@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2pulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  @keyframes v2bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <div style="display:flex;align-items:center;gap:10px;height:34px;padding:0 20px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;border-bottom:1px solid var(--line-soft)">
+    <span style="font-weight:600">Workflow automation</span>
+    <span style="color:var(--ink-2)">Simulated before it runs, approved before it writes, reversible after it does</span>
+    <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft)">
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }}" onClick="{{ setLight }}">Light</span>
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }}" onClick="{{ setDark }}">Dark</span>
+    </span>
+  </div>
+
+  <div style="display:flex;align-items:flex-start">
+    <nav style="width:56px;flex:none;position:sticky;top:0;height:100vh;background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">NG</div>
+      <div style="height:1px;width:28px;background:var(--line-soft);margin:6px 0"></div>
+      <sc-for list="{{ railIcons }}" as="r" hint-placeholder-count="8">
+        <div style="width:38px;height:32px;border-radius:8px;display:grid;place-items:center;background:{{ r.bg }};color:{{ r.color }}">{{ r.icon }}</div>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:10px 20px;border-bottom:1px solid var(--line-soft);background:var(--surface);flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:7px;font-size:13px;min-width:0">
+          <span style="color:var(--ink-3)">Workflows</span><span style="color:var(--ink-4)">/</span>
+          <span style="font-weight:600">Renewal risk sweep</span>
+          <span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--warn-tint);color:var(--warn);white-space:nowrap">Draft v4</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap">Versions</span>
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap">Simulate</span>
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600;box-shadow:var(--e1);white-space:nowrap">Publish</span>
+        </div>
+      </div>
+
+      <div style="padding:18px 20px 0;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+            <h1 style="font-size:25px;font-weight:700;letter-spacing:-0.026em;margin:0">Renewal risk sweep</h1>
+            <span style="font-size:12.5px;color:var(--ink-3)">312 accounts in scope · 6 steps · 2 approvals</span>
+          </div>
+          <div style="font-size:13px;color:var(--ink-2);margin-top:3px">Finds enterprise renewals losing momentum, drafts the intervention, and writes nothing without a person saying yes.</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+          <sc-for list="{{ modes }}" as="m" hint-placeholder-count="4">
+            <span style="padding:5px 12px;border-radius:6px;font-size:11.5px;font-weight:600;background:{{ m.bg }};color:{{ m.color }};box-shadow:{{ m.shadow }};white-space:nowrap">{{ m.label }}</span>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="padding:16px 20px 30px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Builder</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Linear by default · branches only where a condition needs one</span>
+              <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">＋ Step</span>
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;background:var(--ai-tint);color:var(--ai-ink);font-size:11.5px;font-weight:600;white-space:nowrap">✦ Describe it instead</span>
+              </span>
+            </div>
+
+            <div style="padding:18px">
+              <sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+                <div>
+                  <div style="display:grid;grid-template-columns:118px minmax(0,1fr);gap:14px;align-items:stretch">
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;padding-top:14px;text-align:right">
+                      <span style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:{{ s.kindColor }}">{{ s.kind }}</span>
+                      <span style="font-size:10.5px;color:var(--ink-4)">{{ s.meta }}</span>
+                    </div>
+                    <div style="border-radius:12px;background:{{ s.bg }};border:1px solid {{ s.border }};padding:14px 16px;position:relative;overflow:hidden">
+                      <span style="position:absolute;left:0;top:0;bottom:0;width:3px;background:{{ s.edge }}"></span>
+                      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                        <span style="width:24px;height:24px;flex:none;border-radius:7px;background:{{ s.iconBg }};color:{{ s.iconFg }};display:grid;place-items:center;font-size:11px;font-weight:700">{{ s.icon }}</span>
+                        <span style="font-size:13.5px;font-weight:600">{{ s.title }}</span>
+                        <sc-for list="{{ s.tags }}" as="t" hint-placeholder-count="2">
+                          <span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ t.bg }};color:{{ t.fg }};white-space:nowrap">{{ t.label }}</span>
+                        </sc-for>
+                        <span style="margin-left:auto;flex:none;display:flex;gap:9px;color:var(--ink-4);font-size:12px"><span>⣿</span><span>···</span></span>
+                      </div>
+                      <div style="font-size:12.5px;color:var(--ink-2);margin-top:7px;line-height:1.55">{{ s.body }}</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+                        <sc-for list="{{ s.params }}" as="p" hint-placeholder-count="3">
+                          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 9px;border-radius:7px;background:var(--surface);border:1px solid var(--line-soft);font-family:ui-monospace,monospace">
+                            <span style="color:var(--ink-3)">{{ p.k }}</span><span style="font-weight:600">{{ p.v }}</span>
+                          </span>
+                        </sc-for>
+                      </div>
+                      <div style="font-size:11px;color:{{ s.noteColor }};margin-top:9px;font-weight:600;line-height:1.45">{{ s.note }}</div>
+                    </div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:118px minmax(0,1fr);gap:14px">
+                    <div></div>
+                    <div style="display:flex;align-items:center;gap:9px;padding:6px 0 6px 16px">
+                      <span style="width:1.5px;height:18px;background:var(--line)"></span>
+                      <span style="font-size:11px;color:var(--ink-4)">{{ s.connector }}</span>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+              <div style="display:grid;grid-template-columns:118px minmax(0,1fr);gap:14px">
+                <div></div>
+                <div style="border-radius:12px;border:1px dashed var(--line);padding:13px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <span style="width:24px;height:24px;flex:none;border-radius:7px;background:var(--sunken);color:var(--ink-3);display:grid;place-items:center;font-size:12px;font-weight:700">＋</span>
+                  <span style="font-size:12.5px;color:var(--ink-3)">Add a condition, action, AI step or approval</span>
+                  <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4);white-space:nowrap">⌘⏎</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="width:20px;height:20px;flex:none;border-radius:6px;background:var(--brand-tint);color:var(--brand-ink);display:grid;place-items:center;font-size:11px;font-weight:700">▶</span>
+              <span style="font-size:13.5px;font-weight:600">Simulation — dry run on live data</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">No writes, no sends · ran 09:11 against today's 312 accounts</span>
+              <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Re-run</span>
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Pick a record</span>
+              </span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line-soft)">
+              <sc-for list="{{ simKpis }}" as="k" hint-placeholder-count="4">
+                <div style="flex:1 1 150px;min-width:0;padding:14px 16px;border-right:1px solid var(--line-soft)">
+                  <div style="font-size:11px;color:var(--ink-3)">{{ k.k }}</div>
+                  <div style="font-size:20px;font-weight:700;letter-spacing:-0.024em;font-variant-numeric:tabular-nums;margin-top:4px;color:{{ k.color }}">{{ k.v }}</div>
+                  <div style="font-size:11px;color:var(--ink-2);margin-top:2px">{{ k.note }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:740px">
+                <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 92px minmax(0,1.4fr) 120px;gap:12px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Record</div><div>Path</div><div>Would do</div><div style="text-align:right">Verdict</div>
+                </div>
+                <sc-for list="{{ simRows }}" as="r" hint-placeholder-count="5">
+                  <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 92px minmax(0,1.4fr) 120px;gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+                    <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.record }}</div>
+                    <div style="font-size:11px;color:var(--ink-2)">{{ r.path }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-2)">{{ r.would }}</div>
+                    <div style="text-align:right"><span style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ r.tint }};color:{{ r.color }};white-space:nowrap">{{ r.verdict }}</span></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:11px;padding:13px 18px;background:var(--ai-tint);flex-wrap:wrap">
+              <span style="width:18px;height:18px;flex:none;border-radius:5px;background:var(--ai);display:grid;place-items:center;margin-top:1px">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+              </span>
+              <div style="font-size:12.5px;line-height:1.55;min-width:220px;flex:1">
+                <span style="font-weight:600">Simulation found one problem: </span>
+                <span style="color:var(--ink-2)">6 accounts would receive outreach from two workflows on the same day. A “not contacted by automation in 7 days” condition removes the overlap without losing any of the 41.</span>
+              </div>
+              <span style="margin-left:auto;flex:none;font-size:11.5px;font-weight:600;color:var(--ai-ink);white-space:nowrap">Add condition →</span>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Execution history</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Every run, every record · retained 90 days</span>
+              <span style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+                <sc-for list="{{ historyTabs }}" as="h" hint-placeholder-count="4">
+                  <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:{{ h.bg }};color:{{ h.color }};box-shadow:{{ h.shadow }};white-space:nowrap">{{ h.label }}</span>
+                </sc-for>
+              </span>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:800px">
+                <div style="display:grid;grid-template-columns:126px 96px minmax(0,1fr) 112px 100px 78px;gap:12px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Started</div><div>Version</div><div>Outcome</div><div>Records</div><div>Duration</div><div style="text-align:right">Log</div>
+                </div>
+                <sc-for list="{{ runs }}" as="r" hint-placeholder-count="6">
+                  <div style="display:grid;grid-template-columns:126px 96px minmax(0,1fr) 112px 100px 78px;gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px;background:{{ r.bg }}">
+                    <div style="font-variant-numeric:tabular-nums">{{ r.started }}</div>
+                    <div style="font-size:11px;color:var(--ink-2);font-family:ui-monospace,monospace">{{ r.version }}</div>
+                    <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                      <span style="width:6px;height:6px;flex:none;border-radius:999px;background:{{ r.dot }}"></span>
+                      <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ r.textColor }}">{{ r.outcome }}</span>
+                    </div>
+                    <div style="font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums">{{ r.records }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums">{{ r.duration }}</div>
+                    <div style="text-align:right;font-size:11px;font-weight:600;color:var(--brand-ink)">Open</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px">
+            <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;align-self:start">
+              <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+                <span style="font-size:13.5px;font-weight:600">Debugging · run 09:12</span>
+                <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--warn-tint);color:var(--warn);white-space:nowrap">Paused at step 6</span>
+              </div>
+              <div style="padding:16px 18px;border-bottom:1px solid var(--line-soft)">
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                  <span style="font-size:12px;color:var(--ink-3)">Record</span>
+                  <span style="display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:5px 10px;border-radius:8px;background:var(--sunken);font-size:12px;font-weight:600;white-space:nowrap">Vantage Logistics A/S <span style="color:var(--ink-4)">▾</span></span>
+                  <span style="margin-left:auto;display:flex;gap:7px;flex-wrap:wrap">
+                    <span style="display:inline-flex;align-items:center;min-height:26px;padding:4px 9px;border-radius:7px;border:1px solid var(--line);font-size:11px;font-weight:600;white-space:nowrap">Step back</span>
+                    <span style="display:inline-flex;align-items:center;min-height:26px;padding:4px 9px;border-radius:7px;border:1px solid var(--line);font-size:11px;font-weight:600;white-space:nowrap">Step forward</span>
+                  </span>
+                </div>
+                <div style="margin-top:13px;border-radius:11px;background:var(--sunken);border:1px solid var(--line-soft);overflow:hidden">
+                  <sc-for list="{{ debugSteps }}" as="d" hint-placeholder-count="5">
+                    <div style="display:flex;gap:11px;padding:10px 13px;border-bottom:1px solid var(--line-soft);background:{{ d.bg }}">
+                      <span style="width:18px;height:18px;flex:none;border-radius:999px;background:{{ d.markBg }};border:1.5px solid {{ d.markBorder }};color:{{ d.markFg }};display:grid;place-items:center;font-size:9px;font-weight:700;margin-top:1px">{{ d.mark }}</span>
+                      <div style="min-width:0">
+                        <div style="font-size:12px;font-weight:600">{{ d.label }}</div>
+                        <div style="font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ d.output }}</div>
+                      </div>
+                      <span style="margin-left:auto;flex:none;font-size:10.5px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ d.ms }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="padding:14px 18px">
+                <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Logs</div>
+                <div style="margin-top:9px;border-radius:11px;background:var(--sunken);border:1px solid var(--line-soft);padding:12px 13px;font-family:ui-monospace,monospace;font-size:11px;line-height:1.7;overflow-x:auto">
+                  <sc-for list="{{ logs }}" as="l" hint-placeholder-count="6">
+                    <div style="white-space:pre;color:{{ l.color }}">{{ l.line }}</div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;gap:11px;margin-top:11px;flex-wrap:wrap">
+                  <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Copy log</span>
+                  <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Replay record</span>
+                  <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-4);white-space:nowrap">run_8c14-2f</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;align-self:start">
+              <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft)">
+                <span style="font-size:13.5px;font-weight:600">Metrics</span>
+                <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Last 30 days</span>
+              </div>
+              <div style="padding:16px 18px">
+                <div style="display:flex;flex-direction:column;gap:11px">
+                  <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="5">
+                    <div>
+                      <div style="display:flex;align-items:baseline;gap:8px;font-size:11.5px">
+                        <span style="color:var(--ink-2)">{{ m.label }}</span>
+                        <span style="margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums">{{ m.value }}</span>
+                        <span style="font-size:11px;font-weight:600;color:{{ m.color }}">{{ m.delta }}</span>
+                      </div>
+                      <div style="height:5px;border-radius:999px;background:var(--sunken);margin-top:5px;overflow:hidden">
+                        <div style="width:{{ m.pct }};height:100%;border-radius:999px;background:{{ m.color }}"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:14px;padding:12px 13px;border-radius:11px;background:var(--ai-tint);border:1px solid var(--ai-line);font-size:12px;line-height:1.55">
+                  <span style="font-weight:600;color:var(--ai-ink)">Read: </span>
+                  <span>approval rate is the number that matters. At 86% the drafts are trusted; below 60% the step is making work rather than saving it and should be retuned or retired.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Templates &amp; marketplace</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Installed workflows keep their origin and update independently</span>
+              <span style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+                <sc-for list="{{ marketTabs }}" as="m" hint-placeholder-count="3">
+                  <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:{{ m.bg }};color:{{ m.color }};box-shadow:{{ m.shadow }};white-space:nowrap">{{ m.label }}</span>
+                </sc-for>
+              </span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr))">
+              <sc-for list="{{ templates }}" as="t" hint-placeholder-count="6">
+                <div style="padding:16px 18px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);min-width:0">
+                  <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                    <span style="width:24px;height:24px;flex:none;border-radius:7px;background:{{ t.tint }};color:{{ t.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ t.icon }}</span>
+                    <span style="font-size:12.5px;font-weight:600">{{ t.name }}</span>
+                    <span style="margin-left:auto;flex:none;font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:{{ t.badgeBg }};color:{{ t.badgeFg }};white-space:nowrap">{{ t.badge }}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--ink-2);margin-top:8px;line-height:1.55">{{ t.body }}</div>
+                  <div style="display:flex;align-items:center;gap:10px;margin-top:10px;font-size:11px;color:var(--ink-3);flex-wrap:wrap">
+                    <span>{{ t.meta }}</span>
+                    <span style="margin-left:auto;font-weight:600;color:var(--brand-ink);white-space:nowrap">{{ t.action }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap">
+              <span>Marketplace workflows are read-only until forked, and each declares the objects it reads and the fields it writes before install.</span>
+              <span style="margin-left:auto;font-weight:600;color:var(--brand-ink);white-space:nowrap">Submit a workflow</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Publishing</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--warn-tint);color:var(--warn);white-space:nowrap">Draft v4</span>
+            </div>
+            <sc-for list="{{ publishChecks }}" as="p" hint-placeholder-count="5">
+              <div style="display:flex;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:18px;height:18px;flex:none;border-radius:999px;background:{{ p.bg }};border:1.5px solid {{ p.border }};color:{{ p.fg }};display:grid;place-items:center;font-size:9px;font-weight:700;margin-top:1px">{{ p.mark }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:12px;font-weight:600;color:{{ p.color }}">{{ p.label }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-3);margin-top:1px;line-height:1.45">{{ p.meta }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="padding:13px 15px">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ rollout }}" as="r" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;border:1px solid {{ r.border }};background:{{ r.bg }};font-size:12px">
+                    <span style="width:12px;height:12px;flex:none;border-radius:999px;border:1.5px solid {{ r.dotBorder }};background:{{ r.dotBg }}"></span>
+                    <div style="min-width:0">
+                      <div style="font-weight:600">{{ r.label }}</div>
+                      <div style="font-size:10.5px;color:var(--ink-3)">{{ r.meta }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:34px;margin-top:12px;padding:6px 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1);text-align:center">Publish to 20% of scope</span>
+              <div style="font-size:10.5px;color:var(--ink-3);margin-top:9px;line-height:1.5">Publishing creates v4 and leaves v3 running until the canary clears. Rollback restores v3 and stops in-flight runs.</div>
+            </div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--ai-line);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;background:var(--ai-tint);border-bottom:1px solid var(--ai-line)">
+              <span style="width:18px;height:18px;flex:none;border-radius:5px;background:var(--ai);display:grid;place-items:center">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+              </span>
+              <span style="font-size:12.5px;font-weight:600;color:var(--ai-ink)">AI step rules</span>
+            </div>
+            <sc-for list="{{ aiRules }}" as="a" hint-placeholder-count="5">
+              <div style="display:flex;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="color:var(--ai-ink);flex:none;font-weight:700;font-size:11px;margin-top:2px">{{ a.n }}</span>
+                <div style="font-size:11.5px;color:var(--ink-2);line-height:1.5">{{ a.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Approval queue</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--warn-tint);color:var(--warn);white-space:nowrap">2 waiting</span>
+            </div>
+            <sc-for list="{{ approvals }}" as="a" hint-placeholder-count="2">
+              <div style="padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                  <span style="font-size:12px;font-weight:600">{{ a.label }}</span>
+                  <span style="margin-left:auto;font-size:10.5px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ a.count }}</span>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-2);margin-top:5px;line-height:1.5">{{ a.body }}</div>
+                <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+                  <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;background:var(--ai);color:#fff;font-size:11.5px;font-weight:600;white-space:nowrap">Review</span>
+                  <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Skip step</span>
+                </div>
+                <div style="font-size:10.5px;color:var(--ink-3);margin-top:8px;line-height:1.45">{{ a.meta }}</div>
+              </div>
+            </sc-for>
+            <div style="padding:12px 15px;font-size:10.5px;color:var(--ink-3);line-height:1.5">Approvals expire after 72 hours and the run ends as “not approved” rather than proceeding by default.</div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Guardrails</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3)">Workspace-level</span>
+            </div>
+            <sc-for list="{{ guardrails }}" as="g" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line-soft)">
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;font-weight:600">{{ g.label }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-3);margin-top:1px">{{ g.meta }}</div>
+                </div>
+                <span style="margin-left:auto;flex:none;font-size:11px;font-weight:600;color:{{ g.color }};font-variant-numeric:tabular-nums">{{ g.value }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+    });
+  }
+
+  icon(kind) {
+    const p = {
+      home: 'M2.5 7 8 2.5 13.5 7v6.5h-11V7Z', chart: 'M3 13V7M8 13V3M13 13V9',
+      flow: 'M2.5 4h11M4.5 8h7M6.5 12h3', grid: 'M2.5 2.5h5v5h-5zM8.5 2.5h5v5h-5zM2.5 8.5h5v5h-5zM8.5 8.5h5v5h-5z',
+      case: 'M2.5 5.5h11v8h-11zM6 5.5V3h4v2.5', chat: 'M2.5 3h11v7H7l-4.5 3.5z',
+      gear: 'M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.6 3.6 5 5M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4',
+      file: 'M4 2h5l3 3v9H4zM9 2v3h3',
+    }[kind];
+    return R('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }, R('path', { d: p }));
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    const seg = (labels, active) => labels.map((label, i) => ({
+      label,
+      bg: i === active ? 'var(--surface)' : 'transparent',
+      color: i === active ? 'var(--ink)' : 'var(--ink-3)',
+      shadow: i === active ? 'var(--e1)' : 'none',
+    }));
+
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--brand)',
+      lightFg: dark ? 'var(--ink-3)' : '#fff',
+      darkBg: dark ? 'var(--brand)' : 'transparent',
+      darkFg: dark ? '#fff' : 'var(--ink-3)',
+
+      railIcons: ['home', 'chart', 'flow', 'grid', 'case', 'chat', 'gear', 'file'].map((k, i) => ({
+        icon: this.icon(k),
+        bg: i === 6 ? 'var(--brand-tint)' : 'transparent',
+        color: i === 6 ? 'var(--brand)' : 'var(--ink-3)',
+      })),
+
+      modes: seg(['Build', 'Simulate', 'Runs', 'Metrics'], 0),
+      historyTabs: seg(['All', 'Failed', 'Awaiting approval', 'Reverted'], 0),
+      marketTabs: seg(['Installed', 'Templates', 'Marketplace'], 1),
+
+      steps: [
+        {
+          kind: 'Trigger', kindColor: 'var(--brand-ink)', meta: 'Daily 06:00',
+          icon: '⏱', iconBg: 'var(--brand-tint)', iconFg: 'var(--brand-ink)',
+          title: 'Schedule — every weekday at 06:00 local',
+          tags: [{ label: 'Scheduled', bg: 'var(--brand-tint)', fg: 'var(--brand-ink)' }],
+          body: 'Runs against the workspace scope. Event triggers are also available: signal raised, field changed, stage entered, meeting ended.',
+          params: [{ k: 'scope', v: 'EMEA · Enterprise' }, { k: 'window', v: 'renewal ≤ 120d' }, { k: 'concurrency', v: '1 run' }],
+          note: '312 accounts match today · scope is evaluated at run time, never cached',
+          noteColor: 'var(--ink-3)', bg: 'var(--surface)', border: 'var(--brand-line)', edge: 'var(--brand)',
+          connector: 'then',
+        },
+        {
+          kind: 'Condition', kindColor: 'var(--ink-3)', meta: 'Filter · AND',
+          icon: '⑂', iconBg: 'var(--sunken)', iconFg: 'var(--ink-2)',
+          title: 'Keep accounts losing momentum',
+          tags: [{ label: '41 of 312 pass', bg: 'var(--sunken)', fg: 'var(--ink-2)' }],
+          body: 'All conditions must hold. Adding an OR group creates the only branch in this workflow, and the branch is drawn rather than nested.',
+          params: [{ k: 'score', v: '< 50' }, { k: 'last_touch', v: '> 14d' }, { k: 'procurement', v: 'never engaged' }],
+          note: 'Simulation suggests adding: not contacted by automation in 7 days',
+          noteColor: 'var(--ai-ink)', bg: 'var(--surface)', border: 'var(--line-soft)', edge: 'var(--line)',
+          connector: 'for each account',
+        },
+        {
+          kind: 'AI step', kindColor: 'var(--ai-ink)', meta: 'Model · read only',
+          icon: '✦', iconBg: 'var(--ai)', iconFg: '#fff',
+          title: 'Score renewal risk and name the cause',
+          tags: [{ label: 'AI', bg: 'var(--ai-tint)', fg: 'var(--ai-ink)' }, { label: 'No writes', bg: 'var(--pos-tint)', fg: 'var(--pos)' }],
+          body: 'Reads calls, email and CRM history for each account and returns a cause with citations. Output is structured, so later steps can branch on it without parsing prose.',
+          params: [{ k: 'cohort', v: '412 comparables' }, { k: 'min_confidence', v: '3 of 5' }, { k: 'output', v: 'cause · evidence[]' }],
+          note: 'Below the confidence floor the account is skipped and logged, never guessed',
+          noteColor: 'var(--ai-ink)', bg: 'var(--surface)', border: 'var(--ai-line)', edge: 'var(--ai)',
+          connector: 'then',
+        },
+        {
+          kind: 'AI step', kindColor: 'var(--ai-ink)', meta: 'Model · drafts',
+          icon: '✦', iconBg: 'var(--ai)', iconFg: '#fff',
+          title: 'Draft the intervention email per account',
+          tags: [{ label: 'AI', bg: 'var(--ai-tint)', fg: 'var(--ai-ink)' }, { label: 'Draft only', bg: 'var(--warn-tint)', fg: 'var(--warn)' }],
+          body: 'Uses the named cause and the account’s own evidence. Drafts are attached to the record as unsent, so nothing exists in an outbox before a person reads it.',
+          params: [{ k: 'tone', v: 'from brand guide' }, { k: 'variants', v: '1' }, { k: 'cite_evidence', v: 'true' }],
+          note: '41 drafts prepared · 0 sent',
+          noteColor: 'var(--ink-3)', bg: 'var(--surface)', border: 'var(--ai-line)', edge: 'var(--ai)',
+          connector: 'then',
+        },
+        {
+          kind: 'Approval', kindColor: 'var(--warn)', meta: 'Blocking · 72h',
+          icon: '⏸', iconBg: 'var(--warn-tint)', iconFg: 'var(--warn)',
+          title: 'Owner approves the drafts',
+          tags: [{ label: 'Blocking', bg: 'var(--warn-tint)', fg: 'var(--warn)' }, { label: 'Per account', bg: 'var(--sunken)', fg: 'var(--ink-2)' }],
+          body: 'Routed to each deal owner, with a bulk path for a named reviewer. Approve, edit-then-approve, or reject with a reason — the reason feeds the draft quality metric.',
+          params: [{ k: 'approver', v: 'deal owner' }, { k: 'fallback', v: 'CRO after 48h' }, { k: 'expiry', v: '72h → not approved' }],
+          note: '2 waiting · 18 approved · 1 rejected (“wrong contact”)',
+          noteColor: 'var(--warn)', bg: 'var(--warn-tint)', border: 'var(--line-soft)', edge: 'var(--warn)',
+          connector: 'if approved',
+        },
+        {
+          kind: 'Action', kindColor: 'var(--pos)', meta: 'Writes · reversible',
+          icon: '→', iconBg: 'var(--pos-tint)', iconFg: 'var(--pos)',
+          title: 'Send, log the activity and flag the account',
+          tags: [{ label: 'Writes 2 fields', bg: 'var(--risk-tint)', fg: 'var(--risk)' }, { label: 'Reversible 24h', bg: 'var(--pos-tint)', fg: 'var(--pos)' }],
+          body: 'Sends from the owner’s mailbox, logs the activity on the opportunity, and sets the risk flag. Every field this step writes is declared here and audited per run.',
+          params: [{ k: 'writes', v: 'Renewal_Risk__c · Next_Step__c' }, { k: 'send_as', v: 'deal owner' }, { k: 'undo', v: '24h batch' }],
+          note: 'Paused here in run 09:12 — awaiting the second approval',
+          noteColor: 'var(--warn)', bg: 'var(--surface)', border: 'var(--line-soft)', edge: 'var(--pos)',
+          connector: 'end',
+        },
+      ],
+
+      simKpis: [
+        { k: 'Accounts entering', v: '312', note: 'Scope evaluated at 09:11', color: 'var(--ink)' },
+        { k: 'Passing conditions', v: '41', note: '13% of scope', color: 'var(--ink)' },
+        { k: 'Would write', v: '41 records', note: '2 fields each, after approval', color: 'var(--warn)' },
+        { k: 'Would send', v: '0', note: 'Nothing sends without approval', color: 'var(--pos)' },
+      ],
+
+      simRows: [
+        { record: 'Vantage Logistics A/S', path: 'Full path', would: 'Draft intro to procurement; flag risk high', verdict: 'Would run', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { record: 'Ashgrove Retail Group', path: 'Full path', would: 'Draft re-map ask; flag risk high', verdict: 'Would run', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { record: 'Brightwater Group', path: 'Skipped at AI', would: 'Nothing — confidence 2 of 5, below floor', verdict: 'Skipped', tint: 'var(--sunken)', color: 'var(--ink-2)' },
+        { record: 'Meridian Freight', path: 'Skipped at condition', would: 'Nothing — touched 6 days ago', verdict: 'Filtered', tint: 'var(--sunken)', color: 'var(--ink-2)' },
+        { record: 'Corrigan Health', path: 'Overlap', would: 'Would double-contact with “QBR follow-up”', verdict: 'Conflict', tint: 'var(--warn-tint)', color: 'var(--warn)' },
+      ],
+
+      runs: [
+        { started: 'Today 09:12', version: 'v3', outcome: 'Paused — awaiting approval on 2 accounts', records: '41 of 312', duration: '1m 04s', dot: 'var(--warn)', textColor: 'var(--ink)', current: true },
+        { started: 'Yesterday 06:00', version: 'v3', outcome: 'Completed — 38 drafted, 34 approved, 34 sent', records: '38 of 306', duration: '2m 11s', dot: 'var(--pos)', textColor: 'var(--ink-2)', current: false },
+        { started: '2 Aug 06:00', version: 'v3', outcome: 'Completed with 3 skips — confidence floor', records: '31 of 301', duration: '1m 58s', dot: 'var(--pos)', textColor: 'var(--ink-2)', current: false },
+        { started: '1 Aug 06:00', version: 'v2', outcome: 'Failed at step 6 — mailbox auth expired', records: '0 of 298', duration: '48s', dot: 'var(--risk)', textColor: 'var(--ink-2)', current: false },
+        { started: '31 Jul 06:00', version: 'v2', outcome: 'Reverted by M. Reinhardt — wrong contact role', records: '22 reverted', duration: '2m 30s', dot: 'var(--risk)', textColor: 'var(--ink-2)', current: false },
+        { started: '30 Jul 06:00', version: 'v2', outcome: 'Completed — 29 drafted, 26 approved', records: '29 of 295', duration: '2m 02s', dot: 'var(--pos)', textColor: 'var(--ink-2)', current: false },
+      ].map(r => Object.assign({}, r, { bg: r.current ? 'var(--brand-tint)' : 'transparent' })),
+
+      debugSteps: [
+        { label: '1 · Trigger', output: 'matched: true · scope_size: 312', ms: '12ms', state: 'done' },
+        { label: '2 · Condition', output: 'score: 38 (<50 ✓) · last_touch: 19d (>14 ✓) · procurement: none ✓', ms: '31ms', state: 'done' },
+        { label: '3 · AI · score risk', output: 'cause: "pricing → procurement" · confidence: 4 · evidence: 6', ms: '2.4s', state: 'done' },
+        { label: '4 · AI · draft email', output: 'draft_id: dr_91af · 214 words · citations: 3', ms: '3.1s', state: 'done' },
+        { label: '5 · Approval', output: 'state: waiting · approver: M. Reinhardt · expires in 63h', ms: '—', state: 'current' },
+      ].map(d => {
+        const m = {
+          done: { mark: '✓', markBg: 'var(--pos)', markBorder: 'var(--pos)', markFg: '#fff', bg: 'transparent' },
+          current: { mark: '', markBg: 'transparent', markBorder: 'var(--warn)', markFg: 'var(--warn)', bg: 'var(--warn-tint)' },
+        }[d.state];
+        return Object.assign({}, d, m);
+      }),
+
+      logs: [
+        { line: '06:00:00.114  run_8c14-2f  start  version=v3 scope=312', color: 'var(--ink-2)' },
+        { line: '06:00:00.146  condition    pass=41 fail=271', color: 'var(--ink-2)' },
+        { line: '06:00:02.510  ai.score     acct_8814-QX confidence=4 cause=pricing_procurement', color: 'var(--ink)' },
+        { line: '06:00:05.602  ai.draft     acct_8814-QX draft=dr_91af cited=3', color: 'var(--ink)' },
+        { line: '06:00:05.610  approval     acct_8814-QX state=waiting approver=mreinhardt', color: 'var(--warn)' },
+        { line: '06:00:05.611  ai.score     acct_5521-BW skipped reason=confidence_below_floor(2)', color: 'var(--ink-3)' },
+        { line: '06:00:06.004  guardrail    conflict acct_2210-CH workflow=qbr_followup action=held', color: 'var(--warn)' },
+      ],
+
+      metrics: [
+        { label: 'Approval rate on drafts', value: '86%', delta: '+4 pts', pct: '86%', color: 'var(--pos)' },
+        { label: 'Runs completed without error', value: '94%', delta: '+2 pts', pct: '94%', color: 'var(--pos)' },
+        { label: 'Accounts actioned per run', value: '34 of 41', delta: '−1', pct: '83%', color: 'var(--pos)' },
+        { label: 'Reverted actions', value: '1.2%', delta: '−0.8 pts', pct: '12%', color: 'var(--warn)' },
+        { label: 'Time saved (est.)', value: '19h / month', delta: '+3h', pct: '70%', color: 'var(--pos)' },
+      ],
+
+      templates: [
+        { icon: '✦', name: 'Renewal risk sweep', badge: 'Installed', body: 'This workflow. Finds momentum loss, drafts the intervention, needs approval before writing.', meta: 'By Signora · used by 41 teams', action: 'Open', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', badgeBg: 'var(--pos-tint)', badgeFg: 'var(--pos)' },
+        { icon: '↑', name: 'Expansion detector', badge: 'Template', body: 'Watches utilisation and hiring signals, then opens an expansion case with a sized estimate.', meta: 'By Signora · 4 steps', action: 'Use template', tint: 'var(--pos-tint)', color: 'var(--pos)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+        { icon: '⚑', name: 'Competitive response', badge: 'Template', body: 'On a competitor mention, sends the battlecard to the owner and logs the mention on the deal.', meta: 'By Signora · 3 steps', action: 'Use template', tint: 'var(--warn-tint)', color: 'var(--warn)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+        { icon: '◷', name: 'Stale pipeline hygiene', badge: 'Marketplace', body: 'Nudges owners on deals with no next step, then reforecasts what stays untouched.', meta: 'By Northwind RevOps · 4.6★ · 312 installs', action: 'Install', tint: 'var(--sunken)', color: 'var(--ink-2)', badgeBg: 'var(--brand-tint)', badgeFg: 'var(--brand-ink)' },
+        { icon: '▤', name: 'Board pack assembler', badge: 'Marketplace', body: 'Builds the quarterly extract, generates commentary, and files it for review.', meta: 'By Clerestory · 4.4★ · 88 installs', action: 'Install', tint: 'var(--sunken)', color: 'var(--ink-2)', badgeBg: 'var(--brand-tint)', badgeFg: 'var(--brand-ink)' },
+        { icon: '✎', name: 'Blank workflow', badge: 'Start', body: 'Trigger, condition, action. Add AI steps and approvals as you need them.', meta: 'Six-step limit until first publish', action: 'Create', tint: 'var(--sunken)', color: 'var(--ink-3)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+      ],
+
+      publishChecks: [
+        { label: 'Simulation run in the last 24 hours', meta: 'Ran 09:11 · 312 accounts', state: 'done' },
+        { label: 'Every writing step declares its fields', meta: '2 fields on 1 step', state: 'done' },
+        { label: 'Approval covers all sending steps', meta: 'Step 5 gates step 6', state: 'done' },
+        { label: 'Conflict with “QBR follow-up” unresolved', meta: '6 accounts would be double-contacted', state: 'blocked' },
+        { label: 'Owner and rollback plan named', meta: 'Owner: RevOps · rollback to v3', state: 'done' },
+      ].map(p => {
+        const m = {
+          done: { mark: '✓', bg: 'var(--pos)', border: 'var(--pos)', fg: '#fff', color: 'var(--ink-2)' },
+          blocked: { mark: '!', bg: 'var(--risk)', border: 'var(--risk)', fg: '#fff', color: 'var(--risk)' },
+        }[p.state];
+        return Object.assign({}, p, m);
+      }),
+
+      rollout: [
+        { label: 'Canary — 20% of scope', meta: '62 accounts · 3 days · auto-halt on 2 reverts', on: true },
+        { label: 'Full scope', meta: '312 accounts · after canary clears', on: false },
+        { label: 'Paused', meta: 'Keeps v3 running, no new runs of v4', on: false },
+      ].map(r => ({
+        label: r.label, meta: r.meta,
+        border: r.on ? 'var(--brand)' : 'var(--line-soft)',
+        bg: r.on ? 'var(--brand-tint)' : 'transparent',
+        dotBorder: r.on ? 'var(--brand)' : 'var(--line)',
+        dotBg: r.on ? 'var(--brand)' : 'transparent',
+      })),
+
+      aiRules: [
+        { n: '01', text: 'An AI step may read anything the user can read, and write nothing.' },
+        { n: '02', text: 'Every AI output is structured, so downstream steps branch on fields rather than parsing prose.' },
+        { n: '03', text: 'A confidence floor is mandatory. Below it the record is skipped and logged, never guessed at.' },
+        { n: '04', text: 'Drafts are attached as unsent artefacts; sending is always a separate, approved action.' },
+        { n: '05', text: 'Every AI step names its evidence in the run log, so a bad outcome can be traced to what it read.' },
+      ],
+
+      approvals: [
+        { label: 'Drafts for 2 accounts', count: 'expires in 63h', body: 'Vantage Logistics and Ashgrove Retail. Review shows the draft, the cause it was built from, and the evidence.', meta: 'Approve · edit and approve · reject with a reason' },
+        { label: 'Field writes on 41 accounts', count: 'blocked', body: 'Renewal_Risk__c and Next_Step__c. The exact values are listed per account before you approve.', meta: 'Bulk approval requires a named reviewer' },
+      ],
+
+      guardrails: [
+        { label: 'Max records per run', meta: 'Halts and reports beyond this', value: '500', color: 'var(--ink)' },
+        { label: 'Max sends per account', meta: 'Across all workflows, per week', value: '1', color: 'var(--ink)' },
+        { label: 'Quiet hours', meta: 'No sends outside working hours', value: '18:00–08:00', color: 'var(--ink)' },
+        { label: 'Auto-halt on reverts', meta: 'Stops the workflow, keeps the log', value: '2 in a run', color: 'var(--warn)' },
+        { label: 'Undo window', meta: 'Batch revert of everything a run wrote', value: '24h', color: 'var(--pos)' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

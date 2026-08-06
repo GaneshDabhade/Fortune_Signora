@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2shimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes v2pulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <div style="display:flex;align-items:center;gap:10px;height:34px;padding:0 20px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;border-bottom:1px solid var(--line-soft)">
+    <span style="font-weight:600">Executive dashboard</span>
+    <span style="color:var(--ink-2)">CEO / CRO homepage · rendered inside the approved shell · v2 tokens</span>
+    <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft)">
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }}" onClick="{{ setLight }}">Light</span>
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }}" onClick="{{ setDark }}">Dark</span>
+    </span>
+  </div>
+
+  <div style="display:flex;align-items:flex-start">
+    <nav style="width:232px;flex:none;position:sticky;top:0;height:100vh;background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 10px;display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+        <div style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700">NG</div>
+        <div style="min-width:0">
+          <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Northwind Global</div>
+          <div style="font-size:10.5px;color:var(--ink-3)">Enterprise · Global</div>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-left:auto;flex:none;color:var(--ink-4)"><path d="M5 6.5 8 9.5l3-3"></path></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;margin-top:12px">
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="9">
+          <div style="display:flex;align-items:center;gap:10px;padding:6px 9px;border-radius:8px;font-size:12.5px;font-weight:{{ n.weight }};background:{{ n.bg }};color:{{ n.color }}">
+            <span style="display:flex;flex:none;color:{{ n.iconColor }}">{{ n.icon }}</span>
+            <span>{{ n.label }}</span>
+            <span style="margin-left:auto;font-size:10px;font-variant-numeric:tabular-nums;color:var(--ink-4)">{{ n.count }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;padding-top:12px">
+        <div style="height:1px;background:var(--line-soft);margin:0 9px 8px"></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 9px;border-radius:8px;font-size:12.5px;color:var(--ai-ink);background:var(--ai-tint)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12M12 4l-1.8 1.8M5.8 10.2 4 12"></path></svg>
+          <span>Ask Signora</span>
+          <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:9.5px;padding:1px 5px;border-radius:5px;background:var(--surface);border:1px solid var(--ai-line)">⌘K</span>
+        </div>
+      </div>
+    </nav>
+
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:14px;height:56px;padding:0 20px;border-bottom:1px solid var(--line-soft);background:var(--surface);position:sticky;top:0;z-index:5">
+        <span style="font-size:13px;font-weight:600">Home</span>
+        <span style="font-size:12px;color:var(--ink-3)">Executive dashboard</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;width:224px;height:32px;padding:0 11px;border-radius:8px;background:var(--sunken);color:var(--ink-3);font-size:12.5px">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+            <span>Search or ask…</span>
+            <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:9.5px;padding:1px 5px;border-radius:5px;background:var(--surface);border:1px solid var(--line-soft)">⌘K</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:8px;background:var(--warn-tint);color:var(--warn);font-size:11.5px;font-weight:600"><span style="width:6px;height:6px;border-radius:999px;background:var(--warn)"></span>Scoring degraded</div>
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--sunken);display:grid;place-items:center;position:relative;color:var(--ink-2)">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2a4 4 0 0 0-4 4c0 3-1.2 4-1.2 4h10.4S12 9 12 6a4 4 0 0 0-4-4ZM6.5 12.5a1.6 1.6 0 0 0 3 0"></path></svg>
+            <span style="position:absolute;top:-3px;right:-3px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:var(--risk);color:#fff;font-size:9px;font-weight:700;display:grid;place-items:center;border:2px solid var(--surface)">5</span>
+          </div>
+          <div style="width:32px;height:32px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:600">MR</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;height:46px;padding:0 20px;border-bottom:1px solid var(--line-soft);background:var(--bg)">
+        <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Scope</span>
+        <sc-for list="{{ globalFilters }}" as="f" hint-placeholder-count="4">
+          <span style="display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:8px;background:var(--brand-tint);border:1px solid var(--brand-line);font-size:12px;color:var(--brand-ink)">
+            <span style="color:var(--ink-4)">{{ f.field }}</span><span style="font-weight:600">{{ f.value }}</span>
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6.5 8 9.5l3-3"></path></svg>
+          </span>
+        </sc-for>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:12px;font-size:11.5px;color:var(--ink-3)">
+          <span>Data as of 09:14 · CRM synced 4m ago</span>
+          <span style="font-weight:600;color:var(--brand-ink)">Refresh</span>
+        </span>
+      </div>
+
+      <div style="padding:22px 20px 60px">
+
+        <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:26px;font-weight:700;letter-spacing:-0.026em">Good morning, Marta</div>
+            <div style="font-size:13.5px;color:var(--ink-2);margin-top:4px">Q3 closes in 29 days. Three things changed overnight that affect the number.</div>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <span style="display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:12.5px;font-weight:600">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 4h11M4.5 8h7M6.5 12h3"></path></svg>
+              CRO weekly
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--ink-4)"><path d="M5 6.5 8 9.5l3-3"></path></svg>
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:12.5px;font-weight:600">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2"></path></svg>
+              Customise
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border-radius:8px;background:var(--ai);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12"></path></svg>
+              Brief me
+            </span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:20px">
+
+          <div style="grid-column:span 12;border-radius:14px;background:var(--surface);border:1px solid var(--ai-line);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--ai-tint);border-bottom:1px solid var(--ai-line)">
+              <span style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--ai);display:grid;place-items:center">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12M12 4l-1.8 1.8M5.8 10.2 4 12"></path></svg>
+              </span>
+              <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Executive summary</span>
+              <span style="font-size:11.5px;color:var(--ink-2)">Since Friday · 14 sources</span>
+              <span style="margin-left:auto;display:flex;align-items:center;gap:10px">
+                <span style="display:flex;gap:3px">{{ summaryPips }}</span>
+                <span style="font-size:11.5px;color:var(--ink-2)">Confidence 4 of 5</span>
+                <span style="font-size:12px;font-weight:600;color:var(--ai-ink)">Show reasoning</span>
+              </span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr)">
+              <sc-for list="{{ summaryPoints }}" as="p" hint-placeholder-count="3">
+                <div style="padding:18px;border-right:1px solid var(--line-soft)">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:6px;background:{{ p.tagBg }};color:{{ p.tagFg }}">{{ p.tag }}</span>
+                    <span style="font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums">{{ p.impact }}</span>
+                  </div>
+                  <div style="font-size:15px;font-weight:600;letter-spacing:-0.014em;line-height:1.35;margin-top:11px">{{ p.headline }}</div>
+                  <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">{{ p.body }}</p>
+                  <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+                    <span style="font-size:12px;font-weight:600;color:var(--ai-ink)">{{ p.action }}</span>
+                    <span style="font-size:11.5px;color:var(--ink-3)">{{ p.sources }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div style="grid-column:span 3;padding:18px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);transition:box-shadow 160ms var(--ease),border-color 160ms var(--ease)" style-hover="box-shadow:var(--e2);border-color:var(--line)">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:12.5px;color:var(--ink-3)">{{ k.label }}</span>
+                <span style="margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--ai-ink);padding:2px 7px;border-radius:6px;background:var(--ai-tint)">
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>Why
+                </span>
+              </div>
+              <div style="font-size:29px;font-weight:700;letter-spacing:-0.028em;font-variant-numeric:tabular-nums;line-height:1.05;margin-top:11px">{{ k.value }}</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+                <span style="font-size:12.5px;font-weight:600;padding:2px 7px;border-radius:6px;background:{{ k.tint }};color:{{ k.color }};font-variant-numeric:tabular-nums">{{ k.delta }}</span>
+                <span style="font-size:11.5px;color:var(--ink-3)">{{ k.basis }}</span>
+              </div>
+              <div style="margin-top:14px">{{ k.spark }}</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:11px;padding-top:11px;border-top:1px solid var(--line-soft)">{{ k.foot }}</div>
+            </div>
+          </sc-for>
+
+          <div style="grid-column:span 8;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:18px">
+            <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+              <div>
+                <div style="font-size:15px;font-weight:600;letter-spacing:-0.016em">Revenue forecast</div>
+                <div style="font-size:12px;color:var(--ink-3);margin-top:3px">Q3 FY26 · commit, best case and AI projection against a $68.0M plan</div>
+              </div>
+              <div style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+                <sc-for list="{{ forecastScenarios }}" as="s" hint-placeholder-count="3">
+                  <span style="padding:4px 11px;border-radius:6px;font-size:11.5px;font-weight:600;background:{{ s.bg }};color:{{ s.color }};box-shadow:{{ s.shadow }}">{{ s.label }}</span>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;gap:22px;margin-top:16px;flex-wrap:wrap">
+              <sc-for list="{{ forecastFigures }}" as="f" hint-placeholder-count="4">
+                <div>
+                  <div style="font-size:11.5px;color:var(--ink-3)">{{ f.k }}</div>
+                  <div style="display:flex;align-items:baseline;gap:7px;margin-top:2px">
+                    <span style="font-size:19px;font-weight:700;letter-spacing:-0.022em;font-variant-numeric:tabular-nums">{{ f.v }}</span>
+                    <span style="font-size:11.5px;font-weight:600;color:{{ f.color }}">{{ f.d }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <svg viewBox="0 0 760 220" style="width:100%;height:auto;margin-top:14px">
+              <g stroke="var(--line-soft)" stroke-width="1">
+                <line x1="0" y1="30" x2="760" y2="30"></line><line x1="0" y1="80" x2="760" y2="80"></line>
+                <line x1="0" y1="130" x2="760" y2="130"></line><line x1="0" y1="180" x2="760" y2="180"></line>
+              </g>
+              <line x1="0" y1="52" x2="760" y2="52" stroke="var(--ink-3)" stroke-width="1.5" stroke-dasharray="7 5"></line>
+              <text x="756" y="46" text-anchor="end" font-size="10.5" fill="var(--ink-3)">Plan $68.0M</text>
+              <sc-for list="{{ forecastBars }}" as="b" hint-placeholder-count="6">
+                <g>
+                  <rect x="{{ b.x }}" y="{{ b.y3 }}" width="54" height="{{ b.h3 }}" rx="4" fill="var(--c3)" fill-opacity=".28"></rect>
+                  <rect x="{{ b.x }}" y="{{ b.y2 }}" width="54" height="{{ b.h2 }}" rx="4" fill="var(--c2)"></rect>
+                  <rect x="{{ b.x }}" y="{{ b.y1 }}" width="54" height="{{ b.h1 }}" rx="4" fill="var(--c1)"></rect>
+                  <text x="{{ b.cx }}" y="198" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">{{ b.label }}</text>
+                  <text x="{{ b.cx }}" y="212" text-anchor="middle" font-size="10" fill="var(--ink-4)">{{ b.value }}</text>
+                </g>
+              </sc-for>
+            </svg>
+            <div style="display:flex;align-items:center;gap:16px;margin-top:6px;font-size:11.5px;color:var(--ink-2);flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:3px;background:var(--c1)"></span>Closed won</span>
+              <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:3px;background:var(--c2)"></span>Commit</span>
+              <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:11px;height:11px;border-radius:3px;background:var(--c3);opacity:.4"></span>Best case</span>
+              <span style="margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:3px 9px;border-radius:6px;background:var(--ai-tint);color:var(--ai-ink);font-weight:600">AI projection $64.2M — 5.6% below plan</span>
+            </div>
+          </div>
+
+          <div style="grid-column:span 4;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:18px">
+            <div style="font-size:15px;font-weight:600;letter-spacing:-0.016em">Pipeline health</div>
+            <div style="font-size:12px;color:var(--ink-3);margin-top:3px">Coverage, conversion and ageing against the same quarter last year</div>
+            <div style="display:flex;flex-direction:column;gap:11px;margin-top:16px">
+              <sc-for list="{{ health }}" as="h" hint-placeholder-count="4">
+                <div>
+                  <div style="display:flex;align-items:baseline;gap:8px">
+                    <span style="font-size:12.5px;font-weight:600">{{ h.label }}</span>
+                    <span style="margin-left:auto;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">{{ h.value }}</span>
+                    <span style="font-size:11px;color:{{ h.color }};font-weight:600">{{ h.delta }}</span>
+                  </div>
+                  <div style="position:relative;height:6px;border-radius:999px;background:var(--sunken);margin-top:6px;overflow:hidden">
+                    <div style="position:absolute;left:0;top:0;bottom:0;width:{{ h.pct }};border-radius:999px;background:{{ h.bar }}"></div>
+                  </div>
+                  <div style="font-size:11px;color:var(--ink-3);margin-top:5px">{{ h.note }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:10px">
+              <span style="font-size:11.5px;color:var(--ink-2)">Weakest link: Negotiation → Closed won, down 9 points</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink)">Open funnel</span>
+            </div>
+          </div>
+
+          <div style="grid-column:span 6;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <span style="width:22px;height:22px;border-radius:7px;background:var(--risk-tint);color:var(--risk);display:grid;place-items:center;font-size:11px;font-weight:700">!</span>
+              <div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Top risks</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">$8.34M at risk · ranked by revenue exposure × probability</div>
+              </div>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink)">All 11</span>
+            </div>
+            <sc-for list="{{ risks }}" as="r" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:1fr 96px 118px;gap:12px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line-soft);border-left:2px solid {{ r.edge }}">
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.account }}</span>
+                    <span style="flex:none;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ r.tagBg }};color:{{ r.tagFg }}">{{ r.tag }}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ r.why }}</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">{{ r.acv }}</div>
+                  <div style="font-size:11px;color:var(--ink-3)">{{ r.owner }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+                  <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink)">{{ r.action }}</span>
+                  <span style="font-size:10.5px;color:var(--ink-3)">{{ r.evidence }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="grid-column:span 6;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <span style="width:22px;height:22px;border-radius:7px;background:var(--pos-tint);color:var(--pos);display:grid;place-items:center;font-size:11px;font-weight:700">↑</span>
+              <div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Top opportunities</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">$6.10M addressable this quarter · ranked by expected value</div>
+              </div>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink)">All 18</span>
+            </div>
+            <sc-for list="{{ opportunities }}" as="o" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:1fr 96px 118px;gap:12px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line-soft);border-left:2px solid {{ o.edge }}">
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.account }}</span>
+                    <span style="flex:none;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--pos-tint);color:var(--pos)">{{ o.tag }}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ o.why }}</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">{{ o.value }}</div>
+                  <div style="font-size:11px;color:var(--ink-3)">{{ o.owner }}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+                  <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink)">{{ o.action }}</span>
+                  <span style="font-size:10.5px;color:var(--ink-3)">{{ o.evidence }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="grid-column:span 7;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Deal movement</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">Every stage, date and amount change since Friday · net −$2.4M</div>
+              </div>
+              <span style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+                <sc-for list="{{ movementTabs }}" as="t" hint-placeholder-count="3">
+                  <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.shadow }}">{{ t.label }}</span>
+                </sc-for>
+              </span>
+            </div>
+            <sc-for list="{{ movement }}" as="m" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:1fr 150px 86px 74px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line-soft)">
+                <div style="min-width:0">
+                  <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.deal }}</div>
+                  <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">{{ m.owner }} · {{ m.reason }}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:7px;font-size:11.5px">
+                  <span style="padding:2px 7px;border-radius:5px;background:var(--sunken);color:var(--ink-2)">{{ m.from }}</span>
+                  <span style="color:var(--ink-4)">→</span>
+                  <span style="padding:2px 7px;border-radius:5px;background:{{ m.toBg }};color:{{ m.toFg }};font-weight:600">{{ m.to }}</span>
+                </div>
+                <div style="text-align:right;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ m.amountColor }}">{{ m.amount }}</div>
+                <div style="text-align:right;font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums">{{ m.when }}</div>
+              </div>
+            </sc-for>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:11.5px;color:var(--ink-3)">
+              <span>18 changes · 6 positive · 12 negative</span>
+              <span style="margin-left:auto;font-weight:600;color:var(--brand-ink)">Open movement report</span>
+            </div>
+          </div>
+
+          <div style="grid-column:span 5;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Account changes</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">Health, ownership and contract changes on named accounts</div>
+              </div>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink)">All 24</span>
+            </div>
+            <sc-for list="{{ accountChanges }}" as="a" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:24px;height:24px;flex:none;border-radius:7px;background:{{ a.tint }};color:{{ a.color }};display:grid;place-items:center;font-size:11px;font-weight:700">{{ a.icon }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.account }}</div>
+                  <div style="font-size:11.5px;color:var(--ink-2);margin-top:2px">{{ a.change }}</div>
+                </div>
+                <div style="margin-left:auto;flex:none;text-align:right">
+                  <div style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ a.color }}">{{ a.value }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-4)">{{ a.when }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="grid-column:span 5;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <span style="width:8px;height:8px;border-radius:999px;background:var(--pos);animation:v2pulse 2s ease-in-out infinite"></span>
+              <div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Signals feed</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">Live · 14 unreviewed · newest first</div>
+              </div>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink)">Review all</span>
+            </div>
+            <div style="max-height:340px;overflow:auto">
+              <sc-for list="{{ signals }}" as="s" hint-placeholder-count="6">
+                <div style="display:flex;gap:11px;padding:12px 18px;border-bottom:1px solid var(--line-soft);background:{{ s.bg }}">
+                  <span style="width:22px;height:22px;flex:none;border-radius:{{ s.radius }};background:{{ s.tint }};color:{{ s.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ s.icon }}</span>
+                  <div style="min-width:0">
+                    <div style="font-size:12.5px;line-height:1.5"><span style="font-weight:600">{{ s.subject }}</span> <span style="color:var(--ink-2)">{{ s.event }}</span></div>
+                    <div style="font-size:11px;color:var(--ink-3);margin-top:3px">{{ s.meta }}</div>
+                  </div>
+                  <span style="margin-left:auto;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+                    <span style="font-size:10.5px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ s.time }}</span>
+                    <span style="font-size:11px;font-weight:600;color:var(--brand-ink)">{{ s.action }}</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="grid-column:span 4;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Market changes</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">External events mapped to accounts you own</div>
+            </div>
+            <sc-for list="{{ market }}" as="m" hint-placeholder-count="4">
+              <div style="padding:13px 18px;border-bottom:1px solid var(--line-soft)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ m.tint }};color:{{ m.color }}">{{ m.kind }}</span>
+                  <span style="margin-left:auto;font-size:10.5px;color:var(--ink-4)">{{ m.when }}</span>
+                </div>
+                <div style="font-size:12.5px;font-weight:600;margin-top:7px;line-height:1.4">{{ m.headline }}</div>
+                <div style="font-size:11.5px;color:var(--ink-2);margin-top:5px;line-height:1.5">{{ m.impact }}</div>
+                <div style="font-size:11px;color:var(--ink-3);margin-top:6px">{{ m.source }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="grid-column:span 3;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Competitor alerts</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">Mentions in calls and emails, last 14 days</div>
+            </div>
+            <sc-for list="{{ competitors }}" as="c" hint-placeholder-count="4">
+              <div style="padding:12px 18px;border-bottom:1px solid var(--line-soft)">
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="font-size:12.5px;font-weight:600">{{ c.name }}</span>
+                  <span style="margin-left:auto;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ c.color }}">{{ c.trend }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:7px">
+                  <div style="flex:1;height:5px;border-radius:999px;background:var(--sunken);overflow:hidden">
+                    <div style="width:{{ c.pct }};height:100%;border-radius:999px;background:{{ c.bar }}"></div>
+                  </div>
+                  <span style="font-size:10.5px;color:var(--ink-3);font-variant-numeric:tabular-nums">{{ c.count }}</span>
+                </div>
+                <div style="font-size:11px;color:var(--ink-2);margin-top:6px;line-height:1.45">{{ c.note }}</div>
+              </div>
+            </sc-for>
+            <div style="padding:11px 18px;font-size:11.5px;font-weight:600;color:var(--brand-ink)">Open competitive view</div>
+          </div>
+
+          <div style="grid-column:span 6;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Buying committee changes</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">Role changes, departures and new entrants on open deals</div>
+              </div>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink)">All 9</span>
+            </div>
+            <sc-for list="{{ committee }}" as="c" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:1fr 150px;gap:12px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line-soft)">
+                <div style="display:flex;gap:11px;min-width:0">
+                  <span style="width:26px;height:26px;flex:none;border-radius:999px;background:{{ c.tint }};color:{{ c.color }};display:grid;place-items:center;font-size:10px;font-weight:600">{{ c.initials }}</span>
+                  <div style="min-width:0">
+                    <div style="font-size:12.5px;line-height:1.45"><span style="font-weight:600">{{ c.person }}</span> <span style="color:var(--ink-2)">{{ c.change }}</span></div>
+                    <div style="font-size:11px;color:var(--ink-3);margin-top:2px">{{ c.account }} · {{ c.deal }}</div>
+                  </div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ c.tint }};color:{{ c.color }};display:inline-block">{{ c.severity }}</div>
+                  <div style="font-size:11px;color:var(--ai-ink);font-weight:600;margin-top:5px">{{ c.action }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="grid-column:span 6;border-radius:14px;background:var(--surface);border:1px solid var(--ai-line);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;background:var(--ai-tint);border-bottom:1px solid var(--ai-line)">
+              <span style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--ai);display:grid;place-items:center">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12"></path></svg>
+              </span>
+              <div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Recommended actions</div>
+                <div style="font-size:11.5px;color:var(--ink-2);margin-top:1px">Ranked by expected effect on this quarter · you approve, Signora drafts</div>
+              </div>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--ai-ink)">Why these?</span>
+            </div>
+            <sc-for list="{{ recommendations }}" as="r" hint-placeholder-count="4">
+              <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+                <div style="display:flex;align-items:flex-start;gap:12px">
+                  <span style="width:20px;height:20px;flex:none;border-radius:6px;background:var(--ai-tint);color:var(--ai-ink);display:grid;place-items:center;font-size:10px;font-weight:700;margin-top:1px">{{ r.n }}</span>
+                  <div style="min-width:0;flex:1">
+                    <div style="font-size:13.5px;font-weight:600;line-height:1.4">{{ r.title }}</div>
+                    <div style="font-size:12px;color:var(--ink-2);margin-top:4px;line-height:1.5">{{ r.body }}</div>
+                    <div style="display:flex;align-items:center;gap:14px;margin-top:9px;flex-wrap:wrap">
+                      <span style="font-size:11px;color:var(--ink-3)">Effect <span style="font-weight:600;color:var(--pos)">{{ r.effect }}</span></span>
+                      <span style="font-size:11px;color:var(--ink-3)">Basis <span style="font-weight:600;color:var(--ink)">{{ r.basis }}</span></span>
+                      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-3)"><span style="display:flex;gap:2px">{{ r.pips }}</span>{{ r.confidence }}</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:6px;flex:none">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 12px;border-radius:8px;background:var(--ai);color:#fff;font-size:12px;font-weight:600">{{ r.cta }}</span>
+                    <span style="display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Dismiss</span>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="grid-column:span 4;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Your tasks</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">3 due today · 1 overdue</div>
+              </div>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink)">＋ Add</span>
+            </div>
+            <sc-for list="{{ tasks }}" as="t" hint-placeholder-count="4">
+              <div style="display:flex;align-items:flex-start;gap:11px;padding:12px 18px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:15px;height:15px;flex:none;border-radius:5px;border:1.5px solid {{ t.boxBorder }};background:{{ t.boxBg }};color:#fff;display:grid;place-items:center;font-size:9px;margin-top:2px">{{ t.tick }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:12.5px;font-weight:{{ t.weight }};line-height:1.45;text-decoration:{{ t.strike }};color:{{ t.textColor }}">{{ t.title }}</div>
+                  <div style="font-size:11px;color:var(--ink-3);margin-top:3px">{{ t.meta }}</div>
+                </div>
+                <span style="margin-left:auto;flex:none;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ t.dueBg }};color:{{ t.dueFg }}">{{ t.due }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="grid-column:span 4;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Upcoming meetings</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">Today · with prep from Signora</div>
+              </div>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink)">Calendar</span>
+            </div>
+            <sc-for list="{{ meetings }}" as="m" hint-placeholder-count="3">
+              <div style="padding:12px 18px;border-bottom:1px solid var(--line-soft);border-left:2px solid {{ m.edge }}">
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums">{{ m.time }}</span>
+                  <span style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.title }}</span>
+                  <span style="margin-left:auto;flex:none;font-size:10.5px;color:var(--ink-3)">{{ m.dur }}</span>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.45">{{ m.attendees }}</div>
+                <div style="display:flex;align-items:center;gap:9px;margin-top:8px">
+                  <span style="font-size:11px;font-weight:600;color:var(--ai-ink)">{{ m.prep }}</span>
+                  <span style="margin-left:auto;font-size:11px;color:var(--ink-3)">{{ m.stake }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="grid-column:span 4;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Saved views</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">Dashboard presets · scope, widgets and layout</div>
+              </div>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink)">Manage</span>
+            </div>
+            <sc-for list="{{ savedViews }}" as="v" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:11px;padding:12px 18px;border-bottom:1px solid var(--line-soft);background:{{ v.bg }}">
+                <span style="width:22px;height:22px;flex:none;border-radius:7px;background:{{ v.tint }};color:{{ v.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ v.icon }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:12.5px;font-weight:{{ v.weight }}">{{ v.name }}</div>
+                  <div style="font-size:11px;color:var(--ink-3);margin-top:2px">{{ v.meta }}</div>
+                </div>
+                <span style="margin-left:auto;flex:none;font-size:10.5px;color:var(--ink-4)">{{ v.tag }}</span>
+              </div>
+            </sc-for>
+            <div style="padding:12px 18px;font-size:12px;color:var(--ink-3)">Views are shared by link and respect each viewer’s permissions.</div>
+          </div>
+
+        </div>
+
+        <div style="margin-top:56px;padding-top:34px;border-top:1px solid var(--line-soft)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:999px;background:var(--sunken);color:var(--ink-2)">Specification</span>
+            <span style="font-size:12px;color:var(--ink-3)">The dashboard above is the deliverable; everything below is the contract behind it.</span>
+          </div>
+          <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:18px 0 0">Widget contract</h2>
+          <p style="font-size:15.5px;line-height:1.65;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">Every widget on this page answers the same four questions in the same order — what changed, why, what needs attention, what Signora recommends — and every widget ships with the same six facets specified. A widget that cannot state its purpose in one sentence does not belong on an executive homepage.</p>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px">
+            <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+              <div style="padding:12px 16px;border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Loading</div>
+              <div style="padding:16px">
+                <div style="display:flex;flex-direction:column;gap:11px">
+                  <sc-for list="{{ skeleton }}" as="s" hint-placeholder-count="5">
+                    <div style="height:{{ s.h }};width:{{ s.w }};border-radius:{{ s.r }};background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:v2shimmer 1.4s ease-in-out infinite"></div>
+                  </sc-for>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">Skeleton matches the widget's real shape and row count. Appears after 150ms, shimmers three times, then holds still.</div>
+              </div>
+            </div>
+            <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+              <div style="padding:12px 16px;border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Empty</div>
+              <div style="padding:24px 16px">
+                <div style="width:32px;height:32px;border-radius:10px;background:var(--pos-tint);color:var(--pos);display:grid;place-items:center;font-size:14px;font-weight:700">✓</div>
+                <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em;margin:12px 0 6px">No risks above threshold</div>
+                <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:0">Nothing in scope exceeds $250K of exposure. The threshold is yours to set, and lowering it will show smaller deals.</p>
+                <div style="display:flex;gap:8px;margin-top:14px">
+                  <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Lower threshold</span>
+                  <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Widen scope</span>
+                </div>
+              </div>
+            </div>
+            <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+              <div style="padding:12px 16px;border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Error &amp; stale</div>
+              <div style="padding:16px">
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="width:22px;height:22px;border-radius:7px;background:var(--warn-tint);color:var(--warn);display:grid;place-items:center;font-size:11px;font-weight:700">!</span>
+                  <span style="font-size:13.5px;font-weight:600">Scores are 20 minutes behind</span>
+                </div>
+                <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:9px 0 0">The scoring service is degraded. Figures below are from 08:54 and are dimmed until they refresh. Amounts and stages are current.</p>
+                <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px;opacity:.6">
+                  <div style="display:flex;justify-content:space-between;font-size:12px"><span>Vantage Logistics</span><span style="font-variant-numeric:tabular-nums">38</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px"><span>Ashgrove Retail</span><span style="font-variant-numeric:tabular-nums">44</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:13px">
+                  <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Retry</span>
+                  <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-4);margin-left:auto">req_9f3c-88ad</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+            <sc-for list="{{ widgetSpecs }}" as="w" hint-placeholder-count="19">
+              <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+                <div style="display:flex;align-items:center;gap:10px;padding:13px 17px;border-bottom:1px solid var(--line-soft);background:var(--sunken)">
+                  <span style="width:20px;height:20px;flex:none;border-radius:6px;background:var(--brand-tint);color:var(--brand-ink);display:grid;place-items:center;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums">{{ w.n }}</span>
+                  <span style="font-size:13.5px;font-weight:600">{{ w.name }}</span>
+                  <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-3)">{{ w.span }}</span>
+                </div>
+                <sc-for list="{{ w.facets }}" as="f" hint-placeholder-count="6">
+                  <div style="display:grid;grid-template-columns:96px 1fr;gap:12px;padding:9px 17px;border-bottom:1px solid var(--line-soft)">
+                    <span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:{{ f.labelColor }}">{{ f.k }}</span>
+                    <span style="font-size:12.5px;line-height:1.55;color:var(--ink-2)">{{ f.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+
+          <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:48px 0 0">Customise, saved views, theme &amp; responsive</h2>
+          <div style="display:grid;grid-template-columns:400px 1fr;gap:14px;margin-top:22px;align-items:start">
+            <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+              <div style="display:flex;align-items:flex-start;gap:12px;padding:15px 17px;border-bottom:1px solid var(--line-soft)">
+                <div>
+                  <div style="font-size:11.5px;color:var(--ink-3)">Context drawer</div>
+                  <div style="font-size:15.5px;font-weight:600;letter-spacing:-0.016em;margin-top:2px">Customise dashboard</div>
+                </div>
+                <span style="margin-left:auto;color:var(--ink-4);font-size:13px">✕</span>
+              </div>
+              <div style="padding:15px 17px;border-bottom:1px solid var(--line-soft)">
+                <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Density</div>
+                <div style="display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken);margin-top:9px">
+                  <sc-for list="{{ densityOptions }}" as="d" hint-placeholder-count="3">
+                    <span style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:600;background:{{ d.bg }};color:{{ d.color }};box-shadow:{{ d.shadow }}">{{ d.label }}</span>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="padding:11px 17px 4px;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Widgets · drag to reorder</div>
+              <sc-for list="{{ customiseList }}" as="c" hint-placeholder-count="7">
+                <div style="display:flex;align-items:center;gap:11px;padding:9px 17px;border-bottom:1px solid var(--line-soft)">
+                  <span style="color:var(--ink-4);font-size:13px;cursor:grab">⣿</span>
+                  <span style="font-size:12.5px;font-weight:{{ c.weight }};color:{{ c.color }}">{{ c.name }}</span>
+                  <span style="margin-left:auto;flex:none;font-size:10.5px;color:var(--ink-4);font-family:ui-monospace,monospace">{{ c.span }}</span>
+                  <span style="width:30px;height:18px;border-radius:999px;background:{{ c.toggleBg }};position:relative;flex:none">
+                    <span style="position:absolute;top:2px;left:{{ c.knob }};width:14px;height:14px;border-radius:999px;background:#fff;box-shadow:var(--e1)"></span>
+                  </span>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:center;gap:9px;padding:14px 17px">
+                <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">Save to CRO weekly</span>
+                <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Save as new view</span>
+                <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Reset</span>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <sc-for list="{{ mechanics }}" as="m" hint-placeholder-count="6">
+                <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+                  <div style="font-size:13px;font-weight:600">{{ m.t }}</div>
+                  <sc-for list="{{ m.lines }}" as="l" hint-placeholder-count="3">
+                    <div style="display:flex;gap:9px;margin-top:8px;font-size:12.5px;line-height:1.55">
+                      <span style="color:var(--brand-ink);flex:none">·</span><span style="color:var(--ink-2)">{{ l }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px">
+            <sc-for list="{{ breakpoints }}" as="b" hint-placeholder-count="4">
+              <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+                <div style="padding:13px 16px;border-bottom:1px solid var(--line-soft)">
+                  <div style="font-size:13px;font-weight:600">{{ b.name }}</div>
+                  <div style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink);margin-top:2px">{{ b.range }}</div>
+                </div>
+                <div style="padding:14px 16px">
+                  <div style="display:grid;grid-template-columns:{{ b.cols }};gap:4px">
+                    <sc-for list="{{ b.blocks }}" as="k" hint-placeholder-count="6">
+                      <div style="height:{{ k.h }};border-radius:5px;background:{{ k.bg }};grid-column:{{ k.span }}"></div>
+                    </sc-for>
+                  </div>
+                  <sc-for list="{{ b.lines }}" as="l" hint-placeholder-count="3">
+                    <div style="display:flex;gap:8px;margin-top:9px;font-size:12px;line-height:1.5">
+                      <span style="color:var(--brand-ink);flex:none">·</span><span style="color:var(--ink-2)">{{ l }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = {
+      '--font-body': '"Archivo", system-ui, sans-serif',
+      '--ease': 'cubic-bezier(.32,.72,0,1)',
+    };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--c1': '#134e76', '--c2': '#3f81ad', '--c3': '#4b5ec4', '--c4': '#1f7a5c',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--c1': '#7cc0e5', '--c2': '#4fa3d1', '--c3': '#8f9ae8', '--c4': '#4fae87',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  navIcon(kind) {
+    const p = {
+      home: 'M2.5 7 8 2.5 13.5 7v6.5h-11V7Z', chart: 'M3 13V7M8 13V3M13 13V9',
+      flow: 'M2.5 4h11M4.5 8h7M6.5 12h3', grid: 'M2.5 2.5h5v5h-5zM8.5 2.5h5v5h-5zM2.5 8.5h5v5h-5zM8.5 8.5h5v5h-5z',
+      case: 'M2.5 5.5h11v8h-11zM6 5.5V3h4v2.5', chat: 'M2.5 3h11v7H7l-4.5 3.5z',
+      pulse: 'M1.5 8h3l2-4.5L9 12l2-4h3.5', file: 'M4 2h5l3 3v9H4zM9 2v3h3',
+      target: 'M8 14.5A6.5 6.5 0 1 0 8 1.5a6.5 6.5 0 0 0 0 13ZM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+    }[kind] || 'M2.5 2.5h11v11h-11z';
+    return R('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }, R('path', { d: p }));
+  }
+
+  spark(vals, color) {
+    const min = Math.min(...vals), max = Math.max(...vals);
+    const pts = vals.map((v, i) => [i / (vals.length - 1) * 120, 26 - (v - min) / (max - min || 1) * 22]);
+    const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    return R('svg', { viewBox: '0 0 120 30', style: { width: '100%', height: 30, display: 'block' } }, [
+      R('path', { key: 'a', d: d + ' L120 30 L0 30 Z', fill: color, fillOpacity: 0.08 }),
+      R('path', { key: 'b', d, fill: 'none', stroke: color, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+      R('circle', { key: 'c', cx: pts[pts.length - 1][0], cy: pts[pts.length - 1][1], r: 2.4, fill: color }),
+    ]);
+  }
+
+  pips(n, w) {
+    return [1, 2, 3, 4, 5].map(i => R('span', { key: i, style: { width: w || 18, height: 5, borderRadius: 999, display: 'block', background: i <= n ? 'var(--ai)' : 'rgba(128,128,128,.25)' } }));
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--brand)',
+      lightFg: dark ? 'var(--ink-3)' : '#fff',
+      darkBg: dark ? 'var(--brand)' : 'transparent',
+      darkFg: dark ? '#fff' : 'var(--ink-3)',
+
+      navItems: [
+        ['Home', 'home', '', true], ['Forecast', 'chart', '', false],
+        ['Pipeline', 'flow', '', false], ['Accounts', 'grid', '8,412', false],
+        ['Deals', 'case', '', false], ['Conversations', 'chat', '', false],
+        ['Signals', 'pulse', '14', false], ['Territories', 'target', '', false],
+        ['Reports', 'file', '', false],
+      ].map(([label, icon, count, active]) => ({
+        label, count, icon: this.navIcon(icon),
+        bg: active ? 'var(--brand-tint)' : 'transparent',
+        color: active ? 'var(--brand-ink)' : 'var(--ink-2)',
+        iconColor: active ? 'var(--brand)' : 'var(--ink-4)',
+        weight: active ? 600 : 400,
+      })),
+
+      globalFilters: [
+        { field: 'Period', value: 'Q3 FY26' }, { field: 'Region', value: 'All' },
+        { field: 'Segment', value: 'All' }, { field: 'Owner', value: 'All' },
+      ],
+
+      summaryPips: this.pips(4, 16),
+
+      summaryPoints: [
+        { tag: 'Forecast', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)', impact: '−$2.4M', headline: 'Commit fell below plan for the first time this quarter', body: 'Three EMEA enterprise deals slipped out of Q3 overnight. Coverage is still 3.1×, so the quarter is recoverable, but not from the current commit.', action: 'See the 3 deals →', sources: '6 sources' },
+        { tag: 'Cause', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)', impact: 'Pattern', headline: 'All three slipped after the same pricing conversation', body: 'Procurement was named as the blocker in each, and in none of them had procurement been contacted before the first slip. The pattern matches 41 FY26 deals.', action: 'Open the pattern →', sources: '9 sources' },
+        { tag: 'Upside', tagBg: 'var(--pos-tint)', tagFg: 'var(--pos)', impact: '+$1.9M', headline: 'Two renewals moved early and can close this quarter', body: 'Corrigan Health and Norvell Energy both pulled forward after successful QBRs. Both are unblocked and need only legal review.', action: 'Prioritise both →', sources: '4 sources' },
+      ],
+
+      kpis: [
+        { label: 'Commit forecast', value: '$42.8M', delta: '−5.3%', tint: 'var(--risk-tint)', color: 'var(--risk)', basis: 'vs. Friday', foot: '63% of the $68.0M plan · 29 days left', spark: this.spark([45.2, 45.0, 44.6, 44.9, 44.1, 43.2, 42.8], 'var(--risk)') },
+        { label: 'Pipeline coverage', value: '3.1×', delta: '−0.4×', tint: 'var(--warn-tint)', color: 'var(--warn)', basis: 'vs. last week', foot: 'Target 3.5× at this point in quarter', spark: this.spark([3.8, 3.7, 3.6, 3.5, 3.4, 3.2, 3.1], 'var(--warn)') },
+        { label: 'Pipeline at risk', value: '$8.34M', delta: '+18.0%', tint: 'var(--risk-tint)', color: 'var(--risk)', basis: 'vs. last week', foot: '11 deals · 4 regions · 3 owners', spark: this.spark([5.4, 5.9, 6.2, 6.6, 7.0, 7.4, 8.3], 'var(--risk)') },
+        { label: 'Quota attainment pace', value: '68%', delta: '+2 pts', tint: 'var(--pos-tint)', color: 'var(--pos)', basis: 'vs. same day FY25', foot: '34 of 52 reps at or above pace', spark: this.spark([48, 52, 56, 59, 62, 66, 68], 'var(--pos)') },
+      ],
+
+      forecastScenarios: ['Commit', 'Best case', 'AI projection'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--surface)' : 'transparent',
+        color: i === 0 ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: i === 0 ? 'var(--e1)' : 'none',
+      })),
+
+      forecastFigures: [
+        { k: 'Closed won', v: '$28.4M', d: '42% of plan', color: 'var(--ink-3)' },
+        { k: 'Commit', v: '$42.8M', d: '−$2.4M', color: 'var(--risk)' },
+        { k: 'Best case', v: '$71.6M', d: '+$3.6M', color: 'var(--pos)' },
+        { k: 'AI projection', v: '$64.2M', d: '−5.6% vs. plan', color: 'var(--warn)' },
+      ],
+
+      forecastBars: [
+        ['Aug wk 1', 8.2, 3.1, 2.0], ['wk 2', 10.4, 4.2, 2.6], ['wk 3', 12.8, 5.0, 3.4],
+        ['wk 4', 18.6, 6.4, 4.1], ['Sep wk 1', 24.2, 8.8, 5.6], ['wk 2', 28.4, 14.4, 12.4],
+      ].map(([label, won, commit, best], i) => {
+        const s = 180 / 60;
+        const h1 = won * s, h2 = commit * s, h3 = best * s;
+        const x = 18 + i * 122;
+        return {
+          label, x, cx: x + 27,
+          value: '$' + (won + commit + best).toFixed(1) + 'M',
+          h1: h1.toFixed(1), y1: (180 - h1).toFixed(1),
+          h2: h2.toFixed(1), y2: (180 - h1 - h2).toFixed(1),
+          h3: h3.toFixed(1), y3: (180 - h1 - h2 - h3).toFixed(1),
+        };
+      }),
+
+      health: [
+        { label: 'Coverage vs. target', value: '3.1× / 3.5×', delta: '−0.4×', color: 'var(--warn)', pct: '88%', bar: 'var(--warn)', note: '$210M open against $68.0M plan' },
+        { label: 'Stage conversion', value: '11.0%', delta: '−1.4 pts', color: 'var(--risk)', pct: '55%', bar: 'var(--risk)', note: 'Negotiation → won fell from 54% to 45%' },
+        { label: 'Deals older than 90 days', value: '18% of open', delta: '+3 pts', color: 'var(--warn)', pct: '18%', bar: 'var(--warn)', note: '$37.8M in ageing pipeline' },
+        { label: 'New pipeline created', value: '$24.6M', delta: '+9.0%', color: 'var(--pos)', pct: '72%', bar: 'var(--pos)', note: 'Ahead of the pace needed for Q4 coverage' },
+      ],
+
+      risks: [
+        { account: 'Vantage Logistics', tag: 'Slipped twice', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)', why: 'Pricing pushback, procurement uncontacted, 19 days silent', acv: '$1.24M', owner: 'M. Reinhardt', action: 'Draft procurement intro', evidence: '6 sources', edge: 'var(--risk)' },
+        { account: 'Ashgrove Retail', tag: 'Champion left', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)', why: 'Economic buyer changed role; no replacement identified', acv: '$0.30M', owner: 'L. Petrova', action: 'Map new committee', evidence: '4 sources', edge: 'var(--risk)' },
+        { account: 'Meridian Freight', tag: 'Stalling', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)', why: 'In Discovery 74 days, twice the segment median', acv: '$0.43M', owner: 'A. Duval', action: 'Qualify or close out', evidence: '3 sources', edge: 'var(--warn)' },
+        { account: 'Brightwater Group', tag: 'Competitor', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)', why: 'Competitor named on two calls in the last 10 days', acv: '$0.88M', owner: 'J. Okafor', action: 'Send battlecard', evidence: '5 sources', edge: 'var(--warn)' },
+      ],
+
+      opportunities: [
+        { account: 'Corrigan Health', tag: 'Pull forward', why: 'QBR cleared blockers; only legal review remains', value: '$2.11M', owner: 'M. Reinhardt', action: 'Fast-track legal', evidence: '5 sources', edge: 'var(--pos)' },
+        { account: 'Norvell Energy', tag: 'Expansion', why: 'Usage at 94% of contracted volume for three months', value: '$0.74M', owner: 'J. Okafor', action: 'Open expansion', evidence: '4 sources', edge: 'var(--pos)' },
+        { account: 'Halden Systems', tag: 'Multi-thread', why: 'Two new senior contacts engaged this week', value: '$0.86M', owner: 'J. Okafor', action: 'Brief the CFO', evidence: '3 sources', edge: 'var(--pos)' },
+        { account: 'Lindqvist Marine', tag: 'Whitespace', why: 'Peer accounts adopted freight API within 90 days of renewal', value: '$0.52M', owner: 'A. Duval', action: 'Add to plan', evidence: '6 sources', edge: 'var(--pos)' },
+      ],
+
+      movementTabs: ['All', 'Out of Q3', 'Into Q3'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--surface)' : 'transparent',
+        color: i === 0 ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: i === 0 ? 'var(--e1)' : 'none',
+      })),
+
+      movement: [
+        { deal: 'Vantage renewal — Q4', owner: 'M. Reinhardt', reason: 'procurement review extended', from: 'Q3', to: 'Q4', amount: '−$1.24M', when: '08:47', negative: true },
+        { deal: 'Ashgrove platform', owner: 'L. Petrova', reason: 'champion changed role', from: 'Negotiation', to: 'Discovery', amount: '−$0.30M', when: 'Yesterday', negative: true },
+        { deal: 'Corrigan expansion', owner: 'M. Reinhardt', reason: 'QBR cleared blockers', from: 'Proposal', to: 'Negotiation', amount: '+$2.11M', when: 'Yesterday', negative: false },
+        { deal: 'Brightwater services', owner: 'J. Okafor', reason: 'competitor shortlisted', from: 'Commit', to: 'Best case', amount: '−$0.88M', when: 'Friday', negative: true },
+        { deal: 'Norvell renewal', owner: 'J. Okafor', reason: 'pulled forward by customer', from: 'Q4', to: 'Q3', amount: '+$0.62M', when: 'Friday', negative: false },
+      ].map(m => ({
+        deal: m.deal, owner: m.owner, reason: m.reason, from: m.from, to: m.to, amount: m.amount, when: m.when,
+        toBg: m.negative ? 'var(--risk-tint)' : 'var(--pos-tint)',
+        toFg: m.negative ? 'var(--risk)' : 'var(--pos)',
+        amountColor: m.negative ? 'var(--risk)' : 'var(--pos)',
+      })),
+
+      accountChanges: [
+        { account: 'Vantage Logistics', change: 'Health score 62 → 38', value: '−24', when: '09:14', icon: '↓', tint: 'var(--risk-tint)', color: 'var(--risk)' },
+        { account: 'Corrigan Health', change: 'Health score 74 → 82', value: '+8', when: 'Yesterday', icon: '↑', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { account: 'Ashgrove Retail', change: 'Owner reassigned to L. Petrova', value: 'Owner', when: 'Yesterday', icon: '⇄', tint: 'var(--sunken)', color: 'var(--ink-2)' },
+        { account: 'Lindqvist Marine', change: 'Contract renewed 24 → 36 months', value: '+12m', when: 'Friday', icon: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { account: 'Meridian Freight', change: 'Support tier downgraded to Standard', value: 'Tier', when: 'Friday', icon: '!', tint: 'var(--warn-tint)', color: 'var(--warn)' },
+      ],
+
+      signals: [
+        { subject: 'Vantage Logistics', event: 'pricing objection detected on the 14 Jul call', meta: 'Call intelligence · 38:12 · sentiment fell 0.4', time: '09:14', action: 'Open call', icon: '✦', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', radius: '7px', bg: 'var(--ai-tint)' },
+        { subject: 'Brightwater Group', event: 'mentioned a competitor for the second time', meta: 'Email thread · 3 participants', time: '08:52', action: 'Battlecard', icon: '⚑', tint: 'var(--warn-tint)', color: 'var(--warn)', radius: '7px', bg: 'transparent' },
+        { subject: 'Norvell Energy', event: 'usage crossed 94% of contracted volume', meta: 'Product telemetry · third month running', time: '08:20', action: 'Expansion', icon: '↑', tint: 'var(--pos-tint)', color: 'var(--pos)', radius: '7px', bg: 'transparent' },
+        { subject: 'Halden Systems', event: 'new VP Finance engaged the thread', meta: 'Buying committee · seniority up', time: '07:41', action: 'Add to map', icon: 'HS', tint: 'var(--sunken)', color: 'var(--ink-2)', radius: '999px', bg: 'transparent' },
+        { subject: 'Ashgrove Retail', event: 'no contact for 21 days', meta: 'Engagement · longest gap in segment', time: '06:00', action: 'Assign', icon: '!', tint: 'var(--risk-tint)', color: 'var(--risk)', radius: '7px', bg: 'transparent' },
+        { subject: 'Meridian Freight', event: 'renewal date moved inside 90 days', meta: 'CRM · auto-flagged for planning', time: '06:00', action: 'Plan', icon: '◷', tint: 'var(--sunken)', color: 'var(--ink-2)', radius: '7px', bg: 'transparent' },
+      ],
+
+      market: [
+        { kind: 'Regulation', tint: 'var(--warn-tint)', color: 'var(--warn)', when: 'Today', headline: 'EU freight emissions reporting brought forward to Jan 2027', impact: 'Affects 41 accounts, $18.2M of open pipeline. Compliance is now a buying trigger rather than a nice-to-have.', source: 'Regulatory feed · 3 accounts already asked' },
+        { kind: 'M&A', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', when: 'Yesterday', headline: 'Meridian Freight acquired Coastal Haulage', impact: 'Adds an estimated 220 seats. Expansion window opens once integration starts, typically 60–90 days.', source: 'News · confirmed in the 31 Jul call' },
+        { kind: 'Earnings', tint: 'var(--sunken)', color: 'var(--ink-2)', when: '2 days ago', headline: 'Ashgrove Retail guided down for H2', impact: 'Discretionary spend freeze is likely. Two open deals worth $0.6M should be reforecast to Q1.', source: 'Public filing' },
+        { kind: 'Rates', tint: 'var(--sunken)', color: 'var(--ink-2)', when: '4 days ago', headline: 'Freight spot rates down 8% quarter on quarter', impact: 'Margin pressure on logistics accounts. Expect harder procurement in Enterprise renewals.', source: 'Index feed' },
+      ],
+
+      competitors: [
+        { name: 'Cadenza', trend: '+6', color: 'var(--risk)', pct: '78%', bar: 'var(--risk)', count: '14 mentions', note: 'Named in Brightwater and two Mid-market deals. Undercutting on annual commitment.' },
+        { name: 'Orbital', trend: '+2', color: 'var(--warn)', pct: '46%', bar: 'var(--warn)', count: '8 mentions', note: 'Appearing in RFPs where compliance reporting is a requirement.' },
+        { name: 'Meridiem', trend: '−3', color: 'var(--pos)', pct: '22%', bar: 'var(--pos)', count: '4 mentions', note: 'Down since their pricing change. We won two head-to-heads this month.' },
+        { name: 'In-house build', trend: '+1', color: 'var(--ink-3)', pct: '30%', bar: 'var(--c2)', count: '5 mentions', note: 'Still the most common alternative in Enterprise. Usually a budget signal.' },
+      ],
+
+      committee: [
+        { initials: 'DK', person: 'D. Køhler', change: 'left the company — was economic buyer', account: 'Ashgrove Retail', deal: '$0.30M · Negotiation', severity: 'Critical', tint: 'var(--risk-tint)', color: 'var(--risk)', action: 'Re-map committee' },
+        { initials: 'PS', person: 'P. Sørensen', change: 'moved from Ops to Procurement', account: 'Vantage Logistics', deal: '$1.24M · Negotiation', severity: 'High', tint: 'var(--risk-tint)', color: 'var(--risk)', action: 'Re-qualify' },
+        { initials: 'AN', person: 'A. Novak', change: 'joined as VP Finance and engaged', account: 'Halden Systems', deal: '$0.86M · Proposal', severity: 'Opportunity', tint: 'var(--pos-tint)', color: 'var(--pos)', action: 'Brief the CFO' },
+        { initials: 'RT', person: 'R. Tanaka', change: 'promoted to CIO — was champion', account: 'Corrigan Health', deal: '$2.11M · Negotiation', severity: 'Opportunity', tint: 'var(--pos-tint)', color: 'var(--pos)', action: 'Congratulate' },
+      ],
+
+      recommendations: [
+        { n: '01', title: 'Bring procurement into the Vantage negotiation this week', body: 'Deals that engaged procurement before a second slip closed 23 days faster in FY26. Vantage has slipped twice and procurement has never been contacted.', effect: '+18 score · −23d cycle', basis: '412 comparable deals', confidence: '4 of 5', cta: 'Draft intro', pipCount: 4 },
+        { n: '02', title: 'Fast-track legal on Corrigan and Norvell to recover $2.7M in-quarter', body: 'Both are unblocked and waiting on legal review only. Median review time is 11 days; 29 days remain in the quarter.', effect: '+$2.73M commit', basis: 'Legal SLA history', confidence: '4 of 5', cta: 'Request review', pipCount: 4 },
+        { n: '03', title: 'Send the Cadenza battlecard to the four deals where they are named', body: 'Win rate against Cadenza rises from 41% to 63% when the battlecard is used before the shortlist stage.', effect: '+22 pts win rate', basis: '96 head-to-heads', confidence: '3 of 5', cta: 'Send to owners', pipCount: 3 },
+        { n: '04', title: 'Reforecast Ashgrove out of Q3', body: 'Their H2 guidance signals a spend freeze and the economic buyer has left. Holding it in commit overstates the quarter by $0.30M.', effect: 'Forecast accuracy', basis: 'Public filing + CRM', confidence: '5 of 5', cta: 'Reforecast', pipCount: 5 },
+      ].map(r => Object.assign({}, r, { pips: this.pips(r.pipCount, 10) })),
+
+      tasks: [
+        { title: 'Approve the renewal risk sweep — 41 CRM writes', meta: 'Agent · Signora', due: 'Overdue', done: false, dueBg: 'var(--risk-tint)', dueFg: 'var(--risk)' },
+        { title: 'Review Q3 commit with M. Reinhardt', meta: 'EMEA enterprise', due: 'Today', done: false, dueBg: 'var(--warn-tint)', dueFg: 'var(--warn)' },
+        { title: 'Sign off the Cadenza battlecard update', meta: 'Competitive · marketing', due: 'Today', done: false, dueBg: 'var(--warn-tint)', dueFg: 'var(--warn)' },
+        { title: 'Send board pipeline extract', meta: 'Finance · done 08:12', due: 'Done', done: true, dueBg: 'var(--pos-tint)', dueFg: 'var(--pos)' },
+      ].map(t => ({
+        title: t.title, meta: t.meta, due: t.due, dueBg: t.dueBg, dueFg: t.dueFg,
+        tick: t.done ? '✓' : '',
+        boxBg: t.done ? 'var(--pos)' : 'transparent',
+        boxBorder: t.done ? 'var(--pos)' : 'var(--line)',
+        weight: t.done ? 400 : 600,
+        strike: t.done ? 'line-through' : 'none',
+        textColor: t.done ? 'var(--ink-3)' : 'var(--ink)',
+      })),
+
+      meetings: [
+        { time: '10:30', title: 'Vantage — procurement intro', dur: '30m', attendees: 'P. Sørensen (Procurement), M. Reinhardt', prep: 'Prep brief ready — 3 objections, 2 references', stake: '$1.24M at stake', edge: 'var(--risk)' },
+        { time: '13:00', title: 'Q3 forecast review — EMEA', dur: '45m', attendees: 'M. Reinhardt, L. Petrova, finance', prep: 'Signora has the movement summary ready', stake: 'Commit −$2.4M', edge: 'var(--warn)' },
+        { time: '16:00', title: 'Corrigan Health — legal kickoff', dur: '30m', attendees: 'R. Tanaka (CIO), legal', prep: 'Redline history and SLA precedent attached', stake: '$2.11M in-quarter', edge: 'var(--pos)' },
+      ],
+
+      savedViews: [
+        { name: 'CRO weekly', meta: 'All regions · commit focus · 14 widgets', tag: 'Default', icon: '★', current: true },
+        { name: 'Board pack', meta: 'Quarter to date · no signals · print layout', tag: 'Shared', icon: '▤', current: false },
+        { name: 'EMEA deep dive', meta: 'EMEA only · risk and committee widgets', tag: 'Private', icon: '◫', current: false },
+        { name: 'Monday standup', meta: 'Movement, tasks and meetings only', tag: 'Shared', icon: '◷', current: false },
+      ].map(v => ({
+        name: v.name, meta: v.meta, tag: v.tag, icon: v.icon,
+        bg: v.current ? 'var(--brand-tint)' : 'transparent',
+        tint: v.current ? 'var(--brand)' : 'var(--sunken)',
+        color: v.current ? '#fff' : 'var(--ink-2)',
+        weight: v.current ? 600 : 400,
+      })),
+
+      skeleton: [
+        { h: '11px', w: '46%', r: '6px' }, { h: '30px', w: '68%', r: '8px' },
+        { h: '9px', w: '84%', r: '5px' }, { h: '9px', w: '72%', r: '5px' },
+        { h: '30px', w: '100%', r: '8px' },
+      ],
+
+      widgetSpecs: [
+        { name: 'Executive KPIs', span: 'span 3 × 4',
+          purpose: 'The four numbers a CRO is accountable for, each with a delta and the basis of comparison.',
+          inter: 'Click the value opens the source report with global scope applied. “Why” opens the AI explanation inline. Sparkline hover shows the point value and date.',
+          load: 'Value and label paint from cache immediately; only the delta and sparkline skeleton.',
+          empty: 'Never empty. If a metric cannot be computed it states the missing input, e.g. “No quota loaded for FY26”.',
+          error: 'Card keeps the last known value, dims to 60%, and shows “as of” with a retry.',
+          ai: 'Explains the delta in one sentence with citations. Never restates the number.' },
+        { name: 'Revenue forecast', span: 'span 8',
+          purpose: 'Whether the quarter lands, under three scenarios, against plan.',
+          inter: 'Scenario segmented control switches series; hovering a week shows the stack breakdown; clicking a bar filters Deal movement to that week.',
+          load: 'Axis and plan line paint first, bars animate up once on first mount only.',
+          empty: 'Shows the plan line and a prompt to load a quota plan for the period.',
+          error: 'Keeps the chart and marks the affected series with a hatched fill plus a legend note.',
+          ai: 'Contributes the AI projection series and a one-line variance explanation. Projection is always visually distinct from committed data.' },
+        { name: 'Pipeline health', span: 'span 4',
+          purpose: 'Whether the pipeline can still produce the number: coverage, conversion, ageing, creation.',
+          inter: 'Each row opens the underlying cohort. The weakest-link line is a link to the funnel with that stage pre-selected.',
+          load: 'Four labelled rows with skeleton bars; labels are never skeletoned.',
+          empty: 'Requires at least one full quarter of history; before that it explains what is still being collected.',
+          error: 'Per-row failure: that row shows a dash and a retry, the others stay live.',
+          ai: 'Names the weakest link and quantifies the change. No recommendation here — that belongs to Recommended actions.' },
+        { name: 'AI executive summary', span: 'span 12',
+          purpose: 'The three things that changed since the reader last looked, with cause and consequence.',
+          inter: 'Each column links to its evidence. “Show reasoning” expands the ordered steps. “Brief me” reads it aloud as a two-minute audio brief.',
+          load: 'Streams sentence by sentence with a caret; the three columns appear in order rather than all at once.',
+          empty: '“Nothing material changed since Friday” with the checks performed listed underneath.',
+          error: 'Falls back to a deterministic change list — movement, score changes, new signals — labelled as unsummarised.',
+          ai: 'Confidence and source count always shown. Never asserts causation without a citation; hedges are replaced by naming the missing evidence.' },
+        { name: 'Top risks', span: 'span 6',
+          purpose: 'Where revenue is most likely to be lost, ranked by exposure × probability.',
+          inter: 'Row opens the deal in the utility panel; the action drafts the intervention; the tag filters to that risk type.',
+          load: 'Four skeleton rows at full height so the widget does not resize when data lands.',
+          empty: 'Positive empty state: “No risks above threshold”, with controls to lower it or widen scope.',
+          error: 'Falls back to CRM-only risk (stage age, close-date changes) and says scoring is unavailable.',
+          ai: 'Supplies the ranking, the one-line cause, and the suggested action. Every row carries a source count.' },
+        { name: 'Top opportunities', span: 'span 6',
+          purpose: 'Where the recoverable upside is this quarter, ranked by expected value.',
+          inter: 'Same grammar as risks. Adding to a plan writes only after confirmation.',
+          load: 'Matches Top risks so the pair aligns while loading.',
+          empty: '“No qualified upside in scope” plus a link to whitespace analysis.',
+          error: 'Same fallback pattern as risks.',
+          ai: 'Expected value is a model output and is labelled as such; the comparison population is always named.' },
+        { name: 'Deal movement', span: 'span 7',
+          purpose: 'Every stage, date and amount change since the reader last looked, and its net effect.',
+          inter: 'Tabs filter direction; a row expands to the change history; the net figure links to the movement report.',
+          load: 'Five skeleton rows; the net figure is withheld until complete rather than shown wrong.',
+          empty: '“No movement since Friday” — a genuinely good outcome mid-quarter, stated plainly.',
+          error: 'This widget is CRM-only and therefore rarely fails; if it does, it shows the last sync time and a retry.',
+          ai: 'Adds the reason phrase where a reason exists in a call or email; marks inferred reasons distinctly from stated ones.' },
+        { name: 'Account changes', span: 'span 5',
+          purpose: 'Changes to named accounts that a CRO would want to hear about from a person, not discover in a report.',
+          inter: 'Row opens the account; the delta chip opens the score history.',
+          load: 'Five skeleton rows with icon placeholders.',
+          empty: '“No account-level changes in scope.”',
+          error: 'Score-driven rows drop out with a note; ownership and contract changes remain since they are CRM facts.',
+          ai: 'Health-score changes are AI-derived and carry the intelligence mark; ownership and contract changes never do.' },
+        { name: 'Signals feed', span: 'span 5',
+          purpose: 'The live stream of detected events, newest first, before they become risks or opportunities.',
+          inter: 'Scrolls independently; each row has one primary action; reviewing removes it from the unreviewed count. New arrivals do not reorder while the feed is focused.',
+          load: 'Six skeleton rows; the live dot stays grey until the stream connects.',
+          empty: '“All signals reviewed” with the time of the next scheduled sweep.',
+          error: 'Shows the last received signal time and reconnects with backoff; no data is silently dropped.',
+          ai: 'Most signals are model detections and are marked. Each states the source artefact and the threshold it crossed.' },
+        { name: 'Market changes', span: 'span 4',
+          purpose: 'External events, mapped to accounts in scope, with the commercial consequence stated.',
+          inter: 'Headline opens the source; the impact line links to the affected accounts as a filtered list.',
+          load: 'Four skeleton cards.',
+          empty: '“No mapped market events in the last 14 days.”',
+          error: 'If the external feed fails, the widget says so and keeps previously ingested items with their dates.',
+          ai: 'Mapping from event to accounts is AI-derived and always shows how many accounts and how much pipeline it believes are affected.' },
+        { name: 'Competitor alerts', span: 'span 3',
+          purpose: 'Which competitors are appearing in live deals and whether that is rising.',
+          inter: 'Competitor name opens the head-to-head view; the count opens the mentions with transcript timestamps.',
+          load: 'Four rows with skeleton bars.',
+          empty: '“No competitor mentions in scope” — with the caveat that only connected sources are searched.',
+          error: 'Degrades to CRM competitor fields if conversation intelligence is unavailable, and says which source it used.',
+          ai: 'Mentions are extracted by the model; trend is arithmetic. The distinction is stated in the tooltip.' },
+        { name: 'Buying committee changes', span: 'span 6',
+          purpose: 'People changes that invalidate a deal strategy — departures, role moves, new entrants.',
+          inter: 'Person opens the contact; severity chip filters; the action opens the committee map.',
+          load: 'Four skeleton rows with circular avatar placeholders.',
+          empty: '“No committee changes on open deals.”',
+          error: 'Falls back to CRM contact changes only and notes that email and calendar signals are unavailable.',
+          ai: 'Detects changes from email signatures, calendar and call participation. Severity is a model judgement and is labelled.' },
+        { name: 'Recommended actions', span: 'span 6',
+          purpose: 'The highest-value things a CRO could do today, with the expected effect and the evidence behind it.',
+          inter: 'Primary button drafts or requests but never sends. Dismiss records the reason and feeds ranking. “Why these?” opens the ranking explanation.',
+          load: 'Streams in rank order; each card completes before the next appears.',
+          empty: '“No recommendations above the confidence threshold” with the threshold shown and editable.',
+          error: 'Falls back to rules-based plays (stale deals, missing next step) and labels them as rules, not recommendations.',
+          ai: 'Every card states effect, basis population and confidence. Nothing executes without approval; every action is reversible for 24 hours.' },
+        { name: 'Your tasks', span: 'span 4',
+          purpose: 'What the reader personally owes, including approvals that block Signora’s agents.',
+          inter: 'Checkbox completes optimistically with undo in the toast. Agent approvals open the review drawer rather than completing inline.',
+          load: 'Four skeleton rows; counts in the header are withheld until loaded.',
+          empty: '“Nothing due today.” Overdue items are never hidden by an empty state.',
+          error: 'Optimistic completions roll back visibly and the row explains why.',
+          ai: 'Agent-generated tasks are marked and always name the agent run that created them.' },
+        { name: 'Upcoming meetings', span: 'span 4',
+          purpose: 'Today’s meetings that carry revenue, with prep already prepared.',
+          inter: 'Row opens the meeting; prep opens the brief in the utility panel; the stake figure opens the deal.',
+          load: 'Three skeleton rows in time order.',
+          empty: '“No revenue meetings today” plus the next one with its date.',
+          error: 'If the calendar is disconnected, the widget explains how to connect rather than showing an error.',
+          ai: 'Prep briefs are generated: objections, references, last-call summary. Each brief cites the calls it came from.' },
+        { name: 'Saved views', span: 'span 4',
+          purpose: 'Switching the whole dashboard — scope, widgets and layout — in one click.',
+          inter: 'Click switches; the current view is marked; Manage opens sharing and permissions. Editing a shared view warns who else uses it.',
+          load: 'Instant; views are local state and never block on the network.',
+          empty: 'Ships with two defaults, so it is never empty. New users see CRO weekly and Board pack.',
+          error: 'A view referencing a widget the user can no longer access loads without it and says which was skipped.',
+          ai: 'None. Layout is the user’s domain — the model does not rearrange the dashboard.' },
+        { name: 'Customise dashboard', span: 'Drawer',
+          purpose: 'Choosing which widgets appear, in what order, at what density.',
+          inter: 'Drag to reorder, toggle to show or hide, three density options. Changes preview live behind the drawer and commit on save.',
+          load: 'Opens instantly with the current layout; the widget library streams in.',
+          empty: 'Cannot be empty — at least the KPI row and the AI summary are mandatory and cannot be removed.',
+          error: 'A failed save keeps the drawer open with the changes intact and offers retry.',
+          ai: 'Suggests widgets based on role and usage, as a dismissible line at the bottom of the library. It never applies a change itself.' },
+        { name: 'Global scope strip', span: 'Shell',
+          purpose: 'The period, region, segment and owner every widget on the page inherits.',
+          inter: 'Changing scope refreshes all widgets in place with the indeterminate bar; the URL updates so the view is shareable.',
+          load: 'Chips paint from the URL before data resolves.',
+          empty: 'N/A — always has a value, defaulting to the current quarter and the user’s full remit.',
+          error: 'An invalid scope in a shared link falls back to the default and says which part was dropped.',
+          ai: 'The assistant inherits this scope verbatim and states it above the input.' },
+        { name: 'Dark theme', span: 'Both',
+          purpose: 'Parity, not a filter: the same layout, spacing and hierarchy on a dark ground.',
+          inter: 'Follows the OS by default; overridable in the user menu; persists per account, not per device.',
+          load: 'Theme resolves before first paint from a cookie, so there is no flash.',
+          empty: 'N/A.',
+          error: 'N/A.',
+          ai: 'The intelligence hue lifts one ramp step in dark so generated surfaces stay distinguishable at 4.5:1.' },
+      ].map((w, i) => ({
+        name: w.name, span: w.span, n: String(i + 1).padStart(2, '0'),
+        facets: [
+          { k: 'Purpose', v: w.purpose, labelColor: 'var(--ink-3)' },
+          { k: 'Interactions', v: w.inter, labelColor: 'var(--ink-3)' },
+          { k: 'Loading', v: w.load, labelColor: 'var(--ink-3)' },
+          { k: 'Empty', v: w.empty, labelColor: 'var(--ink-3)' },
+          { k: 'Error', v: w.error, labelColor: 'var(--ink-3)' },
+          { k: 'AI behaviour', v: w.ai, labelColor: 'var(--ai-ink)' },
+        ],
+      })),
+
+      densityOptions: ['Comfortable', 'Compact', 'Board'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--surface)' : 'transparent',
+        color: i === 0 ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: i === 0 ? 'var(--e1)' : 'none',
+      })),
+
+      customiseList: [
+        { name: 'Executive summary', span: '12', on: true, locked: true },
+        { name: 'Executive KPIs', span: '3×4', on: true, locked: true },
+        { name: 'Revenue forecast', span: '8', on: true, locked: false },
+        { name: 'Pipeline health', span: '4', on: true, locked: false },
+        { name: 'Top risks / opportunities', span: '6+6', on: true, locked: false },
+        { name: 'Market changes', span: '4', on: true, locked: false },
+        { name: 'Competitor alerts', span: '3', on: false, locked: false },
+        { name: 'Rep leaderboard', span: '4', on: false, locked: false },
+      ].map(c => ({
+        name: c.name, span: c.span,
+        weight: c.on ? 600 : 400,
+        color: c.on ? 'var(--ink)' : 'var(--ink-3)',
+        toggleBg: c.on ? 'var(--brand)' : 'var(--line)',
+        knob: c.on ? '14px' : '2px',
+      })),
+
+      mechanics: [
+        { t: 'Saved views', lines: ['A view stores scope, widget set, order and density — not data.', 'Shared views respect each viewer’s permissions; widgets they cannot see are omitted with a note.', 'One view per user is the default and opens on sign-in.'] },
+        { t: 'Customisation limits', lines: ['The AI summary and KPI row are mandatory and cannot be removed.', 'Maximum 14 widgets; beyond that the page stops being a homepage.', 'Widget spans are fixed by the widget, not the user — no free resizing, so the grid never breaks.'] },
+        { t: 'Refresh model', lines: ['KPIs and movement poll every 60 seconds; signals stream live.', 'Scope changes refresh everything in place with the 2px bar, never a spinner.', 'Stale figures dim to 60% and keep an “as of” time rather than disappearing.'] },
+        { t: 'Dark theme', lines: ['Token swap only — layout, spacing and hierarchy are identical.', 'Chart series lift one ramp step; the AI hue lifts to hold 4.5:1.', 'Resolved before first paint, so there is no flash on load.'] },
+        { t: 'Performance budget', lines: ['Shell and KPI row paint within 1s on a cold cache.', 'No widget blocks another: each fetches and renders independently.', 'The AI summary is allowed to arrive last and streams while the rest is usable.'] },
+        { t: 'Accessibility', lines: ['Each widget is a labelled region with a heading, reachable by landmark navigation.', 'Every chart has a table equivalent one keystroke away; no meaning by colour alone.', 'Streaming summaries announce once on completion, not per token.'] },
+      ],
+
+      breakpoints: [
+        { name: 'Desktop', range: '≥ 1600px', cols: 'repeat(12,1fr)',
+          blocks: [{ h: '18px', span: 'span 12', bg: 'var(--ai-tint)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '30px', span: 'span 8', bg: 'var(--brand-tint)' }, { h: '30px', span: 'span 4', bg: 'var(--sunken)' }],
+          lines: ['Full 12-column grid, 14px gutters.', 'KPI row is four across; forecast 8 + health 4.', 'Utility panel may pin open beside the grid.'] },
+        { name: 'Laptop', range: '1280–1599', cols: 'repeat(12,1fr)',
+          blocks: [{ h: '18px', span: 'span 12', bg: 'var(--ai-tint)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '30px', span: 'span 7', bg: 'var(--brand-tint)' }, { h: '30px', span: 'span 5', bg: 'var(--sunken)' }],
+          lines: ['Reference layout. Rail 232px, no utility panel by default.', 'Signals feed caps at 340px and scrolls internally.', 'Chart labels drop to every second tick.'] },
+        { name: 'Tablet', range: '768–1279', cols: 'repeat(6,1fr)',
+          blocks: [{ h: '18px', span: 'span 6', bg: 'var(--ai-tint)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '22px', span: 'span 3', bg: 'var(--sunken)' }, { h: '30px', span: 'span 6', bg: 'var(--brand-tint)' }, { h: '30px', span: 'span 6', bg: 'var(--sunken)' }],
+          lines: ['Six columns; KPIs two across; every other widget full width.', 'Rail collapses to icons; scope strip becomes one Scope button.', 'The AI summary becomes a vertical stack of three points.'] },
+        { name: 'Phone', range: '< 768px', cols: '1fr',
+          blocks: [{ h: '16px', span: 'span 1', bg: 'var(--ai-tint)' }, { h: '20px', span: 'span 1', bg: 'var(--sunken)' }, { h: '20px', span: 'span 1', bg: 'var(--sunken)' }, { h: '26px', span: 'span 1', bg: 'var(--brand-tint)' }, { h: '20px', span: 'span 1', bg: 'var(--sunken)' }],
+          lines: ['Single column in a fixed priority order: summary, KPIs, risks, recommendations, movement, meetings.', 'Charts become sparkline summaries with a “view full chart” link.', 'Read, approve, comment and ask only — no customisation on phone.'] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

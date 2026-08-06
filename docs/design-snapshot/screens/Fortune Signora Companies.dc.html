@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2shimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes v2bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <div style="display:flex;align-items:center;gap:10px;height:34px;padding:0 20px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;border-bottom:1px solid var(--line-soft)">
+    <span style="font-weight:600">Companies workspace</span>
+    <span style="color:var(--ink-2)">8,412 accounts · table, cards, segments and bulk work in one surface</span>
+    <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft)">
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }}" onClick="{{ setLight }}">Light</span>
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }}" onClick="{{ setDark }}">Dark</span>
+    </span>
+  </div>
+
+  <div style="display:flex;align-items:flex-start">
+    <nav style="width:56px;flex:none;position:sticky;top:0;height:100vh;background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">NG</div>
+      <div style="height:1px;width:28px;background:var(--line-soft);margin:6px 0"></div>
+      <sc-for list="{{ railIcons }}" as="r" hint-placeholder-count="8">
+        <div style="width:38px;height:32px;border-radius:8px;display:grid;place-items:center;background:{{ r.bg }};color:{{ r.color }}">{{ r.icon }}</div>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:14px;height:56px;padding:0 20px;border-bottom:1px solid var(--line-soft);background:var(--surface)">
+        <div style="display:flex;align-items:center;gap:7px;font-size:13px">
+          <span style="color:var(--ink-3)">Accounts</span><span style="color:var(--ink-4)">/</span>
+          <span style="font-weight:600">Companies</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;width:210px;height:32px;padding:0 11px;border-radius:8px;background:var(--sunken);color:var(--ink-3);font-size:12.5px">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+            <span>Search or ask…</span>
+            <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:9.5px;padding:1px 5px;border-radius:5px;background:var(--surface);border:1px solid var(--line-soft)">⌘K</span>
+          </div>
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--sunken)"></div>
+          <div style="width:32px;height:32px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:600">MR</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;height:46px;padding:0 20px;border-bottom:1px solid var(--line-soft);background:var(--bg)">
+        <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Scope</span>
+        <sc-for list="{{ scopeChips }}" as="c" hint-placeholder-count="3">
+          <span style="display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:8px;background:var(--brand-tint);border:1px solid var(--brand-line);font-size:12px;color:var(--brand-ink)">
+            <span style="color:var(--ink-4)">{{ c.k }}</span><span style="font-weight:600">{{ c.v }}</span>
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6.5 8 9.5l3-3"></path></svg>
+          </span>
+        </sc-for>
+        <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Inherited by every module · shareable in the URL</span>
+      </div>
+
+      <div style="padding:20px 20px 0">
+        <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+          <div>
+            <div style="display:flex;align-items:baseline;gap:10px">
+              <h1 style="font-size:26px;font-weight:700;letter-spacing:-0.026em;margin:0">Companies</h1>
+              <span style="font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums">8,412 total · 312 in view</span>
+            </div>
+            <div style="font-size:13px;color:var(--ink-2);margin-top:4px">Every account you can see, in one surface. Views, segments and bulk work happen here rather than in the CRM.</div>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <span style="display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Import</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Export</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">New company</span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;margin-top:18px;border-bottom:1px solid var(--line-soft)">
+          <sc-for list="{{ savedViews }}" as="v" hint-placeholder-count="5">
+            <span style="display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px 8px 0 0;font-size:13px;font-weight:{{ v.weight }};color:{{ v.color }};background:{{ v.bg }};border-bottom:2px solid {{ v.edge }};margin-bottom:-1px">
+              {{ v.name }}
+              <span style="font-size:10.5px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ v.count }}</span>
+              <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:{{ v.tagBg }};color:{{ v.tagFg }}">{{ v.tag }}</span>
+            </span>
+          </sc-for>
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:9px 11px;font-size:13px;color:var(--ink-3)">＋ New view</span>
+          <span style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken);margin-bottom:6px">
+            <sc-for list="{{ viewModes }}" as="m" hint-placeholder-count="3">
+              <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:11.5px;font-weight:600;background:{{ m.bg }};color:{{ m.color }};box-shadow:{{ m.shadow }}">{{ m.icon }}{{ m.label }}</span>
+            </sc-for>
+          </span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 0;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Filters</span>
+          <sc-for list="{{ filterChips }}" as="f" hint-placeholder-count="4">
+            <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:8px;background:{{ f.bg }};border:1px solid {{ f.border }};font-size:12px;color:{{ f.color }}">
+              <span style="color:var(--ink-4)">{{ f.field }}</span>
+              <span style="color:var(--ink-3)">{{ f.op }}</span>
+              <span style="font-weight:600">{{ f.value }}</span>
+              <span style="color:var(--ink-4)">✕</span>
+            </span>
+          </sc-for>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:8px;border:1px dashed var(--line);font-size:12px;color:var(--ink-3)">＋ Add condition</span>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:8px;background:var(--ai-tint);color:var(--ai-ink);font-size:12px;font-weight:600">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+            Smart filter
+          </span>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:12px;font-size:11.5px">
+            <span style="color:var(--ink-3);font-variant-numeric:tabular-nums">312 of 8,412</span>
+            <span style="color:var(--brand-ink);font-weight:600">Save to view</span>
+          </span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;padding:0 0 14px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:8px;background:var(--sunken);font-size:12px;font-weight:600">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 4h11M4.5 8h7M6.5 12h3"></path></svg>
+            Group: Renewal quarter
+            <span style="color:var(--ink-4)">✕</span>
+          </span>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:8px;background:var(--sunken);font-size:12px;font-weight:600">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 3v10M4 13l-2-2M12 13V3M12 3l2 2"></path></svg>
+            Sort: Score ↑, then ACV ↓
+          </span>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Columns · 9 of 42</span>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Density</span>
+          <span style="margin-left:auto;display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:8px;background:var(--ai-tint);color:var(--ai-ink);font-size:12px;font-weight:600">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+            Summarise this view
+          </span>
+        </div>
+      </div>
+
+      <div style="padding:0 20px 24px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow-x:auto;overflow-y:hidden">
+
+          <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;background:var(--brand);color:#fff;min-width:1044px">
+            <span style="width:15px;height:15px;border-radius:4px;background:#fff;color:var(--brand);display:grid;place-items:center;font-size:10px;font-weight:700">✓</span>
+            <span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">41 selected</span>
+            <span style="font-size:11.5px;opacity:.8">of 312 in view</span>
+            <span style="font-size:11.5px;text-decoration:underline;text-underline-offset:2px;opacity:.9">Select all 312</span>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:7px">
+              <sc-for list="{{ bulkActions }}" as="b" hint-placeholder-count="6">
+                <span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:7px;background:{{ b.bg }};color:{{ b.color }};border:1px solid {{ b.border }};font-size:11.5px;font-weight:600">{{ b.label }}</span>
+              </sc-for>
+              <span style="opacity:.75;font-size:13px">✕</span>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:11px;padding:13px 16px;background:var(--ai-tint);border-bottom:1px solid var(--ai-line);min-width:1044px">
+            <span style="width:19px;height:19px;flex:none;border-radius:6px;background:var(--ai);display:grid;place-items:center;margin-top:1px">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12"></path></svg>
+            </span>
+            <div style="min-width:0;font-size:12.5px;line-height:1.55">
+              <span style="font-weight:600">Of the 41 you selected, 18 share the same problem. </span>
+              <span style="color:var(--ink-2)">All 18 have a renewal inside 90 days, no contact in 14 days, and procurement never engaged — worth $7.4M. The other 23 are healthy and only need an owner check.</span>
+              <span style="font-weight:600;color:var(--ai-ink);margin-left:5px;white-space:nowrap">Narrow to those 18 →</span>
+            </div>
+            <span style="margin-left:auto;flex:none;font-size:11.5px;color:var(--ink-3)">Generated 09:14 · ✕</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:36px 32px 232px 116px 108px 152px 122px 118px 96px;align-items:center;padding:0 16px;background:var(--sunken);border-bottom:1px solid var(--line-soft);height:38px;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);position:relative;min-width:1044px">
+            <div><span style="display:inline-block;width:14px;height:14px;border-radius:4px;border:1.5px solid var(--brand);background:var(--brand)"></span></div>
+            <div></div>
+            <div style="display:flex;align-items:center;gap:6px">Company <span style="font-size:9px;color:var(--ink-4)">📌</span></div>
+            <div>Segment</div>
+            <div style="text-align:right">Open ACV</div>
+            <div style="text-align:right;color:var(--ink-2)">Signora score ↑</div>
+            <div>Renewal</div>
+            <div>Owner</div>
+            <div style="text-align:right">Tags</div>
+          </div>
+
+          <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+            <div>
+              <div style="display:flex;align-items:center;gap:11px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line-soft);min-width:1044px">
+                <span style="color:var(--ink-4);font-size:11px">{{ g.chevron }}</span>
+                <span style="font-size:12.5px;font-weight:600">{{ g.label }}</span>
+                <span style="font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums">{{ g.count }}</span>
+                <span style="font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums">· {{ g.acv }}</span>
+                <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ g.tint }};color:{{ g.color }}">{{ g.badge }}</span>
+                <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Avg score <span style="font-weight:600;color:{{ g.color }};font-variant-numeric:tabular-nums">{{ g.avg }}</span></span>
+              </div>
+              <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+                <div style="display:grid;grid-template-columns:36px 32px 232px 116px 108px 152px 122px 118px 96px;align-items:center;padding:0 16px;min-height:44px;min-width:1044px;border-bottom:1px solid var(--line-soft);border-left:2px solid {{ r.edge }};background:{{ r.bg }};font-size:13.5px;transition:background 120ms var(--ease)" style-hover="background:var(--sunken)">
+                  <div><span style="display:inline-block;width:14px;height:14px;border-radius:4px;border:1.5px solid {{ r.checkBorder }};background:{{ r.checkBg }};color:#fff;font-size:9px;text-align:center;line-height:12px">{{ r.tick }}</span></div>
+                  <div style="color:var(--ink-4);font-size:11px">{{ r.expander }}</div>
+                  <div style="display:flex;align-items:center;gap:9px;min-width:0">
+                    <span style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center;font-size:9.5px;font-weight:600">{{ r.initials }}</span>
+                    <a href="#companies" style="font-weight:600;color:var(--ink);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" style-hover="color:var(--brand-ink)">{{ r.name }}</a>
+                  </div>
+                  <div style="font-size:12px;color:var(--ink-2)">{{ r.segment }}</div>
+                  <div style="text-align:right;font-variant-numeric:tabular-nums">{{ r.acv }}</div>
+                  <div style="display:flex;align-items:center;justify-content:flex-end;gap:9px">{{ r.score }}</div>
+                  <div style="font-size:12.5px;font-variant-numeric:tabular-nums;color:{{ r.renewalColor }}">{{ r.renewal }}</div>
+                  <div style="display:flex;align-items:center;gap:7px;min-width:0">
+                    <span style="width:20px;height:20px;flex:none;border-radius:999px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center;font-size:8.5px;font-weight:600">{{ r.ownerInitials }}</span>
+                    <span style="font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.owner }}</span>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;gap:4px">{{ r.tags }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+
+          <div style="padding:16px 16px 18px 84px;background:var(--sunken);border-bottom:1px solid var(--line-soft);min-width:1044px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Expanded · Vantage Logistics</span>
+              <span style="margin-left:auto;font-size:11.5px;font-weight:600;color:var(--brand-ink)">Open full record</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:14px;margin-top:12px">
+              <div style="padding:15px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+                <div style="font-size:11.5px;color:var(--ink-3)">Open opportunities · 3</div>
+                <sc-for list="{{ expandOpps }}" as="o" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+                    <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.name }}</span>
+                    <span style="margin-left:auto;flex:none;font-variant-numeric:tabular-nums;color:var(--ink-2)">{{ o.amount }}</span>
+                    <span style="flex:none;font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:{{ o.tint }};color:{{ o.color }}">{{ o.stage }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="padding:15px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+                <div style="font-size:11.5px;color:var(--ink-3)">Inline edit · commits on ⏎</div>
+                <div style="display:flex;align-items:center;height:32px;padding:0 10px;margin-top:8px;border-radius:7px;border:1px solid var(--brand);box-shadow:0 0 0 3px var(--brand-tint);font-size:13px;font-variant-numeric:tabular-nums">$1,240,000</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:8px;line-height:1.5">Optimistic commit, undo in the toast for 10 seconds, rolls back visibly on failure.</div>
+              </div>
+              <div style="padding:15px;border-radius:12px;background:var(--surface);border:1px solid var(--ai-line)">
+                <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ai-ink)">
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+                  Row-level AI
+                </div>
+                <div style="font-size:12.5px;color:var(--ink-2);margin-top:7px;line-height:1.55">Comparable renewals closed 23 days faster once procurement was engaged.</div>
+                <div style="font-size:12px;font-weight:600;color:var(--ai-ink);margin-top:8px">Draft the intro →</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;font-size:12px;color:var(--ink-3);min-width:1044px">
+            <span style="font-variant-numeric:tabular-nums">Rows 1–8 of 312 · virtualised beyond 100</span>
+            <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+              <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:7px;border:1px solid var(--line-soft)">Previous</span>
+              <span style="display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:7px;background:var(--brand);color:#fff;font-weight:600">1</span>
+              <span style="display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:7px;border:1px solid var(--line-soft)">2</span>
+              <span style="display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:7px;border:1px solid var(--line-soft)">3</span>
+              <span style="display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:7px;border:1px solid var(--line-soft)">Next</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;margin-top:24px;align-items:start">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <h2 style="font-size:20px;font-weight:700;letter-spacing:-0.02em;margin:0">Card view</h2>
+              <span style="font-size:12px;color:var(--ink-3)">Same data, same filters, same selection — for scanning by account rather than by column</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px">
+              <sc-for list="{{ cards }}" as="c" hint-placeholder-count="6">
+                <div style="border-radius:14px;background:var(--surface);border:1px solid {{ c.border }};box-shadow:var(--e1);overflow:hidden;transition:box-shadow 160ms var(--ease)" style-hover="box-shadow:var(--e2)">
+                  <div style="display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+                    <span style="width:15px;height:15px;flex:none;border-radius:4px;border:1.5px solid {{ c.checkBorder }};background:{{ c.checkBg }};color:#fff;font-size:9px;text-align:center;line-height:13px">{{ c.tick }}</span>
+                    <span style="width:24px;height:24px;flex:none;border-radius:7px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center;font-size:9.5px;font-weight:600">{{ c.initials }}</span>
+                    <div style="min-width:0">
+                      <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div>
+                      <div style="font-size:11px;color:var(--ink-3)">{{ c.segment }}</div>
+                    </div>
+                    <span style="margin-left:auto;flex:none;font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ c.statusBg }};color:{{ c.statusFg }}">{{ c.status }}</span>
+                  </div>
+                  <div style="padding:13px 15px">
+                    <div style="display:flex;align-items:flex-end;gap:10px">
+                      <div>
+                        <div style="font-size:11px;color:var(--ink-3)">Open ACV</div>
+                        <div style="font-size:18px;font-weight:700;letter-spacing:-0.022em;font-variant-numeric:tabular-nums;line-height:1.15">{{ c.acv }}</div>
+                      </div>
+                      <div style="margin-left:auto;text-align:right">
+                        <div style="font-size:11px;color:var(--ink-3)">Score</div>
+                        <div style="font-size:18px;font-weight:700;letter-spacing:-0.022em;font-variant-numeric:tabular-nums;line-height:1.15;color:{{ c.scoreColor }}">{{ c.scoreV }}</div>
+                      </div>
+                    </div>
+                    <div style="margin-top:11px">{{ c.spark }}</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:11px">{{ c.tags }}</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:11px;border-top:1px solid var(--line-soft);font-size:11.5px;color:var(--ink-3)">
+                      <span style="width:18px;height:18px;border-radius:999px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center;font-size:8px;font-weight:600">{{ c.ownerInitials }}</span>
+                      <span>{{ c.owner }}</span>
+                      <span style="margin-left:auto;font-variant-numeric:tabular-nums;color:{{ c.renewalColor }}">{{ c.renewal }}</span>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:15px 17px;border-bottom:1px solid var(--line-soft)">
+              <div>
+                <div style="font-size:11.5px;color:var(--ink-3)">Context drawer · row preview</div>
+                <div style="font-size:16px;font-weight:600;letter-spacing:-0.016em;margin-top:2px">Vantage Logistics A/S</div>
+              </div>
+              <span style="margin-left:auto;display:flex;gap:11px;color:var(--ink-4);font-size:13px"><span>⤢</span><span>✕</span></span>
+            </div>
+            <div style="display:flex;gap:3px;padding:10px 14px;border-bottom:1px solid var(--line-soft)">
+              <sc-for list="{{ drawerTabs }}" as="t" hint-placeholder-count="4">
+                <span style="padding:5px 10px;border-radius:7px;font-size:11.5px;font-weight:600;background:{{ t.bg }};color:{{ t.color }}">{{ t.label }}</span>
+              </sc-for>
+            </div>
+            <div style="padding:15px 17px;border-bottom:1px solid var(--line-soft)">
+              <sc-for list="{{ drawerFacts }}" as="f" hint-placeholder-count="6">
+                <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:12.5px">
+                  <span style="color:var(--ink-3)">{{ f.k }}</span>
+                  <span style="font-weight:600;font-variant-numeric:tabular-nums;color:{{ f.color }}">{{ f.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding:15px 17px;border-bottom:1px solid var(--line-soft);background:var(--ai-tint)">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="width:17px;height:17px;border-radius:5px;background:var(--ai);display:grid;place-items:center">
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+                </span>
+                <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink)">Recommended next step</span>
+              </div>
+              <div style="font-size:12.5px;line-height:1.55;margin-top:7px">Introduce procurement to the compliance case this week. Comparable renewals closed 23 days faster.</div>
+              <div style="display:flex;gap:7px;margin-top:11px">
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;background:var(--ai);color:#fff;font-size:12px;font-weight:600">Draft intro</span>
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--ai-line);font-size:12px;font-weight:600;color:var(--ai-ink)">Evidence</span>
+              </div>
+            </div>
+            <div style="padding:13px 17px">
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Navigate</div>
+              <div style="display:flex;align-items:center;gap:12px;margin-top:9px;font-size:12px;color:var(--ink-2)">
+                <span>↑↓ moves the row · the drawer follows</span>
+                <span style="margin-left:auto;font-weight:600;color:var(--brand-ink)">Open record</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:34px;padding-top:28px;border-top:1px solid var(--line-soft)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:999px;background:var(--sunken);color:var(--ink-2)">Mechanics</span>
+            <span style="font-size:12px;color:var(--ink-3)">The parts that make this beat a CRM list view</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px">
+            <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+              <div style="padding:13px 16px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;gap:9px">
+                <span style="font-size:13.5px;font-weight:600">Column configuration</span>
+                <span style="margin-left:auto;font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums">9 of 42 shown</span>
+              </div>
+              <sc-for list="{{ columns }}" as="c" hint-placeholder-count="7">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid var(--line-soft)">
+                  <span style="color:var(--ink-4);font-size:12px;cursor:grab">⣿</span>
+                  <span style="font-size:12.5px;font-weight:{{ c.weight }};color:{{ c.color }}">{{ c.label }}</span>
+                  <span style="margin-left:auto;flex:none;display:flex;align-items:center;gap:8px">
+                    <span style="font-size:10px;font-weight:600;color:{{ c.pinColor }}">{{ c.pin }}</span>
+                    <span style="width:28px;height:17px;border-radius:999px;background:{{ c.toggleBg }};position:relative;flex:none">
+                      <span style="position:absolute;top:2px;left:{{ c.knob }};width:13px;height:13px;border-radius:999px;background:#fff;box-shadow:var(--e1)"></span>
+                    </span>
+                  </span>
+                </div>
+              </sc-for>
+              <div style="padding:12px 16px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Two columns may be pinned left; pinning is per view, not per user, so a shared view looks the same for everyone.</div>
+            </div>
+
+            <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+              <div style="padding:13px 16px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;gap:9px">
+                <span style="font-size:13.5px;font-weight:600">Segments</span>
+                <span style="margin-left:auto;font-size:11px;font-weight:600;color:var(--brand-ink)">New segment</span>
+              </div>
+              <sc-for list="{{ segments }}" as="s" hint-placeholder-count="5">
+                <div style="padding:12px 16px;border-bottom:1px solid var(--line-soft)">
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <span style="width:20px;height:20px;flex:none;border-radius:6px;background:{{ s.tint }};color:{{ s.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ s.icon }}</span>
+                    <span style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</span>
+                    <span style="margin-left:auto;flex:none;font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums">{{ s.count }}</span>
+                  </div>
+                  <div style="font-size:11.5px;color:var(--ink-2);margin-top:5px;line-height:1.5">{{ s.rule }}</div>
+                  <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+                    <span style="font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ s.kindBg }};color:{{ s.kindFg }}">{{ s.kind }}</span>
+                    <span style="font-size:10.5px;color:var(--ink-4)">{{ s.meta }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+                <div style="padding:13px 16px;border-bottom:1px solid var(--line-soft);font-size:13.5px;font-weight:600">Export</div>
+                <div style="padding:14px 16px">
+                  <div style="font-size:12.5px;color:var(--ink-2);line-height:1.55">Exports the <strong>current view</strong>: filters, sort, grouping and visible columns — never the whole table by accident.</div>
+                  <div style="display:flex;flex-direction:column;gap:7px;margin-top:11px">
+                    <sc-for list="{{ exportRows }}" as="e" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;border:1px solid {{ e.border }};background:{{ e.bg }};font-size:12px">
+                        <span style="font-weight:600">{{ e.label }}</span>
+                        <span style="color:var(--ink-3)">{{ e.meta }}</span>
+                        <span style="margin-left:auto;font-size:11px;color:var(--ink-4)">{{ e.right }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="font-size:11.5px;color:var(--ink-3);margin-top:10px;line-height:1.5">Over 5,000 rows runs as a background job with a completion toast. Field-level permissions are applied at export, and the file records who exported what.</div>
+                </div>
+              </div>
+              <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+                <div style="padding:13px 16px;border-bottom:1px solid var(--line-soft);font-size:13.5px;font-weight:600">Import</div>
+                <div style="padding:14px 16px">
+                  <div style="display:flex;flex-direction:column;gap:0">
+                    <sc-for list="{{ importSteps }}" as="i" hint-placeholder-count="4">
+                      <div style="display:flex;gap:11px;padding:8px 0;border-bottom:1px solid var(--line-soft)">
+                        <span style="width:20px;height:20px;flex:none;border-radius:999px;background:{{ i.bg }};border:1.5px solid {{ i.border }};color:{{ i.fg }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ i.n }}</span>
+                        <div style="min-width:0">
+                          <div style="font-size:12.5px;font-weight:600">{{ i.t }}</div>
+                          <div style="font-size:11.5px;color:var(--ink-2);margin-top:2px;line-height:1.45">{{ i.b }}</div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="font-size:11.5px;color:var(--ink-3);margin-top:10px;line-height:1.5">Nothing is written until the preview is approved, and every import is reversible for 24 hours as a single named batch.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:16px">
+            <sc-for list="{{ mechanics }}" as="m" hint-placeholder-count="8">
+              <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+                <div style="font-size:13px;font-weight:600">{{ m.t }}</div>
+                <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">{{ m.b }}</p>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  icon(kind) {
+    const p = {
+      home: 'M2.5 7 8 2.5 13.5 7v6.5h-11V7Z', chart: 'M3 13V7M8 13V3M13 13V9',
+      flow: 'M2.5 4h11M4.5 8h7M6.5 12h3', grid: 'M2.5 2.5h5v5h-5zM8.5 2.5h5v5h-5zM2.5 8.5h5v5h-5zM8.5 8.5h5v5h-5z',
+      case: 'M2.5 5.5h11v8h-11zM6 5.5V3h4v2.5', chat: 'M2.5 3h11v7H7l-4.5 3.5z',
+      pulse: 'M1.5 8h3l2-4.5L9 12l2-4h3.5', file: 'M4 2h5l3 3v9H4zM9 2v3h3',
+    }[kind];
+    return R('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }, R('path', { d: p }));
+  }
+
+  score(v) {
+    const color = v >= 70 ? 'var(--pos)' : (v >= 50 ? 'var(--warn)' : 'var(--risk)');
+    return [
+      R('span', { key: 'b', style: { width: 54, height: 5, borderRadius: 999, background: 'var(--sunken)', overflow: 'hidden', display: 'block' } },
+        R('span', { style: { display: 'block', width: v + '%', height: '100%', borderRadius: 999, background: color } })),
+      R('span', { key: 'v', style: { fontVariantNumeric: 'tabular-nums', fontWeight: 600, width: 22, textAlign: 'right', fontSize: 13 } }, v),
+    ];
+  }
+
+  spark(vals, color) {
+    const min = Math.min(...vals), max = Math.max(...vals);
+    const pts = vals.map((v, i) => [i / (vals.length - 1) * 120, 24 - (v - min) / (max - min || 1) * 20]);
+    const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    return R('svg', { viewBox: '0 0 120 28', style: { width: '100%', height: 28, display: 'block' } }, [
+      R('path', { key: 'a', d: d + ' L120 28 L0 28 Z', fill: color, fillOpacity: .08 }),
+      R('path', { key: 'b', d, fill: 'none', stroke: color, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+      R('circle', { key: 'c', cx: pts[pts.length - 1][0], cy: pts[pts.length - 1][1], r: 2.4, fill: color }),
+    ]);
+  }
+
+  tagChips(tags) {
+    return tags.map((t, i) => R('span', {
+      key: i,
+      style: { fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 5, background: t[1], color: t[2], whiteSpace: 'nowrap' },
+    }, t[0]));
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    const T = {
+      risk: ['var(--risk-tint)', 'var(--risk)'],
+      warn: ['var(--warn-tint)', 'var(--warn)'],
+      pos: ['var(--pos-tint)', 'var(--pos)'],
+      neutral: ['var(--sunken)', 'var(--ink-2)'],
+      ai: ['var(--ai-tint)', 'var(--ai-ink)'],
+    };
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--brand)',
+      lightFg: dark ? 'var(--ink-3)' : '#fff',
+      darkBg: dark ? 'var(--brand)' : 'transparent',
+      darkFg: dark ? '#fff' : 'var(--ink-3)',
+
+      railIcons: ['home', 'chart', 'flow', 'grid', 'case', 'chat', 'pulse', 'file'].map((k, i) => ({
+        icon: this.icon(k),
+        bg: i === 3 ? 'var(--brand-tint)' : 'transparent',
+        color: i === 3 ? 'var(--brand)' : 'var(--ink-3)',
+      })),
+
+      scopeChips: [
+        { k: 'Period', v: 'Q3 FY26' }, { k: 'Region', v: 'EMEA' }, { k: 'Segment', v: 'Enterprise' },
+      ],
+
+      savedViews: [
+        { name: 'My at-risk renewals', count: '41', tag: 'Live', current: true, tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)' },
+        { name: 'EMEA enterprise', count: '312', tag: '', current: false, tagBg: 'transparent', tagFg: 'transparent' },
+        { name: 'Whitespace', count: '1,104', tag: 'AI', current: false, tagBg: 'var(--ai-tint)', tagFg: 'var(--ai-ink)' },
+        { name: 'Board extract', count: '212', tag: 'Shared', current: false, tagBg: 'var(--sunken)', tagFg: 'var(--ink-3)' },
+        { name: 'All companies', count: '8,412', tag: '', current: false, tagBg: 'transparent', tagFg: 'transparent' },
+      ].map(v => ({
+        name: v.name, count: v.count, tag: v.tag, tagBg: v.tagBg, tagFg: v.tagFg,
+        weight: v.current ? 600 : 400,
+        color: v.current ? 'var(--ink)' : 'var(--ink-3)',
+        bg: v.current ? 'var(--sunken)' : 'transparent',
+        edge: v.current ? 'var(--brand)' : 'transparent',
+      })),
+
+      viewModes: [
+        { label: 'Table', icon: '▤ ', active: true }, { label: 'Cards', icon: '▦ ', active: false }, { label: 'Board', icon: '▥ ', active: false },
+      ].map(m => ({
+        label: m.label, icon: m.icon,
+        bg: m.active ? 'var(--surface)' : 'transparent',
+        color: m.active ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: m.active ? 'var(--e1)' : 'none',
+      })),
+
+      filterChips: [
+        { field: 'Renewal', op: 'within', value: '90 days', smart: false },
+        { field: 'Score', op: 'below', value: '50', smart: false },
+        { field: 'Last touch', op: 'older than', value: '14 days', smart: false },
+        { field: 'Procurement', op: 'never', value: 'engaged', smart: true },
+      ].map(f => ({
+        field: f.field, op: f.op, value: f.value,
+        bg: f.smart ? 'var(--ai-tint)' : 'var(--surface)',
+        border: f.smart ? 'var(--ai-line)' : 'var(--line)',
+        color: f.smart ? 'var(--ai-ink)' : 'var(--ink)',
+      })),
+
+      bulkActions: [
+        { label: 'Assign owner', primary: false }, { label: 'Add tag', primary: false },
+        { label: 'Add to segment', primary: false }, { label: 'Create tasks', primary: false },
+        { label: 'Export 41', primary: false }, { label: '✦ Draft outreach', primary: true },
+      ].map(b => ({
+        label: b.label,
+        bg: b.primary ? '#fff' : 'rgba(255,255,255,.12)',
+        color: b.primary ? 'var(--brand)' : '#fff',
+        border: b.primary ? '#fff' : 'rgba(255,255,255,.28)',
+      })),
+
+      groups: [
+        {
+          label: 'Renewal in Q3 FY26', count: '18 companies', acv: '$7.42M', badge: 'Needs attention', avg: '41',
+          tint: 'var(--risk-tint)', color: 'var(--risk)', chevron: '▾',
+          rows: [
+            { name: 'Vantage Logistics A/S', initials: 'VL', segment: 'Enterprise', acv: '$1,240,000', scoreV: 38, renewal: '12 Oct · 69d', renewalWarn: true, owner: 'M. Reinhardt', ownerInitials: 'MR', sel: true, expanded: true, tags: [['At risk', ...T.risk], ['Strategic', ...T.neutral]] },
+            { name: 'Ashgrove Retail Group', initials: 'AR', segment: 'Enterprise', acv: '$298,000', scoreV: 44, renewal: '28 Sep · 55d', renewalWarn: true, owner: 'L. Petrova', ownerInitials: 'LP', sel: true, expanded: false, tags: [['Champion lost', ...T.risk]] },
+            { name: 'Brightwater Group', initials: 'BG', segment: 'Enterprise', acv: '$880,000', scoreV: 47, renewal: '30 Sep · 57d', renewalWarn: true, owner: 'J. Okafor', ownerInitials: 'JO', sel: true, expanded: false, tags: [['Competitor', ...T.warn]] },
+            { name: 'Meridian Freight', initials: 'MF', segment: 'Mid-market', acv: '$430,000', scoreV: 55, renewal: '15 Sep · 42d', renewalWarn: true, owner: 'A. Duval', ownerInitials: 'AD', sel: false, expanded: false, tags: [['Stalling', ...T.warn], ['M&A', ...T.neutral]] },
+          ],
+        },
+        {
+          label: 'Renewal in Q4 FY26', count: '23 companies', acv: '$11.06M', badge: 'Healthy', avg: '78',
+          tint: 'var(--pos-tint)', color: 'var(--pos)', chevron: '▾',
+          rows: [
+            { name: 'Corrigan Health', initials: 'CH', segment: 'Enterprise', acv: '$2,110,000', scoreV: 82, renewal: '14 Jan · 163d', renewalWarn: false, owner: 'M. Reinhardt', ownerInitials: 'MR', sel: false, expanded: false, tags: [['Expansion', ...T.pos], ['Reference', ...T.neutral]] },
+            { name: 'Norvell Energy', initials: 'NE', segment: 'Enterprise', acv: '$1,675,000', scoreV: 91, renewal: '02 Dec · 120d', renewalWarn: false, owner: 'J. Okafor', ownerInitials: 'JO', sel: false, expanded: false, tags: [['Usage 94%', ...T.pos]] },
+            { name: 'Halden Systems', initials: 'HS', segment: 'Enterprise', acv: '$860,000', scoreV: 71, renewal: '19 Nov · 107d', renewalWarn: false, owner: 'J. Okafor', ownerInitials: 'JO', sel: false, expanded: false, tags: [['Multi-thread', ...T.pos]] },
+            { name: 'Lindqvist Marine', initials: 'LM', segment: 'Mid-market', acv: '$520,000', scoreV: 68, renewal: '05 Dec · 123d', renewalWarn: false, owner: 'A. Duval', ownerInitials: 'AD', sel: false, expanded: false, tags: [['Whitespace', ...T.ai]] },
+          ],
+        },
+      ].map(g => ({
+        label: g.label, count: g.count, acv: g.acv, badge: g.badge, avg: g.avg,
+        tint: g.tint, color: g.color, chevron: g.chevron,
+        rows: g.rows.map(r => ({
+          name: r.name, initials: r.initials, segment: r.segment, acv: r.acv,
+          renewal: r.renewal, owner: r.owner, ownerInitials: r.ownerInitials,
+          score: this.score(r.scoreV),
+          tags: this.tagChips(r.tags),
+          renewalColor: r.renewalWarn ? 'var(--warn)' : 'var(--ink-2)',
+          tick: r.sel ? '✓' : '',
+          checkBg: r.sel ? 'var(--brand)' : 'transparent',
+          checkBorder: r.sel ? 'var(--brand)' : 'var(--line)',
+          expander: r.expanded ? '▾' : '▸',
+          edge: r.sel ? 'var(--brand)' : 'transparent',
+          bg: r.sel ? 'var(--brand-tint)' : 'transparent',
+        })),
+      })),
+
+      expandOpps: [
+        { name: 'Renewal — Q4 FY26', amount: '$1.24M', stage: 'Negotiation', tint: 'var(--warn-tint)', color: 'var(--warn)' },
+        { name: 'Expansion — freight API', amount: '$310K', stage: 'Discovery', tint: 'var(--sunken)', color: 'var(--ink-2)' },
+        { name: 'Services — onboarding', amount: '$74K', stage: 'Proposal', tint: 'var(--sunken)', color: 'var(--ink-2)' },
+      ],
+
+      cards: [
+        { name: 'Vantage Logistics A/S', initials: 'VL', segment: 'Enterprise · EMEA', status: 'At risk', acv: '$1.24M', scoreV: 38, renewal: '69d to renewal', owner: 'M. Reinhardt', ownerInitials: 'MR', sel: true, warn: true, trend: [62, 58, 55, 49, 44, 38], tags: [['At risk', ...T.risk], ['Strategic', ...T.neutral]] },
+        { name: 'Ashgrove Retail Group', initials: 'AR', segment: 'Enterprise · EMEA', status: 'At risk', acv: '$298K', scoreV: 44, renewal: '55d to renewal', owner: 'L. Petrova', ownerInitials: 'LP', sel: true, warn: true, trend: [58, 56, 52, 50, 47, 44], tags: [['Champion lost', ...T.risk]] },
+        { name: 'Brightwater Group', initials: 'BG', segment: 'Enterprise · EMEA', status: 'Watch', acv: '$880K', scoreV: 47, renewal: '57d to renewal', owner: 'J. Okafor', ownerInitials: 'JO', sel: true, warn: true, trend: [61, 59, 56, 52, 49, 47], tags: [['Competitor', ...T.warn]] },
+        { name: 'Corrigan Health', initials: 'CH', segment: 'Enterprise · NA', status: 'Healthy', acv: '$2.11M', scoreV: 82, renewal: '163d to renewal', owner: 'M. Reinhardt', ownerInitials: 'MR', sel: false, warn: false, trend: [70, 72, 74, 77, 79, 82], tags: [['Expansion', ...T.pos], ['Reference', ...T.neutral]] },
+        { name: 'Norvell Energy', initials: 'NE', segment: 'Enterprise · EMEA', status: 'Healthy', acv: '$1.68M', scoreV: 91, renewal: '120d to renewal', owner: 'J. Okafor', ownerInitials: 'JO', sel: false, warn: false, trend: [84, 86, 87, 89, 90, 91], tags: [['Usage 94%', ...T.pos]] },
+        { name: 'Lindqvist Marine', initials: 'LM', segment: 'Mid-market · EMEA', status: 'Whitespace', acv: '$520K', scoreV: 68, renewal: '123d to renewal', owner: 'A. Duval', ownerInitials: 'AD', sel: false, warn: false, trend: [60, 62, 63, 65, 66, 68], tags: [['Whitespace', ...T.ai]] },
+      ].map(c => {
+        const sc = c.scoreV >= 70 ? 'var(--pos)' : (c.scoreV >= 50 ? 'var(--warn)' : 'var(--risk)');
+        const st = c.status === 'Healthy' ? T.pos : (c.status === 'At risk' ? T.risk : (c.status === 'Watch' ? T.warn : T.ai));
+        return {
+          name: c.name, initials: c.initials, segment: c.segment, status: c.status, acv: c.acv,
+          scoreV: c.scoreV, renewal: c.renewal, owner: c.owner, ownerInitials: c.ownerInitials,
+          scoreColor: sc, statusBg: st[0], statusFg: st[1],
+          renewalColor: c.warn ? 'var(--warn)' : 'var(--ink-3)',
+          tick: c.sel ? '✓' : '',
+          checkBg: c.sel ? 'var(--brand)' : 'transparent',
+          checkBorder: c.sel ? 'var(--brand)' : 'var(--line)',
+          border: c.sel ? 'var(--brand-line)' : 'var(--line-soft)',
+          tags: this.tagChips(c.tags),
+          spark: this.spark(c.trend, sc),
+        };
+      }),
+
+      drawerTabs: ['Overview', 'Signals', 'Activity', 'Notes'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--brand-tint)' : 'transparent',
+        color: i === 0 ? 'var(--brand-ink)' : 'var(--ink-3)',
+      })),
+
+      drawerFacts: [
+        { k: 'Signora score', v: '38 / 100', color: 'var(--risk)' },
+        { k: 'Open ACV', v: '$1,240,000', color: 'var(--ink)' },
+        { k: 'Renewal', v: '12 Oct 2026', color: 'var(--warn)' },
+        { k: 'Owner', v: 'M. Reinhardt', color: 'var(--ink)' },
+        { k: 'Last touch', v: '19 days ago', color: 'var(--risk)' },
+        { k: 'Open opportunities', v: '3', color: 'var(--ink)' },
+      ],
+
+      columns: [
+        { label: 'Company', on: true, pin: 'Pinned', locked: true },
+        { label: 'Signora score', on: true, pin: 'Pinned', locked: false },
+        { label: 'Open ACV', on: true, pin: '', locked: false },
+        { label: 'Renewal date', on: true, pin: '', locked: false },
+        { label: 'Owner', on: true, pin: '', locked: false },
+        { label: 'Tags', on: true, pin: '', locked: false },
+        { label: 'Buying intent', on: false, pin: '', locked: false },
+        { label: 'Support tier', on: false, pin: '', locked: false },
+      ].map(c => ({
+        label: c.label, pin: c.pin,
+        weight: c.on ? 600 : 400,
+        color: c.on ? 'var(--ink)' : 'var(--ink-3)',
+        pinColor: c.pin ? 'var(--brand-ink)' : 'transparent',
+        toggleBg: c.on ? 'var(--brand)' : 'var(--line)',
+        knob: c.on ? '13px' : '2px',
+      })),
+
+      segments: [
+        { icon: '✦', name: 'Renewal risk — 90 days', count: '41', rule: 'Renewal within 90d · score below 50 · no contact 14d', kind: 'Dynamic', meta: 'Recalculates hourly', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', kindBg: 'var(--ai-tint)', kindFg: 'var(--ai-ink)' },
+        { icon: '↑', name: 'Expansion-ready', count: '118', rule: 'Usage above 88% · no open expansion · healthy support', kind: 'Dynamic', meta: 'Feeds the Q4 plan', tint: 'var(--pos-tint)', color: 'var(--pos)', kindBg: 'var(--pos-tint)', kindFg: 'var(--pos)' },
+        { icon: '▤', name: 'Board reporting set', count: '212', rule: 'Manually curated for the quarterly pack', kind: 'Static', meta: 'Locked by finance', tint: 'var(--sunken)', color: 'var(--ink-2)', kindBg: 'var(--sunken)', kindFg: 'var(--ink-3)' },
+        { icon: '⚑', name: 'Competitive watch', count: '26', rule: 'Competitor named in the last 30 days', kind: 'Dynamic', meta: 'Notifies on entry', tint: 'var(--warn-tint)', color: 'var(--warn)', kindBg: 'var(--ai-tint)', kindFg: 'var(--ai-ink)' },
+        { icon: '◷', name: 'Dormant enterprise', count: '304', rule: 'No activity in 60 days · open ACV above $100K', kind: 'Dynamic', meta: 'Owned by the CRO', tint: 'var(--sunken)', color: 'var(--ink-2)', kindBg: 'var(--ai-tint)', kindFg: 'var(--ai-ink)' },
+      ],
+
+      exportRows: [
+        { label: 'CSV', meta: '312 rows · 9 columns', right: 'Current view', border: 'var(--brand)', bg: 'var(--brand-tint)' },
+        { label: 'XLSX', meta: 'Grouped sheets per renewal quarter', right: 'Keeps grouping', border: 'var(--line)', bg: 'transparent' },
+        { label: 'Scheduled', meta: 'Every Monday 07:00 to finance', right: 'Recurring', border: 'var(--line)', bg: 'transparent' },
+      ],
+
+      importSteps: [
+        { n: '✓', t: 'Upload', b: 'CSV or paste. 2,104 rows read, encoding and delimiter detected.', state: 'done' },
+        { n: '✓', t: 'Map fields', b: '11 of 12 mapped automatically; “Region code” needs a decision.', state: 'done' },
+        { n: '3', t: 'Resolve duplicates', b: '46 matches on domain, 8 ambiguous. Merge, skip or create per row.', state: 'current' },
+        { n: '4', t: 'Preview & commit', b: 'Shows exactly what will be created, updated and left alone.', state: 'todo' },
+      ].map(i => {
+        const m = {
+          done: { bg: 'var(--pos)', border: 'var(--pos)', fg: '#fff' },
+          current: { bg: 'transparent', border: 'var(--brand)', fg: 'var(--brand-ink)' },
+          todo: { bg: 'transparent', border: 'var(--line)', fg: 'var(--ink-3)' },
+        }[i.state];
+        return Object.assign({}, i, m);
+      }),
+
+      mechanics: [
+        { t: 'Grouping', b: 'One level, on any groupable column, with per-group aggregates in the header — count, ACV and average score. Groups collapse, and a collapsed group still shows its worst status.' },
+        { t: 'Sorting', b: 'Up to two keys, stated in words in the toolbar rather than as arrows to decode. Sort survives grouping and is part of the saved view and the URL.' },
+        { t: 'Selection', b: 'Survives scrolling, filtering and paging: the count is always of records, never of rows on screen. Select-all-matching is explicit and states the number.' },
+        { t: 'Bulk actions', b: 'Every bulk action previews its effect and names the record count before it runs. Writes are one reversible batch with undo in the toast.' },
+        { t: 'Tags', b: 'Flat, shared, permissioned. Bulk tagging is additive by default with an explicit replace option, and tag changes appear in each record’s timeline.' },
+        { t: 'Smart filters', b: 'Model-derived conditions — “procurement never engaged”, “slipping twice” — carry the intelligence tint so nobody mistakes an inference for a CRM field.' },
+        { t: 'Pinned columns', b: 'Company and score pin left behind a soft gradient rather than a hard rule, so horizontal scroll never produces a seam.' },
+        { t: 'AI in the table', b: 'One summary row above the data and one recommendation per selection. It narrows and drafts; it never edits a record without approval.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

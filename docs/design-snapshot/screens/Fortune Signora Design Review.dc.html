@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#faf8f6">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#faf8f6"/>
+    <rect x="360" y="240" width="480" height="320" rx="34" fill="#ffffff" stroke="#eae5df" stroke-width="4"/>
+    <rect x="410" y="300" width="120" height="24" rx="12" fill="#e6f1f8"/>
+    <rect x="410" y="360" width="380" height="18" rx="9" fill="#134e76"/>
+    <rect x="410" y="398" width="300" height="18" rx="9" fill="#a5691f"/>
+    <rect x="410" y="436" width="210" height="18" rx="9" fill="#a83329"/>
+    <rect x="410" y="486" width="380" height="10" rx="5" fill="#eae5df"/>
+    <circle cx="768" cy="316" r="18" fill="#4b5ec4"/>
+  </svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em;padding:0 0 120px">
+
+  <header style="max-width:1280px;margin:0 auto;padding:56px 40px 40px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;padding:4px 11px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);font-size:11.5px;font-weight:600">Design review · pre-refactor</span>
+      <span style="font-size:11.5px;color:var(--ink-3)">16 screens measured · 1,250 radius declarations · 2,000+ type declarations · no changes made yet</span>
+      <div style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};box-shadow:{{ lightShadow }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};box-shadow:{{ darkShadow }}" onClick="{{ setDark }}">Dark</span>
+      </div>
+    </div>
+    <h1 style="font-size:44px;line-height:1.06;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:22ch">Sixteen excellent screens that do not yet add up to one product</h1>
+    <p style="font-size:17px;line-height:1.65;max-width:78ch;margin:20px 0 0;color:var(--ink-2);text-wrap:pretty">Each module is individually strong: the thinking is rigorous, the density is right, the AI is accountable, and the writing carries argument rather than filler. Measured against each other, though, they are sixteen dialects of the same language. Nobody consumes the App Shell. Every screen re-declares the palette by hand. The type scale has thirty-six sizes where the system specifies nine, and forty-four per cent of corner radii are off-scale. None of this is visible in a screenshot; all of it is visible in a demo where you move between modules.</p>
+    <p style="font-size:17px;line-height:1.65;max-width:78ch;margin:14px 0 0;color:var(--ink-2)">The good news is the shape of the problem. There is no disagreement about what the product should look like — the drift is accumulated convenience, not competing opinions. That means the refactor is mostly mechanical, and can be done without redesigning a single module.</p>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:34px">
+      <sc-for list="{{ scorecard }}" as="s" hint-placeholder-count="6">
+        <div style="padding:16px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="font-size:11.5px;color:var(--ink-3)">{{ s.k }}</div>
+          <div style="font-size:26px;font-weight:700;letter-spacing:-0.028em;margin-top:7px;color:{{ s.color }}">{{ s.grade }}</div>
+          <div style="font-size:11.5px;line-height:1.5;color:var(--ink-2);margin-top:6px">{{ s.note }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </header>
+
+  <section id="r1" data-screen-label="1 Measured drift" style="max-width:1280px;margin:0 auto;padding:36px 40px 0;border-top:1px solid var(--line-soft)">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">01</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">What the code measures</h2>
+      <span style="font-size:12.5px;color:var(--ink-3)">Counted across all 16 screens, not sampled</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:22px">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <span style="font-size:15px;font-weight:600;letter-spacing:-0.016em">Type scale — 36 sizes in use, 9 specified</span>
+          <span style="margin-left:auto;font-size:11.5px;color:var(--risk);font-weight:600">159 instances below 10.5px</span>
+        </div>
+        <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">The two most-used sizes in the entire product — 11.5px and 11px, 965 instances between them — are not in the v2 scale at all. The specified body size, 14px, appears 42 times. In practice the product runs one to two steps smaller than the system claims, and the long tail reaches 8px.</p>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-top:16px">
+          <sc-for list="{{ sizeBars }}" as="b" hint-placeholder-count="12">
+            <div style="display:grid;grid-template-columns:52px 1fr 48px;gap:10px;align-items:center">
+              <span style="font-size:11.5px;font-variant-numeric:tabular-nums;color:{{ b.color }};font-weight:{{ b.weight }}">{{ b.label }}</span>
+              <span style="height:9px;border-radius:5px;background:{{ b.fill }};width:{{ b.w }}"></span>
+              <span style="font-size:11px;font-variant-numeric:tabular-nums;color:var(--ink-3);text-align:right">{{ b.n }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:14px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:12px;height:6px;border-radius:3px;background:var(--brand)"></span>In the v2 scale</span>
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:12px;height:6px;border-radius:3px;background:var(--warn)"></span>Off-scale, widely used</span>
+          <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:12px;height:6px;border-radius:3px;background:var(--risk)"></span>Below the legibility floor</span>
+        </div>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:22px">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <span style="font-size:15px;font-weight:600;letter-spacing:-0.016em">Radius — 15 values in use, 6 specified</span>
+          <span style="margin-left:auto;font-size:11.5px;color:var(--warn);font-weight:600">44% off-scale</span>
+        </div>
+        <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">The most instructive number here is 14px: used 157 times as the card radius against the specified 12px. The product disagreed with the spec and was right — 14 sits better under these densities. The 5/7/9/10/11 cluster is not a disagreement, it is noise.</p>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-top:16px">
+          <sc-for list="{{ radiusBars }}" as="b" hint-placeholder-count="10">
+            <div style="display:grid;grid-template-columns:52px 1fr 48px;gap:10px;align-items:center">
+              <span style="font-size:11.5px;font-variant-numeric:tabular-nums;color:{{ b.color }};font-weight:{{ b.weight }}">{{ b.label }}</span>
+              <span style="height:9px;border-radius:5px;background:{{ b.fill }};width:{{ b.w }}"></span>
+              <span style="font-size:11px;font-variant-numeric:tabular-nums;color:var(--ink-3);text-align:right">{{ b.n }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px">
+      <sc-for list="{{ driftStats }}" as="d" hint-placeholder-count="8">
+        <div style="padding:18px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="font-size:24px;font-weight:700;letter-spacing:-0.028em;font-variant-numeric:tabular-nums;color:{{ d.color }}">{{ d.v }}</div>
+          <div style="font-size:12.5px;font-weight:600;margin-top:6px">{{ d.k }}</div>
+          <div style="font-size:11.5px;line-height:1.5;color:var(--ink-2);margin-top:5px">{{ d.note }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="r2" data-screen-label="2 Findings" style="max-width:1280px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">02</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Findings</h2>
+      <span style="font-size:12.5px;color:var(--ink-3)">24 findings across the ten categories, with the evidence for each</span>
+    </div>
+    <div style="margin-top:22px;display:flex;flex-direction:column;gap:14px">
+      <sc-for list="{{ findingGroups }}" as="g" hint-placeholder-count="10">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:11px;padding:14px 20px;background:var(--sunken);border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+            <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">{{ g.title }}</span>
+            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:{{ g.sevBg }};color:{{ g.sevFg }};white-space:nowrap">{{ g.severity }}</span>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">{{ g.summary }}</span>
+          </div>
+          <div style="overflow-x:auto">
+            <div style="min-width:860px">
+              <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="3">
+                <div style="display:grid;grid-template-columns:58px 1fr 1fr 128px;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;line-height:1.55;align-items:start">
+                  <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-4)">{{ i.id }}</span>
+                  <div>
+                    <div style="font-weight:600;font-size:13px">{{ i.what }}</div>
+                    <div style="color:var(--ink-3);margin-top:4px">{{ i.evidence }}</div>
+                  </div>
+                  <div style="color:var(--ink-2)">{{ i.fix }}</div>
+                  <div style="text-align:right">
+                    <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:{{ i.prioBg }};color:{{ i.prioFg }};white-space:nowrap">{{ i.prio }}</span>
+                    <div style="font-size:11px;color:var(--ink-4);margin-top:5px">{{ i.effort }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="r3" data-screen-label="3 Plan" style="max-width:1280px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">03</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Prioritised plan</h2>
+      <span style="font-size:12.5px;color:var(--ink-3)">Four passes, in this order. Each is independently shippable.</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px;align-items:start">
+      <sc-for list="{{ passes }}" as="p" hint-placeholder-count="4">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid {{ p.border }};box-shadow:var(--e1);overflow:hidden;display:flex;flex-direction:column">
+          <div style="padding:16px 18px;border-bottom:1px solid var(--line-soft);background:{{ p.headBg }}">
+            <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:{{ p.tagBg }};color:{{ p.tagFg }}">{{ p.tag }}</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">{{ p.effort }}</span>
+            </div>
+            <div style="font-size:15px;font-weight:600;letter-spacing:-0.016em;margin-top:9px">{{ p.title }}</div>
+            <div style="font-size:12px;line-height:1.55;color:var(--ink-2);margin-top:6px">{{ p.why }}</div>
+          </div>
+          <div style="padding:14px 18px;flex:1">
+            <sc-for list="{{ p.items }}" as="i" hint-placeholder-count="5">
+              <div style="display:flex;gap:9px;padding:7px 0;font-size:12.5px;line-height:1.5">
+                <span style="color:{{ p.dot }};flex:none">•</span>
+                <span style="color:var(--ink-2)">{{ i }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:12px 18px;border-top:1px solid var(--line-soft);font-size:11.5px;line-height:1.5;color:var(--ink-3)">{{ p.done }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="r4" data-screen-label="4 One language" style="max-width:1280px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">04</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">The single language</h2>
+      <span style="font-size:12.5px;color:var(--ink-3)">What v2.1 would specify, chosen from what the product already votes for</span>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:76ch;margin:12px 0 0;color:var(--ink-2)">Where the practice is better than the spec, amend the spec. Where the practice is only noise, force the code. That distinction is the whole refactor: it keeps every screen looking like itself while removing the drift that makes them look like different products.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Amend the system to match practice</div>
+        <sc-for list="{{ amend }}" as="a" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:13px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:baseline">
+            <div>
+              <div style="font-weight:600">{{ a.what }}</div>
+              <div style="color:var(--ink-3);font-size:11.5px;margin-top:3px">{{ a.was }}</div>
+            </div>
+            <div>
+              <div style="font-weight:600;color:var(--pos)">{{ a.now }}</div>
+              <div style="color:var(--ink-2);font-size:11.5px;margin-top:3px">{{ a.why }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Force the code to match the system</div>
+        <sc-for list="{{ force }}" as="f" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:13px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:baseline">
+            <div>
+              <div style="font-weight:600">{{ f.what }}</div>
+              <div style="color:var(--ink-3);font-size:11.5px;margin-top:3px">{{ f.was }}</div>
+            </div>
+            <div>
+              <div style="font-weight:600;color:var(--brand-ink)">{{ f.now }}</div>
+              <div style="color:var(--ink-2);font-size:11.5px;margin-top:3px">{{ f.why }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+        <span style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Canonical component inventory</span>
+        <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">18 components replace roughly 90 hand-built variants</span>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:880px">
+          <div style="display:grid;grid-template-columns:190px 74px 1fr 1fr;gap:16px;padding:12px 20px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Component</div><div style="text-align:right">Built</div><div>Where it is duplicated today</div><div>Canonical definition</div>
+          </div>
+          <sc-for list="{{ inventory }}" as="c" hint-placeholder-count="18">
+            <div style="display:grid;grid-template-columns:190px 74px 1fr 1fr;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;line-height:1.55">
+              <div style="font-weight:600">{{ c.name }}</div>
+              <div style="text-align:right;font-variant-numeric:tabular-nums;color:{{ c.color }};font-weight:600">{{ c.count }}</div>
+              <div style="color:var(--ink-3)">{{ c.where }}</div>
+              <div style="color:var(--ink-2)">{{ c.def }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="r5" data-screen-label="5 Protect" style="max-width:1280px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">05</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">What must not change</h2>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:76ch;margin:12px 0 0;color:var(--ink-2)">A consistency pass is the most common way to make a good product worse. These are the things that are working, that a refactor would quietly flatten, and that I would reject a change to.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px">
+      <sc-for list="{{ protect }}" as="p" hint-placeholder-count="9">
+        <div style="display:flex;gap:11px;padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--pos-tint)">
+          <span style="color:var(--pos);flex:none;font-weight:700">✓</span>
+          <div>
+            <div style="font-size:12.5px;font-weight:600">{{ p.t }}</div>
+            <div style="font-size:12px;line-height:1.55;color:var(--ink-2);margin-top:5px">{{ p.b }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="r6" data-screen-label="6 Sequence" style="max-width:1280px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">06</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Sequence &amp; acceptance</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-top:22px;align-items:start">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:22px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Order of work</div>
+        <div style="position:relative;padding-left:24px;margin-top:16px">
+          <div style="position:absolute;left:6px;top:6px;bottom:8px;width:1.5px;border-radius:2px;background:var(--line-soft)"></div>
+          <sc-for list="{{ sequence }}" as="s" hint-placeholder-count="7">
+            <div style="position:relative;padding-bottom:16px">
+              <span style="position:absolute;left:-22px;top:4px;width:9px;height:9px;border-radius:999px;background:{{ s.dot }};box-shadow:0 0 0 3px var(--surface)"></span>
+              <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+                <span style="font-size:13px;font-weight:600">{{ s.step }}</span>
+                <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--sunken);color:var(--ink-2)">{{ s.tag }}</span>
+              </div>
+              <div style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin-top:4px">{{ s.detail }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:22px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Definition of done — mechanically checkable</div>
+        <sc-for list="{{ acceptance }}" as="a" hint-placeholder-count="8">
+          <div style="display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px;line-height:1.55">
+            <span style="width:15px;height:15px;flex:none;border-radius:4px;border:1.5px solid var(--line);margin-top:2px"></span>
+            <span style="color:var(--ink-2)">{{ a }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:24px;border-radius:14px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e1);display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap">
+      <span style="width:34px;height:34px;flex:none;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700">→</span>
+      <div style="min-width:280px;flex:1">
+        <div style="font-size:17px;font-weight:600;letter-spacing:-0.018em">Recommendation</div>
+        <p style="font-size:13.5px;line-height:1.65;color:var(--ink-2);margin:8px 0 0;max-width:90ch">Approve passes 1 and 2 now. They are mechanical, touch every screen, change no layout decision, and are where the entire perceived gain in craft comes from: one token module, one shell, one type scale, one radius scale, one control height set. Pass 3 — the shared component library and the AI surface audit — is a week of real work and should follow once the foundation stops moving. Pass 4 is optional polish and can wait for a quarter.</p>
+        <p style="font-size:13.5px;line-height:1.65;color:var(--ink-2);margin:10px 0 0;max-width:90ch">Tell me which passes to run and I will execute them across all sixteen screens in one sweep, module by module, without redesigning any of them.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+    });
+  }
+
+  bars(rows, max) {
+    return rows.map(([label, n, kind]) => ({
+      label, n,
+      w: Math.max(2, Math.round(n / max * 100)) + '%',
+      fill: kind === 'ok' ? 'var(--brand)' : kind === 'bad' ? 'var(--risk)' : 'var(--warn)',
+      color: kind === 'bad' ? 'var(--risk)' : 'var(--ink-2)',
+      weight: kind === 'ok' ? 600 : 400,
+    }));
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    const prio = { P0: ['var(--risk-tint)', 'var(--risk)'], P1: ['var(--warn-tint)', 'var(--warn)'], P2: ['var(--brand-tint)', 'var(--brand-ink)'], P3: ['var(--sunken)', 'var(--ink-3)'] };
+    const f = (id, what, evidence, fix, p, effort) => ({ id, what, evidence, fix, prio: p, effort, prioBg: prio[p][0], prioFg: prio[p][1] });
+
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      lightShadow: dark ? 'none' : 'var(--e1)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+      darkShadow: dark ? 'var(--e1)' : 'none',
+
+      scorecard: [
+        { k: 'Concept', grade: 'A', note: 'The argument each screen makes is genuinely first-rate.', color: 'var(--pos)' },
+        { k: 'Information design', grade: 'A−', note: 'Density, hierarchy and evidence handling are consistent in spirit.', color: 'var(--pos)' },
+        { k: 'Visual consistency', grade: 'C+', note: '36 type sizes, 15 radii, 5 control heights.', color: 'var(--warn)' },
+        { k: 'Structural reuse', grade: 'D', note: 'Nothing is shared. 16 copies of the palette.', color: 'var(--risk)' },
+        { k: 'Accessibility', grade: 'C', note: '159 instances below 10.5px; spec says 11px floor.', color: 'var(--warn)' },
+        { k: 'Navigability', grade: 'C−', note: 'No screen consumes the shell; you cannot move between modules.', color: 'var(--warn)' },
+      ],
+
+      sizeBars: this.bars([
+        ['11.5px', 525, 'warn'], ['11px', 440, 'warn'], ['12.5px', 316, 'ok'], ['12px', 302, 'ok'],
+        ['10.5px', 226, 'warn'], ['13px', 154, 'warn'], ['13.5px', 111, 'warn'], ['10px', 96, 'bad'],
+        ['16px', 55, 'ok'], ['14px', 42, 'ok'], ['9–9.5px', 60, 'bad'], ['8–8.5px', 3, 'bad'],
+      ], 525),
+
+      radiusBars: this.bars([
+        ['8px', 206, 'ok'], ['999px', 167, 'ok'], ['14px', 157, 'warn'], ['6px', 149, 'ok'],
+        ['5px', 142, 'warn'], ['7px', 120, 'warn'], ['16px', 89, 'ok'], ['12px', 77, 'ok'],
+        ['9px', 62, 'warn'], ['10/11px', 39, 'warn'],
+      ], 206),
+
+      driftStats: [
+        { v: '16', k: 'Copies of the palette', note: 'Every screen re-declares the same 24 tokens by hand. One brand change is sixteen edits.', color: 'var(--risk)' },
+        { v: '12', k: 'Page-title sizes', note: '25, 26, 27, 28, 29, 30, 32, 36, 44, 46, 48, 52px. Nothing tells you which module you are in more loudly.', color: 'var(--risk)' },
+        { v: '5', k: 'Control heights', note: '26, 28, 30, 32, 34px buttons and chips in circulation. The system specifies three.', color: 'var(--warn)' },
+        { v: '34', k: 'Padding values', note: 'The most common is 13px — a value on no grid the system defines.', color: 'var(--warn)' },
+        { v: '19', k: 'Gap values', note: '327 instances use odd numbers (7, 9, 11, 13) that break the 4-point rhythm.', color: 'var(--warn)' },
+        { v: '4', k: 'Content widths', note: '1240, 1300, 1320, 1420px, plus eleven screens with no maximum at all.', color: 'var(--warn)' },
+        { v: '0', k: 'Screens using the shell', note: 'The App Shell is a specification nothing consumes. Fifteen bespoke rails exist instead.', color: 'var(--risk)' },
+        { v: '~90', k: 'Hand-built variants', note: 'Of 18 real components: 13 evidence panels, 10 confidence displays, 9 timelines, 16 column heads.', color: 'var(--risk)' },
+      ],
+
+      findingGroups: [
+        { title: 'Navigation & product structure', severity: 'Critical', summary: 'The product cannot currently be walked through', sev: 'crit', items: [
+          f('NAV-1', 'No screen mounts the App Shell', 'All 16 screens define their own rail or none; the shell exists only as a spec document.', 'Extract the shell into one component every screen imports, with the module as a slot.', 'P0', '1 day'),
+          f('NAV-2', 'Modules are unreachable from each other', 'No screen links to another. A demo requires opening files by hand.', 'Wire the rail\u2019s nine destinations to the real screens; add the ⌘K palette to the shell.', 'P0', '4 hours'),
+          f('NAV-3', 'Theme control appears in four different places', 'Rail top, page banner right, header right, section header — and it is a product control, not a spec toy.', 'Move it into the shell utility bar once. Remove all 16 local copies.', 'P1', '2 hours'),
+          f('NAV-4', 'Breadcrumbs exist on three screens only', 'Account 360, Opportunity and Companies have them; the other thirteen do not.', 'Breadcrumb belongs to the shell, driven by route, not to the page.', 'P1', '3 hours'),
+        ]},
+        { title: 'Typography', severity: 'High', summary: '36 sizes in use against 9 specified', sev: 'high', items: [
+          f('TYP-1', 'Twelve different page-title sizes', '25px on six screens, 26 on four, then 27, 28, 29, 30, 32, 36, 44, 46, 48, 52.', 'One page title: 26/700/−0.026em. Document heroes 40. Nothing else above 30.', 'P0', '2 hours'),
+          f('TYP-2', 'The real body size is 11.5px, not 14px', '11.5px and 11px account for 965 declarations; 14px appears 42 times.', 'Re-baseline the scale to what the product actually needs, then hold it: 11/12/12.5/13.5/15/18/26/40.', 'P0', '1 day'),
+          f('TYP-3', '159 instances below the 10.5px floor', 'Down to 8px in Companies and CRM Integrations. Meta text, counts, timestamps.', 'Nothing below 11px anywhere. The information those labels carry survives the change.', 'P0', '4 hours'),
+          f('TYP-4', 'Uppercase eyebrow used at four sizes', '10.5, 11, 11.5 and 12px with three different letter-spacings.', 'One eyebrow: 11/600/+0.06em/uppercase. Table column heads share it.', 'P1', '2 hours'),
+        ]},
+        { title: 'Colour', severity: 'Medium', summary: 'Consistent by luck, not by structure', sev: 'med', items: [
+          f('COL-1', 'The palette is copy-pasted 16 times', '45–67 hard hex values per file inside a duplicated tokens() function.', 'One tokens module imported by every screen. No hex literals in any screen file.', 'P0', '1 day'),
+          f('COL-2', 'Chart series defined in three places', 'Design System, Executive Dashboard and Opportunity each declare their own series order.', 'Series live in the token module and are referenced by index everywhere.', 'P1', '3 hours'),
+          f('COL-3', 'Tint pills carry three border treatments', 'Some have a hairline in the family hue, some none, some a full-strength border.', 'One pill: tint fill, no border, 600 label, optional dot. Outline reserved for filters.', 'P1', '4 hours'),
+        ]},
+        { title: 'Spacing & layout', severity: 'High', summary: '34 padding values, 19 gap values, 4 content widths', sev: 'high', items: [
+          f('SPC-1', 'Card padding varies 15–22px across modules', 'The most common value, 13px, is on no grid; 20px is the specified card padding.', 'Card 20px, dense card 16px, page section 24px. Three values, no others.', 'P1', '1 day'),
+          f('SPC-2', 'Odd gaps break the rhythm', '327 instances of 7, 9, 11 and 13px gaps sitting beside 8, 12 and 16.', 'Snap every gap to 4/8/12/16/24. Mechanical find-and-replace with visual diff.', 'P1', '4 hours'),
+          f('SPC-3', 'Four content maxima and eleven screens with none', '1240, 1300, 1320, 1420px. Line lengths differ by module on the same monitor.', 'One content maximum in the shell: 1440px with 40px margins.', 'P0', '2 hours'),
+          f('SPC-4', 'Section rhythm varies 36–72px', 'Between-section padding differs within single files as well as between them.', 'One rhythm: 52px between sections, 36px after a page header.', 'P2', '3 hours'),
+        ]},
+        { title: 'Components & visual debt', severity: 'Critical', summary: '~90 hand-built variants of 18 components', sev: 'crit', items: [
+          f('CMP-1', 'Every screen rebuilds the same primitives', '13 evidence panels, 10 confidence displays, 9 timelines, 16 column-head treatments, 16 theme toggles.', 'Build the 18-component library in one file; screens compose it. Nothing bespoke without a written reason.', 'P2', '1 week'),
+          f('CMP-2', 'Five control heights in circulation', '26, 28, 30, 32 and 34px, often adjacent in the same toolbar.', 'Three: 26 compact, 34 default, 40 prominent. Chips match the control beside them.', 'P1', '4 hours'),
+          f('CMP-3', 'Card radius contradicts the spec, consistently', '14px used 157 times against a specified 12px — the practice is better than the spec.', 'Amend the scale to 4/6/8/14/18/999 and remove 5/7/9/10/11 entirely.', 'P0', '3 hours'),
+          f('CMP-4', 'Table plane treatment differs per module', 'Companies, Settings, CRM and Reports each style header, hover and pinning slightly differently.', 'One table component with density, pinning, hover and AI-summary-row as parameters.', 'P2', '3 days'),
+        ]},
+        { title: 'Accessibility', severity: 'High', summary: 'AA is claimed; the type floor breaks it in practice', sev: 'high', items: [
+          f('A11Y-1', 'Type below the readable floor', '159 declarations under 10.5px carrying real information, not decoration.', 'Raise to 11px minimum. Where that breaks a layout, the layout was too dense.', 'P0', '4 hours'),
+          f('A11Y-2', 'Focus rings specified but rarely drawn', 'The spec defines a 2px ring at 2px offset; the screens show it on two inputs total.', 'One focus style in the shared component set, applied by every interactive element.', 'P1', '1 day'),
+          f('A11Y-3', 'Hover-only affordances in tables', 'Row actions and expanders in Companies and Signal Center appear on hover with no keyboard path shown.', 'Persistent affordance at the row end, or a documented keyboard path; never hover alone.', 'P1', '4 hours'),
+          f('A11Y-4', '2–3px indicator bars used as meaning', 'Score bars, engagement bars and edge markers at 2–3px height.', 'Minimum 5px for any bar carrying a value, with the number always adjacent.', 'P2', '2 hours'),
+        ]},
+        { title: 'Workflow friction', severity: 'Medium', summary: 'Each module is coherent; the paths between them are not', sev: 'med', items: [
+          f('FLO-1', 'The same object opens differently per module', 'An account opens as a row expansion, a drawer, or a full page depending on where you clicked.', 'One rule: preview in a drawer, open in a page, and the drawer always offers "open full".', 'P1', '1 day'),
+          f('FLO-2', 'Selection does not survive navigation', 'Selecting 41 accounts and drilling into one loses the set.', 'Selection is view state and belongs in the URL, as the table spec already requires.', 'P2', '1 day'),
+          f('FLO-3', 'Three different bulk-action bars', 'Companies, Signal Center and Workflow each place and word theirs differently.', 'One bulk bar, docked bottom-centre, always naming the count and offering select-all-matching.', 'P1', '4 hours'),
+          f('FLO-4', 'AI entry points vary per surface', 'Explain, Ask, Summarise and Draft appear with different labels, icons and positions.', 'The six verbs, worded identically, in the position the Copilot spec defines.', 'P1', '1 day'),
+        ]},
+        { title: 'Unnecessary components', severity: 'Low', summary: 'Things to delete rather than harmonise', sev: 'low', items: [
+          f('DEL-1', 'Per-screen theme toggles', '16 copies of a control that belongs to the shell.', 'Delete 16, keep one.', 'P1', '1 hour'),
+          f('DEL-2', 'Three sparkline implementations', 'Executive Dashboard, Design System and Account 360 each draw their own.', 'One sparkline, one API, fixed height.', 'P2', '2 hours'),
+          f('DEL-3', 'Two pagination patterns', 'Numbered pages in Companies, "rows n of m" elsewhere.', 'Numbered pages for tables, load-more for feeds. Never both in one product.', 'P2', '2 hours'),
+          f('DEL-4', 'Decorative dividers inside cards', 'Several cards use a hairline where 12px of space would do the same work.', 'Remove. Space groups; rules separate.', 'P3', '2 hours'),
+        ]},
+      ].map(g => Object.assign(g, {
+        sevBg: { crit: 'var(--risk-tint)', high: 'var(--warn-tint)', med: 'var(--brand-tint)', low: 'var(--sunken)' }[g.sev],
+        sevFg: { crit: 'var(--risk)', high: 'var(--warn)', med: 'var(--brand-ink)', low: 'var(--ink-3)' }[g.sev],
+      })),
+
+      passes: [
+        { tag: 'Pass 1', title: 'One foundation', effort: '2 days', why: 'Mechanical, invisible individually, transformative in aggregate.',
+          items: ['Single token module; delete 16 palette copies', 'Re-baseline the type scale to eight sizes', 'Amend the radius scale to 4/6/8/14/18/999', 'Raise every size below 11px', 'One content width and page rhythm'],
+          done: 'No hex literal and no off-scale value exists in any screen file.',
+          border: 'var(--risk-tint)', headBg: 'var(--risk-tint)', tagBg: 'var(--risk)', tagFg: '#fff', dot: 'var(--risk)' },
+        { tag: 'Pass 2', title: 'One shell', effort: '2 days', why: 'Turns sixteen documents into a product you can walk through.',
+          items: ['Extract the App Shell as a real component', 'Every screen mounts inside it', 'Rail destinations wired to real screens', 'Breadcrumb, search, palette, theme live in the shell', 'One page-header pattern with title, facts, actions'],
+          done: 'You can start at the dashboard and reach every module without opening a file.',
+          border: 'var(--warn-tint)', headBg: 'var(--warn-tint)', tagBg: 'var(--warn)', tagFg: '#fff', dot: 'var(--warn)' },
+        { tag: 'Pass 3', title: 'One component set', effort: '1 week', why: 'Where scalability comes from. Also where regressions hide, so it goes third.',
+          items: ['Build the 18 canonical components', 'Replace ~90 hand-built variants', 'One table with density and pinning parameters', 'One AI surface set across all six verbs', 'One focus and hover treatment'],
+          done: 'A new module can be built without writing a new primitive.',
+          border: 'var(--brand-line)', headBg: 'var(--brand-tint)', tagBg: 'var(--brand)', tagFg: '#fff', dot: 'var(--brand)' },
+        { tag: 'Pass 4', title: 'One set of behaviours', effort: '3 days', why: 'The last layer people notice and the first they feel.',
+          items: ['Selection survives navigation', 'One drawer-versus-page rule', 'One bulk bar', 'Motion audit against the three durations', 'Empty, loading and error parity on every screen'],
+          done: 'The same gesture produces the same result in every module.',
+          border: 'var(--line-soft)', headBg: 'var(--sunken)', tagBg: 'var(--ink-3)', tagFg: '#fff', dot: 'var(--ink-3)' },
+      ],
+
+      amend: [
+        { what: 'Card radius', was: 'Spec: 12px', now: '14px', why: 'Used 157 times. It reads better at these densities.' },
+        { what: 'Body size', was: 'Spec: 14px / 1.6', now: '13.5px / 1.55', why: 'The product needs the density; 14px was aspirational.' },
+        { what: 'Label size', was: 'Spec: 12.5px', now: '12.5px, confirmed', why: '316 uses. The one scale step the product kept.' },
+        { what: 'Caption size', was: 'Spec: 12px', now: '11.5px', why: '525 uses. Formalise it and stop the 10.5/11 slide below it.' },
+        { what: 'Table plane radius', was: 'Spec: 16px', now: '18px', why: 'Large planes need more; 16 looks like a card that grew.' },
+        { what: 'Page title', was: 'Spec: 26px title / 40px display', now: '26px everywhere', why: 'Documents may use 40; product pages never exceed 26.' },
+      ],
+
+      force: [
+        { what: 'Small radii', was: '5, 7, 9, 10, 11px — 389 uses', now: '4, 6, 8px only', why: 'Pure noise. No screen chose these deliberately.' },
+        { what: 'Type below 11px', was: '159 declarations, down to 8px', now: '11px floor', why: 'Legibility, and the spec already says so.' },
+        { what: 'Control heights', was: '26, 28, 30, 32, 34px', now: '26, 34, 40px', why: 'Adjacent controls of different heights read as a bug.' },
+        { what: 'Odd gaps', was: '7, 9, 11, 13px — 327 uses', now: '4, 8, 12, 16, 24px', why: 'The 4-point grid is what makes density feel intentional.' },
+        { what: 'Palette declarations', was: '16 hand-written copies', now: 'One imported module', why: 'A brand change must be one edit, not sixteen.' },
+        { what: 'Content width', was: '1240–1420px, or none', now: '1440px, 40px margins', why: 'Line length should not depend on which module you opened.' },
+      ],
+
+      inventory: [
+        ['App shell', 16, 'Every screen rolls its own rail or omits one', 'Rail, top bar, breadcrumb, utility panel, content slot'],
+        ['Page header', 14, 'Title, facts and actions arranged differently per module', 'Title 26, fact strip, action bar, optional AI verdict line'],
+        ['Metric card', 11, 'Executive Dashboard, Account 360, Opportunity, Signal Center', 'Label, value, delta, basis, optional sparkline, explain'],
+        ['Data table', 7, 'Companies, Settings, CRM, Reports, ICP, Signal, Copilot', 'Density, pinning, grouping, inline edit, AI summary row'],
+        ['Status pill', 16, 'Every screen; three border treatments in circulation', 'Tint fill, no border, 600 label, optional dot'],
+        ['Confidence display', 10, 'Copilot, Research, Opportunity, Account 360, Signal', 'Five pips plus a stated basis'],
+        ['Evidence panel', 13, 'Almost everywhere, with different numbering and quoting', 'Numbered source, meta, quoted excerpt, open action'],
+        ['Reasoning chain', 9, 'Copilot, Research, Opportunity, Account 360', 'Ordered steps with weights, collapsed by default'],
+        ['Timeline', 9, 'Account 360, People, Signal, Copilot, Opportunity', 'Dot, actor, action, time, tag, body — AI events tinted'],
+        ['AI insight card', 8, 'Dashboard, Account 360, Companies, Signal', 'Badge, claim, basis, two actions, confidence'],
+        ['Agent run', 3, 'Copilot, Workflow, Design System', 'Plan, per-step scope tag, approval gates, reversibility'],
+        ['Drawer / panel', 6, 'Account 360, Companies, Copilot, Signal', '420px, non-modal, pushes content, scope chips'],
+        ['Command palette', 4, 'Global Search, Copilot, Shell, Design System', 'One input, three intents, intent disclosed before action'],
+        ['Filter bar', 5, 'Companies, Signal, Search, Reports, ICP', 'Outlined for local, tinted for global, AI-derived marked'],
+        ['Bulk action bar', 3, 'Companies, Signal, Workflow', 'Docked, count named, select-all-matching offered'],
+        ['Empty / loading / error', 12, 'Repeated in every module with different wording', 'One tile, one skeleton, one scoped error with correlation ID'],
+        ['Sparkline', 3, 'Dashboard, Design System, Account 360', 'Fixed 30px height, one API, series from tokens'],
+        ['Theme toggle', 16, 'Every screen, in four different positions', 'Shell utility bar only'],
+      ].map(([name, count, where, def]) => ({ name, count, where, def, color: count >= 9 ? 'var(--risk)' : count >= 5 ? 'var(--warn)' : 'var(--ink-2)' })),
+
+      protect: [
+        { t: 'The density', b: 'Tables at 44px rows and 11.5px meta are why this product beats a CRM. Consistency work must not inflate them.' },
+        { t: 'The writing', b: 'Every screen argues rather than labels. That voice is the strongest asset here and no refactor should touch a sentence.' },
+        { t: 'The AI contract', b: 'Scoped, cited, calibrated, proposing, reversible. This is the product\u2019s real differentiator. Harmonise its appearance, never its rules.' },
+        { t: 'Deliberate asymmetries', b: 'The inspector rail on Account 360 and Opportunity is wider than elsewhere because those pages carry evidence. Keep it.' },
+        { t: 'Uncomfortable honesty', b: 'The 29% precision rule, the excluded source, the unmapped Probability field. These are the moments an evaluator trusts.' },
+        { t: 'Warm neutrals', b: 'The single decision that most separates v2 from ERP. No screen should drift back to cool grey for contrast reasons.' },
+        { t: 'Reserved hues', b: 'Blue for brand, indigo for intelligence, warm red for risk. Three hues, never interchangeable, never decorative.' },
+        { t: 'Spec documents as documents', b: 'The Design System and Copilot pages may keep a 40px hero. They are not product pages and should not pretend to be.' },
+        { t: 'Per-module vocabulary', b: 'Signals, plays, sweeps, plans. Domain language differs by module for good reason; only interface language must converge.' },
+      ],
+
+      sequence: [
+        { step: 'Freeze the surface', tag: 'Half a day', detail: 'No new screens until pass 1 lands, or the drift compounds while we fix it.', dot: 'var(--risk)' },
+        { step: 'Token module + scale amendment', tag: 'Pass 1', detail: 'Publish v2.1 of the design system with the amended radius and type scales, then generate the module.', dot: 'var(--risk)' },
+        { step: 'Sweep all 16 screens mechanically', tag: 'Pass 1', detail: 'Find-and-replace with a visual diff per screen. No layout judgement in this step.', dot: 'var(--risk)' },
+        { step: 'Extract and mount the shell', tag: 'Pass 2', detail: 'One screen first — Companies, since it is the most typical — then the rest.', dot: 'var(--warn)' },
+        { step: 'Component library', tag: 'Pass 3', detail: 'Build against the two most demanding consumers, Account 360 and Companies, before generalising.', dot: 'var(--brand)' },
+        { step: 'Behaviour parity', tag: 'Pass 4', detail: 'Selection, drawers, bulk actions, motion, states.', dot: 'var(--ink-3)' },
+        { step: 'Re-audit', tag: 'Half a day', detail: 'Re-run the same measurements. The numbers in section 01 are the regression test.', dot: 'var(--pos)' },
+      ],
+
+      acceptance: [
+        'No hex colour literal appears in any screen file.',
+        'Every font-size resolves to one of eight scale steps; none below 11px.',
+        'Every border-radius resolves to 4, 6, 8, 14, 18 or 999.',
+        'Every gap and padding is a multiple of four.',
+        'Exactly three control heights exist across the product.',
+        'Every screen mounts the shell; every rail destination resolves.',
+        'One theme toggle exists in the entire product.',
+        'The same object opens the same way from every module.',
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

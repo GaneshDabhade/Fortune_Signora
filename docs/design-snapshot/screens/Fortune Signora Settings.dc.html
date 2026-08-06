@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2pulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:6px 20px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+    <span style="font-weight:600">Settings</span>
+    <span style="color:var(--ink-2)">Every change is attributed, reversible and visible in the audit log</span>
+    <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft)">
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};white-space:nowrap" onClick="{{ setLight }}">Light</span>
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};white-space:nowrap" onClick="{{ setDark }}">Dark</span>
+    </span>
+  </div>
+
+  <div style="display:flex;align-items:flex-start">
+    <nav style="width:238px;flex:none;position:sticky;top:0;height:100vh;overflow:auto;background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:16px 12px 40px">
+      <div style="display:flex;align-items:center;gap:10px;padding:0 9px 14px">
+        <div style="width:28px;height:28px;flex:none;border-radius:8px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:10.5px;font-weight:700">NG</div>
+        <div style="min-width:0">
+          <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Northwind Global</div>
+          <div style="font-size:10.5px;color:var(--ink-3)">Enterprise · 312 seats</div>
+        </div>
+      </div>
+      <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="4">
+        <div style="margin-bottom:16px">
+          <div style="font-size:10.5px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4);padding:0 9px 6px">{{ g.label }}</div>
+          <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="5">
+            <a href="{{ i.href }}" style="display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:8px;font-size:12.5px;text-decoration:none;color:{{ i.color }};background:{{ i.bg }};font-weight:{{ i.weight }}" style-hover="background:var(--sunken)">
+              <span>{{ i.label }}</span>
+              <span style="margin-left:auto;font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:{{ i.badgeBg }};color:{{ i.badgeFg }};white-space:nowrap">{{ i.badge }}</span>
+            </a>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:10px 20px;border-bottom:1px solid var(--line-soft);background:var(--surface);flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:7px;font-size:13px;min-width:0">
+          <span style="color:var(--ink-3)">Settings</span><span style="color:var(--ink-4)">/</span>
+          <span style="font-weight:600">Access &amp; security</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap">View audit log</span>
+          <div style="width:32px;height:32px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:600">MR</div>
+        </div>
+      </div>
+
+      <div style="padding:16px 20px 30px;display:grid;grid-template-columns:minmax(0,1fr) 328px;gap:16px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--warn);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:15px 18px;background:var(--warn-tint);flex-wrap:wrap">
+              <span style="width:24px;height:24px;flex:none;border-radius:7px;background:var(--warn);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">!</span>
+              <div style="min-width:240px;flex:1">
+                <div style="font-size:13.5px;font-weight:600">Three settings need attention</div>
+                <div style="font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.55">SCIM deprovisioning is off while SSO is enforced, so leavers keep access until removed by hand. Two API keys have not rotated in over a year. One role grants export on data its holders cannot see in the UI.</div>
+              </div>
+              <span style="margin-left:auto;flex:none;display:inline-flex;align-items:center;min-height:32px;padding:6px 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600;white-space:nowrap">Review all three</span>
+            </div>
+          </div>
+
+          <div id="workspace" style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Workspace</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Identity, region and fiscal calendar</span>
+              <span style="margin-left:auto;font-size:11px;color:var(--ink-3);white-space:nowrap">Changing region requires support</span>
+            </div>
+            <sc-for list="{{ workspaceFields }}" as="w" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr) 100px;gap:14px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line-soft)">
+                <div style="min-width:0">
+                  <div style="font-size:12.5px;font-weight:600">{{ w.label }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-3);line-height:1.4">{{ w.note }}</div>
+                </div>
+                <div style="min-width:0">
+                  <span style="display:inline-flex;align-items:center;min-height:30px;padding:5px 11px;border-radius:8px;border:1px solid {{ w.border }};background:{{ w.bg }};font-size:12.5px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ w.value }}</span>
+                </div>
+                <div style="text-align:right;font-size:11px;font-weight:600;color:{{ w.actionColor }};white-space:nowrap">{{ w.action }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div id="users" style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Users</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">312 seats · 288 active · 6 provisioned this week</span>
+              <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Invite</span>
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Export list</span>
+              </span>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:840px">
+                <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 132px 128px 118px 120px;gap:12px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>User</div><div>Role</div><div>Provisioned by</div><div>Last active</div><div style="text-align:right">Status</div>
+                </div>
+                <sc-for list="{{ users }}" as="u" hint-placeholder-count="6">
+                  <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 132px 128px 118px 120px;gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px;background:{{ u.bg }}">
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                      <span style="width:28px;height:28px;flex:none;border-radius:999px;background:{{ u.avatarBg }};color:{{ u.avatarFg }};display:grid;place-items:center;font-size:10px;font-weight:600">{{ u.initials }}</span>
+                      <div style="min-width:0">
+                        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.name }}</div>
+                        <div style="font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.email }}</div>
+                      </div>
+                    </div>
+                    <div><span style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ u.roleBg }};color:{{ u.roleFg }};white-space:nowrap">{{ u.role }}</span></div>
+                    <div style="font-size:11.5px;color:var(--ink-2)">{{ u.source }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums">{{ u.active }}</div>
+                    <div style="text-align:right;font-size:11px;font-weight:600;color:{{ u.statusColor }};white-space:nowrap">{{ u.status }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap">
+              <span>Users provisioned by SCIM cannot be edited here — the directory is the source of truth and local edits would drift.</span>
+              <span style="margin-left:auto;font-weight:600;color:var(--brand-ink);white-space:nowrap">Show all 312</span>
+            </div>
+          </div>
+
+          <div id="roles" style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Roles &amp; permissions</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Five roles · permissions are additive, never subtractive</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink);white-space:nowrap">New role</span>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:880px">
+                <div style="display:grid;grid-template-columns:minmax(0,1.1fr) repeat(5,minmax(0,1fr));gap:10px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Capability</div>
+                  <sc-for list="{{ roleHeads }}" as="h" hint-placeholder-count="5">
+                    <div style="text-align:center">{{ h }}</div>
+                  </sc-for>
+                </div>
+                <sc-for list="{{ permissionRows }}" as="p" hint-placeholder-count="7">
+                  <div style="display:grid;grid-template-columns:minmax(0,1.1fr) repeat(5,minmax(0,1fr));gap:10px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line-soft);background:{{ p.bg }}">
+                    <div style="min-width:0">
+                      <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.label }}</div>
+                      <div style="font-size:10.5px;color:var(--ink-3);line-height:1.4">{{ p.note }}</div>
+                    </div>
+                    <sc-for list="{{ p.cells }}" as="c" hint-placeholder-count="5">
+                      <div style="text-align:center">
+                        <span style="display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:{{ c.bg }};color:{{ c.fg }};font-size:10px;font-weight:700">{{ c.mark }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:11px;padding:13px 18px;background:var(--warn-tint);flex-wrap:wrap">
+              <span style="width:18px;height:18px;flex:none;border-radius:5px;background:var(--warn);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700;margin-top:1px">!</span>
+              <div style="font-size:12.5px;line-height:1.55;min-width:220px;flex:1">
+                <span style="font-weight:600">Inconsistent grant: </span>
+                <span style="color:var(--ink-2)">Analyst can export account data but cannot view unmasked amounts in the UI. Export bypasses the field mask, which makes the mask decorative for anyone with that role.</span>
+              </div>
+              <span style="margin-left:auto;flex:none;font-size:11.5px;font-weight:600;color:var(--warn);white-space:nowrap">Fix the grant →</span>
+            </div>
+          </div>
+
+          <div id="sso" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+            <div style="flex:1 1 320px;min-width:0;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;align-self:start">
+              <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+                <span style="font-size:13.5px;font-weight:600">SSO</span>
+                <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--pos-tint);color:var(--pos);white-space:nowrap">Enforced</span>
+              </div>
+              <sc-for list="{{ ssoRows }}" as="s" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line-soft)">
+                  <div style="min-width:0">
+                    <div style="font-size:11.5px;font-weight:600">{{ s.k }}</div>
+                    <div style="font-size:10.5px;color:var(--ink-3);line-height:1.4">{{ s.note }}</div>
+                  </div>
+                  <span style="margin-left:auto;flex:none;font-size:11px;font-weight:600;color:{{ s.color }};white-space:nowrap">{{ s.v }}</span>
+                </div>
+              </sc-for>
+              <div style="padding:12px 18px;font-size:10.5px;color:var(--ink-3);line-height:1.5">Two break-glass accounts keep password access. They are named, alerted on use, and reviewed quarterly — enforcing SSO without them is how workspaces get locked out.</div>
+            </div>
+
+            <div style="flex:1 1 320px;min-width:0;border-radius:16px;background:var(--surface);border:1px solid var(--warn);box-shadow:var(--e1);overflow:hidden;align-self:start">
+              <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+                <span style="font-size:13.5px;font-weight:600">SCIM provisioning</span>
+                <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--warn-tint);color:var(--warn);white-space:nowrap">Partly on</span>
+              </div>
+              <sc-for list="{{ scimRows }}" as="s" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line-soft)">
+                  <span style="width:15px;height:15px;flex:none;border-radius:5px;background:{{ s.tint }};color:{{ s.color }};display:grid;place-items:center;font-size:9px;font-weight:700">{{ s.mark }}</span>
+                  <div style="min-width:0">
+                    <div style="font-size:11.5px;font-weight:600;color:{{ s.labelColor }}">{{ s.k }}</div>
+                    <div style="font-size:10.5px;color:var(--ink-3);line-height:1.4">{{ s.note }}</div>
+                  </div>
+                  <span style="margin-left:auto;flex:none;width:26px;height:16px;border-radius:999px;background:{{ s.toggleBg }};position:relative">
+                    <span style="position:absolute;top:2px;left:{{ s.knob }};width:12px;height:12px;border-radius:999px;background:#fff;box-shadow:var(--e1)"></span>
+                  </span>
+                </div>
+              </sc-for>
+              <div style="padding:12px 18px;font-size:10.5px;color:var(--ink-2);line-height:1.5"><span style="font-weight:600;color:var(--warn)">Consequence stated plainly: </span>with deprovisioning off, 4 users who left the directory in the last 30 days still hold access.</div>
+            </div>
+          </div>
+
+          <div id="api" style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">API keys &amp; webhooks</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Scoped, rotatable, and logged per call</span>
+              <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">New webhook</span>
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;background:var(--brand);color:#fff;font-size:11.5px;font-weight:600;white-space:nowrap">Create key</span>
+              </span>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:820px">
+                <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 148px 118px 118px 108px;gap:12px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Key or endpoint</div><div>Scope</div><div>Last used</div><div>Rotated</div><div style="text-align:right">State</div>
+                </div>
+                <sc-for list="{{ apiRows }}" as="a" hint-placeholder-count="6">
+                  <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 148px 118px 118px 108px;gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px;background:{{ a.bg }}">
+                    <div style="min-width:0">
+                      <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name }}</div>
+                      <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.detail }}</div>
+                    </div>
+                    <div><span style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ a.scopeBg }};color:{{ a.scopeFg }};white-space:nowrap">{{ a.scope }}</span></div>
+                    <div style="font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums">{{ a.used }}</div>
+                    <div style="font-size:11.5px;color:{{ a.rotColor }};font-variant-numeric:tabular-nums">{{ a.rotated }}</div>
+                    <div style="text-align:right;font-size:11px;font-weight:600;color:{{ a.stateColor }};white-space:nowrap">{{ a.state }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap">
+              <span>A key is shown once at creation and never again. Failed webhook deliveries retry with backoff for 24 hours, then park with the payload retained.</span>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+            <div id="security" style="flex:1 1 320px;min-width:0;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;align-self:start">
+              <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft)">
+                <span style="font-size:13.5px;font-weight:600">Security</span>
+                <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">Workspace-wide</span>
+              </div>
+              <sc-for list="{{ securityRows }}" as="s" hint-placeholder-count="7">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line-soft)">
+                  <div style="min-width:0">
+                    <div style="font-size:11.5px;font-weight:600">{{ s.k }}</div>
+                    <div style="font-size:10.5px;color:var(--ink-3);line-height:1.4">{{ s.note }}</div>
+                  </div>
+                  <span style="margin-left:auto;flex:none;font-size:11px;font-weight:600;color:{{ s.color }};white-space:nowrap">{{ s.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div id="branding" style="flex:1 1 320px;min-width:0;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;align-self:start">
+              <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft)">
+                <span style="font-size:13.5px;font-weight:600">Branding</span>
+                <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">Exports &amp; shared links only</span>
+              </div>
+              <div style="padding:16px 18px;border-bottom:1px solid var(--line-soft)">
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <div style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700">NG</div>
+                  <div style="min-width:0">
+                    <div style="font-size:12.5px;font-weight:600">Northwind Global</div>
+                    <div style="font-size:11px;color:var(--ink-3)">Logo · SVG · appears on PDF and shared reports</div>
+                  </div>
+                  <span style="margin-left:auto;flex:none;display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Replace</span>
+                </div>
+              </div>
+              <sc-for list="{{ brandingRows }}" as="b" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line-soft)">
+                  <div style="min-width:0">
+                    <div style="font-size:11.5px;font-weight:600">{{ b.k }}</div>
+                    <div style="font-size:10.5px;color:var(--ink-3);line-height:1.4">{{ b.note }}</div>
+                  </div>
+                  <span style="margin-left:auto;flex:none;display:flex;align-items:center;gap:8px">
+                    <span style="width:16px;height:16px;border-radius:5px;background:{{ b.swatch }};border:1px solid rgba(0,0,0,.08)"></span>
+                    <span style="font-size:11px;font-weight:600;white-space:nowrap">{{ b.v }}</span>
+                  </span>
+                </div>
+              </sc-for>
+              <div style="padding:12px 18px;font-size:10.5px;color:var(--ink-3);line-height:1.5">The product interface itself is not themeable. Brand marks appear on artefacts that leave Signora, so a board pack looks like yours without the application drifting from the design system.</div>
+            </div>
+          </div>
+
+          <div id="flags" style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Feature flags</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Opt in per workspace · each states what changes and how to leave</span>
+            </div>
+            <sc-for list="{{ flags }}" as="f" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 128px 60px;gap:14px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line-soft);background:{{ f.bg }}">
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <span style="font-size:12.5px;font-weight:600">{{ f.name }}</span>
+                    <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:{{ f.stageBg }};color:{{ f.stageFg }};white-space:nowrap">{{ f.stage }}</span>
+                  </div>
+                  <div style="font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.5">{{ f.body }}</div>
+                </div>
+                <div style="font-size:11px;color:var(--ink-3);line-height:1.4">{{ f.scope }}</div>
+                <div style="text-align:right">
+                  <span style="display:inline-block;width:28px;height:17px;border-radius:999px;background:{{ f.toggleBg }};position:relative">
+                    <span style="position:absolute;top:2px;left:{{ f.knob }};width:13px;height:13px;border-radius:999px;background:#fff;box-shadow:var(--e1)"></span>
+                  </span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div id="billing" style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Billing</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--pos-tint);color:var(--pos);white-space:nowrap">Enterprise</span>
+            </div>
+            <div style="padding:14px 15px;border-bottom:1px solid var(--line-soft)">
+              <div style="display:flex;align-items:flex-end;gap:8px">
+                <span style="font-size:26px;font-weight:700;letter-spacing:-0.028em;line-height:1;font-variant-numeric:tabular-nums">$284K</span>
+                <span style="font-size:11px;color:var(--ink-3);padding-bottom:3px">annual · renews 14 Mar</span>
+              </div>
+              <div style="height:7px;border-radius:5px;background:var(--sunken);margin-top:12px;overflow:hidden">
+                <div style="width:92%;height:100%;border-radius:5px;background:var(--brand)"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-3);margin-top:5px">
+                <span>288 of 312 seats used</span><span>92%</span>
+              </div>
+            </div>
+            <sc-for list="{{ billingRows }}" as="b" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 15px;border-bottom:1px solid var(--line-soft);font-size:11.5px">
+                <span style="color:var(--ink-3);min-width:0">{{ b.k }}</span>
+                <span style="margin-left:auto;font-weight:600;text-align:right;color:{{ b.color }};white-space:nowrap">{{ b.v }}</span>
+              </div>
+            </sc-for>
+            <div style="padding:12px 15px;font-size:10.5px;color:var(--ink-3);line-height:1.5">Seats are counted on unique active users per month, and the count is shown before an invoice is issued rather than after.</div>
+          </div>
+
+          <div id="audit" style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Audit log</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">Immutable · 7 years</span>
+            </div>
+            <sc-for list="{{ audit }}" as="a" hint-placeholder-count="6">
+              <div style="display:flex;gap:10px;padding:11px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:6px;height:6px;flex:none;border-radius:999px;background:{{ a.dot }};margin-top:6px"></span>
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;line-height:1.45"><span style="font-weight:600">{{ a.who }}</span> <span style="color:var(--ink-2)">{{ a.what }}</span></div>
+                  <div style="font-size:10.5px;color:var(--ink-4);margin-top:2px;font-variant-numeric:tabular-nums">{{ a.meta }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="padding:12px 15px;font-size:10.5px;color:var(--ink-3);line-height:1.5">Every entry records actor, before and after values, IP and session. Exportable to SIEM; not editable by anyone, including support.</div>
+          </div>
+
+          <div id="integrations" style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Integrations</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink);white-space:nowrap">Manage</span>
+            </div>
+            <sc-for list="{{ integrations }}" as="i" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:24px;height:24px;flex:none;border-radius:7px;background:{{ i.tint }};color:{{ i.color }};display:grid;place-items:center;font-size:9px;font-weight:700">{{ i.abbr }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.name }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.meta }}</div>
+                </div>
+                <span style="margin-left:auto;flex:none;font-size:10.5px;font-weight:600;color:{{ i.stateColor }};white-space:nowrap">{{ i.state }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Settings rules</span>
+            </div>
+            <sc-for list="{{ rules }}" as="r" hint-placeholder-count="5">
+              <div style="display:flex;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="color:var(--brand-ink);flex:none;font-weight:700;font-size:11px;margin-top:2px">{{ r.n }}</span>
+                <div style="font-size:11px;color:var(--ink-2);line-height:1.5">{{ r.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+    });
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    const tone = {
+      pos: ['var(--pos-tint)', 'var(--pos)'], warn: ['var(--warn-tint)', 'var(--warn)'],
+      risk: ['var(--risk-tint)', 'var(--risk)'], brand: ['var(--brand-tint)', 'var(--brand-ink)'],
+      neutral: ['var(--sunken)', 'var(--ink-2)'], ai: ['var(--ai-tint)', 'var(--ai-ink)'],
+    };
+
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--brand)',
+      lightFg: dark ? 'var(--ink-3)' : '#fff',
+      darkBg: dark ? 'var(--brand)' : 'transparent',
+      darkFg: dark ? '#fff' : 'var(--ink-3)',
+
+      navGroups: [
+        { label: 'Workspace', items: [
+          { label: 'General', href: '#workspace', badge: '', active: false },
+          { label: 'Branding', href: '#branding', badge: '', active: false },
+          { label: 'Billing', href: '#billing', badge: '', active: false },
+          { label: 'Feature flags', href: '#flags', badge: '3', active: false } ] },
+        { label: 'Access', items: [
+          { label: 'Users', href: '#users', badge: '312', active: true },
+          { label: 'Roles & permissions', href: '#roles', badge: '!', active: false, warn: true },
+          { label: 'SSO', href: '#sso', badge: '', active: false },
+          { label: 'SCIM', href: '#sso', badge: '!', active: false, warn: true } ] },
+        { label: 'Developer', items: [
+          { label: 'API keys', href: '#api', badge: '2', active: false, warn: true },
+          { label: 'Webhooks', href: '#api', badge: '4', active: false },
+          { label: 'Integrations', href: '#integrations', badge: '', active: false } ] },
+        { label: 'Governance', items: [
+          { label: 'Security', href: '#security', badge: '', active: false },
+          { label: 'Audit log', href: '#audit', badge: '', active: false },
+          { label: 'Data retention', href: '#security', badge: '', active: false } ] },
+      ].map(g => ({
+        label: g.label,
+        items: g.items.map(i => ({
+          label: i.label, href: i.href, badge: i.badge,
+          color: i.active ? 'var(--brand-ink)' : 'var(--ink-2)',
+          bg: i.active ? 'var(--brand-tint)' : 'transparent',
+          weight: i.active ? 600 : 400,
+          badgeBg: i.warn ? 'var(--warn-tint)' : 'var(--sunken)',
+          badgeFg: i.warn ? 'var(--warn)' : 'var(--ink-3)',
+        })),
+      })),
+
+      workspaceFields: [
+        { label: 'Workspace name', note: 'Shown in the rail and on exports', value: 'Northwind Global', action: 'Edit', locked: false },
+        { label: 'Workspace URL', note: 'Changing it breaks existing links', value: 'northwind.signora.com', action: 'Edit', locked: false },
+        { label: 'Data region', note: 'Where records are stored and processed', value: 'EU · Frankfurt', action: 'Locked', locked: true },
+        { label: 'Fiscal year', note: 'Drives every quarter in the product', value: 'Feb – Jan · Q3 = Aug–Oct', action: 'Edit', locked: false },
+        { label: 'Default currency', note: 'Reporting currency; source values are preserved', value: 'USD · daily ECB rate', action: 'Edit', locked: false },
+        { label: 'Sandbox workspace', note: 'A copy of production for testing', value: 'Northwind Sandbox · refreshed nightly', action: 'Open', locked: false },
+      ].map(w => ({
+        label: w.label, note: w.note, value: w.value, action: w.action,
+        border: w.locked ? 'var(--line-soft)' : 'var(--line)',
+        bg: w.locked ? 'var(--sunken)' : 'var(--surface)',
+        actionColor: w.locked ? 'var(--ink-4)' : 'var(--brand-ink)',
+      })),
+
+      users: [
+        { name: 'Marta Reinhardt', email: 'marta@northwind.com', initials: 'MR', role: 'Admin', source: 'SCIM · Entra ID', active: '2m ago', status: 'Active', roleTone: 'brand', statusTone: 'pos', sel: true },
+        { name: 'Lena Petrova', email: 'lena@northwind.com', initials: 'LP', role: 'Admin', source: 'SCIM · Entra ID', active: '1h ago', status: 'Active', roleTone: 'brand', statusTone: 'pos', sel: false },
+        { name: 'Jon Okafor', email: 'jon@northwind.com', initials: 'JO', role: 'Manager', source: 'SCIM · Entra ID', active: '4h ago', status: 'Active', roleTone: 'neutral', statusTone: 'pos', sel: false },
+        { name: 'Anne Duval', email: 'anne@northwind.com', initials: 'AD', role: 'Rep', source: 'SCIM · Entra ID', active: 'Yesterday', status: 'Active', roleTone: 'neutral', statusTone: 'pos', sel: false },
+        { name: 'Sven Holm', email: 'sven@northwind.com', initials: 'SH', role: 'Analyst', source: 'Invited · manual', active: '31 days ago', status: 'Idle 31d', roleTone: 'neutral', statusTone: 'warn', sel: false },
+        { name: 'Dorte Køhler', email: 'dorte@northwind.com', initials: 'DK', role: 'Rep', source: 'Left directory 21 Jul', active: '14 days ago', status: 'Access retained', roleTone: 'neutral', statusTone: 'risk', sel: false },
+      ].map(u => ({
+        name: u.name, email: u.email, initials: u.initials, role: u.role, source: u.source, active: u.active, status: u.status,
+        roleBg: tone[u.roleTone][0], roleFg: tone[u.roleTone][1],
+        statusColor: tone[u.statusTone][1],
+        bg: u.statusTone === 'risk' ? 'var(--risk-tint)' : 'transparent',
+        avatarBg: u.sel ? 'var(--brand)' : 'var(--sunken)',
+        avatarFg: u.sel ? '#fff' : 'var(--ink-2)',
+      })),
+
+      roleHeads: ['Admin', 'Manager', 'Rep', 'Analyst', 'Guest'],
+
+      permissionRows: [
+        { label: 'View own accounts', note: 'Records where they are owner', cells: ['full', 'full', 'full', 'full', 'read'], warn: false },
+        { label: 'View all accounts', note: 'Across the workspace', cells: ['full', 'region', 'none', 'full', 'none'], warn: false },
+        { label: 'Edit CRM fields', note: 'Write-back to Salesforce', cells: ['full', 'full', 'own', 'none', 'none'], warn: false },
+        { label: 'View unmasked amounts', note: 'Currency values in the UI', cells: ['full', 'full', 'own', 'none', 'none'], warn: true },
+        { label: 'Export data', note: 'CSV, XLSX and scheduled feeds', cells: ['full', 'full', 'own', 'full', 'none'], warn: true },
+        { label: 'Approve agent actions', note: 'Workflow steps that write', cells: ['full', 'full', 'own', 'none', 'none'], warn: false },
+        { label: 'Manage settings', note: 'This section', cells: ['full', 'none', 'none', 'none', 'none'], warn: false },
+      ].map(p => ({
+        label: p.label, note: p.note,
+        bg: p.warn ? 'var(--warn-tint)' : 'transparent',
+        cells: p.cells.map(c => {
+          const m = {
+            full: { mark: '✓', bg: 'var(--pos-tint)', fg: 'var(--pos)' },
+            region: { mark: 'R', bg: 'var(--brand-tint)', fg: 'var(--brand-ink)' },
+            own: { mark: 'O', bg: 'var(--brand-tint)', fg: 'var(--brand-ink)' },
+            read: { mark: '◐', bg: 'var(--sunken)', fg: 'var(--ink-2)' },
+            none: { mark: '—', bg: 'var(--sunken)', fg: 'var(--ink-4)' },
+          }[c];
+          return m;
+        }),
+      })),
+
+      ssoRows: [
+        { k: 'Provider', v: 'Microsoft Entra ID', note: 'SAML 2.0 · metadata verified 12 Mar', color: 'var(--ink)' },
+        { k: 'Enforcement', v: 'Required for all', note: 'Password login disabled except break-glass', color: 'var(--pos)' },
+        { k: 'Session lifetime', v: '8 hours', note: 'Re-authentication on privilege change', color: 'var(--ink)' },
+        { k: 'Certificate expiry', v: '14 Nov 2026', note: 'Alerts at 30 and 7 days', color: 'var(--ink)' },
+        { k: 'Break-glass accounts', v: '2 named', note: 'Alert on use · reviewed quarterly', color: 'var(--warn)' },
+      ],
+
+      scimRows: [
+        { k: 'User provisioning', v: '', note: 'New directory users get access automatically', on: true, ok: true },
+        { k: 'Attribute sync', v: '', note: 'Name, email, department, manager', on: true, ok: true },
+        { k: 'Group to role mapping', v: '', note: '4 groups mapped to 4 roles', on: true, ok: true },
+        { k: 'Deprovisioning', v: '', note: 'Remove access when a user leaves the directory', on: false, ok: false },
+        { k: 'Just-in-time creation', v: '', note: 'Create on first SSO login', on: false, ok: true },
+      ].map(s => ({
+        k: s.k, note: s.note,
+        mark: s.on ? '✓' : (s.ok ? '—' : '!'),
+        tint: s.on ? 'var(--pos-tint)' : (s.ok ? 'var(--sunken)' : 'var(--risk-tint)'),
+        color: s.on ? 'var(--pos)' : (s.ok ? 'var(--ink-3)' : 'var(--risk)'),
+        labelColor: !s.ok ? 'var(--risk)' : 'var(--ink)',
+        toggleBg: s.on ? 'var(--brand)' : 'var(--line)',
+        knob: s.on ? '12px' : '2px',
+      })),
+
+      apiRows: [
+        { name: 'Warehouse export', detail: 'sk_live_…f81c', scope: 'Read · reports', used: '2m ago', rotated: '41 days ago', state: 'Active', scopeTone: 'brand', rotTone: 'ok', stateTone: 'pos' },
+        { name: 'Ops automation', detail: 'sk_live_…09ab', scope: 'Read + write', used: '14m ago', rotated: '412 days ago', state: 'Rotate now', scopeTone: 'risk', rotTone: 'bad', stateTone: 'risk' },
+        { name: 'Legacy dashboard', detail: 'sk_live_…7d31', scope: 'Read · accounts', used: '388 days ago', rotated: '512 days ago', state: 'Revoke', scopeTone: 'brand', rotTone: 'bad', stateTone: 'risk' },
+        { name: 'deal.stage_changed', detail: 'https://hooks.northwind.com/signora', scope: 'Webhook · 3 events', used: '1m ago', rotated: '—', state: 'Healthy', scopeTone: 'neutral', rotTone: 'ok', stateTone: 'pos' },
+        { name: 'signal.raised', detail: 'https://hooks.northwind.com/signals', scope: 'Webhook · 1 event', used: '6m ago', rotated: '—', state: 'Healthy', scopeTone: 'neutral', rotTone: 'ok', stateTone: 'pos' },
+        { name: 'account.updated', detail: 'https://legacy.northwind.com/hook', scope: 'Webhook · 1 event', used: '3d ago', rotated: '—', state: '41 failures', scopeTone: 'neutral', rotTone: 'ok', stateTone: 'warn' },
+      ].map(a => ({
+        name: a.name, detail: a.detail, scope: a.scope, used: a.used, rotated: a.rotated, state: a.state,
+        scopeBg: tone[a.scopeTone][0], scopeFg: tone[a.scopeTone][1],
+        rotColor: a.rotTone === 'bad' ? 'var(--risk)' : 'var(--ink-2)',
+        stateColor: tone[a.stateTone][1],
+        bg: a.stateTone === 'risk' ? 'var(--risk-tint)' : (a.stateTone === 'warn' ? 'var(--warn-tint)' : 'transparent'),
+      })),
+
+      securityRows: [
+        { k: 'Multi-factor', v: 'Via Entra ID', note: 'Enforced upstream; Signora does not hold a second factor', color: 'var(--pos)' },
+        { k: 'IP allowlist', v: 'Off', note: 'Available; not enabled for this workspace', color: 'var(--ink-3)' },
+        { k: 'Field-level masking', v: '3 fields', note: 'Amounts masked for Analyst and Guest', color: 'var(--warn)' },
+        { k: 'Data retention', v: '7 years', note: 'Audit log; records follow the CRM’s policy', color: 'var(--ink)' },
+        { k: 'Encryption', v: 'AES-256 · TLS 1.3', note: 'At rest and in transit; keys rotated by the platform', color: 'var(--pos)' },
+        { k: 'Sub-processors', v: '4 listed', note: 'Named, with region and purpose', color: 'var(--ink)' },
+        { k: 'Penetration test', v: 'Mar 2026', note: 'Report available under NDA', color: 'var(--ink)' },
+      ],
+
+      brandingRows: [
+        { k: 'Accent on exports', note: 'Used for headings and rules in PDFs', v: '#134E76', swatch: '#134e76' },
+        { k: 'Report footer', note: 'Appears on every printed page', v: 'Confidential — internal', swatch: 'transparent' },
+        { k: 'Shared link header', note: 'What external recipients see', v: 'Logo + workspace name', swatch: 'transparent' },
+        { k: 'Email sender name', note: 'Scheduled reports and notifications', v: 'Northwind Revenue', swatch: 'transparent' },
+      ],
+
+      flags: [
+        { name: 'Agent workflows', stage: 'Beta', body: 'Multi-step agents that draft and, with approval, write. Adds the Workflows section and the approval queue.', scope: 'Admins only', on: true, stageTone: 'ai' },
+        { name: 'AI research workspace', stage: 'Beta', body: 'Question-to-report research with citations and version history. Adds a rail destination.', scope: 'All users', on: true, stageTone: 'ai' },
+        { name: 'Compact density', stage: 'GA', body: '34px table rows across the product. Per-user preference once enabled.', scope: 'All users', on: true, stageTone: 'pos' },
+        { name: 'Second CRM connection', stage: 'Early access', body: 'Read from a second CRM alongside Salesforce. Records are labelled by source and never merged automatically.', scope: 'Admins only', on: false, stageTone: 'warn' },
+        { name: 'Forecast scenarios', stage: 'Alpha', body: 'Model what changes if named deals move. Numbers are clearly marked as hypothetical everywhere they appear.', scope: 'Named users · 4', on: false, stageTone: 'warn' },
+      ].map(f => ({
+        name: f.name, stage: f.stage, body: f.body, scope: f.scope,
+        stageBg: tone[f.stageTone][0], stageFg: tone[f.stageTone][1],
+        toggleBg: f.on ? 'var(--brand)' : 'var(--line)',
+        knob: f.on ? '13px' : '2px',
+        bg: f.on ? 'transparent' : 'var(--sunken)',
+      })),
+
+      billingRows: [
+        { k: 'Plan', v: 'Enterprise · annual', color: 'var(--ink)' },
+        { k: 'Seats', v: '312 committed', color: 'var(--ink)' },
+        { k: 'Overage policy', v: 'True-up at renewal', color: 'var(--ink)' },
+        { k: 'Next invoice', v: '14 Mar 2027', color: 'var(--ink)' },
+        { k: 'Idle seats (31d+)', v: '24 · $21.8K', color: 'var(--warn)' },
+      ],
+
+      audit: [
+        { who: 'M. Reinhardt', what: 'changed Analyst role — export data: own → full', meta: 'Today 09:04 · 10.4.2.19 · session 8c1f', dot: 'var(--warn)' },
+        { who: 'System', what: 'paused Salesforce writes — permission removed upstream', meta: 'Today 06:41 · integration user', dot: 'var(--risk)' },
+        { who: 'L. Petrova', what: 'created API key “Warehouse export” · read scope', meta: '24 Jun · 10.4.2.44', dot: 'var(--brand)' },
+        { who: 'Entra ID', what: 'removed D. Køhler from the directory', meta: '21 Jul · SCIM · access not revoked', dot: 'var(--risk)' },
+        { who: 'M. Reinhardt', what: 'enabled feature flag “AI research workspace”', meta: '18 Jul · 10.4.2.19', dot: 'var(--ai)' },
+        { who: 'L. Petrova', what: 'enforced SSO for all users', meta: '12 Mar · 10.4.2.44', dot: 'var(--pos)' },
+      ],
+
+      integrations: [
+        { abbr: 'SF', name: 'Salesforce', meta: 'CRM · system of record', state: 'Degraded', stateColor: 'var(--warn)', tint: 'var(--brand-tint)', color: 'var(--brand-ink)' },
+        { abbr: 'GW', name: 'Google Workspace', meta: 'Mail and calendar', state: 'Healthy', stateColor: 'var(--pos)', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { abbr: 'GN', name: 'Gong', meta: 'Call recording', state: 'Healthy', stateColor: 'var(--pos)', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { abbr: 'SL', name: 'Slack', meta: 'Notifications only', state: 'Healthy', stateColor: 'var(--pos)', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { abbr: 'SN', name: 'Snowflake', meta: 'Warehouse export · nightly', state: 'Healthy', stateColor: 'var(--pos)', tint: 'var(--sunken)', color: 'var(--ink-2)' },
+      ],
+
+      rules: [
+        { n: '01', text: 'Every setting states its consequence before it is changed, not after.' },
+        { n: '02', text: 'A setting that weakens security says so in words, and appears in the attention banner until resolved.' },
+        { n: '03', text: 'Directory-managed values are read-only here — two sources of truth is a defect, not a convenience.' },
+        { n: '04', text: 'Destructive changes name the object and require typing it; nothing destructive is a single click.' },
+        { n: '05', text: 'The audit log is immutable and includes before and after values. Support cannot edit it either.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

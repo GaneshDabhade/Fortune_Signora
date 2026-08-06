@@ -2,12 +2,7 @@
 
 ## Status
 
-<<<<<<< HEAD
 ✅ **PRODUCT OWNER APPROVED — 2026-08-06, [D-134](../../DECISION_REGISTER.md).** *"The direction is correct, and I agree with the architectural approach. TASK-474 is the correct solution."* **Directed by [D-131](../../DECISION_REGISTER.md), expanded by [D-133](../../DECISION_REGISTER.md), approved with the prohibitions in §2a by [D-134](../../DECISION_REGISTER.md).** Drafted by Lane C.
-**PRODUCT OWNER DIRECTED — 2026-08-06, [D-131](../../DECISION_REGISTER.md), expanded by [D-133](../../DECISION_REGISTER.md).** Drafted by Lane C on that instruction. **Awaiting ratification.**
-=======
-✅ **PRODUCT OWNER APPROVED — 2026-08-06, [D-134](../../DECISION_REGISTER.md).** *"The direction is correct, and I agree with the architectural approach. TASK-474 is the correct solution."* **Directed by [D-131](../../DECISION_REGISTER.md), expanded by [D-133](../../DECISION_REGISTER.md), approved with the prohibitions in §2a by [D-134](../../DECISION_REGISTER.md).** Drafted by Lane C.
->>>>>>> 415afaa3 (D-134 — ADR-0406 approved, and the headed rule was not true of the repository)
 
 > ⚠️ **The register has no `D-132`.** **Recorded rather than silently renumbered** (§2, *a record of what was true then*): this ADR was expanded by the directive labelled D-133, and the gap is noted so a future reader does not go looking for a decision that was never taken.
 
@@ -74,37 +69,6 @@
 
 ⛔ **`CLAUDE.md` §13 forbids a *"skip auth in development"* flag by name, and this ADR is where somebody would reach for one.** ⚡ **Development Mode is its opposite: it makes the link *reachable*, never *unnecessary*.**
 
-<<<<<<< HEAD
-### 2a · Six shortcuts, forbidden by name — [D-134](../../DECISION_REGISTER.md)
-
-> ⚡ **Named individually rather than left to §1's principle, because each is a thing somebody reaches for at a specific moment of frustration, and a general rule loses to a specific temptation.**
-
-| ⛔ **Forbidden** | **The moment it gets proposed** |
-|---|---|
-| **Automatic email verification** | *"The developer just made this account; obviously it's them."* ⛔ **It deletes the journey being reviewed** |
-| **Automatic login after registration** | *"Saves a step."* ⛔ **Production does not do it, so the reviewed flow is not the shipped flow** |
-| **Hard-coded verification tokens** | *"A fixed token makes the test deterministic."* ⛔ **Then the test proves a constant, not a flow** |
-| **Disabled authorization or permission checks** | *"Seeding is easier without RBAC."* ⛔ **§20e: test data enters the way a customer's data enters** |
-| **A mock authentication provider bypassing Better Auth** | *"Just for local."* ⛔ **§13: Better Auth is the *sole* authority. A second authenticator is a second authority** |
-| **Any alternative authentication path that would never exist in production** | **The general case, and the one the other five are instances of** |
-
-> ## **Modes may replace infrastructure. They may never replace authentication semantics.**
-
-### 2b · When a journey cannot run locally, the infrastructure is the problem
-
-> ⛔ ***"If you discover a point where the production journey cannot be executed locally without introducing an artificial shortcut, stop and propose architectural alternatives instead of inventing a development-only path."***
-
-**This is an escalation rule with teeth, and it inverts the usual instinct.** ⚡ **The default engineering reflex is to make the blocked thing work; here the blockage is *information*** — it says an infrastructure boundary is in the wrong place, or is missing.
-
-| ✅ **Do** | ⛔ **Do not** |
-|---|---|
-| **Substitute at an infrastructure boundary** — a transport, a DNS name, a callback URL | **Substitute inside business logic** |
-| **Raise it as a coordination item with alternatives, trade-offs and a recommendation** ([§20e](../../../CLAUDE.md), the six fields) | **Invent a development-only path and record it as a limitation** |
-
-> **We always prefer solving the infrastructure problem over weakening the production authentication model.**
-
-=======
->>>>>>> 415afaa3 (D-134 — ADR-0406 approved, and the headed rule was not true of the repository)
 ### 3 · Development email is a first-class experience, not a `console.log`
 
 > ⚠️ **A console line is a transport, not an experience.** **[D-133](../../DECISION_REGISTER.md) asks for the second, and the difference is what a developer can *do*.**
@@ -172,24 +136,6 @@
 
 > ⚡ **Three of seventeen are green, and the pattern is exact: every journey that needs an email is unwalked, and every journey that does not is covered.** ⛔ **Ten of the fourteen gaps close behind one capability — §3.**
 
-<<<<<<< HEAD
-#### 6a · The journey is the planning unit, not the screen — [D-134](../../DECISION_REGISTER.md)
-
-> ⚡ **The seventeen above are *steps*. A customer does not experience a step.** **The unit that gets planned, built, reviewed and demonstrated is the composite journey**, and the four below are the first-class ones.
-
-| Composite journey | Steps it composes | Blocked on |
-|---|---|---|
-| **Register → Verify Email → Login → Workspace Setup → Onboarding** | 1 · 4 · 2 · 8 · — | **§3** · ⚠️ **and Onboarding does not exist** — [TASK-469](../../BACKLOG.md), no route in `frontend/app/` |
-| **Forgot Password → Reset Password → Login** | 6 · 7 · 2 | **§3 alone.** ✅ **Every surface exists** — the shortest of the four to green |
-| **Invitation → Accept → Join Workspace → Onboarding** | 9 · 10 · 10 · — | **§3** · **Onboarding** |
-| **Team Invitation → New Member Activation → First Login** | 11 · 1/4 · 2 | **§3** |
-
-⚡ **Reading the table as a plan rather than a record: journey 2 is buildable the moment §3 lands, and the other three additionally wait on Onboarding**, which is [TASK-469](../../BACKLOG.md) and behind [C-421](../../LANE_COORDINATION.md).
-
-> ⛔ **Each journey executes through the real backend and the real Better Auth implementation.** **Local simulation occurs only at infrastructure boundaries — the email transport — and never inside business logic** (§2a, §2b).
-
-=======
->>>>>>> 415afaa3 (D-134 — ADR-0406 approved, and the headed rule was not true of the repository)
 ### 7 · Playwright runs the same tests in every mode
 
 > **The only thing that changes between Development and Production is environment configuration. The tests are identical.**

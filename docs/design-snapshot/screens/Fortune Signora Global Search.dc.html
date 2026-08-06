@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2shimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes v2caret { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+  @keyframes v2bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="display:flex;align-items:flex-start;background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <nav style="position:sticky;top:0;width:250px;flex:none;height:100vh;overflow:auto;padding:24px 16px 60px;background:var(--bg-rail);border-right:1px solid var(--line-soft)">
+    <div style="display:flex;align-items:center;gap:11px;padding:0 6px 16px">
+      <div style="width:30px;height:30px;flex:none;border-radius:9px;background:var(--brand);box-shadow:var(--e1);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px">⌕</div>
+      <div>
+        <div style="font-weight:700;font-size:14px;letter-spacing:-0.015em;line-height:1.2">Global search</div>
+        <div style="font-size:11px;color:var(--ink-3)">Fortune Signora · v2 tokens</div>
+      </div>
+    </div>
+    <div style="padding:0 6px 14px">
+      <div style="display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }}" onClick="{{ setDark }}">Dark</span>
+      </div>
+    </div>
+    <sc-for list="{{ toc }}" as="g" hint-placeholder-count="4">
+      <div style="padding:0 6px;margin-bottom:18px">
+        <div style="font-size:10.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-4);padding:0 8px 7px">{{ g.label }}</div>
+        <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="5">
+          <a href="{{ i.href }}" style="display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:8px;font-size:13px;color:var(--ink-2);text-decoration:none" style-hover="background:var(--sunken);color:var(--ink)">
+            <span style="width:16px;flex:none;font-size:10.5px;font-variant-numeric:tabular-nums;color:var(--ink-4)">{{ i.n }}</span>
+            <span>{{ i.t }}</span>
+          </a>
+        </sc-for>
+      </div>
+    </sc-for>
+    <div style="margin:22px 6px 0;padding:14px;border-radius:12px;background:var(--sunken);border:1px solid var(--line-soft)">
+      <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Budget</div>
+      <sc-for list="{{ budget }}" as="b" hint-placeholder-count="4">
+        <div style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;margin-top:7px">
+          <span style="color:var(--ink-2)">{{ b.k }}</span>
+          <span style="font-weight:600;font-variant-numeric:tabular-nums">{{ b.v }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </nav>
+
+  <main style="flex:1;min-width:0;max-width:1300px;padding:0 56px 140px">
+
+    <header style="padding:64px 0 40px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);font-size:11.5px;font-weight:600">Enterprise search</span>
+        <span style="font-size:11.5px;color:var(--ink-3)">One doorway · two exits · never a second search box</span>
+      </div>
+      <h1 style="font-size:48px;line-height:1.05;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:20ch">Search that answers before you finish typing</h1>
+      <p style="font-size:17.5px;line-height:1.62;max-width:66ch;margin:20px 0 0;color:var(--ink-2);text-wrap:pretty">Eight million records, four object types, one keystroke away. Speed here is not a performance target, it is the interaction model: results render on the first character from a local index, the network only ever refines what is already on screen, and nothing the user sees is allowed to move once it has appeared.</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px">
+        <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="4">
+          <div style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+            <div style="font-size:24px;font-weight:700;letter-spacing:-0.028em;line-height:1;font-variant-numeric:tabular-nums">{{ s.v }}</div>
+            <div style="font-size:12px;color:var(--ink-3);margin-top:7px">{{ s.l }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </header>
+
+    <section id="s1" data-screen-label="01 Instant search" style="padding:48px 0 0;border-top:1px solid var(--line-soft)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">01</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Instant search</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">760 × 520px, top-anchored at 12vh, modal elevation. Results on the left, a live preview on the right — the preview is what makes this faster than a search engine, because the user rarely has to open anything to know they have the right record. Groups are typed and ordered by intent, never by score. Every keystroke re-ranks from the local index in under 20ms; the network refines quietly behind that.</p>
+
+      <div style="margin-top:24px;border-radius:18px;background:var(--sunken);border:1px solid var(--line-soft);padding:36px 32px;display:grid;place-items:start center">
+        <div style="width:min(880px,100%);border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:11px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--brand)" stroke-width="1.7"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+            <span style="font-size:15.5px">vantage</span>
+            <span style="width:1.5px;height:18px;background:var(--brand);animation:v2caret 1.1s step-end infinite"></span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:10px">
+              <span style="font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums">28 results · 14ms</span>
+              <span style="font-family:ui-monospace,monospace;font-size:10px;padding:2px 6px;border-radius:5px;background:var(--sunken);color:var(--ink-3)">esc</span>
+            </span>
+          </div>
+          <div style="height:2px;background:var(--sunken);overflow:hidden;position:relative">
+            <div style="position:absolute;inset:0;width:28%;background:var(--brand);opacity:.45;animation:v2bar 1.3s var(--ease) infinite"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;min-height:380px">
+            <div style="border-right:1px solid var(--line-soft);padding:8px 8px 0;overflow:hidden">
+              <sc-for list="{{ instantGroups }}" as="g" hint-placeholder-count="4">
+                <div style="padding-bottom:6px">
+                  <div style="display:flex;align-items:center;gap:8px;padding:6px 10px">
+                    <span style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4)">{{ g.label }}</span>
+                    <span style="font-size:10px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ g.count }}</span>
+                    <span style="margin-left:auto;font-size:10.5px;color:var(--brand-ink);font-weight:600">{{ g.more }}</span>
+                  </div>
+                  <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:9px;background:{{ i.bg }};border-left:2px solid {{ i.edge }}">
+                      <span style="width:26px;height:26px;flex:none;border-radius:{{ i.radius }};background:{{ i.badgeBg }};color:{{ i.badgeFg }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ i.badge }}</span>
+                      <div style="min-width:0">
+                        <div style="font-size:13.5px;font-weight:{{ i.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.name }}</div>
+                        <div style="font-size:11.5px;color:var(--ink-3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.meta }}</div>
+                      </div>
+                      <span style="margin-left:auto;flex:none;display:flex;align-items:center;gap:9px">
+                        <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ i.statusBg }};color:{{ i.statusFg }}">{{ i.status }}</span>
+                        <span style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ i.key }}</span>
+                      </span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding:16px;background:var(--bg)">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4)">Preview</span>
+                <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">⌘↵ opens in panel</span>
+              </div>
+              <div style="display:flex;gap:11px;margin-top:12px">
+                <span style="width:34px;height:34px;flex:none;border-radius:10px;background:var(--brand-tint);border:1px solid var(--brand-line);color:var(--brand-ink);display:grid;place-items:center;font-size:12px;font-weight:700">VL</span>
+                <div style="min-width:0">
+                  <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Vantage Logistics A/S</div>
+                  <div style="font-size:11.5px;color:var(--ink-3)">Enterprise · EMEA · acct_8814-QX</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:11px">
+                <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;background:var(--risk-tint);color:var(--risk)"><span style="width:5px;height:5px;border-radius:999px;background:var(--risk)"></span>At risk</span>
+                <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;background:var(--sunken);color:var(--ink-2)">Renewal 69d</span>
+              </div>
+              <div style="margin-top:13px;padding-top:13px;border-top:1px solid var(--line-soft)">
+                <sc-for list="{{ previewFacts }}" as="f" hint-placeholder-count="5">
+                  <div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:12px">
+                    <span style="color:var(--ink-3)">{{ f.k }}</span>
+                    <span style="font-weight:600;font-variant-numeric:tabular-nums;color:{{ f.color }}">{{ f.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:13px;padding:11px 12px;border-radius:11px;background:var(--ai-tint);border:1px solid var(--ai-line)">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <span style="width:16px;height:16px;border-radius:5px;background:var(--ai);display:grid;place-items:center">
+                    <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+                  </span>
+                  <span style="font-size:11px;font-weight:600;color:var(--ai-ink)">Why it is at risk</span>
+                </div>
+                <div style="font-size:11.5px;line-height:1.5;color:var(--ink);margin-top:6px">Two close-date slips after pricing pushback; procurement uncontacted. Usage is healthy.</div>
+              </div>
+              <div style="display:flex;gap:7px;margin-top:12px">
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">Open ↵</span>
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Pin</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;padding:9px 18px;border-top:1px solid var(--line-soft);font-size:10.5px;color:var(--ink-4)">
+            <span>↑↓ move</span><span>↵ open</span><span>⌘↵ panel</span><span>⇥ next group</span><span>⌥1–4 jump to type</span>
+            <span style="margin-left:auto">Index refreshed 2s ago</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px">
+        <sc-for list="{{ instantSpecs }}" as="s" hint-placeholder-count="4">
+          <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+            <div style="font-size:13px;font-weight:600">{{ s.t }}</div>
+            <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">{{ s.b }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s2" data-screen-label="02 AI and natural language" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">02</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">AI &amp; natural-language search</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">The same input handles both. A name is lookup; a question is retrieval. The classifier runs locally on the first three words, and when a query reads as a question the top group becomes an answer — with citations, a result set the answer was computed from, and a translation of the question into the filters it applied, so the user can correct the interpretation instead of rephrasing blindly.</p>
+
+      <div style="margin-top:24px;border-radius:18px;background:var(--sunken);border:1px solid var(--line-soft);padding:36px 32px;display:grid;place-items:start center">
+        <div style="width:min(880px,100%);border-radius:16px;background:var(--surface);border:1px solid var(--ai-line);box-shadow:var(--e4);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:11px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+            <span style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--ai);display:grid;place-items:center">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12"></path></svg>
+            </span>
+            <span style="font-size:15.5px">which enterprise renewals in EMEA are likely to slip this quarter</span>
+            <span style="width:1.5px;height:18px;background:var(--brand);animation:v2caret 1.1s step-end infinite"></span>
+            <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--ai-tint);color:var(--ai-ink)">Question</span>
+          </div>
+          <div style="padding:16px 18px;background:var(--ai-tint);border-bottom:1px solid var(--ai-line)">
+            <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ai-ink)">Interpreted as</span>
+              <sc-for list="{{ interpreted }}" as="i" hint-placeholder-count="4">
+                <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 9px;border-radius:7px;background:var(--surface);border:1px solid var(--ai-line)">
+                  <span style="color:var(--ink-3)">{{ i.k }}</span><span style="font-weight:600">{{ i.v }}</span>
+                  <span style="color:var(--ink-4)">✕</span>
+                </span>
+              </sc-for>
+              <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink)">Edit filters</span>
+            </div>
+            <p style="font-size:13.5px;line-height:1.65;margin:14px 0 0;color:var(--ink)">Three of eleven open EMEA enterprise renewals are likely to slip: <strong>Vantage Logistics</strong>, <strong>Ashgrove Retail</strong> and <strong>Brightwater Group</strong><a href="#s2" style="color:var(--ai-ink);text-decoration:none;font-weight:600;font-size:11px;vertical-align:super">1</a>. All three moved a close date twice within 30 days of a pricing conversation, and none has engaged procurement<a href="#s2" style="color:var(--ai-ink);text-decoration:none;font-weight:600;font-size:11px;vertical-align:super">2</a>. Together they hold $2.42M of the $8.34M currently at risk<a href="#s2" style="color:var(--ai-ink);text-decoration:none;font-weight:600;font-size:11px;vertical-align:super">3</a>.</p>
+            <div style="display:flex;align-items:center;gap:14px;margin-top:13px;flex-wrap:wrap">
+              <span style="font-size:12px;font-weight:600;color:var(--ai-ink)">Show reasoning</span>
+              <span style="font-size:12px;font-weight:600;color:var(--ai-ink)">3 sources</span>
+              <span style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-2)"><span style="display:flex;gap:3px">{{ answerPips }}</span>Confidence 4 of 5</span>
+              <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Computed from the 11 records below · 0.9s</span>
+            </div>
+          </div>
+          <div style="padding:8px 8px 0">
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 10px">
+              <span style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4)">Records the answer used</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--brand-ink);font-weight:600">Open all 11 as a view</span>
+            </div>
+            <sc-for list="{{ answerRecords }}" as="r" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 120px 96px 108px;gap:12px;align-items:center;padding:9px 10px;border-radius:9px;background:{{ r.bg }};margin-bottom:2px">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                  <span style="width:24px;height:24px;flex:none;border-radius:7px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center;font-size:9.5px;font-weight:700">{{ r.badge }}</span>
+                  <span style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-2)">{{ r.why }}</div>
+                <div style="text-align:right;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">{{ r.acv }}</div>
+                <div style="text-align:right"><span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--risk-tint);color:var(--risk)">{{ r.likelihood }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;padding:11px 18px;border-top:1px solid var(--line-soft);font-size:10.5px;color:var(--ink-4);margin-top:8px">
+            <span>↵ open the answer in the assistant</span><span>⌘↵ open the 11 records as a filtered view</span>
+            <span style="margin-left:auto;font-weight:600;color:var(--ai-ink)">Save as a monitored search</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px">
+        <sc-for list="{{ nlSpecs }}" as="s" hint-placeholder-count="6">
+          <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+            <div style="font-size:13px;font-weight:600">{{ s.t }}</div>
+            <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">{{ s.b }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s3" data-screen-label="03 Full results" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">03</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Full results, facets &amp; filters</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Pressing Enter on the query itself — rather than on a result — opens the full results page. Facets sit in a 240px rail with live counts and never reorder while the user reads them; a facet with zero matches stays visible at 45% so the absence is information. Filters are chips above the list, distinguishable from the global scope chips of the shell: search filters are outlined, scope is tinted.</p>
+
+      <div style="margin-top:24px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+          <div style="display:flex;align-items:center;gap:9px;flex:1;min-width:0;height:36px;padding:0 12px;border-radius:9px;background:var(--sunken);font-size:13.5px">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--ink-3)" stroke-width="1.7"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+            <span>renewal pricing objection</span>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums">1,204 results · 41ms</span>
+          </div>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px;border-radius:9px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Sort: Relevance ▾</span>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px;border-radius:9px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Save search</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap;background:var(--bg)">
+          <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Filters</span>
+          <sc-for list="{{ resultChips }}" as="c" hint-placeholder-count="4">
+            <span style="display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:12px">
+              <span style="color:var(--ink-3)">{{ c.k }}</span><span style="font-weight:600">{{ c.v }}</span><span style="color:var(--ink-4)">✕</span>
+            </span>
+          </sc-for>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:8px;border:1px dashed var(--line);font-size:12px;color:var(--ink-3)">＋ Add filter</span>
+          <span style="margin-left:auto;font-size:11.5px;color:var(--brand-ink);font-weight:600">Clear all</span>
+        </div>
+        <div style="display:grid;grid-template-columns:240px minmax(0,1fr) 300px">
+          <div style="border-right:1px solid var(--line-soft);padding:14px 14px 20px">
+            <sc-for list="{{ facets }}" as="f" hint-placeholder-count="4">
+              <div style="margin-bottom:16px">
+                <div style="display:flex;align-items:center;gap:8px;padding:0 4px 7px">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">{{ f.label }}</span>
+                  <span style="margin-left:auto;color:var(--ink-4);font-size:11px">▾</span>
+                </div>
+                <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:9px;padding:5px 4px;border-radius:7px;opacity:{{ o.opacity }};background:{{ o.bg }}">
+                    <span style="width:14px;height:14px;flex:none;border-radius:4px;border:1.5px solid {{ o.border }};background:{{ o.box }};color:#fff;display:grid;place-items:center;font-size:9px">{{ o.tick }}</span>
+                    <span style="font-size:12.5px;font-weight:{{ o.weight }}">{{ o.label }}</span>
+                    <span style="margin-left:auto;font-size:11px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ o.count }}</span>
+                  </div>
+                </sc-for>
+                <div style="font-size:11px;font-weight:600;color:var(--brand-ink);padding:5px 4px 0">{{ f.more }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="border-right:1px solid var(--line-soft)">
+            <sc-for list="{{ results }}" as="r" hint-placeholder-count="5">
+              <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft);background:{{ r.bg }};border-left:2px solid {{ r.edge }}">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="width:24px;height:24px;flex:none;border-radius:{{ r.radius }};background:{{ r.badgeBg }};color:{{ r.badgeFg }};display:grid;place-items:center;font-size:9.5px;font-weight:700">{{ r.badge }}</span>
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">{{ r.type }}</span>
+                  <span style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.title }}</span>
+                  <span style="margin-left:auto;flex:none;font-size:11px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ r.when }}</span>
+                </div>
+                <div style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin-top:7px">{{ r.snippet }}</div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap">
+                  <sc-for list="{{ r.meta }}" as="m" hint-placeholder-count="3">
+                    <span style="font-size:11px;color:var(--ink-3)">{{ m }}</span>
+                  </sc-for>
+                  <span style="margin-left:auto;font-size:11px;font-weight:600;color:var(--brand-ink)">{{ r.action }}</span>
+                </div>
+              </div>
+            </sc-for>
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:11.5px;color:var(--ink-3)">
+              <span>Showing 1–5 of 1,204 · more load as you scroll</span>
+              <span style="margin-left:auto;font-weight:600;color:var(--brand-ink)">Export result set</span>
+            </div>
+          </div>
+          <div style="padding:16px;background:var(--bg)">
+            <div style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4)">Preview · call</div>
+            <div style="display:flex;gap:11px;margin-top:12px">
+              <span style="width:32px;height:32px;flex:none;border-radius:9px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center;font-size:11px;font-weight:700">☏</span>
+              <div style="min-width:0">
+                <div style="font-size:13.5px;font-weight:600">Vantage QBR — 14 Jul</div>
+                <div style="font-size:11.5px;color:var(--ink-3)">52 min · 4 participants · 4 signals</div>
+              </div>
+            </div>
+            <div style="margin-top:13px;padding:11px 12px;border-radius:11px;background:var(--surface);border:1px solid var(--line-soft)">
+              <div style="font-size:11px;font-weight:600;color:var(--ink-3)">Matched moment · 38:12</div>
+              <div style="font-size:12.5px;line-height:1.55;color:var(--ink);margin-top:6px">“The <mark style="background:var(--brand-tint);color:var(--brand-ink);padding:0 2px;border-radius:3px">pricing</mark> as it stands will not clear our procurement committee this quarter.”</div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:7px">Speaker: D. Køhler, former COO</div>
+            </div>
+            <div style="margin-top:12px">
+              <sc-for list="{{ callPreview }}" as="c" hint-placeholder-count="4">
+                <div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:12px">
+                  <span style="color:var(--ink-3)">{{ c.k }}</span>
+                  <span style="font-weight:600;color:{{ c.color }}">{{ c.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:7px;margin-top:13px">
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">Play at 38:12</span>
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Open account</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="s4" data-screen-label="04 Preview cards" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">04</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Preview cards</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">One card per object type, each answering the question that type is usually searched for: an account's risk, a person's role and reachability, a call's decisive moment, a deal's likelihood. Every card fits in 320px without scrolling and renders from cached fields in under 60ms. If a field is still loading it is omitted, never skeletoned — a preview that shimmers is slower than one that is short.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px">
+        <sc-for list="{{ previewCards }}" as="p" hint-placeholder-count="3">
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 16px;border-bottom:1px solid var(--line-soft)">
+              <span style="width:26px;height:26px;flex:none;border-radius:{{ p.radius }};background:{{ p.tint }};color:{{ p.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ p.badge }}</span>
+              <div style="min-width:0">
+                <div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.title }}</div>
+                <div style="font-size:11px;color:var(--ink-3)">{{ p.subtitle }}</div>
+              </div>
+            </div>
+            <div style="padding:14px 16px">
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ p.chips }}" as="c" hint-placeholder-count="2">
+                  <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }}</span>
+                </sc-for>
+              </div>
+              <div style="margin-top:12px">
+                <sc-for list="{{ p.rows }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:12px">
+                    <span style="color:var(--ink-3)">{{ r.k }}</span>
+                    <span style="font-weight:600;font-variant-numeric:tabular-nums;color:{{ r.color }}">{{ r.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:12px;padding:11px 12px;border-radius:11px;background:var(--ai-tint);border:1px solid var(--ai-line);font-size:11.5px;line-height:1.5">
+                <span style="font-weight:600;color:var(--ai-ink)">{{ p.aiLabel }} </span>{{ p.ai }}
+              </div>
+              <div style="display:flex;gap:7px;margin-top:12px">
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">{{ p.primary }}</span>
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">{{ p.secondary }}</span>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s5" data-screen-label="05 Entity pages" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">05</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Entity pages</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Search is a router, so what a result opens into is part of the search design. Four destinations, each entered at the matched context rather than at the top: a call opens at the matched timestamp, an email at the matched message, an account at the section the match came from. Back returns to the result list with the cursor and scroll position intact.</p>
+      <div style="margin-top:22px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="display:grid;grid-template-columns:150px 1fr 1fr 150px;gap:18px;padding:12px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+          <div>Type</div><div>Opens into</div><div>Entered at</div><div>Return</div>
+        </div>
+        <sc-for list="{{ entityPages }}" as="e" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:150px 1fr 1fr 150px;gap:18px;padding:14px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px;line-height:1.55">
+            <div style="font-weight:600">{{ e.type }}</div>
+            <div style="color:var(--ink-2)">{{ e.opens }}</div>
+            <div style="color:var(--ink-2)">{{ e.at }}</div>
+            <div style="color:var(--ink-3)">{{ e.back }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s6" data-screen-label="06 Recent and pinned" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">06</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Empty input: pinned, recent, suggested</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">The most-used state of any search is the one before typing, so it is designed as a launcher rather than a blank field. Pinned items sit first because the user chose them; recents next because they are usually the answer; suggestions last, generated from what changed since the user's last visit and always dismissible.</p>
+      <div style="margin-top:22px;border-radius:18px;background:var(--sunken);border:1px solid var(--line-soft);padding:34px 30px;display:grid;place-items:start center">
+        <div style="width:min(720px,100%);border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:11px;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--ink-3)" stroke-width="1.7"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+            <span style="font-size:15.5px;color:var(--ink-3)">Search records, ask a question, or run a command</span>
+            <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;padding:2px 6px;border-radius:5px;background:var(--sunken);color:var(--ink-3)">esc</span>
+          </div>
+          <sc-for list="{{ launcherGroups }}" as="g" hint-placeholder-count="3">
+            <div style="padding:8px 8px;border-bottom:1px solid var(--line-soft)">
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 10px">
+                <span style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:{{ g.labelColor }}">{{ g.label }}</span>
+                <span style="margin-left:auto;font-size:10.5px;color:var(--ink-4)">{{ g.hint }}</span>
+              </div>
+              <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:9px;background:{{ i.bg }}">
+                  <span style="width:24px;height:24px;flex:none;border-radius:7px;background:{{ i.tint }};color:{{ i.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ i.icon }}</span>
+                  <div style="min-width:0">
+                    <div style="font-size:13px;font-weight:{{ i.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.label }}</div>
+                    <div style="font-size:11px;color:var(--ink-3);margin-top:1px">{{ i.meta }}</div>
+                  </div>
+                  <span style="margin-left:auto;flex:none;display:flex;align-items:center;gap:9px">
+                    <span style="font-size:11px;font-weight:600;color:{{ i.badgeColor }}">{{ i.badge }}</span>
+                    <span style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ i.key }}</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="display:flex;align-items:center;gap:14px;padding:10px 18px;font-size:10.5px;color:var(--ink-4)">
+            <span>⌘1–5 runs a pinned search</span><span>⌥⌫ clears recents</span>
+            <span style="margin-left:auto">Suggestions are generated · dismiss with ⌫</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s7" data-screen-label="07 Saved searches" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">07</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Saved &amp; monitored searches</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">A saved search stores the query, the filters and the sort — not the results. Monitoring turns it into a standing question: it runs on a schedule, and when the result set or an AI answer changes materially it produces a notification rather than an email nobody reads. This is how search becomes a workflow instead of an errand.</p>
+      <div style="margin-top:22px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="display:grid;grid-template-columns:minmax(0,1.5fr) 1fr 130px 120px 110px;gap:14px;padding:12px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+          <div>Saved search</div><div>Definition</div><div>Monitoring</div><div>Result</div><div>Sharing</div>
+        </div>
+        <sc-for list="{{ savedSearches }}" as="s" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:minmax(0,1.5fr) 1fr 130px 120px 110px;gap:14px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0">
+              <span style="width:22px;height:22px;flex:none;border-radius:7px;background:{{ s.tint }};color:{{ s.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ s.icon }}</span>
+              <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-2);font-family:ui-monospace,monospace">{{ s.def }}</div>
+            <div><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ s.monBg }};color:{{ s.monFg }}">{{ s.monitoring }}</span></div>
+            <div style="font-size:12px;font-weight:600;color:{{ s.resultColor }};font-variant-numeric:tabular-nums">{{ s.result }}</div>
+            <div style="font-size:11.5px;color:var(--ink-3)">{{ s.sharing }}</div>
+          </div>
+        </sc-for>
+        <div style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:11.5px;color:var(--ink-3)">
+          <span>Shared searches respect each viewer’s permissions — the same definition returns different counts per person, and says so.</span>
+          <span style="margin-left:auto;font-weight:600;color:var(--brand-ink)">New saved search</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="s9" data-screen-label="09 Ranking" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">08</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Ranking</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Ranking is explainable on purpose: a rep who cannot predict the order stops trusting the first result. Within a group, score is a weighted sum of six factors, and the dominant one is shown on the row when it is not lexical. Recency and ownership beat raw text score — the record you touched yesterday is almost always the one you meant.</p>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-top:22px;align-items:start">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <sc-for list="{{ ranking }}" as="r" hint-placeholder-count="6">
+            <div style="padding:13px 18px;border-bottom:1px solid var(--line-soft)">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:13px;font-weight:600">{{ r.factor }}</span>
+                <span style="margin-left:auto;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--brand-ink)">{{ r.weight }}</span>
+              </div>
+              <div style="height:6px;border-radius:999px;background:var(--sunken);margin-top:7px;overflow:hidden">
+                <div style="width:{{ r.pct }};height:100%;border-radius:999px;background:var(--brand)"></div>
+              </div>
+              <div style="font-size:11.5px;color:var(--ink-2);margin-top:6px;line-height:1.5">{{ r.note }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <sc-for list="{{ rankingRules }}" as="r" hint-placeholder-count="4">
+            <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+              <div style="font-size:13px;font-weight:600">{{ r.t }}</div>
+              <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">{{ r.b }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="s10" data-screen-label="10 Keyboard" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">09</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Keyboard navigation</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Search is a keyboard surface first; the mouse is the fallback. The cursor never leaves the input, arrow keys move a virtual selection, and every destination has a modifier. Nothing requires a click, and the hand never has to travel.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px">
+        <sc-for list="{{ keyboardGroups }}" as="g" hint-placeholder-count="3">
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="padding:12px 16px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">{{ g.label }}</div>
+            <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+                <span style="color:var(--ink-2)">{{ i.what }}</span>
+                <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:11px;padding:2px 7px;border-radius:6px;background:var(--sunken);border:1px solid var(--line-soft)">{{ i.keys }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s11" data-screen-label="11 Loading and no results" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">10</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Loading, no results, errors</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Because the first paint comes from a local index, a true loading state is rare and short — so it is a 2px bar under the input, not a skeleton over the list. No-results is the state that earns the most design: it states the query, shows which filter is doing the excluding, and offers the widest single change that would help.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Loading — cold index</div>
+          <div style="height:2px;background:var(--sunken);position:relative;overflow:hidden">
+            <div style="position:absolute;inset:0;width:28%;background:var(--brand);animation:v2bar 1.2s var(--ease) infinite"></div>
+          </div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ loadingRows }}" as="l" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:24px;height:24px;flex:none;border-radius:7px;background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:v2shimmer 1.4s ease-in-out infinite"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+                  <div style="height:9px;width:{{ l.a }};border-radius:5px;background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:v2shimmer 1.4s ease-in-out infinite"></div>
+                  <div style="height:8px;width:{{ l.b }};border-radius:5px;background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:v2shimmer 1.4s ease-in-out infinite"></div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">Only on a cold cache, and only for the group still resolving. Groups that are ready render immediately rather than waiting for the slowest.</div>
+          </div>
+        </div>
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">No results</div>
+          <div style="padding:18px 16px">
+            <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Nothing matches <span style="font-family:ui-monospace,monospace;font-size:13px;padding:1px 5px;border-radius:5px;background:var(--sunken)">cadenza pilot</span></div>
+            <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">Four filters are active. <strong>Sentiment: negative</strong> is the narrowest — it excludes 1,180 of the 1,204 matches for this query.</p>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:13px">
+              <span style="display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 11px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600;justify-content:flex-start">Remove “sentiment: negative”</span>
+              <span style="display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Search all object types</span>
+              <span style="display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 11px;border-radius:8px;background:var(--ai-tint);color:var(--ai-ink);font-size:12px;font-weight:600">Ask Signora instead</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px">Did you mean <span style="font-weight:600;color:var(--brand-ink)">Cadenza Freight Cloud</span> — 14 mentions across 6 accounts?</div>
+          </div>
+        </div>
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Partial &amp; error</div>
+          <div style="padding:16px">
+            <div style="display:flex;align-items:center;gap:9px">
+              <span style="width:22px;height:22px;border-radius:7px;background:var(--warn-tint);color:var(--warn);display:grid;place-items:center;font-size:11px;font-weight:700">!</span>
+              <span style="font-size:13.5px;font-weight:600">Conversations are unavailable</span>
+            </div>
+            <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">Accounts, deals and people are complete. Conversation search timed out, so 412 possible matches are not included in this count.</p>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+              <div style="display:flex;align-items:center;gap:9px;font-size:12px"><span style="width:6px;height:6px;border-radius:999px;background:var(--pos)"></span>Accounts · 318 · complete</div>
+              <div style="display:flex;align-items:center;gap:9px;font-size:12px"><span style="width:6px;height:6px;border-radius:999px;background:var(--pos)"></span>Deals · 286 · complete</div>
+              <div style="display:flex;align-items:center;gap:9px;font-size:12px;color:var(--warn)"><span style="width:6px;height:6px;border-radius:999px;background:var(--warn)"></span>Conversations · unavailable</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;margin-top:13px">
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Retry this group</span>
+              <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-4);margin-left:auto">req_5c04-91ba</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s12" data-screen-label="12 Accessibility and responsive" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">11</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Accessibility &amp; responsive</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px;align-items:start">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:13px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Accessibility</div>
+          <sc-for list="{{ a11y }}" as="a" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:56px 1fr;gap:14px;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+              <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ a.sc }}</span>
+              <span style="color:var(--ink-2);line-height:1.55">{{ a.b }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <sc-for list="{{ responsive }}" as="r" hint-placeholder-count="4">
+            <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:16px 18px">
+              <div style="display:flex;align-items:baseline;gap:10px">
+                <span style="font-size:13px;font-weight:600">{{ r.name }}</span>
+                <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ r.range }}</span>
+              </div>
+              <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">{{ r.b }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="s14" data-screen-label="12 Rules" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">12</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Search rules</h2>
+      </div>
+      <div style="margin-top:20px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <sc-for list="{{ rules }}" as="r" hint-placeholder-count="12">
+          <div style="display:grid;grid-template-columns:30px 1fr;gap:12px;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:13px">
+            <span style="font-size:11px;font-weight:700;color:var(--brand-ink);font-variant-numeric:tabular-nums">{{ r.n }}</span>
+            <span style="color:var(--ink-2);line-height:1.55">{{ r.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+  </main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  pips(n, w) {
+    return [1, 2, 3, 4, 5].map(i => R('span', { key: i, style: { width: w || 16, height: 5, borderRadius: 999, display: 'block', background: i <= n ? 'var(--ai)' : 'rgba(128,128,128,.25)' } }));
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+
+      toc: [
+        { label: 'Surfaces', items: [
+          { n: '01', t: 'Instant search', href: '#s1' },
+          { n: '02', t: 'AI & natural language', href: '#s2' },
+          { n: '03', t: 'Results, facets, filters', href: '#s3' },
+          { n: '04', t: 'Preview cards', href: '#s4' },
+          { n: '05', t: 'Entity pages', href: '#s5' } ] },
+        { label: 'Memory', items: [
+          { n: '06', t: 'Recent & pinned', href: '#s6' },
+          { n: '07', t: 'Saved searches', href: '#s7' },
+          { n: '08', t: 'Suggested searches', href: '#s8' } ] },
+        { label: 'Behaviour', items: [
+          { n: '09', t: 'Ranking', href: '#s9' },
+          { n: '10', t: 'Keyboard', href: '#s10' },
+          { n: '11', t: 'Loading & no results', href: '#s11' } ] },
+        { label: 'Governance', items: [
+          { n: '12', t: 'Accessibility', href: '#s12' },
+          { n: '13', t: 'Responsive', href: '#s13' },
+          { n: '14', t: 'Rules', href: '#s14' } ] },
+      ],
+
+      budget: [
+        { k: 'First result', v: '< 20ms' }, { k: 'Refined set', v: '< 120ms' },
+        { k: 'Preview card', v: '< 60ms' }, { k: 'AI answer', v: '< 1.2s' },
+      ],
+
+      heroStats: [
+        { v: '8.4M', l: 'Indexed records' }, { v: '14ms', l: 'Median first paint' },
+        { v: '4', l: 'Object types, one input' }, { v: '0', l: 'Second search boxes' },
+      ],
+
+      instantGroups: [
+        { label: 'Accounts', count: '6', more: 'Show all', items: [
+          { badge: 'VL', name: 'Vantage Logistics A/S', meta: 'Enterprise · EMEA · $1.24M open', status: 'At risk', key: '↵', sel: true, radius: '8px', statusBg: 'var(--risk-tint)', statusFg: 'var(--risk)' },
+          { badge: 'VF', name: 'Vantage Freight (subsidiary)', meta: 'Mid-market · EMEA · $310K open', status: 'On track', key: '', sel: false, radius: '8px', statusBg: 'var(--pos-tint)', statusFg: 'var(--pos)' } ] },
+        { label: 'Deals', count: '9', more: 'Show all', items: [
+          { badge: 'D', name: 'Renewal — Vantage Q4 FY26', meta: 'Negotiation · closes 12 Oct · M. Reinhardt', status: '41%', key: '', sel: false, radius: '8px', statusBg: 'var(--risk-tint)', statusFg: 'var(--risk)' },
+          { badge: 'D', name: 'Expansion — freight API seats', meta: 'Discovery · 180 seats · $310K', status: 'Upside', key: '', sel: false, radius: '8px', statusBg: 'var(--pos-tint)', statusFg: 'var(--pos)' } ] },
+        { label: 'People', count: '7', more: 'Show all', items: [
+          { badge: 'PS', name: 'Peter Sørensen', meta: 'Head of Procurement · Vantage Logistics', status: 'Blocker', key: '', sel: false, radius: '999px', statusBg: 'var(--risk-tint)', statusFg: 'var(--risk)' },
+          { badge: 'JH', name: 'Jonas Hald', meta: 'VP Operations · Vantage Logistics', status: 'Champion', key: '', sel: false, radius: '999px', statusBg: 'var(--pos-tint)', statusFg: 'var(--pos)' } ] },
+        { label: 'Conversations', count: '6', more: 'Show all', items: [
+          { badge: '☏', name: 'Vantage QBR — 14 Jul', meta: '52 min · pricing objection at 38:12', status: '4 signals', key: '', sel: false, radius: '8px', statusBg: 'var(--sunken)', statusFg: 'var(--ink-2)' } ] },
+      ].map(g => ({
+        label: g.label, count: g.count, more: g.more,
+        items: g.items.map(i => ({
+          badge: i.badge, name: i.name, meta: i.meta, status: i.status, key: i.key, radius: i.radius,
+          statusBg: i.statusBg, statusFg: i.statusFg,
+          bg: i.sel ? 'var(--brand-tint)' : 'transparent',
+          edge: i.sel ? 'var(--brand)' : 'transparent',
+          weight: i.sel ? 600 : 400,
+          badgeBg: i.sel ? 'var(--brand)' : 'var(--sunken)',
+          badgeFg: i.sel ? '#fff' : 'var(--ink-2)',
+        })),
+      })),
+
+      previewFacts: [
+        { k: 'Signora score', v: '38 / 100', color: 'var(--risk)' },
+        { k: 'Open ACV', v: '$1,240,000', color: 'var(--ink)' },
+        { k: 'Renewal', v: '12 Oct 2026', color: 'var(--warn)' },
+        { k: 'Owner', v: 'M. Reinhardt', color: 'var(--ink)' },
+        { k: 'Last touch', v: '19 days ago', color: 'var(--risk)' },
+      ],
+
+      instantSpecs: [
+        { t: 'Local first', b: 'A 40MB client index of the user’s own accessible records answers the first keystroke without a request. The network only refines and appends.' },
+        { t: 'Stable results', b: 'Refinement may add rows below and update metadata in place, but never reorders what is already visible. The row under the cursor cannot move.' },
+        { t: 'Typed groups', b: 'Accounts, deals, people, conversations — in that fixed order, five each. Order is intent, not score, so the target is always in the same place.' },
+        { t: 'Preview pane', b: 'Selection renders a preview in under 60ms from cached fields. Most searches end here without opening the record at all.' },
+      ],
+
+      interpreted: [
+        { k: 'Object', v: 'Renewals' }, { k: 'Region', v: 'EMEA' },
+        { k: 'Segment', v: 'Enterprise' }, { k: 'Period', v: 'Q3 FY26' },
+        { k: 'Signal', v: 'Slip likelihood > 50%' },
+      ],
+
+      answerPips: this.pips(4, 15),
+
+      answerRecords: [
+        { badge: 'VL', name: 'Vantage Logistics', why: 'Two slips, pricing', acv: '$1.24M', likelihood: '59% slip', sel: true },
+        { badge: 'AR', name: 'Ashgrove Retail', why: 'Champion left', acv: '$0.30M', likelihood: '64% slip', sel: false },
+        { badge: 'BG', name: 'Brightwater Group', why: 'Competitor named', acv: '$0.88M', likelihood: '52% slip', sel: false },
+      ].map(r => Object.assign({}, r, { bg: r.sel ? 'var(--brand-tint)' : 'transparent' })),
+
+      nlSpecs: [
+        { t: 'Classification is local', b: 'Question-versus-lookup is decided on the client from the first three words. A name never waits for a model, and a question never returns a list of names.' },
+        { t: 'Interpretation is editable', b: 'The question is translated into visible filter chips. Users correct the interpretation instead of rephrasing the sentence and hoping.' },
+        { t: 'Answers cite records', b: 'Every answer names the record set it was computed from, and that set can be opened as a filtered view or exported. No claim without a citation.' },
+        { t: 'Never blocks lookup', b: 'While the answer streams, the deterministic result groups are already on screen and navigable.' },
+        { t: 'Monitored searches', b: 'A question can be saved to run on a schedule and notify when its answer changes — the bridge between search and signals.' },
+        { t: 'Honest gaps', b: 'When evidence is thin the answer names what is missing — “no call data for 4 of these 11” — rather than hedging in prose.' },
+      ],
+
+      resultChips: [
+        { k: 'Type', v: 'Conversations' }, { k: 'Date', v: 'Last 90 days' },
+        { k: 'Segment', v: 'Enterprise' }, { k: 'Sentiment', v: 'Negative' },
+      ],
+
+      facets: [
+        { label: 'Object type', more: '', options: [
+          ['Conversations', '412', true, false], ['Accounts', '318', false, false],
+          ['Deals', '286', false, false], ['People', '188', false, false] ] },
+        { label: 'Owner', more: 'Show 9 more', options: [
+          ['M. Reinhardt', '184', true, false], ['J. Okafor', '142', false, false],
+          ['A. Duval', '96', false, false], ['L. Petrova', '74', false, false] ] },
+        { label: 'Signal', more: '', options: [
+          ['Pricing objection', '96', true, false], ['Competitor named', '48', false, false],
+          ['Champion change', '22', false, false], ['Security review', '0', false, true] ] },
+        { label: 'Region', more: '', options: [
+          ['EMEA', '612', false, false], ['North America', '486', false, false],
+          ['APAC', '106', false, false], ['LATAM', '0', false, true] ] },
+      ].map(f => ({
+        label: f.label, more: f.more,
+        options: f.options.map(([label, count, on, zero]) => ({
+          label, count,
+          tick: on ? '✓' : '',
+          box: on ? 'var(--brand)' : 'transparent',
+          border: on ? 'var(--brand)' : 'var(--line)',
+          weight: on ? 600 : 400,
+          bg: on ? 'var(--brand-tint)' : 'transparent',
+          opacity: zero ? '.45' : '1',
+        })),
+      })),
+
+      results: [
+        { type: 'Conversation', badge: '☏', radius: '8px', title: 'Vantage QBR — 14 Jul', when: '21 days ago', sel: true,
+          snippet: 'D. Køhler at 38:12 — “The pricing as it stands will not clear our procurement committee this quarter.” Sentiment fell 0.4 for the rest of the call.',
+          meta: ['Vantage Logistics', '52 min · 4 participants', 'Signal: pricing objection'], action: 'Play at 38:12' },
+        { type: 'Email', badge: '✉', radius: '8px', title: 'Re: Renewal commercials — procurement review', when: '28 Jul', sel: false,
+          snippet: '“We will need to take this through committee. The current uplift is not something I can approve.”',
+          meta: ['P. Sørensen → M. Reinhardt', 'Unanswered 7 days'], action: 'Open thread' },
+        { type: 'Deal', badge: 'D', radius: '8px', title: 'Renewal — Vantage Q4 FY26', when: 'Updated today', sel: false,
+          snippet: 'Negotiation · $1,240,000 · closes 12 Oct. Two close-date changes, both citing procurement review.',
+          meta: ['M. Reinhardt', 'Slip likelihood 59%'], action: 'Open deal' },
+        { type: 'Conversation', badge: '☏', radius: '8px', title: 'Brightwater pricing call — 26 Jul', when: '9 days ago', sel: false,
+          snippet: 'Buyer compared our uplift with Cadenza’s annual commitment discount at 12:40.',
+          meta: ['Brightwater Group', '31 min', 'Signal: competitor named'], action: 'Play at 12:40' },
+        { type: 'Account', badge: 'AR', radius: '8px', title: 'Ashgrove Retail', when: 'Updated yesterday', sel: false,
+          snippet: 'Matched on note: “pricing objection raised before the economic buyer left the business.”',
+          meta: ['Enterprise · EMEA', 'Score 44 · at risk'], action: 'Open account' },
+      ].map(r => Object.assign({}, r, {
+        bg: r.sel ? 'var(--brand-tint)' : 'transparent',
+        edge: r.sel ? 'var(--brand)' : 'transparent',
+        badgeBg: r.sel ? 'var(--brand)' : 'var(--sunken)',
+        badgeFg: r.sel ? '#fff' : 'var(--ink-2)',
+      })),
+
+      callPreview: [
+        { k: 'Account', v: 'Vantage Logistics', color: 'var(--ink)' },
+        { k: 'Sentiment', v: 'Negative after 36:00', color: 'var(--risk)' },
+        { k: 'Signals', v: '4 detected', color: 'var(--ink)' },
+        { k: 'Follow-up', v: 'None logged', color: 'var(--warn)' },
+      ],
+
+      previewCards: [
+        { badge: 'VL', radius: '8px', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', title: 'Vantage Logistics A/S', subtitle: 'Account · Enterprise · EMEA',
+          chips: [{ label: 'At risk', bg: 'var(--risk-tint)', fg: 'var(--risk)' }, { label: 'Renewal 69d', bg: 'var(--sunken)', fg: 'var(--ink-2)' }],
+          rows: [{ k: 'Score', v: '38 / 100', color: 'var(--risk)' }, { k: 'Open ACV', v: '$1.24M', color: 'var(--ink)' }, { k: 'Owner', v: 'M. Reinhardt', color: 'var(--ink)' }, { k: 'Last touch', v: '19 days', color: 'var(--risk)' }],
+          aiLabel: 'Why at risk:', ai: 'two slips after pricing pushback; procurement uncontacted.', primary: 'Open ↵', secondary: 'Pin' },
+        { badge: 'PS', radius: '999px', tint: 'var(--risk-tint)', color: 'var(--risk)', title: 'Peter Sørensen', subtitle: 'Person · Head of Procurement',
+          chips: [{ label: 'Blocker', bg: 'var(--risk-tint)', fg: 'var(--risk)' }, { label: 'Was champion', bg: 'var(--warn-tint)', fg: 'var(--warn)' }],
+          rows: [{ k: 'Account', v: 'Vantage Logistics', color: 'var(--ink)' }, { k: 'Engagement', v: '3 touches · 24d', color: 'var(--risk)' }, { k: 'Reachable via', v: 'J. Hald', color: 'var(--pos)' }, { k: 'Last email', v: '28 Jul · unanswered', color: 'var(--risk)' }],
+          aiLabel: 'Context:', ai: 'moved from Ops to Procurement on 21 Jul — advocate became gatekeeper.', primary: 'Open ↵', secondary: 'Draft email' },
+        { badge: '☏', radius: '8px', tint: 'var(--sunken)', color: 'var(--ink-2)', title: 'Vantage QBR — 14 Jul', subtitle: 'Conversation · 52 min · 4 people',
+          chips: [{ label: '4 signals', bg: 'var(--sunken)', fg: 'var(--ink-2)' }, { label: 'Negative after 36:00', bg: 'var(--risk-tint)', fg: 'var(--risk)' }],
+          rows: [{ k: 'Matched at', v: '38:12', color: 'var(--brand-ink)' }, { k: 'Speaker', v: 'D. Køhler', color: 'var(--ink)' }, { k: 'Topic', v: 'Pricing · procurement', color: 'var(--ink)' }, { k: 'Follow-up', v: 'None logged', color: 'var(--warn)' }],
+          aiLabel: 'Decisive moment:', ai: '“pricing as it stands will not clear our procurement committee.”', primary: 'Play at 38:12', secondary: 'Summary' },
+      ],
+
+      entityPages: [
+        { type: 'Account', opens: 'Account 360 — the flagship record page', at: 'The section the match came from; a note match scrolls to that note', back: 'Cursor and scroll preserved' },
+        { type: 'Deal', opens: 'Deal room with stage history and risk panel', at: 'The matched field, highlighted for 2 seconds then faded', back: 'Result list, same position' },
+        { type: 'Person', opens: 'Contact page with committee role and thread history', at: 'The matched thread or call participation', back: 'Result list, same position' },
+        { type: 'Conversation', opens: 'Call player with transcript, signals and summary', at: 'The matched timestamp, paused, with the phrase highlighted', back: 'Result list; playback position remembered' },
+      ],
+
+      launcherGroups: [
+        { label: 'Pinned', labelColor: 'var(--brand-ink)', hint: '⌘1–5', items: [
+          { icon: '★', label: 'My at-risk enterprise renewals', meta: 'Saved search · 11 records · 2 new', badge: '2 new', badgeColor: 'var(--risk)', key: '⌘1', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', sel: true },
+          { icon: 'VL', label: 'Vantage Logistics', meta: 'Account · pinned 12 Jun', badge: '', badgeColor: 'var(--ink-3)', key: '⌘2', tint: 'var(--sunken)', color: 'var(--ink-2)', sel: false } ] },
+        { label: 'Recent', labelColor: 'var(--ink-4)', hint: 'this week', items: [
+          { icon: '⌕', label: 'renewal pricing objection', meta: 'Query · 1,204 results · yesterday', badge: '', badgeColor: '', key: '', tint: 'var(--sunken)', color: 'var(--ink-2)', sel: false },
+          { icon: 'CH', label: 'Corrigan Health', meta: 'Account · opened 2 days ago', badge: '', badgeColor: '', key: '', tint: 'var(--sunken)', color: 'var(--ink-2)', sel: false },
+          { icon: '✦', label: 'why is EMEA enterprise slipping', meta: 'Question · answered Monday', badge: 'AI', badgeColor: 'var(--ai-ink)', key: '', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', sel: false } ] },
+        { label: 'Suggested', labelColor: 'var(--ai-ink)', hint: 'from what changed since Friday', items: [
+          { icon: '✦', label: 'Which deals slipped out of Q3 overnight?', meta: '3 deals · $2.42M', badge: 'New', badgeColor: 'var(--ai-ink)', key: '', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', sel: false },
+          { icon: '✦', label: 'Accounts where Cadenza is now named', meta: '4 accounts · first mention this week', badge: 'New', badgeColor: 'var(--ai-ink)', key: '', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', sel: false } ] },
+      ].map(g => ({
+        label: g.label, labelColor: g.labelColor, hint: g.hint,
+        items: g.items.map(i => Object.assign({}, i, {
+          bg: i.sel ? 'var(--brand-tint)' : 'transparent',
+          weight: i.sel ? 600 : 400,
+        })),
+      })),
+
+      savedSearches: [
+        { icon: '★', name: 'My at-risk enterprise renewals', def: 'type:deal segment:ent risk:>50', monitoring: 'Hourly', result: '11 · 2 new', sharing: 'Private', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', monBg: 'var(--pos-tint)', monFg: 'var(--pos)', resultColor: 'var(--risk)' },
+        { icon: '✦', name: 'Where is Cadenza appearing?', def: 'mentions:"Cadenza" last:14d', monitoring: 'Daily · AI', result: '4 accounts', sharing: 'Team', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', monBg: 'var(--ai-tint)', monFg: 'var(--ai-ink)', resultColor: 'var(--warn)' },
+        { icon: '⌕', name: 'Unanswered procurement email', def: 'type:email unanswered:>5d topic:pricing', monitoring: 'Hourly', result: '6 threads', sharing: 'Private', tint: 'var(--sunken)', color: 'var(--ink-2)', monBg: 'var(--pos-tint)', monFg: 'var(--pos)', resultColor: 'var(--risk)' },
+        { icon: '⌕', name: 'Q3 board extract', def: 'type:deal stage:commit period:q3', monitoring: 'Off', result: '212 deals', sharing: 'Shared link', tint: 'var(--sunken)', color: 'var(--ink-2)', monBg: 'var(--sunken)', monFg: 'var(--ink-3)', resultColor: 'var(--ink)' },
+        { icon: '⌕', name: 'Champion changes this quarter', def: 'signal:champion_change period:q3', monitoring: 'Daily', result: '9 people', sharing: 'Team', tint: 'var(--sunken)', color: 'var(--ink-2)', monBg: 'var(--pos-tint)', monFg: 'var(--pos)', resultColor: 'var(--warn)' },
+      ],
+
+      ranking: [
+        { factor: 'Lexical match', weight: '0.30', pct: '30%', note: 'Prefix and fuzzy match on name, identifiers and indexed text. Exact prefix on a name always outranks a body-text hit.' },
+        { factor: 'Recency of your interaction', weight: '0.25', pct: '25%', note: 'Records you opened, edited or were mentioned on in the last 14 days. The single strongest predictor of intent.' },
+        { factor: 'Ownership & team', weight: '0.18', pct: '18%', note: 'Your records first, then your team’s, then the workspace. Never hides other people’s records — only orders them lower.' },
+        { factor: 'Record salience', weight: '0.12', pct: '12%', note: 'Open ACV, tier, and whether the record is currently in a live deal cycle.' },
+        { factor: 'Signal heat', weight: '0.10', pct: '10%', note: 'Recent detected signals. A record that changed this morning outranks a dormant one with the same text score.' },
+        { factor: 'Field weighting', weight: '0.05', pct: '5%', note: 'Name and identifier beat description; transcript speech beats metadata.' },
+      ],
+
+      rankingRules: [
+        { t: 'Explainable on demand', b: 'Hovering the rank badge names the dominant factor — “opened yesterday”, “exact name match”, “signal this morning”. No black-box ordering in a tool people bet quota on.' },
+        { t: 'Groups before scores', b: 'Cross-type ranking is never mixed into one list. Type order is fixed so the eye knows where to go; scoring only orders rows within a type.' },
+        { t: 'No personalised suppression', b: 'Ranking reorders, it never removes. A record you have never touched is still reachable, and the count always reflects everything you may see.' },
+        { t: 'Permissions before ranking', b: 'Access filtering happens in the index, not the UI. A record you cannot see never appears, and its absence never changes a visible count.' },
+      ],
+
+      keyboardGroups: [
+        { label: 'Open & move', items: [
+          { what: 'Open search', keys: '⌘K' }, { what: 'Move selection', keys: '↑ ↓' },
+          { what: 'Next / previous group', keys: '⇥ / ⇧⇥' }, { what: 'Jump to type 1–4', keys: '⌥1–4' },
+          { what: 'First / last result', keys: '⌘↑ / ⌘↓' }, { what: 'Close', keys: 'esc' },
+        ] },
+        { label: 'Act', items: [
+          { what: 'Open result', keys: '↵' }, { what: 'Open in side panel', keys: '⌘↵' },
+          { what: 'Open in new tab', keys: '⌥↵' }, { what: 'Pin result or query', keys: '⌘P' },
+          { what: 'Save search', keys: '⌘S' }, { what: 'Copy link to result', keys: '⌘⇧C' },
+        ] },
+        { label: 'Refine', items: [
+          { what: 'Filter by type', keys: 'type: prefix' }, { what: 'Toggle top facet', keys: '⌘F' },
+          { what: 'Clear filters', keys: '⌘⌫' }, { what: 'Ask instead of search', keys: '⌘⇧↵' },
+          { what: 'Recent queries', keys: '↑ on empty input' }, { what: 'Clear recents', keys: '⌥⌫' },
+        ] },
+      ],
+
+      loadingRows: [{ a: '58%', b: '38%' }, { a: '44%', b: '50%' }, { a: '66%', b: '32%' }, { a: '50%', b: '44%' }],
+
+      a11y: [
+        { sc: '4.1.2', b: 'The input is a combobox with aria-expanded, aria-activedescendant and an owned listbox; results are options, groups are labelled groups.' },
+        { sc: '4.1.3', b: 'Result counts are announced politely and debounced to one announcement per settled query, never per keystroke.' },
+        { sc: '2.1.1', b: 'Facets, filters, preview actions and the AI answer are all reachable without leaving the keyboard.' },
+        { sc: '2.4.7', b: 'The virtual cursor is visible as a 2px brand edge plus a tint, not colour alone; the text caret never leaves the input.' },
+        { sc: '1.4.3', b: 'Highlighted matches use a brand-tint mark with a 7:1 foreground, and are also bolded so the emphasis survives without colour.' },
+        { sc: '2.2.2', b: 'The indeterminate bar is the only motion; it stops as soon as the refined set lands and respects reduced-motion.' },
+        { sc: '1.4.13', b: 'Preview content is not hover-only: selection drives it, so keyboard and pointer see the same thing.' },
+        { sc: '3.3.2', b: 'Query syntax (type:, owner:, last:) is documented inline under the input on first use and in the shortcut sheet after.' },
+      ],
+
+      responsive: [
+        { name: 'Desktop', range: '≥ 1280px', b: 'Palette 880px with the preview pane. Full results page shows facets, list and preview together.' },
+        { name: 'Laptop', range: '1024–1279', b: 'Palette drops to 720px and the preview becomes a keyboard-toggled overlay on the right. Facets collapse to a filter button with a count.' },
+        { name: 'Tablet', range: '768–1023', b: 'Full-width sheet from the top; results only. Selecting a result opens the preview as a bottom sheet at 60% height.' },
+        { name: 'Phone', range: '< 768px', b: 'Full-screen search. Groups become horizontally scrollable type tabs; previews are skipped and results open directly. Voice input is offered on the query field.' },
+      ],
+
+      rules: [
+        'One search surface. The top-bar field is a doorway to it, never a second implementation.',
+        'First results render from the local index without a network request.',
+        'Never reorder rows that are already on screen; refinement may only append and update in place.',
+        'Group order is fixed by object type; scoring orders only within a group.',
+        'Every result row states enough to be rejected without opening it.',
+        'A question produces an answer with citations and the record set it used; a name produces records.',
+        'The AI interpretation of a question is shown as editable filters.',
+        'Facets keep zero-count options visible at 45% — absence is information.',
+        'Permissions are applied in the index; counts never leak inaccessible records.',
+        'Ranking is explainable: the dominant factor is nameable for every row.',
+        'No-results names the narrowest active filter and offers the single widest fix.',
+        'A saved search stores the definition, not the results, and monitoring produces notifications rather than email.',
+        'Search state — query, filters, sort — serialises to the URL and is shareable.',
+        'Every destination opens at the matched context, and Back restores cursor and scroll.',
+      ].map((t, i) => ({ n: String(i + 1).padStart(2, '0'), t })),
+    };
+  }
+}
+</script>
+</body>
+</html>

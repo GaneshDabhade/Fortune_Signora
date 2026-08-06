@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes fsShimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes fsSpin { to { transform: rotate(360deg); } }
+  @keyframes fsPulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em;padding:0 40px 120px">
+
+  <header style="max-width:1360px;margin:0 auto;padding:56px 0 44px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);font-size:11.5px;font-weight:600">Platform foundation · Module 1</span>
+      <span style="font-size:11.5px;color:var(--ink-3)">Design system v2.0 · Quiet Premium · no new tokens</span>
+      <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};box-shadow:{{ lightShadow }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};box-shadow:{{ darkShadow }}" onClick="{{ setDark }}">Dark</span>
+      </span>
+    </div>
+    <h1 style="font-size:44px;line-height:1.06;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:22ch">Authentication</h1>
+    <p style="font-size:17px;line-height:1.6;max-width:74ch;margin:18px 0 0;color:var(--ink-2);text-wrap:pretty">The first screen an enterprise buyer sees, and the one their security team reads most carefully. Every state here is designed to be legible under stress: what happened, whether it was you, and exactly what to do next. No screen blames the user, none leaks whether an account exists, and none is a dead end.</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px;max-width:900px">
+      <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="4">
+        <div style="padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="font-size:24px;font-weight:700;letter-spacing:-0.026em;line-height:1;font-variant-numeric:tabular-nums">{{ s.v }}</div>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:6px">{{ s.l }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </header>
+
+  <section data-screen-label="Journeys" style="max-width:1360px;margin:0 auto;padding-top:8px">
+    <h2 style="font-size:26px;font-weight:700;letter-spacing:-0.026em;margin:0">Five journeys</h2>
+    <p style="font-size:15px;line-height:1.6;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">Every screen in this module belongs to one of these. The branch points are where enterprise authentication actually fails — domain policy, expired invitations, and session expiry mid-work.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:22px">
+      <sc-for list="{{ journeys }}" as="j" hint-placeholder-count="5">
+        <div style="padding:20px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="display:flex;align-items:center;gap:9px">
+            <span style="width:22px;height:22px;border-radius:7px;background:{{ j.tint }};color:{{ j.color }};display:grid;place-items:center;font-size:10.5px;font-weight:700">{{ j.n }}</span>
+            <span style="font-size:13.5px;font-weight:600">{{ j.name }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0;margin-top:14px">
+            <sc-for list="{{ j.steps }}" as="s" hint-placeholder-count="5">
+              <div style="display:flex;align-items:flex-start;gap:9px;padding:5px 0">
+                <span style="width:6px;height:6px;flex:none;border-radius:999px;background:{{ s.dot }};margin-top:7px"></span>
+                <span style="font-size:12.5px;color:{{ s.color }};line-height:1.5">{{ s.t }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;padding-top:11px;border-top:1px solid var(--line-soft);line-height:1.5">{{ j.note }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section data-screen-label="Hierarchy" style="max-width:1360px;margin:0 auto;padding-top:56px">
+    <h2 style="font-size:26px;font-weight:700;letter-spacing:-0.026em;margin:0">Screen hierarchy</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:22px">
+      <sc-for list="{{ hierarchy }}" as="h" hint-placeholder-count="5">
+        <div style="padding:18px 20px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">{{ h.group }}</div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+            <sc-for list="{{ h.items }}" as="i" hint-placeholder-count="5">
+              <div style="display:flex;align-items:baseline;gap:9px;font-size:12.5px">
+                <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4);flex:none">{{ i.route }}</span>
+                <span style="color:var(--ink-2)">{{ i.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section data-screen-label="Screens" style="max-width:1360px;margin:0 auto;padding-top:56px">
+    <h2 style="font-size:26px;font-weight:700;letter-spacing:-0.026em;margin:0">Screens</h2>
+    <p style="font-size:15px;line-height:1.6;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">One layout serves all of them: a 400px card centred on the warm ground, product mark above, legal line below. The card is <span style="font-family:ui-monospace,monospace;font-size:13.5px">--r-xl</span> with <span style="font-family:ui-monospace,monospace;font-size:13.5px">--e2</span>, 32px padding, and a single primary action. Every screen is shown at its real width.</p>
+
+    <div style="margin-top:26px;padding:44px 32px;border-radius:16px;background:var(--sunken);border:1px solid var(--line-soft)">
+      <div style="display:flex;flex-wrap:wrap;gap:36px;justify-content:center;align-items:flex-start">
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">01 · Welcome</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <div style="width:36px;height:36px;border-radius:11px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700;letter-spacing:-0.02em">FS</div>
+            <h3 style="font-size:22px;font-weight:700;letter-spacing:-0.024em;margin:20px 0 0">Fortune Signora</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Revenue intelligence for enterprise teams. Sign in to your workspace, or create one for your company.</p>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:24px">
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Sign in</span>
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;font-weight:600">Create a workspace</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:20px;font-size:12px;color:var(--ink-3)">
+              <span style="flex:1;height:1px;background:var(--line-soft)"></span>Enterprise<span style="flex:1;height:1px;background:var(--line-soft)"></span>
+            </div>
+            <span style="display:flex;align-items:center;justify-content:center;gap:8px;height:38px;margin-top:14px;border-radius:8px;background:var(--sunken);font-size:13px;font-weight:600;color:var(--ink-2)">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 1.5 3 3.5v4c0 3 2.2 5.4 5 6.5 2.8-1.1 5-3.5 5-6.5v-4L8 1.5Z"></path></svg>
+              Sign in with SSO
+            </span>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.55">Region and status are printed under the card: <span style="font-family:ui-monospace,monospace;font-size:11px">EU · eu.signora.app</span> and a live status dot. Buyers check both.</div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">02 · Sign in</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Sign in</h3>
+            <p style="font-size:13px;color:var(--ink-3);margin:6px 0 0">to Northwind Global</p>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:22px">
+              <span style="display:flex;align-items:center;gap:10px;height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;font-weight:600">
+                <span style="width:16px;height:16px;border-radius:4px;background:linear-gradient(135deg,#ea4335,#fbbc05 45%,#34a853 70%,#4285f4)"></span>Continue with Google
+              </span>
+              <span style="display:flex;align-items:center;gap:10px;height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;font-weight:600">
+                <span style="width:16px;height:16px;display:grid;grid-template-columns:1fr 1fr;gap:1.5px">
+                  <span style="background:#f25022"></span><span style="background:#7fba00"></span><span style="background:#00a4ef"></span><span style="background:#ffb900"></span>
+                </span>Continue with Microsoft
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin:18px 0;font-size:12px;color:var(--ink-4)">
+              <span style="flex:1;height:1px;background:var(--line-soft)"></span>or<span style="flex:1;height:1px;background:var(--line-soft)"></span>
+            </div>
+            <div style="font-size:12.5px;font-weight:600;margin-bottom:6px">Work email</div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--brand);box-shadow:0 0 0 3px var(--brand-tint);font-size:13.5px">m.reinhardt@northwind.com<span style="width:1px;height:17px;background:var(--brand);margin-left:2px"></span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 6px">
+              <span style="font-size:12.5px;font-weight:600">Password</span>
+              <a href="#reset" style="font-size:12px;font-weight:600;color:var(--brand-ink);text-decoration:none">Forgot password?</a>
+            </div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;letter-spacing:0.14em;color:var(--ink-2)">••••••••••<span style="margin-left:auto;letter-spacing:0;font-size:12px;font-weight:600;color:var(--brand-ink)">Show</span></div>
+            <div style="display:flex;align-items:center;gap:9px;margin-top:16px">
+              <span style="width:16px;height:16px;border-radius:4px;background:var(--brand);display:grid;place-items:center;color:#fff;font-size:10px;font-weight:700">✓</span>
+              <span style="font-size:13px">Keep me signed in for 30 days</span>
+            </div>
+            <span style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:20px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Sign in</span>
+            <div style="font-size:12.5px;color:var(--ink-3);text-align:center;margin-top:16px">Your company uses SSO? <a href="#sso" style="font-weight:600;color:var(--brand-ink);text-decoration:none">Use single sign-on</a></div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">03 · Sign in — failed, inline validation</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Sign in</h3>
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--risk-tint);border:1px solid var(--risk-line)">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--risk)" stroke-width="1.7" stroke-linecap="round" style="flex:none;margin-top:2px"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 5v3.5M8 11h.01"></path></svg>
+              <div style="font-size:12.5px;line-height:1.55;color:var(--ink)">That email and password don't match. You have <span style="font-weight:600">3 attempts</span> left before the account locks for 15 minutes.</div>
+            </div>
+            <div style="font-size:12.5px;font-weight:600;margin:18px 0 6px">Work email</div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:13.5px">m.reinhardt@northwind.com</div>
+            <div style="font-size:12.5px;font-weight:600;margin:16px 0 6px">Password</div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--risk);box-shadow:0 0 0 3px var(--risk-tint);font-size:13.5px;letter-spacing:0.14em;color:var(--ink-2)">••••••</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--risk);font-weight:600;margin-top:7px">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 5v3.5M8 11h.01"></path></svg>Check the password, or reset it
+            </div>
+            <span style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:18px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Sign in</span>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">The message never says whether the address exists. Attempt counts are only shown once a real credential has failed.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">04 · SSO — domain discovery</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <div style="width:32px;height:32px;border-radius:10px;background:var(--brand-tint);color:var(--brand);display:grid;place-items:center">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 1.5 3 3.5v4c0 3 2.2 5.4 5 6.5 2.8-1.1 5-3.5 5-6.5v-4L8 1.5Z"></path></svg>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:18px 0 0">Single sign-on</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Enter your work email and we'll send you to your company's identity provider.</p>
+            <div style="font-size:12.5px;font-weight:600;margin:20px 0 6px">Work email</div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:13.5px">m.reinhardt@northwind.com</div>
+            <div style="display:flex;align-items:center;gap:9px;margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--brand-tint);border:1px solid var(--brand-line)">
+              <span style="width:20px;height:20px;flex:none;border-radius:6px;background:var(--surface);border:1px solid var(--brand-line);display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--brand-ink)">NG</span>
+              <div style="font-size:12.5px;line-height:1.5"><span style="font-weight:600">northwind.com</span> uses Okta. You'll be redirected.</div>
+            </div>
+            <span style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:18px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Continue to Okta</span>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">If the workspace enforces SSO, password fields are not shown at all — the two break-glass accounts are the only exception and they are named in Settings.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">05 · Magic link sent</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <div style="width:32px;height:32px;border-radius:10px;background:var(--brand-tint);color:var(--brand);display:grid;place-items:center">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M1.8 4.2h12.4v7.6H1.8zM1.8 4.6 8 8.8l6.2-4.2"></path></svg>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:18px 0 0">Check your email</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">If an account exists for <span style="font-weight:600;color:var(--ink)">m.reinhardt@northwind.com</span>, a sign-in link is on its way. The link works once and expires in 15 minutes.</p>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:22px">
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--ink-3)">Resend in 0:42</span>
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--brand-ink);background:var(--brand-tint)">Use a different email</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:16px;line-height:1.5">Same wording whether or not the account exists. The resend timer starts at 45s and doubles; the third resend suggests checking spam and the corporate filter.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">06 · Create account</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Create your account</h3>
+            <p style="font-size:13px;color:var(--ink-3);margin:6px 0 0">Step 1 of 2 · takes about a minute</p>
+            <div style="font-size:12.5px;font-weight:600;margin:20px 0 6px">Full name</div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:13.5px">Marta Reinhardt</div>
+            <div style="font-size:12.5px;font-weight:600;margin:16px 0 6px">Work email</div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:13.5px">m.reinhardt@northwind.com</div>
+            <div style="font-size:12.5px;font-weight:600;margin:16px 0 6px">Password</div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--brand);box-shadow:0 0 0 3px var(--brand-tint);font-size:13.5px;letter-spacing:0.14em;color:var(--ink-2)">•••••••••••••</div>
+            <div style="display:flex;gap:4px;margin-top:9px">
+              <span style="flex:1;height:4px;border-radius:999px;background:var(--pos)"></span>
+              <span style="flex:1;height:4px;border-radius:999px;background:var(--pos)"></span>
+              <span style="flex:1;height:4px;border-radius:999px;background:var(--pos)"></span>
+              <span style="flex:1;height:4px;border-radius:999px;background:var(--sunken)"></span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-top:9px">
+              <sc-for list="{{ pwRules }}" as="r" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:{{ r.color }}">
+                  <span style="width:13px;height:13px;flex:none;border-radius:999px;background:{{ r.bg }};color:{{ r.mark }};display:grid;place-items:center;font-size:8px;font-weight:700">{{ r.icon }}</span>{{ r.t }}
+                </div>
+              </sc-for>
+            </div>
+            <span style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:20px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Continue</span>
+            <div style="font-size:11.5px;color:var(--ink-3);text-align:center;margin-top:14px;line-height:1.5">By continuing you agree to the <a href="#legal" style="color:var(--brand-ink);font-weight:600;text-decoration:none">Terms</a> and <a href="#legal" style="color:var(--brand-ink);font-weight:600;text-decoration:none">Privacy Notice</a>.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">07 · Verify email</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Verify your email</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Enter the 6-digit code we sent to <span style="font-weight:600;color:var(--ink)">m.reinhardt@northwind.com</span>.</p>
+            <div style="display:flex;gap:8px;margin-top:22px">
+              <sc-for list="{{ otp }}" as="d" hint-placeholder-count="6">
+                <span style="flex:1;height:48px;border-radius:8px;border:1px solid {{ d.border }};box-shadow:{{ d.ring }};display:grid;place-items:center;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums">{{ d.v }}</span>
+              </sc-for>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:10px">Paste the whole code and it fills every box. Autocomplete is <span style="font-family:ui-monospace,monospace;font-size:11px">one-time-code</span>.</div>
+            <span style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:18px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1);opacity:.42">Verify</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;font-size:12.5px">
+              <span style="color:var(--ink-3)">Didn't get it?</span>
+              <span style="font-weight:600;color:var(--brand-ink)">Resend code</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.5">Wrong code shows inline under the boxes and keeps the digits — it never clears what was typed.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">08 · Forgot password</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)" id="reset">
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Reset your password</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Enter your work email. If an account exists, you'll get a reset link that works once and expires in 30 minutes.</p>
+            <div style="font-size:12.5px;font-weight:600;margin:20px 0 6px">Work email</div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--brand);box-shadow:0 0 0 3px var(--brand-tint);font-size:13.5px">m.reinhardt@northwind.com</div>
+            <span style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:18px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Send reset link</span>
+            <div style="display:flex;align-items:center;justify-content:center;gap:7px;margin-top:16px;font-size:12.5px;font-weight:600;color:var(--brand-ink)">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M9.5 4 5.5 8l4 4"></path></svg>Back to sign in
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft);line-height:1.5">If the workspace enforces SSO this screen is replaced by a line directing the user to their identity provider — Signora doesn't hold the password.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">09 · Set a new password</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Set a new password</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">for m.reinhardt@northwind.com</p>
+            <div style="font-size:12.5px;font-weight:600;margin:20px 0 6px">New password</div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;letter-spacing:0.14em;color:var(--ink-2)">••••••••••••<span style="margin-left:auto;letter-spacing:0;font-size:12px;font-weight:600;color:var(--brand-ink)">Show</span></div>
+            <div style="font-size:12.5px;font-weight:600;margin:16px 0 6px">Confirm password</div>
+            <div style="display:flex;align-items:center;height:40px;padding:0 13px;border-radius:8px;border:1px solid var(--pos);box-shadow:0 0 0 3px var(--pos-tint);font-size:13.5px;letter-spacing:0.14em;color:var(--ink-2)">••••••••••••<span style="margin-left:auto;letter-spacing:0;color:var(--pos);font-weight:700;font-size:12px">✓</span></div>
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--warn-tint);border:1px solid var(--warn-line)">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--warn)" stroke-width="1.7" stroke-linecap="round" style="flex:none;margin-top:2px"><path d="M8 2.5 14 13H2L8 2.5ZM8 6.5v3M8 11h.01"></path></svg>
+              <div style="font-size:12.5px;line-height:1.55">This signs you out of <span style="font-weight:600">4 other devices</span>, including the iPad last used 3 days ago.</div>
+            </div>
+            <span style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:18px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Update password</span>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">10 · Success</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);text-align:center">
+            <div style="width:44px;height:44px;margin:0 auto;border-radius:999px;background:var(--pos-tint);color:var(--pos);display:grid;place-items:center;border:1px solid var(--pos-line)">
+              <svg width="21" height="21" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8.5 3 3 6-6.5"></path></svg>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:18px 0 0">Password updated</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Other sessions were signed out at 09:14. If that wasn't you, contact your workspace admin now.</p>
+            <span style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:22px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Continue to Signora</span>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">Redirects automatically in 5 seconds. The countdown is visible and cancellable — it never moves without warning.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">11 · Account locked</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <div style="width:36px;height:36px;border-radius:11px;background:var(--risk-tint);color:var(--risk);display:grid;place-items:center;border:1px solid var(--risk-line)">
+              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="7" width="10" height="7" rx="2"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:18px 0 0">This account is locked</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Five failed sign-in attempts locked the account at 09:02. It unlocks automatically at <span style="font-weight:600;color:var(--ink)">09:17</span>, or you can reset the password now.</p>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:22px">
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Reset password</span>
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;font-weight:600">Contact your admin</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:16px;line-height:1.5">A security alert email is sent on lock, naming the location and device. Admins see the event in the audit log within a minute.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">12 · Too many attempts</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <div style="width:36px;height:36px;border-radius:11px;background:var(--warn-tint);color:var(--warn);display:grid;place-items:center;border:1px solid var(--warn-line)">
+              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M8 4.5V8l2.5 1.5"></path></svg>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:18px 0 0">Too many attempts</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">For your protection, sign-in is paused for this device. Try again in:</p>
+            <div style="margin-top:18px;padding:16px;border-radius:12px;background:var(--sunken);text-align:center">
+              <div style="font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em">4:38</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">Doubles with each further attempt</div>
+            </div>
+            <span style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:18px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--ink-3)">Sign in</span>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">Throttling is per device and IP, not per account, so an attacker cannot lock a colleague out by guessing at their address.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">13 · Accept invitation</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <div style="display:flex;align-items:center;gap:11px">
+              <span style="width:36px;height:36px;border-radius:11px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700">NG</span>
+              <div>
+                <div style="font-size:13.5px;font-weight:600">Northwind Global</div>
+                <div style="font-size:11.5px;color:var(--ink-3)">Enterprise workspace · 142 members</div>
+              </div>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:20px 0 0">Anders Hald invited you</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">You'll join as an <span style="font-weight:600;color:var(--ink)">Analyst</span>, with access to EMEA accounts.</p>
+            <div style="margin-top:16px;padding:14px;border-radius:12px;background:var(--sunken)">
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">This role can</div>
+              <div style="display:flex;flex-direction:column;gap:6px;margin-top:9px">
+                <sc-for list="{{ rolePerms }}" as="p" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:{{ p.color }}">
+                    <span style="width:14px;flex:none;text-align:center;font-weight:700;color:{{ p.markColor }}">{{ p.mark }}</span>{{ p.t }}
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:20px">
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Accept and continue</span>
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;font-weight:600">Decline</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">Invitation expires 11 Aug. The role is shown before acceptance because it determines what the person can see on day one.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">14 · Invitation expired</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <div style="width:36px;height:36px;border-radius:11px;background:var(--sunken);color:var(--ink-3);display:grid;place-items:center">
+              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M8 4.5V8l2.5 1.5"></path></svg>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:18px 0 0">This invitation has expired</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Anders Hald invited you to Northwind Global on 14 July. Invitations are valid for 14 days.</p>
+            <span style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:22px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Request a new invitation</span>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">One click notifies the original inviter and the workspace admins — the user is never asked to chase someone by email.</div>
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft);font-size:11.5px;color:var(--ink-3);line-height:1.5"><span style="font-weight:600;color:var(--ink-2)">Declined:</span> same layout, confirms the choice, states the invitation can be re-sent, offers nothing else. <span style="font-weight:600;color:var(--ink-2)">Wrong account:</span> names the signed-in address and the invited one, and offers to switch.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">15 · Authenticating</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="width:20px;height:20px;border-radius:999px;border:2px solid var(--brand-tint);border-top-color:var(--brand);animation:fsSpin .8s linear infinite"></span>
+              <span style="font-size:15px;font-weight:600">Signing you in…</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:11px;margin-top:20px">
+              <sc-for list="{{ authSteps }}" as="s" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:{{ s.color }}">
+                  <span style="width:16px;height:16px;flex:none;border-radius:999px;background:{{ s.bg }};border:1.5px solid {{ s.border }};color:#fff;display:grid;place-items:center;font-size:9px;font-weight:700">{{ s.mark }}</span>{{ s.t }}
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:20px;display:flex;flex-direction:column;gap:9px">
+              <span style="height:9px;border-radius:5px;width:70%;background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:fsShimmer 1.4s ease-in-out infinite"></span>
+              <span style="height:9px;border-radius:5px;width:45%;background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:fsShimmer 1.4s ease-in-out infinite"></span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:16px;line-height:1.5">Named steps replace a bare spinner past 800ms. Past 8 seconds the card offers to cancel and try another method — it never hangs silently.</div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">16 · Authentication error</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <div style="width:36px;height:36px;border-radius:11px;background:var(--risk-tint);color:var(--risk);display:grid;place-items:center;border:1px solid var(--risk-line)">
+              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 5v3.5M8 11h.01"></path></svg>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:18px 0 0">Okta rejected the sign-in</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Your identity provider returned: <span style="font-weight:600;color:var(--ink)">user not assigned to this application</span>. Signora can't grant access — your IT team assigns it.</p>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:22px">
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Email your IT team</span>
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;font-weight:600">Try another method</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft);font-size:11.5px;color:var(--ink-3)">
+              <span style="font-family:ui-monospace,monospace">auth_4c81-77fe</span>
+              <span style="margin-left:auto;font-weight:600;color:var(--brand-ink)">Copy</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="width:400px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">17 · Unauthorized</span></div>
+          <div style="padding:32px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+            <div style="width:36px;height:36px;border-radius:11px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center">
+              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="7" width="10" height="7" rx="2"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:18px 0 0">You don't have access to this workspace</h3>
+            <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">You're signed in as <span style="font-weight:600;color:var(--ink)">m.reinhardt@northwind.com</span>, which isn't a member of <span style="font-weight:600;color:var(--ink)">Meridian Freight</span>.</p>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:22px">
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;background:var(--brand);color:#fff;font-size:13.5px;font-weight:600;box-shadow:var(--e1)">Request access</span>
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;border:1px solid var(--line);font-size:13.5px;font-weight:600">Switch account</span>
+              <span style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--brand-ink);background:var(--brand-tint)">Go to Northwind Global</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">Three routes out, in the order most people need them. The workspace name is shown only because the link proves it was shared with this person.</div>
+          </div>
+        </div>
+
+        <div style="width:456px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">18 · Session expired — over the current view</span></div>
+          <div style="border-radius:16px;border:1px solid var(--line-soft);background:var(--sunken);padding:14px;box-shadow:var(--e1)">
+            <div style="border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);padding:12px;filter:blur(0.4px);opacity:.55">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="width:16px;height:16px;border-radius:5px;background:var(--brand-tint)"></span>
+                <span style="height:8px;width:130px;border-radius:4px;background:var(--sunken)"></span>
+                <span style="margin-left:auto;height:8px;width:52px;border-radius:4px;background:var(--sunken)"></span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+                <span style="height:8px;width:100%;border-radius:4px;background:var(--sunken)"></span>
+                <span style="height:8px;width:88%;border-radius:4px;background:var(--sunken)"></span>
+                <span style="height:8px;width:94%;border-radius:4px;background:var(--sunken)"></span>
+              </div>
+            </div>
+            <div style="margin-top:-42px;padding:24px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);position:relative">
+              <h3 style="font-size:17.5px;font-weight:600;letter-spacing:-0.018em;margin:0">Your session expired</h3>
+              <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Sign in again to continue. Your unsaved edits to <span style="font-weight:600;color:var(--ink)">Vantage Logistics</span> are kept in this tab.</p>
+              <div style="font-size:12.5px;font-weight:600;margin:16px 0 6px">Password for m.reinhardt@northwind.com</div>
+              <div style="display:flex;align-items:center;height:38px;padding:0 12px;border-radius:8px;border:1px solid var(--brand);box-shadow:0 0 0 3px var(--brand-tint);font-size:13.5px;letter-spacing:0.14em;color:var(--ink-2)">••••••••</div>
+              <div style="display:flex;gap:8px;margin-top:16px">
+                <span style="display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:8px;background:var(--brand);color:#fff;font-size:13px;font-weight:600;box-shadow:var(--e1)">Unlock</span>
+                <span style="display:inline-flex;align-items:center;height:36px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:13px;font-weight:600">Sign out</span>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.55">Re-authentication happens over the page, not instead of it. The route, scroll position, filters and draft state survive; the underlying content is dimmed and inert but still visible, so people can see what they were doing. A full redirect is used only when the session is revoked rather than expired.</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Responsive" style="max-width:1360px;margin:0 auto;padding-top:56px">
+    <h2 style="font-size:26px;font-weight:700;letter-spacing:-0.026em;margin:0">Responsive behaviour</h2>
+    <p style="font-size:15px;line-height:1.6;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">The card is the layout, so there is almost nothing to reflow. Below 480px it stops being a card and becomes the page — the border, radius and shadow are dropped rather than shrunk, which is what keeps it from looking like a website on a phone.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:22px">
+      <sc-for list="{{ responsive }}" as="r" hint-placeholder-count="3">
+        <div style="padding:20px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="display:flex;align-items:baseline;gap:9px">
+            <span style="font-size:13.5px;font-weight:600">{{ r.name }}</span>
+            <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-3)">{{ r.range }}</span>
+          </div>
+          <div style="margin:14px 0;height:96px;border-radius:10px;background:var(--sunken);display:grid;place-items:center;padding:10px">
+            <div style="width:{{ r.cardW }};height:{{ r.cardH }};border-radius:{{ r.cardR }};background:var(--surface);border:1px solid var(--line-soft);box-shadow:{{ r.cardE }}"></div>
+          </div>
+          <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:0">{{ r.note }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section data-screen-label="Component states" style="max-width:1360px;margin:0 auto;padding-top:56px">
+    <h2 style="font-size:26px;font-weight:700;letter-spacing:-0.026em;margin:0">Component states</h2>
+    <p style="font-size:15px;line-height:1.6;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">Only three components carry this module: field, button and card. Each is the v2 component with no new variants — these are the states engineering builds against.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px">
+      <div style="padding:22px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Field</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+          <sc-for list="{{ fieldStates }}" as="f" hint-placeholder-count="6">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span style="font-weight:600">{{ f.name }}</span>
+                <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4)">{{ f.spec }}</span>
+              </div>
+              <div style="display:flex;align-items:center;height:38px;padding:0 12px;border-radius:8px;border:1px solid {{ f.border }};box-shadow:{{ f.ring }};background:{{ f.bg }};font-size:13px;color:{{ f.color }}">{{ f.value }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding:22px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Primary button</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+          <sc-for list="{{ buttonStates }}" as="b" hint-placeholder-count="6">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                <span style="font-weight:600">{{ b.name }}</span>
+                <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4)">{{ b.spec }}</span>
+              </div>
+              <span style="display:flex;align-items:center;justify-content:center;gap:8px;height:38px;border-radius:8px;background:{{ b.bg }};color:{{ b.color }};font-size:13px;font-weight:600;box-shadow:{{ b.shadow }};opacity:{{ b.opacity }};border:1px solid {{ b.border }}">{{ b.inner }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Rules" style="max-width:1360px;margin:0 auto;padding-top:56px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Accessibility &amp; interaction</div>
+        <sc-for list="{{ a11y }}" as="a" hint-placeholder-count="9">
+          <div style="display:grid;grid-template-columns:56px 1fr;gap:14px;padding:11px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+            <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ a.sc }}</span>
+            <span style="color:var(--ink-2);line-height:1.55">{{ a.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Motion</div>
+          <sc-for list="{{ motion }}" as="m" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:1fr 74px;gap:12px;padding:10px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+              <span style="color:var(--ink-2)">{{ m.t }}</span>
+              <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink);text-align:right">{{ m.d }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Edge cases handled</div>
+          <sc-for list="{{ edges }}" as="e" hint-placeholder-count="8">
+            <div style="padding:11px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;line-height:1.55;color:var(--ink-2)">{{ e }}</div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:24px;border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e1)">
+      <div style="font-size:17px;font-weight:600;letter-spacing:-0.018em">Design rationale</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:16px">
+        <sc-for list="{{ rationale }}" as="r" hint-placeholder-count="6">
+          <div>
+            <div style="font-size:13px;font-weight:600">{{ r.t }}</div>
+            <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">{{ r.b }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = {
+      '--font-body': '"Archivo", system-ui, sans-serif',
+      '--ease': 'cubic-bezier(.32,.72,0,1)',
+      '--r-sm': '6px', '--r-md': '8px', '--r-lg': '12px', '--r-xl': '16px',
+    };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0', '--pos-line': '#c9e6da',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4', '--warn-line': '#efdcc0',
+      '--risk': '#a83329', '--risk-tint': '#fcefed', '--risk-line': '#f2d5d1',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f', '--pos-line': '#1d4433',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113', '--warn-line': '#453520',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17', '--risk-line': '#4a2a25',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      lightShadow: dark ? 'none' : 'var(--e1)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+      darkShadow: dark ? 'var(--e1)' : 'none',
+
+      heroStats: [
+        { v: '24', l: 'Screens and states specified' },
+        { v: '5', l: 'Journeys, including two failure paths' },
+        { v: '400px', l: 'One card width across every screen' },
+        { v: '0', l: 'Messages that reveal whether an account exists' },
+      ],
+
+      journeys: [
+        { n: '1', name: 'Invited member', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', note: 'The most common path in an enterprise rollout. The invitation carries the workspace, role and inviter, so none of it is asked again.',
+          steps: ['Email invitation', 'Accept invitation', 'Set password or SSO', 'Verify email', 'Land in workspace'] },
+        { n: '2', name: 'Self-serve signup', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', note: 'A work email on a domain that already has a workspace is offered a request to join instead of a second workspace.',
+          steps: ['Welcome', 'Create account', 'Verify email', 'Workspace creation', 'Onboarding — module 2'] },
+        { n: '3', name: 'SSO-enforced', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', note: 'Password fields are never rendered for an enforced domain. Failure returns here with the IdP error preserved.',
+          steps: ['Email entered', 'Domain matched to IdP', 'Redirect to provider', 'Assertion returned', 'Session created'] },
+        { n: '4', name: 'Recovery', tint: 'var(--warn-tint)', color: 'var(--warn)', note: 'Every step is time-boxed and single-use. Reset invalidates all other sessions and says so before it happens.',
+          steps: ['Forgot password', 'Reset link sent', 'New password set', 'Sessions invalidated', 'Signed in'] },
+        { n: '5', name: 'Interrupted session', tint: 'var(--risk-tint)', color: 'var(--risk)', note: 'The only journey that starts inside the product. Unsaved work is the design constraint — nothing is discarded to show a login form.',
+          steps: ['Working in product', 'Session expires', 'Re-auth over current view', 'Same page restored', 'Work continues'] },
+      ].map(j => Object.assign(j, {
+        steps: j.steps.map((t, i, arr) => ({ t, dot: i === arr.length - 1 ? 'var(--pos)' : 'var(--brand)', color: i === arr.length - 1 ? 'var(--ink)' : 'var(--ink-2)' })),
+      })),
+
+      hierarchy: [
+        { group: 'Entry', items: [['/', 'Welcome'], ['/signin', 'Sign in'], ['/signup', 'Create account'], ['/sso', 'SSO discovery'], ['/sso/callback', 'Provider return']] },
+        { group: 'Verification', items: [['/verify', 'Verify email'], ['/verify/resend', 'Resend code'], ['/magic', 'Magic link sent'], ['/magic/:token', 'Link consumed']] },
+        { group: 'Recovery', items: [['/forgot', 'Forgot password'], ['/reset/:token', 'Set new password'], ['/reset/done', 'Password updated'], ['/recover', 'Account recovery']] },
+        { group: 'Invitation', items: [['/invite/:token', 'Accept invitation'], ['/invite/declined', 'Declined'], ['/invite/expired', 'Expired'], ['/invite/mismatch', 'Wrong account']] },
+        { group: 'Blocked', items: [['/locked', 'Account locked'], ['/throttled', 'Too many attempts'], ['/expired', 'Session expired'], ['/unauthorized', 'Unauthorized'], ['/error', 'Authentication error']] },
+      ].map(g => ({ group: g.group, items: g.items.map(([route, name]) => ({ route, name })) })),
+
+      pwRules: [
+        ['At least 12 characters', true], ['Upper and lower case', true],
+        ['A number or symbol', true], ['Not found in a breach corpus', false],
+      ].map(([t, ok]) => ({
+        t, icon: ok ? '✓' : '',
+        bg: ok ? 'var(--pos)' : 'var(--sunken)',
+        mark: ok ? '#fff' : 'var(--ink-4)',
+        color: ok ? 'var(--ink-2)' : 'var(--ink-3)',
+      })),
+
+      otp: ['4', '9', '2', '7', '', ''].map((v, i) => ({
+        v,
+        border: i === 4 ? 'var(--brand)' : (v ? 'var(--line)' : 'var(--line-soft)'),
+        ring: i === 4 ? '0 0 0 3px var(--brand-tint)' : 'none',
+      })),
+
+      rolePerms: [
+        ['Read EMEA accounts, deals and conversations', true],
+        ['Build and share reports', true],
+        ['Edit deal fields', false],
+        ['Invite members or change roles', false],
+      ].map(([t, ok]) => ({
+        t, mark: ok ? '✓' : '—',
+        markColor: ok ? 'var(--pos)' : 'var(--ink-4)',
+        color: ok ? 'var(--ink-2)' : 'var(--ink-3)',
+      })),
+
+      authSteps: [
+        ['Verified your credentials', 'done'],
+        ['Checking workspace membership', 'active'],
+        ['Loading your permissions', 'idle'],
+      ].map(([t, state]) => ({
+        t,
+        mark: state === 'done' ? '✓' : '',
+        bg: state === 'done' ? 'var(--pos)' : 'transparent',
+        border: state === 'done' ? 'var(--pos)' : (state === 'active' ? 'var(--brand)' : 'var(--line)'),
+        color: state === 'idle' ? 'var(--ink-4)' : 'var(--ink-2)',
+      })),
+
+      responsive: [
+        { name: 'Desktop', range: '≥ 1024px', cardW: '150px', cardH: '68px', cardR: '10px', cardE: 'var(--e2)',
+          note: 'Card centred at 400px, vertically centred with a 64px floor so it never sits under the fold. Product mark above, legal and region line below.' },
+        { name: 'Tablet', range: '640–1023px', cardW: '132px', cardH: '76px', cardR: '10px', cardE: 'var(--e2)',
+          note: 'Same card, top-aligned at 96px instead of centred, so the keyboard on a tablet in portrait never pushes the primary action off screen.' },
+        { name: 'Mobile', range: '< 640px', cardW: '100%', cardH: '86px', cardR: '0px', cardE: 'none',
+          note: 'Card becomes the page: no border, no radius, no shadow, 20px gutters. Primary action pins to the bottom above the keyboard; provider buttons stack full-width at 44px.' },
+      ],
+
+      fieldStates: [
+        { name: 'Rest', spec: '1px --line', value: 'name@company.com', border: 'var(--line)', ring: 'none', bg: 'var(--surface)', color: 'var(--ink)' },
+        { name: 'Hover', spec: '1px --ink-4', value: 'name@company.com', border: 'var(--ink-4)', ring: 'none', bg: 'var(--surface)', color: 'var(--ink)' },
+        { name: 'Focus', spec: '--brand + 3px tint', value: 'name@company.com', border: 'var(--brand)', ring: '0 0 0 3px var(--brand-tint)', bg: 'var(--surface)', color: 'var(--ink)' },
+        { name: 'Invalid', spec: '--risk + 3px tint', value: 'name@company', border: 'var(--risk)', ring: '0 0 0 3px var(--risk-tint)', bg: 'var(--surface)', color: 'var(--ink)' },
+        { name: 'Valid', spec: '--pos + 3px tint', value: 'name@company.com', border: 'var(--pos)', ring: '0 0 0 3px var(--pos-tint)', bg: 'var(--surface)', color: 'var(--ink)' },
+        { name: 'Disabled', spec: 'sunken, 60%', value: 'Locked by SSO policy', border: 'var(--line-soft)', ring: 'none', bg: 'var(--sunken)', color: 'var(--ink-4)' },
+      ],
+
+      buttonStates: [
+        { name: 'Rest', spec: '--brand + --e1', inner: 'Sign in', bg: 'var(--brand)', color: '#fff', shadow: 'var(--e1)', opacity: 1, border: 'transparent' },
+        { name: 'Hover', spec: '--brand-strong', inner: 'Sign in', bg: '#0f3d5c', color: '#fff', shadow: 'var(--e2)', opacity: 1, border: 'transparent' },
+        { name: 'Pressed', spec: 'no shadow, 98%', inner: 'Sign in', bg: '#0c2f46', color: '#fff', shadow: 'none', opacity: 1, border: 'transparent' },
+        { name: 'Focus', spec: '2px ring, 2px offset', inner: 'Sign in', bg: 'var(--brand)', color: '#fff', shadow: '0 0 0 2px var(--surface), 0 0 0 4px var(--brand)', opacity: 1, border: 'transparent' },
+        { name: 'Loading', spec: 'label kept, width fixed', inner: 'Signing in…', bg: 'var(--brand)', color: '#fff', shadow: 'var(--e1)', opacity: 1, border: 'transparent' },
+        { name: 'Disabled', spec: '42%, no pointer', inner: 'Sign in', bg: 'var(--brand)', color: '#fff', shadow: 'none', opacity: 0.42, border: 'transparent' },
+      ],
+
+      a11y: [
+        { sc: '1.3.5', t: 'Autocomplete tokens on every field: username, current-password, new-password, one-time-code. Managers fill the whole form.' },
+        { sc: '1.4.3', t: 'Every error message clears 4.5:1 on its tint; no message relies on the red alone — each carries an icon and a stated remedy.' },
+        { sc: '2.1.1', t: 'Provider buttons, show-password, the OTP group and the session-expired card are all reachable and operable by keyboard.' },
+        { sc: '2.2.1', t: 'Timed states — resend counters, lock countdowns, redirect timers — show the remaining time and can be extended or cancelled.' },
+        { sc: '2.4.3', t: 'Focus lands on the first invalid field after a failed submit, and on the card heading when a screen replaces another.' },
+        { sc: '2.4.7', t: '2px brand focus ring at 2px offset, visible on white, sunken and provider buttons alike.' },
+        { sc: '3.3.1', t: 'Errors are adjacent to the field and announced via aria-live polite; the summary at the top is announced once, not per keystroke.' },
+        { sc: '3.3.8', t: 'No cognitive test at any step. Paste is permitted everywhere, including password and OTP fields.' },
+        { sc: '4.1.2', t: 'The session-expired card is a modal dialog with a trapped focus loop, labelled by its heading, dismissible only by unlocking or signing out.' },
+      ],
+
+      motion: [
+        { t: 'Card enter (route change)', d: '160ms' },
+        { t: 'Inline error appear', d: '120ms' },
+        { t: 'Field focus ring', d: '120ms' },
+        { t: 'Session-expired card', d: '160ms' },
+        { t: 'Success check draw', d: '220ms' },
+        { t: 'Reduced motion — all', d: '80ms' },
+      ],
+
+      edges: [
+        'Signed-in user opens an invitation for a different address: both are named, and switching accounts is one click.',
+        'Invitation accepted after the inviter left: the workspace admin becomes the fallback owner of the invitation.',
+        'Email domain already has a workspace: signup offers to request access instead of creating a second one.',
+        'Password manager fills a stale password on an SSO-enforced domain: the field is absent, so the fill silently fails rather than erroring.',
+        'Magic link opened in a different browser: the link still works, but the session is bound to that browser only.',
+        'Back button after signing out: the cached page is not restored; the route re-authenticates.',
+        'Two tabs, one session, expiry in both: unlocking either tab restores both without a reload.',
+        'IdP returns an assertion for a user who has since been deprovisioned: sign-in fails with the SCIM state named, not a generic error.',
+      ],
+
+      rationale: [
+        { t: 'One card, every state', b: 'A single 400px card carries all 24 screens. Users learn the surface once, and engineering builds one layout with a content slot instead of twenty-four pages.' },
+        { t: 'Never confirm an account exists', b: 'Forgot-password, magic link and signup all use conditional wording. This costs a little clarity and removes account enumeration entirely.' },
+        { t: 'Say what happens next', b: 'Every failure names the actor who can fix it — you, your admin, or your IT team — and gives the action. No screen ends in a message without a route.' },
+        { t: 'Re-auth over the work', b: 'Session expiry is the only auth event that interrupts real work, so it is the only one designed as an overlay. Losing a draft to a login redirect is a data-loss bug, not an auth flow.' },
+        { t: 'The provider is the authority', b: 'When SSO fails, Signora quotes the provider verbatim and stops. Rewording an IdP error in friendlier language sends people to the wrong team.' },
+        { t: 'Security details in plain sight', b: 'Lock timers, session invalidation, device counts and region are stated on the screen where they apply. Enterprise buyers read these; hiding them reads as evasion.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

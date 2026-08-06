@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes ntShimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes ntSpin { to { transform: rotate(360deg); } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em;padding:0 40px 120px">
+
+  <header style="max-width:1360px;margin:0 auto;padding:56px 0 40px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);font-size:11.5px;font-weight:600">Platform foundation · Module 7</span>
+      <span style="font-size:11.5px;color:var(--ink-3)">Design system v2.0 · personal notifications</span>
+      <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};box-shadow:{{ lightShadow }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};box-shadow:{{ darkShadow }}" onClick="{{ setDark }}">Dark</span>
+      </span>
+    </div>
+    <h1 style="font-size:44px;line-height:1.06;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:22ch">Notification Center</h1>
+    <p style="font-size:17px;line-height:1.6;max-width:80ch;margin:18px 0 0;color:var(--ink-2);text-wrap:pretty">Notification settings fail in one predictable way: the product sends too much, the person mutes everything, and then misses the one message that mattered. This module is built against that failure. Every control shows the volume it will actually produce, the page opens by naming what you are ignoring, and mutes expire by default — because a mute set in March is how a deal is lost in September.</p>
+  </header>
+
+  <section data-screen-label="Diagnosis" style="max-width:1360px;margin:0 auto">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">01 · What you actually receive</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr))">
+        <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="4">
+          <div style="padding:20px 22px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)">
+            <div style="font-size:12px;color:var(--ink-3)">{{ f.label }}</div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-top:7px">
+              <span style="font-size:28px;font-weight:700;letter-spacing:-0.028em;line-height:1;font-variant-numeric:tabular-nums;color:{{ f.color }}">{{ f.v }}</span>
+              <span style="font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums">{{ f.pct }}</span>
+            </div>
+            <div style="height:5px;border-radius:999px;background:var(--sunken);margin-top:11px;overflow:hidden">
+              <div style="width:{{ f.bar }};height:100%;border-radius:999px;background:{{ f.color }}"></div>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:8px;line-height:1.45">{{ f.meta }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;row-gap:14px;flex-wrap:wrap;padding:20px 24px;background:var(--warn-tint)">
+        <span style="width:30px;height:30px;flex:none;border-radius:10px;background:var(--warn);display:grid;place-items:center">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M8 2a4 4 0 0 0-4 4c0 3-1.2 4-1.2 4h10.4S12 9 12 6a4 4 0 0 0-4-4ZM6.5 12.5a1.6 1.6 0 0 0 3 0"></path></svg>
+        </span>
+        <div style="flex:1;min-width:260px">
+          <div style="font-size:16px;font-weight:600;letter-spacing:-0.016em">You are ignoring 87% of what Signora sends you</div>
+          <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:6px 0 0;max-width:80ch">Three rules produce 214 of your 312 weekly notifications and you have acted on 4 of them. Turning those three into a daily digest would cut your volume by 68% and delay nothing you have responded to in the last 90 days.</p>
+          <div style="display:flex;gap:9px;row-gap:9px;flex-wrap:wrap;margin-top:13px">
+            <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">Review the 3 rules</span>
+            <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12.5px;font-weight:600">Apply the suggestion</span>
+            <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--ink-2)">Dismiss for 30 days</span>
+          </div>
+        </div>
+      </div>
+      <div style="padding:14px 24px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Volume is measured per person, from your own delivery log. No suggestion is applied automatically — a product that quietly stops notifying you is indistinguishable from one that is broken.</div>
+    </div>
+  </section>
+
+  <section data-screen-label="Matrix" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">02 · What you are told, and where</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:flex;align-items:flex-start;gap:14px;row-gap:12px;flex-wrap:wrap;padding:20px 24px;border-bottom:1px solid var(--line-soft)">
+        <div style="flex:1;min-width:260px">
+          <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Notification preferences</h3>
+          <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:6px 0 0;max-width:78ch">One row per event, one column per channel, and a projected weekly volume beside each row. Four channels rather than four separate settings pages — the question is never "how should email work", it is "where do I want to hear about this".</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;flex:none;align-items:center">
+          <span style="font-size:11.5px;color:var(--ink-3)">Projected</span>
+          <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums">98 per week</span>
+          <span style="font-size:11.5px;color:var(--pos);font-weight:600;white-space:nowrap">↓ 214 from current</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:940px">
+          <div style="display:grid;grid-template-columns:1fr 96px 96px 96px 96px 130px;align-items:center;padding:0 24px;height:44px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Event</div>
+            <div style="text-align:center">In-app</div>
+            <div style="text-align:center">Email</div>
+            <div style="text-align:center">Slack</div>
+            <div style="text-align:center">Mobile</div>
+            <div style="text-align:right">Per week</div>
+          </div>
+          <sc-for list="{{ matrixGroups }}" as="g" hint-placeholder-count="4">
+            <div>
+              <div style="padding:11px 24px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft);font-size:11.5px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                {{ g.label }}
+                <span style="font-size:11px;font-weight:400;color:var(--ink-3)">{{ g.note }}</span>
+              </div>
+              <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+                <div style="display:grid;grid-template-columns:1fr 96px 96px 96px 96px 130px;align-items:center;padding:12px 24px;border-bottom:1px solid var(--line-soft);background:{{ r.bg }};font-size:13px">
+                  <div style="min-width:0;padding-right:16px">
+                    <div style="display:flex;align-items:center;gap:8px;row-gap:5px;flex-wrap:wrap">
+                      <span style="font-weight:600">{{ r.t }}</span>
+                      <span style="font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ r.tagBg }};color:{{ r.tagFg }};white-space:nowrap">{{ r.tag }}</span>
+                    </div>
+                    <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px;line-height:1.45">{{ r.b }}</div>
+                  </div>
+                  <div style="display:grid;place-items:center">{{ r.inapp }}</div>
+                  <div style="display:grid;place-items:center">{{ r.email }}</div>
+                  <div style="display:grid;place-items:center">{{ r.slack }}</div>
+                  <div style="display:grid;place-items:center">{{ r.mobile }}</div>
+                  <div style="text-align:right;font-size:12px;font-variant-numeric:tabular-nums;color:{{ r.volColor }};font-weight:{{ r.volWeight }}">{{ r.vol }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;padding:20px 24px">
+        <sc-for list="{{ matrixRules }}" as="m" hint-placeholder-count="4">
+          <div style="padding:15px 16px;border-radius:12px;background:var(--sunken)">
+            <div style="font-size:12.5px;font-weight:600">{{ m.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ m.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Channels" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">03 · Channel behaviour</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;align-items:start">
+      <sc-for list="{{ channels }}" as="c" hint-placeholder-count="4">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid {{ c.border }};box-shadow:var(--e2);overflow:hidden">
+          <div style="display:flex;align-items:flex-start;gap:12px;row-gap:10px;flex-wrap:wrap;padding:18px 20px;border-bottom:1px solid var(--line-soft)">
+            <span style="width:30px;height:30px;flex:none;border-radius:9px;background:{{ c.iconBg }};color:{{ c.iconFg }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ c.abbr }}</span>
+            <div style="flex:1;min-width:130px">
+              <div style="font-size:15px;font-weight:600;letter-spacing:-0.014em">{{ c.t }}</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">{{ c.meta }}</div>
+            </div>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;background:{{ c.tint }};color:{{ c.color }};white-space:nowrap;flex:none">
+              <span style="width:5px;height:5px;border-radius:999px;background:{{ c.color }}"></span>{{ c.state }}
+            </span>
+          </div>
+          <div style="padding:18px 20px">
+            <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:0">{{ c.b }}</p>
+            <div style="display:flex;flex-direction:column;margin-top:14px">
+              <sc-for list="{{ c.settings }}" as="s" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:14px;row-gap:8px;flex-wrap:wrap;padding:11px 0;border-bottom:1px solid var(--line-soft)">
+                  <div style="flex:1;min-width:140px">
+                    <div style="font-size:12.5px;font-weight:600">{{ s.t }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px;line-height:1.45">{{ s.b }}</div>
+                  </div>
+                  <div style="flex:none">{{ s.control }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.5">{{ c.foot }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section data-screen-label="Digest" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">04 · Digest preferences</div>
+    <div style="display:grid;grid-template-columns:1fr 1.05fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:24px 26px">
+        <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Digests</h3>
+        <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0;max-width:60ch">A digest is not a list of everything that happened. It is the difference since the last one, ordered by what changed most — which is why a quiet week produces a short digest rather than the same template with smaller numbers.</p>
+        <div style="display:flex;flex-direction:column;margin-top:18px">
+          <sc-for list="{{ digestSettings }}" as="d" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:1fr 200px;gap:20px;row-gap:8px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line-soft)">
+              <div>
+                <div style="font-size:12.5px;font-weight:600">{{ d.t }}</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px;line-height:1.5">{{ d.b }}</div>
+              </div>
+              <div>{{ d.control }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:16px;padding:14px 15px;border-radius:12px;background:var(--sunken);font-size:12.5px;line-height:1.55;color:var(--ink-2)">
+          <span style="font-weight:600;color:var(--ink)">Send time follows your profile timezone.</span> Yours is Europe/Copenhagen, so the daily digest arrives at 07:00 CEST. If you change timezone, the digest moves with you — but Signora asks first, because a digest that silently arrives at 02:00 is a digest nobody reads again.
+        </div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid var(--line-soft)">
+          <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Preview · tomorrow 07:00</span>
+          <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Built from the last 24 hours of real events</span>
+        </div>
+        <div style="padding:22px 24px">
+          <div style="font-size:11.5px;color:var(--ink-3)">Signora daily · Wednesday 5 August</div>
+          <div style="font-size:19px;font-weight:700;letter-spacing:-0.02em;line-height:1.25;margin-top:6px">Three deals moved against you overnight</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px">
+            <sc-for list="{{ digestStats }}" as="s" hint-placeholder-count="3">
+              <div style="padding:12px 13px;border-radius:10px;background:var(--sunken)">
+                <div style="font-size:17px;font-weight:700;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:{{ s.color }}">{{ s.v }}</div>
+                <div style="font-size:11px;color:var(--ink-3);margin-top:4px;line-height:1.4">{{ s.l }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;margin-top:16px">
+            <sc-for list="{{ digestItems }}" as="i" hint-placeholder-count="4">
+              <div style="display:flex;gap:11px;padding:12px 0;border-bottom:1px solid var(--line-soft)">
+                <span style="width:7px;height:7px;flex:none;margin-top:6px;border-radius:999px;background:{{ i.dot }}"></span>
+                <div style="min-width:0">
+                  <div style="font-size:13px;font-weight:600;line-height:1.4">{{ i.t }}</div>
+                  <div style="font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ i.b }}</div>
+                </div>
+                <span style="margin-left:auto;flex:none;font-size:11.5px;font-weight:600;color:var(--brand-ink);white-space:nowrap">{{ i.action }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft)">
+            <span style="font-size:11.5px;color:var(--ink-3)">14 lower-priority items are summarised in one line at the end, not listed.</span>
+            <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink);white-space:nowrap">Send me this now</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Rules" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">05 · Alert rules</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:flex;align-items:flex-start;gap:14px;row-gap:12px;flex-wrap:wrap;padding:20px 24px;border-bottom:1px solid var(--line-soft)">
+        <div style="flex:1;min-width:260px">
+          <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Your alert rules</h3>
+          <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:6px 0 0;max-width:78ch">Rules produce notifications the standard events cannot express. Each one carries its own precision figure — how often it fired and how often you acted — because a rule you never act on is not a preference, it is noise you configured yourself.</p>
+        </div>
+        <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1);flex:none">New rule</span>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:900px">
+          <div style="display:grid;grid-template-columns:300px 1fr 120px 132px 92px;align-items:center;padding:0 24px;height:38px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Rule</div><div>Condition</div><div style="text-align:right">Fired · 30d</div><div style="text-align:right">You acted</div><div style="text-align:right">Channels</div>
+          </div>
+          <sc-for list="{{ rules }}" as="r" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:300px 1fr 120px 132px 92px;align-items:center;padding:13px 24px;border-bottom:1px solid var(--line-soft);background:{{ r.bg }};font-size:12.5px">
+              <div style="min-width:0;padding-right:16px">
+                <div style="display:flex;align-items:center;gap:8px;row-gap:5px;flex-wrap:wrap">
+                  <span style="font-weight:600">{{ r.t }}</span>
+                  <span style="font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ r.tagBg }};color:{{ r.tagFg }};white-space:nowrap">{{ r.tag }}</span>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">{{ r.scope }}</div>
+              </div>
+              <div style="color:var(--ink-2);line-height:1.5;padding-right:14px">{{ r.condition }}</div>
+              <div style="text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2)">{{ r.fired }}</div>
+              <div style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:{{ r.precisionColor }}">{{ r.acted }}</div>
+              <div style="text-align:right;font-size:11.5px;color:var(--ink-2)">{{ r.channels }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:16px;padding:20px 24px;align-items:start">
+        <div style="padding:18px 20px;border-radius:12px;background:var(--sunken)">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Editing · Enterprise renewal at risk</div>
+          <div style="display:flex;flex-direction:column;gap:11px;margin-top:14px">
+            <sc-for list="{{ ruleBuilder }}" as="b" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap">
+                <span style="width:42px;flex:none;font-size:11px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.05em">{{ b.k }}</span>
+                <span style="display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:5px 11px;border-radius:8px;background:var(--surface);border:1px solid var(--line-soft);font-size:12.5px;flex:1;min-width:180px">{{ b.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft)">
+            <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600">Save rule</span>
+            <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12.5px;font-weight:600">Test on last 30 days</span>
+            <span style="font-size:11.5px;color:var(--ink-2)">Would have fired 11 times</span>
+          </div>
+        </div>
+        <div style="padding:18px 20px;border-radius:12px;background:var(--surface);border:1px solid var(--warn-line)">
+          <div style="display:flex;align-items:center;gap:9px">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--warn)" stroke-width="1.7" stroke-linecap="round"><path d="M8 2.5 14 13H2L8 2.5ZM8 6.5v3M8 11h.01"></path></svg>
+            <span style="font-size:13.5px;font-weight:600">This rule overlaps two others</span>
+          </div>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">Score below 50 and Renewal inside 90 days both already fire on 6 of these 11 accounts, so you would be told the same thing three times. Signora de-duplicates identical events within an hour, but these are three distinct events about one account.</p>
+          <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:12px">
+            <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">Merge into one rule</span>
+            <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Keep all three</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Quiet" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">06 · Quiet hours &amp; mute settings</div>
+    <div style="display:grid;grid-template-columns:1.05fr 1fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:24px 26px">
+        <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Quiet hours</h3>
+        <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0;max-width:60ch">Nothing is dropped during quiet hours. Notifications are held and delivered when the window ends, and the interface says so — "held until 07:00" rather than a silence you have to trust.</p>
+        <div style="margin-top:18px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums;margin-bottom:7px">
+            <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
+          </div>
+          <div style="height:38px;border-radius:10px;background:var(--sunken);position:relative;overflow:hidden;border:1px solid var(--line-soft)">
+            <span style="position:absolute;left:0;top:0;bottom:0;width:29.2%;background:var(--brand-tint)"></span>
+            <span style="position:absolute;right:0;top:0;bottom:0;width:12.5%;background:var(--brand-tint)"></span>
+            <span style="position:absolute;left:50%;top:0;bottom:0;width:6.25%;background:var(--warn-tint)"></span>
+            <span style="position:absolute;left:29.2%;top:0;bottom:0;width:1.5px;background:var(--brand)"></span>
+            <span style="position:absolute;left:87.5%;top:0;bottom:0;width:1.5px;background:var(--brand)"></span>
+          </div>
+          <div style="display:flex;gap:18px;row-gap:8px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--ink-2)">
+            <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:12px;height:8px;border-radius:3px;background:var(--brand-tint);border:1px solid var(--brand-line)"></span>Quiet · 21:00–07:00</span>
+            <span style="display:inline-flex;align-items:center;gap:7px"><span style="width:12px;height:8px;border-radius:3px;background:var(--warn-tint);border:1px solid var(--warn-line)"></span>Focus block · 12:00–13:30</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;margin-top:18px">
+          <sc-for list="{{ quietSettings }}" as="q" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:1fr 190px;gap:20px;row-gap:8px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line-soft)">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;row-gap:5px;flex-wrap:wrap">
+                  <span style="font-size:12.5px;font-weight:600">{{ q.t }}</span>
+                  <span style="font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ q.tagBg }};color:{{ q.tagFg }};white-space:nowrap">{{ q.tag }}</span>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px;line-height:1.5">{{ q.b }}</div>
+              </div>
+              <div>{{ q.control }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:16px;padding:14px 15px;border-radius:12px;background:var(--sunken);font-size:12.5px;line-height:1.55;color:var(--ink-2)">
+          <span style="font-weight:600;color:var(--ink)">4 notifications are being held right now.</span> They arrive at 07:00 CEST. You can see them in the inbox at any time — quiet hours suppress the interruption, not the information.
+        </div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:18px 22px;border-bottom:1px solid var(--line-soft)">
+          <span style="font-size:16px;font-weight:600;letter-spacing:-0.016em">Muted</span>
+          <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">6 active · 2 expiring this week</span>
+        </div>
+        <sc-for list="{{ mutes }}" as="m" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;gap:12px;row-gap:8px;flex-wrap:wrap;padding:13px 22px;border-bottom:1px solid var(--line-soft);background:{{ m.bg }}">
+            <span style="width:26px;height:26px;flex:none;border-radius:8px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center;font-size:9.5px;font-weight:700">{{ m.abbr }}</span>
+            <div style="flex:1;min-width:150px">
+              <div style="display:flex;align-items:center;gap:8px;row-gap:5px;flex-wrap:wrap">
+                <span style="font-size:12.5px;font-weight:600">{{ m.t }}</span>
+                <span style="font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ m.tagBg }};color:{{ m.tagFg }};white-space:nowrap">{{ m.tag }}</span>
+              </div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">{{ m.meta }}</div>
+            </div>
+            <span style="font-size:12px;font-weight:600;color:var(--brand-ink);flex:none">Unmute</span>
+          </div>
+        </sc-for>
+        <div style="padding:16px 22px">
+          <div style="font-size:12.5px;font-weight:600">Mutes expire by default</div>
+          <p style="font-size:12px;line-height:1.55;color:var(--ink-2);margin:6px 0 0">Every mute is created with an end date — 7 days, 30 days, or until a stated event. Permanent is available and requires typing the word, because a mute set in March is how a renewal is missed in September. Seven days before expiry, Signora tells you it is about to resume.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="History" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">07 · Notification history &amp; delivery log</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;row-gap:10px;flex-wrap:wrap;padding:18px 24px;border-bottom:1px solid var(--line-soft)">
+        <div>
+          <div style="font-size:16px;font-weight:600;letter-spacing:-0.016em">Delivery log</div>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:2px">Last 30 days · every attempt, including the ones that failed</div>
+        </div>
+        <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;background:var(--sunken);font-size:12px;color:var(--ink-2)">All channels</span>
+          <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;background:var(--risk-tint);color:var(--risk);font-size:12px;font-weight:600">3 failed ✕</span>
+          <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Export</span>
+        </span>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:920px">
+          <div style="display:grid;grid-template-columns:126px 1fr 118px 132px 122px 96px;align-items:center;padding:0 24px;height:36px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>When</div><div>Notification</div><div>Channel</div><div>Delivery</div><div>Opened</div><div style="text-align:right">Acted</div>
+          </div>
+          <sc-for list="{{ log }}" as="l" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:126px 1fr 118px 132px 122px 96px;align-items:center;padding:12px 24px;border-bottom:1px solid var(--line-soft);background:{{ l.bg }};font-size:12.5px">
+              <div style="font-variant-numeric:tabular-nums;color:var(--ink-2)">{{ l.when }}</div>
+              <div style="min-width:0;padding-right:16px">
+                <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.t }}</div>
+                <div style="font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.rule }}</div>
+              </div>
+              <div style="color:var(--ink-2)">{{ l.channel }}</div>
+              <div>
+                <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:{{ l.tint }};color:{{ l.color }};white-space:nowrap">
+                  <span style="width:5px;height:5px;border-radius:999px;background:{{ l.color }}"></span>{{ l.state }}
+                </span>
+              </div>
+              <div style="color:var(--ink-2);font-variant-numeric:tabular-nums;font-size:12px">{{ l.opened }}</div>
+              <div style="text-align:right;font-size:11.5px;font-weight:600;color:{{ l.actedColor }}">{{ l.acted }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;padding:20px 24px">
+        <sc-for list="{{ logRules }}" as="r" hint-placeholder-count="3">
+          <div style="padding:15px 16px;border-radius:12px;background:var(--sunken)">
+            <div style="font-size:12.5px;font-weight:600">{{ r.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ r.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="States" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">08 · Inbox, empty, loading &amp; failure</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+      <div style="border-radius:16px;background:var(--sunken);border:1px solid var(--line-soft);padding:24px;display:grid;place-items:start center">
+        <div style="width:100%;max-width:400px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line-soft)">
+            <span style="font-size:14px;font-weight:600">Inbox</span>
+            <span style="font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--brand);color:#fff;font-variant-numeric:tabular-nums">7</span>
+            <span style="margin-left:auto;font-size:11.5px;font-weight:600;color:var(--brand-ink)">Mark all read</span>
+          </div>
+          <div style="display:flex;gap:3px;padding:9px 12px;border-bottom:1px solid var(--line-soft)">
+            <span style="padding:4px 10px;border-radius:7px;font-size:11.5px;font-weight:600;background:var(--sunken)">All</span>
+            <span style="padding:4px 10px;border-radius:7px;font-size:11.5px;color:var(--ink-3)">Direct</span>
+            <span style="padding:4px 10px;border-radius:7px;font-size:11.5px;color:var(--ink-3)">AI</span>
+            <span style="padding:4px 10px;border-radius:7px;font-size:11.5px;color:var(--ink-3)">Held · 4</span>
+          </div>
+          <sc-for list="{{ inbox }}" as="i" hint-placeholder-count="4">
+            <div style="display:flex;gap:11px;padding:13px 16px;border-bottom:1px solid var(--line-soft);background:{{ i.bg }}">
+              <span style="width:7px;height:7px;flex:none;margin-top:6px;border-radius:999px;background:{{ i.dot }}"></span>
+              <div style="min-width:0;flex:1">
+                <div style="font-size:12.5px;font-weight:{{ i.weight }};line-height:1.4">{{ i.t }}</div>
+                <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.45">{{ i.b }}</div>
+                <div style="font-size:11px;color:var(--ink-4);margin-top:4px">{{ i.meta }}</div>
+              </div>
+            </div>
+          </sc-for>
+          <div style="padding:11px 16px;font-size:11.5px;color:var(--ink-3)">Grouped: 6 more events on Halden Systems</div>
+        </div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:24px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Empty &amp; loading</div>
+        <div style="margin-top:18px;padding:24px 18px;border-radius:12px;background:var(--sunken);text-align:center">
+          <div style="width:34px;height:34px;margin:0 auto;border-radius:11px;background:var(--surface);border:1px solid var(--line-soft);color:var(--ink-3);display:grid;place-items:center">
+            <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2a4 4 0 0 0-4 4c0 3-1.2 4-1.2 4h10.4S12 9 12 6a4 4 0 0 0-4-4ZM6.5 12.5a1.6 1.6 0 0 0 3 0"></path></svg>
+          </div>
+          <div style="font-size:14px;font-weight:600;margin-top:12px">Nothing waiting</div>
+          <div style="font-size:12.5px;color:var(--ink-2);margin-top:5px;line-height:1.55;max-width:38ch;margin-left:auto;margin-right:auto">You have read everything. 4 items are held until 07:00 and 3 rules are muted — the empty state names both, so quiet never gets mistaken for broken.</div>
+          <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600;margin-top:13px">See what is held</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px">
+          <sc-for list="{{ skeletonRows }}" as="s" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:7px;height:7px;flex:none;border-radius:999px;background:var(--line-soft)"></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                <div style="height:9px;border-radius:5px;width:{{ s.a }};background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:ntShimmer 1.4s ease-in-out infinite"></div>
+                <div style="height:9px;border-radius:5px;width:{{ s.b }};background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:ntShimmer 1.4s ease-in-out infinite"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.5">The inbox loads from cache first and reconciles in the background. Unread counts never decrease optimistically.</div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:24px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Failure &amp; permission</div>
+        <div style="margin-top:16px;padding:15px 16px;border-radius:12px;background:var(--risk-tint);border:1px solid var(--risk-line)">
+          <div style="display:flex;align-items:center;gap:9px">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--risk)" stroke-width="1.7" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 5v3.5M8 11h.01"></path></svg>
+            <span style="font-size:13.5px;font-weight:600">Slack delivery is failing</span>
+          </div>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">The Signora app was removed from northwind.slack.com on 2 August. Three messages could not be delivered — all three are in your in-app inbox and none were lost. Signora stopped retrying after the third rather than queuing indefinitely.</p>
+          <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:12px">
+            <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">Reconnect Slack</span>
+            <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600">See the 3 messages</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;padding:15px 16px;border-radius:12px;background:var(--warn-tint);border:1px solid var(--warn-line)">
+          <div style="font-size:13px;font-weight:600">Browser notifications are blocked</div>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">You denied permission in this browser, so desktop toasts cannot appear. Signora does not re-prompt — the browser would ignore it. The instruction to re-enable it is given instead, for this browser specifically.</p>
+          <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600;margin-top:11px">How to re-enable in Chrome</span>
+        </div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft);font-size:11.5px;color:var(--ink-3);line-height:1.5">Saving preferences is optimistic with undo in the toast. If the write fails, the toggle returns to its previous state and says so — a preference that silently did not save is worse than one that refused.</div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Specs" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Component hierarchy</div>
+        <sc-for list="{{ hierarchy }}" as="h" hint-placeholder-count="12">
+          <div style="display:grid;grid-template-columns:1fr 116px;gap:12px;padding:10px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+            <span style="padding-left:{{ h.pad }};color:{{ h.color }};font-weight:{{ h.weight }}">{{ h.name }}</span>
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4);text-align:right">{{ h.src }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Delivery rules</div>
+        <sc-for list="{{ deliveryRules }}" as="v" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:104px 1fr;gap:12px;padding:10px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+            <span style="font-weight:600">{{ v.k }}</span>
+            <span style="color:var(--ink-2);line-height:1.5">{{ v.v }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">WCAG 2.2 AA</div>
+        <sc-for list="{{ a11y }}" as="a" hint-placeholder-count="9">
+          <div style="display:grid;grid-template-columns:52px 1fr;gap:12px;padding:11px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+            <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ a.sc }}</span>
+            <span style="color:var(--ink-2);line-height:1.55">{{ a.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:14px">
+      <sc-for list="{{ responsive }}" as="r" hint-placeholder-count="3">
+        <div style="padding:20px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+            <span style="font-size:13.5px;font-weight:600">{{ r.name }}</span>
+            <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-3)">{{ r.range }}</span>
+          </div>
+          <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:10px 0 0">{{ r.note }}</p>
+        </div>
+      </sc-for>
+    </div>
+    <div style="margin-top:14px;padding:24px;border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e1)">
+      <div style="font-size:17px;font-weight:600;letter-spacing:-0.018em">Design rationale</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:16px">
+        <sc-for list="{{ rationale }}" as="r" hint-placeholder-count="6">
+          <div>
+            <div style="font-size:13px;font-weight:600">{{ r.t }}</div>
+            <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">{{ r.b }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0', '--pos-line': '#c9e6da',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4', '--warn-line': '#efdcc0',
+      '--risk': '#a83329', '--risk-tint': '#fcefed', '--risk-line': '#f2d5d1',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f', '--pos-line': '#1d4433',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113', '--warn-line': '#453520',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17', '--risk-line': '#4a2a25',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  toggle(on, label, locked) {
+    return R('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } }, [
+      R('span', {
+        key: 't',
+        style: {
+          width: 36, height: 21, borderRadius: 999, flex: 'none',
+          background: on ? (locked ? 'var(--ink-4)' : 'var(--brand)') : 'var(--sunken)',
+          padding: 2, display: 'flex', justifyContent: on ? 'flex-end' : 'flex-start',
+          boxShadow: 'inset 0 0 0 1px ' + (on ? (locked ? 'var(--ink-4)' : 'var(--brand)') : 'var(--line)'),
+          opacity: locked ? 0.7 : 1,
+        },
+      }, R('span', { style: { width: 17, height: 17, borderRadius: 999, background: 'var(--surface)', boxShadow: 'var(--e1)' } })),
+      label ? R('span', { key: 'l', style: { fontSize: 11.5, color: 'var(--ink-2)', whiteSpace: 'nowrap' } }, label) : null,
+    ]);
+  }
+
+  segmented(options, selected, small) {
+    return R('div', {
+      style: { display: 'inline-flex', gap: 3, padding: 3, borderRadius: 9, background: 'var(--sunken)', flexWrap: 'wrap' },
+    }, options.map(o => R('span', {
+      key: o,
+      style: {
+        padding: small ? '3px 9px' : '4px 11px', borderRadius: 6, fontSize: small ? 11 : 11.5,
+        fontWeight: 600, whiteSpace: 'nowrap',
+        background: o === selected ? 'var(--surface)' : 'transparent',
+        color: o === selected ? 'var(--ink)' : 'var(--ink-3)',
+        boxShadow: o === selected ? 'var(--e1)' : 'none',
+      },
+    }, o)));
+  }
+
+  cell(mode) {
+    const map = {
+      on: { bg: 'var(--brand)', border: 'var(--brand)', fg: '#fff', mark: '✓', title: 'Every event' },
+      digest: { bg: 'var(--brand-tint)', border: 'var(--brand-line)', fg: 'var(--brand-ink)', mark: 'D', title: 'In the digest' },
+      off: { bg: 'transparent', border: 'var(--line)', fg: 'var(--ink-4)', mark: '', title: 'Off' },
+      locked: { bg: 'var(--ink-4)', border: 'var(--ink-4)', fg: '#fff', mark: '✓', title: 'Required' },
+      na: { bg: 'transparent', border: 'transparent', fg: 'var(--ink-4)', mark: '–', title: 'Not available' },
+    }[mode];
+    return R('span', {
+      title: map.title,
+      style: {
+        width: 24, height: 24, borderRadius: 7, display: 'grid', placeItems: 'center',
+        background: map.bg, border: '1.5px solid ' + map.border, color: map.fg,
+        fontSize: mode === 'digest' ? 10 : 11, fontWeight: 700,
+        opacity: mode === 'locked' ? 0.75 : 1,
+      },
+    }, map.mark);
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      lightShadow: dark ? 'none' : 'var(--e1)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+      darkShadow: dark ? 'var(--e1)' : 'none',
+
+      funnel: [
+        { label: 'Sent to you last week', v: '312', pct: '', bar: '100%', color: 'var(--ink-3)', meta: 'Across four channels · 44 per day', },
+        { label: 'Opened', v: '41', pct: '13%', bar: '13%', color: 'var(--warn)', meta: 'Mostly in-app, within 2 minutes' },
+        { label: 'Acted on', v: '9', pct: '3%', bar: '3%', color: 'var(--risk)', meta: 'Clicked through and changed something' },
+        { label: 'Muted or dismissed', v: '188', pct: '60%', bar: '60%', color: 'var(--ink-4)', meta: 'Cleared without opening' },
+      ],
+
+      matrixGroups: [
+        {
+          label: 'Your work', note: 'Events on records you own',
+          rows: [
+            ['Deal stage changed', 'High signal', 'pos', 'Someone moves a deal you own forward or back.', 'on', 'off', 'on', 'off', '12', false, false],
+            ['Close date slipped', 'High signal', 'pos', 'A second slip inside 30 days also raises a signal.', 'on', 'on', 'on', 'on', '4', false, true],
+            ['Mentioned in a comment', 'High signal', 'pos', 'Someone types your name. Always delivered, never digested.', 'on', 'on', 'on', 'on', '9', false, false],
+            ['Task assigned to you', '', '', 'Includes tasks an agent created and you approved.', 'on', 'off', 'on', 'off', '7', false, false],
+          ],
+        },
+        {
+          label: 'Accounts you follow', note: 'The three rules producing 214 of your 312',
+          rows: [
+            ['Any field changed', 'Noisy', 'warn', 'Fires on every CRM sync. 148 last week, acted on twice.', 'digest', 'off', 'off', 'off', '148 → 7', true, false],
+            ['New activity logged', 'Noisy', 'warn', 'Every call, email and note across 41 followed accounts.', 'digest', 'off', 'off', 'off', '44 → 7', true, false],
+            ['Score changed by any amount', 'Noisy', 'warn', 'Now thresholded: only changes over 10 points notify.', 'digest', 'off', 'off', 'off', '22 → 3', true, false],
+          ],
+        },
+        {
+          label: 'Intelligence', note: 'Generated content and agent activity',
+          rows: [
+            ['AI insight above your floor', '', '', 'Confidence 3 or higher, on accounts you own.', 'on', 'off', 'off', 'off', '6', false, false],
+            ['The model changed its mind', 'Rare', 'ai', 'A previous conclusion was revised by new evidence.', 'on', 'on', 'on', 'off', '1', false, true],
+            ['Agent needs your approval', 'Blocking', 'ai', 'A workflow has paused and is waiting on you.', 'on', 'on', 'on', 'on', '3', false, true],
+            ['Agent run finished', '', '', 'Completion only. Failures always notify regardless.', 'digest', 'off', 'off', 'off', '5 → 1', false, false],
+          ],
+        },
+        {
+          label: 'Account & security', note: 'Cannot be switched off',
+          rows: [
+            ['Sign-in from a new device', 'Required', 'risk', 'Delivered to every verified channel you have.', 'locked', 'locked', 'off', 'locked', '~0', false, false],
+            ['Permissions or role changed', 'Required', 'risk', 'Including changes an administrator makes on your behalf.', 'locked', 'locked', 'off', 'off', '~0', false, false],
+            ['Integration lost access', '', '', 'A connected app stopped working, as opposed to being revoked.', 'on', 'on', 'off', 'off', '1', false, false],
+          ],
+        },
+      ].map(g => ({
+        label: g.label, note: g.note,
+        rows: g.rows.map(([t, tag, tone, b, inapp, email, slack, mobile, vol, reduced, highlight]) => ({
+          t, tag, b, vol,
+          tagBg: tone === 'pos' ? 'var(--pos-tint)' : tone === 'warn' ? 'var(--warn-tint)' : tone === 'risk' ? 'var(--risk-tint)' : tone === 'ai' ? 'var(--ai-tint)' : 'transparent',
+          tagFg: tone === 'pos' ? 'var(--pos)' : tone === 'warn' ? 'var(--warn)' : tone === 'risk' ? 'var(--risk)' : tone === 'ai' ? 'var(--ai-ink)' : 'transparent',
+          inapp: this.cell(inapp), email: this.cell(email), slack: this.cell(slack), mobile: this.cell(mobile),
+          volColor: reduced ? 'var(--pos)' : 'var(--ink-2)',
+          volWeight: reduced ? 600 : 400,
+          bg: highlight ? 'var(--brand-tint)' : 'transparent',
+        })),
+      })),
+
+      matrixRules: [
+        { t: 'Four states, not two', b: 'On, in the digest, off, and required. The digest state is what makes reduction possible without loss — nothing is deleted, it is deferred to 07:00.' },
+        { t: 'Security cannot be muted', b: 'Sign-in and permission changes render as locked toggles with an explanation, not as absent rows. You should be able to see what will always reach you.' },
+        { t: 'Volume is projected, not promised', b: 'Each figure is your own last-90-day rate under the settings shown. Changing a toggle updates the row and the header total before you save.' },
+        { t: 'Mentions are never digested', b: 'A person typed your name and is waiting. Batching that into tomorrow morning is the one deferral that reliably damages trust in the product.' },
+      ],
+
+      channels: [
+        {
+          abbr: 'APP', t: 'In-app', meta: 'Inbox in the top bar · always on', state: 'Active', tone: 'pos', primary: true,
+          b: 'The inbox is the record of everything, including items suppressed on other channels. Nothing is ever silently dropped — it lands here even when every other channel is off.',
+          settings: [
+            { t: 'Badge count', b: 'Unread total on the bell icon', control: this.segmented(['All', 'Direct only', 'None'], 'Direct only', true) },
+            { t: 'Desktop toasts', b: 'Slide in for 5 seconds, bottom left', control: this.toggle(true, '') },
+            { t: 'Group by account', b: 'Six events on one account become one expandable row', control: this.toggle(true, '') },
+            { t: 'Mark read on open', b: 'Off means you clear the inbox deliberately', control: this.toggle(false, '') },
+          ],
+          foot: 'Read state syncs across devices within a second. An item read on your phone is not waiting for you at your desk.',
+        },
+        {
+          abbr: '@', t: 'Email', meta: 'a.duval@northwind.com', state: 'Verified', tone: 'pos', primary: false,
+          b: 'Email is for things you will need to find again in three months. Individual emails are reserved for events that need a reply; everything else belongs in the digest.',
+          settings: [
+            { t: 'Delivery', b: 'Immediate, or batched into the digest', control: this.segmented(['Immediate', 'Digest'], 'Digest', true) },
+            { t: 'Include record detail', b: 'Full context in the body, so you can decide without opening Signora', control: this.toggle(true, '') },
+            { t: 'Plain text alternative', b: 'Sent alongside HTML for every message', control: this.toggle(true, 'Always') },
+            { t: 'Reply to act', b: 'Replying to a task email completes it', control: this.toggle(false, '') },
+          ],
+          foot: 'Every email carries a one-click unsubscribe for its own event type — not a global opt-out that silently disables security mail.',
+        },
+        {
+          abbr: 'SL', t: 'Slack', meta: 'northwind.slack.com · @aurelie', state: 'Delivery failing', tone: 'risk', primary: false,
+          b: 'Direct messages only. Signora will not post to shared channels on your behalf, because a notification that reveals deal movement to a room you did not choose is a data incident, not a convenience.',
+          settings: [
+            { t: 'Destination', b: 'DM from the Signora app', control: this.segmented(['DM', 'Channel'], 'DM', true) },
+            { t: 'Threading', b: 'Follow-ups reply in thread rather than as new messages', control: this.toggle(true, '') },
+            { t: 'Respect Slack status', b: 'Holds delivery while your Slack status is Do not disturb', control: this.toggle(true, '') },
+            { t: 'Include figures', b: 'Off replaces amounts with "a deal" in message previews', control: this.toggle(false, 'Hidden') },
+          ],
+          foot: '3 messages failed since 2 Aug — the Signora app was removed from your Slack workspace. Those 3 are in your in-app inbox and were not lost.',
+        },
+        {
+          abbr: 'MOB', t: 'Mobile push', meta: 'iPhone 15 Pro · Signora iOS 4.2', state: 'Limited', tone: 'warn', primary: false,
+          b: 'Reserved for things worth interrupting a person for. The default set is four events, and adding a fifth asks you to confirm you want to be interrupted by it.',
+          settings: [
+            { t: 'Critical alerts', b: 'Bypass your phone\'s focus mode. Off by default.', control: this.toggle(false, 'Off') },
+            { t: 'Show content on lock screen', b: 'Off shows "Signora · 1 update" with no detail', control: this.toggle(false, 'Hidden') },
+            { t: 'Sound', b: 'Silent still vibrates', control: this.segmented(['Sound', 'Silent'], 'Silent', true) },
+          ],
+          foot: 'System notification permission was granted 18 Mar but iOS Focus is filtering Signora. That is shown here rather than left to look like a bug in delivery.',
+        },
+      ].map(c => ({
+        abbr: c.abbr, t: c.t, meta: c.meta, state: c.state, b: c.b, settings: c.settings, foot: c.foot,
+        border: c.tone === 'risk' ? 'var(--risk-line)' : c.primary ? 'var(--brand-line)' : 'var(--line-soft)',
+        iconBg: c.primary ? 'var(--brand-tint)' : 'var(--sunken)',
+        iconFg: c.primary ? 'var(--brand-ink)' : 'var(--ink-2)',
+        tint: 'var(--' + c.tone + '-tint)',
+        color: 'var(--' + c.tone + ')',
+      })),
+
+      digestSettings: [
+        { t: 'Daily digest', b: 'Everything deferred since yesterday, ordered by size of change', control: this.segmented(['On', 'Off'], 'On', true) },
+        { t: 'Delivery time', b: 'Your timezone · Europe/Copenhagen', control: this.segmented(['07:00', '08:30', '17:00'], '07:00', true) },
+        { t: 'Weekdays only', b: 'Weekend events roll into Monday', control: this.toggle(true, 'Mon–Fri') },
+        { t: 'Weekly summary', b: 'Friday 16:00 · pipeline movement and what you did not get to', control: this.toggle(true, 'Friday') },
+        { t: 'Skip when empty', b: 'No digest rather than one saying nothing happened', control: this.toggle(true, '') },
+        { t: 'Lead with', b: 'What changed, or a fixed section order', control: this.segmented(['What changed', 'Fixed order'], 'What changed', true) },
+      ],
+
+      digestStats: [
+        { v: '−$4.2M', l: 'Committed forecast movement', color: 'var(--risk)' },
+        { v: '3', l: 'Deals slipped a stage', color: 'var(--warn)' },
+        { v: '9', l: 'Items needing you today', color: 'var(--ink)' },
+      ],
+
+      digestItems: [
+        { t: 'Vantage Logistics moved to 12 Oct', b: 'Second slip in 30 days. Procurement still uncontacted.', action: 'Open', dot: 'var(--risk)' },
+        { t: 'Signora revised its view on Corrigan Health', b: 'Win probability raised from 61% to 78% after yesterday\'s call.', action: 'See why', dot: 'var(--ai)' },
+        { t: 'Renewal sweep is waiting on you', b: '20 drafts prepared. Nothing has been sent.', action: 'Review', dot: 'var(--ai)' },
+        { t: 'J. Okafor mentioned you on Halden Systems', b: '“Can you take procurement on this one?”', action: 'Reply', dot: 'var(--brand)' },
+      ],
+
+      rules: [
+        ['Enterprise renewal at risk', 'Editing', 'brand', '41 enterprise accounts', 'Score < 50 AND renewal within 90 days AND no contact in 14 days', '11', '7 of 11 · 64%', 'pos', 'In-app, Slack', true],
+        ['Champion left the company', '', '', 'All owned accounts', 'A contact with role Champion is marked departed', '2', '2 of 2 · 100%', 'pos', 'In-app, email, Slack', false],
+        ['Competitor mentioned on a call', '', '', 'All owned accounts', 'Transcript contains a name from the competitor list', '18', '6 of 18 · 33%', 'warn', 'In-app', false],
+        ['Any website visit', 'Retune suggested', 'warn', 'Followed accounts', 'An account visits pricing or product pages', '96', '4 of 96 · 4%', 'risk', 'In-app', false],
+        ['Deal over $1M enters Negotiation', '', '', 'All regions', 'Stage becomes Negotiation AND ACV > $1,000,000', '3', '3 of 3 · 100%', 'pos', 'In-app, email', false],
+      ].map(([t, tag, tone, scope, condition, fired, acted, precisionTone, channels, editing]) => ({
+        t, tag, scope, condition, fired, acted, channels,
+        tagBg: tone === 'brand' ? 'var(--brand-tint)' : tone === 'warn' ? 'var(--warn-tint)' : 'transparent',
+        tagFg: tone === 'brand' ? 'var(--brand-ink)' : tone === 'warn' ? 'var(--warn)' : 'transparent',
+        precisionColor: 'var(--' + precisionTone + ')',
+        bg: editing ? 'var(--brand-tint)' : 'transparent',
+      })),
+
+      ruleBuilder: [
+        { k: 'When', v: 'Signora score falls below 50' },
+        { k: 'And', v: 'Renewal date is within 90 days · no contact in 14 days' },
+        { k: 'Only', v: 'Accounts I own · Enterprise · EMEA' },
+        { k: 'Tell me', v: 'In-app immediately · Slack DM · at most once per account per day' },
+      ],
+
+      quietSettings: [
+        { t: 'Quiet hours', tag: 'On', tagBg: 'var(--pos-tint)', tagFg: 'var(--pos)', b: '21:00–07:00, your timezone', control: this.segmented(['On', 'Off'], 'On', true) },
+        { t: 'Weekends', tag: '', tagBg: 'transparent', tagFg: 'transparent', b: 'All day Saturday and Sunday, held until Monday 07:00', control: this.toggle(true, 'Quiet') },
+        { t: 'Focus blocks', tag: 'From calendar', tagBg: 'var(--brand-tint)', tagFg: 'var(--brand-ink)', b: 'Reads busy blocks marked Focus and holds during them', control: this.toggle(true, '') },
+        { t: 'Security alerts', tag: 'Always through', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)', b: 'Sign-ins and permission changes ignore quiet hours entirely', control: this.toggle(true, 'Locked', true) },
+        { t: 'Approvals waiting on you', tag: '', tagBg: 'transparent', tagFg: 'transparent', b: 'An agent blocked on your approval can interrupt after 4 hours', control: this.toggle(false, 'Held') },
+      ],
+
+      mutes: [
+        ['VL', 'Vantage Logistics', 'Expires in 3 days', 'warn', 'Muted 29 Jul for 7 days · field-change events only', false],
+        ['HS', 'Halden Systems — comment thread', 'Expires in 6 days', 'warn', 'Muted 30 Jul · you are still notified if mentioned', false],
+        ['WV', 'Any website visit', '30 days', '', 'Rule muted 18 Jul · resumes 17 Aug', false],
+        ['MF', 'Meridian Freight', 'Until closed', '', 'Muted until the deal reaches a closed stage', false],
+        ['NE', 'Norvell Energy', 'Permanent', 'risk', 'Set 22 Mar · 136 days ago · nothing from this account reaches you', true],
+        ['DG', 'Daily digest', 'Paused', '', 'Paused while on leave · resumes 11 Aug', false],
+      ].map(([abbr, t, tag, tone, meta, flagged]) => ({
+        abbr, t, tag, meta,
+        tagBg: tone === 'warn' ? 'var(--warn-tint)' : tone === 'risk' ? 'var(--risk-tint)' : 'var(--sunken)',
+        tagFg: tone === 'warn' ? 'var(--warn)' : tone === 'risk' ? 'var(--risk)' : 'var(--ink-3)',
+        bg: flagged ? 'var(--risk-tint)' : 'transparent',
+      })),
+
+      log: [
+        ['Today, 08:04', 'Vantage Logistics close date moved', 'Deal stage changed', 'In-app', 'Delivered', 'pos', '08:06', 'Opened deal', 'pos', false],
+        ['Today, 08:04', 'Vantage Logistics close date moved', 'Deal stage changed', 'Slack DM', 'Failed', 'risk', '—', 'No', 'ink-4', true],
+        ['Today, 07:00', 'Daily digest · 5 August', 'Digest', 'Email', 'Delivered', 'pos', '07:22', 'Clicked 2 links', 'pos', false],
+        ['Yesterday, 16:40', 'J. Okafor mentioned you', 'Mention', 'In-app', 'Delivered', 'pos', '16:41', 'Replied', 'pos', false],
+        ['Yesterday, 16:40', 'J. Okafor mentioned you', 'Mention', 'Mobile', 'Suppressed', 'warn', '—', 'No', 'ink-4', false],
+        ['Yesterday, 11:12', 'Renewal sweep needs approval', 'Agent approval', 'Email', 'Delivered', 'pos', 'Not opened', 'No', 'ink-4', false],
+        ['3 Aug, 22:09', 'Sign-in blocked from Lagos', 'Security · required', 'Email', 'Delivered', 'pos', '22:14', 'Reviewed', 'pos', false],
+        ['3 Aug, 21:40', 'Ashgrove Retail field changed', 'Any field changed', 'In-app', 'Held', 'warn', '—', 'No', 'ink-4', false],
+      ].map(([when, t, rule, channel, state, tone, opened, acted, actedTone, failed]) => ({
+        when, t, rule, channel, state, opened, acted,
+        tint: 'var(--' + tone + '-tint)',
+        color: 'var(--' + tone + ')',
+        actedColor: 'var(--' + actedTone + ')',
+        bg: failed ? 'var(--risk-tint)' : 'transparent',
+      })),
+
+      logRules: [
+        { t: 'Suppressed is not the same as failed', b: 'Suppressed means your own settings stopped it — quiet hours, a mute, a focus block. Failed means the channel broke. Collapsing the two hides the difference between "working as configured" and "not working".' },
+        { t: 'Held items are visible before they arrive', b: 'Anything waiting for quiet hours to end is listed with its delivery time. You can always read ahead; you simply are not interrupted.' },
+        { t: 'The log is yours, and it is exportable', b: '30 days of delivery attempts, downloadable as CSV. Administrators can see whether a notification was sent, never whether you read it.' },
+      ],
+
+      inbox: [
+        { t: 'Renewal sweep is waiting on your approval', b: '20 drafts prepared. Nothing has been sent.', meta: 'Agent · 11 minutes ago', dot: 'var(--ai)', bg: 'var(--brand-tint)', weight: 600 },
+        { t: 'J. Okafor mentioned you on Halden Systems', b: '“Can you take procurement on this one?”', meta: 'Mention · 2 hours ago', dot: 'var(--brand)', bg: 'transparent', weight: 600 },
+        { t: 'Signora revised its view on Corrigan Health', b: 'Win probability raised from 61% to 78%.', meta: 'AI · 4 hours ago', dot: 'var(--ai)', bg: 'transparent', weight: 600 },
+        { t: 'Vantage Logistics close date moved to 12 Oct', b: 'Second slip in 30 days.', meta: 'Deal · yesterday · read', dot: 'transparent', bg: 'transparent', weight: 400 },
+      ],
+
+      skeletonRows: [
+        { a: '58%', b: '38%' }, { a: '44%', b: '52%' }, { a: '64%', b: '30%' },
+      ],
+
+      hierarchy: [
+        ['NotificationShell', 'v2 · plane --e2', 0, true],
+        ['VolumeDiagnosis — funnel + suggestion', 'v2 · warn surface', 1, false],
+        ['PreferenceMatrix', 'v2 · table 16px', 1, false],
+        ['ChannelCell — 5 states', 'v2 · 24px control', 2, false],
+        ['ChannelCard ×4', 'v2 · card 16px', 1, false],
+        ['DigestSettings + DigestPreview', 'v2 · split', 1, false],
+        ['RuleTable + RuleBuilder', 'v2 · table + form', 1, false],
+        ['ConflictNotice', 'v2 · warn card', 2, false],
+        ['QuietHoursTimeline', 'v2 · 24h band', 1, false],
+        ['MuteList', 'v2 · rows + expiry', 1, false],
+        ['DeliveryLog', 'v2 · table', 1, false],
+        ['InboxPanel', 'v2 · popover --e4', 1, false],
+      ].map(([name, src, depth, root]) => ({
+        name, src, pad: (depth * 14) + 'px',
+        color: depth === 0 ? 'var(--ink)' : 'var(--ink-2)',
+        weight: root ? 600 : 400,
+      })),
+
+      deliveryRules: [
+        { k: 'Precedence', v: 'Required beats mute beats quiet hours beats channel setting. Security notifications ignore every suppression, and the matrix shows them as locked rather than hiding the rows.' },
+        { k: 'De-duplication', v: 'Identical events on one record collapse into a single notification within a 60-minute window, with a count. Distinct events never merge.' },
+        { k: 'Rate limit', v: 'At most one notification per rule per account per day unless the event is a mention or an approval. The limit is stated in the rule builder, not applied invisibly.' },
+        { k: 'Held items', v: 'Suppressed by quiet hours, a focus block or a mute expiry are queued and delivered when the window ends. Nothing is discarded; the log records the hold and the release.' },
+        { k: 'Retry', v: 'Three attempts with backoff on email and Slack, then the channel is marked failing and the item is guaranteed in-app. Signora never queues indefinitely.' },
+        { k: 'Mute expiry', v: 'Default 7 or 30 days. Permanent requires typing the word. Seven days before expiry you are told the mute is about to end.' },
+        { k: 'Read state', v: 'Synced across devices within one second. Opening on mobile clears the desktop badge; badge counts never decrease optimistically.' },
+        { k: 'Saving', v: 'Optimistic with undo in the toast. A failed write reverts the control and says so — a preference that silently did not save is worse than one that refused.' },
+      ],
+
+      a11y: [
+        { sc: '1.3.1', t: 'The matrix is a real table: event rows, channel column headers, and each cell control labelled "Email — Deal stage changed — in digest".' },
+        { sc: '1.4.1', t: 'Cell state is a glyph plus a label, never colour alone: ✓ on, D digest, empty off, greyed lock required.' },
+        { sc: '1.4.3', t: 'Warn text on its tint measures 5.1:1, risk 5.6:1, brand on tint 7.4:1 — all hold in dark theme.' },
+        { sc: '2.1.1', t: 'The quiet-hours band is operable from the keyboard as two time fields; the visual timeline is a rendering of those fields, never the only control.' },
+        { sc: '2.2.1', t: 'Toasts persist for 5 seconds by default, are pausable on hover and focus, and the duration is itself a preference.' },
+        { sc: '2.4.3', t: 'Opening the inbox moves focus to the panel; Escape returns focus to the bell without marking anything read.' },
+        { sc: '2.5.8', t: 'Matrix cells are 24px targets with 8px separation inside a 44px row — the full row height is clickable for the primary toggle.' },
+        { sc: '3.3.1', t: 'Delivery failures state the channel, the cause, the number affected, and where those items can still be read.' },
+        { sc: '4.1.3', t: 'New in-app notifications announce politely as status. Only approvals blocking a workflow use an assertive role, and only once.' },
+      ],
+
+      responsive: [
+        { name: 'Desktop', range: '≥ 1280px', note: 'Full matrix with four channel columns and the projected-volume column. Channel cards sit four across; digest settings and their preview are side by side so a change and its result are visible together.' },
+        { name: 'Laptop / tablet', range: '768–1279px', note: 'The matrix scrolls horizontally with the event column pinned — channel columns are never dropped, because a hidden column reads as a setting that does not exist. Channel cards go two across.' },
+        { name: 'Mobile', range: '< 768px', note: 'The matrix becomes one card per event with four labelled channel toggles stacked inside it. Log and rule tables become cards. The inbox is a full-screen sheet, and quiet hours use native time pickers.' },
+      ],
+
+      rationale: [
+        { t: 'The page opens with a diagnosis, not a form', b: 'Nobody arrives here wanting to configure notifications; they arrive because the volume is wrong. Leading with 312 sent, 41 opened, 9 acted on — and naming the three rules responsible — turns a settings page into an answer.' },
+        { t: 'Every control shows its volume', b: 'A toggle labelled only "Deal stage changed" gives no basis for a decision. "12 per week" does. The header total updates before you save, so reduction is a visible act rather than a hopeful one.' },
+        { t: 'Digest is a state, not a separate page', b: 'Making digest a fourth value in the matrix — beside on, off and required — is what lets someone cut 68% of their volume without turning anything off. Nothing is lost; it is deferred to 07:00.' },
+        { t: 'Mutes expire', b: 'The most expensive notification bug is not over-sending, it is a mute set during a busy week that silences an account for a year. Every mute has an end date, permanent requires typing the word, and expiry is announced a week ahead.' },
+        { t: 'Suppressed and failed are different words', b: 'One means your settings worked. The other means the product broke. A log that shows both as "not delivered" destroys the only evidence a person has for telling those apart.' },
+        { t: 'Quiet hours hold, never drop', b: 'The interface says "held until 07:00" and lets you read ahead at any time. Silence you cannot inspect is indistinguishable from a system that has stopped working.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

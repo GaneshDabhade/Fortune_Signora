@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2shimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes v2spin { to { transform: rotate(360deg); } }
+  @keyframes v2pulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  @keyframes v2caret { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em;padding:0 0 120px">
+
+  <header style="max-width:1420px;margin:0 auto;padding:56px 40px 40px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;background:var(--ai-tint);color:var(--ai-ink);font-size:11.5px;font-weight:600">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12M12 4l-1.8 1.8M5.8 10.2 4 12"></path></svg>
+        AI Copilot · v2 pattern set
+      </span>
+      <span style="font-size:11.5px;color:var(--ink-3)">17 surfaces · one hue · one contract</span>
+      <div style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};box-shadow:{{ lightShadow }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};box-shadow:{{ darkShadow }}" onClick="{{ setDark }}">Dark</span>
+      </div>
+    </div>
+    <h1 style="font-size:46px;line-height:1.06;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:22ch">The copilot is everywhere, and it is always accountable</h1>
+    <p style="font-size:17px;line-height:1.65;max-width:76ch;margin:20px 0 0;color:var(--ink-2);text-wrap:pretty">Ubiquity is the easy half. The hard half is that a model which appears on every screen must obey the same contract on every screen: it inherits the scope of what you are looking at, it cites what it read, it states how sure it is, it proposes rather than commits, and everything it does is attributable and reversible. This document specifies the seventeen surfaces and the one contract they share.</p>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:32px">
+      <sc-for list="{{ contract }}" as="c" hint-placeholder-count="5">
+        <div style="padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="font-size:13px;font-weight:600">{{ c.t }}</div>
+          <p style="font-size:12px;line-height:1.5;color:var(--ink-2);margin:6px 0 0">{{ c.b }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </header>
+
+  <section id="c01" data-screen-label="01 Right panel" style="max-width:1420px;margin:0 auto;padding:36px 40px 0;border-top:1px solid var(--line-soft)">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">01</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">The right panel</h2>
+      <span style="font-size:12.5px;color:var(--ink-3)">420px · non-modal · pushes content · persists across navigation</span>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">The panel is the copilot's home, and it is never a separate destination. It opens beside the work, inherits the view's scope as a removable chip, and keeps its thread when you navigate — asking about a deal, opening the account, and continuing the same conversation is the normal path.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 442px;gap:16px;margin-top:24px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+          <span style="font-size:13px;color:var(--ink-3)">Opportunities /</span>
+          <span style="font-size:13px;font-weight:600">Vantage Logistics — Renewal FY26</span>
+          <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">The page keeps working. Nothing is blocked.</span>
+        </div>
+        <div style="padding:20px 18px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            <sc-for list="{{ pageKpis }}" as="k" hint-placeholder-count="3">
+              <div style="padding:15px 16px;border-radius:12px;border:1px solid var(--line-soft)">
+                <div style="font-size:11.5px;color:var(--ink-3)">{{ k.l }}</div>
+                <div style="font-size:22px;font-weight:700;letter-spacing:-0.026em;font-variant-numeric:tabular-nums;margin-top:6px">{{ k.v }}</div>
+                <div style="font-size:11.5px;color:{{ k.color }};margin-top:4px">{{ k.d }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:14px;padding:16px;border-radius:12px;border:1px solid var(--line-soft)">
+            <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Highlighted on the page</div>
+            <p style="font-size:13.5px;line-height:1.6;margin:10px 0 0"><span style="background:var(--ai-tint);box-shadow:0 0 0 2px var(--ai-tint);border-radius:3px">Procurement was not engaged before the pricing conversation, and the close date has moved twice since.</span> The security review is still outstanding with legal.</p>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
+              <span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:8px;background:var(--ai);color:#fff;font-size:12px;font-weight:600">Ask about the selection</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Selecting text offers the copilot the selection as scope.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e3);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line-soft)">
+          <span style="width:22px;height:22px;border-radius:7px;background:var(--ai);display:grid;place-items:center">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12M12 4l-1.8 1.8M5.8 10.2 4 12"></path></svg>
+          </span>
+          <span style="font-size:13.5px;font-weight:600">Signora</span>
+          <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--sunken);color:var(--ink-2)">Thread · 4</span>
+          <span style="margin-left:auto;display:flex;gap:5px;color:var(--ink-3);font-size:12px">
+            <span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;border:1px solid var(--line-soft)">⌄</span>
+            <span style="width:24px;height:24px;border-radius:7px;display:grid;place-items:center;border:1px solid var(--line-soft)">✕</span>
+          </span>
+        </div>
+        <div style="display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap;align-items:center">
+          <span style="font-size:11px;color:var(--ink-3)">Scope</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:6px;background:var(--brand-tint);color:var(--brand-ink)">This opportunity <span style="color:var(--ink-4)">✕</span></span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:6px;background:var(--brand-tint);color:var(--brand-ink)">Last 90 days <span style="color:var(--ink-4)">✕</span></span>
+          <span style="font-size:11.5px;color:var(--ai-ink);font-weight:600;margin-left:auto">Widen</span>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:14px;max-height:620px;overflow:auto">
+          <div style="align-self:flex-end;max-width:80%;padding:10px 13px;border-radius:12px 12px 4px 12px;background:var(--sunken);font-size:13.5px;line-height:1.55">What is actually blocking this renewal?</div>
+          <div style="padding:15px;border-radius:12px 12px 12px 4px;background:var(--ai-tint);border:1px solid var(--ai-line)">
+            <p style="font-size:13.5px;line-height:1.65;margin:0">Price is the stated objection, but the pattern says sequence. Procurement entered after the commercial terms were set{{ cite1 }}, which is the same order that preceded a slip in 23 of 31 comparable renewals{{ cite2 }}. The two date changes both followed procurement review, not the pricing conversation itself{{ cite3 }}.</p>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:13px;padding-top:11px;border-top:1px solid var(--ai-line);flex-wrap:wrap">
+              <span style="font-size:12px;font-weight:600;color:var(--ai-ink)">Show reasoning</span>
+              <span style="font-size:12px;font-weight:600;color:var(--ai-ink)">3 sources</span>
+              <span style="margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-3)"><span style="display:flex;gap:2px">{{ pips4 }}</span>4 of 5</span>
+            </div>
+          </div>
+          <div style="align-self:flex-end;max-width:80%;padding:10px 13px;border-radius:12px 12px 4px 12px;background:var(--sunken);font-size:13.5px;line-height:1.55">Draft the note to Bruun then.</div>
+          <div style="padding:15px;border-radius:12px 12px 12px 4px;background:var(--ai-tint);border:1px solid var(--ai-line)">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--surface);color:var(--ai-ink);border:1px solid var(--ai-line)">Draft · not sent</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Writing…</span>
+            </div>
+            <div style="margin-top:11px;padding:12px;border-radius:10px;background:var(--surface);border:1px solid var(--line-soft)">
+              <div style="font-size:12px;color:var(--ink-3)">To: L. Bruun · Subject: Procurement timeline</div>
+              <p style="font-size:13px;line-height:1.6;margin:9px 0 0">Lars — before we take the revised terms further, it would help to bring procurement in on the timeline rather than the price. On the last three renewals we ran this way{{ caret }}</p>
+            </div>
+            <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--ai);color:#fff;font-size:12.5px;font-weight:600">Open in composer</span>
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Shorter</span>
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Stop</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <sc-for list="{{ followUps }}" as="f" hint-placeholder-count="3">
+              <span style="display:inline-flex;align-items:center;min-height:28px;padding:4px 11px;border-radius:999px;border:1px solid var(--line-soft);font-size:12px;color:var(--ink-2)">{{ f }}</span>
+            </sc-for>
+          </div>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid var(--line-soft)">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:12px;background:var(--sunken);font-size:13px;color:var(--ink-3)">
+            Ask about this opportunity…
+            <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;padding:2px 6px;border-radius:5px;background:var(--surface);border:1px solid var(--line-soft)">⌘↵</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:9px;font-size:11px;color:var(--ink-4);flex-wrap:wrap">
+            <span>Nothing is sent or written without approval</span>
+            <span style="margin-left:auto">Thread saved to this record</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px">
+      <sc-for list="{{ panelRules }}" as="p" hint-placeholder-count="4">
+        <div style="padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+          <div style="font-size:12.5px;font-weight:600">{{ p.t }}</div>
+          <p style="font-size:12px;line-height:1.55;color:var(--ink-2);margin:7px 0 0">{{ p.b }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="c02" data-screen-label="02 Inline and context AI" style="max-width:1420px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">02</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Inline AI &amp; context AI</h2>
+      <span style="font-size:12.5px;color:var(--ink-3)">The copilot comes to the cursor, not the other way round</span>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">Inline AI operates on what is under the cursor — a cell, a field, a paragraph, a selection — and returns something you can accept, edit or reject in place. Context AI is the same engine offered from the object's own affordances: a row menu, a right-click, a hover on a metric. Neither one navigates you away, and neither one commits.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:20px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Inline — in a field</div>
+        <div style="margin-top:14px;padding:14px;border-radius:12px;border:1px solid var(--line-soft)">
+          <div style="font-size:12.5px;font-weight:600">Close plan</div>
+          <div style="margin-top:8px;padding:11px 12px;border-radius:8px;border:1px solid var(--ai);box-shadow:0 0 0 3px var(--ai-tint);font-size:13px;line-height:1.6">
+            <span style="color:var(--ink-2)">Security review with legal, then procurement intro via Bruun, then revised terms.</span>
+            <span style="display:block;margin-top:8px;padding-top:8px;border-top:1px solid var(--ai-line);color:var(--ai-ink);font-size:12px;font-weight:600">Suggested from 3 comparable renewals · Tab to accept · Esc to dismiss</span>
+          </div>
+          <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:8px;background:var(--ai);color:#fff;font-size:12px;font-weight:600">Accept</span>
+            <span style="display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Edit first</span>
+            <span style="display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Why this?</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--ink-3);line-height:1.55">An accepted suggestion is recorded as user-authored with an AI-assisted marker. The field history keeps both the suggestion and what you changed it to.</div>
+      </div>
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:20px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Context — from the object</div>
+        <div style="margin-top:14px;border-radius:12px;border:1px solid var(--line-soft);overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr 92px 74px 28px;gap:10px;align-items:center;padding:11px 14px;background:var(--ai-tint);border-bottom:1px solid var(--line-soft);font-size:13px">
+            <span style="font-weight:600">Vantage Logistics</span>
+            <span style="font-variant-numeric:tabular-nums">$1.24M</span>
+            <span style="font-variant-numeric:tabular-nums;color:var(--risk);font-weight:600">34%</span>
+            <span style="text-align:right;color:var(--ink-3)">⋯</span>
+          </div>
+          <div style="padding:6px;background:var(--surface)">
+            <sc-for list="{{ contextMenu }}" as="m" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;font-size:12.5px;background:{{ m.bg }}">
+                <span style="width:18px;height:18px;flex:none;border-radius:6px;background:{{ m.iconBg }};color:{{ m.iconFg }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ m.icon }}</span>
+                <span style="color:{{ m.color }};font-weight:{{ m.weight }}">{{ m.label }}</span>
+                <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ m.key }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--ink-3);line-height:1.55">Context actions are the same six verbs everywhere. The object decides which apply; the wording never changes between a row, a card and a record header.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="c03" data-screen-label="03 Six verbs" style="max-width:1420px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">03</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Explain · Summarize · Predict · Recommend · Generate · Reason</h2>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">Six verbs, and no others. Every AI affordance in the product is one of these, which is what makes the copilot learnable: once you know what Explain returns on a metric, you know what it returns on a score, a chart point and a forecast. Each verb has a fixed output shape, a fixed obligation, and a defined failure.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px">
+      <sc-for list="{{ verbs }}" as="v" hint-placeholder-count="6">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:9px;padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+            <span style="width:22px;height:22px;border-radius:7px;background:var(--ai-tint);color:var(--ai-ink);display:grid;place-items:center;font-size:11px;font-weight:700">{{ v.n }}</span>
+            <span style="font-size:15px;font-weight:600;letter-spacing:-0.016em">{{ v.name }}</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--ink-3)">{{ v.trigger }}</span>
+          </div>
+          <div style="padding:16px 18px;flex:1">
+            <div style="font-size:12.5px;line-height:1.6;color:var(--ink-2)">{{ v.desc }}</div>
+            <div style="margin-top:13px;padding:13px;border-radius:10px;background:var(--ai-tint);border:1px solid var(--ai-line)">{{ v.example }}</div>
+          </div>
+          <div style="padding:12px 18px;border-top:1px solid var(--line-soft);display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:8px;font-size:11.5px"><span style="color:var(--ink-3);width:64px;flex:none">Returns</span><span style="color:var(--ink-2)">{{ v.returns }}</span></div>
+            <div style="display:flex;gap:8px;font-size:11.5px"><span style="color:var(--ink-3);width:64px;flex:none">Obligation</span><span style="color:var(--ink-2)">{{ v.duty }}</span></div>
+            <div style="display:flex;gap:8px;font-size:11.5px"><span style="color:var(--ink-3);width:64px;flex:none">If unsure</span><span style="color:var(--ink-2)">{{ v.fail }}</span></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="c04" data-screen-label="04 Reason evidence confidence" style="max-width:1420px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">04</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Reasoning, evidence, confidence, sources</h2>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">These four are one apparatus, and they are what separate a copilot from a chatbot. Reasoning says how it got there. Evidence shows what it read, quoted. Confidence says how much weight to put on it, with the basis rather than a manufactured percentage. Sources are individually inspectable and individually excludable — turning one off regenerates only the parts that used it.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:24px">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:20px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Reasoning chain</div>
+        <div style="position:relative;padding-left:24px;margin-top:16px">
+          <div style="position:absolute;left:6px;top:6px;bottom:8px;width:1.5px;border-radius:2px;background:var(--ai-line)"></div>
+          <sc-for list="{{ reasoning }}" as="r" hint-placeholder-count="5">
+            <div style="position:relative;padding-bottom:15px">
+              <span style="position:absolute;left:-22px;top:4px;width:9px;height:9px;border-radius:999px;background:{{ r.dot }};box-shadow:0 0 0 3px var(--ai-tint)"></span>
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+                <span style="font-size:12.5px;font-weight:600">{{ r.step }}</span>
+                <span style="font-size:11px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--ai-tint);color:var(--ai-ink);font-variant-numeric:tabular-nums">{{ r.weight }}</span>
+              </div>
+              <div style="font-size:12px;line-height:1.55;color:var(--ink-2);margin-top:3px">{{ r.detail }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:11.5px;color:var(--ink-3);line-height:1.55;padding-top:12px;border-top:1px solid var(--line-soft)">Collapsed by default. Weights are the model's own attribution, not a post-hoc explanation written by a second model.</div>
+      </div>
+
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:20px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Evidence</div>
+        <sc-for list="{{ evidence }}" as="e" hint-placeholder-count="3">
+          <div style="display:flex;gap:11px;padding:13px 0;border-bottom:1px solid var(--line-soft)">
+            <span style="width:20px;height:20px;flex:none;border-radius:6px;background:var(--ai-tint);color:var(--ai-ink);display:grid;place-items:center;font-size:10.5px;font-weight:700">{{ e.n }}</span>
+            <div style="min-width:0">
+              <div style="font-size:12.5px;font-weight:600">{{ e.title }}</div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:2px">{{ e.meta }}</div>
+              <div style="font-size:12px;color:var(--ink-2);margin-top:6px;padding-left:9px;border-left:2px solid var(--ai-line);line-height:1.5">{{ e.quote }}</div>
+              <div style="font-size:11.5px;font-weight:600;color:var(--brand-ink);margin-top:6px">{{ e.action }}</div>
+            </div>
+          </div>
+        </sc-for>
+        <div style="font-size:11.5px;color:var(--ink-3);line-height:1.55;margin-top:12px">A claim with no openable evidence does not ship. Quotes open the artefact at the cited moment, not at the top.</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:20px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Confidence</div>
+          <sc-for list="{{ confidence }}" as="c" hint-placeholder-count="4">
+            <div style="padding:12px 0;border-bottom:1px solid var(--line-soft)">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+                <span style="font-size:12.5px;font-weight:600">{{ c.label }}</span>
+                <span style="font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums">{{ c.value }}</span>
+              </div>
+              <div style="display:flex;gap:3px;margin-top:7px">{{ c.pips }}</div>
+              <div style="font-size:11.5px;color:var(--ink-2);margin-top:6px;line-height:1.5">{{ c.note }}</div>
+            </div>
+          </sc-for>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:11px;line-height:1.55">Below 2 of 5 the copilot leads with the gap rather than the answer, and offers what would close it.</div>
+        </div>
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:20px">
+          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+            <span style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Sources</span>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">6 used · 1 excluded</span>
+          </div>
+          <sc-for list="{{ sources }}" as="s" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-soft)">
+              <span style="width:26px;height:16px;flex:none;border-radius:999px;background:{{ s.track }};padding:2px;display:flex;justify-content:{{ s.justify }}">
+                <span style="width:12px;height:12px;border-radius:999px;background:var(--surface);box-shadow:var(--e1)"></span>
+              </span>
+              <div style="min-width:0">
+                <div style="font-size:12.5px;color:{{ s.color }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</div>
+                <div style="font-size:11px;color:var(--ink-3)">{{ s.meta }}</div>
+              </div>
+              <span style="margin-left:auto;flex:none;font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ s.tagBg }};color:{{ s.tagFg }}">{{ s.tag }}</span>
+            </div>
+          </sc-for>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:11px;line-height:1.55">Excluding a source regenerates only the sections that used it, and says which ones changed.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="c05" data-screen-label="05 Agent tasks" style="max-width:1420px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">05</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Agent tasks &amp; multi-step actions</h2>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">A multi-step action is the copilot doing several things in sequence on your behalf. The rule is that the plan is shown before it runs, each step declares what it may touch, anything that writes or sends stops for approval, and the run continues in the background so you are never watching a progress bar. Tasks are objects: they have an owner, a state, a history and an undo window.</p>
+
+    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:24px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+          <span style="width:24px;height:24px;flex:none;border-radius:8px;background:var(--ai);display:grid;place-items:center">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12"></path></svg>
+          </span>
+          <div style="min-width:0">
+            <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em">Prepare the Vantage procurement approach</div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">Requested by you · 09:41 · step 3 of 5 · runs in background</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex:0 1 auto">
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:6px;background:var(--ai-tint);color:var(--ai-ink);white-space:nowrap">
+              <span style="width:6px;height:6px;border-radius:999px;background:var(--ai);animation:v2pulse 1.6s ease-in-out infinite"></span>Running
+            </span>
+            <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600;white-space:nowrap">Pause</span>
+          </div>
+        </div>
+        <sc-for list="{{ agentSteps }}" as="s" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:26px 1fr;gap:13px;padding:15px 18px;border-bottom:1px solid var(--line-soft);background:{{ s.bg }}">
+            <div style="width:21px;height:21px;border-radius:999px;background:{{ s.markBg }};border:1.5px solid {{ s.markBorder }};color:{{ s.markFg }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ s.mark }}</div>
+            <div style="min-width:0">
+              <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                <span style="font-size:13.5px;font-weight:600">{{ s.title }}</span>
+                <span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:6px;background:{{ s.tagBg }};color:{{ s.tagFg }};white-space:nowrap">{{ s.tag }}</span>
+                <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;border:1px solid var(--line-soft);color:var(--ink-3);white-space:nowrap">{{ s.scope }}</span>
+                <span style="font-size:11px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ s.dur }}</span>
+              </div>
+              <div style="font-size:12.5px;color:var(--ink-2);margin-top:5px;line-height:1.55">{{ s.detail }}</div>
+              <div style="margin-top:10px">{{ s.extra }}</div>
+            </div>
+          </div>
+        </sc-for>
+        <div style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap">
+          <span>Reversible for 24 hours · every step logged as agent-authored in the record timeline</span>
+          <span style="margin-left:auto;font-weight:600;color:var(--brand-ink);white-space:nowrap">Run history</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:9px;padding:13px 18px;border-bottom:1px solid var(--line-soft)">
+            <span style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Task queue</span>
+            <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--warn-tint);color:var(--warn)">2 need you</span>
+          </div>
+          <sc-for list="{{ taskQueue }}" as="t" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:11px;padding:12px 18px;border-bottom:1px solid var(--line-soft)">
+              <span style="width:7px;height:7px;flex:none;border-radius:999px;background:{{ t.dot }}"></span>
+              <div style="min-width:0">
+                <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</div>
+                <div style="font-size:11px;color:var(--ink-3);margin-top:2px">{{ t.meta }}</div>
+              </div>
+              <span style="margin-left:auto;flex:none;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:{{ t.tagBg }};color:{{ t.tagFg }};white-space:nowrap">{{ t.state }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:20px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Permission tiers</div>
+          <sc-for list="{{ permissions }}" as="p" hint-placeholder-count="4">
+            <div style="display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:{{ p.tint }};color:{{ p.color }};height:fit-content;white-space:nowrap">{{ p.tier }}</span>
+              <div style="min-width:0">
+                <div style="font-size:12.5px;line-height:1.55;color:var(--ink)">{{ p.what }}</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">{{ p.eg }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="c06" data-screen-label="06 Memory" style="max-width:1420px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">06</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Memory</h2>
+      <span style="font-size:12.5px;color:var(--ink-3)">Inspectable, editable, forgettable</span>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">A copilot that remembers is more useful and more dangerous. Signora's memory is therefore a visible list rather than an invisible advantage: every entry states what it learned, where it learned it, when it expires and which surfaces it affects. You can correct an entry, and correcting one is itself remembered so the same wrong inference is not re-derived next week.</p>
+
+    <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:16px;margin-top:24px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+          <span style="font-size:13.5px;font-weight:600">What Signora remembers about you</span>
+          <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">14 entries · 3 corrected · 2 expiring</span>
+        </div>
+        <sc-for list="{{ memory }}" as="m" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:98px 1fr 118px;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line-soft);align-items:start">
+            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:{{ m.tint }};color:{{ m.color }};white-space:nowrap;justify-self:start">{{ m.kind }}</span>
+            <div style="min-width:0">
+              <div style="font-size:13px;line-height:1.55">{{ m.text }}</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">{{ m.from }}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11.5px;color:var(--ink-3)">{{ m.expiry }}</div>
+              <div style="font-size:11.5px;font-weight:600;color:var(--brand-ink);margin-top:4px">Correct · Forget</div>
+            </div>
+          </div>
+        </sc-for>
+        <div style="padding:13px 18px;font-size:11.5px;color:var(--ink-3);line-height:1.55">Memory never holds a fact that belongs in a record. If it is true about the account, it is written to the account with attribution, not kept privately by the model.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:20px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Scopes</div>
+          <sc-for list="{{ memScopes }}" as="s" hint-placeholder-count="4">
+            <div style="padding:12px 0;border-bottom:1px solid var(--line-soft)">
+              <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+                <span style="font-size:12.5px;font-weight:600">{{ s.name }}</span>
+                <span style="margin-left:auto;font-size:11px;color:var(--ink-3)">{{ s.retention }}</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.55">{{ s.desc }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--risk-tint);box-shadow:var(--e1);padding:20px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--risk)">Never remembered</div>
+          <sc-for list="{{ neverRemembered }}" as="n" hint-placeholder-count="4">
+            <div style="display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px;line-height:1.55">
+              <span style="color:var(--risk);flex:none">✕</span>
+              <span style="color:var(--ink-2)">{{ n }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="c07" data-screen-label="07 Conversation and palette" style="max-width:1420px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">07</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Conversation &amp; the command palette</h2>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">Conversation is a working medium, not a transcript: a follow-up refines the answer above it rather than appending a new one, versions are kept, and a thread can be turned into a report, a task or a saved view. The palette is the copilot's front door — the same input searches, commands and asks, and it tells you which of the three it is about to do before you commit.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+          <span style="font-size:13.5px;font-weight:600">Thread — EMEA renewals</span>
+          <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--sunken);color:var(--ink-2)">v3</span>
+          <span style="margin-left:auto;font-size:11.5px;font-weight:600;color:var(--brand-ink)">Save as report</span>
+        </div>
+        <sc-for list="{{ conversation }}" as="c" hint-placeholder-count="4">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft);background:{{ c.bg }}">
+            <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+              <span style="font-size:12.5px;font-weight:600;color:{{ c.who }}">{{ c.actor }}</span>
+              <span style="font-size:11px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ c.time }}</span>
+              <span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:6px;background:{{ c.tagBg }};color:{{ c.tagFg }};white-space:nowrap">{{ c.tag }}</span>
+            </div>
+            <div style="font-size:13px;line-height:1.6;margin-top:6px;color:var(--ink)">{{ c.text }}</div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:6px;line-height:1.5">{{ c.note }}</div>
+          </div>
+        </sc-for>
+        <div style="padding:13px 18px;font-size:11.5px;color:var(--ink-3);line-height:1.55">A follow-up that changes the conclusion is labelled as such and keeps both versions. Nobody should discover that an answer moved without being told.</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e3);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line-soft)">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--ai)" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12"></path></svg>
+            <span style="font-size:14.5px">which renewals will slip this quarter</span>
+            <span style="width:1.5px;height:17px;background:var(--ai)"></span>
+            <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--ai-tint);color:var(--ai-ink);white-space:nowrap">Question</span>
+          </div>
+          <sc-for list="{{ palette }}" as="g" hint-placeholder-count="3">
+            <div style="padding:8px">
+              <div style="font-size:10.5px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4);padding:5px 9px">{{ g.label }}</div>
+              <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:8px;background:{{ i.bg }};font-size:13px">
+                  <span style="width:21px;height:21px;flex:none;border-radius:7px;background:{{ i.glyphBg }};color:{{ i.glyphFg }};display:grid;place-items:center;font-size:10.5px;font-weight:600">{{ i.glyph }}</span>
+                  <span style="font-weight:{{ i.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.label }}</span>
+                  <span style="margin-left:auto;flex:none;font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ i.key }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="display:flex;gap:14px;padding:9px 16px;border-top:1px solid var(--line-soft);font-size:10.5px;color:var(--ink-4);flex-wrap:wrap">
+            <span>↵ answer here</span><span>⌘↵ answer in panel</span><span>⇥ turn into a filter</span>
+          </div>
+        </div>
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:20px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Intent disclosure</div>
+          <sc-for list="{{ intents }}" as="i" hint-placeholder-count="3">
+            <div style="display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line-soft);align-items:baseline">
+              <span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ i.tint }};color:{{ i.color }};flex:none;white-space:nowrap">{{ i.kind }}</span>
+              <div style="min-width:0">
+                <div style="font-size:12.5px;line-height:1.5">{{ i.example }}</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">{{ i.does }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="c08" data-screen-label="08 Streaming" style="max-width:1420px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">08</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Streaming</h2>
+      <span style="font-size:12.5px;color:var(--ink-3)">Show work, not spinners</span>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">Prose streams token by token because reading along is genuinely faster. Analysis does not — a number that changes while you read it is worse than a number that arrives late, so computation shows named steps and settles once. Layout is reserved before content arrives, so nothing below the answer jumps.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px">
+      <sc-for list="{{ streamStates }}" as="s" hint-placeholder-count="4">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid var(--line-soft)">
+            <span style="font-size:12.5px;font-weight:600">{{ s.name }}</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums">{{ s.timing }}</span>
+          </div>
+          <div style="padding:16px;flex:1">{{ s.body }}</div>
+          <div style="padding:12px 16px;border-top:1px solid var(--line-soft);font-size:11.5px;line-height:1.5;color:var(--ink-2)">{{ s.rule }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="c09" data-screen-label="09 Where it appears" style="max-width:1420px;margin:0 auto;padding:52px 40px 0">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">09</span>
+      <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Where the copilot appears</h2>
+    </div>
+    <p style="font-size:15.5px;line-height:1.65;max-width:74ch;margin:12px 0 0;color:var(--ink-2)">Everywhere is a design decision, not an absence of one. Each surface below states its entry point, the verbs it offers there, and what it may not do — the last column is the one that keeps ubiquity from becoming noise.</p>
+    <div style="margin-top:22px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+      <div style="overflow-x:auto">
+        <div style="min-width:920px">
+          <div style="display:grid;grid-template-columns:170px 190px 1fr 1fr;gap:16px;padding:12px 20px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Surface</div><div>Entry point</div><div>Verbs offered</div><div>Not permitted there</div>
+          </div>
+          <sc-for list="{{ surfaces }}" as="s" hint-placeholder-count="10">
+            <div style="display:grid;grid-template-columns:170px 190px 1fr 1fr;gap:16px;padding:13px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;line-height:1.55">
+              <div style="font-weight:600">{{ s.surface }}</div>
+              <div style="color:var(--ink-2)">{{ s.entry }}</div>
+              <div style="color:var(--ink-2)">{{ s.verbs }}</div>
+              <div style="color:var(--ink-3)">{{ s.limit }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px">
+      <sc-for list="{{ closingRules }}" as="r" hint-placeholder-count="9">
+        <div style="display:flex;gap:11px;padding:15px 17px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+          <span style="font-size:11px;font-weight:700;color:var(--ai-ink);font-variant-numeric:tabular-nums;flex:none">{{ r.n }}</span>
+          <span style="font-size:12.5px;line-height:1.55;color:var(--ink-2)">{{ r.t }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = {
+      '--font-body': '"Archivo", system-ui, sans-serif',
+      '--ease': 'cubic-bezier(.32,.72,0,1)',
+    };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  pips(n, w) {
+    return [1, 2, 3, 4, 5].map(i => R('span', { key: i,
+      style: { width: w || 14, height: 5, borderRadius: 999, display: 'block', background: i <= n ? 'var(--ai)' : 'var(--sunken)' } }));
+  }
+
+  cite(n) {
+    return R('a', { href: '#c05', style: { color: 'var(--ai-ink)', textDecoration: 'none', fontWeight: 600, fontSize: 11, verticalAlign: 'super', padding: '0 1px' } }, n);
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      lightShadow: dark ? 'none' : 'var(--e1)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+      darkShadow: dark ? 'var(--e1)' : 'none',
+
+      contract: [
+        { t: 'Scoped', b: 'It answers about what you are looking at. The scope is a visible chip you can remove or widen.' },
+        { t: 'Cited', b: 'Every claim carries a source you can open at the exact moment it came from.' },
+        { t: 'Calibrated', b: 'Confidence is stated as pips plus the basis. A weak answer says so instead of hedging in prose.' },
+        { t: 'Proposing', b: 'It drafts, suggests and prepares. Sending, writing and deleting need a human hand.' },
+        { t: 'Reversible', b: 'Anything it does is attributed to it in the timeline and undoable for 24 hours.' },
+      ],
+
+      pageKpis: [
+        { l: 'AI win probability', v: '34%', d: '−23 pts in 30 days', color: 'var(--risk)' },
+        { l: 'Rep forecast', v: 'Commit', d: '90% · unchanged', color: 'var(--ink-3)' },
+        { l: 'Days in stage', v: '61', d: 'Median for won: 34', color: 'var(--warn)' },
+      ],
+
+      cite1: this.cite(1), cite2: this.cite(2), cite3: this.cite(3),
+      pips4: this.pips(4, 12),
+      caret: R('span', { style: { display: 'inline-block', width: 1.5, height: 14, background: 'var(--ai)', verticalAlign: 'text-bottom', marginLeft: 2, animation: 'v2caret 1s steps(1) infinite' } }),
+
+      followUps: ['Who else should be on it?', 'What did we do on Corrigan?', 'Set a reminder for Thursday'],
+
+      panelRules: [
+        { t: 'Non-modal by construction', b: 'The panel pushes the page rather than covering it. Tables reflow; nothing behind it becomes unreachable.' },
+        { t: 'Scope is visible and editable', b: 'Chips show exactly what the model can see. Widening scope is explicit and re-runs the answer.' },
+        { t: 'The thread follows the record', b: 'Threads are saved to the object they were about, so the next person sees what was already asked.' },
+        { t: 'Interruptible', b: 'Stop halts generation and keeps the partial text, marked as incomplete. Nothing partial is ever saved as a fact.' },
+      ],
+
+      contextMenu: [
+        { label: 'Explain this score', icon: '?', key: 'E', ai: true, sel: true },
+        { label: 'Summarize the last 90 days', icon: '≡', key: 'S', ai: true },
+        { label: 'Predict close outcome', icon: '↗', key: 'P', ai: true },
+        { label: 'Recommend next action', icon: '★', key: 'R', ai: true },
+        { label: 'Generate outreach draft', icon: '✎', key: 'G', ai: true },
+        { label: 'Open record', icon: '→', key: '↵', ai: false },
+      ].map(m => ({
+        label: m.label, key: m.key, icon: m.icon,
+        bg: m.sel ? 'var(--ai-tint)' : 'transparent',
+        color: 'var(--ink)',
+        weight: m.sel ? 600 : 400,
+        iconBg: m.ai ? 'var(--ai)' : 'var(--sunken)',
+        iconFg: m.ai ? '#fff' : 'var(--ink-2)',
+      })),
+
+      verbs: [
+        { n: '01', name: 'Explain', trigger: 'On any number', desc: 'Takes a figure the product computed and says what produced it, in the order the factors mattered.',
+          returns: 'Cause list with magnitudes', duty: 'Names the calculation and its inputs', fail: 'Shows the inputs and declines to attribute',
+          ex: ['Why is the score 38?', '−14 pricing objection · −6 second slip · −4 no procurement contact']},
+        { n: '02', name: 'Summarize', trigger: 'On a set or a document', desc: 'Compresses a call, a thread, a record or a filtered set without introducing a claim that is not in the source.',
+          returns: 'Prose plus what changed', duty: 'Every sentence traceable to source', fail: 'Summarises the part it has, states the gap',
+          ex: ['Last 90 days, this account', '4 calls, 21 emails. One objection, unresolved. Champion engagement fell after 14 Jul.']},
+        { n: '03', name: 'Predict', trigger: 'On an outcome field', desc: 'States a likelihood against a named comparable population, never as a bare number.',
+          returns: 'Probability + population + horizon', duty: 'Discloses the comparison set size', fail: 'Refuses below 30 comparables',
+          ex: ['Close by 31 Oct', '34% · from 96 comparable enterprise renewals · ±9 pts']},
+        { n: '04', name: 'Recommend', trigger: 'On a record or a queue', desc: 'Proposes one action with the effect it expects and the population that effect was measured on.',
+          returns: 'Action + expected effect + basis', duty: 'Quantifies the expected change', fail: 'Offers diagnosis instead of action',
+          ex: ['Engage procurement via Bruun', '+18 pts median in 23 comparable renewals · window 6 days']},
+        { n: '05', name: 'Generate', trigger: 'On a writing surface', desc: 'Produces a draft artefact — email, call plan, summary, field content — in the account\u2019s own language.',
+          returns: 'Editable draft, never sent', duty: 'Marked as draft until a human edits or approves', fail: 'Produces an outline and asks for the missing fact',
+          ex: ['Draft procurement intro', 'Draft · not sent · cites the 14 Jul call and the two date changes']},
+        { n: '06', name: 'Reason', trigger: 'Under any answer', desc: 'Exposes the steps, the weights and the counter-case the model tested before it concluded.',
+          returns: 'Ordered steps with weights', duty: 'Shows what would have changed the answer', fail: 'States which step was inconclusive',
+          ex: ['Show reasoning', '4 steps · counter-case tested: seasonal slippage, rejected on 3-year data']},
+      ].map(v => Object.assign({}, v, {
+        example: R('div', {}, [
+          R('div', { key: 'a', style: { fontSize: 11.5, fontWeight: 600, color: 'var(--ai-ink)' } }, v.ex[0]),
+          R('div', { key: 'b', style: { fontSize: 12.5, lineHeight: 1.55, color: 'var(--ink)', marginTop: 5 } }, v.ex[1]),
+        ]),
+      })),
+
+      reasoning: [
+        { step: 'Scoped the question', weight: '—', detail: 'This opportunity, 90 days, 4 calls and 21 emails.', dot: 'var(--ai)' },
+        { step: 'Read the objection', weight: '0.31', detail: 'Pricing raised 14 Jul, 6 days after commercial terms were shared.', dot: 'var(--ai)' },
+        { step: 'Compared the sequence', weight: '0.44', detail: '23 of 31 comparable renewals slipped when procurement entered after terms.', dot: 'var(--ai)' },
+        { step: 'Tested the counter-case', weight: '0.15', detail: 'Seasonal Q3 slippage — rejected. Three-year data shows no Q3 effect in EMEA.', dot: 'var(--warn)' },
+        { step: 'Weighted contact gap', weight: '0.10', detail: 'No procurement contact recorded. Weak on its own, corroborating here.', dot: 'var(--ai)' },
+      ],
+
+      evidence: [
+        { n: '1', title: 'QBR call — 14 Jul', meta: 'Transcript · 38:12 · Bruun speaking', quote: '“The pricing as it stands will not clear our procurement committee this quarter.”', action: 'Open at 38:12' },
+        { n: '2', title: '31 comparable renewals', meta: 'FY24–FY26 · enterprise · EMEA', quote: 'Procurement engaged after terms in 31 cases; 23 slipped at least one quarter.', action: 'Open the cohort' },
+        { n: '3', title: 'Close-date field history', meta: 'CRM · 2 changes in 30 days', quote: 'Both changes logged within 48 hours of a procurement review meeting.', action: 'Open field history' },
+      ],
+
+      confidence: [
+        { label: 'High — 4 of 5', value: '31 comparables', pips: this.pips(4, 22), note: 'Direct quote, consistent pattern, corroborating field history.' },
+        { label: 'Moderate — 3 of 5', value: '< 100 comparables', pips: this.pips(3, 22), note: 'Directional. Stated as a tendency, never as a forecast figure.' },
+        { label: 'Low — 1 of 5', value: 'No recent calls', pips: this.pips(1, 22), note: 'Leads with the gap: “no call data in 60 days” before any inference.' },
+      ],
+
+      sources: [
+        { name: 'QBR call — 14 Jul', meta: 'Transcript · 42 min', on: true, tag: 'Used' },
+        { name: 'Renewal cohort FY24–26', meta: '31 deals', on: true, tag: 'Used' },
+        { name: 'CRM field history', meta: 'Opportunity · 90 days', on: true, tag: 'Used' },
+        { name: 'Email thread — pricing', meta: '9 messages', on: true, tag: 'Used' },
+        { name: 'Discovery call — 3 Mar', meta: 'Poor audio · 41% confidence', on: false, tag: 'Excluded' },
+      ].map(s => ({
+        name: s.name, meta: s.meta, tag: s.tag,
+        track: s.on ? 'var(--ai)' : 'var(--sunken)',
+        justify: s.on ? 'flex-end' : 'flex-start',
+        color: s.on ? 'var(--ink)' : 'var(--ink-3)',
+        tagBg: s.on ? 'var(--ai-tint)' : 'var(--sunken)',
+        tagFg: s.on ? 'var(--ai-ink)' : 'var(--ink-3)',
+      })),
+
+      agentSteps: [
+        { title: 'Read the account history', tag: 'Complete', scope: 'Read only', dur: '2.1s', detail: '4 calls, 21 emails, 14 field changes since 1 May.', state: 'done' },
+        { title: 'Find the comparable cohort', tag: 'Complete', scope: 'Read only', dur: '3.8s', detail: '31 enterprise renewals where procurement entered after commercial terms.', state: 'done' },
+        { title: 'Draft the procurement intro', tag: 'Running', scope: 'Draft only', dur: '6s', detail: 'Writing to Bruun, referencing the timeline rather than the price.', state: 'running' },
+        { title: 'Schedule the follow-up', tag: 'Needs approval', scope: 'Writes calendar', dur: '—', detail: 'Would place a 30-minute hold on Thursday 14:00 with Bruun and Hald.', state: 'approval' },
+        { title: 'Update the close plan field', tag: 'Blocked — needs approval', scope: 'Writes 1 field', dur: '—', detail: 'Would set Close_Plan__c on this opportunity. The exact value is shown before you approve.', state: 'blocked' },
+      ].map(s => {
+        const m = {
+          done: { mark: '✓', markBg: 'var(--pos)', markBorder: 'var(--pos)', markFg: '#fff', tagBg: 'var(--pos-tint)', tagFg: 'var(--pos)', bg: 'transparent' },
+          running: { mark: '', markBg: 'transparent', markBorder: 'var(--ai)', markFg: 'var(--ai)', tagBg: 'var(--ai-tint)', tagFg: 'var(--ai-ink)', bg: 'var(--ai-tint)' },
+          approval: { mark: '4', markBg: 'transparent', markBorder: 'var(--line)', markFg: 'var(--ink-3)', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)', bg: 'transparent' },
+          blocked: { mark: '5', markBg: 'transparent', markBorder: 'var(--line)', markFg: 'var(--ink-3)', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)', bg: 'transparent' },
+        }[s.state];
+        let extra = null;
+        if (s.state === 'running') {
+          extra = R('div', { style: { height: 5, borderRadius: 999, background: 'var(--sunken)', overflow: 'hidden', maxWidth: 300 } },
+            R('div', { style: { width: '55%', height: '100%', borderRadius: 999, background: 'var(--ai)' } }));
+        } else if (s.state === 'approval' || s.state === 'blocked') {
+          extra = R('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, [
+            R('span', { key: 'a', style: { display: 'inline-flex', alignItems: 'center', minHeight: 30, padding: '0 12px', borderRadius: 8, background: 'var(--ai)', color: '#fff', fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap' } }, s.state === 'approval' ? 'Review the invite' : 'Review the field value'),
+            R('span', { key: 'b', style: { display: 'inline-flex', alignItems: 'center', minHeight: 30, padding: '0 12px', borderRadius: 8, border: '1px solid var(--line)', fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap' } }, 'Skip this step'),
+          ]);
+        }
+        return Object.assign({}, s, m, { extra });
+      }),
+
+      taskQueue: [
+        { title: 'Prepare the Vantage procurement approach', meta: 'You · started 09:41', state: 'Running', dot: 'var(--ai)', tagBg: 'var(--ai-tint)', tagFg: 'var(--ai-ink)' },
+        { title: 'Draft 20 renewal outreach emails', meta: 'Renewal sweep · 20 drafts ready', state: 'Approve', dot: 'var(--warn)', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)' },
+        { title: 'Write risk flags to 41 accounts', meta: 'Renewal sweep · writes 1 field', state: 'Approve', dot: 'var(--warn)', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)' },
+        { title: 'Weekly EMEA pipeline brief', meta: 'Scheduled · Mondays 07:00', state: 'Done', dot: 'var(--pos)', tagBg: 'var(--pos-tint)', tagFg: 'var(--pos)' },
+        { title: 'Enrich 312 accounts from the ICP', meta: 'Halted — 2 reverts in canary', state: 'Halted', dot: 'var(--risk)', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)' },
+      ],
+
+      permissions: [
+        { tier: 'Read', what: 'Anything you can see, nothing you cannot.', eg: 'Runs freely. Inherits your field-level permissions exactly.', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { tier: 'Draft', what: 'Produces artefacts that exist but do nothing.', eg: 'Emails, plans, summaries, field values — all held until approved.', tint: 'var(--ai-tint)', color: 'var(--ai-ink)' },
+        { tier: 'Write', what: 'Changes a record in Signora or a connected system.', eg: 'Per-run approval showing exact fields and values. Reversible 24h.', tint: 'var(--warn-tint)', color: 'var(--warn)' },
+        { tier: 'Send', what: 'Anything a person outside the company will receive.', eg: 'Always individually approved. Never bulk-approved by default.', tint: 'var(--risk-tint)', color: 'var(--risk)' },
+      ],
+
+      memory: [
+        { kind: 'Preference', text: 'You want the risk read first, then the recommendation. Summaries are reordered accordingly.', from: 'Inferred from 22 sessions', expiry: 'No expiry', tint: 'var(--ai-tint)', color: 'var(--ai-ink)' },
+        { kind: 'Correction', text: 'Cadenza is a partner in DACH, not a competitor. Do not count DACH accounts as competitive losses.', from: 'You corrected this on 12 Jul', expiry: 'Permanent', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { kind: 'Working set', text: 'You are working the EMEA Q3 renewals. Ambiguous questions default to that scope.', from: 'Last 8 sessions', expiry: 'Ends 30 Sep', tint: 'var(--sunken)', color: 'var(--ink-2)' },
+        { kind: 'Style', text: 'Drafts should be short, no pleasantries, British spelling.', from: 'You edited 6 drafts this way', expiry: 'No expiry', tint: 'var(--ai-tint)', color: 'var(--ai-ink)' },
+        { kind: 'Fact', text: 'Bruun and Hald served on the same steering group for 14 months.', from: 'Written to the account record instead', expiry: 'Not held here', tint: 'var(--warn-tint)', color: 'var(--warn)' },
+        { kind: 'Correction', text: 'Do not propose meetings on Fridays.', from: 'You declined 4 Friday suggestions', expiry: 'Review in 90 days', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+      ],
+
+      memScopes: [
+        { name: 'Session', retention: 'Until you close', desc: 'What you are looking at, what you just asked, the thread so far.' },
+        { name: 'Personal', retention: 'Until forgotten', desc: 'Your preferences, corrections and working set. Visible only to you.' },
+        { name: 'Record', retention: 'Lives with the object', desc: 'Threads and generated artefacts saved to the account or deal, visible to the team.' },
+        { name: 'Workspace', retention: 'Admin-governed', desc: 'Corrections an admin has promoted, so the whole team stops re-deriving them.' },
+      ],
+
+      neverRemembered: [
+        'Anything from a record you no longer have permission to see',
+        'Facts about an account — those are written to the account, with attribution',
+        'Content of a call a participant asked not to be recorded',
+        'Credentials, tokens, or anything typed into a password field',
+      ],
+
+      conversation: [
+        { actor: 'You', time: '09:20', tag: 'Question', text: 'Which EMEA renewals are most likely to slip this quarter?', note: 'Scope inherited from the view: EMEA, enterprise, Q3.', who: 'var(--ink)', bg: 'transparent', tagBg: 'var(--sunken)', tagFg: 'var(--ink-2)' },
+        { actor: 'Signora', time: '09:20', tag: 'v1 · 3 of 5', text: 'Eleven renewals show slip risk; five are above the threshold. Vantage, Ashgrove and Meridian carry $4.2M between them.', note: 'Confidence limited by missing call data on two accounts.', who: 'var(--ai-ink)', bg: 'var(--ai-tint)', tagBg: 'var(--surface)', tagFg: 'var(--ai-ink)' },
+        { actor: 'You', time: '09:23', tag: 'Refinement', text: 'Only the ones where procurement was engaged after pricing.', note: 'Refines the answer above rather than starting a new one.', who: 'var(--ink)', bg: 'transparent', tagBg: 'var(--sunken)', tagFg: 'var(--ink-2)' },
+        { actor: 'Signora', time: '09:23', tag: 'v3 · conclusion changed', text: 'Three renewals fit that sequence: Vantage, Ashgrove, Norvell. Meridian drops out — procurement was engaged before terms there.', note: 'v1 named Meridian. The change is labelled; both versions are kept and diffable.', who: 'var(--ai-ink)', bg: 'var(--ai-tint)', tagBg: 'var(--surface)', tagFg: 'var(--ai-ink)' },
+      ],
+
+      palette: [
+        { label: 'Ask', items: [{ label: 'Answer: which renewals will slip this quarter', glyph: '✦', key: '↵', sel: true, ai: true }] },
+        { label: 'Turn into', items: [
+          { label: 'A filtered view of the 5 at-risk renewals', glyph: '⌗', key: '⇥' },
+          { label: 'A monitored search that alerts on new ones', glyph: '◈', key: '' } ] },
+        { label: 'Commands', items: [
+          { label: 'Run the renewal risk sweep', glyph: '▶', key: '⌘⇧R' },
+          { label: 'Open the EMEA forecast report', glyph: '≡', key: '' } ] },
+      ].map(g => ({
+        label: g.label,
+        items: g.items.map(i => ({
+          label: i.label, key: i.key, glyph: i.glyph,
+          bg: i.sel ? 'var(--ai-tint)' : 'transparent',
+          weight: i.sel ? 600 : 400,
+          glyphBg: i.ai ? 'var(--ai)' : 'var(--sunken)',
+          glyphFg: i.ai ? '#fff' : 'var(--ink-2)',
+        })),
+      })),
+
+      intents: [
+        { kind: 'Search', example: '“vantage”', does: 'Matches records. Never invents an answer from a name.', tint: 'var(--brand-tint)', color: 'var(--brand-ink)' },
+        { kind: 'Command', example: '“run renewal sweep”', does: 'Matches a known action. Shows what it will do before running.', tint: 'var(--sunken)', color: 'var(--ink-2)' },
+        { kind: 'Question', example: '“why is vantage slipping”', does: 'Goes to the model, with the current view as scope.', tint: 'var(--ai-tint)', color: 'var(--ai-ink)' },
+      ],
+
+      streamStates: [
+        { name: 'Prose', timing: 'token rate',
+          body: R('div', { style: { fontSize: 12.5, lineHeight: 1.6 } }, [
+            'Price is the stated objection, but the pattern says sequence. Procurement entered after the commercial terms',
+            R('span', { key: 'c', style: { display: 'inline-block', width: 1.5, height: 13, background: 'var(--ai)', verticalAlign: 'text-bottom', marginLeft: 2, animation: 'v2caret 1s steps(1) infinite' } }),
+          ]),
+          rule: 'Streams. Stop keeps the partial text, marked incomplete.' },
+        { name: 'Analysis', timing: '1.4s',
+          body: R('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, [
+            ['Read 31 comparables', true], ['Weighted the sequence', true], ['Testing the counter-case', false],
+          ].map(([t, done], i) => R('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 } }, [
+            R('span', { key: 'a', style: { width: 14, height: 14, borderRadius: 999, display: 'grid', placeItems: 'center', fontSize: 8, fontWeight: 700, color: done ? '#fff' : 'var(--ai)', background: done ? 'var(--pos)' : 'transparent', border: done ? 'none' : '1.5px solid var(--ai)' } }, done ? '✓' : ''),
+            R('span', { key: 'b', style: { color: done ? 'var(--ink-2)' : 'var(--ink)' } }, t),
+          ]))),
+          rule: 'Named steps, not a spinner. The number settles once.' },
+        { name: 'Reserved layout', timing: 'before content',
+          body: R('div', { style: { display: 'flex', flexDirection: 'column', gap: 9 } }, ['92%', '76%', '84%', '58%'].map((w, i) =>
+            R('div', { key: i, style: { height: 9, width: w, borderRadius: 5, background: 'linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%)', backgroundSize: '200% 100%', animation: 'v2shimmer 1.4s ease-in-out infinite' } }))),
+          rule: 'The answer block claims its height first. Nothing below jumps.' },
+        { name: 'Interrupted', timing: 'user stopped',
+          body: R('div', {}, [
+            R('div', { key: 'a', style: { fontSize: 12.5, lineHeight: 1.6, color: 'var(--ink-2)' } }, 'Price is the stated objection, but the pattern says sequ…'),
+            R('div', { key: 'b', style: { marginTop: 10, fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6, background: 'var(--warn-tint)', color: 'var(--warn)', display: 'inline-block' } }, 'Incomplete — not saved as a finding'),
+          ]),
+          rule: 'Partial output is never cited, exported or written anywhere.' },
+      ],
+
+      surfaces: [
+        { surface: 'Right panel', entry: '⌘K, rail, or any Ask button', verbs: 'All six', limit: 'Cannot send or write without step approval' },
+        { surface: 'Table row', entry: 'Row menu, right-click', verbs: 'Explain, Summarize, Predict, Recommend, Generate', limit: 'Cannot bulk-act from a single row' },
+        { surface: 'Table header', entry: 'Summarise button', verbs: 'Summarize', limit: 'Summarises the filtered set only, never the whole object' },
+        { surface: 'Metric card', entry: 'Explain affordance', verbs: 'Explain, Reason', limit: 'Cannot restate the metric as a different number' },
+        { surface: 'Chart point', entry: 'Hover, then Explain', verbs: 'Explain', limit: 'No forecast beyond the plotted horizon' },
+        { surface: 'Record header', entry: 'Verdict line', verbs: 'Explain, Recommend, Reason', limit: 'Never asserts a role or fact without evidence' },
+        { surface: 'Field', entry: 'Focus, or ⌘J', verbs: 'Generate, Summarize', limit: 'Suggests; the field is committed by you' },
+        { surface: 'Text selection', entry: 'Selection toolbar', verbs: 'Explain, Summarize, Generate', limit: 'Scope is the selection, not the page' },
+        { surface: 'Command palette', entry: '⌘K', verbs: 'All six, plus search and commands', limit: 'Discloses intent before it acts' },
+        { surface: 'Signal Center', entry: 'Signal detail', verbs: 'Explain, Recommend', limit: 'Cannot dismiss a signal on your behalf' },
+        { surface: 'Report builder', entry: 'Narrative block', verbs: 'Summarize, Reason', limit: 'Writes only from blocks already on the page' },
+        { surface: 'Workflow builder', entry: 'AI step', verbs: 'Predict, Generate, Recommend', limit: 'No writes; drafts only, with a confidence floor' },
+      ],
+
+      closingRules: [
+        'One hue. If it is indigo it is generated, and nothing generated is any other colour.',
+        'The scope chip is always visible. A copilot that will not say what it can see cannot be trusted with it.',
+        'Six verbs, everywhere, worded identically. New capabilities extend a verb rather than adding one.',
+        'Every claim opens its evidence at the exact moment it came from, not at the top of the document.',
+        'Confidence is pips plus a basis. Never a percentage the model cannot defend.',
+        'Draft, write and send are three different permissions and are approved separately.',
+        'Partial output is never saved, cited or exported.',
+        'Memory is a list the user can read, correct and delete. Corrections outrank inferences permanently.',
+        'Anything the copilot did appears in the record timeline as its own actor, and is reversible for 24 hours.',
+      ].map((t, i) => ({ n: String(i + 1).padStart(2, '0'), t })),
+    };
+  }
+}
+</script>
+</body>
+</html>

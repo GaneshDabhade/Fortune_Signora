@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2pulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+  @keyframes v2shimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <div style="display:flex;align-items:center;gap:10px;height:34px;padding:0 20px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;border-bottom:1px solid var(--line-soft)">
+    <span style="font-weight:600">Signal center</span>
+    <span style="color:var(--ink-2)">A triage queue, not a notification list · every signal ends in a decision</span>
+    <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft)">
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }}" onClick="{{ setLight }}">Light</span>
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }}" onClick="{{ setDark }}">Dark</span>
+    </span>
+  </div>
+
+  <div style="display:flex;align-items:flex-start">
+    <nav style="width:56px;flex:none;position:sticky;top:0;height:100vh;background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">NG</div>
+      <div style="height:1px;width:28px;background:var(--line-soft);margin:6px 0"></div>
+      <sc-for list="{{ railIcons }}" as="r" hint-placeholder-count="8">
+        <div style="width:38px;height:32px;border-radius:8px;display:grid;place-items:center;background:{{ r.bg }};color:{{ r.color }};position:relative">
+          {{ r.icon }}
+          <span style="position:absolute;top:2px;right:3px;width:6px;height:6px;border-radius:999px;background:{{ r.dot }}"></span>
+        </div>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:14px;height:56px;padding:0 20px;border-bottom:1px solid var(--line-soft);background:var(--surface)">
+        <div style="display:flex;align-items:center;gap:7px;font-size:13px">
+          <span style="color:var(--ink-3)">Signals</span><span style="color:var(--ink-4)">/</span>
+          <span style="font-weight:600">Needs review</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;height:26px;padding:0 10px;border-radius:7px;background:var(--pos-tint);color:var(--pos);font-size:11.5px;font-weight:600">
+          <span style="width:6px;height:6px;border-radius:999px;background:var(--pos);animation:v2pulse 2s ease-in-out infinite"></span>Live · 3 arrived while you were reading
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;width:200px;height:32px;padding:0 11px;border-radius:8px;background:var(--sunken);color:var(--ink-3);font-size:12.5px">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+            <span>Search or ask…</span>
+          </div>
+          <div style="width:32px;height:32px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:600">MR</div>
+        </div>
+      </div>
+
+      <div style="padding:18px 20px 0">
+        <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+          <div>
+            <div style="display:flex;align-items:baseline;gap:10px">
+              <h1 style="font-size:25px;font-weight:700;letter-spacing:-0.026em;margin:0">Signals</h1>
+              <span style="font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums">14 need review · 6 assigned to you · 41 this week</span>
+            </div>
+            <div style="font-size:13px;color:var(--ink-2);margin-top:3px">Detected events arrive continuously. Every one leaves the queue by being actioned, assigned, snoozed or dismissed with a reason.</div>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Rules</span>
+            <span style="display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Analytics</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">Review next ⏎</span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;margin-top:16px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+          <sc-for list="{{ savedViews }}" as="v" hint-placeholder-count="5">
+            <span style="display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px 8px 0 0;font-size:13px;font-weight:{{ v.weight }};color:{{ v.color }};background:{{ v.bg }};border-bottom:2px solid {{ v.edge }};margin-bottom:-1px">
+              {{ v.name }}
+              <span style="font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:{{ v.countBg }};color:{{ v.countFg }};font-variant-numeric:tabular-nums">{{ v.count }}</span>
+            </span>
+          </sc-for>
+          <span style="display:inline-flex;align-items:center;padding:9px 11px;font-size:13px;color:var(--ink-3)">＋ New view</span>
+        </div>
+      </div>
+
+      <div style="padding:16px 20px 24px;display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:16px;align-items:start">
+
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:12px 14px;border-bottom:1px solid var(--line-soft);display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+              <sc-for list="{{ severityFilters }}" as="s" hint-placeholder-count="4">
+                <span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:8px;background:{{ s.bg }};border:1px solid {{ s.border }};font-size:11.5px;font-weight:600;color:{{ s.color }}">
+                  <span style="width:6px;height:6px;border-radius:999px;background:{{ s.dot }}"></span>{{ s.label }}
+                  <span style="font-variant-numeric:tabular-nums;opacity:.75">{{ s.count }}</span>
+                </span>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+              <sc-for list="{{ typeFilters }}" as="t" hint-placeholder-count="5">
+                <span style="display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:7px;background:{{ t.bg }};font-size:11px;font-weight:600;color:{{ t.color }}">{{ t.label }} <span style="font-variant-numeric:tabular-nums;opacity:.7">{{ t.count }}</span></span>
+              </sc-for>
+              <span style="display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:7px;border:1px dashed var(--line);font-size:11px;color:var(--ink-3)">＋ Filter</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--ink-3)">
+              <span>Confidence ≥ 3</span>
+              <div style="flex:1;height:5px;border-radius:999px;background:var(--sunken);position:relative">
+                <div style="position:absolute;left:40%;right:0;top:0;bottom:0;border-radius:999px;background:var(--brand)"></div>
+                <span style="position:absolute;left:40%;top:-3px;width:11px;height:11px;border-radius:999px;background:var(--surface);border:2px solid var(--brand);transform:translateX(-50%)"></span>
+              </div>
+              <span style="font-weight:600;color:var(--ink-2)">14 of 22 shown</span>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--brand);color:#fff">
+            <span style="width:14px;height:14px;border-radius:4px;background:#fff;color:var(--brand);display:grid;place-items:center;font-size:9px;font-weight:700">✓</span>
+            <span style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums">3 selected</span>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+              <sc-for list="{{ bulkActions }}" as="b" hint-placeholder-count="4">
+                <span style="display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);font-size:11px;font-weight:600">{{ b }}</span>
+              </sc-for>
+              <span style="opacity:.75;font-size:12px">✕</span>
+            </div>
+          </div>
+
+          <div style="max-height:760px;overflow:auto">
+            <sc-for list="{{ feedGroups }}" as="g" hint-placeholder-count="3">
+              <div>
+                <div style="display:flex;align-items:center;gap:9px;padding:8px 14px;background:var(--bg);border-bottom:1px solid var(--line-soft);position:sticky;top:0">
+                  <span style="font-size:10.5px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">{{ g.label }}</span>
+                  <span style="font-size:10.5px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ g.count }}</span>
+                </div>
+                <sc-for list="{{ g.items }}" as="s" hint-placeholder-count="4">
+                  <div style="display:flex;gap:11px;padding:12px 14px;border-bottom:1px solid var(--line-soft);border-left:2px solid {{ s.edge }};background:{{ s.bg }}">
+                    <span style="width:14px;height:14px;flex:none;border-radius:4px;border:1.5px solid {{ s.checkBorder }};background:{{ s.checkBg }};color:#fff;display:grid;place-items:center;font-size:9px;margin-top:3px">{{ s.tick }}</span>
+                    <div style="min-width:0;flex:1">
+                      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+                        <span style="width:6px;height:6px;flex:none;border-radius:999px;background:{{ s.sevColor }}"></span>
+                        <span style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px">{{ s.title }}</span>
+                        <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:{{ s.typeBg }};color:{{ s.typeFg }}">{{ s.type }}</span>
+                      </div>
+                      <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.45">{{ s.summary }}</div>
+                      <div style="display:flex;align-items:center;gap:9px;margin-top:6px;flex-wrap:wrap">
+                        <span style="font-size:11px;font-weight:600;color:var(--brand-ink)">{{ s.account }}</span>
+                        <span style="display:flex;gap:2px">{{ s.pips }}</span>
+                        <span style="font-size:10.5px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ s.when }}</span>
+                        <span style="margin-left:auto;font-size:10.5px;color:{{ s.stateColor }};font-weight:600">{{ s.state }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <div style="padding:14px;display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--ink-3)">
+              <span>Virtualised · newest signals never reorder the list while it is focused</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="width:34px;height:34px;flex:none;border-radius:10px;background:var(--risk-tint);color:var(--risk);display:grid;place-items:center;font-size:14px;font-weight:700">!</span>
+              <div style="min-width:0;flex:1">
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                  <h2 style="font-size:19px;font-weight:600;letter-spacing:-0.018em;margin:0">Pricing objection raised on the QBR</h2>
+                  <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--risk-tint);color:var(--risk)">
+                    <span style="width:5px;height:5px;border-radius:999px;background:var(--risk)"></span>Critical
+                  </span>
+                  <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--warn-tint);color:var(--warn)">Deal risk</span>
+                  <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--sunken);color:var(--ink-2)">Unreviewed</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap;font-size:12px;color:var(--ink-3)">
+                  <span><span style="font-weight:600;color:var(--brand-ink)">Vantage Logistics A/S</span> · Renewal Q4 FY26 · $1.24M</span>
+                  <span>·</span><span>Owner M. Reinhardt</span>
+                  <span>·</span><span style="font-variant-numeric:tabular-nums">Detected 14 Jul, recomputed today 09:14</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;min-width:0">
+                <sc-for list="{{ detailActions }}" as="a" hint-placeholder-count="5">
+                  <span style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 11px;border-radius:8px;background:{{ a.bg }};color:{{ a.color }};border:1px solid {{ a.border }};font-size:12px;font-weight:600">
+                    {{ a.icon }}{{ a.label }}
+                    <span style="font-family:ui-monospace,monospace;font-size:9.5px;opacity:.7">{{ a.key }}</span>
+                  </span>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line-soft)">
+              <sc-for list="{{ detailMeta }}" as="m" hint-placeholder-count="4">
+                <div style="padding:14px 18px;border-right:1px solid var(--line-soft)">
+                  <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">{{ m.k }}</div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:7px">
+                    <span style="font-size:14px;font-weight:600;color:{{ m.color }}">{{ m.v }}</span>
+                    <span style="display:flex;gap:2px">{{ m.pips }}</span>
+                  </div>
+                  <div style="font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.45">{{ m.note }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="padding:16px 18px;background:var(--ai-tint);border-bottom:1px solid var(--ai-line)">
+              <div style="display:flex;align-items:center;gap:9px">
+                <span style="width:20px;height:20px;flex:none;border-radius:6px;background:var(--ai);display:grid;place-items:center">
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+                </span>
+                <span style="font-size:12.5px;font-weight:600;color:var(--ai-ink)">Why this matters</span>
+                <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">6 sources · confidence 4 of 5</span>
+              </div>
+              <p style="font-size:13.5px;line-height:1.65;margin:10px 0 0;max-width:94ch">The objection came from the economic buyer, not a user, and it named procurement as the gate. In 412 comparable renewals this pattern preceded a close-date slip 68% of the time, and it has already done so twice here. Usage is at 91%, so the risk is commercial: the deal needs a reframe on compliance cost, not a discount.</p>
+              <div style="display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap">
+                <span style="font-size:12px;font-weight:600;color:var(--ai-ink)">Show reasoning</span>
+                <span style="font-size:12px;font-weight:600;color:var(--ai-ink)">Draft the reframe</span>
+                <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Model v4.2 · rule “pricing objection by economic buyer”</span>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)">
+              <div style="border-right:1px solid var(--line-soft)">
+                <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Evidence</div>
+                <sc-for list="{{ evidence }}" as="e" hint-placeholder-count="4">
+                  <div style="display:flex;gap:11px;padding:13px 18px;border-bottom:1px solid var(--line-soft)">
+                    <span style="width:20px;height:20px;flex:none;border-radius:6px;background:var(--ai-tint);color:var(--ai-ink);display:grid;place-items:center;font-size:10px;font-weight:700">{{ e.n }}</span>
+                    <div style="min-width:0">
+                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        <span style="font-size:12.5px;font-weight:600">{{ e.title }}</span>
+                        <span style="font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--sunken);color:var(--ink-2)">{{ e.kind }}</span>
+                      </div>
+                      <div style="font-size:11px;color:var(--ink-3);margin-top:2px">{{ e.meta }}</div>
+                      <div style="font-size:12px;color:var(--ink-2);margin-top:6px;padding-left:9px;border-left:2px solid var(--ai-line);line-height:1.5">{{ e.quote }}</div>
+                    </div>
+                    <span style="margin-left:auto;flex:none;font-size:11px;font-weight:600;color:var(--brand-ink)">{{ e.action }}</span>
+                  </div>
+                </sc-for>
+                <div style="padding:12px 18px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Sources are the artefacts themselves, opened at the cited moment. A signal without evidence is never raised.</div>
+              </div>
+              <div>
+                <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Signal timeline</div>
+                <div style="padding:16px 18px 8px">
+                  <div style="position:relative;padding-left:24px">
+                    <div style="position:absolute;left:7px;top:6px;bottom:12px;width:1.5px;border-radius:2px;background:var(--line-soft)"></div>
+                    <sc-for list="{{ signalTimeline }}" as="t" hint-placeholder-count="6">
+                      <div style="position:relative;padding-bottom:15px">
+                        <span style="position:absolute;left:-21px;top:4px;width:9px;height:9px;border-radius:999px;background:{{ t.dot }};box-shadow:0 0 0 3px {{ t.ring }}"></span>
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                          <span style="font-size:12.5px;font-weight:600">{{ t.title }}</span>
+                          <span style="font-size:10.5px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ t.when }}</span>
+                        </div>
+                        <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ t.body }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 18px;border-top:1px solid var(--line-soft);background:var(--sunken);flex-wrap:wrap">
+              <span style="font-size:12px;color:var(--ink-2)">Leaving the queue requires a decision:</span>
+              <sc-for list="{{ resolutions }}" as="r" hint-placeholder-count="4">
+                <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:{{ r.bg }};color:{{ r.color }}">{{ r.label }}</span>
+              </sc-for>
+              <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">J / K moves · ⏎ opens · E assigns · S snoozes · D dismisses</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+              <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+                <span style="font-size:13.5px;font-weight:600">Signal analytics</span>
+                <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Last 30 days</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line-soft)">
+                <sc-for list="{{ analyticsKpis }}" as="k" hint-placeholder-count="3">
+                  <div style="flex:1 1 130px;min-width:0;padding:14px 16px;border-right:1px solid var(--line-soft)">
+                    <div style="font-size:11px;color:var(--ink-3)">{{ k.k }}</div>
+                    <div style="font-size:20px;font-weight:700;letter-spacing:-0.024em;font-variant-numeric:tabular-nums;margin-top:4px">{{ k.v }}</div>
+                    <div style="font-size:11px;font-weight:600;color:{{ k.color }};margin-top:2px">{{ k.d }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="padding:16px 18px">
+                <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Precision by rule — dismissal is the signal</div>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+                  <sc-for list="{{ precision }}" as="p" hint-placeholder-count="5">
+                    <div>
+                      <div style="display:flex;align-items:baseline;gap:8px;font-size:11.5px">
+                        <span style="color:var(--ink-2)">{{ p.rule }}</span>
+                        <span style="margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums;color:{{ p.color }}">{{ p.value }}</span>
+                        <span style="color:var(--ink-4);font-variant-numeric:tabular-nums">{{ p.volume }}</span>
+                      </div>
+                      <div style="height:5px;border-radius:999px;background:var(--sunken);margin-top:5px;overflow:hidden">
+                        <div style="width:{{ p.pct }};height:100%;border-radius:999px;background:{{ p.color }}"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.5">Rules below 60% acted-on are proposed for retuning automatically; the proposal names the threshold it would change.</div>
+              </div>
+            </div>
+
+            <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+              <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+                <span style="font-size:13.5px;font-weight:600">Volume &amp; mix</span>
+                <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Weekly, by severity</span>
+              </div>
+              <div style="padding:16px 18px">
+                <div style="display:flex;align-items:flex-end;gap:10px">
+                  <sc-for list="{{ volumeBars }}" as="b" hint-placeholder-count="8">
+                    <div style="flex:1;min-width:0">
+                      <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:2px;height:132px">
+                        <div style="height:{{ b.critical }};border-radius:4px 4px 0 0;background:var(--risk)"></div>
+                        <div style="height:{{ b.high }};background:var(--warn)"></div>
+                        <div style="height:{{ b.info }};border-radius:0 0 4px 4px;background:var(--c2)"></div>
+                      </div>
+                      <div style="font-size:9.5px;color:var(--ink-4);text-align:center;margin-top:5px">{{ b.label }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:var(--ink-2);flex-wrap:wrap">
+                  <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:var(--risk)"></span>Critical</span>
+                  <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:var(--warn)"></span>High</span>
+                  <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:var(--c2)"></span>Informational</span>
+                  <span style="margin-left:auto;color:var(--ink-3)">Volume is flat; critical share is up 9 points</span>
+                </div>
+                <div style="margin-top:14px;padding:12px 13px;border-radius:11px;background:var(--ai-tint);border:1px solid var(--ai-line);font-size:12px;line-height:1.55">
+                  <span style="font-weight:600;color:var(--ai-ink)">Read: </span>
+                  <span>the rise is concentrated in two rules on EMEA enterprise renewals. It reflects real deterioration rather than noisier detection — dismissal rate on those rules is unchanged.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:13.5px;font-weight:600">Signal rules</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">What gets raised, to whom, at what threshold</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink)">New rule</span>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:900px">
+                <div style="display:grid;grid-template-columns:minmax(0,1.4fr) 118px 132px 128px 118px 92px;gap:12px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Rule</div><div>Severity</div><div>Threshold</div><div>Routes to</div><div>Channel</div><div style="text-align:right">State</div>
+                </div>
+                <sc-for list="{{ rules }}" as="r" hint-placeholder-count="6">
+                  <div style="display:grid;grid-template-columns:minmax(0,1.4fr) 118px 132px 128px 118px 92px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+                    <div style="min-width:0">
+                      <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+                      <div style="font-size:11px;color:var(--ink-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.source }}</div>
+                    </div>
+                    <div><span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ r.sevBg }};color:{{ r.sevFg }}">{{ r.severity }}</span></div>
+                    <div style="font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-2)">{{ r.threshold }}</div>
+                    <div style="font-size:12px;color:var(--ink-2)">{{ r.routes }}</div>
+                    <div style="font-size:12px;color:var(--ink-2)">{{ r.channel }}</div>
+                    <div style="text-align:right">
+                      <span style="width:28px;height:17px;border-radius:999px;background:{{ r.toggleBg }};position:relative;display:inline-block">
+                        <span style="position:absolute;top:2px;left:{{ r.knob }};width:13px;height:13px;border-radius:999px;background:#fff;box-shadow:var(--e1)"></span>
+                      </span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:11px;padding:13px 18px;background:var(--ai-tint)">
+              <span style="width:18px;height:18px;flex:none;border-radius:5px;background:var(--ai);display:grid;place-items:center;margin-top:1px">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+              </span>
+              <div style="font-size:12.5px;line-height:1.55">
+                <span style="font-weight:600">Proposed retune: </span>
+                <span style="color:var(--ink-2)">“Website visit spike” is dismissed 71% of the time. Raising its threshold from 3× to 5× baseline would remove 44 signals a month and keep every one that was acted on.</span>
+              </div>
+              <span style="margin-left:auto;flex:none;font-size:11.5px;font-weight:600;color:var(--ai-ink)">Review change →</span>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:13.5px;font-weight:600">Signal history</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Nothing is deleted — every resolution is auditable</span>
+              <span style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+                <sc-for list="{{ historyTabs }}" as="h" hint-placeholder-count="4">
+                  <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:{{ h.bg }};color:{{ h.color }};box-shadow:{{ h.shadow }}">{{ h.label }}</span>
+                </sc-for>
+              </span>
+            </div>
+            <div style="overflow-x:auto">
+            <sc-for list="{{ history }}" as="h" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:minmax(0,1.5fr) 150px 160px 118px;gap:12px;align-items:center;padding:12px 18px;min-width:700px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="width:6px;height:6px;flex:none;border-radius:999px;background:{{ h.dot }}"></span>
+                    <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.title }}</span>
+                  </div>
+                  <div style="font-size:11px;color:var(--ink-3);margin-top:2px">{{ h.account }}</div>
+                </div>
+                <div><span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ h.stateBg }};color:{{ h.stateFg }}">{{ h.state }}</span></div>
+                <div style="font-size:11.5px;color:var(--ink-2)">{{ h.reason }}</div>
+                <div style="text-align:right;font-size:11px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ h.by }}</div>
+              </div>
+            </sc-for>
+            </div>
+            <div style="padding:12px 18px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Dismissal reasons feed rule precision. Snoozed signals return at the stated time with their original evidence intact.</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+            <sc-for list="{{ mechanics }}" as="m" hint-placeholder-count="6">
+              <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+                <div style="font-size:13px;font-weight:600">{{ m.t }}</div>
+                <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">{{ m.b }}</p>
+              </div>
+            </sc-for>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)', '--c2': dark ? '#4fa3d1' : '#3f81ad' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+    });
+  }
+
+  icon(kind) {
+    const p = {
+      home: 'M2.5 7 8 2.5 13.5 7v6.5h-11V7Z', chart: 'M3 13V7M8 13V3M13 13V9',
+      flow: 'M2.5 4h11M4.5 8h7M6.5 12h3', grid: 'M2.5 2.5h5v5h-5zM8.5 2.5h5v5h-5zM2.5 8.5h5v5h-5zM8.5 8.5h5v5h-5z',
+      case: 'M2.5 5.5h11v8h-11zM6 5.5V3h4v2.5', chat: 'M2.5 3h11v7H7l-4.5 3.5z',
+      pulse: 'M1.5 8h3l2-4.5L9 12l2-4h3.5', file: 'M4 2h5l3 3v9H4zM9 2v3h3',
+    }[kind];
+    return R('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }, R('path', { d: p }));
+  }
+
+  pips(n, w) {
+    return [1, 2, 3, 4, 5].map(i => R('span', { key: i, style: { width: w || 12, height: 4, borderRadius: 999, display: 'block', background: i <= n ? 'var(--ai)' : 'rgba(128,128,128,.25)' } }));
+  }
+
+  glyph(d) {
+    return R('svg', { width: 12, height: 12, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' }, R('path', { d }));
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--brand)',
+      lightFg: dark ? 'var(--ink-3)' : '#fff',
+      darkBg: dark ? 'var(--brand)' : 'transparent',
+      darkFg: dark ? '#fff' : 'var(--ink-3)',
+
+      railIcons: ['home', 'chart', 'flow', 'grid', 'case', 'chat', 'pulse', 'file'].map((k, i) => ({
+        icon: this.icon(k),
+        bg: i === 6 ? 'var(--brand-tint)' : 'transparent',
+        color: i === 6 ? 'var(--brand)' : 'var(--ink-3)',
+        dot: i === 6 ? 'var(--risk)' : 'transparent',
+      })),
+
+      savedViews: [
+        { name: 'Needs review', count: '14', current: true, urgent: true },
+        { name: 'Assigned to me', count: '6', current: false, urgent: false },
+        { name: 'Critical only', count: '3', current: false, urgent: true },
+        { name: 'Buying signals', count: '11', current: false, urgent: false },
+        { name: 'Snoozed', count: '9', current: false, urgent: false },
+      ].map(v => ({
+        name: v.name, count: v.count,
+        weight: v.current ? 600 : 400,
+        color: v.current ? 'var(--ink)' : 'var(--ink-3)',
+        bg: v.current ? 'var(--sunken)' : 'transparent',
+        edge: v.current ? 'var(--brand)' : 'transparent',
+        countBg: v.urgent ? 'var(--risk-tint)' : 'var(--sunken)',
+        countFg: v.urgent ? 'var(--risk)' : 'var(--ink-3)',
+      })),
+
+      severityFilters: [
+        { label: 'Critical', count: '3', dot: 'var(--risk)', on: true, tint: 'var(--risk-tint)', color: 'var(--risk)' },
+        { label: 'High', count: '6', dot: 'var(--warn)', on: true, tint: 'var(--warn-tint)', color: 'var(--warn)' },
+        { label: 'Medium', count: '5', dot: 'var(--c2)', on: false, tint: 'transparent', color: 'var(--ink-2)' },
+        { label: 'Info', count: '8', dot: 'var(--ink-4)', on: false, tint: 'transparent', color: 'var(--ink-3)' },
+      ].map(s => ({
+        label: s.label, count: s.count, dot: s.dot,
+        bg: s.on ? s.tint : 'transparent',
+        border: s.on ? 'transparent' : 'var(--line)',
+        color: s.on ? s.color : 'var(--ink-2)',
+      })),
+
+      typeFilters: [
+        { label: 'Deal risk', count: '7', on: true }, { label: 'Buying', count: '11', on: false },
+        { label: 'Competitive', count: '4', on: false }, { label: 'Committee', count: '3', on: false },
+        { label: 'Usage', count: '6', on: false },
+      ].map(t => ({
+        label: t.label, count: t.count,
+        bg: t.on ? 'var(--brand-tint)' : 'var(--sunken)',
+        color: t.on ? 'var(--brand-ink)' : 'var(--ink-2)',
+      })),
+
+      bulkActions: ['Assign', 'Snooze', 'Dismiss', 'Bookmark'],
+
+      feedGroups: [
+        {
+          label: 'Today', count: '6',
+          items: [
+            { title: 'Pricing objection raised', type: 'Deal risk', sev: 'critical', account: 'Vantage Logistics', summary: 'Economic buyer named procurement as the gate on the QBR.', when: '09:14', conf: 4, sel: true, current: true, state: 'Unreviewed' },
+            { title: 'Champion moved to procurement', type: 'Committee', sev: 'critical', account: 'Vantage Logistics', summary: 'Title change detected; advocate now owns approval.', when: '08:52', conf: 5, sel: true, current: false, state: 'Unreviewed' },
+            { title: 'Competitor named twice', type: 'Competitive', sev: 'high', account: 'Brightwater Group', summary: 'Cadenza referenced in a procurement thread.', when: '08:30', conf: 4, sel: true, current: false, state: 'Unreviewed' },
+            { title: 'Usage crossed 94% of licences', type: 'Buying', sev: 'high', account: 'Norvell Energy', summary: 'Third consecutive week above threshold.', when: '07:10', conf: 5, sel: false, current: false, state: 'Assigned · JO' },
+          ],
+        },
+        {
+          label: 'Yesterday', count: '5',
+          items: [
+            { title: 'No contact for 21 days', sevLabel: '', type: 'Deal risk', sev: 'high', account: 'Ashgrove Retail', summary: 'Longest engagement gap in the segment.', when: '16:40', conf: 5, sel: false, current: false, state: 'Snoozed · 2d' },
+            { title: 'Hiring 14 operations roles', type: 'Buying', sev: 'medium', account: 'Vantage Logistics', summary: 'Job-board scan implies Q4 fleet expansion.', when: '14:02', conf: 3, sel: false, current: false, state: 'Bookmarked' },
+            { title: 'Support tier downgraded', type: 'Usage', sev: 'medium', account: 'Meridian Freight', summary: 'Premier to Standard at renewal.', when: '11:18', conf: 4, sel: false, current: false, state: 'Unreviewed' },
+          ],
+        },
+        {
+          label: 'Earlier this week', count: '3',
+          items: [
+            { title: 'New VP Finance engaged', type: 'Committee', sev: 'medium', account: 'Halden Systems', summary: 'Seniority of the thread increased.', when: 'Mon', conf: 4, sel: false, current: false, state: 'Actioned' },
+            { title: 'Website visit spike', type: 'Buying', sev: 'info', account: 'Lindqvist Marine', summary: '3× baseline on pricing pages.', when: 'Mon', conf: 2, sel: false, current: false, state: 'Dismissed' },
+          ],
+        },
+      ].map(g => ({
+        label: g.label, count: g.count,
+        items: g.items.map(s => {
+          const sev = { critical: 'var(--risk)', high: 'var(--warn)', medium: 'var(--c2)', info: 'var(--ink-4)' }[s.sev];
+          const type = {
+            'Deal risk': ['var(--risk-tint)', 'var(--risk)'],
+            'Committee': ['var(--warn-tint)', 'var(--warn)'],
+            'Competitive': ['var(--warn-tint)', 'var(--warn)'],
+            'Buying': ['var(--pos-tint)', 'var(--pos)'],
+            'Usage': ['var(--sunken)', 'var(--ink-2)'],
+          }[s.type];
+          const stateColor = s.state === 'Unreviewed' ? 'var(--ink-4)'
+            : (s.state === 'Dismissed' ? 'var(--ink-4)' : (s.state === 'Actioned' ? 'var(--pos)' : 'var(--brand-ink)'));
+          return {
+            title: s.title, type: s.type, account: s.account, summary: s.summary, when: s.when, state: s.state,
+            sevColor: sev, typeBg: type[0], typeFg: type[1], stateColor,
+            pips: this.pips(s.conf, 10),
+            tick: s.sel ? '✓' : '',
+            checkBg: s.sel ? 'var(--brand)' : 'transparent',
+            checkBorder: s.sel ? 'var(--brand)' : 'var(--line)',
+            edge: s.current ? 'var(--brand)' : 'transparent',
+            bg: s.current ? 'var(--brand-tint)' : 'transparent',
+          };
+        }),
+      })),
+
+      detailActions: [
+        { label: 'Assign', key: 'E', icon: this.glyph('M8 3v10M3 8h10'), primary: false },
+        { label: 'Snooze', key: 'S', icon: this.glyph('M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12ZM8 5v3.5l2.5 1.5'), primary: false },
+        { label: 'Bookmark', key: 'B', icon: this.glyph('M4 2.5h8v11l-4-3-4 3z'), primary: false },
+        { label: 'Dismiss', key: 'D', icon: this.glyph('M4 4l8 8M12 4l-8 8'), primary: false },
+        { label: 'Act on it', key: '⏎', icon: this.glyph('M3 8h10M9 4l4 4-4 4'), primary: true },
+      ].map(a => ({
+        label: a.label, key: a.key, icon: a.icon,
+        bg: a.primary ? 'var(--ai)' : 'var(--surface)',
+        color: a.primary ? '#fff' : 'var(--ink)',
+        border: a.primary ? 'var(--ai)' : 'var(--line)',
+      })),
+
+      detailMeta: [
+        { k: 'Severity', v: 'Critical', color: 'var(--risk)', note: 'Revenue exposure $1.24M × 68% historical slip rate', pips: null },
+        { k: 'Confidence', v: '4 of 5', color: 'var(--ink)', note: 'Direct quote, corroborated by two later events', pips: this.pips(4, 12) },
+        { k: 'Source', v: 'Call intelligence', color: 'var(--ink)', note: 'Vantage QBR · 14 Jul · 38:12 · speaker identified', pips: null },
+        { k: 'Rule', v: 'Pricing objection', color: 'var(--ink)', note: 'By economic buyer · precision 82% over 30 days', pips: null },
+      ],
+
+      evidence: [
+        { n: '1', title: 'Vantage QBR — 14 Jul', kind: 'Call', meta: '52 min · 38:12 · D. Køhler (COO)', quote: '“The pricing as it stands will not clear our procurement committee this quarter.”', action: 'Play' },
+        { n: '2', title: 'Sentiment trace', kind: 'Derived', meta: 'Same call · 36:00 onwards', quote: 'Sentiment fell 0.4 after the objection and did not recover in-call.', action: 'View' },
+        { n: '3', title: 'Close-date change log', kind: 'CRM', meta: '2 changes in 30 days', quote: '14 Sep → 12 Oct. Reason: procurement review extended.', action: 'Open' },
+        { n: '4', title: 'Comparable cohort', kind: 'Model', meta: '412 FY26 renewals', quote: 'Same pattern preceded a slip in 68% of cases.', action: 'Method' },
+      ],
+
+      signalTimeline: [
+        { title: 'Recomputed — severity raised to Critical', when: 'Today 09:14', body: 'The 19-day contact gap crossed threshold, and the objection remains unaddressed 21 days on.', dot: 'var(--risk)', ring: 'var(--risk-tint)' },
+        { title: 'Corroborated by a second slip', when: '4 Aug', body: 'Close date moved again, matching the predicted pattern. Confidence rose from 3 to 4.', dot: 'var(--risk)', ring: 'var(--risk-tint)' },
+        { title: 'Related signal raised', when: '21 Jul', body: 'Champion moved into procurement — linked as a compounding factor rather than a duplicate.', dot: 'var(--warn)', ring: 'var(--warn-tint)' },
+        { title: 'Snoozed for 7 days by M. Reinhardt', when: '16 Jul', body: 'Reason: “awaiting internal pricing approval”. Returned automatically with evidence intact.', dot: 'var(--brand)', ring: 'var(--brand-tint)' },
+        { title: 'Detected', when: '14 Jul 09:02', body: 'Raised 4 minutes after the call transcript finished processing. Routed to the deal owner.', dot: 'var(--ai)', ring: 'var(--ai-tint)' },
+      ],
+
+      resolutions: [
+        { label: 'Act on it', bg: 'var(--ai-tint)', color: 'var(--ai-ink)' },
+        { label: 'Assign to someone', bg: 'var(--brand-tint)', color: 'var(--brand-ink)' },
+        { label: 'Snooze with a date', bg: 'var(--warn-tint)', color: 'var(--warn)' },
+        { label: 'Dismiss with a reason', bg: 'var(--sunken)', color: 'var(--ink-2)' },
+      ],
+
+      analyticsKpis: [
+        { k: 'Acted on', v: '68%', d: '+6 pts vs. last month', color: 'var(--pos)' },
+        { k: 'Median time to review', v: '3.4h', d: '−1.2h', color: 'var(--pos)' },
+        { k: 'Dismissed as noise', v: '19%', d: '−4 pts', color: 'var(--pos)' },
+      ],
+
+      precision: [
+        { rule: 'Pricing objection by economic buyer', value: '82%', volume: '46', pct: '82%', color: 'var(--pos)' },
+        { rule: 'Champion role change', value: '77%', volume: '18', pct: '77%', color: 'var(--pos)' },
+        { rule: 'Licence utilisation threshold', value: '71%', volume: '62', pct: '71%', color: 'var(--pos)' },
+        { rule: 'Competitor mentioned', value: '64%', volume: '54', pct: '64%', color: 'var(--warn)' },
+        { rule: 'Website visit spike', value: '29%', volume: '61', pct: '29%', color: 'var(--risk)' },
+      ],
+
+      volumeBars: [
+        ['W1', 14, 26, 40], ['W2', 12, 30, 36], ['W3', 18, 28, 34], ['W4', 16, 34, 30],
+        ['W5', 22, 30, 28], ['W6', 26, 32, 24], ['W7', 24, 36, 22], ['W8', 30, 34, 20],
+      ].map(([label, c, h, i]) => ({
+        label, critical: c + '%', high: h + '%', info: i + '%',
+      })),
+
+      rules: [
+        { name: 'Pricing objection by economic buyer', source: 'Call and email intelligence', severity: 'Critical', threshold: 'any occurrence', routes: 'Deal owner + CRO', channel: 'In-app + Slack', on: true },
+        { name: 'Close date slipped twice', source: 'CRM field history', severity: 'Critical', threshold: '2 in 30 days', routes: 'Deal owner', channel: 'In-app', on: true },
+        { name: 'Champion role change', source: 'Signature, calendar, public', severity: 'High', threshold: 'title change', routes: 'Deal owner', channel: 'In-app', on: true },
+        { name: 'Licence utilisation high', source: 'Product telemetry', severity: 'High', threshold: '> 90% for 3 weeks', routes: 'CSM + owner', channel: 'In-app', on: true },
+        { name: 'Competitor mentioned', source: 'Call and email intelligence', severity: 'High', threshold: '≥ 2 in 14 days', routes: 'Deal owner', channel: 'In-app', on: true },
+        { name: 'Website visit spike', source: 'Third-party intent', severity: 'Info', threshold: '3× baseline', routes: 'Owner digest', channel: 'Daily email', on: false },
+      ].map(r => ({
+        name: r.name, source: r.source, severity: r.severity, threshold: r.threshold, routes: r.routes, channel: r.channel,
+        sevBg: r.severity === 'Critical' ? 'var(--risk-tint)' : (r.severity === 'High' ? 'var(--warn-tint)' : 'var(--sunken)'),
+        sevFg: r.severity === 'Critical' ? 'var(--risk)' : (r.severity === 'High' ? 'var(--warn)' : 'var(--ink-2)'),
+        toggleBg: r.on ? 'var(--brand)' : 'var(--line)',
+        knob: r.on ? '13px' : '2px',
+      })),
+
+      historyTabs: ['All', 'Actioned', 'Dismissed', 'Snoozed'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--surface)' : 'transparent',
+        color: i === 0 ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: i === 0 ? 'var(--e1)' : 'none',
+      })),
+
+      history: [
+        { title: 'New VP Finance engaged', account: 'Halden Systems', state: 'Actioned', reason: 'Added to committee map', by: 'J. Okafor · Mon', dot: 'var(--pos)', stateBg: 'var(--pos-tint)', stateFg: 'var(--pos)' },
+        { title: 'Website visit spike', account: 'Lindqvist Marine', state: 'Dismissed', reason: 'Not a buying signal', by: 'A. Duval · Mon', dot: 'var(--ink-4)', stateBg: 'var(--sunken)', stateFg: 'var(--ink-3)' },
+        { title: 'No contact for 21 days', account: 'Ashgrove Retail', state: 'Snoozed 2d', reason: 'Owner on leave until Wed', by: 'L. Petrova · Yesterday', dot: 'var(--brand)', stateBg: 'var(--brand-tint)', stateFg: 'var(--brand-ink)' },
+        { title: 'Support tier downgraded', account: 'Meridian Freight', state: 'Assigned', reason: 'Routed to CSM for context', by: 'M. Reinhardt · Yesterday', dot: 'var(--brand)', stateBg: 'var(--brand-tint)', stateFg: 'var(--brand-ink)' },
+        { title: 'Pricing objection raised', account: 'Vantage Logistics', state: 'Reopened', reason: 'Snooze expired, evidence unchanged', by: 'System · Today', dot: 'var(--risk)', stateBg: 'var(--risk-tint)', stateFg: 'var(--risk)' },
+      ],
+
+      mechanics: [
+        { t: 'Arrival without disruption', b: 'New signals increment the count and appear at the top only when the list is not focused. Nothing reorders under the cursor mid-triage.' },
+        { t: 'Severity is computed, not chosen', b: 'Revenue exposure × historical outcome rate for that pattern. A rule cannot declare itself critical; the number does.' },
+        { t: 'Confidence is separate from severity', b: 'A critical signal can be low-confidence. Both are shown, and the queue can be filtered by either — they answer different questions.' },
+        { t: 'Dismissal is training data', b: 'Every dismissal takes a reason from a closed list, and those reasons drive rule precision and the automatic retune proposals.' },
+        { t: 'Snooze is a commitment', b: 'A snooze needs a date and a reason. The signal returns with its original evidence and a note that it was deferred once already.' },
+        { t: 'Duplicates are linked, not merged', b: 'Related detections on the same record are grouped as compounding factors so the timeline stays honest about what was observed when.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

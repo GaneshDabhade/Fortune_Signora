@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2pulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:6px 20px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+    <span style="font-weight:600">Reports</span>
+    <span style="color:var(--ink-2)">Built once, read three ways — screen, presentation and board pack</span>
+    <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft)">
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};white-space:nowrap" onClick="{{ setLight }}">Light</span>
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};white-space:nowrap" onClick="{{ setDark }}">Dark</span>
+    </span>
+  </div>
+
+  <div style="display:flex;align-items:flex-start">
+    <nav style="width:56px;flex:none;position:sticky;top:0;height:100vh;background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">NG</div>
+      <div style="height:1px;width:28px;background:var(--line-soft);margin:6px 0"></div>
+      <sc-for list="{{ railIcons }}" as="r" hint-placeholder-count="8">
+        <div style="width:38px;height:32px;border-radius:8px;display:grid;place-items:center;background:{{ r.bg }};color:{{ r.color }}">{{ r.icon }}</div>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:10px 20px;border-bottom:1px solid var(--line-soft);background:var(--surface);flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:7px;font-size:13px;min-width:0">
+          <span style="color:var(--ink-3)">Reports</span><span style="color:var(--ink-4)">/</span>
+          <span style="font-weight:600">Q3 board pack — EMEA</span>
+          <span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--sunken);color:var(--ink-2);white-space:nowrap">v7 · autosaved</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap">Share</span>
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap">Export</span>
+          <span style="display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:6px 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600;box-shadow:var(--e1);white-space:nowrap">Present</span>
+        </div>
+      </div>
+
+      <div style="padding:18px 20px 0;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <h1 style="font-size:25px;font-weight:700;letter-spacing:-0.026em;margin:0">Q3 board pack — EMEA</h1>
+            <span style="font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:var(--pos-tint);color:var(--pos);white-space:nowrap">Data live</span>
+          </div>
+          <div style="font-size:13px;color:var(--ink-2);margin-top:4px">One definition, three renderings. Numbers are never retyped: every figure traces to a query, and the narrative rewrites itself when the data moves.</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+          <sc-for list="{{ modes }}" as="m" hint-placeholder-count="4">
+            <span style="padding:5px 12px;border-radius:6px;font-size:11.5px;font-weight:600;background:{{ m.bg }};color:{{ m.color }};box-shadow:{{ m.shadow }};white-space:nowrap">{{ m.label }}</span>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="padding:16px 20px 30px;display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:16px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Builder</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Blocks over a shared query · drag to reorder</span>
+              <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">＋ Block</span>
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;background:var(--ai-tint);color:var(--ai-ink);font-size:11.5px;font-weight:600;white-space:nowrap">✦ Describe the report</span>
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid var(--line-soft);background:var(--bg);flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Query</span>
+              <sc-for list="{{ queryChips }}" as="q" hint-placeholder-count="4">
+                <span style="display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:5px 10px;border-radius:8px;background:var(--brand-tint);border:1px solid var(--brand-line);font-size:12px;color:var(--brand-ink);white-space:nowrap">
+                  <span style="color:var(--ink-4)">{{ q.k }}</span><span style="font-weight:600">{{ q.v }}</span>
+                </span>
+              </sc-for>
+              <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);white-space:nowrap">Every block inherits this · 3,104 opportunities</span>
+            </div>
+            <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:106px minmax(0,1fr);gap:14px;padding:14px 18px;border-bottom:1px solid var(--line-soft);background:{{ b.bg }}">
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;text-align:right">
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:{{ b.kindColor }}">{{ b.kind }}</span>
+                  <span style="font-size:10.5px;color:var(--ink-4)">{{ b.meta }}</span>
+                  <span style="color:var(--ink-4);font-size:12px;cursor:grab">⣿</span>
+                </div>
+                <div style="min-width:0">
+                  <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                    <span style="font-size:13.5px;font-weight:600">{{ b.title }}</span>
+                    <sc-for list="{{ b.tags }}" as="t" hint-placeholder-count="2">
+                      <span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ t.bg }};color:{{ t.fg }};white-space:nowrap">{{ t.label }}</span>
+                    </sc-for>
+                    <span style="margin-left:auto;flex:none;font-size:11px;color:var(--ink-3);white-space:nowrap">{{ b.source }}</span>
+                  </div>
+                  <div style="font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ b.body }}</div>
+                  <div style="margin-top:11px">{{ b.visual }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:5px 10px;border-radius:7px;border:1px dashed var(--line);font-size:11.5px;color:var(--ink-3);white-space:nowrap">＋ Add a block</span>
+              <span style="font-size:11.5px;color:var(--ink-3);min-width:200px;flex:1;line-height:1.5">Blocks are chart, table, metric, narrative or divider. A block that would show a number the query cannot produce refuses to save.</span>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--ai-line);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;background:var(--ai-tint);border-bottom:1px solid var(--ai-line);flex-wrap:wrap">
+              <span style="width:20px;height:20px;flex:none;border-radius:6px;background:var(--ai);display:grid;place-items:center">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+              </span>
+              <span style="font-size:13.5px;font-weight:600">AI narrative</span>
+              <span style="font-size:11.5px;color:var(--ink-2)">Regenerates when the data moves · your edits are kept</span>
+              <span style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="display:flex;gap:3px">{{ narrativePips }}</span>
+                <span style="font-size:11.5px;color:var(--ink-2);white-space:nowrap">Confidence 4 of 5</span>
+                <span style="font-size:12px;font-weight:600;color:var(--ai-ink);white-space:nowrap">Regenerate</span>
+              </span>
+            </div>
+            <div style="padding:18px">
+              <p style="font-size:14.5px;line-height:1.7;margin:0;max-width:84ch">EMEA enterprise closed the quarter <strong>$2.4M below commit</strong> on a single mechanism: three renewals raised pricing objections with economic buyers and slipped, none having engaged procurement beforehand<a href="#r1" style="color:var(--ai-ink);text-decoration:none;font-weight:600;font-size:11px;vertical-align:super;padding:0 1px">1</a>. Coverage remains 3.1× and product usage is unchanged, so this is a commercial failure rather than demand weakness<a href="#r1" style="color:var(--ai-ink);text-decoration:none;font-weight:600;font-size:11px;vertical-align:super;padding:0 1px">2</a>.</p>
+              <p style="font-size:14.5px;line-height:1.7;margin:12px 0 0;max-width:84ch">The corrective action is already measured: in 412 comparable renewals, engaging procurement before the second review lifted win rate from 41% to 63%<a href="#r1" style="color:var(--ai-ink);text-decoration:none;font-weight:600;font-size:11px;vertical-align:super;padding:0 1px">3</a>. <span style="background:var(--warn-tint);padding:0 3px;border-radius:4px">Two of the three deals remain recoverable this quarter</span><span style="font-size:10.5px;font-weight:600;color:var(--warn);margin-left:5px">edited by M. Reinhardt</span></p>
+              <div style="display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap">
+                <span style="font-size:11.5px;color:var(--ink-3)">Edited sentences are preserved through regeneration and marked, so the board sees what a person asserted versus what the model derived.</span>
+                <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--ai-ink);white-space:nowrap">3 sources</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Drill down</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Any figure opens its own rows — no dead numbers</span>
+              <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--brand-tint);color:var(--brand-ink);white-space:nowrap">From: commit shortfall −$2.4M</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:11px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap;font-size:12px">
+              <sc-for list="{{ drillPath }}" as="d" hint-placeholder-count="4">
+                <span style="display:inline-flex;align-items:center;gap:7px;white-space:nowrap">
+                  <span style="font-weight:{{ d.weight }};color:{{ d.color }}">{{ d.label }}</span>
+                  <span style="color:var(--ink-4)">{{ d.sep }}</span>
+                </span>
+              </sc-for>
+              <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);white-space:nowrap">3 levels · scope preserved at each</span>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:720px">
+                <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 108px 120px minmax(0,1.1fr);gap:12px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Deal</div><div style="text-align:right">Amount</div><div>Moved</div><div>Reason on record</div>
+                </div>
+                <sc-for list="{{ drillRows }}" as="r" hint-placeholder-count="4">
+                  <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 108px 120px minmax(0,1.1fr);gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+                    <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.deal }}</div>
+                    <div style="text-align:right;font-variant-numeric:tabular-nums;color:{{ r.color }};font-weight:600">{{ r.amount }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-2)">{{ r.moved }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.reason }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="padding:12px 18px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Drilling never leaves the report: the path is a breadcrumb, the export includes whatever level you were on, and a shared link reopens at the same depth.</div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Presentation &amp; executive mode</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">The same blocks, re-laid out — never a separate deck to maintain</span>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0">
+              <div style="padding:18px;border-right:1px solid var(--line-soft)">
+                <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Presentation mode</div>
+                <div style="margin-top:12px;border-radius:12px;background:var(--ink);color:var(--bg);padding:20px;min-height:172px;display:flex;flex-direction:column">
+                  <div style="font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;opacity:.6">EMEA enterprise · Q3 FY26</div>
+                  <div style="font-size:22px;font-weight:700;letter-spacing:-0.024em;line-height:1.2;margin-top:10px">Commit landed $2.4M below plan on one mechanism</div>
+                  <div style="display:flex;gap:20px;margin-top:auto;flex-wrap:wrap">
+                    <sc-for list="{{ presentStats }}" as="p" hint-placeholder-count="3">
+                      <div>
+                        <div style="font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.022em">{{ p.v }}</div>
+                        <div style="font-size:10.5px;opacity:.65">{{ p.k }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+                  <sc-for list="{{ presentRules }}" as="p" hint-placeholder-count="4">
+                    <div style="display:flex;gap:9px;font-size:11.5px;line-height:1.5">
+                      <span style="color:var(--brand-ink);flex:none">·</span><span style="color:var(--ink-2)">{{ p }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="padding:18px">
+                <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Executive mode</div>
+                <div style="margin-top:12px;border-radius:12px;border:1px solid var(--line-soft);background:var(--bg);padding:18px;min-height:172px">
+                  <div style="font-size:13.5px;font-weight:600;line-height:1.4">Three things a CRO should take from this quarter</div>
+                  <div style="display:flex;flex-direction:column;gap:9px;margin-top:11px">
+                    <sc-for list="{{ execPoints }}" as="e" hint-placeholder-count="3">
+                      <div style="display:flex;gap:10px">
+                        <span style="width:17px;height:17px;flex:none;border-radius:5px;background:{{ e.tint }};color:{{ e.color }};display:grid;place-items:center;font-size:9.5px;font-weight:700;margin-top:2px">{{ e.n }}</span>
+                        <div style="font-size:12px;line-height:1.55;color:var(--ink-2)"><span style="font-weight:600;color:var(--ink)">{{ e.lead }}</span> {{ e.body }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+                  <sc-for list="{{ execRules }}" as="e" hint-placeholder-count="4">
+                    <div style="display:flex;gap:9px;font-size:11.5px;line-height:1.5">
+                      <span style="color:var(--brand-ink);flex:none">·</span><span style="color:var(--ink-2)">{{ e }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Templates</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Each carries its own query, blocks and narrative brief</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink);white-space:nowrap">Browse all 18</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr))">
+              <sc-for list="{{ templates }}" as="t" hint-placeholder-count="6">
+                <div style="padding:15px 18px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);min-width:0">
+                  <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                    <span style="width:22px;height:22px;flex:none;border-radius:7px;background:{{ t.tint }};color:{{ t.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ t.icon }}</span>
+                    <span style="font-size:12.5px;font-weight:600">{{ t.name }}</span>
+                    <span style="margin-left:auto;flex:none;font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:{{ t.badgeBg }};color:{{ t.badgeFg }};white-space:nowrap">{{ t.badge }}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--ink-2);margin-top:7px;line-height:1.55">{{ t.body }}</div>
+                  <div style="display:flex;align-items:center;gap:10px;margin-top:9px;font-size:11px;color:var(--ink-3);flex-wrap:wrap">
+                    <span>{{ t.meta }}</span>
+                    <span style="margin-left:auto;font-weight:600;color:var(--brand-ink);white-space:nowrap">{{ t.action }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Chart library</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">8 types</span>
+            </div>
+            <sc-for list="{{ chartTypes }}" as="c" hint-placeholder-count="8">
+              <div style="display:flex;align-items:center;gap:11px;padding:10px 15px;border-bottom:1px solid var(--line-soft);background:{{ c.bg }}">
+                <span style="width:34px;height:22px;flex:none;display:grid;place-items:center">{{ c.spark }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;font-weight:600">{{ c.name }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-3);line-height:1.4">{{ c.use }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="padding:11px 15px;font-size:10.5px;color:var(--ink-3);line-height:1.5">The picker recommends a type from the shape of the data and explains why. No doughnuts, no dual axes, no 3D.</div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Scheduling</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--pos-tint);color:var(--pos);white-space:nowrap">Active</span>
+            </div>
+            <div style="padding:14px 15px;border-bottom:1px solid var(--line-soft)">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ schedule }}" as="s" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px;font-size:11.5px">
+                    <span style="color:var(--ink-3);min-width:0">{{ s.k }}</span>
+                    <span style="margin-left:auto;font-weight:600;text-align:right;white-space:nowrap">{{ s.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <sc-for list="{{ scheduleRules }}" as="s" hint-placeholder-count="3">
+              <div style="display:flex;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:15px;height:15px;flex:none;border-radius:5px;background:{{ s.tint }};color:{{ s.color }};display:grid;place-items:center;font-size:9px;font-weight:700;margin-top:2px">{{ s.mark }}</span>
+                <div style="font-size:11px;color:var(--ink-2);line-height:1.5">{{ s.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Exports</span>
+            </div>
+            <sc-for list="{{ exports }}" as="e" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:11px;padding:10px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:24px;height:24px;flex:none;border-radius:7px;background:{{ e.tint }};color:{{ e.color }};display:grid;place-items:center;font-size:9px;font-weight:700">{{ e.badge }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;font-weight:600">{{ e.label }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-3);line-height:1.4">{{ e.note }}</div>
+                </div>
+                <span style="margin-left:auto;flex:none;font-size:10.5px;color:var(--ink-4);white-space:nowrap">{{ e.right }}</span>
+              </div>
+            </sc-for>
+            <div style="padding:11px 15px;font-size:10.5px;color:var(--ink-3);line-height:1.5">Every export stamps the data timestamp, the scope and the version. A printed number can always be traced back to the query that produced it.</div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Sharing</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">6 people · 1 link</span>
+            </div>
+            <sc-for list="{{ sharing }}" as="s" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:22px;height:22px;flex:none;border-radius:999px;background:{{ s.tint }};color:{{ s.color }};display:grid;place-items:center;font-size:9px;font-weight:700">{{ s.icon }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.label }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-3)">{{ s.meta }}</div>
+                </div>
+                <span style="margin-left:auto;flex:none;font-size:10.5px;font-weight:600;color:{{ s.stateColor }};white-space:nowrap">{{ s.state }}</span>
+              </div>
+            </sc-for>
+            <div style="padding:11px 15px;font-size:10.5px;color:var(--ink-3);line-height:1.5">Recipients see the report through their own permissions: rows they cannot access are withheld with a count, never silently dropped, so totals stay honest.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--c2': '#3f81ad',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--c2': '#4fa3d1',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+    });
+  }
+
+  icon(kind, size) {
+    const p = {
+      home: 'M2.5 7 8 2.5 13.5 7v6.5h-11V7Z', chart: 'M3 13V7M8 13V3M13 13V9',
+      flow: 'M2.5 4h11M4.5 8h7M6.5 12h3', grid: 'M2.5 2.5h5v5h-5zM8.5 2.5h5v5h-5zM2.5 8.5h5v5h-5zM8.5 8.5h5v5h-5z',
+      case: 'M2.5 5.5h11v8h-11zM6 5.5V3h4v2.5', chat: 'M2.5 3h11v7H7l-4.5 3.5z',
+      file: 'M4 2h5l3 3v9H4zM9 2v3h3', people: 'M6 7.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM2.5 13c0-2 1.6-3.2 3.5-3.2S9.5 11 9.5 13',
+    }[kind];
+    return R('svg', { width: size || 14, height: size || 14, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }, R('path', { d: p }));
+  }
+
+  pips(n, w) {
+    return [1, 2, 3, 4, 5].map(i => R('span', { key: i, style: { width: w || 13, height: 5, borderRadius: 999, display: 'block', background: i <= n ? 'var(--ai)' : 'rgba(128,128,128,.25)' } }));
+  }
+
+  waterfall() {
+    const bars = [
+      { x: 6, w: 46, y: 18, h: 74, fill: 'var(--c2)', label: 'Plan', val: '68.0' },
+      { x: 66, w: 46, y: 40, h: 52, fill: 'var(--risk)', label: 'Slipped', val: '−2.4' },
+      { x: 126, w: 46, y: 34, h: 58, fill: 'var(--warn)', label: 'Pushed', val: '−1.1' },
+      { x: 186, w: 46, y: 28, h: 64, fill: 'var(--pos)', label: 'Pulled in', val: '+0.9' },
+      { x: 246, w: 46, y: 24, h: 68, fill: 'var(--brand)', label: 'Commit', val: '42.8' },
+    ];
+    return R('svg', { viewBox: '0 0 300 118', style: { width: '100%', height: 'auto', display: 'block' } }, [
+      R('line', { key: 'ax', x1: 0, y1: 92, x2: 300, y2: 92, stroke: 'var(--line)', strokeWidth: 1 }),
+      ...bars.map((b, i) => R('g', { key: i }, [
+        R('rect', { x: b.x, y: b.y, width: b.w, height: b.h, rx: 4, fill: b.fill, fillOpacity: .9 }),
+        R('text', { x: b.x + b.w / 2, y: 104, textAnchor: 'middle', fontSize: 8, fill: 'var(--ink-3)' }, b.label),
+        R('text', { x: b.x + b.w / 2, y: 114, textAnchor: 'middle', fontSize: 8, fill: 'var(--ink-4)' }, b.val),
+      ])),
+    ]);
+  }
+
+  trendChart() {
+    const pts = [[0, 60], [50, 56], [100, 52], [150, 54], [200, 44], [250, 38], [300, 30]];
+    const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ');
+    return R('svg', { viewBox: '0 0 300 76', style: { width: '100%', height: 'auto', display: 'block' } }, [
+      R('line', { key: 'g', x1: 0, y1: 26, x2: 300, y2: 26, stroke: 'var(--ink-4)', strokeWidth: 1, strokeDasharray: '5 4', opacity: .7 }),
+      R('text', { key: 't', x: 298, y: 20, textAnchor: 'end', fontSize: 8, fill: 'var(--ink-4)' }, 'plan pace' ),
+      R('path', { key: 'a', d: d + ' L300 68 L0 68 Z', fill: 'var(--brand)', fillOpacity: .09 }),
+      R('path', { key: 'p', d, fill: 'none', stroke: 'var(--brand)', strokeWidth: 2, strokeLinecap: 'round' }),
+      R('circle', { key: 'c', cx: 300, cy: 30, r: 3, fill: 'var(--brand)' }),
+    ]);
+  }
+
+  tableBlock() {
+    const rows = [
+      ['Vantage renewal', '$1.24M', 'Q3 → Q4', 'var(--risk)'],
+      ['Ashgrove platform', '$0.30M', 'Slipped', 'var(--risk)'],
+      ['Brightwater services', '$0.88M', 'Commit → Best', 'var(--warn)'],
+    ];
+    return R('div', { style: { borderRadius: 10, border: '1px solid var(--line-soft)', overflow: 'hidden' } },
+      rows.map((r, i) => R('div', {
+        key: i,
+        style: {
+          display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 78px 104px', gap: 10,
+          padding: '7px 11px', fontSize: 11.5, alignItems: 'center',
+          borderBottom: i < rows.length - 1 ? '1px solid var(--line-soft)' : 'none',
+        },
+      }, [
+        R('span', { key: 'a', style: { fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, r[0]),
+        R('span', { key: 'b', style: { textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, r[1]),
+        R('span', { key: 'c', style: { fontSize: 10.5, fontWeight: 600, color: r[3] } }, r[2]),
+      ])));
+  }
+
+  metricRow() {
+    const m = [['$42.8M', 'Commit'], ['63%', 'of plan'], ['3.1×', 'Coverage'], ['−$2.4M', 'vs. Friday']];
+    return R('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+      m.map((x, i) => R('div', {
+        key: i,
+        style: { flex: '1 1 96px', minWidth: 0, padding: '10px 12px', borderRadius: 10, background: 'var(--sunken)' },
+      }, [
+        R('div', { key: 'v', style: { fontSize: 16, fontWeight: 700, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' } }, x[0]),
+        R('div', { key: 'k', style: { fontSize: 10.5, color: 'var(--ink-3)', marginTop: 2 } }, x[1]),
+      ])));
+  }
+
+  narrativeBlock() {
+    return R('div', {
+      style: {
+        padding: '12px 13px', borderRadius: 11, background: 'var(--ai-tint)',
+        border: '1px solid var(--ai-line)', fontSize: 12, lineHeight: 1.55,
+      },
+    }, [
+      R('span', { key: 'a', style: { fontWeight: 600, color: 'var(--ai-ink)' } }, 'Generated: '),
+      R('span', { key: 'b' }, 'the shortfall is concentrated in three renewals sharing one cause. Regenerates on data change; edited sentences are kept and marked.'),
+    ]);
+  }
+
+  spark(kind) {
+    const s = { width: 34, height: 22, viewBox: '0 0 34 22', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' };
+    const shapes = {
+      line: R('path', { d: 'M2 17 L9 12 L16 14 L23 6 L32 4' }),
+      bar: R('g', null, [R('rect', { key: 1, x: 3, y: 10, width: 5, height: 9, fill: 'currentColor', stroke: 'none' }), R('rect', { key: 2, x: 11, y: 6, width: 5, height: 13, fill: 'currentColor', stroke: 'none' }), R('rect', { key: 3, x: 19, y: 13, width: 5, height: 6, fill: 'currentColor', stroke: 'none' }), R('rect', { key: 4, x: 27, y: 3, width: 5, height: 16, fill: 'currentColor', stroke: 'none' })]),
+      waterfall: R('g', null, [R('rect', { key: 1, x: 3, y: 4, width: 5, height: 14, fill: 'currentColor', stroke: 'none' }), R('rect', { key: 2, x: 11, y: 8, width: 5, height: 6, fill: 'currentColor', stroke: 'none', opacity: .6 }), R('rect', { key: 3, x: 19, y: 11, width: 5, height: 5, fill: 'currentColor', stroke: 'none', opacity: .6 }), R('rect', { key: 4, x: 27, y: 9, width: 5, height: 9, fill: 'currentColor', stroke: 'none' })]),
+      funnel: R('g', null, [R('rect', { key: 1, x: 3, y: 4, width: 28, height: 4, fill: 'currentColor', stroke: 'none' }), R('rect', { key: 2, x: 6, y: 10, width: 22, height: 4, fill: 'currentColor', stroke: 'none', opacity: .7 }), R('rect', { key: 3, x: 10, y: 16, width: 14, height: 4, fill: 'currentColor', stroke: 'none', opacity: .5 })]),
+      cohort: R('g', null, [0, 1, 2].map(r => [0, 1, 2, 3].map(c => R('rect', { key: r + '-' + c, x: 3 + c * 8, y: 4 + r * 6, width: 6, height: 4, fill: 'currentColor', stroke: 'none', opacity: 0.25 + ((r + c) % 4) * 0.22 })))),
+      dist: R('path', { d: 'M2 19 C 8 19 8 5 17 5 C 26 5 26 19 32 19' }),
+      pace: R('g', null, [R('path', { key: 1, d: 'M2 18 L32 5' }), R('path', { key: 2, d: 'M2 18 L32 11', strokeDasharray: '3 3' })]),
+      table: R('g', null, [R('rect', { key: 1, x: 3, y: 4, width: 28, height: 15, rx: 2 }), R('path', { key: 2, d: 'M3 9h28M13 4v15' })]),
+    }[kind];
+    return R('svg', Object.assign({}, s, { style: { color: 'var(--ink-2)' } }), shapes);
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    const seg = (labels, active) => labels.map((label, i) => ({
+      label,
+      bg: i === active ? 'var(--surface)' : 'transparent',
+      color: i === active ? 'var(--ink)' : 'var(--ink-3)',
+      shadow: i === active ? 'var(--e1)' : 'none',
+    }));
+
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--brand)',
+      lightFg: dark ? 'var(--ink-3)' : '#fff',
+      darkBg: dark ? 'var(--brand)' : 'transparent',
+      darkFg: dark ? '#fff' : 'var(--ink-3)',
+
+      railIcons: ['home', 'chart', 'flow', 'grid', 'case', 'chat', 'people', 'file'].map((k, i) => ({
+        icon: this.icon(k),
+        bg: i === 7 ? 'var(--brand-tint)' : 'transparent',
+        color: i === 7 ? 'var(--brand)' : 'var(--ink-3)',
+      })),
+
+      modes: seg(['Build', 'Read', 'Present', 'Executive'], 0),
+      narrativePips: this.pips(4, 12),
+
+      queryChips: [
+        { k: 'Period', v: 'Q3 FY26' }, { k: 'Region', v: 'EMEA' },
+        { k: 'Segment', v: 'Enterprise' }, { k: 'Include', v: 'closed + open' },
+      ],
+
+      blocks: [
+        {
+          kind: 'Metric row', meta: '4 figures', title: 'Headline numbers', source: 'live · 09:14',
+          tags: [{ label: 'Auto', bg: 'var(--sunken)', fg: 'var(--ink-2)' }],
+          body: 'Each metric names its comparison basis. A metric without one cannot be added.',
+          visual: this.metricRow(), bg: 'transparent', kindColor: 'var(--brand-ink)',
+        },
+        {
+          kind: 'Chart', meta: 'Waterfall', title: 'Plan to commit — what moved', source: 'query A',
+          tags: [{ label: 'Recommended type', bg: 'var(--ai-tint)', fg: 'var(--ai-ink)' }],
+          body: 'Chosen because the data is a set of signed contributions to one total — the picker explains that choice inline.',
+          visual: this.waterfall(), bg: 'transparent', kindColor: 'var(--brand-ink)',
+        },
+        {
+          kind: 'Chart', meta: 'Line', title: 'Commit against plan pace', source: 'query A',
+          tags: [],
+          body: 'One series and one reference line. The dashed line is the pace required, not a forecast.',
+          visual: this.trendChart(), bg: 'transparent', kindColor: 'var(--brand-ink)',
+        },
+        {
+          kind: 'Table', meta: '3 rows', title: 'The three deals that moved', source: 'drill target',
+          tags: [{ label: 'Drillable', bg: 'var(--brand-tint)', fg: 'var(--brand-ink)' }],
+          body: 'This table is what the headline shortfall opens into. Rows respect the reader’s permissions.',
+          visual: this.tableBlock(), bg: 'transparent', kindColor: 'var(--brand-ink)',
+        },
+        {
+          kind: 'Narrative', meta: 'AI · editable', title: 'Quarter commentary', source: 'model v4.2',
+          tags: [{ label: 'AI', bg: 'var(--ai-tint)', fg: 'var(--ai-ink)' }],
+          body: 'Written from the blocks above, not from a separate prompt — so the prose cannot contradict the charts.',
+          visual: this.narrativeBlock(), bg: 'var(--ai-tint)', kindColor: 'var(--ai-ink)',
+        },
+      ],
+
+      drillPath: [
+        { label: 'EMEA enterprise', weight: 400, color: 'var(--ink-3)', sep: '/' },
+        { label: 'Commit shortfall', weight: 400, color: 'var(--ink-3)', sep: '/' },
+        { label: 'Moved deals · 3', weight: 600, color: 'var(--ink)', sep: '' },
+      ],
+
+      drillRows: [
+        { deal: 'Vantage renewal — Q4 FY26', amount: '−$1.24M', moved: 'Q3 → Q4', reason: 'Procurement review extended', color: 'var(--risk)' },
+        { deal: 'Ashgrove platform', amount: '−$0.30M', moved: 'Slipped a stage', reason: 'Economic buyer left the business', color: 'var(--risk)' },
+        { deal: 'Brightwater services', amount: '−$0.88M', moved: 'Commit → Best case', reason: 'Competitor shortlisted', color: 'var(--warn)' },
+        { deal: 'Norvell renewal', amount: '+$0.62M', moved: 'Q4 → Q3', reason: 'Pulled forward by the customer', color: 'var(--pos)' },
+      ],
+
+      presentStats: [
+        { v: '$42.8M', k: 'Commit' }, { v: '63%', k: 'of plan' }, { v: '3.1×', k: 'Coverage' },
+      ],
+
+      presentRules: [
+        'One idea per slide, stated as a sentence rather than a title.',
+        'Charts redraw at presentation scale: fewer ticks, larger labels, no hover-only content.',
+        'Speaker notes carry the drill-down figures, so a question mid-meeting is answerable without leaving the slide.',
+        'Presenting from live data shows the timestamp; a frozen snapshot says so explicitly.',
+      ],
+
+      execPoints: [
+        { n: '1', lead: 'The quarter is short on one mechanism.', body: 'Three renewals, one cause, $2.42M. Not demand.', tint: 'var(--risk-tint)', color: 'var(--risk)' },
+        { n: '2', lead: 'Two of the three are recoverable.', body: 'Both need only legal review, and 29 days remain.', tint: 'var(--warn-tint)', color: 'var(--warn)' },
+        { n: '3', lead: 'The fix is measured, not theoretical.', body: '41% → 63% win rate across 412 comparable renewals.', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+      ],
+
+      execRules: [
+        'Three points maximum, each a claim rather than a topic.',
+        'No chart unless it changes the decision; the detail stays one click away.',
+        'Every figure keeps its drill-down, so “show me” is always answerable.',
+        'Generated commentary is marked, and human edits are marked differently.',
+      ],
+
+      chartTypes: [
+        { name: 'Line', use: 'A measure over time, one or two series', kind: 'line', sel: false },
+        { name: 'Bar', use: 'Comparison across categories', kind: 'bar', sel: false },
+        { name: 'Waterfall', use: 'Signed contributions to one total', kind: 'waterfall', sel: true },
+        { name: 'Funnel', use: 'Conversion through fixed stages', kind: 'funnel', sel: false },
+        { name: 'Cohort heatmap', use: 'Two dimensions, one density', kind: 'cohort', sel: false },
+        { name: 'Distribution', use: 'Where deals cluster, and the tail', kind: 'dist', sel: false },
+        { name: 'Pace', use: 'Actual against required, same axes', kind: 'pace', sel: false },
+        { name: 'Table', use: 'When the numbers are the point', kind: 'table', sel: false },
+      ].map(c => ({
+        name: c.name, use: c.use,
+        spark: this.spark(c.kind),
+        bg: c.sel ? 'var(--brand-tint)' : 'transparent',
+      })),
+
+      schedule: [
+        { k: 'Cadence', v: 'Weekly · Monday 07:00 CET' },
+        { k: 'Recipients', v: 'CRO, finance, 2 regional VPs' },
+        { k: 'Delivery', v: 'PDF + link to live report' },
+        { k: 'Next run', v: 'Mon 11 Aug · 07:00' },
+      ],
+
+      scheduleRules: [
+        { text: 'A scheduled send waits for the nightly reconciliation. It never delivers mid-sync figures.', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { text: 'If a number moved more than 5% since the last send, the email leads with what changed.', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { text: 'A failed run notifies the owner and retries once. It never sends a partial report.', mark: '!', tint: 'var(--warn-tint)', color: 'var(--warn)' },
+      ],
+
+      exports: [
+        { badge: 'PDF', label: 'Board PDF', note: 'Executive mode layout, endnotes for every figure', right: 'Print-ready', tint: 'var(--risk-tint)', color: 'var(--risk)' },
+        { badge: 'PPT', label: 'Presentation deck', note: 'One slide per block, speaker notes included', right: 'Editable', tint: 'var(--warn-tint)', color: 'var(--warn)' },
+        { badge: 'XLS', label: 'Underlying data', note: 'One sheet per table, at the drill level you are on', right: 'Data', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { badge: 'CSV', label: 'Single table', note: 'The focused block only', right: 'Quick', tint: 'var(--sunken)', color: 'var(--ink-2)' },
+        { badge: 'API', label: 'Scheduled feed', note: 'Same query, delivered to the warehouse nightly', right: 'Ongoing', tint: 'var(--ai-tint)', color: 'var(--ai-ink)' },
+      ],
+
+      sharing: [
+        { icon: '◉', label: 'Workspace link · can view', meta: 'Anyone at Northwind Global', state: 'On', stateColor: 'var(--pos)', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { icon: '◐', label: 'CRO and finance · can comment', meta: '4 people · 2 comments open', state: 'Active', stateColor: 'var(--brand-ink)', tint: 'var(--brand-tint)', color: 'var(--brand-ink)' },
+        { icon: '◑', label: 'Regional VPs · scoped to their region', meta: 'Same report, filtered by permission', state: '2 people', stateColor: 'var(--brand-ink)', tint: 'var(--brand-tint)', color: 'var(--brand-ink)' },
+        { icon: '◯', label: 'External link', meta: 'Board members outside the workspace', state: 'Off', stateColor: 'var(--ink-3)', tint: 'var(--sunken)', color: 'var(--ink-3)' },
+      ],
+
+      templates: [
+        { icon: '▤', name: 'Q3 board pack — EMEA', badge: 'Current', body: 'Waterfall, pace, moved deals and commentary. Scheduled weekly to the CRO and finance.', meta: '5 blocks · v7', action: 'Editing', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', badgeBg: 'var(--pos-tint)', badgeFg: 'var(--pos)' },
+        { icon: '◷', name: 'Weekly forecast review', badge: 'Template', body: 'Movement since Friday, deals needing a decision, and coverage by rep.', meta: '7 blocks', action: 'Use', tint: 'var(--sunken)', color: 'var(--ink-2)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+        { icon: '⚑', name: 'Win/loss review', badge: 'Template', body: 'Closed deals by outcome with the reasons on record and competitor presence.', meta: '6 blocks', action: 'Use', tint: 'var(--warn-tint)', color: 'var(--warn)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+        { icon: '↑', name: 'Pipeline creation', badge: 'Template', body: 'New pipeline by source and segment against the coverage needed for next quarter.', meta: '5 blocks', action: 'Use', tint: 'var(--pos-tint)', color: 'var(--pos)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+        { icon: '✦', name: 'Ask for a report', badge: 'AI', body: 'Describe what you want to know. Signora proposes the query, the blocks and the chart types, then you edit.', meta: 'Always reviewable', action: 'Describe', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', badgeBg: 'var(--ai-tint)', badgeFg: 'var(--ai-ink)' },
+        { icon: '✎', name: 'Blank report', badge: 'Start', body: 'One query, no blocks. Add metric, chart, table or narrative as you go.', meta: 'Nothing assumed', action: 'Create', tint: 'var(--sunken)', color: 'var(--ink-3)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

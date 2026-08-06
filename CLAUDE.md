@@ -975,6 +975,26 @@ promoted commit SHA  ==  certified commit SHA
 >
 > ⛔ **So the rule has a second half: *accessible* is a claim to be tested, never assumed in either direction.** **Verify a lane can open the artifact before writing the task, and verify it again before reporting that it cannot.**
 
+### The Design Snapshot is the implementation authority
+
+**Ratified 2026-08-06, product owner, [D-138](docs/DECISION_REGISTER.md). Drafted by Lane C on that instruction.**
+
+> ## **The Claude Design project is the upstream design authority. [`docs/design-snapshot/`](docs/design-snapshot/MANIFEST.md) is the *implementation* authority, and implementation reads only the snapshot.**
+
+⚡ **The same pattern the repository already trusts for OpenAPI specifications, protobuf definitions and design tokens: a versioned local copy of an upstream contract, refreshed deliberately rather than continuously.**
+
+| | |
+|---|---|
+| ⛔ **During implementation** | **Never reconnect to the upstream project. Never pull a newer design silently. Never compare against upstream** |
+| ✅ **On an explicit refresh instruction** | **Product Office retrieves the complete package, updates the snapshot, and records date, source id, version and upstream reference in [`MANIFEST.md`](docs/design-snapshot/MANIFEST.md)** |
+| ⚡ **A refresh is a new baseline** | **Product Office assesses whether already-planned work is affected *before* the new snapshot propagates** |
+
+**The snapshot is immutable for the wave.** **It supersedes the previous reference when refreshed, and until then every lane implements against one revision — which is the whole objective.**
+
+**Product Office, whenever a task is created:** **reference the design document inside the snapshot by path · verify the implementing lane can open it · verify the task points at the right screen · ⛔ never create work against an outdated revision.**
+
+> ⛔ **Still forbidden, unchanged from [D-137](docs/DECISION_REGISTER.md): copied checklists · rewritten specifications · intermediate interpretations · duplicated design documents.** ⚡ **A byte-identical snapshot is none of those** — **it is the same file, stored where the lanes can reach it — and [`MANIFEST.md`](docs/design-snapshot/MANIFEST.md) carries the hashes that make that claim checkable rather than asserted.**
+
 ### The five product milestones, and they are not one thing
 
 **Ratified 2026-08-06, product owner, [D-137](docs/DECISION_REGISTER.md) §7.** **Repository status reports distinguish these permanently.**

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2pulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  @keyframes v2bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:6px 20px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+    <span style="font-weight:600">CRM integrations</span>
+    <span style="color:var(--ink-2)">The CRM stays the system of record · Signora writes only what it declares</span>
+    <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft)">
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};white-space:nowrap" onClick="{{ setLight }}">Light</span>
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};white-space:nowrap" onClick="{{ setDark }}">Dark</span>
+    </span>
+  </div>
+
+  <div style="display:flex;align-items:flex-start">
+    <nav style="width:56px;flex:none;position:sticky;top:0;height:100vh;background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">NG</div>
+      <div style="height:1px;width:28px;background:var(--line-soft);margin:6px 0"></div>
+      <sc-for list="{{ railIcons }}" as="r" hint-placeholder-count="8">
+        <div style="width:38px;height:32px;border-radius:8px;display:grid;place-items:center;background:{{ r.bg }};color:{{ r.color }}">{{ r.icon }}</div>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:10px 20px;border-bottom:1px solid var(--line-soft);background:var(--surface);flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:7px;font-size:13px;min-width:0">
+          <span style="color:var(--ink-3)">Settings</span><span style="color:var(--ink-4)">/</span>
+          <span style="color:var(--ink-3)">Integrations</span><span style="color:var(--ink-4)">/</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-weight:600"><span style="width:6px;height:6px;border-radius:999px;background:var(--warn)"></span>Salesforce</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap">Run diagnostics</span>
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600;box-shadow:var(--e1);white-space:nowrap">Sync now</span>
+        </div>
+      </div>
+
+      <div style="padding:18px 20px 0;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <h1 style="font-size:25px;font-weight:700;letter-spacing:-0.026em;margin:0">Salesforce</h1>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:var(--warn-tint);color:var(--warn);white-space:nowrap">
+              <span style="width:6px;height:6px;border-radius:999px;background:var(--warn);animation:v2pulse 2s ease-in-out infinite"></span>Degraded
+            </span>
+            <span style="font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:var(--sunken);color:var(--ink-2);white-space:nowrap">Production org</span>
+          </div>
+          <div style="font-size:13px;color:var(--ink-2);margin-top:4px">Connected 14 Mar 2026 by L. Petrova · 8,412 accounts, 3,104 opportunities, 24,880 contacts in sync.</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+            <span style="padding:5px 12px;border-radius:6px;font-size:11.5px;font-weight:600;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.shadow }};white-space:nowrap">{{ t.label }}</span>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="padding:16px 20px 30px;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--warn);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:15px 18px;background:var(--warn-tint);flex-wrap:wrap">
+              <span style="width:26px;height:26px;flex:none;border-radius:8px;background:var(--warn);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700">!</span>
+              <div style="min-width:240px;flex:1">
+                <div style="font-size:14.5px;font-weight:600">Writes are paused — the connected user lost a permission</div>
+                <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">Reads are unaffected and everything on screen is current as of 4 minutes ago. Two fields Signora writes, <span style="font-family:ui-monospace,monospace">Renewal_Risk__c</span> and <span style="font-family:ui-monospace,monospace">Next_Step__c</span>, became read-only for the integration user at 06:41. 41 queued writes are held, not dropped.</p>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:auto">
+                <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600;white-space:nowrap">Reconnect</span>
+                <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap">View 41 held writes</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap">
+              <sc-for list="{{ healthKpis }}" as="k" hint-placeholder-count="4">
+                <div style="flex:1 1 160px;min-width:0;padding:14px 18px;border-right:1px solid var(--line-soft);border-top:1px solid var(--line-soft)">
+                  <div style="font-size:11px;color:var(--ink-3)">{{ k.k }}</div>
+                  <div style="display:flex;align-items:baseline;gap:7px;margin-top:4px">
+                    <span style="font-size:19px;font-weight:700;letter-spacing:-0.022em;font-variant-numeric:tabular-nums;color:{{ k.color }}">{{ k.v }}</span>
+                    <span style="font-size:11px;font-weight:600;color:{{ k.deltaColor }}">{{ k.delta }}</span>
+                  </div>
+                  <div style="font-size:11px;color:var(--ink-2);margin-top:2px">{{ k.note }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Objects &amp; sync status</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Direction is declared per object, never inferred</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink);white-space:nowrap">Add an object</span>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:840px">
+                <div style="display:grid;grid-template-columns:minmax(0,1.1fr) 128px 108px 118px minmax(0,1fr) 92px;gap:12px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Object</div><div>Direction</div><div>Records</div><div>Last sync</div><div>State</div><div style="text-align:right">Fields</div>
+                </div>
+                <sc-for list="{{ objects }}" as="o" hint-placeholder-count="6">
+                  <div style="display:grid;grid-template-columns:minmax(0,1.1fr) 128px 108px 118px minmax(0,1fr) 92px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px;background:{{ o.bg }}">
+                    <div style="min-width:0">
+                      <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.name }}</div>
+                      <div style="font-size:11px;color:var(--ink-3);font-family:ui-monospace,monospace">{{ o.api }}</div>
+                    </div>
+                    <div><span style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ o.dirBg }};color:{{ o.dirFg }};white-space:nowrap">{{ o.direction }}</span></div>
+                    <div style="font-variant-numeric:tabular-nums;color:var(--ink-2)">{{ o.records }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums">{{ o.last }}</div>
+                    <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                      <span style="width:6px;height:6px;flex:none;border-radius:999px;background:{{ o.dot }}"></span>
+                      <span style="font-size:11.5px;color:{{ o.stateColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.state }}</span>
+                    </div>
+                    <div style="text-align:right;font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums">{{ o.fields }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap">
+              <span>Signora writes to 3 fields in total across 8,412 accounts. Everything else is read-only by design.</span>
+              <span style="margin-left:auto;font-weight:600;color:var(--brand-ink);white-space:nowrap">See the write contract</span>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Field mappings — Opportunity</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">28 mapped · 2 need attention · 1 write-back</span>
+              <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Validate mappings</span>
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;background:var(--ai-tint);color:var(--ai-ink);font-size:11.5px;font-weight:600;white-space:nowrap">✦ Suggest mappings</span>
+              </span>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:860px">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr) 118px minmax(0,1.1fr);gap:12px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Salesforce field</div><div></div><div>Signora field</div><div>Direction</div><div>Validation</div>
+                </div>
+                <sc-for list="{{ mappings }}" as="m" hint-placeholder-count="7">
+                  <div style="display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr) 118px minmax(0,1.1fr);gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px;background:{{ m.bg }}">
+                    <div style="min-width:0">
+                      <div style="font-family:ui-monospace,monospace;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.sf }}</div>
+                      <div style="font-size:10.5px;color:var(--ink-4)">{{ m.sfType }}</div>
+                    </div>
+                    <div style="text-align:center;color:{{ m.arrowColor }};font-weight:700">{{ m.arrow }}</div>
+                    <div style="min-width:0">
+                      <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.sig }}</div>
+                      <div style="font-size:10.5px;color:var(--ink-4)">{{ m.sigType }}</div>
+                    </div>
+                    <div><span style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ m.dirBg }};color:{{ m.dirFg }};white-space:nowrap">{{ m.direction }}</span></div>
+                    <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                      <span style="width:15px;height:15px;flex:none;border-radius:5px;background:{{ m.vBg }};color:{{ m.vFg }};display:grid;place-items:center;font-size:9px;font-weight:700">{{ m.vMark }}</span>
+                      <span style="font-size:11.5px;color:{{ m.vColor }};line-height:1.4">{{ m.validation }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:11px;padding:13px 18px;background:var(--ai-tint);flex-wrap:wrap">
+              <span style="width:18px;height:18px;flex:none;border-radius:5px;background:var(--ai);display:grid;place-items:center;margin-top:1px">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+              </span>
+              <div style="font-size:12.5px;line-height:1.55;min-width:230px;flex:1">
+                <span style="font-weight:600">Two picklists have drifted: </span>
+                <span style="color:var(--ink-2)">Salesforce added “Legal review” and “Procurement” to StageName last week. 214 opportunities now sit in stages Signora treats as unmapped, and their velocity metrics are excluded until mapped.</span>
+              </div>
+              <span style="margin-left:auto;flex:none;font-size:11.5px;font-weight:600;color:var(--ai-ink);white-space:nowrap">Map both →</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px">
+            <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;align-self:start">
+              <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+                <span style="font-size:13.5px;font-weight:600">Errors</span>
+                <span style="font-size:11.5px;color:var(--ink-3)">Grouped by cause, not by record</span>
+                <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--risk-tint);color:var(--risk);white-space:nowrap">3 groups · 218 records</span>
+              </div>
+              <sc-for list="{{ errors }}" as="e" hint-placeholder-count="3">
+                <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+                  <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                    <span style="width:20px;height:20px;flex:none;border-radius:6px;background:{{ e.tint }};color:{{ e.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ e.icon }}</span>
+                    <span style="font-size:13px;font-weight:600;min-width:0;overflow-wrap:anywhere">{{ e.title }}</span>
+                    <span style="font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ e.tint }};color:{{ e.color }};white-space:nowrap">{{ e.count }}</span>
+                    <span style="margin-left:auto;font-size:10.5px;color:var(--ink-4);font-variant-numeric:tabular-nums;white-space:nowrap">{{ e.first }}</span>
+                  </div>
+                  <div style="font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ e.body }}</div>
+                  <div style="font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-3);margin-top:7px;padding:8px 10px;border-radius:8px;background:var(--sunken);overflow-x:auto;white-space:pre">{{ e.raw }}</div>
+                  <div style="display:flex;align-items:center;gap:9px;margin-top:10px;flex-wrap:wrap">
+                    <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;background:var(--brand);color:#fff;font-size:11.5px;font-weight:600;white-space:nowrap">{{ e.fix }}</span>
+                    <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Show records</span>
+                    <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4);white-space:nowrap">{{ e.id }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;align-self:start">
+              <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft)">
+                <span style="font-size:13.5px;font-weight:600">Sync history</span>
+                <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Last 7 runs</span>
+              </div>
+              <sc-for list="{{ syncRuns }}" as="s" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:11px;padding:11px 18px;border-bottom:1px solid var(--line-soft);background:{{ s.bg }}">
+                  <span style="width:6px;height:6px;flex:none;border-radius:999px;background:{{ s.dot }}"></span>
+                  <div style="min-width:0">
+                    <div style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums">{{ s.when }}</div>
+                    <div style="font-size:11px;color:var(--ink-2);margin-top:1px;line-height:1.4">{{ s.detail }}</div>
+                  </div>
+                  <span style="margin-left:auto;flex:none;text-align:right">
+                    <div style="font-size:11.5px;font-weight:600;color:{{ s.color }};font-variant-numeric:tabular-nums">{{ s.result }}</div>
+                    <div style="font-size:10.5px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ s.duration }}</div>
+                  </span>
+                </div>
+              </sc-for>
+              <div style="padding:12px 18px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Incremental every 5 minutes, full reconciliation nightly. A failed run never leaves partial state — it rolls back to the last consistent watermark.</div>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Logs</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Every API call, request and response, retained 30 days</span>
+              <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Filter: errors</span>
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Download</span>
+              </span>
+            </div>
+            <div style="padding:14px 18px;font-family:ui-monospace,monospace;font-size:11px;line-height:1.75;background:var(--sunken);overflow-x:auto">
+              <sc-for list="{{ logs }}" as="l" hint-placeholder-count="7">
+                <div style="white-space:pre;color:{{ l.color }}">{{ l.line }}</div>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap">
+              <span>Field values are redacted in logs unless you hold the data-access role.</span>
+              <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-4);white-space:nowrap">sync_5f02-a1</span>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Connection wizard</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Five steps · nothing syncs until the last one is confirmed</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--sunken);color:var(--ink-3);white-space:nowrap">Shown for a new org</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0;padding:14px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <sc-for list="{{ wizardSteps }}" as="w" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:9px;padding-right:14px">
+                  <span style="width:22px;height:22px;flex:none;border-radius:999px;background:{{ w.bg }};border:1.5px solid {{ w.border }};color:{{ w.fg }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ w.mark }}</span>
+                  <div>
+                    <div style="font-size:12px;font-weight:{{ w.weight }};color:{{ w.color }};white-space:nowrap">{{ w.label }}</div>
+                    <div style="font-size:10.5px;color:var(--ink-4);white-space:nowrap">{{ w.meta }}</div>
+                  </div>
+                  <span style="width:22px;height:1.5px;background:var(--line-soft);margin-left:5px"></span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0">
+              <div style="padding:18px;border-right:1px solid var(--line-soft)">
+                <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Step 2 · OAuth</div>
+                <div style="margin-top:12px;border-radius:12px;border:1px solid var(--line-soft);background:var(--sunken);padding:16px">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <span style="width:28px;height:28px;flex:none;border-radius:8px;background:var(--surface);border:1px solid var(--line-soft);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--brand-ink)">SF</span>
+                    <div style="min-width:0">
+                      <div style="font-size:12.5px;font-weight:600">Sign in to Salesforce</div>
+                      <div style="font-size:11px;color:var(--ink-3)">login.salesforce.com · production</div>
+                    </div>
+                  </div>
+                  <div style="font-size:12px;color:var(--ink-2);margin-top:12px;line-height:1.55">Signora never sees or stores a password. Authorisation happens in Salesforce, and the token is bound to a named integration user rather than to the person clicking.</div>
+                  <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+                    <sc-for list="{{ oauthFacts }}" as="o" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:center;gap:9px;font-size:11.5px">
+                        <span style="width:14px;height:14px;flex:none;border-radius:4px;background:{{ o.tint }};color:{{ o.color }};display:grid;place-items:center;font-size:8.5px;font-weight:700">{{ o.mark }}</span>
+                        <span style="color:var(--ink-2)">{{ o.label }}</span>
+                        <span style="margin-left:auto;font-weight:600;color:{{ o.color }};white-space:nowrap">{{ o.value }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <span style="display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:34px;margin-top:14px;padding:6px 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">Authorise in Salesforce ↗</span>
+                  <div style="font-size:10.5px;color:var(--ink-3);margin-top:9px;line-height:1.5">Sandbox and My Domain logins are offered before this step, so the wrong org cannot be connected by habit.</div>
+                </div>
+              </div>
+              <div style="padding:18px">
+                <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Step 3 · Permissions requested</div>
+                <div style="margin-top:12px;display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ permissions }}" as="p" hint-placeholder-count="5">
+                    <div style="display:flex;gap:10px;padding:11px 12px;border-radius:11px;border:1px solid {{ p.border }};background:{{ p.bg }}">
+                      <span style="width:18px;height:18px;flex:none;border-radius:5px;background:{{ p.tint }};color:{{ p.color }};display:grid;place-items:center;font-size:9.5px;font-weight:700;margin-top:1px">{{ p.mark }}</span>
+                      <div style="min-width:0">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                          <span style="font-size:12px;font-weight:600">{{ p.label }}</span>
+                          <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:{{ p.tint }};color:{{ p.color }};white-space:nowrap">{{ p.scope }}</span>
+                        </div>
+                        <div style="font-size:11px;color:var(--ink-2);margin-top:3px;line-height:1.45">{{ p.why }}</div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font-size:11px;color:var(--ink-3);margin-top:11px;line-height:1.5">Each permission states why it is needed and what stops working without it. Declining write access is a supported configuration — Signora runs read-only and hides every write affordance rather than failing at the end.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Connection health</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--warn-tint);color:var(--warn);white-space:nowrap">Degraded</span>
+            </div>
+            <sc-for list="{{ healthChecks }}" as="h" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:7px;height:7px;flex:none;border-radius:999px;background:{{ h.dot }}"></span>
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;font-weight:600">{{ h.label }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-3);margin-top:1px">{{ h.meta }}</div>
+                </div>
+                <span style="margin-left:auto;flex:none;font-size:11px;font-weight:600;color:{{ h.color }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ h.value }}</span>
+              </div>
+            </sc-for>
+            <div style="padding:12px 15px;font-size:10.5px;color:var(--ink-3);line-height:1.5">Health is checked every minute. Two consecutive failures pause writes and raise a signal to the workspace admins.</div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Reconnect</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">Non-destructive</span>
+            </div>
+            <div style="padding:14px 15px">
+              <div style="font-size:12px;color:var(--ink-2);line-height:1.55">Reconnecting re-runs OAuth for the same org and integration user. Mappings, history and held writes are preserved; the held queue drains automatically once permissions verify.</div>
+              <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+                <sc-for list="{{ reconnectSteps }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:9px;font-size:11.5px">
+                    <span style="width:16px;height:16px;flex:none;border-radius:999px;border:1.5px solid var(--line);color:var(--ink-3);display:grid;place-items:center;font-size:9px;font-weight:700">{{ r.n }}</span>
+                    <span style="color:var(--ink-2)">{{ r.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:34px;margin-top:13px;padding:6px 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">Reconnect Salesforce</span>
+            </div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--risk);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600;color:var(--risk)">Disconnect</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;color:var(--risk);white-space:nowrap">Destructive</span>
+            </div>
+            <div style="padding:14px 15px">
+              <div style="font-size:12px;color:var(--ink-2);line-height:1.55">Disconnecting stops all sync and revokes the token in Salesforce. What happens to data is your choice, stated before you confirm:</div>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+                <sc-for list="{{ disconnectOptions }}" as="d" hint-placeholder-count="2">
+                  <div style="display:flex;gap:10px;padding:11px 12px;border-radius:11px;border:1px solid {{ d.border }};background:{{ d.bg }}">
+                    <span style="width:12px;height:12px;flex:none;border-radius:999px;border:1.5px solid {{ d.dotBorder }};background:{{ d.dotBg }};margin-top:3px"></span>
+                    <div style="min-width:0">
+                      <div style="font-size:12px;font-weight:600">{{ d.label }}</div>
+                      <div style="font-size:11px;color:var(--ink-2);margin-top:2px;line-height:1.45">{{ d.body }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:11px;color:var(--ink-2);margin-top:12px;line-height:1.5"><span style="font-weight:600">Three things are never deleted: </span>the sync history, the audit log, and anything Signora already wrote into Salesforce.</div>
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:34px;margin-top:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--risk);color:var(--risk);font-size:12.5px;font-weight:600">Disconnect — type the org name to confirm</span>
+            </div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Other systems</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink);white-space:nowrap">Browse</span>
+            </div>
+            <sc-for list="{{ otherSystems }}" as="o" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:24px;height:24px;flex:none;border-radius:7px;background:{{ o.tint }};color:{{ o.color }};display:grid;place-items:center;font-size:9px;font-weight:700">{{ o.abbr }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.name }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-3)">{{ o.meta }}</div>
+                </div>
+                <span style="margin-left:auto;flex:none;font-size:10.5px;font-weight:600;color:{{ o.stateColor }};white-space:nowrap">{{ o.state }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+    });
+  }
+
+  icon(kind) {
+    const p = {
+      home: 'M2.5 7 8 2.5 13.5 7v6.5h-11V7Z', chart: 'M3 13V7M8 13V3M13 13V9',
+      flow: 'M2.5 4h11M4.5 8h7M6.5 12h3', grid: 'M2.5 2.5h5v5h-5zM8.5 2.5h5v5h-5zM2.5 8.5h5v5h-5zM8.5 8.5h5v5h-5z',
+      case: 'M2.5 5.5h11v8h-11zM6 5.5V3h4v2.5', chat: 'M2.5 3h11v7H7l-4.5 3.5z',
+      gear: 'M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.6 3.6 5 5M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4',
+      file: 'M4 2h5l3 3v9H4zM9 2v3h3',
+    }[kind];
+    return R('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }, R('path', { d: p }));
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--brand)',
+      lightFg: dark ? 'var(--ink-3)' : '#fff',
+      darkBg: dark ? 'var(--brand)' : 'transparent',
+      darkFg: dark ? '#fff' : 'var(--ink-3)',
+
+      railIcons: ['home', 'chart', 'flow', 'grid', 'case', 'chat', 'gear', 'file'].map((k, i) => ({
+        icon: this.icon(k),
+        bg: i === 6 ? 'var(--brand-tint)' : 'transparent',
+        color: i === 6 ? 'var(--brand)' : 'var(--ink-3)',
+      })),
+
+      tabs: ['Overview', 'Objects', 'Mappings', 'Logs', 'Settings'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--surface)' : 'transparent',
+        color: i === 0 ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: i === 0 ? 'var(--e1)' : 'none',
+      })),
+
+      healthKpis: [
+        { k: 'Last successful sync', v: '4m ago', delta: 'on time', deltaColor: 'var(--pos)', note: 'Incremental · every 5 minutes', color: 'var(--ink)' },
+        { k: 'Records in sync', v: '36,396', delta: '+412 today', deltaColor: 'var(--pos)', note: 'Across 6 objects', color: 'var(--ink)' },
+        { k: 'Held writes', v: '41', delta: 'queued', deltaColor: 'var(--warn)', note: 'Retained until permissions verify', color: 'var(--warn)' },
+        { k: 'API usage', v: '38%', delta: 'of daily limit', deltaColor: 'var(--ink-3)', note: '47,900 of 125,000 calls', color: 'var(--ink)' },
+      ],
+
+      objects: [
+        { name: 'Accounts', api: 'Account', direction: 'Read + write', records: '8,412', last: '4m ago', state: 'Healthy', fields: '32 of 214', dir: 'rw', st: 'ok', sel: false },
+        { name: 'Opportunities', api: 'Opportunity', direction: 'Read + write', records: '3,104', last: '4m ago', state: '2 picklists unmapped · 214 records', fields: '28 of 186', dir: 'rw', st: 'warn', sel: true },
+        { name: 'Contacts', api: 'Contact', direction: 'Read only', records: '24,880', last: '4m ago', state: 'Healthy', fields: '18 of 96', dir: 'r', st: 'ok', sel: false },
+        { name: 'Activities', api: 'Task, Event', direction: 'Read only', records: '—', last: '4m ago', state: 'Healthy · 412 today', fields: '11 of 64', dir: 'r', st: 'ok', sel: false },
+        { name: 'Users', api: 'User', direction: 'Read only', records: '312', last: '1h ago', state: 'Healthy · hourly', fields: '6 of 88', dir: 'r', st: 'ok', sel: false },
+        { name: 'Custom — Renewals', api: 'Renewal__c', direction: 'Read only', records: '1,240', last: 'Failed', state: '4 fields no longer exist', fields: '9 of 22', dir: 'r', st: 'err', sel: false },
+      ].map(o => ({
+        name: o.name, api: o.api, direction: o.direction, records: o.records, last: o.last, state: o.state, fields: o.fields,
+        dirBg: o.dir === 'rw' ? 'var(--brand-tint)' : 'var(--sunken)',
+        dirFg: o.dir === 'rw' ? 'var(--brand-ink)' : 'var(--ink-2)',
+        dot: o.st === 'ok' ? 'var(--pos)' : (o.st === 'warn' ? 'var(--warn)' : 'var(--risk)'),
+        stateColor: o.st === 'ok' ? 'var(--ink-2)' : (o.st === 'warn' ? 'var(--warn)' : 'var(--risk)'),
+        bg: o.sel ? 'var(--warn-tint)' : 'transparent',
+      })),
+
+      mappings: [
+        { sf: 'Name', sfType: 'Text(255)', sig: 'Account name', sigType: 'Text', direction: 'Read', v: 'ok', validation: 'Types compatible', dir: 'r' },
+        { sf: 'Amount', sfType: 'Currency(16,2)', sig: 'Deal amount', sigType: 'Currency', direction: 'Read', v: 'ok', validation: 'Currency DKK → USD at daily rate', dir: 'r' },
+        { sf: 'StageName', sfType: 'Picklist(9)', sig: 'Stage', sigType: 'Enum(7)', direction: 'Read', v: 'warn', validation: '2 values unmapped: Legal review, Procurement', dir: 'r' },
+        { sf: 'CloseDate', sfType: 'Date', sig: 'Close date', sigType: 'Date', direction: 'Read', v: 'ok', validation: 'Change history also read', dir: 'r' },
+        { sf: 'Renewal_Risk__c', sfType: 'Picklist(4)', sig: 'Signora risk band', sigType: 'Enum(4)', direction: 'Write', v: 'blocked', validation: 'Field is read-only for the integration user', dir: 'w' },
+        { sf: 'Next_Step__c', sfType: 'Text(255)', sig: 'Recommended action', sigType: 'Text', direction: 'Write', v: 'blocked', validation: 'Field is read-only for the integration user', dir: 'w' },
+        { sf: 'Probability', sfType: 'Percent', sig: 'AI win probability', sigType: 'Percent', direction: 'Not mapped', v: 'off', validation: 'Deliberately unmapped — never overwrite the rep’s number', dir: 'none' },
+      ].map(m => {
+        const v = {
+          ok: { vBg: 'var(--pos-tint)', vFg: 'var(--pos)', vMark: '✓', vColor: 'var(--ink-2)' },
+          warn: { vBg: 'var(--warn-tint)', vFg: 'var(--warn)', vMark: '!', vColor: 'var(--warn)' },
+          blocked: { vBg: 'var(--risk-tint)', vFg: 'var(--risk)', vMark: '✕', vColor: 'var(--risk)' },
+          off: { vBg: 'var(--sunken)', vFg: 'var(--ink-3)', vMark: '—', vColor: 'var(--ink-3)' },
+        }[m.v];
+        const d = {
+          r: { arrow: '→', arrowColor: 'var(--ink-3)', dirBg: 'var(--sunken)', dirFg: 'var(--ink-2)' },
+          w: { arrow: '←', arrowColor: 'var(--risk)', dirBg: 'var(--risk-tint)', dirFg: 'var(--risk)' },
+          none: { arrow: '⊘', arrowColor: 'var(--ink-4)', dirBg: 'var(--sunken)', dirFg: 'var(--ink-3)' },
+        }[m.dir];
+        return Object.assign({}, m, v, d, { bg: m.v === 'blocked' ? 'var(--risk-tint)' : (m.v === 'warn' ? 'var(--warn-tint)' : 'transparent') });
+      }),
+
+      errors: [
+        { icon: '✕', tint: 'var(--risk-tint)', color: 'var(--risk)', title: 'INSUFFICIENT_ACCESS_ON_CROSS_REFERENCE_ENTITY', count: '41 records', first: 'First at 06:41',
+          body: 'The integration user can no longer write Renewal_Risk__c. A profile change at 06:41 removed field-level edit permission. Writes are held, not discarded.',
+          raw: 'PATCH /services/data/v61.0/sobjects/Opportunity/0065g00000XyZ\n→ 403  field=Renewal_Risk__c  user=svc_signora@northwind',
+          fix: 'Open the permission fix', id: 'err_1a04-77' },
+        { icon: '!', tint: 'var(--warn-tint)', color: 'var(--warn)', title: 'PICKLIST_VALUE_NOT_MAPPED', count: '214 records', first: 'First at 31 Jul',
+          body: 'StageName returned two values Signora does not recognise. Affected opportunities are excluded from velocity and conversion metrics until mapped — they are not silently bucketed.',
+          raw: 'value="Legal review"  count=148\nvalue="Procurement"   count=66',
+          fix: 'Map both values', id: 'err_2b91-03' },
+        { icon: '✕', tint: 'var(--risk-tint)', color: 'var(--risk)', title: 'INVALID_FIELD — Renewal__c', count: '4 fields', first: 'First at 2 Aug',
+          body: 'Four mapped fields no longer exist on the custom object; they were deleted in Salesforce. The object’s sync is halted rather than partially importing.',
+          raw: 'SELECT Contract_Term__c, Uplift__c, Notice_Days__c, Owner_Region__c\n→ 400  INVALID_FIELD: no such column',
+          fix: 'Review 4 fields', id: 'err_3c22-18' },
+      ],
+
+      syncRuns: [
+        { when: 'Today 09:14', detail: 'Incremental · reads complete, 41 writes held', result: '412 changed', duration: '9s', dot: 'var(--warn)', color: 'var(--warn)', sel: true },
+        { when: 'Today 09:09', detail: 'Incremental · reads complete, writes held', result: '388 changed', duration: '8s', dot: 'var(--warn)', color: 'var(--warn)', sel: false },
+        { when: 'Today 02:00', detail: 'Nightly reconciliation · 1 object halted', result: '36,396 verified', duration: '14m 02s', dot: 'var(--warn)', color: 'var(--warn)', sel: false },
+        { when: 'Yesterday 06:41', detail: 'Permission change detected · writes paused', result: 'Auto-paused', duration: '—', dot: 'var(--risk)', color: 'var(--risk)', sel: false },
+        { when: 'Yesterday 02:00', detail: 'Nightly reconciliation · all objects', result: '35,984 verified', duration: '13m 41s', dot: 'var(--pos)', color: 'var(--pos)', sel: false },
+        { when: '2 Aug 02:00', detail: 'Nightly reconciliation · 4 fields dropped', result: '35,712 verified', duration: '13m 55s', dot: 'var(--warn)', color: 'var(--warn)', sel: false },
+      ].map(s => Object.assign({}, s, { bg: s.sel ? 'var(--warn-tint)' : 'transparent' })),
+
+      logs: [
+        { line: '09:14:02.114  sync.start     mode=incremental watermark=2026-08-04T09:09:01Z', color: 'var(--ink-2)' },
+        { line: '09:14:02.660  read.account   changed=118  api_calls=3', color: 'var(--ink-2)' },
+        { line: '09:14:03.902  read.opp       changed=64   api_calls=2  unmapped_stage=9', color: 'var(--warn)' },
+        { line: '09:14:05.318  write.opp      held=41  reason=INSUFFICIENT_ACCESS  retry_in=15m', color: 'var(--risk)' },
+        { line: '09:14:05.320  read.renewal   halted  reason=INVALID_FIELD(4)', color: 'var(--risk)' },
+        { line: '09:14:11.006  sync.end       status=degraded  duration=8.9s  watermark_advanced=true', color: 'var(--ink-2)' },
+        { line: '09:14:11.008  health.check   writes=paused reads=ok token=valid(expires 12 Sep)', color: 'var(--ink-3)' },
+      ],
+
+      wizardSteps: [
+        { label: 'Choose system', meta: 'Salesforce', state: 'done' },
+        { label: 'OAuth', meta: 'Production org', state: 'current' },
+        { label: 'Permissions', meta: '5 scopes', state: 'todo' },
+        { label: 'Objects & mappings', meta: 'Suggested', state: 'todo' },
+        { label: 'Validate & start', meta: 'Dry run first', state: 'todo' },
+      ].map((w, i) => {
+        const m = {
+          done: { mark: '✓', bg: 'var(--pos)', border: 'var(--pos)', fg: '#fff', weight: 400, color: 'var(--ink-2)' },
+          current: { mark: String(i + 1), bg: 'transparent', border: 'var(--brand)', fg: 'var(--brand-ink)', weight: 600, color: 'var(--ink)' },
+          todo: { mark: String(i + 1), bg: 'transparent', border: 'var(--line)', fg: 'var(--ink-3)', weight: 400, color: 'var(--ink-3)' },
+        }[w.state];
+        return Object.assign({}, w, m);
+      }),
+
+      oauthFacts: [
+        { label: 'Password seen by Signora', value: 'Never', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { label: 'Token bound to', value: 'svc_signora user', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { label: 'Token rotation', value: 'Every 90 days', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { label: 'Revocable from Salesforce', value: 'Any time', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+      ],
+
+      permissions: [
+        { label: 'Read accounts, opportunities, contacts', scope: 'Required', why: 'Without this there is no product — every screen is built on these objects.', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)', border: 'var(--line-soft)', bg: 'transparent' },
+        { label: 'Read activities and calendar events', scope: 'Required', why: 'Engagement scoring and the contact-gap signals depend on activity history.', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)', border: 'var(--line-soft)', bg: 'transparent' },
+        { label: 'Write 3 named fields', scope: 'Optional', why: 'Lets Signora push its risk band and recommended action back. Declining keeps everything else working; write affordances are hidden rather than disabled.', mark: '◐', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', border: 'var(--brand-line)', bg: 'var(--brand-tint)' },
+        { label: 'Read field history', scope: 'Recommended', why: 'Close-date slips and stage regressions are detected from history. Without it, momentum signals degrade to daily snapshots.', mark: '◐', tint: 'var(--warn-tint)', color: 'var(--warn)', border: 'var(--line-soft)', bg: 'transparent' },
+        { label: 'Offline access (refresh token)', scope: 'Required', why: 'Keeps sync running without a person present. Revoking it stops sync within 5 minutes.', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)', border: 'var(--line-soft)', bg: 'transparent' },
+      ],
+
+      healthChecks: [
+        { label: 'Token', meta: 'Expires 12 Sep 2026', value: 'Valid', dot: 'var(--pos)', color: 'var(--pos)' },
+        { label: 'Read permissions', meta: '6 objects', value: 'Complete', dot: 'var(--pos)', color: 'var(--pos)' },
+        { label: 'Write permissions', meta: '2 of 3 fields blocked', value: 'Failing', dot: 'var(--risk)', color: 'var(--risk)' },
+        { label: 'Schema drift', meta: '2 picklist values, 4 deleted fields', value: '6 changes', dot: 'var(--warn)', color: 'var(--warn)' },
+        { label: 'API headroom', meta: '77,100 calls remaining today', value: '62%', dot: 'var(--pos)', color: 'var(--pos)' },
+        { label: 'Sync latency', meta: 'Target under 6 minutes', value: '4m 12s', dot: 'var(--pos)', color: 'var(--pos)' },
+      ],
+
+      reconnectSteps: [
+        { n: '1', label: 'Re-authorise in Salesforce (same org)' },
+        { n: '2', label: 'Verify the 5 permission scopes' },
+        { n: '3', label: 'Dry-run one object before resuming' },
+        { n: '4', label: 'Drain the 41 held writes in order' },
+      ],
+
+      disconnectOptions: [
+        { label: 'Keep synced data in Signora', body: 'Records stay readable and historical analysis keeps working, marked as “no longer syncing” with the date.', on: true },
+        { label: 'Delete all synced data', body: 'Removes 36,396 records and everything derived from them, including scores and signals. Irreversible after 24 hours.', on: false },
+      ].map(d => ({
+        label: d.label, body: d.body,
+        border: d.on ? 'var(--brand)' : 'var(--line-soft)',
+        bg: d.on ? 'var(--brand-tint)' : 'transparent',
+        dotBorder: d.on ? 'var(--brand)' : 'var(--line)',
+        dotBg: d.on ? 'var(--brand)' : 'transparent',
+      })),
+
+      otherSystems: [
+        { abbr: 'SF', name: 'Salesforce', meta: 'CRM · system of record', state: 'Degraded', stateColor: 'var(--warn)', tint: 'var(--brand-tint)', color: 'var(--brand-ink)' },
+        { abbr: 'GW', name: 'Google Workspace', meta: 'Mail and calendar · 312 mailboxes', state: 'Healthy', stateColor: 'var(--pos)', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { abbr: 'GN', name: 'Gong', meta: 'Call recording · 96 calls this week', state: 'Healthy', stateColor: 'var(--pos)', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { abbr: 'SL', name: 'Slack', meta: 'Notifications only · no data read', state: 'Healthy', stateColor: 'var(--pos)', tint: 'var(--pos-tint)', color: 'var(--pos)' },
+        { abbr: 'HS', name: 'HubSpot', meta: 'Second CRM · read only', state: 'Not connected', stateColor: 'var(--ink-3)', tint: 'var(--sunken)', color: 'var(--ink-2)' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2shimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes v2spin { to { transform: rotate(360deg); } }
+  @keyframes v2pulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+  @keyframes v2bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(320%); } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="display:flex;align-items:flex-start;background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <nav style="position:sticky;top:0;width:264px;flex:none;height:100vh;overflow:auto;padding:26px 18px 60px;background:var(--bg-rail);border-right:1px solid var(--line-soft)">
+    <div style="display:flex;align-items:center;gap:11px;padding:0 6px 18px">
+      <div style="width:30px;height:30px;flex:none;border-radius:9px;background:var(--brand);box-shadow:var(--e1);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;letter-spacing:-0.02em">FS</div>
+      <div>
+        <div style="font-weight:700;font-size:14px;letter-spacing:-0.015em;line-height:1.2">Application shell</div>
+        <div style="font-size:11px;color:var(--ink-3)">Fortune Signora · v2 tokens</div>
+      </div>
+    </div>
+    <div style="padding:0 6px 16px">
+      <div style="display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};box-shadow:{{ lightShadow }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};box-shadow:{{ darkShadow }}" onClick="{{ setDark }}">Dark</span>
+      </div>
+    </div>
+    <sc-for list="{{ toc }}" as="g" hint-placeholder-count="4">
+      <div style="padding:0 6px;margin-bottom:20px">
+        <div style="font-size:10.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-4);padding:0 8px 7px">{{ g.label }}</div>
+        <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="6">
+          <a href="{{ i.href }}" style="display:flex;align-items:center;gap:9px;padding:6px 9px;border-radius:8px;font-size:13px;color:var(--ink-2);text-decoration:none;transition:background 120ms var(--ease), color 120ms var(--ease)" style-hover="background:var(--sunken);color:var(--ink)">
+            <span style="width:17px;flex:none;font-size:10.5px;font-variant-numeric:tabular-nums;color:var(--ink-4)">{{ i.n }}</span>
+            <span>{{ i.t }}</span>
+          </a>
+        </sc-for>
+      </div>
+    </sc-for>
+  </nav>
+
+  <main style="flex:1;min-width:0;max-width:1320px;padding:0 56px 140px">
+
+    <header style="padding:66px 0 40px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);font-size:11.5px;font-weight:600">Shell specification</span>
+        <span style="font-size:11.5px;color:var(--ink-3)">Every module mounts inside this frame. No component is redesigned here.</span>
+      </div>
+      <h1 style="font-size:48px;line-height:1.05;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:22ch">The Fortune Signora application shell</h1>
+      <p style="font-size:17.5px;line-height:1.62;max-width:66ch;margin:20px 0 0;color:var(--ink-2);text-wrap:pretty">The shell is the only part of the product every user sees on every visit, so it is specified once and never negotiated per module. It holds a fixed frame — banners, rail, top bar, filter strip, content, utility panel — and a fixed set of transient surfaces that open over it. Modules own the content region and nothing else.</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px">
+        <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="4">
+          <div style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+            <div style="font-size:24px;font-weight:700;letter-spacing:-0.028em;line-height:1;font-variant-numeric:tabular-nums">{{ s.v }}</div>
+            <div style="font-size:12px;color:var(--ink-3);margin-top:7px">{{ s.l }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </header>
+
+    <section id="s1" data-screen-label="01 Assembled shell" style="padding:48px 0 0;border-top:1px solid var(--line-soft)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">01</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">The assembled shell</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Reference viewport 1440 × 900. Vertical order is fixed and non-negotiable: environment banner, trial banner, top bar, breadcrumb and filter strip, then the content region. The rail spans the full height beneath the banners; the utility panel docks to the right of content, never over it.</p>
+
+      <div style="margin-top:24px;border-radius:16px;border:1px solid var(--line-soft);background:var(--surface);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:9px;height:30px;padding:0 16px;background:var(--warn-tint);color:var(--warn);font-size:11.5px;font-weight:600;border-bottom:1px solid var(--line-soft)">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8 2.5 14 13H2L8 2.5ZM8 6.5v3M8 11h.01"></path></svg>
+          <span>Sandbox — a copy of production as of 03 Aug 2026. Changes here do not sync.</span>
+          <span style="margin-left:auto;font-weight:600;text-decoration:underline;text-underline-offset:2px">Switch to production</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;height:34px;padding:0 16px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;border-bottom:1px solid var(--line-soft)">
+          <span style="font-weight:600">21 days left in your Enterprise trial.</span>
+          <span style="color:var(--ink-2)">Seats 34 of 50 · Conversation intelligence unlocked</span>
+          <span style="margin-left:auto;display:inline-flex;align-items:center;height:24px;padding:0 11px;border-radius:7px;background:var(--brand);color:#fff;font-size:11.5px;font-weight:600">Talk to sales</span>
+          <span style="color:var(--ink-4);font-size:13px">✕</span>
+        </div>
+
+        <div style="display:flex;align-items:stretch;min-height:520px">
+          <div style="width:232px;flex:none;background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 10px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+              <div style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700">NG</div>
+              <div style="min-width:0">
+                <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Northwind Global</div>
+                <div style="font-size:10.5px;color:var(--ink-3)">Enterprise · EMEA</div>
+              </div>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-left:auto;flex:none;color:var(--ink-4)"><path d="M5 6.5 8 9.5l3-3"></path></svg>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;margin-top:12px">
+              <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="10">
+                <div style="display:flex;align-items:center;gap:10px;padding:6px 9px;padding-left:{{ n.pad }};border-radius:8px;font-size:12.5px;font-weight:{{ n.weight }};background:{{ n.bg }};color:{{ n.color }}">
+                  <span style="display:flex;flex:none;color:{{ n.iconColor }}">{{ n.icon }}</span>
+                  <span style="white-space:nowrap">{{ n.label }}</span>
+                  <span style="margin-left:auto;font-size:10px;font-variant-numeric:tabular-nums;color:var(--ink-4)">{{ n.count }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:auto;display:flex;flex-direction:column;gap:2px;padding-top:12px">
+              <div style="height:1px;background:var(--line-soft);margin:0 9px 8px"></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:6px 9px;border-radius:8px;font-size:12.5px;color:var(--ai-ink);background:var(--ai-tint)">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12M12 4l-1.8 1.8M5.8 10.2 4 12"></path></svg>
+                <span>Ask Signora</span>
+                <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:9.5px;padding:1px 5px;border-radius:5px;background:var(--surface);border:1px solid var(--ai-line)">⌘K</span>
+              </div>
+              <sc-for list="{{ railUtility }}" as="u" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:10px;padding:6px 9px;border-radius:8px;font-size:12.5px;color:var(--ink-2)">
+                  <span style="display:flex;flex:none;color:var(--ink-4)">{{ u.icon }}</span><span>{{ u.label }}</span>
+                  <span style="margin-left:auto;font-size:10px;color:var(--ink-4)">{{ u.meta }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:14px;height:56px;padding:0 18px;border-bottom:1px solid var(--line-soft);background:var(--surface)">
+              <div style="display:flex;align-items:center;gap:7px;font-size:13px;min-width:0">
+                <span style="color:var(--ink-3)">Accounts</span>
+                <span style="color:var(--ink-4)">/</span>
+                <span style="color:var(--ink-3)">Enterprise</span>
+                <span style="color:var(--ink-4)">/</span>
+                <span style="display:inline-flex;align-items:center;gap:6px;font-weight:600">
+                  <span style="width:6px;height:6px;border-radius:999px;background:var(--risk)"></span>Vantage Logistics
+                </span>
+              </div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px;width:224px;height:32px;padding:0 11px;border-radius:8px;background:var(--sunken);color:var(--ink-3);font-size:12.5px">
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+                  <span>Search or ask…</span>
+                  <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:9.5px;padding:1px 5px;border-radius:5px;background:var(--surface);border:1px solid var(--line-soft)">⌘K</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:8px;background:var(--pos-tint);color:var(--pos);font-size:11.5px;font-weight:600">
+                  <span style="width:6px;height:6px;border-radius:999px;background:var(--pos)"></span>All systems normal
+                </div>
+                <div style="width:32px;height:32px;border-radius:8px;background:var(--sunken);display:grid;place-items:center;position:relative;color:var(--ink-2)">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2a4 4 0 0 0-4 4c0 3-1.2 4-1.2 4h10.4S12 9 12 6a4 4 0 0 0-4-4ZM6.5 12.5a1.6 1.6 0 0 0 3 0"></path></svg>
+                  <span style="position:absolute;top:-3px;right:-3px;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:var(--risk);color:#fff;font-size:9px;font-weight:700;display:grid;place-items:center;border:2px solid var(--surface)">3</span>
+                </div>
+                <div style="width:32px;height:32px;border-radius:8px;background:var(--sunken);display:grid;place-items:center;color:var(--ink-2)">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M6.4 6.2a1.7 1.7 0 1 1 2.4 1.5c-.5.3-.8.6-.8 1.1M8 11.6h.01"></path></svg>
+                </div>
+                <div style="width:32px;height:32px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:600">MR</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:8px;height:46px;padding:0 18px;border-bottom:1px solid var(--line-soft);background:var(--bg)">
+              <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Scope</span>
+              <sc-for list="{{ globalFilters }}" as="f" hint-placeholder-count="4">
+                <span style="display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:8px;background:{{ f.bg }};border:1px solid {{ f.border }};font-size:12px;color:{{ f.color }}">
+                  <span style="color:var(--ink-4)">{{ f.field }}</span><span style="font-weight:600">{{ f.value }}</span>
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6.5 8 9.5l3-3"></path></svg>
+                </span>
+              </sc-for>
+              <span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:8px;border:1px dashed var(--line);font-size:12px;color:var(--ink-3)">＋ Add filter</span>
+              <span style="margin-left:auto;display:flex;align-items:center;gap:12px;font-size:11.5px;color:var(--ink-3)">
+                <span>Applies to every module</span>
+                <span style="font-weight:600;color:var(--brand-ink)">Save as view</span>
+              </span>
+            </div>
+
+            <div style="flex:1;display:flex;min-height:0">
+              <div style="flex:1;min-width:0;padding:22px;background:var(--bg)">
+                <div style="display:flex;align-items:flex-start;gap:14px">
+                  <div>
+                    <div style="font-size:22px;font-weight:700;letter-spacing:-0.024em">Vantage Logistics</div>
+                    <div style="font-size:12.5px;color:var(--ink-3);margin-top:3px">Module content region — modules own everything inside this box and nothing outside it.</div>
+                  </div>
+                  <span style="margin-left:auto;display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">Log activity</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px">
+                  <sc-for list="{{ contentCards }}" as="c" hint-placeholder-count="3">
+                    <div style="padding:16px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+                      <div style="font-size:11.5px;color:var(--ink-3)">{{ c.label }}</div>
+                      <div style="font-size:22px;font-weight:700;letter-spacing:-0.026em;font-variant-numeric:tabular-nums;margin-top:8px">{{ c.value }}</div>
+                      <div style="font-size:11.5px;color:{{ c.color }};font-weight:600;margin-top:5px">{{ c.delta }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:12px;border-radius:12px;border:1px solid var(--line-soft);background:var(--surface);box-shadow:var(--e1);overflow:hidden">
+                  <sc-for list="{{ contentRows }}" as="r" hint-placeholder-count="4">
+                    <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 90px;gap:12px;align-items:center;padding:11px 15px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+                      <span style="font-weight:600">{{ r.a }}</span>
+                      <span style="color:var(--ink-2)">{{ r.b }}</span>
+                      <span style="text-align:right;font-variant-numeric:tabular-nums">{{ r.c }}</span>
+                      <span style="text-align:right;color:var(--ink-3);font-variant-numeric:tabular-nums">{{ r.d }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="width:300px;flex:none;border-left:1px solid var(--line-soft);background:var(--surface);padding:16px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Utility panel</span>
+                  <span style="margin-left:auto;color:var(--ink-4);font-size:12px">⇥</span>
+                </div>
+                <div style="display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken);margin-top:11px">
+                  <sc-for list="{{ utilityTabs }}" as="t" hint-placeholder-count="3">
+                    <span style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:600;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.shadow }}">{{ t.label }}</span>
+                  </sc-for>
+                </div>
+                <div style="margin-top:14px;padding:14px;border-radius:12px;background:var(--ai-tint);border:1px solid var(--ai-line)">
+                  <div style="display:flex;align-items:center;gap:7px">
+                    <span style="width:18px;height:18px;border-radius:6px;background:var(--ai);display:grid;place-items:center">
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+                    </span>
+                    <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink)">Account health</span>
+                  </div>
+                  <p style="font-size:12.5px;line-height:1.55;margin:8px 0 0;color:var(--ink)">Score fell 24 points in three weeks. Two slips after pricing review; procurement uncontacted.</p>
+                  <div style="font-size:12px;font-weight:600;color:var(--ai-ink);margin-top:9px">See evidence →</div>
+                </div>
+                <div style="margin-top:12px">
+                  <sc-for list="{{ utilityFacts }}" as="f" hint-placeholder-count="5">
+                    <div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+                      <span style="color:var(--ink-3)">{{ f.k }}</span>
+                      <span style="font-weight:600;font-variant-numeric:tabular-nums">{{ f.v }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px">
+        <sc-for list="{{ anatomy }}" as="a" hint-placeholder-count="6">
+          <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-size:13px;font-weight:600">{{ a.t }}</span>
+              <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ a.size }}</span>
+            </div>
+            <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">{{ a.b }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s2" data-screen-label="02 Left navigation" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">02</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Left navigation</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">232px expanded, 56px collapsed, full height, on the rail ground with a single hairline to content. Nine destinations, two levels, ordered along the revenue funnel. Items are 32px pills; the active item is a brand-tint fill with a 600-weight label and a coloured icon. Second-level items appear only under the open parent and indent to 30px. Counts are live but never a badge — a badge means "unread", a count means "how many".</p>
+      <div style="display:grid;grid-template-columns:248px 72px 1fr;gap:14px;margin-top:24px;align-items:start">
+        <div style="border-radius:14px;background:var(--bg-rail);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:12px 10px">
+          <div style="font-size:10.5px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4);padding:0 9px 9px">Expanded · states</div>
+          <sc-for list="{{ navStates }}" as="n" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:10px;padding:6px 9px;border-radius:8px;font-size:12.5px;font-weight:{{ n.weight }};background:{{ n.bg }};color:{{ n.color }};border:1px solid {{ n.ring }};box-shadow:{{ n.shadow }};margin-bottom:3px">
+              <span style="display:flex;flex:none;color:{{ n.iconColor }}">{{ n.icon }}</span>
+              <span>{{ n.label }}</span>
+              <span style="margin-left:auto;font-size:10px;color:var(--ink-4)">{{ n.meta }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:14px;background:var(--bg-rail);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">NG</div>
+          <div style="height:1px;width:28px;background:var(--line-soft);margin:6px 0"></div>
+          <sc-for list="{{ collapsedNav }}" as="c" hint-placeholder-count="7">
+            <div style="width:36px;height:32px;border-radius:8px;display:grid;place-items:center;background:{{ c.bg }};color:{{ c.color }}">{{ c.icon }}</div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <sc-for list="{{ navSpecs }}" as="s" hint-placeholder-count="4">
+            <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">{{ s.label }}</div>
+              <sc-for list="{{ s.lines }}" as="l" hint-placeholder-count="4">
+                <div style="display:flex;gap:9px;margin-top:9px;font-size:12.5px;line-height:1.5">
+                  <span style="color:var(--brand-ink);flex:none">·</span>
+                  <span style="color:var(--ink-2)">{{ l }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="s3" data-screen-label="03 Workspace switcher" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">03</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Workspace switcher</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Pinned to the top of the rail, because switching workspace is a change of everything below it. The trigger states the workspace, its plan and its region. The menu groups by organisation, shows role and environment per workspace, searches above six entries, and always ends with the two administrative escapes. Switching preserves the current route when the destination has it, and lands on Home when it does not — it never drops the user on an error.</p>
+      <div style="display:grid;grid-template-columns:340px 1fr;gap:14px;margin-top:24px;align-items:start">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid var(--line-soft)">
+            <div style="width:24px;height:24px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700">NG</div>
+            <div>
+              <div style="font-size:12.5px;font-weight:600">Northwind Global</div>
+              <div style="font-size:10.5px;color:var(--ink-3)">Enterprise · EMEA · Admin</div>
+            </div>
+            <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:9.5px;padding:1px 5px;border-radius:5px;background:var(--sunken);color:var(--ink-3)">⌘⇧W</span>
+          </div>
+          <div style="padding:9px 13px;font-size:12px;color:var(--ink-3);border-bottom:1px solid var(--line-soft)">Find a workspace…</div>
+          <sc-for list="{{ workspaceGroups }}" as="g" hint-placeholder-count="2">
+            <div style="padding:7px 6px">
+              <div style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4);padding:4px 8px">{{ g.label }}</div>
+              <sc-for list="{{ g.items }}" as="w" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;background:{{ w.bg }}">
+                  <span style="width:22px;height:22px;flex:none;border-radius:7px;background:{{ w.avatarBg }};color:{{ w.avatarFg }};display:grid;place-items:center;font-size:9.5px;font-weight:700">{{ w.initials }}</span>
+                  <div style="min-width:0">
+                    <div style="font-size:12.5px;font-weight:{{ w.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ w.name }}</div>
+                    <div style="font-size:10.5px;color:var(--ink-3)">{{ w.meta }}</div>
+                  </div>
+                  <span style="margin-left:auto;flex:none;font-size:10px;font-weight:600;padding:2px 6px;border-radius:5px;background:{{ w.tagBg }};color:{{ w.tagFg }}">{{ w.tag }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="border-top:1px solid var(--line-soft);padding:7px 6px">
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--ink-2)"><span style="color:var(--ink-4)">＋</span>Create a workspace</div>
+            <div style="display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;font-size:12.5px;color:var(--ink-2)"><span style="color:var(--ink-4)">⚙</span>Workspace settings</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <sc-for list="{{ switcherSpecs }}" as="s" hint-placeholder-count="4">
+            <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">{{ s.label }}</div>
+              <sc-for list="{{ s.lines }}" as="l" hint-placeholder-count="4">
+                <div style="display:flex;gap:9px;margin-top:9px;font-size:12.5px;line-height:1.5">
+                  <span style="color:var(--brand-ink);flex:none">·</span><span style="color:var(--ink-2)">{{ l }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="s4" data-screen-label="04 Top navigation" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">04</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Top navigation</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">56px, surface-coloured, sticky, one hairline at the bottom. Left: breadcrumb only. Right, in fixed order: search, system status, notifications, help, account. The order never changes between modules, because muscle memory in the top-right corner is the single most valuable thing a shell can offer. Module actions live in the page header, one level below.</p>
+      <div style="margin-top:24px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:14px;height:56px;padding:0 18px;border-bottom:1px solid var(--line-soft)">
+          <span style="font-size:13px;color:var(--ink-3)">Pipeline</span>
+          <span style="font-size:13px;color:var(--ink-4)">/</span>
+          <span style="font-size:13px;font-weight:600">EMEA enterprise</span>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px;width:224px;height:32px;padding:0 11px;border-radius:8px;background:var(--sunken);color:var(--ink-3);font-size:12.5px">Search or ask…<span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:9.5px;padding:1px 5px;border-radius:5px;background:var(--surface);border:1px solid var(--line-soft)">⌘K</span></div>
+            <div style="display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:8px;background:var(--pos-tint);color:var(--pos);font-size:11.5px;font-weight:600"><span style="width:6px;height:6px;border-radius:999px;background:var(--pos)"></span>Normal</div>
+            <div style="width:32px;height:32px;border-radius:8px;background:var(--sunken)"></div>
+            <div style="width:32px;height:32px;border-radius:8px;background:var(--sunken)"></div>
+            <div style="width:32px;height:32px;border-radius:999px;background:var(--brand)"></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0">
+          <sc-for list="{{ topBarSlots }}" as="t" hint-placeholder-count="5">
+            <div style="padding:16px 18px;border-right:1px solid var(--line-soft)">
+              <div style="font-size:12.5px;font-weight:600">{{ t.t }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);margin-top:2px">{{ t.size }}</div>
+              <p style="font-size:12px;line-height:1.5;color:var(--ink-2);margin:8px 0 0">{{ t.b }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="s5" data-screen-label="05 Breadcrumbs" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">05</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Breadcrumbs</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Mandatory below the first level, because most sessions start from a deep link in Slack or email. They mirror the data hierarchy, not the click path. Past four levels the middle collapses into an ellipsis menu; the last crumb is the current record, is not a link, and carries its status dot. Crumbs truncate from the middle out — the current record is the last thing to lose characters.</p>
+      <div style="margin-top:24px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <sc-for list="{{ crumbCases }}" as="c" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:190px 1fr;gap:18px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+            <div>
+              <div style="font-size:12.5px;font-weight:600">{{ c.label }}</div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:2px">{{ c.note }}</div>
+            </div>
+            <div style="font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">{{ c.trail }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s6" data-screen-label="06 Global filters" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">06</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Global filters</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">A 46px strip directly under the top bar holding the four dimensions every module shares: period, region, segment, owner. Module-local filters live in the module's own toolbar and are visually distinct — global filters are tinted, local filters are outlined. Global scope survives navigation, serialises to the URL, and can be saved as a named view. Nothing here is ever hidden behind a collapse.</p>
+      <div style="margin-top:24px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:8px;height:46px;padding:0 18px;border-bottom:1px solid var(--line-soft);background:var(--bg)">
+          <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Scope</span>
+          <sc-for list="{{ globalFilters }}" as="f" hint-placeholder-count="4">
+            <span style="display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:8px;background:{{ f.bg }};border:1px solid {{ f.border }};font-size:12px;color:{{ f.color }}">
+              <span style="color:var(--ink-4)">{{ f.field }}</span><span style="font-weight:600">{{ f.value }}</span>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6.5 8 9.5l3-3"></path></svg>
+            </span>
+          </sc-for>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:8px;border:1px dashed var(--line);font-size:12px;color:var(--ink-3)">＋ Add filter</span>
+          <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">312 accounts in scope</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;height:46px;padding:0 18px;border-bottom:1px solid var(--line-soft)">
+          <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-4)">Module</span>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:12px;color:var(--ink-2)">Stage <span style="font-weight:600;color:var(--ink)">Negotiation</span> <span style="color:var(--ink-4)">✕</span></span>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:12px;color:var(--ink-2)">Score <span style="font-weight:600;color:var(--ink)">below 50</span> <span style="color:var(--ink-4)">✕</span></span>
+          <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Outlined chips are local to this module and clear on navigation</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr)">
+          <sc-for list="{{ filterSpecs }}" as="s" hint-placeholder-count="4">
+            <div style="padding:16px 18px;border-right:1px solid var(--line-soft)">
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">{{ s.label }}</div>
+              <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">{{ s.b }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="s7" data-screen-label="07 Banners and status" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">07</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Banners &amp; system status</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">At most two banners are ever stacked: one environment, one commercial. Environment banners are undismissable while the state is risky; commercial banners are dismissible for the session and suppressed entirely in sandbox. System status is a persistent pill in the top bar rather than a banner — degradation is a fact about the product, not an interruption, and it expands into detail on click.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:24px">
+        <sc-for list="{{ banners }}" as="b" hint-placeholder-count="5">
+          <div style="display:flex;align-items:center;gap:10px;padding:0 16px;height:{{ b.h }};border-radius:10px;background:{{ b.bg }};color:{{ b.fg }};border:1px solid {{ b.border }};font-size:12px">
+            <span style="width:15px;height:15px;flex:none;display:grid;place-items:center;font-weight:700;font-size:11px">{{ b.icon }}</span>
+            <span style="font-weight:600">{{ b.title }}</span>
+            <span style="color:{{ b.bodyColor }}">{{ b.body }}</span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:12px">
+              <span style="font-weight:600;text-decoration:underline;text-underline-offset:2px">{{ b.action }}</span>
+              <span style="color:var(--ink-4);font-size:13px">{{ b.dismiss }}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:360px 1fr;gap:14px;margin-top:14px;align-items:start">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+            <span style="width:8px;height:8px;border-radius:999px;background:var(--warn)"></span>
+            <span style="font-size:13px;font-weight:600">Partial degradation</span>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Updated 2m ago</span>
+          </div>
+          <sc-for list="{{ statusRows }}" as="s" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+              <span style="width:7px;height:7px;flex:none;border-radius:999px;background:{{ s.dot }}"></span>
+              <span>{{ s.name }}</span>
+              <span style="margin-left:auto;font-size:11.5px;color:{{ s.color }};font-weight:600">{{ s.state }}</span>
+            </div>
+          </sc-for>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 15px;font-size:11.5px;color:var(--ink-3)">
+            <span>Scores are recalculating; figures may lag by up to 20 minutes.</span>
+            <span style="margin-left:auto;font-weight:600;color:var(--brand-ink)">Status page</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <sc-for list="{{ bannerSpecs }}" as="s" hint-placeholder-count="4">
+            <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">{{ s.label }}</div>
+              <sc-for list="{{ s.lines }}" as="l" hint-placeholder-count="3">
+                <div style="display:flex;gap:9px;margin-top:9px;font-size:12.5px;line-height:1.5">
+                  <span style="color:var(--brand-ink);flex:none">·</span><span style="color:var(--ink-2)">{{ l }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+    <section id="s8" data-screen-label="08 Global search" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">08</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Global search</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">There is exactly one global search and it is the palette. The top-bar field is a doorway, not a second search: clicking it or pressing ⌘K opens the same surface with the same behaviour. Results are typed, grouped and ranked by recency-weighted relevance, with the record's key facts on the row so the user rarely needs to open the wrong one. A natural-language question routes to the assistant instead of returning rows.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px;align-items:start">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--brand)" stroke-width="1.7"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+            <span style="font-size:14px">vantage</span>
+            <span style="width:1.5px;height:16px;background:var(--brand)"></span>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">28 results</span>
+          </div>
+          <sc-for list="{{ searchGroups }}" as="g" hint-placeholder-count="3">
+            <div style="padding:7px 6px;border-bottom:1px solid var(--line-soft)">
+              <div style="display:flex;align-items:center;gap:8px;padding:4px 9px">
+                <span style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4)">{{ g.label }}</span>
+                <span style="margin-left:auto;font-size:10.5px;color:var(--ink-4)">{{ g.more }}</span>
+              </div>
+              <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:10px;padding:7px 9px;border-radius:8px;background:{{ i.bg }}">
+                  <span style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center;font-size:9.5px;font-weight:600">{{ i.badge }}</span>
+                  <span style="font-size:13px;font-weight:{{ i.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.name }}</span>
+                  <span style="margin-left:auto;flex:none;font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums">{{ i.meta }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="display:flex;gap:14px;padding:9px 16px;font-size:10.5px;color:var(--ink-4)">
+            <span>↑↓ move</span><span>↵ open</span><span>⌘↵ open in panel</span><span>⇥ next group</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <sc-for list="{{ searchSpecs }}" as="s" hint-placeholder-count="4">
+            <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">{{ s.label }}</div>
+              <sc-for list="{{ s.lines }}" as="l" hint-placeholder-count="4">
+                <div style="display:flex;gap:9px;margin-top:9px;font-size:12.5px;line-height:1.5">
+                  <span style="color:var(--brand-ink);flex:none">·</span><span style="color:var(--ink-2)">{{ l }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="s9" data-screen-label="09 Command palette" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">09</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Global command palette</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">640px, anchored at 14vh, modal elevation, available from every surface including inside dialogs. Group order is fixed — Ask Signora, Recents, Records, Reports, Actions, Navigate, Settings — with five per group and a keyboard-reachable “show all”. Anything reachable by clicking is reachable here. Destructive commands always route through a confirmation, never fire from the palette.</p>
+      <div style="margin-top:24px;border-radius:16px;background:var(--sunken);border:1px solid var(--line-soft);padding:44px 32px;display:grid;place-items:start center">
+        <div style="width:min(640px,100%);border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:11px;padding:15px 17px;border-bottom:1px solid var(--line-soft)">
+            <span style="width:22px;height:22px;border-radius:7px;background:var(--ai);display:grid;place-items:center">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12"></path></svg>
+            </span>
+            <span style="font-size:15px">why is EMEA enterprise slipping</span>
+            <span style="width:1.5px;height:18px;background:var(--brand)"></span>
+            <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;padding:2px 6px;border-radius:5px;background:var(--sunken);color:var(--ink-3)">esc</span>
+          </div>
+          <sc-for list="{{ paletteGroups }}" as="g" hint-placeholder-count="4">
+            <div style="padding:7px 7px;border-bottom:1px solid var(--line-soft)">
+              <div style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4);padding:5px 9px">{{ g.label }}</div>
+              <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:11px;padding:8px 9px;border-radius:8px;background:{{ i.bg }};font-size:13.5px">
+                  <span style="width:22px;height:22px;flex:none;border-radius:7px;background:{{ i.glyphBg }};color:{{ i.glyphFg }};display:grid;place-items:center;font-size:10.5px;font-weight:600">{{ i.glyph }}</span>
+                  <span style="font-weight:{{ i.weight }}">{{ i.label }}</span>
+                  <span style="font-size:11.5px;color:var(--ink-3)">{{ i.meta }}</span>
+                  <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ i.key }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="display:flex;gap:16px;padding:10px 18px;font-size:10.5px;color:var(--ink-4)">
+            <span>↑↓ navigate</span><span>↵ run</span><span>⌘↵ open in panel</span><span>⌘⇧K last command</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s10" data-screen-label="10 Notifications" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">10</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Notifications</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">A 400px popover, not a page, with three tabs: Needs you, Mentions, All. Everything is grouped by day, unread carries a 6px brand dot rather than a coloured row, and each item states who or what acted, on which record, and what is expected of the reader. Agent and AI notifications are marked with the intelligence hue so a generated nudge never reads as a colleague's request.</p>
+      <div style="display:grid;grid-template-columns:420px 1fr;gap:14px;margin-top:24px;align-items:start">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+            <span style="font-size:13.5px;font-weight:600">Notifications</span>
+            <span style="font-size:11px;font-weight:600;padding:1px 6px;border-radius:999px;background:var(--risk);color:#fff">3</span>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--brand-ink);font-weight:600">Mark all read</span>
+          </div>
+          <div style="display:flex;gap:3px;padding:8px 10px;border-bottom:1px solid var(--line-soft)">
+            <sc-for list="{{ notifTabs }}" as="t" hint-placeholder-count="3">
+              <span style="padding:5px 11px;border-radius:7px;font-size:12px;font-weight:600;background:{{ t.bg }};color:{{ t.color }}">{{ t.label }}</span>
+            </sc-for>
+          </div>
+          <div style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4);padding:10px 15px 4px">Today</div>
+          <sc-for list="{{ notifications }}" as="n" hint-placeholder-count="4">
+            <div style="display:flex;gap:11px;padding:11px 15px;border-bottom:1px solid var(--line-soft);background:{{ n.bg }}">
+              <span style="width:24px;height:24px;flex:none;border-radius:{{ n.avatarRadius }};background:{{ n.avatarBg }};color:{{ n.avatarFg }};display:grid;place-items:center;font-size:10px;font-weight:600">{{ n.avatar }}</span>
+              <div style="min-width:0">
+                <div style="font-size:12.5px;line-height:1.5"><span style="font-weight:600">{{ n.actor }}</span> <span style="color:var(--ink-2)">{{ n.action }}</span></div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">{{ n.meta }}</div>
+                <div style="margin-top:8px">{{ n.actionRow }}</div>
+              </div>
+              <span style="margin-left:auto;flex:none;display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ n.time }}</span>
+                <span style="width:6px;height:6px;border-radius:999px;background:{{ n.unread }}"></span>
+              </span>
+            </div>
+          </sc-for>
+          <div style="padding:11px 15px;font-size:12px;color:var(--brand-ink);font-weight:600">Notification settings</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <sc-for list="{{ notifSpecs }}" as="s" hint-placeholder-count="4">
+            <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">{{ s.label }}</div>
+              <sc-for list="{{ s.lines }}" as="l" hint-placeholder-count="4">
+                <div style="display:flex;gap:9px;margin-top:9px;font-size:12.5px;line-height:1.5">
+                  <span style="color:var(--brand-ink);flex:none">·</span><span style="color:var(--ink-2)">{{ l }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="s11" data-screen-label="11 User menu" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">11</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">User menu</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">280px, right-aligned to the avatar. It states who you are, in which workspace, with which role — the three facts that prevent expensive mistakes. Theme is a segmented control rather than a toggle so the OS option is visible. Sign out is separated by a hairline and is the only red text in the menu.</p>
+      <div style="display:grid;grid-template-columns:300px 1fr;gap:14px;margin-top:24px;align-items:start">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden">
+          <div style="display:flex;gap:11px;padding:15px;border-bottom:1px solid var(--line-soft)">
+            <span style="width:34px;height:34px;flex:none;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:600">MR</span>
+            <div style="min-width:0">
+              <div style="font-size:13.5px;font-weight:600">Marta Reinhardt</div>
+              <div style="font-size:11.5px;color:var(--ink-3)">marta@northwind.com</div>
+              <div style="display:flex;gap:6px;margin-top:6px">
+                <span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--brand-tint);color:var(--brand-ink)">Admin</span>
+                <span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--sunken);color:var(--ink-2)">Northwind Global</span>
+              </div>
+            </div>
+          </div>
+          <div style="padding:12px 15px;border-bottom:1px solid var(--line-soft)">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">Appearance</div>
+            <div style="display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken);margin-top:8px">
+              <sc-for list="{{ themeOptions }}" as="t" hint-placeholder-count="3">
+                <span style="flex:1;text-align:center;padding:5px 0;border-radius:6px;font-size:11.5px;font-weight:600;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.shadow }}">{{ t.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="padding:7px 6px">
+            <sc-for list="{{ userMenuItems }}" as="m" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:10px;padding:7px 9px;border-radius:8px;font-size:12.5px;color:var(--ink-2)">
+                <span>{{ m.label }}</span>
+                <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ m.key }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="border-top:1px solid var(--line-soft);padding:7px 6px">
+            <div style="display:flex;align-items:center;gap:10px;padding:7px 9px;border-radius:8px;font-size:12.5px;color:var(--risk);font-weight:600">Sign out</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <sc-for list="{{ userSpecs }}" as="s" hint-placeholder-count="4">
+            <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+              <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">{{ s.label }}</div>
+              <sc-for list="{{ s.lines }}" as="l" hint-placeholder-count="3">
+                <div style="display:flex;gap:9px;margin-top:9px;font-size:12.5px;line-height:1.5">
+                  <span style="color:var(--brand-ink);flex:none">·</span><span style="color:var(--ink-2)">{{ l }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="s12" data-screen-label="12 AI assistant entry" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--ai-ink);font-variant-numeric:tabular-nums">12</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">AI assistant entry points</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Four doors, one room. Wherever it opens from, the assistant inherits the current scope, states that scope above the input, and opens as a non-modal 420px drawer that pushes content. There is no floating bubble: a persistent circle in the corner is a consumer pattern and it covers data.</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px">
+        <sc-for list="{{ aiEntries }}" as="a" hint-placeholder-count="4">
+          <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--ai-line)">
+            <div style="display:flex;align-items:center;gap:9px">
+              <span style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--ai-tint);color:var(--ai-ink);display:grid;place-items:center;font-size:10px;font-weight:700">{{ a.n }}</span>
+              <span style="font-size:13px;font-weight:600">{{ a.t }}</span>
+            </div>
+            <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:9px 0 0">{{ a.b }}</p>
+            <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ai-ink);margin-top:9px">{{ a.key }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:14px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;display:grid;grid-template-columns:1fr 420px">
+        <div style="padding:20px;background:var(--bg)">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">Content region — pushed, not covered</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+            <sc-for list="{{ pushedRows }}" as="r" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:10px;background:var(--surface);border:1px solid var(--line-soft);font-size:12.5px">
+                <span style="font-weight:600">{{ r.a }}</span>
+                <span style="margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink-2)">{{ r.b }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="border-left:1px solid var(--line-soft);display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line-soft)">
+            <span style="width:22px;height:22px;border-radius:7px;background:var(--ai);display:grid;place-items:center">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12"></path></svg>
+            </span>
+            <div>
+              <div style="font-size:13.5px;font-weight:600">Ask Signora</div>
+              <div style="font-size:11px;color:var(--ink-3)">Scope: EMEA · Enterprise · Q3 FY26</div>
+            </div>
+            <span style="margin-left:auto;display:flex;gap:10px;color:var(--ink-4);font-size:12px"><span>⇥</span><span>✕</span></span>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+            <div style="padding:12px 14px;border-radius:12px 12px 12px 4px;background:var(--ai-tint);border:1px solid var(--ai-line);font-size:13px;line-height:1.6">
+              I inherit the filters on screen. Ask about these 312 accounts, or select rows first to narrow me further.
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <sc-for list="{{ aiPrompts }}" as="p" hint-placeholder-count="3">
+                <span style="padding:9px 12px;border-radius:10px;border:1px solid var(--line-soft);font-size:12.5px;color:var(--ink-2)">{{ p }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:13px 16px;border-top:1px solid var(--line-soft);font-size:12.5px;color:var(--ink-3)">
+            Ask about this view…
+            <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;padding:2px 6px;border-radius:5px;background:var(--sunken)">⌘↵</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="s13" data-screen-label="13 Utility panel" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">13</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Right utility panel</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">A docked 300–360px column for context that accompanies the content: insights, activity, notes, and the record preview a table row produces. It is non-modal, it pushes rather than overlays, and its open state is remembered per module per user. It never holds a task — anything with a Save belongs in the context drawer.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px">
+        <sc-for list="{{ panelSpecs }}" as="s" hint-placeholder-count="6">
+          <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+            <div style="font-size:13px;font-weight:600">{{ s.t }}</div>
+            <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">{{ s.b }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s14" data-screen-label="14 Context drawer" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">14</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Context drawer</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Modal, right-hand, 480 / 640 / 800px, for a task with a definite end: edit a record, build a filter, review agent output, complete a workflow step. It has a header with the object name, a scrolling body, and a pinned footer holding the primary action. Escape closes only when nothing would be lost; otherwise it asks. Drawers never stack — a second task replaces the first, with a breadcrumb back to it.</p>
+      <div style="margin-top:24px;border-radius:16px;background:var(--sunken);border:1px solid var(--line-soft);padding:32px;display:flex;justify-content:flex-end">
+        <div style="width:min(560px,100%);border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);overflow:hidden;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line-soft)">
+            <div>
+              <div style="font-size:11.5px;color:var(--ink-3)">Editing · Vantage Logistics</div>
+              <div style="font-size:16px;font-weight:600;letter-spacing:-0.016em;margin-top:2px">Renewal — Q4 FY26</div>
+            </div>
+            <span style="margin-left:auto;display:flex;gap:12px;color:var(--ink-4);font-size:13px"><span>⤢</span><span>✕</span></span>
+          </div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+            <div>
+              <div style="font-size:12.5px;font-weight:600;margin-bottom:6px">Close date</div>
+              <div style="display:flex;align-items:center;height:34px;padding:0 11px;border-radius:8px;border:1px solid var(--brand);box-shadow:0 0 0 3px var(--brand-tint);font-size:13.5px">12 Oct 2026</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:6px">Third change. A reason will be recorded on the timeline.</div>
+            </div>
+            <div>
+              <div style="font-size:12.5px;font-weight:600;margin-bottom:6px">Reason</div>
+              <div style="padding:11px;border-radius:8px;border:1px solid var(--line);font-size:13px;color:var(--ink-3);min-height:64px">Procurement review extended…</div>
+            </div>
+            <div style="padding:13px 15px;border-radius:12px;background:var(--ai-tint);border:1px solid var(--ai-line);font-size:12.5px;line-height:1.55">
+              <span style="font-weight:600;color:var(--ai-ink)">Signora: </span>
+              <span>deals that slip a third time close 41% of the time. Engaging procurement now is the highest-value next step.</span>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;align-items:center;gap:9px;padding:14px 18px;border-top:1px solid var(--line-soft);background:var(--surface)">
+            <span style="display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:8px;background:var(--brand);color:#fff;font-size:13px;font-weight:600;box-shadow:var(--e1)">Save changes</span>
+            <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:13px;font-weight:600">Cancel</span>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3)">Autosaved as draft 12s ago</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px">
+        <sc-for list="{{ drawerSpecs }}" as="s" hint-placeholder-count="4">
+          <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4)">{{ s.label }}</div>
+            <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:8px 0 0">{{ s.b }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s15" data-screen-label="15 Keyboard shortcuts" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">15</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Keyboard shortcuts</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Two families: chords with ⌘ for surfaces, and Vim-style sequences with G for navigation. <span style="font-family:ui-monospace,monospace;font-size:13px">?</span> opens the reference from anywhere. Every shortcut is listed beside its command in the palette, which is how users discover them — a cheat sheet nobody opens is not a feature.</p>
+      <div style="margin-top:24px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr)">
+          <sc-for list="{{ shortcutGroups }}" as="g" hint-placeholder-count="3">
+            <div style="border-right:1px solid var(--line-soft)">
+              <div style="padding:13px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">{{ g.label }}</div>
+              <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+                  <span style="color:var(--ink-2)">{{ i.what }}</span>
+                  <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:11px;padding:2px 7px;border-radius:6px;background:var(--sunken);border:1px solid var(--line-soft);color:var(--ink)">{{ i.keys }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+    <section id="s16" data-screen-label="16 Global loading" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">16</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Global loading</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Three tiers, chosen by what is actually unknown. Cold boot paints the shell chrome immediately and skeletons only the content region — the frame is never blank, because the frame is the same on every route. Route changes keep the shell and skeleton the content. In-place refreshes show a 2px bar under the top bar and dim stale figures to 60%; they never cover data that is already readable.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px">
+        <sc-for list="{{ loadingCases }}" as="l" hint-placeholder-count="3">
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="padding:13px 16px;border-bottom:1px solid var(--line-soft)">
+              <div style="font-size:13px;font-weight:600">{{ l.t }}</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">{{ l.when }}</div>
+            </div>
+            <div style="height:2px;background:var(--sunken);overflow:hidden;position:relative">
+              <div style="position:absolute;inset:0;width:30%;background:var(--brand);animation:v2bar 1.4s var(--ease) infinite;opacity:{{ l.barOpacity }}"></div>
+            </div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ l.blocks }}" as="b" hint-placeholder-count="4">
+                <div style="height:{{ b.h }};width:{{ b.w }};border-radius:{{ b.r }};background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:v2shimmer 1.4s ease-in-out infinite;opacity:{{ b.o }}"></div>
+              </sc-for>
+            </div>
+            <div style="padding:0 16px 16px;font-size:12px;line-height:1.55;color:var(--ink-2)">{{ l.note }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s17" data-screen-label="17 Error pages" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">17</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Error pages</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">Errors render inside the shell whenever the shell itself is healthy — the rail, top bar and workspace stay, so the user is never stranded. Only a failed boot or a lost session takes the full page. Every error states what happened, what it means for their data, one route forward, and a copyable correlation ID. No apologies, no cartoons, no dead ends.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px">
+        <sc-for list="{{ errorCases }}" as="e" hint-placeholder-count="6">
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);padding:22px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="width:28px;height:28px;flex:none;border-radius:9px;background:{{ e.tint }};color:{{ e.color }};display:grid;place-items:center;font-size:12px;font-weight:700">{{ e.icon }}</span>
+              <span style="font-family:ui-monospace,monospace;font-size:11.5px;color:var(--ink-3)">{{ e.code }}</span>
+              <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--sunken);color:var(--ink-2)">{{ e.scope }}</span>
+            </div>
+            <div style="font-size:17px;font-weight:600;letter-spacing:-0.018em;margin:14px 0 7px">{{ e.title }}</div>
+            <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:0">{{ e.body }}</p>
+            <div style="display:flex;align-items:center;gap:9px;margin-top:16px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">{{ e.primary }}</span>
+              <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">{{ e.secondary }}</span>
+              <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-4)">{{ e.id }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s18" data-screen-label="18 Empty workspace" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">18</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Empty workspace</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">A brand-new workspace shows the full shell with real navigation, not a stripped-down wizard: destinations that need data are visible but marked, so the user learns the product's shape while they set it up. The content region holds a three-step activation checklist with live counts, and the assistant offers to answer questions about the setup itself.</p>
+      <div style="margin-top:24px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:20px 22px;border-bottom:1px solid var(--line-soft)">
+          <div>
+            <div style="font-size:20px;font-weight:700;letter-spacing:-0.022em">Welcome to Northwind Global</div>
+            <div style="font-size:13px;color:var(--ink-2);margin-top:4px">Signora needs three connections before it can score anything. This takes about twelve minutes.</div>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+            <div style="width:120px;height:6px;border-radius:999px;background:var(--sunken);overflow:hidden"><div style="width:33%;height:100%;border-radius:999px;background:var(--brand)"></div></div>
+            <span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">1 of 3</span>
+          </div>
+        </div>
+        <sc-for list="{{ onboarding }}" as="o" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:34px 1fr auto;gap:16px;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line-soft);background:{{ o.bg }}">
+            <span style="width:26px;height:26px;border-radius:999px;background:{{ o.markBg }};border:1.5px solid {{ o.markBorder }};color:{{ o.markFg }};display:grid;place-items:center;font-size:11px;font-weight:700">{{ o.mark }}</span>
+            <div>
+              <div style="font-size:14px;font-weight:600">{{ o.t }}</div>
+              <div style="font-size:12.5px;color:var(--ink-2);margin-top:3px">{{ o.b }}</div>
+            </div>
+            <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:{{ o.btnBg }};color:{{ o.btnFg }};border:1px solid {{ o.btnBorder }};font-size:12.5px;font-weight:600">{{ o.cta }}</span>
+          </div>
+        </sc-for>
+        <div style="display:flex;align-items:flex-start;gap:11px;padding:18px 22px;background:var(--ai-tint)">
+          <span style="width:20px;height:20px;flex:none;border-radius:6px;background:var(--ai);display:grid;place-items:center;margin-top:1px">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+          </span>
+          <div style="font-size:13px;line-height:1.55">
+            <span style="font-weight:600">Signora can explain the setup as you go. </span>
+            <span style="color:var(--ink-2)">Ask what a coverage ratio is, or which CRM fields it needs, before you connect anything.</span>
+          </div>
+          <span style="margin-left:auto;flex:none;font-size:12.5px;font-weight:600;color:var(--ai-ink)">Ask a question →</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="s19" data-screen-label="19 Multi-workspace" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">19</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Multi-workspace behaviour</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">A workspace is the hard boundary of data, permission and configuration. The shell never mixes two workspaces in one view; it makes moving between them cheap and unmistakable instead. Every workspace-scoped surface — search, notifications, filters, the assistant — is labelled with the workspace it belongs to whenever more than one is available to the user.</p>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:24px">
+        <sc-for list="{{ multiWorkspace }}" as="m" hint-placeholder-count="6">
+          <div style="padding:20px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft)">
+            <div style="display:flex;align-items:center;gap:9px">
+              <span style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--brand-tint);color:var(--brand-ink);display:grid;place-items:center;font-size:10px;font-weight:700">{{ m.n }}</span>
+              <span style="font-size:13.5px;font-weight:600">{{ m.t }}</span>
+            </div>
+            <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">{{ m.b }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s20" data-screen-label="20 Responsive" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">20</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Responsive behaviour</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">The shell yields in a fixed order as width disappears: utility panel first, then the rail's labels, then the rail itself, then the filter strip, and only then does content reflow. Data is the last thing to change and is never removed — a column becomes a card line, never a hidden field. Below 640px the shell is a review tool: read, approve, comment, ask. It is not where a territory plan gets built.</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px">
+        <sc-for list="{{ breakpoints }}" as="b" hint-placeholder-count="4">
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="padding:13px 16px;border-bottom:1px solid var(--line-soft)">
+              <div style="font-size:13px;font-weight:600">{{ b.name }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink);margin-top:2px">{{ b.range }}</div>
+            </div>
+            <div style="padding:14px 16px">
+              <div style="display:flex;gap:4px;height:96px">
+                <div style="width:{{ b.railW }};border-radius:6px;background:var(--brand-tint);border:1px solid var(--brand-line)"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0">
+                  <div style="height:12px;border-radius:5px;background:var(--sunken)"></div>
+                  <div style="height:9px;border-radius:5px;background:var(--sunken);opacity:{{ b.filterOpacity }}"></div>
+                  <div style="flex:1;display:flex;gap:4px;min-height:0">
+                    <div style="flex:1;border-radius:6px;background:var(--bg);border:1px solid var(--line-soft)"></div>
+                    <div style="width:{{ b.panelW }};border-radius:6px;background:var(--sunken);display:{{ b.panelDisplay }}"></div>
+                  </div>
+                </div>
+              </div>
+              <sc-for list="{{ b.lines }}" as="l" hint-placeholder-count="4">
+                <div style="display:flex;gap:8px;margin-top:9px;font-size:12px;line-height:1.5">
+                  <span style="color:var(--brand-ink);flex:none">·</span><span style="color:var(--ink-2)">{{ l }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="s21" data-screen-label="21 Accessibility" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">21</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Accessibility of the shell</h2>
+      </div>
+      <p style="font-size:16px;line-height:1.65;max-width:74ch;margin:14px 0 0;color:var(--ink-2)">The shell is the first thing a screen reader meets and the thing keyboard users pass through hundreds of times a day, so its landmark structure and focus behaviour are specified as tightly as its pixels.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:13px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Landmarks &amp; order</div>
+          <sc-for list="{{ landmarks }}" as="l" hint-placeholder-count="7">
+            <div style="display:grid;grid-template-columns:126px 1fr;gap:14px;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+              <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ l.el }}</span>
+              <span style="color:var(--ink-2);line-height:1.5">{{ l.b }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:13px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Behaviour</div>
+          <sc-for list="{{ a11yRules }}" as="a" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:52px 1fr;gap:14px;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+              <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ a.sc }}</span>
+              <span style="color:var(--ink-2);line-height:1.5">{{ a.b }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="s22" data-screen-label="22 Rationale" style="padding:56px 0 0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11.5px;font-weight:600;color:var(--brand-ink);font-variant-numeric:tabular-nums">22</span>
+        <h2 style="font-size:28px;font-weight:700;letter-spacing:-0.028em;margin:0">Rationale &amp; shell rules</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px">
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft);font-size:14px;font-weight:600">Why the shell is shaped this way</div>
+          <sc-for list="{{ rationale }}" as="r" hint-placeholder-count="7">
+            <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+              <div style="font-size:13px;font-weight:600">{{ r.t }}</div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:5px 0 0">{{ r.b }}</p>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft);font-size:14px;font-weight:600">Rules every module inherits</div>
+          <sc-for list="{{ shellRules }}" as="r" hint-placeholder-count="12">
+            <div style="display:grid;grid-template-columns:26px 1fr;gap:10px;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+              <span style="font-size:11px;font-weight:700;color:var(--brand-ink);font-variant-numeric:tabular-nums">{{ r.n }}</span>
+              <span style="color:var(--ink-2);line-height:1.55">{{ r.t }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:24px;border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e1);display:flex;gap:18px;align-items:flex-start">
+        <span style="width:32px;height:32px;flex:none;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700">FS</span>
+        <div>
+          <div style="font-size:17px;font-weight:600;letter-spacing:-0.018em">The shell is a contract, not a template</div>
+          <p style="font-size:13.5px;line-height:1.65;color:var(--ink-2);margin:8px 0 0;max-width:88ch">A module receives one region and four guarantees: the frame will not move, the global scope is already applied, the transient surfaces already exist, and the keyboard model is already learned. In exchange it may not add chrome, invent a second search, place actions in the top bar, or open its own floating panels. Every capability a module thinks it needs from the shell is either already here or becomes an amendment to this document.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = {
+      '--font-body': '"Archivo", system-ui, sans-serif',
+      '--ease': 'cubic-bezier(.32,.72,0,1)',
+      '--r-xs': '4px', '--r-sm': '6px', '--r-md': '8px', '--r-lg': '12px', '--r-xl': '16px',
+    };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-strong': '#0f3d5c', '--brand-ink': '#134e76',
+      '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-strong': '#7cc0e5', '--brand-ink': '#9ccfe8',
+      '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  navIcon(kind) {
+    const p = {
+      home: 'M2.5 7 8 2.5 13.5 7v6.5h-11V7Z', chart: 'M3 13V7M8 13V3M13 13V9',
+      flow: 'M2.5 4h11M4.5 8h7M6.5 12h3', grid: 'M2.5 2.5h5v5h-5zM8.5 2.5h5v5h-5zM2.5 8.5h5v5h-5zM8.5 8.5h5v5h-5z',
+      sub: 'M4 8h8', case: 'M2.5 5.5h11v8h-11zM6 5.5V3h4v2.5', chat: 'M2.5 3h11v7H7l-4.5 3.5z',
+      pulse: 'M1.5 8h3l2-4.5L9 12l2-4h3.5', file: 'M4 2h5l3 3v9H4zM9 2v3h3',
+      gear: 'M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.6 3.6l1.4 1.4M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4',
+      book: 'M3 3h4.5v10H3zM8.5 3H13v10H8.5z', key: 'M10 6a2.5 2.5 0 1 0-2.4 3.2L3 14h2v-1.5h1.5V11h1.2A2.5 2.5 0 0 0 10 6Z',
+    }[kind] || 'M2.5 2.5h11v11h-11z';
+    return R('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }, R('path', { d: p }));
+  }
+
+  crumbs(items, statusColor) {
+    const out = [];
+    items.forEach(([label, kind], i) => {
+      if (i) out.push(R('span', { key: 's' + i, style: { color: 'var(--ink-4)' } }, '/'));
+      const current = kind === 'current';
+      const style = {
+        fontWeight: current ? 600 : 400,
+        color: current ? 'var(--ink)' : 'var(--ink-3)',
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+      };
+      if (kind === 'menu') { style.padding = '2px 7px'; style.borderRadius = 6; style.background = 'var(--sunken)'; }
+      if (kind === 'workspace') { style.padding = '2px 8px'; style.borderRadius = 6; style.background = 'var(--brand-tint)'; style.color = 'var(--brand-ink)'; style.fontWeight = 600; }
+      out.push(R('span', { key: 'c' + i, style },
+        current && statusColor
+          ? [R('span', { key: 'd', style: { width: 6, height: 6, borderRadius: 999, background: statusColor } }), label]
+          : label));
+    });
+    return out;
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      lightShadow: dark ? 'none' : 'var(--e1)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+      darkShadow: dark ? 'var(--e1)' : 'none',
+
+      toc: [
+        { label: 'Frame', items: [
+          { n: '01', t: 'Assembled shell', href: '#s1' },
+          { n: '02', t: 'Left navigation', href: '#s2' },
+          { n: '03', t: 'Workspace switcher', href: '#s3' },
+          { n: '04', t: 'Top navigation', href: '#s4' },
+          { n: '05', t: 'Breadcrumbs', href: '#s5' },
+          { n: '06', t: 'Global filters', href: '#s6' },
+          { n: '07', t: 'Banners & status', href: '#s7' } ] },
+        { label: 'Surfaces', items: [
+          { n: '08', t: 'Global search', href: '#s8' },
+          { n: '09', t: 'Command palette', href: '#s9' },
+          { n: '10', t: 'Notifications', href: '#s10' },
+          { n: '11', t: 'User menu', href: '#s11' },
+          { n: '12', t: 'AI assistant entry', href: '#s12' },
+          { n: '13', t: 'Utility panel', href: '#s13' },
+          { n: '14', t: 'Context drawer', href: '#s14' },
+          { n: '15', t: 'Keyboard shortcuts', href: '#s15' } ] },
+        { label: 'States', items: [
+          { n: '16', t: 'Global loading', href: '#s16' },
+          { n: '17', t: 'Error pages', href: '#s17' },
+          { n: '18', t: 'Empty workspace', href: '#s18' },
+          { n: '19', t: 'Multi-workspace', href: '#s19' },
+          { n: '20', t: 'Responsive', href: '#s20' } ] },
+        { label: 'Governance', items: [
+          { n: '21', t: 'Accessibility', href: '#s21' },
+          { n: '22', t: 'Rationale & rules', href: '#s22' } ] },
+      ],
+
+      heroStats: [
+        { v: '6', l: 'Fixed frame regions' },
+        { v: '8', l: 'Transient surfaces' },
+        { v: '1', l: 'Content region modules own' },
+        { v: '4', l: 'Breakpoint behaviours' },
+      ],
+
+      navItems: [
+        ['Home', 'home', '', 0, false], ['Forecast', 'chart', '', 0, false],
+        ['Pipeline', 'flow', '', 0, false], ['Accounts', 'grid', '8,412', 0, true],
+        ['Enterprise', 'sub', '312', 1, false], ['Mid-market', 'sub', '1,140', 1, false],
+        ['Deals', 'case', '', 0, false], ['Conversations', 'chat', '', 0, false],
+        ['Signals', 'pulse', '14', 0, false], ['Reports', 'file', '', 0, false],
+      ].map(([label, icon, count, level, active]) => ({
+        label, count, icon: this.navIcon(icon),
+        pad: level ? '30px' : '9px',
+        bg: active ? 'var(--brand-tint)' : 'transparent',
+        color: active ? 'var(--brand-ink)' : 'var(--ink-2)',
+        iconColor: active ? 'var(--brand)' : 'var(--ink-4)',
+        weight: active ? 600 : 400,
+      })),
+
+      railUtility: [
+        { label: 'Settings', icon: this.navIcon('gear'), meta: '' },
+        { label: 'Shortcuts', icon: this.navIcon('key'), meta: '?' },
+        { label: 'Docs & support', icon: this.navIcon('book'), meta: '' },
+      ],
+
+      globalFilters: [
+        { field: 'Period', value: 'Q3 FY26', active: true },
+        { field: 'Region', value: 'EMEA', active: true },
+        { field: 'Segment', value: 'Enterprise', active: true },
+        { field: 'Owner', value: 'All', active: false },
+      ].map(f => ({
+        field: f.field, value: f.value,
+        bg: f.active ? 'var(--brand-tint)' : 'var(--surface)',
+        border: f.active ? 'var(--brand-line)' : 'var(--line-soft)',
+        color: f.active ? 'var(--brand-ink)' : 'var(--ink-2)',
+      })),
+
+      contentCards: [
+        { label: 'Open ACV', value: '$1.24M', delta: '−12.0% vs. 30 days', color: 'var(--risk)' },
+        { label: 'Signora score', value: '38', delta: '−24 points', color: 'var(--risk)' },
+        { label: 'Days since touch', value: '19', delta: 'Longest in segment', color: 'var(--warn)' },
+      ],
+
+      contentRows: [
+        { a: 'Renewal — Vantage Q4', b: 'Negotiation', c: '$1,240,000', d: '19d' },
+        { a: 'Expansion — freight API', b: 'Discovery', c: '$180,000', d: '4d' },
+        { a: 'Services — onboarding', b: 'Proposal', c: '$74,000', d: '11d' },
+        { a: 'Renewal — Vantage NA', b: 'Closed won', c: '$620,000', d: '2d' },
+      ],
+
+      utilityTabs: ['Insights', 'Activity', 'Notes'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--surface)' : 'transparent',
+        color: i === 0 ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: i === 0 ? 'var(--e1)' : 'none',
+      })),
+
+      utilityFacts: [
+        { k: 'Owner', v: 'M. Reinhardt' }, { k: 'Renewal', v: '12 Oct 2026' },
+        { k: 'Contract', v: '36 months' }, { k: 'Support tier', v: 'Premier' },
+        { k: 'Last QBR', v: '14 Jul 2026' },
+      ],
+
+      anatomy: [
+        { t: 'Environment banner', size: '30px', b: 'Only for sandbox, impersonation and read-only maintenance. Never for marketing. Dismissible only when the state is not risky.' },
+        { t: 'Trial / billing banner', size: '34px', b: 'One at a time, dismissible for the session, and never covering the top bar. Suppressed entirely inside sandbox.' },
+        { t: 'Top bar', size: '56px', b: 'Orientation and identity only: breadcrumb, search, status, notifications, help, account. No module actions ever.' },
+        { t: 'Rail', size: '232px / 56px', b: 'Nine destinations, two levels, workspace switcher pinned top, utilities pinned bottom. Collapse state persists per user.' },
+        { t: 'Filter strip', size: '46px', b: 'Global scope that every module inherits: period, region, segment, owner. Serialised in the URL.' },
+        { t: 'Utility panel', size: '300–360px', b: 'Non-modal, pushes content, remembers its open state per module. Docked context, not a task surface.' },
+      ],
+
+      navStates: [
+        { label: 'Default', icon: this.navIcon('chart'), meta: '', bg: 'transparent', color: 'var(--ink-2)', iconColor: 'var(--ink-4)', weight: 400, ring: 'transparent', shadow: 'none' },
+        { label: 'Hover', icon: this.navIcon('flow'), meta: '', bg: 'var(--sunken)', color: 'var(--ink)', iconColor: 'var(--ink-2)', weight: 400, ring: 'transparent', shadow: 'none' },
+        { label: 'Active', icon: this.navIcon('grid'), meta: '8,412', bg: 'var(--brand-tint)', color: 'var(--brand-ink)', iconColor: 'var(--brand)', weight: 600, ring: 'transparent', shadow: 'none' },
+        { label: 'Focus (keyboard)', icon: this.navIcon('case'), meta: '', bg: 'transparent', color: 'var(--ink)', iconColor: 'var(--ink-4)', weight: 400, ring: 'var(--brand)', shadow: '0 0 0 3px var(--brand-tint)' },
+        { label: 'With unread', icon: this.navIcon('pulse'), meta: '● 14', bg: 'transparent', color: 'var(--ink-2)', iconColor: 'var(--ink-4)', weight: 400, ring: 'transparent', shadow: 'none' },
+        { label: 'Restricted', icon: this.navIcon('file'), meta: '🔒', bg: 'transparent', color: 'var(--ink-4)', iconColor: 'var(--ink-4)', weight: 400, ring: 'transparent', shadow: 'none' },
+      ],
+
+      collapsedNav: ['home', 'chart', 'flow', 'grid', 'case', 'chat', 'pulse'].map((k, i) => ({
+        icon: this.navIcon(k),
+        bg: i === 3 ? 'var(--brand-tint)' : 'transparent',
+        color: i === 3 ? 'var(--brand)' : 'var(--ink-3)',
+      })),
+
+      navSpecs: [
+        { label: 'Layout', lines: ['232px expanded, 56px collapsed, 12px outer / 10px inner padding.', 'Item 32px tall, 8px radius, 10px icon-to-label gap.', 'Second level indents to 30px and never nests further.', 'Utilities and the assistant pin to the bottom above the fold.'] },
+        { label: 'States', lines: ['Hover: sunken tint. Active: brand tint, 600 label, brand icon.', 'Focus: 1px brand border plus a 3px tint halo — never the browser ring.', 'Restricted destinations stay visible at 45% with a lock and explain on click.', 'Counts are neutral; a dot means unread and only Signals uses it.'] },
+        { label: 'Keyboard', lines: ['G then H / F / P / A jumps to Home, Forecast, Pipeline, Accounts.', '[ toggles collapse; the state persists per user, per device class.', 'Tab order is rail → filter strip → content → utility panel.', 'Collapsed items expose their label as an accessible name and a 300ms tooltip.'] },
+        { label: 'Rationale', lines: ['Nine destinations is the limit at which scanning beats searching.', 'Depth lives in records, so the rail never grows a third level.', 'A pill-shaped active state reads as a place, not a border decoration.', 'Utilities at the bottom keep the funnel order uninterrupted at the top.'] },
+      ],
+
+      workspaceGroups: [
+        { label: 'Northwind Holdings', items: [
+          { initials: 'NG', name: 'Northwind Global', meta: 'Enterprise · Admin', tag: 'Current', sel: true },
+          { initials: 'NA', name: 'Northwind Americas', meta: 'Enterprise · Analyst', tag: 'Prod', sel: false },
+          { initials: 'NS', name: 'Northwind Sandbox', meta: 'Copy of Global · Admin', tag: 'Sandbox', sel: false, sandbox: true } ] },
+        { label: 'Shared with you', items: [
+          { initials: 'VL', name: 'Vantage Logistics (partner)', meta: 'Guest · read-only', tag: 'Guest', sel: false } ] },
+      ].map(g => ({
+        label: g.label,
+        items: g.items.map(w => ({
+          initials: w.initials, name: w.name, meta: w.meta, tag: w.tag,
+          weight: w.sel ? 600 : 400,
+          bg: w.sel ? 'var(--brand-tint)' : 'transparent',
+          avatarBg: w.sel ? 'var(--brand)' : 'var(--sunken)',
+          avatarFg: w.sel ? '#fff' : 'var(--ink-2)',
+          tagBg: w.sandbox ? 'var(--warn-tint)' : (w.sel ? 'var(--brand)' : 'var(--sunken)'),
+          tagFg: w.sandbox ? 'var(--warn)' : (w.sel ? '#fff' : 'var(--ink-3)'),
+        })),
+      })),
+
+      switcherSpecs: [
+        { label: 'Layout', lines: ['Trigger 38px tall inside the rail; menu 340px at --e4.', 'Grouped by organisation, search appears above six workspaces.', 'Each row: 22px avatar, name, role and environment, right-hand tag.', 'Administrative actions are always the last two rows.'] },
+        { label: 'Behaviour', lines: ['Switching keeps the current route when it exists in the destination.', 'Unsaved work triggers a confirm before the switch, never after.', 'Sandbox workspaces carry the caution tag and inherit the environment banner.', 'Guest workspaces open read-only with write affordances hidden, not disabled.'] },
+        { label: 'Keyboard', lines: ['⌘⇧W opens the switcher from anywhere.', '1–9 selects by position; type to filter; ⏎ switches.', 'Focus returns to the trigger on close.', 'The palette also lists every workspace under “Switch workspace”.'] },
+        { label: 'Rationale', lines: ['Placement at the top of the rail matches the mental model: everything below belongs to it.', 'Role and environment on the row prevent the classic mistake of editing production while thinking it is sandbox.', 'Route preservation makes multi-workspace comparison a two-second task.'] },
+      ],
+
+      topBarSlots: [
+        { t: 'Breadcrumb', size: 'flex, min 0', b: 'Truncates from the middle. Never wraps. Always present below level one.' },
+        { t: 'Search', size: '224 × 32', b: 'Opens the palette on click or ⌘K. Widens to 320px on focus at ≥1600px.' },
+        { t: 'System status', size: 'auto × 32', b: 'Green pill hides its label at <1280px; amber and red always show it.' },
+        { t: 'Notifications', size: '32 × 32', b: 'Count badge caps at 99+. Opens a 400px panel, not a page.' },
+        { t: 'Help & account', size: '32 + 32', b: 'Help before account, always last. Avatar is the only circle in the shell.' },
+      ],
+
+      crumbCases: [
+        { label: 'Two levels', note: 'Minimum where breadcrumbs appear', trail: this.crumbs([['Accounts', 'link'], ['Vantage Logistics', 'current']]) },
+        { label: 'Record with status', note: 'Current record carries its dot', trail: this.crumbs([['Deals', 'link'], ['Vantage renewal', 'current']], 'var(--risk)') },
+        { label: 'Deep drill-down', note: 'Four levels, full trail', trail: this.crumbs([['Pipeline', 'link'], ['EMEA enterprise', 'link'], ['Q3 FY26', 'link'], ['Renewal — Vantage', 'current']]) },
+        { label: 'Collapsed', note: 'Beyond four levels', trail: this.crumbs([['Reports', 'link'], ['…', 'menu'], ['Stage velocity', 'link'], ['Negotiation cohort', 'current']]) },
+        { label: 'Cross-workspace', note: 'Guest or partner context', trail: this.crumbs([['Vantage Logistics', 'workspace'], ['Accounts', 'link'], ['Meridian Freight', 'current']]) },
+      ],
+
+      filterSpecs: [
+        { label: 'Persistence', b: 'Global scope lives in the URL and in the user’s last-session state. A shared link reproduces the exact view.' },
+        { label: 'Precedence', b: 'Module filters narrow global scope; they never widen it. A module cannot silently leave the global period.' },
+        { label: 'Visual grammar', b: 'Tinted chip = global and persistent. Outlined chip = local and transient. Dashed = add.' },
+        { label: 'Rationale', b: 'Four dimensions cover every module’s question. A fifth belongs to a module, not the shell.' },
+      ],
+
+      banners: [
+        { icon: '!', title: 'Sandbox.', body: 'A copy of production as of 03 Aug 2026. Changes do not sync.', action: 'Switch to production', dismiss: '', h: '34px', bg: 'var(--warn-tint)', fg: 'var(--warn)', border: 'transparent', bodyColor: 'var(--ink-2)' },
+        { icon: '◉', title: 'Viewing as J. Okafor.', body: 'Support session · expires in 42 minutes · every action is logged.', action: 'End session', dismiss: '', h: '34px', bg: 'var(--risk-tint)', fg: 'var(--risk)', border: 'transparent', bodyColor: 'var(--ink-2)' },
+        { icon: '↺', title: 'Read-only maintenance.', body: 'Writes are paused until 02:30 UTC. Reading and export are unaffected.', action: 'Details', dismiss: '', h: '34px', bg: 'var(--sunken)', fg: 'var(--ink)', border: 'var(--line-soft)', bodyColor: 'var(--ink-2)' },
+        { icon: '★', title: '21 days left in your Enterprise trial.', body: 'Seats 34 of 50 · conversation intelligence unlocked.', action: 'Talk to sales', dismiss: '✕', h: '34px', bg: 'var(--brand-tint)', fg: 'var(--brand-ink)', border: 'transparent', bodyColor: 'var(--ink-2)' },
+        { icon: '⚑', title: 'Trial ended 2 days ago.', body: 'Data is retained for 28 more days. Reading is available; writes are disabled.', action: 'Reactivate', dismiss: '', h: '34px', bg: 'var(--risk-tint)', fg: 'var(--risk)', border: 'transparent', bodyColor: 'var(--ink-2)' },
+      ],
+
+      statusRows: [
+        { name: 'Application', state: 'Normal', dot: 'var(--pos)', color: 'var(--pos)' },
+        { name: 'CRM sync — Salesforce', state: 'Normal · 4m ago', dot: 'var(--pos)', color: 'var(--pos)' },
+        { name: 'Scoring service', state: 'Degraded', dot: 'var(--warn)', color: 'var(--warn)' },
+        { name: 'Conversation ingest', state: 'Backlog 18m', dot: 'var(--warn)', color: 'var(--warn)' },
+        { name: 'Exports', state: 'Normal', dot: 'var(--pos)', color: 'var(--pos)' },
+      ],
+
+      bannerSpecs: [
+        { label: 'Stacking', lines: ['Maximum two: one environment, one commercial, in that order.', 'Commercial banners are suppressed inside sandbox and impersonation.', 'Banners push the whole frame down; they never overlay the top bar.'] },
+        { label: 'Dismissal', lines: ['Environment banners cannot be dismissed while the state carries risk.', 'Commercial banners dismiss for the session and return on the next login.', 'A dismissed banner leaves a marker in the account menu so the state is never invisible.'] },
+        { label: 'Status', lines: ['Green shows a dot only below 1280px; amber and red always keep their label.', 'The pill opens a 360px popover listing subsystems, not a full page.', 'Degradation that changes numbers also annotates the affected charts.'] },
+        { label: 'Rationale', lines: ['Colour alone never carries the message: every banner leads with a word.', 'Interruption is proportional to consequence — a trial is a tint, impersonation is red.', 'Status as furniture rather than an alert stops users learning to ignore banners.'] },
+      ],
+
+      searchGroups: [
+        { label: 'Ask Signora', more: '', items: [{ badge: '✦', name: 'Ask: what changed at Vantage this month?', meta: '', sel: true }] },
+        { label: 'Accounts', more: 'Show all 6', items: [
+          { badge: 'VL', name: 'Vantage Logistics', meta: '$1.24M · At risk', sel: false },
+          { badge: 'VF', name: 'Vantage Freight (subsidiary)', meta: '$310K · On track', sel: false } ] },
+        { label: 'Deals & calls', more: 'Show all 21', items: [
+          { badge: 'D', name: 'Vantage renewal — Q4', meta: 'Negotiation · 38', sel: false },
+          { badge: 'C', name: 'Vantage QBR — 14 Jul', meta: '52 min · 4 signals', sel: false } ] },
+      ].map(g => ({
+        label: g.label, more: g.more,
+        items: g.items.map(i => ({
+          badge: i.badge, name: i.name, meta: i.meta,
+          bg: i.sel ? 'var(--ai-tint)' : 'transparent',
+          weight: i.sel ? 600 : 400,
+        })),
+      })),
+
+      searchSpecs: [
+        { label: 'Behaviour', lines: ['200ms debounce, results stream in group order as they resolve.', 'Typed groups in a fixed order; five rows each with “show all”.', 'A question routes to the assistant; a name routes to records.', 'Recent destinations rank above exact-but-cold matches.'] },
+        { label: 'Scope', lines: ['Global search ignores the filter strip — it searches the workspace.', 'Cross-workspace results appear only for workspaces you can already open.', 'Restricted records are never listed, not even greyed out.', 'In-page search stays inside its table and is bound to /.'] },
+        { label: 'States', lines: ['Empty query shows recents and three suggested questions.', 'Zero results names the query and offers the assistant as the next step.', 'Slow backends show a 2px indeterminate bar under the input, never a spinner.'] },
+        { label: 'Rationale', lines: ['One search surface means one place to learn and one place to instrument.', 'Key facts on the row turn search into triage instead of a guessing game.', 'Routing questions to the assistant stops users typing prose into a record finder.'] },
+      ],
+
+      paletteGroups: [
+        { label: 'Ask Signora', items: [{ label: 'Answer: why is EMEA enterprise slipping', meta: '', glyph: '✦', key: '↵', sel: true, ai: true }] },
+        { label: 'Recents', items: [
+          { label: 'Vantage Logistics', meta: 'Account', glyph: 'VL', key: '' },
+          { label: 'Q3 forecast review', meta: 'Report', glyph: 'QR', key: '' } ] },
+        { label: 'Actions', items: [
+          { label: 'Create territory plan', meta: '', glyph: '＋', key: '⌘⇧T' },
+          { label: 'Export current view', meta: 'CSV · respects filters', glyph: '↧', key: '⌘⇧E' },
+          { label: 'Run renewal risk sweep', meta: 'Agent', glyph: '⚙', key: '' } ] },
+        { label: 'Navigate', items: [
+          { label: 'Go to Pipeline', meta: '', glyph: '→', key: 'G P' },
+          { label: 'Switch workspace', meta: '4 available', glyph: '⇄', key: '⌘⇧W' } ] },
+      ].map(g => ({
+        label: g.label,
+        items: g.items.map(i => ({
+          label: i.label, meta: i.meta, glyph: i.glyph, key: i.key,
+          bg: i.sel ? 'var(--ai-tint)' : 'transparent',
+          weight: i.sel ? 600 : 400,
+          glyphBg: i.ai ? 'var(--ai)' : 'var(--sunken)',
+          glyphFg: i.ai ? '#fff' : 'var(--ink-2)',
+        })),
+      })),
+
+      notifTabs: ['Needs you · 3', 'Mentions', 'All'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--brand-tint)' : 'transparent',
+        color: i === 0 ? 'var(--brand-ink)' : 'var(--ink-3)',
+      })),
+
+      notifications: [
+        { actor: 'Renewal risk sweep', action: 'needs approval for 41 CRM field writes', meta: 'Agent · EMEA enterprise', time: '09:12', unread: 'var(--ai)', bg: 'var(--ai-tint)', avatar: '✦', avatarBg: 'var(--ai)', avatarFg: '#fff', avatarRadius: '7px', kind: 'agent' },
+        { actor: 'Signora', action: 'lowered Vantage Logistics to 38', meta: 'Score change · −24 in three weeks', time: '09:14', unread: 'var(--ai)', bg: 'transparent', avatar: '✦', avatarBg: 'var(--ai-tint)', avatarFg: 'var(--ai-ink)', avatarRadius: '7px', kind: 'ai' },
+        { actor: 'J. Okafor', action: 'mentioned you on Halden Systems', meta: '“Marta — can you approve the discount?”', time: '08:51', unread: 'var(--brand)', bg: 'transparent', avatar: 'JO', avatarBg: 'var(--sunken)', avatarFg: 'var(--ink-2)', avatarRadius: '999px', kind: 'human' },
+        { actor: 'Export', action: 'finished — 8,412 rows', meta: 'accounts-2026-08-04.csv · 4.2 MB', time: '08:30', unread: 'transparent', bg: 'transparent', avatar: '↧', avatarBg: 'var(--sunken)', avatarFg: 'var(--ink-2)', avatarRadius: '7px', kind: 'system' },
+      ].map(n => {
+        let actionRow = null;
+        if (n.kind === 'agent') {
+          actionRow = R('div', { style: { display: 'flex', gap: 8 } }, [
+            R('span', { key: 'a', style: { display: 'inline-flex', alignItems: 'center', height: 28, padding: '0 11px', borderRadius: 8, background: 'var(--ai)', color: '#fff', fontSize: 12, fontWeight: 600 } }, 'Review'),
+            R('span', { key: 'b', style: { display: 'inline-flex', alignItems: 'center', height: 28, padding: '0 11px', borderRadius: 8, border: '1px solid var(--line)', fontSize: 12, fontWeight: 600 } }, 'Later'),
+          ]);
+        } else if (n.kind === 'human') {
+          actionRow = R('span', { style: { fontSize: 12, fontWeight: 600, color: 'var(--brand-ink)' } }, 'Reply in context →');
+        } else if (n.kind === 'system') {
+          actionRow = R('span', { style: { fontSize: 12, fontWeight: 600, color: 'var(--brand-ink)' } }, 'Download');
+        }
+        return Object.assign({}, n, { actionRow });
+      }),
+
+      notifSpecs: [
+        { label: 'Layout', lines: ['400px popover at --e4, anchored to the bell, 12px from the top bar.', 'Grouped by day with sticky day heads; 4 items visible before scroll.', 'Unread is a 6px dot on the right, never a coloured row.'] },
+        { label: 'Taxonomy', lines: ['Needs you: approvals, mentions, assignments — anything blocking a person.', 'Mentions: comments and @-references only.', 'All: everything including system and export events.', 'Agent and AI items are marked with the intelligence hue and glyph.'] },
+        { label: 'Behaviour', lines: ['Opening the panel does not mark items read; opening an item does.', 'Actions resolve in place; the row collapses to a confirmation line.', 'Real-time arrival animates the badge count only — the panel never reorders while open.'] },
+        { label: 'Rationale', lines: ['Approvals are the highest-value notification in an AI product, so they lead.', 'Distinguishing agent nudges from colleagues protects trust in both.', 'A popover keeps the user in place; a notifications page would lose their context.'] },
+      ],
+
+      themeOptions: ['Light', 'Dark', 'System'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--surface)' : 'transparent',
+        color: i === 0 ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: i === 0 ? 'var(--e1)' : 'none',
+      })),
+
+      userMenuItems: [
+        { label: 'Profile & preferences', key: '' },
+        { label: 'Notification settings', key: '' },
+        { label: 'Workspace settings', key: '' },
+        { label: 'Members & roles', key: '' },
+        { label: 'Keyboard shortcuts', key: '?' },
+        { label: 'What’s new', key: '' },
+      ],
+
+      userSpecs: [
+        { label: 'Layout', lines: ['280px, right-aligned to the avatar, 8px below the top bar.', 'Identity block, appearance control, six items, then sign out below a hairline.'] },
+        { label: 'Content rules', lines: ['Always states name, email, role and workspace.', 'Role is a brand-tint chip so permission questions are answered without navigating.', 'Sign out is the only red text and never adjacent to a destructive account action.'] },
+        { label: 'Keyboard', lines: ['⌘⇧, opens preferences; ? opens shortcuts; Esc closes and returns focus to the avatar.'] },
+        { label: 'Rationale', lines: ['Mistakes in enterprise tools come from not knowing which identity you are acting as.', 'Theme as a three-way control makes “follow the OS” discoverable rather than hidden.'] },
+      ],
+
+      aiEntries: [
+        { n: '01', t: 'Rail entry', b: 'A permanent “Ask Signora” item pinned above the utilities. The only always-visible door.', key: 'Click · ⌘K' },
+        { n: '02', t: 'Palette', b: 'A natural-language query in ⌘K routes to the assistant instead of returning rows.', key: '⌘K then type' },
+        { n: '03', t: 'Explain in place', b: 'Any metric, chart point, score or row exposes an Explain affordance that opens the drawer pre-asked.', key: 'Click Explain' },
+        { n: '04', t: 'Selection', b: 'Selecting rows adds “Ask about 41 selected” to the bulk bar, narrowing the assistant’s scope.', key: '⌘⇧A' },
+      ],
+
+      pushedRows: [
+        { a: 'Vantage Logistics', b: '$1.24M' }, { a: 'Halden Systems', b: '$860K' },
+        { a: 'Meridian Freight', b: '$430K' }, { a: 'Corrigan Health', b: '$2.11M' },
+        { a: 'Ashgrove Retail', b: '$298K' },
+      ],
+
+      aiPrompts: [
+        'Which of these 312 accounts are most likely to slip?',
+        'Compare EMEA to NA at the same point last quarter',
+        'Summarise what changed since Monday',
+      ],
+
+      panelSpecs: [
+        { t: 'Width & docking', b: '300px at 1280, 360px at 1600+. Docks right of content and pushes it; never overlays a table.' },
+        { t: 'Tabs', b: 'Insights, Activity, Notes — plus a module-supplied fourth tab at most. Tab state persists per module.' },
+        { t: 'Row preview', b: 'Selecting a table row fills the panel rather than opening a second surface. Arrow keys move the selection and the panel follows.' },
+        { t: 'Persistence', b: 'Open state is remembered per module per user. Collapsing leaves a 28px rail with the tab icons.' },
+        { t: 'Never', b: 'No forms with a Save, no multi-step flows, no destructive actions. Those are context drawers.' },
+        { t: 'Rationale', b: 'Context that is always visible removes the open-read-close loop that dominates CRM work.' },
+      ],
+
+      drawerSpecs: [
+        { label: 'Widths', b: '480 for a single object, 640 for a form with context, 800 for agent output review. Expandable to full-screen with ⤢.' },
+        { label: 'Structure', b: 'Header names the object and the verb; body scrolls; footer is pinned and holds exactly one primary action.' },
+        { label: 'Dismissal', b: 'Escape and scrim click close only when nothing is lost. Otherwise a confirm offers Keep editing, Discard, Save draft.' },
+        { label: 'Rationale', b: 'A drawer keeps the list behind it visible, so the user never loses their place in a 8,000-row table.' },
+      ],
+
+      shortcutGroups: [
+        { label: 'Surfaces', items: [
+          { what: 'Command palette', keys: '⌘K' }, { what: 'Ask Signora', keys: '⌘⇧A' },
+          { what: 'Notifications', keys: '⌘⇧N' }, { what: 'Switch workspace', keys: '⌘⇧W' },
+          { what: 'Toggle utility panel', keys: '⌘.' }, { what: 'Shortcut reference', keys: '?' },
+        ] },
+        { label: 'Navigate', items: [
+          { what: 'Home', keys: 'G H' }, { what: 'Forecast', keys: 'G F' },
+          { what: 'Pipeline', keys: 'G P' }, { what: 'Accounts', keys: 'G A' },
+          { what: 'Back / forward', keys: '⌘[ / ⌘]' }, { what: 'Collapse rail', keys: '[' },
+        ] },
+        { label: 'Work', items: [
+          { what: 'Search in view', keys: '/' }, { what: 'Move selection', keys: 'J / K' },
+          { what: 'Open record', keys: '↵' }, { what: 'Open in panel', keys: '⌘↵' },
+          { what: 'Select / extend', keys: 'X / ⇧X' }, { what: 'Edit cell', keys: 'E' },
+        ] },
+      ],
+
+      loadingCases: [
+        { t: 'Cold boot', when: 'First paint, no cache', barOpacity: 1, note: 'Chrome paints from cached shell state; only the content region skeletons. Workspace name and rail appear before data resolves.',
+          blocks: [{ h: '18px', w: '52%', r: '8px', o: 1 }, { h: '10px', w: '78%', r: '5px', o: .8 }, { h: '10px', w: '64%', r: '5px', o: .7 }, { h: '44px', w: '100%', r: '10px', o: .6 }] },
+        { t: 'Route change', when: 'Module to module', barOpacity: 1, note: 'Shell, filters and utility panel persist. Only the content region skeletons, at the shape of the destination.',
+          blocks: [{ h: '12px', w: '38%', r: '6px', o: 1 }, { h: '36px', w: '100%', r: '10px', o: .7 }, { h: '10px', w: '86%', r: '5px', o: .6 }, { h: '10px', w: '72%', r: '5px', o: .5 }] },
+        { t: 'In-place refresh', when: 'Filter change, sync, retry', barOpacity: .35, note: '2px bar under the top bar; existing figures stay readable at 60% until replaced. No overlay, no spinner, no layout shift.',
+          blocks: [{ h: '10px', w: '68%', r: '5px', o: .35 }, { h: '10px', w: '54%', r: '5px', o: .35 }, { h: '10px', w: '74%', r: '5px', o: .35 }, { h: '10px', w: '46%', r: '5px', o: .35 }] },
+      ],
+
+      errorCases: [
+        { code: '403', scope: 'In shell', icon: '⊘', tint: 'var(--warn-tint)', color: 'var(--warn)', title: 'You do not have access to NA enterprise', body: 'Access is granted per region by a workspace admin. Your regions are EMEA and APAC. Nothing you can see has changed.', primary: 'Request access', secondary: 'Admin: L. Petrova', id: 'req_4a91-02c7' },
+        { code: '404', scope: 'In shell', icon: '?', tint: 'var(--sunken)', color: 'var(--ink-2)', title: 'This account no longer exists', body: 'It was merged into Vantage Group on 22 Jul. Links from before that date will land here.', primary: 'Open Vantage Group', secondary: 'Back to accounts', id: 'req_77bd-1e40' },
+        { code: '500', scope: 'In shell', icon: '!', tint: 'var(--risk-tint)', color: 'var(--risk)', title: 'This module failed to load', body: 'The rest of the workspace is unaffected. Your filters and selection are preserved and will be restored on retry.', primary: 'Retry', secondary: 'Copy diagnostics', id: 'req_9f3c-88ad' },
+        { code: 'Offline', scope: 'In shell', icon: '⇎', tint: 'var(--sunken)', color: 'var(--ink-2)', title: 'You are offline', body: 'Cached views from the last 15 minutes stay readable and are marked stale. Edits are queued locally and will sync automatically.', primary: 'Retry connection', secondary: 'View 2 queued edits', id: '—' },
+        { code: '503', scope: 'Full page', icon: '↺', tint: 'var(--warn-tint)', color: 'var(--warn)', title: 'Signora is in read-only maintenance', body: 'Reading and export work normally. Writes resume at 02:30 UTC. This window was announced on 28 Jul.', primary: 'Continue reading', secondary: 'Status page', id: 'win_2026-08-04' },
+        { code: '401', scope: 'Full page', icon: '⇥', tint: 'var(--risk-tint)', color: 'var(--risk)', title: 'Your session expired', body: 'Unsaved work in the open drawer is held for 30 minutes. Signing back in returns you to this exact view.', primary: 'Sign back in', secondary: 'Save a copy locally', id: 'sess_c19a' },
+      ],
+
+      onboarding: [
+        { t: 'Connect your CRM', b: 'Salesforce connected · 8,412 accounts imported · field mapping confirmed', cta: 'Review mapping', state: 'done' },
+        { t: 'Connect conversation sources', b: 'Calendar, email and call recording. Signora cannot score engagement without at least one.', cta: 'Connect', state: 'current' },
+        { t: 'Invite your team and set territories', b: 'Roles, regions and quota. 1 member so far — you.', cta: 'Invite', state: 'todo' },
+      ].map(o => {
+        const m = {
+          done: { mark: '✓', markBg: 'var(--pos)', markBorder: 'var(--pos)', markFg: '#fff', bg: 'transparent', btnBg: 'transparent', btnFg: 'var(--ink)', btnBorder: 'var(--line)' },
+          current: { mark: '2', markBg: 'transparent', markBorder: 'var(--brand)', markFg: 'var(--brand-ink)', bg: 'var(--brand-tint)', btnBg: 'var(--brand)', btnFg: '#fff', btnBorder: 'var(--brand)' },
+          todo: { mark: '3', markBg: 'transparent', markBorder: 'var(--line)', markFg: 'var(--ink-3)', bg: 'transparent', btnBg: 'transparent', btnFg: 'var(--ink)', btnBorder: 'var(--line)' },
+        }[o.state];
+        return Object.assign({}, o, m);
+      }),
+
+      multiWorkspace: [
+        { n: '01', t: 'Hard data boundary', b: 'No view, search, export or AI answer ever crosses a workspace. Cross-workspace comparison is a deliberate feature of Reports, not a side effect of the shell.' },
+        { n: '02', t: 'Labelled surfaces', b: 'When a user has more than one workspace, search, notifications and the assistant all carry the workspace name in their header. Ambiguity here is what causes the wrong customer to be discussed.' },
+        { n: '03', t: 'Route preservation', b: 'Switching keeps the equivalent route when it exists, and lands on Home when it does not. Never an error page, never a blank state.' },
+        { n: '04', t: 'Per-workspace memory', b: 'Rail collapse, panel state, saved views, theme and filter scope are remembered per workspace, because the same person works differently in each.' },
+        { n: '05', t: 'Sandbox pairing', b: 'A sandbox is presented as a sibling of its production workspace, tagged in caution, and always carries the environment banner. Its data is never mixed into production search.' },
+        { n: '06', t: 'Guest and partner access', b: 'Read-only workspaces hide write affordances rather than disabling them, and the breadcrumb leads with a workspace chip so the user always knows whose data they are reading.' },
+      ],
+
+      breakpoints: [
+        { name: 'Desktop', range: '≥ 1600px', railW: '30%', panelW: '34%', panelDisplay: 'block', filterOpacity: 1,
+          lines: ['Rail 232px, utility panel 360px, both open.', 'Search widens to 320px on focus.', 'Tables may show optional columns.'] },
+        { name: 'Laptop', range: '1280–1599', railW: '28%', panelW: '30%', panelDisplay: 'block', filterOpacity: 1,
+          lines: ['Reference layout. Rail 232px, panel 300px.', 'Status pill keeps its label only when amber or red.', 'Utility panel remembers per-module state.'] },
+        { name: 'Small laptop', range: '1024–1279', railW: '12%', panelW: '0', panelDisplay: 'none', filterOpacity: 1,
+          lines: ['Rail collapses to 56px icons with tooltips.', 'Utility panel closes to a 28px tab rail.', 'Filter strip stays; chips scroll horizontally.'] },
+        { name: 'Tablet & phone', range: '< 1024px', railW: '0', panelW: '0', panelDisplay: 'none', filterOpacity: .35,
+          lines: ['Rail becomes a sheet from a top-bar button.', 'Filter strip collapses to one “Scope” button with a count.', 'Tables become row cards; pinned columns become the card head.', 'Below 640px: review, approve, comment and ask only.'] },
+      ],
+
+      landmarks: [
+        { el: 'header[banner]', b: 'Environment and trial banners, then the top bar. First in the DOM, first in tab order.' },
+        { el: 'nav[navigation]', b: 'The rail, labelled “Primary”. Workspace switcher is its first child.' },
+        { el: 'search', b: 'The top-bar field, labelled “Search Fortune Signora”. Opens the palette as a dialog.' },
+        { el: 'main', b: 'The content region. Receives focus on route change and announces the new page title.' },
+        { el: 'aside[complementary]', b: 'The utility panel, labelled with its active tab.' },
+        { el: 'dialog', b: 'Palette, dialogs and context drawers. Focus-trapped, aria-modal, labelled by their title.' },
+        { el: 'output[status]', b: 'System status pill and toast region, polite live region, deduplicated.' },
+      ],
+
+      a11yRules: [
+        { sc: '2.4.1', b: 'Skip links: to content, to navigation, to the utility panel — visible on focus.' },
+        { sc: '2.4.3', b: 'Focus moves into a surface on open and returns to the trigger on close, every time.' },
+        { sc: '2.4.7', b: '2px brand ring at 2px offset plus a border change; never suppressed anywhere in the shell.' },
+        { sc: '2.1.2', b: 'No keyboard trap outside modal surfaces; Escape always exits the innermost one.' },
+        { sc: '4.1.3', b: 'Route changes, sync results and agent state changes announce once, politely.' },
+        { sc: '1.4.13', b: 'Collapsed-rail tooltips are hoverable, dismissible and persistent.' },
+        { sc: '2.5.8', b: 'Every top-bar control is a 32px target with 8px separation; 44px on touch.' },
+        { sc: '1.4.10', b: 'The shell reflows to 320px at 400% zoom; only tables retain horizontal scroll.' },
+        { sc: '2.2.6', b: 'Session expiry warns at two minutes and preserves open drawer input for 30 minutes.' },
+      ],
+
+      rationale: [
+        { t: 'The frame never moves', b: 'Users navigate by muscle memory in the corners. Fixing banner, rail, top bar and filter positions means every module inherits an interface people already know, which is the cheapest usability win available.' },
+        { t: 'One search, one assistant', b: 'Two search boxes create two mental models and two sets of expectations. Routing questions to the assistant and names to records keeps a single doorway with two exits.' },
+        { t: 'Scope lives in the shell', b: 'Period, region, segment and owner are the questions every module asks. Hoisting them to the frame stops each module inventing its own period picker and keeps a shared link meaningful.' },
+        { t: 'Panels push, drawers cover', b: 'Context should never hide the row it describes; tasks should never leave the list. That single distinction determines which of the two surfaces any new feature uses.' },
+        { t: 'AI has no bubble', b: 'A floating circle covers data and implies a separate product. Entry points at the places where questions arise make intelligence part of the work instead of a destination.' },
+        { t: 'Errors stay in the frame', b: 'Keeping the shell alive during a failure preserves orientation and gives the user a route out. Full-page errors are reserved for cases where the shell itself cannot be trusted.' },
+        { t: 'Chrome yields before data', b: 'On a narrow screen the answer is to remove the frame, not the figures. Density is the product; the frame is only its packaging.' },
+      ],
+
+      shellRules: [
+        'Modules own the content region and nothing else.',
+        'No module may add anything to the top bar.',
+        'One primary action per view, and it lives in the page header.',
+        'Global scope is read, never overridden, by a module.',
+        'Module filters narrow global scope and are outlined, not tinted.',
+        'Breadcrumbs are mandatory below the first level.',
+        'Anything clickable is reachable in the palette.',
+        'Context that describes content goes in the utility panel; anything with a Save goes in a drawer.',
+        'Drawers never stack; a second task replaces the first.',
+        'At most two banners, environment before commercial.',
+        'Toasts confirm background outcomes only, never required reading.',
+        'AI surfaces inherit the current scope and state it in their header.',
+        'Errors render inside the shell unless the shell itself failed.',
+        'Every new shell capability is an amendment to this document, not a local decision.',
+      ].map((t, i) => ({ n: String(i + 1).padStart(2, '0'), t })),
+    };
+  }
+}
+</script>
+</body>
+</html>
