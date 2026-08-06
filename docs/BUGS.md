@@ -80,14 +80,14 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
-### B-207 · An expired score renders as *no score*, and those are opposite messages
+### B-207 · An expired score renders as *no score* — **withdrawn, and the mistake is the interesting part**
 
 | | |
 |---|---|
 | **Module** | **Product Surface** — the attention list. `frontend/components/intelligence/attention.tsx` |
 | **Current assignee** | **Lane A** — Product Surface is its in [`modules.toml`](coordination/modules.toml), and this lane wrote the component |
 | **Severity** | 🟠 · **Wrong behaviour a customer would hit**, on the first screen they see, about the number the screen is sorted by |
-| **Status** | **`OPEN`** — found 2026-08-06 by Lane A, running [TASK-441](BACKLOG.md)'s reuse audit before writing code. **Fixed as part of that row**, which already carries the rule |
+| **Status** | ⛔ **`CLOSED` — withdrawn by the lane that raised it**, 2026-08-06, within the hour, on checking the composed row rather than the component. **The id is retired and never reused.** **There is no defect: the surface already says *Evidence expired*** — see the correction below |
 | **Found** | 2026-08-06, `bcea8ba` |
 
 **Steps to reproduce.** Open the homepage with an account whose buying score has expired — `score: null` on `AccountAttentionResponse`.
@@ -121,7 +121,40 @@ export function AttentionScore({ score }: { score: number | null }) {
 
 **The component is right about everything else and says so at length** — why the score is typographic rather than a gauge, why it is subordinate to the account name. ⚡ **`aria-label="No current score"` is even *literally* true**: there is no current score. **It is the inference a reader draws that is wrong**, which is why no test caught it and why reading the component does not reveal it. **The defect is only visible against the API contract**, and [453](architecture/453-opportunity-intelligence-traceability-audit.md) is what put the two side by side.
 
-**Fix.** Say *expired* where the fact is expiry, and keep the em dash out of it. **[TASK-441](BACKLOG.md) carries the rule in its own words** — *"an expired score must render as expired, never as absent and never as current"* — so the fix and its regression test land there rather than in a separate change.
+⛔ ### Withdrawn — 2026-08-06, by Lane A, an hour after filing
+
+**Everything above reads `AttentionScore` on its own. The row that composes it already says the thing.**
+
+```tsx
+// app/(app)/page.tsx — the status lane, immediately before the score column
+<ContestedMark contested={account.contested} />
+<EvidenceHealth evidence={account.evidence} />   // ← "Evidence expired"
+...
+<AttentionScore score={account.score} />          // ← "—"
+```
+
+**And the two cannot disagree**, which is the fact that settles it:
+
+```python
+# opportunity_engine/application/queries.py
+def evidence_state(opportunity, score, moment) -> EvidenceState:
+    if score is None or not score.is_valid_at(moment):
+        return EvidenceState.STALE
+```
+
+> ## **`score is None` implies `stale`, by construction. Every row with an em dash carries the *Evidence expired* badge, one element to its left.**
+
+**So the surface is correct and is arguably better than what this row proposed.** The badge states *why there is no number*; the em dash states *that there is no number*. **Two facts, each where it belongs** — and putting the word *expired* into the score column would have said one of them twice, in the column the page is scanned down.
+
+### What this lane got wrong, recorded rather than quietly deleted
+
+**The filing judged an element in isolation and drew a conclusion the composition does not support.** ⚡ **That is the same error this lane had criticised [447](architecture/447-signal-center-traceability-audit.md) for one poll earlier** — counting a thing as present without checking the context it lives in — **committed while writing up [C-228](LANE_COORDINATION.md), which is the item making that criticism.**
+
+**The `aria-label` observation was the tell and was misread.** *"No current score"* is literally true, and this row treated its literal truth as evidence that a reader would infer something false. **The reader is not reading the label alone either.**
+
+⚠️ **What survives, and it is small.** **`AttentionScore` is also called by `NeedsIdentity`**, where no `EvidenceHealth` badge sits beside it — so a company nobody can name shows an em dash with nothing explaining it. **That is not this row's claim** (it asserted a defect on the attention list, where the badge exists) and it is not a defect either: an account with no identity has no evidence health to state. **Recorded so the next reader does not re-derive it.**
+
+**[TASK-441](BACKLOG.md)'s rule is unaffected and still binds** — *"an expired score must render as expired, never as absent and never as current."* **The lesson for that screen is now concrete rather than theoretical: the badge is where expiry is said, and the new screen must carry it rather than inventing a second way to say the same thing.**
 
 
 ### B-328 · `state-check.py` reports 54 `READY` tasks when there are two, because it counts headings
