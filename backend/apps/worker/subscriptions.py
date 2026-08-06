@@ -47,6 +47,7 @@ from modules.ai_research_engine.interface.handlers import (
     CONSUMER_NAME as RESEARCH_CONSUMER,
 )
 from modules.ai_research_engine.interface.handlers import run_requested_research
+from modules.business_event_engine.public import BusinessEventQueries
 from modules.business_event_engine.infrastructure.composition import (
     build_queries as build_business_event_queries,
 )
@@ -60,7 +61,17 @@ from modules.observation_engine.infrastructure.composition import (
     build_queries as build_observation_queries,
 )
 from modules.provider_normalization.infrastructure.claim_reader import SqlClaimReader
+from modules.buying_score_engine.infrastructure.composition import (
+    build_compute_buying_score,
+)
+from modules.buying_score_engine.interface.handlers import (
+    CONSUMER_NAME as SCORE_CONSUMER,
+)
+from modules.buying_score_engine.interface.handlers import compute_from_signal
 from modules.signal_engine.infrastructure.composition import build_generate_signals
+from modules.signal_engine.infrastructure.composition import (
+    build_queries as build_signal_queries,
+)
 from modules.signal_engine.interface.handlers import CONSUMER_NAME as SIGNAL_CONSUMER
 from modules.signal_engine.interface.handlers import generate_from_business_event
 from modules.timeline.domain.projection import PROJECTIONS
@@ -114,6 +125,13 @@ SYSTEM_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 #: them out and says why.** Reported rather than fixed: the constants belong
 #: in the module that owns the vocabulary, and it is not this lane's.
 SIGNAL_INPUTS: Final = ("business_event.detected", "business_event.superseded")
+
+#: What Buying Score Engine consumes. **Both, and its own docstring says why**:
+#: *"a strengthened hypothesis arrives as a new signal plus a supersession, and
+#: a consumer that handled only the first would keep weighing the replaced
+#: reading alongside the one that replaced it — counting the same grounds
+#: twice."* Spelled out here for `SIGNAL_INPUTS`' reason, one module over.
+SCORE_INPUTS: Final = ("signal.generated", "signal.superseded")
 
 
 class RuntimeNotInstalled(RuntimeError):
@@ -247,6 +265,57 @@ async def _project_to_timeline(envelope: EventEnvelope) -> None:
         await session.commit()
 
 
+def _business_events(session: AsyncSession, workspace_id: UUID) -> BusinessEventQueries:
+    """The read chain two pipeline stages need — **built once here**.
+
+    **The same two-levels-deep chain `apps/api/composition/triage.py` builds**:
+    business events need observations, which need the graph. **Every edge is
+    one the dependency matrix already ratified; none is new.**
+
+    ⚠️ **The claim reader is workspace-scoped from the caller**, never from a
+    default. The API takes it from the verified request context; a handler's
+    equivalent is the event's own `workspace_id`, which `tenant_scoped_session`
+    has just established as the RLS key.
+
+    **One function rather than one per consumer** — Signal Engine needs this
+    chain to form hypotheses and Buying Score needs it to read them back, and
+    two copies would drift the first time an edge changes (§2).
+    """
+    graph = build_graph_queries(
+        session, claims=SqlClaimReader(session, workspace_id=workspace_id)
+    )
+    observations = build_observation_queries(session, graph=graph)
+    return build_business_event_queries(session, observations=observations)
+
+
+async def _compute_buying_score(envelope: EventEnvelope) -> None:
+    """Re-read an account's attention when its hypotheses move (TASK-901 slice 3).
+
+    **Signals are read back through the Signal Engine's published port rather
+    than reconstructed from the envelope**, which is the module's own rule:
+    *"events carry identity; ports carry payload, and a score built from an
+    event body would be a score built from whatever the envelope happened to
+    include."* That is why this composes the read chain rather than passing the
+    payload along.
+    """
+    current = runtime()
+    async with tenant_scoped_session(
+        current.session_factory,
+        workspace_id=envelope.workspace_id,
+        user_id=SYSTEM_USER_ID,
+    ) as session:
+        signals = build_signal_queries(
+            session, business_events=_business_events(session, envelope.workspace_id)
+        )
+        await compute_from_signal(
+            envelope,
+            compute=build_compute_buying_score(
+                session, signals=signals, publisher=PostgresOutboxEventPublisher()
+            ),
+        )
+        await session.commit()
+
+
 async def _generate_signals(envelope: EventEnvelope) -> None:
     """Form hypotheses when a business event is detected (TASK-901 slice 2).
 
@@ -267,11 +336,7 @@ async def _generate_signals(envelope: EventEnvelope) -> None:
         workspace_id=envelope.workspace_id,
         user_id=SYSTEM_USER_ID,
     ) as session:
-        graph = build_graph_queries(
-            session, claims=SqlClaimReader(session, workspace_id=envelope.workspace_id)
-        )
-        observations = build_observation_queries(session, graph=graph)
-        events = build_business_event_queries(session, observations=observations)
+        events = _business_events(session, envelope.workspace_id)
         await generate_from_business_event(
             envelope,
             generate=build_generate_signals(
@@ -318,6 +383,16 @@ def register() -> None:
             consumer_name=SIGNAL_CONSUMER,
             event_type=signal_event,
             handler=_generate_signals,
+            pool=INTELLIGENCE.name,
+        )
+
+    # **Buying Score, TASK-901 slice 3.** The stage directly downstream of the
+    # one above, on the same pool, for the same reason.
+    for score_event in SCORE_INPUTS:
+        registry.subscribe(
+            consumer_name=SCORE_CONSUMER,
+            event_type=score_event,
+            handler=_compute_buying_score,
             pool=INTELLIGENCE.name,
         )
 

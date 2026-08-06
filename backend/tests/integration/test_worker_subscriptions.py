@@ -23,6 +23,9 @@ import pytest
 from apps.worker import subscriptions
 from apps.worker.pools import POOLS
 from modules.timeline.domain.projection import PROJECTIONS
+from modules.buying_score_engine.interface.handlers import (
+    CONSUMER_NAME as SCORE_CONSUMER,
+)
 from modules.signal_engine.interface.handlers import CONSUMER_NAME as SIGNAL_CONSUMER
 from modules.timeline.interface.handlers import CONSUMER_NAME as TIMELINE_CONSUMER
 from signora_platform.event_bus import registry
@@ -128,4 +131,48 @@ class TestSignalGenerationIsActuallySubscribed:
 
         assert found is not None
         assert found.pool == POOLS["intelligence"].name
+
+
+class TestBuyingScoreIsActuallySubscribed:
+    """TASK-901 slice 3 — **the stage directly downstream of slice 2.**"""
+
+    def test_both_signal_events_reach_the_buying_score_engine(self) -> None:
+        """**Both, and the module's own docstring is the argument**: *"a
+        strengthened hypothesis arrives as a new signal plus a supersession,
+        and a consumer that handled only the first would keep weighing the
+        replaced reading alongside the one that replaced it — counting the
+        same grounds twice."* Subscribing to `signal.generated` alone would
+        double-count, silently, and only on strengthened hypotheses."""
+        subscriptions.register()
+
+        missing = [
+            event_type
+            for event_type in subscriptions.SCORE_INPUTS
+            if registry.find(consumer_name=SCORE_CONSUMER, event_type=event_type) is None
+        ]
+
+        assert missing == []
+
+    def test_it_consumes_exactly_what_its_trigger_table_maps(self) -> None:
+        """**The two lists are one fact and must not drift.** The module maps
+        each event type it handles to a `ScoreTrigger`; a subscription to an
+        event absent from that table would score with a defaulted trigger, and
+        a table entry with no subscription would never fire."""
+        from modules.buying_score_engine.interface.handlers import _TRIGGERS
+
+        assert set(subscriptions.SCORE_INPUTS) == set(_TRIGGERS)
+
+    def test_the_pipeline_stages_share_one_pool(self) -> None:
+        """`intelligence` — declared for these engines since M1.1. Signals and
+        the scores that follow them belong to one flow, and splitting them
+        across pools would let a score wait behind unrelated work."""
+        subscriptions.register()
+
+        signal = registry.find(
+            consumer_name=SIGNAL_CONSUMER, event_type="business_event.detected"
+        )
+        score = registry.find(consumer_name=SCORE_CONSUMER, event_type="signal.generated")
+
+        assert signal is not None and score is not None
+        assert signal.pool == score.pool == POOLS["intelligence"].name
 

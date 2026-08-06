@@ -511,3 +511,16 @@ Nested under the account (`…/accounts/{account_id}/score`) because a score is 
 ### Verified
 
 14 full-stack tests over the real request path — JWT verification, server-side membership, RLS context, Casbin, a four-deep read composition and PostgreSQL as the least-privileged role. A non-member, an account in another workspace and an account that has never been scored all receive **404**, deliberately indistinguishable: a different answer for any of them would make account identifiers enumerable across tenants.
+
+## The module consumes what it declares — 2026-08-06 (Lane A, TASK-901 slice 3)
+
+**Two subscriptions, and the module is untouched.** `signal.generated` and `signal.superseded` now reach `compute_from_signal` in the deployed worker; until this slice the only caller was `tests/pipeline.py`.
+
+**Both event types, and the module's own docstring is the argument** — *"a strengthened hypothesis arrives as a new signal plus a supersession, and a consumer that handled only the first would keep weighing the replaced reading alongside the one that replaced it, counting the same grounds twice."* ⚠️ **Subscribing to `signal.generated` alone would double-count silently, and only on strengthened hypotheses** — the failure that looks like a scoring-model problem for weeks. **A test asserts the subscription set equals the module's own `_TRIGGERS` table**, so the two cannot drift.
+
+**The read chain is shared with [TASK-901 slice 2](25-signal-engine.md), not copied.** Signal Engine needs business events to form hypotheses; this module needs them to read hypotheses back through `SignalQueries`. **One `_business_events()` in the worker's composition root, because two copies drift the first time an edge changes** (§2).
+
+**Signals are read through the published port rather than reconstructed from the envelope**, which is this module's standing rule: *"events carry identity; ports carry payload, and a score built from an event body would be a score built from whatever the envelope happened to include."*
+
+⛔ **It computes no scores in production yet, and the chain above it is why.** `signal_engine` is now wired ([slice 2](25-signal-engine.md)) but `business_event_engine` is not, so nothing publishes the events that would start the sequence. **`BLOCKED_BY_C012` is down to five, and each remaining slice removes exactly one.**
+
