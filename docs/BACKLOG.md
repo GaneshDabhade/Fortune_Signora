@@ -563,6 +563,21 @@
 | **Delivers** | **A reviewable path through sign-up in the demo environment**, by the door a customer uses. ⛔ **§20e: test data enters the way a customer's data enters** — no seeded session, no bypassed verification |
 | ⚠️ **Bound** | ⛔ **No *skip auth in development* flag.** §13 forbids it by name, and this row is exactly where somebody would reach for one |
 | **Unblocks** | **The [D-113](DECISION_REGISTER.md) authentication journey** — a Playwright scenario that signs in needs an environment where signing up is possible |
+| ⚡ **Shape ruled 2026-08-06 — [D-131](DECISION_REGISTER.md), [ADR-0406](architecture/adr/0406-authentication-execution-modes.md)** | ✅ **This is *Development Mode*, and it is not new engineering — it is the existing console transport, named.** **Measured under [D-130](DECISION_REGISTER.md) rather than assumed: `createEmailTransport` already writes the *real* Better Auth link with its real token — *"nothing here is mocked"* — and `loadAuthConfig` already refuses it in a deployed environment.** ⛔ **So the slice does not build a transport. It makes the existing one reachable as a reviewable path and names the mode it is.** ⛔ **`requireEmailVerification` stays `true`** — the mode changes where the link goes, **never whether it is required** |
+
+### TASK-473 · A developer can always tell which authentication mode is running
+
+| | |
+|---|---|
+| **Discovery** | **[ADR-0406](architecture/adr/0406-authentication-execution-modes.md) §3**, drafted on [D-131](DECISION_REGISTER.md) |
+| **Module** | **`infra/` + the frontend edge — Lane C** *(Platform Foundation, [D-022](DECISION_REGISTER.md))*. ⚠️ **The *surface* is Product Surface's if it becomes a screen element — see the bound below** |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06.** **Fitness (§20e); placed last, reordering nothing** |
+| ⚡ **The requirement, and it is the only genuinely new one in [D-131](DECISION_REGISTER.md)** | ⛔ ***"These modes must be explicit and never silently imitate production behavior. A user or developer should always know which mode is active."*** **Today nothing reports it.** **`environmentName()` defaults to `'local'` silently, and no surface names the mode at all** |
+| ⚠️ **The failure it prevents, stated concretely** | **A reviewer walking the first hour cannot tell whether they signed in as a seeded demo account or created one.** ⛔ **Those are two different products to review, and a review of the wrong one is worse than no review — because it is reported as a review.** ⚡ **[C-320](LANE_COORDINATION.md) is the evidence this is real: *"every account that has ever existed in Signora was created by `demo-users.ts`"*, and nobody noticed for three days** |
+| **Delivers** | **The process reports its active mode**, and ⚡ **a test asserts the reported value *changes with the configuration*** — ⛔ **not that it equals today's value.** **[B-130](BUGS.md)'s lesson: *the test that catches a constant is not one that checks today's number — it is one that changes the input and requires the output to follow*** |
+| ⛔ **Out of scope, and this is [D-129](DECISION_REGISTER.md)'s rule** | **How the mode is *displayed*.** **A banner, a badge, a startup line — the treatment is the approved design's, and [410](architecture/410-approved-ui-specification.md) is the authority.** ⚠️ **This row delivers the *fact* and refuses to invent the *presentation*** |
+| **Change Budget** | 🟠 — **a new observable on the auth configuration.** ⛔ **No new authentication path, no new flow, no weakened guard** |
+| ⚠️ **The rule it must not break** | ⛔ **§13, by name: *never add a "skip auth in development" flag*.** ⚡ **This row is adjacent to that temptation and is the opposite of it** — it makes the mode *visible*, never *permissive*. **`requireEmailVerification` is `true` in all three modes and this slice does not touch it** |
 
 ### TASK-461 · The Action Batch's `public/` contract, and nothing else
 

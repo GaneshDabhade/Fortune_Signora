@@ -268,6 +268,36 @@
 
 **Defect discovery moves earlier.** ⚡ **And QE's purpose changes with it: integration correctness, cross-module interaction, release confidence — not rediscovering what the lane could have caught.**
 
+### ⚖️ 0-J · A ruling and its field move together — [D-131](DECISION_REGISTER.md)
+
+> ## ***"Whenever a decision is executed, the corresponding status fields are updated in the same change. A decision recorded only in prose is effectively invisible to the repository."***
+
+**The prose is for the reader. The field is for everything else** — `state-check`, `decision-queue`, the dashboards, the queues, and the next session that arrives cold.
+
+⛔ **Writing the ruling into a blockquote and leaving the `Status` field alone is not a partial update. It is a *no-op* as far as the repository is concerned**, and it is worse than silence: **the item continues to present itself as an open question, so it keeps consuming the one resource this office exists to protect.**
+
+| **Measured 2026-08-06** | |
+|---|---|
+| **Twelve items** | Carried a ruling above a `Status` field that still read `OPEN` or `READY FOR PRODUCT DECISION` — **C-002 · C-006 · C-020 · C-025 · C-104 · C-225 · C-322 · C-329 · C-332 · C-417 · C-418 · C-419** |
+| **Three of them** | ⛔ **Were about to be escalated to the product owner as open questions they had already answered** |
+| **The class** | ⚡ **[C-213](LANE_COORDINATION.md)'s, exactly** — *a fact recorded in prose beside a field is a fact no instrument reads.* **C-213 cost two days on one stale word; this cost a re-decision request on twelve items** |
+
+> ✅ **The discipline, and it is one sentence: the edit that records a ruling and the edit that sets the field are the same edit.** ⛔ **Never two commits, and never *"the blockquote says it."***
+
+### ⚖️ 0-K · Product readiness is a goal beside architectural correctness — [D-131](DECISION_REGISTER.md)
+
+> ## ***"Evaluate whether it moves Signora closer to being a complete, production-quality enterprise product, not merely a complete architecture."***
+
+**This does not relax a single architectural rule.** ⛔ **Every freeze, boundary, budget and gate binds unchanged, and [D-131](DECISION_REGISTER.md) says so in its own words**: *"while maintaining the architectural quality we have established."*
+
+**What it changes is the *tie-break*.** ⚡ **When two pieces of work are both correct and both ready, the one that moves a customer-visible capability closer to shippable goes first.**
+
+| ✅ **Counts as product readiness** | ⬜ **Does not, on its own** |
+|---|---|
+| **A screen a customer can reach and use** · **a journey that completes end to end** · **a state that renders honestly when a read fails** · **a mode a reviewer can identify** · **an enterprise concern a buyer asks about** — permissions, audit, export, accessibility | **A contract with no consumer** · **an audit with no row** · **a capability nothing calls** · **a refinement of a process that is working** |
+
+⚠️ **And the honest caveat: the second column is not waste.** **Several of them are how the first column gets built** — [P-E](DOMAIN_DISCOVERY_REGISTER.md) exists because a contract *must* precede its consumer across a lane boundary. ⛔ **The test is not *does this touch a screen*. It is *does the shortest path from here to a customer using it pass through this*** — and if the answer needs a paragraph, it usually does not.
+
 ### ⚖️ 0-i · Evidence First — [D-102](DECISION_REGISTER.md)
 
 > ## ***"Every recommendation should first attempt to disprove itself."***

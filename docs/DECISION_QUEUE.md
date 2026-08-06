@@ -145,6 +145,76 @@
 | **Priority** | **P0 on timing · P3 on difficulty.** Two small slices |
 | **Recommended** | ✅ **Sequence [TASK-434](BACKLOG.md) ahead of TASK-406's backtest slice.** ⚠️ **First slice is a prerequisite regardless of any of this**: **`commercial_profile/public/` publishes thirteen views and *not one is the ICP* — no module can read the criteria at all today**, and every one of the sixteen consumers is blocked on that one missing read port. **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the ratified precedent for exactly this shape** |
 
+## 🔴 The Action Batch needs an owner — one registry line, brought with the decomposition
+
+✅ **[D-126](DECISION_REGISTER.md) is ruled and executed**: [ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) is drafted, and **[TASK-461](BACKLOG.md)–[TASK-466](BACKLOG.md)** are the six slices. ⛔ **One thing remains and it is not mine: the new bounded context has no owner, and module ownership is never Lane C's** (§20e).
+
+> ⚡ **Brought *with* the decomposition rather than discovered after it.** **[TASK-427](BACKLOG.md) sat shut for two days because its row said *"`modules.toml` gains a row when this is placed, not before"* while `READY` needed an owner — [D-103](DECISION_REGISTER.md) broke that deadlock, and this is the lesson applied rather than re-learned.**
+
+| | |
+|---|---|
+| ✅ **Lane C recommends** | **Lane B** |
+| **§20e's precedence, and it points one way** | **① product architecture** — the first consumer is **Companies bulk**, whose backend is `opportunity_engine` · **② bounded context** — Lane B holds `opportunity_engine`, `commercial_profile` and `people` · **③ long-term maintenance** — four of the five blocked screens read Lane B's modules · **④ continuity** — Lane B raised and closed [C-334](LANE_COORDINATION.md), [C-332](LANE_COORDINATION.md) and the `TASK-428` boundary, all in this area |
+| ⚖️ **And the load argument, stated separately because it is weaker** | **Lane A holds 11 eligible rows at shortfall 0; Lane B holds 4.** ⛔ **Capacity is not a precedence criterion** — §20e: *ownership optimises for cohesion, never for arithmetic* — **so it is offered as a tiebreak that was not needed, not as the reason** |
+| ⬜ **Also unnamed, and deliberately** | **The context's own name.** ⛔ **[ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) refuses to coin one**: a name is [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s test — *would a salesperson use this word unprompted?* — **and it is worth one deliberate pass rather than a placeholder that ships** |
+
+**On confirmation: the `modules.toml` row is written, [TASK-461](BACKLOG.md) goes `READY`, and the five remaining slices sequence behind it. Nothing else waits.**
+
+## 📌 TASK-431 · Six screens assert one guarantee, and the repository has no word for it
+
+**Not a `C-` item — no lane is blocked and nothing is undecided about *whether*.** **The question is the shape**, and it is 🔴, so it is yours.
+
+| | |
+|---|---|
+| **Summary** | **[442 §F1](architecture/442-product-led-domain-discovery.md).** *"Approved before it writes, reversible after it does"* · *"nothing sends without your approval, reversible for 24 hours"* · *"reversible for 24 hours as a single named batch"* · *"attributed, reversible, in the audit log"* · **AI Copilot's 17 surfaces: *"proposes rather than commits… attributable and reversible"***. **Five screens in the design project's own words, plus every AI surface** |
+| **The finding** | **The AI contract and the bulk-edit contract are the same contract**, and that is invisible screen-by-screen — one reads as AI governance, the other as a table feature. **They are one concept: a change that waits for a human, is recorded as one named thing with an author, and can be taken back inside a window** |
+| **Already built** | **More than half.** `Recommendation` proposes · **`MACHINE_AUTHORED = frozenset({Stage.TRACKING})` — *"Intelligence suggests. Humans commit."*** · `actor_id` in **37 files** · **reversal-as-supersession, five times** (`observation` · `signal` · `entity` · `business_event` · opportunity stage) |
+| **Genuinely absent** | **A named unit of change · a window · and the verbs.** The `Action` enum is `read · update · add · remove` — **there is no `approve` and no `withdraw`, so the guarantee cannot currently be *authorized*, let alone recorded** |
+| **Impact** | **Six screens.** **AI Copilot is wave 2 and is the first to need it** |
+| **Blocked tasks** | **[TASK-431](BACKLOG.md).** Nothing is blocked today — **the cost is paid later, and paid five times** |
+| **Lanes waiting** | **None.** This is why it is cheap to rule now |
+| **Priority** | **P1 — the only 🔴 in [442](architecture/442-product-led-domain-discovery.md) with no decision behind it** |
+| **Recommended** | ✅ **(b) — a domain concept in one owning context, consumed through `public/`.** **The reason is the reuse gate, not taste**: *"a port belongs to the module that owns the language it represents"* (§6), and **approval is a language the whole product speaks** — which is exactly what distinguishes it from the five existing supersessions, each of which is one module's own vocabulary. **(a)** puts a shared concept in frozen substrate; **(c)** is the five-implementations outcome, and it is unpickable afterwards because each copy will be load-bearing for its own screen |
+
+## 📌 TASK-433 · `Segment` already means something else
+
+| | |
+|---|---|
+| **Summary** | **[442 §F2](architecture/442-product-led-domain-discovery.md).** The App Shell applies global scope *"before a module renders"* and **all 16 screens inherit it**; **Companies** needs *"saved views and segments"*; **Global Search** needs *"saved and monitored searches"*. **`saved_view`, `saved search`, `monitored` — zero matches repository-wide** |
+| **The collision** | **`commercial_profile` owns `Segment`** — a named ICP segment with its own state machine, meaning ***who buys***. **Companies' "segment" is a saved filter over a list of accounts.** **Two concepts, one word, and the word is already in the ubiquitous language** — §4: *"never repurpose a term from one module inside another"* |
+| **What this does *not* ask** | ⛔ **[O3](DECISION_REGISTER.md) stays deferred.** O3 asked **where shell services live**; this asks **whether a saved view is a domain concept, and what it is called.** *"No further preparation"* is respected — no placement is proposed here |
+| **Impact** | **Five screens**, and the shell inherits into all sixteen |
+| **Lanes waiting** | **None** |
+| **Priority** | **P2 — trivial now, a rename across a bounded context later** |
+| **Recommended** | ✅ **Rule the name before the second one is built.** **Lane C's suggestion is `SavedView` for the filter and `Segment` unchanged for the ICP concept** — the customer says *"my saved view"* and *"my segment"* about different things already, so [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s test is satisfied without inventing anything |
+
+## ⬜ Open, and none of these blocks a lane today
+
+> ⚠️ **These twelve were never on this page, and the reason is worth recording: they were *masked*.** **`decision-queue.py` treats a bold `**C-nnn**` anywhere in a section as a listing, so each of them counted as present because a section about something else mentioned it.** ⛔ **Removing seven decided sections on 2026-08-06 revealed all twelve at once** — **the page had been under-reporting by twelve for as long as those sections existed.**
+>
+> ✅ **Listed compactly rather than as twelve sections, deliberately.** **None blocks a lane today, and giving each a full page of analysis would bury [C-421](#-c-421--a-lane-cannot-read-the-design-it-is-implementing-against--external) and [C-229](#-c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately), which do.** ⚡ **A queue that presents everything equally has stopped prioritising.**
+
+| | The decision | Why it is here rather than higher |
+|---|---|---|
+| **[C-211](LANE_COORDINATION.md)** | 🔴 **Where does an approach brief live?** **It reads the buying committee, signals, business events, validation, narration and the opportunity — and *no existing module may read all six*** | ⚡ **The most architectural of the twelve.** **A new bounded context or a widened contract; both are 🔴** |
+| **[C-212](LANE_COORDINATION.md)** | 🟠 **Which product is an opportunity about?** **The buying committee is declared *per product*; an opportunity has no product** | ⛔ ***"Which committee applies to this account?"* is unanswerable, so role ranking cannot start** |
+| **[C-203](LANE_COORDINATION.md)** | **Nothing in the product can render a person's name** | **Narrowed 2026-08-02. Grouped with People Intelligence** |
+| **[C-204](LANE_COORDINATION.md)** | **The catalog explains nine words to nobody** | ⚡ **Half-answered today**: [TASK-456](BACKLOG.md)'s audit settled the *per-account* surface. **What remains is whether a catalog *browse page* is wanted** |
+| **[C-005](LANE_COORDINATION.md)** | **Who owns the signal-profile write path** | **Blocks the first customer-editable relevance profile** |
+| **[C-223](LANE_COORDINATION.md)** | **`competitor_entry` across the current dependency graph** | **Only the *detection* half of Epic D phase 1** — the declaration, its API and its screen all shipped |
+| **[C-009](LANE_COORDINATION.md)** | **An internal fault reaches a customer as a `422`** | **Blocks nothing today. It blocks *doing this properly* in any module that splits its errors** |
+| **[C-003](LANE_COORDINATION.md)** | **Three wire codes for one condition** | ⚠️ **Blocks nothing — *"but it gets worse with every slice"*.** **[TASK-454](BACKLOG.md) is the slice that fixes it and is `READY`** |
+| **[C-017](LANE_COORDINATION.md)** | **The onboarding honesty principle has no permanent home** | ⚡ **The text is written and ready to paste. Lane B may not place it** — **this is one paste, not a project** |
+| **[C-007](LANE_COORDINATION.md)** | **The guided first run is a two-lane build** | ⚡ **Becomes live with [TASK-469](BACKLOG.md) Onboarding**, which is sequenced behind [C-421](#-c-421--a-lane-cannot-read-the-design-it-is-implementing-against--external) |
+| **[C-014](LANE_COORDINATION.md)** | **Accessibility and performance testing are QE's, and neither exists** | ⚠️ **QE owns it and recorded the absence rather than stubbing a framework.** ⛔ **[D-131](DECISION_REGISTER.md) ② makes this a *product readiness* item — accessibility is what an enterprise buyer asks about** |
+| **[C-210](LANE_COORDINATION.md)** | **Will Signora hold personal data?** | ⏸️ **Already `DEFERRED` by you on 2026-08-05** — *"keep grouped with future People Intelligence work"*. **Listed only because it carries no `Status` field for an instrument to read** |
+
+## Closed on 2026-08-06
+
+> **Seven rows left this page because they were decided, not because they were dropped.** **[D-131](DECISION_REGISTER.md) ①**: *"a decision recorded only in prose is effectively invisible to the repository"* — **so each item's `Status` field and its index row were written in the same change as this removal, and `decision-queue.py --check` is what proves it.**
+
+⚠️ **All seven had been ruled on 2026-08-06 and were still presenting themselves as open questions.** **Three of them — [C-417](LANE_COORDINATION.md), [C-418](LANE_COORDINATION.md), [C-419](LANE_COORDINATION.md) — were nearly escalated for a second ruling.**
+
 ## C-332 · The predicate landed and TASK-406 still cannot call it
 
 ⚠️ **Raised by Lane B, and it falsifies a claim this office published.** **[443](architecture/443-account-matching-capability.md) and [TASK-406](BACKLOG.md)'s row both say *"the per-criterion lift half is unaffected and needs nothing new."* Lane B measured that and it is wrong.**
@@ -202,49 +272,6 @@
 | **Priority** | **P1 — it is in front of seven slices and a starving lane** |
 | **Recommended** | ✅ **A bounded, named exception**: *the slice may delete `# type: ignore[arg-type]` comments at publish sites and may change no other line in `backend/modules/`*. **Five deleted comments, provably behaviour-free, and a reviewer can verify the bound from the diff alone** — the same standard §20a's carve-out already uses for a `Resource` member. **The alternative that bends no rule delivers the capability never**: those comments have sat there for weeks precisely because no slice makes anybody touch them |
 | ⚠️ **Two corrections to the ADR, same validation** | **It says *"all eight"* ignores; there are **five** at publish sites** — the other three are `provider_normalization` (×2) and `ai_research_engine` and none is at a publish site. **And §Validation checks that `apps/worker/` has an owner but never checks that the *modules* the change reaches have one** — which is the check that would have caught this at ratification |
-
-## 🔴 The Action Batch needs an owner — one registry line, brought with the decomposition
-
-✅ **[D-126](DECISION_REGISTER.md) is ruled and executed**: [ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) is drafted, and **[TASK-461](BACKLOG.md)–[TASK-466](BACKLOG.md)** are the six slices. ⛔ **One thing remains and it is not mine: the new bounded context has no owner, and module ownership is never Lane C's** (§20e).
-
-> ⚡ **Brought *with* the decomposition rather than discovered after it.** **[TASK-427](BACKLOG.md) sat shut for two days because its row said *"`modules.toml` gains a row when this is placed, not before"* while `READY` needed an owner — [D-103](DECISION_REGISTER.md) broke that deadlock, and this is the lesson applied rather than re-learned.**
-
-| | |
-|---|---|
-| ✅ **Lane C recommends** | **Lane B** |
-| **§20e's precedence, and it points one way** | **① product architecture** — the first consumer is **Companies bulk**, whose backend is `opportunity_engine` · **② bounded context** — Lane B holds `opportunity_engine`, `commercial_profile` and `people` · **③ long-term maintenance** — four of the five blocked screens read Lane B's modules · **④ continuity** — Lane B raised and closed [C-334](LANE_COORDINATION.md), [C-332](LANE_COORDINATION.md) and the `TASK-428` boundary, all in this area |
-| ⚖️ **And the load argument, stated separately because it is weaker** | **Lane A holds 11 eligible rows at shortfall 0; Lane B holds 4.** ⛔ **Capacity is not a precedence criterion** — §20e: *ownership optimises for cohesion, never for arithmetic* — **so it is offered as a tiebreak that was not needed, not as the reason** |
-| ⬜ **Also unnamed, and deliberately** | **The context's own name.** ⛔ **[ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) refuses to coin one**: a name is [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s test — *would a salesperson use this word unprompted?* — **and it is worth one deliberate pass rather than a placeholder that ships** |
-
-**On confirmation: the `modules.toml` row is written, [TASK-461](BACKLOG.md) goes `READY`, and the five remaining slices sequence behind it. Nothing else waits.**
-
-## 📌 TASK-431 · Six screens assert one guarantee, and the repository has no word for it
-
-**Not a `C-` item — no lane is blocked and nothing is undecided about *whether*.** **The question is the shape**, and it is 🔴, so it is yours.
-
-| | |
-|---|---|
-| **Summary** | **[442 §F1](architecture/442-product-led-domain-discovery.md).** *"Approved before it writes, reversible after it does"* · *"nothing sends without your approval, reversible for 24 hours"* · *"reversible for 24 hours as a single named batch"* · *"attributed, reversible, in the audit log"* · **AI Copilot's 17 surfaces: *"proposes rather than commits… attributable and reversible"***. **Five screens in the design project's own words, plus every AI surface** |
-| **The finding** | **The AI contract and the bulk-edit contract are the same contract**, and that is invisible screen-by-screen — one reads as AI governance, the other as a table feature. **They are one concept: a change that waits for a human, is recorded as one named thing with an author, and can be taken back inside a window** |
-| **Already built** | **More than half.** `Recommendation` proposes · **`MACHINE_AUTHORED = frozenset({Stage.TRACKING})` — *"Intelligence suggests. Humans commit."*** · `actor_id` in **37 files** · **reversal-as-supersession, five times** (`observation` · `signal` · `entity` · `business_event` · opportunity stage) |
-| **Genuinely absent** | **A named unit of change · a window · and the verbs.** The `Action` enum is `read · update · add · remove` — **there is no `approve` and no `withdraw`, so the guarantee cannot currently be *authorized*, let alone recorded** |
-| **Impact** | **Six screens.** **AI Copilot is wave 2 and is the first to need it** |
-| **Blocked tasks** | **[TASK-431](BACKLOG.md).** Nothing is blocked today — **the cost is paid later, and paid five times** |
-| **Lanes waiting** | **None.** This is why it is cheap to rule now |
-| **Priority** | **P1 — the only 🔴 in [442](architecture/442-product-led-domain-discovery.md) with no decision behind it** |
-| **Recommended** | ✅ **(b) — a domain concept in one owning context, consumed through `public/`.** **The reason is the reuse gate, not taste**: *"a port belongs to the module that owns the language it represents"* (§6), and **approval is a language the whole product speaks** — which is exactly what distinguishes it from the five existing supersessions, each of which is one module's own vocabulary. **(a)** puts a shared concept in frozen substrate; **(c)** is the five-implementations outcome, and it is unpickable afterwards because each copy will be load-bearing for its own screen |
-
-## 📌 TASK-433 · `Segment` already means something else
-
-| | |
-|---|---|
-| **Summary** | **[442 §F2](architecture/442-product-led-domain-discovery.md).** The App Shell applies global scope *"before a module renders"* and **all 16 screens inherit it**; **Companies** needs *"saved views and segments"*; **Global Search** needs *"saved and monitored searches"*. **`saved_view`, `saved search`, `monitored` — zero matches repository-wide** |
-| **The collision** | **`commercial_profile` owns `Segment`** — a named ICP segment with its own state machine, meaning ***who buys***. **Companies' "segment" is a saved filter over a list of accounts.** **Two concepts, one word, and the word is already in the ubiquitous language** — §4: *"never repurpose a term from one module inside another"* |
-| **What this does *not* ask** | ⛔ **[O3](DECISION_REGISTER.md) stays deferred.** O3 asked **where shell services live**; this asks **whether a saved view is a domain concept, and what it is called.** *"No further preparation"* is respected — no placement is proposed here |
-| **Impact** | **Five screens**, and the shell inherits into all sixteen |
-| **Lanes waiting** | **None** |
-| **Priority** | **P2 — trivial now, a rename across a bounded context later** |
-| **Recommended** | ✅ **Rule the name before the second one is built.** **Lane C's suggestion is `SavedView` for the filter and `Segment` unchanged for the ICP concept** — the customer says *"my saved view"* and *"my segment"* about different things already, so [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s test is satisfied without inventing anything |
 
 ## C-104 · May a request handler call a vendor synchronously, when the answer *is* the request?
 

@@ -50,7 +50,19 @@ MODULES = ROOT / "docs" / "coordination" / "modules.toml"
 # precedes it; enumerating decorations is a list that goes stale the first
 # time somebody picks a different one.
 ROW = re.compile(r"^#{2,3}[^\w\n]*(C-\d+)\s*·", re.M)
-INLINE = re.compile(r"\*\*(C-\d+)\*\*")
+# **A grouped listing is a bold id at the head of a table cell — never a bold
+# id in prose.** The pattern required `**C-nnn**` literally, so the linked form
+# `**[C-nnn](LANE_COORDINATION.md)**` did not count and twelve rows were
+# reported absent from a table they were in. **Widening it to any bold id then
+# over-corrected**: a live section citing `**[C-213](…)**` as context was read
+# as queueing C-213, and eight decided items came back as stale.
+#
+# **The anchor is what separates the two.** A listing starts its own row; a
+# reference sits inside a sentence. ⛔ **Under-reporting is the dangerous
+# direction** — this module exists because absence cannot be seen from inside
+# the document — but a check that cries wolf gets muted, which produces the
+# same silence more slowly.
+INLINE = re.compile(r"^\|\s*\*\*\[?(C-\d+)\]?", re.M)
 # **Two heading shapes, because the register has two and pretending otherwise
 # hid seven items.** The convention is `## C-nnn · title`; C-210 through C-216
 # were written as `### C-nnn — title` (and C-210 as `####`), with an em-dash and
@@ -271,7 +283,14 @@ def check() -> int:
     for cid in sorted(q):
         if cid not in reg:
             stale.append(f"{cid} has a row here and no item in LANE_COORDINATION.md")
-        elif not _is_open(reg[cid][1]):
+        elif not _is_open(reg[cid][1]) and "AWAITING" not in reg[cid][1].upper():
+            # **`RULED, awaiting provision` is decided and still needs the
+            # product owner** — D-131 ⑤ calls C-334 *operational configuration*:
+            # the ruling was taken and the credential is not yet supplied.
+            # Dropping it from the queue would hide an action; reporting it as
+            # stale would train a reader to ignore this check. **It is neither
+            # an open question nor finished work**, and the queue is the only
+            # place that difference is visible.
             stale.append(f"{cid} is {_clean(reg[cid][1])[:44]!r} — ruled, and still queued")
 
     unowned: list[str] = []
