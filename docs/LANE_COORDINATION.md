@@ -354,7 +354,7 @@ databaseUrl: required(
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | **`RULED`** — 2026-08-05 · [D-073](DECISION_REGISTER.md) · a `Resource` is a **declaration**, never a grant · **[`CLAUDE.md` §20a](../CLAUDE.md) amended** | **[TASK-405](BACKLOG.md)'s last route is unblocked.** Authorization is granted only through `policy.csv`; a `Resource` entry without policy rows provides no runtime capability, so the two authorities were never governing the same thing |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
-| [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) | **Opportunity Intelligence needs a door, and [D38](architecture/39-product-review-findings.md) closed that one deliberately** | Lane A | **Product owner** — reversing a ratified navigation decision is not a lane's, and not Lane C's | **`READY FOR PRODUCT DECISION`** — raised 2026-08-06 · **one question, a recommendation, and the build scoped either way** | **[TASK-441](BACKLOG.md)'s entrance only.** The screen itself is ready to build |
+| [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) | **Three approved screens need a door, and [D38](architecture/39-product-review-findings.md) closed all three by name** | Lane A | **Product owner** — reversing a ratified navigation decision is not a lane's, and not Lane C's | **`READY FOR PRODUCT DECISION`** — raised 2026-08-06, **widened the same day to the class** · **one question, a recommendation, and the builds scoped either way** | **The *entrances* of [TASK-441](BACKLOG.md), [TASK-440](BACKLOG.md) and [TASK-439](BACKLOG.md).** ⚡ **Every screen those rows deliver is otherwise ready** |
 | [C-228](#c-228--the-signal-center-has-no-workspace-wide-queue-to-render-and-no-way-to-leave-it) | **The Signal Center has no workspace-wide queue to render, and no way to leave it** | Lane A | **Lane C** — the row's scope and its Change Budget are Product Office's | **`READY FOR LANE C`** — raised 2026-08-06 from inside [TASK-439](BACKLOG.md), before writing code | **[TASK-439](BACKLOG.md) whole.** Its budget is *render only, no new endpoint*, and the screen needs two |
 | [C-227](#c-227--joinworkspace_id-has-no-in-product-entrance-by-design-and-the-declaration-is-qes) | **`/join/{workspace_id}` has no in-product entrance by design, and the declaration is QE's** | Lane A | ~~QE~~ **Lane A** | **`CLOSED`** — 2026-08-05. ⚠️ **The item's own premise was wrong**: QE ruled at [B-123](BUGS.md) that the call is the implementing lane's, and this lane declared the route. **Four polls lost to asking rather than deciding** | Nothing. `reachability.test.tsx` is green |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | **`CLOSED`** — 2026-08-05 · deferral confirmed | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
@@ -5859,6 +5859,36 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 ### Implementation impact
 
 **None yet. Nothing has been written.** No route, no component, no navigation edit, no test. **The audit ran first, which is what found this.**
+
+---
+
+## ⚡ Widened the same day — it is three screens and one question
+
+**Raised for Opportunity Intelligence. Checked against the next row in the queue an hour later, and the shape repeated.** **D38 did not remove one entry; it removed six and named three of this backlog's screens explicitly:**
+
+> *"It was six: Overview, **Companies**, **Signals**, Timeline, **Opportunities**, Settings… **None of the six customer journeys is *show me all the signals* or *show me all the companies*.** A signal is what explains an account; a company is what an account is. **Both are already on the brief.**"*
+
+| Row | Screen | D38 | Its audit mentions D38, navigation or how a seller arrives? |
+|---|---|---|---|
+| **[TASK-441](BACKLOG.md)** | Opportunity Intelligence | ⛔ *Opportunities*, removed by name | **[453](architecture/453-opportunity-intelligence-traceability-audit.md) — no** |
+| **[TASK-440](BACKLOG.md)** | Companies | ⛔ *Companies*, removed by name **and reasoned about** | **[446](architecture/446-companies-traceability-audit.md) — no** |
+| **[TASK-439](BACKLOG.md)** | Signal Center | ⛔ *Signals*, removed by name | **[447](architecture/447-signal-center-traceability-audit.md) — no** *(and it has [C-228](#c-228--the-signal-center-has-no-workspace-wide-queue-to-render-and-no-way-to-leave-it)'s missing read as well)* |
+
+> ## **So the question is asked once, not three times: does [410](architecture/410-approved-ui-specification.md) supersede [D38](architecture/39-product-review-findings.md)?**
+>
+> **It is entirely plausible that it does.** 410 is a product-owner-approved sixteen-screen product, and D38 is an M12.3 navigation review taken when four of those screens did not exist. **If 410 supersedes it, D38 becomes a dated record, all three entries are correct, and this lane builds them in queue order.** ⚠️ **What a lane may not do is decide that**, and **no audit noticed there was anything to decide.**
+
+### Why this is one item rather than three
+
+**A third near-identical row would be the register growing instead of the question getting answered** — and this register's own standard is that it should shrink. **The argument, the alternatives and the recommendation above apply unchanged to all three**; only the screen's name changes.
+
+### What it means for the queue, stated plainly
+
+**Lane A has nothing startable until this is answered.** [TASK-432](BACKLOG.md) is `IN VALIDATION`, [TASK-439](BACKLOG.md) is held on [C-228](#c-228--the-signal-center-has-no-workspace-wide-queue-to-render-and-no-way-to-leave-it), and **[TASK-441](BACKLOG.md) and [TASK-440](BACKLOG.md) are the whole of `future`.**
+
+⛔ **[TASK-440](BACKLOG.md) is deliberately left `READY` and unclaimed.** **Parking a third row under this lane's name would make the board read as three tasks in progress when the truth is one unanswered question** — and a `READY` row is visible to whoever answers it, where a `CLAIMED` one looks handled.
+
+> **This is not the lane running out of work. It is four screens' worth of work behind one sentence** — and the sentence is *"D38 stands"* or *"410 supersedes it"*.
 
 ## C-228 · The Signal Center has no workspace-wide queue to render, and no way to leave it
 
