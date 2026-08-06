@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `ce1a658`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `ff3ac8f`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `ce1a658`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `ff3ac8f`, 2026-08-06.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`ce1a658`** — the certified commit itself |
-| **`integration`** | **level with `main`** at `ce1a658` |
-| **Release candidate** | **None pinned.** Cycle 70 promoted **the invariant that will notice if last cycle's fix ever regresses** — 387 Security Invariants became **389** |
-| **Certification** | ✅ [`ce1a658f376a`](certification/reports/ce1a658f376a.md) · migration head **`0039`** · protocol **v2** |
+| **`main`** | **`ff3ac8f`** — the certified commit itself |
+| **`integration`** | **level with `main`** at `ff3ac8f` |
+| **Release candidate** | **None pinned.** Cycle 71 promoted **three lanes at once** — the frontend suite entering a gate, the pipeline reporting its own health, and the discovery phase closing |
+| **Certification** | ✅ [`ff3ac8f6184e`](certification/reports/ff3ac8f6184e.md) · migration head **`0039`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
-| **Validation queue** | ⚠️ **Lane C — 13 commits, deferred.** Its branch carries **pre-rebase copies of audits already promoted in cycle 69**, so replaying them removes rows newer than themselves. **QE aborted rather than resolve another lane's history**; one rebase on their side clears it |
-| **Customer value this cycle** | ⛔ **None directly, and it is the right kind of none.** A guarantee that outlives the feature that created it, and a design document that stopped colliding with another |
+| **Validation queue** | **Empty.** ✅ **Lane C's cycle-70 deferral resolved itself** — the lane rebased, and its work is promoted here |
+| **Customer value this cycle** | ✅ **Yes.** A seller can ask **how the pipeline itself is doing** — conversion, ageing, movement since a date, roll-up by owner, ICP coverage — built entirely from what the platform already records |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3653 backend tests** · **95.42% coverage** *(floor 95)* · **1255 frontend tests** across 60 files *(**ungated** — [B-123](docs/BUGS.md))* · **389 Security Invariants** *(+2, [B-127](docs/BUGS.md) closed)* · mypy strict over **762 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 148s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3683 backend tests** · **95.33% coverage** *(floor 95)* · **1255 frontend tests** across 60 files *(**ungated** — [B-123](docs/BUGS.md))* · **389 Security Invariants** · mypy strict over **765 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 140s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,17 +40,17 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **[TASK-437](docs/BACKLOG.md)** *(cycle 69)* — leaving is real, and removal revokes | **[B-126](docs/BUGS.md)** — the duplicate was a second design doc | **[TASK-418 ④](docs/BACKLOG.md)** and audits `444`–`448` *(cycle 69)* | **Cycle 70** — [B-127](docs/BUGS.md), 387 → 389 invariants |
-| **Execution phase** | **Building** — [TASK-438](docs/BACKLOG.md) claimed | **Building** | **Auditing** — screens and vocabulary, under [D-078](docs/DECISION_REGISTER.md) | **Certified · Promoted · Closed out** |
-| **Branch** | Level with `main` | Level with `main` | ⚠️ **14 ahead, and stale** — carries pre-rebase copies of cycle 69's promoted audits | Level with `main` |
-| **Validation status** | — | ✅ **Promoted this cycle** | ⚠️ **Deferred** — one rebase on their side clears it | — |
-| **Blocked?** | **No** | **No** | **No** — deferred is not blocked; nothing is waiting on anybody else | **No** |
-| **Waiting on QE?** | No | No | **Yes, after they rebase** | — |
-| **Next executable work** | [TASK-438](docs/BACKLOG.md) — the Executive Dashboard's five sections that need nothing new | Next `READY` task | Already building | **Cycle 71, on the next pass** |
+| **Last promoted** | **[TASK-437](docs/BACKLOG.md)** *(cycle 69)* — leaving is real, and removal revokes | **[TASK-438](docs/BACKLOG.md)** — the pipeline says how it is doing | **[D-093](docs/DECISION_REGISTER.md)** — the discovery phase closes | **Cycle 71** — [B-123](docs/BUGS.md), `vitest` enters stage 1 |
+| **Execution phase** | **Building** | **Building** | **Governing** — discovery closed, review and dependency work continues | **Certified · Promoted · Closed out** |
+| **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
+| **Validation status** | — | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
+| **Blocked?** | **No** | **No** | **No** | **No** |
+| **Waiting on QE?** | No | No | No | — |
+| **Next executable work** | Next `READY` task | Next `READY` task | Review and dependency coordination | **Cycle 72, on the next pass** |
 
-> **Two of three branches now sit level with `main`.** Lane C's does not, and the cause is worth naming precisely: **its work was promoted in cycle 69 while its branch kept the pre-rebase copies**, so replaying them removes register rows newer than themselves. **That is a lane's own history to reconcile, not QE's.**
+> **Every branch now sits level with `main`** — the first time in this session's eleven cycles. Lane C's cycle-70 deferral cleared **because the lane rebased**, which is what *deferred rather than blocked* was predicting: one rebase, and nobody owed anybody an answer.
 >
-> **Nothing is waiting on the product owner to release it.** Lane C is **deferred, not blocked** — the distinction matters, because *deferred* means one rebase and *blocked* would mean somebody owes an answer.
+> **Nothing is waiting on the product owner.** The open ruling — architecture document numbers `49`, `50` and `51`, and whether `REQUIRED_GATES` should become version-aware — blocks no lane and no cycle.
 
 ---
 
@@ -101,44 +101,60 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 70
+## 1d · Release summary — 2026-08-06, cycle 71
 
-**Derived from the promoted commit `ce1a658`.** **Twenty-six promotions.** The cycle that made last cycle's fix permanent — and the first this session where QE's own finding became QE's own slice.
+**Derived from the promoted commit `ff3ac8f`.** **Twenty-seven promotions.** Three lanes in one snapshot — and the first certification this session that had to be run twice, for a reason that was QE's and not the repository's.
 
 ### What was promoted
 
-**[B-127](docs/BUGS.md), QE** — `TestMembershipRevocation`, two invariants. **Security Invariants 387 → 389.**
+**[TASK-438](docs/BACKLOG.md), Lane B** — *a seller can ask how the pipeline itself is doing.* **Stage conversion · ageing · movement since a date · roll-up by owner · ICP coverage.**
 
-Cycle 69 fixed a defect that made removal a record rather than a revocation. **The fix was covered through the customer's door, in the module's own suite — correct, and not where §11 puts a guarantee of this class.** The feature is *leaving*; the guarantee is *an ended membership grants nothing*, and those have different lifetimes.
+> **It needed nothing new.** `opportunity_state` is append-only and already carries sequence, stage, owner and timestamp, so every one of the five is a question the platform could already answer and nobody had asked. **No forecast, no probability, no deal value, no quarter** — the row draws that line itself, and holds it.
 
-> **A slice that reshapes the leave endpoint takes a feature test with it, and [B-206](docs/BUGS.md) is the evidence nobody would notice** — the filter was missing for the entire life of the repository because nothing asked. §11 wants the overlap **deliberately**, so that rewriting a feature cannot remove its guarantee.
+**[B-123](docs/BUGS.md) half-closed, QE** — **`make validate` now runs `vitest`.**
 
-**Asserted at the authorization boundary rather than through a route**, so it holds for leaving, removal, and any future way a membership ends.
+```
+1  migrate  ·  2  tsc --noEmit  ·  3  vitest  1255 passed  ←  new  ·  4  suite
+```
 
-**Mutation-checked.** With `ended_at IS NULL` removed from the query service the first invariant fails on `assert 'member' is None`; with it present both pass. **The production file was restored byte-for-byte and no production code is in the commit** — QE writes tests in any module's suite and changes no module's production code.
+**`REQUIRED_GATES` is deliberately still six.** Adding a seventh would make **every certification record ever written unsatisfied** — none of them ran it, so `is_certified` would read false across the whole history `--audit-main` walks. `RECORD_VERSION` exists for exactly this, and a version-aware required set **changes what certification means** ([ADR-0032](docs/architecture/adr/0032-release-certification.md)). **That is a ruling, not a slice.**
 
-> **The first draft added the member through `user_scoped_session` and PostgreSQL refused the insert.** The same wall Lane A hit writing the feature test, one cycle earlier: `membership` is workspace-owned, so the owner adds through a **workspace-scoped** session — the door an owner actually uses.
+> **The honest scope**: a frontend regression can still reach `main` if stage 1 is skipped. What this fixes is that **it cannot reach `main` through a validation QE actually ran** — most of the exposure, and not all of it.
 
-**[B-126](docs/BUGS.md), Lane B** — and the fix corrected QE's diagnosis. **The duplicate was not a misnumbered document; it was a second design document**, and it moved to `40-commercial-profile.md` rather than being renumbered in place.
+**[D-093](docs/DECISION_REGISTER.md), Lane C** — the screen-by-screen discovery phase closes, **and its first miss is recorded the same day.**
 
-### Lane C is deferred, and it is one rebase rather than a defect
+### Lane C's cycle-70 deferral resolved itself
 
-**13 commits, not taken.** Its branch carries **pre-rebase copies of the audits promoted in cycle 69**, so replaying the oldest of them onto current `integration` tries to remove register rows *newer than itself* — four conflicts in `BACKLOG.md`, `DECISION_QUEUE.md`, `DOMAIN_DISCOVERY_REGISTER.md` and `LANE_COORDINATION.md`.
+**No intervention, and that is the point.** Cycle 70 deferred 13 commits because Lane C's branch carried pre-rebase copies of work already promoted. **The lane rebased.** Its work is in this snapshot, and nothing was negotiated.
 
-> **QE aborted rather than resolve them.** A board conflict of QE's own making is board reconciliation; **a lane's own history conflicting with what that lane already pushed is not** — *"conflicts are resolved by the lane that is rebasing, never by QE — the lane knows what its change meant."*
+### The certification that had to be run twice, and it was QE's fault
 
-**Nothing is lost and nothing is blocked.** One rebase on Lane C's side, and the work is a candidate again.
+**Attempt 1 was killed at exactly 10m 0s.** QE passed a 40-minute timeout to a tool whose maximum is ten, so it clamped silently and terminated a run that needed longer.
+
+> **An abort, not a failure.** No gate reached a verdict, so nothing about the commit was learned and nothing about it is recorded. The lease released cleanly, no process survived, and the orphaned `signora_certify_ff3ac8f6184e` database was dropped before the retry.
+
+**The preflight had already named the reason**, and it is the workstation rather than the repository:
+
+```
+⚠️  MEMORY PRESSURE — certification will be slow, and may be killed
+    2.6 GB available · swap 49% consumed
+    7 × editor server processes, ~4.1 GB between them
+```
+
+**Earlier cycles today finished in about eight minutes; this one crossed ten.** The retry, detached from the foreground limit, passed every gate — **smoke 24 stages in 140s**, unremarkable.
+
+> **The preflight warns and does not refuse, which is right.** Killing somebody's editor to make a gate faster is not a decision a gate should take, and it is not QE's either.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3653 backend** · **1255 frontend** *(ungated)* · **95.42%** · **389 invariants** *(+2)* · **762 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **71 certification runs recorded, 67 certified** · `promoted == certified` ✓ · ⚠️ **[B-123](docs/BUGS.md) open — the frontend suite is in no gate** |
+| **Technical** | **3683 backend** *(+30)* · **1255 frontend** — **gated in stage 1 from this cycle** · **95.33%** · **389 invariants** · **765 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **71 certification runs recorded, 68 certified** · `promoted == certified` ✓ · **1 abort, QE's own timeout, no verdict recorded** · ⚠️ **[B-123](docs/BUGS.md) half open — certification still does not run `vitest`** |
 | **Architecture** | Reachability 0 doorless · migration `0039` **reversible, verified this cycle** · event catalog 1 known drift · ⚠️ **two capabilities shipped without a caller** · ⚠️ **[B-126](docs/BUGS.md) — architecture document `25` claimed twice** |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ⛔ **None directly.** A guarantee that outlives the feature that created it — **the cheapest cycle in the repository to justify and the easiest to skip** |
-| **Process** | ✅ **The register closed a loop in both directions.** QE filed [B-126](docs/BUGS.md) and Lane B fixed it **and corrected the diagnosis**; QE filed [B-127](docs/BUGS.md) against itself and closed it the same day. ⚠️ **Lane C deferred on a stale branch** — reported, not resolved |
+| **Customer Value** | ✅ **Direct.** A seller can ask how their pipeline is doing — conversion, ageing, movement, roll-up, ICP coverage — **and none of it needed a new table** |
+| **Process** | ✅ **Three lanes, three clean rebases, no conflicts** — and last cycle's deferral cleared without anybody being asked. ⚠️ **One certification abort, entirely QE's**: a timeout passed above the tool's maximum, clamped silently, and killed a run mid-flight. **Recorded as an abort, which says nothing about the commit** |
 
 ### Repository Health Trend
 
