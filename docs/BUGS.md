@@ -537,6 +537,48 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-132 · TASK-439 widened the `SignalRepository` protocol and left the fake behind
+
+| | |
+|---|---|
+| **Module** | `signal_engine` |
+| **Current assignee** | **Lane A** — it authored TASK-439 |
+| **Severity** | 🟠 · **Blocking Quality Defect class** — `mypy --strict` fails, so the slice cannot be certified |
+| **Status** | **`OPEN` — `CHANGES REQUESTED`.** Reported with every line named; **not fixed, another lane's module** |
+| **Found** | 2026-08-06 by QE, cycle 81, by `make certify` |
+
+**Steps to reproduce.**
+
+```bash
+cd backend && uv run mypy --strict .
+→ Found 7 errors in 4 files (checked 794 source files)
+   "FakeSignalRepository" is missing following "SignalRepository" protocol member:
+       for_workspace
+```
+
+`e933c068` added `for_workspace` to `application/ports.py` and implemented it in `infrastructure/repository.py`. **`FakeSignalRepository` was not extended**, so every construction of `SignalQueries` and `ResolveSignal` in the tests now fails the protocol.
+
+| File | Lines |
+|---|---|
+| `tests/signal_engine/test_unsupported_types.py` | 49, 124 |
+| `tests/signal_engine/test_catalog_and_history.py` | 70 |
+| `tests/signal_engine/test_triage.py` | 138, 537 |
+
+### The tests pass, which is the point
+
+**`pytest` is green.** Python does not enforce a `Protocol` at runtime, so the fake is *structurally* wrong and *behaviourally* fine — **until a caller uses the method the fake does not have.** `mypy --strict` is the only gate that sees it, and §19 requires the lane to run it before handing over.
+
+> **This is [B-130](#b-130--d-107-removed-ui_wave_tasks-and-left-its-test-referencing-it)'s class in a different gate**: a slice that changed one side of a contract and not the other, caught by a check the lane is required to run and did not.
+
+### ⚡ And it is the first certification gate this session to fail on lane code
+
+**`make validate` cannot catch it.** Stage 1 runs migrate · `tsc` · `vitest` · `pytest` — **`mypy` belongs to certification by design**, recorded in `validate.py`'s own docstring: *"`lint-imports` and `mypy` belong to certification… folding them in would produce a command that looks like certification, takes as long, and records nothing."*
+
+**So the split worked exactly as intended**, and it is worth noting against [465](architecture/465-certification-strategy.md): *"no gate has ever caught a product defect"* remains true — **this is a type defect, not a product one** — but it is the first time in this session that a certification gate has refused a lane's code rather than QE's own.
+
+**Lane B and Lane C were not held for it.** The candidate was rebuilt without TASK-439 and certified on its own.
+
+
 ### B-131 · The Validation Planner requires sixteen gates; the certification record contains six
 
 | | |
