@@ -20,6 +20,7 @@ from modules.workspace_tenancy.infrastructure.models import (
     WorkspaceModel,
 )
 from modules.workspace_tenancy.public.query_port import MembershipView
+from signora_platform.pagination import CursorPosition
 
 
 class WorkspaceQueryService:
@@ -76,6 +77,45 @@ class WorkspaceQueryService:
             role=model.role.value,
         )
 
+    async def organization_history_page(
+        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
+    ) -> tuple[list[HistoryEntry], bool]:
+        """One page of the organization's history, newest first — **TASK-443**.
+
+        **The endpoint returned every entry there had ever been.** That is a
+        contract a client cannot work with once a workspace has been running a
+        year, and it is the collection §7 requires to be cursor-paginated.
+
+        **Keyed on `(occurred_at, source_id)`.** Two things can happen in one
+        microsecond, and a page boundary falling between them would drop one.
+        `source_id` is the row an entry was derived from, which is the only
+        stable identifier a derived entry has — entries are computed, not
+        stored, so there is no id of their own to use.
+
+        ⚠️ **The response is bounded and the *fetch* is not yet.** This pages
+        over the full read below, so the query cost still grows with the
+        workspace while the payload no longer does. **Said plainly rather than
+        implied**: it fixes the contract and half the problem.
+
+        **Bounding the fetch needs six queries, not one** — an entry is
+        derived, so one membership yields a `joined` and possibly a `removed`
+        at two different timestamps, and *"the newest N rows"* is a question no
+        single table can answer. Each kind would be fetched bounded on its own
+        timestamp and the six merged, taking `limit + 1` from each so the merge
+        is provably complete. ⛔ **Still not a `UNION` of the three sources**,
+        for the reason recorded below: the columns do not line up, and making
+        them line up would turn adding a field to one source into a change to
+        all three. **[C-231](../../../../docs/LANE_COORDINATION.md) carries it.**
+        """
+        found = await self.organization_history(workspace_id)
+        if after is not None:
+            found = [
+                entry
+                for entry in found
+                if (entry.occurred_at, entry.source_id) < (after.created_at, after.id)
+            ]
+        return found[:limit], len(found) > limit
+
     async def organization_history(self, workspace_id: UUID) -> list[HistoryEntry]:
         """Everything that has happened to this organization, newest first.
 
@@ -108,6 +148,7 @@ class WorkspaceQueryService:
                 HistoryEntry(
                     occurred_at=membership.created_at,
                     kind=HistoryKind.JOINED,
+                    source_id=membership.id,
                     actor_id=None,
                     actor_email=None,
                     subject_email=membership.member_email,
@@ -120,6 +161,7 @@ class WorkspaceQueryService:
                     HistoryEntry(
                         occurred_at=membership.ended_at,
                         kind=HistoryKind.REMOVED,
+                        source_id=membership.id,
                         actor_id=membership.ended_by,
                         actor_email=remover_email,
                         subject_email=membership.member_email,
@@ -146,6 +188,7 @@ class WorkspaceQueryService:
                 HistoryEntry(
                     occurred_at=invitation.created_at,
                     kind=HistoryKind.INVITED,
+                    source_id=invitation.id,
                     actor_id=invitation.created_by,
                     actor_email=inviter_email,
                     subject_email=invitation.invited_email,
@@ -162,6 +205,7 @@ class WorkspaceQueryService:
                         HistoryEntry(
                             occurred_at=moment,
                             kind=kind,
+                            source_id=invitation.id,
                             # **Withdrawal records no actor today**, and saying
                             # so is better than attributing it to the inviter,
                             # who may not be who withdrew it.
@@ -194,6 +238,7 @@ class WorkspaceQueryService:
                 HistoryEntry(
                     occurred_at=change.created_at,
                     kind=HistoryKind.ROLE_CHANGED,
+                    source_id=change.id,
                     actor_id=change.created_by,
                     actor_email=actor_email,
                     subject_email=subject_email,

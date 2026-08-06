@@ -195,10 +195,14 @@ async def add_member(
 
 @router.get(
     "/workspaces/{workspace_id}/history",
-    response_model=list[HistoryEntryResponse],
+    response_model=CursorPage[HistoryEntryResponse],
     summary="What has happened to this organization",
 )
-async def organization_history(context: CurrentWorkspace) -> list[HistoryEntryResponse]:
+async def organization_history(
+    context: CurrentWorkspace,
+    limit: LimitParam = DEFAULT_PAGE_LIMIT,
+    cursor: CursorParam = None,
+) -> CursorPage[HistoryEntryResponse]:
     """*"What happened?"* — in one place, newest first.
 
     Somebody joined, was invited, was withdrawn, changed role, or was removed.
@@ -206,14 +210,33 @@ async def organization_history(context: CurrentWorkspace) -> list[HistoryEntryRe
     that could always have been added later — and why the writing was not
     deferred (`CLAUDE.md` §2).
 
+    ⚡ **Cursor-paginated from TASK-443.** It returned every entry there had
+    ever been, which is a contract a client cannot work with once a workspace
+    has been running a year — and the collection §7 requires to be paged.
+    **The keyset is `(occurred_at, source_id)`**, because two things can happen
+    in one microsecond and a page boundary between them would drop one.
+
     **`member:read` authorizes it**, on the reading that already made listing
     members and invitations `member:read`. **Everybody in the organization can
     see it**, deliberately: a history only administrators may read is a history
     that cannot be used to hold administrators accountable.
     """
     context.authorize(Resource.MEMBER, Action.READ)
-    entries = await build_query_service(context.session).organization_history(context.workspace_id)
-    return [HistoryEntryResponse.from_domain(entry) for entry in entries]
+    entries, has_more = await build_query_service(context.session).organization_history_page(
+        context.workspace_id,
+        after=decode_cursor(cursor) if cursor else None,
+        limit=limit,
+    )
+    last = entries[-1] if entries and has_more else None
+    return CursorPage(
+        items=[HistoryEntryResponse.from_domain(entry) for entry in entries],
+        next_cursor=(
+            encode_cursor(CursorPosition(created_at=last.occurred_at, id=last.source_id))
+            if last
+            else None
+        ),
+        has_more=has_more,
+    )
 
 
 @router.get(

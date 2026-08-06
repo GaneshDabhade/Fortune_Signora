@@ -1137,3 +1137,18 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 ### Still open in this document's §2
 
 **The `remove` endpoint's own gap is closed** — it exists. **What §2 raised and this row deliberately did not take** is membership suspension and notification, both out of scope and neither blocked.
+
+## The history becomes queryable — 2026-08-06 (Lane A, TASK-443)
+
+**Attribution was complete and the query was missing.** `actor_id` is carried across the repository and every write already records who did it; `GET /workspaces/{id}/history` has assembled the organization's own facts since Team Management. **What it could not do was answer the question in pages** — it returned every entry there had ever been, which is a contract a client cannot work with once a workspace has been running a year, and the collection [§7](../../CLAUDE.md) requires to be cursor-paginated.
+
+**The keyset is `(occurred_at, source_id)`.** `source_id` is new and is the row an entry was derived from — a membership, an invitation, a role change. **Entries are computed rather than stored, so there is no identifier of their own to page on**, and two things happening in one microsecond would otherwise put a page boundary between them and drop one. It is deliberately **not unique**: one membership yields both a `joined` and a `removed`, so it pairs with `kind` and `occurred_at` rather than standing alone.
+
+⚠️ **The response is bounded and the fetch is not yet** — [C-231](../LANE_COORDINATION.md), raised by this lane against its own slice. Bounding the fetch needs six queries, one per kind, each ordered on its own timestamp: an entry is derived, so *"the newest fifty rows"* is a question no single table can answer. **Recorded rather than implied**, and the urgency is low because the sources are a workspace's people rather than its pipeline.
+
+### ⚠️ The endpoint had no test, and that is how the shape could change unnoticed
+
+**It shipped with none.** Changing the response from a bare list to a paged envelope broke nothing, because nothing asserted anything about it. **`tests/integration/test_api_organization_history.py` now covers it** — what it records, newest-first ordering, the cursor walking without repeating or dropping an entry, that a member sees it and a stranger gets `404`, and that one organization never appears in another's history.
+
+**Every fact in those tests is produced through the API** — invitations sent and accepted, people leaving — because a history assembled from rows inserted behind the product would prove the assembly and not the recording (§20e).
+

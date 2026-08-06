@@ -179,6 +179,14 @@ class HistoryEntryResponse(BaseModel):
 
     occurred_at: datetime
     kind: HistoryKind
+    source_id: UUID = Field(
+        description=(
+            "The record this entry was derived from — a membership, an invitation or a "
+            "role change. Entries are computed rather than stored, so this is the only "
+            "stable identifier one has, and it is what the page cursor is keyed on. Not "
+            "unique on its own: one membership yields both a joined and a removed entry."
+        )
+    )
     actor_id: UUID | None
     actor_email: str | None
     subject_email: str | None
@@ -192,6 +200,7 @@ class HistoryEntryResponse(BaseModel):
         return cls(
             occurred_at=entry.occurred_at,
             kind=entry.kind,
+            source_id=entry.source_id,
             actor_id=entry.actor_id,
             actor_email=entry.actor_email,
             subject_email=entry.subject_email,

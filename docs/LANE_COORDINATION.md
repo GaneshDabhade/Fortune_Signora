@@ -355,6 +355,7 @@ databaseUrl: required(
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | **`RULED`** — 2026-08-05 · [D-073](DECISION_REGISTER.md) · a `Resource` is a **declaration**, never a grant · **[`CLAUDE.md` §20a](../CLAUDE.md) amended** | **[TASK-405](BACKLOG.md)'s last route is unblocked.** Authorization is granted only through `policy.csv`; a `Resource` entry without policy rows provides no runtime capability, so the two authorities were never governing the same thing |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
+| [C-231](#c-231--the-organization-history-is-paged-and-its-fetch-is-not-yet-bounded) | **The organization history is paged, and its fetch is not yet bounded** | Lane A | **Lane A** — its own module, recorded so the half-fix is not mistaken for the whole | **`OPEN`** — raised 2026-08-06 from inside [TASK-443](BACKLOG.md), by this lane against itself | **Nothing.** The contract is fixed and the cost is not |
 | [C-230](#c-230--lane-as-assignable-work-is-exhausted-and-here-is-every-row-and-its-reason) | **Lane A's assignable work is exhausted — every row, and its reason** | Lane A | **Product owner** *(the two decisions)* · **Lane C** *(two stale rows)* | **`READY FOR PRODUCT DECISION`** — raised 2026-08-06 on the product owner's instruction to document the dependency | ⚡ **Nothing new.** It measures what [C-228](#c-228--the-signal-center-has-no-workspace-wide-queue-to-render-and-no-way-to-leave-it) and [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) already hold, and **releases [TASK-419](BACKLOG.md) for Lane C** |
 | [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) | **Three approved screens need a door, and [D38](architecture/39-product-review-findings.md) closed all three by name** | Lane A | **Product owner** — reversing a ratified navigation decision is not a lane's, and not Lane C's | **`READY FOR PRODUCT DECISION`** — raised 2026-08-06, **widened the same day to the class** · **one question, a recommendation, and the builds scoped either way** | **The *entrances* of [TASK-441](BACKLOG.md), [TASK-440](BACKLOG.md) and [TASK-439](BACKLOG.md).** ⚡ **Every screen those rows deliver is otherwise ready** |
 | [C-228](#c-228--the-signal-center-has-no-workspace-wide-queue-to-render-and-no-way-to-leave-it) | **The Signal Center has no workspace-wide queue to render, and no way to leave it** | Lane A | **Lane C** — the row's scope and its Change Budget are Product Office's | **`READY FOR LANE C`** — raised 2026-08-06 from inside [TASK-439](BACKLOG.md), before writing code | **[TASK-439](BACKLOG.md) whole.** Its budget is *render only, no new endpoint*, and the screen needs two |
@@ -5927,6 +5928,41 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 Lane A's recommendation, offered rather than taken: **a page-level test rather than a per-component one.** Render the account brief with every hook erroring and assert the page says so — one test, no new prop on any component, and it cannot be silenced by adding a field. `brief.test.tsx` already has the harness. **Lane A will build it on request**; it is not being built unasked because the assertion would reach sections other lanes own.
 
 **Six occurrences of one defect is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. The register is where a repeated shape stops being individually correct.
+
+## C-231 · The organization history is paged, and its fetch is not yet bounded
+
+**Opened 2026-08-06 · Lane A · owner: Lane A · 🟡 · raised by this lane against its own slice**
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, delivering [TASK-443](BACKLOG.md), **before the slice was committed** |
+| **Owner** | **Lane A.** `workspace_tenancy` is this lane's; nothing is being asked of anybody |
+| **Status** | **`OPEN`** — recorded so a half-fix is not read as a whole one |
+| **Blocks** | **Nothing.** The API contract is correct and bounded; the query cost is not |
+
+### What shipped, and what did not
+
+**`GET /workspaces/{id}/history` is now cursor-paginated** — §7's requirement, and the row's deliverable. **The response is bounded.** ⚠️ **The fetch behind it is not**: the page is taken over the full read, so the query still assembles every entry a workspace has ever produced and then returns fifty of them.
+
+> **Said plainly rather than implied.** It fixes the contract and half the problem, and the docstring in `query_service.py` says so in the same words.
+
+### Why the remaining half is not one more line
+
+**An entry is derived, not stored.** One membership row yields a `joined` and possibly a `removed`, at two different timestamps; one invitation yields up to three. **So *"the newest fifty rows"* is a question no single table can answer**, and `LIMIT 50` on any one of the three sources is wrong.
+
+**The correct shape is six bounded queries, one per kind**, each ordered on its own timestamp and taking `limit + 1`, merged — because the newest `limit + 1` of every kind must contain the newest `limit` overall.
+
+⛔ **Not a `UNION` of the three sources**, and that refusal is older than this slice: the read model records it as *"a UNION would need every column to line up — which would make adding a field to one of them a change to all three."* **A union of three narrow projections `(occurred_at, source_id, kind)` would sidestep that**, at the cost of a second hydration pass — which is the design worth weighing when this is taken up.
+
+### Why it was not done here
+
+**The row's deliverable is *"one workspace-scoped, cursor-paginated history read"*, and that is delivered.** Six queries and a hydration pass is a different slice with a different risk profile, and bundling it would have made a bounded, testable change into an unbounded one.
+
+⚡ **And the urgency is genuinely low**: the sources are memberships, invitations and role changes — **a workspace's people**, not its pipeline. A thousand-entry history is a large organisation over a long time, not a busy afternoon.
+
+### One thing this slice found and fixed on the way
+
+⚠️ **The endpoint had no test of any kind.** It has existed since Team Management, and **its response shape was changed from a bare list to a paged envelope without a single assertion noticing.** **`test_api_organization_history.py` now covers it** — what it records, ordering, the cursor walking without repeating or dropping, who may read it, and that one organisation never appears in another's. **A read nobody tests is a read whose contract is whatever the last edit left behind.**
 
 ## C-230 · Lane A's assignable work is exhausted — every row, and its reason
 

@@ -48,8 +48,18 @@ class HistoryEntry:
 
     occurred_at: datetime
     kind: HistoryKind
+    #: The row this entry was derived from — a membership, an invitation or a
+    #: role change. **Added by TASK-443 so the history can be paged**: entries
+    #: are derived rather than stored, so a keyset needs a stable tiebreak
+    #: that survives two things happening in the same microsecond, and the
+    #: source row's identifier is the only one that exists.
+    #:
+    #: **Not unique across the list** — one membership yields both a `joined`
+    #: and a `removed` entry — so it pairs with `kind` and `occurred_at`
+    #: rather than standing alone.
     #: Who acted. `None` where nothing recorded one — the founding membership
     #: has no actor but itself, and inventing one would be a guess.
+    source_id: UUID
     actor_id: UUID | None
     actor_email: str | None
     #: Who it happened to. An address for an invitation; a membership's

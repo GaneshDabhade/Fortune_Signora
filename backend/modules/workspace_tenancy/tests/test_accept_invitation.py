@@ -165,9 +165,7 @@ class TestTheOfferBecomesAMembership:
         invitation = _invitation(workspace_id)
         await invitations.add(invitation)
 
-        membership = await use_case.execute(
-            _input(workspace_id), now=NOW, correlation_id=uuid4()
-        )
+        membership = await use_case.execute(_input(workspace_id), now=NOW, correlation_id=uuid4())
 
         assert membership.workspace_id == workspace_id
         assert membership.is_live
@@ -185,9 +183,7 @@ class TestTheOfferBecomesAMembership:
         invitation = _invitation(workspace_id, role=WorkspaceRole.OWNER)
         await invitations.add(invitation)
 
-        membership = await use_case.execute(
-            _input(workspace_id), now=NOW, correlation_id=uuid4()
-        )
+        membership = await use_case.execute(_input(workspace_id), now=NOW, correlation_id=uuid4())
 
         assert membership.role is WorkspaceRole.OWNER
 
@@ -202,9 +198,7 @@ class TestTheOfferBecomesAMembership:
         invitation = _invitation(workspace_id)
         await invitations.add(invitation)
 
-        await use_case.execute(
-            _input(workspace_id), now=NOW, correlation_id=uuid4()
-        )
+        await use_case.execute(_input(workspace_id), now=NOW, correlation_id=uuid4())
 
         assert [i.accepted_at for i in invitations.settled] == [NOW]
         assert len(publisher.published) == 1
@@ -281,9 +275,7 @@ class TestNamingTheLinkIsNotAuthorityToUseIt:
         await invitations.add(invitation)
 
         with pytest.raises(InvitationNotFoundError):
-            await use_case.execute(
-                _input(mine), now=NOW, correlation_id=uuid4()
-            )
+            await use_case.execute(_input(mine), now=NOW, correlation_id=uuid4())
 
     async def test_never_invited_and_invited_someone_else_are_one_answer(
         self,
@@ -391,9 +383,7 @@ class TestASettledOfferCannotBeUsedAgain:
         await invitations.add(invitation)
 
         with pytest.raises(InvitationNotFoundError):
-            await use_case.execute(
-                _input(workspace_id), now=NOW, correlation_id=uuid4()
-            )
+            await use_case.execute(_input(workspace_id), now=NOW, correlation_id=uuid4())
 
 
 class TestFollowingTheLinkTwiceIsNotAnError:
