@@ -42,7 +42,39 @@ A seller reading *"Latest evidence · 5 weeks ago"* could not tell whether **the
 
 **Not backfilled, and the null is the honest value.** Every existing row was read at some point and nothing recorded when. `now()` would assert every subject was checked at migration time; `created_at` would assert each was checked once and never since. **Both are false, so the product says it does not know.**
 
-> **What A7 does not yet deliver, and it is the open half.** `subject` is the customer's typed company name; the brief holds an entity id, and resolution is deliberately downstream ([ADR-0036](adr/0036-target-account-contract.md) §5). **Joining the two is unresolved** — [C-219](../LANE_COORDINATION.md), with Lane C. Until it is, **nothing renders this**, and **the word *checked* does not reach a screen**: A4 refuses it and `freshness.test.tsx` asserts the refusal, which is the contract the render slice updates rather than works around.
+> **What A7 did not yet deliver, and it was the open half.** `subject` is the customer's typed company name; the brief holds an entity id, and resolution is deliberately downstream ([ADR-0036](adr/0036-target-account-contract.md) §5). **Joining the two is unresolved** — [C-219](../LANE_COORDINATION.md), with Lane C. Until it is, **nothing renders this**, and **the word *checked* does not reach a screen**: A4 refuses it and `freshness.test.tsx` asserts the refusal, which is the contract the render slice updates rather than works around. *(Closed 2026-08-06 — see below.)*
+
+### The column reaches a screen, and it did so without a join — A7's render *(2026-08-06)*
+
+**[C-219](../LANE_COORDINATION.md) was ratified by Lane C on 2026-08-06: option ③, freshness renders *per target account*.** The paragraph above framed the open half as a join to be designed. **The ruling's finding is that there was never a join to perform**, and the code is why:
+
+| | |
+|---|---|
+| **`TargetAccount` is `(id, name)`** | And **nothing else.** `target_accounts.py`: *"It names companies; it finds none… It does not resolve the name"* |
+| ⚡ **The key identity** | **`TargetAccount.name` is what becomes `RunProviderSync(subject=…)`.** The two keys are the same string from the same source |
+| ⛔ **Why ② was refused, not merely deferred** | A subject↔entity binding table is **the only route to the brief, and the brief is closed**: `TargetAccount` carries no entity id *deliberately* and [ADR-0036](adr/0036-target-account-contract.md) makes that permanent. Sequenced behind a stated trigger — *a screen that must state freshness for an account reached through something other than a target declaration.* **Not fired** |
+| ⛔ **Why ① was refused outright** | Matching subjects to entities by name is **a second resolver, by a weaker method than the resolver's** — and its failure is silent and confident |
+
+**`GET /workspaces/{id}/target-account-coverage`** — this module's **first and only HTTP surface**. It takes the subjects a caller is rendering and answers one entry each.
+
+> **Why the endpoint is here rather than a field on the target account list.** That list is Commercial Profile's, and the dependency matrix runs **Commercial Profile → Provider Platform** ([05](05-module-dependencies.md)). **The module holding the list may not read the module holding the attempts**, and reversing the edge would make the graph cyclic. **So the frontend composes the two** — the same arrangement `account-identities` uses to put names on accounts, and the option that needed no graph change.
+
+**Four states, carried by two nullable-independent fields rather than one status string.** A string would enumerate them, and the enumeration would then exist twice — here and wherever it is rendered.
+
+| `last_attempt` | `stored_anything` | |
+|---|---|---|
+| `null` | `false` | **Nobody has ever looked** |
+| a moment | `false` | **Looked, and found nothing** — the case `position` could not express, and the reason the column exists |
+| a moment | `true` | **Looked, and evidence arrived** |
+| `null` | `true` | **Read before `attempted_at` existed.** The null the migration deliberately did not backfill, surfacing exactly as itself |
+
+**Rows collapse across providers and capabilities.** A subject has one watermark per `(provider, capability)`, and the question a seller asks is *when did anybody last look* — not *when did Apollo's company enrichment last look*. **The latest attempt wins; evidence from any of them counts.**
+
+**A subject with no watermark comes back as an entry, never as an omission.** *Never checked* is an answer, and a caller reading a missing key renders a blank — which is the state A4 already refuses in words rather than in whitespace.
+
+**The word *checked* now ships, and `freshness.test.tsx`'s refusal was scoped rather than lifted.** `Freshness` still may not say it and its test still asserts so, because on the brief it still would not be true. `LastChecked` is **a second export beside it** — which is what that component's own docstring said the second kind would be — so the honest sentence and the dishonest one are not one boolean apart inside one component.
+
+**Authorization reuses `target_account, read`.** The timestamps beside a list a member may already read say nothing that list does not; a new resource for them would be a distinction `policy.csv` could not defend.
 
 ### A watermark belongs to one subject — PP-01, B-004 *(2026-08-02)*
 

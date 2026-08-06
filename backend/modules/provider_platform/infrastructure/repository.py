@@ -191,3 +191,45 @@ class SqlTargetSyncStateRepository:
             ProviderWatermarkModel.position.is_not(None),
         )
         return frozenset((await self._session.execute(statement)).scalars().all())
+
+
+class CoverageReadRepository:
+    """The A7 read — every watermark row for a named set of subjects.
+
+    **Its own class rather than a method on the two above.** Both of those are
+    the sync path's and are held by a worker; this one is held by a request,
+    reads across providers, and never writes. Sharing a class would give the
+    write path a read it has no reason to hold, and this one a session it does
+    not need to write with.
+    """
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def watermarks_for(
+        self, workspace_id: UUID, subjects: frozenset[str]
+    ) -> tuple[SyncWatermark, ...]:
+        # `workspace_id` is filtered explicitly as well as by RLS — §8's
+        # defense in depth, and the same shape every other read here uses.
+        #
+        # **No empty-set guard here, deliberately.** `ReportCoverage` returns
+        # before calling this when nothing was asked about, so one here could
+        # never fire — and a guard that cannot fail is documentation pretending
+        # to be code (§2). The round trip it would save is saved a layer up,
+        # where a test actually holds it.
+        statement = select(ProviderWatermarkModel).where(
+            ProviderWatermarkModel.workspace_id == workspace_id,
+            ProviderWatermarkModel.subject.in_(subjects),
+        )
+        models = (await self._session.execute(statement)).scalars().all()
+        return tuple(
+            SyncWatermark(
+                workspace_id=workspace_id,
+                provider=ProviderName(model.provider),
+                capability=ProviderCapability(model.capability),
+                subject=model.subject,
+                position=model.position,
+                attempted_at=model.attempted_at,
+            )
+            for model in models
+        )

@@ -822,6 +822,36 @@ export interface DeclareTargetAccounts {
   accounts: TargetAccount[];
 }
 
+/**
+ * When Signora last looked at one company, and whether it found anything — A7.
+ *
+ * **Provider Platform's, not Commercial Profile's**, which is why it arrives on
+ * its own request rather than as a field on `TargetAccountList`. The module
+ * holding the list may not read the module holding the attempts — the
+ * dependency runs the other way — so this screen composes the two, exactly as
+ * the attention list composes account identities.
+ *
+ * **Two fields carry four states**, and none of them may collapse:
+ *
+ * | `last_attempt` | `stored_anything` | |
+ * |---|---|---|
+ * | `null` | `false` | Nobody has ever looked |
+ * | a moment | `false` | Looked, and found nothing — the case A4 could not say |
+ * | a moment | `true` | Looked, and evidence arrived |
+ * | `null` | `true` | Read before Signora recorded when it looked |
+ */
+export interface SubjectCoverage {
+  /** The company name exactly as declared. Unresolved by design — it keys a
+   * declaration entry, never an entity. */
+  subject: string;
+  /** When a provider last **completed** a read, whether or not anything came
+   * back. Null is two different things; read `stored_anything` to tell them
+   * apart. */
+  last_attempt: string | null;
+  /** Whether any read has ever stored evidence. */
+  stored_anything: boolean;
+}
+
 /** One technology this workspace competes against. */
 export interface Competitor {
   id: string;

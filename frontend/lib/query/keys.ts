@@ -79,6 +79,13 @@ export const queryKeys = {
   targetAccounts: (workspaceId: string) =>
     ['workspace', workspaceId, 'target-accounts'] as const,
 
+  /** Lane A (Provider Platform). When Signora last looked at each declared
+   * company — a different module's fact from the list itself, so a different
+   * key: declaring a new list must not serve stale attempt times, and an
+   * attempt landing must not invalidate the declaration. */
+  targetAccountCoverage: (workspaceId: string, subjects: readonly string[]) =>
+    ['workspace', workspaceId, 'target-account-coverage', ...subjects] as const,
+
   /** Who this workspace competes against. */
   competitors: (workspaceId: string) =>
     ['workspace', workspaceId, 'competitors'] as const,

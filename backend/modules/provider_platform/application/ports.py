@@ -77,6 +77,28 @@ class TargetSyncStateRepository(Protocol):
         ...
 
 
+class CoverageRepository(Protocol):
+    """The read behind *"when did anybody last look at this company"* (**A7**).
+
+    **A read port, separate from `SyncRepository`.** That one is the sync
+    path's — one watermark per `(provider, capability, subject)`, fetched and
+    saved by a worker mid-run. This answers a question a person asked, about
+    several subjects at once, and never writes. Folding it in would give the
+    write path a method it has no reason to hold.
+    """
+
+    async def watermarks_for(
+        self, workspace_id: UUID, subjects: frozenset[str]
+    ) -> tuple[SyncWatermark, ...]:
+        """Every watermark row for the named subjects, across all providers
+        and capabilities.
+
+        **A subject with no row is absent from the result rather than an
+        error**; *never checked* is an answer, and the domain turns absence
+        into one instead of leaving the caller to interpret a missing key."""
+        ...
+
+
 class SyncReporter(Protocol):
     """What `RunProviderSync` tells monitoring, and nothing more.
 

@@ -1,13 +1,15 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { formatDay } from '@/components/intelligence/dates';
+import { LastChecked } from '@/components/intelligence/freshness';
 import { Button, EmptyState, Input } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
-import type { TargetAccount, TargetAccountList } from '@/lib/api/types';
+import type { SubjectCoverage, TargetAccount, TargetAccountList } from '@/lib/api/types';
 import { useDeclareTargetAccounts } from '@/lib/query/hooks/commercial';
+import { useTargetAccountCoverage } from '@/lib/query/hooks/coverage';
 
 /**
  * The companies this customer wants watched.
@@ -33,11 +35,25 @@ import { useDeclareTargetAccounts } from '@/lib/query/hooks/commercial';
  * Anything here that resolved a name would put resolution in the recording
  * module.
  *
- * ### It shows no status, and that is deliberate
+ * ### It now shows whether Signora has looked, and that took a second request
  *
- * Whether Signora has looked at an account, what it found, and when it will
- * look again are Provider Platform's facts. The API carries none of them and
- * neither does this screen.
+ * **A7, and [C-219](../../../docs/LANE_COORDINATION.md) option ③ as Lane C
+ * ratified it.** This screen used to say that whether Signora had looked at an
+ * account was Provider Platform's fact and that the API carried none of them.
+ * The first half is still true — which is exactly why the answer arrives on its
+ * own request rather than as a field on the declaration. **The module that owns
+ * this list may not read the module that owns the attempts**, and reversing
+ * that edge would make the dependency graph cyclic, so **the screen composes
+ * the two** — the same arrangement the attention list uses to put names on
+ * accounts.
+ *
+ * **The key is the company name**, because it is the same string on both sides
+ * by construction: what the customer typed here is what `RunProviderSync` is
+ * given. There is no join to build, and nothing resolves a name to find one.
+ *
+ * **What it still does not show** is what Signora found or when it will look
+ * again. Neither exists as a fact yet, and a screen promising either would be
+ * back to asserting something untrue.
  */
 export function TargetAccountsEditor({
   accounts,
@@ -48,6 +64,23 @@ export function TargetAccountsEditor({
 }) {
   const declare = useDeclareTargetAccounts(workspaceId);
   const [draft, setDraft] = useState('');
+
+  // Memoised because the array is the query key. Rebuilding it each render
+  // would make every render a new key, and every new key a new request.
+  const subjects = useMemo(
+    () => accounts.accounts.map((account) => account.name),
+    [accounts.accounts],
+  );
+  const { data: coverage } = useTargetAccountCoverage(workspaceId, subjects);
+
+  // **Keyed by name, which is the only key both sides share.** The declaration
+  // entry's id is Commercial Profile's and never reaches a sync; the subject a
+  // sync records is this name, verbatim.
+  const checked = useMemo(() => {
+    const found = new Map<string, SubjectCoverage>();
+    for (const entry of coverage ?? []) found.set(entry.subject, entry);
+    return found;
+  }, [coverage]);
 
   const save = (next: TargetAccount[]) =>
     declare.mutate({ expected_version: accounts.version, accounts: next });
@@ -117,7 +150,19 @@ export function TargetAccountsEditor({
               key={account.id}
               className="flex items-center justify-between gap-4 px-4 py-2.5"
             >
-              <span className="min-w-0 text-sm text-content">{account.name}</span>
+              <div className="min-w-0">
+                <span className="text-sm text-content">{account.name}</span>
+                {/* **Rendered only once the answer has arrived.** *Loading* and
+                    *nobody has looked* are different facts, and a line that
+                    said the second while the first was true would be the
+                    screen inventing an answer to fill a gap. */}
+                {checked.has(account.name) ? (
+                  <LastChecked
+                    lastAttempt={checked.get(account.name)!.last_attempt}
+                    storedAnything={checked.get(account.name)!.stored_anything}
+                  />
+                ) : null}
+              </div>
               <Button
                 size="sm"
                 variant="ghost"

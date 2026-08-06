@@ -43,6 +43,7 @@ from modules.opportunity_engine.interface.errors import (
     ERROR_MAPPING as OPPORTUNITY_ENGINE_ERRORS,
 )
 from modules.observation_engine.interface.router import router as observation_router
+from modules.provider_platform.interface.router import router as coverage_router
 from modules.opportunity_engine.interface.router import router as opportunity_router
 from modules.workspace_tenancy.infrastructure.composition import build_query_service
 from modules.workspace_tenancy.interface.errors import (
@@ -164,6 +165,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(timeline_router)
     app.include_router(integrations_router)
     app.include_router(approach_router)
+    app.include_router(coverage_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["operations"])
     async def health() -> HealthResponse:

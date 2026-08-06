@@ -43,6 +43,11 @@ import { howLongAgo } from '@/components/intelligence/dates';
  * component owns the *sentence*, not the caller — a second kind arrives as a
  * second export beside this one, or as a prop the day there are two callers,
  * and no call site has to change to allow either.
+ *
+ * ⚡ **The second kind arrived, as `LastChecked` below.** A second export
+ * rather than a prop, because the two answer different questions on different
+ * screens — and this one's refusal to say *checked* is not relaxed by the
+ * other becoming able to say it.
  */
 export function Freshness({ observedAt }: { observedAt: string | null }) {
   return (
@@ -60,4 +65,59 @@ export function Freshness({ observedAt }: { observedAt: string | null }) {
         : `Latest evidence · ${howLongAgo(observedAt)}`}
     </p>
   );
+}
+
+/**
+ * Whether Signora has actually looked at a company, and when — **A7**.
+ *
+ * **The half `Freshness` above deliberately refuses.** That line says when the
+ * newest evidence was *observed by a provider*; it cannot say when anybody last
+ * *looked*, because until `attempted_at` shipped nothing recorded it. So a
+ * seller reading *"Latest evidence · 5 weeks ago"* could not tell whether the
+ * account went quiet or the pipeline did — and those demand opposite actions.
+ *
+ * ### It says *checked*, and that word is now true
+ *
+ * `Freshness` still may not use it and its test still asserts the refusal.
+ * **That refusal is not lifted here; it is scoped.** The fact behind this line
+ * is a completed read of a named company, written on every run whether or not
+ * anything came back — so on this screen *checked* is a claim the repository
+ * supports, and on the brief it still is not.
+ *
+ * ### Four states, and none may collapse into another
+ *
+ * The pair that matters is *nobody has looked* against *somebody looked and
+ * there was nothing there*: identical before this slice, opposite in what a
+ * seller should do about them. The fourth — evidence with no recorded attempt —
+ * is what rows written before the column existed look like, and it says so
+ * rather than inventing a date or claiming nobody checked.
+ */
+export function LastChecked({
+  lastAttempt,
+  storedAnything,
+}: {
+  lastAttempt: string | null;
+  storedAnything: boolean;
+}) {
+  return (
+    <p className="text-xs text-content-subtle">{sentence(lastAttempt, storedAnything)}</p>
+  );
+}
+
+function sentence(lastAttempt: string | null, storedAnything: boolean) {
+  if (lastAttempt === null) {
+    // **Absence stated, never blank** — the same rule the line above follows.
+    // The two cases differ, and a customer who has been told *"not checked
+    // yet"* about a company Signora demonstrably holds evidence for would be
+    // reading something false.
+    return storedAnything
+      ? 'Checked · we did not record when'
+      : 'Not checked yet';
+  }
+  return storedAnything
+    ? `Checked ${howLongAgo(lastAttempt)}`
+    : // **The sentence the whole slice exists for.** Somebody looked and there
+      // was nothing there, which is a fact about the account rather than about
+      // Signora — and the previous screen could only render it as silence.
+      `Checked ${howLongAgo(lastAttempt)} · nothing found`;
 }
