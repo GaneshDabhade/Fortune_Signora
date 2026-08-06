@@ -354,6 +354,7 @@ databaseUrl: required(
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | **`RULED`** — 2026-08-05 · [D-073](DECISION_REGISTER.md) · a `Resource` is a **declaration**, never a grant · **[`CLAUDE.md` §20a](../CLAUDE.md) amended** | **[TASK-405](BACKLOG.md)'s last route is unblocked.** Authorization is granted only through `policy.csv`; a `Resource` entry without policy rows provides no runtime capability, so the two authorities were never governing the same thing |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
+| [C-228](#c-228--the-signal-center-has-no-workspace-wide-queue-to-render-and-no-way-to-leave-it) | **The Signal Center has no workspace-wide queue to render, and no way to leave it** | Lane A | **Lane C** — the row's scope and its Change Budget are Product Office's | **`READY FOR LANE C`** — raised 2026-08-06 from inside [TASK-439](BACKLOG.md), before writing code | **[TASK-439](BACKLOG.md) whole.** Its budget is *render only, no new endpoint*, and the screen needs two |
 | [C-227](#c-227--joinworkspace_id-has-no-in-product-entrance-by-design-and-the-declaration-is-qes) | **`/join/{workspace_id}` has no in-product entrance by design, and the declaration is QE's** | Lane A | ~~QE~~ **Lane A** | **`CLOSED`** — 2026-08-05. ⚠️ **The item's own premise was wrong**: QE ruled at [B-123](BUGS.md) that the call is the implementing lane's, and this lane declared the route. **Four polls lost to asking rather than deciding** | Nothing. `reachability.test.tsx` is green |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | **`CLOSED`** — 2026-08-05 · deferral confirmed | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
@@ -5791,6 +5792,78 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 Lane A's recommendation, offered rather than taken: **a page-level test rather than a per-component one.** Render the account brief with every hook erroring and assert the page says so — one test, no new prop on any component, and it cannot be silenced by adding a field. `brief.test.tsx` already has the harness. **Lane A will build it on request**; it is not being built unasked because the assertion would reach sections other lanes own.
 
 **Six occurrences of one defect is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. The register is where a repeated shape stops being individually correct.
+
+## C-228 · The Signal Center has no workspace-wide queue to render, and no way to leave it
+
+**Opened 2026-08-06 · Lane A · owner: Lane C — [TASK-439](BACKLOG.md)'s scope and Change Budget are Product Office's · 🟠**
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, on claiming [TASK-439](BACKLOG.md) and running the reuse audit **before writing a line** |
+| **Owner** | **Lane C.** ⛔ **Not a defect and not a ruling** — the row says what to do with it in its own words: *"if a section turns out to need one, that is a finding to raise, not a change to make"* |
+| **Status** | **`READY FOR LANE C`** — nothing blocks the investigation, and the measurement is below |
+| **Blocks** | **[TASK-439](BACKLOG.md) whole.** Not partially: without a workspace-wide read there is no list, and without a write surface nothing leaves it |
+
+### The row's sequencing line does not survive checking, and neither does the audit's scope
+
+**[TASK-439](BACKLOG.md) says: *"After [TASK-405](BACKLOG.md) promotes (it adds `Resource.SIGNAL`, and a write surface without it is unauthorized)."*** **TASK-405 promoted, and it did not add it** — measured against `origin/main` rather than inferred from a row:
+
+```bash
+git show origin/main:backend/signora_platform/authorization/enforcer.py | grep -c SIGNAL
+→ 0
+git show origin/main:backend/signora_platform/authorization/policies/policy.csv | grep -ci signal
+→ 0
+git show origin/main:backend/modules/signal_engine/interface/router.py | grep -c '@router.post\|@router.put'
+→ 0
+```
+
+**TASK-405 withheld the route deliberately and said so**, in its own row and in [25-signal-engine.md](architecture/25-signal-engine.md): the `Resource` was 🔴 at the time and [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) was unruled. **C-224 is now `RULED` and nobody has built it since.** ⚠️ **[447 §Permissions](architecture/447-signal-center-traceability-audit.md) agrees with this lane and not with the backlog row** — it assigns `Resource.SIGNAL` to **[R-13](DOMAIN_DISCOVERY_REGISTER.md)**, never to TASK-405. **Two documents name two different owners for one missing member.**
+
+### And the larger gap is one neither document looked for
+
+**447 traced ten elements — domain, events, permissions, projections — and every one of them is about *what a decision is*.** **None asks whether the queue can be listed.**
+
+```bash
+grep -n "async def queue" -A 3 backend/modules/signal_engine/application/triage.py
+→     async def queue(
+→         self,
+→         workspace_id: UUID,
+→         entity_id: UUID,          ← required, not optional
+```
+
+> ## **`TriageQueries.queue` answers *"what is outstanding on this account"*. The Signal Center asks *"what is outstanding"*.**
+>
+> **There is no workspace-wide read at any layer** — not the repository (`for_entity`), not the application layer, not a route. The four shipped `GET`s are per account, per signal, or the catalog.
+
+**So the approved screen — *"a triage queue, not a notification list"* — has no list to render.** A seller cannot open the Signal Center and see what is waiting, because nothing can answer that question for a workspace.
+
+### This is [B-327](BUGS.md)'s class, third instance in three days
+
+| | |
+|---|---|
+| **[C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it--nothing-builds-its-input-and-the-module-that-measures-may-not-reach-one)** | `evaluate(icp, observed)` is promoted and correct, and **nothing constructs an `ObservedAttributes`** |
+| **[C-417](#c-417--adr-0404-approved-three-platform-capabilities-whose-owner-may-not-finish-two-of-them)** | A contract approved whose owner may not finish two of its capabilities |
+| **C-228 — this one** | **Four outcome types, a `Resolution` aggregate, a queue predicate and an event, all built and all correct — and no way for a customer to reach any of them** |
+
+**[D-093](DECISION_REGISTER.md) named the fix the same week and it was not applied here**: *"every Context Definition now carries one more line: who constructs each input, and may they reach it."* **A traceability audit is where that line belongs too.** 447 counted a domain element as ✅ because it exists in `domain/`; **existing and being reachable are different facts**, which is exactly what B-327 corrected four documents ago.
+
+### What would resolve it — three, and the recommendation is the first
+
+| | | |
+|---|---|---|
+| ✅ **A — widen TASK-439's budget to include what it needs** | **The two endpoints and the `Resource` registration.** A workspace-wide `queue`, the resolve route, `Resource.SIGNAL` plus its `policy.csv` rows | **Recommended.** ⚡ **Both modules are already Lane A's and the row says so**, so nothing crosses a lane. **C-224 ruled the enum member is a *declaration* a lane may perform**, and the grants go in the any-lane registry. **The work is ordinary**: one repository query without an `entity_id` filter, one route beside four that already exist, and one use case that is already written and already tested |
+| **B — sequence it as its own row first** | A row for the write surface and the workspace read; TASK-439 then becomes a true render | **Honest, and slower.** It splits one screen across two claims for a boundary that is bookkeeping rather than architecture |
+| ⛔ **C — narrow TASK-439 to what is reachable today** | A per-account triage panel on the account brief | **Refused, and named so it is not chosen by accident.** That is not the approved screen — it answers *"what is outstanding here"* and the Signal Center's whole premise is the queue across the workspace |
+
+### The trade-off, stated rather than buried
+
+**A changes the row from 🟢 to 🟠**, and a Change Budget is Product Office's to set. **This lane will not widen its own budget**, which is the whole reason this item exists rather than a commit — *"if a section turns out to need one, that is a finding to raise, not a change to make"*, in the row's own words.
+
+### Implementation impact
+
+**No code, no schema, no contract.** **Nothing has been written for TASK-439** — the audit ran first, which is what found this. **The task stays `CLAIMED` by Lane A and is not started**; it does not return to `READY`, because the work is real and this lane is holding it pending a scope answer.
+
+⚠️ **And Lane A is otherwise idle from here.** [TASK-432](BACKLOG.md) is `IN VALIDATION` and [TASK-400](BACKLOG.md) promoted this cycle. The queue's `future` names [TASK-441](BACKLOG.md) and [TASK-440](BACKLOG.md) — **this lane will take the next eligible row rather than wait**, and says so here so an idle-looking lane is not mistaken for a blocked one.
 
 ## C-227 · `/join/{workspace_id}` has no in-product entrance by design, and the declaration is QE's
 
