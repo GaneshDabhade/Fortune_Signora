@@ -295,6 +295,7 @@ databaseUrl: required(
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
+| [C-334](#c-334--four-rows-wait-on-one-credential-and-it-has-no-row-of-its-own) | **Four rows wait on one credential, and it has no row of its own** | Lane B | **Product owner** — resourcing, not a ruling | `OPEN` — raised 2026-08-06 | **[TASK-003](BACKLOG.md) · [TASK-202](BACKLOG.md) · [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) · [C-331](#c-331--task-003-changes-what-the-model-is-shown-which-un-releases-the-narration-prompt).** Two of the four are the only `READY` rows in the backlog |
 | [C-333](#c-333--lane-b-has-no-claimable-work-and-the-file-whose-job-is-to-say-so-reports-no-shortfall) | **Lane B has no claimable work, and the file whose job is to say so reports no shortfall** | Lane B | **Lane C** — queue and backlog health | ✅ **`RESOLVED` 2026-08-06** — eight validations, and [D-099](DECISION_REGISTER.md) makes the duty standing | **Nothing.** Replaced by a check that runs on every `state-check` invocation |
 | [C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it--nothing-builds-its-input-and-the-module-that-measures-may-not-reach-one) | The predicate landed and TASK-406 still cannot call it — nothing builds its input, and the module that measures may not reach one | Lane B | **Product owner** — the edge is 🔴 | `OPEN` — raised 2026-08-05, **after** TASK-434 promoted | **[TASK-406](BACKLOG.md) whole.** Both halves, not only the backtest |
 | [C-329](#c-329--lane-b-has-nothing-claimable-and-the-row-that-says-otherwise-names-two-tasks-it-cannot-take) | Lane B has nothing claimable, and the row that says otherwise names two tasks it cannot take | Lane B | **Product owner** (synchronization) · **Lane C** (the register correction) | `OPEN` — raised 2026-08-05 | **Every Lane B slice.** The lane has been `AVAILABLE` since cycle 54 |
@@ -4249,6 +4250,69 @@ KeyError: '0035'
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
 
+## C-334 · Four rows wait on one credential, and it has no row of its own
+
+**Opened 2026-08-06 · Lane B · owner: product owner · 🟠**
+
+> **Every task assigned to Lane B is blocked. They trace to three roots, and this is the one that is not a decision.**
+
+| | |
+|---|---|
+| **Raised by** | **Lane B**, 2026-08-06, on being asked to document its blockers and finding this one is recorded **only as a sub-clause of two other items** |
+| **Owner** | **The product owner** — it is a resourcing act, not a ruling. Nothing here needs to be decided, only provided |
+| **Status** | **`OPEN`** |
+| **Blocks** | **[TASK-003](BACKLOG.md) · [TASK-202](BACKLOG.md) · [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) · [C-331](#c-331--task-003-changes-what-the-model-is-shown-which-un-releases-the-narration-prompt).** **Two of those four are the only `READY` rows in the entire backlog** |
+
+### Why it needs a row when two items already mention it
+
+**[C-331](#c-331--task-003-changes-what-the-model-is-shown-which-un-releases-the-narration-prompt) says it best and says it in passing**: *"a single hosted evaluation credential converts two of the six into executable work, and it is the only one of the blockers that is not a decision about the product."*
+
+> **That sentence is the most actionable thing in the register and it is buried inside an item about a prompt.** **C-222 mentions it too, from the other end.** So the one blocker nobody has to think about is the one nobody has a row for — and a dependency that appears only as a clause inside two others is one that gets read as somebody else's problem twice.
+
+### What is actually being asked for, concretely
+
+**One API key, in `.env`, for any hosted provider the AI Platform already adapts.** The mechanism is built and needs no engineering:
+
+```bash
+# backend/.env
+SIGNORA_ANTHROPIC_API_KEY=...
+```
+
+`AISettings` reads it under the `SIGNORA_` prefix; `build_provider_registry` registers the adapter **only when the key is present**; the evaluation harness names a *model* and the registry resolves who serves it. **No code changes, no configuration design, no new dependency.**
+
+> ⚠️ **`anthropic` is named as the adapter that exists, not as a preference.** The product owner's direction stands — *"continue treating this as a provider-independent evaluation process; do not optimise for any specific LLM vendor"* — and **any hosted adapter satisfies this item.** `ollama.py`, `anthropic.py` and `mock.py` are what is built today; a second hosted vendor is [TASK-420](BACKLOG.md).
+
+### ⛔ Necessary, and **not** sufficient — measured before asking
+
+**This is the finding that stops the credential being reported as an unblocking**, and it was measured from the committed manifest rather than predicted ([29](architecture/29-ai-reasoning-engine.md)):
+
+| Model | Protocol | Grounding failures | Coverage |
+|---|---|---|---|
+| `granite3.3:2b` | 1 | 0 | 0.833 ✅ |
+| **`granite3.3:2b`** | **2** | **2 of 2** | **0.0** |
+
+**Same model, same dataset, same prompt.** With `MINIMUM_COVERAGE = 0.66`, **`reasoning@1` has no passing protocol-2 evaluation and cannot earn one as written** — so TASK-202's first slice fails *whatever* provider serves it. **A prompt revision is needed as well as a credential**, and the shape is known: `research_synthesis@2` fixed the same class by replacing a transformation instruction with *"copy the reference character for character"* plus a worked example. **`reasoning@1` has no example at all.**
+
+**Stated here so the credential arrives with the right expectation.** It converts TASK-003 and C-331 into executable work immediately; it converts TASK-202 into *authorable* work, which is the next step rather than the last.
+
+### The other two roots, so this is not read as clearing the lane
+
+**Named and cross-referenced, never restated** — each has its own item and this one does not duplicate them.
+
+| Root | Blocks | Owner | Kind |
+|---|---|---|---|
+| **This item** — the credential | [TASK-003](BACKLOG.md) · [TASK-202](BACKLOG.md) | **Product owner** | **Resourcing.** Nothing to decide |
+| **[C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it--nothing-builds-its-input-and-the-module-that-measures-may-not-reach-one)** — the edge to observed attributes | [TASK-406](BACKLOG.md) | **Product owner** | **Architecture.** A dependency edge is 🔴 |
+| **ADR-0400 · [B-205](BUGS.md)** — Epic C's governance | [TASK-201](BACKLOG.md) · [TASK-427](BACKLOG.md) | **Lane C**, then the product owner | **Governance.** *"Do not implement against conflicting governance documents"* |
+
+**All three must move for the lane to be fully unblocked. Any one of them moving gives it work.**
+
+### What Lane B has done rather than wait
+
+**Preparation for all three is complete and promoted** — [27](architecture/27-opportunity-engine.md) for TASK-406, [40](architecture/40-commercial-profile.md) for Epic C, [29](architecture/29-ai-reasoning-engine.md) for Epic G, which is where the table above came from. **[B-324](BUGS.md) — the one open defect assigned to this lane — is fixed.** **[C-333](#c-333--lane-b-has-no-claimable-work-and-the-file-whose-job-is-to-say-so-reports-no-shortfall) records the queue half.**
+
+> **There is no fourth thing to prepare, and that is the reason this item exists rather than a fourth preparation commit.**
+
 ## C-333 · Lane B has no claimable work, and the file whose job is to say so reports no shortfall
 
 > ⛔ **Two items now hold this id, and QE renumbers at merge** (§20e — *"renumbering an existing identifier is QE's, at merge, and only to break a tie… the later claim moves, decided by author timestamp"*). **This one is the earlier**, raised 2026-08-05 and promoted to `main` inside `a6eee5d3`; **[the other](#c-333--the-queue-was-documentation-and-it-is-now-validated) is Lane C's, on the same subject.** **`B-327` collided the same way and on the same day.**
@@ -4423,7 +4487,7 @@ grep -E '^(current|next|future|eligible_count|shortfall|depth_target)' \
 |---|---|
 | **Raised by** | **Lane B**, 2026-08-05, on claiming TASK-003 and tracing the change through before writing |
 | **Owner** | **Product owner** — it needs an evaluation run this workstation cannot perform, which is a resourcing question |
-| **Status** | `OPEN` — **TASK-003 is `IN PROGRESS` and the code is not written.** The change itself is small and understood |
+| **Status** | `OPEN` — **TASK-003 is `IN PROGRESS` and the code is not written.** The change itself is small and understood. ⚡ **The credential half now has its own row: [C-334](#c-334--four-rows-wait-on-one-credential-and-it-has-no-row-of-its-own)** — this item's *"a single hosted evaluation credential converts two of the six into executable work"* was the most actionable sentence in the register and was **a clause inside an item about a prompt.** **What remains here is the prompt consequence**, which is this item's own subject |
 | **Blocks** | ⚠️ **Three rows, not one — consolidated 2026-08-05 rather than raised three times.** **[TASK-003](BACKLOG.md)** needs a re-evaluation to keep `explanation_narration` released · **[TASK-202](BACKLOG.md)** — Epic G — has *"author a `reasoning` dataset and evaluate `reasoning@1` under protocol 2"* as its **first slice** · **[C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time)** has been open since 2026-08-04 on the same measurement. **One missing input gates all three** |
 
 > **This is why it is worth a decision rather than a workaround.** Lane B's queue currently holds **TASK-408** (needs a product ruling), **TASK-406** (`BLOCKED`, [C-330](#c-330--task-406-measures-icp-fit-against-outcomes-and-nothing-can-say-which-accounts-are-in-the-icp)), **TASK-201/427** (need ADR-0400 ratified), **TASK-902** (`WAITING`), and **TASK-003 and TASK-202 — both of which this item gates.** **A single hosted evaluation credential converts two of the six into executable work**, and it is the only one of the blockers that is not a decision about the product.
