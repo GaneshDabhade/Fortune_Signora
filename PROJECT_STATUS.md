@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `c160921`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `b5cff6f`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `c160921`, 2026-08-06.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `b5cff6f`, 2026-08-06.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`c160921`** — the certified commit itself |
+| **`main`** | **`b5cff6f`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 84 promoted **25 commits, first attempt, no conflicts and no aborts** — and **two lanes turned QE's own mistakes into checks** |
-| **Certification** | ✅ [`c1609215d3bd`](certification/reports/c1609215d3bd.md) · migration head **`0040`** · protocol **v2** · ⚠️ **11 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 85 promoted **four commits** — a small cycle, and **QE narrowed its own conflict guard for the third time, from a denylist to an allowlist** |
+| **Certification** | ✅ [`b5cff6f42bba`](certification/reports/b5cff6f42bba.md) · migration head **`0040`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
 | **Validation queue** | **Empty.** ✅ **Lane C's cycle-70 deferral resolved itself** — the lane rebased, and its work is promoted here |
-| **Customer value this cycle** | ✅ **Yes.** **A workspace can list its accounts**, and **an ICP criterion is scored against outcomes** — the measurement TASK-434's predicate was built for |
+| **Customer value this cycle** | ⚠️ **Foundational.** **A declaration now asks for a provider read** — the sync path TASK-901 needs, with [C-021](docs/LANE_COORDINATION.md) answered after standing open since 2026-08-02 |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3872 backend tests** · **95.35% coverage** *(floor 95)* · **1448 frontend tests** across 67 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **807 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **37 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 185s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3879 backend tests** · **95.36% coverage** *(floor 95)* · **1448 frontend tests** across 67 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **809 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **37 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 162s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,19 +40,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **TASK-447 · TASK-901 slice 1**, and **[B-133](docs/BUGS.md) closed** | **TASK-406 · TASK-472**, and [C-100](docs/LANE_COORDINATION.md) answered | **D-137 · D-138** — the design lives in the repository | **Cycle 84** |
+| **Last promoted** | **TASK-901 slice 1**, and **[C-021](docs/LANE_COORDINATION.md) answered** | **TASK-406 · TASK-472** *(cycle 84)* — nothing new this cycle | **D-137**, and a TASK-440 state it corrected against itself | **Cycle 85** |
 | **Execution phase** | **Building** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
 | **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
-| **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
+| **Validation status** | ✅ **Promoted this cycle** | — **nothing new** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | Next `READY` row | Next `READY` row | Stewardship | **Cycle 85, on the next pass** |
+| **Next executable work** | Next `READY` row | Next `READY` row | Stewardship | **Cycle 86, on the next poll** |
 
-> ⚡ **The cleanest cycle of the session.** Twenty-five commits, three lanes, first attempt, no code conflicts, no aborts, and `integration` never moved during certification.
+> **A small cycle, and the smallest commit closes the oldest question**: [C-021](docs/LANE_COORDINATION.md) had been open since 2026-08-02, and TASK-901 slice 1 answers it by building the provider read a declaration needs.
 >
-> **The cheap-gates-first order found nothing**, which is exactly what it costs when it is working: seconds when clean, a whole certification when not.
+> ⚠️ **QE's conflict guard was reshaped rather than re-listed.** It union-merged a Python file and `CLAUDE.md` — no damage, because both matched the owner's branch, **but that was luck.** Three narrowings in three cycles is the signal that a denylist was the wrong shape: **it is now an allowlist of six append-only registers, and everything else stops and asks.**
 >
-> ⚡ **And the direction worth noticing is the unusual one.** Lane C built a structured-file check *"earned by two lanes making the same mistake in one cycle"* — **QE's TOML defect from last cycle, made mechanical by the file's owner.** Lane A closed [B-133](docs/BUGS.md) by changing the habit rather than the line. **Neither was asked for**, and both are findings travelling *from* QE's mistakes *into* the repository's guarantees.
+> **Lane C corrected a state against itself** — *"TASK-440 carried two states on `integration`, and the first one was mine."* That is the collision QE declined to adjudicate two cycles ago, resolved by the lane that caused it.
 
 ---
 
@@ -103,50 +103,51 @@
 
 ---
 
-## 1d · Release summary — 2026-08-06, cycle 84
+## 1d · Release summary — 2026-08-06, cycle 85
 
-**Derived from the promoted commit `c160921`.** **Forty promotions.** **The cleanest cycle of the session** — and the one where two lanes turned QE's own mistakes into mechanical checks.
+**Derived from the promoted commit `b5cff6f`.** **Forty-one promotions.** A small cycle, **and the one where QE learned that its conflict guard had the wrong shape rather than the wrong list.**
 
 ### What was promoted
 
-**Twenty-five commits, all three lanes, first attempt, no conflicts in code and no aborts.**
+**Four commits. A small cycle, and the smallest is the one that closes a five-day-old question.**
 
 | | |
 |---|---|
-| **TASK-406** *(Lane B)* | **An ICP criterion is scored against outcomes** — the measurement [TASK-434](docs/BACKLOG.md)'s pure predicate was built for |
-| **TASK-472** *(Lane B)* | **A workspace can list its accounts** |
-| **TASK-447 · TASK-901** *(Lane A)* | The shell's one unenforced invariant becomes a test; TASK-901 **measured before writing** |
-| **[B-133](docs/BUGS.md)** *(Lane A)* | ✅ Closed — *"the import goes, **and the gate habit becomes the general one**"* |
-| **D-137 · D-138** *(Lane C)* | The design was always readable, and **it now lives in the repository** |
+| **TASK-901 slice 1** *(Lane A)* | **A declaration asks for a provider read**, and **[C-021](docs/LANE_COORDINATION.md) is answered** — open since 2026-08-02 |
+| **C-232** *(Lane A)* | Closed — *"Lane B built the read, and the held screen now points at the wrong one"* |
+| **D-137** *(Lane C)* | *"C-421 was never an access problem, and no UI is derived from the design"* |
+| **TASK-440 state** *(Lane C)* | *"It carried two states on `integration`, **and the first one was mine**"* |
 
-### ⚡ Two lanes turned QE's own mistakes into checks
+**Lane B had nothing new** — all four of its commits were promoted in cycle 84.
 
-**Lane C built a structured-file check** — *"earned by two lanes making the same mistake in one cycle."* That is the TOML union defect **QE caused last cycle**, made mechanical by the lane that owns the file. QE wrote the rule into its own loop; **Lane C wrote it into the repository**, which is the better half.
+### ⚠️ QE's conflict guard had the wrong *shape*, not the wrong list
 
-**Lane A generalised [B-133](docs/BUGS.md) rather than patching it.** QE returned that row twice for one unused import; Lane A closed it by changing the habit that produced it, not the line.
+**Resolving Lane C, QE union-merged `infra/decision-queue.py` — a Python file — and `CLAUDE.md`, which is the product owner's and ⚫ in the Change Budget.**
 
-> **Neither was asked for.** Both are the register working in the direction it is least often observed going — **from QE's defects back into the repository's guarantees.**
+**No damage: both came out byte-identical to Lane C's own branch**, and `decision-queue.py` parses. **That was luck, not design.**
 
-### Lane B answered [C-100](docs/LANE_COORDINATION.md), and it matters for [B-131](docs/BUGS.md)
+> **The guard has now been narrowed three times.** It began as *"union anything"*, became *"not `.toml`"* when TOML broke with duplicate keys, then *"not `.toml/.json/.yaml/.csv`"* — **and a `.py` file and `CLAUDE.md` walked straight through that list.**
+>
+> **A denylist has to predict every dangerous format. An allowlist has to name the six files where *keep both sides* is actually correct**, because they are append-only lists of rows. **Three narrowings is the signal that the shape was wrong, not the list.**
 
-> *"The Playwright substrate is on `main`, and it is fifteen specs."*
+**It is now an allowlist** — `BUGS` · `LANE_COORDINATION` · `BACKLOG` · `ACTIVE_ASSIGNMENTS` · `DECISION_REGISTER` · `DECISION_QUEUE` — **and anything else stops and asks.** Verified refusing before it was used again.
 
-**`accessibility` and the journey gates have been in the planner's required list with nothing behind them.** There is now something behind them — which moves part of B-131's shortfall from *"a gate that does not exist"* to *"a gate that exists and is not recorded."* **Those need different fixes**, and only the second is QE's.
+### Four lease aborts this session, none forced
 
-### The cheap-gates-first order held
+**Attempt 1 aborted with Lane B holding the lease.** QE waited ~4 minutes across six polls, then relaunched **after verifying the candidate still matched the pinned snapshot** rather than assuming it.
 
-**ESLint 0 · mypy over 807 files · 37 import contracts · every TOML parsing — all before validation started.** Nothing was found, which is the point: the order costs seconds when it finds nothing and saves a certification when it does.
+> **Cumulative cost across the session: ~21 minutes of wall-clock and zero correctness.** Every abort was correct behaviour on both sides, and none was ever forced.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3872 backend** *(+31)* · **1448 frontend** *(+16)* — **gated in stage 1** · **95.35%** · **392 invariants** · **807 files typed** · **37 contracts** · `tsc` clean and gated |
-| **Release** | **84 certification runs recorded, 81 certified** · `promoted == certified` ✓ · `--audit-main` clean · ⚡ **first attempt, no aborts, `integration` never moved** |
+| **Technical** | **3879 backend** *(+7)* · **1448 frontend** — **gated in stage 1** · **95.36%** · **392 invariants** · **809 files typed** · **37 contracts** · `tsc` clean and gated |
+| **Release** | **85 certification runs recorded, 82 certified** · `promoted == certified` ✓ · `--audit-main` clean · **1 abort on the lease, not a verdict** |
 | **Architecture** | Reachability 0 doorless · migration `0040` **reversible, verified this cycle** · **a new bounded context, with its ADR, its ownership row, its RLS and its invariants all present** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ✅ **Direct.** A workspace can list its accounts, and an ICP criterion is scored against outcomes |
-| **Process** | ⚡ **The cleanest cycle of the session.** Cheap gates first found nothing, which is what that order costs when it is working. **Two lanes turned QE's own defects into repository checks**, unprompted |
+| **Customer Value** | ⚠️ **Foundational.** A declaration asks for a provider read — the sync path, with [C-021](docs/LANE_COORDINATION.md) answered after five days |
+| **Process** | ⚠️ **QE's conflict guard was reshaped, not re-listed.** A denylist let a Python file and `CLAUDE.md` through; it is now an allowlist of six append-only registers and refuses everything else |
 
 ### Repository Health Trend
 
