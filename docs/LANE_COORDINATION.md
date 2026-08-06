@@ -5993,6 +5993,32 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 | **2** | **[C-228](#c-228--the-signal-center-has-no-workspace-wide-queue-to-render-and-no-way-to-leave-it)** — widen TASK-439's budget to include the workspace queue read, the resolve route and `Resource.SIGNAL` | **A budget change**, all inside Lane A's own modules |
 | **3** | **TASK-440's read** — Lane C to decide whether Companies gets one, or is rescoped | Follows from finding 2 |
 
+### ⚡ Updated 2026-08-06 — [TASK-448](BACKLOG.md) delivered two slices, and its third needs one list
+
+**Design System v2 was the answer to this item and it worked**: the row was startable, needed no ruling, and produced two validated slices. [410](architecture/410-approved-ui-specification.md) names five foundations — *tokens, type scale, radius scale, control heights, 18 canonical components* — and **four are now done**.
+
+| | |
+|---|---|
+| ✅ **Type scale · radius scale** | 15 arbitrary `text-[…]` values and 15 uses of an undeclared `rounded-md` retired. **Both scales are tokens and the guard checks membership, not just absence** |
+| ✅ **Control heights** | The button restated the scale; `input` and `select` each hardcoded the middle step. **Three edits that had to agree, and nothing would have noticed if they stopped** |
+| ⏸️ **The 18 canonical components** | **Not executable from the repository** |
+
+> ## **The eighteen are named nowhere in the repository.**
+>
+> ```bash
+> grep -rniE "18 canonical|canonical component" docs/ --include=*.md
+> → 410 line 34   "Tokens, type scale, radius scale, control heights, 18 canonical components"
+> → 411 line 113  "the implementation converges to Design System v2's 18 canonical components"
+> ```
+>
+> **Two references, both to a set neither document lists.** The enumeration is in the design project's own files, which this repository does not contain.
+
+**`components/ui/` holds nine.** ⛔ **Building nine more to reach eighteen would be inventing components with no caller**, which §6 forbids in as many words — *"do not add abstractions for hypothetical future needs"* — and a component nothing renders is dead code that a future screen then has to work around rather than use.
+
+**What is asked, and it is small**: **the list.** Which eighteen, so convergence has a target. **Lane C owns [410](architecture/410-approved-ui-specification.md) and [411](architecture/411-ui-convergence-assessment.md)**, and 411 §6 already classifies all 51 component files as `REPLACE` *against that set* — so the set is presumably known to the document that cites it.
+
+⚠️ **Slices 1 and 2 do not wait on it.** They are independently executable, tested and reviewable exactly as the row requires, and are on the branch validated. **This blocks the third slice and nothing behind it.**
+
 ### What this lane is doing meanwhile
 
 **Polling, and nothing else.** §20e: *"a lane never begins work when no `READY` task exists"*, and *"`AVAILABLE` with an empty queue is a correct repository state, not a stalled one."* **No work has been invented, no row self-assigned, and no slice manufactured to stay busy.** **Lane A re-claims by the Task Claim Protocol the moment any of the three above lands on `integration`.**
