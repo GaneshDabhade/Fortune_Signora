@@ -23,6 +23,7 @@ Decorative Logic (§2).
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import json
 import re
 import subprocess
@@ -378,6 +379,97 @@ def _profile(impacts: set[str]) -> tuple[str, frozenset[str]]:
         gates |= PROFILE_GATES.get(impact, PROFILE_GATES["platform"])
     name = "platform" if "platform" in impacts else "+".join(sorted(impacts))
     return name, gates
+
+
+@dataclass(frozen=True, slots=True)
+class ValidationPlan:
+    """What must run before a change is handed to QE.
+
+    **A typed record rather than a dict**: the first version returned
+    `dict[str, object]` and every reader needed a cast, which is a shape that
+    invites a reader to guess. `CLAUDE.md` §2 — *types should make incorrect
+    architecture impossible* — applies to a plan somebody executes.
+    """
+
+    paths: int
+    impacts: dict[str, list[str]]
+    profile: str
+    gates: list[str]
+    journeys: list[str]
+
+    @property
+    def every_journey(self) -> bool:
+        return self.journeys == ["__all__"]
+
+
+def validation_plan(paths: list[str]) -> ValidationPlan:
+    """**The complete validation plan for a set of changed paths** — [D-115](../docs/DECISION_REGISTER.md).
+
+    > *"The implementation lane should no longer decide which validations to
+    > execute. The repository should compute that plan."*
+
+    **One function over the pieces that already existed.** `_impacts` classified
+    paths and `PROFILE_GATES` named gates before this directive; `journeys_for`
+    was added by [D-114](../docs/DECISION_REGISTER.md). **What was missing was a
+    single entry point that answers *"what must I run before handing this
+    over?"* in one call** — so this composes rather than computes, and adding a
+    future validation means adding it to `PROFILE_GATES`, not here.
+
+    ⛔ **Union, never intersection**, inherited from `_profile` — *the single
+    easiest bug to write here.*
+
+    ⛔ **And unknown always widens.** An unrecognised path is `platform`; an
+    unrecognised `frontend/` path is every journey. **A plan that shrinks
+    because nobody classified a new directory is the `missing_gates` failure
+    wearing a planner's clothes.**
+    """
+    found = _impacts(paths)
+    name, gates = _profile(set(found))
+    journeys = journeys_for(paths)
+    return ValidationPlan(
+        paths=len(paths),
+        impacts={k: sorted(v) for k, v in sorted(found.items())},
+        profile=name,
+        gates=sorted(gates),
+        journeys=["__all__"] if "__all__" in journeys else sorted(journeys),
+    )
+
+
+def _report_plan(rev_range: str) -> int:
+    """`--plan` — what a lane must run before handing work to QE."""
+    paths = sorted({p for p in _git("diff", "--name-only", rev_range).splitlines() if p})
+    if not paths:
+        print("validation plan: nothing changed in that range.")
+        return 0
+    plan = validation_plan(paths)
+    print("")
+    print(f"  VALIDATION PLAN — {plan.paths} changed path(s), {rev_range}")
+    print(f"  profile: {plan.profile}")
+    print("")
+    print("  Impacts")
+    for impact, causes in plan.impacts.items():
+        shown = ", ".join(causes[:2]) + (f" (+{len(causes) - 2})" if len(causes) > 2 else "")
+        print(f"    {impact:<14} {shown}")
+    print("")
+    print(f"  Gates ({len(plan.gates)})")
+    for gate in plan.gates:
+        print(f"    {gate}")
+    js = plan.journeys
+    print("")
+    print(f"  Playwright journeys ({'ALL' if plan.every_journey else len(js)})")
+    if plan.every_journey:
+        print("    every journey — shared infrastructure or an unmapped path")
+    elif not js:
+        print("    none — nothing under frontend/ changed")
+    else:
+        for j in js:
+            print(f"    {j}")
+    print("")
+    print("  Run these, and they must pass, BEFORE handing work to QE")
+    print("  (CLAUDE.md §19 · ENGINEERING_LAWS.md L-15 gate 8 · D-114)")
+    print("  ⛔ This plan is computed, not chosen. Unknown paths widen it,")
+    print("     never narrow it.\n")
+    return 0
 
 
 def _report_impact(rev_range: str) -> None:
@@ -736,6 +828,11 @@ def main() -> int:
         help="a lane may push a claim to `integration` and nothing else — check that it did",
     )
     parser.add_argument(
+        "--plan",
+        metavar="REV_RANGE",
+        help="the complete validation plan for a change — gates and Playwright journeys (D-115)",
+    )
+    parser.add_argument(
         "--next-cycle",
         action="store_true",
         help="is there anything on `integration` worth certifying, and what is it?",
@@ -746,6 +843,8 @@ def main() -> int:
         return _audit_main()
     if args.audit_claims:
         return _audit_claims()
+    if args.plan:
+        return _report_plan(args.plan)
     if args.next_cycle:
         return _next_cycle()
 

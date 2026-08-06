@@ -156,6 +156,50 @@ def evidence_state(opportunity, score, moment) -> EvidenceState:
 
 **[TASK-441](BACKLOG.md)'s rule is unaffected and still binds** — *"an expired score must render as expired, never as absent and never as current."* **The lesson for that screen is now concrete rather than theoretical: the badge is where expiry is said, and the new screen must carry it rather than inventing a second way to say the same thing.**
 
+### B-402 · `ENGINEERING_LAWS.md` is classified `platform`, so editing it demands a DR run
+
+| | |
+|---|---|
+| **Module** | `infra/certification-guard.py` — `CLOSEOUT_PATHS` |
+| **Current assignee** | ⚠️ **QE.** **`certification-guard.py` is named in `CLAUDE.md` §20e as QE's**, and this constant decides **what may promote as a Closeout** — so changing it changes what a gate *means*. ⛔ **Lane C found it while building on the classifier and may not repair it** |
+| **Severity** | 🟡 — **nothing is wrong today; the plan is too wide rather than too narrow**, which is the safe direction. **It becomes 🟠 the moment a lane distrusts the plan and starts ignoring it** |
+| **Status** | **`OPEN`** — reported with evidence, **not fixed: it is a gate's meaning** |
+| **Found** | 2026-08-06 by Lane C, **testing the [D-115](DECISION_REGISTER.md) validation planner against a real diff** rather than by reading the constant |
+
+**Steps to reproduce.**
+
+```bash
+python3 infra/certification-guard.py --plan origin/main..HEAD
+→   Impacts
+      documentation  CLAUDE.md, PROJECT_STATUS.md (+11)
+      platform       ENGINEERING_LAWS.md, docs/coordination/queues/lane-a.toml (+5)
+    Gates (16)  … dr, migration-reversibility, prompt-evaluation …
+```
+
+**Expected.** **Two governance markdown files at the repository root classify alike.**
+**Actual.** **`CLAUDE.md` is `documentation` and `ENGINEERING_LAWS.md` is `platform`** — so **a governance edit demands `dr`, `migration-reversibility` and `prompt-evaluation`.**
+
+### The cause is one missing entry, and the comment above it predicted this class
+
+```python
+CLOSEOUT_PATHS = ("certification/", "docs/", "PROJECT_STATUS.md", "README.md", "CLAUDE.md")
+```
+
+⚡ **`ENGINEERING_LAWS.md` is not in it, and it is the Repository Engineering Standard** — `CLAUDE.md` §19 and §20e both delegate to it. **It sits at the root beside `CLAUDE.md` and `README.md`, and only it is missing.**
+
+⚠️ **The classifier's own comment records the identical defect being fixed once already**: *"The first real run of this analysis classified `CLAUDE.md` as `platform` — it is not under `docs/`… Two classifiers in one file, disagreeing on their first disagreement."* **The fix shared the rule; it did not complete the list.**
+
+### Why the direction matters more than the instance
+
+✅ **The plan is too *wide*, which is the correct failure.** [D-114](DECISION_REGISTER.md)'s rule — *unknown widens, never narrows* — worked exactly as designed and this defect is what it looks like when it fires.
+
+⚠️ **But a plan that demands a disaster-recovery run to edit a markdown file is one lanes will learn to ignore**, and an ignored plan is worse than no plan. **That is the cost, and it is why this is filed rather than tolerated.**
+
+### The fix, for QE
+
+**Add `ENGINEERING_LAWS.md` to `CLOSEOUT_PATHS`.** ⚠️ **And check the rest of the root** — `IMPLEMENTATION_ROADMAP.md`, `PRODUCT_DIFFERENTIATORS.md` and any other root governance file have the same shape. ⛔ **Lane C did not enumerate them, because proposing the full list would be proposing the fix.**
+
+**Regression guard.** ✅ **Available and cheap**: assert every tracked root-level `.md` classifies as `documentation`. **A new governance file added at the root then fails visibly rather than silently demanding a DR run.**
 
 ### B-328 · `state-check.py` reports 54 `READY` tasks when there are two, because it counts headings
 
