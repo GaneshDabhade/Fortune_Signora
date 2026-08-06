@@ -101,6 +101,31 @@ echo "local $(git rev-parse --short HEAD) · origin $(git rev-parse --short orig
 
 > **`integration` moves continuously and by design** (§20e). A rejected push is therefore **normal**, not exceptional — which is exactly why it must be checked rather than assumed away.
 
+## 0e-3 · Ask the guard before parking the record, never after
+
+**Ratified by QE, 2026-08-06, cycle 78 — the second time this exact order has produced a false refusal.**
+
+**`certification-guard.py` reads `certification/manifest.json` from the working tree.** The record `make certify` just wrote is **uncommitted**, so parking it — by stash or otherwise — makes the guard answer from the *previous* cycle's manifest:
+
+```
+git stash push -u                       # the record is now invisible
+python3 infra/certification-guard.py <sha>
+→ REFUSED — <sha> has no certification record        ← and it does
+```
+
+**The refusal is correct given what the guard can see, and wrong about the repository.** It cost nothing both times because the guard *refuses* rather than proceeding — **the failure mode is a stop, which is the right one** — but a false stop teaches doubt about a true guard, and that is expensive in a different way.
+
+**The order is fixed and it is one line:**
+
+```bash
+python3 infra/certification-guard.py "$CERT_SHA" || exit 1   # 1. ask, while the record is visible
+git stash push -u -m "record"                                # 2. then park it
+git switch main && git merge --ff-only "$CERT_SHA" || exit 1 # 3. promote
+git stash pop                                                # 4. restore for the Closeout commit
+```
+
+> **The record must be parked at all** because the certified commit does not contain it — the tree that was certified is the tree without it. **That is not a wrinkle to remove; it is why a Closeout commit exists.**
+
 ## 0e-2 · `git reset --hard` is banned from a cycle. Prefer the operation that refuses.
 
 **Ratified by QE, 2026-08-06, after [B-129](BUGS.md) recurred one cycle after [§0e](#0e--commit-the-certification-record-before-touching-a-branch) was written to prevent it.**

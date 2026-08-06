@@ -206,7 +206,12 @@ with database.disposable('signora_reversibility_check') as t:
 
 ```bash
 make certified ARGS="$CERT_SHA"                     # refuses if this commit is not certified
-git checkout main && git merge --ff-only "$CERT_SHA"
+# The guard reads the working-tree manifest, so ask BEFORE parking the record —
+# parking it first produces a refusal that is correct about what it can see and
+# wrong about the repository (§0e-3).
+python3 infra/certification-guard.py "$CERT_SHA" || exit 1
+git stash push -u -m "certification record"
+git switch main && git merge --ff-only "$CERT_SHA" || exit 1
 
 [ "$(git rev-parse HEAD)" = "$CERT_SHA" ] || echo "ABORT — promoted != certified"
 ```
