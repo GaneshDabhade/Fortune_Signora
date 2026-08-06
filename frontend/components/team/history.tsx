@@ -72,7 +72,7 @@ export function OrganizationHistory({
                 key={`${entry.occurred_at}:${index}`}
                 className="flex items-baseline justify-between gap-4 border-l-2 border-border pl-3"
               >
-                <p className="text-[0.9375rem] leading-6 text-content">{sentence(entry)}</p>
+                <p className="text-md leading-6 text-content">{sentence(entry)}</p>
                 <time
                   className="shrink-0 text-xs text-content-subtle"
                   dateTime={entry.occurred_at}

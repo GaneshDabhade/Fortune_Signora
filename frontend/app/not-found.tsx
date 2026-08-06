@@ -37,7 +37,7 @@ export default function NotFound() {
         <h1 className="text-xl font-semibold text-content">
           That address does not lead anywhere
         </h1>
-        <p className="text-[0.9375rem] leading-6 text-content-muted">
+        <p className="text-md leading-6 text-content-muted">
           Nothing in Signora sits at this link. It may have moved, or it may
           never have existed — either way, nothing about your accounts has
           changed.

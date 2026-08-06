@@ -91,7 +91,7 @@ export function NarrativeBlock({
               key={`${index}:${statement.evidence.join(',')}`}
               className="flex items-baseline justify-between gap-4"
             >
-              <p className="text-[0.9375rem] leading-6 text-content">{statement.text}</p>
+              <p className="text-md leading-6 text-content">{statement.text}</p>
               <Grounding
                 tokens={statement.evidence}
                 resolvable={statement.evidence.some((token) => facts.has(token))}

@@ -62,7 +62,7 @@ export default function AppError({
       <div className="flex max-w-md flex-col items-start gap-3">
         <p className="text-sm font-medium text-content-subtle">Signora</p>
         <h1 className="text-xl font-semibold text-content">Something went wrong</h1>
-        <p className="text-[0.9375rem] leading-6 text-content-muted">
+        <p className="text-md leading-6 text-content-muted">
           This screen could not be shown. Nothing about your accounts, your
           evidence or your decisions has changed — the failure is in displaying
           them.

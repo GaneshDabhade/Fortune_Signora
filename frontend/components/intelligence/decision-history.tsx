@@ -108,7 +108,7 @@ function Decision({
 }) {
   return (
     <div className="flex flex-col gap-0.5 border-l-2 border-border pl-3">
-      <p className="text-[0.9375rem] leading-6 text-content">{state.reason}</p>
+      <p className="text-md leading-6 text-content">{state.reason}</p>
       <p className="text-xs text-content-subtle">
         {actor(state, viewerId, people)} · {movement(state, previous, viewerId, people)} ·{' '}
         {formatDay(state.occurred_at)}

@@ -222,3 +222,91 @@ describe('theme switching requires no component change', () => {
     expect(offenders.map((o) => o.name)).toEqual([]);
   });
 });
+
+/**
+ * **The same rule as colour, applied to the two scales that did not have it —
+ * TASK-448.**
+ *
+ * `design-tokens.test.tsx` has always asserted that a *theme* change is a
+ * token edit. It said nothing about type or radius, and the code found the
+ * gap exactly as the file's own header predicts: **fifteen arbitrary
+ * `text-[…]` values** and **fifteen uses of `rounded-md`, a step no token
+ * declared**, resolving to a Tailwind default nothing controlled.
+ *
+ * **So a colour change was one edit and a radius change was a sweep**, which
+ * is the difference this file exists to remove.
+ */
+describe('the type and radius scales are tokens too', () => {
+  /** An arbitrary value is to a scale what a hex colour is to the palette:
+   * correct today, and invisible to whoever changes the scale tomorrow. */
+  const ARBITRARY_TYPE = /\btext-\[/;
+  const ARBITRARY_RADIUS = /\brounded-\[/;
+
+  it.each(ALL_COMPONENTS)('$name uses no arbitrary type size', ({ source }) => {
+    expect(
+      ARBITRARY_TYPE.test(source),
+      'an arbitrary text-[…] survives a type-scale change unaltered, which is the bug',
+    ).toBe(false);
+  });
+
+  it.each(ALL_COMPONENTS)('$name uses no arbitrary radius', ({ source }) => {
+    expect(ARBITRARY_RADIUS.test(source), 'arbitrary rounded-[…] found').toBe(false);
+  });
+
+  it('every type size a component uses is a declared token', () => {
+    /** **Membership, not merely absence of arbitraries.** Tailwind's own
+     * scale still resolves — `extend` merges — so a component could reach
+     * `text-3xl` and no token would control it. This is what stops that. */
+    const declared = declaredScale('fontSize');
+    const used = new Set<string>();
+    for (const { source } of ALL_COMPONENTS) {
+      for (const [, step] of source.matchAll(/\btext-([a-z0-9]+)\b/g)) {
+        used.add(step as string);
+      }
+    }
+    // **`text-` is three utilities wearing one prefix**: size, colour and
+    // alignment. Only the first is this check's business — the palette check
+    // above governs colour, and alignment has no scale to belong to. So the
+    // declared colour tokens, Tailwind's colour keywords and the alignment
+    // words are removed before what is left is held to the type scale.
+    const colours = definedColours().names;
+    const KEYWORDS = /^(current|inherit|transparent|left|right|center|justify|start|end|wrap|nowrap|balance|pretty|ellipsis|clip)$/;
+    const sizes = [...used].filter(
+      (step) => !colours.has(step) && !KEYWORDS.test(step),
+    );
+
+    expect(sizes.filter((step) => !declared.includes(step))).toEqual([]);
+  });
+
+  it('every radius a component uses is a declared token', () => {
+    const declared = [...declaredScale('borderRadius'), 'full', 'none'];
+    const used = new Set<string>();
+    for (const { source } of ALL_COMPONENTS) {
+      for (const [, step] of source.matchAll(/\brounded-([a-z0-9]+)\b/g)) {
+        used.add(step as string);
+      }
+    }
+
+    expect([...used].filter((step) => !declared.includes(step))).toEqual([]);
+  });
+
+  it('both scales are defined in exactly one place', () => {
+    // The same property the colour set is held to: a second definition is a
+    // second thing to edit, and the one nobody edits is the one that drifts.
+    const css = readFileSync(join(process.cwd(), 'app', 'globals.css'), 'utf8');
+    for (const step of declaredScale('fontSize')) {
+      expect(css, `--text-${step} is not declared in globals.css`).toContain(`--text-${step}:`);
+    }
+  });
+});
+
+/** The steps Tailwind is configured with, read from the config rather than
+ * restated here — a list copied into a test is a second source of truth. */
+function declaredScale(key: 'fontSize' | 'borderRadius'): string[] {
+  const config = readFileSync(join(process.cwd(), 'tailwind.config.ts'), 'utf8');
+  const block = config.slice(config.indexOf(`${key}: {`));
+  const body = block.slice(0, block.indexOf('},'));
+  return [...body.matchAll(/^\s*'?([A-Za-z0-9]+)'?:\s*'var\(/gm)].map(([, name]) =>
+    name === 'DEFAULT' ? '' : (name as string),
+  );
+}

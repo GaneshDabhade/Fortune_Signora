@@ -54,7 +54,7 @@ export function ScoreArithmetic({ score }: { score: AccountScore }) {
           the screen does not show. */}
       <span
         aria-hidden
-        className="text-4xl font-semibold tabular-nums leading-none text-content"
+        className="text-display font-semibold tabular-nums leading-none text-content"
       >
         {score.score}
       </span>

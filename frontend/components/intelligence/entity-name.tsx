@@ -99,7 +99,7 @@ export function EntityName({
   return (
     <span className={cn('flex flex-col gap-0.5', className)}>
       <span className="flex items-center gap-1.5">
-        <span className="truncate text-[0.9375rem] font-medium leading-6 text-content">
+        <span className="truncate text-md font-medium leading-6 text-content">
           <Openable href={href}>{identity.name}</Openable>
         </span>
 

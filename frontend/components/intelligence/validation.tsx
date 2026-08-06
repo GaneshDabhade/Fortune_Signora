@@ -242,7 +242,7 @@ function Hypothesis({
   return (
     <div className="flex flex-col gap-2.5 rounded-md border border-border bg-surface-raised px-4 py-3.5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <h3 className="text-[0.9375rem] font-medium leading-6 text-content">
+        <h3 className="text-md font-medium leading-6 text-content">
           {hypothesis.title}
         </h3>
         <Relevance relevance={hypothesis.relevance} />

@@ -154,7 +154,7 @@ function Key({ hint }: { hint: 'j' | 'k' }) {
   return (
     <kbd
       aria-hidden
-      className="hidden shrink-0 rounded border border-border px-1 font-sans text-[0.6875rem] leading-4 text-content-subtle sm:inline"
+      className="hidden shrink-0 rounded border border-border px-1 font-sans text-2xs leading-4 text-content-subtle sm:inline"
     >
       {hint}
     </kbd>

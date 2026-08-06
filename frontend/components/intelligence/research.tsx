@@ -134,7 +134,7 @@ export function ResearchPanel({
  */
 function Unavailable() {
   return (
-    <p className="text-[0.9375rem] leading-6 text-content-muted">
+    <p className="text-md leading-6 text-content-muted">
       Signora could not load the research for this account. Nothing has changed about
       the account — reload to try again.
     </p>
@@ -143,7 +143,7 @@ function Unavailable() {
 
 function Invitation() {
   return (
-    <p className="text-[0.9375rem] leading-6 text-content-muted">
+    <p className="text-md leading-6 text-content-muted">
       Signora can compare the evidence beneath this account against itself — which
       conclusions rest on a single provider, what the score outweighed, and how far apart
       the evidence falls. It usually takes a minute or two.
@@ -157,7 +157,7 @@ function Status({ research }: { research: AccountResearch }) {
 
   if (status === 'requested' || status === 'running') {
     return (
-      <p aria-live="polite" className="text-[0.9375rem] leading-6 text-content-muted">
+      <p aria-live="polite" className="text-md leading-6 text-content-muted">
         {status === 'requested'
           ? 'Queued. This usually takes a minute or two — you can leave this page and come back.'
           : 'Comparing the evidence on this account. Usually a minute or two.'}
@@ -167,7 +167,7 @@ function Status({ research }: { research: AccountResearch }) {
 
   if (status === 'nothing_to_research') {
     return (
-      <p className="text-[0.9375rem] leading-6 text-content-muted">
+      <p className="text-md leading-6 text-content-muted">
         There was nothing to compare here. This account&rsquo;s evidence comes from one
         source and one period, so none of the comparisons research performs had anything
         to say.
@@ -178,7 +178,7 @@ function Status({ research }: { research: AccountResearch }) {
   if (status === 'failed') {
     return (
       <div className="flex flex-col gap-1.5">
-        <p className="text-[0.9375rem] leading-6 text-warning">
+        <p className="text-md leading-6 text-warning">
           Research could not finish. Nothing was recorded about this account.
         </p>
         {/* **The reason, verbatim.** A customer who cannot see why cannot
@@ -270,7 +270,7 @@ function Findings({
               ].join(' ')}
             >
               <span className="block text-sm text-content-muted">{finding.question}</span>
-              <span className="block text-[0.9375rem] leading-6 text-content underline decoration-dotted underline-offset-4">
+              <span className="block text-md leading-6 text-content underline decoration-dotted underline-offset-4">
                 {summarise(finding)}
               </span>
             </button>
@@ -308,7 +308,7 @@ function Reading({
             key={`${index}:${statement.cites.join(',')}`}
             className="flex items-baseline justify-between gap-4"
           >
-            <p className="text-[0.9375rem] leading-6 text-content">{statement.text}</p>
+            <p className="text-md leading-6 text-content">{statement.text}</p>
             <Cited tokens={statement.cites} findings={findings} onOpen={onOpen} />
           </li>
         ))}

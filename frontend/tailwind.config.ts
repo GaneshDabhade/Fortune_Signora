@@ -58,8 +58,23 @@ export default {
       },
       borderRadius: {
         sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
         DEFAULT: 'var(--radius)',
         lg: 'var(--radius-lg)',
+      },
+      /* **The type scale becomes tokens** (TASK-448). Declared here rather
+       * than left to Tailwind's defaults so that `design-tokens.test.tsx` can
+       * assert membership: an arbitrary `text-[0.9375rem]` is to the type
+       * scale exactly what `bg-slate-100` is to the colour scale. */
+      fontSize: {
+        '2xs': 'var(--text-2xs)',
+        xs: 'var(--text-xs)',
+        sm: 'var(--text-sm)',
+        md: 'var(--text-md)',
+        base: 'var(--text-base)',
+        lg: 'var(--text-lg)',
+        xl: 'var(--text-xl)',
+        display: 'var(--text-display)',
       },
       boxShadow: {
         sm: 'var(--shadow-sm)',
