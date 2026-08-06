@@ -318,6 +318,8 @@ A task is done only when all of the following are true:
 | **Documentation updated** | The module's design doc, consistent with the code (§12) |
 | **Self-validation performed** | The lane ran its own gates on the **rebased** branch |
 | **Independently demonstrable** | §2 — showable without naming a module, a table or a port |
+| ⚡ **Customer journey automated** | **For every customer-visible slice: a Playwright scenario that completes the journey** ([D-113](docs/DECISION_REGISTER.md), [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) L-15 gate 8). **A UI slice is not complete until its scenario is.** ⛔ **A journey, never a control** — *button exists* and *modal opens* are component tests and belong in `frontend/tests/components/`. **Headed by default in development (`HEADED=1`); QE chooses the mode for certification** |
+| **UI states covered** | **Loading · empty · error · permissions · accessibility where applicable.** ⚠️ **And the error state is the one that gets skipped** — [P-A](docs/DOMAIN_DISCOVERY_REGISTER.md): *a failed read must never render as an empty result*, which [C-226](docs/LANE_COORDINATION.md) found six times on one screen |
 | **Engineering Laws satisfied** | **The eleven handover gates in [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) §L-15** — reuse audit · behaviour preservation · data preservation · migration contract · backward compatibility · architecture consistency · runtime composition · customer journey · documentation · QE impact · no blocking defect |
 | **Ready for QE validation** | All of the above **before** the handover, not after the rejection |
 

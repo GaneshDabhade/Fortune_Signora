@@ -116,6 +116,23 @@
 
 ⚠️ **And it was this office's own queue.** **Lane C reported itself legitimately empty while holding a startable row** — **the same defect it had corrected in Lane A's queue the previous day** (*"zero claimable is not zero executable"*), **committed here and found only because the sweep became standing.**
 
+### 🎭 0-B · Every screen row carries its journey — [D-113](DECISION_REGISTER.md)
+
+> ## ***"Every customer-visible feature should have a corresponding customer-visible Playwright journey."***
+
+**Mandatory in the decomposition template.** ⛔ **A screen row this office writes is incomplete without a `Playwright journey` field**, and the field states the journey in the customer's words — **not the controls it touches.**
+
+| ✅ Write | ⛔ Never |
+|---|---|
+| *a seller works the triage queue to empty and every signal leaves by a decision* | *the dismiss button exists* |
+| *a seller saves a view, returns, and a colleague sees the same one* | *the modal opens* |
+
+⚡ **This adds no new gate.** **[`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) L-15 gate 8 has always asked *"can a customer complete this journey?"* and accepted a sentence.** **Playwright is the same question with an executable answer.**
+
+⚠️ **And Evidence First found the capability already complete before any of this was written**: **15 spec files · `make e2e` · a narrated `demo` project · `HEADED=1` already wired as `headless: process.env.HEADED !== '1'` · traces, video and screenshots on failure.** ⛔ **What was missing was never the tooling. It was the requirement** — which is the same shape as every *implemented, not usable* finding in this repository.
+
+**When a row has no journey** — a foundation slice, a `public/` contract, a design system — **the field says so and says why.** **[TASK-448](BACKLOG.md) is the worked example: a design system has no customer journey, and asserting one would be the *icon renders* test the directive forbids.**
+
 ### ⚖️ 0-i · Evidence First — [D-102](DECISION_REGISTER.md)
 
 > ## ***"Every recommendation should first attempt to disprove itself."***

@@ -435,10 +435,26 @@ Reused unchanged   ·  Extended  ·  Generalized  ·  Refactored  ·  New
 | 5 | **Backward Compatibility Review** (L-10) | Required or not, decided against the table |
 | 6 | **Architecture Consistency Review** (L-14) | Budget respected; no boundary crossed |
 | 7 | **Runtime Composition Check** (L-7) | `make runtime-composition` shows no new unexpected gap |
-| 8 | **Customer Journey Check** (L-6) | Discoverable, reachable by role, usable |
+| 8 | **Customer Journey Check** (L-6) | ⚡ **For a customer-visible slice: a Playwright scenario that completes the journey.** Discoverable, reachable by role, usable — **demonstrated, not asserted** ([D-113](docs/DECISION_REGISTER.md)) |
 | 9 | **Documentation Updated** (L-3) | The module's design doc is true of the code |
 | 10 | **QE Impact Statement** | What QE must do to validate this — named, not implied |
 | 11 | **No lane-owned Blocking Quality Defect** | Coverage, tests, types, migrations, import contracts, invariants |
+
+### ⚡ Gate 8 becomes executable — [D-113](docs/DECISION_REGISTER.md), 2026-08-06
+
+> ## **Every customer-visible feature has a corresponding customer-visible Playwright journey.**
+
+**This adds no twelfth gate.** **Gate 8 has always asked *"can a customer complete this journey?"* and has always accepted a sentence as the answer.** ⚡ **A Playwright scenario is the same question with an executable answer**, and the repository already has the whole apparatus — 15 spec files, `make e2e`, a narrated `demo` project, `HEADED=1`, traces and video on failure. **What was missing was never the capability. It was the requirement.**
+
+| | |
+|---|---|
+| ✅ **What a scenario must be** | **A complete user journey** — sign in · create an ICP · triage a signal · create a saved view · open Account 360 · perform a bulk action. **It proves a customer can accomplish meaningful work** |
+| ⛔ **What it must not be** | ***button exists · modal opens · icon renders · CSS verification.*** **Those are component tests and `frontend/tests/components/` already holds them** |
+| **Coverage a journey earns** | **authentication · navigation · API interaction · persistence · UI refresh · permissions · audit behaviour where applicable** |
+| ⚡ **Growth is progressive** | ⛔ **Do not wait for a module to finish.** **When a screen becomes usable, its scenario exists; it expands as functionality arrives** |
+| **Headed by default in development** | **`HEADED=1`** — already wired: `headless: process.env.HEADED !== '1'`, with `slowMo` and video. ***"I want implementation to be visible."*** **QE keeps whatever mode is right for certification reliability** |
+
+⚠️ **The suite is therefore also the product demonstration.** **`make product-demo` already runs it narrated, headed and recorded** — **so a stakeholder review, a regression check and an onboarding walkthrough are the same artifact, and it stays true because it runs.**
 
 **All eleven precede the handover, not the rejection.** A gap found at certification is the same gap that was visible to the lane in seconds.
 
