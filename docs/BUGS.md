@@ -537,6 +537,60 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-131 · The Validation Planner requires sixteen gates; the certification record contains six
+
+| | |
+|---|---|
+| **Module** | The certification gate set — `backend/tests/certification/` and `REQUIRED_GATES` |
+| **Current assignee** | **QE** — the gate set is QE's |
+| **Severity** | 🟠 · **Nothing is failing.** Ten required gates leave **no trace**, so a cycle where they passed is indistinguishable from one where they were skipped |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-06 by QE, cycle 79, the first cycle in which `validation_plan` was reachable from `main` |
+
+**Steps to reproduce.**
+
+```bash
+python3 infra/certification-guard.py --plan <promoted>..<candidate>
+→ Gates (16)
+python3 -c "…manifest…"
+→ ['import-linter', 'mypy', 'pytest', 'security-invariants', 'smoke', 'tsc']
+```
+
+**Expected.** What the repository says must run is what the record says did run.
+
+**Actual.** **16 required, 6 recorded.** Absent from the record:
+
+```
+doc-drift · dr · eslint · event-catalog · frontend-suite
+migration-reversibility · prompt-evaluation · reachability
+runtime-composition · state-check
+```
+
+### Four of the ten do run — and that is the sharper half
+
+**QE runs `dr`, `migration-reversibility`, `state-check` and `frontend-suite` every cycle**, by hand, **outside the record.** So the defect is not only *ten gates missing*; it is that **the four that pass leave the same evidence as the six that never ran — none.**
+
+> **A gate whose result is not recorded is a gate nobody can audit**, and [ADR-0032](architecture/adr/0032-release-certification.md) exists so that a certification is *"a record rather than an opinion."* **Four passes that live only in a QE session are an opinion.**
+
+### It reframes [465](architecture/465-certification-strategy.md) rather than contradicting it
+
+*"Across seventy certifications, no gate has ever caught a product defect"* is a much less surprising sentence once **ten of the sixteen required gates leave no trace in the record it is measured from.**
+
+### The fix is not uniform, and pretending it is would be the mistake
+
+| | |
+|---|---|
+| **`dr` · `migration-reversibility` · `state-check` · `frontend-suite`** | **Already run. They need recording, not building** |
+| **`doc-drift` · `event-catalog` · `reachability` · `runtime-composition` · `eslint`** | Exist as commands; **not wired into certification** |
+| **`prompt-evaluation`** | ⛔ **Cannot simply be switched on.** `reasoning@1` has no released model on this hardware — a plan demanding it would refuse **every** cycle. **A known standing limitation, not an oversight** |
+
+### And closing it changes what certification means
+
+**Adding to `REQUIRED_GATES` makes every prior record unsatisfied**, exactly as [B-123](#b-123--the-frontend-suite-is-in-no-gate-and-a-failing-test-is-on-a-lane-branch-right-now)'s open half describes: none of the 79 recorded runs executed them, so `is_certified` would read false across the whole history `--audit-main` walks. **`RECORD_VERSION` exists for precisely this**, and making the requirement set version-aware is a change to what certification *means* ([ADR-0032](architecture/adr/0032-release-certification.md)).
+
+> **Same decision as B-123's open half, now with a second and larger reason to take it.** **QE's next step is a report, not an enforcement**: compute the plan, compare it to the manifest, print the delta, refuse nothing — [427](architecture/427-impact-based-validation.md) step 1's own discipline, *measure the disagreement while everything still runs.*
+
+
 ### B-130 · D-107 removed `UI_WAVE_TASKS` and left its test referencing it
 
 | | |

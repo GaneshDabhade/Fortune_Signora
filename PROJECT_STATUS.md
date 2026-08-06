@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `78705c2`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3eec247`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `78705c2`, 2026-08-06.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `3eec247`, 2026-08-06.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`78705c2`** — the certified commit itself |
-| **`integration`** | **level with `main`** at `78705c2` |
-| **Release candidate** | **None pinned.** Cycle 78 promoted **a new bounded context** — the People domain, with the first migration since `0039` |
-| **Certification** | ✅ [`78705c2562ff`](certification/reports/78705c2562ff.md) · migration head **`0040`** · protocol **v2** |
+| **`main`** | **`3eec247`** — the certified commit itself |
+| **`integration`** | **`748d161`** — two claim commits, replayed onto the certified commit |
+| **Release candidate** | **None pinned.** Cycle 79 promoted **23 commits and the Validation Planner** — and the planner's first run against this repository found [B-131](docs/BUGS.md) |
+| **Certification** | ✅ [`3eec2479b849`](certification/reports/3eec2479b849.md) · migration head **`0040`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
 | **Validation queue** | **Empty.** ✅ **Lane C's cycle-70 deferral resolved itself** — the lane rebased, and its work is promoted here |
-| **Customer value this cycle** | ⚠️ **Foundational, and declared as such.** Signora can now hold **a person, and where they have worked as an interval that closes rather than a field that is overwritten.** No screen shows it yet |
+| **Customer value this cycle** | ⛔ **None.** Governance and instrumentation — **and the instrument's first act was to measure the gate set and find it short by ten** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3756 backend tests** · **95.35% coverage** *(floor 95)* · **1267 frontend tests** across 62 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **788 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **36 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 184s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3757 backend tests** · **95.35% coverage** *(floor 95)* · **1267 frontend tests** across 62 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **788 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **36 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 144s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,17 +40,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **C-228 · C-229 · B-207** — three findings, one withdrawn by its own author | **[TASK-427](docs/BACKLOG.md)** — the People bounded context | **468 audit · [D-103](docs/DECISION_REGISTER.md)** *(cycle 76)* | **Cycle 78** |
-| **Execution phase** | **Building** | **Building** | ⚠️ **Blocked on a disagreement with Lane A**, not on a defect | **Certified · Promoted · Closed out** |
-| **Branch** | Level with `main` | Level with `main` | **18 commits, including the Validation Planner** | Level with `main` |
-| **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ⚠️ **Cannot rebase** — `BACKLOG.md` records the same rows as `CLAIMED` and `BLOCKED` | — |
-| **Blocked?** | **No** | **No** | **Yes — by Lane A, and mutually** | **No** |
-| **Waiting on QE?** | No | No | **After the two lanes agree** | — |
-| **Next executable work** | Next `READY` row | Next `READY` row | **Settle TASK-440/441 with Lane A**, then 18 commits land at once | **Cycle 79, on the next pass** |
+| **Last promoted** | **C-228 · C-229** — findings, with one bug withdrawn by its own author | **[TASK-427](docs/BACKLOG.md)** *(cycle 78)* — the People bounded context | **[D-115](docs/DECISION_REGISTER.md) the Validation Planner · [D-123](docs/DECISION_REGISTER.md) execution state as a check** | **Cycle 79** |
+| **Execution phase** | **Building** | **Building** — [TASK-201](docs/BACKLOG.md) claimed | **Governing** — unblocked, rebased clean, 23 commits landed at once | **Certified · Promoted · Closed out** |
+| **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
+| **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
+| **Blocked?** | **No** | **No** | **No** — *"execution state is the lane's, and I overwrote it twice"* | **No** |
+| **Waiting on QE?** | No | No | No | — |
+| **Next executable work** | Next `READY` row | [TASK-201](docs/BACKLOG.md) | Stewardship | **The plan-versus-record report ([B-131](docs/BUGS.md))** |
 
-> **A new bounded context shipped with everything a new bounded context owes**: a ratified ADR, an ownership row, RLS enabled *and* forced in the creating migration, both tables classified in `tenancy_policy.py`, a reversible migration, and **three new Security Invariants that arrived with the module rather than after it.**
+> **Lane C unblocked itself in one exchange**, exactly as predicted: *"execution state is the lane's, and I overwrote it twice."* **Twenty-three commits landed in a single cycle**, and the Validation Planner among them.
 >
-> ⚠️ **Lane C is blocked and it is not a defect.** Eighteen commits — **including the Validation Planner QE was asked to build on** — cannot rebase because `BACKLOG.md` records TASK-440/441 as `CLAIMED` by Lane A at 10:08 and `BLOCKED` by Lane C at 10:55. **Both lanes are acting correctly on what they can see.** QE resolves board conflicts its own Closeouts cause; **it does not decide whether a claimed task is claimable**, and the two lanes settling it is one exchange.
+> ⚡ **Its first measurement was of certification itself, and it found a shortfall of ten.** **Sixteen gates required, six recorded** — and four of the missing ten are gates QE runs every cycle **by hand, outside the record**. A pass that leaves no trace is indistinguishable from a skip, which is the one property [ADR-0032](docs/architecture/adr/0032-release-certification.md) exists to guarantee.
+>
+> **QE's answer is a report before an enforcement** — compute the plan, compare it to the manifest, print the delta, refuse nothing. **427 step 1's discipline, applied to QE's own gate set.**
 
 ---
 
@@ -101,58 +103,65 @@
 
 ---
 
-## 1d · Release summary — 2026-08-06, cycle 78
+## 1d · Release summary — 2026-08-06, cycle 79
 
-**Derived from the promoted commit `78705c2`.** **Thirty-four promotions.** A new bounded context, its own migration, and **three new Security Invariants that arrived with it rather than after it.**
+**Derived from the promoted commit `3eec247`.** **Thirty-five promotions.** The Validation Planner reached `main` — **and the first thing it measured was the certification that promoted it.**
 
 ### What was promoted
 
-**[TASK-427](docs/BACKLOG.md), Lane B — the People bounded context.** Signora can now hold **a person, and where they have worked as an interval that closes rather than a field that is overwritten** ([ADR-0400](docs/architecture/adr/0400-person-as-an-entity.md)). **New module, new migration `0040`, two new tables.** No screen shows it yet, and the row says so.
+**Lane C's twenty-three commits, and the one that matters is [D-115](docs/DECISION_REGISTER.md) — the Validation Planner.**
 
-**Lane A** — three findings raised and one withdrawn by its own author: `C-228` the Signal Center has no queue to render, `C-229` Opportunity Intelligence needs a door, `B-207` **withdrawn** — *"the row said it, I read the component."*
-
-### The 🔴 path was checked rather than assumed
-
-**A new bounded context is Red** (Change Budget), so QE verified the authorization instead of trusting the commit message:
-
-| | |
-|---|---|
-| **ADR** | [ADR-0400](docs/architecture/adr/0400-person-as-an-entity.md) — **PRODUCT OWNER APPROVED**, on `integration` and actionable |
-| **Ownership** | the `[people]` row in [`modules.toml`](docs/coordination/modules.toml), added by the product owner at [D-103](docs/DECISION_REGISTER.md) |
-| **Tenancy** | both tables **`ENABLE` *and* `FORCE` RLS in the creating migration**; `SELECT`/`INSERT`/`DELETE` policies separate; the one `UPDATE` policy carries **both `USING` and `WITH CHECK`** — *"without the second, a row could be updated out of its own workspace"* |
-| **Classification** | both tables registered in `tenancy_policy.py` **in the same change** |
-| **Reversibility** | `0040` verified to base and back |
-
-> **The invariants arrived with the module, not after it: 389 → 392, and import contracts 35 → 36.** A new bounded context that adds no guarantee is the shape §11 exists to prevent.
-
-### [§0e-3](docs/QUALITY_ENGINEERING.md) — the guard refused correctly and was wrong about the repository
-
-**`certification-guard.py` reads the manifest from the working tree**, and the record `certify` had just written was uncommitted. **Parking it before asking made the guard answer from the previous cycle's manifest:**
-
-```
-git stash push -u                                  # the record is now invisible
-python3 infra/certification-guard.py 78705c2
-→ REFUSED — 78705c2 has no certification record    ← and it does
+```python
+validation_plan(paths) -> ValidationPlan     # what a change requires
+--plan REV_RANGE                             # what a lane must run before handing over
 ```
 
-**Second time this order has produced a false refusal.** It cost nothing both times **because the guard stops rather than proceeding** — the right failure mode — but **a false stop teaches doubt about a true guard**, which is expensive differently. **The order is now fixed in the checklist: ask while the record is visible, then park it, then promote.**
+> *"The implementation lane should no longer decide which validations to execute. The repository should compute that plan."*
 
-### Lane C returned again, and this time it is not their defect
+**Two design choices in it are worth keeping visible**, because both are the difference between a planner and a liability: **union, never intersection** — *"the single easiest bug to write here"* — and **unknown always widens**: an unclassified directory becomes `platform`, an unmapped `frontend/` path becomes every journey. *"A plan that shrinks because nobody classified a new directory is the `missing_gates` failure wearing a planner's clothes."*
 
-**Eighteen commits, including the Validation Planner** — `validation_plan(paths)` and `--plan`, real at `2301e9a7`. Their branch will not rebase because of a **semantic** conflict in `BACKLOG.md`: `integration` records Lane A **claiming** TASK-440/441 at 10:08; Lane C's `D-117` marks the same rows **`BLOCKED`** at 10:55, accepting Lane A's finding that the rows were wrong.
+**Also promoted:** [D-123](docs/DECISION_REGISTER.md), the execution-state rule made a check **and proved by reintroducing the defect** — after `0-F`, in which Lane C recorded overwriting another lane's execution state **twice**.
 
-> **Two lanes disagreeing about execution state is not QE's to adjudicate.** QE resolves board conflicts its own Closeouts cause; it does not decide whether a task a lane has claimed is claimable. **B-130 is fixed on their tip** — and better than asked: the test now asserts the removed symbol **stays** removed.
+### ⚡ The planner's first act was to measure the certification that promoted it
+
+```
+planner requires: 16 gates
+certify records:   6
+
+absent from the record:
+  doc-drift · dr · eslint · event-catalog · frontend-suite
+  migration-reversibility · prompt-evaluation · reachability
+  runtime-composition · state-check
+```
+
+**[B-131](docs/BUGS.md) filed.** And **the sharper half is not the six that never run — it is the four that do.** QE runs `dr`, `migration-reversibility`, `state-check` and `frontend-suite` every cycle, **by hand, outside the record**, so **a cycle where they passed is indistinguishable from one where they were skipped.**
+
+> [ADR-0032](docs/architecture/adr/0032-release-certification.md) exists so a certification is *"a record rather than an opinion."* **Four passes that live only in a QE session are an opinion.**
+
+**It reframes [465](docs/architecture/465-certification-strategy.md) rather than contradicting it.** *"No gate has ever caught a product defect across seventy certifications"* is far less surprising once **ten of sixteen required gates leave no trace in the record it is measured from.**
+
+**The fix is not uniform, and pretending otherwise would be the mistake.** Four need *recording*, not building. Five exist as commands and are unwired. **`prompt-evaluation` cannot simply be switched on** — `reasoning@1` has no released model on this hardware, so a plan demanding it would refuse every cycle. **A known standing limitation, not an oversight.**
+
+**And closing it changes what certification means** — adding to `REQUIRED_GATES` makes all 79 prior records unsatisfied, which is exactly where [B-123](docs/BUGS.md)'s open half already sits. **Same decision, second and larger reason.**
+
+### QE's next step is a report, not an enforcement
+
+**Compute the plan, compare it to the manifest, print the delta, refuse nothing.** That is [427](docs/architecture/427-impact-based-validation.md) step 1's own discipline — *measure the disagreement while everything still runs* — and it is the half of D-115 ④ that belongs to certification rather than to the lane.
+
+### The order fixed last cycle earned itself immediately
+
+**[§0e-3](docs/QUALITY_ENGINEERING.md) worked on its first use**: the guard was consulted **while the record was visible**, answered `CERTIFIED`, and only then was the record parked. **And the ancestor check stopped the promotion** when `integration` moved mid-cycle — two claim commits, replayed onto the certified candidate so the certified SHA was genuinely on `integration`'s history. **No shortcut, no head-chasing.**
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3756 backend** *(+28)* · **1267 frontend** — **gated in stage 1** · **95.35%** · **392 invariants** *(+3)* · **788 files typed** · **36 contracts** *(+1)* · `tsc` clean and gated |
-| **Release** | **78 certification runs recorded, 75 certified** · `promoted == certified` ✓ · `--audit-main` clean · **migration head `0040`, reversible** · ⚠️ **[B-123](docs/BUGS.md) half open** |
+| **Technical** | **3757 backend** · **1267 frontend** — **gated in stage 1** · **95.35%** · **392 invariants** · **788 files typed** · **36 contracts** · `tsc` clean and gated |
+| **Release** | **79 certification runs recorded, 76 certified** · `promoted == certified` ✓ · `--audit-main` clean · ⚠️ **[B-131](docs/BUGS.md) — 16 gates required, 6 recorded** · ⚠️ **[B-123](docs/BUGS.md) half open** |
 | **Architecture** | Reachability 0 doorless · migration `0040` **reversible, verified this cycle** · **a new bounded context, with its ADR, its ownership row, its RLS and its invariants all present** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ⚠️ **Foundational, declared.** A person and a closing affiliation exist in the platform; **no screen shows them yet** |
-| **Process** | ✅ **Clean promotion, fail-fast sequence throughout.** ⚠️ **One false refusal from the guard** — the record was parked before it was consulted, now fixed in the checklist ([§0e-3](docs/QUALITY_ENGINEERING.md)). ⚠️ **Lane C returned on a lane-to-lane backlog disagreement**, which is not QE's to settle |
+| **Customer Value** | ⛔ **None.** Instrumentation — **and the instrument's first measurement was of the gate set itself** |
+| **Process** | ✅ **[§0e-3](docs/QUALITY_ENGINEERING.md) earned itself on first use**, and the ancestor check stopped a promotion when `integration` moved. ⚠️ **[B-131](docs/BUGS.md)**: ten required gates leave no trace, and four of them are ones QE runs every cycle by hand |
 
 ### Repository Health Trend
 
