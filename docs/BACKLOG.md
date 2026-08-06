@@ -564,6 +564,66 @@
 | ⚠️ **Bound** | ⛔ **No *skip auth in development* flag.** §13 forbids it by name, and this row is exactly where somebody would reach for one |
 | **Unblocks** | **The [D-113](DECISION_REGISTER.md) authentication journey** — a Playwright scenario that signs in needs an environment where signing up is possible |
 
+### TASK-461 · The Action Batch's `public/` contract, and nothing else
+
+| | |
+|---|---|
+| **Discovery** | **[R-03](DOMAIN_DISCOVERY_REGISTER.md)** · **[455 §5](architecture/455-context-definitions-r02-r03.md)** slice 1 · **[ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md)**, approved [D-126](DECISION_REGISTER.md) |
+| **Module** | ⚠️ **A new bounded context.** 🔴 **Its owner is the product owner's to confirm** — see the row below. **Lane C recommends Lane B, with evidence** |
+| **Status** | ⏸️ **`SEQUENCED`** — **the only thing outstanding is the owner.** ⛔ **Not `READY`: a `READY` row in a module no lane owns is unclaimable, which is [C-412](LANE_COORDINATION.md), and [D-103](DECISION_REGISTER.md) taught this office to register ownership *before* the row rather than after** |
+| ⚡ **Delivers** | **The port and the reader in `public/`. No domain, no table, no endpoint.** ***"Unblocks all seven consumers"*** — a consumer lane can compile, type-check and test against it before a row is persisted, and `lint-imports` proves the coupling never forms |
+| **Why slice 1 is the contract alone** | **[P-E](DOMAIN_DISCOVERY_REGISTER.md), ratified [D-121](DECISION_REGISTER.md).** **Five screens consume this; publishing first is what stops five approval models being invented while it is built** |
+| ⛔ **Out of scope** | **Events** — two are named in slice 4 and neither is designed. **[P-C](DOMAIN_DISCOVERY_REGISTER.md): an event exists when a consumer appears** |
+| **Change Budget** | 🔴 **A new bounded context** — and [ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) is the ratified ADR §6 requires |
+
+### TASK-462 · The Action Batch's domain — proposal, approval, and the window as a predicate
+
+| | |
+|---|---|
+| **Module** | The Action Batch context · **[455 §5](architecture/455-context-definitions-r02-r03.md)** slice 2 |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-461](#task-461--the-action-batchs-public-contract-and-nothing-else)** |
+| **Delivers** | **The proposal · approval · withdrawal · the named unit · and the reversible window** |
+| ⚠️ **The rule this slice exists to get right** | ⛔ **`settled` is `now() >= applied_at + window`, computed at read time and materialised nowhere.** ⚡ **`Snoozed.until` in `signal_engine` is the precedent, and [447](architecture/447-signal-center-traceability-audit.md) called it *"the pattern R-03 should copy"*.** ⛔ **A stored `is_settled` column is two representations of one fact; a scheduler to flip it is the machinery [P-B](DOMAIN_DISCOVERY_REGISTER.md) refuses** |
+| ⛔ **What the context must never learn** | **Business semantics.** ***"The Action context coordinates lifecycle. Business domains own business behaviour"*** ([D-126](DECISION_REGISTER.md)) |
+
+### TASK-463 · The Action Batch's persistence — append-only, and no `UPDATE` grant
+
+| | |
+|---|---|
+| **Module** | The Action Batch context · **[455 §5](architecture/455-context-definitions-r02-r03.md)** slice 3 |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-462](#task-462--the-action-batchs-domain--proposal-approval-and-the-window-as-a-predicate)** |
+| **Delivers** | **Append-only tables · no `UPDATE` grant · `ENABLE` *and* `FORCE ROW LEVEL SECURITY` in the creating migration · classification in `tenancy_policy.py` in the same change** (§8) |
+| ⚡ **The standard to match, and it is recent** | **[TASK-427](#task-427--m-d--the-people-domain--a-person-and-an-affiliation-with-an-end)** — QE's Closeout called it ***"a new bounded context that brought its own guarantees"***: **both tables forced, separate `SELECT`/`INSERT`/`DELETE` policies, and the one `UPDATE` policy carrying *both* `USING` and `WITH CHECK` — *"without the second, a row could be updated out of its own workspace"*.** **389 → 392 invariants** |
+| ⚠️ **Why append-only is not a preference** | **An approval that can be edited is an approval nobody can cite** (§2) |
+
+### TASK-464 · The Action Batch's application layer, and the two events
+
+| | |
+|---|---|
+| **Module** | The Action Batch context · **[455 §5](architecture/455-context-definitions-r02-r03.md)** slice 4 |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-463](#task-463--the-action-batchs-persistence--append-only-and-no-update-grant)** |
+| **Delivers** | **The application layer, and the two events — *now* that a consumer exists** ([P-C](DOMAIN_DISCOVERY_REGISTER.md)) |
+| ⚠️ **Catalogue them in the same change** | **§9, and [C-101](LANE_COORDINATION.md) is what happens when that slips** — 25 declared in code, 24 in the catalogue |
+
+### TASK-465 · Applying a batch asynchronously, and saying so while it runs
+
+| | |
+|---|---|
+| **Module** | The Action Batch context · **[455 §5](architecture/455-context-definitions-r02-r03.md)** slice 5 |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)** |
+| **Delivers** | **Asynchronous application through ARQ and the outbox — both built** — **and the progress surface** |
+| ⚠️ ⚡ **[P-A](DOMAIN_DISCOVERY_REGISTER.md) applies here and [455](architecture/455-context-definitions-r02-r03.md) says so** | ⛔ **A batch that is *still running* and a batch that *failed to start* must never render alike.** **This is the slice where a progress surface silently becomes a stated absence, and where [C-226](LANE_COORDINATION.md)'s six instances would become a seventh** |
+
+### TASK-466 · Companies bulk — the first consumer, end to end
+
+| | |
+|---|---|
+| **Module** | **Product Surface + the Action Batch's `public/`** · **[455 §5](architecture/455-context-definitions-r02-r03.md)** slice 6 |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-465](#task-465--applying-a-batch-asynchronously-and-saying-so-while-it-runs)** |
+| ⚡ **One consumer, deliberately** | ***"A contract proven by one real caller before six adopt it"*** — **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md)'s discipline.** ⛔ **A port with six simultaneous first callers has no chance of being corrected cheaply** |
+| **Why Companies** | **[446](architecture/446-companies-traceability-audit.md) audited it, and it is the only consumer whose *whole* workflow is understood** |
+| **Unblocks, once proven** | **Opportunity Intelligence · Workflow Automation · AI Copilot · AI Research** |
+
 ### TASK-460 · Global Search — one box, four kinds of answer
 
 | | |

@@ -4,7 +4,9 @@
 
 > ***"This should become the implementation contract rather than allowing individual slices to redefine the capability as they progress."***
 
-**Nothing implemented. No lane named. No ADR drafted** — R-03's still waits on [TASK-431](../BACKLOG.md)'s shape ruling.
+~~**Nothing implemented. No lane named. No ADR drafted** — R-03's still waits on [TASK-431](../BACKLOG.md)'s shape ruling.~~
+
+> ✅ **SUPERSEDED 2026-08-06 — [D-126](../DECISION_REGISTER.md) ruled [TASK-431](../BACKLOG.md), option (b).** **[ADR-0405](adr/0405-an-action-is-approved-before-it-is-effective.md) is drafted *after* the ruling, and the six slices are [TASK-461](../BACKLOG.md)–[TASK-466](../BACKLOG.md).** ⚠️ **This sentence is what stopped Lane C drafting the ADR a day early** — the office had cited *an ADR ahead of a ruling gets its sizing wrong* as the reason it was safe to proceed, **and the Context Definition contradicted it on line 7.**
 
 ---
 

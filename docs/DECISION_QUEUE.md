@@ -150,6 +150,21 @@
 | **Recommended** | ✅ **A bounded, named exception**: *the slice may delete `# type: ignore[arg-type]` comments at publish sites and may change no other line in `backend/modules/`*. **Five deleted comments, provably behaviour-free, and a reviewer can verify the bound from the diff alone** — the same standard §20a's carve-out already uses for a `Resource` member. **The alternative that bends no rule delivers the capability never**: those comments have sat there for weeks precisely because no slice makes anybody touch them |
 | ⚠️ **Two corrections to the ADR, same validation** | **It says *"all eight"* ignores; there are **five** at publish sites** — the other three are `provider_normalization` (×2) and `ai_research_engine` and none is at a publish site. **And §Validation checks that `apps/worker/` has an owner but never checks that the *modules* the change reaches have one** — which is the check that would have caught this at ratification |
 
+## 🔴 The Action Batch needs an owner — one registry line, brought with the decomposition
+
+✅ **[D-126](DECISION_REGISTER.md) is ruled and executed**: [ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) is drafted, and **[TASK-461](BACKLOG.md)–[TASK-466](BACKLOG.md)** are the six slices. ⛔ **One thing remains and it is not mine: the new bounded context has no owner, and module ownership is never Lane C's** (§20e).
+
+> ⚡ **Brought *with* the decomposition rather than discovered after it.** **[TASK-427](BACKLOG.md) sat shut for two days because its row said *"`modules.toml` gains a row when this is placed, not before"* while `READY` needed an owner — [D-103](DECISION_REGISTER.md) broke that deadlock, and this is the lesson applied rather than re-learned.**
+
+| | |
+|---|---|
+| ✅ **Lane C recommends** | **Lane B** |
+| **§20e's precedence, and it points one way** | **① product architecture** — the first consumer is **Companies bulk**, whose backend is `opportunity_engine` · **② bounded context** — Lane B holds `opportunity_engine`, `commercial_profile` and `people` · **③ long-term maintenance** — four of the five blocked screens read Lane B's modules · **④ continuity** — Lane B raised and closed [C-334](LANE_COORDINATION.md), [C-332](LANE_COORDINATION.md) and the `TASK-428` boundary, all in this area |
+| ⚖️ **And the load argument, stated separately because it is weaker** | **Lane A holds 11 eligible rows at shortfall 0; Lane B holds 4.** ⛔ **Capacity is not a precedence criterion** — §20e: *ownership optimises for cohesion, never for arithmetic* — **so it is offered as a tiebreak that was not needed, not as the reason** |
+| ⬜ **Also unnamed, and deliberately** | **The context's own name.** ⛔ **[ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) refuses to coin one**: a name is [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s test — *would a salesperson use this word unprompted?* — **and it is worth one deliberate pass rather than a placeholder that ships** |
+
+**On confirmation: the `modules.toml` row is written, [TASK-461](BACKLOG.md) goes `READY`, and the five remaining slices sequence behind it. Nothing else waits.**
+
 ## 📌 TASK-431 · Six screens assert one guarantee, and the repository has no word for it
 
 **Not a `C-` item — no lane is blocked and nothing is undecided about *whether*.** **The question is the shape**, and it is 🔴, so it is yours.
