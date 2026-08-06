@@ -404,6 +404,20 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 ⚠️ **Added 2026-08-06 · [D-112](../DECISION_REGISTER.md), ruling [B-401](../BUGS.md).** **Zero mentions in this document before that date.** **Paired with `commercial_profile`** — [C-213](../LANE_COORDINATION.md) is what an unstabilized interface between two lanes costs.
 
+### People
+
+**A person, and an affiliation with an end.** An anonymous `Person` and an `Affiliation` — *person × company × title × interval* — so *"a VP of Engineering joined Acme in March and left in September"* is queryable rather than an event that passes.
+
+⚠️ **Added 2026-08-06 · [D-127](../DECISION_REGISTER.md).** **The module shipped at [TASK-427](../BACKLOG.md) and this document did not follow** — **caught by the [B-401](../BUGS.md) guard on the same run that registered the Action Batch**, which is the guard doing exactly what it was built for. ⛔ **Scope bound [C-221](../LANE_COORDINATION.md): no person's name anywhere.**
+
+### Action Batch
+
+**A change is proposed, approved, applied as one named thing, and can be taken back.** **Ratified [ADR-0405](adr/0405-an-action-is-approved-before-it-is-effective.md), [D-126](../DECISION_REGISTER.md).**
+
+**It owns lifecycle** — the `Action` as the canonical unit of work, approval, withdrawal, approval state, the reversible window, execution metadata and the public contract. ⛔ **It never owns business semantics: the consuming domain interprets, validates, executes, and implements the inverse.**
+
+⚠️ **`action_batch` is the bounded-context identity, not the product's word.** **No customer-facing name is ratified** — [ADR-0034](adr/0034-ubiquitous-language.md)'s test applies and [D-127](../DECISION_REGISTER.md) forbids a placeholder becoming production terminology because implementation started first.
+
 ### Timeline
 
 **Purpose:** A cross-cutting, read-optimized module that builds and serves a chronological feed of everything that has happened for a given entity.

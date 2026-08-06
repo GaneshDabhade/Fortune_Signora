@@ -569,8 +569,8 @@
 | | |
 |---|---|
 | **Discovery** | **[R-03](DOMAIN_DISCOVERY_REGISTER.md)** · **[455 §5](architecture/455-context-definitions-r02-r03.md)** slice 1 · **[ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md)**, approved [D-126](DECISION_REGISTER.md) |
-| **Module** | ⚠️ **A new bounded context.** 🔴 **Its owner is the product owner's to confirm** — see the row below. **Lane C recommends Lane B, with evidence** |
-| **Status** | ⏸️ **`SEQUENCED`** — **the only thing outstanding is the owner.** ⛔ **Not `READY`: a `READY` row in a module no lane owns is unclaimable, which is [C-412](LANE_COORDINATION.md), and [D-103](DECISION_REGISTER.md) taught this office to register ownership *before* the row rather than after** |
+| ✅ **Module** | **`action_batch` — Lane B.** **Assigned by the product owner 2026-08-06, [D-127](DECISION_REGISTER.md).** ⚠️ **`action_batch` is the *bounded-context identity*, not the product's word** — **no customer-facing name is ratified, and [D-127](DECISION_REGISTER.md) forbids a placeholder becoming production terminology because implementation started first** |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06, on the ownership ruling.** **Placed last, reordering nothing** |
 | ⚡ **Delivers** | **The port and the reader in `public/`. No domain, no table, no endpoint.** ***"Unblocks all seven consumers"*** — a consumer lane can compile, type-check and test against it before a row is persisted, and `lint-imports` proves the coupling never forms |
 | **Why slice 1 is the contract alone** | **[P-E](DOMAIN_DISCOVERY_REGISTER.md), ratified [D-121](DECISION_REGISTER.md).** **Five screens consume this; publishing first is what stops five approval models being invented while it is built** |
 | ⛔ **Out of scope** | **Events** — two are named in slice 4 and neither is designed. **[P-C](DOMAIN_DISCOVERY_REGISTER.md): an event exists when a consumer appears** |

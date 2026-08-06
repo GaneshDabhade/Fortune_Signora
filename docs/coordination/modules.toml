@@ -235,6 +235,48 @@ context requires.
 no person's name, anywhere. Role-based and organization-level only.
 """
 
+[action_batch]
+context = "A change is proposed, approved, applied as one named thing, and can be taken back"
+current_owner = "Lane B"
+future_owner = "Lane B"
+transition = "settled"
+implementation = 0
+basis = "Not built. ADR-0405 ratified 2026-08-06; six slices are TASK-461..466"
+last_work = "none — no lane-attributable work exists"
+next_milestone = "TASK-461 — the public/ contract alone"
+paired_with = "opportunity_engine"
+note = """
+⚡ ASSIGNED BY THE PRODUCT OWNER, 2026-08-06 (D-127). Module ownership is never
+Lane C's, and this row records a ruling rather than a judgement.
+
+§20e's precedence and the ruling reached the same answer:
+  ① product architecture   — Companies bulk is the first consumer (455 §5
+                             slice 6), and its backend is opportunity_engine
+  ② bounded context        — Lane B holds opportunity_engine, commercial_profile
+                             and people
+  ③ long-term maintenance  — four of the five blocked screens read Lane B's
+                             modules
+  ④ repository continuity  — Lane B raised and closed C-332, C-334 and the
+                             TASK-428 boundary, all in this area
+
+⚠️ THE DIRECTORY NAME IS ENGINEERING VOCABULARY, NOT THE PRODUCT'S WORD.
+D-127: "do not invent a temporary name simply to unblock implementation… never
+allow placeholder terminology to become production terminology simply because
+implementation started first."
+
+`action_batch` is the bounded-context identity — the same kind of word as
+`workspace_tenancy`, which ADR-0034 keeps precisely because `workspace` is
+"precise about isolation in a way `organization` is not". ⛔ NO CUSTOMER-FACING
+NAME IS RATIFIED. Nothing in a screen, a notification, an email or UI copy may
+use `action_batch` or any derivative until a name satisfies ADR-0034's test:
+would a salesperson use this word unprompted about their own job?
+
+⛔ AND THE BOUNDARY IS THE ADR'S, not this row's: the context owns lifecycle,
+approval, withdrawal, the reversible window, execution metadata and the public
+contract. It never owns business semantics. The consuming domain interprets,
+validates, executes, and implements the inverse.
+"""
+
 [provider_platform]
 context = "Third-party data acquisition, precedence and dispatch"
 current_owner = "Lane A"
