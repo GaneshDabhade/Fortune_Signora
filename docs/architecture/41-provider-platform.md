@@ -264,8 +264,26 @@ A seller reading *"Latest evidence · 5 weeks ago"* could not tell whether **the
 
 | | Blocked on | Resume trigger |
 |---|---|---|
-| **PP-02's last wire** — nothing starts a sync | [C-021](../LANE_COORDINATION.md) — an event handler cannot reach a provider adapter, and no module may enqueue ARQ work | A dispatch direction is accepted |
+| ~~**PP-02's last wire** — nothing starts a sync~~ | ~~[C-021](../LANE_COORDINATION.md)~~ **`CLOSED` 2026-08-05, [ADR-0404](adr/0404-platform-composition.md)** | ✅ **Built at [TASK-901](../BACKLOG.md) slice 1 — see below** |
 | **PP-03** — un-watching stops the spending | The same, plus **there is no polling to stop** | The same decision settles both |
+
+### TASK-901 slice 1 — the last wire, and it is an event *(2026-08-06)*
+
+**The dispatch direction [C-021](../LANE_COORDINATION.md) waited two months for.** `SyncDispatcher` had been a Protocol with no implementation since PP-02, so a customer's declaration reached this module's handler and stopped: the delta was computed, and nothing carried a company to a provider.
+
+> **A module asking for its own long work publishes an event.** `SyncDeclaredTargets` → `provider.sync.requested`, one per company no watermark covers → this module's own subscription → `RunProviderSync`.
+
+**`ai_research_engine` is the precedent and nothing here is invented.** ⛔ **The alternative was refused by the platform in its own first line** — *"modules never touch this directly — the relay publishes, the worker consumes"* (`signora_platform/event_bus/queue.py`) — **and it would also have lost the outbox's guarantee**: the request would live in Redis while the watermark write that justified it could still roll back.
+
+| Decision | Why it is this way |
+|---|---|
+| **`provider` and `capability` travel on the event** | Resolved when the request is made, never when it runs. **A replay must do what the original run did**, and a registry can change in between — the same reasoning that keeps `declaration_version` on the event it answers |
+| **The first provider supporting the capability, in name order** | `ProviderRegistry.supporting()` sorts, so the choice is deterministic. **Insertion order is a hidden input** (§2) and this repository has eliminated that one before |
+| **Company enrichment is what a *first* read is** | An account must exist and be described before technographics or capital events say anything about it. The other four capabilities are not refused, they are simply not first |
+| **No provider for the capability raises** | ⚠️ **Loudly.** A workspace whose declared companies are silently never read is indistinguishable from one with nothing to read, and the dead-letter path exists for this. **The answer is the same for every subject, so failing on the first is not a partial outcome** |
+| **The refusal is not a `ProviderError`** | §10 — *"an error must never name a component that was not involved."* **No provider was reached; none exists to reach**, and `ProviderError` requires a `ProviderName` because everything under it happened *to* a vendor |
+
+⛔ **It does not run yet, and the reason is [C-234](../LANE_COORDINATION.md).** **Two `registry.subscribe()` calls and a `providers` field on `WorkerRuntime` remain, and they are `apps/`** — [TASK-419](../BACKLOG.md), Lane C's, `READY`. **[ADR-0404](adr/0404-platform-composition.md) draws that line itself**: *"only the `WorkerRuntime` field is `apps/`, which is Lane C's."* **Everything below it is built and tested; the day that field lands, a customer declaring a company starts a provider read.**
 
 ### Operational observations, for future milestones rather than current work
 

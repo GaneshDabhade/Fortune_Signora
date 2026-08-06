@@ -25,9 +25,19 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from modules.provider_platform.application.run_sync import (
+    RunProviderSync,
+    RunProviderSyncInput,
+)
 from modules.provider_platform.application.sync_targets import (
     SyncDeclaredTargets,
     SyncDeclaredTargetsInput,
+)
+from modules.provider_platform.domain.provider import (
+    ProviderAdapter,
+    ProviderCapability,
+    ProviderName,
+    ProviderRegistry,
 )
 from signora_platform.db import tenant_scoped_session
 from signora_platform.event_bus import EventEnvelope
@@ -46,6 +56,7 @@ accident."""
 SYSTEM_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 
 SyncFactory = Callable[[AsyncSession], SyncDeclaredTargets]
+RunSyncFactory = Callable[[AsyncSession, ProviderAdapter], RunProviderSync]
 
 
 async def sync_declared_targets(
@@ -86,4 +97,59 @@ async def sync_declared_targets(
     )
 
 
-__all__ = ["CONSUMER_NAME", "sync_declared_targets"]
+async def run_requested_sync(
+    envelope: EventEnvelope,
+    *,
+    session_factory: async_sessionmaker[AsyncSession],
+    registry: ProviderRegistry,
+    build: RunSyncFactory,
+) -> None:
+    """Read one company, because something asked for it (TASK-901).
+
+    **The other half of the pair.** `sync_declared_targets` decides *which*
+    companies have never been read and publishes one request each; this runs
+    one. **Two subscriptions rather than one handler doing both** — a
+    declaration of fifty companies must not become fifty paged HTTP
+    conversations inside one event handler, which is the sentence
+    `SyncDispatcher` exists for.
+
+    **The provider is read from the event, never re-resolved.** Re-resolving
+    would let a replay run against a registry that has since changed, so the
+    second run would do something the first did not — the same reasoning that
+    keeps `declaration_version` on the event it answers.
+
+    ⚠️ **A failed sync does not raise.** `RunProviderSync` records its own
+    outcome and publishes `provider.sync.failed`; raising here would add the
+    dispatcher's retry on top of a decision the use case has already made,
+    and only it knows whether the failure was transient. **The same choice
+    `tasks.py` documents, made in the same words.**
+    """
+    subject = str(envelope.payload["subject"])
+    provider = ProviderName(envelope.payload["provider"])
+    capability = ProviderCapability(envelope.payload["capability"])
+    adapter = registry.get(provider)
+
+    async with tenant_scoped_session(
+        session_factory, workspace_id=envelope.workspace_id, user_id=SYSTEM_USER_ID
+    ) as session:
+        result = await build(session, adapter).execute(
+            RunProviderSyncInput(
+                workspace_id=envelope.workspace_id, capability=capability, subject=subject
+            ),
+            correlation_id=envelope.correlation_id,
+        )
+
+    logger.info(
+        "requested sync finished",
+        extra={
+            "workspace_id": str(envelope.workspace_id),
+            "correlation_id": str(envelope.correlation_id),
+            "sync_id": str(result.sync.id),
+            "provider": provider.value,
+            "status": result.sync.status.value,
+            "records_stored": result.records_stored,
+        },
+    )
+
+
+__all__ = ["CONSUMER_NAME", "run_requested_sync", "sync_declared_targets"]

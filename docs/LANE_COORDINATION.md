@@ -378,6 +378,7 @@ databaseUrl: required(
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | **`RULED`** — 2026-08-05 · [D-073](DECISION_REGISTER.md) · a `Resource` is a **declaration**, never a grant · **[`CLAUDE.md` §20a](../CLAUDE.md) amended** | **[TASK-405](BACKLOG.md)'s last route is unblocked.** Authorization is granted only through `policy.csv`; a `Resource` entry without policy rows provides no runtime capability, so the two authorities were never governing the same thing |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
+| [C-234](#c-234--task-901s-first-slice-is-complete-inside-the-module-and-the-wiring-is-task-419s) | **TASK-901's first slice is complete inside the module, and the wiring is TASK-419's** | Lane A | **Lane C** — `apps/` is its in [`modules.toml`](coordination/modules.toml), and [TASK-419](BACKLOG.md) names the exact change | **`OPEN`** — raised 2026-08-06 from inside [TASK-901](BACKLOG.md) | **The last step of TASK-901 slice 1.** Everything below it is built and tested |
 | [C-233](#c-233--the-app-shells-22-numbered-specifications-are-not-in-the-repository) | **The App Shell's 22 numbered specifications are not in the repository** | Lane A | **Lane C** *(three documents quote the specification; none records it)* | **`OPEN`** — raised 2026-08-06 from inside [TASK-447](BACKLOG.md) | **Nothing today.** The buildable part of the row shipped; **what cannot be built is what cannot be read** |
 | [C-232](#c-232--companies-shows-what-signora-tracks-and-the-audit-called-it-what-the-customer-declared) | **Companies shows what Signora *tracks*, and the audit called it what the customer *declared*** | Lane A | **Lane B** *(`commercial_profile` holds the declaration)* · **the product owner** *(whether the two should be one list)* | **`OPEN`** — raised 2026-08-06 from inside [TASK-440](BACKLOG.md), against the audit that produced it | **Nothing.** The screen ships over the read that exists and says which set it is |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would h | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
@@ -5985,6 +5986,34 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 Lane A's recommendation, offered rather than taken: **a page-level test rather than a per-component one.** Render the account brief with every hook erroring and assert the page says so — one test, no new prop on any component, and it cannot be silenced by adding a field. `brief.test.tsx` already has the harness. **Lane A will build it on request**; it is not being built unasked because the assertion would reach sections other lanes own.
 
 **Six occurrences of one defect is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. The register is where a repeated shape stops being individually correct.
+
+## C-234 · TASK-901's first slice is complete inside the module, and the wiring is TASK-419's
+
+**Opened 2026-08-06 · Lane A · owner: Lane C · 🟡**
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, holding [TASK-901](BACKLOG.md), with the module's half built and tested |
+| **Status** | **`OPEN`** |
+| **Blocks** | **The last step of slice 1, and nothing else.** A customer's declaration still does not reach a provider |
+
+### What is built, and what one field is missing
+
+✅ **`provider.sync.requested`** — catalogued in [06-events.md](architecture/06-events.md) · ✅ **`OutboxSyncDispatcher`**, the `SyncDispatcher` port's first implementation · ✅ **`run_requested_sync`**, the consumer that runs what was asked · ✅ **7 tests**, `mypy --strict` clean.
+
+⚡ **And the split is [ADR-0404](architecture/adr/0404-platform-composition.md)'s own, in its own words**: *"a typed `Settings` choosing which adapters exist belongs to the module that owns the behaviour — that is `provider_platform`, **Lane A's**. **Only the `WorkerRuntime` field is `apps/`, which is Lane C's.**"* **So this item is not a judgement about ownership; it is the ruling, reached.**
+
+⛔ **What is missing is two `registry.subscribe()` calls and a provider registry on `WorkerRuntime`** — and **[TASK-419](BACKLOG.md) is that change, in its own words**: *"`WorkerRuntime` gains a `providers` field, built at the worker's composition root exactly as the API's registry already is."* **It is `READY`, unclaimed, and Lane C's** (`apps/`, [C-010](#), ruled 2026-08-05).
+
+### Why this lane did not simply do it
+
+⚠️ **The argument for doing it is real and is recorded rather than hidden**: [§20a](../CLAUDE.md) lists *"adding a new subscription"* among the things the platform freeze **does not** prohibit, and this lane has composed its own module in `apps/` before — `apps/api/composition/coverage.py`, shipped and promoted at [TASK-400](BACKLOG.md).
+
+⛔ **The argument against is the one that decides it**: **a row exists, it names this exact change, and it is assigned to another lane.** *"Finding a defect outside your assignment is an obligation to report it, never permission to fix it"* — and the same holds for finding work. **Doing it here would be Lane A implementing a `READY` row belonging to Lane C**, which is worse than waiting.
+
+> ⚡ **Two lanes could close this in one commit each, and either is fine.** **Lane C claims [TASK-419](BACKLOG.md)** and the subscriptions come with it. **Or Lane C says the subscriptions are Lane A's to add**, and this lane adds them the same hour — the code below them is finished and tested.
+
+---
 
 ## C-233 · The App Shell's 22 numbered specifications are not in the repository
 

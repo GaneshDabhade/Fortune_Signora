@@ -21,6 +21,12 @@ from modules.provider_platform.domain.provider import ProviderCapability, Provid
 
 EVENT_VERSION: Final = 1
 
+#: The wire name as a constant rather than only a dataclass default.
+#: `slots=True` makes the class attribute a descriptor, so `Event.event_type`
+#: reads as a repr rather than the string — `ai_research_engine` found that
+#: the hard way and records it.
+PROVIDER_SYNC_REQUESTED: Final = "provider.sync.requested"
+
 
 @dataclass(frozen=True, slots=True)
 class ProviderSyncStarted:
@@ -121,6 +127,50 @@ class ProviderSyncFailed:
             "capability": self.capability.value,
             "failure_kind": self.failure_kind,
             "failure_message": self.failure_message,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderSyncRequested:
+    """One declared company needs reading, and nothing has read it yet.
+
+    ⚡ **The event that makes a customer's declaration reach a provider**
+    (TASK-901). `SyncDeclaredTargets` decides *which* subjects are new; this
+    announces one of them, and the worker runs it. **A declaration of fifty
+    companies must not become fifty paged HTTP conversations inside one event
+    handler** — which is `SyncDispatcher`'s whole reason for being a port, and
+    this is the shape that satisfies it.
+
+    **Modelled on `ai_research.requested` because that is the repository's one
+    precedent for a module asking for its own long work**: publish, subscribe,
+    run. ⛔ **The alternative was a module enqueueing onto ARQ directly**, and
+    `signora_platform/event_bus/queue.py` refuses it in its first line —
+    *"modules never touch this directly."*
+
+    **`provider` and `capability` travel on the event**, resolved when the
+    request is made rather than when it runs. A consumer that re-resolved them
+    could act on a registry that has since changed, which would make a replay
+    do something the original run did not — the same reasoning that keeps
+    `declaration_version` on the event it answers.
+    """
+
+    event_id: UUID
+    workspace_id: UUID
+    occurred_at: datetime
+    #: The company, as the customer typed it. **Never resolved here** — this
+    #: module reads what it is given and Knowledge Graph decides identity.
+    subject: str
+    provider: ProviderName
+    capability: ProviderCapability
+    causation_id: UUID | None = None
+    event_type: str = PROVIDER_SYNC_REQUESTED
+    event_version: int = EVENT_VERSION
+
+    def to_payload(self) -> dict[str, Any]:
+        return {
+            "subject": self.subject,
+            "provider": self.provider.value,
+            "capability": self.capability.value,
         }
 
 

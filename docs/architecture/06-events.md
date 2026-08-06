@@ -242,6 +242,7 @@ The Internal Event Bus is a versioned, envelope-standardized, at-least-once, per
 
 | Event | v | Payload | Notes |
 |---|---|---|---|
+| `provider.sync.requested` | 1 | `subject`, `provider`, `capability` | ⚡ **One declared company needs its first read** (TASK-901). Published by `SyncDeclaredTargets` — one per company that no watermark covers — and consumed by this module's own worker subscription. **The provider is resolved when the request is made, not when it runs**, so a replay cannot be sent somewhere the original was not. ⛔ **Modelled on `ai_research.requested`**: a module asking for its own long work publishes it, because `signora_platform/event_bus/queue.py` refuses a module enqueueing directly — *"modules never touch this directly"* |
 | `provider.sync.started` | 1 | `sync_id`, `provider`, `capability` | One sync run begins |
 | `provider.record.received` | 1 | `record_id`, `sync_id`, `provider`, `capability`, `external_id` | One raw record landed. **Carries identity, not payload** — putting a provider body in an envelope would make every vendor shape change an event contract change. |
 | `provider.sync.completed` | 1 | `sync_id`, `provider`, `capability`, `records_received`, `pages_fetched` | Watermark advances only on this |
