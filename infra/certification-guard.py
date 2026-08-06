@@ -231,6 +231,82 @@ IMPACT_CONTAINS: Final = (
     ("prompt", ("/prompts/", "/evaluation/")),
 )
 
+#: ══════════════════════════════════════════════════════════════════════════
+#: **Which Playwright journeys a change must run** — [D-114](../docs/DECISION_REGISTER.md).
+#:
+#: **Deterministic, so journey selection is not a developer's judgement call.**
+#: The directive asked Product Office to *"define the dependency mapping so this
+#: selection becomes deterministic rather than relying on developer
+#: judgement"*, and this is that mapping.
+#:
+#: ⚡ **It lives here rather than in a new file, and the reason is written 40
+#: lines above**: *"would eventually disagree — with the unmaintained one
+#: deciding what to skip."* A second impact map is exactly that failure, and a
+#: journey map is an impact map.
+#:
+#: **Ordered; first match wins; the widest rules come first.** A change to
+#: shared UI infrastructure selects every journey that consumes it, which is
+#: what the directive requires for the Design System, App Shell, Navigation,
+#: Routing, Workspace and Shared Components.
+JOURNEY_RULES: Final = (
+    # ⚠️ **Shared infrastructure selects everything.** These are the paths the
+    # directive names, and a change to any of them reaches every screen.
+    ("__all__", ("frontend/components/ui/", "frontend/components/shell/",
+                 "frontend/app/layout.tsx", "frontend/app/(app)/layout.tsx",
+                 "frontend/lib/query/", "frontend/lib/state/", "frontend/lib/api/")),
+    # Authentication reaches every journey that signs in — which is all of them —
+    # so it is also `__all__` rather than only `auth-journey`.
+    ("__all__", ("frontend/app/(auth)/", "frontend/lib/auth")),
+    ("commercial-profile", ("frontend/components/commercial/",)),
+    ("connections", ("frontend/components/integrations/",)),
+    ("workflow", ("frontend/components/intelligence/",)),
+    ("daily-usage", ("frontend/components/timeline/",)),
+    ("permissions.member", ("frontend/components/team/", "frontend/components/workspace/")),
+    ("confidence", ("frontend/components/feedback/",)),
+    # ── Route-level rules. **Without these, every screen render falls through
+    # to the widen-default and selection never narrows** — safe, and useless.
+    # Found by testing the map rather than by reading it: an Account 360 render
+    # selected `__all__`.
+    ("daily-usage", ("frontend/app/(app)/accounts/",)),
+    ("business-setup", ("frontend/app/(app)/business/",)),
+    ("permissions.member", ("frontend/app/(app)/settings/", "frontend/app/(app)/join/")),
+)
+
+#: **Journeys every frontend change runs, whatever else is selected.**
+#: The same shape as `ALWAYS` below and for the same reason: a computation that
+#: could reason its way out of the golden journey has inverted its purpose.
+JOURNEYS_ALWAYS: Final = frozenset({"golden-journey", "accessibility"})
+
+
+def journeys_for(paths: list[str]) -> frozenset[str]:
+    """Which Playwright specs a change must run before integration.
+
+    ⛔ **An unrecognised `frontend/` path selects every journey, never none.**
+    Identical to `_impacts`'s rule that an unrecognised path is `platform`:
+    **a new directory must not silently reduce validation.** The failure mode
+    of getting this wrong is a journey that stops running and nobody noticing,
+    which is strictly worse than running too many.
+
+    **Returns an empty set when nothing under `frontend/` changed** — a
+    backend-only slice has no journey to run, and saying so is not a reduction.
+    """
+    touched = [p for p in paths if p.startswith("frontend/")]
+    if not touched:
+        return frozenset()
+    selected: set[str] = set(JOURNEYS_ALWAYS)
+    for path in touched:
+        for journey, prefixes in JOURNEY_RULES:
+            if path.startswith(prefixes):
+                if journey == "__all__":
+                    return frozenset({"__all__"})
+                selected.add(journey)
+                break
+        else:
+            # Unrecognised frontend path — widen rather than narrow.
+            return frozenset({"__all__"})
+    return frozenset(selected)
+
+
 #: **Every executable profile carries these, and no computation removes one.**
 #: `CLAUDE.md` §11: a Security Invariant failure means a guarantee the
 #: architecture depends on has stopped holding. A framework that could reason

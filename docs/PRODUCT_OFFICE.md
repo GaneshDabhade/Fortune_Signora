@@ -133,6 +133,51 @@
 
 **When a row has no journey** — a foundation slice, a `public/` contract, a design system — **the field says so and says why.** **[TASK-448](BACKLOG.md) is the worked example: a design system has no customer journey, and asserting one would be the *icon renders* test the directive forbids.**
 
+### 🔀 0-C · UI automation is implementation work — [D-114](DECISION_REGISTER.md)
+
+> ## ***"The lane that implements a UI feature is also responsible for proving that the feature works."***
+
+**The ownership boundary, and it is the whole directive:**
+
+| | Owner |
+|---|---|
+| Backend · frontend · **Playwright E2E** · **regression validation** | ⚡ **The same implementation lane** |
+| **Repository integration certification** | **QE** |
+
+> ⛔ ***"QE should not become the first place where individual UI functionality is exercised."***
+
+### The three execution categories
+
+| | Who | Runs | Mode |
+|---|---|---|---|
+| **Development validation** | **The implementing lane** | ⚡ **Only the affected journeys** | **Headed** |
+| **Integration validation** | **QE** | Impacted integration journeys · cross-module scenarios | QE's choice |
+| **Release validation** | **QE** | **The complete suite** | QE's choice |
+
+### ⚡ Selection is deterministic, not a judgement call
+
+> ***"Product Office should define the dependency mapping so this selection becomes deterministic rather than relying on developer judgement."***
+
+**`JOURNEY_RULES` in [`infra/certification-guard.py`](../infra/certification-guard.py).** ⚡ **It lives there rather than in a new file, and the reason is a comment already forty lines above it**: *"would eventually disagree — with the unmaintained one deciding what to skip."* **A journey map is an impact map, and a second impact map is that failure.**
+
+| Change | Selects |
+|---|---|
+| **A screen route** | **That screen's journeys**, plus the golden journey and accessibility |
+| ⚠️ **`components/ui/` · `components/shell/` · a layout · `lib/query` · `lib/state` · `lib/api` · auth** | ⚡ **Every journey** — these are the shared-infrastructure paths the directive names |
+| ⛔ **A `frontend/` path nobody mapped** | ⚡ **Every journey.** **Identical to `_impacts`'s rule that an unrecognised path is `platform`: a new directory must not silently reduce validation** |
+| **Backend only** | **None** — and saying so is not a reduction |
+
+⚠️ **Route rules were added only after *testing* the map**: an Account 360 render selected `__all__`, which is safe and useless. **A selection framework that never narrows has not been built, it has been declared.**
+
+### The long-term objective this serves
+
+```
+  lane implements → lane writes the journey → lane RUNS the affected journeys
+  → lane fixes → integration → QE validates integration and release → production
+```
+
+**Defect discovery moves earlier.** ⚡ **And QE's purpose changes with it: integration correctness, cross-module interaction, release confidence — not rediscovering what the lane could have caught.**
+
 ### ⚖️ 0-i · Evidence First — [D-102](DECISION_REGISTER.md)
 
 > ## ***"Every recommendation should first attempt to disprove itself."***

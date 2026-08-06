@@ -435,7 +435,7 @@ Reused unchanged   ·  Extended  ·  Generalized  ·  Refactored  ·  New
 | 5 | **Backward Compatibility Review** (L-10) | Required or not, decided against the table |
 | 6 | **Architecture Consistency Review** (L-14) | Budget respected; no boundary crossed |
 | 7 | **Runtime Composition Check** (L-7) | `make runtime-composition` shows no new unexpected gap |
-| 8 | **Customer Journey Check** (L-6) | ⚡ **For a customer-visible slice: a Playwright scenario that completes the journey.** Discoverable, reachable by role, usable — **demonstrated, not asserted** ([D-113](docs/DECISION_REGISTER.md)) |
+| 8 | **Customer Journey Check** (L-6) | ⚡ **For a customer-visible slice: a Playwright scenario that completes the journey.** Discoverable, reachable by role, usable — **demonstrated, not asserted** ([D-113](docs/DECISION_REGISTER.md)). ⚡ **And *run* by the implementing lane before handover, not by QE ([D-114](docs/DECISION_REGISTER.md))** |
 | 9 | **Documentation Updated** (L-3) | The module's design doc is true of the code |
 | 10 | **QE Impact Statement** | What QE must do to validate this — named, not implied |
 | 11 | **No lane-owned Blocking Quality Defect** | Coverage, tests, types, migrations, import contracts, invariants |
