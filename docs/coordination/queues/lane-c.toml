@@ -41,8 +41,8 @@ updated      = 2026-08-06
 depth_target = 5
 
 current = "TASK-419"
-next    = ""
-future  = []
+next    = "TASK-454"
+future  = ["TASK-455"]
 
 # **0 of 5, and the honest number.** This read 3 while all three entries were
 # blocked on somebody else — the same defect this office corrected in C-412,
@@ -83,8 +83,16 @@ future  = []
 # startable row. That is the same defect it corrected in Lane A's queue on
 # 2026-08-06 — "zero claimable is not zero executable" — committed here one
 # day later, and found only because D-106 made the sweep standing.
-eligible_count = 1
-shortfall      = 4
+# ✅ 2026-08-06 · D-116's Tier 3 sweep converted two coordination items
+# into rows this lane owns:
+#   TASK-454  one condition, one wire code — C-003 + C-009 are ONE
+#             defect seen from two ends, and C-003's own note says it
+#             'gets worse with every slice'. A compounding defect is
+#             not a deferral candidate.
+#   TASK-455  a reviewable sign-up — blocks no implementation and
+#             blocks REVIEW, which §2 makes a completion condition.
+eligible_count = 3
+shortfall      = 2
 
 [rationale]
 "TASK-418" = "the three signora_platform capabilities ADR-0404 approved: EventHandler takes the dispatcher session, PublishableEvent becomes read-only properties, Action.LEAVE plus two policy lines. ✅ UNBLOCKED 2026-08-05 by C-416 — backend/signora_platform/ is Lane C's as permanent architectural owner. ⚠️ Ownership is not approval: §20a still freezes the tree and ADR-0404 is what makes this buildable. The two existing handlers migrate here, not in TASK-901. Run ADR-0404 §Validation first — all four"

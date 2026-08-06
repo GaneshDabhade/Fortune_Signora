@@ -486,6 +486,9 @@ This is **Provider Platform's defect, not a contract problem**, and it does not 
 
 ## C-002 · Customer language has no anticorruption layer
 
+> ✅ **`CLOSED` — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). Answered by a ruling taken for another item.** ⚡ **It asked where the customer-vocabulary anticorruption layer lives, and named three candidate homes — the first being *the Knowledge Graph, because it already resolves.*** **[D-111](DECISION_REGISTER.md) ruled [C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it--nothing-builds-its-input-and-the-module-that-measures-may-not-reach-one) on exactly that reasoning: `knowledge_graph` publishes the resolved fact because *it owns identity resolution, the binding, the claims and the vocabulary — no other module holds any of the four*.** **[TASK-446](BACKLOG.md) is where it lands.** ⚠️ **It was deferred *grouped with [C-322](#c-322--is-an-icp-a-description-or-a-filter)* — and C-322 is now ruled too, so the group is empty.**
+
+
 > ⏸️ **`DEFERRED` — product owner, 2026-08-05.** *"Keep grouped **with [C-322](#c-322)**. Do not split. Review when Epic B1 begins."* ⚠️ **Still the live scope bound on [TASK-903](BACKLOG.md)**: display the declarations, assert no match.
 
 | | |
@@ -560,6 +563,9 @@ Provider Normalization is an **anticorruption layer for vendor vocabulary** — 
 
 ## C-005 · Who owns the signal-profile write path
 
+> ⏸️ **`DEFERRED` with a concrete trigger — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md).** **Trigger: the first slice that makes a relevance profile customer-editable.** ⚡ **Not fired, and measurably so — [B-001](BUGS.md) records that *nothing has ever written a second profile version; there is no API and no UI*.**
+
+
 > ⏸️ **`DEFERRED` — product owner, 2026-08-05.** *"Leave open until implementation reaches the feature."*
 
 | | |
@@ -600,6 +606,9 @@ Both are customer-authored, both are versioned, both are immutable, and **custom
 
 ## C-006 · Which lane owns `test_api_<module>.py`
 
+> ✅ **`CLOSED` — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). Already answered by `CLAUDE.md` §20e, and this item predates that text.** ***"QE creates, maintains, extends and retires repository-wide automated tests; lanes own the tests specific to the slices they implement."*** ⛔ **A standing ambiguity that a rule already resolves is a reading problem, not a coordination item.**
+
+
 | | |
 |---|---|
 | **Owner** | **Product owner** |
@@ -624,6 +633,9 @@ Raised again because [C-008](#c-008--sellers-cannot-see-what-their-company-sells
 ---
 
 ## C-007 · The guided first run is a two-lane build
+
+> ⏸️ **`DEFERRED` with a concrete trigger — [D-116](DECISION_REGISTER.md).** **Trigger: M12.5 slice 5 reaching implementation.** **The item's own `Blocks` field already states it: *nothing until M12.5 slice 5 is done*.**
+
 
 | | |
 |---|---|
@@ -1134,6 +1146,9 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 ---
 
 ## C-017 · The onboarding honesty principle has no permanent home
+
+> ⏸️ **`DEFERRED` with a concrete trigger — [D-116](DECISION_REGISTER.md).** **Trigger: the first onboarding flow, guided setup or wizard entering implementation.** ⚡ **Onboarding is platform-foundation module 2 and has no backlog row**, so the trigger is visible on the coverage view rather than needing a watcher.
+
 
 | | |
 |---|---|
@@ -2014,6 +2029,9 @@ It is also the failure mode this repository keeps finding in a different coat: [
 ---
 
 ## C-203 · Nothing in the product can render a person's name
+
+> ⏸️ **`DEFERRED` with a concrete trigger — [D-116](DECISION_REGISTER.md).** **Trigger: M-E — the milestone at which a provider supplies a person identifier ([TASK-429](BACKLOG.md)).** ⛔ **Until then [C-221](#c-221--epic-c-can-be-narrowed-to-role-based-intelligence-or-widened-to-named-people-and-the-two-differ-by-an-order-of-magnitude)'s bound holds and [TASK-427](BACKLOG.md) forbids a person's name anywhere** — so nothing between now and M-E can need this.
+
 
 > ⏸️ **`DEFERRED` — product owner, 2026-08-05.** Grouped with [C-210](#c-210) and future People Intelligence work.
 
@@ -4594,6 +4612,9 @@ grep -E '^(current|next|future|eligible_count|shortfall|depth_target)' \
 
 ## C-331 · TASK-003 changes what the model is shown, which un-releases the narration prompt
 
+> ⏸️ **`DEFERRED` on a ruled dependency — [D-116](DECISION_REGISTER.md).** **Trigger: the hosted evaluation credential, ruled and being provided at [C-334](#c-334--four-rows-wait-on-one-credential-and-it-has-no-row-of-its-own).** ⛔ **No longer an open question — it is a queued consequence**, and [D-111](DECISION_REGISTER.md) already directs its automatic release.
+
+
 | | |
 |---|---|
 | **Raised by** | **Lane B**, 2026-08-05, on claiming TASK-003 and tracing the change through before writing |
@@ -4709,6 +4730,9 @@ grep -E '^(current|next|future|eligible_count|shortfall|depth_target)' \
 **No code was written and no dependency added.** The edge verified at C-328 stays correct and unused. **TASK-406's `Non-goals` already exclude fitted weights and drift** — this item concerns the *input* to the measurement rather than its sophistication, and neither option changes the ruled dependency direction.
 
 ## C-329 · Lane B has nothing claimable, and the row that says otherwise names two tasks it cannot take
+
+> ✅ **`CLOSED` — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). Moot by events.** **It said *"Lane B has been `AVAILABLE` with nothing verifiable to claim since cycle 54."* Lane B now holds four eligible rows.** ⚡ **And the class is guarded rather than merely resolved: [C-333](#c-333--lane-b-has-no-claimable-work-and-the-file-whose-job-is-to-say-so-reports-no-shortfall)'s eight checks report a dry queue on every `state-check` run.**
+
 
 | | |
 |---|---|
@@ -5030,6 +5054,9 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 > **The general finding is the tool, not the row.** **This collision has existed since 2026-08-04 and no gate reported it** — `state-check` validates identifiers and cross-references, not module ownership. **A dashboard that reads the board mechanically found in one run what four reports of prose did not.**
 
 ## C-412 · Three backlog rows say `READY` and are not claimable
+
+> ✅ **`CLOSED` — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). Fixed and guarded.** **The three rows were corrected, and *"a `READY` row that is not claimable"* is now check ③ of [C-333](#c-333--lane-b-has-no-claimable-work-and-the-file-whose-job-is-to-say-so-reports-no-shortfall)'s queue validation** — **it cannot recur silently.**
+
 
 | | |
 |---|---|
@@ -5557,6 +5584,9 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 **Lane A recommends the first**, and is not blocked meanwhile: everything in G1 except a live inference is buildable, and the refusal path is testable precisely because the refusal is real.
 ## C-223 · `competitor_entry` cannot be implemented across the current dependency graph
 
+> ⏸️ **`DEFERRED` with a concrete trigger — [D-116](DECISION_REGISTER.md).** **Trigger: Epic D phase 1's *detection* half entering implementation.** **The declaration, its API and its screen are shipped; only detection waits.**
+
+
 | | |
 |---|---|
 | **Owner** | **Product office** — the boundary question. **Product owner** — the ruling |
@@ -5614,6 +5644,9 @@ Two enforcements, either of which is sufficient on its own:
 ---
 
 ## C-300 · Provider Platform owns the half of the inbound path Lane B may not build
+
+> ⏸️ **`DEFERRED` with a concrete trigger — [D-116](DECISION_REGISTER.md).** **Trigger: [409](architecture/409-inbound-source-port-contract.md) step 4 — the runner — entering implementation.** ⚡ **The same trigger `LIVE_CAPABILITIES` already names for `CRM_RECORDS`**: *"it joins this set when the runner lands, and not before."* **One trigger, two consumers, and it is already written in code.**
+
 
 | | |
 |---|---|
@@ -5723,6 +5756,9 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 **They are deliberately not in the code today.** A schema no route can reach is a contract nobody agreed to.
 
 ## C-225 · Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice
+
+> ✅ **`CLOSED` — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). Answered by delivery.** **Wave 1 shipped ten sections, not eleven — [414](architecture/414-wave-1-account-360.md) was corrected before anything was built.** **The product owner's half — *does wave 1 ship the subset or wait* — is answered by the subset having shipped.**
+
 
 | | |
 |---|---|

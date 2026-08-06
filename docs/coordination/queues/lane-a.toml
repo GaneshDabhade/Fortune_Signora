@@ -51,7 +51,7 @@ depth_target = 5
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-439"
 next    = "TASK-441"
-future  = ["TASK-440", "TASK-442", "TASK-443", "TASK-448", "TASK-447", "TASK-445", "TASK-901", "TASK-449", "TASK-453"]
+future  = ["TASK-440", "TASK-442", "TASK-443", "TASK-448", "TASK-447", "TASK-445", "TASK-901", "TASK-449", "TASK-453", "TASK-456"]
 
 # ⚠️ **Rewritten 2026-08-05. This file declared 5 eligible and none of the five
 # was startable.** Every row is now checked against BACKLOG.md rather than
@@ -124,7 +124,7 @@ future  = ["TASK-440", "TASK-442", "TASK-443", "TASK-448", "TASK-447", "TASK-445
 #             (SavedView; Segment stays commercial_profile's). Slice 1
 #             of four, and it unblocks every consumer immediately.
 #   TASK-453  the six verbs, published by ai_reasoning_engine
-eligible_count = 11
+eligible_count = 12
 shortfall      = 0
 
 [rationale]

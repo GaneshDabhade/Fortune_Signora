@@ -540,6 +540,42 @@
 | **Delivered** | **`POST /workspaces/{id}/membership/leave`** — no target, no body, no reason. The membership is found from the workspace and the verified token, so **there is no identifier to substitute and no ownership check that could be written wrongly.** The last-owner refusal is the domain's, reused from `Membership.end` rather than restated. 🔴 **The slice found [B-206](BUGS.md) in its own module**: `WorkspaceQueryService.get_membership` — the request-time membership check — **never filtered ended memberships, so removal did not revoke access.** `SqlMembershipRepository.get` did filter, and documented that exact outcome as its reason: two reads of one fact, and authorization consulted the unfiltered one. Fixed, with end-to-end regression tests for both the removed and the departed case. 🟠 **`LastOwnerCannotLeaveError` was mapped to no status code**, so *"Make somebody else an owner first"* reached customers as **500 "An unexpected error occurred."** Now `409`, which repairs `remove` and `demote` too. **`MembershipResponse` gained `ended_at`**, which `remove`'s docstring already claimed. **`make validate` PASSED — 3651 tests, clean migrate, clean `tsc`** |
 | **Governance** | 🟠 — the module's own layers and a route, **announced in the commit message.** **No ADR: the model question was C-207 and it is closed** |
 
+### TASK-454 · One condition, one wire code
+
+| | |
+|---|---|
+| **Discovery** | **[C-003](LANE_COORDINATION.md)** — *"three wire codes for one condition"* · **[C-009](LANE_COORDINATION.md)** — *"an internal fault reaches a customer as a `422`"* |
+| **Module** | **`signora_platform/api/` — Lane C.** **§7: domain and application layers never raise `HTTPException`; exceptions are mapped centrally** |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md).** ⚡ **Two coordination items converted into one row, because they are one defect seen from two ends** |
+| **Delivers** | **One condition maps to one wire code, and an internal fault never presents as a client error.** ⛔ **A `422` tells a customer *you sent something wrong*; an internal fault is not that, and saying so is a lie the API tells** |
+| ⚡ **Why now rather than deferred again** | **[C-003](LANE_COORDINATION.md)'s own `Blocks` field: *"Nothing — but it gets worse with every slice."*** **It has been open since M12.5 and the repository has added routes throughout.** **A defect that compounds is not a candidate for deferral; deferring it is choosing to pay more later** |
+| **Change Budget** | 🟠 **The central exception mapper.** ⛔ **No domain layer learns an HTTP code** — that is what §7 forbids and this row must not become |
+| ⚠️ **The rule it must not break** | **§10's *failure attribution must be truthful*** — *"an error must never name a component that was not involved… an incorrect attribution is worse than none, because it misdirects the investigation"* |
+
+### TASK-455 · A customer can complete a sign-up in a reviewable environment
+
+| | |
+|---|---|
+| **Discovery** | **[C-320](LANE_COORDINATION.md)** — *"no environment can complete a sign-up, so nobody has reviewed the most commercially important hour in the product"* |
+| **Module** | **`infra/` — Lane C.** **Platform Foundation, [D-022](DECISION_REGISTER.md)** |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md)** |
+| ⚡ **Why it converts rather than defers** | **It blocks no implementation and it blocks *review* — and [§2](../CLAUDE.md) makes review a completion condition: *no frontend screen is complete until a human has reviewed it there*.** **So an environment that cannot reach sign-up makes a §2 condition unsatisfiable for the first hour of the product** |
+| **Delivers** | **A reviewable path through sign-up in the demo environment**, by the door a customer uses. ⛔ **§20e: test data enters the way a customer's data enters** — no seeded session, no bypassed verification |
+| ⚠️ **Bound** | ⛔ **No *skip auth in development* flag.** §13 forbids it by name, and this row is exactly where somebody would reach for one |
+| **Unblocks** | **The [D-113](DECISION_REGISTER.md) authentication journey** — a Playwright scenario that signs in needs an environment where signing up is possible |
+
+### TASK-456 · The signal catalog explains itself to a customer
+
+| | |
+|---|---|
+| **Discovery** | **[C-204](LANE_COORDINATION.md)** — *"the catalog explains nine words to nobody"* · [R5-04](architecture/39-product-review-findings.md) |
+| **Module** | **`signal_engine` + Product Surface — Lane A** |
+| **Status** | ✅ **`READY`** — **[D-116](DECISION_REGISTER.md)** |
+| **Delivers** | **The catalog's own explanations, surfaced where the signal appears.** ⚡ **The knowledge exists and is reviewed** — §2: *domain experts own static knowledge*, and the catalog is that artifact. **Nothing is authored here; it is rendered** |
+| ⛔ **Out of scope** | **No model-generated explanation.** §10: *if the system already knows something deterministically, never ask a model to invent it again* — **and the catalog knows it** |
+| **Change Budget** | 🟢 **A read of an existing catalog** |
+| ⚡ **Playwright journey** ([D-113](DECISION_REGISTER.md)) | **A seller meets a signal they do not recognise and finds out what it means without leaving the queue** |
+
 ### TASK-453 · The six verbs become a published contract
 
 | | |
