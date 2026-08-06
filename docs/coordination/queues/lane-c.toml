@@ -40,7 +40,7 @@ lane         = "Lane C"
 updated      = 2026-08-06
 depth_target = 5
 
-current = ""
+current = "TASK-419"
 next    = ""
 future  = []
 
@@ -72,12 +72,23 @@ future  = []
 # ⚡ **The investigation D-099 requires found the bottleneck inside the office
 # that runs the investigation.** Stated here rather than in a report, because
 # a finding that named another lane would have been wrong.
-eligible_count = 0
-shortfall      = 5
+# ⚡ CORRECTED 2026-08-06 · D-106's stale-blocker sweep, and the stale blocker
+# was this office's own. TASK-419 read BLOCKED on "provider_platform's typed
+# Settings and a build_provider_registry at its composition root" — TASK-436
+# shipped both and is PROMOTED. Verified by reading the code rather than the
+# row: ProviderSettings in provider_platform/infrastructure/settings.py and
+# build_provider_registry in provider_platform/infrastructure/composition.py.
+#
+# ⚠️ So this office reported itself legitimately empty while holding a
+# startable row. That is the same defect it corrected in Lane A's queue on
+# 2026-08-06 — "zero claimable is not zero executable" — committed here one
+# day later, and found only because D-106 made the sweep standing.
+eligible_count = 1
+shortfall      = 4
 
 [rationale]
 "TASK-418" = "the three signora_platform capabilities ADR-0404 approved: EventHandler takes the dispatcher session, PublishableEvent becomes read-only properties, Action.LEAVE plus two policy lines. ✅ UNBLOCKED 2026-08-05 by C-416 — backend/signora_platform/ is Lane C's as permanent architectural owner. ⚠️ Ownership is not approval: §20a still freezes the tree and ADR-0404 is what makes this buildable. The two existing handlers migrate here, not in TASK-901. Run ADR-0404 §Validation first — all four"
-"TASK-419" = "ADR-0404 capability 3, the apps/ half. Still sequenced behind Lane A's provider_platform Settings and registry builder; a WorkerRuntime field pointing at a registry nothing populates is the decorative class §2 forbids"
+"TASK-419" = "ADR-0404 capability 3, the apps/ half. ✅ UNBLOCKED 2026-08-06 — TASK-436 is PROMOTED and shipped both halves it owed: ProviderSettings (provider_platform/infrastructure/settings.py) and build_provider_registry (provider_platform/infrastructure/composition.py), verified by reading the code rather than this row. What remains is the apps/ half alone — a WorkerRuntime field pointing at the registry provider_platform now populates. ⚠️ THE NAME COLLISION IS STILL LIVE: apps/worker/subscriptions.py imports build_provider_registry from ai_platform, a different thing with the same name. ⛔ Wire the provider_platform one; do not assume the import already present is it. Run ADR-0404 §Validation first."
 #: not sequenced — see [[held]] below.
 "_TASK-413" = "change-aware validation — frontend-only skips. SEQUENCED with a trigger that has not fired: a measured certification wall-clock cost. Listed so the sequence is visible; it does not start on a schedule"
 
@@ -144,8 +155,8 @@ standing = [
   "keep implementation lanes continuously supplied with work",
 ]
 
-[[blocked]]
+# ── Historical: why this row read BLOCKED until 2026-08-06 ───────────────────
+[[disposed]]
 task    = "TASK-419"
-blocker = ["provider_platform's Settings and registry builder — Lane A's"]
-owner   = "Lane A first, then Lane C"
-note    = "ADR-0404 capability 3. Rescoped 2026-08-05 before a line was written: the ADR said the registry is built at the worker composition root `exactly as the API's registry already is`, and no composition root builds a ProviderRegistry anywhere. That sentence compared it to ai_platform's AI provider registry -- a different thing with a similar name, and the collision is live at apps/worker/subscriptions.py:153. SimulatedProviderAdapter is constructed only in tests and provider_platform has no Settings object. §10 puts a typed Settings with the module that owns the behaviour, which is Lane A's. Only the WorkerRuntime field is apps/. A field pointing at a registry nothing populates is the decorative class §2 forbids, so the halves are sequenced."
+by      = "Lane C, 2026-08-06 — moved out of `blocked`, not closed"
+note    = "Kept as the record of a blocker that outlived its cause by a day. Its blocker read 'provider_platform's Settings and registry builder — Lane A's', and Lane A had shipped both. The rescope on 2026-08-05 was correct and nobody re-read it after TASK-436 promoted."

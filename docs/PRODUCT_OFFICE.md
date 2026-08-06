@@ -58,6 +58,36 @@
 
 > ⚠️ **And writing that check found the register in *four* ownership schemas** — `Owner` · `Current assignee(s)` · inline `owner:` · inline `current module assignee:`. **The first version of the check knew one of them and reported twelve owned items as unowned.** **A check that cries wolf is worse than no check**, because the register is where a lane looks to find out who to ask.
 
+### ✅ 0-0 · Definition of Done for Product Office — [D-106](DECISION_REGISTER.md)
+
+> ## ***"A discovery is only complete when it has become executable work."***
+
+**Eight conditions. A finding that satisfies seven is unfinished planning, not a completed discovery.**
+
+**① the architecture has been validated · ② repository reuse has been evaluated · ③ ownership has been determined · ④ the correct implementation lane has been identified · ⑤ dependencies have been identified · ⑥ implementation tasks have been created · ⑦ those tasks have been assigned to the appropriate lane · ⑧ sequencing has been updated.**
+
+> **At that point the discovery has become delivery.**
+
+⛔ **A finding must not be left as `READY`, `BACKLOG`, `TODO`, *Future Work* or *Planned* unless a genuine dependency prevents implementation.** **"Genuine" means named, owned, and currently unmet** — not *"somebody should decide this eventually."*
+
+#### ⚠️ The failure this rule is named after, and it is this office's own
+
+**[467 §3](architecture/467-system-states-traceability-audit.md) endorsed Lane A's page-level test for [C-226](LANE_COORDINATION.md) and wrote: *"Lane A offered to build it on request; the request is this document."***
+
+> ## ⛔ **A document is not a request.** **No task existed, so no lane could claim it, and an endorsed, agreed, unblocked piece of work sat as prose.**
+
+**[TASK-442](BACKLOG.md) is that sentence turned into a row.** **The discovery was complete by every measure except ⑥ and ⑦ — which are the two that make it happen.**
+
+### 🔁 0-0a · The stale-blocker sweep is standing
+
+> ***"The cheapest dependency is the one resolved before it delays engineering."***
+
+**Every poll, for every `BLOCKED` row: read the blocker against the repository, not against the row.**
+
+⚡ **First run, 2026-08-06: [TASK-419](BACKLOG.md) had been unblocked for a day.** **It read `BLOCKED` on *"`provider_platform`'s typed Settings and a `build_provider_registry` at its composition root"* — and [TASK-436](BACKLOG.md) had shipped both and was `PROMOTED`.** **Verified by reading `provider_platform/infrastructure/settings.py` and `.../composition.py`, not the row.**
+
+⚠️ **And it was this office's own queue.** **Lane C reported itself legitimately empty while holding a startable row** — **the same defect it had corrected in Lane A's queue the previous day** (*"zero claimable is not zero executable"*), **committed here and found only because the sweep became standing.**
+
 ### ⚖️ 0-i · Evidence First — [D-102](DECISION_REGISTER.md)
 
 > ## ***"Every recommendation should first attempt to disprove itself."***
