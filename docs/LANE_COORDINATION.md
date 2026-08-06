@@ -6019,6 +6019,27 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 ⚠️ **Slices 1 and 2 do not wait on it.** They are independently executable, tested and reviewable exactly as the row requires, and are on the branch validated. **This blocks the third slice and nothing behind it.**
 
+### Dependency statement — 2026-08-06, current
+
+**Two rows are in flight and neither is idle-blocked; both have delivered, validated halves on the branch.**
+
+| Row | Delivered | Waiting on | Owner of the answer |
+|---|---|---|---|
+| **[TASK-439](BACKLOG.md)** · Signal Center | ✅ **The whole backend** — workspace triage read, resolve route, `Resource.SIGNAL`, `Action.RESOLVE`. +8 API tests, 392 Security Invariants | ⏸️ **The screen's entrance** — it is written and cannot be reached | **Product owner**, [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) |
+| **[TASK-448](BACKLOG.md)** · Design System v2 | ✅ **Four of 410's five foundations** — tokens, type scale, radius scale, control heights, all guarded and proven by reintroducing each defect | ⏸️ **Which eighteen canonical components** | **Lane C**, this item |
+
+**Three rows further down the queue inherit the same two answers**, which is why neither is a small question:
+
+| | |
+|---|---|
+| **[TASK-440](BACKLOG.md)** · Companies | Entrance is [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately)'s, **and its account table has no read** — `GET /accounts` returns open opportunities, not companies to browse |
+| **[TASK-441](BACKLOG.md)** · Opportunity Intelligence | Entrance is [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately)'s. Claim released so Lane C could rebase |
+| **[TASK-447](BACKLOG.md)** · App Shell | **Sequenced behind [TASK-448](BACKLOG.md)** — *"the shell composes from the system, not the reverse"* — whose remaining slice waits on the list above. **And the shell is where navigation lives**, which is C-229's subject exactly |
+
+> **So two sentences unblock five rows.** *"D38 stands"* or *"410 supersedes it"*, and *"the eighteen are these"*.
+
+⚡ **This lane is not waiting on either.** [TASK-442](BACKLOG.md) is claimed and being built — 🟢, a test in Lane A's own harness, no production code, and it answers [C-226](#c-226--a-failed-read-renders-as-an-empty-account-and-three-sections-did-it), which this lane raised.
+
 ### What this lane is doing meanwhile
 
 **Polling, and nothing else.** §20e: *"a lane never begins work when no `READY` task exists"*, and *"`AVAILABLE` with an empty queue is a correct repository state, not a stalled one."* **No work has been invented, no row self-assigned, and no slice manufactured to stay busy.** **Lane A re-claims by the Task Claim Protocol the moment any of the three above lands on `integration`.**

@@ -15,7 +15,7 @@
  *
  * R1-04 and R2-03 — the same plumbing, and the reason they were done together.
  */
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -501,5 +501,143 @@ describe('an account with no data still says what it has no data about — TASK-
     render(withQuery(<AccountBriefPage />));
 
     expect(screen.queryByText(/who you compete against/i)).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * **A page must say when it could not find out — TASK-442.**
+ *
+ * *"Absence can never distinguish itself from failure."* — [P-A · Stated
+ * absence], ratified 2026-08-05 with **nine recorded instances and zero
+ * executable assertions**. This is the first.
+ *
+ * ### Why it is a page-level test and not a prop
+ *
+ * **[C-226] was raised by this lane after finding three sections of the brief
+ * rendering a failed read as an empty account**, and the fix at TASK-417 was
+ * three components each learning to tell the two apart. That fix is correct
+ * and it is not a guarantee: **the fourth section added next week starts out
+ * unable to tell them apart, and nothing fails.**
+ *
+ * **[467 §3] endorsed the page-level form for exactly that reason**, and it is
+ * the shape `no-mock-data.test.tsx` and `design-tokens.test.tsx` already use —
+ * a repository-wide invariant asserted by a test rather than by review.
+ *
+ * ⚡ **It cannot be silenced by adding a field.** The assertion is about what
+ * the *page* says with every read failing, so a new section that renders
+ * nothing on error makes the page quieter and the test no happier.
+ */
+describe('a page must say when it could not find out — P-A, TASK-442', () => {
+  /** Every read the brief makes, in the failed state the API can actually
+   * produce. `isError` with `data: undefined` is what react-query hands a
+   * component when a request rejects. */
+  const FAILED = { data: undefined, isLoading: false, isError: true, error: new Error('x') };
+
+  /** **The sentences a customer must never be shown instead.** Each one
+   * asserts something the page cannot know when every read has failed: that
+   * there is nothing here, that nothing has happened, that all is well. */
+  const FALSE_REASSURANCE = [
+    /nothing (has )?happened/i,
+    /no activity/i,
+    /up to date/i,
+    /all clear/i,
+    /nothing to (show|report|do)/i,
+  ];
+
+  function everyReadFails() {
+    score.mockReturnValue(FAILED);
+    opportunity.mockReturnValue(FAILED);
+    narration.mockReturnValue(FAILED);
+    validation.mockReturnValue(FAILED);
+    research.mockReturnValue(FAILED);
+    accounts.mockReturnValue(FAILED);
+    identities.mockReturnValue(FAILED);
+    observations.mockReturnValue(FAILED);
+    timeline.mockReturnValue({
+      data: undefined,
+      hasNextPage: false,
+      isLoading: false,
+      isFetchingNextPage: false,
+      isError: true,
+      fetchNextPage: vi.fn(),
+    });
+  }
+
+  it('says the read failed, in words, when every read has failed', () => {
+    everyReadFails();
+
+    const { container } = render(withQuery(<AccountBriefPage />));
+
+    // **Any of these is a page admitting it does not know.** The wording is
+    // each section's; what this asserts is that *something* says so — a page
+    // that rendered a screenful of blanks would pass no part of this.
+    expect(container.textContent).toMatch(
+      /could not|couldn't|unavailable|unable to|try again|reload/i,
+    );
+  });
+
+  it('never offers reassurance it cannot support', () => {
+    /** **The half that matters, and the one C-226 actually found.** A page
+     * that says *"nothing has happened here"* when it could not reach the
+     * server has not merely failed to inform — it has told the customer
+     * something false, and they will act on it. */
+    everyReadFails();
+
+    const { container } = render(withQuery(<AccountBriefPage />));
+
+    for (const claim of FALSE_REASSURANCE) {
+      expect(container.textContent, `page reassures on a failed read: ${claim}`).not.toMatch(
+        claim,
+      );
+    }
+  });
+
+  it('does not render as an empty account', () => {
+    /** **The specific defect, asserted against the specific state.** Three
+     * sections did this before TASK-417: a failed read produced the same
+     * output as an account nothing is known about. The two are opposite
+     * facts — one is *ask again*, the other is *there is nothing to ask*. */
+    everyReadFails();
+    const failed = render(withQuery(<AccountBriefPage />)).container.textContent ?? '';
+    cleanup();
+
+    // The same page with every read *succeeding* and returning nothing —
+    // a genuinely empty account.
+    score.mockReturnValue(IDLE);
+    opportunity.mockReturnValue({ ...IDLE, data: committed() });
+    narration.mockReturnValue(IDLE);
+    validation.mockReturnValue({ ...IDLE, data: { account_id: ACCOUNT, hypotheses: [] } });
+    research.mockReturnValue(IDLE);
+    accounts.mockReturnValue({ ...IDLE, data: { items: [] } });
+    identities.mockReturnValue(IDLE);
+    observations.mockReturnValue(IDLE);
+    timeline.mockReturnValue({
+      data: { pages: [{ items: [], next_cursor: null, has_more: false }] },
+      hasNextPage: false,
+      isLoading: false,
+      isFetchingNextPage: false,
+      isError: false,
+      fetchNextPage: vi.fn(),
+    });
+    const empty = render(withQuery(<AccountBriefPage />)).container.textContent ?? '';
+
+    expect(
+      failed,
+      'a failed read renders identically to an empty account — this is C-226',
+    ).not.toBe(empty);
+  });
+
+  it('says so even when only some reads fail', () => {
+    /** **The realistic outage, and the one a whole-page check would miss.**
+     * Services fail one at a time. A page that only admitted failure when
+     * *everything* broke would be silent in the case that actually happens. */
+    score.mockReturnValue(FAILED);
+    narration.mockReturnValue(FAILED);
+
+    const { container } = render(withQuery(<AccountBriefPage />));
+
+    expect(container.textContent).toMatch(
+      /could not|couldn't|unavailable|unable to|try again|reload/i,
+    );
   });
 });
