@@ -12,6 +12,7 @@ from uuid import UUID, uuid4
 
 from modules.business_event_engine.domain.business_event import BusinessEvent
 from modules.business_event_engine.domain.taxonomy import BusinessDomain, BusinessEventType
+from modules.commercial_profile.domain.committee import seat_id
 from modules.commercial_profile.public import (
     BuyingCommitteeRoleView,
     BuyingCommitteeView,
@@ -85,11 +86,21 @@ class TestTheCommitteeAdapter:
                     committees=(
                         ProductCommitteeView(
                             product_id=other,
-                            roles=(BuyingCommitteeRoleView(title="CTO", part="evaluator"),),
+                            roles=(
+                                BuyingCommitteeRoleView(
+                                    id=seat_id(other, "CTO"), title="CTO", part="evaluator"
+                                ),
+                            ),
                         ),
                         ProductCommitteeView(
                             product_id=wanted,
-                            roles=(BuyingCommitteeRoleView(title="CFO", part="economic_buyer"),),
+                            roles=(
+                                BuyingCommitteeRoleView(
+                                    id=seat_id(wanted, "CFO"),
+                                    title="CFO",
+                                    part="economic_buyer",
+                                ),
+                            ),
                         ),
                     ),
                 )
@@ -116,8 +127,14 @@ class TestTheCommitteeAdapter:
                     version=1,
                     committees=(
                         ProductCommitteeView(
-                            product_id=uuid4(),
-                            roles=(BuyingCommitteeRoleView(title="CFO", part="economic_buyer"),),
+                            product_id=(unread := uuid4()),
+                            roles=(
+                                BuyingCommitteeRoleView(
+                                    id=seat_id(unread, "CFO"),
+                                    title="CFO",
+                                    part="economic_buyer",
+                                ),
+                            ),
                         ),
                     ),
                 )
@@ -140,7 +157,11 @@ class TestTheCommitteeAdapter:
                         ProductCommitteeView(
                             product_id=product,
                             roles=(
-                                BuyingCommitteeRoleView(title="Head of AI", part="a_part_from_2027"),
+                                BuyingCommitteeRoleView(
+                                    id=seat_id(product, "Head of AI"),
+                                    title="Head of AI",
+                                    part="a_part_from_2027",
+                                ),
                             ),
                         ),
                     ),

@@ -195,6 +195,18 @@ class BuyingCommitteeRoleView:
     platform holds no person's name at any point.
     """
 
+    #: **What a consumer cites when it means *this seat*.**
+    #:
+    #: Derived from the product and the title rather than stored, so every
+    #: committee ever declared has one — including the immutable declarations
+    #: written before the field existed, which could never have been
+    #: backfilled ([TASK-428](../../../../docs/BACKLOG.md)).
+    #:
+    #: ⚠️ **A renamed seat is a different id.** Carrying identity across a
+    #: rename needs somebody to say *"same seat, renamed"*, and no editing
+    #: surface exists to say it. **A consumer holding a citation that no longer
+    #: resolves should read it as "that seat is gone", which is true.**
+    id: UUID
     title: str
     part: str
 

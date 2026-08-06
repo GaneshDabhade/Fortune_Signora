@@ -45,7 +45,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
-from uuid import UUID
+from typing import Final
+from uuid import UUID, uuid5
 
 from modules.commercial_profile.domain.declaration import CommercialProfileError
 
@@ -101,6 +102,35 @@ MAX_TITLE = 96
 #: what they meant to paste.
 MAX_ROLES = 16
 
+#: The namespace every seat identifier is derived in.
+#:
+#: **A fixed UUID rather than a random one**, because the whole value of the
+#: derivation is that it is the same everywhere and forever: the same product
+#: and title must produce the same id in this process, in the next release, and
+#: in a customer's database that has not been written to since July.
+#:
+#: Generated once and pinned. **Changing it re-identifies every seat in every
+#: workspace**, which is why it lives here as a constant rather than in
+#: configuration where something could vary it.
+SEAT_NAMESPACE: Final = UUID("6f8d2c41-9a3e-5b07-8c14-2d9f7e0a5b63")
+
+
+def seat_id(product_id: UUID, title: str) -> UUID:
+    """The identifier for one seat on one product's committee.
+
+    **Case and surrounding space are folded**, so a customer who retypes a
+    title with different capitalisation is citing the same seat rather than
+    creating a second one. Nothing further is normalised — deciding that two
+    *different* words name one seat is the mapping ❓3 of
+    [ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md)
+    leaves open, and it is not this module's to invent.
+
+    **Pure and total.** No clock, no randomness, no storage, no session — the
+    same inputs give the same id in every process and every release, which is
+    the property the whole design rests on.
+    """
+    return uuid5(SEAT_NAMESPACE, f"{product_id}:{' '.join(title.split()).casefold()}")
+
 
 @dataclass(frozen=True, slots=True)
 class CommitteeRole:
@@ -113,18 +143,50 @@ class CommitteeRole:
     forbidden to hold. Each would also be a field nothing reads, and a field
     nothing reads is a field nobody keeps accurate.
 
-    **No stable id, and that is a considered asymmetry with `Product`.** A
-    product has one because everything declared later cites a product;
-    *nothing cites a role*, and person entities — the first plausible
-    consumer — are deferred platform-wide. An identifier nothing references is
-    an identifier nobody keeps meaningful. Within one product's committee a
-    role is identified by its title, which is why two roles may not share one.
-    **Trigger for adding one: the first consumer that needs to cite a
-    particular seat.**
+    ⚡ **The trigger fired on 2026-08-06 and a seat now has an id.** This
+    docstring said *"no stable id, and that is a considered asymmetry with
+    `Product`… trigger for adding one: the first consumer that needs to cite a
+    particular seat."* **[TASK-428](../../../../docs/BACKLOG.md) is that
+    consumer** — a committee seat citing a real affiliation — and the trigger
+    is honoured rather than re-argued.
+
+    **The id is *derived*, not stored, and that is what makes it possible at
+    all.** Every declaration on disk is immutable and none carries an
+    identifier, so a minted id could only ever be assigned going forward and
+    **every committee declared before today would have none.** A derivation
+    reads the same for a row written in July as for one written tomorrow —
+    §2's rule arriving as a practical dividend: *"a stored copy of a derivable
+    fact is a defect."*
+
+    ⚠️ **A rename mints a new identity, and that limitation is real.** The id
+    is a function of the product and the title, so *"VP Finance"* becoming
+    *"CFO"* produces a different seat and a citation to the old one points at
+    a seat that no longer exists.
+
+    **The alternatives were considered and each needs something that does not
+    exist.** Carrying an id across a rename requires somebody to say *"this is
+    the same seat, renamed"* — which only an editing surface knows, and there
+    is none. Matching on write by title has this same weakness plus a stored
+    field. **Trigger for revisiting: a consumer that needs identity to survive
+    a rename, whose own need decides the shape.**
     """
 
     title: str
     part: CommitteePart
+
+    def seat_id(self, product_id: UUID) -> UUID:
+        """This seat's stable identifier, derived from the product and title.
+
+        **`product_id` is a parameter rather than a field** because a role does
+        not know which committee it sits on — and giving it one would put the
+        same product on every role in the tuple, which is a second
+        representation of what `ProductCommittee` already says once.
+
+        **Deterministic, so two processes agree without coordinating** and a
+        declaration written before this method existed answers the same as one
+        written after.
+        """
+        return seat_id(product_id, self.title)
 
     def __post_init__(self) -> None:
         if not self.title.strip():

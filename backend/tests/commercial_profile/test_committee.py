@@ -24,14 +24,16 @@ from modules.commercial_profile.application.declaring import (
 )
 from modules.commercial_profile.domain.catalog import Product, ProductCatalog, first_catalog
 from modules.commercial_profile.domain.committee import (
-    MAX_ROLES,
-    MAX_TITLE,
     BuyingCommittee,
     BuyingCommitteeError,
     CommitteePart,
     CommitteeRole,
+    MAX_ROLES,
+    MAX_TITLE,
     ProductCommittee,
+    SEAT_NAMESPACE,
     first_committee,
+    seat_id,
 )
 
 WORKSPACE = UUID("11111111-1111-4111-8111-111111111111")
@@ -344,3 +346,61 @@ class TestItEvaluatesNobody:
             "product_id",
             "roles",
         ]
+
+
+class TestASeatCanBeCited:
+    """**TASK-428 is the consumer the docstring named as the trigger** — a
+    committee seat citing a real affiliation — so a seat now has an id.
+
+    Every test here is about the one property that matters: **the same seat
+    answers the same id, everywhere and forever**, including for declarations
+    written before the field existed.
+    """
+
+    def test_the_same_product_and_title_always_give_the_same_id(self) -> None:
+        product = uuid4()
+
+        assert seat_id(product, "CFO") == seat_id(product, "CFO")
+
+    def test_it_is_derived_rather_than_stored_so_an_old_declaration_has_one(self) -> None:
+        """**The reason the design is a derivation.**
+
+        Every declaration on disk is immutable and none carries an identifier,
+        so a minted id could only ever have been assigned going forward. A
+        role parsed from a July row answers the same as one built today.
+        """
+        product = uuid4()
+        parsed_from_storage = CommitteeRole(title="CFO", part=CommitteePart.ECONOMIC_BUYER)
+
+        assert parsed_from_storage.seat_id(product) == seat_id(product, "CFO")
+
+    def test_two_products_do_not_share_a_seat(self) -> None:
+        assert seat_id(uuid4(), "CFO") != seat_id(uuid4(), "CFO")
+
+    def test_two_seats_on_one_product_differ(self) -> None:
+        product = uuid4()
+
+        assert seat_id(product, "CFO") != seat_id(product, "CTO")
+
+    def test_retyping_a_title_differently_cites_the_same_seat(self) -> None:
+        """Case and surrounding space are folded, so a customer who retypes a
+        title is not creating a second seat."""
+        product = uuid4()
+
+        assert seat_id(product, "  chief   financial officer ") == seat_id(
+            product, "Chief Financial Officer"
+        )
+
+    def test_a_rename_mints_a_new_identity_and_that_is_the_stated_limitation(self) -> None:
+        """⚠️ **Asserted rather than left in prose**, because it is the one
+        thing a consumer must know: carrying identity across a rename needs
+        somebody to say *"same seat, renamed"*, and no editing surface exists
+        to say it."""
+        product = uuid4()
+
+        assert seat_id(product, "VP Finance") != seat_id(product, "CFO")
+
+    def test_the_namespace_is_pinned(self) -> None:
+        """**Changing it re-identifies every seat in every workspace.** A test
+        so that a change is a decision rather than an edit."""
+        assert str(SEAT_NAMESPACE) == "6f8d2c41-9a3e-5b07-8c14-2d9f7e0a5b63"

@@ -513,6 +513,14 @@ Epic C's narrowed scope is **role-based intelligence** — C-221: *"do NOT expan
 - **A derived id would not be stable.** `(product_id, title, part)` identifies a seat within a version, but renaming *"VP Finance"* to *"CFO"* would mint a new identity for the same seat — which is precisely the tracking the epic wants, broken.
 - **A minted id must survive the next declaration**, which means the write path has to match an incoming role to an existing one — and matching by title is the same instability wearing a different coat.
 
+> ⚡ **Answered and built, 2026-08-06 — and the answer removed the difficulty rather than solving it.**
+>
+> **The id is *derived*, not minted**: `seat_id(product_id, title)`, a `uuid5` in a pinned namespace. **Every objection above was an objection to storing one.** Existing declarations are immutable and carry no ids — so a derivation gives them one for free, and there is nothing to backfill because there is nothing to fill. §2 arrives as a practical dividend rather than a rule to obey: *"a stored copy of a derivable fact is a defect."*
+>
+> ⚠️ **The rename limitation is unchanged and is now asserted in a test.** *"VP Finance"* becoming *"CFO"* is a different seat, and a citation to the old id points at one that no longer exists. **Carrying identity across a rename needs somebody to say *"same seat, renamed"* — which only an editing surface knows, and none exists.** Matching on write by title has the same weakness plus a stored field, which is why it was not chosen. **Trigger for revisiting: a consumer that needs identity to survive a rename, whose own need decides the shape.**
+>
+> **Published as `BuyingCommitteeRoleView.id`** and derived on read in `committee_reader.py`. **`SEAT_NAMESPACE` is pinned by a test**, because changing it re-identifies every seat in every workspace.
+
 > **That is a real design question and it is the whole of this module's piece.** It is recorded now rather than discovered mid-slice, and it is **not** answered here: the shape of a role's identity is architecture, and B-205 shows the surrounding documents do not yet agree on the epic it serves.
 
 **Nothing is blocked on it today.** `BuyingCommitteeRoleView` gaining an `id` is additive (§9), and no consumer asks for one yet.

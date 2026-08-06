@@ -14,10 +14,12 @@ this module intends to extend.
 
 from __future__ import annotations
 
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from modules.commercial_profile.domain.committee import seat_id
 from modules.commercial_profile.infrastructure.models import BuyingCommitteeModel
 from modules.commercial_profile.infrastructure.versioned import latest
 from modules.commercial_profile.public import (
@@ -25,6 +27,31 @@ from modules.commercial_profile.public import (
     BuyingCommitteeView,
     ProductCommitteeView,
 )
+
+
+def _to_committee(raw: dict[str, Any]) -> ProductCommitteeView:
+    """One product's seats, each carrying the id a consumer cites.
+
+    **A function rather than a nested comprehension**, because the seat id
+    needs the product id and a comprehension cannot see the value its outer
+    level parsed — and parsing it twice would be two chances to parse it
+    differently.
+    """
+    product_id = UUID(raw["product_id"])
+    return ProductCommitteeView(
+        product_id=product_id,
+        roles=tuple(
+            BuyingCommitteeRoleView(
+                # **Derived on read, from the stored product and title.**
+                # Nothing on disk holds it, which is why a declaration written
+                # in July answers the same as one written today.
+                id=seat_id(product_id, role["title"]),
+                title=role["title"],
+                part=role["part"],
+            )
+            for role in raw["roles"]
+        ),
+    )
 
 
 class SqlBuyingCommitteeReader:
@@ -48,14 +75,5 @@ class SqlBuyingCommitteeReader:
         return BuyingCommitteeView(
             workspace_id=row.workspace_id,
             version=row.version,
-            committees=tuple(
-                ProductCommitteeView(
-                    product_id=UUID(raw["product_id"]),
-                    roles=tuple(
-                        BuyingCommitteeRoleView(title=role["title"], part=role["part"])
-                        for role in raw["roles"]
-                    ),
-                )
-                for raw in row.committees
-            ),
+            committees=tuple(_to_committee(raw) for raw in row.committees),
         )

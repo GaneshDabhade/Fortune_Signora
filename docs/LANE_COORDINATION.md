@@ -295,6 +295,7 @@ databaseUrl: required(
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
+| [C-335](#c-335--epic-cs-next-stage-is-four-deep-and-two-of-the-four-are-nobodys-to-fix-quickly) | **Epic C's next stage is four deep, and two of the four are nobody's to fix quickly** | Lane B | **Lane C** (the trigger) · **product owner** (C-417, and the boundary) | `OPEN` — raised 2026-08-06 | **[TASK-428](BACKLOG.md)'s S3.** ✅ Not its `commercial_profile` half, which this lane is building |
 | [C-334](#c-334--four-rows-wait-on-one-credential-and-it-has-no-row-of-its-own) | **Four rows wait on one credential, and it has no row of its own** | Lane B | **Product owner** — resourcing, not a ruling | `OPEN` — raised 2026-08-06 | **[TASK-003](BACKLOG.md) · [TASK-202](BACKLOG.md) · [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) · [C-331](#c-331--task-003-changes-what-the-model-is-shown-which-un-releases-the-narration-prompt).** Two of the four are the only `READY` rows in the backlog |
 | [C-333](#c-333--lane-b-has-no-claimable-work-and-the-file-whose-job-is-to-say-so-reports-no-shortfall) | **Lane B has no claimable work, and the file whose job is to say so reports no shortfall** | Lane B | **Lane C** — queue and backlog health | ✅ **`RESOLVED` 2026-08-06** — eight validations, and [D-099](DECISION_REGISTER.md) makes the duty standing | **Nothing.** Replaced by a check that runs on every `state-check` invocation |
 | [C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it--nothing-builds-its-input-and-the-module-that-measures-may-not-reach-one) | The predicate landed and TASK-406 still cannot call it — nothing builds its input, and the module that measures may not reach one | Lane B | **Product owner** — the edge is 🔴 | `OPEN` — raised 2026-08-05, **after** TASK-434 promoted | **[TASK-406](BACKLOG.md) whole.** Both halves, not only the backtest |
@@ -4385,6 +4386,59 @@ KeyError: '0035'
 **B-400 named the first, on cost, and that reasoning still holds.** This lane is ready either way: `lane-b-commercial-profile` is rebased onto `1252d02` with its gates green, and the renumber is pre-verified.
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
+
+## C-335 · Epic C's next stage is four deep, and two of the four are nobody's to fix quickly
+
+**Opened 2026-08-06 · Lane B · 🟠 · owners: Lane C · product owner**
+
+> **[TASK-427](BACKLOG.md) shipped, and the stage behind it did not become available.** **Traced end to end here because no single row shows the chain**, and each link looks small from where it sits.
+
+| | |
+|---|---|
+| **Raised by** | **Lane B**, 2026-08-06, on TASK-427 reaching `main` and returning to the queue for the stage its own trigger names |
+| **Owner** | **Lane C** for ① · **the product owner** for ③. ② and ④ resolve themselves once those move |
+| **Status** | **`OPEN`** |
+| **Blocks** | **[TASK-428](BACKLOG.md)'s S3 entirely.** ✅ **Not its `commercial_profile` half** — see *What is buildable anyway* below, which is what this lane is doing meanwhile |
+
+### The chain, in the order a lane hits it
+
+| | | Owner | Kind |
+|---|---|---|---|
+| ① | **[TASK-428](BACKLOG.md) is `SEQUENCED` and its trigger has fired.** It reads *"trigger: TASK-427 promoted"*, and TASK-427 is on `main` at `a1cc8a34`. **`READY` is Lane C's to set on fitness** (§20e), so the row is not claimable until it does | **Lane C** | Bookkeeping |
+| ② | **TASK-428's S3 is sequenced behind [TASK-901](BACKLOG.md)** — *"`runtime-composition` reports 2 of 9 consumers wired, and a projection would land dark"* | — | Sequencing |
+| ③ | **TASK-901 is `BLOCKED` on [C-417](#c-417--adr-0404-approved-three-platform-capabilities-whose-owner-may-not-finish-two-of-them), which is `READY FOR PRODUCT DECISION`** — a Change Budget question, and *"the Change Budget is theirs"* | **Product owner** | Governance |
+| ④ | **And S3 spans a boundary that does not exist yet** — below | **Product owner** | Ownership |
+
+> **①'s cost is small and its shape is the one worth noticing.** **The trigger fired in fact and not in the register**, and a `SEQUENCED` row is invisible to the Task Claim Protocol however true its trigger has become. **This is [C-333](#c-333--lane-b-has-no-claimable-work-and-the-file-whose-job-is-to-say-so-reports-no-shortfall)'s family** — *derivable is not visible* — arriving through a trigger rather than through a queue count.
+>
+> **Not filed as a criticism of timing.** The cycle that ran between the promotion and this item was **QE's Closeout, and setting `READY` is not QE's.** Lane C has not run since. **What the item records is that the chain exists**, so that when Lane C does run, ① is known not to be the end of it.
+
+### ④ The boundary, and §20e already has a rule for it
+
+**TASK-428 names four modules: `timeline` · `commercial_profile` · `signal_engine` · `people`.**
+
+| | |
+|---|---|
+| **`timeline` · `commercial_profile` · `people`** | **Lane B's** ([`modules.toml`](coordination/modules.toml)) |
+| **`signal_engine`** | **Lane A's**, `transition = "settled"` |
+
+**S3 makes `new_decision_maker` and `decision_maker_departed` name what changed** — which means `signal_engine` reading a subject that `people` publishes, **across a contract neither module has built.**
+
+> **§20e, *Do not divide ownership across an interface that has not yet stabilized*: *"two modules with a published-but-unbuilt contract between them belong to one lane."***
+>
+> **[C-213](#c-213--sales-engagement-needs-the-commercial-profile-it-may-not-read) is the worked example and it cost two days** — `commercial_profile` held the export, `sales_engagement` held the only consumer, the contract was published and unbuilt, and the slice stopped until one lane held both. **This is that shape before it costs anything**, which is the only useful time to raise it.
+
+**Not a recommendation about who.** Ownership is the product owner's and the rule says *one lane*, not *which*. **Raised now so it is a decision rather than a discovery.**
+
+### ✅ What is buildable anyway, and this lane is building it
+
+**TASK-428's `commercial_profile` half has none of these dependencies.** The row separates it out itself:
+
+> **`commercial_profile` gains one field**, on **the trigger that module wrote down itself**: *"the first consumer that needs to cite a particular seat."*
+
+**A stable `CommitteeRole` id needs no projection, no provider, no platform capability and no second module.** It is one field in a module this lane holds, its design question was recorded during preparation in [40](architecture/40-commercial-profile.md), and **it is the piece S3 will otherwise wait on after everything above clears.**
+
+**Being built under [TASK-201](BACKLOG.md)**, which is `READY`, is Lane B's, and whose queue rationale states what a claim on it means: *"TASK-427 first and TASK-428 stage 3 second, in that order."* **TASK-427 is promoted, so this is that sequence continuing** — and the half that is blocked stays blocked and is named above rather than built ahead.
 
 ## C-334 · Four rows wait on one credential, and it has no row of its own
 
