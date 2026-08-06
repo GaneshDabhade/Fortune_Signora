@@ -80,6 +80,52 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-328 · `state-check.py` reports 54 `READY` tasks when there are two, because it counts headings
+
+| | |
+|---|---|
+| **Module** | `infra/state-check.py` — the backlog summary line, check 5c |
+| **Current assignee** | **Lane C** — `infra/` is Platform Foundation ([D-022](DECISION_REGISTER.md)), and [B-125](#b-125--the-new-document-location-check-silently-no-ops-on-a-clone-without-originintegration) is already assigned there for this same file |
+| **Severity** | 🟠 · **Reassuring rather than merely wrong.** *"54 READY"* reads as a healthy queue on a day when two rows are `READY` and both are blocked |
+| **Status** | **`OPEN`** — reported with the line identified; **not fixed, another lane's file** |
+| **Found** | 2026-08-06 by Lane B, checking its own reporting against the gate after [C-333](LANE_COORDINATION.md) added seven queue validations |
+
+**Steps to reproduce.**
+
+```bash
+python3 infra/state-check.py | grep 'Backlog:'
+→ ok   Backlog: 69 task(s), 54 READY, no task claimed twice.
+
+grep -oE '^\| \*\*Status\*\* \| [^|]{0,40}' docs/BACKLOG.md \
+  | sed 's/| \*\*Status\*\* | //; s/[*`]//g' | awk '{print $1, $2}' | sort | uniq -c | sort -rn
+→ 20 IN VALIDATION · 16 SEQUENCED · 4 DONE · 3 PROMOTED · 3 IN PROGRESS
+   2 ✅ READY · 2 ⏸️ BLOCKED · 1 RATIFIED · 1 DISPOSED · 1 DISPOSED · 1 WAITING
+```
+
+**Expected.** The count of rows whose status is `READY`.
+**Actual.** **54 — the number of `### TASK-nnn` headings**, which is neither the `READY` count (2) nor the task count (69, which the same line reports separately and correctly).
+
+### The line
+
+```python
+ready = len(re.findall(r"^### TASK-\d+", backlog, re.M))
+notes.append(f"Backlog: {len(known)} task(s), {ready} READY, no task claimed twice.")
+```
+
+**It never reads a status.** `_STARTABLE = {"READY", "CHANGES REQUESTED"}` exists twenty lines above and is not consulted here.
+
+### Why 🟠 rather than cosmetic
+
+**This is the only number in the gate's output that answers *"how much claimable work exists?"***, and it is the number a session would quote. **It is wrong in the reassuring direction**, which is [§2](../CLAUDE.md)'s class exactly: a repository asserting something untrue is worse than one that says nothing, *because it is trusted*.
+
+⚠️ **And [C-333](LANE_COORDINATION.md) has just made queue health a validated concern.** One of its seven checks is *"`READY` rows in no queue"* — **which cannot be doing what it claims if `READY` is being read this way anywhere else in the file.** Worth checking whether the two share a helper; **this row does not assume they do.**
+
+### What it cost, and it is not hypothetical
+
+**This lane matched the same status the wrong way and reported *"zero `READY` rows"* across four polls.** The right answer is **two — [TASK-201](BACKLOG.md) and [TASK-202](BACKLOG.md), both externally blocked** — so every conclusion drawn from it survived, and the phrasing did not. **The emoji prefix is what both readers missed**: the rows are `✅ READY`, not `` `READY` ``.
+
+> **Two independent readers got the same field wrong on the same day, in opposite directions.** That is the argument for the status being **parsed once, in one place**, rather than pattern-matched wherever it is needed.
+
 ### B-327 · Three documents say the Executive Dashboard's ICP section is buildable, and a coordination item on `integration` says it is not
 
 | | |

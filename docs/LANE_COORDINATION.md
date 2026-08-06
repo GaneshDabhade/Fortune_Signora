@@ -4175,6 +4175,13 @@ KeyError: '0035'
 
 ## C-333 · Lane B has no claimable work, and the file whose job is to say so reports no shortfall
 
+> ⛔ **Two items now hold this id, and QE renumbers at merge** (§20e — *"renumbering an existing identifier is QE's, at merge, and only to break a tie… the later claim moves, decided by author timestamp"*). **This one is the earlier**, raised 2026-08-05 and promoted to `main` inside `a6eee5d3`; **[the other](#c-333--the-queue-was-documentation-and-it-is-now-validated) is Lane C's, on the same subject.** **`B-327` collided the same way and on the same day.**
+>
+> **Not a lane's to fix and deliberately not fixed here.** Lane C's note records that the product owner named both ids and that they were *"verified absent from every register and from `origin/integration` before use"* — **which was true when it was checked and had stopped being true by the time it was written**: these two were on `origin/integration` at `24349948`. **Nobody was careless; that is the whole argument for allocation blocks** (§20e — *"a block makes it unrepresentable"*), **and both ids came from Lane B's `300+` block rather than Lane C's `400+`.**
+>
+> **`state-check.py` catches it, which is the system working**: *"`B-` identifiers are allocated twice: B-327. `C-` identifiers are allocated twice: C-333."*
+
+
 **Opened 2026-08-05 · Lane B · owner: Lane C — queue health, backlog health and execution flow are its standing responsibilities under the governance freeze**
 
 | | |
@@ -4186,10 +4193,16 @@ KeyError: '0035'
 
 ### The state, measured rather than described
 
+> ⚠️ **The first command below is wrong, and it is corrected rather than deleted** (2026-08-06, Lane B, its own error). **It returned nothing because the rows are `✅ READY`, not `` `READY` `` — the emoji defeats the pattern.** **The right answer is two: [TASK-201](BACKLOG.md) and [TASK-202](BACKLOG.md)**, which are the same two rows the queue names below, and **both are blocked by the dependencies named beside them.**
+>
+> **The item's conclusion is unchanged and was never resting on that line** — point ② below is exactly this fact stated correctly, and it is the point Lane C's fix has still not addressed. **What changes is that *"zero `READY` rows"* was the wrong sentence for it**, and this lane said so in four reports before checking.
+>
+> ⚡ **And the gate had the same bug in the opposite direction** — `state-check.py` reports **54 `READY`** by counting task *headings* ([B-328](BUGS.md)). **Two independent readers got one field wrong on one day**, which is the argument for parsing a status once rather than matching it wherever it is wanted.
+
 ```bash
-# READY rows in the whole backlog
+# READY rows in the whole backlog — ⚠️ this pattern misses `✅ READY`; see above
 awk '/^### TASK-/{t=$0} /^\| \*\*Status\*\* \| \*\*`READY`/{print t}' docs/BACKLOG.md
-→ (nothing)
+→ (nothing)   # ⛔ actually two: TASK-201 and TASK-202, both blocked
 
 grep -E '^(current|next|future|eligible_count|shortfall|depth_target)' \
     docs/coordination/queues/lane-b.toml
