@@ -6075,6 +6075,22 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 ## C-230 · Lane A's assignable work is exhausted — every row, and its reason
 
+> ### ⚡ Re-measured 2026-08-06, later the same day — the list changed and the conclusion did not
+>
+> **Six rows have shipped since this item was raised** — [TASK-442](BACKLOG.md), [TASK-443](BACKLOG.md), [TASK-445](BACKLOG.md), [TASK-449](BACKLOG.md), [TASK-456](BACKLOG.md), [TASK-460](BACKLOG.md), [TASK-447](BACKLOG.md) — **and [B-133](BUGS.md) was returned by QE and repaired.** **This lane has not idled.**
+>
+> **What is left, joined by module against [`modules.toml`](coordination/modules.toml) rather than by searching for a lane's name:**
+>
+> | Row | Why it cannot be started |
+> |---|---|
+> | **[TASK-901](BACKLOG.md)** | ⛔ **`READY` in the backlog and behind an unmade decision in its own instrument.** `make runtime-composition` reports all seven modules *"waiting on C-012, deliberately"*, and **[C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered) is `WAITING` on the product owner with an RFC queued since M3A.** ⚠️ **The queue lists it as eligible; the measurement says otherwise** — §20e asks that the disagreement be reported rather than resolved by a lane |
+> | **[TASK-440](BACKLOG.md)** | ⛔ **Two blockers, neither this lane's**: [TASK-472](BACKLOG.md) is Lane B's, and [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) is the product owner's. **The screen is built and held** |
+> | **[TASK-448](BACKLOG.md) slice 3** | ⛔ **Finding 3 of this item, unchanged**: eighteen canonical components, and nothing enumerates which eighteen |
+> | **[TASK-447](BACKLOG.md)** | ✅ **Shipped, and [C-233](#c-233--the-app-shells-22-numbered-specifications-are-not-in-the-repository) records why it was small** |
+>
+> ⚡ **So the state is `AVAILABLE` with an empty queue, which §20e calls a correct repository state rather than a stalled one** — *"the remaining work is being implemented, awaiting QE, blocked, or awaiting a decision, and each of those has an owner who is not this lane."* **Three of the four stoppers are a decision somebody else owns**, and the fourth is another lane's row.
+
+
 **Opened 2026-08-06 · Lane A · 🟠 · raised on the product owner's instruction to *"document this dependency and start working on another task"***
 
 | | |
