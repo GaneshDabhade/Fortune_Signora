@@ -126,7 +126,7 @@
 | **Existing and correctly modelled** | `IcpDeclaration` and its versioning · `EmployeeRange` as a count not a band · `describes_nobody_in_particular` as a question not a refusal · `SegmentState`'s state machine · owner-only `icp:update` · **[TASK-434](../BACKLOG.md)'s predicate, promoted** |
 | **Extension candidates** | **An `icp.declared` event** · **`TECHNOLOGY_DETECTED` as a real criterion group** rather than a note |
 | **Architectural evolution** | 🟠 **`notes` is inert and the backtest does not say so** — §4 |
-| **Missing foundational capabilities** | ⛔ **None new.** [R-00](../DOMAIN_DISCOVERY_REGISTER.md) shipped; [R-01](../DOMAIN_DISCOVERY_REGISTER.md) is sequenced |
+| **Missing foundational capabilities** | ⚠️ **CORRECTED 2026-08-06 · [B-327](../BUGS.md).** ~~None new. R-00 shipped~~ → **one, and this audit missed it**: **[R-00](../DOMAIN_DISCOVERY_REGISTER.md)'s predicate shipped and no module can construct its input** — [C-332](../LANE_COORDINATION.md). [R-01](../DOMAIN_DISCOVERY_REGISTER.md) is sequenced and unaffected |
 | **Missing workflows** | **Re-evaluation when an ICP changes** — background, and it needs the event first |
 | **Missing entities** | ⬜ **Three unidentified criterion groups** |
 | **Missing business events** | **`icp.declared`** — [R-14](../DOMAIN_DISCOVERY_REGISTER.md) |
@@ -140,7 +140,7 @@
 
 | Capability | Screens converging | Confidence |
 |---|---|---|
-| **[R-00](../DOMAIN_DISCOVERY_REGISTER.md) matching** | Companies · Copilot · **ICP Builder** · Exec Dashboard · Workflow · E1 · Search · Research | ✅ **Shipped. Validated by the screen that needed it most** |
+| **[R-00](../DOMAIN_DISCOVERY_REGISTER.md) matching** | Companies · Copilot · **ICP Builder** · Exec Dashboard · Workflow · E1 · Search · Research | ⚠️ **CORRECTED 2026-08-06 · [B-327](../BUGS.md).** ~~Shipped. Validated by the screen that needed it most~~ → **Implemented, not usable** — [C-332](../LANE_COORDINATION.md). ⚡ **The convergence count of 8 is unchanged and is the reason this matters**: eight screens read this row to decide whether they are blocked |
 | **[R-01](../DOMAIN_DISCOVERY_REGISTER.md) People** | Account 360 · Copilot · **ICP Builder** · Exec Dashboard · Global Search | ⚡ **Strengthened *and split* — §3.** Two criteria at M-D, two at M-E |
 | **[R-14](../DOMAIN_DISCOVERY_REGISTER.md) events at human completion points** | Signal Center · **ICP Builder** | **New, at two screens** |
 | **[R-02](../DOMAIN_DISCOVERY_REGISTER.md) · [R-13](../DOMAIN_DISCOVERY_REGISTER.md)** | Segments ⬜ unchanged · authorization already correct here | **Neither strengthened, and that is information too** |

@@ -74,8 +74,20 @@ future  = []
 # immutable and a title drifts**. The narrowing they carried is real and moves
 # into TASK-400's rationale and its blocked entry, keyed to the id that exists.
 #
-# 🔴 **CAPACITY FINDING — 2 eligible against a target of 5.** Not a lane
+# 🔴 **CAPACITY FINDING — 0 claimable against a target of 5.** Not a lane
 # behaviour; a Product Office planning finding. Stated in full below.
+#
+# ⚠️ **`eligible_count = 0` is right and "Lane A is idle" is wrong**, corrected
+# 2026-08-06 under D-099. **Zero claimable is not zero executable.** This lane
+# HOLDS TASK-400 (IN PROGRESS), and **its A6 half became executable on
+# 2026-08-05 when C-321 was ruled** — a day before this file last said A6 was
+# blocked on it. **A queue reporting a lane as having nothing to do, while the
+# lane holds a row with an unblocked half, is the C-333 defect inverted**: the
+# earlier one hid a dry queue, this one hid available work inside a full one.
+#
+# **`eligible` means *claimable now*, and TASK-400 is already claimed** — so
+# the count stays 0 and the narrative changes. **Both facts belong here,
+# because the number alone reads as idleness.**
 eligible_count = 0
 shortfall      = 5
 
@@ -94,9 +106,9 @@ note = "Epic A completion. IN PROGRESS — claimed 2026-08-05, and A6 delivered 
 # ── Blocked, keyed to real ids ───────────────────────────────────────────────
 [[blocked]]
 task    = "TASK-400"
-blocker = ["C-219", "C-321"]
-owner   = "Lane A proposes, Lane C reviews (C-219) · Product owner (C-321)"
-note    = "Epic A completion, and it is PARTLY startable — which is why it is `current` rather than here alone. QE returned it CHANGES REQUESTED and §20e says a returned task is addressed first. ⛔ TWO PARTS ARE HELD INSIDE IT. A7's render waits on the subject↔entity join: C-219 says 'the render waits on the join, and Lane A will bring Lane C a proposal rather than assume one' — this is the D-060 loop and Lane C is not holding it, because no proposal has been brought. The word `checked` does not ship until it is true; freshness.test.tsx asserts the refusal and is updated by the render slice, never worked around. A6 waits on C-321: 51-implementation-specifications.md §A6 says it twice in its own words — 'depends entirely on the C-321 ruling' and 'the clearest case in the roadmap of a decision blocking a build.' Narrowing A6 to the render does not escape it: what to render IS the ruling"
+blocker = ["C-219"]
+owner   = "Lane C — the join proposal is with this office for review"
+note    = "⚠️ CORRECTED 2026-08-06 under D-099's standing queue investigation. This entry named TWO blockers and BOTH had moved on 2026-08-05, a day before it was last written. ① C-321 is RULED — 'Adopt Lane B's proposed behaviour. Proceed.' All six sub-answers stand: appear yes · working list no · score yes · opportunity no · workable never · `Needs identity`, its own queue. ⚡ A6 IS EXECUTABLE TODAY and this file said it was not. ② C-219's note read 'Lane C is not holding it, because no proposal has been brought' — the proposal WAS brought on 2026-08-05, four polls late, and C-219 records it in full. Lane C IS holding it, and that inversion is now recorded in lane-c.toml where the obligation sits. What remains genuinely blocked is A7's RENDER ONLY, on Lane C's review of that proposal. The word `checked` does not ship until it is true; freshness.test.tsx asserts the refusal and is updated by the render slice, never worked around"
 
 # ── With QE ──────────────────────────────────────────────────────────────────
 [[in_validation]]

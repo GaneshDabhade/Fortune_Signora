@@ -39,9 +39,11 @@ opportunity_state — sequence · stage · owner_id · actor_id · reason · occ
 | **Ageing** | `occurred_at` deltas between consecutive rows | ✅ **Nothing new** |
 | **Movement since a date** | `occurred_at > :since`, and `reason` explains each one | ✅ **Nothing new** |
 | **Team roll-up** | **`owner_id` is already on every state row** | ✅ **Nothing new** |
-| **ICP coverage — in vs outside** | **[TASK-434](../BACKLOG.md)** | ✅ ⚡ **`PROMOTED` today.** Unblocked hours ago |
+| **ICP coverage — in vs outside** | **[TASK-434](../BACKLOG.md)** | ⛔ **CORRECTED 2026-08-06 · [B-327](../BUGS.md).** ~~✅ `PROMOTED` today~~ — **the predicate is promoted and nothing can call it.** Blocked on [C-332](../LANE_COORDINATION.md) |
 
-> **Five of the screen's sections need no new domain concept at all**, and the fifth stopped being blocked this morning. **`GET /accounts` and `GET /accounts/decided` are published and workspace-scoped.**
+> ⚠️ **Corrected 2026-08-06.** **Four of the screen's sections need no new domain concept; the fifth needs a producer of observed attributes that does not exist** — [C-332](../LANE_COORDINATION.md). **`GET /accounts` and `GET /accounts/decided` are published and workspace-scoped**, and that was never the missing part.
+>
+> **What this document got wrong is worth naming rather than overwriting:** it read *`TASK-434` is `PROMOTED`* as *the section is buildable*, which is [B-327](../BUGS.md)'s whole shape — **a promoted predicate is a foundation, and a section needs a caller that can reach one.**
 
 ---
 
@@ -105,7 +107,7 @@ opportunity_state — sequence · stage · owner_id · actor_id · reason · occ
 
 | | |
 |---|---|
-| **[TASK-438](../BACKLOG.md)** | ✅ **The five sections that need nothing** — conversion, ageing, movement, roll-up by owner, ICP coverage. **`READY`, decomposition of approved scope, and it needs no answer from anybody** |
+| **[TASK-438](../BACKLOG.md)** | ⚠️ **CORRECTED 2026-08-06 · [B-327](../BUGS.md).** ~~The five sections that need nothing… it needs no answer from anybody~~ → ✅ **Four sections that need nothing** — conversion, ageing, movement, roll-up by owner. ⛔ **ICP coverage needs [C-332](../LANE_COORDINATION.md)**, and **Lane B delivered four rather than five** on exactly this |
 | **[C-418](../LANE_COORDINATION.md)** | **One question — *does Signora forecast revenue?*** — carrying all four missing concepts, the ratified conflict, the E1 sequencing and the permission consequence |
 
 **Two artifacts from sixteen screen sections.** **Deliberately** — *"success is not measured by the number of backlog items created."*

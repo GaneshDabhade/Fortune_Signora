@@ -543,6 +543,23 @@ Decisions required    what the product owner must rule before it can start
 
 > ⛔ **Stop at 🏛️ Established.** **Re-proving a settled capability is the one activity this office must now refuse.** ***"Once a capability reaches Architecturally Established, the burden of proof shifts from proving it again to protecting its boundaries."***
 
+#### Extended to eight, 2026-08-06 ([D-099](DECISION_REGISTER.md))
+
+> ***"Going forward I expect Product Office to shift from discovery to stewardship."***
+
+**The four above stand and are unchanged.** **Four more are added, and each is a duty this office was already performing without a line saying it must.**
+
+**⑤ Protect established domain boundaries** — ②'s general form, applied beyond the Context Definitions to every 🏛️ Established capability.
+**⑥ Review implementation proposals against the approved Context Definitions** — **including [§6a](#6a--reviewing-implementation-preparation)'s four reachability checks**, which are what C-332 cost.
+**⑦ Maintain queue health as an operational metric** — **[§11](#-queue-integrity-is-a-standing-operational-duty-d-097)'s six causes, and *"implementation lanes should not reach a genuine zero-`READY` state without Product Office immediately investigating why."***
+**⑧ ⚡ Proactively identify future foundational capabilities before implementation reaches them** — **the only forward-looking duty in the list, and the one the other seven exist to make affordable.**
+
+> ## **The measure changed with them.**
+>
+> ***"The goal is no longer discovering everything. The goal is ensuring the architecture remains coherent as implementation accelerates."***
+>
+> ⚡ **Which is why ⑧ is not a licence to reopen discovery.** ⛔ **[D-093](DECISION_REGISTER.md) still forbids a broad initiative.** **The difference is scope: ⑧ acts on a *named, approaching* consumer — a trigger that fired, a design that arrived, a lane about to reach a gap — and never on a survey.**
+
 #### ⚠️ A missed foundation is a Product Office finding ([D-093](DECISION_REGISTER.md))
 
 > ***"If implementation reaches a feature and discovers a missing foundational concept that reasonably should have been identified during Product-Led Domain Discovery, that should be treated as a Product Office finding and analyzed so the methodology continues to improve."***
@@ -637,6 +654,27 @@ Decisions required    what the product owner must rule before it can start
 > **Lane C does not rewrite a package unless governance requires it.** The test is *would this, as submitted, breach a rule the repository can name?* — **and if the answer is *"it is not how I would have done it"*, the correct output is approval.**
 >
 > **A review that rewrites is preparation wearing a review's clothes.** It restores the bottleneck the model was created to remove, one round-trip later and with the owning lane's work discarded — **and the owning lane knows its module better, which is the directive's own argument.**
+
+### The four reachability checks, on every Context Definition ([D-099](DECISION_REGISTER.md))
+
+> ***"Continue validating that Context Definitions identify who owns the capability, who constructs every input, who consumes every output, and whether all required dependency edges already exist. I want these checks to become part of the standard Product Office review process going forward."***
+
+**These are not four of the twelve above. They run in addition, on any package that defines or extends a capability**, and they are asked in this order because each one's answer constrains the next.
+
+| | The check | ⛔ What it refuses |
+|---|---|---|
+| ① | **Who owns the capability?** | An owner chosen because a lane arrived at it first. **Ownership is an architectural decision, never an implementation accident** ([D-090](DECISION_REGISTER.md)) |
+| ⚡ ② | **Who constructs every input?** | **A named type with no producer anywhere in the repository** |
+| ③ | **Who consumes every output?** | A published contract nothing calls — and, on [P-C](DOMAIN_DISCOVERY_REGISTER.md), **an event declared before a consumer exists** |
+| ⚡ ④ | **Do all required dependency edges already exist?** | A design whose ownership and inputs are both correct **and where the constructor may not reach the module holding the facts** |
+
+> ## ⚠️ **② and ④ exist because their absence produced [C-332](../docs/LANE_COORDINATION.md), and it is this office's own miss.**
+>
+> **`evaluate(icp, observed)` is `PROMOTED` and correct. Nothing constructs an `ObservedAttributes`, and `opportunity_engine` — the module ruled to do the measuring — is forbidden from `knowledge_graph`, the only module that could build one.**
+>
+> ⚡ **And the cause is worth more than the finding: [443](architecture/443-account-matching-capability.md) made the function pure *specifically* to satisfy the import contract, and never asked who would hand it the facts.** **Passing ④ by construction is what made ② invisible** — the boundary was clean because nothing crossed it, including the data.
+
+**Second instance of one failure mode, with [C-417](LANE_COORDINATION.md): a boundary designed without asking who stands on the other side.** **Two instances is why this is a standing check rather than a lesson.**
 
 **Two queues are reported every cycle, and Lane C computes both because each measures Lane C:**
 
@@ -780,24 +818,69 @@ Execution Buffer Health
 
 **A lane must never appear to have executable work when it has none, nor appear empty when executable work exists.** **The second is a Product Office capacity finding; the first is a defect.**
 
-### 🔗 Dependency reporting — seven fields, always ([D-094](DECISION_REGISTER.md))
+#### The six causes, ruled out one at a time ([D-099](DECISION_REGISTER.md))
 
-> **Whenever a report states a dependency, a waiting state or a blocked condition, it carries all seven.** *"This should become part of the standard Product Office reporting format."*
+> ***"Implementation lanes should not reach a genuine zero-`READY` state without Product Office immediately investigating why… Whenever a lane becomes `WAITING` because of planning rather than engineering, investigate."***
+
+**A lane is not reported as correctly waiting until all six have been checked and the check is recorded.** *"The queue says zero"* is the beginning of the investigation, never its conclusion.
+
+| | Cause | The question that tests it |
+|---|---|---|
+| ① | **Stale dependencies** | **Is any named blocker already resolved?** Read the register, not the queue — **the queue is the thing suspected of being wrong** |
+| ② | **Incorrect queue ordering** | Is a startable row sitting below an unstartable one? |
+| ③ | **Decomposition opportunities** | **Is there a smaller piece inside a blocked row that needs none of what blocks it?** |
+| ④ | **Resequencing opportunities** | Would a different order let work begin without changing scope or priority? |
+| ⑤ | **Reusable preparatory slices** | **Is prepared work sitting outside `integration`?** Prepared work that has not reached `integration` does not exist (§12) |
+| ⑥ | **Outdated blockers** | **Is a blocker's *note* still true, even where its identifier still exists?** |
+
+> ⚡ **① and ⑥ are different questions and the difference cost a day.** **① asks whether the blocker was resolved. ⑥ asks whether the sentence describing it is still accurate** — and a `C-nnn` can remain legitimately open while the reason it blocks has inverted.
+
+##### The worked example, and it is this office's own
+
+**Run 2026-08-06 against Lane A, which had read `0 of 5` for two cycles.**
+
+| | |
+|---|---|
+| ① **Stale dependency** | ⚡ **Found.** `TASK-400`'s entry named **`C-321`**, which was **`RULED` on 2026-08-05** — *"Adopt Lane B's proposed behaviour. Proceed."* **The A6 half had been executable for a full day while the lane's own file said otherwise** |
+| ⑥ **Outdated blocker** | ⚡ **Found, and it is the more serious one.** The entry read *"Lane C is not holding it, because no proposal has been brought."* **The proposal was brought on 2026-08-05.** `C-219` is still legitimately open — **but the holder had inverted, and the note named the wrong lane** |
+| ②③④⑤ | **Checked and clear.** Ordering correct · [455](architecture/455-context-definitions-r02-r03.md)'s slices already decomposed and blocked on a ruling rather than on preparation · no resequencing available without touching priority · nothing prepared sitting off `integration` |
+
+> ## ⛔ **The conclusion was not *"Lane A is idle."* It was that Lane A had executable work it could not see, and that the item blocking the rest was sitting with the office running the investigation.**
+
+⚠️ **And the count was right the whole time.** `eligible_count = 0` **counts claimable `TASK-nnn` rows, and a review obligation is not one** — so an office holding the single item blocking another lane reports itself as empty, **correctly, by the schema.** **Recorded and not fixed**: the freeze wants an *observed* execution problem, and **one observation is not evidence.** **If a second review obligation goes unseen the same way, that is the trigger.**
+
+### 🔗 Dependency reporting — eleven fields, always ([D-099](DECISION_REGISTER.md))
+
+> **Whenever a report states a dependency, a waiting state or a blocked condition, it carries all eleven.** *"This has become one of the most valuable parts of the status reporting and should remain standard."*
 
 ```text
   Dependency:              the identifier — C-nnn · TASK-nnn · B-nnn
-  Owner:                   the lane or person who can move it
-  Affected tasks:          every id it holds, not only the nearest
-  Current status:          the state that identifier is actually in
+  Current Owner:           the lane or person who can move it, TODAY
+  Category:                governance · architecture · ownership · synchronization
+                           · external · product decision · repository health
+  Affected Tasks:          every id it holds, not only the nearest
+  Current Status:          the state that identifier is actually in
   Why it blocks:           the mechanism, not the label
-  Expected next action:    what happens next, and who does it
+  Expected Next Action:    what happens next, and who does it
   Product Owner action?    YES with one sentence of why · or NO
-  Priority / Impact:       what resolving it actually buys — "unblocks 7
-                           implementation slices" · "restores Lane A execution"
-                           · "governance only" · "future roadmap only"
+  Product Office action?   YES with one sentence of why · or NO
+  Decomposable further?    YES — naming the smaller piece that could start
+                           now · or NO, with the reason
+  Impact if unresolved:    what it costs to leave it — and the honest form,
+                           which is often "throughput, not product"
 ```
 
-> **The eighth field exists because the other seven describe a dependency and none of them ranks it** ([D-095](DECISION_REGISTER.md)). **Two items can both be `READY FOR PRODUCT DECISION`, both owned by the product owner, and one unblocks seven slices while the other tidies a document.**
+**Three fields were added 2026-08-06 and each closes a specific way the eight-field form failed.**
+
+| Field | What it caught that the eight could not |
+|---|---|
+| **`Category`** | **Eight items all reading *blocked on the product owner* are not one queue.** A governance dependency and an architectural one need different responses, and the old form flattened them |
+| ⚡ **`Product Office action?`** | **The one that matters most, and it is the mirror of the field beside it.** *"Product Owner action? NO"* previously read as *nobody need do anything* — **and on 2026-08-06 the item blocking Lane A's render was sitting with this office**, described in its own queue as waiting on Lane A. **A report with no field for its author's own obligations will not surface them** |
+| **`Decomposable further?`** | **Asked prospectively rather than after a lane goes idle.** [455](architecture/455-context-definitions-r02-r03.md)'s slice 1 — the `public/` contract alone — is what this field is looking for, and it existed for a month before anybody asked whether a smaller piece could start |
+
+> **The ranking field exists because the others describe a dependency and none of them ranks it** ([D-095](DECISION_REGISTER.md)). **Two items can both be `READY FOR PRODUCT DECISION`, both owned by the product owner, and one unblocks seven slices while the other tidies a document.**
+
+> ⚠️ **`Why it blocks` and `Expected Next Action` are the ones that get skipped, and they are the ones that matter.** **A report saying *"blocked on C-417"* names something; a report saying *"C-417 is `READY FOR PRODUCT DECISION` and blocks because the platform edit's proof lives in five files this lane may not touch"* lets somebody act without opening a second document.**
 
 > ⚠️ **The fourth and fifth fields are the ones that get skipped, and they are the ones that matter.** **A report saying *"blocked on C-417"* names something; a report saying *"C-417 is `READY FOR PRODUCT DECISION` and blocks because the platform edit's proof lives in five files this lane may not touch"* lets somebody act without opening a second document.**
 

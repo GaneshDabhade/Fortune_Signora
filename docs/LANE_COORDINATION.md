@@ -295,7 +295,7 @@ databaseUrl: required(
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
-| [C-333](#c-333--lane-b-has-no-claimable-work-and-the-file-whose-job-is-to-say-so-reports-no-shortfall) | **Lane B has no claimable work, and the file whose job is to say so reports no shortfall** | Lane B | **Lane C** — queue and backlog health | **`READY FOR LANE C`** — raised 2026-08-05 | **Every Lane B slice after [TASK-438](BACKLOG.md).** Zero `READY` rows repository-wide; `shortfall = 0` is wrong on the file's own arithmetic |
+| [C-333](#c-333--lane-b-has-no-claimable-work-and-the-file-whose-job-is-to-say-so-reports-no-shortfall) | **Lane B has no claimable work, and the file whose job is to say so reports no shortfall** | Lane B | **Lane C** — queue and backlog health | ✅ **`RESOLVED` 2026-08-06** — eight validations, and [D-099](DECISION_REGISTER.md) makes the duty standing | **Nothing.** Replaced by a check that runs on every `state-check` invocation |
 | [C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it--nothing-builds-its-input-and-the-module-that-measures-may-not-reach-one) | The predicate landed and TASK-406 still cannot call it — nothing builds its input, and the module that measures may not reach one | Lane B | **Product owner** — the edge is 🔴 | `OPEN` — raised 2026-08-05, **after** TASK-434 promoted | **[TASK-406](BACKLOG.md) whole.** Both halves, not only the backtest |
 | [C-329](#c-329--lane-b-has-nothing-claimable-and-the-row-that-says-otherwise-names-two-tasks-it-cannot-take) | Lane B has nothing claimable, and the row that says otherwise names two tasks it cannot take | Lane B | **Product owner** (synchronization) · **Lane C** (the register correction) | `OPEN` — raised 2026-08-05 | **Every Lane B slice.** The lane has been `AVAILABLE` since cycle 54 |
 | [C-305](#c-305--two-principles-that-outgrew-the-adr-that-found-them) | Two principles that outgrew the ADR that found them | Lane B | **Product owner** | `OPEN` | **Nothing.** Both are already applied in two modules each; this is placement |
@@ -4188,8 +4188,8 @@ KeyError: '0035'
 |---|---|
 | **Raised by** | **Lane B**, 2026-08-05, on setting [TASK-438](BACKLOG.md) to `IN VALIDATION` and returning to the queue for the next row |
 | **Owner** | **Lane C.** ⛔ **Not the product owner** — nothing here needs a ruling. Every input already exists; what is missing is the routing |
-| **Status** | **`READY FOR LANE C`** — investigation is warranted and nothing blocks it |
-| **Blocks** | **Every future Lane B slice.** Not this one: TASK-438 is delivered and with QE. **This is the boundary after it** |
+| **Status** | ✅ **`RESOLVED` — 2026-08-06.** **Eight validations in [`infra/state-check.py`](../infra/state-check.py), and [D-099](DECISION_REGISTER.md) makes the duty standing rather than closing it** |
+| **Blocks** | **Nothing now.** It blocked *every future Lane B slice*; what replaced it is a check that runs on every invocation |
 
 ### The state, measured rather than described
 
@@ -4245,6 +4245,39 @@ grep -E '^(current|next|future|eligible_count|shortfall|depth_target)' \
 ### Implementation impact
 
 **None. No code, no contract, no schema.** This is a routing and bookkeeping item, and it is filed here rather than raised in a report because **a dependency stated in a report reaches one reader, and a dependency stated in the register reaches whoever is on Lane C next week** (§20e — the register exists so no dependency disappears because the lane that found it could not fix it).
+
+---
+
+## ✅ Resolution — 2026-08-06 · the queue was documentation, and it is now validated
+
+**Ruled by the product owner the same day it was raised:** ***"The queue must always represent the actual executable state of the repository… The queue should be considered an executable planning artifact rather than documentation."***
+
+⚠️ **The id falls in Lane B's allocation block (`300+`), not Lane C's (`400+`).** **The product owner named it explicitly.** **Recorded here so QE renumbers rather than discovers it.**
+
+### The eight validations, in [`infra/state-check.py`](../infra/state-check.py)
+
+**① `eligible_count` against the sequence beside it · ② `shortfall` against `depth_target` · ③ actual claimability · ④ dependency satisfaction · ⑤ queue freshness against `BACKLOG.md`'s last commit · ⑥ `READY` rows in no queue · ⑦ departed rows still sequenced · ⑧ the `held` and `in_validation` arrays.**
+
+> ⚡ **Seven were specified; the eighth was found by the first seven passing a queue that was wrong.** **Checks ①–⑦ all read the *executable* fields and none read the arrays describing what a lane is **not** doing** — so a shipped task could sit in `held` indefinitely and every check agreed. **Check ⑧ then found five drifts, two of them in a file this office had corrected that morning.**
+
+### ⚡ Four drifts on the first run, and two were in queues this office wrote
+
+| | |
+|---|---|
+| **`lane-a`** | Queued **TASK-437** as executable; its row says `IN VALIDATION`. **Lane A had shipped the leave endpoint** |
+| **`lane-b`** | Declared `shortfall = 0` against **2 of 5** |
+| **`lane-c`** | Queued **TASK-418** as executable; it is with QE |
+| **`TASK-901`** | ⚡ **`READY` in the backlog and in nobody's queue** — and the finding was the *backlog*, not the queue. **Both lane queues already listed it as blocked on TASK-418; the backlog was the optimistic one.** Corrected to `BLOCKED` on [C-417](#c-417--adr-0404-approved-three-platform-capabilities-whose-owner-may-not-finish-two-of-them) |
+
+### ⚠️ And the check found a defect in its own wiring
+
+**It was appended *after* `if not findings: return 0`.** **Every queue validation would have been skipped on exactly the day the rest of the repository agreed with itself** — **the one day a silent queue drift goes unseen.** **Moved above the early return, and the reason is recorded in the code.**
+
+### What [D-099](DECISION_REGISTER.md) changed, and it is why this item closes rather than ends
+
+> ***"C-333 now becomes a standing operational responsibility. Implementation lanes should not reach a genuine zero-READY state without Product Office immediately investigating why."***
+
+**So the deliverable was never the eight checks.** **It is the obligation they make cheap**: a dry queue is now a finding the instrument raises, and **[§5f](PRODUCT_OFFICE.md) carries the six causes that must be ruled out before a lane is reported as correctly waiting.** **The checks detect; the protocol decides what the detection means.**
 
 ## C-332 · The predicate landed and TASK-406 still cannot call it — nothing builds its input, and the module that measures may not reach one
 
@@ -5685,27 +5718,8 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 ⛔ **Not a rename programme.** **Both recommendations avoid touching a shipped API, a Casbin subject or a ratified invariant** — which is the whole reason to rule on vocabulary *before* the next screen rather than after.
 
-## C-333 · The queue was documentation, and it is now validated
+---
 
-**Opened 2026-08-06 · Lane C · 🟠 · ✅ `RULED` — product owner, same day: *"Approved for Product Office handling."***
+⚠️ **A second `C-333` section stood here until 2026-08-06.** **It recorded the resolution while the item it resolved sat 1,500 lines above still reading `READY FOR LANE C`, and neither referenced the other.** **Merged into the single item above.**
 
-> ***"The queue must always represent the actual executable state of the repository… The queue should be considered an executable planning artifact rather than documentation."***
-
-⚠️ **The id falls in Lane B's allocation block (`300+`), not Lane C's (`400+`).** **The product owner named it explicitly, and `B-327`/`C-333` were both verified absent from every register and from `origin/integration` before use.** **Recorded here so QE renumbers rather than discovers it.**
-
-### The seven validations, in `infra/state-check.py`
-
-**`eligible_count` against the sequence beside it · `shortfall` against `depth_target` · actual claimability · dependency satisfaction · queue freshness against `BACKLOG.md`'s last commit · `READY` rows in no queue · completed rows still queued.**
-
-### ⚡ Four drifts on the first run, and two were in queues this office wrote
-
-| | |
-|---|---|
-| **`lane-a`** | Queued **TASK-437** as executable; its row says `IN VALIDATION`. **Lane A had shipped the leave endpoint** |
-| **`lane-b`** | Declared `shortfall = 0` against **2 of 5** |
-| **`lane-c`** | Queued **TASK-418** as executable; it is with QE |
-| **`TASK-901`** | ⚡ **`READY` in the backlog and in nobody's queue** — and the finding was the *backlog*, not the queue. **Both lane queues already listed it as blocked on TASK-418; the backlog was the optimistic one.** Corrected to `BLOCKED` on [C-417](#c-417--adr-0404-approved-three-platform-capabilities-whose-owner-may-not-finish-two-of-them) |
-
-### ⚠️ And the check found a defect in its own wiring
-
-**It was appended *after* `if not findings: return 0`.** **Every queue validation would have been skipped on exactly the day the rest of the repository agreed with itself** — **the one day a silent queue drift goes unseen.** **Moved above the early return, and the reason is recorded in the code.**
+⚡ **It also claimed `B-327` and `C-333` were *"both verified absent from every register"*. That was wrong on both counts** — each id already carried a live row raised by Lane B the day before. **`state-check`'s duplicate-identifier check found it; the sentence asserting the verification is exactly what a check exists to disbelieve.**

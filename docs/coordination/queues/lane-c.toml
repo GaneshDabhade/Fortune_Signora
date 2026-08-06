@@ -52,6 +52,26 @@ future  = []
 #
 # **§20e: `AVAILABLE` with an empty queue is a correct repository state, not a
 # stalled one** — every remaining item has an owner who is not this lane.
+#
+# ⚠️ **CORRECTED 2026-08-06 under D-099. That last sentence was false.**
+# **C-219's review is this office's and has been since 2026-08-05**, and this
+# file recorded it as waiting on Lane A — see `[[held]]` below.
+#
+# ⚡ **AND THE COUNT STAYS 0, WHICH IS THE SECOND FINDING.** `eligible_count`
+# counts claimable `TASK-nnn` rows, and a **review obligation is not a task
+# row** — so an office holding the one item blocking another lane reports
+# itself as having nothing to do, correctly, by the schema. **The number was
+# never wrong; it cannot express this.**
+#
+# **Recorded rather than fixed.** Adding an `eligible_reviews` field would be
+# a governance change, and §20e's freeze wants an *observed* execution problem
+# first. **This is one observation. One is not evidence** — if a second review
+# obligation goes unseen the same way, that is the trigger, and it is named
+# here so the next reader does not have to rediscover it.
+#
+# ⚡ **The investigation D-099 requires found the bottleneck inside the office
+# that runs the investigation.** Stated here rather than in a report, because
+# a finding that named another lane would have been wrong.
 eligible_count = 0
 shortfall      = 5
 
@@ -69,9 +89,9 @@ note    = "The RFC is written and pushed. The task is the RFC only — no module
 
 [[held]]
 task    = "C-219"
-blocker = ["Lane A's join proposal"]
-owner   = "Lane A proposes · Lane C reviews"
-note    = "C-219: `the render waits on the join, and Lane A will bring Lane C a proposal rather than assume one.` No proposal has arrived. Lane C is the reviewer here, not the author, and writing the proposal would be this office doing the preparation D-060 moved to the lanes."
+blocker = []
+owner   = "Lane C — the REVIEW, and it is this office's to perform"
+note    = "⚡ CORRECTED 2026-08-06 under D-099. This read 'No proposal has arrived. Lane C is the reviewer here, not the author' — true on 2026-08-03, false from 2026-08-05, when Lane A brought the subject↔entity join proposal four polls late. C-219 records it in full: provider_watermark holds attempted_at and a typed subject; provider_sync has no subject at all; raw_provider_record stores the provider's external_id but not the request's input; knowledge_graph binds on (provider, provider_external_id). The proposal recommends surfacing freshness per TARGET ACCOUNT rather than per entity. ⛔ THIS IS THE ONLY THING BLOCKING TASK-400's A7 RENDER, and it has been waiting on this office. `blocker` is now EMPTY — it named Lane A's proposal, which has arrived. A queue naming another lane as the holder of one's own obligation is worse than an empty queue: it reads as diligence."
 
 [[held]]
 task    = "C-221"

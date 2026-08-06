@@ -36,6 +36,47 @@
 
 ---
 
+# 0a · ⚖️ The four outcomes, ruled — [D-099](../DECISION_REGISTER.md)
+
+> ***"From now onward, certification history should distinguish: Passed · Failed · Aborted · Skipped. These are fundamentally different outcomes and should never be merged into a single 'failure' metric."***
+
+**The ruling settles what §0 could only recommend.** **Below is what each state must mean, stated tightly enough that two people classifying the same run agree** — because a four-valued field applied inconsistently is worse than the two-valued one it replaces.
+
+| State | **The gate evaluated the repository?** | Means | The question it answers |
+|---|---|---|---|
+| ✅ **`passed`** | **Yes** | The repository satisfied the guarantee | — |
+| 🔴 **`failed`** | ⚡ **Yes** | **The repository is wrong.** The gate ran to completion and the repository did not satisfy it | ***"Does this gate catch defects?"*** — **and only this state may answer it** |
+| ⚠️ **`aborted`** | ⛔ **No** | **The gate could not run.** Environment down · a dependency missing · a tool that produced no parseable output · a timeout | ***"Is this gate reliable?"*** — **a different question, and it must never be read as the first** |
+| ⬜ **`skipped`** | ⛔ **No, and deliberately** | Not selected for this profile, or its trigger did not fire | ***"What did this run not check?"*** — **[P-A](../DOMAIN_DISCOVERY_REGISTER.md): absence must state itself** |
+
+### ⚡ The line that decides every ambiguous case
+
+> ## **Did the gate reach a verdict about the repository?**
+>
+> **`passed` and `failed` are verdicts. `aborted` and `skipped` are the absence of one** — and the absence of a verdict is **never** evidence that the repository is sound.
+
+**Applied to the three recorded failures**, and this is the whole reason the ruling matters:
+
+| Run | Recorded | ⚡ Under the ruling | Why |
+|---|---|---|---|
+| **26** | `smoke` **failed** | ⚠️ **`aborted`** | *"2 stages in 38s"* **of 24.** The build never came up. **The gate reached no verdict** |
+| **38** | `smoke` **failed** | ⚠️ **`aborted`** | *"2 stages in 53s… Build 53s"*. Same shape |
+| **54** | `mypy` **failed** | ⚠️ **`aborted`** | *"no summary line"* — **the gate could not parse its own tool's output.** A repository with type errors produces a summary line **saying so** |
+
+> ## ⛔ **All three reclassify. Which makes the gate failure rate across 70 certifications `0`, and the abort rate `4.3%`.**
+>
+> ⚡ **And that inverts [463](463-certification-architecture-assessment.md)'s central recommendation.** It called `smoke` *"the highest-value gate"* **on those two data points.** **Under the ruling they say `smoke` is the *least reliable* gate, not the most valuable one** — and the correct response is to fix its environment dependency, **not to promote it in a tier model.**
+
+⚠️ **This is a reclassification of an existing record and it must not be performed silently.** **`CLAUDE.md` §2: *a record of what was true then must not be rewritten to match now.*** **The three runs stay as recorded, and the cause is added alongside** — never substituted for the outcome that was written on the day.
+
+### ⛔ What this does not license
+
+**No metric may sum `failed` and `aborted`.** **A dashboard reporting *"3 gate failures in 70 runs"* is now wrong by the repository's own rule** — and it is the figure both prior assessments were built on.
+
+⚠️ **And an `aborted` run is still not a pass.** **A cycle that aborts has certified nothing**, exactly as the release checklist has said about DR since before any of this: *"an abort means the gate never evaluated the repository."*
+
+---
+
 # 1 · The ten questions, answered with what exists
 
 | | Question | Answer today |
@@ -101,6 +142,38 @@
 > ## **Three of five are ratified and unmeasured; two do not exist.**
 >
 > **So the work is not designing profiles. It is *declaring* the three that exist so their cost can be measured, and *creating* the two that do not.** ⚡ **And a profile nobody can measure is exactly the state §20e is in today: six moments, one timed gate between them.**
+
+## 4a · The operating model — [D-099](../DECISION_REGISTER.md)
+
+> ***"Continue preparing the certification strategy around execution profiles… Simply prepare the long-term operating model."*** ⛔ ***"Do not implement anything."***
+
+**Each profile answers one question and is defined by what it deliberately does *not* check** — because a profile that checks everything is not a profile, and a profile whose omissions are unstated is [P-A](../DOMAIN_DISCOVERY_REGISTER.md)'s failure.
+
+| Profile | The one question | Run by | ⛔ Deliberately omits | Confidence it must never claim |
+|---|---|---|---|---|
+| **Developer** | ***"Did I just break what I am touching?"*** | The lane, continuously | Everything outside the change | **None about the repository.** It is a feedback loop, not a gate |
+| ⚡ **Lane** | ***"Is this slice fit to hand over?"*** | The lane, once, on the **rebased** branch | Cross-module integration · `smoke` *(binds 3000/8000)* | **That merged code works.** ⚡ **§0 suggests this is where defects are actually caught, which makes it the most undervalued profile in the model** |
+| **QE** | ***"Is this commit fit to promote?"*** | QE, on the pinned SHA | Nothing. **It is the everything profile** | — |
+| **Release** | ***"Is this fit to put in front of a customer?"*** | ⛔ **Nobody — no moment exists** | — | ⚠️ **T7 has no home.** [ADR-0027](adr/0027-local-first-development.md) defers release to M14.5, so **the honest status is *absent*, not *deferred to a profile that exists*** |
+| **Infrastructure / DR** | ***"Does the system survive being restarted?"*** | QE, inside the QE profile today | — | ⚠️ **It is not a separate profile today** — §5 is the proposal to make it one |
+
+### The three rules that keep profiles from becoming shortcuts
+
+| | |
+|---|---|
+| ⛔ **A profile never reduces confidence at its own moment** | **A gate is omitted only where the question it answers cannot be affected by the change.** ***"Run everything that provides additional confidence"*** — the invariant, applied per profile rather than repository-wide |
+| ⛔ **A lighter profile never substitutes for a heavier one** | **`Lane` passing is not `QE` passing.** The lifecycle stages are ordered, and a profile model must not become a way to skip forward through them |
+| ⚡ **Every profile records what it skipped** | **`skipped` is one of the four states for exactly this reason.** **A profile whose omissions are invisible is indistinguishable from one that failed to run them** — [P-A](../DOMAIN_DISCOVERY_REGISTER.md), and the reason §0a's fourth state is not optional |
+
+### What adopting this actually costs
+
+| | |
+|---|---|
+| **Developer · Lane · QE** | **Naming what §20e already ratifies.** No behaviour changes; **three profiles become measurable** |
+| **Infrastructure / DR** | **Extracting `make dr` from the QE profile** — the only structural change, and §5 is its design |
+| ⛔ **Release** | **Not designable today.** There is no release, no target environment and no customer-facing deployment. **Designing a profile for a moment that does not exist is the speculative abstraction §2 forbids** — recorded as absent and left there |
+
+> ⚠️ **And the model is unmeasurable until the two recording steps land.** **Every row above states a cost nobody has timed and a confidence nobody has quantified.** **A profile model built on that is a taxonomy, not a strategy** — which is why §9's recommendation puts the two fields ahead of every profile in this section.
 
 ---
 
@@ -182,6 +255,20 @@
 **Steps 1–3 are the whole of the near-term recommendation.** **They are two enum fields and one gate wiring, they change no behaviour, and without them every optimisation in this document is an opinion.**
 
 ⛔ **Demote nothing.** ⛔ **No scheduler** — §20c-2. ⛔ **And do not treat change-aware selection as the prize**: §6 measures it as small, because the expensive gates are precisely the ones that must always run.
+
+## ✅ Updated 2026-08-06 — [D-099](../DECISION_REGISTER.md) ruled step 1, and it is no longer a recommendation
+
+> ***"Never optimize certification based on assumptions. Optimize only after the repository provides objective evidence."***
+
+| | |
+|---|---|
+| **Step 1 — record a cause per gate** | ⚖️ **Ruled.** **`passed · failed · aborted · skipped`, and *"never merged into a single failure metric"*** — §0a defines each state and reclassifies the three recorded failures against it |
+| **Step 2 — record a duration per gate** | ⚖️ **Ruled, and ordered**: *"proceed with adding duration measurements for every gate **before** recommending changes to execution frequency"* |
+| **Step 3 — gate the frontend suite** | **[B-123](../BUGS.md), unchanged and still open.** ⚠️ **The weakest confidence lens is still the one nearest the customer** |
+
+> ⛔ **All three remain QE's to make or refuse.** §20e: a change to what a gate *means* is a slice, and certification behaviour is QE's. **This office prepared them; it does not wire them.**
+
+⚡ **And the ruling has already paid for itself before anything is built.** **Applying the four states to the existing record turns *"3 failures in 70 runs"* into *"0 failures and 3 aborts"*** — **which reverses [463](463-certification-architecture-assessment.md)'s judgement of `smoke` without a single new measurement being taken.**
 
 ---
 

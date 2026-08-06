@@ -465,9 +465,29 @@ def main() -> int:
                 )
 
         if not contested and not unknown:
-            ready = len(re.findall(r"^### TASK-\d+", backlog, re.M))
+            # **Both figures were wrong, and the second one mattered.** `ready`
+            # counted `^### TASK-` headings — every task in the file, whatever
+            # state it declared — and reported the total as the READY count.
+            # It read `54 READY` on a repository with **two** claimable rows.
+            #
+            # That is B-101's shape once more: a proxy counted, and labelled
+            # with the word for the thing it is not. It is worse here than
+            # elsewhere because D-099 makes a lane reaching zero READY a
+            # finding Product Office must investigate — **and this line is
+            # where a reader would have looked to see it.** A dashboard
+            # reporting 54 claimable rows hides the exact condition the
+            # standing duty exists to catch.
+            #
+            # `_backlog_states` already parses the Status row correctly and
+            # already existed in this file, written for the queue checks.
+            # `known` is every `TASK-nnn` *mentioned* anywhere — right for the
+            # unknown-row check above, wrong as a count of defined tasks.
+            states = _backlog_states(backlog)
+            startable = sorted(t for t, s in states.items() if s in _STARTABLE)
             notes.append(
-                f"Backlog: {len(known)} task(s), {ready} READY, no task claimed twice."
+                f"Backlog: {len(states)} task(s), {len(startable)} startable "
+                f"({', '.join(startable) if startable else 'none'}), "
+                f"no task claimed twice."
             )
 
     # 5c-2 — a document warning that it is not on `integration`, while it is.

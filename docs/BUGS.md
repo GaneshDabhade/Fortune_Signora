@@ -133,7 +133,7 @@ notes.append(f"Backlog: {len(known)} task(s), {ready} READY, no task claimed twi
 | **Module** | Repository records — [`BACKLOG.md`](BACKLOG.md)'s TASK-438 row · [444](architecture/444-executive-dashboard-domain-assessment.md) · [448](architecture/448-icp-builder-traceability-audit.md) · [`DOMAIN_DISCOVERY_REGISTER.md`](DOMAIN_DISCOVERY_REGISTER.md) |
 | **Current assignee** | **Lane C** — all four are its documents, and the registers are its to reconcile |
 | **Severity** | 🟠 · **Wrong information a lane would act on.** It already produced a `READY` row with an unbuildable section |
-| **Status** | **`OPEN`** — reported with evidence, **not fixed: another lane's documents** |
+| **Status** | ✅ **`FIXED` — 2026-08-06, all seven documents.** **QE verifies; the lane that fixed it does not close it** |
 | **Found** | 2026-08-05 by Lane B, claiming [TASK-438](BACKLOG.md) and reading its acceptance before writing |
 | **Commit found** | `f14db51e` — and [C-332](LANE_COORDINATION.md) landed at `714f4663`, **one commit earlier** |
 
@@ -173,11 +173,32 @@ grep -c "C-332" docs/architecture/448-icp-builder-traceability-audit.md
 
 **Lane B claimed TASK-438 on the strength of that row**, discovered the fifth section on the reuse audit, and **delivered four sections rather than five**. That is the cheap outcome. **The expensive one was available**: a lane that trusted *"a call to a published predicate"* would have built the arithmetic and met the missing input at the end.
 
-### The fix, and it is one line of judgement rather than four edits
+### The fix, and it was one line of judgement rather than seven edits
 
-**Decide what R-00 means, then say it once.** *"Shipped"* is defensible for M2 and misleading for the capability — so the register needs the distinction it currently collapses. **The three documents downstream then derive from it**, which is [§2](../CLAUDE.md)'s rule: truth has exactly one authoritative representation.
+**Decide what R-00 means, then say it once.** *"Shipped"* is defensible for M2 and misleading for the capability — so the register needed the distinction it collapsed. **Every downstream document then derives from it**, which is [§2](../CLAUDE.md)'s rule: truth has exactly one authoritative representation.
 
-**Not fixed here.** All four are Lane C's, and a lane rewriting another's records is how two accounts of one fact begin. **Recorded in [27](architecture/27-opportunity-engine.md)** — this module's own design doc — **so the next assignee inherits the correction even if this row is still open.**
+> ## **The word adopted, and it is now the register's: *implemented, not usable*.**
+>
+> **A promoted predicate with no reachable caller is a foundation, not a capability.** **Both halves are true and stating only the first is what cost Lane B a section.**
+
+### ⚡ The fix ran twice, and the second half is a Product Office finding
+
+**Two reconciliations happened on 2026-08-06 and neither knew about the other**, because **they were filed under one id and I did not notice.**
+
+| | Documents | When |
+|---|---|---|
+| **① [D-094](DECISION_REGISTER.md)'s reconciliation** | **[443](architecture/443-account-matching-capability.md) · [TASK-406](BACKLOG.md)'s row · [Register](DOMAIN_DISCOVERY_REGISTER.md) rows 312/346 · [461](architecture/461-product-led-domain-discovery-review.md)** | 2026-08-06, morning |
+| ⚠️ **② The three this row actually named** | **[444](architecture/444-executive-dashboard-domain-assessment.md) §42 and §108 · [448](architecture/448-icp-builder-traceability-audit.md) §129 and §143 · [Register](DOMAIN_DISCOVERY_REGISTER.md) rows 8, 14, 69 and the coverage matrix** | **2026-08-06, on [D-099](DECISION_REGISTER.md) — after the row already read `FIXED`** |
+
+> ⛔ **So this row read `FIXED` for part of a day while three of the documents it names still said the section was buildable.** **The duplicate id is what concealed it**: two rows under `B-327` meant the fix row and the report row were never read together, and each looked complete on its own.
+>
+> ⚡ **`state-check` caught the duplicate id and could not have caught the partial fix** — it compares identifiers, not claims. **The instrument found the *cause* and a human had to find the *consequence*, which is the honest division and worth recording rather than smoothing over.**
+
+### Regression guard
+
+⛔ **None, and deliberately.** **A document agreeing with a *capability's reachability* is not mechanically checkable** — `state-check` can compare a document to a commit, not a claim to a codebase. **Saying so beats a check that would pretend to cover it.**
+
+✅ **What *is* now guarded is the thing that hid it.** The duplicate-identifier check already existed and worked; **what was missing was reading its output before declaring the fix complete.** **[D-099](DECISION_REGISTER.md) makes `state-check` a precondition of closing any Product Office row, not a report written after one.**
 
 ### B-325 · B-118's fix allocates Lane B its own database, and the document that tells a lane how to run still names the shared one
 
@@ -4065,15 +4086,6 @@ removed person GETs /workspaces/{id}/members                  → 200  ← shoul
 
 **Suggested fix.** Two products, an ideal customer for each, a buying committee for each, one focus, three target accounts — enough that the read surface has shape, and coherent with the twelve accounts the scenario already seeds, which are technology companies.
 
-### B-327 · Four governance artifacts described ICP Matching as finished
+---
 
-| | |
-|---|---|
-| **Module** | Repository governance — [443](architecture/443-account-matching-capability.md) · [BACKLOG](BACKLOG.md) TASK-406 · [Domain Discovery Register](DOMAIN_DISCOVERY_REGISTER.md) · [461](architecture/461-product-led-domain-discovery-review.md) |
-| **Current assignee** | **Lane C** — it authored all four |
-| **Severity** | 🟠 — **a lane reading any of them would begin work believing the capability is usable** |
-| **Status** | ✅ **`FIXED` — 2026-08-06.** **QE verifies; the lane that fixed it does not close it** |
-| **Found** | 2026-08-06, by [C-332](LANE_COORDINATION.md) *(Lane B)*, and assigned by the product owner: *"Implementation should never discover conflicting governance documentation."* |
-| **The conflict** | **`evaluate(icp, observed)` is `PROMOTED` and correct. Nothing constructs an `ObservedAttributes`, and `opportunity_engine` — ruled to do the measuring — is forbidden from `knowledge_graph`, the only module holding the `entity_id → SubjectRef` binding.** **So the capability is *implemented* and *not usable*, and four documents said it was done** |
-| **Fix** | **[443](architecture/443-account-matching-capability.md)** gains a dated correction naming why it missed it — *§3 made the function pure specifically to avoid the import contract and never asked who hands it the facts* · **TASK-406's row** strikes *"the per-criterion lift half is unaffected"* · **the Register** marks R-00 `PROMOTED, no reachable caller` and moves it out of *Architecturally Stable* · **[461](architecture/461-product-led-domain-discovery-review.md)**'s readiness summary reads **Implemented, not usable** |
-| **Regression guard** | ⛔ **None, and deliberately.** **A document agreeing with a *capability's reachability* is not mechanically checkable** — `state-check` can compare a document to a commit, not a claim to a codebase. **Saying so beats a check that would pretend to cover it** |
+⚠️ **A second `B-327` row stood here until 2026-08-06.** **It described the same defect from the fix side while the report side sat under `## Open` at the top of this file, and neither referenced the other.** **Merged into the single row above** — **`state-check`'s duplicate-identifier check is what found it**, and the partial fix it was concealing is recorded there.
