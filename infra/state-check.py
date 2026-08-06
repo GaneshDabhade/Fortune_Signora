@@ -240,6 +240,30 @@ def _queue_findings(backlog: str) -> list[str]:
                 f"not re-measured since"
             )
 
+        # ⑧ the arrays that describe what a lane is *not* doing.
+        #
+        # **Added after the first version passed a queue that was wrong.**
+        # C-333's checks validated `current`, `next` and `future` — what a lane
+        # should *start* — and never read `held` or `in_validation`. `lane-a`
+        # carried a PROMOTED row in `held` and two IN VALIDATION rows beside it,
+        # and every executable check passed because none of them looked there.
+        # **A queue is not only a list of what to take; it is a claim about
+        # everything else, and the claim was unchecked.**
+        for entry in queue.get("held") or []:
+            task = str(entry.get("task"))
+            state = states.get(task)
+            if state in _DEPARTED:
+                out.append(
+                    f"{lane}: holds {task}, which is {state} — it left this lane"
+                )
+        for entry in queue.get("in_validation") or []:
+            task = str(entry.get("task"))
+            state = states.get(task)
+            if state is not None and state not in _DEPARTED:
+                out.append(
+                    f"{lane}: lists {task} as with QE; its row says {state}"
+                )
+
     for task, state in sorted(states.items()):
         if state in _STARTABLE and task not in queued:
             out.append(

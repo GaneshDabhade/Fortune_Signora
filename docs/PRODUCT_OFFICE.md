@@ -768,6 +768,18 @@ Execution Buffer Health
 
 > ⚠️ **The distinction that makes the finding useful.** *"Blocked"* and *"empty"* are different diagnoses and only one of them is the product owner's. **Lane A's queue on 2026-08-05 was neither** — its rows were `CLAIMED`, `IN VALIDATION` or another lane's, and **the honest bottleneck was that Product Office had not prepared the next slices.** **Reporting that as a dependency would have pointed at the wrong person.**
 
+### 🚦 Queue integrity is a standing operational duty ([D-097](DECISION_REGISTER.md))
+
+> ***"Product Office should proactively validate repository state rather than waiting for implementation lanes to identify the issue."***
+
+**Every summary reports queue health.** **And when a lane reports no claimable work, a stale queue, a wrong eligible count or a dependency inconsistency, Product Office validates *before* replying** — `python3 infra/state-check.py`, which carries C-333's eight queue checks.
+
+> ⚠️ **The distinction that matters, and Lane A is the worked example.** **Its queue read 0 of 5 and that was *correct*** — the only two startable rows on the board are in Lane B's modules. **What was wrong was the bookkeeping beside it**: a `PROMOTED` row and two `IN VALIDATION` rows sitting in `held`.
+>
+> ⚡ **And the first seven checks passed it, because they validated `current`/`next`/`future` and never read the arrays describing what a lane is *not* doing.** **A queue is not only a list of what to take; it is a claim about everything else, and that claim was unchecked.** **Check ⑧ exists because a queue this office had already corrected once was still wrong.**
+
+**A lane must never appear to have executable work when it has none, nor appear empty when executable work exists.** **The second is a Product Office capacity finding; the first is a defect.**
+
 ### 🔗 Dependency reporting — seven fields, always ([D-094](DECISION_REGISTER.md))
 
 > **Whenever a report states a dependency, a waiting state or a blocked condition, it carries all seven.** *"This should become part of the standard Product Office reporting format."*

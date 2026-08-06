@@ -118,14 +118,6 @@ note    = "M-D, the People domain. NOT blocked on a decision — D-074 ruled the
 
 # ── In progress with this lane — listed so nothing here reads as claimable ────
 [[held]]
-task = "TASK-434"
-note = "account matching — the criterion predicate. CLAIMED 2026-08-05 within the hour of the product owner sequencing it, and returning as the row C-330 had asked for. ⛔ THE TWO INVARIANTS STAND: a match is a category with reasons and never a number, and `unmeasured` is a value in the type and never `false`"
-
-[[held]]
-task = "TASK-408"
-note = "B-ii, search results are grouped and the ranking explainable. IN PROGRESS — claimed by this lane 2026-08-05 the moment the ruling landed. It had been `next` in this file and was claimed while Lane C was editing the same file; corrected before publishing, because a queue naming a claimed task as the next one to take is worse than no queue"
-
-[[held]]
 task = "TASK-406"
 note = "an ICP criterion scored against outcomes. IN PROGRESS. ⚠️ ITS BACKTEST HALF NOW CONSUMES TASK-434 — 'the backtest reports both cohorts, never in-ICP alone' needs a predicate deciding which an account is, and D-077 sequenced that capability ahead of this slice so it is established once rather than five times. ⛔ Do not inline an in-ICP test here; read commercial_profile/public/. ✅ The per-criterion lift half is unaffected and needs nothing new. C-328 is RULED and its blocked entry is removed"
 
