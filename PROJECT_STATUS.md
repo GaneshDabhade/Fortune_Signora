@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `92b5d87`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `766fd4c`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `92b5d87`, 2026-08-06.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `766fd4c`, 2026-08-06.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`92b5d87`** — the certified commit itself |
+| **`main`** | **`766fd4c`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 81 promoted **two Lane B slices** — and **refused a third**, the first certification gate this session to fail on a lane's code |
-| **Certification** | ✅ [`92b5d879f71b`](certification/reports/92b5d879f71b.md) · migration head **`0040`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 82 promoted **17 commits and refused one slice** — three attempts, two verdicts, one abort |
+| **Certification** | ✅ [`766fd4c689f8`](certification/reports/766fd4c689f8.md) · migration head **`0040`** · protocol **v2** · ⚠️ **11 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
 | **Validation queue** | **Empty.** ✅ **Lane C's cycle-70 deferral resolved itself** — the lane rebased, and its work is promoted here |
-| **Customer value this cycle** | ✅ **Yes.** **A committee seat can be cited** — with an id derived rather than stored — and **an account's observed attributes have a publisher** |
+| **Customer value this cycle** | ✅ **Yes, four ways.** The Signal Center's queue is reachable · **a page says when it could not find out** · a workspace's history is queryable · the design system's scales became tokens a guard enforces |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3789 backend tests** · **95.33% coverage** *(floor 95)* · **1267 frontend tests** across 62 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **794 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **36 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 157s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3818 backend tests** · **95.40% coverage** *(floor 95)* · **1425 frontend tests** across 66 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **796 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **36 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 215s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,19 +40,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **TASK-460 · C-230** *(cycle 80)* | **[TASK-201](docs/BACKLOG.md) · [TASK-446](docs/BACKLOG.md)** | **D-126 · D-127** — the Action Batch registered | **Cycle 81** |
-| **Execution phase** | 🔴 **Correcting** — [B-132](docs/BUGS.md) | **Building** | **Governing** | **Certified · Promoted · Closed out** |
-| **Branch** | **TASK-439 returned** | Level with `main` | Level with `main` | Level with `main` |
-| **Validation status** | 🔴 **`CHANGES REQUESTED`** — `mypy --strict`, 7 errors, the fake is missing `for_workspace` | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
-| **Blocked?** | **No** — the fix is one method on one fake | **No** | **No** | **No** |
-| **Waiting on QE?** | **After it extends the fake** | No | No | — |
-| **Next executable work** | Repair TASK-439, then [TASK-448](docs/BACKLOG.md) | Next `READY` row | Stewardship | **Cycle 82, on the next pass** |
+| **Last promoted** | **TASK-439 · 442 · 443 · 448**, and [B-132](docs/BUGS.md) closed | **[TASK-427](docs/BACKLOG.md)** — the port gets its test | **[D-130](docs/DECISION_REGISTER.md)** — verify behaviour, never a name | **Cycle 82** |
+| **Execution phase** | 🔴 **Correcting** — [B-133](docs/BUGS.md), one unused import | **Building** | **Governing** | **Certified · Promoted · Closed out** |
+| **Branch** | **TASK-445 returned** | Level with `main` | Level with `main` | Level with `main` |
+| **Validation status** | 🔴 **`CHANGES REQUESTED`** — `next build` ESLint, `no-unused-vars` | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
+| **Blocked?** | **No** — one line | **No** | **No** | **No** |
+| **Waiting on QE?** | **After it removes the import** | No | No | — |
+| **Next executable work** | Repair TASK-445 · ⚠️ **and settle TASK-440 with Lane C** | Next `READY` row | Stewardship | **Cycle 83, on the next pass** |
 
-> ⚡ **A certification gate refused a lane's code for the first time this session**, and the gate that did it is one `make validate` deliberately does not run. **`mypy` belongs to certification** — *"folding it into stage 1 would produce a command that looks like certification, takes as long, and records nothing."* The split was designed for exactly this and had never been called on.
+> ⚡ **Two gate failures in one cycle, both real, both in one lane** — a protocol left half-implemented and an unused import. **Neither was visible to the gates that ran before them**, and neither would have reached `main`.
 >
-> **Two aborts, and neither is a verdict.** One on the workstation lease while Lane B ran consecutive suites — QE waited five minutes and killed nothing. **A failure is a statement about the commit; an abort is a statement about the run**, and only one of them says anything about a lane's code.
+> **[B-133](docs/BUGS.md) made [B-131](docs/BUGS.md) concrete.** `eslint` is not a missing gate — it runs inside `smoke`, unrecorded, reachable only through the slowest path in the set. **Ten seconds by hand; four minutes through an image build.** QE used the ten-second route to verify the fix, which is the argument for recording it made by using it.
 >
-> **Nothing was held.** Two Lane B slices and Lane C's batch promoted on their own while Lane A's returns.
+> ⚠️ **One claim/block collision was preserved rather than decided.** Lane C withdrew TASK-440's `READY`; Lane A's claim was written against it. **QE kept the block on Lane C's own standard** — *the queue must never hold the more optimistic of two defensible readings* — **left the claim intact on the board, and wrote into the row that the two lanes must settle it.**
 
 ---
 
@@ -103,54 +103,67 @@
 
 ---
 
-## 1d · Release summary — 2026-08-06, cycle 81
+## 1d · Release summary — 2026-08-06, cycle 82
 
-**Derived from the promoted commit `92b5d87`.** **Thirty-seven promotions.** **The first cycle this session in which a certification gate refused a lane's code** — and the split that made it possible was designed on purpose.
+**Derived from the promoted commit `766fd4c`.** **Thirty-eight promotions.** **Two gate failures in one cycle, both real, both the same lane** — and the second one made [B-131](docs/BUGS.md) concrete rather than theoretical.
 
 ### What was promoted
 
-**[TASK-201](docs/BACKLOG.md), Lane B** — *a committee seat can be cited, and the id is derived rather than stored.*
-**[TASK-446](docs/BACKLOG.md), Lane B** — *an account's observed attributes have a publisher.*
-**Lane C** — `D-126`, `D-127`: the Action Batch registered as Lane B's, *"and registering it exposed a second gap."*
+**Seventeen commits, four customer-visible slices, and the frontend suite up 158 tests.**
 
-### 🔴 And one slice was refused — [B-132](docs/BUGS.md), the first gate failure on a lane's code this session
+| | |
+|---|---|
+| **TASK-439** | The Signal Center's queue becomes reachable |
+| **TASK-442** | **A page must say when it could not find out** |
+| **TASK-443** | A workspace's history is queryable, not merely recorded |
+| **TASK-448** | The type, radius and control-height scales become tokens, **and a guard enforces them** |
+| **TASK-427** *(Lane B)* | *"The port had no test, and the gate said so"* |
+| **D-130** *(Lane C)* | **Verify behaviour, never a name** — now a standing duty |
 
-```
-mypy --strict: Found 7 errors in 4 files (checked 794 source files)
-  "FakeSignalRepository" is missing following "SignalRepository"
-  protocol member: for_workspace
-```
+**[B-132](docs/BUGS.md) closed**, and Lane A's own diagnosis was sharper than QE's: **"the gap was the lane's gate habit."**
 
-**Lane A's TASK-439 added `for_workspace` to the protocol and implemented it on the real repository.** `FakeSignalRepository` was not extended, so every construction of `SignalQueries` and `ResolveSignal` in the tests fails the contract.
+### 🔴 [B-133](docs/BUGS.md) — the same gap, one cycle later, through a different gate
 
-> **`pytest` is green, and that is the point.** Python does not enforce a `Protocol` at runtime — the fake is **structurally wrong and behaviourally fine**, until a caller uses the method it does not have. **`mypy --strict` is the only gate that sees it**, and §19 requires the lane to run it before handing over.
+**TASK-445 left an unused `EmptyState` import** after replacing its usage. `smoke` failed at **Build — 2 stages in 24s** against a normal 24 in ~215s.
 
-### The split that caught it was designed on purpose
+**Three gates could not see it, each for a principled reason:**
 
-**`make validate` structurally cannot find this.** Stage 1 runs migrate · `tsc` · `vitest` · `pytest`. **`mypy` belongs to certification**, and `validate.py`'s own docstring says why: *"folding them in would produce a command that looks like certification, takes as long, and records nothing — the shape of a gate people learn to skip."*
+| | |
+|---|---|
+| `tsc --noEmit` | An unused import is **valid TypeScript.** Type-checking is not linting |
+| `vitest` | The page renders; the import is inert at runtime |
+| `pytest` | Not its layer |
 
-**It refines [465](docs/architecture/465-certification-strategy.md) without contradicting it.** *"No gate has ever caught a product defect"* still holds — **this is a type defect** — but it is the first time a certification gate has refused a lane's code rather than QE's own.
+**`next build` runs ESLint**, and the Dockerfile says why in its own comment — *"`ignoreDuringBuilds` to false, so a type error fails the image rather than shipping inside it."*
 
-**Lane B and Lane C were not held.** The candidate was rebuilt without TASK-439, `mypy` confirmed clean over 794 files, revalidated, and certified on its own.
+### ⚡ And that makes [B-131](docs/BUGS.md) concrete rather than theoretical
 
-### Two aborts, and neither is a verdict
+**`eslint` is one of the eleven planned-but-unrecorded gates.** It is **not absent** — it runs, buried inside `smoke` — but:
 
-**One on the workstation lease**, held by Lane B running consecutive suites — QE waited five minutes and killed nothing. **The other was the `mypy` failure, which *was* a verdict** and produced B-132.
+> **It is unrecorded**, so nothing can distinguish a cycle where linting passed from one where it never ran; and **it is reachable only through the slowest gate in the set**. `npx eslint .` answers in under ten seconds; the image build takes four minutes to say the same thing.
 
-> **Keeping those distinct is the whole of the distinction**: *a failure is a statement about the commit; an abort is a statement about the run.* Only one of them says anything about a lane's code.
+**QE verified the rebuilt candidate with `npx eslint .` before revalidating** — which is the argument for recording it, made by using it.
 
-**The failed run's verdict survives where the design puts it** — `certification/attempts.jsonl`, `outcome: failed, failing_gates: ['mypy']` — rather than in a manifest entry the next attempt discards. **The runner documents that flow in its own comment**, and QE followed it rather than improvising around it.
+### The collision QE did not resolve on the merits
+
+Replaying `integration`'s newcomers onto the certified commit hit **a claim against a block**: Lane C had **withdrawn** TASK-440's `READY` — *"why the `READY` was wrong, and this office set it"* — and Lane A's claim was written against it.
+
+> **QE kept the block and did not silently restore the claim**, on Lane C's own standard: *"the queue must never hold the more optimistic of two defensible readings."* **The claim is not lost** — it is on the board and in `git log` — and **a note in the row itself says both lanes must settle it and that QE has not.**
+
+### Three attempts, two verdicts, one abort
+
+**Attempt 1** — aborted on Lane B's lease, third time today. **Attempt 2** — `smoke` failed, a verdict, and it produced B-133. **Attempt 3** — certified. **Both verdicts were real defects in one lane's slices**, and neither would have reached `main`.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3789 backend** *(+23)* · **1267 frontend** — **gated in stage 1** · **95.33%** · **392 invariants** · **794 files typed** · **36 contracts** · `tsc` clean and gated |
-| **Release** | **81 certification runs recorded, 78 certified** · `promoted == certified` ✓ · `--audit-main` clean · 🔴 **1 genuine gate failure** ([B-132](docs/BUGS.md)) · **1 abort on the lease** · ⚠️ **[B-131](docs/BUGS.md) measured, not closed** |
+| **Technical** | **3818 backend** *(+29)* · **1425 frontend** *(+158)* — **gated in stage 1** · **95.40%** · **392 invariants** · **796 files typed** · **36 contracts** · `tsc` clean and gated |
+| **Release** | **82 certification runs recorded, 79 certified** · `promoted == certified` ✓ · `--audit-main` clean · 🔴 **2 genuine gate failures** ([B-132](docs/BUGS.md), [B-133](docs/BUGS.md)) · **1 abort on the lease** |
 | **Architecture** | Reachability 0 doorless · migration `0040` **reversible, verified this cycle** · **a new bounded context, with its ADR, its ownership row, its RLS and its invariants all present** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ✅ **Direct.** A committee seat can be cited, and an account's observed attributes have a publisher |
-| **Process** | ⚡ **The gate split earned itself.** `mypy` belongs to certification and not to stage 1, by design — and it refused a slice `make validate` could not have seen. **One lane returned, two promoted, nothing held** |
+| **Customer Value** | ✅ **Direct, four ways.** A reachable triage queue, a page that says when it could not find out, a queryable workspace history, and design scales a guard enforces |
+| **Process** | ⚡ **Gates caught two real defects in one cycle**, both in one lane, both invisible to the gates that ran before them. ⚠️ **A claim/block collision was preserved rather than decided** — QE kept the safer reading and recorded that it did not adjudicate |
 
 ### Repository Health Trend
 
