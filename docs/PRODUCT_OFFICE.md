@@ -133,6 +133,21 @@
 
 **When a row has no journey** — a foundation slice, a `public/` contract, a design system — **the field says so and says why.** **[TASK-448](BACKLOG.md) is the worked example: a design system has no customer journey, and asserting one would be the *icon renders* test the directive forbids.**
 
+### ⛔ 0-F · Execution state is the lane's, never Product Office's — [D-122](DECISION_REGISTER.md)
+
+> **`CLAIMED` · `IN PROGRESS` · `IN VALIDATION` are set by the lane** (`CLAUDE.md` §20e). **Product Office sets `READY` and `REVISION REQUESTED` and nothing else on that axis.**
+
+⚠️ **This office broke it twice in one day, on [TASK-439](BACKLOG.md) and [TASK-441](BACKLOG.md)** — **writing `BLOCKED` over rows a lane had already claimed.** ⚡ **The rebase surfaced it as a conflict, which is the only reason it was caught**: `integration` said `CLAIMED`, this branch said `BLOCKED`, **and the lane was right on both.**
+
+| ✅ **What a finding against a claimed row looks like** | ⛔ **What it must not be** |
+|---|---|
+| **A row added beneath the status, naming what is wrong and who owns it** | **A rewritten `Status` field** |
+| **A `[[blocked]]` entry in the queue with the blocker named** | **An execution state the lane did not set** |
+
+> ## **A blocker is information the lane acts on. A status is a claim about what the lane is doing — and only the lane knows that.**
+
+⚡ **The findings themselves were correct and survive**: [C-228](LANE_COORDINATION.md) and [C-229](LANE_COORDINATION.md) are recorded on both rows. **Only the field they were written into was wrong.**
+
 ### 📐 0-E · Contract first, across a lane boundary — [D-121](DECISION_REGISTER.md)
 
 > ## ***"That should become the repository's normal implementation pattern."***
