@@ -780,7 +780,12 @@ Execution Buffer Health
   Why it blocks:           the mechanism, not the label
   Expected next action:    what happens next, and who does it
   Product Owner action?    YES with one sentence of why · or NO
+  Priority / Impact:       what resolving it actually buys — "unblocks 7
+                           implementation slices" · "restores Lane A execution"
+                           · "governance only" · "future roadmap only"
 ```
+
+> **The eighth field exists because the other seven describe a dependency and none of them ranks it** ([D-095](DECISION_REGISTER.md)). **Two items can both be `READY FOR PRODUCT DECISION`, both owned by the product owner, and one unblocks seven slices while the other tidies a document.**
 
 > ⚠️ **The fourth and fifth fields are the ones that get skipped, and they are the ones that matter.** **A report saying *"blocked on C-417"* names something; a report saying *"C-417 is `READY FOR PRODUCT DECISION` and blocks because the platform edit's proof lives in five files this lane may not touch"* lets somebody act without opening a second document.**
 
