@@ -237,17 +237,44 @@ def board_rows(board: str) -> list[dict[str, str]]:
     return out
 
 
-#: Backlog rows that render approved UI. **Named here rather than inferred from
-#: a title**, because a heuristic over titles would silently miscount the day
-#: somebody words one differently — and this figure is the product's headline
-#: gap, so a quiet miscount is the expensive kind.
-UI_WAVE_TASKS: frozenset[str] = frozenset({"TASK-417"})
+def ui_wave_tasks(ref: str) -> frozenset[str]:
+    """Backlog rows that render approved UI, **read from the rows themselves.**
+
+    A row declares its screen in an `| **Approved screen** |` field. This reads
+    that field; it does not guess from a title and it does not hold a list.
+
+    **This replaced a hardcoded `frozenset({"TASK-417"})` on 2026-08-06**, and
+    the comment above it was half right: it argued that *"a heuristic over
+    titles would silently miscount the day somebody words one differently — and
+    this figure is the product's headline gap, so a quiet miscount is the
+    expensive kind."* **Correct about titles, and it chose the wrong
+    alternative.** A declared field is neither a heuristic nor a list: the row
+    states what it renders, and a row that does not state it is not counted.
+
+    ⚠️ **The cost of the list was exactly the miscount it was written to
+    prevent.** By 2026-08-06 the backlog held **nine** screen rows and this set
+    named **one** — and not even one of the nine, because `TASK-417`, the first
+    screen ever built against the approved UI, carried no field naming its
+    screen. **The instrument measuring the product's headline gap could see
+    none of the screens.**
+
+    **The failure mode inverts, and that is the point**: a list goes stale
+    silently as rows are *added*; a field goes stale visibly, because a row
+    that forgets it is absent from a figure somebody reads every cycle.
+    """
+    out: set[str] = set()
+    for block in re.split(r"(?=^### TASK-\d+)", show(ref, "docs/BACKLOG.md"), flags=re.M):
+        head = re.match(r"^### (TASK-\d+)", block)
+        if head and re.search(r"^\| \*\*Approved screen\*\* \|", block, re.M):
+            out.add(head.group(1))
+    return frozenset(out)
 
 
-def _ui_implemented(tk: list[tuple[str, str, str]]) -> int:
+def _ui_implemented(tk: list[tuple[str, str, str]], ref: str) -> int:
     """Wave rows a lane has finished — past `CLAIMED`, whatever comes next."""
     done = ("IN VALIDATION", "VERIFIED", "CERTIFIED", "PROMOTED", "DONE")
-    return sum(1 for i, _, s in tk if i in UI_WAVE_TASKS and s in done)
+    wave = ui_wave_tasks(ref)
+    return sum(1 for i, _, s in tk if i in wave and s in done)
 
 
 def _ui_integrated() -> int:
@@ -264,8 +291,9 @@ def _ui_integrated() -> int:
     """
     started = ("CLAIMED", "IN PROGRESS", "IN VALIDATION", "CHANGES REQUESTED",
                "VERIFIED", "CERTIFIED", "PROMOTED", "DONE")
+    wave = ui_wave_tasks("origin/main")
     return sum(1 for i, _, s in tasks("origin/main")
-               if i in UI_WAVE_TASKS and s in started)
+               if i in wave and s in started)
 
 
 def bar(pct: int, width: int = 10) -> str:
@@ -314,7 +342,7 @@ def build(ref: str, since: str | None = None) -> str:
     a(f"  Measured        {ref} @ {head}   (main @ {main_head})")
     a(f"  Modules {len(modules)}   Epics {len(epics)}   Tasks {len(tk)}   ADRs {len(adrs)}")
     a(f"  Endpoints {endpoints}   Frontend routes {routes}   Active lanes {len(lanes)}")
-    a(f"  Approved UI screens 26   Implemented {_ui_implemented(tk)}   (wave rows in BACKLOG.md)")
+    a(f"  Approved UI screens 26   Implemented {_ui_implemented(tk, ref)}   (wave rows in BACKLOG.md)")
     a(f"  Open blockers on the board: {', '.join(blockers) if blockers else 'none'}")
     a(f"  Repository health          {J}")
     a(f"  Overall implementation     {J}  (estimate)")
@@ -468,7 +496,7 @@ def build(ref: str, since: str | None = None) -> str:
     # C-213 and C-412 both were, committed here by the office that closed them.
     # **Counted from the wave rows instead**, so the day a wave completes this
     # line changes without anybody remembering to change it.
-    a(f"  Approved 26 · Implemented {_ui_implemented(tk)} · "
+    a(f"  Approved 26 · Implemented {_ui_implemented(tk, ref)} · "
       f"Integrated {_ui_integrated()} · QE certified {J}")
     a("  Implemented counts a UI wave row past CLAIMED at the measured ref.")
     a("  Integrated counts it present on `origin/main` — **the code arrives**")
