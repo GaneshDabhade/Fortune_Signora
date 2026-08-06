@@ -230,6 +230,30 @@ export interface SearchResult {
   is_renamed: boolean;
 }
 
+/**
+ * Whether Signora looked for this kind of thing, and if not why not.
+ *
+ * **Read before `results`, always.** *"The absence of results and the absence
+ * of the group represent different business meanings"* — product owner,
+ * 2026-08-05 — so an empty list means nothing until this says which emptiness
+ * it is.
+ */
+export type SearchCoverage = 'searched' | 'not_applicable' | 'not_requested';
+
+/**
+ * One kind of thing, what Signora did about it, and what it found.
+ *
+ * **The group is present whether or not it has results.** A surface that
+ * rendered `results` without reading `coverage` would collapse *"nothing
+ * matched"* into *"we did not look"*, which is the distinction the group
+ * exists to keep.
+ */
+export interface SearchGroup {
+  result_type: SearchResultType;
+  coverage: SearchCoverage;
+  results: SearchResult[];
+}
+
 /** What a reading implies commercially. **Never a sign in the arithmetic** —
  * two accounts can score the same and mean opposite things, and this is the
  * only place that difference survives. */

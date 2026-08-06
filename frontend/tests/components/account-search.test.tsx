@@ -54,8 +54,32 @@ function result(id: string, name: string | null, matched?: string): SearchResult
   };
 }
 
+/**
+ * What the API actually returns — **groups, not a flat list.**
+ *
+ * ⚠️ **This helper used to return `rows` directly, and that is how
+ * [B-208] survived**: the component was tested against a shape the endpoint
+ * stopped sending at TASK-408, so the surface threw on the first real match
+ * and every test passed. **A mock is a claim about the contract**, and this
+ * one was wrong for as long as nobody made it match.
+ */
 function found(...rows: SearchResult[]) {
-  return { data: rows, isFetching: false };
+  return {
+    data: [
+      { result_type: 'company' as const, coverage: 'searched' as const, results: rows },
+    ],
+    isFetching: false,
+  };
+}
+
+/** A group Signora did not search, which is a different answer from one that
+ * matched nothing. */
+function group(
+  result_type: 'company' | 'technology',
+  coverage: 'searched' | 'not_applicable' | 'not_requested',
+  ...rows: SearchResult[]
+) {
+  return { result_type, coverage, results: rows };
 }
 
 beforeEach(() => {
@@ -153,7 +177,7 @@ describe('finding an account by name', () => {
     await userEvent.type(screen.getByRole('combobox'), 'zzzz');
 
     expect(await screen.findByRole('status')).toHaveTextContent(
-      'No account here is called “zzzz”',
+      'Nothing in accounts matches “zzzz”',
     );
   });
 
@@ -192,3 +216,79 @@ describe('finding an account by name', () => {
     expect(container).toBeEmptyDOMElement();
   });
 });
+
+describe('four kinds of answer, and each emptiness is its own — TASK-460, B-208', () => {
+  it('renders the groups the API actually sends', async () => {
+    /** ⚠️ **[B-208]: it did not.** The endpoint has returned groups since
+     * TASK-408 and this surface read them as results, so `row.account` was
+     * `undefined` and the dropdown threw on the first match. Nothing caught
+     * it: `tsc` saw a type parameter on a JSON call, which is a claim rather
+     * than a check, and the mock here asserted the shape that preceded the
+     * change. */
+    const user = userEvent.setup();
+    search.mockReturnValue({
+      data: [
+        group('company', 'searched', result('acc-1', 'Databricks, Inc.')),
+        group('technology', 'not_applicable'),
+      ],
+      isFetching: false,
+    });
+    render(<AccountSearch />);
+
+    await user.type(screen.getByRole('combobox'), 'data');
+
+    expect(screen.getByText('Accounts')).toBeInTheDocument();
+    expect(screen.getByText('Databricks, Inc.')).toBeInTheDocument();
+  });
+
+  it('a kind that was not searched says so, rather than looking empty', async () => {
+    /** *"The absence of results and the absence of the group represent
+     * different business meanings"* — product owner, 2026-08-05. **Reading
+     * `results` without `coverage` collapses the two**, which is the exact
+     * thing the group exists to prevent. */
+    const user = userEvent.setup();
+    search.mockReturnValue({
+      data: [group('technology', 'not_applicable')],
+      isFetching: false,
+    });
+    render(<AccountSearch />);
+
+    await user.type(screen.getByRole('combobox'), 'data');
+
+    expect(screen.getByText(/does not search technologies by name/i)).toBeInTheDocument();
+  });
+
+  it('a kind that matched nothing says something different again', async () => {
+    const user = userEvent.setup();
+    search.mockReturnValue({
+      data: [group('technology', 'searched')],
+      isFetching: false,
+    });
+    render(<AccountSearch />);
+
+    await user.type(screen.getByRole('combobox'), 'data');
+
+    expect(screen.getByText(/Nothing in technologies matches/i)).toBeInTheDocument();
+  });
+
+  it('the keyboard moves through matches and never through headings', async () => {
+    /** **The index counts matches, not rendered rows.** A heading that could
+     * take focus would make the arrow keys count things a customer cannot
+     * choose. */
+    const user = userEvent.setup();
+    search.mockReturnValue({
+      data: [
+        group('company', 'searched', result('acc-1', 'Alpha'), result('acc-2', 'Beta')),
+        group('technology', 'not_applicable'),
+      ],
+      isFetching: false,
+    });
+    render(<AccountSearch />);
+
+    await user.type(screen.getByRole('combobox'), 'a');
+    await user.keyboard('{ArrowDown}{Enter}');
+
+    expect(push).toHaveBeenCalledWith('/accounts/acc-2');
+  });
+});
+

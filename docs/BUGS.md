@@ -206,6 +206,27 @@ sed -n '2042,2044p' docs/BUGS.md
 **`unclosed_fence(text) -> int | None`** in `infra/registers.py`, checked by `state-check` across all four registers **before** the marker check, so a reader learns the structure is broken rather than reading a conclusion drawn from broken structure. **Five tests**, including one asserting the blindness directly — **the only half no assertion about `conflict_markers` could catch, since its answer is empty either way.**
 
 **What it does not fix.** The register is still hand-merged, so the **next** corruption is a different shape again. ⛔ **This is now the third time that sentence has been written in this file**, and RC-4's actual answer remains ADR-0039's to propose and the product owner's to schedule.
+### B-208 · Global Search crashes the moment it finds anything
+| **Module** | **Product Surface** — `components/intelligence/account-search.tsx` · `lib/query/hooks/search.ts` |
+| **Current assignee** | **Lane A** — Product Surface is its in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 · **Wrong behaviour a customer hits immediately.** [MC-1](PRODUCT_EXPERIENCE.md) calls search *"the first thing every evaluator types"* |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-06, inside [TASK-460](BACKLOG.md), which owns this surface. **`VERIFIED` is QE's** |
+| **Found** | 2026-08-06 by Lane A, running TASK-460's reuse audit before writing code |
+**Steps to reproduce.** Sign in, type three characters of a known company into the header search.
+**Expected.** A list of matches.
+**Actual.** The dropdown throws. `key={row.account.account_id}` reads `.account_id` of `undefined`.
+### The two sides of one contract disagree, and each is internally consistent
+| **The API returns** | `list[SearchGroupResponse]` — **one group per `EntityKind`**, each with `result_type`, `coverage` and `results` |
+| **The hook asks for** | `SearchResult[]` — **a flat list**, the shape that preceded [TASK-408](BACKLOG.md) |
+| **The component does** | `rows.map((row) => row.account.account_id)` — **so every element is a group being read as a result** |
+**`TASK-408` changed the response to groups and the frontend was never moved.** The backend's own test helper records the change and reads through it:
+> *"**Search returns groups from TASK-408**, one per `EntityKind`, each saying whether Signora looked. These tests were written against the flat list that preceded the ruling."*
+### Why three gates all missed it
+| **`tsc`** | The shape is asserted at the fetch — `apiRequest<SearchResult[]>` — and **a type parameter on a JSON call is a claim, not a check** |
+| **The frontend test** | Mocks `useAccountSearch` itself and feeds it flat `SearchResult` objects. **It tests the component against a shape the API does not return** |
+| **The backend test** | Flattens groups through `_rows()` before asserting, deliberately and reasonably — it is testing matches, not grouping |
+> **Each gate was reasonable alone.** ⚡ **What nothing owned was the seam**: a test that mocks the hook cannot see the contract, and a test that flattens the response cannot see the client. **The one place the two shapes meet is a browser, and no test runs there** — `e2e/` is Playwright and search is not in it.
+**Fix.** [TASK-460](BACKLOG.md) is *"the existing account search raised to the approved specification: typed grouping across the object kinds that exist"* — **so the correct fix and the claimed slice are the same work**, and the grouping the API already sends is now what the surface renders.
 
 ### B-207 · An expired score renders as *no score* — **withdrawn, and the mistake is the interesting part**
 | | |

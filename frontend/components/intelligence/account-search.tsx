@@ -7,6 +7,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { MINIMUM_QUERY, useAccountSearch } from '@/lib/query/hooks/search';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { cn } from '@/lib/design/cn';
+import type { SearchCoverage, SearchResultType } from '@/lib/api/types';
 
 /**
  * *"Show me Databricks."* — A1, and the second question of every evaluation.
@@ -56,9 +57,12 @@ export function AccountSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
   const listId = useId();
 
-  const { data: results, isFetching } = useAccountSearch(workspaceId, text);
-  const rows = results ?? [];
+  const { data: groups, isFetching } = useAccountSearch(workspaceId, text);
   const asked = text.trim().length >= MINIMUM_QUERY;
+  /** **Every match, in group order — the keyboard's view of the list.**
+   * Arrow keys move through results and never through headings, so the index
+   * `active` holds must count matches rather than rendered rows. */
+  const rows = (groups ?? []).flatMap((group) => group.results);
 
   useEffect(() => {
     // **⌘K, and Ctrl+K for everyone not on a Mac.** Bound on the document
@@ -144,40 +148,66 @@ export function AccountSearch() {
           aria-label="Accounts"
           className="absolute left-0 right-0 top-9 z-20 overflow-hidden rounded border border-border bg-surface shadow-lg"
         >
-          {rows.map((row, index) => (
-            <button
-              key={row.account.account_id}
-              type="button"
-              role="option"
-              aria-selected={index === active}
-              onMouseEnter={() => setActive(index)}
-              onClick={() => go(row.account.account_id)}
-              className={cn(
-                'block w-full px-3 py-2 text-left text-sm text-content',
-                index === active && 'bg-surface-raised',
-              )}
-            >
-              {/* **An account nobody has named is still a result.** It is a
-                  company the pipeline is watching, and hiding it would make
-                  search quietly disagree with the list that shows it. */}
-              <span className="block truncate">
-                {row.account.name ?? (
-                  <span className="text-content-subtle">Unnamed account</span>
-                )}
-              </span>
-              {/* **Only the rows that need explaining.** `is_renamed` is the
-                  server's answer to *"did this match under something other
-                  than what you are reading?"*, and it is false for almost
-                  every row. */}
-              {row.is_renamed ? (
-                <span className="block truncate text-xs text-content-muted">
-                  matched “{row.matched_name}”
-                </span>
+          {/* **Grouped by kind, and the group is drawn whether or not it
+              matched** — *"the absence of results and the absence of the group
+              represent different business meanings"* (product owner,
+              2026-08-05). **B-208**: this surface read the API's groups as if
+              they were results and threw on the first match; the grouping the
+              server has sent since TASK-408 is now what is rendered. */}
+          {(groups ?? []).map((group) => (
+            <div key={group.result_type}>
+              <p className="px-3 pt-2 text-xs font-medium uppercase tracking-wide text-content-subtle">
+                {KIND_LABEL[group.result_type]}
+              </p>
+              {group.results.length === 0 ? (
+                <p role="status" className="px-3 pb-2 pt-1 text-sm text-content-muted">
+                  {/* **`coverage` is read before `results`, always.** An empty
+                      list means nothing until this says which emptiness it is —
+                      collapsing *"nothing matched"* into *"we did not look"* is
+                      exactly what the group exists to prevent. */}
+                  {coverageSentence(group.coverage, group.result_type, text.trim())}
+                </p>
               ) : null}
-            </button>
+              {group.results.map((row) => {
+                const index = rows.indexOf(row);
+                return (
+                  <button
+                    key={row.account.account_id}
+                    type="button"
+                    role="option"
+                    aria-selected={index === active}
+                    onMouseEnter={() => setActive(index)}
+                    onClick={() => go(row.account.account_id)}
+                    className={cn(
+                      'block w-full px-3 py-2 text-left text-sm text-content',
+                      index === active && 'bg-surface-raised',
+                    )}
+                  >
+                    {/* **An account nobody has named is still a result.** It is
+                        a company the pipeline is watching, and hiding it would
+                        make search quietly disagree with the list that shows
+                        it. */}
+                    <span className="block truncate">
+                      {row.account.name ?? (
+                        <span className="text-content-subtle">Unnamed account</span>
+                      )}
+                    </span>
+                    {/* **Only the rows that need explaining.** `is_renamed` is
+                        the server's answer to *"did this match under something
+                        other than what you are reading?"*, and it is false for
+                        almost every row. */}
+                    {row.is_renamed ? (
+                      <span className="block truncate text-xs text-content-muted">
+                        matched “{row.matched_name}”
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
           ))}
 
-          {rows.length === 0 ? (
+          {rows.length === 0 && (groups ?? []).length === 0 ? (
             <p className="px-3 py-2 text-sm text-content-muted" role="status">
               {isFetching ? 'Looking…' : `No account here is called “${text.trim()}”`}
             </p>
@@ -186,4 +216,33 @@ export function AccountSearch() {
       ) : null}
     </div>
   );
+}
+
+/** What each kind is called on screen. **The customer's word, not
+ * `EntityKind`'s** — a heading reading `company` would be the data model
+ * showing through (ADR-0034). */
+const KIND_LABEL: Record<SearchResultType, string> = {
+  company: 'Accounts',
+  technology: 'Technologies',
+};
+
+/**
+ * Which emptiness this is.
+ *
+ * **Three states and three sentences**, because they ask a customer to do
+ * different things: search for something else · stop expecting this kind ·
+ * change what you asked for.
+ */
+function coverageSentence(
+  coverage: SearchCoverage,
+  kind: SearchResultType,
+  query: string,
+): string {
+  if (coverage === 'not_applicable') {
+    return `Signora does not search ${KIND_LABEL[kind].toLowerCase()} by name.`;
+  }
+  if (coverage === 'not_requested') {
+    return `${KIND_LABEL[kind]} were not included in this search.`;
+  }
+  return `Nothing in ${KIND_LABEL[kind].toLowerCase()} matches “${query}”.`;
 }

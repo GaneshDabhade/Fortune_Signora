@@ -11,7 +11,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api/client';
-import type { SearchResult } from '@/lib/api/types';
+import type { SearchGroup } from '@/lib/api/types';
 import { queryKeys } from '@/lib/query/keys';
 
 /** The server refuses one character, and so does this — a customer who has
@@ -45,7 +45,7 @@ export function useAccountSearch(workspaceId: string | null, text: string) {
     placeholderData: keepPreviousData,
     queryFn: () => {
       const query = new URLSearchParams({ q: trimmed, limit: String(RESULT_LIMIT) });
-      return apiRequest<SearchResult[]>(`/workspaces/${workspaceId}/account-search?${query}`);
+      return apiRequest<SearchGroup[]>(`/workspaces/${workspaceId}/account-search?${query}`);
     },
   });
 }
