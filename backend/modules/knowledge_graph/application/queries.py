@@ -240,6 +240,20 @@ class SearchCoverage(StrEnum):
 SEARCH_COVERAGE: dict[EntityKind, "SearchCoverage"] = {
     EntityKind.COMPANY: SearchCoverage.SEARCHED,
     EntityKind.TECHNOLOGY: SearchCoverage.NOT_APPLICABLE,
+    # **`NOT_APPLICABLE`, and it is a product statement rather than a gap.**
+    # Search matches a legal name; a `Person` in this repository has none by
+    # specification — C-221 narrows the People domain to *"role-based and
+    # organization-level intelligence"*, with no person's name anywhere.
+    # **So the honest sentence is "Signora does not search people by name"**,
+    # which is exactly what this coverage renders, and it stays correct even
+    # if TASK-429 later supplies a provider identifier: an identifier is not
+    # a name either.
+    #
+    # ⚡ **Added because `EntityKind.PERSON` was added and the suite refused
+    # the omission** — `test_every_kind_the_graph_knows_gets_a_group` failed
+    # on the same commit, which is the guard doing precisely what TASK-408's
+    # ruling asked of it.
+    EntityKind.PERSON: SearchCoverage.NOT_APPLICABLE,
 }
 
 

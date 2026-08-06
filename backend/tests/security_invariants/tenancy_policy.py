@@ -78,6 +78,19 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # Signora concluded from evidence, and a person disagreeing with it
         # later has not changed what was concluded.
         "signal_resolution",
+        # The People bounded context (TASK-427), migration 0040. **Two tables,
+        # and `person` is deliberately almost empty** — an identity with no
+        # name, no contact channel and no provider identifier (C-221). It is
+        # tenant-owned rather than shared because two customers tracking the
+        # same real human hold two unrelated rows: one workspace's evidence
+        # must never become another's.
+        "person",
+        # Where somebody has worked, as an interval that closes rather than a
+        # field that is overwritten (ADR-0400). **The one tenant table in this
+        # module that carries an UPDATE grant**, and the reason is in the
+        # migration: `ended_on` moves exactly once, from NULL to a date, and
+        # nothing else in the row is ever touched.
+        "affiliation",
         # Buying Score Engine (M5B), migration 0013. `workspace_scoring_model`
         # is the **second** customer-authored table — a workspace's own
         # weighting, which cannot be regenerated from anything.
@@ -309,6 +322,12 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "signal",
         "signal_profile",
         "signal_resolution",
+        # `person` holds no mutable fact at all — it is an id and its tenant —
+        # so it takes the ordinary immutable grant. **`affiliation` is
+        # deliberately absent from this set**: closing an interval is the one
+        # legitimate in-place change in the module, and it is not an edit of a
+        # fact. See migration 0040, which argues it rather than assuming it.
+        "person",
         "buying_score",
         "workspace_scoring_model",
         "opportunity",

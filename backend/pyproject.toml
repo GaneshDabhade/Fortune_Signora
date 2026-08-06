@@ -660,6 +660,32 @@ forbidden_modules = [
 # computing, and the one boundary it has would be gone. It is allowed exactly
 # one downstream neighbour, and only through `public/`.
 [[tool.importlinter.contracts]]
+name = "people identifies; it never judges"
+type = "forbidden"
+source_modules = ["modules.people"]
+forbidden_modules = [
+    # **The boundary in one line** (ADR-0400): *"People knows who somebody is
+    # and where they have worked. It never decides what any of that means
+    # about a deal."* Every module below makes a judgement, and a People
+    # module that could read one would start making them — which is the
+    # failure `commercial_profile` and `timeline` each have a contract to
+    # prevent, arriving from a third direction.
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.ai_platform",
+    "modules.ai_reasoning_engine",
+    "modules.ai_research_engine",
+    "modules.commercial_profile",
+    # **And not `workspace_tenancy` either, which is the load-bearing one.**
+    # A `Member` is a customer's employee using Signora; a `Person` is
+    # somebody at a target account who has never heard of Signora. Different
+    # lawful basis, different lifecycle. **Making them joinable is the defect
+    # this line exists to make impossible.**
+    "modules.workspace_tenancy",
+]
+
+[[tool.importlinter.contracts]]
 name = "commercial_profile declares; it never reads the pipeline"
 type = "forbidden"
 source_modules = ["modules.commercial_profile"]

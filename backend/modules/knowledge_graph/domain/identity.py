@@ -29,13 +29,28 @@ from uuid import UUID, uuid4
 class EntityKind(StrEnum):
     """What kinds of thing the graph knows about.
 
-    Person is deliberately absent: claims carry role changes but no person
-    *identifier*, so there is no identity to resolve. Adding people now
-    would mean inventing one.
+    ⚠️ **`PERSON` was absent until 2026-08-06, and the reason it was absent is
+    still true.** This docstring read: *"claims carry role changes but no
+    person identifier, so there is no identity to resolve. Adding people now
+    would mean inventing one."* **Nothing has changed about the claims** — no
+    provider supplies a person identifier, and whether one could is ❓1 of
+    [ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md).
+
+    **What changed is that a person no longer needs resolving to be useful.**
+    The `people` context mints an *anonymous* identity so that an affiliation
+    — *person × company × title × interval* — has a subject; it resolves
+    nothing, because there is nothing to resolve against. **`PERSON` is
+    therefore a kind this graph names and does not bind**: no
+    `identity_binding` row will ever carry it until a provider supplies an
+    identifier, and that is [TASK-429](../../../../docs/BACKLOG.md).
+
+    **Stated rather than left to be discovered**, because a member that
+    resolution never produces looks like a bug to whoever finds it next.
     """
 
     COMPANY = "company"
     TECHNOLOGY = "technology"
+    PERSON = "person"
 
 
 class IdentityState(StrEnum):
