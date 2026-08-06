@@ -133,6 +133,24 @@
 
 **When a row has no journey** — a foundation slice, a `public/` contract, a design system — **the field says so and says why.** **[TASK-448](BACKLOG.md) is the worked example: a design system has no customer journey, and asserting one would be the *icon renders* test the directive forbids.**
 
+### 📐 0-E · Contract first, across a lane boundary — [D-121](DECISION_REGISTER.md)
+
+> ## ***"That should become the repository's normal implementation pattern."***
+
+**Whenever a published-but-unimplemented contract spans two lanes, the default is four steps and no negotiation:**
+
+**① publish the contract · ② assign it to the *owning* lane · ③ sequence consumers behind it · ④ ⛔ avoid cross-lane ownership changes unless absolutely unavoidable.**
+
+⚡ **This is the cheaper reading of a rule that appears to say the opposite.** **§20e states *two modules with a published-but-unbuilt contract between them belong to one lane*, which reads as a reassignment instruction.** **Its problem is the contract being *unbuilt*, not the ownership being split** — **so building it first makes the boundary ordinary and moves nobody.**
+
+| | |
+|---|---|
+| **Registered as** | **[P-E](DOMAIN_DISCOVERY_REGISTER.md)** in the pattern table, with four instances |
+| ⚠️ **Why it needed naming rather than inventing** | **The practice already existed three times** — [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md), [455 §4](architecture/455-context-definitions-r02-r03.md) slice 1, and [TASK-446](BACKLOG.md). ⛔ **What was missing was that it was not the *default*** — so each occurrence was re-argued from scratch, and [C-213](LANE_COORDINATION.md) cost two days when nobody argued it at all |
+| ⚡ **The tell that it applies** | **A slice's `Module` field names modules from more than one lane.** **That is the moment to decompose, and it is cheap only *before* the row is claimed** — which is what Lane B demonstrated on [TASK-428](BACKLOG.md) |
+
+⛔ **It does not license splitting a slice at any convenient seam.** **The split is *at the contract*, and slice 1 is the contract alone** — [D-091](DECISION_REGISTER.md)'s reasoning: a consumer can compile, type-check and test against a published port before a row is persisted, and `lint-imports` proves the coupling never forms.
+
 ### 🚪 0-D · A screen row states its door and its list — [D-117](DECISION_REGISTER.md)
 
 > ## ⛔ **Every screen row answers four questions before it may be `READY`. Three of them this office had never asked.**

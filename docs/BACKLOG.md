@@ -594,7 +594,7 @@
 | **Module** | **`ai_reasoning_engine` prompts — Lane B** |
 | **Status** | ⏸️ **`SEQUENCED`** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)** |
 | ⚡ **Why this row exists, and it corrects this office** | **Lane C reported to the product owner that *the credential gates TASK-202's prompt release, never its start*.** ⚠️ **Lane B's measurement is more precise and this row is the difference**: **the credential lets the work *start*; a prompt revision is the actual first slice, and it had no row.** ⛔ **[TASK-202](#task-202--epic-g--copilot) does not finish without it** |
-| **Delivers** | **A revision of `reasoning@1` that can pass protocol 2**, and its evaluation record |
+| **Delivers** | **`reasoning@2` — a revision that can pass protocol 2 — and its evaluation record.** ⚡ **Sequence ruled [D-121](DECISION_REGISTER.md): create `@2` → hosted evaluation → promotion *if it passes*.** ⛔ ***"Treat `reasoning@1` as immutable history. Do not edit or reuse it."*** |
 | ⚠️ **The rule it must not break** | **§10: a released version is immutable** — *"a change is a new version, never an edit, because editing one silently invalidates every result that claims it."* ⛔ **This is `reasoning@2`, not a repair of `@1`** |
 
 ### TASK-456 · The signal catalog explains itself to a customer
