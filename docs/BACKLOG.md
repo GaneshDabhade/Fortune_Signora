@@ -540,6 +540,36 @@
 | **Delivered** | **`POST /workspaces/{id}/membership/leave`** — no target, no body, no reason. The membership is found from the workspace and the verified token, so **there is no identifier to substitute and no ownership check that could be written wrongly.** The last-owner refusal is the domain's, reused from `Membership.end` rather than restated. 🔴 **The slice found [B-206](BUGS.md) in its own module**: `WorkspaceQueryService.get_membership` — the request-time membership check — **never filtered ended memberships, so removal did not revoke access.** `SqlMembershipRepository.get` did filter, and documented that exact outcome as its reason: two reads of one fact, and authorization consulted the unfiltered one. Fixed, with end-to-end regression tests for both the removed and the departed case. 🟠 **`LastOwnerCannotLeaveError` was mapped to no status code**, so *"Make somebody else an owner first"* reached customers as **500 "An unexpected error occurred."** Now `409`, which repairs `remove` and `demote` too. **`MembershipResponse` gained `ended_at`**, which `remove`'s docstring already claimed. **`make validate` PASSED — 3651 tests, clean migrate, clean `tsc`** |
 | **Governance** | 🟠 — the module's own layers and a route, **announced in the commit message.** **No ADR: the model question was C-207 and it is closed** |
 
+### TASK-440 · Companies — the account list a seller actually works
+
+| | |
+|---|---|
+| **Discovery** | **[446](architecture/446-companies-traceability-audit.md)** — Companies traced to its domain |
+| **Approved screen** | **Companies** — [410](architecture/410-approved-ui-specification.md), *"8,412 rows"* |
+| **Module** | **Product Surface — Lane A** *(`transition = "settled"`)*. **Reads only published contracts** |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06, [D-105](DECISION_REGISTER.md).** **Fitness (§20e); placed last, reordering nothing** |
+| ⚡ **Why it exists at all** | **Companies had *no backlog row of any kind*** — the only approved screen with none. **[446](architecture/446-companies-traceability-audit.md) audited it, found five of nine elements built, and nothing decomposed that into work a lane could claim.** **That gap is the finding [D-105](DECISION_REGISTER.md) asks this office to close** |
+| ✅ **Delivers — five elements, all built, none rebuilt** | **The account table** — `GET /accounts`, cursor-paginated, with `OwnerScope` *"applied in the page query"* · **Card view** — *"no backend at all. A rendering, not a capability"* · **Owner filter** — `OwnerScope` *(`ALL` · `MINE` · `UNASSIGNED`)* · **Score, trend and contested** — `BuyingScore` + the Contribution Ledger · ⚡ **Search by name** — the `account-search` projection, and [MC-1](PRODUCT_EXPERIENCE.md) calls it *"the first thing every evaluator types"* |
+| **Customer journey** | ⚡ **ICP creation → *account discovery* → account analysis.** **This is the middle step, and the third is already with QE** *([TASK-417](#task-417--account-360-renders-what-the-platform-already-knows))*. **The first is blocked on [C-332](LANE_COORDINATION.md)** — so this slice makes two of three journey steps real |
+| ⛔ **Out of scope, named rather than discovered late** | **Bulk actions** — [R-03](DOMAIN_DISCOVERY_REGISTER.md); *"the approval has no representation"* · **Export with field-level permissions** — [R-13](DOMAIN_DISCOVERY_REGISTER.md), **unexpressible today** · **Import** — 🔴 and [446 §3](architecture/446-companies-traceability-audit.md) challenges it: *"it must not be a new door"* · ⬜ **Segments** — [TASK-433](#task-433--segment-already-means-something-else), and the naming question is unruled. **All four are additive; none changes what ships here** |
+| **Change Budget** | 🟢 **Render only.** No endpoint, no event, no migration, no new table |
+| ⚠️ **The rule it must not break** | **[P-A](DOMAIN_DISCOVERY_REGISTER.md) · [C-226](LANE_COORDINATION.md)** — **a failed read must never render as an empty account list.** **8,412 rows and *zero* look identical to a seller when the difference is an outage** |
+
+### TASK-441 · Opportunity Intelligence — the pursuit, and how it got here
+
+| | |
+|---|---|
+| **Discovery** | **[453](architecture/453-opportunity-intelligence-traceability-audit.md)** |
+| **Approved screen** | **Opportunity Intelligence** — [410](architecture/410-approved-ui-specification.md) |
+| **Module** | **Product Surface — Lane A.** **Reads `opportunity_engine` and `buying_score_engine` through `public/`** |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06, [D-105](DECISION_REGISTER.md).** **Fitness; placed last** |
+| ⚡ **Why this ranks above the other unbuilt screens** | ⚡ **It is the most complete approved screen in the repository, measured**: **permissions ✅ *complete* — `Resource.OPPORTUNITY`, `read` and `update`, with a Security Invariant pinning the boundary** · **audit ✅ — `opportunity_state` *is* the audit, append-only, attributed, reasoned** · **business events ⛔ none needed, and [453](architecture/453-opportunity-intelligence-traceability-audit.md) says *correctly*: [R-14](DOMAIN_DISCOVERY_REGISTER.md) does not fire because *"reading is not deciding"*.** **One 🔴 in the whole screen** |
+| ✅ **Delivers** | **Score and its expiry** — ⚡ *"and it is [P-A](DOMAIN_DISCOVERY_REGISTER.md) implemented"* · **Stage and its history** — `opportunity_state`, append-only, with sequence and actor · **Competitors** — `DeclaredCompetitors`, **shipped whole**, [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) |
+| **Customer journey** | **opportunity identification → account intelligence → engagement.** **The first two are built; this renders them** |
+| ⛔ **Out of scope** | **Quarter aggregates** — 🔴, **and shared with the Executive Dashboard**, which is why [412](architecture/412-backend-capability-matrix.md) treats it as one capability rather than two screens' work. ⛔ **Do not build it here** · **[R-03](DOMAIN_DISCOVERY_REGISTER.md) approval · [R-07](DOMAIN_DISCOVERY_REGISTER.md) audit *query* surface** |
+| **Change Budget** | 🟢 **Render only** |
+| ⚠️ **The rule it must not break** | **The score carries an expiry and [453](architecture/453-opportunity-intelligence-traceability-audit.md) calls it [P-A](DOMAIN_DISCOVERY_REGISTER.md) implemented.** ⛔ **An expired score must render as expired, never as absent and never as current** |
+
 ### TASK-439 · The Signal Center — the triage queue a seller actually works
 
 | | |

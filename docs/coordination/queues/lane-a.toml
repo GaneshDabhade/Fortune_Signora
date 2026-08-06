@@ -51,7 +51,7 @@ depth_target = 5
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-432"
 next    = "TASK-439"
-future  = []
+future  = ["TASK-441", "TASK-440"]
 
 # ⚠️ **Rewritten 2026-08-05. This file declared 5 eligible and none of the five
 # was startable.** Every row is now checked against BACKLOG.md rather than
@@ -88,8 +88,23 @@ future  = []
 # **`eligible` means *claimable now*, and TASK-400 is already claimed** — so
 # the count stays 0 and the narrative changes. **Both facts belong here,
 # because the number alone reads as idleness.**
-eligible_count = 2
-shortfall      = 3
+# ✅ 2026-08-06 · D-105 — this lane goes from 0 claimable to 4 in one day, and
+# every one is an approved SCREEN rather than a capability. The finding that
+# produced them: most approved screens had backend rows and no RENDER row, so
+# the work was prepared and never made claimable. Decomposing approved scope
+# is Lane C's under §20e; auditing further screens is not what was missing.
+#
+# ⚠️ ORDERED BY READINESS, NOT BY VALUE — and the order is fitness only:
+#   TASK-432  the event Signal Center needs, and three other consumers want
+#   TASK-439  Signal Center — both its blockers already in flight
+#   TASK-441  Opportunity Intelligence — the MOST complete approved screen
+#             measured: permissions ✅ complete, audit ✅, no events needed,
+#             ONE 🔴 in the whole screen
+#   TASK-440  Companies — 5 of 9 built; the only approved screen that had no
+#             backlog row of any kind
+# ⛔ Position is the product owner's and every one of these can be reordered.
+eligible_count = 4
+shortfall      = 1
 
 [rationale]
 "TASK-439" = "⚡ THE SIGNAL CENTER — the first approved screen this lane ships under D-104, and it is a RENDER. 447 traced ten elements: 6 built, 2 amber, 2 red — and BOTH reds are already moving: Resource.SIGNAL is TASK-405 (IN VALIDATION, with QE) and signal.resolved is TASK-432 (above, this lane's). No other approved screen has both blockers in flight. Already built and not to be rebuilt: the aggregate and its scoring; Actioned/Assigned/Snoozed/Dismissed/Resolution, all four; Snoozed.until as a read-time predicate; DismissalReason; and the triage counts in lib/state/triage.ts, which partition and never re-rank. ⛔ OUT OF SCOPE, named so it is not discovered late: the readable audit surface (R-07, 🟡) and rule precision (downstream of TASK-432 — without signal.resolved there is nothing to aggregate). 🟢 Render only: no endpoint, no event, no migration. If a section needs one, raise it. ⚠️ AND THE ONE RULE: a failed read must never render as an empty queue — P-A and C-226. 'Nothing to triage' and 'we could not find out' are opposite messages to a seller, and this is the screen where the difference costs most. Sequence after TASK-405 promotes; TASK-432 may run in parallel."
