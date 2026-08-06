@@ -29,10 +29,19 @@ from modules.knowledge_graph.domain.identity import (
     ResolutionReason,
     ResolutionRule,
 )
+from modules.knowledge_graph.domain.attributes import (
+    ResolvedAttribute,
+    ValueAgreement,
+)
 from modules.knowledge_graph.domain.naming import NameAgreement, SelectedName, select_name
+from modules.knowledge_graph.public.attributes import (
+    AccountAttributes,
+    AccountAttributesReader,
+)
 
 __all__ = [
-    "USES_TECHNOLOGY",
+    "AccountAttributes",
+    "AccountAttributesReader",
     "AccountIdentity",
     "ClaimSet",
     "Entity",
@@ -40,14 +49,17 @@ __all__ = [
     "EntityKind",
     "GraphQueries",
     "IdentityBinding",
-    "NameAgreement",
     "IdentityState",
     "MatchStrength",
+    "NameAgreement",
     "Relationship",
     "ResolutionDecision",
     "ResolutionOutcome",
     "ResolutionReason",
     "ResolutionRule",
+    "ResolvedAttribute",
     "SelectedName",
+    "USES_TECHNOLOGY",
+    "ValueAgreement",
     "select_name",
 ]

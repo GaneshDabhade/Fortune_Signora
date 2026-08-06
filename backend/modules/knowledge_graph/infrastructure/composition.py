@@ -16,6 +16,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from modules.knowledge_graph.application.queries import GraphQueries
 from modules.knowledge_graph.application.relationships import DeriveRelationships
 from modules.knowledge_graph.application.resolve import ResolveEntity
+from modules.knowledge_graph.infrastructure.attribute_reader import (
+    SqlAccountAttributesReader,
+)
 from modules.knowledge_graph.infrastructure.repository import SqlGraphRepository
 from modules.provider_normalization.public import ClaimReader
 from signora_platform.event_bus import EventPublisher
@@ -42,3 +45,15 @@ def build_derive_relationships(
 
 def build_queries(session: AsyncSession, *, claims: ClaimReader) -> GraphQueries:
     return GraphQueries(repository=SqlGraphRepository(session), claims=claims)
+
+def build_attributes_reader(
+    session: AsyncSession, *, claims: ClaimReader
+) -> SqlAccountAttributesReader:
+    """The published attributes reader, for the composition root to inject.
+
+    **A separate builder rather than a method on `GraphQueries`.** That object
+    answers this module's own screens; this satisfies a contract another module
+    depends on, and keeping them apart means a change to one cannot silently
+    reshape the other (TASK-446).
+    """
+    return SqlAccountAttributesReader(repository=SqlGraphRepository(session), claims=claims)

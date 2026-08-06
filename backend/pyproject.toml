@@ -278,7 +278,25 @@ forbidden_modules = [
     "modules.signal_engine",
     "modules.business_event_engine",
     "modules.observation_engine",
-    "modules.knowledge_graph",
+    # ⚡ **Narrowed from `modules.knowledge_graph` in full, 2026-08-06**, on
+    # [D-111](../docs/DECISION_REGISTER.md) approving
+    # [462](../docs/architecture/462-observed-attributes-proposal.md) exactly
+    # as written, and raised by this lane at C-332.
+    #
+    # **The prohibition existed because a consumer projecting `ClaimSet` into
+    # one value becomes a second resolver** — and with sixteen consumers that
+    # is sixteen rules for what an account's industry is, with every
+    # disagreement invisible because each answer looks right in isolation.
+    #
+    # **`AccountAttributesReader` removes the reason rather than the rule.**
+    # It publishes a *resolved* fact with its provenance, so the consumer has
+    # nothing left to resolve — and the inner layers stay closed, which is what
+    # keeps that true. **The exact shape [ADR-0403](../docs/architecture/adr/0403-signal-engine-reads-a-declaration.md)
+    # used for `signal_engine → commercial_profile.public`.**
+    "modules.knowledge_graph.domain",
+    "modules.knowledge_graph.application",
+    "modules.knowledge_graph.infrastructure",
+    "modules.knowledge_graph.interface",
     "modules.provider_normalization.domain",
     "modules.provider_normalization.application",
     "modules.provider_normalization.infrastructure",

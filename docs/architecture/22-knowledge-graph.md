@@ -493,3 +493,55 @@ Adding a member to `EntityKind` without deciding what search does about it **fai
 **The dominant ranking factor is not reported.** TASK-408 also asks that *"the dominant ranking factor is present on a row whenever it is not lexical"*, which needs the six-factor weighted score the approved screen names. **Ordering today is the matched name ascending and nothing else** — so every row's dominant factor *is* lexical, and there is nothing yet to disclose. **Defining six factors and their weights is a reviewed scoring model, not a lane's invention** (§2, *domain experts own static knowledge*), and it is left unbuilt rather than approximated.
 
 *+4 tests. 3577 backend passed, coverage 95.36%.*
+
+---
+
+## TASK-446 — an account's observed attributes have a publisher
+
+**Delivered 2026-08-06 by Lane B.** `AccountAttributesReader` in `public/`, answering **[C-332](../LANE_COORDINATION.md)** — raised by this lane when [TASK-434](../BACKLOG.md)'s predicate shipped and nothing could construct its input. **[462](462-observed-attributes-proposal.md) was approved exactly as written** by [D-111](../DECISION_REGISTER.md).
+
+### Why `ClaimSet` could not already do this
+
+**It very nearly could, and measuring that changed the answer.** `claim_set(workspace_id, entity_id, attribute)` has been published all along — so the naïve reading is that `opportunity_engine` calls it three times and builds the value itself.
+
+> **`ClaimSet` is not insufficient in *shape*. It is insufficient in *authority*.**
+
+It hands a caller three providers, three answers and **no rule for settling them**. A consumer that projects it into one value **has become a second resolver** — and with sixteen consumers of the matching capability that is up to sixteen rules for what an account's industry is, **with every disagreement invisible, because each answer looks correct in isolation.**
+
+The repository had refused exactly this twice in writing before today — `commercial_profile/domain/competitors.py` (*"a second resolver here would be free to disagree with it"*) and [443 §1](443-account-matching-capability.md). **This is the third refusal, and the first one that supplies the alternative.**
+
+### The rule, and where it is stated
+
+> **The most recently observed claim wins, and the providers that agreed with it are named.**
+
+**Identical to `select_name`, deliberately.** That function resolves the *name* attribute by this rule already, and an account whose name resolved by recency while its industry resolved by something else would be one account with two notions of what *current* means.
+
+**The refusal is inherited with it**: *"provider precedence is a customer policy… encoding one here would put an unreviewed judgement in the substrate."* **No provider is ranked, scored or weighted.**
+
+[462 §3](462-observed-attributes-proposal.md) required the rule to be **stated in the contract rather than decided by accident inside the first implementation** — it is the module docstring of `domain/attributes.py`, and every clause of it has a test.
+
+⬜ **Open, and named rather than settled**: whether *most-corroborated* should beat *most recent*, and whether a customer may declare precedence. Both are policy needing a reviewed artifact.
+
+### Four states, because absence is not disagreement
+
+`ValueAgreement` is `unknown · single_source · agreed · disputed` — **the same four as `NameAgreement`, for the same reason.** *"Nobody has said"*, *"one source said"* and *"two sources disagree"* are three different situations for a seller, and only the last is worth interrupting them for.
+
+**`unknown` is the same word `unmeasured` already is** in [TASK-434](../BACKLOG.md)'s predicate — **arriving from the other end of the same call**, which is what makes the two contracts compose without a translation.
+
+### ⛔ `SubjectRef` does not cross this boundary, and the omission is load-bearing
+
+`ResolvedAttribute` carries provider **names**; it carries no subject, and a test asserts the field set. **A provider identity crossing here would let a consumer fetch the claims and resolve them itself** — which is precisely the defect the contract closes, arriving through the contract that closed it.
+
+### One call, not three
+
+A caller assembling three reads has **three round trips, three moments and no guarantee they describe the same state of the graph**. The reader takes the bindings once and filters in memory — cheaper, and the three answers are one snapshot rather than three.
+
+### The dependency edge
+
+**`opportunity_engine → knowledge_graph.public`, and nothing else.** `pyproject.toml` forbade `modules.knowledge_graph` **in full**; it is narrowed to the four inner layers — **the exact shape [ADR-0403](adr/0403-signal-engine-reads-a-declaration.md) used** for `signal_engine → commercial_profile.public`.
+
+**The reason for the prohibition is removed rather than the prohibition being weakened.** A consumer reading a *resolved* fact has nothing left to resolve; the closed inner layers are what keep that true. **And the dangerous direction stays shut** — [C-328](../LANE_COORDINATION.md) ruled `commercial_profile` may not read the pipeline, and nothing here changes it.
+
+### How to see it
+
+**Not directly — this is a contract, not a screen.** What it unblocks is [TASK-406](../BACKLOG.md), **both halves**: a criterion can finally be scored against outcomes, because an account can now be asked what it is.
