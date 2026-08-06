@@ -44,7 +44,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         ref={ref}
         id={selectId}
         className={cn(
-          'h-10 rounded border border-border-strong bg-surface px-3 text-sm text-content',
+          'h-control-md rounded border border-border-strong bg-surface px-3 text-sm text-content',
           'disabled:opacity-50',
           className,
         )}

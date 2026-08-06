@@ -84,6 +84,12 @@ export default {
       spacing: {
         sidebar: 'var(--sidebar-width)',
         topbar: 'var(--topbar-height)',
+        /* **Control heights** (TASK-448). In `spacing` so they read as
+         * `h-control-md`, which says what the number is for at the call
+         * site — `h-10` said only how tall it happened to be. */
+        'control-sm': 'var(--control-sm)',
+        'control-md': 'var(--control-md)',
+        'control-lg': 'var(--control-lg)',
       },
     },
   },

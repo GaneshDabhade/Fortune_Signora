@@ -300,6 +300,49 @@ describe('the type and radius scales are tokens too', () => {
   });
 });
 
+describe('control heights are tokens', () => {
+  /** **The three components that render an interactive box.** Everything else
+   * sizing itself with `h-…` is an icon or a layout, which have no control
+   * scale to belong to — and a check that forbade every literal height would
+   * be forbidding the wrong thing to catch the right one. */
+  const CONTROLS = ['ui/button.tsx', 'ui/input.tsx', 'ui/select.tsx'];
+
+  it.each(CONTROLS)('%s takes its height from a control token', (name) => {
+    const { source } = ALL_COMPONENTS.find((c) => c.name === name)!;
+    // `h-4` on the button's spinner is an icon, not the control box; the
+    // check is that no *control size* is a literal, so it looks at the
+    // size table rather than the whole file.
+    const sizes = source.slice(source.indexOf('sm:'), source.indexOf('};'));
+    expect(/\bh-\d/.test(sizes), `${name} hardcodes a control height`).toBe(false);
+  });
+
+  it('every control height is declared in exactly one place', () => {
+    const css = readFileSync(join(process.cwd(), 'app', 'globals.css'), 'utf8');
+    const config = readFileSync(join(process.cwd(), 'tailwind.config.ts'), 'utf8');
+    const steps = [...config.matchAll(/'control-([a-z]+)':\s*'var\(--control-\1\)'/g)].map(
+      ([, step]) => step as string,
+    );
+
+    expect(steps.length, 'no control steps are configured').toBeGreaterThan(0);
+    for (const step of steps) {
+      expect(css, `--control-${step} is not declared`).toContain(`--control-${step}:`);
+    }
+  });
+
+  it('no control component invents a height of its own', () => {
+    /** **The duplication this slice removed, asserted so it cannot return.**
+     * `input` and `select` each hardcoded the middle step independently, so a
+     * control-height change was three edits that had to agree — and nothing
+     * would have noticed if they stopped agreeing. */
+    const offenders = CONTROLS.filter((name) => {
+      const { source } = ALL_COMPONENTS.find((c) => c.name === name)!;
+      return /\bh-\d+\s+rounded/.test(source);
+    });
+
+    expect(offenders).toEqual([]);
+  });
+});
+
 /** The steps Tailwind is configured with, read from the config rather than
  * restated here — a list copied into a test is a second source of truth. */
 function declaredScale(key: 'fontSize' | 'borderRadius'): string[] {

@@ -96,6 +96,21 @@
     --shadow: 0 1px 3px 0 rgb(15 23 42 / 0.1), 0 1px 2px -1px rgb(15 23 42 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1);
 
+    /* The control heights. **Three steps, and every interactive control in
+     * the product is one of them** (TASK-448).
+     *
+     * Before this they were literals in three files: the button restated the
+     * scale, and `input` and `select` each hardcoded the middle step
+     * independently. **A control-height change was three edits that had to
+     * agree**, and nothing would have noticed if they stopped agreeing —
+     * which is the same defect the colour tokens removed, one property over.
+     *
+     * `md` is the default a form control gets. `sm` is for controls that sit
+     * inside a row of content rather than on their own line. */
+    --control-sm: 2rem;
+    --control-md: 2.5rem;
+    --control-lg: 2.75rem;
+
     /* Layout constants the shell depends on — here rather than in the
      * shell, so the sidebar width is one edit and not three. */
     --sidebar-width: 15rem;
