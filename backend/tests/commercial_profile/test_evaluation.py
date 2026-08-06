@@ -16,6 +16,7 @@ from uuid import uuid4
 import pytest
 
 from modules.commercial_profile.domain.icp import EmployeeRange, ProductIcp
+from modules.commercial_profile.public import IcpCriteriaView, evaluate_criteria
 from modules.commercial_profile.domain.evaluation import (
     CriterionKind,
     CriterionVerdict,
@@ -163,3 +164,77 @@ class TestItIsPure:
         verdicts = evaluate(an_icp(), ObservedAttributes())
         assert isinstance(verdicts, tuple)
         assert not hasattr(verdicts, "matches")
+
+
+class TestThePredicateIsReachableFromOutsideTheModule:
+    """⚡ **`evaluate` shipped at TASK-434 and no consumer could call it.**
+
+    It takes `ProductIcp` — this module's aggregate — so a module holding
+    `IcpCriteriaView` had the criteria and no way to ask the question about
+    them. **A foundation sixteen consumers were counted waiting on, that none
+    of them could reach.** Published on the trigger this module already uses:
+    the first consumer that needs it ([TASK-406](../../../docs/BACKLOG.md)).
+    """
+
+    @staticmethod
+    def _criteria(**overrides: object) -> IcpCriteriaView:
+        defaults: dict[str, object] = {
+            "product_id": uuid4(),
+            "industries": ("Fintech",),
+            "countries": ("United Kingdom",),
+            "employees_minimum": 100,
+            "employees_maximum": 1000,
+        }
+        return IcpCriteriaView(**{**defaults, **overrides})  # type: ignore[arg-type]
+
+    def test_a_consumer_can_ask_the_question_holding_only_the_view(self) -> None:
+        found = evaluate_criteria(
+            self._criteria(), industry="Fintech", country="United Kingdom", employees=500
+        )
+
+        assert {v.kind: v.verdict for v in found} == {
+            CriterionKind.INDUSTRY: Verdict.YES,
+            CriterionKind.COUNTRY: Verdict.YES,
+            CriterionKind.EMPLOYEES: Verdict.YES,
+        }
+
+    def test_nothing_observed_is_unmeasured_and_never_no(self) -> None:
+        """**The same fact `AccountAttributesReader` calls `unknown`**, arriving
+        from the other end of the same call."""
+        found = evaluate_criteria(self._criteria())
+
+        assert {v.verdict for v in found} == {Verdict.UNMEASURED}
+
+    def test_an_undeclared_criterion_is_still_returned(self) -> None:
+        """A criterion the customer did not declare comes back `UNMEASURED`
+        rather than being omitted — *the absence of results and the absence of
+        the group represent different business meanings.*"""
+        found = evaluate_criteria(
+            self._criteria(industries=(), employees_minimum=None, employees_maximum=None),
+            industry="Fintech",
+            employees=500,
+        )
+
+        by_kind = {v.kind: v.verdict for v in found}
+        assert len(found) == 3
+        assert by_kind[CriterionKind.INDUSTRY] is Verdict.UNMEASURED
+        assert by_kind[CriterionKind.EMPLOYEES] is Verdict.UNMEASURED
+
+    def test_a_size_only_declaration_still_builds_its_range(self) -> None:
+        """An open-ended range is declared, not absent — the view carries one
+        bound and the predicate must see it."""
+        found = evaluate_criteria(
+            self._criteria(industries=(), countries=(), employees_maximum=None),
+            employees=50,
+        )
+
+        assert {v.kind: v.verdict for v in found}[CriterionKind.EMPLOYEES] is Verdict.NO
+
+    def test_it_returns_no_overall_answer(self) -> None:
+        """⛔ **Deliberate.** Rolling three verdicts into *"matches"* needs a
+        rule for `UNMEASURED`, and every available rule is a judgement that
+        belongs to the consumer with a reason for it."""
+        found = evaluate_criteria(self._criteria(), industry="Fintech")
+
+        assert isinstance(found, tuple)
+        assert not hasattr(found, "matches")

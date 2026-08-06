@@ -14,7 +14,7 @@ contract closes. **Provider *names* travel; provider *subjects* do not.**
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol, Sequence
 from uuid import UUID
 
 from modules.knowledge_graph.domain.attributes import ResolvedAttribute
@@ -47,6 +47,25 @@ class AccountAttributesReader(Protocol):
     and injected at the composition root — the `View · Reader` shape this
     module and `commercial_profile` both already publish.
     """
+
+    async def for_accounts(
+        self, workspace_id: UUID, entity_ids: Sequence[UUID]
+    ) -> dict[UUID, AccountAttributes]:
+        """The same answer for many accounts, in one call.
+
+        ⚡ **Added on the first consumer that needed it** — [TASK-406](../../../../docs/BACKLOG.md)
+        measures a criterion across every decided account, **and calling
+        `for_account` in a loop is the N+1 §14 calls a defect at write time.**
+        The precedent is `account_identities`, which is a batch for exactly
+        this reason: *"a page of fifty accounts must cost one request, not
+        fifty."*
+
+        **Every requested id appears in the result**, with three `UNKNOWN`
+        values when nothing is known about it — so a caller zips its own list
+        against the answer without discovering a missing key at the worst
+        moment.
+        """
+        ...
 
     async def for_account(self, workspace_id: UUID, entity_id: UUID) -> AccountAttributes:
         """Everything this contract can say about one account.

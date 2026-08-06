@@ -36,6 +36,10 @@ from modules.opportunity_engine.application.queries import OpportunityQueries
 from modules.opportunity_engine.infrastructure.composition import (
     build_queries as build_opportunity_queries,
 )
+from modules.commercial_profile.infrastructure.icp_reader import SqlIcpReader
+from modules.knowledge_graph.infrastructure.composition import build_attributes_reader
+from modules.opportunity_engine.application.measure_icp import MeasureIcp
+from modules.opportunity_engine.infrastructure.repository import SqlOpportunityRepository
 from modules.provider_normalization.infrastructure.claim_reader import SqlClaimReader
 from modules.signal_engine.infrastructure.composition import (
     build_queries as build_signal_queries,
@@ -65,6 +69,31 @@ def opportunity_queries(context: CurrentWorkspace) -> OpportunityQueries:
     signals = build_signal_queries(session, business_events=events)
     scores = build_buying_score_queries(session, signals=signals)
     return build_opportunity_queries(session, scores=scores)
+
+
+def measure_icp(context: CurrentWorkspace) -> MeasureIcp:
+    """The ICP measurement, assembled for one request.
+
+    **Three dependencies from three modules, every one through `public/`.**
+    The outcomes are this module's own; the criteria come from
+    `commercial_profile` on the edge [C-328](../../../docs/LANE_COORDINATION.md)
+    ruled open, and the observed attributes from `knowledge_graph` on the edge
+    [D-111](../../../docs/DECISION_REGISTER.md) opened. **The composition root
+    is where they meet**, which is what keeps all three modules ignorant of
+    each other's internals.
+    """
+    session = context.session
+    workspace_id = context.workspace_id
+    return MeasureIcp(
+        repository=SqlOpportunityRepository(session),
+        icp=SqlIcpReader(session),
+        attributes=build_attributes_reader(
+            session, claims=SqlClaimReader(session, workspace_id=workspace_id)
+        ),
+    )
+
+
+MeasureIcpDependency = Annotated[MeasureIcp, Depends(measure_icp)]
 
 
 def qualify_opportunity(context: CurrentWorkspace) -> QualifyOpportunity:

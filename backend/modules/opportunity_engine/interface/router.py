@@ -23,7 +23,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, status
 
-from apps.api.composition.opportunities import OpportunityOpening, OpportunityRead
+from apps.api.composition.opportunities import (
+    MeasureIcpDependency,
+    OpportunityOpening,
+    OpportunityRead,
+)
 from apps.api.composition.workflow import OpportunityWorkflow
 from modules.opportunity_engine.application.qualify import QualifyOpportunityInput
 from modules.opportunity_engine.application.transition import TransitionOpportunityInput
@@ -33,6 +37,7 @@ from modules.opportunity_engine.interface.schemas import (
     AccountOpportunityResponse,
     DecidedAccountResponse,
     OpenedOpportunityResponse,
+    IcpMeasurementResponse,
     OpenOpportunityRequest,
     PipelineHealthResponse,
     RecordDecisionRequest,
@@ -114,6 +119,49 @@ DEFAULT_MOVEMENT_WINDOW: Final = timedelta(days=14)
 
 SinceParam = Annotated[datetime | None, Query()]
 MovementLimitParam = Annotated[int, Query(ge=1, le=MAX_PAGE_LIMIT)]
+
+
+@router.get(
+    "/workspaces/{workspace_id}/icp-performance",
+    response_model=list[IcpMeasurementResponse],
+    summary="Whether each declared criterion actually predicts a win",
+)
+async def icp_performance(
+    context: CurrentWorkspace, measure: MeasureIcpDependency
+) -> list[IcpMeasurementResponse]:
+    """*"Is our ideal customer description any good?"* — measured, not asserted.
+
+    **The ICP is declarable today and nothing told a customer whether it was
+    right.** Each criterion is scored against accounts somebody actually
+    decided: **lift is `P(won | criterion holds) ÷ P(won overall)`.**
+
+    **Above 1.0 the criterion predicts; at 1.0 it tells you nothing; below 1.0
+    it is selecting against you** — the last being the most useful thing this
+    can say and the one nobody expects.
+
+    **Every figure carries its sample size, and `is_directional` says when the
+    sample is too small to settle anything.** The threshold is the screen's own
+    sentence — *"2.2× lift on only 22 deals; treat as directional, not
+    settled"* — so the measurement and the screen agree about what small means.
+
+    ⛔ **A criterion nothing supports returns `null`, never `1.0`.** Null and
+    *"this criterion is neutral"* are different statements, and a young
+    workspace with no wins yet gets the first.
+
+    **Accounts nobody has described leave the denominator** and are reported as
+    `unmeasured`. Counting them as failing would make a criterion look worse
+    the less Signora knew, which is the opposite of the truth.
+
+    ⛔ **No overall verdict.** Rolling three criteria into *"your ICP is good"*
+    needs a rule for the unmeasured ones, and every available rule is a
+    judgement — this returns the evidence and leaves the judgement where it
+    belongs.
+
+    **Empty when no ICP has been declared** — a state to wait in, not zeroes.
+    """
+    context.authorize(Resource.OPPORTUNITY, Action.READ)
+    measured = await measure.for_workspace(context.workspace_id)
+    return [IcpMeasurementResponse.from_domain(m) for m in measured]
 
 
 @router.get(

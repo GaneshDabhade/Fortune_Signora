@@ -41,6 +41,8 @@ from modules.opportunity_engine.application.queries import (
     OpportunityBrief,
     TrackedOpportunity,
 )
+from modules.opportunity_engine.application.measure_icp import IcpMeasurement
+from modules.opportunity_engine.domain.criterion_lift import CriterionLift
 from modules.opportunity_engine.domain.pipeline_health import (
     Movement,
     OwnerLoad,
@@ -655,8 +657,94 @@ class PipelineHealthResponse(BaseModel):
             movements_since=health.movements_since,
         )
 
+class CriterionLiftResponse(BaseModel):
+    """What one declared criterion predicted."""
+
+    model_config = ConfigDict(frozen=True)
+
+    criterion: str = Field(
+        description="Which part of the ideal-customer description this measures — "
+        "`industry`, `country` or `employees`."
+    )
+    lift: float | None = Field(
+        description="How much more likely a deal is to be won when this criterion holds. "
+        "**1.0 means it tells you nothing; below 1.0 means it is selecting against you**, "
+        "which is the most useful thing this can say. **Null when it cannot be measured** — "
+        "nothing satisfied it, nothing was measured, or nothing has been won yet. Never "
+        "render null as 1.0."
+    )
+    satisfied: int = Field(
+        description="Decided accounts where this criterion held. **The sample size behind "
+        "`lift`** — read it before the multiple."
+    )
+    satisfied_won: int = Field(description="Of those, how many were won.")
+    measured: int = Field(
+        description="Every decided account this could be measured on, satisfied or not. "
+        "The denominator of the comparison."
+    )
+    measured_won: int = Field(description="Of those, how many were won.")
+    unmeasured: int = Field(
+        description="Decided accounts dropped because no source has reported this attribute "
+        "about them. **They do not count against the criterion** — an account nobody has "
+        "described is not evidence about whether the criterion predicts anything."
+    )
+    is_directional: bool = Field(
+        description="Whether the sample is too small to settle anything. True below 22 "
+        "satisfying accounts — the threshold the ICP Builder itself states: *'2.2× lift on "
+        "only 22 deals; treat as directional, not settled.'*"
+    )
+
+    @classmethod
+    def from_domain(cls, lift: CriterionLift) -> "CriterionLiftResponse":
+        return cls(
+            criterion=lift.kind.value,
+            lift=lift.lift,
+            satisfied=lift.satisfied,
+            satisfied_won=lift.satisfied_won,
+            measured=lift.measured,
+            measured_won=lift.measured_won,
+            unmeasured=lift.unmeasured,
+            is_directional=lift.is_directional,
+        )
+
+
+class IcpMeasurementResponse(BaseModel):
+    """What one product's ideal-customer description predicted.
+
+    ⛔ **No overall verdict, and that is deliberate.** Rolling three criteria
+    into *"your ICP is good"* needs a rule for the ones nothing was observed
+    for, and every available rule is a judgement — read the criteria.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    product_id: UUID = Field(
+        description="The product this ideal customer describes. Resolve its name through "
+        "the product catalog."
+    )
+    decided: int = Field(
+        description="Decided accounts the measurement drew on, before any criterion "
+        "filtered them. **The honest denominator** — if this is small, nothing below it "
+        "is settled."
+    )
+    criteria: list[CriterionLiftResponse] = Field(
+        description="One entry per criterion kind, always all three, in a stable order. "
+        "A criterion the customer did not declare comes back unmeasured rather than being "
+        "omitted."
+    )
+
+    @classmethod
+    def from_domain(cls, measurement: IcpMeasurement) -> "IcpMeasurementResponse":
+        return cls(
+            product_id=measurement.product_id,
+            decided=measurement.decided,
+            criteria=[CriterionLiftResponse.from_domain(c) for c in measurement.criteria],
+        )
+
 
 __all__ = [
+    "CriterionLiftResponse",
+    "IcpMeasurementResponse",
     "AccountAttentionResponse",
     "AccountOpportunityResponse",
     "DecidedAccountResponse",

@@ -63,6 +63,15 @@ from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
+from modules.commercial_profile.domain.evaluation import (
+    CriterionKind,
+    CriterionVerdict,
+    ObservedAttributes,
+    Verdict,
+    evaluate,
+)
+from modules.commercial_profile.domain.icp import EmployeeRange, ProductIcp
+
 
 @dataclass(frozen=True, slots=True)
 class TargetAccountView:
@@ -349,7 +358,81 @@ class IcpReader(Protocol):
         """
         ...
 
+# ── The predicate, published (TASK-406) ──────────────────────────────────────
+#
+# ⚡ **`evaluate` shipped in `domain/` at TASK-434 and no consumer could call
+# it.** It takes `ProductIcp` — this module's aggregate — so a module holding
+# `IcpCriteriaView` had the criteria and no way to ask the question about them.
+# **A foundation sixteen consumers were counted waiting on, that none of them
+# could reach.**
+#
+# **Published now on the trigger this module already uses**: *the first
+# consumer that needs it* — [TASK-406](../../../../docs/BACKLOG.md), whose own
+# row says *"do not inline an in-ICP test here; consume
+# `commercial_profile/public/`'s."*
+#
+# **The verdict types travel as themselves, not as views.** They are value
+# objects with no aggregate behind them — the same reason `knowledge_graph`
+# publishes `MatchStrength` directly — and wrapping them would create a second
+# vocabulary for three words that already mean exactly one thing each.
+
+
+def evaluate_criteria(
+    criteria: IcpCriteriaView,
+    *,
+    industry: str | None = None,
+    country: str | None = None,
+    employees: int | None = None,
+) -> tuple[CriterionVerdict, ...]:
+    """Whether an account satisfies each of one product's declared criteria.
+
+    **Pure**, like the domain function beneath it: no session, no clock, no
+    repository. The caller supplies what the pipeline observed — typically
+    from `knowledge_graph`'s `AccountAttributesReader`, whose `unknown` is the
+    same fact as the `UNMEASURED` that comes back here.
+
+    **Three keyword arguments rather than a published `ObservedAttributes`.**
+    A consumer already holds three resolved values and would otherwise
+    construct a type solely to pass them one call later — and a published type
+    whose only purpose is to be constructed at the call site is ceremony, not a
+    contract.
+
+    **Always three verdicts, one per criterion kind**, whether or not the
+    declaration mentions them — a criterion the customer did not declare comes
+    back `UNMEASURED` rather than being omitted, on the ruling that *"the
+    absence of results and the absence of the group represent different
+    business meanings."*
+
+    ⛔ **No overall answer, deliberately.** Rolling three verdicts into
+    *"matches"* needs a rule for `UNMEASURED`, and every available rule is a
+    judgement: treat it as a pass and an unmeasured account looks qualified,
+    treat it as a fail and it looks disqualified. **That rule belongs to
+    whichever consumer has a reason for it**, stated where a customer can see
+    it.
+    """
+    return evaluate(
+        ProductIcp(
+            product_id=criteria.product_id,
+            industries=criteria.industries,
+            countries=criteria.countries,
+            employees=(
+                EmployeeRange(
+                    minimum=criteria.employees_minimum, maximum=criteria.employees_maximum
+                )
+                if criteria.employees_minimum is not None
+                or criteria.employees_maximum is not None
+                else None
+            ),
+        ),
+        ObservedAttributes(industry=industry, country=country, employees=employees),
+    )
+
+
 __all__ = [
+    "CriterionKind",
+    "CriterionVerdict",
+    "Verdict",
+    "evaluate_criteria",
     "BuyingCommitteeReader",
     "BuyingCommitteeRoleView",
     "BuyingCommitteeView",

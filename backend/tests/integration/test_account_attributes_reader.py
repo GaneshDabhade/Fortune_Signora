@@ -94,3 +94,67 @@ class TestAnAccountDescribesItselfInOneCall:
             )
 
         assert found.industry.agreement is ValueAgreement.UNKNOWN
+
+
+class TestManyAccountsCostOneCall:
+    """⚡ **Added at [TASK-406](../../../docs/BACKLOG.md), the first consumer
+    that needed it.** A backtest reads every decided account in a workspace,
+    and calling `for_account` in a loop is the N+1 §14 calls a defect at write
+    time — the same reason `account_identities` is a batch.
+    """
+
+    async def test_every_requested_account_comes_back(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Including ones nothing is known about.** A caller zips its own
+        list against the answer and must not discover a missing key at the
+        worst moment."""
+        workspace_id, _, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        unheard_of = UUID("00000000-0000-4000-8000-000000000fed")
+
+        async with session_factory() as session, session.begin():
+            await set_workspace_context(session, workspace_id)
+            found = await _reader(session, workspace_id).for_accounts(  # type: ignore[attr-defined]
+                workspace_id, [entity_id, unheard_of]
+            )
+
+        assert set(found) == {entity_id, unheard_of}
+        assert found[unheard_of].industry.agreement is ValueAgreement.UNKNOWN
+
+    async def test_it_agrees_with_the_single_read(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Two paths to one fact must not disagree** — the batch exists for
+        cost, never for a different answer."""
+        workspace_id, _, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        async with session_factory() as session, session.begin():
+            await set_workspace_context(session, workspace_id)
+            reader = _reader(session, workspace_id)
+            one = await reader.for_account(workspace_id, entity_id)  # type: ignore[attr-defined]
+            many = await reader.for_accounts(workspace_id, [entity_id])  # type: ignore[attr-defined]
+
+        assert many[entity_id] == one
+
+    async def test_asking_for_nothing_returns_nothing(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, _, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        async with session_factory() as session, session.begin():
+            await set_workspace_context(session, workspace_id)
+            found = await _reader(session, workspace_id).for_accounts(workspace_id, [])  # type: ignore[attr-defined]
+
+        assert found == {}

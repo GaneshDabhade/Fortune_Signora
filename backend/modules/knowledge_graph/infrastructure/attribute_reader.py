@@ -9,9 +9,11 @@ the graph** rather than three moments.
 
 from __future__ import annotations
 
+from typing import Sequence
 from uuid import UUID
 
 from modules.knowledge_graph.application.ports import GraphRepository
+from modules.knowledge_graph.domain.identity import IdentityBinding
 from modules.knowledge_graph.application.queries import _subjects
 from modules.knowledge_graph.domain.attributes import resolve_value
 from modules.knowledge_graph.public.attributes import AccountAttributes
@@ -24,6 +26,50 @@ class SqlAccountAttributesReader:
     def __init__(self, *, repository: GraphRepository, claims: ClaimReader) -> None:
         self._repository = repository
         self._claims = claims
+
+    async def for_accounts(
+        self, workspace_id: UUID, entity_ids: Sequence[UUID]
+    ) -> dict[UUID, AccountAttributes]:
+        """**Two queries for any number of accounts, not two per account.**
+
+        The bindings for every requested entity come back in one read and the
+        claims for every resulting subject in a second, then the claims are
+        grouped in memory. A loop over `for_account` would be 2n queries, which
+        is the N+1 §14 forbids — and the backtest that needed this reads every
+        decided account in a workspace.
+        """
+        if not entity_ids:
+            return {}
+        bindings = await self._repository.bindings_for_entities(workspace_id, tuple(entity_ids))
+        # The read returns one flat tuple; group it by the entity each binding
+        # resolved to, so a claim is never attributed to the wrong account.
+        grouped: dict[UUID, list[IdentityBinding]] = {}
+        for binding in bindings:
+            if binding.entity_id is not None:
+                grouped.setdefault(binding.entity_id, []).append(binding)
+        subjects = {
+            entity_id: _subjects(tuple(found)) for entity_id, found in grouped.items()
+        }
+        every = [s for group in subjects.values() for s in group]
+        claims = await self._claims.for_subjects(every) if every else ()
+        by_subject: dict[tuple[str, str], list[ClaimView]] = {}
+        for claim in claims:
+            by_subject.setdefault((claim.provider, claim.subject_external_id), []).append(claim)
+
+        answered: dict[UUID, AccountAttributes] = {}
+        for entity_id in entity_ids:
+            mine = tuple(
+                claim
+                for subject in subjects.get(entity_id, [])
+                for claim in by_subject.get((subject.provider, subject.provider_external_id), [])
+            )
+            answered[entity_id] = AccountAttributes(
+                entity_id=entity_id,
+                industry=resolve_value(_of(mine, ClaimAttribute.INDUSTRY)),
+                country=resolve_value(_of(mine, ClaimAttribute.COUNTRY)),
+                employee_count=resolve_value(_of(mine, ClaimAttribute.EMPLOYEE_COUNT)),
+            )
+        return answered
 
     async def for_account(self, workspace_id: UUID, entity_id: UUID) -> AccountAttributes:
         bindings = await self._repository.bindings_for_entity(workspace_id, entity_id)

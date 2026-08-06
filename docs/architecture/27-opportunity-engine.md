@@ -767,3 +767,55 @@ Reading the clock inside the query would make two sections of one dashboard disa
 ### How to see it
 
 **Settings → nothing.** This is an API slice: `GET /workspaces/{id}/pipeline-health`. Move an account from *tracking* to *engaged* on the accounts list, call it again, and the funnel's first step moves from *0 of 2* to *1 of 2* with the reason you typed at the top of the movement feed. **There is no screen yet, and that is stated rather than dressed up** (§2) — the Executive Dashboard is [410](410-approved-ui-specification.md) #3 and unbuilt.
+
+---
+
+## TASK-406 — an ICP criterion is scored against outcomes
+
+**Delivered 2026-08-06 by Lane B.** `GET /workspaces/{id}/icp-performance`. **The row three coordination items were about**, and the reason all three were worth raising.
+
+### The chain, because it is the point
+
+| | What was missing | Found by |
+|---|---|---|
+| **[C-330](../LANE_COORDINATION.md)** | Nothing could say whether an account matches a criterion | Claiming this row and **refusing to invent one inside it** |
+| **[C-332](../LANE_COORDINATION.md)** | Nothing could construct the predicate's input | TASK-434 promoting |
+| — | Nothing outside `commercial_profile` could **call** the predicate | Resuming this row |
+| — | The attributes reader was **per-account**; a backtest needs **per-cohort** | Wiring the measurement |
+
+**Each was invisible until the next step existed**, and each would have been a silent wrong answer if inlined instead. **The first refusal cost three items and was worth all three**: the alternative was up to sixteen consumers each deciding for themselves what *"in the ICP"* means, with every disagreement invisible because each answer looks right in isolation.
+
+### Where it lives, and why
+
+**[C-328](../LANE_COORDINATION.md), ruled:** *"`commercial_profile` declares. `opportunity_engine` measures."* **The module that owns outcomes measures against them.** The trade-off was stated rather than buried — the surface is the ICP Builder, which is `commercial_profile`'s screen, so **the value a seller reads is computed by a module they never see named.** That is already true of every derived fact in the product; the alternative is a declaring module grading its own input.
+
+**Both reads are through `public/` and nothing else**, on the two edges that were ruled open — and the predicate is **called, never reimplemented**.
+
+### The arithmetic and the four decisions in it
+
+> **Lift is `P(won | criterion satisfied) ÷ P(won overall)`.**
+
+| | |
+|---|---|
+| **`UNMEASURED` accounts leave the denominator** | TASK-434 left this policy to *"whichever consumer has a reason for it"*, **and this is that consumer.** An account nobody has described is **not evidence** about whether a criterion predicts. Counting it as failing would make a criterion look worse the less Signora knew — the opposite of the truth. `unmeasured` reports how many left |
+| **A `DISPUTED` attribute is still measured** | The reader returns the most recent value with the disagreement named. **Treating a contested observation as unknown discards evidence the platform genuinely has** — the surface shows the dispute, the measurement uses the value |
+| **`DISMISSED` is not an outcome** | It is feedback about Signora's own qualification. **Folding it into losses would make a criterion look unpredictive because the platform surfaced the wrong accounts** — a different failure with a different owner |
+| **`None`, never `1.0`** | Nothing satisfied it, nothing measured, or **nothing won yet** — the last is what a young workspace hits, where `1.0` would read *"this criterion is neutral"* when the truth is *"there are no wins to compare against"* |
+
+**Below 1.0 is a real answer**: the criterion is selecting *against* you. **The most useful thing this can say, and the one nobody expects to see.**
+
+**`is_directional` is `satisfied < 22`, taken from the approved screen's own sentence** — *"2.2× lift on only 22 deals; treat as directional, not settled"* — so the measurement and the screen agree about what small means rather than each carrying its own number.
+
+### Bounded, and guarded at the boundary
+
+**`MEASUREMENT_LIMIT = 500`** — a backtest over unbounded history is an unbounded fetch wearing a date (§14). Far past the point where a lift stops being directional, so it constrains cost and not the answer.
+
+**Two guards where a published boundary meets a typed predicate**: a value that arrived as the wrong shape produces `UNMEASURED` rather than a `TypeError` inside the predicate, and `bool` is rejected for `employee_count` because `bool` is an `int` in Python and would silently measure `True` as one employee.
+
+### ⛔ No overall verdict
+
+Rolling three criteria into *"your ICP is good"* needs a rule for the unmeasured ones, and every available rule is a judgement. **The endpoint returns the evidence and leaves the judgement where it belongs.**
+
+### How to see it
+
+**Declare an ICP under Settings → Products, decide a few accounts, then ask for ICP performance.** A criterion your won deals share reads above `1.0×`; one they do not reads below it; one nothing supports reads `null` rather than pretending to be neutral — and every figure says how many accounts it is standing on.
