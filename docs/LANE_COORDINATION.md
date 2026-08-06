@@ -4172,7 +4172,11 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 
 ## C-322 · Is an ICP a description, or a filter?
 
-> ⏸️ **`DEFERRED` — product owner, 2026-08-05.** *"Keep grouped **with [C-002](#c-002)**. Do not split. **Review when Epic B1 begins.**"*
+> ⏸️ ~~**`DEFERRED` — product owner, 2026-08-05.** *"Keep grouped with [C-002](#c-002). Do not split. **Review when Epic B1 begins.**"*~~
+>
+> ## ⚡ **`READY FOR PRODUCT DECISION` — 2026-08-06, [D-111](DECISION_REGISTER.md). The trigger fired early, and not because Epic B1 began.**
+>
+> **[TASK-434](BACKLOG.md) shipped `evaluate(icp, observed)` and it is `PROMOTED`** — **a predicate that measures an account against a declaration is the *filter* reading, built.** **[D-077](DECISION_REGISTER.md) sequenced it deliberately, ahead of its first consumer.** ⛔ **So the repository has already taken half of position B while this item records the question as open** — and [C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it--nothing-builds-its-input-and-the-module-that-measures-may-not-reach-one) is the other half asking to be finished.
 
 | | |
 |---|---|
