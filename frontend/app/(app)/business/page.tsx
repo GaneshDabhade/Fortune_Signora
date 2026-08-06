@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { CommercialProfile } from '@/components/commercial/profile';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
-import { EmptyState, SkeletonText } from '@/components/ui';
+import { SkeletonText } from '@/components/ui';
 import { useSession } from '@/lib/auth/client';
 import {
   useBuyingCommittee,

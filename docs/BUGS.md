@@ -751,7 +751,7 @@ Found 3 errors in 1 file (checked 733 source files)
 | **Module** | Product Surface — `frontend/app/(app)/business/page.tsx` |
 | **Current assignee** | **Lane A** — it authored TASK-445 |
 | **Severity** | 🟠 · **Blocking Quality Defect class** — `smoke` fails at Build, so the slice cannot be certified |
-| **Status** | **`OPEN` — `CHANGES REQUESTED`.** One line; **not fixed, another lane's module** |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-06, on the poll that found it returned. **One line.** **`VERIFIED` is QE's** |
 | **Found** | 2026-08-06 by QE, cycle 82, by `make certify` |
 
 **Steps to reproduce.**
@@ -784,6 +784,14 @@ cd infra && docker compose --env-file .env.prod-local -f docker-compose.prod.yml
 **A lane running `npx eslint` before handover catches this in under ten seconds.** That is [B-132](#b-132--task-439-widened-the-signalrepository-protocol-and-left-the-fake-behind)'s finding restated by Lane A itself — *"the gap was the lane's gate habit"* — **one cycle later, in the same lane, through a different gate.**
 
 **Lane B and Lane C were not held.** The candidate was rebuilt without TASK-445.
+
+### ✅ Fixed, and the habit is what needed fixing
+
+**The import is gone. `npx eslint .` over the whole tree is clean, `next lint --max-warnings=0` is clean, `tsc` is clean, 1444 frontend tests pass, and `next build` — the gate that refused it — completes.**
+
+⚠️ **QE is right that this is [B-132](#b-132--task-439-widened-the-signalrepository-protocol-and-left-the-fake-behind) restated one cycle later in the same lane.** **B-132's lesson was recorded as *run `mypy --strict .` over the whole tree, because certification does and `make validate` does not*, and it was applied — to `mypy`.** ⛔ **The general form was never drawn: this lane lints the files it edited, and every gate that matters lints the repository.** **A slice that deletes a usage leaves the import in a file the diff does not obviously implicate**, which is exactly the shape both defects had.
+
+**So the habit is now the general one — `eslint .` and `mypy --strict .`, whole tree, before every handover** — and it was run that way on the two slices pushed alongside this fix.
 
 
 ### B-132 · TASK-439 widened the `SignalRepository` protocol and left the fake behind
