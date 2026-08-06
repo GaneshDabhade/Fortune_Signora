@@ -323,6 +323,53 @@ def _backlog_states(backlog: str) -> dict[str, str]:
     return states
 
 
+#: States a row can sit in while nobody is executing it. **These are the rows
+#: [D-135](../docs/DECISION_REGISTER.md) exists for** — *"every task should
+#: have an owner even if it cannot yet have an executor."*
+_PARKED = frozenset({"SEQUENCED", "BLOCKED", "WAITING", "DISPOSED"})
+
+
+def _ownership_findings(backlog: str) -> list[str]:
+    """Rows nobody is executing and nobody is accountable for.
+
+    **[D-135](../docs/DECISION_REGISTER.md), ownership-first planning:** *"I do
+    not want work to disappear into a general backlog where nobody is
+    responsible for it. The backlog should represent planned execution, not
+    unprocessed ideas."*
+
+    **A parked row needs two things and they are different questions.** *Who
+    would build it* is a **module** question, and `CLAUDE.md` §20e deliberately
+    leaves it open — *"predicting it earlier buys nothing and can be wrong"*.
+    *Who notices its trigger fired* is a **task** question, and leaving that
+    open is how a row parks for a month after its blocker cleared.
+
+    **So the check accepts either a resolvable module or a named steward**, and
+    reports only the rows that have neither. ⛔ **It does not demand a module
+    where §20e says not to have one** — a check that contradicted a ratified
+    rule would be the more expensive defect.
+    """
+    findings: list[str] = []
+    states = _backlog_states(backlog)
+    for block in re.split(r"(?=^### TASK-\d+)", backlog, flags=re.M):
+        head = re.match(r"^### (TASK-\d+)", block)
+        if head is None or states.get(head.group(1), "") not in _PARKED:
+            continue
+        body = block.split("\n### ", 1)[0]
+        module = re.search(r"^\|\s*[^|]*\*\*Module\*\*[^|]*\|([^|]*)\|", body, re.M)
+        named = module is not None and not re.search(
+            r"undecided|deliberately unnamed|not yet decided", module.group(1), re.I
+        )
+        steward = re.search(r"\*\*Trigger steward\*\*", body) is not None
+        if not named and not steward:
+            findings.append(
+                f"{head.group(1)} is {states[head.group(1)]} with no resolvable module "
+                f"and no trigger steward. Nobody is accountable for noticing when its "
+                f"prerequisites are met (D-135). A module may stay undecided (§20e); "
+                f"a steward may not."
+            )
+    return findings
+
+
 def _queue_findings(backlog: str) -> list[str]:
     states = _backlog_states(backlog)
     out: list[str] = []
@@ -1035,6 +1082,7 @@ def main() -> int:
     # run.** `if not findings: return` would have skipped every queue check on
     # exactly the day the rest of the repository agreed with itself — which is
     # the one day a silent queue drift would go unseen.
+    findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
     findings.extend(_execution_state_findings())
     findings.extend(_staleness_findings())

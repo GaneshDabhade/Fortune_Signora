@@ -268,6 +268,33 @@
 
 **Defect discovery moves earlier.** ⚡ **And QE's purpose changes with it: integration correctness, cross-module interaction, release confidence — not rediscovering what the lane could have caught.**
 
+### ⚖️ 0-L · Nothing exists without an owner — [D-135](DECISION_REGISTER.md)
+
+> ## ***"Every task should have an owner even if it cannot yet have an executor."***
+
+**Work discovered by any route — gap analysis, governance review, UI review, architecture review, dependency analysis, journey analysis, production-readiness review, technical debt, platform, security, testing, documentation — becomes an owned action item immediately.** ⛔ **Never an anonymous backlog row and never a `TODO`.**
+
+> **The backlog represents planned execution, not unprocessed ideas.**
+
+#### ⚡ The apparent conflict with §20e, and it is not one
+
+**[§20e](../CLAUDE.md) says: *"When ownership is genuinely unclear, leave it unassigned and mark it review at first implementation… predicting it earlier buys nothing and can be wrong — evidence over prediction."*** **D-135 says every task has an owner.** ⚠️ **Read carelessly these contradict.**
+
+✅ **They do not, because they answer different questions — and [D-135](DECISION_REGISTER.md) names both fields itself:**
+
+| | | |
+|---|---|---|
+| **Owning module** | ***Who would build it?*** | ⛔ **An architectural boundary. §20e governs it, and *undecided* is a correct answer** |
+| **Owning lane · trigger steward** | ***Who notices its prerequisites were met?*** | ✅ **An accountability. D-135 governs it, and *undecided* is never a correct answer** |
+
+> ⚡ **A module may stay undecided for months. A steward may not exist for a day.** **The failure D-135 prevents is a row parking for a month after its blocker cleared, because nobody was watching.**
+
+#### The record a parked row carries
+
+**`SEQUENCED` · `BLOCKED` · `WAITING` rows carry: the owning module *or* an explicit reason it is undecided · a trigger steward · the trigger itself · dependencies · out-of-scope.** ⛔ **Priority is *not* a per-row field** — §20e is explicit that *"the queue order is the priority"*, and a second representation of it would contradict the first (§2).
+
+✅ **Enforced rather than asked for**: `_ownership_findings()` in `infra/state-check.py` reports any parked row with neither a resolvable module nor a steward. ⚡ **It accepts *either*, deliberately — a check that demanded a module would contradict §20e, and a check that contradicts a ratified rule is the more expensive defect.**
+
 ### ⚖️ 0-J · A ruling and its field move together — [D-131](DECISION_REGISTER.md)
 
 > ## ***"Whenever a decision is executed, the corresponding status fields are updated in the same change. A decision recorded only in prose is effectively invisible to the repository."***

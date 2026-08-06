@@ -458,6 +458,7 @@
 | **Module** | **Undecided — that is the deliverable** |
 | **Slice** | discovery |
 | **Status** | **`WAITING`** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding of 2026-08-04, which this office raised and then left uncorrected for a day. **[D-029](DECISION_REGISTER.md) defers it explicitly**: *"do not force a module boundary until implementation naturally reaches M14b."* **A row whose deliverable is a boundary the product owner deferred is not claimable**, and leaving it `READY` made the eligible count overstate itself by one every time it was read. **The scope is untouched and the order is untouched** — only the advertisement stops |
+| ⚡ **Trigger steward** | **Lane C — Product Office.** **Naming a bounded context is preparation, and the module *is* the deliverable.** ⛔ **The naming itself is the product owner's to ratify.** ⚡ **Added 2026-08-06 under [D-135](DECISION_REGISTER.md)** — *"every task should have an owner even if it cannot yet have an executor."* ⛔ **This is not a module assignment and does not become one.** **[§20e](../CLAUDE.md) says *when ownership is genuinely unclear, leave it unassigned* — that governs the *module*, an architectural boundary.** **D-135 governs the *task*, and names *owning lane* and *owning module* as two separate fields.** **The module stays undecided; somebody still watches the trigger.** |
 | **Notes** | [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-2: **a roadmap row is not claimable until it names its bounded context.** M14b's first task is therefore the discovery that names it. Lane A's analysis is already recorded — *one module and two integrations, not one and not three* |
 
 ### TASK-001 · Verify the three fixes QE may not close
@@ -1217,6 +1218,7 @@
 | **Epic** | **Epic H**, [437](architecture/437-ai-platform-future-epic.md) |
 | **Module** | ⚠️ **Undecided — that is part of the deliverable.** `workspace_tenancy`, `ai_platform`, or a new context |
 | **Status** | **`SEQUENCED`** — after [TASK-421](#task-421), **and blocked on ADR-B** |
+| ⚡ **Trigger steward** | **Lane C — Product Office.** ⛔ **The module stays undecided and that is correct — the row says so itself: *"that is part of the deliverable"*.** **Two triggers, and both are watched here:** **① [TASK-421](#task-421) completing** · **② ADR-B, which does not exist and is [437](architecture/437-ai-platform-future-epic.md)'s to propose.** ⚠️ **The second is the real one** — a row blocked on an unwritten ADR parks indefinitely unless somebody is accountable for writing it, and drafting an ADR is Product Office's ([§20e](../CLAUDE.md)). ⚡ **Added 2026-08-06 under [D-135](DECISION_REGISTER.md)**: *"someone is accountable for advancing it when its prerequisites are satisfied."* |
 | **Objective** | Allowed providers · model restrictions · compliance constraints, **per workspace** |
 | **Stays inside the ratified contract** | **Routing by policy is configuration**, which [ADR-0012](architecture/adr/0012-ai-platform-architecture.md) permits. ⛔ **Routing that learns from observed latency or cost is not** — the registry is *"read-only… no adaptive routing that learns from previous calls"* |
 
@@ -1247,6 +1249,7 @@
 | **Recommendation** | **[437 §4](architecture/437-ai-platform-future-epic.md)** — a foundational gap found by repository-wide measurement, **not part of Epic H** |
 | **Module** | Undecided |
 | **Status** | **`SEQUENCED`** — **trigger: the first support request that cannot be answered without database access** |
+| ⚡ **Trigger steward** | **Lane C — Product Office.** **Watches for the trigger — *the first support request that cannot be answered without database access*** — ⚡ **and that request will arrive at the product owner or QE, not here, so the steward's real job is to have asked them.** ⚡ **Added 2026-08-06 under [D-135](DECISION_REGISTER.md)** — *"every task should have an owner even if it cannot yet have an executor."* ⛔ **This is not a module assignment and does not become one.** **[§20e](../CLAUDE.md) says *when ownership is genuinely unclear, leave it unassigned* — that governs the *module*, an architectural boundary.** **D-135 governs the *task*, and names *owning lane* and *owning module* as two separate fields.** **The module stays undecided; somebody still watches the trigger.** |
 | **Measured** | **`tenant admin`, `admin console` and `back-office` appear in zero documents and zero code files** |
 | **Objective** | **Support can see a workspace's state without a database client.** Today they cannot, and that is how production credentials end up on a laptop |
 
@@ -1258,6 +1261,7 @@
 | **Recommendation** | **[438 §2](architecture/438-platform-initiatives.md) shared foundation S1** — the one row this office proposes out of roughly forty capabilities assessed, and the reason is timing rather than importance |
 | **Module** | ⚠️ **Undecided — a repository-wide policy, not a module.** Likely `signora_platform/db/` *(🔴, frozen)* plus a per-module rule |
 | **Status** | **`SEQUENCED`** — **trigger: whichever comes first —** *(a)* the first customer contract naming a retention or erasure obligation, *(b)* the first workspace deletion request, or *(c)* **migration 0050**, because the cost of this rises with every table |
+| ⚡ **Trigger steward** | **Lane C — Product Office**, and ⚠️ **the policy half is the product owner's**: a retention term is a contract term. **Lane C prepares; it does not choose a retention period.** ⚡ **Added 2026-08-06 under [D-135](DECISION_REGISTER.md)** — *"every task should have an owner even if it cannot yet have an executor."* ⛔ **This is not a module assignment and does not become one.** **[§20e](../CLAUDE.md) says *when ownership is genuinely unclear, leave it unassigned* — that governs the *module*, an architectural boundary.** **D-135 governs the *task*, and names *owning lane* and *owning module* as two separate fields.** **The module stays undecided; somebody still watches the trigger.** |
 | **Objective** | **One answer to: what happens when a workspace, a person or a record must go.** Soft versus hard deletion · cascade order · what survives for audit · restoration · legal hold |
 | **Measured 2026-08-05** | **`deleted_at`, `is_deleted` and `soft delete` appear in ZERO files.** There is no strategy, consistent or otherwise, **and nothing has needed one yet.** Meanwhile **26 tables grant `FOR DELETE` and only 10 grant `FOR UPDATE`** — the repository is **edit-averse, not delete-averse**, so erasure is mechanically possible and only the policy is absent |
 | **Why now rather than at GA** | **The erasure surface is near-zero today.** [C-221](LANE_COORDINATION.md), ruled 2026-08-05, keeps person-level data out of the platform — *"do not expand the architecture around people until we have a reliable provider capability."* **This is the cheapest moment in Signora's life to decide what erasure means**, and every migration after this makes it dearer |
@@ -1366,6 +1370,7 @@
 | | |
 |---|---|
 | **Status** | **`SEQUENCED`** — **trigger: the Billing screen is scheduled for implementation** |
+| ⚡ **Trigger steward** | **Lane C — Product Office.** ⛔ **The module stays deliberately unnamed under [D-042](DECISION_REGISTER.md)** — *"do not force a module boundary until implementation reaches it"* — **and that ruling is untouched.** **Stewardship is watching for the Billing screen to be scheduled.** ⚡ **Added 2026-08-06 under [D-135](DECISION_REGISTER.md)** — *"every task should have an owner even if it cannot yet have an executor."* ⛔ **This is not a module assignment and does not become one.** **[§20e](../CLAUDE.md) says *when ownership is genuinely unclear, leave it unassigned* — that governs the *module*, an architectural boundary.** **D-135 governs the *task*, and names *owning lane* and *owning module* as two separate fields.** **The module stays undecided; somebody still watches the trigger.** |
 | **Preparation** | [424](architecture/424-usage-metering-assessment.md) §9a — six slices, most of them reads |
 | **Module** | ⚠️ **Deliberately unnamed.** [D-042](DECISION_REGISTER.md): *"do not force a module boundary until implementation naturally reaches it"* |
 | **Reuse** | **`ai_inference` · `provider_sync` · `membership` already meter, per workspace, immutably.** Slices 1–3 are `UsageReader` ports over tables and indexes that exist |
@@ -1377,6 +1382,7 @@
 | | |
 |---|---|
 | **Status** | **`SEQUENCED`** — **trigger: TASK-411 slices 4–5 complete** |
+| ⚡ **Trigger steward** | **Lane C — Product Office**, inherited with [TASK-411](#task-411--usage-accounting--meter-what-a-workspace-consumed), whose slices 4–5 are its trigger. ⚡ **Added 2026-08-06 under [D-135](DECISION_REGISTER.md)** — *"every task should have an owner even if it cannot yet have an executor."* ⛔ **This is not a module assignment and does not become one.** **[§20e](../CLAUDE.md) says *when ownership is genuinely unclear, leave it unassigned* — that governs the *module*, an architectural boundary.** **D-135 governs the *task*, and names *owning lane* and *owning module* as two separate fields.** **The module stays undecided; somebody still watches the trigger.** |
 | **Preparation** | [424](architecture/424-usage-metering-assessment.md) §9b |
 | **Serves** | Customers · engineering · finance · support |
 | **Reuse** | Every figure derives from TASK-411's readers. **No second aggregation** |
