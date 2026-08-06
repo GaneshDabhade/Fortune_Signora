@@ -498,7 +498,7 @@ This is **Provider Platform's defect, not a contract problem**, and it does not 
 | **Owner** | **Product owner** — needs an ADR |
 | **Requesting lane** | Lane B |
 | **Category** | Architecture clarification · ADR requirement |
-| **Status** | `OPEN` |
+| **Status** | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 | **Blocks** | **Nothing in M12.5.** It must be answered before anything matches an account against an ICP |
 | **Raised** | `30e66d0` as F-B1; sharpened at `960b604` |
 
@@ -616,7 +616,7 @@ Both are customer-authored, both are versioned, both are immutable, and **custom
 | **Owner** | **Product owner** |
 | **Requesting lane** | Lane B |
 | **Category** | Architecture clarification — `CLAUDE.md` §20e |
-| **Status** | `OPEN` |
+| **Status** | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 | **Blocks** | Nothing. A standing ambiguity every feature lane hits |
 | **Raised** | `30e66d0` as F-B5 |
 
@@ -1209,7 +1209,7 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 | **Owner** | **Product owner** — the roadmap and `docs/architecture/01`–`21` are 🔴 |
 | **Requesting lane** | Lane B, assigned M7 on 2026-08-02 |
 | **Category** | Milestone definition · module design · infrastructure dependency |
-| **Status** | `OPEN` |
+| **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 | **Blocks** | **M7 entirely** — recorded as [`TASK-017`](BACKLOG.md), `WAITING`, not `BLOCKED` |
 | **Why `WAITING`** | Ruled 2026-08-02: **`BLOCKED` is work already begun that a dependency has stopped; `WAITING` is work not yet executable.** M7 has never been implementable — its architecture is unagreed — so it belongs to repository planning rather than to engineering execution, and **the lane does not sit idle beside it** |
 | **Raised** | 2026-08-02, during the startup workflow for the M7 module assignment, **before any code** |
@@ -1377,7 +1377,7 @@ Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commer
 | **Owner** | **Product owner** — scope, sequencing and one ratified rule |
 | **Requesting lane** | Lane B, assigned M13 on 2026-08-02 |
 | **Category** | Milestone scope · module ownership · authentication boundary |
-| **Status** | `OPEN` |
+| **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 | **Blocks** | **M13's credential half entirely.** Parts of it are executable today; the part every adapter needs first is not |
 | **Raised** | 2026-08-02, during the M13 implementation readiness review, **before any code** |
 
@@ -3082,7 +3082,7 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 |---|---|
 | **Owner** | **Product owner** — an architectural interpretation, not a defect |
 | **Requesting lane** | **QE**, validating TASK-407 |
-| **Status** | ✅ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-06. **Analysis below; one ruling, and a recommendation** |
+| **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 | **State** | ~~`OPEN`~~ — **superseded by `Status` above.** ⚠️ **This field name is why the item drifted; see the note at the end** |
 | **Raised** | 2026-08-04 |
 | **Blocks** | **Nothing today.** TASK-407 passes every gate and was promoted. **This asks whether it should become precedent** |
@@ -4226,7 +4226,7 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 |---|---|
 | **Raised by** | Lane B, 2026-08-03, Product Capability Audit ([50](architecture/50-product-capability-audit.md) §2.4, §4b) |
 | **Owner** | **Product owner**, with `commercial_profile` and `buying_score_engine` |
-| **Status** | `OPEN` |
+| **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-111](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 | **Blocks** | **Epic B1.** And it is why the product currently contradicts itself on screen |
 
 **The contradiction, measured.** *Your business* says Signora needs the catalogue *"before it can tell you anything useful about anyone else's company"*. A freshly seeded organization has **no products and twelve scored accounts** ([PX-314](PRODUCT_EXPERIENCE.md)). **One of those two screens is wrong**, and which one is a product decision.
@@ -4621,7 +4621,7 @@ grep -E '^(current|next|future|eligible_count|shortfall|depth_target)' \
 |---|---|
 | **Raised by** | **Lane B**, 2026-08-05, on resuming [TASK-406](BACKLOG.md) after [TASK-434](BACKLOG.md) was promoted — reading the two contracts before writing, exactly as [C-328](#c-328--task-406-asks-commercial_profile-to-read-the-pipeline-which-a-contract-forbids-by-design) and [C-330](#c-330--task-406-measures-icp-fit-against-outcomes-and-nothing-can-say-which-accounts-are-in-the-icp) were raised |
 | **Owner** | **The product owner** — it needs a dependency edge that the ratified graph does not contain, which is 🔴 and never a lane's |
-| **Status** | **`OPEN`** — **TASK-406 returns to `BLOCKED` and no code is written.** ⚠️ **This is not a re-raise of C-330.** That item asked for the predicate; the predicate exists and is on `main`. **This is about the two things either side of it** |
+| **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-111](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 | **Blocks** | **[TASK-406](BACKLOG.md) whole — both halves, not only the backtest.** The row's *"the per-criterion lift half is unaffected and needs nothing new"* is **measurably wrong**, and that is the most useful thing in this item |
 
 ### The problem, in one line
@@ -4805,7 +4805,7 @@ grep -E '^(current|next|future|eligible_count|shortfall|depth_target)' \
 |---|---|
 | **Raised by** | **Lane B**, 2026-08-05, on being asked whether it had documented what it was waiting on. **It had not, and that is the finding** |
 | **Owner** | **Product owner** — synchronization priority is theirs (§20e) · **Lane C** for the register correction, which is their row |
-| **Status** | `OPEN` |
+| **Status** | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 | **Blocks** | **Every Lane B slice.** The lane has been `AVAILABLE` with nothing verifiable to claim since cycle 54 |
 
 ### Two facts, both measured from `origin/integration` today
@@ -5837,7 +5837,7 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-05, on claiming [TASK-417](BACKLOG.md) and checking each of the twelve sections against the routes that actually ship — **before writing a line** |
 | **Owner** | **Lane C** (the [414](architecture/414-wave-1-account-360.md) correction) · **Lane B** (`knowledge_graph`, if an endpoint is wanted) · **the product owner** (whether wave 1 ships eleven sections or waits) |
-| **Status** | `OPEN` — **[TASK-417](BACKLOG.md) is not blocked.** Eleven of the twelve sections are buildable and are being built |
+| **Status** | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 | **Blocks** | **One section of one screen** |
 
 ### The finding, in one line
@@ -6341,7 +6341,7 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 | **Raised by** | **Lane C**, claiming [TASK-418](BACKLOG.md) |
 | **Owner** | **The product owner** — it is a Change Budget question, and the Change Budget is theirs |
 | **Blocks** | **[TASK-418](BACKLOG.md) capabilities ① and ②.** **④ is unaffected and ships now** |
-| **Status** | **`READY FOR PRODUCT DECISION`** — alternatives, recommendation and trade-offs below |
+| **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-111](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 
 ### The problem, in one line
 
@@ -6403,7 +6403,7 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 | **Raised by** | **Lane C**, Product-Led Domain Discovery |
 | **Owner** | **The product owner.** It is a product decision with a ratified engineering principle on one side of it |
 | **Blocks** | **Nothing today.** **[TASK-438](BACKLOG.md) delivers five of the screen's sections without it** |
-| **Status** | **`READY FOR PRODUCT DECISION`** |
+| **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 
 ### The conflict, in two quotations
 
@@ -6459,7 +6459,7 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 | **Raised by** | **Lane C**, auditing the screen before implementation reached it |
 | **Owner** | **The product owner** — it decides a module's published language and a platform boundary |
 | **Blocks** | **Nothing today.** [TASK-202](BACKLOG.md) is blocked on [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) for unrelated reasons |
-| **Status** | **`READY FOR PRODUCT DECISION`** |
+| **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 
 ### Two halves, and the second cannot be answered without the first
 
