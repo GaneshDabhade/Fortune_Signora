@@ -296,6 +296,76 @@ def _ui_integrated() -> int:
                if i in wave and s in started)
 
 
+#: The approved screen set, and the only hand-written number in this view.
+#: **16 business + 10 platform foundation = 26**, from
+#: `418-platform-foundation-assessment.md` §1. It is a *count of designs the
+#: product owner approved* — nothing in the repository derives it, so deriving
+#: it would be inventing it. **Everything below is measured against it.**
+APPROVED_SCREENS = 26
+
+
+def screen_coverage(ref: str) -> list[str]:
+    """**Which approved screens can be built, and what stops the rest** (D-108).
+
+    Answers the seven questions the directive names, from two sources joined at
+    `ref`: the screen rows in `BACKLOG.md` and the ⛔ blockers the Domain
+    Discovery Register records per screen.
+
+    ⚡ **The category that matters is the last one** — a screen with **no ⛔
+    blocker recorded** and **no row.** Nothing the Register calls blocking
+    prevents it; **the only reason it is not moving may be that Product Office
+    has not written the row.** Every other category names somebody else's
+    dependency. **This one can name this office**, which is why it is computed
+    rather than described.
+
+    ⚠️ **It counts ⛔ and nothing else, and the label says so.** The Register
+    also records constraints with ⚠️ — *"no search index exists: `meilisearch`
+    `tsvector` `trigram` all 0"* for Global Search, and five absent concerns for
+    App Shell — **and those are real even though they are not ⛔.** Counting
+    them here would need a judgement about which ⚠️ blocks, and a script making
+    that call would be stating opinion in the voice of arithmetic. **So the
+    figure is deliberately named for the marker it counts**: a screen appearing
+    here is a *candidate* for decomposition, not a verdict that it is ready.
+    **The alternative — calling it "not blocked" — is B-101's shape: a proxy
+    labelled as the thing it stands for.**
+    """
+    rows = {i: s for i, _, s in tasks(ref) if i in ui_wave_tasks(ref)}
+    shipped = ("VERIFIED", "CERTIFIED", "PROMOTED", "DONE")
+    flight = ("CLAIMED", "IN PROGRESS", "IN VALIDATION", "CHANGES REQUESTED")
+
+    register = show(ref, "docs/DOMAIN_DISCOVERY_REGISTER.md").split("# Part B")[0]
+    blocked: dict[str, list[str]] = {}
+    for line in register.splitlines():
+        m = re.match(r"^\| \d+ \| \*\*(.+?)\*\*.*?\|(.*)\|$", line)
+        if not m:
+            continue
+        blocked[m.group(1).strip()] = [
+            b.strip() for b in re.findall(r"⛔ \*\*([^*]+)\*\*", m.group(2))
+        ]
+
+    counts = Counter(
+        "implemented" if s in shipped else "in flight" if s in flight
+        else "ready" if s == "READY" else "other"
+        for s in rows.values()
+    )
+    undecomposed = sorted(s for s, b in blocked.items() if not b)
+
+    out = [section("SCREEN COVERAGE — product completion (D-108)")]
+    out.append(f"  Approved screens           {APPROVED_SCREENS}")
+    out.append(f"  With a row at {ref:<14} {len(rows)}")
+    out.append(f"    implemented              {counts['implemented']}")
+    out.append(f"    in flight                {counts['in flight']}")
+    out.append(f"    implementation-ready     {counts['ready']}")
+    out.append(f"  Audited, no row, blocked   {sum(1 for b in blocked.values() if b)}")
+    out.append(
+        f"  ⚡ No ⛔ recorded and no row   {len(undecomposed)}"
+        f"   {', '.join(undecomposed) if undecomposed else '—'}"
+    )
+    out.append("     ^ decomposition candidates. ⚠️ counts ⛔ only — a screen")
+    out.append("       constrained by a ⚠️ note appears here and is not ready.")
+    return out
+
+
 def bar(pct: int, width: int = 10) -> str:
     filled = max(0, min(width, round(pct / 100 * width)))
     return "█" * filled + "░" * (width - filled)
@@ -342,11 +412,12 @@ def build(ref: str, since: str | None = None) -> str:
     a(f"  Measured        {ref} @ {head}   (main @ {main_head})")
     a(f"  Modules {len(modules)}   Epics {len(epics)}   Tasks {len(tk)}   ADRs {len(adrs)}")
     a(f"  Endpoints {endpoints}   Frontend routes {routes}   Active lanes {len(lanes)}")
-    a(f"  Approved UI screens 26   Implemented {_ui_implemented(tk, ref)}   (wave rows in BACKLOG.md)")
+    a(f"  Approved UI screens {APPROVED_SCREENS}   Implemented {_ui_implemented(tk, ref)}   (wave rows in BACKLOG.md)")
     a(f"  Open blockers on the board: {', '.join(blockers) if blockers else 'none'}")
     a(f"  Repository health          {J}")
     a(f"  Overall implementation     {J}  (estimate)")
     a(f"  Highest priority work      {J}")
+    o.extend(screen_coverage(ref))
 
     # **Every report carries this** (D-070, product owner 2026-08-05):
     # *"Product Office should always be thinking several steps ahead."* The
@@ -496,7 +567,7 @@ def build(ref: str, since: str | None = None) -> str:
     # C-213 and C-412 both were, committed here by the office that closed them.
     # **Counted from the wave rows instead**, so the day a wave completes this
     # line changes without anybody remembering to change it.
-    a(f"  Approved 26 · Implemented {_ui_implemented(tk, ref)} · "
+    a(f"  Approved {APPROVED_SCREENS} · Implemented {_ui_implemented(tk, ref)} · "
       f"Integrated {_ui_integrated()} · QE certified {J}")
     a("  Implemented counts a UI wave row past CLAIMED at the measured ref.")
     a("  Integrated counts it present on `origin/main` — **the code arrives**")
