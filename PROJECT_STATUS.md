@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `ef3e51f`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `f1eddf4`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,20 +12,20 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `ef3e51f`, 2026-08-06.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `f1eddf4`, 2026-08-06.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`ef3e51f`** — the certified commit itself |
-| **`integration`** | **level with `main`** at `ef3e51f` |
-| **Release candidate** | **None pinned.** Cycle 73 promoted **three corrections to the repository's account of itself** — a duplicate id that hid an unfinished fix, a `READY` count that was wrong by 52, and a certification record that had been calling aborts failures |
-| **Certification** | ✅ [`ef3e51f35327`](certification/reports/ef3e51f35327.md) · migration head **`0039`** · protocol **v2** |
+| **`main`** | **`f1eddf4`** — the certified commit itself |
+| **`integration`** | **level with `main`** at `f1eddf4` |
+| **Release candidate** | **None pinned.** Cycle 74 promoted **two checks that make an unowned coordination item visible** — and the first sweep miscounted its author's own register |
+| **Certification** | ✅ [`f1eddf41a0d6`](certification/reports/f1eddf41a0d6.md) · migration head **`0039`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
 | **Validation queue** | **Empty.** ✅ **Lane C's cycle-70 deferral resolved itself** — the lane rebased, and its work is promoted here |
-| **Customer value this cycle** | ⛔ **None.** Every change is the repository correcting what it says about itself — **and one of those corrections is that only two rows are claimable, where the dashboard has been reading 54** |
+| **Customer value this cycle** | ⛔ **None.** Governance instrumentation. **Three cycles running with no customer-visible change**, and that is the fact worth carrying forward rather than the individual entries |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
@@ -40,19 +40,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **[TASK-437](docs/BACKLOG.md)** *(cycle 69)* | **[B-328](docs/BUGS.md)** — the gate said 54 `READY`, the lane said zero, and there are two | **[D-099](docs/DECISION_REGISTER.md)** — the duplicate id, and what it hid | **Cycle 73** |
-| **Execution phase** | ⚠️ **Idle, four cycles** — and **the board held two claimable rows, not 54** | **Building** | **Governing** — stewardship from D-099 | **Certified · Promoted · Closed out** |
+| **Last promoted** | **[TASK-437](docs/BACKLOG.md)** *(cycle 69)* | **[C-420](docs/LANE_COORDINATION.md)** *(cycle 72)*; this cycle's slice **dropped as a duplicate** | **[D-100](docs/DECISION_REGISTER.md)** — an unowned coordination item becomes visible | **Cycle 74** |
+| **Execution phase** | ⚠️ **Idle, five cycles** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
 | **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
-| **Validation status** | — | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
-| **Blocked?** | **Materially, yes** — 2 startable rows across the whole repository | **No** | **No** | **No** |
+| **Validation status** | — | **Nothing new** — its fix was already promoted | ✅ **Promoted this cycle** | — |
+| **Blocked?** | **Materially, yes** — **2 startable rows in the whole repository** | **Same constraint** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | **[TASK-201](docs/BACKLOG.md) or [TASK-202](docs/BACKLOG.md)** — the only two startable rows there are | Next slice | Stewardship | **Cycle 74, on the next pass** |
+| **Next executable work** | **[TASK-201](docs/BACKLOG.md) or [TASK-202](docs/BACKLOG.md)** — the only two there are | Same two | Stewardship | **Cycle 75, on the next pass** |
 
-> **Every branch sits level with `main` and both promoted lanes arrived already rebased**, so QE rebased nothing for the second cycle running.
+> **Every branch sits level with `main`.** QE has rebased nothing for three cycles; the lanes arrive already rebased.
 >
-> ⚠️ **The queue, not the lanes, is the constraint — and last cycle's dashboard said the opposite.** `state-check` reported **54 `READY`** where the repository holds **two startable rows**, so *"Lane A has pushed nothing for four cycles"* was recorded against a board that looked full and was not. **A lane finding nothing to take is not a lane declining to take something**, and only one of those is a lane's problem.
+> ⚠️ **The constraint is the queue and it has not moved.** **Two startable rows across the entire repository**, unchanged since the miscount was corrected in cycle 73 — and **three consecutive cycles have shipped no customer-visible change.** Each was defensible alone; the run of three is the thing worth seeing.
 >
-> **Work allocation is the product owner's** (§20e) — QE reports the count and does not fill the queue.
+> **Work allocation is the product owner's** (§20e). QE measures the count, reports it, and does not fill the queue.
 
 ---
 
@@ -103,51 +103,52 @@
 
 ---
 
-## 1d · Release summary — 2026-08-06, cycle 73
+## 1d · Release summary — 2026-08-06, cycle 74
 
-**Derived from the promoted commit `ef3e51f`.** **Twenty-nine promotions.** Three corrections to what the repository says about itself — **and two of them are corrections to figures QE has been publishing.**
+**Derived from the promoted commit `f1eddf4`.** **Thirty promotions.** One lane's governance checks — **and a duplicate that dropped itself, which is the register working rather than a lane wasting a slice.**
 
 ### What was promoted
 
-**Three corrections to what the repository says about itself, and two of them correct figures QE had been publishing.**
+**[D-100](docs/DECISION_REGISTER.md), Lane C** — every coordination item must declare an **owner** and a **state**, and `state-check` now says when one does not.
 
-### ① [D-099](docs/DECISION_REGISTER.md) — a row read `FIXED` and was not, and the duplicate id is what hid it
+> *"An unowned item is worse than an unraised one: it is visibly filed, so everybody assumes somebody has it."* [C-213](docs/LANE_COORDINATION.md) cost TASK-205 two days on a **stale** owner. **An absent one fails the same way and is harder to notice, because there is no wrong name to disbelieve.**
 
-**Two reconciliation passes ran on 2026-08-06 and neither knew about the other**, because both were filed under `B-327`. One corrected four documents; the other left the three the original row actually named. `444` still read *"the five sections that need nothing… it needs no answer from anybody"*; `448` still read *"R-00 shipped."* **All seven now say implemented, not usable.**
+### The check miscounted its author's own register, and the row says so
 
-> **`state-check`'s duplicate-id check found the cause and could not find the consequence: it compares identifiers, not claims.** That is the honest limit of a mechanical check, and Lane C stated it rather than implying the check was sufficient.
+**The first sweep reported 12 unowned items when 2 were.** Items raised before 2026-08-03 write `Current assignee(s)`; later ones write `Owner`.
 
-**QE said it would renumber these and did not need to.** Lane C merged the two items instead — the better fix, because renumbering would have preserved two rows describing one reconciliation.
+> **Reading both schemas is the fix; the register having two is the finding.** Lane C reported the drift rather than silently accommodating it — the same shape as [B-125](docs/BUGS.md), where a check that could not run reported success by reporting nothing.
 
-### ② The `READY` count was wrong by 52, in the one line a reader consults
+### What it surfaced immediately, on this candidate
 
 ```
-before   Backlog: 69 task(s), 54 READY
-after    Backlog: 54 task(s), 2 startable (TASK-201, TASK-202)
+16 coordination items declare no Status row
+   C-026 C-027 C-104 C-211 C-212 C-214 C-215 C-216 C-300…C-307
+15 items still use the pre-2026-08-03 ownership schema
 ```
 
-**`state-check` was counting task headings, not claimable rows** — [B-101](docs/BUGS.md)'s class again, and `_backlog_states` was already in the file.
+**Advisory, never repaired automatically** — each has more than one correct resolution. ⚠️ **[C-104](docs/LANE_COORDINATION.md) is on that list**: the synchronous-vendor-call question QE raised for the product owner several cycles ago **has no `Status` row**, which is part of why it has been easy to leave.
 
-> ⚠️ **This changes how the previous cycle's Lane A observation should be read.** *"Lane A has pushed nothing for three cycles"* was recorded against a board that appeared to hold 54 claimable rows. **It held two.** A lane finding nothing to take is a different situation from a lane declining to take something, and the dashboard was describing the wrong one.
+### Lane B's slice dropped itself, and that is the register working
 
-### ③ `465` — across 70 certifications, no gate has caught a product defect
+**Lane B's [B-328](docs/BUGS.md) vanished on rebase** — the `READY`-count fix it carried is the same one Lane C landed in cycle 73. **Two lanes independently found and fixed the miscount within hours**, and the duplicate cost one rebase to discover rather than a coordination item to unpick.
 
-**And D-099 reclassifies the record**: *"3 failures in 70 runs"* becomes **0 failures and 3 aborts**, which **reverses `463`'s judgement of `smoke` without taking a new measurement.**
+### Three cycles with no customer-visible change
 
-> **That is the attempt/failure/abort distinction applied backwards through the record, and it is the correct application of it.** An abort is a statement about the run; a failure is a statement about the commit. A record that had been conflating them was overstating how often the repository was broken — **including cycle 71's abort, which was QE's own timeout and never a verdict on anything.**
+**71 shipped product. 72, 73 and 74 have not.** Each was defensible on its own — a rename taken while free, three corrections to the repository's account of itself, two checks that make an unowned item visible — **and the pattern is worth stating rather than leaving to be inferred from three summaries in a row.**
 
-**The claim in `465`'s title stands and is worth sitting with**: seventy certifications, and no gate has ever caught a product defect. **Every defect that has mattered was found by using the product** — which is the argument that created this lane, now with a number attached.
+> **QE does not allocate work** (§20e), and this is not a criticism of any lane: `state-check` reports **two startable rows in the entire repository**. **Governance work is what remains when the queue is empty**, and the queue is the product owner's.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
 | **Technical** | **3683 backend** · **1255 frontend** — **gated in stage 1** · **95.33%** · **389 invariants** · **765 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **73 certification runs recorded, 70 certified** · `promoted == certified` ✓ · **3 aborts across the record, 0 failures** *(reclassified by [D-099](docs/DECISION_REGISTER.md))* · ⚠️ **[B-123](docs/BUGS.md) half open** |
+| **Release** | **74 certification runs recorded, 71 certified** · `promoted == certified` ✓ · **3 aborts, 0 failures** · ⚠️ **[B-123](docs/BUGS.md) half open** |
 | **Architecture** | Reachability 0 doorless · migration `0039` **reversible, verified this cycle** · event catalog 1 known drift · ⚠️ **two capabilities shipped without a caller** · ⚠️ **[B-126](docs/BUGS.md) — architecture document `25` claimed twice** |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ⛔ **None.** The repository corrected three things it was saying about itself — **two of them figures on this dashboard** |
-| **Process** | ✅ **Two lanes, clean rebases, no aborts.** ⚠️ **And the cycle's real finding is about QE**: a duplicate id, a miscounted queue and a misclassified failure record all reached `main` under a passing certification. **`465` says why** — no gate has ever caught a product defect in seventy runs |
+| **Customer Value** | ⛔ **None, third cycle running.** Governance instrumentation, and **two startable rows in the whole repository** |
+| **Process** | ✅ **Clean — one lane, one rebase, no conflicts, no aborts.** A second lane's slice **dropped itself as a duplicate**, which is the register working: two lanes fixed the same miscount within hours and it cost one rebase to find |
 
 ### Repository Health Trend
 
