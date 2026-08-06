@@ -318,12 +318,30 @@ A task is done only when all of the following are true:
 | **Documentation updated** | The module's design doc, consistent with the code (§12) |
 | **Self-validation performed** | The lane ran its own gates on the **rebased** branch |
 | **Independently demonstrable** | §2 — showable without naming a module, a table or a port |
-| ⚡ **Customer journey automated *and executed*** | **For every customer-visible slice: a Playwright scenario that completes the journey — written by the implementing lane, and *run by it before the push*** ([D-114](docs/DECISION_REGISTER.md)). ⚡ **`python3 infra/certification-guard.py --journeys` names which specs the change selects; the mapping is deterministic and not a judgement call.** ⛔ **The responsibility does not end with writing the tests. It includes executing them** ([D-113](docs/DECISION_REGISTER.md), [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) L-15 gate 8). **A UI slice is not complete until its scenario is written and passing.** ⛔ **A journey, never a control** — *button exists* and *modal opens* are component tests and belong in `frontend/tests/components/`. **Headed by default in development (`HEADED=1`); QE chooses the mode for certification** |
+| ⚡ **Customer journey automated *and executed*** | **For every customer-visible slice: a Playwright scenario that completes the journey — written by the implementing lane, and *run by it before the push*** ([D-114](docs/DECISION_REGISTER.md)). ⚡ **`python3 infra/certification-guard.py --journeys` names which specs the change selects; the mapping is deterministic and not a judgement call.** ⛔ **The responsibility does not end with writing the tests. It includes executing them** ([D-113](docs/DECISION_REGISTER.md), [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) L-15 gate 8). **A UI slice is not complete until its scenario is written and passing.** ⛔ **A journey, never a control** — *button exists* and *modal opens* are component tests and belong in `frontend/tests/components/`. ⚡ **Headed is the default for local development and review; QE chooses the mode for certification** — **[D-134](docs/DECISION_REGISTER.md), and see *The headed-execution policy* below** |
+| ⚡ **Visually reviewed in headed mode** | **Before handover to QE, the implementing lane runs the completed journey headed and watches it** ([D-134](docs/DECISION_REGISTER.md)). ⛔ **The purpose is not verification — the assertions already did that. It is continuous product review.** **What is being watched: screen transitions · navigation flow · animations and interactions · loading states · empty states · error states · form validation · responsiveness where applicable · and overall consistency with the finalized design system ([D-128](docs/DECISION_REGISTER.md)).** ⚡ **The journey is implementation evidence** — it demonstrates that the complete customer experience works end to end, **not merely that the assertions passed** |
 | **UI states covered** | **Loading · empty · error · permissions · accessibility where applicable.** ⚠️ **And the error state is the one that gets skipped** — [P-A](docs/DOMAIN_DISCOVERY_REGISTER.md): *a failed read must never render as an empty result*, which [C-226](docs/LANE_COORDINATION.md) found six times on one screen |
 | **Engineering Laws satisfied** | **The eleven handover gates in [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) §L-15** — reuse audit · behaviour preservation · data preservation · migration contract · backward compatibility · architecture consistency · runtime composition · customer journey · documentation · QE impact · no blocking defect |
 | **Ready for QE validation** | All of the above **before** the handover, not after the rejection |
 
 > **QE validates that this happened. QE does not make it happen.** A coverage gap found at certification is the same gap that was visible to the lane in seconds — `make coverage-debt` reads the data `pytest --cov` already wrote and names the file. **Quality moves left because it is cheaper there, not because QE minds looking.**
+
+### The headed-execution policy
+
+**Ratified 2026-08-06, product owner, [D-134](docs/DECISION_REGISTER.md). Drafted by Lane C on that instruction, which is the only route by which this file is amended.**
+
+> ## **Headed is the default mode for local development and review. Certification may run headless.**
+
+**The reason is not debugging.** ⚡ ***"The purpose is not only verification, but also continuous product review."*** **A passing assertion says a control was found and clicked. It says nothing about whether the transition was jarring, the empty state was designed, the error state existed, or the screen matched the approved design** — and **those are the defects this repository keeps finding by *using* the product rather than by testing it** (§20e: *every defect that has mattered in this project was found by using the product, not by the suite*).
+
+| | |
+|---|---|
+| **Local development · review** | ⚡ **Headed.** **The lane watches the journey it built, as a customer would see it** |
+| **Certification · QE** | **Headless, for speed and stability.** **QE chooses, unchanged** |
+
+⚠️ **This is a change, not a restatement.** **`playwright.config.ts` reads `headless: process.env.HEADED !== '1'` — headless is today's default and `HEADED=1` opts in** — **and the line above previously described that as *"headed by default"*, which was not true of the repository** (§2). ⛔ **The text is corrected here and the behaviour is [TASK-476](docs/BACKLOG.md); a rule stated before the mechanism exists is the defect this file warns about, so the row exists rather than the claim.**
+
+**The Playwright journey is implementation evidence.** It demonstrates that the complete customer experience works from beginning to end — **and a lane reporting a journey complete has watched it, not only run it.**
 
 ### Milestone Definition of Done
 

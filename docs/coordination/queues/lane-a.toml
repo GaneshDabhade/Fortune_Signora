@@ -50,8 +50,15 @@ depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-447"
-next    = "TASK-456"
-future  = ["TASK-460", "TASK-901"]
+next    = "TASK-460"
+future  = ["TASK-901"]
+
+# ⚡ **TASK-456 claimed 2026-08-06 — the sixth row this lane has taken today,
+# and the D-130 audit that narrowed its surface reached it in time.**
+# ⚠️ **Eligible is 3 against a target of 5, and falling.** This lane consumes
+# roughly one row an hour; the remaining approved screens are behind C-421
+# (design access) and C-229 (the navigation entry), both the product owner's.
+# ⛔ Not padded — decomposing further would need scope this office may not add.
 
 # ⚡ **TASK-449 claimed 2026-08-06 — the fifth row this lane has taken today.**
 # ⚡ **TASK-475 added to `blocked`, not to the eligible sequence** — it is
@@ -187,6 +194,8 @@ eligible_count = 6
 shortfall      = 0
 eligible_count = 4
 shortfall      = 1
+eligible_count = 3
+shortfall      = 2
 
 [rationale]
 "TASK-439" = "⚡ THE SIGNAL CENTER — the first approved screen this lane ships under D-104, and it is a RENDER. 447 traced ten elements: 6 built, 2 amber, 2 red — and BOTH reds are already moving: Resource.SIGNAL is TASK-405 (IN VALIDATION, with QE) and signal.resolved is TASK-432 (above, this lane's). No other approved screen has both blockers in flight. Already built and not to be rebuilt: the aggregate and its scoring; Actioned/Assigned/Snoozed/Dismissed/Resolution, all four; Snoozed.until as a read-time predicate; DismissalReason; and the triage counts in lib/state/triage.ts, which partition and never re-rank. ⛔ OUT OF SCOPE, named so it is not discovered late: the readable audit surface (R-07, 🟡) and rule precision (downstream of TASK-432 — without signal.resolved there is nothing to aggregate). 🟢 Render only: no endpoint, no event, no migration. If a section needs one, raise it. ⚠️ AND THE ONE RULE: a failed read must never render as an empty queue — P-A and C-226. 'Nothing to triage' and 'we could not find out' are opposite messages to a seller, and this is the screen where the difference costs most. Sequence after TASK-405 promotes; TASK-432 may run in parallel."

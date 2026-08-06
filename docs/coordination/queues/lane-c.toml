@@ -42,7 +42,12 @@ depth_target = 5
 
 current = "TASK-419"
 next    = "TASK-454"
-future  = ["TASK-455", "TASK-474", "TASK-473"]
+future  = ["TASK-455", "TASK-474", "TASK-476", "TASK-473"]
+
+# ⚡ **TASK-476 added 2026-08-06 — D-134 ④.** Headed becomes the default a
+# lane reviews in. ⛔ Found by VERIFYING the existing rule rather than quoting
+# it: CLAUDE.md §19 said "headed by default" and the config defaults to
+# headless. The sentence was wrong, not the config.
 
 # ⚡ **TASK-474 added 2026-08-06 — D-133 ③, and it is the highest-leverage
 # row in the whole backlog: ten of the fourteen journey gaps in ADR-0406 §6
@@ -105,7 +110,7 @@ future  = ["TASK-455", "TASK-474", "TASK-473"]
 #             not a deferral candidate.
 #   TASK-455  a reviewable sign-up — blocks no implementation and
 #             blocks REVIEW, which §2 makes a completion condition.
-eligible_count = 5
+eligible_count = 6
 shortfall      = 0
 
 [rationale]
