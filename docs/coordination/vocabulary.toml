@@ -118,7 +118,29 @@ status      = "canonical"
 owner       = "commercial_profile"
 means       = "Deciding whether an account satisfies a declared ICP criterion, per criterion, with a reason."
 relates_to  = ["Icp", "Account", "Unmeasured"]
-note        = "Never a score. MatchStrength's invariant applies by analogy: a category with reasons, never a number."
+note        = """
+Never a score. MatchStrength's invariant applies by analogy: a category with
+reasons, never a number.
+
+⚡ RATIFIED 2026-08-06 · D-111, ruling C-322:
+
+    An ICP is a declarative filter evaluated against observed customer
+    attributes.
+
+That settles a question the register carried as open while the repository had
+already answered it: TASK-434 shipped `evaluate(icp, observed)` and it is
+PROMOTED, and a predicate measuring an account against a declaration IS the
+filter reading. The alternative — an ICP as a DESCRIPTION, "the customer's
+words, versioned, ungraded" — is now closed, and with it the contradiction the
+product showed on screen: `Your business` claimed the catalogue was needed
+"before it can tell you anything useful about anyone else's company" while a
+freshly seeded organization with no products showed twelve scored accounts.
+
+⛔ What the ruling does NOT license: relevance is still judged with reasons and
+never as a number, and the declaration is still the customer's own words. What
+changed is that those words are now EVALUATED rather than merely recorded.
+TASK-446 supplies the observed attributes the predicate compares against.
+"""
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Canonical terms confirmed by audit — each already owned, none in dispute

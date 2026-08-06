@@ -400,7 +400,7 @@
 |---|---|
 | **Module** | Seven pipeline modules, **one per slice** |
 | **Slice** | **Seven independently certifiable slices**, not one |
-| **Status** | ⏸️ **`BLOCKED` — on [C-417](LANE_COORDINATION.md), corrected 2026-08-05.** ⚠️ **This row read `READY` while the capabilities it consumes were blocked**, and `state-check`'s new queue validation found it by the other end: *a `READY` row in no lane's queue*. **Both lane queues already listed it as blocked on [TASK-418](#task-418--the-platform-gains-the-four-capabilities-adr-0404-approved); the backlog was the optimistic one.** **[TASK-418](#task-418--the-platform-gains-the-four-capabilities-adr-0404-approved) capability ④ is `IN VALIDATION`; ① and ② are what these seven slices consume and they wait on [C-417](LANE_COORDINATION.md).** *(Original status retained:* ⚡ **`READY` — released 2026-08-05.** **[ADR-0404](architecture/adr/0404-platform-composition.md) is ratified and [TASK-418](#task-418) is now buildable**, so the capabilities these seven slices consume have both an approved contract and an owner to build them. **Seven independently certifiable slices, one per pipeline module** — each claimable by whichever lane owns that module in [`modules.toml`](coordination/modules.toml). ⚠️ **Sequenced behind [TASK-418](#task-418)**: the capabilities must exist before a module can consume them, and **capability 1 changes `EventHandler`'s shape, so the two existing handlers migrate in TASK-418, not here.** **Run [ADR-0404](architecture/adr/0404-platform-composition.md) §Validation before the first slice** .)* |
+| **Status** | ✅ **`READY`** — **released 2026-08-06 by [D-111](DECISION_REGISTER.md)'s ruling on [C-417](LANE_COORDINATION.md).** **Option A approved, bounded**: the platform slice may delete only the five `# type: ignore[arg-type]` comments the capability requires. **[TASK-418](#task-418--the-three-signora_platform-capabilities-adr-0404-approved) ① and ② are unblocked, and the seven slices behind them with it** |
 | **Notes** | After each, `make runtime-composition` is measured and **`BLOCKED_BY_C012` shrinks by exactly one.** A module leaving that list is how the architecture records that it now expects live consumption |
 
 ### TASK-902 · M7 Timeline — the remaining slices
@@ -540,13 +540,52 @@
 | **Delivered** | **`POST /workspaces/{id}/membership/leave`** — no target, no body, no reason. The membership is found from the workspace and the verified token, so **there is no identifier to substitute and no ownership check that could be written wrongly.** The last-owner refusal is the domain's, reused from `Membership.end` rather than restated. 🔴 **The slice found [B-206](BUGS.md) in its own module**: `WorkspaceQueryService.get_membership` — the request-time membership check — **never filtered ended memberships, so removal did not revoke access.** `SqlMembershipRepository.get` did filter, and documented that exact outcome as its reason: two reads of one fact, and authorization consulted the unfiltered one. Fixed, with end-to-end regression tests for both the removed and the departed case. 🟠 **`LastOwnerCannotLeaveError` was mapped to no status code**, so *"Make somebody else an owner first"* reached customers as **500 "An unexpected error occurred."** Now `409`, which repairs `remove` and `demote` too. **`MembershipResponse` gained `ended_at`**, which `remove`'s docstring already claimed. **`make validate` PASSED — 3651 tests, clean migrate, clean `tsc`** |
 | **Governance** | 🟠 — the module's own layers and a route, **announced in the commit message.** **No ADR: the model question was C-207 and it is closed** |
 
+### TASK-446 · An account's observed attributes have a publisher
+
+| | |
+|---|---|
+| **Discovery** | **[C-332](LANE_COORDINATION.md)** *(Lane B)* · **[462](architecture/462-observed-attributes-proposal.md)** — the proposal, approved **exactly as written** by [D-111](DECISION_REGISTER.md) |
+| **Module** | **`knowledge_graph` — Lane B.** ⚡ **Chosen because it owns identity resolution, the `entity_id → SubjectRef` binding, the claims and the vocabulary** — *"no other module holds any of the four"* |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06, on the ruling** |
+| **Delivers** | **`AccountAttributesReader` in `knowledge_graph/public/`** — **one call per entity, not three** — returning **the resolved value, the providers that agreed, and `unknown` as a first-class outcome** |
+| **Dependency edge** | **`opportunity_engine → knowledge_graph.public`, and nothing else.** ⚠️ **`pyproject.toml` currently forbids `modules.knowledge_graph` to `opportunity_engine` *in full*** — **it is replaced with the inner-layer form, which is exactly the shape [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) used** |
+| ⛔ **What it must never do** | **Never score, rank or weight a provider · never return a *best guess* without saying it is one · never expose `SubjectRef`** — **a provider identity crossing this boundary lets a consumer do resolution after all, which is the whole defect this closes** |
+| ⬜ **Stated, not settled** | **Which resolution rule applies to an attribute value** — newest, most-corroborated, or declared precedence. ⚡ **Ship with the simplest defensible rule — most recent, with the agreeing providers named — *provided the rule is stated in the contract rather than buried in a query*** ([462 §3](architecture/462-observed-attributes-proposal.md)) |
+| **Unblocks** | **[TASK-406](#task-406--a-iv--an-icp-criterion-is-scored-against-outcomes) — both halves** · **[R-00](DOMAIN_DISCOVERY_REGISTER.md) becomes usable rather than merely implemented, for 16 consumers** |
+| **Change Budget** | 🔴 **A new cross-module dependency edge — and it is ruled.** **ADR required and now drafted against a decision rather than ahead of one** |
+
+### TASK-447 · The App Shell the approved design describes
+
+| | |
+|---|---|
+| **Discovery** | **[452](architecture/452-app-shell-traceability-audit.md)** — *"the least-ready screen and the one every other screen inherits"* |
+| **Approved screen** | **App Shell** — [410](architecture/410-approved-ui-specification.md) |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY`** — **[D-111](DECISION_REGISTER.md), 2026-08-06.** ⚡ **§20c ruled**: *"it is not intended to prohibit deliberate, Product Office–approved architectural evolution"* |
+| ✅ **Delivers — the three concerns that are complete** | **Session and identity context** *(Better Auth is the sole authority; the Python tier verifies RS256 only)* · **Workspace context** *(`CurrentWorkspace`, membership verification, `SET LOCAL app.workspace_id`)* · **Search** |
+| ⛔ **Out of scope, and each has its own reason** | **Notifications** — ⏸ [ADR-0040](architecture/adr/0040-notifications.md), deferred by [D-027](DECISION_REGISTER.md) · **AI entry points** — the *ask* route is missing, [C-419](LANE_COORDINATION.md) · **User preferences** — 🔴 nothing, ⚠️ **and deliberately *not* saved views** · **Feature flags · announcements · background activity** — [438 Epic J](architecture/438-platform-initiatives.md), deferred with triggers |
+| ⚠️ **The ruling's bound, and it is not optional** | ⛔ ***"Do not combine App Shell work with feature implementation."*** **Independently scoped, independently reviewable, independently releasable.** **All sixteen screens inherit this; a shell change folded into a feature is a change nobody reviewed as a shell change** |
+| **Permissions** | ✅ **None new** — *"the identity layer is the one part of this screen that is finished"* |
+
+### TASK-448 · Design System v2
+
+| | |
+|---|---|
+| **Approved screen** | **Design System v2** — [410](architecture/410-approved-ui-specification.md), platform foundation module 1 |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY`** — **[D-111](DECISION_REGISTER.md), 2026-08-06**, as a Product Office–approved foundation evolution |
+| ⚡ **Why it is the cheapest row on the board** | **[418](architecture/418-platform-foundation-assessment.md): *"Requires no backend at all."*** **The only approved screen with zero backend dependency, and it is what every other screen composes from** |
+| **Change Budget** | 🔴 **The frozen frontend foundation, ruled.** **Not a licence for anything else in `components/ui`** |
+| ⚠️ **Bound** | **Each slice independently executable, testable and reviewable.** ⛔ **Strict separation from feature work** · **design tokens stay the only source of colour** — `design-tokens.test.tsx` is not relaxed to make a slice pass |
+| **Sequencing** | ⚡ **Before [TASK-447](#task-447--the-app-shell-the-approved-design-describes) where they overlap** — the shell composes from the system, not the reverse |
+
 ### TASK-445 · Stated absence becomes one implementation instead of nine local ones
 
 | | |
 |---|---|
 | **Discovery** | **[R-15 · Stated absence](DOMAIN_DISCOVERY_REGISTER.md)** — 📐 **[P-A](DOMAIN_DISCOVERY_REGISTER.md)**, ratified 2026-08-05 · **[467](architecture/467-system-states-traceability-audit.md)** |
-| **Module** | ⛔ **Undecided, and that is the blocker rather than a gap in this row** |
-| **Status** | ⏸️ **`BLOCKED`** — **on one ruling, and it is the product owner's** |
+| ✅ **Module** | **`product_surface` — Lane A.** **Where `no-mock-data.test.tsx` and `design-tokens.test.tsx` already live** — the repository's two existing repository-wide frontend invariants. ⚡ **R-15 becomes the third, in the place the other two proved** |
+| **Status** | ✅ **`READY`** — **[D-111](DECISION_REGISTER.md), 2026-08-06.** ⚡ **And the ruling adopted the *split*, which is what preparation found**: **only the frontend rendering capability needs an owner.** **The backend convention — `unmeasured` · `missing_gates` · an unscored criterion — *"already demonstrates stable convergence and does not require another owning module."*** |
 | ⚡ **Blocked on** | **An owner for [R-15](DOMAIN_DISCOVERY_REGISTER.md).** **26 consumers, no module, and nine instances already decided by whoever met one.** ⛔ **Module ownership is never Lane C's** (§20e), so this office cannot choose — **and choosing by implementation is precisely what [D-090](DECISION_REGISTER.md) forbids**: *"ownership should be an architectural decision rather than an implementation accident"* |
 | **The finding, measured** | **9 recorded instances · 0 implementations.** ⚡ **The Register annotated it *"name before the ninth"* — and the ninth arrived as [C-226](LANE_COORDINATION.md), six at once on one screen, fixed by four different lanes.** **Every fix was correct and local, which is how a pattern becomes nine incompatible implementations rather than one capability** |
 | **Predecessor** | **[TASK-442](#task-442--a-page-must-say-when-it-could-not-find-out)** — ✅ `READY`. **It proves the shape on one page and needs no ruling.** ⚡ **So the ruling is not blocking *all* progress on P-A, only its generalisation** |

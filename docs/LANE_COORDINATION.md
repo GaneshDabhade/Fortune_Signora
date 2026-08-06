@@ -4172,6 +4172,9 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 
 ## C-322 · Is an ICP a description, or a filter?
 
+> ✅ **`RULED` — product owner, 2026-08-06, [D-111](DECISION_REGISTER.md).** > ## **An ICP is a declarative filter evaluated against observed customer attributes.** **The repository had already taken this direction through implementation, and the documentation now describes reality rather than an open question.** **[C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it--nothing-builds-its-input-and-the-module-that-measures-may-not-reach-one) completes it**
+
+
 > ⏸️ ~~**`DEFERRED` — product owner, 2026-08-05.** *"Keep grouped with [C-002](#c-002). Do not split. **Review when Epic B1 begins.**"*~~
 >
 > ## ⚡ **`READY FOR PRODUCT DECISION` — 2026-08-06, [D-111](DECISION_REGISTER.md). The trigger fired early, and not because Epic B1 began.**
@@ -4342,6 +4345,9 @@ KeyError: '0035'
 
 ## C-334 · Four rows wait on one credential, and it has no row of its own
 
+> ✅ **`RULED` — product owner, 2026-08-06, [D-111](DECISION_REGISTER.md).** *"I will provide the hosted evaluation credential."* ⚡ **Release is automatic on configuration and needs no further instruction**: [TASK-003](BACKLOG.md) · [TASK-202](BACKLOG.md)'s prompt-evaluation work · [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) · [C-331](#c-331--task-003-changes-what-the-model-is-shown-which-un-releases-the-narration-prompt). ⚠️ **[TASK-202](BACKLOG.md) is `READY` today and stays `READY`** — the credential gates its *prompt release*, never its start
+
+
 **Opened 2026-08-06 · Lane B · owner: product owner · 🟠**
 
 > **Every task assigned to Lane B is blocked. They trace to three roots, and this is the one that is not a decision.**
@@ -4510,6 +4516,9 @@ grep -E '^(current|next|future|eligible_count|shortfall|depth_target)' \
 **So the deliverable was never the eight checks.** **It is the obligation they make cheap**: a dry queue is now a finding the instrument raises, and **[§5f](PRODUCT_OFFICE.md) carries the six causes that must be ruled out before a lane is reported as correctly waiting.** **The checks detect; the protocol decides what the detection means.**
 
 ## C-332 · The predicate landed and TASK-406 still cannot call it — nothing builds its input, and the module that measures may not reach one
+
+> ✅ **`RULED` — product owner, 2026-08-06, [D-111](DECISION_REGISTER.md). [462](architecture/462-observed-attributes-proposal.md) approved exactly as proposed.** **`AccountAttributesReader` published by `knowledge_graph/public/` · `opportunity_engine` consuming the public contract only · [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md)'s precedent followed exactly.** *"No alternative architecture is required."* **[TASK-446](BACKLOG.md) implements it**
+
 
 | | |
 |---|---|
@@ -6008,6 +6017,9 @@ One entry in `ENTERED_FROM_OUTSIDE`:
 The argument is above. **The check is working**: it caught a genuinely unreachable route within a minute of the route existing, which is what it is for.
 
 ## C-417 · ADR-0404 approved three platform capabilities whose owner may not finish two of them
+
+> ✅ **`RULED` — product owner, 2026-08-06, [D-111](DECISION_REGISTER.md). Option A, bounded.** **The slice may delete only the five `# type: ignore[arg-type]` comments the capability requires** — ⛔ **no functional change, no architectural change, no opportunistic cleanup, no unrelated edit.** *"This exception exists solely to unblock ADR-0404."* **Releases [TASK-418](BACKLOG.md) ① and ②, and [TASK-901](BACKLOG.md)'s dependent slices**
+
 
 **Opened 2026-08-05 · Lane C · current module assignee: Lane C (`signora_platform/`) · 🔴**
 
