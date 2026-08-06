@@ -57,8 +57,27 @@ depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-202"
-next    = "TASK-201"
-future  = ["TASK-446", "TASK-457", "TASK-461"]
+next    = "TASK-461"
+future  = ["TASK-472"]
+
+# ⚡ **TASK-472 added 2026-08-06 — and it is the highest-leverage row here.**
+# `knowledge_graph` publishes a workspace-wide account listing. **Lane A's
+# Companies screen (TASK-440) is blocked on it**, so this row unblocks another
+# lane rather than only extending this one. **Contract first across a lane
+# boundary — P-E, D-121.**
+
+# ⚡ **2026-08-06 — TASK-201, TASK-446 and TASK-457 removed: this lane claimed
+# all three off `integration` since the last write**, and TASK-457 was listed as
+# eligible *and* blocked at the same time — two answers to one question, which
+# is worse than either alone.
+#
+# ⚠️ **And the removal exposes the real finding: this lane is one row deep.**
+# `depth_target = 5` and `eligible` now holds two. **Everything behind them is
+# the Action Batch chain (TASK-462…466), and each waits on its predecessor by
+# construction** — a sequence cannot be widened by planning it harder.
+# **Recorded as a capacity finding rather than padded**, because inventing a
+# parallel row to reach five would be new scope (§20e), and a queue that reads
+# as healthy while the lane runs dry is the failure this file was built to end.
 
 # **Rewritten 2026-08-05 after D-077. Four rows moved and every move is checked
 # against BACKLOG.md rather than against this file's own memory.**
@@ -128,8 +147,19 @@ future  = ["TASK-446", "TASK-457", "TASK-461"]
 # ⚠️ `action_batch` is the DIRECTORY name. No customer-facing word is
 # ratified; ADR-0034's test has not been run and D-127 forbids a placeholder
 # becoming production terminology because implementation started first.
-eligible_count = 5
-shortfall      = 0
+# ⚠️ **5 → 2, 2026-08-06, and the shortfall is declared rather than hidden.**
+# TASK-201, TASK-446 and TASK-457 were claimed by this lane. What remains is
+# TASK-202 and TASK-461, and **everything behind them is the Action Batch chain
+# (TASK-462…466), each waiting on its predecessor by construction** — a sequence
+# cannot be widened by planning it harder.
+#
+# ⛔ **Not padded to reach the target.** Inventing a parallel row would be new
+# scope (§20e) and Product Office may not introduce it. **A shortfall stated is
+# a bottleneck the product owner can see; a shortfall papered over is a lane
+# that runs dry with a healthy-looking queue file** — which is the exact failure
+# D-070 created this field to end.
+eligible_count = 3
+shortfall      = 2
 
 [rationale]
 "TASK-427" = "M-D · the People domain — a person, and an affiliation with an end. ✅ READY 2026-08-06. ⚡ Placed FIRST because it is the prerequisite of what sits behind it, which is fitness and not priority: TASK-202's own row says 'phase 4 needs Epic C', so a lane taking TASK-202 first meets this at phase 4. ⛔ Position remains the product owner's and can be reordered freely. The owner of the new `people` context is Lane B, assigned by the product owner at D-103 — modules.toml carries the row and the directory does not exist yet, deliberately. Authority to build is D-074 (the domain approved, NOT the full People Intelligence feature set) and ADR-0400 is the ratified ADR a new bounded context requires. ⛔ SCOPE BOUND C-221, unchanged: no person's name anywhere — role-based and organization-level only. ⛔ FORBIDDEN in this row: no seniority_score, no is_key_contact, no priority, no ordered list read as a ranking; influence is buying_score_engine's and stays there. Needs NO provider: the intervals derive from RoleChangeValue(title, seniority, direction) + occurred_on + company, which flow in production today."
@@ -186,16 +216,21 @@ blocker = ["TASK-418"]
 owner   = "Product owner — an owner for signora_platform/"
 note    = "seven modules consume the events they declare. ADR-0404 approved the capabilities on 2026-08-05 and TASK-418 builds them; three of the four live in signora_platform/, which has no assignable owner. C-010 asked about apps/ AND signora_platform/ and the ruling named apps/ only. Seven slices sit behind one unassigned directory."
 
-[[held]]
+# ⚡ TASK-427 moved from `held` to `in_validation` 2026-08-06 — the backlog has
+# said `IN VALIDATION` since the lane pushed, and this file still said `held`.
+# **A task that has left the lane must not be listed as work the lane is doing**
+# (§20e: execution ownership ends at `IN VALIDATION`).
+[[in_validation]]
 task = "TASK-427"
-note = "M-D, the People domain. CLAIMED by this lane 2026-08-06 and 2 commits ahead awaiting QE — within a day of the [people] ownership row landing at D-103. ⛔ Scope bound C-221 unchanged: no person's name anywhere."
+note = "M-D, the People domain — the bounded context, Person, Affiliation, RoleInterval and departure matching. Delivered S1 and S2 within a day of the [people] ownership row landing at D-103. ⛔ Scope bound C-221 unchanged: no person's name anywhere."
 
 # ── Sequenced, D-120 — decomposed from Lane B's own pre-emption ──────────────
-[[blocked]]
-task    = "TASK-457"
-blocker = ["TASK-427 promoted"]
-owner   = "Lane B — one module, one lane"
-note    = "People publishes its public/ contract. ⚡ This lane raised the boundary BEFORE claiming TASK-428, which is the only cheap moment. §20e says two modules with a published-but-unbuilt contract belong to one lane — and the cheaper reading is to BUILD the contract first, which makes the boundary ordinary and moves no ownership. 455 §4 proved the pattern for R-02 at D-091. ⛔ C-221 unchanged: no person's name anywhere."
+# ⚡ TASK-457 moved from `blocked` to `held` 2026-08-06 — the lane claimed it,
+# so its blocker is met and it is no longer waiting on anything. It was listed
+# as eligible *and* blocked simultaneously until this write.
+[[held]]
+task = "TASK-457"
+note = "People publishes its public/ contract. CLAIMED by this lane 2026-08-06. ⚡ This lane raised the boundary BEFORE claiming TASK-428, which is the only cheap moment. §20e says two modules with a published-but-unbuilt contract belong to one lane — and the cheaper reading is to BUILD the contract first, which makes the boundary ordinary and moves no ownership. 455 §4 proved the pattern for R-02 at D-091. ⛔ C-221 unchanged: no person's name anywhere. ⛔ TASK-458, its consumer half, stays blocked until this publishes."
 
 [[blocked]]
 task    = "TASK-459"

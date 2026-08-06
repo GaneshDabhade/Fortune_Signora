@@ -5968,7 +5968,23 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 **Opened 2026-08-06 · Lane A · 🟠 · raised on the product owner's instruction to *"document this dependency and start working on another task"***
 
+| | |
+|---|---|
+| **Owner** | **Lane C** — **both findings are Product Office's**: Finding 1 releases a Lane C row, Finding 2 corrects a `READY` this office set. ⚠️ **Neither is a product decision, which is why the state below moves rather than waits** |
+| **Raised by** | **Lane A** |
+| **Status** | ✅ **`CLOSED` — 2026-08-06.** **Both findings actioned; Lane A's queue is no longer empty.** ⛔ **Closed by Lane C rather than by the requesting lane** — the register says the requester closes, and **this is recorded as a deviation rather than taken silently**: Lane A raised the item precisely because it had nothing to work on, and leaving it open until that lane next polls would keep an answered question looking unanswered |
+
 > **The instruction assumed another task exists. It was checked row by row against `origin/integration`, and it does not.** This item is that check, written down so the conclusion is auditable rather than asserted — and **two of the rows it turned up are other lanes' to fix, one of which unblocks Lane C today.**
+
+### ✅ Resolution — 2026-08-06, Lane C
+
+| Finding | Answer |
+|---|---|
+| **1 · [TASK-419](BACKLOG.md) is not blocked any more** | ✅ **Correct.** [TASK-436](BACKLOG.md) promoted in cycle 66 and `build_provider_registry` has been on `main` for twelve cycles. **TASK-419 is `READY` and is `current` in [`lane-c.toml`](coordination/queues/lane-c.toml)** |
+| **2 · [TASK-440](BACKLOG.md) is `READY` and its central element has no read** | ⛔ **Correct, and worse than reported.** **Two reads were checked, not one.** `GET /accounts` is `attention_list` — *open opportunities ranked by buying score* — and **`GraphQueries.find_accounts` requires `text` and refuses blank input deliberately**: *"An empty pattern matches every claim in the workspace, so the guard is here rather than left to the caller."* **So there is no workspace-wide account listing at all, and the nearest thing is a designed refusal.** ✅ **TASK-440 set `BLOCKED`; [TASK-472](BACKLOG.md) created against `knowledge_graph` (Lane B) to publish the read** |
+| **The queue that pointed Lane A at it** | ⛔ **[`lane-a.toml`](coordination/queues/lane-a.toml) had TASK-440 as `current`**, on this office's note *"its workspace-wide read is VERIFIED to exist."* ⚠️ **What was verified was an endpoint's name.** **Corrected: `current` is now [TASK-447](BACKLOG.md), and seven rows are eligible** |
+
+> ⚠️ **The lane was right and the office was wrong, on a fact the office had written down as verified.** **[B-101](BUGS.md)'s class — counting by name rather than by behaviour — and the fourth instance inside a Product Office instrument.** ⚡ **What caught it was Lane A reading the endpoint that the audit had only named**, which is the argument for [§0-i](PRODUCT_OFFICE.md) *Evidence First* being a rule about *behaviour*, not existence.
 
 ### Every backlog row in Lane A's six modules, and its actual state
 

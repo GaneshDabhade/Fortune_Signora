@@ -124,6 +124,26 @@ def conflict_markers(text: str) -> list[int]:
     return found
 
 
+def unclosed_fence(text: str) -> int | None:
+    """Line number of the code fence nothing closes, or `None`.
+
+    **`conflict_markers` trusts fence parity to decide what to skip, and an
+    odd fence inverts that decision for the whole rest of the file** — every
+    marker in prose is then silently skipped and every quoted one is reported.
+    Found in `docs/BUGS.md` (B-403): a row lost its opening ```` ```bash ````
+    to a merge, and the check had been reporting the wrong half of the
+    register for three days while blind to the real half.
+
+    **A guard that reasons about structure must first establish that the
+    structure holds** (`CLAUDE.md` §2) — otherwise its silence means nothing.
+    """
+    opened_at: int | None = None
+    for number, line in enumerate(text.splitlines(), start=1):
+        if line.lstrip().startswith("```"):
+            opened_at = None if opened_at is not None else number
+    return opened_at
+
+
 def malformed_tables(text: str) -> list[int]:
     """Line numbers of table separators with no header row above them.
 

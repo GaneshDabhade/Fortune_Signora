@@ -181,6 +181,51 @@ class TestConflictMarkersAreCaught:
         assert registers.conflict_markers("Title\n=======\n") == [2]
 
 
+class TestUnclosedFenceIsCaught:
+    """The fence-skip above is only trustworthy if the fences balance.
+
+    One unclosed fence inverts every parity decision after it, so
+    `conflict_markers` goes **blind to a real marker in prose** and reports
+    quoted ones instead. That is what happened in `docs/BUGS.md` ([B-403]):
+    a row lost its opening ```` ```bash ```` to a merge, and for three days
+    the check reported the one marker that was correctly quoted while unable
+    to see any that were not.
+
+    **A guard that reasons about structure must first establish that the
+    structure holds** — otherwise its silence carries no information.
+    """
+
+    def test_a_balanced_document_reports_nothing(self) -> None:
+        assert registers.unclosed_fence("a\n```\nx\n```\nb\n") is None
+
+    def test_no_fences_at_all_is_balanced(self) -> None:
+        assert registers.unclosed_fence("plain prose\n") is None
+
+    def test_an_unclosed_fence_names_the_line_that_opened_it(self) -> None:
+        assert registers.unclosed_fence("a\n```bash\nx\ny\n") == 2
+
+    def test_it_names_the_last_opener_not_the_first(self) -> None:
+        """Three fences: the first pair balances, the third is the defect."""
+        assert registers.unclosed_fence("```\nx\n```\ntext\n```py\ny\n") == 5
+
+    def test_the_blindness_it_exists_to_explain(self) -> None:
+        """**B-403's exact shape, and the half that matters.**
+
+        A merge ate the *opening* fence, so the surviving closer on line 2 is
+        read as an opener and everything after it is treated as code. The
+        genuine marker on line 3 sits in prose and is **silently skipped** —
+        `conflict_markers` returns nothing at all and the register reads as
+        clean.
+
+        **Under-reporting is the dangerous direction**, and no assertion about
+        the marker check could catch it, because its answer is empty either
+        way. Only the parity check can.
+        """
+        corrupt = 'grep -oE "^### "\n```\n>>>>>>> real, in prose\n'
+        assert registers.conflict_markers(corrupt) == []
+        assert registers.unclosed_fence(corrupt) == 2
+
+
 class TestBlockingIsUnaffected:
     """`unresolved` reads the cell's prefix and was always correct.
 

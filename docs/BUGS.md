@@ -80,6 +80,64 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-403 · A merge interleaved two bug rows, and the check that should have seen it went blind instead
+
+| | |
+|---|---|
+| **Module** | Repository records — [`docs/BUGS.md`](BUGS.md), and the instrument `infra/registers.py` |
+| **Current assignee** | **Lane C** — `infra/` is Platform Foundation ([D-022](DECISION_REGISTER.md)), and **both scrambled rows are this office's** ([B-328](#b-328--state-checkpy-reports-54-ready-tasks-when-there-are-two-because-it-counts-headings), [B-401](#b-401--04-modulesmd-disagrees-with-backendmodules-in-four-places)) |
+| **Severity** | 🟠 · **Wrong information a lane would act on**, in the register every lane reads at Startup step 3 — **and it is on `main`** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-06.** Rows separated, fence restored, `unclosed_fence()` added and wired into `state-check`. **QE verifies; the lane that fixed it does not close it** |
+| **Found** | 2026-08-06 by Lane C, running `state-check` during a routine poll — **by disbelieving its finding rather than by acting on it** |
+| **Commit found** | On `main` at `1984545`, `integration` at `023e0d0` and `lane-qe` — **promoted, and carried through certification cycles** |
+
+**Steps to reproduce.**
+
+```bash
+python3 infra/state-check.py | grep -i conflict
+→ docs/BUGS.md carries an unresolved merge-conflict marker at line(s) 2043.
+
+sed -n '2042,2044p' docs/BUGS.md
+→ a fence opener, then the marker, then the closer
+```
+
+**Expected.** Nothing reported — that marker is **inside a fenced block**, quoting [B-102](#b-102--a-conflict-marker-committed-promoted-and-carried-through-several-certification-cycles)'s own evidence, and `conflict_markers()` documents that it skips fences.
+
+> ⚡ **This row's first draft opened with a nested fence and the new check fired on it inside a minute** — the same way [B-102](#b-102--a-conflict-marker-committed-promoted-and-carried-through-several-certification-cycles)'s check fired on B-102's own row. **A register documenting a corruption keeps trying to become one**, which is the argument for both guards rather than a curiosity.
+
+**Actual.** Reported. **And the reason it was reported is the defect, not the report.**
+
+### Two rows wearing each other's clothes
+
+**A merge interleaved [B-328](#b-328--state-checkpy-reports-54-ready-tasks-when-there-are-two-because-it-counts-headings) and [B-401](#b-401--04-modulesmd-disagrees-with-backendmodules-in-four-places):**
+
+| Lines | Held | Should have held |
+|---|---|---|
+| 197–203 | **B-328's table** | ✅ correct |
+| 205–213 | **B-401's heading and table** | ⛔ **B-328's body** |
+| 215–249 | **B-328's body**, under B-401's heading | ⛔ |
+| 251+ | **B-401's body — with `**Steps to reproduce.**` and its opening ```` ```bash ```` destroyed** | ⛔ |
+
+⚡ **The missing opener is what carried the damage past its own two rows.** **A single unclosed fence inverts parity for the entire remaining file** — 1,790 lines of it — and `state-check`'s own output shows both halves: `B-322 has no Severity` was **the same defect**, reported as if it were a second one.
+
+### The half that matters, and it is not the noise
+
+⛔ **In the inverted region the check does not merely over-report — it is *blind*.** Every marker in prose is read as fenced and skipped; only quoted ones are reported. **`conflict_markers()` was doing the exact opposite of its job across two thirds of the register**, and it would have said nothing at all about a genuine marker there.
+
+> **A guard that reasons about structure must first establish that the structure holds.** Its silence otherwise carries no information — which is [§2](../CLAUDE.md)'s *decorative logic* exactly: **removal would not have changed the property it claims to protect**, because it was not protecting it.
+
+### Why nothing caught it
+
+**Third instance of [ADR-0039](architecture/adr/0039-release-engineering-model.md) RC-4** — *the registers are a multi-writer database written in markdown* — after [B-100](#b-100--a-lanes-rebase-silently-reverted-the-execution-board-by-seven-cycles-and-every-gate-passed) and [B-102](#b-102--a-conflict-marker-committed-promoted-and-carried-through-several-certification-cycles). ⚡ **And this one got past the check *built for B-102*, which is the new information: RC-4's answer cannot be another markdown-reading check.**
+
+**It is also [B-101](#b-101--the-kpi-block-counted-nine-bug-rows-twice-under-a-banner-promising-nothing-was-typed-by-hand)'s class** — counting by proxy. **Fence parity was the proxy for *"am I inside code?"***, and nothing ever asked whether the proxy was sound.
+
+### The fix
+
+**`unclosed_fence(text) -> int | None`** in `infra/registers.py`, checked by `state-check` across all four registers **before** the marker check, so a reader learns the structure is broken rather than reading a conclusion drawn from broken structure. **Five tests**, including one asserting the blindness directly — **the only half no assertion about `conflict_markers` could catch, since its answer is empty either way.**
+
+**What it does not fix.** The register is still hand-merged, so the **next** corruption is a different shape again. ⛔ **This is now the third time that sentence has been written in this file**, and RC-4's actual answer remains ADR-0039's to propose and the product owner's to schedule.
+
 ### B-207 · An expired score renders as *no score* — **withdrawn, and the mistake is the interesting part**
 | | |
 |---|---|
@@ -129,24 +187,6 @@ def evidence_state(opportunity, score, moment) -> EvidenceState:
 **The `aria-label` observation was the tell and was misread.** *"No current score"* is literally true, and this row treated its literal truth as evidence that a reader would infer something false. **The reader is not reading the label alone either.**
 ⚠️ **What survives, and it is small.** **`AttentionScore` is also called by `NeedsIdentity`**, where no `EvidenceHealth` badge sits beside it — so a company nobody can name shows an em dash with nothing explaining it. **That is not this row's claim** (it asserted a defect on the attention list, where the badge exists) and it is not a defect either: an account with no identity has no evidence health to state. **Recorded so the next reader does not re-derive it.**
 **[TASK-441](BACKLOG.md)'s rule is unaffected and still binds** — *"an expired score must render as expired, never as absent and never as current."* **The lesson for that screen is now concrete rather than theoretical: the badge is where expiry is said, and the new screen must carry it rather than inventing a second way to say the same thing.**
-### B-130 · `D-107` removed `UI_WAVE_TASKS` and left a test binding it
-| | |
-|---|---|
-| **Module** | `backend/tests/certification/test_repository_generators.py:105` |
-| **Current assignee** | **Lane C** — [D-107](DECISION_REGISTER.md) caused it |
-| **Severity** | 🟠 — **a Blocking Quality Defect**: a failing test, and §19 makes that the owning lane's highest priority |
-| **Status** | ✅ **`FIXED` — Lane C, 2026-08-06.** **QE verifies; the lane that fixed it does not close it** |
-| **Found** | 2026-08-06 by **QE**, cycle 77. ⚠️ **Filed on QE's branch and mirrored here** — the row and its fix were on different branches, which is the [C-103](LANE_COORDINATION.md) condition rather than a numbering choice |
-**Expected.** `D-107` replaced the hardcoded `UI_WAVE_TASKS` frozenset with `ui_wave_tasks(ref)` and updated every reader.
-**Actual.** **It updated the two readers in `repository-dashboard.py` and not the one in the test that binds it.**
-### The fix — repaired, never deleted, and the test says why
-⚡ **The test's own docstring is the argument**: *"the test that catches a constant is not one that checks today's number — it is one that **changes the input and requires the output to follow**."* **QE said the same thing in the row.**
-**That property is preserved exactly. Only the *source* of the wave id changed** — from a named constant to `ui_wave_tasks("HEAD")` — **which is the whole point of [D-107](DECISION_REGISTER.md).** ✅ **Verified: the derived set holds 11 screen rows; all three assertions hold.**
-⚡ **And the bug earned a second test**: `test_the_wave_set_is_derived_from_the_rows_not_from_a_list` **asserts `UI_WAVE_TASKS` never comes back**. **A hardcoded set goes stale *silently* as rows are added — it named one id while the backlog held nine.**
-### ⚠️ The Lane C failure, stated plainly
-**[D-107](DECISION_REGISTER.md) removed a module-level constant and did not grep for its readers.** **The removal was right; leaving a binding test behind was not.**
-⛔ **And *"another lane's file"* was not the obstacle** — **Lane C had already edited this exact file** (the `PRINTING` tuple, D-094). **Not looking was.**
-
 ### B-402 · `ENGINEERING_LAWS.md` is classified `platform`, so editing it demands a DR run
 
 | | |
@@ -202,16 +242,6 @@ CLOSEOUT_PATHS = ("certification/", "docs/", "PROJECT_STATUS.md", "README.md", "
 | **Status** | ✅ **`FIXED` — Lane C, 2026-08-06.** **QE verifies; the lane that fixed it does not close it.** ⚡ **Fixed independently and hours apart** — this office found the same defect while writing [D-099](DECISION_REGISTER.md)'s queue work and corrected it in the same commit, and Lane B's `B-328` commit dropped as a duplicate on rebase. **Both diagnoses were right and the second cost one rebase to discover** — recorded as [C-103](LANE_COORDINATION.md)'s second instance. **The line now reads `Backlog: 61 task(s), 9 startable (…)`, and it lists the ids** |
 | **Found** | 2026-08-06 by Lane B, checking its own reporting against the gate after [C-333](LANE_COORDINATION.md) added seven queue validations |
 
-### B-401 · `04-modules.md` disagrees with `backend/modules/` in four places
-
-| | |
-|---|---|
-| **Module** | Repository architecture — [`docs/architecture/04-modules.md`](architecture/04-modules.md), the ratified module reference |
-| **Current assignee** | ⚠️ **Product owner** — `docs/architecture/01`–`21` is 🔴 (Change Budget). **Lane C reports; it may not repair** |
-| **Severity** | 🟠 — **wrong information a lane would act on.** It has already produced one wrong statement in a ratified ADR |
-| **Status** | **`OPEN`** — reported with evidence, **not fixed: 🔴 and not this office's** |
-| **Found** | 2026-08-06 by Lane C, auditing the Notification Center ([468 §1](architecture/468-notification-center-traceability-audit.md)) — **while checking another document's stated blocker rather than by inspecting this one** |
-
 **Steps to reproduce.**
 
 ```bash
@@ -248,6 +278,19 @@ notes.append(f"Backlog: {len(known)} task(s), {ready} READY, no task claimed twi
 
 > **Two independent readers got the same field wrong on the same day, in opposite directions.** That is the argument for the status being **parsed once, in one place**, rather than pattern-matched wherever it is needed.
 
+### B-401 · `04-modules.md` disagrees with `backend/modules/` in four places
+
+| | |
+|---|---|
+| **Module** | Repository architecture — [`docs/architecture/04-modules.md`](architecture/04-modules.md), the ratified module reference |
+| **Current assignee** | ⚠️ **Product owner** — `docs/architecture/01`–`21` is 🔴 (Change Budget). **Lane C reports; it may not repair** |
+| **Severity** | 🟠 — **wrong information a lane would act on.** It has already produced one wrong statement in a ratified ADR |
+| **Status** | **`OPEN`** — reported with evidence, **not fixed: 🔴 and not this office's** |
+| **Found** | 2026-08-06 by Lane C, auditing the Notification Center ([468 §1](architecture/468-notification-center-traceability-audit.md)) — **while checking another document's stated blocker rather than by inspecting this one** |
+
+**Steps to reproduce.**
+
+```bash
 grep -oE "^### [A-Z].*" docs/architecture/04-modules.md   # Module Reference entries
 ls -d backend/modules/*/                                   # what exists
 ```
@@ -527,6 +570,9 @@ Found 3 errors in 1 file (checked 733 source files)
 
 | | |
 |---|---|
+| **Module** | **Product Surface** — `frontend/tests/components/triage-strip.test.tsx`, and **the gate gap is nobody's module**, which is the half [B-111](#b-111--tsc---noemit-is-in-no-gate-qe-runs-and-main-is-red) separated out |
+| **Current assignee** | **None — not assignable.** The row is withdrawn; [B-111](#b-111--tsc---noemit-is-in-no-gate-qe-runs-and-main-is-red) carries both halves and both assignees |
+| **Severity** | 🟠 — **stated as it was raised, not retired with the row.** ⚡ **A withdrawn row keeps its severity**, or a reader cannot tell whether it was withdrawn because it did not matter or because somebody else had it. **It was the second** |
 | **Status** | **`CLOSED` — duplicate.** The id is retired and never reused |
 | **Found** | 2026-08-04, by Lane B, rebasing onto `integration` |
 
@@ -657,8 +703,12 @@ runtime-composition · state-check
 | **Module** | `infra/repository-dashboard.py` — Platform Foundation ([D-022](DECISION_REGISTER.md)) |
 | **Current assignee** | **Lane C** — it authored `D-107` |
 | **Severity** | 🟠 · **Blocking Quality Defect class** — a failing test, so the slice cannot be promoted |
-| **Status** | **`OPEN` — `CHANGES REQUESTED`.** Reported with the line identified; **not fixed, another lane's file** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-06.** Repaired, never deleted; a second test added. **QE verifies; the lane that fixed it does not close it** |
 | **Found** | 2026-08-06 by QE, cycle 77, validating the candidate |
+
+> ⚠️ **This row absorbed a duplicate on 2026-08-06.** Lane C mirrored QE's finding onto its own branch as a **second `B-130`**, and the two carried contradictory statuses — QE's `OPEN`, Lane C's `FIXED`. **`B-130` is QE's allocation (§20e, `100+`), so QE's row is the one that survives** and the fix detail below is folded in.
+>
+> ⛔ **Two rows under one id is [B-327](#b-327--three-documents-say-the-executive-dashboards-icp-section-is-buildable-and-a-coordination-item-on-integration-says-it-is-not)'s shape exactly** — same defect, same day, two branches. **Mirroring a row is not filing one**, and the register cannot tell the difference afterwards. **Update the original where it lives.**
 
 **Steps to reproduce.**
 
@@ -690,6 +740,20 @@ Its own docstring says why it exists: *"`Implemented 0` and `Integrated 0` were 
 **`make validate` catches it in one run**, and the Definition of Done requires the lane to have run its own gates on the rebased branch (§19, *self-validation performed*). **The slice reached QE without that**, which is the check that was skipped rather than a check that is missing.
 
 **Lane A's work was not held for it.** [TASK-432](BACKLOG.md) validated and certified on its own; Lane C's six commits are returned and rejoin the next cycle once the test binds a symbol that exists.
+
+### The fix — repaired, never deleted, and the test says why
+
+⚡ **The test's own docstring is the argument**, and QE's row above says the same thing: *"the test that catches a constant is not one that checks today's number — it is one that **changes the input and requires the output to follow**."*
+
+**That property is preserved exactly. Only the *source* of the wave id changed** — from a named constant to `ui_wave_tasks("HEAD")` — **which is the whole point of [D-107](DECISION_REGISTER.md).** ✅ **Verified: the derived set holds 11 screen rows; all three assertions hold.**
+
+⚡ **And the bug earned a second test.** `test_the_wave_set_is_derived_from_the_rows_not_from_a_list` **asserts `UI_WAVE_TASKS` never comes back** — a hardcoded set goes stale *silently* as rows are added, and it named one id while the backlog held nine.
+
+### ⚠️ The Lane C failure, stated plainly
+
+**[D-107](DECISION_REGISTER.md) removed a module-level constant and did not grep for its readers.** **The removal was right; leaving a binding test behind was not.**
+
+⛔ **And *"another lane's file"* was not the obstacle** — **Lane C had already edited this exact file** (the `PRINTING` tuple, D-094). **Not looking was.**
 
 
 ### B-129 · `git reset --hard` destroyed a certification record, and `--audit-main` refused until it was re-earned

@@ -30,7 +30,12 @@ import tomllib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from registers import bug_rows, conflict_markers, malformed_tables  # noqa: E402
+from registers import (  # noqa: E402
+    bug_rows,
+    conflict_markers,
+    malformed_tables,
+    unclosed_fence,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MIGRATIONS = REPO_ROOT / "backend" / "migrations" / "versions"
@@ -692,6 +697,19 @@ def main() -> int:
         # a table separator. One sat in the coordination register through
         # several certifications (B-102), stranding a row outside its table and
         # leaving two more duplicated with contradictory statuses.
+        # And the marker check is only as good as the fence parity it skips
+        # on: one unclosed fence inverts every decision after it, so a real
+        # marker in prose is skipped and a quoted one is reported (B-403).
+        # Establish the structure before trusting a conclusion drawn from it.
+        unclosed = unclosed_fence(text)
+        if unclosed is not None:
+            findings.append(
+                f"{name} opens a code fence at line {unclosed} that nothing "
+                f"closes. Every fence-aware check reads the rest of the file "
+                f"inverted — including the conflict-marker check, which is "
+                f"then blind to a real marker and reports quoted ones."
+            )
+
         conflicts = conflict_markers(text)
         if conflicts:
             findings.append(
