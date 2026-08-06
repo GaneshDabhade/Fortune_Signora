@@ -207,6 +207,9 @@ sed -n '2042,2044p' docs/BUGS.md
 
 **What it does not fix.** The register is still hand-merged, so the **next** corruption is a different shape again. ⛔ **This is now the third time that sentence has been written in this file**, and RC-4's actual answer remains ADR-0039's to propose and the product owner's to schedule.
 ### B-208 · Global Search crashes the moment it finds anything
+
+| | |
+|---|---|
 | **Module** | **Product Surface** — `components/intelligence/account-search.tsx` · `lib/query/hooks/search.ts` |
 | **Current assignee** | **Lane A** — Product Surface is its in [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🟠 · **Wrong behaviour a customer hits immediately.** [MC-1](PRODUCT_EXPERIENCE.md) calls search *"the first thing every evaluator types"* |
@@ -227,6 +230,20 @@ sed -n '2042,2044p' docs/BUGS.md
 | **The backend test** | Flattens groups through `_rows()` before asserting, deliberately and reasonably — it is testing matches, not grouping |
 > **Each gate was reasonable alone.** ⚡ **What nothing owned was the seam**: a test that mocks the hook cannot see the contract, and a test that flattens the response cannot see the client. **The one place the two shapes meet is a browser, and no test runs there** — `e2e/` is Playwright and search is not in it.
 **Fix.** [TASK-460](BACKLOG.md) is *"the existing account search raised to the approved specification: typed grouping across the object kinds that exist"* — **so the correct fix and the claimed slice are the same work**, and the grouping the API already sends is now what the surface renders.
+
+
+
+
+
+| | |
+|---|---|
+
+
+
+
+
+
+
 
 ### B-207 · An expired score renders as *no score* — **withdrawn, and the mistake is the interesting part**
 | | |
