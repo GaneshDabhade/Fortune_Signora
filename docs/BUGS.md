@@ -4018,3 +4018,16 @@ removed person GETs /workspaces/{id}/members                  → 200  ← shoul
 **Worked around for review, not fixed.** Lane A declared a coherent profile for the Playground workspace **through the real `PUT` endpoints, as an owner, with a signed-in session** — the customer's door, and the only one `CLAUDE.md` §20e permits. **It is runtime state and a re-seed loses it**, which is exactly why the row stays open: the fix is five declarations in the seeder, so the demo is reproducible rather than repaired by hand.
 
 **Suggested fix.** Two products, an ideal customer for each, a buying committee for each, one focus, three target accounts — enough that the read surface has shape, and coherent with the twelve accounts the scenario already seeds, which are technology companies.
+
+### B-327 · Four governance artifacts described ICP Matching as finished
+
+| | |
+|---|---|
+| **Module** | Repository governance — [443](architecture/443-account-matching-capability.md) · [BACKLOG](BACKLOG.md) TASK-406 · [Domain Discovery Register](DOMAIN_DISCOVERY_REGISTER.md) · [461](architecture/461-product-led-domain-discovery-review.md) |
+| **Current assignee** | **Lane C** — it authored all four |
+| **Severity** | 🟠 — **a lane reading any of them would begin work believing the capability is usable** |
+| **Status** | ✅ **`FIXED` — 2026-08-05.** **QE verifies; the lane that fixed it does not close it** |
+| **Found** | 2026-08-05, by [C-332](LANE_COORDINATION.md) *(Lane B)*, and assigned by the product owner: *"Implementation should never discover conflicting governance documentation."* |
+| **The conflict** | **`evaluate(icp, observed)` is `PROMOTED` and correct. Nothing constructs an `ObservedAttributes`, and `opportunity_engine` — ruled to do the measuring — is forbidden from `knowledge_graph`, the only module holding the `entity_id → SubjectRef` binding.** **So the capability is *implemented* and *not usable*, and four documents said it was done** |
+| **Fix** | **[443](architecture/443-account-matching-capability.md)** gains a dated correction naming why it missed it — *§3 made the function pure specifically to avoid the import contract and never asked who hands it the facts* · **TASK-406's row** strikes *"the per-criterion lift half is unaffected"* · **the Register** marks R-00 `PROMOTED, no reachable caller` and moves it out of *Architecturally Stable* · **[461](architecture/461-product-led-domain-discovery-review.md)**'s readiness summary reads **Implemented, not usable** |
+| **Regression guard** | ⛔ **None, and deliberately.** **A document agreeing with a *capability's reachability* is not mechanically checkable** — `state-check` can compare a document to a commit, not a claim to a codebase. **Saying so beats a check that would pretend to cover it** |

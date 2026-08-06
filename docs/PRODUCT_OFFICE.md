@@ -768,6 +768,22 @@ Execution Buffer Health
 
 > ⚠️ **The distinction that makes the finding useful.** *"Blocked"* and *"empty"* are different diagnoses and only one of them is the product owner's. **Lane A's queue on 2026-08-05 was neither** — its rows were `CLAIMED`, `IN VALIDATION` or another lane's, and **the honest bottleneck was that Product Office had not prepared the next slices.** **Reporting that as a dependency would have pointed at the wrong person.**
 
+### 🔗 Dependency reporting — seven fields, always ([D-094](DECISION_REGISTER.md))
+
+> **Whenever a report states a dependency, a waiting state or a blocked condition, it carries all seven.** *"This should become part of the standard Product Office reporting format."*
+
+```text
+  Dependency:              the identifier — C-nnn · TASK-nnn · B-nnn
+  Owner:                   the lane or person who can move it
+  Affected tasks:          every id it holds, not only the nearest
+  Current status:          the state that identifier is actually in
+  Why it blocks:           the mechanism, not the label
+  Expected next action:    what happens next, and who does it
+  Product Owner action?    YES with one sentence of why · or NO
+```
+
+> ⚠️ **The fourth and fifth fields are the ones that get skipped, and they are the ones that matter.** **A report saying *"blocked on C-417"* names something; a report saying *"C-417 is `READY FOR PRODUCT DECISION` and blocks because the platform edit's proof lives in five files this lane may not touch"* lets somebody act without opening a second document.**
+
 ### The rules that carry the weight
 
 | | |

@@ -40,7 +40,7 @@ lane         = "Lane C"
 updated      = 2026-08-05
 depth_target = 5
 
-current = "TASK-418"
+current = ""
 next    = ""
 future  = []
 
@@ -52,8 +52,8 @@ future  = []
 #
 # **§20e: `AVAILABLE` with an empty queue is a correct repository state, not a
 # stalled one** — every remaining item has an owner who is not this lane.
-eligible_count = 1
-shortfall      = 4
+eligible_count = 0
+shortfall      = 5
 
 [rationale]
 "TASK-418" = "the three signora_platform capabilities ADR-0404 approved: EventHandler takes the dispatcher session, PublishableEvent becomes read-only properties, Action.LEAVE plus two policy lines. ✅ UNBLOCKED 2026-08-05 by C-416 — backend/signora_platform/ is Lane C's as permanent architectural owner. ⚠️ Ownership is not approval: §20a still freezes the tree and ADR-0404 is what makes this buildable. The two existing handlers migrate here, not in TASK-901. Run ADR-0404 §Validation first — all four"

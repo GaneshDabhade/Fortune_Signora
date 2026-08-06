@@ -102,7 +102,7 @@ future  = []
 # queue**, which is the whole reason `current` is checked against BACKLOG.md
 # rather than against what this file said an hour ago.
 eligible_count = 2
-shortfall      = 0
+shortfall      = 3
 
 [rationale]
 "TASK-201" = "Epic C — People Intelligence. ✅ UNBLOCKED 2026-08-05 at NARROWED scope, and DECOMPOSED the same day by D-074 into TASK-427 (domain) · TASK-428 (intelligence) · TASK-429 (provider enrichment) · TASK-430 (the screens). ⚠️ TASK-201 is NOT replaced and does not move — its status, position and assignment are the product owner's and unchanged. A claim on it means TASK-427 first and TASK-428 stage 3 second, in that order, which is a statement of fitness and never of priority. ⛔ TASK-427 is not yet claimable: its trigger has fired but the product owner has not placed it. C-221 stands and its narrowing IS the plan — role-based and organization-level intelligence, no person's name anywhere"

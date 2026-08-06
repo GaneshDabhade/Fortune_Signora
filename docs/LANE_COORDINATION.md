@@ -5671,3 +5671,28 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 ### What this item is not
 
 ⛔ **Not a rename programme.** **Both recommendations avoid touching a shipped API, a Casbin subject or a ratified invariant** — which is the whole reason to rule on vocabulary *before* the next screen rather than after.
+
+## C-333 · The queue was documentation, and it is now validated
+
+**Opened 2026-08-05 · Lane C · 🟠 · ✅ `RULED` — product owner, same day: *"Approved for Product Office handling."***
+
+> ***"The queue must always represent the actual executable state of the repository… The queue should be considered an executable planning artifact rather than documentation."***
+
+⚠️ **The id falls in Lane B's allocation block (`300+`), not Lane C's (`400+`).** **The product owner named it explicitly, and `B-327`/`C-333` were both verified absent from every register and from `origin/integration` before use.** **Recorded here so QE renumbers rather than discovers it.**
+
+### The seven validations, in `infra/state-check.py`
+
+**`eligible_count` against the sequence beside it · `shortfall` against `depth_target` · actual claimability · dependency satisfaction · queue freshness against `BACKLOG.md`'s last commit · `READY` rows in no queue · completed rows still queued.**
+
+### ⚡ Four drifts on the first run, and two were in queues this office wrote
+
+| | |
+|---|---|
+| **`lane-a`** | Queued **TASK-437** as executable; its row says `IN VALIDATION`. **Lane A had shipped the leave endpoint** |
+| **`lane-b`** | Declared `shortfall = 0` against **2 of 5** |
+| **`lane-c`** | Queued **TASK-418** as executable; it is with QE |
+| **`TASK-901`** | ⚡ **`READY` in the backlog and in nobody's queue** — and the finding was the *backlog*, not the queue. **Both lane queues already listed it as blocked on TASK-418; the backlog was the optimistic one.** Corrected to `BLOCKED` on [C-417](#c-417--adr-0404-approved-three-platform-capabilities-whose-owner-may-not-finish-two-of-them) |
+
+### ⚠️ And the check found a defect in its own wiring
+
+**It was appended *after* `if not findings: return 0`.** **Every queue validation would have been skipped on exactly the day the rest of the repository agreed with itself** — **the one day a silent queue drift goes unseen.** **Moved above the early return, and the reason is recorded in the code.**

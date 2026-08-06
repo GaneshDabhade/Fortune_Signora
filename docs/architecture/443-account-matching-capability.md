@@ -191,3 +191,13 @@
 **One row is time-critical and it is not a ruling**: **[TASK-406](../BACKLOG.md) is being implemented today and its backtest needs the predicate.** **The recommendation is that step 1 and step 2 precede it** — which is the same shape as [D-074](../DECISION_REGISTER.md), arriving from a different direction, and **the second time this week that a foundational concept was scheduled behind something that needs it.**
 
 **The decision this contains is small**: **M2's home**. **Everything else in this document is measurement, and every alternative was tested against source rather than argued.**
+
+---
+
+# ⚠️ Corrected 2026-08-05 — [B-327](../BUGS.md) / [C-332](../LANE_COORDINATION.md)
+
+**This document said the per-criterion lift half was unaffected and needed nothing new. It is wrong.**
+
+> **`evaluate(icp, observed)` shipped and is correct, and *nothing in the repository constructs an `ObservedAttributes`*.** **The module ruled to do the measuring — `opportunity_engine` — is forbidden from `knowledge_graph`, which is the only module holding the `entity_id → SubjectRef` binding.**
+
+**Why this document missed it:** ⚡ **§3 made the function pure *specifically* to avoid the import contract — *"the facts are handed to it"* — and never asked who hands them.** **The capability is *implemented*, not *usable*.**

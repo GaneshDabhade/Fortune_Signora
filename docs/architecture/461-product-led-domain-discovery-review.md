@@ -48,7 +48,7 @@
 
 | Capability | Confidence | Owner | `public/` | Context Def | Decomposition | Dependent areas | Governance remaining | Wave |
 |---|---|---|---|---|---|---|---|---|
-| **[R-00](../DOMAIN_DISCOVERY_REGISTER.md)** | **Implemented** | `commercial_profile` | ✅ **Published** | ✅ [443](443-account-matching-capability.md) | ✅ 2 slices, shipped | 8 screens | ⛔ **None** | ✅ |
+| **[R-00](../DOMAIN_DISCOVERY_REGISTER.md)** | ⚠️ **Implemented, not usable** | `commercial_profile` | ✅ **Published** | ⚠️ [443](443-account-matching-capability.md), **corrected** | ✅ 2 slices, shipped | 8 screens | ⚠️ **[C-332](../LANE_COORDINATION.md) — an input with no producer** | ✅ |
 | **[R-02](../DOMAIN_DISCOVERY_REGISTER.md)** | 🏛️ **Ready** | ✅ `workspace_tenancy` | **Slice 1** | ✅ [455 §1](455-context-definitions-r02-r03.md) | ✅ 4 slices | 4 + 16 inherit | **[TASK-433](../BACKLOG.md) — a name** | 3 |
 | **[R-03](../DOMAIN_DISCOVERY_REGISTER.md)** | 🏛️ **Ready** | ✅ **New context** | **Slice 1** | ✅ [455 §2](455-context-definitions-r02-r03.md) | ✅ 6 slices | 7 screens | **[TASK-431](../BACKLOG.md) — a shape, then an ADR** | **before 2** |
 | **[R-01](../DOMAIN_DISCOVERY_REGISTER.md)** | **Established** | ✅ `people` *(new)* | — | ✅ [ADR-0400](adr/0400-person-as-an-entity.md) | ✅ 4 milestones | 6 screens | **[TASK-427](../BACKLOG.md) placement** | 1.5 |

@@ -26,6 +26,7 @@ import json
 import re
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -135,6 +136,117 @@ def _latest_certification() -> dict[str, object] | None:
         return None
     runs = json.loads(manifest.read_text()).get("runs") or []
     return runs[-1] if runs else None
+
+
+#: **The seven queue validations — C-333.** *"The queue must always represent
+#: the actual executable state of the repository… an executable planning
+#: artifact rather than documentation."*
+#:
+#: **Every one of these had already fired in practice before it was written.**
+#: `lane-a.toml` declared five eligible rows of which **none was startable** —
+#: one was `IN VALIDATION`, two were `CLAIMED`, one was `CHANGES REQUESTED` and
+#: one belonged to another lane entirely. `lane-b.toml` carried a task as
+#: `current` while its own note in the same file said *"claimed and delivered"*.
+#: **A queue nobody validates drifts within hours, and it drifts silently
+#: because it reads like a plan either way.**
+QUEUES = REPO_ROOT / "docs" / "coordination" / "queues"
+
+#: States a lane may actually start from. **`CHANGES REQUESTED` belongs here**
+#: — §20e makes a returned task the lane's highest priority, so it is
+#: executable even though it is not `READY`.
+_STARTABLE = {"READY", "CHANGES REQUESTED"}
+_DEPARTED = {"IN VALIDATION", "VERIFIED", "CERTIFIED", "PROMOTED", "DONE", "DISPOSED"}
+_HELD = {"CLAIMED", "IN PROGRESS"}
+_STATE_WORDS = _STARTABLE | _DEPARTED | _HELD | {
+    "WAITING", "BLOCKED", "SEQUENCED", "PREPARING", "UNDER REVIEW",
+    "REVISION REQUESTED", "RATIFIED",
+}
+
+
+def _backlog_states(backlog: str) -> dict[str, str]:
+    """Every `TASK-nnn` and the state its own row declares.
+
+    **Read from the Status row's backticked words in line order**, which is the
+    correction B-101 forced on the dashboard: a status that *explains* a state
+    in prose must not be mistaken for being in it.
+    """
+    states: dict[str, str] = {}
+    for block in re.split(r"(?=^### TASK-\d+)", backlog, flags=re.M):
+        head = re.match(r"^### (TASK-\d+)", block)
+        row = re.search(r"^\| \*\*Status\*\* \|(.+)$", block, re.M)
+        if not head or not row:
+            continue
+        for quoted in re.findall(r"`([A-Z][A-Z ]+)`", row.group(1)):
+            if quoted.strip() in _STATE_WORDS:
+                states[head.group(1)] = quoted.strip()
+                break
+    return states
+
+
+def _queue_findings(backlog: str) -> list[str]:
+    states = _backlog_states(backlog)
+    out: list[str] = []
+    if not QUEUES.is_dir():
+        return out
+    newest = _git("log", "-1", "--format=%cs", "--", "docs/BACKLOG.md")
+    queued: set[str] = set()
+
+    for path in sorted(QUEUES.glob("lane-*.toml")):
+        lane = path.stem
+        try:
+            queue = tomllib.loads(path.read_text())
+        except tomllib.TOMLDecodeError as broken:
+            out.append(f"{lane}: does not parse — {broken}")
+            continue
+
+        sequence = [str(t) for t in (queue.get("current"), queue.get("next")) if t]
+        sequence += [str(t) for t in (queue.get("future") or [])]
+        queued.update(sequence)
+        target = int(queue.get("depth_target", 5) or 5)
+
+        declared = queue.get("eligible_count")
+        if declared is not None and int(declared) != len(sequence):
+            out.append(
+                f"{lane}: declares eligible_count {declared} beside a sequence of "
+                f"{len(sequence)} — one of the two is stale"
+            )
+        stated = queue.get("shortfall")
+        expected = max(0, target - len(sequence))
+        if stated is not None and int(stated) != expected:
+            out.append(
+                f"{lane}: declares shortfall {stated}; {len(sequence)} of {target} "
+                f"is a shortfall of {expected}"
+            )
+        for task in sequence:
+            state = states.get(task)
+            if state is None:
+                out.append(f"{lane}: queues {task}, which has no row in BACKLOG.md")
+            elif state in _DEPARTED:
+                out.append(
+                    f"{lane}: queues {task} as executable and its row says {state} "
+                    f"— finished work advertised as available"
+                )
+            elif state in _HELD:
+                out.append(f"{lane}: queues {task} as executable; somebody holds it ({state})")
+            elif state not in _STARTABLE:
+                out.append(f"{lane}: queues {task}, which is {state} and not startable")
+        blocked = {str(b.get("task")) for b in (queue.get("blocked") or [])}
+        for task in sorted(blocked & set(sequence)):
+            out.append(f"{lane}: lists {task} as both executable and blocked")
+        stamped = queue.get("updated")
+        if stamped is not None and newest and str(stamped) < newest:
+            out.append(
+                f"{lane}: stamped {stamped}; BACKLOG.md last moved {newest} — "
+                f"not re-measured since"
+            )
+
+    for task, state in sorted(states.items()):
+        if state in _STARTABLE and task not in queued:
+            out.append(
+                f"{task} is {state} and appears in no lane queue — a lane reading "
+                f"only its queue cannot see work the backlog offers"
+            )
+    return out
 
 
 def main() -> int:
@@ -541,6 +653,15 @@ def main() -> int:
 
     for note in notes:
         print(f"  ok   {note}")
+    # C-333 — the queue is an executable planning artifact, so it is validated
+    # rather than trusted.
+    #
+    # **Placed above the early return deliberately, and it was below it for one
+    # run.** `if not findings: return` would have skipped every queue check on
+    # exactly the day the rest of the repository agreed with itself — which is
+    # the one day a silent queue drift would go unseen.
+    findings.extend(_queue_findings(backlog))
+
     if not findings:
         print("\nstate-check: governance documents agree with the repository.")
         return 0

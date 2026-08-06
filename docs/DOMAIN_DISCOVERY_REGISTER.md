@@ -309,7 +309,7 @@
 
 | Capability | Category | Owner | Consuming screens | Dependency chain | Status | Wave | 🎯 Trigger | Criticality |
 |---|---|---|---|---|---|---|---|---|
-| **[R-00] Criteria Evaluation** | 🏗️ | `commercial_profile` | **8** — ICP Builder · Companies · Copilot · Exec Dash · Search · Research · Workflow · E1 | ICP declaration → predicate → lift · cohorts · rules | ✅ **`PROMOTED`** | Shipped | ✅ fired | **Was 🔴. Now discharged** |
+| **[R-00] Criteria Evaluation** | 🏗️ | `commercial_profile` | **8** — ICP Builder · Companies · Copilot · Exec Dash · Search · Research · Workflow · E1 | ICP declaration → predicate → lift · cohorts · rules | ⚠️ **`PROMOTED`, no reachable caller** | Shipped | ✅ fired | ⚠️ **NOT discharged — [C-332](LANE_COORDINATION.md).** Nothing constructs an `ObservedAttributes` |
 | **[R-02] Global scope · Saved view** | 🏗️ | ⚡ **`workspace_tenancy` recommended — [454 §1](architecture/454-r02-r03-implementation-preparation.md)** | **16 inherit · 5 name it** | Shell → every filtered read → Reports · Segments | 🔴 **Missing** | 3 | ⛔ not fired | 🏛️ **Ready for Implementation** — owner ruled, [Context Definition](architecture/455-context-definitions-r02-r03.md) written, **4 slices decomposed.** 🔴 **Blocked on a *name* alone** |
 | **[R-03] Action batch** | 🏗️ | ⚡ **A new bounded context recommended — [454 §2](architecture/454-r02-r03-implementation-preparation.md)** | **7** — Workflow · Companies · Copilot · Opp Intel · Settings · Account 360 · Exec Dash | [ADR-0402](architecture/adr/0402-a-rule-is-data.md) → *N* subscribers → approve · apply · **withdraw via [P-B](#)** | 🔴 **Missing** | **before 2** | ✅ **fired, structurally** | 🏛️ **Ready for Implementation** — owner ruled, [Context Definition](architecture/455-context-definitions-r02-r03.md) written, **6 slices decomposed.** 🔴 **Blocked on a *shape*, which its ADR needs** |
 | **[R-01] People · Affiliation** | 🏗️ | `people` *(new)* | **6** — People · Account 360 · ICP Builder · Copilot · Exec Dash · Search | ADR-0400 → `EntityKind.PERSON` → Affiliation → timeline · committee · criteria | **Sequenced** | **1.5** | ✅ fired | 🟠 **High. Split M-D/M-E** |
@@ -343,7 +343,7 @@
 | Capability | Category | Screens | Workflows | Owning module | Status · wave | **Trigger condition** |
 |---|---|---|---|---|---|---|
 | **[R-15] Stated absence** | 📐 **P-A** | **5 + certification** | Every read | ⚠️ **None — it is a pattern, not a module** | **7 instances, 0 implementations** | 🔴 **Highest, and unowned** |
-| **[R-00] Account matching** | 🏗️ | **8** | Backtest · segments · rules · cohorts | `commercial_profile` | ✅ **`PROMOTED`** | **High** |
+| **[R-00] Account matching** | 🏗️ | **8** | Backtest · segments · rules · cohorts | `commercial_profile` | ⚠️ **`PROMOTED`, unusable — [C-332](LANE_COORDINATION.md)** | **High** |
 | **[R-01] People · Affiliation** | 🏗️ | **6** | Committee · org chart · criteria · movements · search | `people` *(new)* | **Sequenced — wave 1.5, split M-D/M-E** | **High** |
 | **[R-03] Action batch** | 🏗️ | **7** | Bulk · approve · AI apply · **rule subscribers** | ⚠️ Undecided | **Awaiting shape ruling** | ⚡ **The second module needing approve/apply/reverse — [451 §0](architecture/451-workflow-automation-traceability-audit.md) makes it structural** |
 | **[R-02] Saved view** | 🏗️ | **4** | Every filtered read | ⚠️ Undecided | **Awaiting naming ruling — wave 3** | **Medium** ⚡ *defined by all four* |
