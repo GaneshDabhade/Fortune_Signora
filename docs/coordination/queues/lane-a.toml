@@ -146,10 +146,6 @@ future  = []
 
 # ⚡ TASK-443 claimed by this lane 2026-08-06, within the hour of becoming
 # `next`. Removed from eligible; the queue is doing its job.
-next    = "TASK-443"
-future  = ["TASK-445", "TASK-901", "TASK-449", "TASK-456", "TASK-460"]
-next    = "TASK-445"
-future  = ["TASK-901", "TASK-449", "TASK-456", "TASK-460"]
 
 # ⛔ **2026-08-06 — TASK-440 removed from `current` and set BLOCKED.** This file
 # put it there on the note *"its workspace-wide read is VERIFIED to exist"*, and
@@ -257,14 +253,6 @@ future  = ["TASK-901", "TASK-449", "TASK-456", "TASK-460"]
 # ⚠️ **Counted wrong once and corrected by the gate**: `current` + `next` + three
 # `future` is 5, not 4. **The instrument caught its author** — which is the only
 # reason C-333's count check exists.
-eligible_count = 5
-eligible_count = 7
-eligible_count = 6
-shortfall      = 0
-eligible_count = 4
-shortfall      = 1
-eligible_count = 3
-shortfall      = 2
 eligible_count = 2
 shortfall      = 3
 
