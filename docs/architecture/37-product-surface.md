@@ -761,6 +761,40 @@ So on an expired account the brief said it **twice in one card, three lines apar
 
 ---
 
+## TASK-440 — Companies, the book a seller scans *(built 2026-08-06 · **not shipped**)*
+
+> ⛔ **This section describes a screen that is complete and is not in the repository.** Implementation, tests and two passing Playwright journeys exist; **the route is withheld because it has no entrance and the entrance is [C-229](../LANE_COORDINATION.md)'s to rule.** **Shipping it would leave `reachability` red in both `make reachability` and `tests/components/reachability.test.tsx`** — a blocking quality defect traded for a screen nobody can reach. **It lands unchanged, plus one link, the day the ruling arrives.** *This is recorded here rather than lost in a stash: the next lane in this module must not rebuild it.*
+
+**`/accounts` — the whole tracked book, paged, as a table or as cards, with the owner filter and a search.** Attention answers *"who do I call today"*; **this answers *"where is everything"***, which is a different act and needs a different shape: a table exists so a reader can run their eye down a column, and a triage list that grew a *show all* control would stop being a triage list.
+
+⛔ **It has no entrance, and that is the one thing to read before touching this screen.** [D38](39-product-review-findings.md) removed *Companies* from navigation by name — *"a company is what an account is"* — and [C-229](../LANE_COORDINATION.md) asks the product owner whether [410](410-approved-ui-specification.md) supersedes that. **`make reachability` fails on `/accounts` today, deliberately**: the screen is complete and the door is not this lane's to hang. **Do not add a navigation entry to make the gate pass** — that is the ruling, arriving as a commit.
+
+### What the list contains, and the audit that got it wrong
+
+⚠️ **[446](446-companies-traceability-audit.md) describes the table as *"every company this workspace watches"* and cites `GET /accounts`. That read returns open opportunities.** A company is *declared* the moment somebody types it and becomes *tracked* when its evidence crosses the qualification threshold, so **the two sets differ and the screen may not use the customer's word for the one it is not showing.**
+
+**The subtitle names the set, and a test asserts it never drifts back** — the same treatment `freshness.tsx` gives *"last checked"*. **The gap itself is [C-232](../LANE_COORDINATION.md)**, and closing it needs account matching rather than a render.
+
+### Every cell already existed, and the extraction is the slice's one structural change
+
+**`AccountRow` moved out of `app/(app)/page.tsx` into `components/intelligence/account-row.tsx`, unchanged.** [446](446-companies-traceability-audit.md) calls the card view *"no backend at all — a rendering, not a capability"*, and **that only stays true if it renders something that already exists**: a second implementation of an account row is how two screens start disagreeing about what an account looks like. Attention's suite was not touched and still passes, which is the proof the move changed nothing.
+
+**The three coverage sentences are imported from the header search rather than restated**, for the same reason.
+
+### Three decisions a later change must not quietly reverse
+
+| | |
+|---|---|
+| **The owner filter is applied in the page query, never over the page** | [446](446-companies-traceability-audit.md)'s own words: filtering returned rows *"reads correctly at twelve accounts and silently becomes a lie at two hundred"*. **This screen is the one built for two hundred**, which is also why it pages with `useInfiniteQuery` instead of reusing `useAccounts` |
+| **A search replaces the list rather than filtering it** | Filtering the loaded pages searches the rows that happened to arrive. **And the projection has no notion of who owns an account**, so a seller filtered to *Mine* can be shown a company that is not theirs — **the screen says so above the results** rather than letting it become a bug report |
+| **The view and the filter travel together in the URL** | Changing how the list is drawn must not silently widen whose list it is. Both are links, so both are bookmarkable and keyboard-reachable without a widget |
+
+### What it did not need
+
+**No endpoint, no index, no migration, no table, no event.** 🟢 render only, as the row said — and the only backend fact this slice established is one the audit had wrong.
+
+---
+
 ## A1 — find an account by name *(2026-08-03)*
 
 **Epic A's second slice.** *"Show me Databricks"* — the second question of every evaluation, and the one a ranked list structurally cannot answer.

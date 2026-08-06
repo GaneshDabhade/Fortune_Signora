@@ -376,6 +376,7 @@ databaseUrl: required(
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | **`RULED`** — 2026-08-05 · [D-073](DECISION_REGISTER.md) · a `Resource` is a **declaration**, never a grant · **[`CLAUDE.md` §20a](../CLAUDE.md) amended** | **[TASK-405](BACKLOG.md)'s last route is unblocked.** Authorization is granted only through `policy.csv`; a `Resource` entry without policy rows provides no runtime capability, so the two authorities were never governing the same thing |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
+| [C-232](#c-232--companies-shows-what-signora-tracks-and-the-audit-called-it-what-the-customer-declared) | **Companies shows what Signora *tracks*, and the audit called it what the customer *declared*** | Lane A | **Lane B** *(`commercial_profile` holds the declaration)* · **the product owner** *(whether the two should be one list)* | **`OPEN`** — raised 2026-08-06 from inside [TASK-440](BACKLOG.md), against the audit that produced it | **Nothing.** The screen ships over the read that exists and says which set it is |
 | [C-231](#c-231--the-organization-history-is-paged-and-its-fetch-is-not-yet-bounded) | **The organization history is paged, and its fetch is not yet bounded** | Lane A | **Lane A** — its own module, recorded so the half-fix is not mistaken for the whole | **`OPEN`** — raised 2026-08-06 from inside [TASK-443](BACKLOG.md), by this lane against itself | **Nothing.** The contract is fixed and the cost is not |
 | [C-230](#c-230--lane-as-assignable-work-is-exhausted-and-here-is-every-row-and-its-reason) | **Lane A's assignable work is exhausted — every row, and its reason** | Lane A | **Product owner** *(the two decisions)* · **Lane C** *(two stale rows)* | **`READY FOR PRODUCT DECISION`** — raised 2026-08-06 on the product owner's instruction to document the dependency | ⚡ **Nothing new.** It measures what [C-228](#c-228--the-signal-center-has-no-workspace-wide-queue-to-render-and-no-way-to-leave-it) and [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) already hold, and **releases [TASK-419](BACKLOG.md) for Lane C** |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would h | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
@@ -5962,6 +5963,45 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 **Six occurrences of one defect is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. The register is where a repeated shape stops being individually correct.
 
+## C-232 · Companies shows what Signora tracks, and the audit called it what the customer declared
+
+**Opened 2026-08-06 · Lane A · owner: Lane B and the product owner · 🟡**
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, holding [TASK-440](BACKLOG.md), from the reuse audit and before writing a line |
+| **Status** | **`OPEN`** |
+| **Blocks** | **Nothing.** The screen ships over the read that exists and **says on screen which set it is showing** |
+
+### The premise that did not survive
+
+**[446](architecture/446-companies-traceability-audit.md), verbatim:**
+
+> | **The account table — 8,412 rows** | **Every company this workspace watches** | **Aggregate + read** — `GET /accounts`, cursor-paginated | ✅ **Exists, and correctly** |
+
+⛔ **`GET /accounts` does not return every company this workspace watches.** Its own docstring says what it returns — *"**Open opportunities** for this workspace, ordered by attention"* — and `open_page` filters to `OPEN_STAGES`. **An opportunity is opened when an account crosses the tracking threshold** (`qualify.py`: *"Open an opportunity when an account crosses the tracking threshold"*).
+
+**So there are two sets and the audit conflated them:**
+
+| | Where it lives | What it means |
+|---|---|---|
+| **Declared** | `GET /target-accounts` — `commercial_profile` | **What the customer typed.** *"As the customer typed it. Never resolved."* |
+| **Tracked** | `GET /accounts` — `opportunity_engine` | **What Signora found enough about to follow** |
+
+**A declared company that Signora has not found enough about is in neither this screen nor any other**, and its absence currently means nothing a customer can read.
+
+### Why this lane did not close it
+
+**There is no join, and building one is not a render slice.** A declared account is `{id, name}` with an id that is *"stable across every revision of the list"* — **a declaration-local id, not a resolved entity** — so nothing connects a declared row to a score, a brief or an account page. **Producing that correspondence is account matching**, which is [443](architecture/443-account-matching-capability.md) and another module's.
+
+### What TASK-440 did instead, so nothing is silently wrong meanwhile
+
+**The subtitle names the set**: *"Every company Signora is tracking for you. A company you have named appears here once Signora has found enough to start following it."* **A test asserts the screen never claims otherwise**, because a subtitle promising the declaration is a sentence a customer cannot check.
+
+⚡ **The related capability already exists and is not consumed**: [TASK-400](BACKLOG.md)'s A7 slice built `GET /target-account-coverage`, which answers *did Signora look at this declared subject, and did it store anything* — **precisely the question a declared-but-untracked company raises.** **Whether Companies should show declared rows with their coverage beside tracked ones is a product decision**, and it is the one being asked here.
+
+---
+
 ## C-231 · The organization history is paged, and its fetch is not yet bounded
 
 **Opened 2026-08-06 · Lane A · owner: Lane A · 🟡 · raised by this lane against its own slice**
@@ -6138,7 +6178,9 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 | **Raised by** | **Lane A**, holding [TASK-441](BACKLOG.md), after the reuse audit and before writing a line |
 | **Owner** | **The product owner.** ⛔ **Not Lane C** — [D38](architecture/39-product-review-findings.md) is a ratified product decision about information architecture, and the row that removed *Opportunities* says in its own words that **adding one back is a claim that needs defending** |
 | **Status** | **`READY FOR PRODUCT DECISION`** — **one question.** The screen is scoped, its reads are verified, and it is buildable the moment this is answered |
-| **Blocks** | **[TASK-441](BACKLOG.md)'s entrance, and nothing else.** ⚠️ **Not the screen** — see *what this is not* below |
+| **Blocks** | **The *entrance* of the three screens [D38](architecture/39-product-review-findings.md) removed by name, and nothing else.** ⚠️ **Not the screens** — see *what this is not* below |
+| ⚡ **Evidence, 2026-08-06 — and it is now a failing gate rather than a question** | **[TASK-440](BACKLOG.md) built Companies at `/accounts`, complete and green on every other gate, and `make reachability` fails on it:** *"**NO ENTRANCE — built, and no screen leads here: `/accounts`**"* · *"every one is a defect"*. ⛔ **So the entrance is not a finishing touch that can follow the screen — the repository refuses to certify a screen without one.** ⚡ **This is exactly what [D-127](DECISION_REGISTER.md) ④ asked for**: *"bring the recommendation back once implementation and journey validation supply the evidence."* **Implementation is done and both journeys pass against the real product** — a seller narrows to their own book, searches a company by name and opens it. **What is missing is one ruling.** ⛔ **This lane did not declare the route in `ENTERED_FROM_OUTSIDE`**: nothing outside the product sends a customer to `/accounts`, so the declaration would be false and would make the guard unable to fail |
+| ⚡ **Lane A's recommendation, offered as input and never as authority** | **Give the three screens an entrance *from the surface that already answers the neighbouring question*, and add no navigation entry.** For Companies: **one link at the foot of the attention list** — *see every company Signora is tracking* — which satisfies the gate, keeps [D38](architecture/39-product-review-findings.md)'s two-entry navigation intact, and puts the door where the question is actually asked. ⛔ **Not implemented.** D38's own words are *"adding one back is a claim that needs defending"*, and **a lane that hangs the door has answered the question by shipping a link**, which is what this item exists to prevent |
 
 ### The question, in one sentence
 

@@ -206,6 +206,60 @@ sed -n '2042,2044p' docs/BUGS.md
 **`unclosed_fence(text) -> int | None`** in `infra/registers.py`, checked by `state-check` across all four registers **before** the marker check, so a reader learns the structure is broken rather than reading a conclusion drawn from broken structure. **Five tests**, including one asserting the blindness directly — **the only half no assertion about `conflict_markers` could catch, since its answer is empty either way.**
 
 **What it does not fix.** The register is still hand-merged, so the **next** corruption is a different shape again. ⛔ **This is now the third time that sentence has been written in this file**, and RC-4's actual answer remains ADR-0039's to propose and the product owner's to schedule.
+### B-210 · The journey plan names a Playwright spec that does not exist
+
+| | |
+|---|---|
+| **Module** | **`infra/`** — `certification-guard.py`, `JOURNEYS_ALWAYS` |
+| **Current assignee** | **QE.** ⚡ *"A defect in a gate that stops QE certifying is QE's to fix, unchanged"* (§20e, [D-022](DECISION_REGISTER.md)'s clarification) — this decides what a lane is told to run before handing over |
+| **Severity** | 🟡 · **Wrong but survivable.** The two journeys it names are supposed to run on *every* frontend change, so the one that does not exist has never run on any |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-06 by Lane A, following [D-113](DECISION_REGISTER.md) on [TASK-440](BACKLOG.md) — computing the plan rather than choosing the journeys |
+
+**Steps.** `python3 infra/certification-guard.py --plan integration..HEAD` on any narrow frontend change, then `ls frontend/tests/e2e/*.spec.ts`.
+
+**Expected.** Every journey named by the plan exists and can be run.
+
+**Actual.** `JOURNEYS_ALWAYS` is `{"golden-journey", "accessibility"}`. **There is no `golden-journey.spec.ts`** — the fourteen specs are `accessibility`, `auth-journey`, `business-setup`, `commercial-profile`, `confidence`, `connections`, `consistency`, `daily-usage`, `interaction-boundaries`, `perception`, `permissions.member`, `resilience`, `visual`, `workflow`.
+
+> ⚡ **The always-run set is the one place the mapping cannot afford to be wrong**, because it is the part no path selects into and therefore the part no lane double-checks. **A lane following the plan literally runs `playwright test golden-journey`, which matches nothing and exits reporting no failures** — a gate that cannot fail (§2).
+
+⚠️ **And [`CLAUDE.md` §19](../CLAUDE.md) names the flag as `--journeys`**, which the tool does not accept; the capability is `--plan REV_RANGE`. **Reported rather than corrected**: that file is the product owner's.
+
+---
+
+### B-209 · Eleven Playwright journeys fail on `integration`, and the header search is why
+
+| | |
+|---|---|
+| **Module** | **The repository-wide journey suite** — `frontend/tests/e2e/pages/business.ts` and the specs that use it |
+| **Current assignee** | **QE** — §20e: QE *"creates, maintains, extends and retires repository-wide automated tests; lanes own the tests specific to the slices they implement"* |
+| **Severity** | 🔴 · **Blocking Quality Defect — failing tests.** Eleven journeys, including four `@journey` and five `@regression` |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-06 by Lane A, running the full journey suite for [TASK-440](BACKLOG.md) before handing over |
+
+**Steps.** Seed a lane environment, `npx playwright test`, on `integration` with nothing else changed.
+
+**Expected.** The suite passes, or a named defect explains why it does not.
+
+**Actual.** Eleven fail, all on the same line:
+
+```
+locator.fill: strict mode violation: getByLabel('Name') resolved to 2 elements:
+  1) <input aria-label="Find an account by name" …>   ← the shell header search
+  2) <input id="_r_0_" placeholder="Revenue Cloud" …> ← the product dialog
+```
+
+**`getByLabel` matches a substring, and the shell header is on every screen.** `business.productName` asks for *Name* and the header search's accessible name — *Find an account by **name*** — contains it. **Nothing about the product is wrong**: both labels are good, and the second is exactly the specificity [ADR-0034](architecture/adr/0034-ubiquitous-language.md) asks for.
+
+> ⛔ **Verified as not this lane's change, and verified twice.** The spec fails with Lane A's working tree stashed, **and it fails on `integration` itself** with the branch checked out clean. **The clashing `aria-label` is on `origin/main`.**
+>
+> ⚡ **The fix is one word — `exact: true`, or `getByRole('textbox', { name: 'Name', exact: true })`** — and it belongs to whoever owns the page object. **Reported rather than fixed**: finding a defect outside the assignment is an obligation to report it, never permission to fix it (§20e), and a lane editing QE's suite is how a shared suite acquires two authors.
+
+⚠️ **What this says about the gate is worth more than the fix.** [D-113](DECISION_REGISTER.md) made running the journeys the *lane's* responsibility before handover, and **this is the first slice to run the whole suite from a lane** — the eleven have presumably been failing for as long as the header search has existed on the business page. **A journey suite nobody runs end to end is a plan, not a gate.**
+
+---
+
 ### B-208 · Global Search crashes the moment it finds anything
 
 | | |
