@@ -6736,6 +6736,39 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
 
+## C-424 · The finalized rail links four screens the design set does not contain
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-06, under [D-140](DECISION_REGISTER.md) — **after exhausting the design set, the Design System, the related screens, the ADRs and the implementation** |
+| **Owner** | **Product owner** — ⛔ **this is missing *design intent*, not a missing decision about architecture** |
+| **Status** | **`READY FOR PRODUCT DECISION`** — ⚡ **one precise question, and it needs a pointer rather than an explanation** |
+| **Blocks** | ⛔ **Nothing today.** **Every screen currently in flight is one the design set contains** |
+
+### The question, at its smallest
+
+> ## **`Fortune Signora App Shell.dc.html` specifies a navigation rail with eight primary entries. Four of them — `Forecast`, `Pipeline`, `Deals`, `Conversations` — link to screens no design in the set defines.**
+
+**Is each of those four:** **① a screen whose design exists and I have not found · ② deliberately out of scope for this wave · or ③ a screen still to be designed?**
+
+⛔ **That is the whole question.** ⚡ **[D-140](DECISION_REGISTER.md): *"Bring only the smallest unresolved question"*** — **this is not asking how navigation works, or what those screens do. It asks which of three states each of four names is in, and any of the three can be answered by pointing.**
+
+### What was exhausted first
+
+| Source | Result |
+|---|---|
+| **The 26 design documents** | ⛔ **No `Forecast`, `Pipeline`, `Deals` or `Conversations` design.** Verified by filename and by reading the App Shell's `navItems` definition |
+| **The App Shell design itself** | ✅ **It names them and gives each an icon and a count field. It does not describe their contents** |
+| **Related screens** | ⚡ **`Deals` is confirmed as a real parent — the Opportunity Intelligence design's breadcrumb reads `Deals / EMEA enterprise / Vantage renewal — Q4 FY26`.** ⛔ **The other three appear nowhere else** |
+| **The implementation** | ⛔ **No route exists for any of the four in `frontend/app/`** |
+| **The ADRs and [D38](architecture/39-product-review-findings.md)** | **[D38](architecture/39-product-review-findings.md) removed *Opportunities* from navigation; the finalized design reinstates a richer rail. [D-128](DECISION_REGISTER.md) makes the design the authority, so D38 does not answer this** |
+
+### ⚠️ Why it matters even though it blocks nothing
+
+**Four rail entries with no design is either four missing screens or four items that should not be built.** ⛔ **A lane implementing the App Shell has to render the rail, and will otherwise either invent four destinations or silently drop them** — **which is exactly the drift [D-140](DECISION_REGISTER.md) exists to prevent.**
+
+⚡ **`Accounts` is the worked example of why guessing is dangerous**: it carries `8,412`, the exact row count [TASK-440](BACKLOG.md) cites, so it maps to **Companies** — **a mapping no filename would have suggested.** **Three of the remaining four may map similarly, and one guess in four is a screen nobody designed.**
+
 ## C-423 · Architecture document numbers can still collide, and D-112 already solved this one class over
 
 | | |

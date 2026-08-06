@@ -295,6 +295,32 @@
 
 ✅ **Enforced rather than asked for**: `_ownership_findings()` in `infra/state-check.py` reports any parked row with neither a resolvable module nor a steward. ⚡ **It accepts *either*, deliberately — a check that demanded a module would contradict §20e, and a check that contradicts a ratified rule is the more expensive defect.**
 
+### ⚖️ 0-N · When the design is ambiguous, ask one precise question — [D-140](DECISION_REGISTER.md)
+
+> ## ***"Ask one precise question rather than making one convenient assumption."***
+
+⛔ **Do not invent a missing detail.** ⛔ **And do not ask a broad one** — *"how should this screen work?"* is not a question anybody can answer quickly.
+
+| ⛔ **Not this** | ✅ **This** |
+|---|---|
+| *"Can you explain the design?"* | *"The design shows X but never specifies Y"* |
+| *"What should we do here?"* | *"The interaction between step 3 and step 4 is undefined"* |
+| *"How does navigation work?"* | *"The rail names four screens the set does not define — is each one out of scope, still to be designed, or a design I have not found?"* |
+
+**Exhaust first, and name what was exhausted:** **the finalized designs · the Design System · related screens · ADRs · architecture documents · ratified decisions · the implementation · customer journeys · reusable components · repository principles.**
+
+> **The objective is that the product owner answers by *pointing* — to a location in the design, or to the missing intent — without interrupting implementation.**
+
+**On resolution:** **update the planning artifact · update the task · make the same ambiguity unable to recur · and continue without reopening it.**
+
+#### ⚠️ The first application found the failure was mine, twice
+
+**[C-424](LANE_COORDINATION.md) is the protocol's first use and it is precise: four rail entries, three possible states each, answerable by pointing.**
+
+⛔ **But reaching it required correcting two of this office's own conclusions inside one hour.** **[C-229](LANE_COORDINATION.md) was published with a recommendation resting on *"the App Shell binds its navigation items from data this office cannot read."*** ⚡ **The data was in the file. This office read the templates and never looked for the definitions.**
+
+> **A claim that evidence is unavailable is itself a claim, and it needs checking harder than the evidence would have.** **Both times this week — [C-421](LANE_COORDINATION.md)'s design access and this — the office concluded *unreadable* without attempting the read.**
+
 ### ⚖️ 0-M · Escalate a decision, never an investigation — [D-139](DECISION_REGISTER.md)
 
 > ## ***"Bring me only the decision, not the investigation."***

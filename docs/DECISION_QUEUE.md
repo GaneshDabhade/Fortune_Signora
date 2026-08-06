@@ -44,15 +44,42 @@
 
 ---
 
-## ⛔ C-229 · Opportunity Intelligence needs a door — ✅ **now with one recommended navigation model**
+## 📌 C-424 · Four rail entries, no design — **one pointer answers it**
 
 | | |
 |---|---|
-| **The question** | **Does Opportunity Intelligence get a navigation entry, reversing [D38](architecture/39-product-review-findings.md) — or reach the customer another way?** |
-| **Blocks** | **The *entrance* of the screens D38 removed by name. Not the screens** |
-| **Priority** | **P2 — [TASK-441](BACKLOG.md)'s screen is otherwise the most complete of the sixteen** |
+| **The question** | **The App Shell rail specifies `Forecast`, `Pipeline`, `Deals`, `Conversations`. No design in the set defines them.** ⚡ **Is each one: ① a design I have not found · ② out of scope for this wave · or ③ still to be designed?** |
+| **Blocks** | ⛔ **Nothing today** — every screen in flight is one the set contains |
+| **Priority** | **P2 — it becomes P1 the moment a lane renders the rail**, which is [TASK-447](BACKLOG.md), currently `CLAIMED` |
+| **What was exhausted** | **All 26 designs · the App Shell's own `navItems` definition · the related screens · the ADRs · [D38](architecture/39-product-review-findings.md) · `frontend/app/`.** ⚡ **`Deals` is confirmed real — Opportunity Intelligence's breadcrumb reads `Deals / EMEA enterprise / Vantage renewal`. The other three appear nowhere else** |
+| ⚠️ **Why guessing is dangerous here** | **`Accounts` maps to the *Companies* design — proven by its `8,412`, the exact row count [TASK-440](BACKLOG.md) cites.** ⛔ **No filename would have suggested that mapping.** **Three of the remaining four may map similarly, and one wrong guess in four is a screen nobody designed** |
+| **Recommended** | ⚪ **None offered — this needs design intent, not a judgement.** ⚡ **Answerable by pointing: a filename, "out of scope", or "not yet designed", per name** |
 
-### ✅ Recommendation — **contextual, reached by drilling. Not a first-class destination.**
+## ✅ C-229 · Opportunity Intelligence's door — **answered by the design, and my first recommendation was wrong**
+
+⛔ **Corrected 2026-08-06, within the hour.** **The recommendation published earlier today said *"contextual, not a destination"* and rested on a caveat that was false: that the App Shell binds its navigation items from data this office cannot read.** ⚡ **The data is in the file.** **I read the templates and not the definitions**, and [D-140](DECISION_REGISTER.md)'s *exhaust the evidence first* is what found it.
+
+### The finalized navigation rail, read from the design
+
+**`Home · Forecast · Pipeline · Accounts (8,412) · Deals · Conversations · Signals (14) · Reports`**, with **`Enterprise (312)`** and **`Mid-market (1,140)`** as sub-items of Accounts, and **`Settings`** in the utility rail.
+
+| | |
+|---|---|
+| ✅ **Opportunity Intelligence is *not* a rail entry** | **That half of the earlier recommendation holds.** Its breadcrumb is `Deals / EMEA enterprise / Vantage renewal — Q4 FY26` and every label on it is singular — **a record page, like Account 360** |
+| ⛔ **But its parent `Deals` *is* a rail entry** | **So the entrance exists and it is a first-class destination — one level up.** **The screen is reached by drilling *from a list that the rail links*** |
+| ⚡ **And `Accounts` carries `8,412`** | **The exact row count [TASK-440](BACKLOG.md) Companies cites.** ⛔ **Companies *is* a first-class navigation destination in the finalized design** |
+
+### ⚠️ What this means for D38
+
+**[D38](architecture/39-product-review-findings.md) reduced navigation to two entries plus Settings, reasoning that *"none of the six customer journeys is show me all the companies."*** ⛔ **The finalized design has eight primary entries plus two sub-items plus Settings, and `Accounts` is one of them.**
+
+> ## **The design supersedes D38 on this point, and [D-128](DECISION_REGISTER.md) already says so: the design is the authority, and historical UI is not.**
+
+✅ **So C-229 needs no ruling.** **The question was *"does it get a navigation entry, reversing D38?"*** — **the design answers it, and the answer arrived when the design became readable.** ⛔ **Escalating it further would be asking the product owner to re-decide something the approved design already states.**
+
+⚡ **[TASK-441](BACKLOG.md) is unblocked**: its entrance is `Deals`, which the rail provides.
+
+## ✅ Recommendation — **contextual, reached by drilling. Not a first-class destination.**
 
 ⚡ **[D-139](DECISION_REGISTER.md) ① asked for a navigation model rather than a question, and the finalized design answers it directly.** **Measured from [`design-snapshot/screens/Fortune Signora Opportunity Intelligence.dc.html`](../design-snapshot/screens/), which this office could not read when the item was raised.**
 
