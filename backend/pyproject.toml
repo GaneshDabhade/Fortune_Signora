@@ -678,6 +678,40 @@ forbidden_modules = [
 # computing, and the one boundary it has would be gone. It is allowed exactly
 # one downstream neighbour, and only through `public/`.
 [[tool.importlinter.contracts]]
+name = "action_batch coordinates lifecycle; it never performs business behaviour"
+type = "forbidden"
+source_modules = ["modules.action_batch"]
+forbidden_modules = [
+    # **ADR-0405's boundary, made structural**: *"the Action context
+    # coordinates lifecycle. Business domains own business behaviour."* It
+    # interprets nothing, validates nothing, executes nothing and implements
+    # no inverse — the module that owns an operation is the only thing that
+    # knows how to perform or undo it.
+    #
+    # **So it imports no business module at all.** A consumer hands it a
+    # lifecycle to coordinate; it never reaches back for the meaning. Listed
+    # exhaustively rather than by layer because there is no layer of any of
+    # these it may reach.
+    "modules.commercial_profile",
+    "modules.knowledge_graph",
+    "modules.observation_engine",
+    "modules.business_event_engine",
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.ai_platform",
+    "modules.ai_reasoning_engine",
+    "modules.ai_research_engine",
+    "modules.sales_engagement",
+    "modules.integrations",
+    "modules.timeline",
+    "modules.people",
+    "modules.workspace_tenancy",
+]
+
+[[tool.importlinter.contracts]]
 name = "people identifies; it never judges"
 type = "forbidden"
 source_modules = ["modules.people"]
