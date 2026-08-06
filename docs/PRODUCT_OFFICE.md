@@ -116,6 +116,28 @@
 
 ⚠️ **And it was this office's own queue.** **Lane C reported itself legitimately empty while holding a startable row** — **the same defect it had corrected in Lane A's queue the previous day** (*"zero claimable is not zero executable"*), **committed here and found only because the sweep became standing.**
 
+### 📐 0-H · The approved design is the authority; code is not — [D-128](DECISION_REGISTER.md)
+
+> ## ***"Existing code is not the authority. Historical UI is not the authority. Intermediate mockups are not the authority."***
+
+**[410](architecture/410-approved-ui-specification.md) is the register and carries the canonical location.** ⛔ **The design is never duplicated here — one canonical location, many consumers, exactly how an ADR is registered.**
+
+**Every UI audit, readiness report, decomposition and implementation plan follows one sequence:**
+
+**① approved design → ② current implementation → ③ gap analysis → ④ refinement or replacement → ⑤ executable slices.**
+
+⚡ **④ preserves what the design does not govern.** **Backend, Better Auth integration and published APIs are reused, never rebuilt** — **only the UI and interaction model are replaced.**
+
+### The five states, and they replace *"implemented"*
+
+**Legacy implementation · Design-compliant · Functionally complete · Production ready · Enterprise ready.**
+
+⛔ **`Legacy implementation` is the default for anything built before 2026-08-04**, the day the design became authoritative. ⛔ **A screen that predates the design is never reported production-ready because code exists.**
+
+> ⚠️ **This office made exactly that error on 2026-08-06**, reporting six authentication screens as shipped and reasoning from their existence. **Dating them settled it: six of eight predate the specification they are measured against.** **[410](architecture/410-approved-ui-specification.md) carries the table.**
+
+⚠️ **And ① is a precondition, not a formality.** **The design set is not in the repository** — **no `.dc.html`, no export.** **When a conformance question cannot be answered from the repository, say so; do not assess from the code alone.** **That refusal is what produced this entry.**
+
 ### 🎭 0-B · Every screen row carries its journey — [D-113](DECISION_REGISTER.md)
 
 > ## ***"Every customer-visible feature should have a corresponding customer-visible Playwright journey."***

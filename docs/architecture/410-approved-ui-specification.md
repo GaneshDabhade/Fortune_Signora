@@ -11,8 +11,53 @@
 | **Project** | `Signora design system specification` |
 | **Identifier** | `1d043179-1ee9-4c9f-b59e-592e04297cad` |
 | **Type** | `PROJECT_TYPE_PROJECT` — **not** `PROJECT_TYPE_DESIGN_SYSTEM` |
-| **Contents** | 16 screen specifications · 1 design system (v2) · 1 pre-refactor design review |
+| ⚡ **Location** | **https://claude.ai/design/p/1d043179-1ee9-4c9f-b59e-592e04297cad** — **registered [D-128](../DECISION_REGISTER.md), 2026-08-06.** **One canonical location, many consumers — exactly how an ADR is registered.** ⛔ **The design is never duplicated into Product Office documentation** |
+| **Contents** | ⚠️ **26 screen specifications** · 1 design system (v2) · 1 pre-refactor design review |
 | **Read** | 2026-08-04, in full, by Lane C |
+
+> ⚠️ **The `Contents` row read *16 screen specifications* until 2026-08-06 and the set is twenty-six** — **sixteen business screens plus the ten platform-foundation modules [418 §1](418-platform-foundation-assessment.md) inventories.** **The ten arrived on the same day and were recorded in a different document, so the canonical register described part of the canonical set.** **Corrected here, because a register that undercounts its own contents is how *"that screen has no design"* becomes true by omission.**
+
+---
+
+## ⚖️ The authority rule — [D-128](../DECISION_REGISTER.md), 2026-08-06
+
+> ## **The finalized design documents are the authority. Existing code is not.**
+
+**Not historical UI. Not intermediate mockups. Not an implementation that happens to run.** **The design set at the location above is the source of truth for:** **page layout · visual hierarchy · interaction model · navigation · information architecture · spacing · typography · component usage · responsive behaviour · loading, empty and error states · customer journeys · accessibility expectations · workflow sequencing.**
+
+### ⚡ Why this needed writing down, and it is measured rather than argued
+
+**On 2026-08-06 this office reported six authentication screens as *shipped* and reasoned from their existence.** **Dating them against this document settled it:**
+
+| Screen | First committed | |
+|---|---|---|
+| **Login** | **2026-07-28** | 🔴 **seven days before the design existed** |
+| **Workspace Creation** | **2026-07-28** | 🔴 **before** |
+| **Registration · Verification · Forgot · Reset** | **2026-08-01** | 🔴 **before** — built to [ADR-0033](adr/0033-authentication-methods.md), not to this |
+| **Team Management** | **2026-08-04** | 🟠 **the same day — concurrent, not derived** |
+| **Workspace Invitation** | **2026-08-05** | ✅ **after** |
+
+> **Six of eight predate the specification they are now measured against.** ⛔ **Their existence establishes nothing about their correctness**, and reporting them as complete treated historical UI and approved UI as equivalent.
+
+### The lifecycle every UI implementation is classified against
+
+| | |
+|---|---|
+| **Legacy implementation** | **Built before the finalized design, or unverified against it.** ⛔ **The default for anything predating 2026-08-04** |
+| **Design-compliant implementation** | **Verified against the approved design** |
+| **Functionally complete** | Compliant, and the journey completes |
+| **Production ready** | Complete, and its states, accessibility and error paths hold |
+| **Enterprise ready** | Production ready, plus the enterprise surface the design specifies |
+
+⛔ **A screen that predates the design must never be reported as production-ready merely because code exists.**
+
+### The sequence every UI audit and decomposition follows
+
+**① Approved design** *(canonical)* → **② current repository implementation** → **③ gap analysis** → **④ refinement or replacement work** → **⑤ executable slices.**
+
+⚡ **④ preserves what the design does not govern**: **backend, Better Auth integration and published APIs are reused, never rebuilt.** **Only the UI and interaction model are replaced.**
+
+⚠️ **And ① is a real precondition, not a formality.** **On 2026-08-06 this office was asked to audit conformance across fifteen dimensions and could not**: **the design set is not in the repository, and no `.dc.html` or export exists here.** **Stating that beat inventing an assessment** — **and it is why the location above is now registered rather than assumed.**
 
 **It is not analysed, redesigned, critiqued, simplified or improved.** It is read the way a ratified contract is read: to determine what the repository must provide.
 

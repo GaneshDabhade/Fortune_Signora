@@ -33,7 +33,9 @@
 
 # Part A · Screen → domain
 
-**Sixteen approved specifications ([410](architecture/410-approved-ui-specification.md)).** **✅ the domain has it · 🟨 partial · ⛔ absent.**
+**Sixteen approved *business* specifications, of twenty-six total ([410](architecture/410-approved-ui-specification.md), which carries the canonical location).** ⚠️ **The other ten are platform foundation — [418 §1](architecture/418-platform-foundation-assessment.md), and [Part A-2](#) below.**
+
+> ⚖️ **[D-128](DECISION_REGISTER.md): the approved design is the authority and code is not.** **Every row in this register is measured against [410](architecture/410-approved-ui-specification.md)'s design set, never against what happens to be built** — **and anything built before 2026-08-04 is `Legacy implementation` until verified.** **✅ the domain has it · 🟨 partial · ⛔ absent.**
 
 > **The platform baseline is universal and stated once rather than sixteen times:** **JWT verification · Casbin authorization · RLS workspace scoping · the error envelope · cursor pagination · structured logging with `correlation_id`.** **Every screen needs all six.** **The `Platform` column names only what is *beyond* the baseline** — so a filled cell is information and an empty one is too.
 
