@@ -207,8 +207,9 @@ blocker = ["C-228"]
 owner   = "Lane C — scope and Change Budget are Product Office's"
 note    = "The Signal Center has no workspace-wide queue to render and no way to leave it. Measured by Lane A and re-verified by Lane C: signal_engine has ZERO write routes, Resource.SIGNAL does not exist in the enforcer or policy.csv, and TriageQueries.queue requires an entity_id. ⛔ Do not start. The row's own sequencing line was false."
 
-[[blocked]]
+[[held]]
 task    = "TASK-441"
-blocker = ["C-229"]
-owner   = "Product owner — D38 is a ratified product decision"
-note    = "Opportunity Intelligence needs a navigation entry that D38 removed from first principles. ✅ The screen's content is verified buildable and every read exists — only the entrance is blocked, and Lane A confirmed the four deliverables already render inside Account 360."
+blocker = []
+owner   = "Lane A — CLAIMED and correctly so"
+note    = "Opportunity Intelligence. ⚠️ Lane C set this BLOCKED for one turn and it was an over-correction, reversed the same turn. C-229's own scope line says it blocks the ENTRANCE and nothing else — not the screen — and this lane raised the item, verified every read, and claimed with eyes open. ⛔ The navigation entry remains the product owner's (reversing D38), and Lane A has since widened C-229 to three screens and one question."
+

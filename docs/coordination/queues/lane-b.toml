@@ -56,9 +56,9 @@ updated      = 2026-08-06
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-427"
-next    = "TASK-202"
-future  = ["TASK-201", "TASK-446"]
+current = "TASK-202"
+next    = "TASK-201"
+future  = ["TASK-446"]
 
 # **Rewritten 2026-08-05 after D-077. Four rows moved and every move is checked
 # against BACKLOG.md rather than against this file's own memory.**
@@ -107,8 +107,19 @@ future  = ["TASK-201", "TASK-446"]
 # for 16 consumers. ⚠️ The import contract changes with it: pyproject
 # forbids modules.knowledge_graph to opportunity_engine IN FULL, and it
 # is replaced with the inner-layer form — ADR-0403's exact shape.
-eligible_count = 4
-shortfall      = 1
+# ⚠️ 2026-08-06 · Lane B reports TASK-201 and TASK-202 as 'both still
+# blocked' while integration's backlog says both are READY. §20e: the
+# backlog wins on state, the queue wins on ownership, and the disagreement
+# is reported — this is that report.
+#   TASK-202  READY on the board. Its dependency is the hosted evaluation
+#             credential, RULED at C-334 and being provided — and that
+#             ruling is not yet on integration, so Lane B cannot see it.
+#             ⚡ The credential gates its PROMPT RELEASE, never its start.
+#   TASK-201  READY, and TASK-427 — its prerequisite — is now CLAIMED by
+#             this lane, so the sequencing is satisfied.
+# ✅ TASK-427 moved to `held`: claimed, and 2 commits ahead awaiting QE.
+eligible_count = 3
+shortfall      = 2
 
 [rationale]
 "TASK-427" = "M-D · the People domain — a person, and an affiliation with an end. ✅ READY 2026-08-06. ⚡ Placed FIRST because it is the prerequisite of what sits behind it, which is fitness and not priority: TASK-202's own row says 'phase 4 needs Epic C', so a lane taking TASK-202 first meets this at phase 4. ⛔ Position remains the product owner's and can be reordered freely. The owner of the new `people` context is Lane B, assigned by the product owner at D-103 — modules.toml carries the row and the directory does not exist yet, deliberately. Authority to build is D-074 (the domain approved, NOT the full People Intelligence feature set) and ADR-0400 is the ratified ADR a new bounded context requires. ⛔ SCOPE BOUND C-221, unchanged: no person's name anywhere — role-based and organization-level only. ⛔ FORBIDDEN in this row: no seniority_score, no is_key_contact, no priority, no ordered list read as a ranking; influence is buying_score_engine's and stays there. Needs NO provider: the intervals derive from RoleChangeValue(title, seniority, direction) + occurred_on + company, which flow in production today."
@@ -164,3 +175,7 @@ task    = "TASK-901"
 blocker = ["TASK-418"]
 owner   = "Product owner — an owner for signora_platform/"
 note    = "seven modules consume the events they declare. ADR-0404 approved the capabilities on 2026-08-05 and TASK-418 builds them; three of the four live in signora_platform/, which has no assignable owner. C-010 asked about apps/ AND signora_platform/ and the ruling named apps/ only. Seven slices sit behind one unassigned directory."
+
+[[held]]
+task = "TASK-427"
+note = "M-D, the People domain. CLAIMED by this lane 2026-08-06 and 2 commits ahead awaiting QE — within a day of the [people] ownership row landing at D-103. ⛔ Scope bound C-221 unchanged: no person's name anywhere."
