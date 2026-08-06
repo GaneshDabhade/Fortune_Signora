@@ -31,6 +31,7 @@ from modules.signal_engine.domain.catalog import Relevance, SignalType
 from modules.signal_engine.domain.profile import ProfileEntry, SignalProfile
 from modules.signal_engine.domain.signal import Signal, SignalError, signal_id
 from modules.signal_engine.infrastructure.catalog_loader import load_catalog
+from signora_platform.pagination import CursorPosition
 from tests.knowledge_graph.fakes import RecordingPublisher
 
 WORKSPACE = uuid4()
@@ -81,6 +82,38 @@ class FakeSignalRepository:
             and (signal_type is None or s.signal_type is signal_type)
             and (live_at is None or (s.relevant_until >= live_at and s.id not in replaced))
         )
+
+    async def for_workspace(
+        self,
+        workspace_id: UUID,
+        *,
+        live_at: datetime,
+        after: CursorPosition | None,
+        limit: int,
+    ) -> tuple[Signal, ...]:
+        """The workspace queue, newest first — **B-132**.
+
+        **TASK-439 widened `SignalRepository` and left this behind.** `pytest`
+        stayed green because Python does not enforce a `Protocol` at runtime,
+        so the fake was structurally wrong and behaviourally fine right up to
+        the moment a caller reached for the method it did not have. `mypy
+        --strict` is what noticed, and it belongs to certification rather than
+        to `make validate` — which is why this reached QE.
+
+        **It mirrors the real query rather than approximating it**: same two
+        liveness rules, same newest-first order, same keyset semantics. A fake
+        that answered a slightly different question would let a test pass
+        against behaviour the database does not have.
+        """
+        replaced = self._replaced()
+        live = sorted(
+            (s for s in self.rows if s.relevant_until >= live_at and s.id not in replaced),
+            key=lambda s: (s.occurred_at, s.id),
+            reverse=True,
+        )
+        if after is not None:
+            live = [s for s in live if (s.occurred_at, s.id) < (after.created_at, after.id)]
+        return tuple(live[:limit])
 
     async def by_id(self, workspace_id: UUID, signal_id_: UUID) -> Signal | None:
         return next((s for s in self.rows if s.id == signal_id_), None)
@@ -681,9 +714,7 @@ class TestCompetitorEntry:
 
     async def test_a_workspace_that_declared_nobody_grounds_nothing(self) -> None:
         repository = FakeSignalRepository()
-        engine, _, _ = _engine(
-            repository, [_adopted(1, "CloudCRM")], competitors=_declared()
-        )
+        engine, _, _ = _engine(repository, [_adopted(1, "CloudCRM")], competitors=_declared())
 
         await engine.execute(_input(), correlation_id=uuid4())
 

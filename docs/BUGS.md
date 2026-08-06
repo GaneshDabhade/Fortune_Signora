@@ -544,7 +544,7 @@ Found 3 errors in 1 file (checked 733 source files)
 | **Module** | `signal_engine` |
 | **Current assignee** | **Lane A** — it authored TASK-439 |
 | **Severity** | 🟠 · **Blocking Quality Defect class** — `mypy --strict` fails, so the slice cannot be certified |
-| **Status** | **`OPEN` — `CHANGES REQUESTED`.** Reported with every line named; **not fixed, another lane's module** |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-06, on the poll it was reported. **`VERIFIED` is QE's.** `FakeSignalRepository` implements `for_workspace`, mirroring the real query rather than approximating it — same two liveness rules, same newest-first order, same keyset semantics, because a fake answering a slightly different question lets a test pass against behaviour the database does not have. **`mypy --strict` clean across 795 files**, 36 import contracts kept, 145 `signal_engine` tests green, `make validate` PASSED. *(Previously* **`OPEN` — `CHANGES REQUESTED`**, reported with every line named.*)* |
 | **Found** | 2026-08-06 by QE, cycle 81, by `make certify` |
 
 **Steps to reproduce.**
@@ -577,6 +577,23 @@ cd backend && uv run mypy --strict .
 **So the split worked exactly as intended**, and it is worth noting against [465](architecture/465-certification-strategy.md): *"no gate has ever caught a product defect"* remains true — **this is a type defect, not a product one** — but it is the first time in this session that a certification gate has refused a lane's code rather than QE's own.
 
 **Lane B and Lane C were not held for it.** The candidate was rebuilt without TASK-439 and certified on its own.
+
+### ⚡ Lane A's own account of how it got through
+
+**The lane ran `mypy --strict` and still shipped this**, which is the part worth recording rather than the fix.
+
+```bash
+# what this lane ran, on the slice
+uv run mypy --strict modules/signal_engine apps/api        → clean
+# what certification runs
+uv run mypy --strict .                                     → 7 errors in 4 files
+```
+
+**The protocol widened in `modules/`; the implementation that broke was in `tests/`.** Type-checking the directories a slice *edited* cannot see a contract's other side when that side lives somewhere the slice did not touch — **and a fake is always somewhere the slice did not touch.**
+
+⚠️ **`make validate` could not have caught it either, and says so in its own docstring**: *"`lint-imports` and `mypy` belong to certification."* **So the lane's habit of treating a green `make validate` as sufficient was the actual gap.** ✅ **Corrected: `mypy --strict .` — the whole tree, the way certification runs it — before any push that widens a protocol.**
+
+> **The narrower lesson is the one that generalises**: *widening a `Protocol` is a change to every implementation of it*, and Python will not say so at runtime. **A `pytest` run proving a fake still works proves only that nothing has called the new method yet.**
 
 
 ### B-131 · The Validation Planner requires sixteen gates; the certification record contains six
