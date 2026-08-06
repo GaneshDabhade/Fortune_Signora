@@ -79,10 +79,16 @@
 | **4** | **Team Management** | ⚡ **418 calls it *"highest reuse in all 26 screens"*** — invitations, bulk CSV, seats. **Bulk is [R-03](#)** |
 | **5** | **User Profile** | ⚡ **"three field ownerships"** — an ownership question stated by the design itself |
 | **6** | **Security Center** | Sessions · devices · MFA · **step-up** — **step-up is an authorization dimension, [R-13](#)** |
-| **7** | **Notification Center** | **Event × channel matrix · digests · quiet hours** — ⚡ **[R-04](#) is deferred, and this is the screen that would fire its trigger** |
+| **7** | **Notification Center** ✅ [468](architecture/468-notification-center-traceability-audit.md) | ✅ **Audited 2026-08-06. ⛔ No new foundational capability — the most pre-decided of the ten.** [ADR-0040](architecture/adr/0040-notifications.md) is substantial · the delivery substrate is **built** · [ADR-0402](architecture/adr/0402-a-rule-is-data.md) already made Notifications *a subscriber rather than a blocker*. ⛔ **[R-04](#) not re-raised — [D-027](DECISION_REGISTER.md) stands.** ⚡ **Three findings, none of them about notifications**: **[B-401](BUGS.md)** — `04-modules.md` disagrees with `backend/modules/` in four places, found by checking ADR-0040's stated blocker · **[C-302](LANE_COORDINATION.md)** — per-person RLS, 4 days old, blocks N-01's migration · **the approved screen shows four features ADR-0040's *Day One* excludes**, because the ADR predates the design by two days |
 | **8** | **Billing** | **Annual commitment · true-up · read-only degradation** — ⬜ **a commercial lifecycle nothing in the sixteen touches** |
 | **9** | **Help Center** | **Contractual SLAs · regional status** | 
-| **10** | **System States** | ⚡ **418: *"every screen inherits it"*** — **15 states, one grammar.** **This is [P-A](#)'s screen, and P-A is a ratified pattern** |
+| **10** | **System States** ✅ [467](architecture/467-system-states-traceability-audit.md) | ✅ **Audited 2026-08-06. ⛔ No new foundational capability.** ⚡ **[R-15 / P-A](#)'s ninth instance arrived as [C-226](LANE_COORDINATION.md) — six on one screen** — and the register had annotated it *"name before the ninth."* **C-226 `ANSWERED`.** 🔴 **R-15's owner is the one open ruling: 26 consumers, no module** |
+
+> ### ⚡ A trigger recorded by [468 §4](architecture/468-notification-center-traceability-audit.md), 2026-08-06
+>
+> **Whichever of `workflow` and `notifications` is built *second* must state whether it reuses the first's condition model, or explain why not.**
+>
+> **[ADR-0402](architecture/adr/0402-a-rule-is-data.md) ruled that a rule is data evaluated over published events. A notification rule's *condition* half is the same shape; its *consequent* — routing, channel, quiet hours — has no analogue.** ⛔ **Neither module is built, so the shared half is not designed now** (§6, speculative abstraction). **The trigger is recorded so the question is asked once rather than answered twice** — the [462 §1](architecture/462-observed-attributes-proposal.md) defect, in a new place.
 
 > ⚠️ **The honest expectation, stated before the work rather than after**: **the sixteen ended with the final six producing zero new rows** ([D-092](DECISION_REGISTER.md)), **and these ten are platform rather than product.** **A result of *nothing new* is a success here and should be predicted, not treated as a disappointing outcome.**
 >

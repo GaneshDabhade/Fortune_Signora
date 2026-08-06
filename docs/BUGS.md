@@ -90,6 +90,16 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Status** | **`OPEN`** — reported with the line identified; **not fixed, another lane's file** |
 | **Found** | 2026-08-06 by Lane B, checking its own reporting against the gate after [C-333](LANE_COORDINATION.md) added seven queue validations |
 
+### B-401 · `04-modules.md` disagrees with `backend/modules/` in four places
+
+| | |
+|---|---|
+| **Module** | Repository architecture — [`docs/architecture/04-modules.md`](architecture/04-modules.md), the ratified module reference |
+| **Current assignee** | ⚠️ **Product owner** — `docs/architecture/01`–`21` is 🔴 (Change Budget). **Lane C reports; it may not repair** |
+| **Severity** | 🟠 — **wrong information a lane would act on.** It has already produced one wrong statement in a ratified ADR |
+| **Status** | **`OPEN`** — reported with evidence, **not fixed: 🔴 and not this office's** |
+| **Found** | 2026-08-06 by Lane C, auditing the Notification Center ([468 §1](architecture/468-notification-center-traceability-audit.md)) — **while checking another document's stated blocker rather than by inspecting this one** |
+
 **Steps to reproduce.**
 
 ```bash
@@ -125,6 +135,30 @@ notes.append(f"Backlog: {len(known)} task(s), {ready} READY, no task claimed twi
 **This lane matched the same status the wrong way and reported *"zero `READY` rows"* across four polls.** The right answer is **two — [TASK-201](BACKLOG.md) and [TASK-202](BACKLOG.md), both externally blocked** — so every conclusion drawn from it survived, and the phrasing did not. **The emoji prefix is what both readers missed**: the rows are `✅ READY`, not `` `READY` ``.
 
 > **Two independent readers got the same field wrong on the same day, in opposite directions.** That is the argument for the status being **parsed once, in one place**, rather than pattern-matched wherever it is needed.
+
+grep -oE "^### [A-Z].*" docs/architecture/04-modules.md   # Module Reference entries
+ls -d backend/modules/*/                                   # what exists
+```
+
+**Expected.** The ratified module reference names the modules the repository has.
+**Actual.** **Sixteen entries and sixteen directories, and they are not the same sixteen.**
+
+| Direction | Modules | Consequence |
+|---|---|---|
+| ⚠️ **In code, absent from the document** | **`sales_engagement`** — **zero mentions; no heading, no Module Reference entry** · **`integrations`** — mentioned three times, **no Module Reference entry** | **Two shipped bounded contexts the architecture does not define.** A lane resolving module ownership against `04-modules.md` (§1, *"resolving that ambiguity against `04-modules.md` is the first step of the task"*) finds nothing |
+| ⚠️ **In the document, absent from code** | **Recommendation Engine** · **Revenue Intelligence Platform** | **Correct and deferred** — but indistinguishable, in that document, from the two that shipped |
+
+### It has already cost something, which is why it is a row rather than a note
+
+**[ADR-0040](architecture/adr/0040-notifications.md)'s status block states its ratification blocker as *"a fifteenth entry in `04-modules.md`"*.** ⚡ **It would be the seventeenth.** **The ADR is not careless — that count was defensible on 2026-08-02** — **but a ratification gate stated against a stale count is a gate nobody can check.**
+
+### The fix, and it is not four edits
+
+**Decide what `04-modules.md` is.** If it describes **what exists**, `sales_engagement` and `integrations` need entries and the two unbuilt modules need marking as planned. If it describes **the intended architecture**, then two modules shipped without one and that is the finding instead. ⛔ **Lane C will not choose** — `CLAUDE.md` §2: *a governance edit that changes what somebody does tomorrow needed a decision yesterday.*
+
+### Regression guard
+
+⚡ **Available and cheap, unlike [B-327](#b-327--three-documents-say-the-executive-dashboards-icp-section-is-buildable-and-a-coordination-item-on-integration-says-it-is-not)'s.** **This one *is* mechanically checkable** — a directory listing against a document's headings, which is exactly what `state-check` already does for architecture-document numbering. **Proposed, not built**: it belongs with whoever rules on the paragraph above, because the check's correct assertion depends on which of the two answers is chosen.
 
 ### B-327 · Three documents say the Executive Dashboard's ICP section is buildable, and a coordination item on `integration` says it is not
 
