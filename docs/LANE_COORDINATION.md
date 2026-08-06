@@ -65,6 +65,11 @@
 
 ### C-211 — where does an approach brief live?
 
+| | |
+|---|---|
+| **Status** | **`OPEN`** — 🔴 **architectural, and the most architectural of the unrouted set**: an approach brief reads six subjects and **no existing module may read all six.** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
+| **Owner** | **Product owner** — 🔴 **a new bounded context or a widened contract; both are the product owner's.** ⚡ **Field added 2026-08-06 — the owner was declared inline beside `Opened` and no instrument reads prose** ([D-131](DECISION_REGISTER.md)). |
+
 **Opened 2026-08-03 · Lane A · owner: product owner · 🔴 architectural**
 
 **The problem.** An approach brief reads the buying committee, signals, business events, validation, narration and the opportunity. **No existing module may read all six**, and the Opportunity Engine's import contract forbids reaching the Signal Engine at all.
@@ -78,6 +83,11 @@
 **Implementation impact.** Blocks SE-01 onward. **Nothing in Sales Engagement can begin until it is settled.**
 
 ### C-212 — which product is an opportunity about?
+
+| | |
+|---|---|
+| **Status** | **`OPEN`** — 🟠 **the buying committee is declared per product and an opportunity has no product**, so *"which committee applies?"* is unanswerable and role ranking cannot start. ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
+| **Owner** | **Product owner** — 🟠 **it decides what an opportunity is *about*, which is product modelling.** ⚡ **Field added 2026-08-06 — the owner was declared inline beside `Opened` and no instrument reads prose** ([D-131](DECISION_REGISTER.md)). |
 
 **Opened 2026-08-03 · Lane A · owner: product owner · 🟠**
 
@@ -119,6 +129,11 @@
 
 ### C-214 — `Evaluation` assumes one rendering protocol, and a second now exists
 
+| | |
+|---|---|
+| **Status** | **`OPEN`** — **owner: whoever is assigned `ai_platform`.** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
+| **Owner** | **The current module assignee for `ai_platform`** — joined from [`modules.toml`](coordination/modules.toml), never stored here ([C-213](#c-213--task-205-names-an-assignee-that-moved)). ⚡ **Field added 2026-08-06 — the owner was declared inline beside `Opened` and no instrument reads prose** ([D-131](DECISION_REGISTER.md)). |
+
 **Opened 2026-08-03 · Lane A · owner: whoever is assigned `ai_platform` · 🟡**
 
 **The problem.** `Evaluation.rendering_protocol_version` records *which protocol produced the text the model actually read*, and `Evaluation.earns_release` compares it against `PROMPT_RENDERING_PROTOCOL_VERSION` — the AI Platform's **evidence** rendering protocol. That was correct while every prompt in the repository was shown an `EvidenceSet`.
@@ -142,6 +157,11 @@
 **Implementation impact.** Blocks nothing. SE-09c ships complete under the divergence above.
 
 ### C-215 — the Timeline feed is per-account, and the workspace needs it per-seller
+
+| | |
+|---|---|
+| **Status** | **`OPEN`** — ⚠️ **assigned 2026-08-04 by the consolidation ([D-058](DECISION_REGISTER.md)) and *still not answered*.** **Whoever builds [TASK-902](BACKLOG.md) inherits it with the module.** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
+| **Owner** | **The current module assignee for `timeline`** — assigned 2026-08-04 by the consolidation ([D-058](DECISION_REGISTER.md)); **joined from [`modules.toml`](coordination/modules.toml), never stored here.** ⚡ **Field added 2026-08-06 — the owner was declared inline beside `Opened` and no instrument reads prose** ([D-131](DECISION_REGISTER.md)). |
 
 **Opened 2026-08-03 · Lane A · current module assignee: Lane B (`timeline`) · 🟠**
 
@@ -191,6 +211,8 @@ databaseUrl: required(
 | **Deterministic loading** | The `tsx` scripts load `.env.local` explicitly, so a script and the dev server read the same file |
 | **Lane-aware configuration** | One documented way to point a whole lane — API, web, scripts, seeder — at its own database |
 | **No silent fallback** | A setup script with no `SIGNORA_AUTH_DATABASE_URL` **fails and says so.** A runtime default that happens to be another environment's database is worse than a crash |
+| **Status** | **`OPEN`** — **owner: QE** ([`RUNNING.md`](RUNNING.md) is theirs). **The default is the defect, not the missing loader.** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
+| **Owner** | **QE** — [`RUNNING.md`](RUNNING.md) is theirs, and *"QE removes its own blockers"* (§20e). ⚡ **Field added 2026-08-06 — the owner was declared inline beside `Opened` and no instrument reads prose** ([D-131](DECISION_REGISTER.md)). |
 
 **Trade-offs.** Removing the default would fail any environment that relied on it; that is the point, and it fails loudly at setup rather than quietly at seed time. Loading `.env.local` in the scripts alone fixes the symptom and leaves the fallback in place for the next caller.
 
@@ -317,7 +339,7 @@ databaseUrl: required(
 | [C-003](#c-003--three-wire-codes-for-one-condition) | Three wire codes for one condition | Lane B | **Product owner** | `OPEN` | Nothing. **It stopped growing** — slice 5 cites no product |
 | [C-004](#c-004--shared-documents-lag-commercial-profile) | Shared documents lag Commercial Profile | Lane B | **QE** | `OPEN` | Nothing today; a cold session reads a stale manifest |
 | [C-005](#c-005--who-owns-the-signal-profile-write-path) | Who owns the signal-profile write path | Lane B | **Product owner** / Lane A | `ANSWERED` — ownership. **Sequencing still the product owner's** | The first customer-editable relevance profile |
-| [C-006](#c-006--which-lane-owns-test_api_modulepy) | Which lane owns `test_api_<module>.py` | Lane B | **Product owner** | `OPEN` — **deliberately.** Not to be resolved inside a slice (2026-08-02) | Nothing — a standing ambiguity in §20e |
+| [C-006](#c-006--which-lane-owns-test_api_modulepy) | Which lane owns `test_api_<module>.py` | Lane B | **Product owner** | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). **Already answered by `CLAUDE.md` §20e, which postdates this item.** ⚡ **Index re-synced from the body here, the opposite direction to C-303 and C-027 — the rule is not *body wins*, it is *the more recent evidenced statement wins*.** | Nothing — a standing ambiguity in §20e |
 | [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) | The guided first run is a two-lane build | Lane B | Lane A + **product owner** | `OPEN` — routing and navigation answered; **deliberately not scheduled** (2026-08-02) | **Blocked on a capability, not a decision:** the `target_accounts_changed` consumer in `provider_platform` |
 | [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | Sellers cannot see what their company sells | Lane B | **Product owner** + QE | **`CLOSED`** — 2026-08-05 · ruled 08-03, stage 1 shipped | Nothing. **Stage 2's grading half waits on [C-002](#c-002--customer-language-has-no-anticorruption-layer)**; its display half is executable |
 | [C-009](#c-009--an-internal-fault-reaches-a-customer-as-a-422) | An internal fault reaches a customer as a `422` | Lane A | **Product owner** (platform §20a) | `OPEN` | Nothing today. Splitting the error hierarchy in any module |
@@ -578,7 +600,7 @@ Provider Normalization is an **anticorruption layer for vendor vocabulary** — 
 | **Owner** | **Product owner** / Lane A |
 | **Requesting lane** | Lane B |
 | **Category** | Module ownership |
-| **Status** | `OPEN` |
+| **Status** | ✅ **`ANSWERED`** — **ownership answered 2026-08-02; *sequencing* remains the product owner's.** ⚡ **Re-synced 2026-08-06 from the summary index, which carried the answer while this field read `OPEN`.** |
 | **Blocks** | The first customer-editable relevance profile |
 | **Raised** | `3931b3c` as F-B6 |
 
@@ -1792,6 +1814,7 @@ The model is now four: **Integration (catalog) · Connected Account · Grant · 
 | **Current assignee(s)** | **Lane A** — the shell and navigation are the frozen frontend foundation (§20c) |
 | **Blocking** | **Nothing in Integrations.** `/settings/connections` is built, tested and reachable at its URL |
 | **Raised** | 2026-08-02, by Lane B, at the M13 pause |
+| **Status** | ✅ **`ANSWERED`** — **narrowed to nothing 2026-08-02; Lane A shipped the entry point as CX-01 and a route census asserts every `/settings/*` route has a link.** ⛔ **`CLOSED` remains Lane B's to set as the requesting lane.** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
 
 **The same class as [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it), in a different module, and reported for the same reason.** A page nothing links to is a page a customer will not find, and *"it works if you type the URL"* is not a shipped capability. The OAuth routes already redirect to `/settings/connections?system=…&outcome=…`, so the return trip lands correctly; there is simply no way in from the product.
 
@@ -2917,6 +2940,7 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 | **Current assignee(s)** | **Product owner** |
 | **Blocking** | **M14a's shape.** Not its start — a first slice exists and is named below |
 | **Raised** | 2026-08-02, by Lane B, assigned M14a. **Before any code**, as with M7 and M13 |
+| **Status** | ✅ **`ANSWERED`** — **four decisions taken 2026-08-02; [ADR-0040](architecture/adr/0040-notifications.md) proposed.** ⏸️ **Ratification deferred by [D-027](DECISION_REGISTER.md), and it needs a `04-modules.md` entry — see [B-401](BUGS.md), which measured that the stated count is stale.** ⛔ **Corrected 2026-08-06 — this office wrote `OPEN` here hours earlier by defaulting rather than reading.** **The summary index carried the resolution and the body did not, so a `Status` field added *safely* overwrote a real answer.** ⚡ **The safe default is only safe when the other record is also empty**, and this one was not. |
 
 **M14a was reviewed the way M7 and M13 were. It is in a third condition, different from both.** M7 had no design. M13 had a ratified architecture that described something other than a module. **M14a has a ratified *purchase decision* that has been read as an architecture, and it is not one.**
 
@@ -3472,6 +3496,7 @@ frontend/playwright.config.ts                       modified
 | **Current assignee(s)** | **QE** — repository-wide automated tests are QE's; lanes own the tests specific to their slices (`CLAUDE.md` §20e) |
 | **Blocking** | **Nothing today.** [B-301](BUGS.md) is fixed and Timeline consumes correctly |
 | **Raised** | 2026-08-02, by Lane B, having just shipped the defect it describes |
+| **Status** | **`OPEN`** — **owner: QE**, repository-wide automated tests. ✅ **Blocking nothing today**: [B-301](BUGS.md) is fixed and Timeline consumes correctly. ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
 
 **The specific defect is fixed; the class that produced it is not.** [B-301](BUGS.md) — Timeline promoted to `main` with a projection handler the deployed worker never registered — got through **2518 passing tests, a coverage gate, MyPy strict, import-linter, `make smoke` and a full certification cycle.**
 
@@ -3530,6 +3555,7 @@ frontend/playwright.config.ts                       modified
 | **Current assignee(s)** | **Product owner** — `11-tenancy.md` and `docs/architecture/01`–`21` are 🔴 |
 | **Blocking** | **N-01's migration**, and nothing before it |
 | **Raised** | 2026-08-02, by Lane B, stress-testing [ADR-0040](architecture/adr/0040-notifications.md) against membership changes |
+| **Status** | **`OPEN`** — **a notification is per-person and workspace RLS is not enough.** ⏸️ **Travels with [ADR-0040](architecture/adr/0040-notifications.md), deferred by [D-027](DECISION_REGISTER.md).** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
 
 **Every workspace-owned table in this repository is workspace-scoped and workspace-*shared*.** RLS answers *"may this organization see this row?"*, and within a workspace every member sees everything. That has been correct for every table so far, because every one holds facts about the *organization*.
 
@@ -3582,6 +3608,7 @@ USING (
 | **Current assignee(s)** | **Product owner** — the structural decision was reserved explicitly |
 | **Blocking** | **All ICP Management implementation.** Discovery, audit and design continue |
 | **Raised** | 2026-08-02, by Lane B, assigned ICP Management, **after the reuse audit and before any code** |
+| **Status** | ✅ **`ANSWERED`** — **2026-08-02: the ICP stays in Commercial Profile, and the aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md).** ⚠️ **The structural decision the body describes was reserved to the product owner and the *ownership* question is settled.** ⛔ **Corrected 2026-08-06 — this office wrote `OPEN` here hours earlier by defaulting rather than reading.** **The summary index carried the resolution and the body did not, so a `Status` field added *safely* overwrote a real answer.** ⚡ **The safe default is only safe when the other record is also empty**, and this one was not. |
 
 ### 1 · The reuse audit — what already exists, and it is more than expected
 
@@ -3806,6 +3833,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 | **Current assignee(s)** | **Product owner** — `CLAUDE.md` is theirs, and a review practice is governance |
 | **Blocking** | **Nothing** |
 | **Raised** | 2026-08-02, by Lane B, at the product owner's suggestion after it caught a real error |
+| **Status** | **`OPEN`** — **a standing review question, owner the product owner** (`CLAUDE.md` is theirs). ⚡ **Not a blocker and not closeable**: it asks that a rejection state whether it rejects the whole option or one instance. ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
 
 **The question, ready to adopt:**
 
@@ -3856,6 +3884,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 | **Current assignee(s)** | **Product owner** — `CLAUDE.md` §2 is governance |
 | **Blocking** | **Nothing.** Both are being applied; this decides whether they are named |
 | **Raised** | 2026-08-02, by Lane B, at the product owner's direction |
+| **Status** | **`OPEN`** — **two principles that outgrew their ADR, owner the product owner** (`CLAUDE.md` is theirs). ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
 
 **Neither was invented. Both were *found* — each already enforced in a module that had never described it as a rule**, which is the evidence that they are repository principles rather than ICP details.
 
@@ -3915,6 +3944,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 | **Current assignee(s)** | **Product owner** |
 | **Blocking** | **The frontend half only.** The backend half is unassigned and Lane B can begin immediately |
 | **Raised** | 2026-08-03, by Lane B, assigned the capability, **after the mandatory reuse audit and before any code** |
+| **Status** | **`OPEN`** — ⚠️ **and it argues *against* work**: rebuilding the Opportunities & Signals experience *"would discard fourteen findings from real product review."* ⚡ **Relevant to [D-128](DECISION_REGISTER.md)** — the design is the authority, and this item is the strongest recorded counter-argument on one screen. **It needs a ruling, not an implementation.** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
 
 ### 1 · The audit's first finding: it is already built, and reachable
 
@@ -4020,6 +4050,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 | **Current assignee(s)** | **Product owner** — a recommendation is stated below and **Lane B is proceeding on it rather than waiting** |
 | **Blocking** | **Nothing Lane B intends to build.** Named because the answer changes where one table goes |
 | **Raised** | 2026-08-03, by Lane B, assigned User Profile, **after the reuse audit and before any code** |
+| **Status** | **`OPEN`** — **"the product cannot tell me who my colleagues are."** **Grouped with People Intelligence alongside [C-203](#c-203--nothing-in-the-product-can-render-a-persons-name) and [C-210](#c-210--will-signora-hold-personal-data).** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
 
 ### 1 · The audit's finding, and it is not "there is no profile screen"
 

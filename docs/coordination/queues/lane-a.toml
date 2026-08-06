@@ -53,7 +53,20 @@ current = "TASK-447"
 next    = "TASK-901"
 future  = []
 
-# 🔴 **CAPACITY FINDING — 2026-08-06.** TASK-460 claimed; **the seventh row
+# ⛔ **CORRECTION — 2026-08-06, and this office made the error this file
+# already documents.** The note below was reported to the product owner as
+# "Lane A will be dry within hours". **It will not.** Measured against
+# origin/integration: this lane holds NINE rows in flight — TASK-439 (in
+# progress), 442, 443, 445, 448, 449, 453, 456, 460 — and its branch carries
+# ten commits QE has not yet taken.
+#
+# ⚡ **`eligible_count` counts what is CLAIMABLE, never what is EXECUTABLE**,
+# and the comment eighty lines below says exactly that: *"`eligible_count = 0`
+# is right and 'Lane A is idle' is wrong. Zero claimable is not zero
+# executable."* **Written by this office on 2026-08-06 and forgotten the same
+# day.** The shortfall is real and the urgency was invented.
+#
+# 🟠 **CAPACITY FINDING — restated honestly.** TASK-460 claimed; **the seventh row
 # this lane has taken today.** ⛔ **Eligible is now 1 against a target of 5.**
 # ⚠️ **And TASK-901 is the least certain row here** — seven slices behind
 # TASK-900, whose RFC (435) awaits product owner approval.

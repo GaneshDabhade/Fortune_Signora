@@ -2,27 +2,17 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ⚠️ Four items, and one is a Product Office miss. Three others are waiting and you are holding all three deliberately.
+> ## ⛔ Two decisions block work today. Everything else is deferred, blocked on nothing, or waiting on you at your convenience.
 >
-> ⚠️ **[C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it) — Lane B found that a promoted capability has no reachable caller, and it falsifies a claim this office published.** **[TASK-406](BACKLOG.md) is blocked whole.**
+> **① [C-421](#-c-421--a-lane-cannot-read-the-design-it-is-implementing-against--external) — design access.** ⚡ **Nothing to decide; something to provide.** **Three prepared slices — [TASK-467](BACKLOG.md), [468](BACKLOG.md), [471](BACKLOG.md) — cannot begin**, and the workaround was proposed and refused by [D-129](DECISION_REGISTER.md).
 >
-> ⚠️ **[C-419](#c-419--the-six-verbs-have-no-representation-and-17-surfaces-one-contract-is-undecided) — the six verbs have no representation, and mounting the assistant would let every member spend a model call on every page.** **Blocks nothing; wave 2 reaches this screen next.**
+> **② [C-229](#-c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) — the navigation entry.** **Blocks [TASK-441](BACKLOG.md)'s entrance and nothing else.** ⚪ **No recommendation is offered, deliberately** — defending an entry against [D38](architecture/39-product-review-findings.md) is information architecture, which §20e reserves to you.
 >
-> ⚠️ **[C-418](#c-418--does-signora-forecast-revenue) — the Executive Dashboard's first word is *forecast* and a ratified principle refuses to forecast.** **Blocks nothing** — five of the screen's six sections ship without it — **and it decides four missing concepts at once.**
+> ⏱️ **[C-334](#-c-334--the-hosted-evaluation-credential--ruled-not-yet-provided) is ruled and unprovided** — **one credential converts four rows**, and release is automatic on configuration.
 >
-> ⚠️ **[C-417](#c-417--adr-0404-approved-three-platform-capabilities-and-its-owner-may-not-finish-two-of-them) — raised today, and it is in front of seven slices and a starving lane.** **ADR-0404's own §Validation caught it before the first line was written**, which is the good news; **the ADR is Lane C's, which is not.**
+> ⚠️ **[C-306](#-c-306--the-one-that-argues-against-work-and-it-collides-with-d-128) is the interesting one.** **It argues *against* rebuilding a screen** — *"would discard fourteen findings from real product review"* — **and it predates [D-128](DECISION_REGISTER.md), which made the design the authority.** **Nothing is blocked today; it becomes P1 the moment a refinement slice reaches that screen.**
 >
-> ✅ **The previously time-critical row is ruled.** **[TASK-434](BACKLOG.md) is `READY` at the head of the queue**, sequenced ahead of TASK-406's backtest by [D-077](DECISION_REGISTER.md) — *"establish the reusable capability once rather than allowing multiple implementations to emerge independently."* **The window closed with the capability on the right side of it.**
->
-> **① [Placing TASK-427](#-task-427--the-people-domains-trigger-has-fired-and-placing-it-is-yours)** — **the People domain.** Its trigger has already fired.
-> **② [TASK-431](#-task-431--six-screens-assert-one-guarantee-and-the-repository-has-no-word-for-it)** — six approved screens assert one guarantee; the repository has no word for it.
-> **③ [TASK-433](#-task-433--segment-already-means-something-else)** — one word, and it costs a sentence today.
->
-> **①–③ are held in the planned sequence at your instruction** — *"I will review their individual architectural shape separately."* **Discovery has not waited on them** ([D-075](DECISION_REGISTER.md)): **[443](architecture/443-account-matching-capability.md) and the [Domain Discovery Register](DOMAIN_DISCOVERY_REGISTER.md) were both produced while they sat here.**
->
-> ✅ **Both of the items that stood here on 2026-08-05 are ruled and cleared** — **[C-416](LANE_COORDINATION.md)** gave `signora_platform/` a permanent owner and released [TASK-418](BACKLOG.md) with [TASK-901](BACKLOG.md)'s seven slices; **[C-224](LANE_COORDINATION.md)** settled the authorization `Resource`, and `CLAUDE.md` §20a now names it in the carve-out. **Both were ruled by [D-073](DECISION_REGISTER.md).** *(This banner still asked for them the next morning. **`--check` reported C-224 as `STALE` and it was right** — the queue is only true if a ruling removes its own row.)*
->
-> **The 2026-08-05 rulings cleared every item that existed when they were made.** **Fourteen approved, three confirmed, eight deferred, three closed** — and the four platform items collapsed into one ADR. **Every remaining row below is either deferred by you or blocks nothing being built.**
+> ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
 
@@ -200,14 +190,27 @@
 | **[C-212](LANE_COORDINATION.md)** | 🟠 **Which product is an opportunity about?** **The buying committee is declared *per product*; an opportunity has no product** | ⛔ ***"Which committee applies to this account?"* is unanswerable, so role ranking cannot start** |
 | **[C-203](LANE_COORDINATION.md)** | **Nothing in the product can render a person's name** | **Narrowed 2026-08-02. Grouped with People Intelligence** |
 | **[C-204](LANE_COORDINATION.md)** | **The catalog explains nine words to nobody** | ⚡ **Half-answered today**: [TASK-456](BACKLOG.md)'s audit settled the *per-account* surface. **What remains is whether a catalog *browse page* is wanted** |
-| **[C-005](LANE_COORDINATION.md)** | **Who owns the signal-profile write path** | **Blocks the first customer-editable relevance profile** |
 | **[C-223](LANE_COORDINATION.md)** | **`competitor_entry` across the current dependency graph** | **Only the *detection* half of Epic D phase 1** — the declaration, its API and its screen all shipped |
 | **[C-009](LANE_COORDINATION.md)** | **An internal fault reaches a customer as a `422`** | **Blocks nothing today. It blocks *doing this properly* in any module that splits its errors** |
 | **[C-003](LANE_COORDINATION.md)** | **Three wire codes for one condition** | ⚠️ **Blocks nothing — *"but it gets worse with every slice"*.** **[TASK-454](BACKLOG.md) is the slice that fixes it and is `READY`** |
 | **[C-017](LANE_COORDINATION.md)** | **The onboarding honesty principle has no permanent home** | ⚡ **The text is written and ready to paste. Lane B may not place it** — **this is one paste, not a project** |
 | **[C-007](LANE_COORDINATION.md)** | **The guided first run is a two-lane build** | ⚡ **Becomes live with [TASK-469](BACKLOG.md) Onboarding**, which is sequenced behind [C-421](#-c-421--a-lane-cannot-read-the-design-it-is-implementing-against--external) |
 | **[C-014](LANE_COORDINATION.md)** | **Accessibility and performance testing are QE's, and neither exists** | ⚠️ **QE owns it and recorded the absence rather than stubbing a framework.** ⛔ **[D-131](DECISION_REGISTER.md) ② makes this a *product readiness* item — accessibility is what an enterprise buyer asks about** |
-| **[C-210](LANE_COORDINATION.md)** | **Will Signora hold personal data?** | ⏸️ **Already `DEFERRED` by you on 2026-08-05** — *"keep grouped with future People Intelligence work"*. **Listed only because it carries no `Status` field for an instrument to read** |
+| **[C-210](LANE_COORDINATION.md)** | **Will Signora hold personal data?** | ⏸️ **Already `DEFERRED` by you on 2026-08-05** — *"keep grouped with future People Intelligence work"* |
+| **[C-307](LANE_COORDINATION.md)** | **Signora cannot say who anybody is** | ⚡ **The customer framing is the useful part**: not *"I want to edit my name"* but ***"the product cannot tell me who my colleagues are."*** **Grouped with [C-203](LANE_COORDINATION.md) and [C-210](LANE_COORDINATION.md)** |
+| **[C-302](LANE_COORDINATION.md)** | **A notification is per-person, and workspace RLS is not enough** | ⏸️ **Same deferral.** ⚡ **One row each rather than one shared row** — the check anchors a listing to the head of a cell, so a second id in the same cell is invisible to it. **Two questions, two rows** |
+| **[C-305](LANE_COORDINATION.md)** | **Two principles that outgrew the ADR that found them** | **`CLAUDE.md` is yours.** ⚡ ***"A version is something the customer intentionally published. Not something they typed."*** — **a sentence worth promoting or discarding, not leaving in an ADR's margin** |
+| **[C-304](LANE_COORDINATION.md)** | **A standing review question that has already paid for itself** | ⚡ **Not a blocker and not closeable.** **It asks that a rejection state whether it rejects the *whole* option or only one instance of it** — ⛔ **and this office has made that exact error twice this week** |
+
+### ⚠️ C-306 · The one that argues *against* work, and it collides with D-128
+
+| | |
+|---|---|
+| **The claim** | ⛔ ***"Rebuilding this experience would discard fourteen findings from real product review."*** **The Opportunities & Signals experience already exists and Lane A owns how it evolved** |
+| **Why it needs you rather than me** | ⚡ **[D-128](DECISION_REGISTER.md) says the 26 finalized designs are the canonical UI specification — *"existing code is not the authority. Historical UI is not the authority."*** **C-306 is the strongest recorded counter-argument to applying that on one screen**, and it predates the ruling |
+| **What is *not* in tension** | ✅ **D-128's authority is not in doubt.** **The question is narrower: whether fourteen product-review findings should be carried *into* the conformance work as inputs, or whether the design already accounts for them** |
+| **Priority** | **P2 — nothing is blocked today.** ⚠️ **It becomes P1 the moment a refinement slice reaches this screen**, and [TASK-467](BACKLOG.md)–[471](BACKLOG.md) are that work |
+| **Recommended** | ✅ **Rule that the design is authoritative *and* that the fourteen findings are inputs to the gap analysis** — ⛔ **not a veto over it.** ⚡ **[D-129](DECISION_REGISTER.md) already permits exactly this artifact: a measurable gap analysis is one of the three, and *"the design already handles this"* is a legitimate finding for each of the fourteen** |
 
 ## Closed on 2026-08-06
 
