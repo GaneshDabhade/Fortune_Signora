@@ -44,6 +44,51 @@
 # writes can be seen by it.
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════════
+# 🔴  PLANNING CORRECTION — 2026-08-06 · TASK-440 · advisory, not a state change
+#
+# **WHAT CHANGED.** The account table in TASK-440 has no read behind it. This
+# office set the row READY on the note "its workspace-wide read is VERIFIED to
+# exist", and what was verified was an endpoint's NAME.
+#
+# **WHY.** Measured again after your claim landed, not assumed:
+#   GET /workspaces/{id}/accounts  is `attention_list` — "Accounts worth
+#     attention, most pressing first". Open OPPORTUNITIES ranked by live buying
+#     score, authorized on Resource.OPPORTUNITY.
+#   GraphQueries.find_accounts    requires `text` and refuses blank input
+#     DELIBERATELY: "an empty pattern matches every claim in the workspace, so
+#     the guard is here rather than left to the caller."
+#   Companies needs "8,412 rows" — a browse.
+# There is no workspace-wide account listing anywhere, and the nearest thing is
+# a designed refusal a browse screen must consciously reverse.
+#
+# **STILL EXECUTABLE — four of the five elements.** Card view · owner filter ·
+# score, trend and contested · search by name. All built, all reachable, and
+# the row's green budget covers them.
+#
+# **SHOULD WAIT — one element.** The account table itself.
+#
+# **THE DEPENDENCY NOW EXPECTED.** TASK-472 — `knowledge_graph` publishes a
+# cursor-paginated workspace-wide account listing through public/. READY,
+# unclaimed, Lane B's, and flagged urgent in lane-b.toml because you are its
+# waiting consumer.
+#
+# ⛔ DO NOT inline a browse read into Product Surface. knowledge_graph owns
+# account identity and the bindings; reaching past its public/ is C-213's
+# shape. ⚠️ And P-A applies meanwhile: an absent read must NOT render as an
+# empty account list — "8,412 rows" and zero look identical to a seller when
+# the difference is a missing endpoint.
+#
+# **YOUR CLAIM STANDS AND YOUR REASONING WAS RIGHT.** You read C-229, concluded
+# it blocks the entrance and not the screen, and declined to hang the door
+# because that would decide C-229 inside a feature slice. Every word correct —
+# it was a different blocker, and it was invisible to you because this office
+# left the correction on its own branch. C-422 records that failure as ours.
+#
+# ⛔ ADVISORY ONLY (D-136). This notice changes no execution state. TASK-440 is
+# CLAIMED and it is yours. Nothing here bypasses QE integration.
+# ══════════════════════════════════════════════════════════════════════════════
+
 lane         = "Lane A"
 updated      = 2026-08-06
 depth_target = 5

@@ -959,6 +959,49 @@ promoted commit SHA  ==  certified commit SHA
 
 **Losing a race costs one commit and no code.** That is the entire point of the ordering, and it is why the protocol reads as more ceremony than it costs.
 
+### Four classes of repository change, and planning corrections are one
+
+**Ratified 2026-08-06, product owner, [D-136](docs/DECISION_REGISTER.md). Drafted by Lane C on that instruction.**
+
+> **QE remains the only component responsible for integrating repository state.** ⛔ **Product Office gains no write authority into `integration`, and asked for none twice.**
+
+**The problem this solves is throughput, not authority.** **A planning correction — *this row is not buildable*, *this dependency exists*, *this owner moved* — is worth nothing until a lane can see it, and a lane sees only `integration`.** ⚠️ **[C-422](docs/LANE_COORDINATION.md) is the worked example: `TASK-440` was corrected on one day and claimed from the stale state on the next, by a lane that followed every rule.**
+
+| Class | What it is | How QE treats it |
+|---|---|---|
+| **Feature** | Production code a customer eventually uses | The full lifecycle, unchanged |
+| **Planning** | ⚡ **`READY`/`BLOCKED` status · dependencies · ownership · sequencing · lane assignments · coordination items** | **High-priority synchronization** — ahead of ordinary feature work in the integration order |
+| **Governance** | Rules, and this file | Ordinary |
+| **Coordination** | A register entry that blocks nobody | Ordinary |
+
+#### The marker
+
+**A planning correction carries `Planning-Sync: required` as a commit trailer.**
+
+```
+C-422 — TASK-440's account table has no read
+
+<the body>
+
+Planning-Sync: required
+```
+
+**A commit message, not a file.** ⚡ **Every alternative was a new shared file, and a shared file is a conflict surface between the two lanes it exists to coordinate.** **The repository already carries three conventions this way — `Claim TASK-`, `Repository Closeout`, `Slice-Handoff` — and each is found by `--grep` rather than by parsing something somebody maintains.**
+
+**`python3 infra/state-check.py` reports how many are waiting and how old the oldest is.** ⛔ **It reports rather than fails**: the lane that would have to clear the condition cannot push to `integration`, and a check that fails on something its own lane cannot fix teaches people to ignore it.
+
+#### Notify the lane; never overwrite it
+
+> **If Product Office discovers that a lane is about to work from stale planning information, it notifies that lane immediately** — in the lane's own queue file, which Product Office writes and the lane reads on every poll.
+
+**The notice names five things**: **what changed · why · which parts remain executable · which should wait · what dependency is now expected.**
+
+⛔ **It is advisory and it is coordination.** **It must not overwrite lane-owned execution state** (§20e, *execution ownership*) **and it must not bypass QE integration.** ⚡ **A lane that has been told can decide; a lane that has not been told cannot.**
+
+#### Measure it rather than argue from incidents
+
+**If `Planning-Sync` items accumulate or repeatedly delay implementation, the response is evidence gathered over several cycles and a proposal built on it** — ⛔ **never a governance change argued from one bad day.** **That is *Governance is stable; it evolves reactively* below, applied to this section's own subject.**
+
 ### Governance is stable; it evolves reactively
 
 **Ratified 2026-08-02, product owner, and it binds this file as much as any other.**
