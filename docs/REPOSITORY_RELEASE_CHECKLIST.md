@@ -280,11 +280,18 @@ git log --grep="Slice-Handoff" main~10..main  # what the lanes reported
 # `integration` and `main` diverge every cycle by construction: Closeout commits
 # land on `main` and never on `integration`. So `integration` is rebased onto the
 # promoted commit — replaying whatever arrived during certification on top of it.
-git checkout integration && git rebase main
+git switch integration && git rebase main || exit 1
 
-# idle lanes only — a lane mid-slice is left alone
+# Before any branch operation: refuse rather than discard. A cycle's own output
+# — the manifest `certify` just wrote — lives in the working tree until it is
+# committed, and `git reset --hard` cannot see it (B-129, three times).
+[ -z "$(git status --porcelain)" ] || { echo "uncommitted work — commit it first"; exit 1; }
+
+# idle lanes only — a lane mid-slice is left alone.
+# `merge --ff-only` refuses a dirty tree AND a non-fast-forward; `reset --hard`
+# refuses neither, which is why it is banned from a cycle (§0e-2).
 for lane in <idle-lane-branches>; do
-  git checkout "$lane" && git merge --ff-only integration
+  git switch "$lane" && git merge --ff-only integration || exit 1
 done
 git checkout main
 git branch -v

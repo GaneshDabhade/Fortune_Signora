@@ -101,6 +101,34 @@ echo "local $(git rev-parse --short HEAD) · origin $(git rev-parse --short orig
 
 > **`integration` moves continuously and by design** (§20e). A rejected push is therefore **normal**, not exceptional — which is exactly why it must be checked rather than assumed away.
 
+## 0e-2 · `git reset --hard` is banned from a cycle. Prefer the operation that refuses.
+
+**Ratified by QE, 2026-08-06, after [B-129](BUGS.md) recurred one cycle after [§0e](#0e--commit-the-certification-record-before-touching-a-branch) was written to prevent it.**
+
+> **We prefer operations that refuse an unsafe state over operations that silently recover from one** (product owner, 2026-08-06).
+
+**Three losses this session, all the same command**: a bug filing, then a certification record, then **the same certification record again — after the rule forbidding it existed.** §0e was true, published, and did not stop the third occurrence, **because a rule lives in a document and the command lives in muscle memory.**
+
+### The substitution, and why it is not merely a different spelling
+
+| Banned | Use | What changes |
+|---|---|---|
+| `git reset --hard <ref>` | `git switch <branch>` then `git merge --ff-only <ref>` | **Both refuse a dirty tree.** `merge --ff-only` additionally refuses a non-fast-forward, which is the second failure mode of the same step |
+
+**`reset --hard` succeeds under every condition**, which is precisely what makes it wrong here: **a cycle's uncommitted output is invisible to it, and being "recovered" from is indistinguishable from being destroyed.** The fail-fast pair stops and says why, and **a stop costs one command where a loss costs a re-certification.**
+
+### The checklist was already right, and that is the uncomfortable part
+
+**[`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) has never contained `reset --hard`** — its synchronization step is `git checkout <branch> && git merge --ff-only <ref>`, which would have refused all three times.
+
+> **The defect was improvisation, not documentation.** Every loss came from typing a faster equivalent instead of running the step as written. **The runbook is the operation; a shorter command that does the same thing on a good day is not the same command.**
+
+### Never touch the tree while a certification is measuring it
+
+**`tree_is_clean` is evaluated when the record is built — at the *end* of the run.** An edit made while `certify` is running therefore lands in the record as *the tree certified was never stored*, and **every gate runs first, so the cost is the full twelve minutes before the refusal appears.**
+
+**Its preflight says so in advance** — *"working tree dirty — certify will refuse it"* — and **it is a warning describing a certainty**, which is the worst shape a message can have: it reads as advice and behaves as a verdict. **Read it as the verdict. Stop the run, clean the tree, start again** — an abort costs nothing, and no gate reached a verdict, so nothing is recorded against the commit.
+
 ## 0e · Commit the certification record before touching a branch
 
 **Ratified by QE, 2026-08-06, after [B-129](BUGS.md).** `make certify` writes `certification/manifest.json` **into the working tree**. Between that write and the commit that stores it, **every branch operation can discard it — and `git reset --hard` does.**

@@ -425,6 +425,48 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-130 · D-107 removed `UI_WAVE_TASKS` and left its test referencing it
+
+| | |
+|---|---|
+| **Module** | `infra/repository-dashboard.py` — Platform Foundation ([D-022](DECISION_REGISTER.md)) |
+| **Current assignee** | **Lane C** — it authored `D-107` |
+| **Severity** | 🟠 · **Blocking Quality Defect class** — a failing test, so the slice cannot be promoted |
+| **Status** | **`OPEN` — `CHANGES REQUESTED`.** Reported with the line identified; **not fixed, another lane's file** |
+| **Found** | 2026-08-06 by QE, cycle 77, validating the candidate |
+
+**Steps to reproduce.**
+
+```bash
+make validate
+→ AttributeError: module 'repository_dashboard' has no attribute 'UI_WAVE_TASKS'
+   tests/certification/test_repository_generators.py:105
+   TestAFigureIsDerivedRatherThanStated::test_implemented_counts_the_wave_rows_it_is_given
+```
+
+**Expected.** A slice that renames or removes a symbol updates the test that reads it, in the same change.
+
+**Actual.** `b86a6bfd` (D-107) reshaped `repository-dashboard.py` — 48 lines changed — and **removed `UI_WAVE_TASKS`**. `backend/tests/certification/test_repository_generators.py:105` still binds it, so the suite fails on import of the attribute.
+
+### The test is the good kind, which is why it must be repaired rather than deleted
+
+```python
+wave = next(iter(dashboard.UI_WAVE_TASKS))
+assert dashboard._ui_implemented([(wave, "x", "IN VALIDATION")]) == 1
+assert dashboard._ui_implemented([(wave, "x", "READY")]) == 0
+```
+
+Its own docstring says why it exists: *"`Implemented 0` and `Integrated 0` were both literals. The test that catches a constant is not one that checks today's number — it is one that **changes the input and requires the output to follow**."*
+
+> **Whatever `UI_WAVE_TASKS` became, the property still holds** and the test should be pointed at the new name. **Deleting it would remove the guard against the exact defect D-107 was written to fix.**
+
+### Why this is QE's finding rather than a gate's
+
+**`make validate` catches it in one run**, and the Definition of Done requires the lane to have run its own gates on the rebased branch (§19, *self-validation performed*). **The slice reached QE without that**, which is the check that was skipped rather than a check that is missing.
+
+**Lane A's work was not held for it.** [TASK-432](BACKLOG.md) validated and certified on its own; Lane C's six commits are returned and rejoin the next cycle once the test binds a symbol that exists.
+
+
 ### B-129 · `git reset --hard` destroyed a certification record, and `--audit-main` refused until it was re-earned
 
 | | |
@@ -432,7 +474,7 @@ Found 3 errors in 1 file (checked 733 source files)
 | **Module** | QE's own release procedure — the ordering of branch surgery against uncommitted records |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 · **The record of a run that happened was lost.** No data lost, and the repository asserted an untruth until repaired |
-| **Status** | ✅ **`FIXED` — 2026-08-06**, by re-earning the record rather than reconstructing it |
+| **Status** | ✅ **`FIXED` — 2026-08-06, cycle 77.** ⚠️ **It recurred once before the fix was mechanical** — see *Third instance* below |
 | **Found** | 2026-08-06 by QE, cycle 76, when the manifest count did not move after a promotion |
 
 **Steps to reproduce.**
@@ -453,6 +495,22 @@ python3 infra/certification-guard.py --audit-main
 > ⛔ **A hand-written certification record is a fabricated record**, and it is worse than a missing one: the missing one is visible to `--audit-main` and the fabricated one is not. [§0b](QUALITY_ENGINEERING.md) forbids constructing a SHA for the same reason — *the repository's most load-bearing claim must never be produced by hand.*
 
 **The record was re-earned instead**: `make certify` re-run at the same commit, unchanged tree, every gate passing again — **12 minutes, and a genuine record.** `--audit-main` clean afterwards: 70 certified, 500 inside a snapshot, none outside.
+
+### ⚠️ Third instance — **after** the rule forbidding it was written
+
+**Cycle 77, one cycle later.** `git reset --hard main` on `lane-qe`, the manifest entry for `a7c98393` destroyed, `--audit-main` refusing again. **§0e existed, was correct, and did not prevent it.**
+
+> **A rule lives in a document; the command lives in muscle memory.** Three occurrences say the fix has to be *unrepresentable* rather than *written down* (`CLAUDE.md` §2 — prefer a violation that cannot be expressed over one that is merely discouraged).
+
+**The fix, ratified by the product owner 2026-08-06** — *"always prefer operations that refuse unsafe states over operations that silently recover from them"*:
+
+| Banned | Use |
+|---|---|
+| `git reset --hard <ref>` | `git switch <branch>` · `git merge --ff-only <ref>` |
+
+**`merge --ff-only` refuses a dirty tree *and* a non-fast-forward. `reset --hard` refuses neither** — it succeeds under every condition, which is exactly what makes it wrong when a cycle's uncommitted output is in the tree.
+
+**And the uncomfortable part: [`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) never contained `reset --hard`.** Its synchronization step has always been `checkout && merge --ff-only`, which would have refused all three times. **The defect was improvisation, not documentation** — a faster equivalent typed instead of the step as written. The checklist now also asserts a clean tree before any branch operation, so the guard is in the runbook rather than in the reader.
 
 ### Second instance this session
 
