@@ -16,6 +16,7 @@ import {
   ScoreMovement,
 } from '@/components/intelligence/attention';
 import { DecidedAccounts } from '@/components/intelligence/decided';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NeedsIdentity } from '@/components/intelligence/needs-identity';
 import { NothingRaises, TriageStrip } from '@/components/intelligence/triage';
 import { EntityName } from '@/components/intelligence/entity-name';
@@ -489,10 +490,6 @@ function Quiet({
 
 function Unavailable() {
   return (
-    <EmptyState
-      icon={LineChart}
-      title="Could not load your accounts"
-      description="The list is unavailable right now. Nothing has changed about your accounts — reload to try again."
-    />
+    <StatedAbsence as="page" icon={LineChart} subject="your accounts" />
   );
 }

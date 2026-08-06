@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { formatDay } from '@/components/intelligence/dates';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { Badge, Dialog } from '@/components/ui';
 import type { AccountNarration, EvidenceFact } from '@/lib/api/types';
 
@@ -68,7 +69,7 @@ export function NarrativeBlock({
 
   if (narration === undefined) {
     if (notNarrated) return <Aside>{NOT_WRITTEN}</Aside>;
-    if (isError) return <Aside>{COULD_NOT_LOAD}</Aside>;
+    if (isError) return <StatedAbsence subject="the explanation for this account" reassurance="Nothing has changed about the account" />;
     return null;
   }
 
@@ -127,8 +128,6 @@ export function NarrativeBlock({
 const NOT_WRITTEN =
   'Signora has not written one for this account yet. Everything above stands on its own — an explanation is written separately, and appears here once it has been.';
 
-const COULD_NOT_LOAD =
-  'Signora could not load the explanation for this account. Nothing has changed about the account — reload to try again.';
 
 /**
  * The panel with nothing in it, said in one line.

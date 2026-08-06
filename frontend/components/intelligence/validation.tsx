@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { useId, useState } from 'react';
 
 import { Badge } from '@/components/ui';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import type {
   AccountValidation,
   EvidenceState,
@@ -165,10 +166,7 @@ function NothingCurrent({ evidence }: { evidence?: EvidenceState }) {
 function Unavailable() {
   return (
     <div className="rounded-md border border-border bg-surface-raised px-4 py-3.5">
-      <p className="text-sm leading-6 text-content-muted">
-        Signora could not load what to check on this account. Nothing has changed about
-        the account — reload to try again.
-      </p>
+      <StatedAbsence subject="what to check on this account" reassurance="Nothing has changed about the account" />
     </div>
   );
 }

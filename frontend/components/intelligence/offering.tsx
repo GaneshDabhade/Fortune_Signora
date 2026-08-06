@@ -1,4 +1,5 @@
 import { PART_LABELS } from '@/components/commercial/vocabulary';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { Badge, Card, CardBody, CardHeader, CardTitle } from '@/components/ui';
 import type { BuyingCommittee, ProductCatalog } from '@/lib/api/types';
 
@@ -170,13 +171,10 @@ function Signatories({ roles, sayMissing }: { roles: BuyingCommittee['committees
 
 function Unavailable() {
   return (
-    <Card>
-      <CardBody>
-        <p className="text-sm leading-6 text-content-muted">
-          Signora could not load what your organization sells. Nothing your organization
-          has declared has been lost — reload to try again.
-        </p>
-      </CardBody>
-    </Card>
+    <StatedAbsence
+      as="card"
+      subject="what your organization sells"
+      reassurance="Nothing your organization has declared has been lost"
+    />
   );
 }

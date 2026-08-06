@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { CommercialProfile } from '@/components/commercial/profile';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { EmptyState, SkeletonText } from '@/components/ui';
 import { useSession } from '@/lib/auth/client';
@@ -115,9 +116,10 @@ export default function BusinessPage() {
       {!workspacesLoading && activeWorkspace === null ? <NoWorkspace /> : null}
       {loading ? <SkeletonText lines={5} /> : null}
       {failed ? (
-        <EmptyState
-          title="Could not load your business"
-          description="That is a fault in Signora, not a missing declaration — nothing your organization has declared has been lost."
+        <StatedAbsence
+          as="page"
+          subject="your business"
+          reassurance="That is a fault in Signora, not a missing declaration — nothing your organization has declared has been lost"
         />
       ) : null}
       {!failed && ready ? (

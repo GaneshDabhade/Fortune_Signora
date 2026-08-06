@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge, Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { formatDay } from '@/components/intelligence/dates';
 import type { BadgeTone } from '@/components/ui';
 import type { IcpSegmentSummary, ProductCatalog } from '@/lib/api/types';
@@ -99,9 +100,11 @@ export function SegmentList({
 
   if (isError) {
     return (
-      <p role="alert" className="text-sm text-danger">
-        We could not load who you sell to. Reload the page to try again.
-      </p>
+      <StatedAbsence
+        announce="assertive"
+        subject="who you sell to"
+        reassurance="Nothing your organization has declared has been lost"
+      />
     );
   }
 

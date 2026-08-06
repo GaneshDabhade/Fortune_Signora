@@ -1,6 +1,7 @@
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 
 import { howLongAgo } from '@/components/intelligence/dates';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { Card, CardBody, CardHeader, CardTitle, EmptyState, SkeletonText } from '@/components/ui';
 import type { AccountObservation } from '@/lib/api/types';
 
@@ -156,12 +157,7 @@ function ObservationRow({ observation }: { observation: AccountObservation }) {
  * than inventing a second way of saying the same thing.
  */
 function Unavailable() {
-  return (
-    <p className="text-sm leading-6 text-content-muted">
-      Signora could not load what changed at this account. Nothing has changed about the
-      account — reload to try again.
-    </p>
-  );
+  return <StatedAbsence subject="what changed at this account" reassurance="Nothing has changed about the account" />;
 }
 
 export function ObservationList({

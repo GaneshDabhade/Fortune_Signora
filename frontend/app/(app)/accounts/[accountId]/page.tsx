@@ -16,6 +16,7 @@ import {
   ScoreArithmetic,
 } from '@/components/intelligence/contributions';
 import { CompetitorContext } from '@/components/intelligence/competitors';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { DecisionHistory } from '@/components/intelligence/decision-history';
 import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
@@ -249,10 +250,7 @@ export default function AccountBriefPage() {
                nobody should act on state Signora could not read — but a silent
                gap tells a seller this account is untouched, which is a claim
                about their pipeline rather than about our request. */
-            <p className="mt-0.5 text-sm leading-6 text-content-muted">
-              Signora could not load where this account stands. Nothing has changed about
-              the account — reload to try again.
-            </p>
+            <StatedAbsence subject="where this account stands" reassurance="Nothing has changed about the account" />
           ) : null}
 
           {opportunity ? (
@@ -590,10 +588,10 @@ function NeverScored() {
 
 function Unavailable() {
   return (
-    <EmptyState
+    <StatedAbsence
+      as="page"
       icon={Scale}
-      title="Could not load this account"
-      description="The explanation is unavailable right now. Nothing has changed about the account — reload to try again."
+      subject="this account"
     />
   );
 }

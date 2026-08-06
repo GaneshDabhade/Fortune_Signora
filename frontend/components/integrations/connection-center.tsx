@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge, Button, Card, CardBody, CardHeader, CardTitle } from '@/components/ui';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import type {
   Connection,
   ConnectionAttention,
@@ -117,9 +118,10 @@ export function ConnectionCenter({
 }) {
   if (isError) {
     return (
-      <p className="text-sm text-content-muted">
-        We could not load what you have connected. Try again in a moment.
-      </p>
+      <StatedAbsence
+        subject="what you have connected"
+        reassurance="Nothing about your connections has changed"
+      />
     );
   }
   if (isLoading) {

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Search } from 'lucide-react';
 
 import { formatDay } from '@/components/intelligence/dates';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { Badge, Button, Dialog } from '@/components/ui';
 import type { AccountResearch, ResearchFinding, ResearchStatus } from '@/lib/api/types';
 
@@ -133,12 +134,7 @@ export function ResearchPanel({
  * renders, Signora does not know.
  */
 function Unavailable() {
-  return (
-    <p className="text-md leading-6 text-content-muted">
-      Signora could not load the research for this account. Nothing has changed about
-      the account — reload to try again.
-    </p>
-  );
+  return <StatedAbsence subject="the research for this account" reassurance="Nothing has changed about the account" />;
 }
 
 function Invitation() {

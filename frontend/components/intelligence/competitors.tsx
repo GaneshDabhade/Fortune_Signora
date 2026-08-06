@@ -1,4 +1,5 @@
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui';
+import { StatedAbsence } from '@/components/feedback/stated-absence';
 import type { DeclaredCompetitors } from '@/lib/api/types';
 
 /**
@@ -54,10 +55,10 @@ export function CompetitorContext({
     return (
       <Card>
         <CardBody>
-          <p className="text-sm leading-6 text-content-muted">
-            Signora could not load who your organization competes against. Nothing your
-            organization has declared has been lost — reload to try again.
-          </p>
+          <StatedAbsence
+            subject="who your organization competes against"
+            reassurance="Nothing your organization has declared has been lost"
+          />
         </CardBody>
       </Card>
     );
