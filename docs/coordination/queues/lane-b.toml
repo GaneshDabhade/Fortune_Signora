@@ -63,9 +63,6 @@ future  = []
 # ⚡ **TASK-461 claimed 2026-08-06 — the Action Batch contract is under way,
 # and the five slices behind it (462…466) become eligible as it lands.**
 
-# ⚡ **TASK-461 claimed 2026-08-06 — the Action Batch contract is under way,
-# and the five slices behind it (462…466) become eligible as it lands.**
-
 # 🔴 **TASK-472 — URGENCY RAISED 2026-08-06, C-422.** Lane A has CLAIMED
 # TASK-440 and its account table has no read. This row is that read, and a
 # waiting consumer now exists. ⛔ Do not inline it in Product Surface — the
