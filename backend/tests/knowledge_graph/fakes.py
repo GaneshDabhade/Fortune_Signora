@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
+from signora_platform.pagination import CursorPosition
 from modules.knowledge_graph.domain.identity import (
     Entity,
     EntityKind,
@@ -102,6 +103,19 @@ class FakeGraphRepository:
         for entity_id in entity_ids:
             found.extend(await self.bindings_for_entity(workspace_id, entity_id))
         return tuple(found)
+
+    async def entity_page(
+        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
+    ) -> tuple[Entity, ...]:
+        found = sorted(
+            (e for e in self.entities.values() if e.workspace_id == workspace_id),
+            key=lambda e: (e.created_at, e.id),
+        )
+        if after is not None:
+            found = [
+                e for e in found if (e.created_at, e.id) > (after.created_at, after.id)
+            ]
+        return tuple(found[:limit])
 
     async def entities_for_subjects(
         self, workspace_id: UUID, subjects: Sequence[SubjectRef]

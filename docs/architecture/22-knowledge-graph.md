@@ -545,3 +545,37 @@ A caller assembling three reads has **three round trips, three moments and no gu
 ### How to see it
 
 **Not directly — this is a contract, not a screen.** What it unblocks is [TASK-406](../BACKLOG.md), **both halves**: a criterion can finally be scored against outcomes, because an account can now be asked what it is.
+
+---
+
+## TASK-472 — a workspace can list its accounts
+
+**Delivered 2026-08-06 by Lane B.** `GET /workspaces/{id}/accounts-list`, keyset-paginated, published through `public/`.
+
+### Browse and search are two questions, so they are two reads
+
+**`find_accounts` refuses blank input deliberately**, and its own docstring says why:
+
+> *"An empty pattern matches every claim in the workspace, so the guard is here rather than left to the caller — every future caller would have to remember it, and the one that forgets ships a search box that dumps the customer's whole book of business on the first keystroke."*
+
+⛔ **Relaxing that guard to build browse would have broken search.** A second read costs one method and keeps both guards honest — which is why [TASK-472](../BACKLOG.md) is a slice rather than a parameter.
+
+### The row is not an `AccountMatch`, and the difference is three fields
+
+A search result carries `matched_name`, `matched_source` and `is_renamed` **because it has to explain why it is in the list**. **A browse row is in the list because it exists**, and all three would be null on every one of them — **a field that is null wherever it is not a search is a field in the wrong type.**
+
+`ListedAccount` carries the identity, the kind, **and the `created_at` the page is ordered by** — because `AccountIdentity` deliberately holds no such field: it answers *"who is this?"*, not *"when did we learn about it?"*, and a cursor derived from something the row does not hold would walk a different sequence from the one the page came back in.
+
+**The identity is resolved by the same rule search uses**, so a table renders one type whether the customer typed something or not — which is what [TASK-440](../BACKLOG.md) needs.
+
+### ⛔ Keyset, never offset
+
+**The graph is written continuously** — a resolution binds a new provider identity and an account appears. **An offset page skips or repeats rows between two requests**, and a customer paging a list would silently miss accounts with no way to tell. The platform's `CursorPosition` is reused rather than reinvented.
+
+### Contract first across a lane boundary
+
+**The screen is Lane A's and the read is Lane B's** ([P-E](../DOMAIN_DISCOVERY_REGISTER.md), ratified [D-121](../DECISION_REGISTER.md)), so the contract is published **before** the consumer is written — the [C-213](../LANE_COORDINATION.md) shape that rule exists to prevent.
+
+### One mapper, not two
+
+`entity_by_id` and the new page read now share `_to_entity`. **Extracted when the page arrived rather than copied**: two mappings of one row is two chances for a future column to reach one caller and not the other (§2).

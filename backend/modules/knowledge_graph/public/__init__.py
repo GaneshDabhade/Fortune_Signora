@@ -12,6 +12,8 @@ refuses both.
 
 from modules.knowledge_graph.application.queries import (
     AccountIdentity,
+    AccountPage,
+    ListedAccount,
     ClaimSet,
     EntityEvidence,
     GraphQueries,
@@ -40,6 +42,8 @@ from modules.knowledge_graph.public.attributes import (
 )
 
 __all__ = [
+    "ListedAccount",
+    "AccountPage",
     "AccountAttributes",
     "AccountAttributesReader",
     "AccountIdentity",

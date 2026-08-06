@@ -25,11 +25,17 @@ from fastapi import APIRouter, Query
 from apps.api.composition.accounts import GraphRead
 from modules.knowledge_graph.interface.schemas import (
     AccountIdentityResponse,
+    ListedAccountResponse,
     SearchGroupResponse,
 )
-from signora_platform.api import CurrentWorkspace
+from signora_platform.api import CurrentWorkspace, CursorPage
 from signora_platform.authorization import Action, Resource
-from signora_platform.pagination import MAX_PAGE_LIMIT
+from signora_platform.pagination import (
+    DEFAULT_PAGE_LIMIT,
+    MAX_PAGE_LIMIT,
+    decode_cursor,
+    encode_cursor,
+)
 
 router = APIRouter(tags=["accounts"])
 
@@ -37,6 +43,10 @@ router = APIRouter(tags=["accounts"])
 #: the rows I just received"*, and a request naming more accounts than a page
 #: can hold is either a mistake or a scrape.
 IdsParam = Annotated[list[UUID], Query(min_length=1, max_length=MAX_PAGE_LIMIT)]
+
+#: The same shape every paginated surface uses — an opaque string the caller
+#: echoes back, never a page number.
+CursorParam = Annotated[str | None, Query()]
 
 
 @router.get(
@@ -73,6 +83,52 @@ async def account_identities(
 #: has typed one letter has not asked a question yet.
 QueryParam = Annotated[str, Query(min_length=2, max_length=200)]
 LimitParam = Annotated[int, Query(ge=1, le=MAX_PAGE_LIMIT)]
+
+
+@router.get(
+    "/workspaces/{workspace_id}/accounts-list",
+    response_model=CursorPage[ListedAccountResponse],
+    summary="Every account this workspace knows, a page at a time",
+)
+async def accounts_list(
+    context: CurrentWorkspace,
+    queries: GraphRead,
+    limit: LimitParam = DEFAULT_PAGE_LIMIT,
+    cursor: CursorParam = None,
+) -> CursorPage[ListedAccountResponse]:
+    """*"Show me my accounts."* — browse, not search.
+
+    **A second read rather than a parameter on `/account-search`**, and the
+    reason is in that endpoint's own guard: it refuses blank input because *"an
+    empty pattern matches every claim in the workspace… the one that forgets
+    ships a search box that dumps the customer's whole book of business on the
+    first keystroke."* **Relaxing that guard to build this would break
+    search.** Browse and search are two questions and want two reads.
+
+    **The rows carry the same identity a search result does**, resolved by the
+    same rule — so a table renders one type whether the customer typed
+    something or not.
+
+    ⛔ **Keyset pagination, never offset.** The graph is written continuously:
+    a resolution binds a new provider identity and an account appears, so an
+    offset page would skip or repeat rows between two requests and a customer
+    paging the list would silently miss accounts.
+
+    **Oldest first**, which is stable — a list ordered by anything the graph
+    recomputes would reshuffle underneath somebody reading it.
+    """
+    context.authorize(Resource.ACCOUNT, Action.READ)
+    page = await queries.list_accounts(
+        context.workspace_id,
+        after=decode_cursor(cursor) if cursor else None,
+        limit=limit,
+    )
+    position = page.next_position
+    return CursorPage(
+        items=[ListedAccountResponse.from_domain(item) for item in page.items],
+        next_cursor=encode_cursor(position) if position else None,
+        has_more=page.has_more,
+    )
 
 
 @router.get(

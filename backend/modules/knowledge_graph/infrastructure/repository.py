@@ -34,6 +34,7 @@ from modules.knowledge_graph.domain.identity import (
 )
 from modules.knowledge_graph.domain.resolution import ResolutionCandidate
 from modules.provider_normalization.public import SubjectRef
+from signora_platform.pagination import CursorPosition
 from modules.knowledge_graph.infrastructure.models import (
     EntityModel,
     IdentityBindingModel,
@@ -241,14 +242,7 @@ class SqlGraphRepository:
                 )
             )
         ).scalar_one_or_none()
-        if row is None:
-            return None
-        return Entity(
-            id=row.id,
-            workspace_id=row.workspace_id,
-            kind=EntityKind(row.kind),
-            created_at=row.created_at,
-        )
+        return None if row is None else _to_entity(row)
 
     async def bindings_for_entity(
         self, workspace_id: UUID, entity_id: UUID
@@ -279,6 +273,31 @@ class SqlGraphRepository:
             .order_by(IdentityBindingModel.provider, IdentityBindingModel.provider_external_id)
         )
         return tuple(_to_binding(row) for row in rows.scalars())
+
+    async def entity_page(
+        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
+    ) -> tuple[Entity, ...]:
+        """One page of accounts, **keyset on `(created_at, id)`.**
+
+        ⛔ **Never an offset.** The graph is written continuously, so an offset
+        page skips or repeats rows between two requests — a customer paging a
+        list would silently miss accounts, and would have no way to tell.
+
+        **Both predicates, always.** RLS is the authoritative control and the
+        explicit `workspace_id` is defence in depth (§8).
+        """
+        statement = (
+            select(EntityModel)
+            .where(EntityModel.workspace_id == workspace_id)
+            .order_by(EntityModel.created_at, EntityModel.id)
+            .limit(limit)
+        )
+        if after is not None:
+            statement = statement.where(
+                tuple_(EntityModel.created_at, EntityModel.id) > (after.created_at, after.id)
+            )
+        rows = await self._session.execute(statement)
+        return tuple(_to_entity(row) for row in rows.scalars())
 
     async def entities_for_subjects(
         self, workspace_id: UUID, subjects: Sequence[SubjectRef]
@@ -467,3 +486,18 @@ class SqlGraphRepository:
             .order_by(EntityModel.created_at, EntityModel.id)
         )
         return list(rows.scalars())
+
+
+def _to_entity(row: EntityModel) -> Entity:
+    """One mapping, used by both the single read and the page.
+
+    **Extracted when the page arrived** rather than copied: two mappings of one
+    row is two chances for a future column to reach one caller and not the
+    other (§2).
+    """
+    return Entity(
+        id=row.id,
+        workspace_id=row.workspace_id,
+        kind=EntityKind(row.kind),
+        created_at=row.created_at,
+    )

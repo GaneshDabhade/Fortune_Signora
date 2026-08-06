@@ -22,6 +22,7 @@ from modules.knowledge_graph.domain.identity import (
 )
 from modules.knowledge_graph.domain.resolution import ResolutionCandidate
 from modules.provider_normalization.public import SubjectRef
+from signora_platform.pagination import CursorPosition
 
 
 class GraphRepository(Protocol):
@@ -67,6 +68,26 @@ class GraphRepository(Protocol):
         of fifty accounts one entity at a time is fifty round trips, and an
         obvious N+1 is a defect at write time rather than a future
         optimisation (CLAUDE.md §14).
+        """
+        ...
+
+    async def entity_page(
+        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
+    ) -> tuple[Entity, ...]:
+        """One page of this workspace's accounts, oldest first.
+
+        ⛔ **Keyset on `(created_at, id)`, never an offset.** The graph is
+        written continuously — a resolution binds a new provider identity and
+        an account appears — so **an offset page skips or repeats rows between
+        two requests**, and a customer paging a list would silently miss
+        accounts. The platform's `CursorPosition` is reused rather than
+        reinvented.
+
+        **A different question from `find_accounts`, and deliberately a
+        different read.** That one refuses blank input because *"an empty
+        pattern matches every claim in the workspace"* — **relaxing that guard
+        to build browse would break search.** Browse and search want two reads
+        ([TASK-472](../../../../docs/BACKLOG.md)).
         """
         ...
 

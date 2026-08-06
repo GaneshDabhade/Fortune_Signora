@@ -35,6 +35,7 @@ from modules.knowledge_graph.domain.naming import (
     NameAgreement,
     select_name,
 )
+from signora_platform.pagination import CursorPosition
 from modules.provider_normalization.public import (
     ClaimAttribute,
     ClaimReader,
@@ -258,6 +259,49 @@ SEARCH_COVERAGE: dict[EntityKind, "SearchCoverage"] = {
 
 
 @dataclass(frozen=True, slots=True)
+class ListedAccount:
+    """One account on a browse page: **who it is, and what kind of thing.**
+
+    **Not an `AccountMatch`**, and the difference is the three fields it does
+    not have. A match carries `matched_name`, `matched_source` and
+    `is_renamed` because a search result has to explain *why it is in the
+    list*; **a browse row is in the list because it exists**, and those fields
+    would be null on every one of them — a field that is null wherever it is
+    not a search is a field in the wrong type.
+    """
+
+    account: AccountIdentity
+    kind: EntityKind
+    #: When the account first entered the graph. **Carried because the page is
+    #: ordered by it** — a cursor derived from anything the row does not hold
+    #: would walk a different sequence from the one the page came back in, and
+    #: `AccountIdentity` deliberately holds no such field: it answers *"who is
+    #: this?"*, not *"when did we learn about it?"*
+    created_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class AccountPage:
+    """One page of accounts, **oldest first**."""
+
+    items: tuple[ListedAccount, ...]
+    has_more: bool
+
+    @property
+    def next_position(self) -> CursorPosition | None:
+        """Where the next page resumes, or `None` at the end.
+
+        **Keyed on the entity's own `created_at` and id**, which is what the
+        repository ordered by — a cursor derived from anything else would walk
+        a different sequence from the one the page came back in.
+        """
+        if not self.has_more or not self.items:
+            return None
+        last = self.items[-1]
+        return CursorPosition(created_at=last.created_at, id=last.account.entity_id)
+
+
+@dataclass(frozen=True, slots=True)
 class AccountMatchGroup:
     """One kind of thing, what Signora did about it, and what it found.
 
@@ -406,6 +450,45 @@ class GraphQueries:
             entity_id: _identity(entity_id, tuple(found), freshest.get(entity_id))
             for entity_id, found in grouped.items()
         }
+
+    async def list_accounts(
+        self, workspace_id: UUID, *, after: CursorPosition | None = None, limit: int = 50
+    ) -> "AccountPage":
+        """Every account the graph knows, a page at a time.
+
+        **Browse, not search — and deliberately a second read.**
+        `find_accounts` refuses blank input because *"an empty pattern matches
+        every claim in the workspace… the one that forgets ships a search box
+        that dumps the customer's whole book of business on the first
+        keystroke."* **Relaxing that guard to build this would break search**
+        ([TASK-472](../../../../docs/BACKLOG.md)).
+
+        **The rows carry the same identity a search result does**, resolved by
+        the same rule, so a table renders one type whether the customer typed
+        something or not.
+
+        **Keyset, never offset**: the graph is written continuously and an
+        offset page skips or repeats rows between two requests.
+        """
+        page = await self._repository.entity_page(
+            workspace_id, after=after, limit=limit + 1
+        )
+        entities = page[:limit]
+        identities = await self.identities(
+            workspace_id, tuple(entity.id for entity in entities)
+        )
+        return AccountPage(
+            items=tuple(
+                ListedAccount(
+                    account=identities[entity.id],
+                    kind=entity.kind,
+                    created_at=entity.created_at,
+                )
+                for entity in entities
+                if entity.id in identities
+            ),
+            has_more=len(page) > limit,
+        )
 
     async def find_accounts(
         self, workspace_id: UUID, text: str, *, limit: int

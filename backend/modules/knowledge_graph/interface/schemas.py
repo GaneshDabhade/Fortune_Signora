@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from modules.knowledge_graph.application.queries import (
     AccountIdentity,
+    ListedAccount,
     AccountMatch,
     AccountMatchGroup,
     SearchCoverage,
@@ -168,6 +169,32 @@ class SearchGroupResponse(BaseModel):
             result_type=group.kind,
             coverage=group.coverage,
             results=[SearchResultResponse.from_domain(m) for m in group.matches],
+        )
+
+class ListedAccountResponse(BaseModel):
+    """One account on the list: **who it is, and what kind of thing.**
+
+    **Not a search result.** `matched_name`, `matched_source` and `is_renamed`
+    are absent because a browse row is in the list *because it exists*, not
+    because something matched — and a field that is null wherever it is not a
+    search is a field in the wrong schema.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account: AccountIdentityResponse = Field(
+        description="Who this account is — the same shape search and the brief return, "
+        "so a caller reads one identity everywhere."
+    )
+    kind: EntityKind = Field(
+        description="What kind of thing this is. Read it rather than assuming: the list "
+        "answers for companies today and the graph knows more kinds than it can search."
+    )
+
+    @classmethod
+    def from_domain(cls, listed: ListedAccount) -> "ListedAccountResponse":
+        return cls(
+            account=AccountIdentityResponse.from_domain(listed.account), kind=listed.kind
         )
 
 
