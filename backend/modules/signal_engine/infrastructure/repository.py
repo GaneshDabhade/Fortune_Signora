@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, tuple_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -47,6 +47,7 @@ from modules.signal_engine.infrastructure.models import (
     SignalProfileModel,
     SignalResolutionModel,
 )
+from signora_platform.pagination import CursorPosition
 
 SYSTEM_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 
@@ -186,6 +187,44 @@ class SqlSignalRepository:
 
         rows = await self._session.execute(
             statement.order_by(SignalModel.occurred_at, SignalModel.id)
+        )
+        return tuple(_to_signal(row) for row in rows.scalars())
+
+    async def for_workspace(
+        self,
+        workspace_id: UUID,
+        *,
+        live_at: datetime,
+        after: CursorPosition | None,
+        limit: int,
+    ) -> tuple[Signal, ...]:
+        """Every live hypothesis in the workspace, newest first, one page.
+
+        **The Signal Center's read, and the reason it could not be built until
+        now** ([C-228](../../../../docs/LANE_COORDINATION.md)): `for_entity`
+        answers *"what is outstanding on this account"* and the queue asks
+        *"what is outstanding"*. **Same liveness rules, no entity filter** —
+        a second definition of *live* is the one thing this must not become.
+
+        **Keyset on `(occurred_at, id)`, newest first.** A queue is worked from
+        the top, and paging by anything the pipeline can move would let a
+        regeneration between two requests skip a signal or show it twice —
+        the same reasoning the attention list applies to `(opened_at, id)`.
+        """
+        replaced = select(SignalModel.supersedes).where(
+            SignalModel.workspace_id == workspace_id, SignalModel.supersedes.is_not(None)
+        )
+        statement = select(SignalModel).where(
+            SignalModel.workspace_id == workspace_id,
+            SignalModel.relevant_until >= live_at,
+            SignalModel.id.not_in(replaced),
+        )
+        if after is not None:
+            statement = statement.where(
+                tuple_(SignalModel.occurred_at, SignalModel.id) < (after.created_at, after.id)
+            )
+        rows = await self._session.execute(
+            statement.order_by(SignalModel.occurred_at.desc(), SignalModel.id.desc()).limit(limit)
         )
         return tuple(_to_signal(row) for row in rows.scalars())
 

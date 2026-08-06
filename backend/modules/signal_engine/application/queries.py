@@ -30,6 +30,7 @@ from modules.signal_engine.domain.profile import (
 )
 from modules.signal_engine.domain.rules import ground
 from modules.signal_engine.domain.signal import Signal
+from signora_platform.pagination import CursorPosition
 
 
 @dataclass(frozen=True, slots=True)
@@ -118,6 +119,41 @@ class SignalQueries:
         if not live_only:
             return found
 
+        profile = await self._profiles.current(workspace_id)
+        return tuple(
+            signal
+            for signal in found
+            if resolve_entry(self._catalog, profile, signal.signal_type).is_active
+        )
+
+    async def live_page(
+        self,
+        workspace_id: UUID,
+        *,
+        after: CursorPosition | None,
+        limit: int,
+        now: datetime | None = None,
+    ) -> tuple[Signal, ...]:
+        """One page of live hypotheses across the workspace, newest first.
+
+        **`signals` above with no entity, and the same three liveness rules.**
+        Two are the repository's — superseded, and past its shelf life — and
+        **the third is here, where it has always been**: a hypothesis of a type
+        the workspace no longer holds is not current, and that is a profile
+        question the query layer resolves rather than a column the database
+        can filter.
+
+        ⚠️ **The profile filter runs after the page is fetched**, so a page can
+        come back shorter than `limit`. That is the honest consequence of
+        liveness being partly derived, and it is the same reason `queue`
+        cannot filter by state in SQL. The caller pages on.
+        """
+        moment = now or datetime.now(UTC)
+        found = await self._repository.for_workspace(
+            workspace_id, live_at=moment, after=after, limit=limit
+        )
+        if not found:
+            return ()
         profile = await self._profiles.current(workspace_id)
         return tuple(
             signal

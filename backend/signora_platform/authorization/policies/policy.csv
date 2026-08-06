@@ -42,3 +42,7 @@ p, member, *, integration, read
 p, owner, *, integration, update
 p, member, *, member, leave
 p, owner, *, member, leave
+p, owner, *, signal, read
+p, member, *, signal, read
+p, owner, *, signal, resolve
+p, member, *, signal, resolve

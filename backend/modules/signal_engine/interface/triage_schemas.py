@@ -15,14 +15,17 @@ here, because a schema no route can reach is a contract nobody agreed to.
 """
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from modules.signal_engine.application.triage import QueueState, TriagedSignal
 from modules.signal_engine.domain.resolution import (
+    MAX_REASON,
     Actioned,
     Assigned,
+    DismissalReason,
     Dismissed,
     Outcome,
     Resolution,
@@ -97,6 +100,14 @@ class QueueEntryResponse(BaseModel):
             "signal catalog, which is the one place a type is named."
         )
     )
+    entity_id: UUID = Field(
+        description=(
+            "Which account this is about. Redundant on the per-account read and "
+            "load-bearing on the workspace queue, where an entry that cannot say which "
+            "company it concerns is one nobody can act on. The name is resolved through "
+            "the identity batch, as everywhere else."
+        )
+    )
     state: QueueState = Field(
         description=(
             "open, snoozed, or closed. **Derived from the decision and the current time, "
@@ -119,6 +130,7 @@ class QueueEntryResponse(BaseModel):
         return cls(
             signal_id=entry.signal.id,
             signal_type=entry.signal.signal_type.value,
+            entity_id=entry.signal.entity_id,
             state=entry.state,
             resolution=(
                 ResolutionResponse.from_domain(entry.resolution)
@@ -178,3 +190,90 @@ __all__ = [
     "ResolutionHistoryResponse",
     "ResolutionResponse",
 ]
+
+
+class ActionedRequest(BaseModel):
+    """*"I dealt with it."* **Carries nothing**, because what was done happens
+    in a CRM, a call or an inbox — none of which Signora can see."""
+
+    model_config = ConfigDict(frozen=True)
+    kind: Literal["actioned"]
+
+    def to_domain(self) -> Outcome:
+        return Actioned()
+
+
+class AssignedRequest(BaseModel):
+    """*"Somebody else owns this now."* **Routing, not resolving** — the signal
+    stays open, because a queue that treated handing over as an ending would
+    lose every signal passed to a colleague."""
+
+    model_config = ConfigDict(frozen=True)
+    kind: Literal["assigned"]
+    to: UUID = Field(description="The member the decision now belongs to.")
+
+    def to_domain(self) -> Outcome:
+        return Assigned(to=self.to)
+
+
+class SnoozedRequest(BaseModel):
+    """*"Not now, but not wrong."* The signal returns at the stated time with
+    its original evidence intact — because nothing about it is touched."""
+
+    model_config = ConfigDict(frozen=True)
+    kind: Literal["snoozed"]
+    until: datetime = Field(
+        description=(
+            "When it should come back. Must be in the future and carry a timezone — "
+            "a snooze that has already elapsed would return the signal immediately."
+        )
+    )
+
+    def to_domain(self) -> Outcome:
+        return Snoozed(until=self.until)
+
+
+class DismissedRequest(BaseModel):
+    """*"We should not have been shown this."* **The only outcome that says
+    Signora was wrong**, and the reason is what a rule can later learn from."""
+
+    model_config = ConfigDict(frozen=True)
+    kind: Literal["dismissed"]
+    reason: str = Field(
+        min_length=1,
+        max_length=MAX_REASON,
+        description=(
+            "Why this signal should not have been raised, in your own words. "
+            "Required: a dismissal with no reason is indistinguishable from one "
+            "nobody explained."
+        ),
+    )
+
+    def to_domain(self) -> Outcome:
+        return Dismissed(reason=DismissalReason(self.reason))
+
+
+class ResolveSignalRequest(BaseModel):
+    """What a person decided about a signal.
+
+    **The outcome is a discriminated union, not a string plus optional
+    fields.** `outcome: "dismissed"` with `reason: null` would be a request the
+    schema accepts and the domain refuses — and *"a dismissal cannot be
+    recorded without a reason"* is the acceptance criterion. Four shapes, each
+    carrying exactly what its outcome needs, make the omission a `422` at the
+    edge instead of an exception behind it (§2, *types should make incorrect
+    architecture impossible*).
+
+    ⛔ **No `actor_id`.** The person is the verified principal on the request;
+    a body able to name its own actor could sign somebody else's name to a
+    decision that outlives them.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    outcome: ActionedRequest | AssignedRequest | SnoozedRequest | DismissedRequest = Field(
+        discriminator="kind"
+    )
+
+    def to_domain(self) -> Outcome:
+        return self.outcome.to_domain()

@@ -84,6 +84,19 @@ class Resource(StrEnum):
     #: it believes it is losing to are different admissions, and the second is
     #: the one a customer is most likely to want held more narrowly.
     COMPETITOR = "competitor"
+    #: Registered by TASK-439, on the same terms as every member above — a
+    #: *use* of the platform rather than a change to it (§20a), and the
+    #: distinction [C-224](../../../docs/LANE_COORDINATION.md) ruled: **a
+    #: `Resource` member is a declaration that a resource exists; who may act
+    #: on it is granted only in `policy.csv`.** This member on its own confers
+    #: nothing.
+    #:
+    #: Its own resource rather than a reuse of `ACCOUNT`: **triage is a write
+    #: on a page every member reads.** Reading what Signora concluded is
+    #: everyday; *deciding* that a conclusion was wrong is feedback the
+    #: catalog learns from, and one resource could not express both without
+    #: making every reader an author.
+    SIGNAL = "signal"
 
 
 class Action(StrEnum):
@@ -111,6 +124,14 @@ class Action(StrEnum):
     #: reading the workspace. `Membership.LastOwnerCannotLeaveError` is where
     #: it lives.
     LEAVE = "leave"
+    #: Registered by TASK-439. **Distinct from `UPDATE`, and the difference is
+    #: what is being changed.** Updating an opportunity edits a record Signora
+    #: keeps *for* the customer; resolving a signal is the customer telling
+    #: Signora that a conclusion it reached was right, premature or wrong.
+    #: **Nothing about the signal changes** — a resolution is a separate,
+    #: immutable record beside it — so `update` would name a mutation that
+    #: does not happen.
+    RESOLVE = "resolve"
 
 
 class AuthorizationDeniedError(Exception):

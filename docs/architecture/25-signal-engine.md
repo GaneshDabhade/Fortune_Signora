@@ -798,3 +798,35 @@ The outcome discriminators — `actioned`, `assigned`, `snoozed`, `dismissed` �
 **Nothing consumes it.** No subscription is registered, and none is invented here — `timeline` and TASK-406 are the consumers the row names, and both are other work. **A subscription added speculatively would be a consumer nobody asked for** (§6), and the event is worth publishing before it is worth consuming precisely because the evidence is otherwise lost.
 
 **And no route reaches it.** `ResolveSignal` is still reachable only from the composition — TASK-405's withheld route, now unblocked by C-224's ruling. **So this slice is not independently demonstrable to a non-engineer today** (§2), and that is stated rather than glossed: it is pipeline plumbing whose value is that a transition stops going unrecorded, and it becomes visible the moment that route ships.
+
+## The queue becomes reachable — 2026-08-06 (Lane A, TASK-439)
+
+**Every piece of triage existed and none of it could be reached.** The domain shipped at TASK-405, `signal.resolved` at TASK-432 — and a customer could do neither, because **there was no workspace-wide read and no write route.** [C-228](../LANE_COORDINATION.md) measured it and Lane C widened this row's budget to 🟠 to cover it.
+
+### `GET /workspaces/{id}/triage` — the read that did not exist at any layer
+
+`TriageQueries.queue` takes a **required** `entity_id`, so it answers *"what is outstanding on this account"*. The approved Signal Center is *"a triage queue, not a notification list"* and asks *"what is outstanding"*. **No workspace-level read existed in the repository, the application layer or a route.**
+
+| | |
+|---|---|
+| **Same liveness, no entity** | Superseded · past its shelf life · a type the workspace no longer holds. ⛔ **A second definition of *live* is the one thing this must not become**, so `for_workspace` mirrors `for_entity`'s two rules and `live_page` applies the third where it has always been |
+| **Keyset on `(occurred_at, id)`, newest first** | A queue is worked from the top. **Paging by anything the pipeline can move** would let a regeneration between two requests skip a signal or show it twice — the attention list's reasoning about `(opened_at, id)` |
+| ⚠️ **`state` filters the page, not the query** | Queue state is derived from the outcome in force and the clock; a `WHERE` clause would require storing it, which §2 forbids and which the per-account read already refuses. **So a filtered page can come back short**, and `has_more` is what tells a caller to page on. **Stated in the endpoint's own description rather than discovered** |
+| ⚠️ **So can an unfiltered one** | The profile filter runs after the page is fetched. Same cause: liveness is partly derived |
+
+**`QueueEntryResponse` gained `entity_id`.** Redundant on the per-account read and **load-bearing here** — an entry that cannot say which company it concerns is one nobody can act on. The name is resolved through the identity batch, as everywhere else.
+
+### `POST /workspaces/{id}/signals/{id}/resolution` — the route TASK-405 withheld
+
+**That slice built the use case, the error mapping and the persistence, and stopped.** A write surface needs an authorization `Resource` and there was none; [C-224](../LANE_COORDINATION.md) then ruled that **a `Resource` member is a declaration and never a grant**, and C-228 widened this budget to cover it.
+
+**`Resource.SIGNAL` and `Action.RESOLVE`**, granted to owner and member in `policy.csv`. **`RESOLVE` rather than `UPDATE`, and the difference is what changes**: updating edits a record Signora keeps *for* a customer, while resolving is the customer saying a conclusion was right, premature or wrong — and **nothing about the signal changes**, so `update` would name a mutation that does not happen.
+
+**The request body is a discriminated union**, not a string plus optional fields. `outcome: "dismissed"` with no reason would be a request the schema accepts and the domain refuses; four shapes make it a `422` at the edge instead of an exception behind it. ⛔ **No `actor_id` in the body** — a request able to name its own actor could sign somebody else's name to a decision that outlives them.
+
+**`201`, because a resolution is a new record and never an edit**, and `404` for a signal in another workspace, deliberately not distinguished from *no such signal*.
+
+### ⚠️ What is built and not shipped, and why
+
+**The screen is written and is not on `main`.** `reachability.test.tsx` refuses a route with no entrance, and **giving the Signal Center a sidebar entry is the [D38](39-product-review-findings.md) reversal [C-229](../LANE_COORDINATION.md) asks the product owner about** — not a lane's to take. **The endpoints above are independently useful and independently tested**, so the answer to C-229 now releases a screen rather than starting one.
+

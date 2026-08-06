@@ -1015,3 +1015,55 @@ export interface AccountObservation {
   /** When Signora recorded it. */
   recorded_at: string;
 }
+
+/**
+ * Where a signal stands in the triage queue — **three states, none stored.**
+ *
+ * Derived from the decision in force and the current time, which is exactly
+ * why a snoozed signal comes back on its own: the clock moves, and nothing has
+ * to run. `closed` is deliberately not `done` — a dismissal closes a signal
+ * and means Signora was wrong, which is the opposite of finished.
+ */
+export type QueueState = 'open' | 'snoozed' | 'closed';
+
+/** One decision somebody recorded about one signal. Immutable — a correction
+ * is a new record naming the one it replaces, never an edit. */
+export interface Resolution {
+  id: string;
+  signal_id: string;
+  /** `actioned` · `assigned` · `snoozed` · `dismissed`. */
+  outcome: string;
+  assigned_to: string | null;
+  snoozed_until: string | null;
+  /** Present only on a dismissal, where it is required. */
+  reason: string | null;
+  actor_id: string;
+  recorded_at: string;
+  /** The earlier decision this replaces. Null on the first. */
+  supersedes: string | null;
+}
+
+/**
+ * One row of the triage queue.
+ *
+ * **`resolution: null` means still open and is not a decision to do nothing** —
+ * that is what `actioned` is for, and conflating them loses the difference
+ * between work somebody finished and work nobody has looked at.
+ */
+export interface QueueEntry {
+  signal_id: string;
+  signal_type: string;
+  /** Which account. Load-bearing on the workspace queue — an entry that cannot
+   * say which company it concerns is one nobody can act on. */
+  entity_id: string;
+  state: QueueState;
+  resolution: Resolution | null;
+}
+
+/** What a person decided. A discriminated union, so a dismissal without a
+ * reason is unconstructable rather than merely rejected. */
+export type ResolveOutcome =
+  | { kind: 'actioned' }
+  | { kind: 'assigned'; to: string }
+  | { kind: 'snoozed'; until: string }
+  | { kind: 'dismissed'; reason: string };

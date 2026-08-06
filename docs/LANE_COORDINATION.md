@@ -6065,6 +6065,26 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 ---
 
+### ⚡ Updated 2026-08-06 — the Signal Center's backend shipped, and its door is the only thing left
+
+**[C-228](#c-228--the-signal-center-has-no-workspace-wide-queue-to-render-and-no-way-to-leave-it) was answered** and [TASK-439](BACKLOG.md)'s budget widened to 🟠, so Lane A built everything that answer authorised:
+
+| | |
+|---|---|
+| **`GET /workspaces/{id}/triage`** | The workspace-wide queue that did not exist at any layer — repository, port, query, keyset-paged, same three liveness rules |
+| **`POST /workspaces/{id}/signals/{id}/resolution`** | The route [TASK-405](BACKLOG.md) built everything for and withheld |
+| **`Resource.SIGNAL` · `Action.RESOLVE`** | Registered with grants for owner and member. **392 Security Invariants pass** |
+
+> ## **The screen is written and is not shipped, because it has nowhere to be reached from.**
+>
+> `frontend/tests/components/reachability.test.tsx` refuses a route with no entrance — correctly, and it caught this immediately. **Giving `/signals` a sidebar entry is precisely the D38 reversal this item asks about**, so this lane did not do it: *"a lane's recommendation is architectural input and never implementation authority"* (§20e).
+
+**What is held**: the page and its `QueueRow` component — the queue, the four views, and the three decisions on each row *(assign is deliberately absent: no screen in Signora can name a member yet, and inventing a picker here would be a second way to choose a colleague)*. **Nothing about it is speculative** — it renders the endpoints above, which are on the branch and green.
+
+**So the answer to this item now releases a screen rather than a plan.** ⚡ **And it costs less than it did when this was raised**: the backend is done, tested and independently useful, so whichever way D38 goes, the work behind it is already paid for.
+
+---
+
 ## ⚡ Widened the same day — it is three screens and one question
 
 **Raised for Opportunity Intelligence. Checked against the next row in the queue an hour later, and the shape repeated.** **D38 did not remove one entry; it removed six and named three of this backlog's screens explicitly:**

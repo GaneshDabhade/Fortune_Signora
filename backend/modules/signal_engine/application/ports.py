@@ -17,6 +17,7 @@ from modules.signal_engine.domain.catalog import SignalType
 from modules.signal_engine.domain.profile import SignalProfile
 from modules.signal_engine.domain.resolution import Resolution
 from modules.signal_engine.domain.signal import Signal
+from signora_platform.pagination import CursorPosition
 
 
 class SignalRepository(Protocol):
@@ -44,6 +45,26 @@ class SignalRepository(Protocol):
         signal_type: SignalType | None = None,
         live_at: datetime | None = None,
     ) -> tuple[Signal, ...]: ...
+
+    async def for_workspace(
+        self,
+        workspace_id: UUID,
+        *,
+        live_at: datetime,
+        after: CursorPosition | None,
+        limit: int,
+    ) -> tuple[Signal, ...]:
+        """Every live hypothesis in the workspace, newest first, one page.
+
+        **Separate from `for_entity` rather than an optional `entity_id`.** An
+        optional filter would make *"the whole workspace"* the accidental
+        default of a method whose every existing caller means one account —
+        and the two answer different questions, on different screens, with
+        different cost. **`live_at` is required here** for the same reason: a
+        queue read that could omit it would silently return work nobody should
+        be shown.
+        """
+        ...
 
     async def by_id(self, workspace_id: UUID, signal_id: UUID) -> Signal | None: ...
 

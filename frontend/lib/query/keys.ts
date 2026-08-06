@@ -93,6 +93,13 @@ export const queryKeys = {
   signalCatalog: (workspaceId: string) =>
     ['workspace', workspaceId, 'signal-catalog'] as const,
 
+  /** Lane A (Signal Engine). The Signal Center's queue, across the workspace.
+   * The state filter is part of the key: *open* and *everything* are two
+   * cached lists rather than one the browser re-filters, because the server
+   * derives state from the clock and the browser cannot. */
+  workspaceTriage: (workspaceId: string, state: string) =>
+    ['workspace', workspaceId, 'triage', state] as const,
+
   businessEvent: (workspaceId: string, eventId: string) =>
     ['workspace', workspaceId, 'business-events', eventId] as const,
 

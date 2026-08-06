@@ -316,3 +316,294 @@ class TestNothingIsDeleted:
 
         assert response.status_code == 200, response.text
         assert response.json()["decisions"] == []
+
+
+async def _queue(
+    client: AsyncClient,
+    key_pair: KeyPair,
+    user_id: UUID,
+    workspace_id: UUID,
+    *,
+    state: str | None = None,
+    limit: int | None = None,
+    cursor: str | None = None,
+) -> Any:
+    params: list[str] = []
+    if state:
+        params.append(f"state={state}")
+    if limit is not None:
+        params.append(f"limit={limit}")
+    if cursor:
+        params.append(f"cursor={cursor}")
+    query = f"?{'&'.join(params)}" if params else ""
+    return await client.get(
+        f"/workspaces/{workspace_id}/triage{query}", headers=_auth(key_pair, user_id)
+    )
+
+
+async def _resolve(
+    client: AsyncClient,
+    key_pair: KeyPair,
+    user_id: UUID,
+    workspace_id: UUID,
+    signal_id: UUID,
+    outcome: dict[str, Any],
+) -> Any:
+    return await client.post(
+        f"/workspaces/{workspace_id}/signals/{signal_id}/resolution",
+        json={"outcome": outcome},
+        headers=_auth(key_pair, user_id),
+    )
+
+
+class TestTheWorkspaceQueue:
+    """**The read [C-228](../../../docs/LANE_COORDINATION.md) found missing.**
+
+    The per-account triage answers *"what is outstanding here"*. The approved
+    Signal Center is *"a triage queue, not a notification list"* and asks the
+    question across the workspace — and until this endpoint there was no way
+    to ask it at any layer.
+    """
+
+    async def test_it_returns_what_is_waiting_across_the_workspace(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind", **_recent()
+        )
+
+        response = await _queue(client, key_pair, user_id, workspace_id)
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["items"], "the recent-epoch scenario is expected to hold live hypotheses"
+        assert all(entry["state"] == "open" for entry in body["items"])
+        # **Contains, not equals** — and the difference is the whole point of
+        # this endpoint. The scenario seeds several accounts in one workspace,
+        # and a queue that returned only the one the test happened to name
+        # would be the per-account read wearing a new path.
+        assert str(entity_id) in {entry["entity_id"] for entry in body["items"]}
+        assert all(entry["entity_id"] for entry in body["items"])
+
+    async def test_a_workspace_with_nothing_outstanding_gets_an_empty_page(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**An empty queue is an answer, not an error.** A product that 404'd
+        on *"you are finished"* would be treating success as a fault."""
+        user_id = uuid4()
+        created = await client.post(
+            "/workspaces", json={"name": "Acme"}, headers=_auth(key_pair, user_id)
+        )
+        workspace_id = UUID(created.json()["id"])
+
+        response = await _queue(client, key_pair, user_id, workspace_id)
+
+        assert response.status_code == 200, response.text
+        assert response.json() == {"items": [], "next_cursor": None, "has_more": False}
+
+    async def test_a_decision_takes_a_signal_out_of_the_open_queue(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Every item leaves the list by a decision** — the screen's whole
+        promise, asserted end to end through the two new routes together."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind", **_recent()
+        )
+        first = (await _queue(client, key_pair, user_id, workspace_id)).json()["items"][0]
+        signal_id = UUID(first["signal_id"])
+
+        recorded = await _resolve(
+            client, key_pair, user_id, workspace_id, signal_id, {"kind": "actioned"}
+        )
+
+        assert recorded.status_code == 201, recorded.text
+        still_open = (await _queue(client, key_pair, user_id, workspace_id, state="open")).json()[
+            "items"
+        ]
+        assert str(signal_id) not in {e["signal_id"] for e in still_open}
+
+    async def test_it_is_paged_and_the_page_is_bounded(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**A queue is unbounded by nature**, so the read is paged — an
+        endpoint that returned every live signal would be the unbounded fetch
+        §14 forbids, on the screen most likely to have thousands."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind", **_recent()
+        )
+
+        first = (await _queue(client, key_pair, user_id, workspace_id, limit=1)).json()
+
+        assert len(first["items"]) <= 1
+        if first["has_more"]:
+            assert first["next_cursor"]
+            second = await _queue(
+                client, key_pair, user_id, workspace_id, limit=1, cursor=first["next_cursor"]
+            )
+            assert second.status_code == 200, second.text
+            assert second.json()["items"][0]["signal_id"] != first["items"][0]["signal_id"]
+
+    async def test_another_workspace_sees_none_of_it(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, _, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind", **_recent()
+        )
+        stranger = uuid4()
+
+        response = await _queue(client, key_pair, stranger, workspace_id)
+
+        assert response.status_code == 404, response.text
+
+
+class TestRecordingADecisionOverHttp:
+    """**The route [TASK-405](../../../docs/BACKLOG.md) built everything for
+    and withheld**, because a write surface needs an authorization `Resource`
+    and there was none. `signal:resolve` exists now.
+    """
+
+    async def test_a_dismissal_requires_a_reason(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Refused at the edge, not behind it.** The discriminated union
+        makes a reasonless dismissal unconstructable, so it is a `422` rather
+        than a domain exception mapped to one."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind", **_recent()
+        )
+        signal_id = UUID(
+            (await _queue(client, key_pair, user_id, workspace_id)).json()["items"][0]["signal_id"]
+        )
+
+        response = await _resolve(
+            client, key_pair, user_id, workspace_id, signal_id, {"kind": "dismissed"}
+        )
+
+        assert response.status_code == 422, response.text
+
+    async def test_a_snooze_that_has_already_elapsed_is_refused(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """The signal would come straight back, so the product says so rather
+        than accepting an instruction it cannot honour."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind", **_recent()
+        )
+        signal_id = UUID(
+            (await _queue(client, key_pair, user_id, workspace_id)).json()["items"][0]["signal_id"]
+        )
+        past = (datetime.now(UTC) - timedelta(days=1)).isoformat()
+
+        response = await _resolve(
+            client,
+            key_pair,
+            user_id,
+            workspace_id,
+            signal_id,
+            {"kind": "snoozed", "until": past},
+        )
+
+        assert response.status_code == 422, response.text
+
+    async def test_the_decision_is_attributed_to_the_caller(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The verified principal, never the body.** A request able to name
+        its own actor could sign somebody else's name to a decision that
+        outlives them."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind", **_recent()
+        )
+        signal_id = UUID(
+            (await _queue(client, key_pair, user_id, workspace_id)).json()["items"][0]["signal_id"]
+        )
+
+        recorded = await _resolve(
+            client,
+            key_pair,
+            user_id,
+            workspace_id,
+            signal_id,
+            {"kind": "dismissed", "reason": "Already a customer."},
+        )
+
+        assert recorded.status_code == 201, recorded.text
+        assert recorded.json()["actor_id"] == str(user_id)
+
+    async def test_a_signal_in_another_workspace_is_a_404(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Never distinguished from *no such signal*.** Telling the two apart
+        answers *"does workspace X hold this?"* to somebody who cannot see it."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind", **_recent()
+        )
+
+        response = await _resolve(
+            client, key_pair, user_id, workspace_id, uuid4(), {"kind": "actioned"}
+        )
+
+        assert response.status_code == 404, response.text
+
+    async def test_changing_your_mind_supersedes_rather_than_edits(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """*"Nothing is deleted; every resolution is auditable."* The second
+        decision names the first rather than replacing it."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind", **_recent()
+        )
+        signal_id = UUID(
+            (await _queue(client, key_pair, user_id, workspace_id)).json()["items"][0]["signal_id"]
+        )
+
+        first = await _resolve(
+            client,
+            key_pair,
+            user_id,
+            workspace_id,
+            signal_id,
+            {"kind": "dismissed", "reason": "Wrong account."},
+        )
+        second = await _resolve(
+            client, key_pair, user_id, workspace_id, signal_id, {"kind": "actioned"}
+        )
+
+        assert second.status_code == 201, second.text
+        assert second.json()["supersedes"] == first.json()["id"]

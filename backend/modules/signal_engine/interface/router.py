@@ -5,11 +5,12 @@ verification and RLS context are established by the dependency chain before a
 handler runs.
 """
 
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query, status
 
-from apps.api.composition.triage import TriageRead
+from apps.api.composition.triage import ResolveWrite, TriageRead
 from apps.api.composition.validation import SignalRead
 from modules.signal_engine.application.triage import QueueState
 from modules.signal_engine.domain.catalog import Relevance
@@ -23,11 +24,23 @@ from modules.signal_engine.interface.triage_schemas import (
     QueueResponse,
     ResolutionHistoryResponse,
     ResolutionResponse,
+    ResolveSignalRequest,
 )
 from signora_platform.api import CurrentWorkspace
+from signora_platform.api.responses import CursorPage
 from signora_platform.authorization import Action, Resource
+from signora_platform.pagination import (
+    DEFAULT_PAGE_LIMIT,
+    MAX_PAGE_LIMIT,
+    decode_cursor,
+    encode_cursor,
+)
 
 router = APIRouter(tags=["accounts"])
+
+#: The same bounds every paged collection here uses.
+LimitParam = Annotated[int, Query(ge=1, le=MAX_PAGE_LIMIT)]
+CursorParam = Annotated[str | None, Query()]
 
 #: Most relevant first. Ordering is the *product's* judgement about which
 #: hypothesis a seller should validate first, and `Relevance` is the only
@@ -203,3 +216,100 @@ async def signal_decisions(
 
 
 __all__ = ["router"]
+
+
+@router.get(
+    "/workspaces/{workspace_id}/triage",
+    response_model=CursorPage[QueueEntryResponse],
+    summary="Everything still waiting on a decision, across the workspace",
+)
+async def workspace_triage(
+    context: CurrentWorkspace,
+    queue: TriageRead,
+    state: QueueState | None = None,
+    limit: LimitParam = DEFAULT_PAGE_LIMIT,
+    cursor: CursorParam = None,
+) -> CursorPage[QueueEntryResponse]:
+    """*"What is waiting on me?"* — **the Signal Center's queue.**
+
+    **The read [C-228](../../../../docs/LANE_COORDINATION.md) found missing.**
+    The per-account triage above answers *"what is outstanding here"*; the
+    approved screen is *"a triage queue, not a notification list"* and asks the
+    question across the workspace. **Same liveness, same derivation, no
+    entity** — a second definition of *live* is the one thing this must not
+    become.
+
+    **Newest first, keyset-paged on `(occurred_at, id)`.** A queue is worked
+    from the top, and paging by anything the pipeline can move would let a
+    regeneration between two requests skip a signal or show it twice.
+
+    ⚠️ **`state` filters the page rather than the query, so a filtered page can
+    come back short.** Queue state is a function of the outcome in force and
+    the current time; storing it would be the second representation §2 forbids,
+    and the per-account read refuses it for the same reason. `has_more` is what
+    tells a caller whether to page on.
+
+    **An empty page is an answer, not an error.** A workspace with nothing
+    outstanding has nothing to triage, and a queue that 404'd on *"you are
+    finished"* would be the product treating success as a fault.
+    """
+    context.authorize(Resource.SIGNAL, Action.READ)
+    page = await queue.workspace_queue(
+        context.workspace_id,
+        state=state,
+        after=decode_cursor(cursor) if cursor else None,
+        limit=limit,
+    )
+    position = page.next_position
+    return CursorPage(
+        items=[QueueEntryResponse.from_domain(entry) for entry in page.items],
+        next_cursor=encode_cursor(position) if position else None,
+        has_more=page.has_more,
+    )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/signals/{signal_id}/resolution",
+    response_model=ResolutionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Record what you decided about this signal",
+)
+async def resolve_signal(
+    context: CurrentWorkspace,
+    resolve: ResolveWrite,
+    signal_id: UUID,
+    request: ResolveSignalRequest,
+) -> ResolutionResponse:
+    """**Every signal ends in a decision**, and this is where it ends.
+
+    **The route [TASK-405](../../../../docs/BACKLOG.md) built everything for
+    and deliberately withheld.** Its use case, error mapping and persistence
+    shipped; only this was held back, because a write surface needs an
+    authorization `Resource` and there was none. **[C-224](../../../../docs/LANE_COORDINATION.md)
+    ruled that a `Resource` member is a declaration rather than a grant**, and
+    [C-228](../../../../docs/LANE_COORDINATION.md) widened this row's budget to
+    cover it — so `signal:resolve` exists now, granted to owner and member
+    alike.
+
+    **`201`, because a resolution is a new record and never an edit.** Changing
+    your mind creates another one naming the one it replaces; nothing here
+    mutates the signal, and *"nothing is deleted: every resolution is
+    auditable."*
+
+    **The actor is the verified principal.** The body cannot name one — a
+    request able to sign somebody else's name to a decision that outlives them
+    is the defect no amount of validation downstream would catch.
+
+    **`404` when the signal is not in this workspace**, deliberately not
+    distinguished from *no such signal*: telling the two apart would answer
+    *"does workspace X hold this signal?"* to somebody who cannot see it.
+    """
+    context.authorize(Resource.SIGNAL, Action.RESOLVE)
+    resolution = await resolve.execute(
+        context.workspace_id,
+        signal_id,
+        outcome=request.to_domain(),
+        actor_id=context.principal.user_id,
+        correlation_id=context.correlation_id,
+    )
+    return ResolutionResponse.from_domain(resolution)
