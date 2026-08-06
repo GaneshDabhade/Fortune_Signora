@@ -44,8 +44,14 @@ current = "TASK-419"
 next    = "TASK-454"
 <<<<<<< HEAD
 future  = ["TASK-455"]
-=======
 future  = ["TASK-455", "TASK-474", "TASK-473"]
+=======
+future  = ["TASK-455", "TASK-474", "TASK-476", "TASK-473"]
+
+# ⚡ **TASK-476 added 2026-08-06 — D-134 ④.** Headed becomes the default a
+# lane reviews in. ⛔ Found by VERIFYING the existing rule rather than quoting
+# it: CLAUDE.md §19 said "headed by default" and the config defaults to
+# headless. The sentence was wrong, not the config.
 
 # ⚡ **TASK-474 added 2026-08-06 — D-133 ③, and it is the highest-leverage
 # row in the whole backlog: ten of the fourteen journey gaps in ADR-0406 §6
@@ -112,8 +118,9 @@ future  = ["TASK-455", "TASK-474", "TASK-473"]
 <<<<<<< HEAD
 eligible_count = 3
 shortfall      = 2
-=======
 eligible_count = 5
+=======
+eligible_count = 6
 shortfall      = 0
 >>>>>>> 2a1bcbb4 (D-133 — the Authentication Operating Model, and the front door has never been walked)
 

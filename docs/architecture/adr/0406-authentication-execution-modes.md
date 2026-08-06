@@ -4,9 +4,10 @@
 
 <<<<<<< HEAD
 ✅ **PRODUCT OWNER APPROVED — 2026-08-06, [D-134](../../DECISION_REGISTER.md).** *"The direction is correct, and I agree with the architectural approach. TASK-474 is the correct solution."* **Directed by [D-131](../../DECISION_REGISTER.md), expanded by [D-133](../../DECISION_REGISTER.md), approved with the prohibitions in §2a by [D-134](../../DECISION_REGISTER.md).** Drafted by Lane C.
-=======
 **PRODUCT OWNER DIRECTED — 2026-08-06, [D-131](../../DECISION_REGISTER.md), expanded by [D-133](../../DECISION_REGISTER.md).** Drafted by Lane C on that instruction. **Awaiting ratification.**
->>>>>>> 2a1bcbb4 (D-133 — the Authentication Operating Model, and the front door has never been walked)
+=======
+✅ **PRODUCT OWNER APPROVED — 2026-08-06, [D-134](../../DECISION_REGISTER.md).** *"The direction is correct, and I agree with the architectural approach. TASK-474 is the correct solution."* **Directed by [D-131](../../DECISION_REGISTER.md), expanded by [D-133](../../DECISION_REGISTER.md), approved with the prohibitions in §2a by [D-134](../../DECISION_REGISTER.md).** Drafted by Lane C.
+>>>>>>> 415afaa3 (D-134 — ADR-0406 approved, and the headed rule was not true of the repository)
 
 > ⚠️ **The register has no `D-132`.** **Recorded rather than silently renumbered** (§2, *a record of what was true then*): this ADR was expanded by the directive labelled D-133, and the gap is noted so a future reader does not go looking for a decision that was never taken.
 
@@ -103,7 +104,7 @@
 > **We always prefer solving the infrastructure problem over weakening the production authentication model.**
 
 =======
->>>>>>> 2a1bcbb4 (D-133 — the Authentication Operating Model, and the front door has never been walked)
+>>>>>>> 415afaa3 (D-134 — ADR-0406 approved, and the headed rule was not true of the repository)
 ### 3 · Development email is a first-class experience, not a `console.log`
 
 > ⚠️ **A console line is a transport, not an experience.** **[D-133](../../DECISION_REGISTER.md) asks for the second, and the difference is what a developer can *do*.**
@@ -188,7 +189,7 @@
 > ⛔ **Each journey executes through the real backend and the real Better Auth implementation.** **Local simulation occurs only at infrastructure boundaries — the email transport — and never inside business logic** (§2a, §2b).
 
 =======
->>>>>>> 2a1bcbb4 (D-133 — the Authentication Operating Model, and the front door has never been walked)
+>>>>>>> 415afaa3 (D-134 — ADR-0406 approved, and the headed rule was not true of the repository)
 ### 7 · Playwright runs the same tests in every mode
 
 > **The only thing that changes between Development and Production is environment configuration. The tests are identical.**
