@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `f1eddf4`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `b562226`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `f1eddf4`, 2026-08-06.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `b562226`, 2026-08-06.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`f1eddf4`** — the certified commit itself |
-| **`integration`** | **level with `main`** at `f1eddf4` |
-| **Release candidate** | **None pinned.** Cycle 74 promoted **two checks that make an unowned coordination item visible** — and the first sweep miscounted its author's own register |
-| **Certification** | ✅ [`f1eddf41a0d6`](certification/reports/f1eddf41a0d6.md) · migration head **`0039`** · protocol **v2** |
+| **`main`** | **`b562226`** — the certified commit itself |
+| **`integration`** | **level with `main`** at `b562226` |
+| **Release candidate** | **None pinned.** Cycle 75 promoted **a correction to a claim QE published** — and released a task that was being held by a trigger that had outlived its reason |
+| **Certification** | ✅ [`b5622261f7dd`](certification/reports/b5622261f7dd.md) · migration head **`0039`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
 | **Validation queue** | **Empty.** ✅ **Lane C's cycle-70 deferral resolved itself** — the lane rebased, and its work is promoted here |
-| **Customer value this cycle** | ⛔ **None.** Governance instrumentation. **Three cycles running with no customer-visible change**, and that is the fact worth carrying forward rather than the individual entries |
+| **Customer value this cycle** | ⛔ **None — the fourth running.** But **the queue moved for the first time in four cycles**: 2 startable rows became 3, by a hold being released rather than a task being written |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3683 backend tests** · **95.34% coverage** *(floor 95)* · **1255 frontend tests** across 60 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **389 Security Invariants** · mypy strict over **765 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 139s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3683 backend tests** · **95.34% coverage** *(floor 95)* · **1255 frontend tests** across 60 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **389 Security Invariants** · mypy strict over **765 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 159s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,19 +40,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **[TASK-437](docs/BACKLOG.md)** *(cycle 69)* | **[C-420](docs/LANE_COORDINATION.md)** *(cycle 72)*; this cycle's slice **dropped as a duplicate** | **[D-100](docs/DECISION_REGISTER.md)** — an unowned coordination item becomes visible | **Cycle 74** |
-| **Execution phase** | ⚠️ **Idle, five cycles** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
+| **Last promoted** | **[TASK-437](docs/BACKLOG.md)** *(cycle 69)* | **[C-420](docs/LANE_COORDINATION.md)** *(cycle 72)* | **[C-104](docs/LANE_COORDINATION.md) answered · TASK-432 released · QE's false positive corrected** | **Cycle 75** |
+| **Execution phase** | ⚠️ **Idle, six cycles** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
 | **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
-| **Validation status** | — | **Nothing new** — its fix was already promoted | ✅ **Promoted this cycle** | — |
-| **Blocked?** | **Materially, yes** — **2 startable rows in the whole repository** | **Same constraint** | **No** | **No** |
+| **Validation status** | — | **Nothing new** | ✅ **Promoted this cycle** | — |
+| **Blocked?** | **3 startable rows** *(was 2)* — **[TASK-432](docs/BACKLOG.md) released this cycle is `signal_engine`, which is Lane A's** | Same queue | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | **[TASK-201](docs/BACKLOG.md) or [TASK-202](docs/BACKLOG.md)** — the only two there are | Same two | Stewardship | **Cycle 75, on the next pass** |
+| **Next executable work** | **[TASK-432](docs/BACKLOG.md)** — released this cycle, in a module this lane holds | [TASK-201](docs/BACKLOG.md) · [TASK-202](docs/BACKLOG.md) | Stewardship | **Cycle 76, on the next pass** |
 
-> **Every branch sits level with `main`.** QE has rebased nothing for three cycles; the lanes arrive already rebased.
+> **Every branch sits level with `main`.** QE has rebased nothing for four cycles.
 >
-> ⚠️ **The constraint is the queue and it has not moved.** **Two startable rows across the entire repository**, unchanged since the miscount was corrected in cycle 73 — and **three consecutive cycles have shipped no customer-visible change.** Each was defensible alone; the run of three is the thing worth seeing.
+> ⚡ **The queue grew for the first time in four cycles — and not because anybody wrote a task.** [TASK-432](docs/BACKLOG.md) was being held by a trigger that had outlived its bundle, and releasing it is the office's own authority under §20e. **It is `signal_engine`, which is Lane A's** — the lane that has been idle six cycles now has a row in a module it holds.
 >
-> **Work allocation is the product owner's** (§20e). QE measures the count, reports it, and does not fill the queue.
+> ⚠️ **One line only the product owner can write.** `modules.toml` has **no `[people]` row**, so [TASK-427](docs/BACKLOG.md) would be `READY` in a module nobody owns — unclaimable. **Module ownership is never Lane C's**, and the ask is one registry line.
 
 ---
 
@@ -103,52 +103,52 @@
 
 ---
 
-## 1d · Release summary — 2026-08-06, cycle 74
+## 1d · Release summary — 2026-08-06, cycle 75
 
-**Derived from the promoted commit `f1eddf4`.** **Thirty promotions.** One lane's governance checks — **and a duplicate that dropped itself, which is the register working rather than a lane wasting a slice.**
+**Derived from the promoted commit `b562226`.** **Thirty-one promotions.** The cycle that corrected QE — **twice, on two different claims, both of which QE had reported to the product owner as fact.**
 
 ### What was promoted
 
-**[D-100](docs/DECISION_REGISTER.md), Lane C** — every coordination item must declare an **owner** and a **state**, and `state-check` now says when one does not.
+**Two corrections to claims QE published, and one hold released.**
 
-> *"An unowned item is worse than an unraised one: it is visibly filed, so everybody assumes somebody has it."* [C-213](docs/LANE_COORDINATION.md) cost TASK-205 two days on a **stale** owner. **An absent one fails the same way and is harder to notice, because there is no wrong name to disbelieve.**
+### ① QE reasoned from a false positive, and the correction is Lane C's
 
-### The check miscounted its author's own register, and the row says so
+**QE reported [C-104](docs/LANE_COORDINATION.md) as having no `Status` row** — *"which is part of why it has been easy to leave."* **The inference was reasonable and the premise was wrong.** C-104 declares `State`, not `Status`, and `state-check` knew only the second name.
 
-**The first sweep reported 12 unowned items when 2 were.** Items raised before 2026-08-03 write `Current assignee(s)`; later ones write `Owner`.
+> **Second instance of one defect in one file on consecutive days.** The ownership sweep knew one field name and reported **twelve owned items as unowned**; the state check knew one field name and reported **two stated items as stateless**. **14 items are genuinely stateless, not 16**, and the register carries **five schemas** across ownership and state.
 
-> **Reading both schemas is the fix; the register having two is the finding.** Lane C reported the drift rather than silently accommodating it — the same shape as [B-125](docs/BUGS.md), where a check that could not run reported success by reporting nothing.
+**And the real cause was not the field name.** Lane C's own line: *"`OPEN` means nobody has looked, and somebody had. Moving it to a decidable state is Lane C's under §20e, and this office did not for two days."*
 
-### What it surfaced immediately, on this candidate
+### ② [C-104](docs/LANE_COORDINATION.md) is answered, and the analysis is sharper than the question
 
-```
-16 coordination items declare no Status row
-   C-026 C-027 C-104 C-211 C-212 C-214 C-215 C-216 C-300…C-307
-15 items still use the pre-2026-08-03 ownership schema
-```
+> `02-principles.md` §13 governs *"work **not required to complete within the request/response cycle**"* and enumerates provider polling, normalization, the observation→signal→opportunity chain, AI reasoning — **every one a pipeline stage. A liveness probe's answer *is* the response, so the precondition is never met.**
+>
+> **`CLAUDE.md` §7 paraphrased it and widened it**: *"provider polling"* became *"provider calls"*. **§20e predicted exactly this** — a rule written in two places is a rule that will eventually contradict itself.
 
-**Advisory, never repaired automatically** — each has more than one correct resolution. ⚠️ **[C-104](docs/LANE_COORDINATION.md) is on that list**: the synchronous-vendor-call question QE raised for the product owner several cycles ago **has no `Status` row**, which is part of why it has been easy to leave.
+**Evidence first:** `/check` is **the only synchronous outbound vendor call in any `interface/` layer** — a precedent being *set*, not discovered. Lane C recommends permitting it **bounded by four conditions rather than by judgement**, and states that **the `CLAUDE.md` §7 half is the product owner's alone.**
 
-### Lane B's slice dropped itself, and that is the register working
+### ③ The queue moved, and not because anybody wrote a task
 
-**Lane B's [B-328](docs/BUGS.md) vanished on rebase** — the `READY`-count fix it carried is the same one Lane C landed in cycle 73. **Two lanes independently found and fixed the miscount within hours**, and the duplicate cost one rebase to discover rather than a coordination item to unpick.
+**2 startable rows became 3.** Lane C swept all 16 `SEQUENCED` rows against their own triggers and found one being held without cause: **TASK-432**, whose trigger read *"the next `signal_engine` slice — small enough to travel with one."*
 
-### Three cycles with no customer-visible change
+> **No such slice is queued or foreseeable**, and the row's own cost line reads *"every day without it loses evidence that cannot be recovered."* **A convenience trigger that outlives its bundle stops being efficient and becomes a hold.**
 
-**71 shipped product. 72, 73 and 74 have not.** Each was defensible on its own — a rename taken while free, three corrections to the repository's account of itself, two checks that make an unowned item visible — **and the pattern is worth stating rather than leaving to be inferred from three summaries in a row.**
+**Lane C accepted the escalation squarely**, and the sentence is worth keeping: *"Lane idleness was zero; product throughput was zero. **Only one of those was on my dashboard.**"*
 
-> **QE does not allocate work** (§20e), and this is not a criticism of any lane: `state-check` reports **two startable rows in the entire repository**. **Governance work is what remains when the queue is empty**, and the queue is the product owner's.
+### ⚡ One blocker only the product owner can clear
+
+**`modules.toml` has no `[people]` row at all.** So TASK-427 would be `READY` in a module no lane owns — **unclaimable**, the [C-412](docs/LANE_COORDINATION.md) defect. **Module ownership is never Lane C's.** The ask is **one registry line**, and Lane C's reading is that the answer is Lane B.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
 | **Technical** | **3683 backend** · **1255 frontend** — **gated in stage 1** · **95.33%** · **389 invariants** · **765 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **74 certification runs recorded, 71 certified** · `promoted == certified` ✓ · **3 aborts, 0 failures** · ⚠️ **[B-123](docs/BUGS.md) half open** |
+| **Release** | **75 certification runs recorded, 72 certified** · `promoted == certified` ✓ · **3 aborts, 0 failures** · ⚠️ **[B-123](docs/BUGS.md) half open** |
 | **Architecture** | Reachability 0 doorless · migration `0039` **reversible, verified this cycle** · event catalog 1 known drift · ⚠️ **two capabilities shipped without a caller** · ⚠️ **[B-126](docs/BUGS.md) — architecture document `25` claimed twice** |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ⛔ **None, third cycle running.** Governance instrumentation, and **two startable rows in the whole repository** |
-| **Process** | ✅ **Clean — one lane, one rebase, no conflicts, no aborts.** A second lane's slice **dropped itself as a duplicate**, which is the register working: two lanes fixed the same miscount within hours and it cost one rebase to find |
+| **Customer Value** | ⛔ **None, fourth cycle running** — **but the queue grew for the first time in four**, by a hold being released rather than a task being written |
+| **Process** | ⚠️ **The cycle's finding is about QE.** Two claims QE reported to the product owner as fact were wrong, and **a lane corrected both** — one a false positive read as evidence, one a count. **Neither was caught by a gate**, which is [465](docs/architecture/465-certification-strategy.md)'s point arriving in QE's own reporting |
 
 ### Repository Health Trend
 
