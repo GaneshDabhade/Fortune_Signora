@@ -50,8 +50,11 @@ depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-447"
-next    = "TASK-443"
-future  = ["TASK-445", "TASK-901", "TASK-449", "TASK-456", "TASK-460"]
+next    = "TASK-445"
+future  = ["TASK-901", "TASK-449", "TASK-456", "TASK-460"]
+
+# ⚡ TASK-443 claimed by this lane 2026-08-06, within the hour of becoming
+# `next`. Removed from eligible; the queue is doing its job.
 
 # ⛔ **2026-08-06 — TASK-440 removed from `current` and set BLOCKED.** This file
 # put it there on the note *"its workspace-wide read is VERIFIED to exist"*, and
@@ -156,7 +159,7 @@ future  = ["TASK-445", "TASK-901", "TASK-449", "TASK-456", "TASK-460"]
 # opportunity_engine's router publishes four GETs including the account list.
 # ⚡ 11 → 8, 2026-08-06: TASK-448, TASK-442 and TASK-453 were claimed by this
 # lane and are no longer eligible. **Still three above `depth_target`.**
-eligible_count = 7
+eligible_count = 6
 shortfall      = 0
 
 [rationale]
