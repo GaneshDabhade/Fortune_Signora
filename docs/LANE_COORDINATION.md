@@ -6473,6 +6473,33 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
 
+## C-421 · A lane must be able to read the design it is implementing against
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-06, on [D-129](DECISION_REGISTER.md) |
+| **Owner** | ⚠️ **Product owner — EXTERNAL.** **Access to the design set is not a lane's to arrange, and [D-129](DECISION_REGISTER.md) classifies it exactly**: *"treat that as an environmental issue to be resolved — not as a reason to create another specification"* |
+| **Status** | **`READY FOR PRODUCT DECISION`** — **nothing to decide, something to provide** |
+| **Blocks** | **[TASK-467](BACKLOG.md) · [TASK-468](BACKLOG.md) · [TASK-471](BACKLOG.md)** — every slice whose first act is a gap analysis against the design |
+
+### What is being asked for, concretely
+
+**That Lane A can open the canonical design set** — the location registered in [410](architecture/410-approved-ui-specification.md).
+
+⛔ **Not a copy. Not an export into the repository. Not a derived checklist.** **[D-129](DECISION_REGISTER.md) forbids all three**: *"the only acceptable derived artifacts are implementation tasks, measurable gap analyses, and test cases. The design itself must remain the single source of truth."*
+
+### Why this is a coordination item rather than a note
+
+⚡ **Because the alternative was tried and refused.** **This office proposed extracting the design's stated states into a conformance checklist a row could reference, and the product owner ruled against it** — **an intermediate artifact becomes a second specification, and the second one is the one that drifts.**
+
+> **So the slices are written to reference the design *directly*, and the access question is raised as its own item rather than absorbed as a workaround.** ⚠️ **That is the difference between a dependency and a silent assumption.**
+
+### What is not blocked
+
+✅ **[TASK-469](BACKLOG.md) Onboarding and [TASK-470](BACKLOG.md) User Profile carry backend work that is absent regardless of the design** — onboarding state, step progress, inferred-value marking, the three-way field-ownership model. **Those can be measured and prepared without it.**
+
+✅ **And nothing in the current wave waits on this.** **Lane A holds 11 eligible rows; all five refinement slices are `SEQUENCED` behind [TASK-448](BACKLOG.md).**
+
 ## C-420 · Two words carry two concepts each — `Owner` and `Match`
 
 **Opened 2026-08-05 · Lane C · current module assignee: `workspace_tenancy` · `opportunity_engine` · `knowledge_graph` · `commercial_profile` · 🟠**

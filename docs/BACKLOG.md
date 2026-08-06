@@ -624,6 +624,73 @@
 | **Why Companies** | **[446](architecture/446-companies-traceability-audit.md) audited it, and it is the only consumer whose *whole* workflow is understood** |
 | **Unblocks, once proven** | **Opportunity Intelligence · Workflow Automation · AI Copilot · AI Research** |
 
+### TASK-467 · The authentication surface, to the approved design
+
+| | |
+|---|---|
+| **Approved design** | ⚡ **Platform foundation module 1 — Authentication**, in the canonical design set ([410](architecture/410-approved-ui-specification.md)). **[418 §1](architecture/418-platform-foundation-assessment.md) records its stated shape: *16 states · one 400px card · SSO branch points*** |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ⏸️ **`SEQUENCED`** — **after [TASK-448](#task-448--design-system-v2)**. ⚡ **Rebuilding six screens against 9 primitives and then again against v2 is the work twice** |
+| **Why this is refinement, not new work** | **Six surfaces exist and five predate the design** — `sign-in` and Workspace Creation **2026-07-28**, `sign-up`/`verify-email`/`forgot-password`/`reset-password` **2026-08-01, built to [ADR-0033](architecture/adr/0033-authentication-methods.md) rather than to 410.** **Classified `Legacy implementation` under [D-128](DECISION_REGISTER.md)** |
+| ✅ **Preserved, never rebuilt** | ⛔ **Better Auth stays the sole Authentication Authority** (§13) · **the Python tier keeps verifying RS256 only** · **`requireEmailVerification: true` is not relaxed — it is what makes the `email_verified` claim mean something** · **every existing route and hook** |
+| **Replaced** | **UI and interaction model only** — layout, hierarchy, states, component usage, and the SSO branch points |
+| ⚡ **The slice's own first act** | **A measurable gap analysis against the design document** — **[D-129](DECISION_REGISTER.md) permits exactly three derived artifacts: implementation tasks, measurable gap analyses and test cases.** ⛔ **No checklist, no translation, no intermediate specification** |
+| ⛔ **Out of scope** | **Magic link · MFA and recovery codes · per-workspace SSO enforcement · domain→IdP routing · session-expiry state** — [418](architecture/418-platform-foundation-assessment.md) lists all five as absent, and each is its own capability |
+| **Dependency** | 🔴 **The lane must be able to read the design** — [C-421](LANE_COORDINATION.md) |
+| ⚡ **Playwright journey** ([D-113](DECISION_REGISTER.md)) | **A person signs up, verifies, signs in, forgets, resets, and signs in again.** ⚠️ **`auth-journey.spec.ts` and `auth.setup.ts` already exist and are extended, not replaced** |
+| **Acceptance** | **Every state the design specifies renders · the journey completes end to end · no Better Auth behaviour changes · `design-tokens.test.tsx` unrelaxed** |
+| **Change Budget** | 🔴 **The frozen frontend foundation** — and [D-111](DECISION_REGISTER.md) ruled §20c permits *deliberate, Product Office–approved architectural evolution*. **Independently scoped, reviewable and releasable** |
+
+### TASK-468 · Workspace Setup — replaced, not refined
+
+| | |
+|---|---|
+| **Approved design** | **Platform foundation module 3 — Workspace Setup**: *region · URL · domain verification · branding · deletion* |
+| **Module** | **`product_surface` — Lane A**, reading `workspace_tenancy.public` |
+| **Status** | ⏸️ **`SEQUENCED`** — after [TASK-448](#task-448--design-system-v2) |
+| ⚡ **Why *replace entirely* and not refine** | **Today workspace creation is a text field inside `settings/page.tsx`, shipped 2026-07-28.** ⛔ **The approved design is a *different screen* with five concerns that do not exist anywhere.** **That is not a rename** |
+| ✅ **Preserved** | **`POST /workspaces` and `useCreateWorkspace`** — the creation path works and is reused |
+| ⛔ **Genuinely absent, and each is backend work** | **Data region** — ⚠️ **permanent, no migration path; a tenancy matter** · **URL change with forwarding and callback impact** · **DNS TXT domain verification** · **branding with a 4.5:1 contrast gate** · **deletion** |
+| ⚠️ **This row is the render half only** | **The five capabilities above need their own rows once the gap analysis measures them.** ⛔ **Writing them now would be inventing scope against a design this office cannot read** |
+| **Dependency** | 🔴 [C-421](LANE_COORDINATION.md) · **and it is [TASK-469](#task-469--onboarding-the-guided-first-run)'s predecessor** |
+| ⚡ **Playwright journey** | **A customer creates a workspace and lands inside it** |
+
+### TASK-469 · Onboarding — the guided first run
+
+| | |
+|---|---|
+| **Approved design** | **Platform foundation module 2 — Onboarding**: *6 steps, one required · "asks for four and infers the rest"* |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not-refined)**. **A first run that cannot create a workspace is not a first run** |
+| ⚡ **Genuinely not started** | **No onboarding route exists anywhere in `frontend/app/`.** **This is the one auth-adjacent screen that is new work rather than legacy** |
+| ✅ **Reusable today** | **`POST /workspaces`** · ⚡ **`ProviderCapability.COMPANY_ENRICHMENT`** — [418](architecture/418-platform-foundation-assessment.md): *"infers the rest from the email domain, the enrichment record behind it"* |
+| ⛔ **Absent** | **Onboarding state · step progress · inferred-value marking · goals→features** |
+| ⚠️ **The rule it must not break** | **[C-007](LANE_COORDINATION.md) — the guided first run was raised as a two-lane build** · **[C-017](LANE_COORDINATION.md) — the onboarding honesty principle has no permanent home**, and this is the first flow that would breach it |
+| ⚡ **Playwright journey** | ⚡ **The one that matters most: a person signs up and reaches their first insight.** **The whole customer journey, end to end** |
+
+### TASK-470 · User Profile
+
+| | |
+|---|---|
+| **Approved design** | **Platform foundation module 5 — User Profile**: *"personal, and three field ownerships"* |
+| **Module** | **`product_surface` — Lane A** · ⚠️ **backend is `API MISSING` per [418](architecture/418-platform-foundation-assessment.md)** |
+| **Status** | ⏸️ **`SEQUENCED`** — trigger: [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) complete |
+| ✅ **Exists** | **Theme provider and theme toggle** |
+| ⛔ **Absent** | **Profile · locale · timezone · accessibility preferences · shortcut remapping** · ⚡ **the three-way field-ownership model, which is the design's own headline and has no backend at all** |
+| ⚠️ **Backend work required** | **Unlike [TASK-467](#task-467--the-authentication-surface-to-the-approved-design), this is not render-only.** **Sequenced accordingly rather than bundled** |
+
+### TASK-471 · Team Management — conformance verified, or refined
+
+| | |
+|---|---|
+| **Approved design** | **Platform foundation module 4 — Team Management**: *invitations · bulk CSV · seats · roles · accept/decline/expired*. ⚡ **[418](architecture/418-platform-foundation-assessment.md) calls it *"highest reuse in all 26 screens"*** |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ⏸️ **`SEQUENCED`** — after [TASK-448](#task-448--design-system-v2) |
+| ⚠️ **Why this row is a *question* before it is work** | **`settings/team/` shipped 2026-08-04 — the same day the design landed.** ⛔ **Concurrent, not derived**, so it is neither clearly legacy nor clearly compliant. **The gap analysis decides whether this is a refinement or a no-op** |
+| ✅ **Preserved regardless** | **Eight endpoints, and [TASK-904](#task-904--an-organization-can-grow)'s invitation lifecycle** — **`join/[workspaceId]` is the one screen built *after* the design and is `Design-compliant`** |
+| ⛔ **Absent** | **Expiry · seats · bulk CSV** |
+| ⚡ **Possible outcome** | ✅ **No refinement needed.** **[D-116](DECISION_REGISTER.md)'s discipline applies — a gap analysis that concludes *nothing is required* is a successful outcome, not a wasted slice** |
+
 ### TASK-460 · Global Search — one box, four kinds of answer
 
 | | |
