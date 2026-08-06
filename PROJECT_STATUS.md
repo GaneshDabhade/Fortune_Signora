@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3eec247`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `5743a90`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `3eec247`, 2026-08-06.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `5743a90`, 2026-08-06.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`3eec247`** — the certified commit itself |
-| **`integration`** | **`748d161`** — two claim commits, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 79 promoted **23 commits and the Validation Planner** — and the planner's first run against this repository found [B-131](docs/BUGS.md) |
-| **Certification** | ✅ [`3eec2479b849`](certification/reports/3eec2479b849.md) · migration head **`0040`** · protocol **v2** |
+| **`main`** | **`5743a90`** — the certified commit itself |
+| **`integration`** | one claim commit ahead, replayed onto the certified commit |
+| **Release candidate** | **None pinned.** Cycle 80 promoted **the answer to what the planner found** — certification now reports the gates it did not run |
+| **Certification** | ✅ [`5743a90aaff2`](certification/reports/5743a90aaff2.md) · migration head **`0040`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, now printed** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
 | **Validation queue** | **Empty.** ✅ **Lane C's cycle-70 deferral resolved itself** — the lane rebased, and its work is promoted here |
-| **Customer value this cycle** | ⛔ **None.** Governance and instrumentation — **and the instrument's first act was to measure the gate set and find it short by ten** |
+| **Customer value this cycle** | ⛔ **None.** Instrumentation — **and for the first time in eighty cycles a certification says what it did not run** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3757 backend tests** · **95.35% coverage** *(floor 95)* · **1267 frontend tests** across 62 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **788 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **36 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 144s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3766 backend tests** · **95.35% coverage** *(floor 95)* · **1267 frontend tests** across 62 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **789 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **36 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 160s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,19 +40,17 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **C-228 · C-229** — findings, with one bug withdrawn by its own author | **[TASK-427](docs/BACKLOG.md)** *(cycle 78)* — the People bounded context | **[D-115](docs/DECISION_REGISTER.md) the Validation Planner · [D-123](docs/DECISION_REGISTER.md) execution state as a check** | **Cycle 79** |
-| **Execution phase** | **Building** | **Building** — [TASK-201](docs/BACKLOG.md) claimed | **Governing** — unblocked, rebased clean, 23 commits landed at once | **Certified · Promoted · Closed out** |
+| **Last promoted** | **TASK-460 · [C-230](docs/LANE_COORDINATION.md)** — decomposition backlog to zero | **[TASK-427](docs/BACKLOG.md)** *(cycle 78)* | **[D-124](docs/DECISION_REGISTER.md) · [D-125](docs/DECISION_REGISTER.md)** — 9 open items to 2, unprompted | **Cycle 80** — [B-131](docs/BUGS.md)'s report |
+| **Execution phase** | ⚠️ **Reports its assignable work exhausted** ([C-230](docs/LANE_COORDINATION.md)) | **Building** | **Governing** | **Certified · Promoted · Closed out** |
 | **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
-| **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
-| **Blocked?** | **No** | **No** | **No** — *"execution state is the lane's, and I overwrote it twice"* | **No** |
+| **Validation status** | ✅ **Promoted this cycle** | — | ✅ **Promoted this cycle** | — |
+| **Blocked?** | **By module scope, not by the queue** — 17 rows startable, none in modules Lane A holds | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | Next `READY` row | [TASK-201](docs/BACKLOG.md) | Stewardship | **The plan-versus-record report ([B-131](docs/BUGS.md))** |
+| **Next executable work** | **Needs a row in a module it holds** — that is the product owner's | Next `READY` row | Stewardship | **Cycle 81, on the next pass** |
 
-> **Lane C unblocked itself in one exchange**, exactly as predicted: *"execution state is the lane's, and I overwrote it twice."* **Twenty-three commits landed in a single cycle**, and the Validation Planner among them.
+> ⚡ **Certification now measures itself.** Every run prints the gates the Validation Planner required and the record does not contain — **ten of sixteen, this cycle** — and it refuses nothing, because enforcing would invalidate all 79 prior records and that is [ADR-0032](docs/architecture/adr/0032-release-certification.md)'s decision rather than a run's.
 >
-> ⚡ **Its first measurement was of certification itself, and it found a shortfall of ten.** **Sixteen gates required, six recorded** — and four of the missing ten are gates QE runs every cycle **by hand, outside the record**. A pass that leaves no trace is indistinguishable from a skip, which is the one property [ADR-0032](docs/architecture/adr/0032-release-certification.md) exists to guarantee.
->
-> **QE's answer is a report before an enforcement** — compute the plan, compare it to the manifest, print the delta, refuse nothing. **427 step 1's discipline, applied to QE's own gate set.**
+> ⚠️ **Lane A and `state-check` disagree, and both are right.** The gate reports **17 startable rows**; [C-230](docs/LANE_COORDINATION.md) reports **none Lane A can take**. Those are different claims — the queue's depth versus which modules a lane holds — and **only the first is what an empty queue looks like.** Work allocation is the product owner's; QE measures and reports.
 
 ---
 
@@ -103,65 +101,60 @@
 
 ---
 
-## 1d · Release summary — 2026-08-06, cycle 79
+## 1d · Release summary — 2026-08-06, cycle 80
 
-**Derived from the promoted commit `3eec247`.** **Thirty-five promotions.** The Validation Planner reached `main` — **and the first thing it measured was the certification that promoted it.**
+**Derived from the promoted commit `5743a90`.** **Thirty-six promotions.** The half of D-115 ④ that belongs to certification — **and the first run carrying it reported its own shortfall of ten.**
 
 ### What was promoted
 
-**Lane C's twenty-three commits, and the one that matters is [D-115](docs/DECISION_REGISTER.md) — the Validation Planner.**
-
-```python
-validation_plan(paths) -> ValidationPlan     # what a change requires
---plan REV_RANGE                             # what a lane must run before handing over
-```
-
-> *"The implementation lane should no longer decide which validations to execute. The repository should compute that plan."*
-
-**Two design choices in it are worth keeping visible**, because both are the difference between a planner and a liability: **union, never intersection** — *"the single easiest bug to write here"* — and **unknown always widens**: an unclassified directory becomes `platform`, an unmapped `frontend/` path becomes every journey. *"A plan that shrinks because nobody classified a new directory is the `missing_gates` failure wearing a planner's clothes."*
-
-**Also promoted:** [D-123](docs/DECISION_REGISTER.md), the execution-state rule made a check **and proved by reintroducing the defect** — after `0-F`, in which Lane C recorded overwriting another lane's execution state **twice**.
-
-### ⚡ The planner's first act was to measure the certification that promoted it
+**[B-131](docs/BUGS.md)'s report, QE.** For the first time in eighty cycles, a certification says what it **did not** run:
 
 ```
-planner requires: 16 gates
-certify records:   6
-
-absent from the record:
-  doc-drift · dr · eslint · event-catalog · frontend-suite
-  migration-reversibility · prompt-evaluation · reachability
-  runtime-composition · state-check
+validation plan     platform: 10 planned gate(s) NOT recorded
+  · doc-drift · dr · eslint · event-catalog · frontend-suite
+  · migration-reversibility · prompt-evaluation · reachability
+  · runtime-composition · state-check
+  reported only — nothing skipped, nothing refused (B-131)
 ```
 
-**[B-131](docs/BUGS.md) filed.** And **the sharper half is not the six that never run — it is the four that do.** QE runs `dr`, `migration-reversibility`, `state-check` and `frontend-suite` every cycle, **by hand, outside the record**, so **a cycle where they passed is indistinguishable from one where they were skipped.**
+**This is the half of [D-115](docs/DECISION_REGISTER.md) ④ that belongs to certification.** Lane C's `validation_plan` computes **what a change requires**; this compares it with **what the record contains**. Neither is the other, and the pairing is Lane C's framing rather than QE's.
 
-> [ADR-0032](docs/architecture/adr/0032-release-certification.md) exists so a certification is *"a record rather than an opinion."* **Four passes that live only in a QE session are an opinion.**
+### It reports and refuses nothing, deliberately
 
-**It reframes [465](docs/architecture/465-certification-strategy.md) rather than contradicting it.** *"No gate has ever caught a product defect across seventy certifications"* is far less surprising once **ten of sixteen required gates leave no trace in the record it is measured from.**
+**Enforcing would mean adding to `REQUIRED_GATES`, and that makes all 79 prior records unsatisfied** — none of them executed these gates. A change to what certification *means* ([ADR-0032](docs/architecture/adr/0032-release-certification.md)), and **not one a run may make about itself.** [427](docs/architecture/427-impact-based-validation.md) step 1's discipline, turned on QE's own gate set.
 
-**The fix is not uniform, and pretending otherwise would be the mistake.** Four need *recording*, not building. Five exist as commands and are unwired. **`prompt-evaluation` cannot simply be switched on** — `reasoning@1` has no released model on this hardware, so a plan demanding it would refuse every cycle. **A known standing limitation, not an oversight.**
+**The plan is computed, never restated.** The report loads `validation_plan` rather than deriving a second gate set — *two answers to "what must run?" would drift, and the unmaintained one would be this copy.*
 
-**And closing it changes what certification means** — adding to `REQUIRED_GATES` makes all 79 prior records unsatisfied, which is exactly where [B-123](docs/BUGS.md)'s open half already sits. **Same decision, second and larger reason.**
+### Three things QE got wrong first, and each is a rule the repository already had
 
-### QE's next step is a report, not an enforcement
+| | |
+|---|---|
+| **The loader failed inside `dataclasses`** | The guard was executed without being registered in `sys.modules`, so the error surfaced **on the decorator, nowhere near the caller**. `test_repository_generators.py` had already solved it — **matched rather than reinvented** |
+| **"Nothing to plan for" was reported as "could not measure"** | They need opposite responses. **An absent measurement reported as silence is [B-125](docs/BUGS.md)'s class**, and this file was one edit from being its third instance |
+| **Two tests asserted tautologies** | `plan.gates - set() == plan.gates` cannot fail — §2's *documentation pretending to be code*. Rewritten to stub the planner, then **mutation-checked**: inverting the subtraction fails two of them, and the production file went back byte-for-byte |
 
-**Compute the plan, compare it to the manifest, print the delta, refuse nothing.** That is [427](docs/architecture/427-impact-based-validation.md) step 1's own discipline — *measure the disagreement while everything still runs* — and it is the half of D-115 ④ that belongs to certification rather than to the lane.
+### Also promoted
 
-### The order fixed last cycle earned itself immediately
+**Lane C — [D-125](docs/DECISION_REGISTER.md)**, *"swept my own backlog unprompted: 9 open → 2"*, and D-124 answering three items outstanding since 2026-08-04.
 
-**[§0e-3](docs/QUALITY_ENGINEERING.md) worked on its first use**: the guard was consulted **while the record was visible**, answered `CERTIFIED`, and only then was the record parked. **And the ancestor check stopped the promotion** when `integration` moved mid-cycle — two claim commits, replayed onto the certified candidate so the certified SHA was genuinely on `integration`'s history. **No shortcut, no head-chasing.**
+**Lane A — TASK-460**, which takes the decomposition backlog to zero, and **[C-230](docs/LANE_COORDINATION.md): its assignable work is exhausted, every row with its reason.**
+
+> ⚠️ **`state-check` reports 17 startable rows and Lane A reports none it can take.** **Those are different claims** — one is about the queue, the other about which modules a lane holds — and only the first is what an empty queue looks like.
+
+### The limitation, stated rather than left to be found
+
+**It compares gate *names*, not whether a recorded gate exercised what the plan meant by it.** And **`prompt-evaluation` will appear in every shortfall** until `reasoning@1` has a released model on this hardware — a standing limitation, not something this report can fix.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3757 backend** · **1267 frontend** — **gated in stage 1** · **95.35%** · **392 invariants** · **788 files typed** · **36 contracts** · `tsc` clean and gated |
-| **Release** | **79 certification runs recorded, 76 certified** · `promoted == certified` ✓ · `--audit-main` clean · ⚠️ **[B-131](docs/BUGS.md) — 16 gates required, 6 recorded** · ⚠️ **[B-123](docs/BUGS.md) half open** |
+| **Technical** | **3766 backend** *(+9)* · **1267 frontend** — **gated in stage 1** · **95.35%** · **392 invariants** · **789 files typed** · **36 contracts** · `tsc` clean and gated |
+| **Release** | **80 certification runs recorded, 77 certified** · `promoted == certified` ✓ · `--audit-main` clean · ⚡ **every run now prints its planned-gate shortfall** · ⚠️ **[B-131](docs/BUGS.md) measured, not closed** |
 | **Architecture** | Reachability 0 doorless · migration `0040` **reversible, verified this cycle** · **a new bounded context, with its ADR, its ownership row, its RLS and its invariants all present** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ⛔ **None.** Instrumentation — **and the instrument's first measurement was of the gate set itself** |
-| **Process** | ✅ **[§0e-3](docs/QUALITY_ENGINEERING.md) earned itself on first use**, and the ancestor check stopped a promotion when `integration` moved. ⚠️ **[B-131](docs/BUGS.md)**: ten required gates leave no trace, and four of them are ones QE runs every cycle by hand |
+| **Customer Value** | ⛔ **None.** Instrumentation — **certification can now be held to what the repository says it should do** |
+| **Process** | ✅ **Clean cycle, fail-fast throughout**, and the ancestor check stopped a promotion when `integration` moved — replayed rather than chased. ⚡ **QE's own gate set is now measured by every run rather than by QE noticing** |
 
 ### Repository Health Trend
 
