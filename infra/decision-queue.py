@@ -43,7 +43,13 @@ MODULES = ROOT / "docs" / "coordination" / "modules.toml"
 # **A heading, never a mention.** Counting `C-\d+` anywhere would find every
 # cross-reference in the prose and call each one a row — B-101's shape, and the
 # reason `_queued` reads only what the document presents as a row.
-ROW = re.compile(r"^#{2,3}\s*(?:🥇\s*)?(C-\d+)\s*·", re.M)
+# **Any leading decoration is skipped, not one enumerated emoji.** The pattern
+# named `🥇` alone and then missed four rows written with `⛔`, `⏱️` and `📌` —
+# reporting them absent from a page they were on. **A heading's emoji is
+# presentation and the id is the fact**, so match the id and ignore whatever
+# precedes it; enumerating decorations is a list that goes stale the first
+# time somebody picks a different one.
+ROW = re.compile(r"^#{2,3}[^\w\n]*(C-\d+)\s*·", re.M)
 INLINE = re.compile(r"\*\*(C-\d+)\*\*")
 # **Two heading shapes, because the register has two and pretending otherwise
 # hid seven items.** The convention is `## C-nnn · title`; C-210 through C-216

@@ -48,6 +48,59 @@
 
 > **`python3 infra/decision-queue.py --check` fails when this file and the register disagree.** It reported every ruled row still sitting here within a minute of the ruling, which is how this rewrite got scoped.
 
+> ⚠️ **And on 2026-08-06 it caught the other direction, which is the one that cannot be seen from inside this document.** **Five items were `OPEN`, owned by the product owner, and had no row here** — so this page claimed to be the single place to review decisions and was not. **They are added below.**
+>
+> ⚡ **Four *more* would have been escalated and should not have been.** **`C-201`, `C-334`, `C-412` and `C-025` each carried a ruling in a blockquote directly above a `Status` field that still read `OPEN` or `READY FOR PRODUCT DECISION`.** ⛔ **That is this tool's *"most misleading failure"* by its own docstring — attention spent on something already decided.** **All four fields are corrected in the register.** **The lesson is the one [C-213](LANE_COORDINATION.md) taught: a fact stated in prose beside a field is a fact no instrument reads.**
+
+---
+
+## ⛔ C-421 · A lane cannot read the design it is implementing against — EXTERNAL
+
+| | |
+|---|---|
+| **The ask** | ⚡ **Nothing to decide. Something to provide.** **That Lane A can open the canonical design set** — the location registered in [410](architecture/410-approved-ui-specification.md) |
+| **Blocks** | **[TASK-467](BACKLOG.md) · [TASK-468](BACKLOG.md) · [TASK-471](BACKLOG.md)** — **every slice whose first act is a gap analysis against the design.** ✅ **[TASK-469](BACKLOG.md) and [TASK-470](BACKLOG.md) carry backend work that is not blocked** |
+| **Priority** | **P1 — three prepared slices, sequenced, and none can begin** |
+| ⛔ **Why it is an item and not a note** | **The workaround was proposed and refused.** **This office suggested extracting the design's states into a conformance checklist a row could reference; [D-129](DECISION_REGISTER.md) ruled against it** — *"the only acceptable derived artifacts are implementation tasks, measurable gap analyses, and test cases. The design itself must remain the single source of truth."* ⚡ **So the slices reference the design directly and the access gap is raised rather than absorbed — the difference between a dependency and a silent assumption** |
+| **Recommended** | ✅ **Grant read access to the registered design location.** ⛔ **Not a copy, not an export into the repository, not a checklist** — all three are what D-129 forbids |
+
+## ⛔ C-229 · Opportunity Intelligence needs a door, and D38 closed that one deliberately
+
+| | |
+|---|---|
+| **The question** | > **Does [410](architecture/410-approved-ui-specification.md)'s Opportunity Intelligence get a navigation entry, reversing [D38](architecture/39-product-review-findings.md) — or does it reach the customer some other way?** |
+| **Blocks** | ⚠️ **[TASK-441](BACKLOG.md)'s *entrance*, and nothing else. Not the screen** — the row's own scope line says so, and this office over-corrected it once already |
+| **Priority** | **P2 — one screen's door, and the screen is otherwise the most complete of the sixteen** |
+| ⛔ **Why it is not Lane C's** | **[D38](architecture/39-product-review-findings.md) is a ratified product decision about information architecture, and it removed this exact entry from first principles**: *"six… four of the thirteen pipeline modules with a menu item each, **which is a data model rendered as navigation**… **none of the six customer journeys is *show me all the signals***."* ⚡ **Its own words set the bar: *"D38 reduced this to two on purpose, so adding one back is a claim that needs defending."*** **Defending it is a product judgement, not an architectural one** |
+| **Recommended** | ⚪ **No recommendation offered, deliberately.** **This office can say what each option costs and cannot say which the product wants** — and a recommendation here would be Lane C taking information architecture, which §20e reserves |
+
+## ⏱️ C-334 · The hosted evaluation credential — ✅ ruled, not yet provided
+
+| | |
+|---|---|
+| **Status** | ✅ **`RULED` — [D-111](DECISION_REGISTER.md)**: *"I will provide the hosted evaluation credential."* ⛔ **Listed here because it is not yet configured, never because it is undecided** |
+| **Blocks** | **[TASK-003](BACKLOG.md) · [TASK-202](BACKLOG.md)'s prompt release · [C-222](LANE_COORDINATION.md) · [C-331](LANE_COORDINATION.md)** |
+| **Priority** | **P1 — one credential converts four rows** |
+| ✅ **No action needed beyond configuring it** | **Release is automatic**; nothing waits on further instruction. ⚠️ **[TASK-202](BACKLOG.md) is `READY` today and stays `READY`** — the credential gates its *prompt release*, never its start |
+
+## 📌 C-331 · TASK-003 changes what the model is shown, which un-releases the narration prompt
+
+| | |
+|---|---|
+| **The problem** | **[TASK-003](BACKLOG.md) is `IN PROGRESS` and the change is small and understood** — **but changing what the model is shown un-releases the prompt** (§10: *a released version is immutable; a change is a new version*), **and re-releasing needs an evaluation run this workstation cannot perform** |
+| **Blocks** | **Three rows, consolidated rather than raised three times** |
+| **Priority** | **P2 — and it collapses into [C-334](#-c-334--the-hosted-evaluation-credential--ruled-not-yet-provided) the moment the credential lands** |
+| **Recommended** | ✅ **Take no separate action.** ⚡ **This is not an independent decision** — the credential [D-111](DECISION_REGISTER.md) already approved is the whole of what it needs. **Listed so it is visibly accounted for rather than quietly assumed** |
+
+## 📌 C-335 · Epic C's next stage is four deep, and two of the four are nobody's to take
+
+| | |
+|---|---|
+| **The problem** | **[TASK-428](BACKLOG.md)'s S3 sits behind four dependencies; ① is Lane C's and ③ is yours.** ✅ **② and ④ resolve themselves once those move** |
+| **Blocks** | **[TASK-428](BACKLOG.md)'s S3 entirely** — ⛔ **not its `commercial_profile` half**, which the lane is building |
+| **Priority** | **P3 — the lane is not idle on it** |
+| **Recommended** | ✅ **Answer ③ when convenient.** ⚠️ **Recorded here because a chain four deep with two unowned links is how a stage becomes permanently *next*** — and nothing on the board makes that visible |
+
 ---
 
 ## 📌 TASK-427 · The People domain's trigger has fired, and placing it is yours

@@ -80,6 +80,37 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-405 · A dated audit table's five links all resolve to nothing, because the ids were renumbered under it
+
+| | |
+|---|---|
+| **Module** | Repository records — [`docs/LANE_COORDINATION.md`](LANE_COORDINATION.md), the *"none of the five is executable"* re-check table |
+| **Current assignee** | ⚠️ **Product owner** — ⛔ **the repair needs a ruling, not a lane.** **§2 forbids rewriting a dated record to match now**, and every available fix either changes the ids the record was written with or leaves five links broken. **Choosing between those is a governance decision** |
+| **Severity** | 🟡 — **wrong but survivable.** **The prose is intact and correct; only the navigation fails.** ⚠️ **It becomes 🟠 if anybody reasons from the ids rather than the subjects** |
+| **Status** | **`OPEN`** — reported with the mapping measured, **not fixed** |
+| **Found** | 2026-08-06 by Lane C, running `decision-queue.py --check` and chasing why `C-025` appeared three times in the index |
+
+**Steps to reproduce.** Follow any link in the table headed `| Item | Kind | Still blocked? | What was checked |`.
+
+**Expected.** Each resolves to the item it names.
+
+**Actual.** ⛔ **None of the five does.** **The table's ids are pre-renumbering; the bodies moved and the table did not.**
+
+| The table says | Its subject | Where that subject lives now |
+|---|---|---|
+| `C-024` | *"nothing in the product can render a person's name"* | ✅ **[C-203](LANE_COORDINATION.md)** — `C-024` today is *Timeline has a surface and nowhere to mount it* |
+| `C-025` | *"the catalog explains nine words to nobody"* | ✅ **[C-204](LANE_COORDINATION.md)** — `C-025` today is *M13 is not a module* |
+| `C-026` | *"is Signora expected to work on a phone"* | ⚠️ **Unresolved** — `C-026` today is *The Connection Center is reachable only by typing its URL*, and **no current item carries the viewport question.** ⛔ **This one is not a renumbering; it may be a lost item** |
+| `C-021` · `C-008` | as written | **Plausibly still correct** — not asserted here, because two of five were wrong and a spot check is not a measurement |
+
+### ⚡ Why it is worth a row rather than five link edits
+
+**This is [B-102](#b-102--a-conflict-marker-committed-promoted-and-carried-through-several-certification-cycles)'s residue.** That defect's own row records *"`C-024` and `C-025` each appeared **twice, with contradictory statuses**"*. **The duplication was repaired by renumbering the bodies — and this table, written before the repair, kept the ids it was written with.** ✅ **Which is what §2 requires of a dated record**, and it is exactly why the fix is not obvious.
+
+> ⛔ **Every option costs something.** **Rewrite the ids** → falsifies a record of what was true then. **Repair only the anchors** → the displayed id and its target disagree, which is worse than a dead link because it looks like it works. **Leave it** → five dead links and a reader who cannot check the evidence. ⚠️ **And the `C-026` row may not be a renumbering at all** — a lost item is a different defect and would be repaired differently.
+
+⚡ **One index row *was* unambiguous and is fixed here**: `C-025` carried **two identical index rows** for *M13 is not a module*. The duplicate is removed — that is a present-tense error with one correct resolution, not a dated record.
+
 ### B-404 · The execution board's `## Current` section is empty, and every live row sits under `## Module assignment`
 
 | | |
