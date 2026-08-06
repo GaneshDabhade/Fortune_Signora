@@ -330,6 +330,19 @@ def screen_coverage(ref: str) -> list[str]:
     labelled as the thing it stands for.**
     """
     rows = {i: s for i, _, s in tasks(ref) if i in ui_wave_tasks(ref)}
+    # **Which screens actually have a row** — read from the rows' own
+    # `Approved screen` field, the same declaration `ui_wave_tasks` uses.
+    #
+    # ⚠️ **Added 2026-08-06 after the label lied.** The category read "No ⛔
+    # recorded and no row" and computed only the first half, so a screen that
+    # had just been decomposed still appeared as a decomposition candidate.
+    # **Naming a proxy after the thing it stands for is the defect this file
+    # keeps finding elsewhere**, and it was here.
+    screens_with_rows: set[str] = set()
+    for block in re.split(r"(?=^### TASK-\d+)", show(ref, "docs/BACKLOG.md"), flags=re.M):
+        named = re.search(r"^\| \*\*Approved screen\*\* \| \*\*(.+?)\*\*", block, re.M)
+        if named:
+            screens_with_rows.add(named.group(1).strip())
     shipped = ("VERIFIED", "CERTIFIED", "PROMOTED", "DONE")
     flight = ("CLAIMED", "IN PROGRESS", "IN VALIDATION", "CHANGES REQUESTED")
 
@@ -355,7 +368,10 @@ def screen_coverage(ref: str) -> list[str]:
     # "awaiting decomposition" would name the wrong owner: the first list is
     # this office's backlog, the second is the product owner's.
     _FROZEN_FOUNDATION = ("App Shell", "Design System")
-    candidates = sorted(s for s, b in blocked.items() if not b)
+    candidates = sorted(
+        s for s, b in blocked.items()
+        if not b and not any(s.startswith(n) or n.startswith(s) for n in screens_with_rows)
+    )
     frozen = [s for s in candidates if s.startswith(_FROZEN_FOUNDATION)]
     undecomposed = [s for s in candidates if s not in frozen]
 

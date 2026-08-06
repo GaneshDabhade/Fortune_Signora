@@ -564,6 +564,21 @@
 | ⚠️ **Bound** | ⛔ **No *skip auth in development* flag.** §13 forbids it by name, and this row is exactly where somebody would reach for one |
 | **Unblocks** | **The [D-113](DECISION_REGISTER.md) authentication journey** — a Playwright scenario that signs in needs an environment where signing up is possible |
 
+### TASK-460 · Global Search — one box, four kinds of answer
+
+| | |
+|---|---|
+| **Discovery** | **[450](architecture/450-global-search-traceability-audit.md)** — Global Search traced to its domain |
+| **Approved screen** | **Global Search** — [410](architecture/410-approved-ui-specification.md) |
+| **Module** | **Product Surface — Lane A**, reading `knowledge_graph/public/` |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06.** **Placed last, reordering nothing** |
+| ✅ **[§0-D](PRODUCT_OFFICE.md)'s four questions, measured before this row was written** | ⚡ **① Reads** — `GET /workspaces/{id}/account-search` and `/account-identities` · **② Workspace-wide?** ✅ **Yes, and verified rather than assumed** — the route is workspace-scoped, ⛔ **not entity-scoped like `TriageQueries.queue`, which is what [C-228](LANE_COORDINATION.md) cost** · **③ Writes** — ⛔ **none, and correctly: a search that writes is not a search** · **④ Entrance** — ✅ **`AccountSearch` is mounted in `components/shell/app-shell.tsx` itself.** ⚠️ **It appears nowhere in `navigation.tsx`, which is why ④ was checked rather than assumed — search is *in* the shell, not an entry *on* it** |
+| **Delivers** | **The existing account search raised to the approved specification: typed grouping across the object kinds that exist, and the ranking [TASK-408](#task-408--b-ii--search-results-are-grouped-and-the-ranking-is-explainable) already made explainable** |
+| ⛔ **Out of scope, named rather than discovered late** | ⚠️ **A search *index*** — [450](architecture/450-global-search-traceability-audit.md) measured **`meilisearch`, `tsvector` and `trigram` all at zero.** **This slice does not build one**: 450 records a ranking index as **sequenced behind a trigger that has not fired**, and building one for a workspace's account list is the speculative optimisation §14 forbids · **Saved search** — [R-02](DOMAIN_DISCOVERY_REGISTER.md), [TASK-449](#task-449--saved-view--the-publiccontract-and-nothing-else) · ⚡ **Monitored search** — **deliberately *not* R-02**: 450 narrowed the capability by measuring that *a monitored search is a subscription, not a view* · **Natural-language questions** — AI Copilot's, [TASK-453](#task-453--the-six-verbs-become-a-published-contract) · **`EntityKind.PERSON`** — [R-01](DOMAIN_DISCOVERY_REGISTER.md), and **deals were re-classified *out* of `EntityKind` by [450](architecture/450-global-search-traceability-audit.md)** |
+| **Change Budget** | 🟢 **Render only.** No endpoint, no index, no migration |
+| ⚡ **Playwright journey** ([D-113](DECISION_REGISTER.md)) | **A seller types a company name into the shell and reaches that account** — ⚡ **[MC-1](PRODUCT_EXPERIENCE.md) calls it *"the first thing every evaluator types"*, so it is the first thing the journey does** |
+| ⚠️ **The rule it must not break** | **[P-A](DOMAIN_DISCOVERY_REGISTER.md).** **No results and a failed query must never render alike** — ⛔ *"nothing matched"* and *"we could not look"* are opposite answers to somebody who typed a name they know exists |
+
 ### TASK-457 · People publishes what other modules may say about a person
 
 | | |

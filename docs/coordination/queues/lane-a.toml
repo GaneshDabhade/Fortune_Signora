@@ -51,7 +51,7 @@ depth_target = 5
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-440"
 next    = "TASK-448"
-future  = ["TASK-447", "TASK-442", "TASK-443", "TASK-445", "TASK-901", "TASK-449", "TASK-453", "TASK-456"]
+future  = ["TASK-447", "TASK-442", "TASK-443", "TASK-445", "TASK-901", "TASK-449", "TASK-453", "TASK-456", "TASK-460"]
 
 # ⚠️ **Rewritten 2026-08-05. This file declared 5 eligible and none of the five
 # was startable.** Every row is now checked against BACKLOG.md rather than
@@ -135,7 +135,7 @@ future  = ["TASK-447", "TASK-442", "TASK-443", "TASK-445", "TASK-901", "TASK-449
 #             product owner's.
 # ⚡ TASK-440 becomes current: its workspace-wide read is VERIFIED to exist —
 # opportunity_engine's router publishes four GETs including the account list.
-eligible_count = 10
+eligible_count = 11
 shortfall      = 0
 
 [rationale]
