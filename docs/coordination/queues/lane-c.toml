@@ -42,7 +42,14 @@ depth_target = 5
 
 current = "TASK-419"
 next    = "TASK-454"
-future  = ["TASK-455", "TASK-474", "TASK-476", "TASK-473"]
+future  = ["TASK-455", "TASK-474", "TASK-476", "TASK-473", "TASK-477"]
+
+# ⚡ **TASK-477 added 2026-08-06 — D-135 applied to a recurring finding.**
+# Three architecture document numbers each name two documents, and
+# `state-check` has reported it every cycle since 2026-08-03 with nobody
+# owning it. ⛔ A recurring advisory with no row is the "unprocessed idea"
+# D-135 forbids. Placed LAST: it blocks nothing and touches no customer,
+# which is D-131 ②'s tie-break working in the honest direction.
 
 # ⚡ **TASK-476 added 2026-08-06 — D-134 ④.** Headed becomes the default a
 # lane reviews in. ⛔ Found by VERIFYING the existing rule rather than quoting
@@ -110,7 +117,7 @@ future  = ["TASK-455", "TASK-474", "TASK-476", "TASK-473"]
 #             not a deferral candidate.
 #   TASK-455  a reviewable sign-up — blocks no implementation and
 #             blocks REVIEW, which §2 makes a completion condition.
-eligible_count = 6
+eligible_count = 7
 shortfall      = 0
 
 [rationale]

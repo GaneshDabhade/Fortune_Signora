@@ -566,6 +566,21 @@
 | **Unblocks** | **The [D-113](DECISION_REGISTER.md) authentication journey** — a Playwright scenario that signs in needs an environment where signing up is possible |
 | ⚡ **Shape ruled 2026-08-06 — [D-131](DECISION_REGISTER.md), [ADR-0406](architecture/adr/0406-authentication-execution-modes.md)** | ✅ **This is *Development Mode*, and it is not new engineering — it is the existing console transport, named.** **Measured under [D-130](DECISION_REGISTER.md) rather than assumed: `createEmailTransport` already writes the *real* Better Auth link with its real token — *"nothing here is mocked"* — and `loadAuthConfig` already refuses it in a deployed environment.** ⛔ **So the slice does not build a transport. It makes the existing one reachable as a reviewable path and names the mode it is.** ⛔ **`requireEmailVerification` stays `true`** — the mode changes where the link goes, **never whether it is required** |
 
+### TASK-477 · Three architecture document numbers each name two documents
+
+| | |
+|---|---|
+| **Discovery** | ⚡ **`state-check` has reported this every cycle since 2026-08-03 and nobody owned it** — which is the condition [D-135](DECISION_REGISTER.md) exists to end |
+| **Module** | **`docs/architecture/` — Lane C.** **Architecture governance and repository conventions are Product Office's** ([D-060](DECISION_REGISTER.md)) |
+| ⚡ **Trigger steward** | **Lane C — Product Office.** ⛔ **No trigger: it is executable today.** **Listed because a recurring advisory finding with no row is exactly the *unprocessed idea* [D-135](DECISION_REGISTER.md) forbids** |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06.** **Fitness (§20e); placed last, reordering nothing** |
+| ⛔ **The defect** | **A reference to *"49"* names two documents.** ⚠️ **Six files, three collisions, all six landed 2026-08-03** — **two lanes numbered independently and git merged both happily**, which is [C-201](LANE_COORDINATION.md)'s class exactly |
+| ✅ **The target is measured, not chosen** | ⚡ **Move the *less-referenced* document of each pair, because that minimises broken links** — **inbound references counted across `docs/`:** **`49-end-to-end-product-validation` 0** *(vs `49-lead-ownership` 1)* · **`50-product-capability-audit` 1** *(vs `50-sales-engagement` 4)* · **`51-sales-workspace` 1** *(vs `51-implementation-specifications` **12***)*. ⛔ **Do not re-derive this by preference — recount, because the numbers move** |
+| ✅ **Why it is performable, unlike [B-400](BUGS.md)** | ⚡ **All six files are on `origin/integration` today.** **[C-325](LANE_COORDINATION.md) records why the migration renumber was *not* performable — *"a renumber target computed against a branch you cannot see has a shelf life"* — and that condition does not hold here.** **Checked rather than assumed** |
+| ⚠️ **The rule it must not break** | ⛔ **§2: *a record of what was true then must not be rewritten to match now*.** **These are `30`+ documents — records, not instruction.** ✅ **A rename changes a filename, never a sentence**: ⛔ **no content is edited, no date is moved, and every inbound link is updated in the same change** |
+| ⛔ **Out of scope, and it is the product owner's** | ⚡ **Making the collision *unrepresentable* rather than merely fixed.** **[D-112](DECISION_REGISTER.md) ruled a prefixed allocation strategy for `B-`, `C-` and `TASK-` ids on exactly this reasoning — *"repository growth should remove collision risk completely rather than reducing it probabilistically"* — and it did not name architecture documents.** ⚠️ **Extending it is the same decision one class further and is not this row's to take.** **Raised as [C-423](LANE_COORDINATION.md)** |
+| **Change Budget** | 🟢 — **three renames and their inbound links.** ⛔ **No content edited** |
+
 ### TASK-476 · Headed becomes the default a lane reviews in, and the rule stops being untrue
 
 | | |

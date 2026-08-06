@@ -202,6 +202,16 @@
 | **[C-305](LANE_COORDINATION.md)** | **Two principles that outgrew the ADR that found them** | **`CLAUDE.md` is yours.** ⚡ ***"A version is something the customer intentionally published. Not something they typed."*** — **a sentence worth promoting or discarding, not leaving in an ADR's margin** |
 | **[C-304](LANE_COORDINATION.md)** | **A standing review question that has already paid for itself** | ⚡ **Not a blocker and not closeable.** **It asks that a rejection state whether it rejects the *whole* option or only one instance of it** — ⛔ **and this office has made that exact error twice this week** |
 
+## 📌 C-423 · Architecture document numbers can still collide — the cheap half of a decision you already took
+
+| | |
+|---|---|
+| **The question** | **Do numbered architecture documents get a prefixed allocation block, the way `B-`, `C-` and `TASK-` ids did at [D-112](DECISION_REGISTER.md)?** |
+| **Blocks** | ⛔ **Nothing.** **[TASK-477](BACKLOG.md) fixes today's three collisions either way; this decides whether a fourth can occur** |
+| **Priority** | **P3 — one sentence, and it can wait indefinitely without cost** |
+| ⚡ **Why it is here at all** | **[D-112](DECISION_REGISTER.md)'s bar was general: *"repository growth should remove collision risk completely rather than reducing it probabilistically."*** **Architecture documents fail it today** — six files landed on one day, three numbers each naming two documents, **and `state-check` has reported it every cycle since.** **Detection working as designed; prevention absent** |
+| **Recommended** | ✅ **Extend the existing block table prospectively — Lane A `2xx`, Lane B `3xx`, Lane C `4xx`.** ⚡ **That is what already happened by accident**: every `4xx` document in the tree is Product Office's. ⛔ **Do not retro-fit across the forty existing documents** — they are dated records (§2), and rewriting forty identities to prevent a defect that has occurred once is the wrong trade |
+
 ### ⚠️ C-306 · The one that argues *against* work, and it collides with D-128
 
 | | |

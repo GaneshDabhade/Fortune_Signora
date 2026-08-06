@@ -6522,6 +6522,35 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
 
+## C-423 · Architecture document numbers can still collide, and D-112 already solved this one class over
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-06, decomposing [TASK-477](BACKLOG.md) |
+| **Owner** | **Product owner** — ⚡ **[D-112](DECISION_REGISTER.md) took the identical decision for `B-`, `C-` and `TASK-` ids, so extending it is theirs by precedent** |
+| **Status** | **`READY FOR PRODUCT DECISION`** — **one question, and [TASK-477](BACKLOG.md) proceeds either way** |
+| **Blocks** | ⛔ **Nothing.** **[TASK-477](BACKLOG.md) fixes today's three collisions regardless; this decides whether a fourth can occur** |
+
+### The question
+
+> ## **Do architecture documents get a prefixed allocation block, the way `B-`, `C-` and `TASK-` ids did — or does the repository keep detecting collisions after they happen?**
+
+### Why it is worth asking rather than assuming
+
+**[D-112](DECISION_REGISTER.md) ruled the prefixed strategy on a stated bar, and the bar is general:**
+
+> ***"Repository growth should remove collision risk completely rather than reducing it probabilistically."***
+
+⚡ **Architecture documents fail that bar today and nothing noticed for three days.** **Six files landed on 2026-08-03, three numbers each naming two documents, and `state-check` has reported it every cycle since** — **detection working exactly as designed, and prevention absent.**
+
+⚠️ **And the allocation table in [§20e](../CLAUDE.md) already has a column for ADRs — `0100+` QE, `0200+` Lane A, `0400+` Lane C — but *not* for numbered architecture documents.** ⛔ **That is the gap: the same document set, half of it blocked and half of it free-for-all.**
+
+### What this office is not asking for
+
+⛔ **Not a renumbering of existing documents beyond [TASK-477](BACKLOG.md)'s three.** **`30`+ documents are dated records** (§2), **and retro-fitting a scheme across forty of them would rewrite forty identities to prevent a defect that has occurred once.**
+
+✅ **The cheap answer, if you want one: extend the existing block table to numbered architecture documents, prospectively.** ⚡ **Lane A takes `2xx`, Lane B `3xx`, Lane C `4xx` — which is what already happened by accident**, since every `4xx` document in the tree is this office's.
+
 ## C-422 · TASK-440 is claimed and its central element has no read — and Product Office is why
 
 | | |
