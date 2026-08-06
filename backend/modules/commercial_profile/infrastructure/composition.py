@@ -161,7 +161,7 @@ def build_icp_reader(session: AsyncSession) -> SqlIcpReader:
     """The ideal customer, for whoever needs to evaluate an account against it.
 
     **Published at TASK-434, and the reader is only half of the capability.**
-    The other half is `domain/matching.evaluate`, which is pure and takes the
+    The other half is `domain/evaluation.evaluate`, which is pure and takes the
     observed attributes as an argument — so a consumer reads the criteria
     through this port and supplies the facts itself. That split is what keeps
     the comparison in the module that owns the vocabulary without that module

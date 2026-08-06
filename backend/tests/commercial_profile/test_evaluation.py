@@ -16,7 +16,7 @@ from uuid import uuid4
 import pytest
 
 from modules.commercial_profile.domain.icp import EmployeeRange, ProductIcp
-from modules.commercial_profile.domain.matching import (
+from modules.commercial_profile.domain.evaluation import (
     CriterionKind,
     CriterionVerdict,
     ObservedAttributes,

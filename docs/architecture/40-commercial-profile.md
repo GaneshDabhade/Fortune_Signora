@@ -489,6 +489,8 @@ This lane claimed TASK-406, found that lift needs a predicate nothing could supp
 
 *+23 tests. 3600 backend passed, coverage 95.37%; `icp_reader.py` 100%, `matching.py` 95%.*
 
+> ⚠️ **`matching.py` became `evaluation.py` on 2026-08-05**, after the product owner ruled [C-420](../LANE_COORDINATION.md) / [D-087](../DECISION_REGISTER.md). **`Match` carried two concepts and now carries none alone**: **Identity Resolution** is `MatchStrength` in `knowledge_graph` — ratified 2026-07-29 and unchanged — and **Criteria Evaluation** is this. **The good word had already won at the call site**; only the filename disagreed, which made it 🟢 and module-internal. **The window was open because nothing outside the module ever imported the path**, and `public/` never exported the predicate.
+
 ---
 
 ## Epic C preparation — the one piece that is this module's, and the question in it

@@ -1,4 +1,20 @@
-"""Whether an account matches an ideal customer — asked once, answered here.
+"""**Criteria Evaluation** — whether an account satisfies a declared criterion.
+
+> ⚠️ **This file was `matching.py` until 2026-08-05.** Renamed on the product
+> owner's ruling at [C-420](../../../../docs/LANE_COORDINATION.md) /
+> [D-087](../../../../docs/DECISION_REGISTER.md): **`Match` carried two
+> concepts and now carries none on its own.**
+>
+> | Canonical | What it is | Where |
+> |---|---|---|
+> | **Identity Resolution** | *Is this the same company?* | `MatchStrength`, in `knowledge_graph` — **ratified 2026-07-29 and keeps its name** |
+> | **Criteria Evaluation** | *Does this company satisfy this criterion?* | **here** |
+>
+> **The good word had already won at the call site** — the shipped function is
+> `evaluate`, and `IcpCriteriaView` and `validate_criterion_list` say *match*
+> nowhere. **Only the filename disagreed**, which made this the cheapest
+> correction the ruling identified: module-internal, 🟢, and available only
+> until something outside the module imported the path. **Nothing ever did.**
 
 **The capability [C-330](../../../../docs/LANE_COORDINATION.md) asked for.**
 Lane B refused to invent it inside TASK-406; the product owner ruled it
@@ -9,7 +25,7 @@ counted **sixteen** consumers. This is the one place that answers.
 ### Why it lives in the module that records the declaration
 
 **The criterion vocabulary is defined here** — `industries`, `countries`,
-`EmployeeRange`, `validate_criterion_list` — and a matcher built anywhere else
+`EmployeeRange`, `validate_criterion_list` — and an evaluator built anywhere else
 would need a second copy of it. Two copies of a vocabulary is the duplicated
 truth §2 forbids, and the copy nobody is maintaining is the one that decides
 whether an account is in its own ICP.

@@ -682,7 +682,7 @@ Removing the identifiers makes the messages safe to show, which is this slice. *
 | | Where | State |
 |---|---|---|
 | **The criteria** | `commercial_profile/public/` `IcpReader` | ✅ **Shipped at TASK-434.** Thirteen views existed and none was the ICP |
-| **The predicate** | `commercial_profile/domain/matching.evaluate` | ✅ **Shipped at TASK-434.** Pure; the caller supplies the facts |
+| **The predicate** | `commercial_profile/domain/evaluation.evaluate` | ✅ **Shipped at TASK-434.** Pure; the caller supplies the facts |
 | **The observed attributes** | — | ⚠️ **Does not exist, and this is the slice** |
 
 **`ObservedAttributes` takes `industry`, `country`, `employees`, and the canonical vocabulary carries all three** — `ClaimAttribute.INDUSTRY`, `COUNTRY`, `EMPLOYEE_COUNT`. So the facts are recorded. **What is missing is the step from claims to a value.**
