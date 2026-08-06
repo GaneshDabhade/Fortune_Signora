@@ -682,7 +682,7 @@
 |---|---|
 | **Discovery** | **[C-332](LANE_COORDINATION.md)** *(Lane B)* · **[462](architecture/462-observed-attributes-proposal.md)** — the proposal, approved **exactly as written** by [D-111](DECISION_REGISTER.md) |
 | **Module** | **`knowledge_graph` — Lane B.** ⚡ **Chosen because it owns identity resolution, the `entity_id → SubjectRef` binding, the claims and the vocabulary** — *"no other module holds any of the four"* |
-| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06, on the ruling** |
+| **Status** | ✅ **`CLAIMED` — Lane B**, 2026-08-06, by the Task Claim Protocol. **The lane that raised [C-332](LANE_COORDINATION.md) takes its answer.** [TASK-202](#task-202--epic-g--copilot) stands higher and is skipped on the reason in its own row — the hosted evaluation credential ([C-334](LANE_COORDINATION.md)) — **not a priority judgement.** **Originally: `READY` — Lane C, 2026-08-06, on the ruling** |
 | **Delivers** | **`AccountAttributesReader` in `knowledge_graph/public/`** — **one call per entity, not three** — returning **the resolved value, the providers that agreed, and `unknown` as a first-class outcome** |
 | **Dependency edge** | **`opportunity_engine → knowledge_graph.public`, and nothing else.** ⚠️ **`pyproject.toml` currently forbids `modules.knowledge_graph` to `opportunity_engine` *in full*** — **it is replaced with the inner-layer form, which is exactly the shape [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) used** |
 | ⛔ **What it must never do** | **Never score, rank or weight a provider · never return a *best guess* without saying it is one · never expose `SubjectRef`** — **a provider identity crossing this boundary lets a consumer do resolution after all, which is the whole defect this closes** |
