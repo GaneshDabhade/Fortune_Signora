@@ -3223,6 +3223,9 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 
 ## C-103 · Two lanes wrote the same file, from the same bug row, within hours
 
+> ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-124](DECISION_REGISTER.md).** ⚡ **Its trigger fired: this is now three instances, and the third nearly cost a slice rather than a rebase.** **① [B-109](BUGS.md), two lanes writing one test file · ② `B-328`, Lane B and Lane C diagnosing the `54 READY` miscount within hours · ③ ⚡ **QE proposing to build the Validation Planner in cycle 77, which had existed since `2301e9a`** — invisible because 22 commits sat off `integration`.** ⛔ **And the answer is not a claim protocol for defects**, which the first two instances priced at one rebase each. ✅ **It is the same mechanism [C-102](#c-102--a-lane-cannot-see-the-defect-report-that-blocks-it) needed, because they are one root**: **information reaches a lane only through `integration`, and lanes rebase on their own cadence.** **`state-check` now names the coordination items a branch has never seen — the ones that would otherwise be re-raised or rebuilt.**
+
+
 | | |
 |---|---|
 | **Owner** | **Lane C** — Product Office. *Duplicate-engineering prevention* |
@@ -3294,6 +3297,9 @@ backend/tests/integrations/test_public_contract.py
 
 ## C-102 · A lane cannot see the defect report that blocks it
 
+> ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-124](DECISION_REGISTER.md), and built rather than recommended.** ⚡ **QE's own closing line is the answer — *"the cheapest possible answer may be the right one"* — and half of it has since become a rule**: **§19 already requires the lane to run its own gates before handover, and [D-114](DECISION_REGISTER.md) added *the lane runs the affected journeys*, with `certification-guard.py --plan` computing which.** **What remained was the *reporting reach*: a lane cannot read a row that is on a ref it has not pulled.** ✅ **[`state-check`](../infra/state-check.py) now reports when the current branch is behind `integration` *and that ref carries register rows this branch has never seen* — bug rows for [C-102](#c-102--a-lane-cannot-see-the-defect-report-that-blocks-it), coordination items for [C-103](#c-103--two-lanes-wrote-the-same-file-from-the-same-bug-row-within-hours).** ⛔ **No notification, no scheduler, no CI — §20c-2.** **It is the check a lane already runs, telling it locally that the ref it consumes has moved and carries something it must see.** ⚡ **Verified against today's repository: Lane B is 9 commits behind and has never seen `B-207`, `C-228` or `C-229`.**
+
+
 | | |
 |---|---|
 | **Owner** | **Lane C** — Product Office. *Governance workflow* |
@@ -3334,6 +3340,9 @@ origin/integration        rows present:  2
 
 
 ## C-101 · A lane can emit an event it is forbidden to catalog
+
+> ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-124](DECISION_REGISTER.md).** ⚡ **The answer already exists in this repository and was ruled for a different registry.** **[C-224](#c-224) settled the identical shape for `Resource`: the enum sits in frozen `signora_platform/**` (🔴) while `policy.csv` is *a registry every lane extends* — and the ruling was that *adding a member is a **declarative registration**, never a grant*.** **`06-events.md` has the same two halves and no line between them**: **the envelope, ordering, idempotency, dead-lettering and schema-evolution rules are architecture (🔴)** · **the *catalogue of declared event types* is a registry, and it drifts for exactly the reason `policy.csv` would if it were 🔴.** ✅ **Recommendation: add the event-type table to `CLAUDE.md` §20e's *registries every lane extends — append-only, one line, alphabetical*, beside `tenancy_policy.py` and `policy.csv`.** 🔴 **That is a `CLAUDE.md` amendment and therefore the product owner's; the reasoning is C-224's and needs no new argument.** ⚡ **On QE's question 2 — *does the same gap exist for other 🔴 documents?* — **yes, and it is measured**: **[B-401](BUGS.md) found `04-modules.md` two modules behind the code**, `sales_engagement` with zero mentions while shipped. **The gap is general and `06-events.md` is simply where it was noticed first.**
+
 
 | | |
 |---|---|

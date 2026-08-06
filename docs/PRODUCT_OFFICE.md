@@ -1198,6 +1198,18 @@ Execution Buffer Health
 
 ```text
   Dependency:              the identifier — C-nnn · TASK-nnn · B-nnn
+  Owner class:             ⚡ ONE of four, and never a fifth (D-124)
+                             PRODUCT OFFICE  — this office owns it. Picked up
+                                               without waiting. Never reported
+                                               as a thing the Product Owner
+                                               must action.
+                             PRODUCT OWNER   — a genuine decision. Brought.
+                             QE INTEGRATION  — a repository THROUGHPUT issue,
+                                               and the headline whenever
+                                               prepared work cannot reach the
+                                               branch engineering consumes.
+                             EXTERNAL        — tracked and reported until
+                                               cleared.
   Current Owner:           the lane or person who can move it, TODAY
   Category:                governance · architecture · ownership · synchronization
                            · external · product decision · repository health
@@ -1213,7 +1225,11 @@ Execution Buffer Health
                            which is often "throughput, not product"
 ```
 
-**Three fields were added 2026-08-06 and each closes a specific way the eight-field form failed.**
+⚡ **`Owner class` was added 2026-08-06 ([D-124](DECISION_REGISTER.md)) and it is the field that changes behaviour rather than description.** ***"Product Office action required → you own it. Pick it up without waiting."*** ⚠️ **The failure it closes is this office's own**: **[C-228](LANE_COORDINATION.md) sat as `READY FOR LANE C` while Lane A could not act on the row it holds, and [TASK-457](BACKLOG.md) sat `SEQUENCED` with its trigger fired while Lane B declined to chase it.** ⛔ **Both were reported as *dependencies* when they were Product Office latency wearing a dependency's clothes.**
+
+> ## **A `PRODUCT OFFICE` line in a dependency report is not information for the Product Owner. It is a task this office has not done yet, and it should have been gone before the report was written.**
+
+**Three further fields were added earlier the same day, and each closes a specific way the eight-field form failed.**
 
 | Field | What it caught that the eight could not |
 |---|---|

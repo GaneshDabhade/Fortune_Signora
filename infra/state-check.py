@@ -184,6 +184,60 @@ _LANE_OWNED_STATES = frozenset({
 })
 
 
+def _staleness_findings() -> list[str]:
+    """**Is this branch building blind?** — [C-102](../docs/LANE_COORDINATION.md), [C-103](../docs/LANE_COORDINATION.md).
+
+    **Both items have one root and neither says so**: information reaches a lane
+    only through `integration`, and a lane rebases on its own cadence. **C-102 is
+    a lane that cannot see the defect blocking it. C-103 is two lanes that cannot
+    see each other's work.** Same cause, opposite symptom.
+
+    ⚡ **Measured when C-102 was raised**: Lane A idle six hours then 23 files in
+    one push with `B-107` untouched; Lane B five pushes and 41 commits deep with
+    `B-108` untouched. **Neither lane misbehaved** — §20e's *Continuous
+    execution* tells a lane not to idle, and Startup is what pulls.
+
+    ⛔ **No notification, no scheduler, no CI** (§20c-2). **This is the cheapest
+    thing that could work: the check a lane already runs tells it, locally, when
+    the ref it consumes has moved and carries something it must see.**
+    """
+    behind = _git("rev-list", "--count", "HEAD..origin/integration").strip()
+    if not behind.isdigit() or int(behind) == 0:
+        return []
+    theirs_bugs = _git("show", "origin/integration:docs/BUGS.md")
+    theirs_coord = _git("show", "origin/integration:docs/LANE_COORDINATION.md")
+    out: list[str] = []
+    mine_bugs = _read("docs/BUGS.md")
+    unseen = sorted(
+        set(re.findall(r"^### (B-\d+)", theirs_bugs, re.M))
+        - set(re.findall(r"^### (B-\d+)", mine_bugs, re.M))
+    )
+    if unseen:
+        out.append(
+            f"{behind} commit(s) behind `integration`, which carries "
+            f"{len(unseen)} bug row(s) this branch has never seen: "
+            f"{', '.join(unseen)}. A lane cannot act on a defect it cannot read "
+            f"(C-102). Rebase before the next slice."
+        )
+    mine_coord = _read("docs/LANE_COORDINATION.md")
+    unseen_c = sorted(
+        set(re.findall(r"^#{2,3} (C-\d+)", theirs_coord, re.M))
+        - set(re.findall(r"^#{2,3} (C-\d+)", mine_coord, re.M))
+    )
+    if unseen_c:
+        out.append(
+            f"`integration` carries {len(unseen_c)} coordination item(s) this "
+            f"branch has never seen: {', '.join(unseen_c)}. Two lanes that "
+            f"cannot see each other's items build the same thing twice (C-103)."
+        )
+    if not out:
+        out.append(
+            f"{behind} commit(s) behind `integration` — nothing unseen in the "
+            f"registers, so this is ordinary drift rather than blindness."
+        )
+    return out
+
+
 def _execution_state_findings() -> list[str]:
     """**Did Product Office overwrite a state a lane owns?** ([D-123](../docs/DECISION_REGISTER.md))
 
@@ -962,6 +1016,7 @@ def main() -> int:
     # the one day a silent queue drift would go unseen.
     findings.extend(_queue_findings(backlog))
     findings.extend(_execution_state_findings())
+    findings.extend(_staleness_findings())
 
     if not findings:
         print("\nstate-check: governance documents agree with the repository.")
