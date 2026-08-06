@@ -133,6 +133,23 @@
 
 **When a row has no journey** — a foundation slice, a `public/` contract, a design system — **the field says so and says why.** **[TASK-448](BACKLOG.md) is the worked example: a design system has no customer journey, and asserting one would be the *icon renders* test the directive forbids.**
 
+### 🚪 0-D · A screen row states its door and its list — [D-117](DECISION_REGISTER.md)
+
+> ## ⛔ **Every screen row answers four questions before it may be `READY`. Three of them this office had never asked.**
+
+| | The question | ⛔ What it catches |
+|---|---|---|
+| ① | **What does this screen read?** | — |
+| ⚡ ② | **Does a *workspace-wide* read exist for it?** | **[C-228](LANE_COORDINATION.md): `TriageQueries.queue` requires an `entity_id`. It answers *what is outstanding on this account*; the Signal Center asks *what is outstanding*. There was no workspace-wide read at any layer** |
+| ⚡ ③ | **What does this screen write, and is that write authorized?** | **`Resource.SIGNAL` does not exist. `signal_engine` has zero write routes. Nothing could leave the queue** |
+| ⚡ ④ | **Where is this screen entered from?** | **[C-229](LANE_COORDINATION.md): Opportunity Intelligence has no navigation entry, because [D38](architecture/39-product-review-findings.md) removed it deliberately** |
+
+**These are [D-093](DECISION_REGISTER.md)'s rule — *who constructs each input, and may they reach it?* — applied where this office never applied it.** ⚠️ **That rule was written for Context Definitions after [C-332](LANE_COORDINATION.md). A screen row is a consumer of inputs too, and nothing said so until a lane paid for it.**
+
+> ⚠️ **[C-228](LANE_COORDINATION.md) is [B-327](BUGS.md)'s class, third instance in three days** — after [C-332](LANE_COORDINATION.md) and [C-417](LANE_COORDINATION.md). **Each time: something built, correct, and unreachable by the thing that needs it.**
+
+⚡ **And the audit is not exonerated by the row.** **[447](architecture/447-signal-center-traceability-audit.md) traced ten elements — domain, events, permissions, projections — and *every one is about what a decision is*.** ⛔ **None asked whether the queue can be listed.** **An audit that inventories a screen's concepts without asking whether they can be assembled has audited a vocabulary, not a screen.**
+
 ### 🔀 0-C · UI automation is implementation work — [D-114](DECISION_REGISTER.md)
 
 > ## ***"The lane that implements a UI feature is also responsible for proving that the feature works."***
