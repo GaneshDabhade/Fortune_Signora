@@ -593,9 +593,12 @@ def main() -> int:
             holders = board_here.get(task, set())
             if not holders:
                 findings.append(
-                    f"BACKLOG.md says {lane} holds TASK-{task}; ACTIVE_ASSIGNMENTS.md "
-                    f"has no row for it. A lane reading only the board would take work "
-                    f"somebody else is doing."
+                    f"BACKLOG.md says {lane} holds TASK-{task}; "
+                    f"ACTIVE_ASSIGNMENTS.md has no row for it under `## Current`. "
+                    f"A lane reading only the board would take work somebody else "
+                    f"is doing. (A row elsewhere in the file does not count — "
+                    f"`## Current` is where a lane looks, and B-404 is what it "
+                    f"costs when the rows live under another heading.)"
                 )
             elif lane not in holders:
                 findings.append(

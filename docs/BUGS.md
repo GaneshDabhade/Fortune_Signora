@@ -80,6 +80,43 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-404 · The execution board's `## Current` section is empty, and every live row sits under `## Module assignment`
+
+| | |
+|---|---|
+| **Module** | Repository records — [`docs/ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) |
+| **Current assignee** | **QE** — **reconciling the board is Closeout activity 3** (`CLAUDE.md` §20e), and this is a reconciliation rather than a claim. ⛔ **Lane C reports it: a lane writes only its own row, and restructuring twenty of them mid-cycle would collide with the Closeout that owns them** |
+| **Severity** | 🟠 · **Wrong information a lane would act on.** ⚠️ **It reads as *nobody is working on anything*** — the most reassuring possible wrong answer, on the one document §20e calls *"the single authoritative record of execution state"* |
+| **Status** | **`OPEN`** — reported with evidence, **not fixed: another lane's reconciliation** |
+| **Found** | 2026-08-06 by Lane C, **investigating why `state-check` had reported two missing board rows that visibly exist** |
+
+**Steps to reproduce.**
+
+```bash
+grep -n '^## ' docs/ACTIVE_ASSIGNMENTS.md
+→ 74: ## Current — as of 2026-08-06, `5743a90`
+  76: ## Module assignment — the product owner's ruling, 2026-08-04
+  150: ## What is available to claim
+```
+
+**Expected.** `## Current` carries the rows for work in flight.
+
+**Actual.** ⛔ **Two lines separate the heading from the next heading. `## Current` is empty**, and the twenty execution rows — Lane A's, Lane B's, Lane C's and QE's, `CLAIMED` through `VERIFIED` — sit under **`## Module assignment`**, which is a governance section about who owns what, not a record of who is doing what.
+
+### Why it matters more than a misplaced heading
+
+⚡ **`## Current` is where the tooling and the lanes both look.** `_board_claims()` scopes to it deliberately and says why: *"Recently completed names tasks that have shipped, and counting those as live claims would leave every finished task looking contested forever."* **That scoping is right. The board moved out from under it.**
+
+**So the board answers *"who is doing what, right now?"* — its one stated responsibility (§20e) — with silence**, while the answer sits two headings down mixed in with completed and promoted work that §20e requires to be *"marked `COMPLETE`, then removed."*
+
+### ⚠️ It has already cost two false findings
+
+**`state-check` reported *"BACKLOG.md says Lane A holds TASK-400; ACTIVE_ASSIGNMENTS.md has no row for it"*** — **and the row exists.** ⛔ **A finding that is true of the section and false of the file is the worst kind**, because checking it makes the check look wrong and the register look fine. **The message is corrected in the same change to name the section**; the register is not, because it is not this office's to restructure.
+
+### The fix, and it is not one move
+
+⛔ **Not simply moving twenty rows.** **Most of them should not be on the board at all** — §20e: *"Completed assignments marked `COMPLETE`, then removed… no lane may remain assigned to work that has reached `main`."* **Rows reading `VERIFIED`, `PROMOTED` and `RELEASED` are Closeout residue.** **The reconciliation is: retire what has shipped, move what is genuinely in flight under `## Current`, and leave `## Module assignment` describing ownership only.**
+
 ### B-403 · A merge interleaved two bug rows, and the check that should have seen it went blind instead
 
 | | |
