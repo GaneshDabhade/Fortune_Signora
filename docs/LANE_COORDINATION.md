@@ -328,7 +328,7 @@ databaseUrl: required(
 | [C-307](#c-307--signora-cannot-say-who-anybody-is) | Signora cannot say who anybody is | Lane B | **Product owner** | `OPEN` — **blocking, discovered during implementation.** Same class as [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | **All of User Profile.** The first table is user-scoped, and the tenancy model has no classification for one |
 | [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) | The Opportunities & Signals experience already exists, and Lane A owns half of it | Lane B | **Product owner** | `OPEN` | **The frontend half only.** The backend half is unassigned and Lane B can start it |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
-| [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
+| [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | ⏸️ **`DEFERRED` — [D-139](DECISION_REGISTER.md) ⑤: *"Continue holding this until ADR-0040. No further Product Owner time required until then."*** ⚡ **Trigger: [ADR-0040](architecture/adr/0040-notifica | **M14a N-01's migration.** The pattern exists; the ruling does not |
 | [C-323](#c-323--epic-a-was-assigned-to-lane-b-and-lane-a-is-already-building-it) | Epic A was assigned to Lane B, and Lane A is already building it | Lane B | **Product owner** | **`CLOSED` 2026-08-03** — ruled the same day it was raised | **Nothing now.** Lane B owns Epic A end to end; Lane A keeps Sales Workspace |
 | [C-324](#c-324--where-does-epic-as-rendering-stop-being-lane-bs) | Where does Epic A's rendering stop being Lane B's? | Lane B | **Lane C** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-125](DECISION_REGISTER.md)** | **A5 and A6's screens.** Nothing in A1 or A4 |
 | [C-322](#c-322--is-an-icp-a-description-or-a-filter) | Is an ICP a description, or a filter? | Lane B | **Product owner** | ✅ **`RULED`** — product owner, 2026-08-06, [D-111](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one w | Epic B1; the product contradicts itself on screen until it is answered |
@@ -379,6 +379,8 @@ databaseUrl: required(
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
 | [C-234](#c-234--task-901s-first-slice-is-complete-inside-the-module-and-the-wiring-is-task-419s) | **TASK-901's first slice is complete inside the module, and the wiring is TASK-419's** | Lane A | **Lane C** — `apps/` is its in [`modules.toml`](coordination/modules.toml), and [TASK-419](BACKLOG.md) names the exact change | **`OPEN`** — raised 2026-08-06 from inside [TASK-901](BACKLOG.md) | **The last step of TASK-901 slice 1.** Everything below it is built and tested |
+| [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, a | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
+| [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [467 §3](architecture/467-system-states-traceability-audit.md).** ⚡ **The invariant it asks for already exists: it is [P-A / R-15](DOMAIN_DISCOVERY_REGISTER.md), r | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
 | [C-233](#c-233--the-app-shells-22-numbered-specifications-are-not-in-the-repository) | **The App Shell's 22 numbered specifications are not in the repository** | Lane A | **Lane C** *(three documents quote the specification; none records it)* | **`OPEN`** — raised 2026-08-06 from inside [TASK-447](BACKLOG.md) | **Nothing today.** The buildable part of the row shipped; **what cannot be built is what cannot be read** |
 | [C-232](#c-232--companies-shows-what-signora-tracks-and-the-audit-called-it-what-the-customer-declared) | **Companies shows what Signora *tracks*, and the audit called it what the customer *declared*** | Lane A | **Lane B** *(`commercial_profile` holds the declaration)* · **the product owner** *(whether the two should be one list)* | ✅ **`CLOSED`** — **Lane A, 2026-08-06, the dependency no longer exists.** [TASK-472](BACKLOG.md) shipped `GET /accounts-list` | **Nothing.** The screen ships over the read that exists and says which set it is |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would h | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
@@ -2160,7 +2162,7 @@ The product owner's own questions make it foundational rather than local: **how 
 | **Owner** | **Product owner**, with `signal_engine`'s assignee |
 | **Requesting lane** | Lane A |
 | **Category** | Public API contract · product vocabulary |
-| **Status** | `OPEN` |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-06, [D-139](DECISION_REGISTER.md) ⑦.** **Closed with rationale, not deferred: the approved design already provides the discoverability this item asked for.** |
 | **Blocks** | [R5-04](architecture/39-product-review-findings.md). Nothing else |
 | **Raised** | 2026-08-02, after building the slice and reverting it |
 
@@ -2204,6 +2206,23 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 **Lane A built the second and reverted it.** It was ~70 lines and every gate passed except that one assertion: catalog endpoint, a `useSignalGlossary` hook sharing the existing request, a `SignalGlossary` disclosure closed by default with the definitions `sr-only` while shut, and 7 component tests. **Not a tooltip per row** — R5-04 calls that *"a wall"* — and the words unedited, because a second phrasing of a definition teaches two things by one name. **It can be restored in minutes if the ruling goes that way.**
 
 ---
+
+
+### ✅ Closed 2026-08-06 — the design answers it, and the answer is *no catalog page*
+
+⚡ **[D-139](DECISION_REGISTER.md) ⑦: *"Do not ask whether a catalog page is wanted in the abstract. Evaluate it against the finalized customer journeys and UI designs."*** **Measured against the snapshot, which did not exist when this was raised.**
+
+| | |
+|---|---|
+| ✅ **The explanation is already designed, on the signal** | **`Fortune Signora Signal Center.dc.html` renders *"Why this matters"* directly on the signal**, beside **`Show reasoning`** and **`Evidence`**. ⚡ **That is the discoverability this item asked for, in the place a seller meets the word** |
+| ⛔ **No catalog page exists in the approved design** | **The Signal Center's own sections are `Signals · Needs review · Rules · Analytics`.** **None of the twenty-six designs draws a signal catalog or glossary** |
+| ⚡ **And a glossary has a home if it is ever wanted** | **`Fortune Signora Help Center.dc.html`** carries *"what it means"* and *"definition"*. ⛔ **That is a different screen with its own row, not this item** |
+
+> ## **The product requires signal discoverability through an experience that is already designed. A dedicated catalog would be a second place to learn the same nine words.**
+
+✅ **[TASK-456](BACKLOG.md) reached the same conclusion independently on 2026-08-06 by reading the endpoints** — *"this slice surfaces explanations on an account, where a signal actually appears"* — **and the design confirms it.** ⚡ **Two routes, one answer, and the row needs no change.**
+
+⛔ **What would reopen this**: a customer journey in a future design that requires browsing signal types without an account in hand. **None of the twenty-six does.**
 
 ## C-205 · Is Signora expected to work on a phone?
 
@@ -3579,7 +3598,7 @@ frontend/playwright.config.ts                       modified
 | **Current assignee(s)** | **Product owner** — `11-tenancy.md` and `docs/architecture/01`–`21` are 🔴 |
 | **Blocking** | **N-01's migration**, and nothing before it |
 | **Raised** | 2026-08-02, by Lane B, stress-testing [ADR-0040](architecture/adr/0040-notifications.md) against membership changes |
-| **Status** | **`OPEN`** — **a notification is per-person and workspace RLS is not enough.** ⏸️ **Travels with [ADR-0040](architecture/adr/0040-notifications.md), deferred by [D-027](DECISION_REGISTER.md).** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
+| **Status** | ⏸️ **`DEFERRED` — [D-139](DECISION_REGISTER.md) ⑤: *"Continue holding this until ADR-0040. No further Product Owner time required until then."*** ⚡ **Trigger: [ADR-0040](architecture/adr/0040-notifications.md) reaching ratification.** **Trigger steward: Lane C.** |
 
 **Every workspace-owned table in this repository is workspace-scoped and workspace-*shared*.** RLS answers *"may this organization see this row?"*, and within a workspace every member sees everything. That has been correct for every table so far, because every one holds facts about the *organization*.
 
@@ -4512,7 +4531,7 @@ KeyError: '0035'
 |---|---|
 | **Raised by** | **Lane B**, 2026-08-06, on being asked to document its blockers and finding this one is recorded **only as a sub-clause of two other items** |
 | **Owner** | **The product owner** — it is a resourcing act, not a ruling. Nothing here needs to be decided, only provided |
-| **Status** | ✅ **`RULED`, awaiting provision** — product owner, 2026-08-06, [D-111](DECISION_REGISTER.md): *"I will provide the hosted evaluation credential."* ⛔ **The decision is taken; the credential is not yet configured.** ⚡ **Corrected 2026-08-06 — this row read `OPEN` beneath a ruling recorded directly above it**, which is the fourth such row found in one sweep and the reason `decision-queue.py --check` reads the field rather than the prose |
+| **Status** | ⚙️ **`OPERATIONAL` — reclassified 2026-08-06, [D-139](DECISION_REGISTER.md) ②.** ⛔ ***"This is no longer a Product Owner decision. It is an operational environment dependency."*** **Tracked, and removed from decision discussions unless a new architectural issue appears.** ⚡ **Release remains automatic on configuration; nothing waits on further instruction.** |
 | **Blocks** | **[TASK-003](BACKLOG.md) · [TASK-202](BACKLOG.md) · [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) · [C-331](#c-331--task-003-changes-what-the-model-is-shown-which-un-releases-the-narration-prompt).** **Two of those four are the only `READY` rows in the entire backlog** |
 
 ### Why it needs a row when two items already mention it

@@ -44,24 +44,39 @@
 
 ---
 
-## ⛔ C-229 · Opportunity Intelligence needs a door, and D38 closed that one deliberately
+## ⛔ C-229 · Opportunity Intelligence needs a door — ✅ **now with one recommended navigation model**
 
 | | |
 |---|---|
-| **The question** | > **Does [410](architecture/410-approved-ui-specification.md)'s Opportunity Intelligence get a navigation entry, reversing [D38](architecture/39-product-review-findings.md) — or does it reach the customer some other way?** |
-| **Blocks** | ⚠️ **[TASK-441](BACKLOG.md)'s *entrance*, and nothing else. Not the screen** — the row's own scope line says so, and this office over-corrected it once already |
-| **Priority** | **P2 — one screen's door, and the screen is otherwise the most complete of the sixteen** |
-| ⛔ **Why it is not Lane C's** | **[D38](architecture/39-product-review-findings.md) is a ratified product decision about information architecture, and it removed this exact entry from first principles**: *"six… four of the thirteen pipeline modules with a menu item each, **which is a data model rendered as navigation**… **none of the six customer journeys is *show me all the signals***."* ⚡ **Its own words set the bar: *"D38 reduced this to two on purpose, so adding one back is a claim that needs defending."*** **Defending it is a product judgement, not an architectural one** |
-| **Recommended** | ⚪ **No recommendation offered, deliberately.** **This office can say what each option costs and cannot say which the product wants** — and a recommendation here would be Lane C taking information architecture, which §20e reserves |
+| **The question** | **Does Opportunity Intelligence get a navigation entry, reversing [D38](architecture/39-product-review-findings.md) — or reach the customer another way?** |
+| **Blocks** | **The *entrance* of the screens D38 removed by name. Not the screens** |
+| **Priority** | **P2 — [TASK-441](BACKLOG.md)'s screen is otherwise the most complete of the sixteen** |
 
-## ⏱️ C-334 · The hosted evaluation credential — ✅ ruled, not yet provided
+### ✅ Recommendation — **contextual, reached by drilling. Not a first-class destination.**
 
-| | |
+⚡ **[D-139](DECISION_REGISTER.md) ① asked for a navigation model rather than a question, and the finalized design answers it directly.** **Measured from [`design-snapshot/screens/Fortune Signora Opportunity Intelligence.dc.html`](../design-snapshot/screens/), which this office could not read when the item was raised.**
+
+| Evidence | |
 |---|---|
-| **Status** | ✅ **`RULED` — [D-111](DECISION_REGISTER.md)**: *"I will provide the hosted evaluation credential."* ⛔ **Listed here because it is not yet configured, never because it is undecided** |
-| **Blocks** | **[TASK-003](BACKLOG.md) · [TASK-202](BACKLOG.md)'s prompt release · [C-222](LANE_COORDINATION.md) · [C-331](LANE_COORDINATION.md)** |
-| **Priority** | **P1 — one credential converts four rows** |
-| ✅ **No action needed beyond configuring it** | **Release is automatic**; nothing waits on further instruction. ⚠️ **[TASK-202](BACKLOG.md) is `READY` today and stays `READY`** — the credential gates its *prompt release*, never its start |
+| ⚡ **The breadcrumb the design draws** | **`Deals / EMEA enterprise / Vantage renewal — Q4 FY26`** — ⛔ **three levels deep, and the screen is the leaf** |
+| **Every label is singular** | *Opportunity summary · Update deal · Deal health · Competitive position · Next best action · Add to forecast call* — ⛔ **not one list affordance on the page** |
+| **It is a record page** | **The same shape as Account 360**, which also has no navigation entry and is reached by opening an account |
+
+> ## **The design does not draw a destination. It draws a leaf, and a leaf is reached by drilling.**
+
+**So the five options resolve like this:**
+
+| Option | |
+|---|---|
+| ⛔ **First-class navigation destination** | **Refused by the design itself** — the breadcrumb places it under two parents, and D38's bar (*"adding one back is a claim that needs defending"*) is not met by a page with no list |
+| ✅ **Contextual from Account 360** | **Recommended, primary.** The account brief already carries the opportunity; opening it is the customer's existing motion |
+| ✅ **Contextual from the attention list** | **Recommended, and it is the journey that already ships** — *"which accounts should I work on today?"* → open the one that moved |
+| ✅ **Accessible through Search** | **Recommended, and already designed** — the App Shell specifies **`08 Global search`** and **`09 Command palette`**, which is how a named deal is reached without a list |
+| ⛔ **Intentionally not exposed** | **Refused** — three entrances is exposure; the screen is reachable, just not from the rail |
+
+⛔ **What this does *not* claim.** **The App Shell design binds its navigation items from data (`{{ n.label }}`), so this office cannot read the rail's item list and does not assert what is on it.** ⚡ **The recommendation rests on where the *screen* places itself, which the design states in full.**
+
+✅ **If ruled as recommended, [TASK-441](BACKLOG.md) needs no navigation work at all** — **the entrances are Account 360, the attention list and search, and all three exist.** ⛔ **[D38](architecture/39-product-review-findings.md) is not reversed and needs no amendment.**
 
 ## 📌 C-331 · TASK-003 changes what the model is shown, which un-releases the narration prompt
 
@@ -179,7 +194,6 @@
 | **[C-211](LANE_COORDINATION.md)** | 🔴 **Where does an approach brief live?** **It reads the buying committee, signals, business events, validation, narration and the opportunity — and *no existing module may read all six*** | ⚡ **The most architectural of the twelve.** **A new bounded context or a widened contract; both are 🔴** |
 | **[C-212](LANE_COORDINATION.md)** | 🟠 **Which product is an opportunity about?** **The buying committee is declared *per product*; an opportunity has no product** | ⛔ ***"Which committee applies to this account?"* is unanswerable, so role ranking cannot start** |
 | **[C-203](LANE_COORDINATION.md)** | **Nothing in the product can render a person's name** | **Narrowed 2026-08-02. Grouped with People Intelligence** |
-| **[C-204](LANE_COORDINATION.md)** | **The catalog explains nine words to nobody** | ⚡ **Half-answered today**: [TASK-456](BACKLOG.md)'s audit settled the *per-account* surface. **What remains is whether a catalog *browse page* is wanted** |
 | **[C-223](LANE_COORDINATION.md)** | **`competitor_entry` across the current dependency graph** | **Only the *detection* half of Epic D phase 1** — the declaration, its API and its screen all shipped |
 | **[C-009](LANE_COORDINATION.md)** | **An internal fault reaches a customer as a `422`** | **Blocks nothing today. It blocks *doing this properly* in any module that splits its errors** |
 | **[C-003](LANE_COORDINATION.md)** | **Three wire codes for one condition** | ⚠️ **Blocks nothing — *"but it gets worse with every slice"*.** **[TASK-454](BACKLOG.md) is the slice that fixes it and is `READY`** |
@@ -188,7 +202,6 @@
 | **[C-014](LANE_COORDINATION.md)** | **Accessibility and performance testing are QE's, and neither exists** | ⚠️ **QE owns it and recorded the absence rather than stubbing a framework.** ⛔ **[D-131](DECISION_REGISTER.md) ② makes this a *product readiness* item — accessibility is what an enterprise buyer asks about** |
 | **[C-210](LANE_COORDINATION.md)** | **Will Signora hold personal data?** | ⏸️ **Already `DEFERRED` by you on 2026-08-05** — *"keep grouped with future People Intelligence work"* |
 | **[C-307](LANE_COORDINATION.md)** | **Signora cannot say who anybody is** | ⚡ **The customer framing is the useful part**: not *"I want to edit my name"* but ***"the product cannot tell me who my colleagues are."*** **Grouped with [C-203](LANE_COORDINATION.md) and [C-210](LANE_COORDINATION.md)** |
-| **[C-302](LANE_COORDINATION.md)** | **A notification is per-person, and workspace RLS is not enough** | ⏸️ **Same deferral.** ⚡ **One row each rather than one shared row** — the check anchors a listing to the head of a cell, so a second id in the same cell is invisible to it. **Two questions, two rows** |
 | **[C-305](LANE_COORDINATION.md)** | **Two principles that outgrew the ADR that found them** | **`CLAUDE.md` is yours.** ⚡ ***"A version is something the customer intentionally published. Not something they typed."*** — **a sentence worth promoting or discarding, not leaving in an ADR's margin** |
 | **[C-304](LANE_COORDINATION.md)** | **A standing review question that has already paid for itself** | ⚡ **Not a blocker and not closeable.** **It asks that a rejection state whether it rejects the *whole* option or only one instance of it** — ⛔ **and this office has made that exact error twice this week** |
 
@@ -213,6 +226,22 @@
 | **Recommended** | ✅ **Rule that the design is authoritative *and* that the fourteen findings are inputs to the gap analysis** — ⛔ **not a veto over it.** ⚡ **[D-129](DECISION_REGISTER.md) already permits exactly this artifact: a measurable gap analysis is one of the three, and *"the design already handles this"* is a legitimate finding for each of the fourteen** |
 
 ## Closed on 2026-08-06
+
+> ✅ **[C-204](LANE_COORDINATION.md) closed 2026-08-06, [D-139](DECISION_REGISTER.md) ⑦** — **evaluated against the finalized designs rather than in the abstract.** **The Signal Center design puts *"Why this matters"* on the signal itself; no catalog page exists in any of the twenty-six.**
+
+> ⚙️ **[C-334](LANE_COORDINATION.md) left this page 2026-08-06, reclassified `OPERATIONAL` by [D-139](DECISION_REGISTER.md) ②** — *"no longer a Product Owner decision… an operational environment dependency."* **Tracked in the register; release is automatic on configuration.**
+> ⏸️ **[C-302](LANE_COORDINATION.md) removed from the open tier** — held until [ADR-0040](architecture/adr/0040-notifications.md) by [D-139](DECISION_REGISTER.md) ⑤, **with Lane C as trigger steward.**
+
+## ⏱️ C-334 · The hosted evaluation credential — ✅ ruled, not yet provided
+
+| | |
+|---|---|
+| **Status** | ✅ **`RULED` — [D-111](DECISION_REGISTER.md)**: *"I will provide the hosted evaluation credential."* ⛔ **Listed here because it is not yet configured, never because it is undecided** |
+| **Blocks** | **[TASK-003](BACKLOG.md) · [TASK-202](BACKLOG.md)'s prompt release · [C-222](LANE_COORDINATION.md) · [C-331](LANE_COORDINATION.md)** |
+| **Priority** | **P1 — one credential converts four rows** |
+| ✅ **No action needed beyond configuring it** | **Release is automatic**; nothing waits on further instruction. ⚠️ **[TASK-202](BACKLOG.md) is `READY` today and stays `READY`** — the credential gates its *prompt release*, never its start |
+
+
 > ✅ **[C-421](LANE_COORDINATION.md) left this page 2026-08-06.** **It was never an access problem** — the design was readable throughout and [`docs/design-snapshot/`](design-snapshot/MANIFEST.md) now holds it locally ([D-138](DECISION_REGISTER.md)). ⛔ **It blocked three prepared slices for two days on a call nobody made.**
 
 ## ⛔ C-421 · A lane cannot read the design it is implementing against — EXTERNAL

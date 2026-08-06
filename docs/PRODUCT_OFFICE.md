@@ -295,6 +295,25 @@
 
 ✅ **Enforced rather than asked for**: `_ownership_findings()` in `infra/state-check.py` reports any parked row with neither a resolvable module nor a steward. ⚡ **It accepts *either*, deliberately — a check that demanded a module would contradict §20e, and a check that contradicts a ratified rule is the more expensive defect.**
 
+### ⚖️ 0-M · Escalate a decision, never an investigation — [D-139](DECISION_REGISTER.md)
+
+> ## ***"Bring me only the decision, not the investigation."***
+
+**Before escalating anything, ask one question:**
+
+> **Can this be answered from the architecture, the finalized design, the existing ADRs, repository principles, implementation evidence, or previously ratified decisions?**
+
+| | |
+|---|---|
+| **Yes** | ⚡ **Execute it.** ⛔ **The product owner is not a routing layer for decisions this office can already make** |
+| **No** | **Escalate — with the alternatives, the trade-offs, a recommendation, and *why each alternative was rejected*** |
+
+⚠️ **And the test has teeth, because two items failed it on the day it was written.** **[C-204](LANE_COORDINATION.md) asked whether a signal catalog page was wanted; the Signal Center design already renders *"Why this matters"* on the signal and no catalog exists in any of the twenty-six.** **[C-229](LANE_COORDINATION.md) asked whether Opportunity Intelligence needs a navigation entry; the design draws the breadcrumb `Deals / EMEA enterprise / Vantage renewal` and every label on the page is singular.** ⛔ **Both were answerable from the design set. Neither had been checked against it.**
+
+⚡ **The reason they were not is worth keeping**: the design was unreadable when both were raised, and **nobody re-asked the question when it became readable.** ✅ **A blocker is recorded once and re-read many times** — so an escalation carries the date its evidence was gathered, and a stale one is re-measured before it is sent again.
+
+**Four outcomes, and every open item takes one:** **execute · decompose · defer with a stated trigger and steward · close with rationale.** ⛔ **None may remain an open-ended discussion item.**
+
 ### ⚖️ 0-J · A ruling and its field move together — [D-131](DECISION_REGISTER.md)
 
 > ## ***"Whenever a decision is executed, the corresponding status fields are updated in the same change. A decision recorded only in prose is effectively invisible to the repository."***
