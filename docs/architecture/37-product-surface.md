@@ -761,6 +761,30 @@ So on an expired account the brief said it **twice in one card, three lines apar
 
 ---
 
+## TASK-447 — the App Shell, and the invariant it could not enforce *(2026-08-06)*
+
+**The shell's *"never a second search box"* is now a test.** [450 §5](450-global-search-traceability-audit.md) asked for exactly this — *"a structural test that refuses a second search input outside the shell… the fourth instance of a pattern the frontend already uses three times"* — and `tests/components/single-search.test.tsx` is it, written to `vocabulary` · `design-tokens` · `no-mock-data`'s shape.
+
+### It forbids a second *implementation*, not a second input, and the reading is deliberate
+
+**All three precedents forbid a practice rather than an element.** ⛔ **The literal reading would refuse an approved screen**: [410](410-approved-ui-specification.md) approves a *Search by name* on Companies **and** the shell's global search. **What the invariant protects is that there is one search — one request path, one cache identity, one global entry** — so a screen may *use* it and may not build another.
+
+| The three checks | And the fourth |
+|---|---|
+| **One file reaches `/account-search?`** · **one file builds the `accountSearch` key** · **only the shell mounts `<AccountSearch />`** | ⚡ **The shell still mounts it.** Without this the other three pass over a product with no search at all — *a guard that cannot fail is documentation pretending to be code* (§2) |
+
+**Every one was proven by reintroducing the violation**, including the anti-vacuity check.
+
+⚠️ **If the product owner meant the literal reading — no search input anywhere but the shell — this file is where that ruling lands**, one line stricter rather than a redesign.
+
+### Why the slice is this small, which is a finding rather than an apology
+
+**Three of the shell's ten cross-cutting concerns are complete** — session and identity, workspace context, search — **and [452](452-app-shell-traceability-audit.md) produced *"no new backlog row"*.** ⛔ **Everything else in the shell is somebody else's**: global scope is [TASK-450](../BACKLOG.md)–[TASK-452](../BACKLOG.md), notifications are [ADR-0040](adr/0040-notifications.md), AI entry points are [C-419](../LANE_COORDINATION.md), and the rest is named out of scope by the row itself. **What was left was the one gap the audit named, and it is built.**
+
+⛔ **The 22 numbered specifications are not in the repository** — three documents quote the same three sentences and none records the rest. **[C-233](../LANE_COORDINATION.md)**, and it is [C-230](../LANE_COORDINATION.md)'s shape one row later: a convergence task whose target the repository does not hold.
+
+---
+
 ## TASK-440 — Companies, the book a seller scans *(built 2026-08-06 · **not shipped**)*
 
 > ⛔ **This section describes a screen that is complete and is not in the repository.** Implementation, tests and two passing Playwright journeys exist; **the route is withheld because it has no entrance and the entrance is [C-229](../LANE_COORDINATION.md)'s to rule.** **Shipping it would leave `reachability` red in both `make reachability` and `tests/components/reachability.test.tsx`** — a blocking quality defect traded for a screen nobody can reach. **It lands unchanged, plus one link, the day the ruling arrives.** *This is recorded here rather than lost in a stash: the next lane in this module must not rebuild it.*

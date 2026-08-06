@@ -376,6 +376,7 @@ databaseUrl: required(
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | **`RULED`** — 2026-08-05 · [D-073](DECISION_REGISTER.md) · a `Resource` is a **declaration**, never a grant · **[`CLAUDE.md` §20a](../CLAUDE.md) amended** | **[TASK-405](BACKLOG.md)'s last route is unblocked.** Authorization is granted only through `policy.csv`; a `Resource` entry without policy rows provides no runtime capability, so the two authorities were never governing the same thing |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
+| [C-233](#c-233--the-app-shells-22-numbered-specifications-are-not-in-the-repository) | **The App Shell's 22 numbered specifications are not in the repository** | Lane A | **Lane C** *(three documents quote the specification; none records it)* | **`OPEN`** — raised 2026-08-06 from inside [TASK-447](BACKLOG.md) | **Nothing today.** The buildable part of the row shipped; **what cannot be built is what cannot be read** |
 | [C-232](#c-232--companies-shows-what-signora-tracks-and-the-audit-called-it-what-the-customer-declared) | **Companies shows what Signora *tracks*, and the audit called it what the customer *declared*** | Lane A | **Lane B** *(`commercial_profile` holds the declaration)* · **the product owner** *(whether the two should be one list)* | **`OPEN`** — raised 2026-08-06 from inside [TASK-440](BACKLOG.md), against the audit that produced it | **Nothing.** The screen ships over the read that exists and says which set it is |
 | [C-231](#c-231--the-organization-history-is-paged-and-its-fetch-is-not-yet-bounded) | **The organization history is paged, and its fetch is not yet bounded** | Lane A | **Lane A** — its own module, recorded so the half-fix is not mistaken for the whole | **`OPEN`** — raised 2026-08-06 from inside [TASK-443](BACKLOG.md), by this lane against itself | **Nothing.** The contract is fixed and the cost is not |
 | [C-230](#c-230--lane-as-assignable-work-is-exhausted-and-here-is-every-row-and-its-reason) | **Lane A's assignable work is exhausted — every row, and its reason** | Lane A | **Product owner** *(the two decisions)* · **Lane C** *(two stale rows)* | **`READY FOR PRODUCT DECISION`** — raised 2026-08-06 on the product owner's instruction to document the dependency | ⚡ **Nothing new.** It measures what [C-228](#c-228--the-signal-center-has-no-workspace-wide-queue-to-render-and-no-way-to-leave-it) and [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) already hold, and **releases [TASK-419](BACKLOG.md) for Lane C** |
@@ -5962,6 +5963,41 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 Lane A's recommendation, offered rather than taken: **a page-level test rather than a per-component one.** Render the account brief with every hook erroring and assert the page says so — one test, no new prop on any component, and it cannot be silenced by adding a field. `brief.test.tsx` already has the harness. **Lane A will build it on request**; it is not being built unasked because the assertion would reach sections other lanes own.
 
 **Six occurrences of one defect is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. The register is where a repeated shape stops being individually correct.
+
+## C-233 · The App Shell's 22 numbered specifications are not in the repository
+
+**Opened 2026-08-06 · Lane A · owner: Lane C · 🟡**
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, holding [TASK-447](BACKLOG.md), after delivering the part that is specified |
+| **Status** | **`OPEN`** |
+| **Blocks** | **Nothing today.** The row's buildable content shipped. **This is about the next shell slice, not this one** |
+
+### The row asks for a screen the repository describes in three sentences
+
+**[410](architecture/410-approved-ui-specification.md) names it** — *"App Shell — the frame every module mounts inside — **22 numbered specifications**"*. **[411](architecture/411-ui-convergence-assessment.md) and [452](architecture/452-app-shell-traceability-audit.md) each quote from it.** ⛔ **The 22 sections themselves are nowhere in the repository**, and `git grep` finds only the same three sentences quoted in three places.
+
+### What that leaves a lane, once the parts other rows own are removed
+
+| Specification | Where it actually is |
+|---|---|
+| **§2 global scope** — *"applied before a module renders, serialises to the URL, saved as a named view"* | ⛔ **Not this row's.** [TASK-450](BACKLOG.md) · [TASK-451](BACKLOG.md) · **[TASK-452](BACKLOG.md), *the screens that use it*** |
+| **Notifications** | ⏸ [ADR-0040](architecture/adr/0040-notifications.md), deferred — and named out of scope by the row |
+| **AI entry points** | [C-419](#) — the *ask* route is missing |
+| **User preferences · feature flags · announcements · background activity** | 🔴 named out of scope by the row, each with its own reason |
+| **Session · workspace · search** | ✅ **Complete**, and the row says so |
+| ✅ **The one gap left** | **[450 §5](architecture/450-global-search-traceability-audit.md)'s structural test** — *"never a second search box"* had no enforcement. **Built here** |
+
+> ⚡ **So the row is honestly small, and it is small because everything else in the shell is either finished or somebody else's.** **That is a good outcome and a bad row description**: *"the App Shell the approved design describes"* promises a screen, and what was available was one guard.
+
+### The same shape as C-230, one row later
+
+**[C-230](#c-230--lane-as-assignable-work-is-exhausted-and-here-is-every-row-and-its-reason) Finding 3 is [TASK-448](BACKLOG.md) slice 3** — *eighteen canonical components*, and **no document enumerates which eighteen.** ⛔ **This is the same defect on the neighbouring row**: a convergence task whose target is a specification the repository quotes and does not hold.
+
+**What would close it:** either **the 22 sections recorded in `docs/architecture/`**, or **the row rewritten to name what it wants** in the repository's own terms. ⛔ **Not a lane's to write either way** — a lane inferring the specification converges on the inference, which is exactly what this class of row keeps producing.
+
+---
 
 ## C-232 · Companies shows what Signora tracks, and the audit called it what the customer declared
 
