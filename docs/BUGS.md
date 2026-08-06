@@ -89,6 +89,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Severity** | 🟠 · **Wrong information a lane would act on.** ⚠️ **It reads as *nobody is working on anything*** — the most reassuring possible wrong answer, on the one document §20e calls *"the single authoritative record of execution state"* |
 | **Status** | **`OPEN`** — reported with evidence, **not fixed: another lane's reconciliation** |
 | **Found** | 2026-08-06 by Lane C, **investigating why `state-check` had reported two missing board rows that visibly exist** |
+| ⚡ **Ruled** | ✅ **Product owner, 2026-08-06, [D-130](DECISION_REGISTER.md) ③.** ***"If `ACTIVE_ASSIGNMENTS` is intended to answer 'who is doing what right now,' then the `Current` section must be the canonical execution view."*** ⛔ ***"Live execution state should never be inferred from historical or module-assignment sections."*** **This is no longer one lane's reading of §20e — it is a ruling, and the reconciliation below is required rather than recommended** |
 
 **Steps to reproduce.**
 

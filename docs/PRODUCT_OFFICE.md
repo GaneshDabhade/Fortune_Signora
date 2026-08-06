@@ -286,6 +286,24 @@
 | **[466 §0](architecture/466-certification-parallelism.md)** | *"The repository records no cause and no duration"* → **`attempts.py` records both, and derives aborts better than the enum proposed** |
 | ⚡ **[467 §0](architecture/467-system-states-traceability-audit.md)** | *"System States needs a foundational capability"* → **it was discovered the previous day, ranked highest, and annotated *name before the ninth*** |
 
+#### ⛔ Evidence means behaviour, never a name — [D-130](DECISION_REGISTER.md)
+
+> ## ***"Verifying an endpoint name is not the same as verifying customer behavior."***
+
+**Reading that a symbol exists is not evidence. Read what it returns, to whom, and under which authorization.** ⚠️ **The three questions that separate a name from a capability:**
+
+| | |
+|---|---|
+| **What set does it return?** | ⛔ **`GET /workspaces/{id}/accounts` is named for every account and returns *open opportunities ranked by live buying score*.** **Companies needs a browse of *"8,412 rows"*.** **Same word, different set** |
+| **What does it refuse?** | ⚡ **`GraphQueries.find_accounts` requires `text` and rejects blank input *deliberately*** — *"an empty pattern matches every claim in the workspace."* **A designed refusal is not a gap somebody forgot to fill, and reversing one is a slice rather than a parameter** |
+| **What does it authorize on?** | **`Resource.OPPORTUNITY`, not an account resource.** **A read a screen cannot reach under its own permissions is a read that screen does not have** |
+
+⛔ **This office set [TASK-440](BACKLOG.md) `READY` and queued it as Lane A's `current` on the note *"its workspace-wide read is VERIFIED to exist."*** **Lane A opened the endpoint and raised [C-230](LANE_COORDINATION.md) Finding 2. It was right.**
+
+> **This is [B-101](BUGS.md)'s class — counting by proxy — and the fourth instance inside a Product Office instrument.** ⚡ **The pattern is stable enough to name: every one of them substituted something cheap to read for the thing that mattered.** **A heading count for a status. A substring for a state. A filename for a schema. An endpoint's name for its result set.**
+
+**So the four questions in [§0-D](#0-d) are answered by reading the implementation, never the route table, the export list or the design document** — and **a `READY` set from any of those three is set on nothing.**
+
 ### 📖 0-iii · One canonical rule; everything else references it — [D-103](DECISION_REGISTER.md)
 
 > ***"Every repository rule should have one authoritative source. All other locations should reference that source rather than restating it."***
