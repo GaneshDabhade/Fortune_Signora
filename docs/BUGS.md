@@ -425,6 +425,91 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-129 · `git reset --hard` destroyed a certification record, and `--audit-main` refused until it was re-earned
+
+| | |
+|---|---|
+| **Module** | QE's own release procedure — the ordering of branch surgery against uncommitted records |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 · **The record of a run that happened was lost.** No data lost, and the repository asserted an untruth until repaired |
+| **Status** | ✅ **`FIXED` — 2026-08-06**, by re-earning the record rather than reconstructing it |
+| **Found** | 2026-08-06 by QE, cycle 76, when the manifest count did not move after a promotion |
+
+**Steps to reproduce.**
+
+```bash
+make certify                 # writes certification/manifest.json — uncommitted
+git checkout lane-qe && git reset --hard main
+python3 infra/certification-guard.py --audit-main
+→ REFUSED — 7 commits neither certified, nor an ancestor of one, nor a Closeout
+```
+
+**`make certify` writes the manifest into the working tree.** Every branch operation between the run and the commit that stores it can discard it, and `reset --hard` does.
+
+### The repair, and why the obvious one was refused
+
+**The report file survives** — `reset --hard` does not remove untracked files — **and it holds the whole run**: gates, coverage, conditions, timestamp. **Reconstructing the manifest entry from it would have taken a minute.**
+
+> ⛔ **A hand-written certification record is a fabricated record**, and it is worse than a missing one: the missing one is visible to `--audit-main` and the fabricated one is not. [§0b](QUALITY_ENGINEERING.md) forbids constructing a SHA for the same reason — *the repository's most load-bearing claim must never be produced by hand.*
+
+**The record was re-earned instead**: `make certify` re-run at the same commit, unchanged tree, every gate passing again — **12 minutes, and a genuine record.** `--audit-main` clean afterwards: 70 certified, 500 inside a snapshot, none outside.
+
+### Second instance this session
+
+**The first destroyed a bug filing** and produced a commit message claiming a row was closed when `grep -c` returned 0. **This one destroyed a certification record.** The pattern is the same: **`reset --hard` run while something the cycle produced was still only in the working tree.**
+
+**The rule that prevents both: the record is committed before the branch is touched.** Certification produces an artifact; a cycle that moves a branch before storing it is racing its own evidence.
+
+**Not automated, deliberately.** A guard here would have to know which uncommitted files matter, and it would be one more check whose output nobody branches on ([B-128](#b-128--a-rejected-push-did-not-stop-the-promotion-and-main-diverged-from-integration)). **The ordering is the fix.**
+
+
+### B-128 · A rejected push did not stop the promotion, and `main` diverged from `integration`
+
+| | |
+|---|---|
+| **Module** | QE's own release procedure — [`QUALITY_ENGINEERING.md` §0c](QUALITY_ENGINEERING.md) |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 · **No data lost and no guarantee broken** — but the repository spent several minutes in a state its own model forbids |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-06 by QE, cycle 76, reading the output of its own integrate step |
+
+**Steps to reproduce.**
+
+```
+PUSH_EXIT=1
+local e636018b · origin/integration b7eb036c     ← printed, and not acted on
+GUARD_EXIT=0
+PROMOTE_EXIT=0                                   ← promoted anyway
+```
+
+**A lane pushed a claim commit to `integration` during certification**, so the integrate push was rejected as non-fast-forward. **The compound command continued** and promoted the certified commit to `main`.
+
+### What did not go wrong, stated first so the severity is legible
+
+| | |
+|---|---|
+| **`promoted == certified`** | ✅ Held. `e636018b` was the certified SHA, confirmed by the guard *before* the promotion |
+| **`--audit-main`** | ✅ Clean — 70 certified, 500 inside a snapshot, **none outside** |
+| **Anything lost** | ✅ Nothing. The claim commit stayed on `integration`; the promoted work stayed on `main` |
+
+**What broke is the ordering invariant**: `main` must be an ancestor of `integration`, and for several minutes it was not. **Repaired by rebasing the claim commit onto `main`** — Closeout activity 10, performed early.
+
+### [§0c](QUALITY_ENGINEERING.md) was followed and was not enough
+
+**§0c says an integrate step ends by comparing the two refs**, *"because agreement is a fact and a zero exit code is an inference."* **The comparison ran. It printed. Nothing consumed it.**
+
+> **A check whose result is printed and not branched on is Decorative Logic** (`CLAUDE.md` §2) — it produces the reassurance of verification without the effect of it. **§0c described the measurement and left out the consequence**, and a rule that stops at *"look at this"* depends on the reader, which is exactly what a gate is for.
+
+**The fix is one word in the procedure and one line in the script: the comparison must gate the next step.**
+
+```bash
+git push origin HEAD:integration || exit 1
+[ "$(git rev-parse HEAD)" = "$(git rev-parse origin/integration)" ] || exit 1
+```
+
+**Second instance this session of a captured exit code being read and not obeyed** — the first is §0c's own origin. **That is the argument for making it mechanical rather than writing the rule a third time.**
+
+
 ### B-127 · The revocation guarantee lives in a feature test, and not in the Security Invariants
 
 | | |

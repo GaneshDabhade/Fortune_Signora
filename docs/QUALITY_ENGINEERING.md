@@ -101,6 +101,48 @@ echo "local $(git rev-parse --short HEAD) · origin $(git rev-parse --short orig
 
 > **`integration` moves continuously and by design** (§20e). A rejected push is therefore **normal**, not exceptional — which is exactly why it must be checked rather than assumed away.
 
+## 0e · Commit the certification record before touching a branch
+
+**Ratified by QE, 2026-08-06, after [B-129](BUGS.md).** `make certify` writes `certification/manifest.json` **into the working tree**. Between that write and the commit that stores it, **every branch operation can discard it — and `git reset --hard` does.**
+
+```bash
+make certify
+git checkout lane-qe && git reset --hard main   # ← the record is gone
+python3 infra/certification-guard.py --audit-main
+→ REFUSED — commits neither certified, nor an ancestor of one, nor a Closeout
+```
+
+**The report file survives** (`reset --hard` spares untracked files) and holds the entire run, so reconstructing the manifest entry is a minute's work.
+
+> ⛔ **Do not.** A hand-written certification record is a **fabricated** record, and it is worse than a missing one: **the missing one is visible to `--audit-main`; the fabricated one is not.** [§0b](#0b--never-construct-a-commit-sha--read-it-from-the-manifest) forbids constructing a SHA for exactly this reason.
+
+**Re-earn it.** Re-run `make certify` at the same commit — the tree is unchanged, the gates pass again, and the record is genuine. **Twelve minutes is the correct price for having destroyed the evidence.**
+
+**Second instance this session**: the first `reset --hard` destroyed a bug filing and produced a commit message claiming a row was closed when it was not. **Same shape both times — the branch moved while something the cycle produced was still only in the working tree.**
+
+## 0c-2 · A comparison that does not gate the next step is decoration
+
+**Ratified by QE, 2026-08-06, after [B-128](BUGS.md).** [§0c](#0c--verify-the-push-landed--capturing-an-exit-code-is-not-reading-it) requires an integrate step to end by comparing the two refs. **In cycle 76 the comparison ran, printed a disagreement, and the promotion proceeded anyway.**
+
+```
+PUSH_EXIT=1
+local e636018b · origin/integration b7eb036c    ← printed
+PROMOTE_EXIT=0                                  ← and promoted
+```
+
+**§0c described a measurement and left out the consequence.** A rule that stops at *"look at this"* depends on the reader noticing — **which is the definition of the thing a gate exists to replace.**
+
+> **A check whose result is printed and never branched on is Decorative Logic** (`CLAUDE.md` §2): it produces the reassurance of verification without the effect of it. **The `&&` and `||` are the rule; the `echo` is only the evidence.**
+
+**Every step that can fail ends in a branch, not a print:**
+
+```bash
+git push origin HEAD:integration || exit 1
+[ "$(git rev-parse HEAD)" = "$(git rev-parse origin/integration)" ] || exit 1
+```
+
+**And never chain an integrate and a promote in one compound command.** `integration` moves during certification by design (§20e), so a rejected push there is **normal** — it must be able to stop what follows it.
+
 ## 0b · Never construct a commit SHA — read it from the manifest
 
 **Ratified by QE, 2026-08-05, after the second occurrence.** A certification report is named `<12-char>.md`. **Twice QE has padded that filename into a 40-character SHA and promoted against the result.**

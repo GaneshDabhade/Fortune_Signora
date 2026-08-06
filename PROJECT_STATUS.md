@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `b562226`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `e636018`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `b562226`, 2026-08-06.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `e636018`, 2026-08-06.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`b562226`** — the certified commit itself |
-| **`integration`** | **level with `main`** at `b562226` |
-| **Release candidate** | **None pinned.** Cycle 75 promoted **a correction to a claim QE published** — and released a task that was being held by a trigger that had outlived its reason |
-| **Certification** | ✅ [`b5622261f7dd`](certification/reports/b5622261f7dd.md) · migration head **`0039`** · protocol **v2** |
+| **`main`** | **`e636018`** — the certified commit itself |
+| **`integration`** | **`e16c1d5`** — one claim commit ahead, **after QE repaired a divergence it caused.** See §1d |
+| **Release candidate** | **None pinned.** Cycle 76 promoted **all three lanes in one snapshot** — and **the product-visible drought ended**: a seller can see whether Signora is still watching a company |
+| **Certification** | ✅ [`e636018bb2fd`](certification/reports/e636018bb2fd.md) · migration head **`0039`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
 | **Validation queue** | **Empty.** ✅ **Lane C's cycle-70 deferral resolved itself** — the lane rebased, and its work is promoted here |
-| **Customer value this cycle** | ⛔ **None — the fourth running.** But **the queue moved for the first time in four cycles**: 2 startable rows became 3, by a hold being released rather than a task being written |
+| **Customer value this cycle** | ✅ **Yes, after four cycles without.** **A seller can see whether Signora is still watching a company** — freshness on the accounts they are going after, and on the intelligence behind them |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3683 backend tests** · **95.34% coverage** *(floor 95)* · **1255 frontend tests** across 60 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **389 Security Invariants** · mypy strict over **765 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 159s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3713 backend tests** · **95.35% coverage** *(floor 95)* · **1267 frontend tests** across 62 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **389 Security Invariants** · mypy strict over **772 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 196s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,19 +40,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **[TASK-437](docs/BACKLOG.md)** *(cycle 69)* | **[C-420](docs/LANE_COORDINATION.md)** *(cycle 72)* | **[C-104](docs/LANE_COORDINATION.md) answered · TASK-432 released · QE's false positive corrected** | **Cycle 75** |
-| **Execution phase** | ⚠️ **Idle, six cycles** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
+| **Last promoted** | **[TASK-400](docs/BACKLOG.md)** — a seller can see whether Signora is still watching a company | **[B-324](docs/BUGS.md) · [C-334](docs/LANE_COORDINATION.md)** | **468 audit · [D-103](docs/DECISION_REGISTER.md) the `[people]` row · D-104 · D-105** | **Cycle 76** |
+| **Execution phase** | **Building** — [TASK-432](docs/BACKLOG.md) claimed | **Building** | **Governing** | ⚠️ **Two defects of its own, both repaired** |
 | **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
-| **Validation status** | — | **Nothing new** | ✅ **Promoted this cycle** | — |
-| **Blocked?** | **3 startable rows** *(was 2)* — **[TASK-432](docs/BACKLOG.md) released this cycle is `signal_engine`, which is Lane A's** | Same queue | **No** | **No** |
+| **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
+| **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | **[TASK-432](docs/BACKLOG.md)** — released this cycle, in a module this lane holds | [TASK-201](docs/BACKLOG.md) · [TASK-202](docs/BACKLOG.md) | Stewardship | **Cycle 76, on the next pass** |
+| **Next executable work** | [TASK-432](docs/BACKLOG.md) | Next `READY` row | Stewardship | **Cycle 77, on the next pass** |
 
-> **Every branch sits level with `main`.** QE has rebased nothing for four cycles.
+> **All three lanes promoted in one snapshot** — the first time this session — and **the four-cycle run without customer-visible change ended.**
 >
-> ⚡ **The queue grew for the first time in four cycles — and not because anybody wrote a task.** [TASK-432](docs/BACKLOG.md) was being held by a trigger that had outlived its bundle, and releasing it is the office's own authority under §20e. **It is `signal_engine`, which is Lane A's** — the lane that has been idle six cycles now has a row in a module it holds.
+> ⚠️ **Both of this cycle's defects were QE's, and neither was caught by a gate.** A rejected push that did not stop a promotion, and a `reset --hard` that destroyed a certification record. **Both are ordering failures in QE's own procedure**, both repaired, both now written down as §0c-2 and §0e.
 >
-> ⚠️ **One line only the product owner can write.** `modules.toml` has **no `[people]` row**, so [TASK-427](docs/BACKLOG.md) would be `READY` in a module nobody owns — unclaimable. **Module ownership is never Lane C's**, and the ask is one registry line.
+> **That is [465](docs/architecture/465-certification-strategy.md)'s claim landing in the place it is least comfortable**: seventy-odd certifications have never caught a product defect, and this cycle they did not catch two defects in the process that runs them either.
 
 ---
 
@@ -103,52 +103,70 @@
 
 ---
 
-## 1d · Release summary — 2026-08-06, cycle 75
+## 1d · Release summary — 2026-08-06, cycle 76
 
-**Derived from the promoted commit `b562226`.** **Thirty-one promotions.** The cycle that corrected QE — **twice, on two different claims, both of which QE had reported to the product owner as fact.**
+**Derived from the promoted commit `e636018`.** **Thirty-two promotions.** All three lanes in one snapshot, the product drought ended — **and QE promoted through a rejected push and had to repair the result.**
 
 ### What was promoted
 
-**Two corrections to claims QE published, and one hold released.**
+**All three lanes in one snapshot, and the four-cycle product drought ended.**
 
-### ① QE reasoned from a false positive, and the correction is Lane C's
+**[TASK-400](docs/BACKLOG.md), Lane A** — *a seller can see whether Signora is still watching a company.* Freshness on the accounts they are going after and on the intelligence behind them. **Seven executable frontend files with their tests; frontend suite 1255 → 1267.**
 
-**QE reported [C-104](docs/LANE_COORDINATION.md) as having no `Status` row** — *"which is part of why it has been easy to leave."* **The inference was reasonable and the premise was wrong.** C-104 declares `State`, not `Status`, and `state-check` knew only the second name.
+> **It is the lane that had been idle six cycles**, and the row it claimed next — [TASK-432](docs/BACKLOG.md) — is the one Lane C released last cycle by noticing a trigger that had outlived its bundle. **The unstick worked.**
 
-> **Second instance of one defect in one file on consecutive days.** The ownership sweep knew one field name and reported **twelve owned items as unowned**; the state check knew one field name and reported **two stated items as stateless**. **14 items are genuinely stateless, not 16**, and the register carries **five schemas** across ownership and state.
+**Lane B** — `B-324`, a scripted run stops being recordable as an evaluation; `C-334`, *"the one blocker that is not a decision finally has a row."*
 
-**And the real cause was not the field name.** Lane C's own line: *"`OPEN` means nobody has looked, and somebody had. Moving it to a decidable state is Lane C's under §20e, and this office did not for two days."*
+**Lane C** — the Notification Center audit, and **[D-103](docs/DECISION_REGISTER.md), the `[people]` row**: *"it broke a deadlock that was nobody's fault."*
 
-### ② [C-104](docs/LANE_COORDINATION.md) is answered, and the analysis is sharper than the question
+### ⚠️ QE promoted through a rejected push, and had to repair the result
 
-> `02-principles.md` §13 governs *"work **not required to complete within the request/response cycle**"* and enumerates provider polling, normalization, the observation→signal→opportunity chain, AI reasoning — **every one a pipeline stage. A liveness probe's answer *is* the response, so the precondition is never met.**
->
-> **`CLAUDE.md` §7 paraphrased it and widened it**: *"provider polling"* became *"provider calls"*. **§20e predicted exactly this** — a rule written in two places is a rule that will eventually contradict itself.
+**[B-128](docs/BUGS.md), and it is QE's.** A lane pushed a claim commit to `integration` during certification, so the integrate push was **rejected** as non-fast-forward. **The compound command continued and promoted anyway.**
 
-**Evidence first:** `/check` is **the only synchronous outbound vendor call in any `interface/` layer** — a precedent being *set*, not discovered. Lane C recommends permitting it **bounded by four conditions rather than by judgement**, and states that **the `CLAUDE.md` §7 half is the product owner's alone.**
+```
+PUSH_EXIT=1
+local e636018b · origin/integration b7eb036c    ← printed, not acted on
+PROMOTE_EXIT=0                                  ← promoted regardless
+```
 
-### ③ The queue moved, and not because anybody wrote a task
+**What did not break, stated first so the severity is legible:**
 
-**2 startable rows became 3.** Lane C swept all 16 `SEQUENCED` rows against their own triggers and found one being held without cause: **TASK-432**, whose trigger read *"the next `signal_engine` slice — small enough to travel with one."*
+| | |
+|---|---|
+| **`promoted == certified`** | ✅ Held — the guard confirmed the SHA *before* the promotion |
+| **`--audit-main`** | ✅ Clean: 70 certified, 500 inside a snapshot, **none outside** |
+| **Anything lost** | ✅ Nothing — the claim stayed on `integration`, the work on `main` |
 
-> **No such slice is queued or foreseeable**, and the row's own cost line reads *"every day without it loses evidence that cannot be recovered."* **A convenience trigger that outlives its bundle stops being efficient and becomes a hold.**
+**What broke is the ordering invariant** — `main` must be an ancestor of `integration`, and for several minutes it was not. **Repaired by rebasing the claim commit onto `main`**, which is Closeout activity 10 performed early.
 
-**Lane C accepted the escalation squarely**, and the sentence is worth keeping: *"Lane idleness was zero; product throughput was zero. **Only one of those was on my dashboard.**"*
+> **[§0c](docs/QUALITY_ENGINEERING.md) was followed and was not enough.** It requires the integrate step to end by comparing the two refs. **The comparison ran, printed a disagreement, and nothing consumed it** — *a check whose result is printed and never branched on is Decorative Logic* (§2). **§0c-2 now says the comparison must gate the next step**, and that an integrate and a promote are never chained in one command.
 
-### ⚡ One blocker only the product owner can clear
+**Second instance this session of a captured exit code read and not obeyed.** The first is §0c's own origin — **which is the argument for making it mechanical rather than writing the rule a third time.**
 
-**`modules.toml` has no `[people]` row at all.** So TASK-427 would be `READY` in a module no lane owns — **unclaimable**, the [C-412](docs/LANE_COORDINATION.md) defect. **Module ownership is never Lane C's.** The ask is **one registry line**, and Lane C's reading is that the answer is Lane B.
+### ⚠️ And then QE destroyed the certification record repairing it
+
+**[B-129](docs/BUGS.md).** Cleaning up after B-128, `git reset --hard main` on `lane-qe` **discarded the uncommitted manifest entry** for the commit just promoted. **`--audit-main` refused**: seven commits neither certified, nor an ancestor of one, nor a Closeout.
+
+**The report file survived and holds the whole run**, so the entry could have been reconstructed by hand in a minute.
+
+> ⛔ **A hand-written certification record is a fabricated record, and it is worse than a missing one** — the missing one is visible to `--audit-main` and the fabricated one is not. **The record was re-earned instead**: `make certify` re-run at the same commit, unchanged tree, every gate passing again. **Twelve minutes, and a genuine record.** `--audit-main` clean afterwards.
+
+**Second time this session `reset --hard` has destroyed something the cycle produced.** The first was a bug filing. **§0e now requires the record to be committed before any branch is touched** — a cycle that moves a branch before storing its evidence is racing itself.
+
+### A near-miss worth recording
+
+While reconciling `docs/BUGS.md` QE found `>>>>>>> 603a077 (…)` on `main` and was one step from filing a committed conflict marker. **It is inside a fenced code block — a bug row quoting the marker it documents.** Filing it would have been the false-positive-read-as-evidence error Lane C corrected last cycle, and **the third time this repository has recorded a check confusing prose *about* a thing with the thing itself.**
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3683 backend** · **1255 frontend** — **gated in stage 1** · **95.33%** · **389 invariants** · **765 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **75 certification runs recorded, 72 certified** · `promoted == certified` ✓ · **3 aborts, 0 failures** · ⚠️ **[B-123](docs/BUGS.md) half open** |
+| **Technical** | **3713 backend** *(+30)* · **1267 frontend** *(+12)* — **gated in stage 1** · **95.35%** · **389 invariants** · **772 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **76 certification runs recorded, 73 certified** · `promoted == certified` ✓ · `--audit-main` clean **after repair** · ⚠️ **[B-128](docs/BUGS.md)** a rejected push did not stop a promotion · ⚠️ **[B-129](docs/BUGS.md)** a certification record was destroyed and re-earned · ⚠️ **[B-123](docs/BUGS.md)** half open |
 | **Architecture** | Reachability 0 doorless · migration `0039` **reversible, verified this cycle** · event catalog 1 known drift · ⚠️ **two capabilities shipped without a caller** · ⚠️ **[B-126](docs/BUGS.md) — architecture document `25` claimed twice** |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ⛔ **None, fourth cycle running** — **but the queue grew for the first time in four**, by a hold being released rather than a task being written |
-| **Process** | ⚠️ **The cycle's finding is about QE.** Two claims QE reported to the product owner as fact were wrong, and **a lane corrected both** — one a false positive read as evidence, one a count. **Neither was caught by a gate**, which is [465](docs/architecture/465-certification-strategy.md)'s point arriving in QE's own reporting |
+| **Customer Value** | ✅ **Direct, after four cycles without.** A seller can see **whether Signora is still watching a company** |
+| **Process** | 🔴 **Two defects this cycle, both QE's** — [B-128](docs/BUGS.md) and [B-129](docs/BUGS.md). **Nothing lost and no guarantee permanently broken**, and the repository twice held a state its own model forbids. **Both are ordering failures in QE's own procedure**, now written as §0c-2 and §0e |
 
 ### Repository Health Trend
 
