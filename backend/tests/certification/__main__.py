@@ -185,6 +185,87 @@ def _slowest_stage(output: str) -> str:
     return ""
 
 
+def _load_guard() -> object | None:
+    """`infra/certification-guard.py`, loaded by path because its name has a dash.
+
+    **Registered in `sys.modules` before execution, and that is not optional.**
+    The guard defines `@dataclass(slots=True)` types, and `dataclasses` resolves
+    a class's own module out of `sys.modules` while processing it — so a module
+    executed unregistered raises `AttributeError` on the decorator rather than
+    anywhere the caller can see. `test_repository_generators.py` loads it the
+    same way, which is why this matches that loader rather than inventing a
+    second one.
+    """
+    import importlib.util
+
+    path = REPOSITORY_ROOT / "infra" / "certification-guard.py"
+    spec = importlib.util.spec_from_file_location("certification_guard", path)
+    if spec is None or spec.loader is None:
+        return None
+    guard = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = guard
+    spec.loader.exec_module(guard)
+    return guard
+
+
+def _plan_shortfall(recorded: set[str]) -> tuple[list[str] | None, str]:
+    """What the repository says must run, against what this record contains.
+
+    **B-131.** `validation_plan` computes the gates a change requires; this
+    compares them with the gates the run actually recorded. **It reports and
+    refuses nothing** — 427 step 1's discipline applied to QE's own gate set:
+    measure the disagreement while everything still runs.
+
+    Enforcing it would mean adding to `REQUIRED_GATES`, which makes every
+    prior record unsatisfied because none of them executed these gates. That
+    is a change to what certification *means* (ADR-0032), not one a run may
+    make about itself.
+
+    **The plan is computed, never restated here.** Two answers to "what must
+    run?" would drift, and the unmaintained one would be this copy.
+
+    Returns `(None, reason)` when the plan could not be computed at all — an
+    absent measurement reported as silence is B-125's class, and this file is
+    not going to be its third instance.
+    """
+    guard = _load_guard()
+    if guard is None:
+        return None, "certification-guard.py could not be loaded"
+
+    _, base = _run(["git", "rev-parse", "--verify", "--quiet", "origin/main"], cwd=REPOSITORY_ROOT)
+    if not base.strip():
+        return None, "no origin/main to measure against"
+
+    _, diffed = _run(
+        ["git", "diff", "--name-only", f"{base.strip()}..HEAD"], cwd=REPOSITORY_ROOT
+    )
+    changed = [line for line in diffed.splitlines() if line]
+    if not changed:
+        # Not the same as "could not measure": a candidate level with
+        # `origin/main` has nothing to plan for.
+        return [], "no change against origin/main"
+
+    plan = guard.validation_plan(changed)  # type: ignore[attr-defined]
+    return sorted(set(plan.gates) - recorded), str(plan.profile)
+
+
+def _report_plan_shortfall(gates: tuple[GateResult, ...]) -> None:
+    missing, note = _plan_shortfall({gate.name for gate in gates})
+    if missing is None:
+        print(f"\n  validation plan     NOT MEASURED — {note}")
+        return
+    if note == "no change against origin/main":
+        print("\n  validation plan     nothing changed against origin/main")
+        return
+    if not missing:
+        print(f"\n  validation plan     {note} — every planned gate is in this record")
+        return
+    print(f"\n  validation plan     {note}: {len(missing)} planned gate(s) NOT recorded")
+    for gate in missing:
+        print(f"    · {gate}")
+    print("    reported only — nothing skipped, nothing refused (B-131)")
+
+
 def _scenarios() -> tuple[ScenarioResult, ...]:
     """The customer journeys. **One today**, and the catalogue grows here.
 
@@ -309,6 +390,8 @@ def _certify(target: disposable_database.Disposable) -> int:
     report = report_path(run)
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(render(run, now))
+
+    _report_plan_shortfall(run.gates)
 
     print(f"\nrecorded in {MANIFEST.relative_to(REPOSITORY_ROOT)}")
     print(f"report      {report.relative_to(REPOSITORY_ROOT)}")
