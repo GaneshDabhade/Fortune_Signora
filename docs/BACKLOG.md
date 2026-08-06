@@ -690,7 +690,7 @@
 |---|---|
 | **Discovery** | **[C-419](LANE_COORDINATION.md)** · **[445](architecture/445-ai-copilot-traceability-audit.md)** — *"six verbs and no others"*, and *"17 surfaces, one contract"* |
 | **Module** | **`ai_reasoning_engine` — its `public/`.** ⚡ **Ruled [D-112](DECISION_REGISTER.md): *"the engine owns the language. Screens consume that language."*** **§6: a port belongs to the module that owns the language it represents** |
-| **Status** | ✅ **`READY`** — 2026-08-06 |
+| **Status** | ✅ **`CLAIMED` — Lane B**, 2026-08-06, by the Task Claim Protocol. [TASK-202](#task-202--epic-g--copilot) stands higher and is skipped on the credential ([C-334](LANE_COORDINATION.md)) — **not a priority judgement. Originally: `READY` — 2026-08-06** |
 | **Delivers** | **The closed verb set — Explain · Summarize · Predict · Recommend · Generate · Reason — and a surface identifier, published through `public/`** |
 | ⛔ **What the ruling forbids** | ***"Do not duplicate this taxonomy in frontend code."*** ⚡ **Put it in the frontend and the closed set stops being closed the first time a screen needs a seventh** |
 | **Consumers** | **17 surfaces, as *consumers* rather than variants** — AI Copilot, Account 360, and every screen with an AI entry point |
