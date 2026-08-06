@@ -80,6 +80,50 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-207 · An expired score renders as *no score*, and those are opposite messages
+
+| | |
+|---|---|
+| **Module** | **Product Surface** — the attention list. `frontend/components/intelligence/attention.tsx` |
+| **Current assignee** | **Lane A** — Product Surface is its in [`modules.toml`](coordination/modules.toml), and this lane wrote the component |
+| **Severity** | 🟠 · **Wrong behaviour a customer would hit**, on the first screen they see, about the number the screen is sorted by |
+| **Status** | **`OPEN`** — found 2026-08-06 by Lane A, running [TASK-441](BACKLOG.md)'s reuse audit before writing code. **Fixed as part of that row**, which already carries the rule |
+| **Found** | 2026-08-06, `bcea8ba` |
+
+**Steps to reproduce.** Open the homepage with an account whose buying score has expired — `score: null` on `AccountAttentionResponse`.
+
+**Expected.** *"We scored this, and the evidence behind it is no longer current."*
+
+**Actual.** An em dash, labelled **`"No current score"`**.
+
+```tsx
+export function AttentionScore({ score }: { score: number | null }) {
+  if (score === null) {
+    return <span aria-label="No current score">—</span>;
+  }
+```
+
+### The API says what null means, and it does not mean absent
+
+**`opportunity_engine/interface/schemas.py`, in the published OpenAPI description a consumer reads:**
+
+> ***"Commercial attention, 0–100… Null when the evidence behind it has expired — the opportunity is still open and the number that justified it is no longer current."***
+
+**So `null` carries a specific, actionable fact and the surface renders it as an absence.** A seller reading `—` concludes *Signora has nothing on this account*; the truth is *Signora had something and it went stale*, on an opportunity that **is still open**. **Those demand opposite actions** — the first is a reason to ignore the row, the second is a reason to distrust the ranking it is sitting in.
+
+### It is [P-A](DOMAIN_DISCOVERY_REGISTER.md), and the repository already knows the pattern
+
+**[C-226](LANE_COORDINATION.md) is this exact class** — *a failed read rendering as an empty account* — and this lane fixed three sections of it in [TASK-417](BACKLOG.md). **The account brief already does it correctly**: a 404 from the score read renders *"Nothing has scored this account yet"* and any other error renders *"Could not load this account"*, because **never scored** and **could not find out** are different sentences.
+
+> **The list never got the third one.** The brief distinguishes *never* from *failed*; **nothing anywhere distinguishes *expired*** — and expired is the only one of the three that the attention list can actually be showing, because a row is there precisely because an opportunity is open.
+
+### Why it survived review
+
+**The component is right about everything else and says so at length** — why the score is typographic rather than a gauge, why it is subordinate to the account name. ⚡ **`aria-label="No current score"` is even *literally* true**: there is no current score. **It is the inference a reader draws that is wrong**, which is why no test caught it and why reading the component does not reveal it. **The defect is only visible against the API contract**, and [453](architecture/453-opportunity-intelligence-traceability-audit.md) is what put the two side by side.
+
+**Fix.** Say *expired* where the fact is expiry, and keep the em dash out of it. **[TASK-441](BACKLOG.md) carries the rule in its own words** — *"an expired score must render as expired, never as absent and never as current"* — so the fix and its regression test land there rather than in a separate change.
+
+
 ### B-328 · `state-check.py` reports 54 `READY` tasks when there are two, because it counts headings
 
 | | |
