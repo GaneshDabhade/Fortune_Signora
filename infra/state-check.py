@@ -243,6 +243,66 @@ def _staleness_findings() -> list[str]:
     return out
 
 
+#: **The `Planning-Sync` trailer — [D-136](../docs/DECISION_REGISTER.md).**
+#:
+#: > *"Planning corrections should become their own class of repository
+#: > change… QE should then treat these as high-priority synchronization work
+#: > rather than ordinary feature work."*
+#:
+#: **A commit message, not a file.** Every alternative was a new shared file,
+#: and a shared file is a conflict surface between the two lanes it exists to
+#: coordinate. The repository already carries three conventions this way —
+#: `Claim TASK-`, `Repository Closeout`, `Slice-Handoff` — and each is found
+#: by `--grep` rather than by parsing something somebody has to maintain.
+_PLANNING_SYNC = "Planning-Sync: required"
+
+
+def _planning_sync_findings() -> list[str]:
+    """Planning corrections written here and not yet visible to any lane.
+
+    **[D-136](../docs/DECISION_REGISTER.md), and it exists because the gap was
+    measured rather than imagined.** Lane A claimed `TASK-440` from
+    `origin/integration` while this branch had carried the row's correction —
+    *no read exists behind its account table* — for a day. **The lane followed
+    every rule; the correction was simply somewhere it could not look.**
+
+    **Why a count rather than a gate.** ⛔ This office may not push to
+    `integration` (D-136 keeps QE the sole integration authority), so a check
+    that *failed* would fail on a condition its own lane cannot clear — which
+    trains a reader to ignore it. **It reports an age and a list**, and the
+    list is what QE picks up.
+
+    ⚡ **It is also the evidence D-136 asks for**: *"if Planning Sync Required
+    items begin accumulating or repeatedly delay implementation, gather
+    evidence over several cycles."* **A number that appears every run is a
+    trend; an incident report is not.**
+    """
+    branch = _git("rev-parse", "--abbrev-ref", "HEAD").strip()
+    if not branch.startswith("lane-c"):
+        return []
+    pending = [
+        line
+        for line in _git(
+            "log", "--format=%h %s", f"origin/integration..{branch}",
+            f"--grep={_PLANNING_SYNC}",
+        ).splitlines()
+        if line.strip()
+    ]
+    if not pending:
+        return []
+    oldest = _git(
+        "log", "--format=%cr", f"origin/integration..{branch}",
+        f"--grep={_PLANNING_SYNC}",
+    ).splitlines()[-1].strip()
+    return [
+        f"{len(pending)} planning correction(s) are not on `integration`, the "
+        f"oldest written {oldest or 'unknown'}. **Until QE integrates them every "
+        f"lane is planning from the previous answer** — which is how TASK-440 was "
+        f"claimed after its blocker was recorded (C-422). Commits: "
+        + ", ".join(line.split(" ", 1)[0] for line in pending[:8])
+    ]
+
+
 def _execution_state_findings() -> list[str]:
     """**Did Product Office overwrite a state a lane owns?** ([D-123](../docs/DECISION_REGISTER.md))
 
@@ -1082,6 +1142,7 @@ def main() -> int:
     # run.** `if not findings: return` would have skipped every queue check on
     # exactly the day the rest of the repository agreed with itself — which is
     # the one day a silent queue drift would go unseen.
+    findings.extend(_planning_sync_findings())
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
     findings.extend(_execution_state_findings())
