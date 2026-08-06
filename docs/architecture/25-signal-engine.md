@@ -758,4 +758,43 @@ Currency is resolved before state: a snooze somebody later replaced with a dismi
 
 **Recording a decision has no HTTP route.** Every write surface in the repository carries its own authorization `Resource` — `opportunity`, `research`, `icp`, `target_account`, and nine more — and there is no `signal` one. Adding it means editing `signora_platform/authorization/enforcer.py`, which the Change Budget puts at 🔴 (*product owner + ADR*), while `policy.csv` is listed as a registry any lane may extend. **The enum member and the policy rows are one registration in two files with two different authorities**, and that conflict is not a lane's to resolve.
 
-The use case, the error mapping and the persistence are complete and tested; only the route is withheld. [C-224](../LANE_COORDINATION.md) carries the request, the twelve precedents, and the proposed request bodies. **No existing tuple was reused instead** — authorizing a write as `account:read` would be a security defect, and `account:update` is granted to no role and would 403 every caller.
+⚡ **[C-224](../LANE_COORDINATION.md) was `RULED` on 2026-08-05** — a `Resource` is a *declaration*, never a grant; authorization is granted only through `policy.csv`, so the two files were never governing the same thing, and `CLAUDE.md` §20a is amended to say so. **The route is unblocked, and it is [TASK-405](../BACKLOG.md)'s remainder rather than this section's.** *(Dated record of the blockage, retained below.)* The use case, the error mapping and the persistence are complete and tested; only the route is withheld. [C-224](../LANE_COORDINATION.md) carries the request, the twelve precedents, and the proposed request bodies. **No existing tuple was reused instead** — authorizing a write as `account:read` would be a security defect, and `account:update` is granted to no role and would 403 every caller.
+
+## The decision reaches the pipeline — 2026-08-06 (Lane A, TASK-432)
+
+**A human decision was the one thing in this pipeline that produced no event.** Every other stage announces what it concluded — `signal.generated`, `signal.superseded`, `buying_score.updated`, sixteen more. A person saying *"I dealt with it"*, *"not now"* or *"you were wrong"* was written into `signal_resolution` and nowhere else.
+
+> **The row recorded the state; nothing recorded the transition.** `timeline` could not project a decision, and [TASK-406](../BACKLOG.md) — which measures ICP criteria against outcomes, and *dismissed with a reason* is an outcome — had nothing to read. **Every day without it lost evidence that cannot be reconstructed afterwards**, because a state you can query today says nothing about when it changed or how often somebody changed their mind.
+
+`ResolveSignal` now publishes **`signal.resolved`** in the same transaction as the row, through the outbox — so a consumer can never hear about a decision that was rolled back, and the refusal path (a signal this workspace cannot see) announces nothing at all.
+
+### The four words moved to the domain, and that is the interesting part
+
+The outcome discriminators — `actioned`, `assigned`, `snoozed`, `dismissed` — lived as private constants in `infrastructure/repository.py`. **That was correct while the column was the only place they appeared.** Publishing them made a second spelling possible, and a stored `dismissed` disagreeing with a published one is one fact with two representations (§2) — with the bus being where the second copy becomes *somebody else's* vocabulary.
+
+**So `discriminator()` and its four constants are now `domain/resolution.py`'s**, and both edges read them. The names are unchanged, so no stored row means anything different. `Outcome` is still a closed union, so `mypy` still refuses a fifth member with no branch — **which now protects the published contract as well as the column.**
+
+### What the event carries, and the two things it deliberately does not
+
+| | |
+|---|---|
+| `resolution_id` · `signal_id` · `entity_id` | **`entity_id` is carried rather than looked up.** `timeline` projects per account and does not depend on this module's read surface, so an event without it is one a consumer cannot place |
+| `outcome` · `actor_id` · `supersedes` | *Intelligence suggests; humans commit* — an outcome with no actor could not have happened. `supersedes` travels so a consumer that acted on the earlier decision does not count both |
+| ⛔ **Not the dismissal reason** | **An event carries an identity, not a body** — the rule `provider.record.received` already follows. A reason is a sentence a customer typed about why Signora was wrong; publishing it copies it into every subscriber's storage, and **a bus cannot take it back.** It stays in the row, where a port can serve it if a consumer ever needs it |
+| ⛔ **Not `closes_the_signal`** | **Derivable from `outcome`**, and therefore a second representation of one fact. Which outcomes end a signal is this module's judgement and it is published in `CLOSING`; a boolean beside the discriminator would eventually disagree with it |
+
+### The publisher is required, not defaulted
+
+`build_resolve_signal` takes it as a keyword with no default. **A default would make the announcement the thing you have to remember**, and the failure — a decision the pipeline never hears — is silent, looks exactly like nothing having happened, and cannot be reconstructed later.
+
+### ⚠️ `06-events.md` does not list it, and that is [C-101](../LANE_COORDINATION.md) rather than an omission
+
+**`CLAUDE.md` §9 requires the catalog entry in the same change. `06-events.md` is 🔴 — product owner and ADR only.** A lane that emits an event cannot satisfy §9, which is the workflow gap C-101 asks Lane C to design; `make event-catalog` reports the drift and is advisory for exactly that reason.
+
+**This is the second instance**, after `commercial_profile.target_accounts_changed`. **The row is written out ready to paste in C-101**, as Lane B did for the first one — the correct behaviour under the rules as written, and it is recorded here so the next assignee of this module inherits the fact rather than discovering it from a checker.
+
+### What is still not built
+
+**Nothing consumes it.** No subscription is registered, and none is invented here — `timeline` and TASK-406 are the consumers the row names, and both are other work. **A subscription added speculatively would be a consumer nobody asked for** (§6), and the event is worth publishing before it is worth consuming precisely because the evidence is otherwise lost.
+
+**And no route reaches it.** `ResolveSignal` is still reachable only from the composition — TASK-405's withheld route, now unblocked by C-224's ruling. **So this slice is not independently demonstrable to a non-engineer today** (§2), and that is stated rather than glossed: it is pipeline plumbing whose value is that a transition stops going unrecorded, and it becomes visible the moment that route ships.

@@ -15,7 +15,7 @@ against real rows rather than against an empty table.
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -31,6 +31,7 @@ from modules.signal_engine.domain.resolution import (
 )
 from modules.signal_engine.infrastructure.composition import build_resolve_signal
 from signora_platform.db import tenant_scoped_session
+from signora_platform.event_bus import PostgresOutboxEventPublisher
 from signora_platform.settings import Settings
 from signora_platform.tests.keys import (
     TEST_AUDIENCE,
@@ -108,12 +109,21 @@ async def _decide(
 ) -> None:
     """Through the use case, which is where the route will call once it
     exists. **Not raw SQL** — a fixture that bypassed the write would test the
-    read against rows the product cannot actually produce."""
+    read against rows the product cannot actually produce.
+
+    **The real outbox publisher, as the composition root wires it** (TASK-432).
+    Recording a decision now also announces it, and a fixture publishing to a
+    double would leave this read tested against a write the product does not
+    perform — the same reason it does not use raw SQL."""
     async with tenant_scoped_session(
         factory, workspace_id=workspace_id, user_id=user_id
     ) as session:
-        await build_resolve_signal(session).execute(
-            workspace_id, signal_id, outcome=outcome, actor_id=user_id
+        await build_resolve_signal(session, publisher=PostgresOutboxEventPublisher()).execute(
+            workspace_id,
+            signal_id,
+            outcome=outcome,
+            actor_id=user_id,
+            correlation_id=uuid4(),
         )
 
 

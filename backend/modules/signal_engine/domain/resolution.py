@@ -179,6 +179,39 @@ Outcome = Actioned | Assigned | Snoozed | Dismissed
 CLOSING: Final = (Actioned, Dismissed)
 
 
+#: The name of each outcome, and **the only place these four words are
+#: decided.** They are this module's ubiquitous language for *how a signal left
+#: the queue* (§4), so they belong to the domain rather than to either of the
+#: two edges that spell them out: the column `SignalResolutionModel.outcome`
+#: stores one, and `signal.resolved` publishes one. **Those must never be able
+#: to disagree** — a stored `dismissed` and a published `Dismissed` would be
+#: one fact with two representations, and the bus is where the second one
+#: becomes somebody else's vocabulary (§2).
+ACTIONED: Final = "actioned"
+ASSIGNED: Final = "assigned"
+SNOOZED: Final = "snoozed"
+DISMISSED: Final = "dismissed"
+
+
+def discriminator(outcome: Outcome) -> str:
+    """What this outcome is called, in one word.
+
+    **Exhaustive by construction.** `Outcome` is a closed union, so `mypy`
+    refuses this function if a fifth member is ever added without a branch —
+    which is the point of the union being closed, and it now protects the
+    published contract as well as the column.
+    """
+    match outcome:
+        case Actioned():
+            return ACTIONED
+        case Assigned():
+            return ASSIGNED
+        case Snoozed():
+            return SNOOZED
+        case Dismissed():
+            return DISMISSED
+
+
 @dataclass(frozen=True, slots=True)
 class Resolution:
     """One person's decision about one signal, and when they made it.
@@ -244,8 +277,12 @@ class Resolution:
 
 
 __all__ = [
+    "ACTIONED",
+    "ASSIGNED",
     "CLOSING",
+    "DISMISSED",
     "MAX_REASON",
+    "SNOOZED",
     "Actioned",
     "Assigned",
     "DismissalReason",
@@ -255,4 +292,5 @@ __all__ = [
     "ResolutionError",
     "Snoozed",
     "UnreadableOutcomeError",
+    "discriminator",
 ]

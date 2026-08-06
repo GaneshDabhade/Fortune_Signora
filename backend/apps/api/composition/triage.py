@@ -27,6 +27,7 @@ from modules.signal_engine.application.resolve import ResolveSignal
 from modules.signal_engine.application.triage import TriageQueries
 from modules.signal_engine.infrastructure.composition import build_resolve_signal, build_triage
 from signora_platform.api import CurrentWorkspace
+from signora_platform.event_bus import PostgresOutboxEventPublisher
 
 
 def triage_queries(context: CurrentWorkspace) -> TriageQueries:
@@ -53,8 +54,11 @@ def resolve_signal(context: CurrentWorkspace) -> ResolveSignal:
     prove it exists and nothing else — no evidence, no observations, no graph.
     Building the whole read stack here would make a write depend on four
     modules it never asks a question of.
+
+    **The publisher is the real one, writing to the outbox on the request's own
+    session** — so the announcement commits with the row or neither does.
     """
-    return build_resolve_signal(context.session)
+    return build_resolve_signal(context.session, publisher=PostgresOutboxEventPublisher())
 
 
 TriageRead = Annotated[TriageQueries, Depends(triage_queries)]

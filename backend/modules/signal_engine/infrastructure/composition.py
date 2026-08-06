@@ -63,14 +63,23 @@ def build_profiles(session: AsyncSession) -> SqlProfileRepository:
     return SqlProfileRepository(session)
 
 
-def build_resolve_signal(session: AsyncSession) -> ResolveSignal:
+def build_resolve_signal(session: AsyncSession, *, publisher: EventPublisher) -> ResolveSignal:
     """Recording a decision. **Its own builder, not a method on the queries** —
     the read surface is handed to other modules through `public/`, and a write
     reachable from there would let a consumer resolve a signal it may not even
-    name."""
+    name.
+
+    ⚡ **`publisher` is required rather than defaulted** (TASK-432). A default
+    would make the announcement the thing you have to remember, and the failure
+    — a decision the pipeline never hears — is silent, looks exactly like
+    nothing having happened, and cannot be reconstructed afterwards. The same
+    reasoning `build_run_sync` applies to its reporter, inverted: there the
+    real one is the default; here there is no sensible quiet one at all."""
     return ResolveSignal(
         signals=SqlSignalRepository(session),
         resolutions=SqlResolutionRepository(session),
+        publisher=publisher,
+        session=session,
     )
 
 

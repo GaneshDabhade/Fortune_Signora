@@ -27,6 +27,10 @@ from modules.business_event_engine.public import BusinessEventType
 from modules.signal_engine.domain.catalog import Relevance, SignalType
 from modules.signal_engine.domain.profile import ProfileEntry, SignalProfile
 from modules.signal_engine.domain.resolution import (
+    ACTIONED,
+    ASSIGNED,
+    DISMISSED,
+    SNOOZED,
     Actioned,
     Assigned,
     DismissalReason,
@@ -35,6 +39,7 @@ from modules.signal_engine.domain.resolution import (
     Resolution,
     Snoozed,
     UnreadableOutcomeError,
+    discriminator,
 )
 from modules.signal_engine.domain.signal import Signal
 from modules.signal_engine.infrastructure.models import (
@@ -272,14 +277,20 @@ class SqlProfileRepository:
         await self._session.flush()
 
 
-#: The stored discriminator for each outcome. **One table, not four**, because
-#: they are four shapes of the same fact — *how this signal left the queue* —
-#: and a queue read that had to union four tables would be reading one concept
-#: through four doors.
-_ACTIONED = "actioned"
-_ASSIGNED = "assigned"
-_SNOOZED = "snoozed"
-_DISMISSED = "dismissed"
+#: **One table, not four**, because they are four shapes of the same fact —
+#: *how this signal left the queue* — and a queue read that had to union four
+#: tables would be reading one concept through four doors.
+#:
+#: ⚡ **The four words moved to `domain/resolution.py` when `signal.resolved`
+#: began publishing them.** They were private here and correct while the column
+#: was the only place they appeared; a published event spelling them out a
+#: second time would be one fact with two representations, and the copy that
+#: drifts is the one nobody is looking at (§2). **The names are unchanged, so
+#: no stored row means anything different.**
+_ACTIONED = ACTIONED
+_ASSIGNED = ASSIGNED
+_SNOOZED = SNOOZED
+_DISMISSED = DISMISSED
 
 
 def _to_outcome(row: SignalResolutionModel) -> Outcome:
@@ -351,7 +362,7 @@ class SqlResolutionRepository:
                 id=resolution.id,
                 workspace_id=resolution.workspace_id,
                 signal_id=resolution.signal_id,
-                outcome=_discriminator(outcome),
+                outcome=discriminator(outcome),
                 assigned_to=outcome.to if isinstance(outcome, Assigned) else None,
                 snoozed_until=outcome.until if isinstance(outcome, Snoozed) else None,
                 dismissal_reason=(outcome.reason.text if isinstance(outcome, Dismissed) else None),
@@ -421,21 +432,6 @@ class SqlResolutionRepository:
             .order_by(SignalResolutionModel.recorded_at, SignalResolutionModel.id)
         )
         return _in_chain_order(tuple(_to_resolution(row) for row in rows.scalars()))
-
-
-def _discriminator(outcome: Outcome) -> str:
-    """**Exhaustive by construction.** `Outcome` is a closed union, so `mypy`
-    refuses this function if a fifth member is ever added without a branch
-    here — which is the point of the union being closed."""
-    match outcome:
-        case Actioned():
-            return _ACTIONED
-        case Assigned():
-            return _ASSIGNED
-        case Snoozed():
-            return _SNOOZED
-        case Dismissed():
-            return _DISMISSED
 
 
 def _in_chain_order(resolutions: tuple[Resolution, ...]) -> tuple[Resolution, ...]:

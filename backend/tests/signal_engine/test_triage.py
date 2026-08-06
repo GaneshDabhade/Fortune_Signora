@@ -21,13 +21,23 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from modules.signal_engine.application.resolve import ResolveSignal, SignalNotFoundError
+from modules.signal_engine.application.resolve import (
+    PRODUCER_MODULE,
+    ResolveSignal,
+    SignalNotFoundError,
+)
 from modules.signal_engine.application.triage import QueueState, state_of
+from modules.signal_engine.domain.events import SignalResolved
 from modules.signal_engine.domain.resolution import (
+    ACTIONED,
+    ASSIGNED,
+    DISMISSED,
+    SNOOZED,
     Actioned,
     Assigned,
     DismissalReason,
     Dismissed,
+    Outcome,
     Resolution,
     Snoozed,
 )
@@ -39,6 +49,10 @@ from tests.signal_engine.test_generate import FakeSignalRepository
 NOW = datetime(2026, 8, 5, 12, 0, tzinfo=UTC)
 NEXT_WEEK = NOW + timedelta(days=7)
 ACTOR = uuid4()
+#: One correlation id for every decision in this file. The use case does not
+#: mint one — it carries the caller's, so a decision is traceable back to the
+#: request that made it (§16).
+CORRELATION = uuid4()
 
 
 class FakeResolutions:
@@ -83,8 +97,50 @@ def _stored(signals: FakeSignalRepository) -> Signal:
     return signal
 
 
-def _resolver(signals: FakeSignalRepository, resolutions: FakeResolutions) -> ResolveSignal:
-    return ResolveSignal(signals=signals, resolutions=resolutions, clock=lambda: NOW)
+class FakePublisher:
+    """Collects what was announced, in order.
+
+    **Not a spy on `publish` alone — it keeps the events**, because the
+    assertion that matters is *what the pipeline was told*, and a call count
+    would pass just as happily for an announcement carrying the wrong account.
+    """
+
+    def __init__(self) -> None:
+        self.published: list[SignalResolved] = []
+        self.sessions: list[object] = []
+        self.correlations: list[UUID] = []
+
+    async def publish(
+        self,
+        events: Sequence[SignalResolved],
+        *,
+        session: object,
+        producer_module: str,
+        correlation_id: UUID,
+    ) -> None:
+        self.published.extend(events)
+        self.sessions.append(session)
+        self.correlations.append(correlation_id)
+        self.producer_module = producer_module
+
+
+class NullSession:
+    """The use case hands its session to the publisher and never uses it
+    itself, so there is nothing here to implement."""
+
+
+def _resolver(
+    signals: FakeSignalRepository,
+    resolutions: FakeResolutions,
+    publisher: FakePublisher | None = None,
+) -> ResolveSignal:
+    return ResolveSignal(
+        signals=signals,
+        resolutions=resolutions,
+        publisher=publisher or FakePublisher(),  # type: ignore[arg-type]
+        session=NullSession(),  # type: ignore[arg-type]
+        clock=lambda: NOW,
+    )
 
 
 class TestADecisionIsRecordedAgainstARealSignal:
@@ -93,7 +149,11 @@ class TestADecisionIsRecordedAgainstARealSignal:
         signal = _stored(signals)
 
         recorded = await _resolver(signals, resolutions).execute(
-            signal.workspace_id, signal.id, outcome=Actioned(), actor_id=ACTOR
+            signal.workspace_id,
+            signal.id,
+            outcome=Actioned(),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
         )
 
         assert recorded.actor_id == ACTOR
@@ -109,7 +169,7 @@ class TestADecisionIsRecordedAgainstARealSignal:
 
         with pytest.raises(SignalNotFoundError):
             await _resolver(signals, resolutions).execute(
-                uuid4(), uuid4(), outcome=Actioned(), actor_id=ACTOR
+                uuid4(), uuid4(), outcome=Actioned(), actor_id=ACTOR, correlation_id=CORRELATION
             )
 
         assert resolutions.rows == []
@@ -127,6 +187,7 @@ class TestADecisionIsRecordedAgainstARealSignal:
             signal.id,
             outcome=Dismissed(reason=DismissalReason("Wrong account.")),
             actor_id=ACTOR,
+            correlation_id=CORRELATION,
         )
 
         assert signals.rows == before
@@ -147,9 +208,14 @@ class TestChangingYourMindNamesWhatItReplaces:
             signal.id,
             outcome=Dismissed(reason=DismissalReason("Not relevant.")),
             actor_id=ACTOR,
+            correlation_id=CORRELATION,
         )
         second = await resolver.execute(
-            signal.workspace_id, signal.id, outcome=Actioned(), actor_id=ACTOR
+            signal.workspace_id,
+            signal.id,
+            outcome=Actioned(),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
         )
 
         assert first.supersedes is None
@@ -166,8 +232,15 @@ class TestChangingYourMindNamesWhatItReplaces:
             signal.id,
             outcome=Dismissed(reason=DismissalReason("Not relevant.")),
             actor_id=ACTOR,
+            correlation_id=CORRELATION,
         )
-        await resolver.execute(signal.workspace_id, signal.id, outcome=Actioned(), actor_id=ACTOR)
+        await resolver.execute(
+            signal.workspace_id,
+            signal.id,
+            outcome=Actioned(),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
+        )
 
         history = await resolutions.history_for_signal(signal.workspace_id, signal.id)
         assert len(history) == 2
@@ -233,13 +306,18 @@ class TestASnoozedSignalReturnsWithoutAnythingRunning:
         resolver = _resolver(signals, resolutions)
 
         await resolver.execute(
-            signal.workspace_id, signal.id, outcome=Snoozed(until=NEXT_WEEK), actor_id=ACTOR
+            signal.workspace_id,
+            signal.id,
+            outcome=Snoozed(until=NEXT_WEEK),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
         )
         await resolver.execute(
             signal.workspace_id,
             signal.id,
             outcome=Dismissed(reason=DismissalReason("Wrong account.")),
             actor_id=ACTOR,
+            correlation_id=CORRELATION,
         )
 
         current = await resolutions.current_for_signals(signal.workspace_id, [signal.id])
@@ -288,3 +366,203 @@ class TestTheAuditTrailCannotRenderOutOfOrder:
 
         assert set(ordered) == {rooted, orphan}
         assert ordered[0] == rooted
+
+
+class TestThePipelineHearsTheDecision:
+    """**TASK-432 — the one transition in this pipeline that produced no event.**
+
+    Every other stage announces what it concluded. A *human* decision was
+    recorded in a row and nowhere else, so `timeline` could not project it and
+    nothing measuring whether Signora's judgement was any good had a transition
+    to read. **The row recorded the state; nothing recorded the change** — and
+    a change nobody published is evidence that cannot be recovered afterwards.
+    """
+
+    async def test_recording_a_decision_announces_it(self) -> None:
+        signals, resolutions = FakeSignalRepository(), FakeResolutions()
+        signal = _stored(signals)
+        publisher = FakePublisher()
+
+        await _resolver(signals, resolutions, publisher).execute(
+            signal.workspace_id,
+            signal.id,
+            outcome=Actioned(),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
+        )
+
+        assert len(publisher.published) == 1
+        assert publisher.published[0].event_type == "signal.resolved"
+
+    async def test_it_names_the_account_the_decision_was_about(self) -> None:
+        """**Carried, not looked up.** `timeline` projects per account and does
+        not depend on this module's read surface, so an event without
+        `entity_id` would be one a consumer could not place."""
+        signals, resolutions = FakeSignalRepository(), FakeResolutions()
+        signal = _stored(signals)
+        publisher = FakePublisher()
+
+        await _resolver(signals, resolutions, publisher).execute(
+            signal.workspace_id,
+            signal.id,
+            outcome=Actioned(),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
+        )
+
+        assert publisher.published[0].entity_id == signal.entity_id
+
+    async def test_every_outcome_travels_under_the_name_the_column_stores(self) -> None:
+        """**One vocabulary, asserted against the persistence layer's own.**
+        The four words used to live privately in `infrastructure/`; publishing
+        them made a second copy possible, so they moved to the domain and both
+        edges now read the same constants. This is the test that would fail if
+        somebody re-introduced the copy and let it drift."""
+        cases: list[tuple[Outcome, str]] = [
+            (Actioned(), ACTIONED),
+            (Assigned(to=uuid4()), ASSIGNED),
+            (Snoozed(until=NEXT_WEEK), SNOOZED),
+            (Dismissed(reason=DismissalReason("Wrong account.")), DISMISSED),
+        ]
+        for outcome, expected in cases:
+            signals, resolutions = FakeSignalRepository(), FakeResolutions()
+            signal = _stored(signals)
+            publisher = FakePublisher()
+
+            await _resolver(signals, resolutions, publisher).execute(
+                signal.workspace_id,
+                signal.id,
+                outcome=outcome,
+                actor_id=ACTOR,
+                correlation_id=CORRELATION,
+            )
+
+            assert publisher.published[0].outcome == expected
+            assert publisher.published[0].to_payload()["outcome"] == expected
+
+    async def test_a_dismissal_never_puts_the_reason_on_the_bus(self) -> None:
+        """**An event carries an identity, not a body** — the rule
+        `provider.record.received` already follows. A dismissal reason is a
+        sentence a customer typed about why Signora was wrong; putting it on
+        the bus copies it into every subscriber's storage, and a bus cannot
+        take it back."""
+        signals, resolutions = FakeSignalRepository(), FakeResolutions()
+        signal = _stored(signals)
+        publisher = FakePublisher()
+
+        await _resolver(signals, resolutions, publisher).execute(
+            signal.workspace_id,
+            signal.id,
+            outcome=Dismissed(reason=DismissalReason("They already bought from us.")),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
+        )
+
+        payload = publisher.published[0].to_payload()
+        assert "They already bought from us." not in str(payload)
+        assert payload["outcome"] == DISMISSED
+
+    async def test_changing_your_mind_announces_what_it_replaced(self) -> None:
+        """**The chain travels.** A consumer that acted on the first decision
+        has to know which one it is superseding, or it counts two."""
+        signals, resolutions = FakeSignalRepository(), FakeResolutions()
+        signal = _stored(signals)
+        publisher = FakePublisher()
+        resolver = _resolver(signals, resolutions, publisher)
+
+        first = await resolver.execute(
+            signal.workspace_id,
+            signal.id,
+            outcome=Dismissed(reason=DismissalReason("Not relevant.")),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
+        )
+        await resolver.execute(
+            signal.workspace_id,
+            signal.id,
+            outcome=Actioned(),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
+        )
+
+        assert publisher.published[0].supersedes is None
+        assert publisher.published[1].supersedes == first.id
+
+    async def test_it_names_the_person_rather_than_the_platform(self) -> None:
+        """*Intelligence suggests; humans commit.* Every outcome is a human
+        judgement, so an event without an actor could not have happened."""
+        signals, resolutions = FakeSignalRepository(), FakeResolutions()
+        signal = _stored(signals)
+        publisher = FakePublisher()
+
+        await _resolver(signals, resolutions, publisher).execute(
+            signal.workspace_id,
+            signal.id,
+            outcome=Actioned(),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
+        )
+
+        assert publisher.published[0].actor_id == ACTOR
+
+    async def test_it_carries_the_callers_correlation_id(self) -> None:
+        """**The caller's, never a fresh one.** A decision that could not be
+        traced back to the request that made it is exactly the untraceable
+        async flow §16 forbids."""
+        signals, resolutions = FakeSignalRepository(), FakeResolutions()
+        signal = _stored(signals)
+        publisher = FakePublisher()
+
+        await _resolver(signals, resolutions, publisher).execute(
+            signal.workspace_id,
+            signal.id,
+            outcome=Actioned(),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
+        )
+
+        assert publisher.correlations == [CORRELATION]
+        assert publisher.producer_module == PRODUCER_MODULE
+
+    async def test_it_publishes_on_the_callers_own_session(self) -> None:
+        """**So the outbox row commits with the resolution or neither does.**
+        Two sessions could not promise that, and a consumer hearing about a
+        decision that was rolled back is the failure the outbox exists to
+        prevent (§9)."""
+        signals, resolutions = FakeSignalRepository(), FakeResolutions()
+        signal = _stored(signals)
+        publisher, session = FakePublisher(), NullSession()
+
+        await ResolveSignal(
+            signals=signals,
+            resolutions=resolutions,
+            publisher=publisher,  # type: ignore[arg-type]
+            session=session,  # type: ignore[arg-type]
+            clock=lambda: NOW,
+        ).execute(
+            signal.workspace_id,
+            signal.id,
+            outcome=Actioned(),
+            actor_id=ACTOR,
+            correlation_id=CORRELATION,
+        )
+
+        assert publisher.sessions == [session]
+
+    async def test_a_signal_that_does_not_exist_announces_nothing(self) -> None:
+        """**The refusal is silent on the bus.** An event for a decision that
+        was never recorded would tell the pipeline something untrue, and it is
+        the case a publish placed before the write would get wrong."""
+        signals, resolutions = FakeSignalRepository(), FakeResolutions()
+        publisher = FakePublisher()
+
+        with pytest.raises(SignalNotFoundError):
+            await _resolver(signals, resolutions, publisher).execute(
+                uuid4(),
+                uuid4(),
+                outcome=Actioned(),
+                actor_id=ACTOR,
+                correlation_id=CORRELATION,
+            )
+
+        assert publisher.published == []

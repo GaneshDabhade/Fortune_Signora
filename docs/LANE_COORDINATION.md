@@ -3342,6 +3342,37 @@ missing             1     commercial_profile.target_accounts_changed
 
 **What QE did build** is the detection: `make event-catalog` (Repository Health · *Documentation Synchronization*) enumerates every declared `event_type` and compares it against the catalog. **Advisory, deliberately** — its one finding today can only be cleared by editing a 🔴 file, and a gate that fails on something its owner cannot fix teaches people to ignore gates. **It becomes gateable the day this item is resolved**, which is the clearest statement of what "resolved" means.
 
+---
+
+### ⚠️ Second instance — 2026-08-06, Lane A, `signal.resolved`
+
+**The count is now two of twenty-six, and the second one arrived exactly as the first did.** [TASK-432](BACKLOG.md) publishes `signal.resolved` from `signal_engine`, the lane cannot edit `06-events.md`, and the row below is written out ready to paste — **the same correct behaviour under the rules as written that Lane B performed at [C-004](#c-004--shared-documents-lag-commercial-profile)**, and the same behaviour the next lane will perform at the third.
+
+```
+declared in code   26
+in the catalog     24
+missing             2     commercial_profile.target_accounts_changed
+                          signal.resolved
+```
+
+> **This is the argument the first instance could not yet make.** One gap is a boundary being discovered. **Two, ten months apart in different modules by different lanes, is a workflow that does not close** — and the register's own standard says an item open across instances is a finding rather than a queue position.
+
+**The rows, ready to paste.** For the summary table at the top of [`06-events.md`](architecture/06-events.md):
+
+| Event | Producer | Consumers | Payload |
+|---|---|---|---|
+| `signal.resolved` | Signal Engine | *(none yet — `timeline` and [TASK-406](BACKLOG.md) are the intended ones)* | `resolution_id`, `signal_id`, `entity_id`, `outcome`, `actor_id`, `supersedes`, `payload_version` |
+
+And for the Signal Engine's own catalog section:
+
+| Event | Version | Payload | Meaning |
+|---|---|---|---|
+| `signal.resolved` | 1 | `resolution_id`, `signal_id`, `entity_id`, `outcome`, `actor_id`, `supersedes`, `payload_version` | **A person decided what to do about a signal** — actioned, assigned, snoozed or dismissed |
+
+⛔ **Two things the entry should say, because they are refusals rather than omissions.** **The dismissal reason is not on the event** — an event carries an identity and not a body, the rule `provider.record.received` already follows, and a sentence a customer typed cannot be recalled once a bus has copied it into every subscriber. **And there is no `closes_the_signal`** — it is derivable from `outcome`, so a boolean beside the discriminator would be one fact twice and would eventually disagree with itself (§2).
+
+**Nothing is blocked by this.** The event publishes, is tested against the real outbox, and is documented in [25-signal-engine.md](architecture/25-signal-engine.md) so the module's next assignee inherits the gap rather than rediscovering it from the checker.
+
 
 ## C-100 · The demonstration runner must reuse Lane B's Playwright infrastructure, not grow a second one
 

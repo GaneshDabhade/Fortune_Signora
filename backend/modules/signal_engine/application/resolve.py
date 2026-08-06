@@ -6,11 +6,22 @@ hypotheses, and the only human input was the profile that interpreted them.
 This is a person saying *"I dealt with it"*, *"not now"*, or *"you were
 wrong"*, and none of those can be reconstructed from anything.
 
-**It writes exactly one row and touches nothing else.** No signal is updated,
-no evidence is re-read, no score is recomputed and no event is published.
-*"Resolution never mutates the signal or its evidence"* is the acceptance
-criterion, and the shortest way to keep it is a use case with nothing else to
-reach for — the repository it holds has no method that could.
+**It writes exactly one row and announces it.** No signal is updated, no
+evidence is re-read and no score is recomputed — *"resolution never mutates the
+signal or its evidence"* is the acceptance criterion, and the repository this
+use case holds has no method that could.
+
+⚡ **The announcement arrived with TASK-432, and this paragraph used to end
+*"and no event is published."*** That was true and was the gap: **a human
+decision was the one thing in this pipeline that produced no event**, so
+`timeline` could not project it and nothing measuring whether Signora's
+judgement was any good had a transition to read. **The row recorded the state
+and nothing recorded the change**, which is evidence that cannot be recovered
+later. **Publishing does not weaken the acceptance criterion** — an event is
+not a mutation, and the signal is still never touched.
+
+**The event goes in the same transaction as the row**, through the outbox, so a
+consumer can never hear about a decision that was rolled back (§9).
 
 **Superseding is worked out here rather than asked for.** A caller that had to
 pass the resolution it replaces would eventually pass the wrong one, or `None`,
@@ -25,8 +36,16 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from modules.signal_engine.application.ports import ResolutionRepository, SignalRepository
-from modules.signal_engine.domain.resolution import Outcome, Resolution
+from modules.signal_engine.domain.events import SignalResolved
+from modules.signal_engine.domain.resolution import Outcome, Resolution, discriminator
+from signora_platform.event_bus import EventPublisher
+
+#: Matches `GenerateSignals`. One module, one producer name, however many use
+#: cases publish from it.
+PRODUCER_MODULE = "signal_engine"
 
 
 class SignalNotFoundError(LookupError):
@@ -47,14 +66,27 @@ class ResolveSignal:
         *,
         signals: SignalRepository,
         resolutions: ResolutionRepository,
+        publisher: EventPublisher,
+        session: AsyncSession,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
     ) -> None:
         self._signals = signals
         self._resolutions = resolutions
+        self._publisher = publisher
+        # **The caller's own session, not one this use case opens.** The outbox
+        # row must commit with the resolution or neither should exist, and two
+        # sessions cannot promise that.
+        self._session = session
         self._clock = clock
 
     async def execute(
-        self, workspace_id: UUID, signal_id: UUID, *, outcome: Outcome, actor_id: UUID
+        self,
+        workspace_id: UUID,
+        signal_id: UUID,
+        *,
+        outcome: Outcome,
+        actor_id: UUID,
+        correlation_id: UUID,
     ) -> Resolution:
         """Record `outcome` against this signal, superseding any decision
         already in force.
@@ -86,6 +118,31 @@ class ResolveSignal:
             supersedes=previous.id if previous is not None else None,
         )
         await self._resolutions.record(resolution)
+
+        # See the note in `generate.py`: the platform's `PublishableEvent`
+        # Protocol declares settable members, which frozen domain events cannot
+        # satisfy. Raised as a finding there, and not fixed here either.
+        resolved = SignalResolved(
+            event_id=uuid4(),
+            workspace_id=workspace_id,
+            occurred_at=resolution.recorded_at,
+            resolution_id=resolution.id,
+            signal_id=signal_id,
+            # **From the signal that was read to prove it exists**, not from
+            # the request. A consumer projecting per account cannot reach this
+            # module to look it up.
+            entity_id=signal.entity_id,
+            outcome=discriminator(outcome),
+            actor_id=actor_id,
+            supersedes=resolution.supersedes,
+            payload_version=resolution.payload_version,
+        )
+        await self._publisher.publish(
+            [resolved],  # type: ignore[list-item]
+            session=self._session,
+            producer_module=PRODUCER_MODULE,
+            correlation_id=correlation_id,
+        )
         return resolution
 
 
