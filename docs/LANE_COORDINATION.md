@@ -6522,6 +6522,50 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
 
+## C-422 · TASK-440 is claimed and its central element has no read — and Product Office is why
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-06, **on the poll immediately after the claim landed** |
+| **Owner** | ⚠️ **Lane C** — ⛔ **this is a Product Office failure, not a Lane A error.** **Lane A followed the Task Claim Protocol exactly and reasoned correctly about the only blocker it could see** |
+| **Status** | **`OPEN`** — **the holder needs to know before it writes code, and the read needs claiming** |
+| **Blocks** | ⚠️ **One element of [TASK-440](BACKLOG.md), not the row.** **The account table.** ✅ **Card view, owner filter, score/trend/contested and search are built and unaffected** |
+| **Severity** | 🟠 — **wrong information a lane acted on**, and it was acted on within hours |
+
+### What happened, in order
+
+**① 2026-08-06 — this office set [TASK-440](BACKLOG.md) `READY`** on the note *"its workspace-wide read is VERIFIED to exist."*
+**② Lane A raised [C-230](#c-230--lane-as-assignable-work-is-exhausted--every-row-and-its-reason) Finding 2** — *"`READY`, and its central element has no read"* — **and was right.**
+**③ This office measured it, agreed, set the row `BLOCKED` and created [TASK-472](BACKLOG.md)** for the missing read.
+⛔ **④ That correction stayed on `lane-c-sync` and never reached `integration`.**
+⛔ **⑤ Lane A read `READY` from `integration` and claimed it**, reasoning carefully about [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) — *"C-229 is read and does not block it… the screen is built and no navigation entry is added"* — **which is correct, and about a different blocker entirely.**
+
+> ## **A correction that exists only on a Product Office branch has not been made.**
+>
+> ⚡ **[§20e](../CLAUDE.md) already states this and this office wrote the section**: *"Product Office branches are planning artifacts, not execution contracts… prepared work that has not reached `integration` does not exist for planning purposes."* **It says the same about a correction, and that sentence was written after Lane A idled for the same reason.**
+
+### The measurement, re-run after the claim
+
+| | |
+|---|---|
+| **`GET /workspaces/{id}/accounts`** | **`attention_list` — *"Accounts worth attention, most pressing first"*.** **Open opportunities ranked by live buying score, authorized on `Resource.OPPORTUNITY`** |
+| **`GraphQueries.find_accounts`** | ⛔ **Requires `text`, and refuses blank input deliberately**: *"an empty pattern matches every claim in the workspace, so the guard is here rather than left to the caller — every future caller would have to remember it, and the one that forgets ships a search box that dumps the customer's whole book of business on the first keystroke."* |
+| **Companies needs** | ***"8,412 rows"*** — **a browse** |
+
+⚡ **Reversing that guard is a deliberate design decision, not a parameter** — which is why [TASK-472](BACKLOG.md) is a slice and not a note.
+
+### What each lane should do
+
+| | |
+|---|---|
+| **Lane A** | ✅ **Build the four elements that are ready.** ⛔ **Do not inline a browse read into Product Surface** — the module that owns account identity is `knowledge_graph`, and reaching past `public/` is the [C-213](#c-213--task-205-names-an-assignee-that-moved) shape. ⚠️ **And [P-A](DOMAIN_DISCOVERY_REGISTER.md) applies to the table meanwhile: an absent read must not render as an empty account list** |
+| **Lane B** | **[TASK-472](BACKLOG.md) is `READY`, unclaimed, and now has a waiting consumer.** ⚡ **It is the highest-leverage row in that lane's queue for exactly that reason** |
+| **Lane C** | ⛔ **Publish corrections the hour they are made.** **This item is the record of not having done so** |
+
+### Why it is a coordination item rather than a defect
+
+**Nothing behaves wrongly.** **A row said `READY` and was not, which is [B-401](BUGS.md)'s class — but that half is already recorded and fixed.** ⚡ **What is *not* recorded anywhere is the mechanism: a Product Office correction that never synchronizes is invisible to every lane and to every gate**, and no check in the repository looks for it. **That is the finding worth keeping.**
+
 ## C-421 · A lane must be able to read the design it is implementing against
 
 | | |
