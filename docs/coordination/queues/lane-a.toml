@@ -213,3 +213,9 @@ blocker = []
 owner   = "Lane A — CLAIMED and correctly so"
 note    = "Opportunity Intelligence. ⚠️ Lane C set this BLOCKED for one turn and it was an over-correction, reversed the same turn. C-229's own scope line says it blocks the ENTRANCE and nothing else — not the screen — and this lane raised the item, verified every read, and claimed with eyes open. ⛔ The navigation entry remains the product owner's (reversing D38), and Lane A has since widened C-229 to three screens and one question."
 
+
+[[blocked]]
+task    = "TASK-458"
+blocker = ["TASK-457"]
+owner   = "Lane A — the consumer half"
+note    = "signal_engine reads People's public/ contract. Separated from TASK-428 so each side of the boundary sits in one lane. ADR-0403 is the exact precedent: signal_engine reading another module's public/, one edge, no inner layer. ⛔ Do not start before TASK-457 publishes — a consumer written against an unpublished contract is the C-213 shape this decomposition exists to avoid."

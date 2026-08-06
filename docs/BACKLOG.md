@@ -564,6 +564,39 @@
 | ⚠️ **Bound** | ⛔ **No *skip auth in development* flag.** §13 forbids it by name, and this row is exactly where somebody would reach for one |
 | **Unblocks** | **The [D-113](DECISION_REGISTER.md) authentication journey** — a Playwright scenario that signs in needs an environment where signing up is possible |
 
+### TASK-457 · People publishes what other modules may say about a person
+
+| | |
+|---|---|
+| **Discovery** | **Lane B, 2026-08-06**, pre-empting the boundary in [TASK-428](#task-428--m-i--what-the-domain-lets-other-modules-say) **before claiming it** — *"worth deciding who holds that slice before it's claimed rather than after someone hits the boundary"* |
+| **Module** | **`people/public/` — Lane B.** ⛔ **One module, one lane. No ownership moves** |
+| **Status** | ⏸️ **`SEQUENCED`** — **trigger: [TASK-427](#task-427--m-d--the-people-domain--a-person-and-an-affiliation-with-an-end) promoted.** Same trigger as its parent |
+| ⚡ **Why this row exists** | **[TASK-428](#task-428--m-i--what-the-domain-lets-other-modules-say) spans four modules — `timeline`, `commercial_profile`, `people` *(Lane B's)* and `signal_engine` *(Lane A's)*.** **§20e: *two modules with a published-but-unbuilt contract between them belong to one lane*, written after [C-213](LANE_COORDINATION.md) cost two days on precisely this shape.** ⚡ **Lane B raised it before claiming, which is the only cheap moment to raise it** |
+| ✅ **And the rule has a cheaper reading than reassignment** | **§20e's problem is a contract that is *published-but-unbuilt*.** ⛔ **Build it first and the boundary becomes ordinary — that is what `public/` is for.** **No module changes owner, no resource decision is needed, and this repository has already proved the pattern**: [455 §4](architecture/455-context-definitions-r02-r03.md) makes slice 1 of R-02 *the `public/` contract and nothing else*, approved at [D-091](DECISION_REGISTER.md) because **a consumer can compile and test against a published port before a row is persisted** |
+| **Delivers** | **The types `people` publishes — a person, an affiliation interval — and nothing that reads them** |
+| ⛔ **Scope bound** | **[C-221](LANE_COORDINATION.md), unchanged: no person's name anywhere.** **Role-based and organization-level only** |
+| **Change Budget** | 🟠 **A module's `public/`** |
+
+### TASK-458 · Signal Engine reads the People contract
+
+| | |
+|---|---|
+| **Module** | **`signal_engine` — Lane A** |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-457](#task-457--people-publishes-what-other-modules-may-say-about-a-person)** |
+| ⚡ **Why it is a separate row** | **It is the *consumer* half, and separating it is what keeps the boundary inside one lane each.** **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the exact precedent — `signal_engine` reading another module's `public/`, one edge, no inner layer touched** |
+| ⛔ **Do not start before its predecessor** | **A consumer written against an unpublished contract is the C-213 shape, and it is what this decomposition exists to avoid** |
+
+### TASK-459 · `reasoning@1` earns a protocol-2 evaluation
+
+| | |
+|---|---|
+| **Discovery** | **Lane B, 2026-08-06** — ⚡ ***"`reasoning@1` has no passing protocol-2 evaluation and can't earn one as written — measured, not predicted"*** |
+| **Module** | **`ai_reasoning_engine` prompts — Lane B** |
+| **Status** | ⏸️ **`SEQUENCED`** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)** |
+| ⚡ **Why this row exists, and it corrects this office** | **Lane C reported to the product owner that *the credential gates TASK-202's prompt release, never its start*.** ⚠️ **Lane B's measurement is more precise and this row is the difference**: **the credential lets the work *start*; a prompt revision is the actual first slice, and it had no row.** ⛔ **[TASK-202](#task-202--epic-g--copilot) does not finish without it** |
+| **Delivers** | **A revision of `reasoning@1` that can pass protocol 2**, and its evaluation record |
+| ⚠️ **The rule it must not break** | **§10: a released version is immutable** — *"a change is a new version, never an edit, because editing one silently invalidates every result that claims it."* ⛔ **This is `reasoning@2`, not a repair of `@1`** |
+
 ### TASK-456 · The signal catalog explains itself to a customer
 
 | | |

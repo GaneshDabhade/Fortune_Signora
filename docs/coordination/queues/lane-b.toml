@@ -179,3 +179,16 @@ note    = "seven modules consume the events they declare. ADR-0404 approved the 
 [[held]]
 task = "TASK-427"
 note = "M-D, the People domain. CLAIMED by this lane 2026-08-06 and 2 commits ahead awaiting QE — within a day of the [people] ownership row landing at D-103. ⛔ Scope bound C-221 unchanged: no person's name anywhere."
+
+# ── Sequenced, D-120 — decomposed from Lane B's own pre-emption ──────────────
+[[blocked]]
+task    = "TASK-457"
+blocker = ["TASK-427 promoted"]
+owner   = "Lane B — one module, one lane"
+note    = "People publishes its public/ contract. ⚡ This lane raised the boundary BEFORE claiming TASK-428, which is the only cheap moment. §20e says two modules with a published-but-unbuilt contract belong to one lane — and the cheaper reading is to BUILD the contract first, which makes the boundary ordinary and moves no ownership. 455 §4 proved the pattern for R-02 at D-091. ⛔ C-221 unchanged: no person's name anywhere."
+
+[[blocked]]
+task    = "TASK-459"
+blocker = ["C-334 — the hosted evaluation credential"]
+owner   = "Lane B"
+note    = "reasoning@2. ⚡ Created because this lane measured what Product Office had asserted loosely: reasoning@1 has no passing protocol-2 evaluation and cannot earn one AS WRITTEN. The credential lets the work start; the prompt revision is the actual first slice and had no row. ⛔ §10: a released version is immutable — this is @2, never an edit of @1."
