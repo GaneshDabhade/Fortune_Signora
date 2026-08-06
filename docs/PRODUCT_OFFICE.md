@@ -58,6 +58,36 @@
 
 > ⚠️ **And writing that check found the register in *four* ownership schemas** — `Owner` · `Current assignee(s)` · inline `owner:` · inline `current module assignee:`. **The first version of the check knew one of them and reported twelve owned items as unowned.** **A check that cries wolf is worse than no check**, because the register is where a lane looks to find out who to ask.
 
+### ⚖️ 0-i · Evidence First — [D-102](DECISION_REGISTER.md)
+
+> ## ***"Every recommendation should first attempt to disprove itself."***
+
+**Before proposing a capability, framework, process, optimisation, architectural abstraction or workflow, actively search the repository for evidence that it already exists, partially exists, or is implemented differently.**
+
+> ✅ ***"Continue treating negative findings as successful outcomes. Discovering that something already exists is just as valuable as discovering something missing."***
+
+**The search is part of the proposal, not preparation for it** — **and it is reported whether or not it changes the recommendation.** ⚡ **[467 §2](architecture/467-system-states-traceability-audit.md) is the form**: five things looked for, five found already built, **and the one most expected to be missing was the one that already existed.**
+
+**Three worked examples, all of which changed a recommendation after it was drafted:**
+
+| | |
+|---|---|
+| **[462 §0](architecture/462-observed-attributes-proposal.md)** | *"There is no reader"* → **`knowledge_graph/public/` already publishes `claim_set()`.** **The argument had to move from *the contract is missing* to *the contract publishes evidence where a resolved fact is needed*** — a better argument, available only by reading the code |
+| **[466 §0](architecture/466-certification-parallelism.md)** | *"The repository records no cause and no duration"* → **`attempts.py` records both, and derives aborts better than the enum proposed** |
+| ⚡ **[467 §0](architecture/467-system-states-traceability-audit.md)** | *"System States needs a foundational capability"* → **it was discovered the previous day, ranked highest, and annotated *name before the ninth*** |
+
+### 🔁 0-ii · Self-verification — a previous conclusion is not evidence
+
+> ***"Do not assume that a previous Product Office conclusion remains correct after repository evolution. Re-measure when appropriate."***
+
+**A Product Office conclusion is a measurement with a date on it.** **The repository moves; the document does not.**
+
+**Seven found by re-measuring rather than by being told:** **durations already existed · aborts were already represented · P-A was partially implemented · queue counts were wrong · vocabulary assumptions were wrong · ICP Matching documentation drifted · workflow ownership drifted.**
+
+> ⚠️ **The tell is a document that cites another document rather than the repository.** **[463](architecture/463-certification-architecture-assessment.md) and [465](architecture/465-certification-strategy.md) both read one file and there were two; [B-327](BUGS.md)'s fix reconciled four artifacts and missed the three the row named.** **Both were correct when written and neither was re-checked.**
+
+**When to re-measure:** **before citing a prior conclusion in a new recommendation · when a capability it describes has since shipped · when an audit's subject is touched by a slice · and whenever a figure is about to be repeated rather than taken.**
+
 ### 0a · Two workstreams, and neither waits for the other — [D-101](DECISION_REGISTER.md)
 
 > ***"Neither stream should wait for the other."*** **And the tiebreak is unchanged: *"Repository health remains the first responsibility."***

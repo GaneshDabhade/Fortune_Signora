@@ -208,6 +208,65 @@ aborted=len(started - set(finished)),
 
 ⛔ **And unchanged from [465](465-certification-strategy.md): demote nothing · no scheduler (§20c-2) · [B-123](../BUGS.md) still precedes the roadmap**, because a frontend suite in no gate is a validation that does not happen, and parallelising the gates that *do* run does not touch it.
 
+## 9a · The six fields, per proposal — [D-102](../DECISION_REGISTER.md)
+
+> ***"For every proposed certification optimization provide: expected benefit, implementation complexity, confidence impact, operational risk, rollback strategy, measurable success criteria."***
+
+### ① Per-gate duration and cause
+
+| | |
+|---|---|
+| **Expected benefit** | ⛔ **No runtime benefit at all.** **It makes every other proposal measurable** — and four of them are unquantifiable without it |
+| **Complexity** | 🟢 **Two fields at one choke point.** `_run()` is the single function every gate passes through |
+| **Confidence impact** | ✅ **Zero.** Additive fields; no gate's behaviour changes |
+| **Operational risk** | 🟢 **Near zero.** A wider record, read by a tolerant reader |
+| **Rollback** | **Revert the writer. The field becomes absent, never wrong**, and all 71 prior runs still read |
+| ⚡ **Success criteria** | **After 10 runs: a duration for all six gates, and a cause distinguishing `passed · failed · aborted` per gate.** **Concretely — the next `smoke` stall records `aborted` rather than `failed`** |
+
+### ② `mypy` ∥ `import-linter` ∥ `tsc`
+
+| | |
+|---|---|
+| **Expected benefit** | ⚠️ **Unknown, and it stays unknown until ① lands.** Bounded by the sum of three unmeasured durations |
+| **Complexity** | 🟢 **One `ThreadPoolExecutor`, three submissions.** Every gate is a subprocess, so the GIL is irrelevant |
+| **Confidence impact** | ✅ **Zero, provably** — same commands, same tree, same three verdicts. **Nothing in class S reads state any other gate writes** |
+| **Operational risk** | 🟡 **One: `mypy`'s memory**, alongside two other processes on a workstation |
+| **Rollback** | **One commit. Six sequential statements restored.** ⚡ **The manifest schema is untouched, so a concurrent run is byte-comparable with a sequential one** |
+| ⚡ **Success criteria** | **Identical verdicts on one commit run both ways**, and a measured wall-clock reduction. ⛔ **Any verdict difference is a defect in the concurrency, never a finding about the repository — and it triggers rollback** |
+
+### ③ Class S in `pytest`'s shadow
+
+| | |
+|---|---|
+| **Expected benefit** | ⚠️ **Unknown; larger than ②** |
+| **Complexity** | 🟠 **The same executor with `pytest` submitted alongside.** **Output interleaving is the real work** |
+| **Confidence impact** | ✅ **Zero** — class S touches no database and `pytest` touches no source-analysis cache |
+| **Operational risk** | 🟡 **Failure attribution.** Three gates failing at once produce interleaved output — **mitigated because `_run()` already returns per-gate output separately** |
+| **Rollback** | **One commit** |
+| **Success criteria** | **As ②, plus: every gate's output remains individually attributable in the report** |
+
+### ④ DR as its own profile
+
+| | |
+|---|---|
+| **Expected benefit** | **Removes DR's runtime from every certification** — [465 §5](465-certification-strategy.md) |
+| **Complexity** | 🟠 **Extracting it from the QE profile** |
+| **Confidence impact** | 🟡 ⚠️ **Not zero, and it is the honest risk here.** **Restart survival stops being proven every cycle.** ⛔ **Mitigated only if the trigger is right** — any `infra/` or `signora_platform/db` change |
+| **Operational risk** | 🟡 **A missed trigger means an unproven guarantee** |
+| **Rollback** | **Restore it to the QE profile.** **No data implication** |
+| ⚡ **Success criteria** | ⛔ **Cannot be stated yet — DR's runtime is recorded nowhere.** **This proposal is blocked on ① more firmly than any other** |
+
+### ⑤ Parallel `pytest`
+
+| | |
+|---|---|
+| **Expected benefit** | **Potentially the largest — 3683 tests** |
+| **Complexity** | 🔴 **Highest.** Per-worker databases · `xdist_group` on the cluster-mutating invariants · lease-aware allocation |
+| **Confidence impact** | 🔴 ⚠️ **Not zero.** **A worker collision produces a failure that looks like a repository defect** — the most expensive failure mode a gate has |
+| **Operational risk** | 🔴 **This is the proposal that could reproduce cycle 57** |
+| **Rollback** | 🟠 **Harder.** Per-worker databases change environment allocation, which the lease knows about |
+| ⛔ **Success criteria** | **100 consecutive runs with no cross-worker interference, and identical verdicts to a sequential run on the same commit.** ⚡ **A criterion that strict is itself the argument for §3's refusal** |
+
 ## For QE, who owns the implementation
 
 **Every item above is QE's to accept, reorder or refuse** (§20e — *a change to what a gate means is a slice*). **What this office asserts is the graph and the classes; what it does not assert is that any of it is worth doing before it is measured.**

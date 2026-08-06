@@ -5501,8 +5501,25 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-05, auditing the account brief's sections against [410](architecture/410-approved-ui-specification.md)'s *"27 sections, each in six states"* while building [TASK-417](BACKLOG.md) |
 | **Owner** | **Lane C** — it is a repository-wide frontend invariant, and whether one exists is an architecture question rather than a render slice's |
-| **Status** | `OPEN` — **nothing is blocked.** Every instance found is fixed; this asks whether the *class* should be closed |
+| **Status** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [467 §3](architecture/467-system-states-traceability-audit.md).** ⚡ **The invariant it asks for already exists: it is [P-A / R-15](DOMAIN_DISCOVERY_REGISTER.md), ratified 2026-08-05 — the day before this item was raised.** **One thing remains and it is the product owner's: R-15's *owner*** |
 | **Blocks** | Nothing |
+
+> ## ⚡ **Answered 2026-08-06 — and the answer was written the day before the question.**
+>
+> **[P-A · Stated absence](DOMAIN_DISCOVERY_REGISTER.md), ratified 2026-08-05:** ***"A result says what it could not evaluate… absence can never distinguish itself from failure."***
+>
+> **This item, raised independently the same day:** ***"`undefined` then means both 'the API said there is none' and 'the request failed', and the section's empty branch states the first as a fact."***
+>
+> **Two documents, one sentence, neither citing the other** — and **this office wrote both.**
+>
+> ⚡ **The register even predicted the trigger**: R-15 stood at **8 instances, 0 implementations, 🔴 highest and unowned**, annotated **🟠 *"Name before the ninth."*** **C-226 is the ninth, and it arrived as six at once on the first screen anybody built.**
+
+| | |
+|---|---|
+| ✅ **Is it a repository invariant?** | **Yes. It already was.** The question narrows from *should this be one* to *who implements the one it has* |
+| ✅ **Lane A's recommendation is endorsed** | **A page-level test, not a per-component prop.** Build it when convenient — 🟢, one screen, its own harness, **no ruling needed** |
+| ⚡ **And Lane A's *refusal* is the better half** | *"A naive guard would be wrong"* — **`EntityName` falls back to the real identifier and makes no false claim under any error.** **A guard that flagged it would teach lanes to add a prop to silence it**: Decorative Logic (§2), predicted before it was written |
+| 🔴 **What is left, and it is the only ruling** | **R-15's owner.** **Twenty-six consumers, no module, and nine instances already decided by whoever met one** — [D-090](DECISION_REGISTER.md)'s *"ownership should be an architectural decision rather than an implementation accident"* |
 
 ### The finding
 
