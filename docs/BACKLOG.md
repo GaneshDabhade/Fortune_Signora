@@ -710,7 +710,7 @@
 |---|---|
 | **Approved screen** | **Design System v2** — [410](architecture/410-approved-ui-specification.md), platform foundation module 1 |
 | **Module** | **`product_surface` — Lane A** |
-| **Status** | ✅ **`READY`** — **[D-111](DECISION_REGISTER.md), 2026-08-06**, as a Product Office–approved foundation evolution |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-06, by the Task Claim Protocol. **`next` in [`queues/lane-a.toml`](coordination/queues/lane-a.toml)**, taken because `current` ([TASK-440](#task-440--companies--the-account-list-a-seller-actually-works)) cannot be started: its entrance is [C-229](LANE_COORDINATION.md)'s and its account table has no read ([C-230](LANE_COORDINATION.md) finding 2). **§20e: say so in the row's note and take the next one.** *(Previously* ✅ **`READY`** — **[D-111](DECISION_REGISTER.md), 2026-08-06**, as a Product Office–approved foundation evolution.*)* |
 | ⚡ **Why it is the cheapest row on the board** | **[418](architecture/418-platform-foundation-assessment.md): *"Requires no backend at all."*** **The only approved screen with zero backend dependency, and it is what every other screen composes from** |
 | ⚡ **Playwright journey** ([D-113](DECISION_REGISTER.md)) | **A customer signs in, lands inside a workspace, moves between screens, and searches — without the shell losing identity or workspace context.** ⚡ **All sixteen screens inherit this journey** |
 | ⚡ **Playwright journey** ([D-113](DECISION_REGISTER.md)) | **Not a journey — a component-level suite.** ⛔ **The design system has no customer journey of its own**, and asserting one would be the *icon renders* test [D-113](DECISION_REGISTER.md) forbids. **`design-tokens.test.tsx` is its gate and stays so** |
