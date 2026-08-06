@@ -10,6 +10,68 @@
 
 ---
 
+## 0 · ⚙️ The operating priority — [D-100](DECISION_REGISTER.md)
+
+**Ratified 2026-08-06, product owner.** **This is the permanent operating model and it outranks the section order below.** **When two responsibilities compete, the lower number wins.**
+
+| | | Why it sits here |
+|---|---|---|
+| **1** | **Keep implementation lanes productive** | ⚡ **The only item that directly buys engineering time.** Everything else is preparation for it |
+| **2** | **Resolve Product Office-owned dependencies** | **A lane waiting on this office is the most expensive state the repository can be in** — the cost is paid twice, in the idle lane and in the preparation ageing while it waits |
+| **3** | **Maintain queue health** | The instrument that makes 1 and 2 visible before a lane reports them |
+| **4** | **Perform architectural reviews** | |
+| **5** | **Prepare future foundational work** | |
+| **6** | **Audit newly approved UI designs** | |
+| **7** | **Long-term product and platform planning** | |
+
+> ## **The first four influence engineering velocity. Only once they are under control does significant effort move to 5–7.**
+>
+> ⚠️ **Which is a reversal of how this office spent the discovery phase, and the record should say so.** **[464](architecture/464-task-433-implementation-impact.md) already found it from the other direction**: *"Lane C. The office that reports this finding is the one holding the row that resolves it, and it spent the preceding cycles on discovery instead."*
+
+### Registers are dashboards, not documents
+
+> ***"Treat these as operational dashboards rather than documents."***
+
+**Read every cycle, as state rather than as prose:** **registers · QE findings · validation results · `READY` queues · `WAITING` queues · blocked tasks · stale coordination items · unreviewed proposals · unresolved architectural findings · outstanding Product Office actions.**
+
+### Act before a lane stops
+
+> ***"The goal is that implementation lanes should rarely need to ask Product Office for work. Product Office should already be preparing it."***
+
+**Eight triggers. Any one of them starts preparation immediately — none waits for a lane to report it:**
+
+**declining `READY` work · a blocked *current* task · an empty `future` queue · stale planning · an outstanding Product Office review · an unresolved dependency · missing ownership · architectural work that can safely be prepared.**
+
+### ⚡ A dependency owned by this office is a highest-priority interrupt
+
+> ***"If another lane is waiting on Product Office, that should become one of your highest operational priorities."***
+
+**On any lane reporting a Product Office-owned dependency: acknowledge · review promptly · then one of five, never silence** — **resolve · decompose · resequence · assign · or explicitly explain why it remains pending.**
+
+> ⛔ **"Pending" is a statement somebody makes, never a state something drifts into.** **[C-219](LANE_COORDINATION.md) is the worked example and it is this office's own**: Lane A brought its proposal on 2026-08-05, **this office's queue went on naming Lane A as the holder**, and the item aged a full day while a render sat blocked. **It was ratified in one sitting once read.**
+
+### Ownership is never ambiguous
+
+> ***"Every task has an owner. Every dependency has an owner. Every review has an owner. Every architectural assessment has an owner. Every coordination item has an owner."***
+
+⚡ **Enforced rather than asserted.** **`infra/state-check.py` §6a refuses a coordination item that declares no owner and reports every item that declares no state** — because a rule kept by discipline can be kept by a machine instead (`CLAUDE.md` §20e).
+
+> ⚠️ **And writing that check found the register in *four* ownership schemas** — `Owner` · `Current assignee(s)` · inline `owner:` · inline `current module assignee:`. **The first version of the check knew one of them and reported twelve owned items as unowned.** **A check that cries wolf is worse than no check**, because the register is where a lane looks to find out who to ask.
+
+### The long-term rhythm
+
+```
+  Product Owner   ─▶  defines direction
+  Product Office  ─▶  continuously translates it into executable work
+  Lanes           ─▶  always hold a healthy pipeline of READY work
+  QE              ─▶  validates
+  Product Office  ─▶  continuously monitors repository and planning health
+```
+
+> **The capacity for 5–7 is an *output* of this rhythm, never an input to it.** **When the operational flow runs smoothly, the time for future architecture appears on its own** — and taking it before then is what left a lane idle while this office prepared.
+
+---
+
 ## 1 · The coordination taxonomy
 
 **First, the question that decides whether an item exists at all** *(ratified 2026-08-04, product owner)*:

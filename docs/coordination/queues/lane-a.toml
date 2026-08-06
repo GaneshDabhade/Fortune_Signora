@@ -104,11 +104,11 @@ task = "TASK-400"
 note = "Epic A completion. IN PROGRESS — claimed 2026-08-05, and A6 delivered the same day. C-219 was brought four polls late and is now with Lane C for review, which releases the A7 render"
 
 # ── Blocked, keyed to real ids ───────────────────────────────────────────────
-[[blocked]]
+[[held]]
 task    = "TASK-400"
-blocker = ["C-219"]
-owner   = "Lane C — the join proposal is with this office for review"
-note    = "⚠️ CORRECTED 2026-08-06 under D-099's standing queue investigation. This entry named TWO blockers and BOTH had moved on 2026-08-05, a day before it was last written. ① C-321 is RULED — 'Adopt Lane B's proposed behaviour. Proceed.' All six sub-answers stand: appear yes · working list no · score yes · opportunity no · workable never · `Needs identity`, its own queue. ⚡ A6 IS EXECUTABLE TODAY and this file said it was not. ② C-219's note read 'Lane C is not holding it, because no proposal has been brought' — the proposal WAS brought on 2026-08-05, four polls late, and C-219 records it in full. Lane C IS holding it, and that inversion is now recorded in lane-c.toml where the obligation sits. What remains genuinely blocked is A7's RENDER ONLY, on Lane C's review of that proposal. The word `checked` does not ship until it is true; freshness.test.tsx asserts the refusal and is updated by the render slice, never worked around"
+blocker = []
+owner   = "Lane A — both halves are executable"
+note    = "✅ FULLY UNBLOCKED 2026-08-06. This entry named TWO blockers and both are now gone. ① C-321 is RULED (2026-08-05) — 'Adopt Lane B's proposed behaviour. Proceed.' All six sub-answers stand: appear yes · working list no · score yes · opportunity no · workable never · `Needs identity`, its own queue. A6 had been executable for a full day while this file said otherwise. ② C-219 is RATIFIED by Lane C (2026-08-06): option ③ — freshness renders PER TARGET ACCOUNT, not per entity. ⚡ No join is built because there is nothing to join: TargetAccount is (id, name), its name IS the subject RunProviderSync takes, and the entry carries a stable client-chosen id so the render keys on an id rather than a name. ⛔ Do NOT implement ① name matching — refused as a second resolver by a weaker method than the resolver's. ⛔ Do NOT build ② the binding table — sequenced behind a trigger that has not fired: a screen needing freshness for an account reached through something other than a target declaration. ⚠️ 51 §A7's UX row said 'the same line A4 owns' — that is the brief, and ③ does not render there; the amendment is recorded in C-219. Acceptance ③ already permits it: the A4 sentence is unchanged where the fact is absent. The word `checked` does not ship until it is true; freshness.test.tsx asserts the refusal and is updated by the render slice, never worked around"
 
 # ── With QE ──────────────────────────────────────────────────────────────────
 [[in_validation]]

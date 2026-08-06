@@ -87,11 +87,11 @@ blocker = ["product owner approval of 435"]
 owner   = "Product owner"
 note    = "The RFC is written and pushed. The task is the RFC only — no module is rewired by it — so the deliverable is complete and nothing further is startable here. Three questions are asked at the end of the document."
 
-[[held]]
-task    = "C-219"
-blocker = []
-owner   = "Lane C — the REVIEW, and it is this office's to perform"
-note    = "⚡ CORRECTED 2026-08-06 under D-099. This read 'No proposal has arrived. Lane C is the reviewer here, not the author' — true on 2026-08-03, false from 2026-08-05, when Lane A brought the subject↔entity join proposal four polls late. C-219 records it in full: provider_watermark holds attempted_at and a typed subject; provider_sync has no subject at all; raw_provider_record stores the provider's external_id but not the request's input; knowledge_graph binds on (provider, provider_external_id). The proposal recommends surfacing freshness per TARGET ACCOUNT rather than per entity. ⛔ THIS IS THE ONLY THING BLOCKING TASK-400's A7 RENDER, and it has been waiting on this office. `blocker` is now EMPTY — it named Lane A's proposal, which has arrived. A queue naming another lane as the holder of one's own obligation is worse than an empty queue: it reads as diligence."
+# ── Discharged ───────────────────────────────────────────────────────────────
+[[disposed]]
+task = "C-219"
+by   = "Lane C, 2026-08-06"
+note = "✅ REVIEWED AND RATIFIED — option ③, freshness per target account. Lane A's A7 render is unblocked and needs nothing further from this office. ⚡ The specification had already delegated the choice: 51 §A7's `hard part` row names ③ as one of its two branches and calls it 'the design decision the slice turns on' — so it was Lane C's to ratify and never needed a ruling. ⚠️ AND IT SAT FOR A DAY BECAUSE THIS FILE SAID LANE A HELD IT. The entry read 'No proposal has arrived' from 2026-08-03; the proposal arrived 2026-08-05. Under D-100 a Product Office-owned dependency blocking a lane is the highest operational priority — this one was invisible to the office that owned it, which is the failure mode that directive exists to end."
 
 [[held]]
 task    = "C-221"

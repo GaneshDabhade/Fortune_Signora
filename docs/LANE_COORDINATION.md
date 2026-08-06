@@ -4783,7 +4783,8 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 | | |
 |---|---|
 | **Raised by** | Lane C, 2026-08-04 |
-| **Status** | **`OPEN`** — for the product owner, who owns [`BACKLOG.md`](BACKLOG.md) |
+| **Owner** | **Product owner** — [`BACKLOG.md`](BACKLOG.md)'s scope and order are theirs. **Stated as a field 2026-08-06 under [D-100](DECISION_REGISTER.md)**; it had lived inside the `Status` prose, where no instrument reads it |
+| **Status** | **`OPEN`** |
 | **Class** | **Dependency Resolution** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §1) — *what is actually blocking* |
 
 **Found by measuring the READY buffer against `origin/integration` rather than assuming it.** Lane C reported seven claimable tasks; both implementation lanes reported that nothing could be claimed. **The lanes were right, and three rows are why.**
@@ -4824,7 +4825,8 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 | | |
 |---|---|
 | **Raised by** | Lane C, 2026-08-04 |
-| **Status** | **`OPEN`** — for whoever owns each, named per row |
+| **Owner** | ⚡ **Lane C — routing only, added 2026-08-06 under [D-100](DECISION_REGISTER.md).** ***"Ownership should never be ambiguous."*** **This row read *"for whoever owns each, named per row"*, which names nobody**: the three findings have three different owners and the *item* had none, so **nobody was responsible for seeing them through.** **Lane C owns the routing; each finding's owner is unchanged and stated in its row** |
+| **Status** | **`OPEN`** — three findings, each owned in its own row |
 | **Class** | **Not a Coordination Item, three times over** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §1) — none is a dependency. **They are here because they had no other home**, which is itself the finding |
 
 **Each of these was found during Product Office work, reported in a commit message, and recorded in no document a lane reads.** [423](architecture/423-knowledge-continuity-framework.md) §8 names that class: *findings reported but not fixed*, which today live only in commit messages.
@@ -5041,6 +5043,57 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 **② is the right answer if and when the product genuinely needs entity-level freshness** — and building it before a screen asks is speculative architecture for a question nobody has posed (§6). **The trigger to reconsider is explicit: a screen that must state freshness for an account reached through something other than a target declaration.**
 
 **What Lane A asks of Lane C:** ratify ③ as A7's render target, or name the screen that requires ②. **Either answer unblocks the render; this lane is not waiting on which.**
+
+---
+
+### ✅ Lane C's review — 2026-08-06 · **③ ratified.** The render is unblocked
+
+**Reviewed under [D-100](DECISION_REGISTER.md), which makes a Product Office-owned dependency blocking a lane the highest operational priority.** ⚠️ **This item had been answerable since 2026-08-05 and sat because [this office's own queue named Lane A as the holder](coordination/queues/lane-c.toml).**
+
+#### ⚡ The specification already contains ③, which decides who may ratify it
+
+**[51 §A7](architecture/51-implementation-specifications.md), *The hard part, and it is not the column*, verbatim:**
+
+> *"Joining the two needs either a resolved-subject link the Knowledge Graph can follow, **or the answer surfaced per *target account* rather than per account entity**. **This is the design decision the slice turns on.**"*
+
+> ## **③ is not a deviation from approved scope. It is the specification's own second branch, and the specification explicitly delegated the choice.**
+>
+> **So this is Lane C's to ratify and needs no ruling** — §6a's test is *would this, as submitted, breach a rule the repository can name?*, and the answer is no.
+
+#### And the code makes ③ stronger than *"cheapest"* — it is the only coherent option
+
+**Measured, not recalled:**
+
+| | |
+|---|---|
+| **`TargetAccount`** | **`(id: UUID, name: str)`** — and **nothing else.** `target_accounts.py`: *"It names companies; it finds none… It does not resolve the name"* |
+| ⚡ **The key identity** | **`TargetAccount.name` is what becomes `RunProviderSync(subject=…)`** — *"`RunProviderSync` has taken a `subject: str` since M2.1 and nothing has ever supplied one. This is it."* **The two keys are the same string from the same source** |
+| ⚡ **And the entry has a stable client-chosen id** | **So the render keys on an id rather than on a name** — ①'s failure mode is not merely avoided, it is unreachable |
+
+> ## **③ performs no join because there is nothing to join. `subject` *is* the target account's name, by construction.**
+
+⛔ **And ② is not merely deferred — it is the only route to the brief, and the brief is closed.** **`TargetAccount` carries no entity id *deliberately*, and [ADR-0036](architecture/adr/0036-target-account-contract.md) makes that boundary permanent.** **Rendering `attempted_at` on the brief requires the subject↔entity binding, which is exactly what ② would have to create.**
+
+#### ⚠️ The one consequence Lane A understated, and it is this review's own finding
+
+**§A7's UX row says *"the same line A4 owns, extended"* — which is the brief. ③ does not render there.** **The specification therefore disagrees with itself**: its *hard part* row offers ③, and its *UX* row assumes ②.
+
+> **Resolved in ③'s favour, and the acceptance criteria already permit it:** **③ *"The existing A4 sentence is unchanged when this fact is absent"*** — **so a brief with no target declaration behind it stays exactly as it is today, which is what acceptance asked for.**
+>
+> ⚡ **And Lane A's asymmetry is the reason this is right rather than merely allowed:** **an entity that was never a target has no *last checked* — the fact is *meaningless* for it, not unknown.** **Rendering it on the brief would require saying *nothing to report* for a whole class of accounts with no way to explain why**, which is [P-A](DOMAIN_DISCOVERY_REGISTER.md): an absence that cannot distinguish itself from a failure.
+
+**[51 §A7](architecture/51-implementation-specifications.md)'s UX row is amended to name the target-account surface.** **It is Lane C's document and this is the branch it delegated** — recorded rather than edited silently.
+
+#### The ruling
+
+| | |
+|---|---|
+| ✅ **Ratified** | **③ — freshness renders per target account.** **A7's render is unblocked and needs nothing from anybody** |
+| ⛔ **Refused** | **① name matching.** Lane A's refusal is correct and its reasoning is the repository's: **a second resolver by a weaker method than the resolver's.** [462 §1](architecture/462-observed-attributes-proposal.md) refused the identical shape for `ClaimSet` four documents ago |
+| ⏸ **Sequenced, trigger stated** | **②, and the trigger is exactly Lane A's**: *a screen that must state freshness for an account reached through something other than a target declaration.* **Not fired. No screen asks** |
+| 🔴 **What would reopen it** | **A product owner decision that freshness must appear on the brief.** **That is ②, it costs a table, a migration and a write on the ingest path, and it is the only thing in this item that is not Lane C's** |
+
+⛔ **No code written · no table created · no migration · no UI changed · no backlog row.** **Lane A builds the render; this office ratified which fact it renders.**
 
 ---
 

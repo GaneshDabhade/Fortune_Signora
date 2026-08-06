@@ -157,6 +157,20 @@ QUEUES = REPO_ROOT / "docs" / "coordination" / "queues"
 _STARTABLE = {"READY", "CHANGES REQUESTED"}
 _DEPARTED = {"IN VALIDATION", "VERIFIED", "CERTIFIED", "PROMOTED", "DONE", "DISPOSED"}
 _HELD = {"CLAIMED", "IN PROGRESS"}
+
+#: Coordination-item states that need no owner, because the question is settled.
+#: **Kept identical to `decision-queue.py`'s set on purpose** — two files
+#: disagreeing about what *closed* means is how an item becomes invisible to one
+#: instrument and urgent to the other.
+_SHUT_ITEM_STATES = {
+    "CLOSED",
+    "RULED",
+    "ANSWERED",
+    "RESOLVED",
+    "SUPERSEDED",
+    "WITHDRAWN",
+    "READY FOR IMPLEMENTATION",
+}
 _STATE_WORDS = _STARTABLE | _DEPARTED | _HELD | {
     "WAITING", "BLOCKED", "SEQUENCED", "PREPARING", "UNDER REVIEW",
     "REVISION REQUESTED", "RATIFIED",
@@ -694,6 +708,102 @@ def main() -> int:
         )
     else:
         notes.append(f"Coordination register: {opened} item(s), {closed} closed.")
+
+    # 6a — D-100. **Every coordination item declares an owner and a state.**
+    #
+    # > *"Every task has an owner. Every dependency has an owner. Every review
+    # > has an owner… Ownership should never be ambiguous."*
+    #
+    # **An unowned item is worse than an unraised one**: it is visibly filed, so
+    # everybody assumes somebody has it. C-213 cost TASK-205 two days on a
+    # *stale* owner; an absent one fails the same way and is harder to notice,
+    # because there is no wrong name to disbelieve.
+    #
+    # ⚠️ **Two field names are accepted, and that is the finding rather than a
+    # convenience.** Items raised before 2026-08-03 write `Current assignee(s)`;
+    # later ones write `Owner`. **A sweep that knew only one name reported 12
+    # unowned items when 2 were** — this office's own, on the day D-100 landed.
+    # Reading both is correct; **the register drifting into two schemas is the
+    # thing worth seeing**, so the count is reported rather than passed over.
+    _OWNER_FIELDS = ("Owner", "Current assignee(s)", "Current assignee", "Owned by")
+    unowned: list[str] = []
+    stateless: list[str] = []
+    off_schema = 0
+    # **Position in the file is not authoritative, and C-411 is why.** Its own
+    # finding ② records that C-326's body sits *after* the `## Closed` marker
+    # while its `Status` says `OPEN` — so truncating at that marker silently
+    # exempts genuinely open items, including the two this office raised. **An
+    # item's declared state decides whether it is open; where it happens to sit
+    # does not.**
+    for chunk in re.split(r"(?=^#{2,3} C-\d+)", coordination, flags=re.M):
+        titled = re.match(r"^#{2,3} (C-\d+)", chunk)
+        if not titled:
+            continue
+        item = titled.group(1)
+        declared = ""
+        status_row = re.search(r"^\| \*\*Status\*\* \|(.+)$", chunk, re.M)
+        opened_line = re.search(r"(?m)^\*\*Opened .*$", chunk)
+        for source in (
+            status_row.group(1) if status_row else "",
+            opened_line.group(0) if opened_line else "",
+        ):
+            quoted = re.search(r"`([A-Z][A-Z ]+)`", source)
+            if quoted:
+                declared = quoted.group(1).strip()
+                break
+        if declared in _SHUT_ITEM_STATES:
+            continue
+        field = next(
+            (
+                f
+                for f in _OWNER_FIELDS
+                if re.search(rf"^\| \*\*{re.escape(f)}\*\* \|", chunk, re.M)
+            ),
+            None,
+        )
+        # **The third form, and it is why this check nearly shipped crying wolf.**
+        # C-211..C-216 carry ownership inline — `**Opened … · owner: product
+        # owner · 🔴**` — with no table at all. A first version of this check
+        # looked only for table fields and reported six owned items as unowned.
+        # **That is B-101 once more: a proxy searched for, and its absence
+        # reported as the absence of the thing.** A check that cries wolf is
+        # worse than no check, because the register is where a lane looks to
+        # find out who to ask.
+        inline = (
+            re.search(
+                r"(?im)^\*\*Opened .*?\b(?:current module assignee|owner):\s*\S", chunk
+            )
+            is not None
+        )
+        if field is None and not inline:
+            unowned.append(item)
+        elif field is not None and field != "Owner":
+            off_schema += 1
+        elif field is None:
+            off_schema += 1
+        if not re.search(r"^\| \*\*Status\*\* \|", chunk, re.M):
+            stateless.append(item)
+
+    if unowned:
+        findings.append(
+            f"Coordination items declare no owner: {', '.join(sorted(unowned))}. "
+            f"An item nobody owns looks filed and is not (D-100). Every item names "
+            f"an owner, and `Product owner` is an owner."
+        )
+    if stateless:
+        findings.append(
+            f"{len(stateless)} coordination item(s) declare no Status row: "
+            f"{', '.join(sorted(stateless))}. Without one a reader cannot tell "
+            f"whether the item is open, and `decision-queue.py` cannot route it "
+            f"(CLAUDE.md §20e lifecycle states)."
+        )
+    if off_schema:
+        notes.append(
+            f"Coordination register: {off_schema} item(s) declare ownership in a "
+            f"pre-2026-08-03 form — `Current assignee(s)`, or inline beside "
+            f"`Opened`. Read by this check; three schemas in one register is worth "
+            f"converging, and is why a single-schema sweep miscounts."
+        )
 
     for note in notes:
         print(f"  ok   {note}")
