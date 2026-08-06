@@ -43,6 +43,30 @@ def record(report: EvaluationReport, *, manifest: Path = MANIFEST) -> Evaluation
     Returns the evaluation written, so a caller can report whether it earned
     a release without re-deriving the criteria.
     """
+    # **Refused before anything else, including the fingerprint check.**
+    #
+    # A run served by a fake produces a report that looks exactly like a real
+    # one — the schema parses, the citations resolve, the coverage computes —
+    # and every one of those figures describes the fixture. **Recording it
+    # would put a scripted answer into the artifact that decides whether a
+    # prompt is released**, where nothing downstream could tell the difference
+    # ([B-324](../../../../docs/BUGS.md)).
+    #
+    # **The condition names no vendor and no adapter**, which is what lets it
+    # exist here at all: `TestTheEvaluationFrameworkNamesNoVendor` states that
+    # evaluation code may not, and the first attempt at this fix was
+    # `report.provider is AIVendor.MOCK` and was refused within the hour. The
+    # capability is declared by whatever served the call and read back through
+    # the report.
+    if not report.output_is_evidence:
+        raise ReleaseError(
+            f"{report.prompt_name}@{report.prompt_version} was measured against "
+            f"'{report.model}' by a provider whose output is not evidence about a model — "
+            "a deterministic fake returns what it was configured to return, so this run "
+            "describes the fixture. Nothing about it can be recorded as an evaluation. "
+            "Configure a real provider for the model and run it again."
+        )
+
     evaluation = report.as_evaluation()
 
     # Loading verifies every fingerprint on disk. Doing it first means a

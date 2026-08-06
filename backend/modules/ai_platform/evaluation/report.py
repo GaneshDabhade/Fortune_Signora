@@ -112,6 +112,18 @@ class EvaluationReport:
     #: unregistered model fails before a call is made, and naming a provider
     #: for that run would attribute it to a component never involved (§10).
     provider: AIVendor | None = None
+    #: **Whether this run measured a model at all.**
+    #:
+    #: `False` when the adapter serving the model returns scripted content —
+    #: the deterministic mock, or any future fake declaring the same. A run
+    #: like that produces a perfectly valid-looking report and **describes the
+    #: fixture rather than the model**, which is why `record` refuses to write
+    #: one into the manifest ([B-324](../../../../docs/BUGS.md)).
+    #:
+    #: **Read from a capability and never from `provider`.** The vendor field
+    #: beside it is provenance and is never consulted for a decision (§10);
+    #: this is the decision, and it is a different fact.
+    output_is_evidence: bool = True
 
     @property
     def sample_size(self) -> int:

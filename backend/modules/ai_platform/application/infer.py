@@ -152,6 +152,37 @@ class Infer:
         # reached for.
         self._sleep = sleep
 
+    def output_is_evidence(self, model: str) -> bool:
+        """Whether a measurement taken against this model would be evidence.
+
+        **`False` when the adapter serving it returns scripted content** — the
+        deterministic mock, or any future fake or replay adapter that declares
+        the same. `True` when a real model would answer.
+
+        **A capability read from the descriptor, never a vendor comparison**
+        (§10). The caller names a *model*; the registry decides who serves it
+        and the adapter says what it is. Evaluation can therefore refuse a
+        worthless run without being able to name what it refused
+        ([B-324](../../../../docs/BUGS.md)).
+
+        **Here rather than on the harness**, because the harness has no
+        registry and giving it one would change a constructor four evaluation
+        entrypoints call — one of which belongs to another module. This
+        object already holds the registry, and every harness already holds
+        this object, so the guarantee reaches all four without any of them
+        changing.
+
+        **`True` for a model nothing serves.** An unregistered model fails at
+        the call with its own diagnosis; answering *"not evidence"* here would
+        replace that with a misleading one, and the run records no result to
+        write in any case.
+        """
+        for adapter in self._providers.adapters:
+            descriptor = adapter.describe()
+            if descriptor.serves(model):
+                return descriptor.output_is_evidence
+        return True
+
     async def execute[T: GroundedOutput](
         self, request: InferenceInput, output_type: type[T]
     ) -> InferenceOutput[T]:

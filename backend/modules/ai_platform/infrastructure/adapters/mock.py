@@ -125,6 +125,12 @@ class MockAdapter:
             #: unusable here, not degraded.
             supports_structured_output=True,
             vendor=VENDOR,
+            #: **False, and it is the whole of [B-324](../../../../../docs/BUGS.md).**
+            #: This adapter returns what it was configured to return, so a
+            #: measurement taken against it describes the fixture and not the
+            #: model. Declaring it here is what lets the evaluation harness
+            #: refuse the run **without naming this adapter or its vendor.**
+            output_is_evidence=False,
         )
 
     async def complete(self, request: InferenceRequest) -> InferenceResult:

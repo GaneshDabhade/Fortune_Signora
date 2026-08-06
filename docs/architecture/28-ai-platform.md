@@ -1187,3 +1187,35 @@ The environment is a field on **`AISettings`**, reading `SIGNORA_ENVIRONMENT` �
 > **The correct shape is a capability on `AIProviderDescriptor`** — *does this adapter measure a real model?* — exactly as `domain/provider.py` prescribes: *"Capabilities first, identity last."* It names no vendor and covers every future stub rather than the one that exists today. **That is a second change to a published domain type in one day and belongs in its own reviewed slice**, so it is filed as [B-324](../BUGS.md) with the design named rather than appended here.
 
 *+2 tests. 3474 backend passed, coverage 95.30%, 737 files mypy clean, 35 contracts, frontend 1171.*
+
+---
+
+## B-324 closed — a capability, and the constructor that was not changed
+
+**Fixed 2026-08-06 by Lane B**, in the shape the row designed a day earlier and deliberately did not ship at the end of a session.
+
+**`AIProviderDescriptor` gains `output_is_evidence`.** The mock declares `False`; every real adapter is `True` by default. **`record()` refuses a report carrying `False`** — before the manifest is read, so a refusal leaves the file byte-identical.
+
+### Why the check is a capability and not `provider is MOCK`
+
+**The obvious fix is banned, and by a test rather than by taste.** `TestTheEvaluationFrameworkNamesNoVendor` parses this package as a syntax tree and refuses a vendor named in executable code — which is what reverted the first attempt within the hour. **A capability keeps the guarantee and loses the coupling**: a second fake, or a replay adapter, declares the same field and this code never learns its name. It is `domain/provider.py`'s own rule applied to itself — *"capabilities first, identity last."*
+
+### Where it is read, and the constraint that decided it
+
+**`Infer.output_is_evidence(model)`**, not a new argument on the harness.
+
+**The harness has no registry, and giving it one would change a constructor four evaluation entry points call** — `ai_platform`, `ai_reasoning_engine`, `sales_engagement` and **`ai_research_engine`, which is another lane's module.** A required parameter would have made this slice edit a file it may not touch (§20e).
+
+> **`Infer` already holds the registry and every harness already holds `Infer`.** So the guarantee reaches all four entry points **with no entry point changing at all** — which is a better outcome than the one the boundary was blocking, not a workaround for it.
+
+### The default, stated because it is the weaker half
+
+**`output_is_evidence` defaults to `True`.** The stronger shape is a required field — §2 prefers a violation that is *unrepresentable* — and it would break a descriptor constructed in `tests/ai_research_engine/`, which is not this lane's to edit.
+
+**The default is right for the population it describes.** Every *real* adapter is evidence, so a new vendor integrates correctly without knowing the field exists; **a fake is written by somebody who knows it is a fake.** The risk it leaves is a future fake that forgets to opt out, and that is stated here rather than hidden.
+
+### What was deleted rather than weakened
+
+A test asserting *the refusal names no vendor* was written here, **failed on the comment explaining why it names no vendor**, and was removed. The Security Invariant already states it, parses the AST, and **exempts prose on purpose** — *"the first draft failed on three docstrings explaining why the framework is vendor-neutral, which would have banned exactly the writing that keeps the rule understood."* **The guarantee exists once, in the suite that owns it.**
+
+*+5 tests. `VERIFIED` is QE's.*

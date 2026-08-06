@@ -102,6 +102,10 @@ class Harness:
             # Read back from what actually answered, never passed in: the
             # adapter that served the call is the only component that knows.
             provider=self._run_log.provider(),
+            # **Asked of the thing that resolves adapters, not of the vendor
+            # name above it.** `provider` is provenance; this decides whether
+            # the manifest may hold the run at all (B-324).
+            output_is_evidence=self._infer.output_is_evidence(model),
             prompt_name=prompt_name,
             prompt_version=prompt_version,
             prompt_fingerprint=prompt.fingerprint,

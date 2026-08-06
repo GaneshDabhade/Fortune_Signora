@@ -280,6 +280,29 @@ class AIProviderDescriptor:
     #: Provenance and composition key only. Declared last, and never read to
     #: decide behaviour.
     vendor: AIVendor
+    #: **Whether what this adapter returns is evidence about a model.**
+    #:
+    #: True of every adapter that calls one. **False for the deterministic
+    #: mock**, whose output is whatever it was configured to say — which is
+    #: exactly what makes it useful for testing behaviour and worthless for
+    #: measuring a model ([B-324](../../../../docs/BUGS.md)).
+    #:
+    #: **A capability, deliberately, and not `vendor is MOCK`.** Evaluation
+    #: may not name a vendor — `TestTheEvaluationFrameworkNamesNoVendor`
+    #: refuses it — and this module's own rule is *"capabilities first,
+    #: identity last: a future vendor integrates by describing what it
+    #: supports, never by requiring conditional logic elsewhere."* A second
+    #: fake, or a replay adapter, declares `False` here and every consumer
+    #: keeps working without learning its name.
+    #:
+    #: ⚠️ **Defaults to `True`, and the direction is a considered trade.** A
+    #: required field would be the stronger shape (§2 — *make the violation
+    #: unrepresentable*) and would break a descriptor built in another
+    #: module's tests, which is not this lane's to edit. **The default is
+    #: right for the population it describes**: every *real* adapter is
+    #: evidence, so a new vendor is correct without knowing this field
+    #: exists, and **a fake is written by somebody who knows it is a fake.**
+    output_is_evidence: bool = True
 
     def serves(self, model: str) -> bool:
         return model in self.models

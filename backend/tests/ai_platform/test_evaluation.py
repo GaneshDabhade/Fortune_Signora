@@ -38,6 +38,8 @@ from modules.ai_platform.evaluation.dataset import (
 )
 from modules.ai_platform.evaluation.harness import EvaluationAbandonedError, Harness
 from modules.ai_platform.evaluation.release import ReleaseError, record
+from modules.ai_platform.infrastructure.adapters.mock import MockAdapter
+from modules.ai_platform.infrastructure.adapters.ollama import OllamaAdapter
 from modules.ai_platform.evaluation import report as report_module
 from modules.ai_platform.evaluation.report import CaseResult, EvaluationReport
 from modules.ai_platform.evaluation.rubric import RUBRIC_VERSION, coverage, criteria
@@ -511,7 +513,10 @@ def _evaluation(**overrides: Any) -> Evaluation:
 
 
 def _report(
-    *, outcome: InferenceOutcome = InferenceOutcome.OK, fingerprint: str | None = None
+    *,
+    outcome: InferenceOutcome = InferenceOutcome.OK,
+    fingerprint: str | None = None,
+    output_is_evidence: bool = True,
 ) -> EvaluationReport:
     shipped = load_prompt_registry().get("explanation_narration", 1)
     return EvaluationReport(
@@ -524,6 +529,7 @@ def _report(
         dataset_fingerprint="f" * 64,
         rubric_version=RUBRIC_VERSION,
         evaluated_on=TODAY,
+        output_is_evidence=output_is_evidence,
         results=(
             CaseResult(
                 case="one",
@@ -796,3 +802,55 @@ class TestARunReportsItsOwnRetries:
         usable diagnosis with a stack trace."""
         log = RunLog()
         assert log.retries_for(uuid4()) == 0
+
+
+class TestAScriptedRunIsNotAnEvaluation:
+    """**B-324.** A run served by a fake measures the fixture, and the
+    manifest is what decides whether a prompt is released.
+
+    The hazard is not that the number is wrong — it is that **the number is
+    right about the wrong thing**, and passes. Everything downstream reads a
+    perfectly well-formed evaluation.
+
+    **That the refusal names no vendor is asserted elsewhere and deliberately
+    not here.** `TestTheEvaluationFrameworkNamesNoVendor` in the Security
+    Invariants already scans this package, parses it as a syntax tree and
+    exempts prose on purpose — *"the first draft failed on three docstrings
+    explaining why the framework is vendor-neutral, which would have banned
+    exactly the writing that keeps the rule understood."* **A string search
+    here was written, failed on the comment explaining the rule, and was
+    deleted rather than weakened**: the guarantee exists once, in the suite
+    that owns it (§2).
+    """
+
+    def test_the_mock_declares_that_its_output_is_not_evidence(self) -> None:
+        # The capability lives on the adapter because only the adapter knows.
+        assert MockAdapter(models=frozenset({MODEL})).describe().output_is_evidence is False
+
+    def test_a_real_adapter_declares_that_it_is(self) -> None:
+        assert OllamaAdapter(client=None, models=frozenset({MODEL})).describe().output_is_evidence  # type: ignore[arg-type]
+
+    def test_recording_a_scripted_run_is_refused(self, tmp_path: Path) -> None:
+        manifest = _manifest_copy(tmp_path)
+
+        with pytest.raises(ReleaseError, match="not evidence about a model"):
+            record(_report(output_is_evidence=False), manifest=manifest)
+
+    def test_the_refusal_leaves_the_manifest_untouched(self, tmp_path: Path) -> None:
+        """**Refused before the file is opened**, not after a partial write."""
+        manifest = _manifest_copy(tmp_path)
+        before = manifest.read_text()
+
+        with pytest.raises(ReleaseError):
+            record(_report(output_is_evidence=False), manifest=manifest)
+
+        assert manifest.read_text() == before
+
+    def test_a_real_run_still_records(self, tmp_path: Path) -> None:
+        """The guard has to let the thing it exists for through — otherwise
+        it is not a guard, it is an outage."""
+        manifest = _manifest_copy(tmp_path)
+
+        written = record(_report(), manifest=manifest)
+
+        assert written.model == MODEL
