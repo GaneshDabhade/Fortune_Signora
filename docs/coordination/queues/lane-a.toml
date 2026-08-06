@@ -125,7 +125,9 @@ future  = []
 # TASK-900, whose RFC (435) awaits product owner approval.
 #
 # **The remaining approved screens are behind two product owner decisions:**
-#   C-421  design access   → blocks TASK-467, 468, 471
+#   ✅ C-421 CLOSED 2026-08-06 — the design was readable the whole time.
+#      DesignSync, project 1d043179-1ee9-4c9f-b59e-592e04297cad, 26 documents.
+#      TASK-467, 468 and 471 now wait on TASK-448 alone.
 #   C-229  navigation entry → blocks TASK-441's entrance
 # **Neither is Lane C's to resolve, and decomposing around them would need
 # scope this office may not introduce (§20e).** ⛔ Reported, not padded.
@@ -349,19 +351,19 @@ note    = "signal_engine reads People's public/ contract. Separated from TASK-42
 # ── Design-conformance refinement, D-128/D-129 — sequenced behind the system ──
 [[blocked]]
 task    = "TASK-467"
-blocker = ["TASK-448", "C-421"]
-owner   = "Lane A · design access is the product owner's (C-421)"
+blocker = ["TASK-448"]
+owner   = "Lane A"
 note    = "The authentication surface, to the approved design. ⚠️ REFINEMENT, not new work: six surfaces exist and five predate the design — sign-in 2026-07-28, the rest 2026-08-01, built to ADR-0033 rather than to 410. Legacy implementation under D-128. ✅ PRESERVED: Better Auth as sole authority, RS256-only verification, requireEmailVerification, every route and hook. REPLACED: UI and interaction only. ⚡ The slice's first act is a measurable gap analysis against the design document — D-129 permits implementation tasks, gap analyses and test cases, and NOTHING ELSE derived. ⛔ Sequenced after TASK-448 because rebuilding six screens against 9 primitives and then again against v2 is the work twice."
 
 [[blocked]]
 task    = "TASK-468"
-blocker = ["TASK-448", "C-421"]
+blocker = ["TASK-448"]
 owner   = "Lane A"
 note    = "Workspace Setup — REPLACE ENTIRELY. Today workspace creation is a text field inside settings/page.tsx (2026-07-28). The approved design is a different screen: region, URL, domain verification, branding, deletion. ✅ POST /workspaces and useCreateWorkspace are reused. ⚠️ This row is the render half only; the five capabilities need their own rows once the gap analysis measures them — writing them now would invent scope against a design this office cannot read."
 
 [[blocked]]
 task    = "TASK-471"
-blocker = ["TASK-448", "C-421"]
+blocker = ["TASK-448"]
 owner   = "Lane A"
 note    = "Team Management — conformance verified, or refined. ⚠️ settings/team/ shipped 2026-08-04, the SAME DAY the design landed: concurrent, not derived, so neither clearly legacy nor clearly compliant. The gap analysis decides whether this is a refinement or a no-op. ⚡ A gap analysis concluding 'nothing is required' is a successful outcome, not a wasted slice."
 

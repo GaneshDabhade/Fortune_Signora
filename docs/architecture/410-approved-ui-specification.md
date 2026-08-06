@@ -12,6 +12,8 @@
 | **Identifier** | `1d043179-1ee9-4c9f-b59e-592e04297cad` |
 | **Type** | `PROJECT_TYPE_PROJECT` — **not** `PROJECT_TYPE_DESIGN_SYSTEM` |
 | ⚡ **Location** | **https://claude.ai/design/p/1d043179-1ee9-4c9f-b59e-592e04297cad** — **registered [D-128](../DECISION_REGISTER.md), 2026-08-06.** **One canonical location, many consumers — exactly how an ADR is registered.** ⛔ **The design is never duplicated into Product Office documentation** |
+
+> ✅ **How a lane opens it, recorded 2026-08-06 ([D-137](../DECISION_REGISTER.md) §2, [C-421](../LANE_COORDINATION.md)).** **`DesignSync` · `projectId` `1d043179-1ee9-4c9f-b59e-592e04297cad` · `get_file` with the screen's document path** — e.g. `Fortune Signora Authentication.dc.html`. **`list_files` returns all twenty-six.** ⚠️ **`list_projects` does *not* show it**: that method returns design-*system* projects and this is typed `PROJECT`. ⛔ **An absence in that listing is not an absence of access, and reading it as one cost [TASK-467](../BACKLOG.md), [TASK-468](../BACKLOG.md) and [TASK-471](../BACKLOG.md) two days.**
 | **Contents** | ⚠️ **26 screen specifications** · 1 design system (v2) · 1 pre-refactor design review |
 | **Read** | 2026-08-04, in full, by Lane C |
 

@@ -6717,7 +6717,7 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-06, on [D-129](DECISION_REGISTER.md) |
 | **Owner** | ⚠️ **Product owner — EXTERNAL.** **Access to the design set is not a lane's to arrange, and [D-129](DECISION_REGISTER.md) classifies it exactly**: *"treat that as an environmental issue to be resolved — not as a reason to create another specification"* |
-| **Status** | **`READY FOR PRODUCT DECISION`** — **nothing to decide, something to provide** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-06, [D-137](DECISION_REGISTER.md) §2.** ⚡ **The dependency is resolved by direct access, exactly as D-137 requires — no copy, no export, no checklist.** ⛔ **And it was never a permission problem: the design was reachable the whole time and this office had not attempted it.** |
 | **Blocks** | **[TASK-467](BACKLOG.md) · [TASK-468](BACKLOG.md) · [TASK-471](BACKLOG.md)** — every slice whose first act is a gap analysis against the design |
 
 ### What is being asked for, concretely
@@ -6737,6 +6737,23 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 ✅ **[TASK-469](BACKLOG.md) Onboarding and [TASK-470](BACKLOG.md) User Profile carry backend work that is absent regardless of the design** — onboarding state, step progress, inferred-value marking, the three-way field-ownership model. **Those can be measured and prepared without it.**
 
 ✅ **And nothing in the current wave waits on this.** **Lane A holds 11 eligible rows; all five refinement slices are `SEQUENCED` behind [TASK-448](BACKLOG.md).**
+
+
+### ✅ Resolution — 2026-08-06, and the item was open for two days on an untested assumption
+
+**[D-137](DECISION_REGISTER.md) §2 asked three questions. All three are yes, and each was answered by *trying* rather than by reasoning.**
+
+| | |
+|---|---|
+| **Can a lane access the finalized designs?** | ✅ **Yes.** `DesignSync get_project 1d043179-1ee9-4c9f-b59e-592e04297cad` returns **`"Signora design system specification"`, `canEdit: true`** |
+| **Can they be opened while implementing?** | ✅ **Yes.** `list_files` returns **26 `.dc.html` screen documents**, and `get_file` returned the Authentication design in full — **73,728 characters** |
+| **Can refinement tasks reference them directly?** | ✅ **Yes, by path** — e.g. `Fortune Signora Authentication.dc.html`. **A path is a reference, not a duplicate** |
+
+> ⛔ **Why it stayed open: `list_projects` returns *design-system* projects only, and this one is typed `PROJECT_TYPE_PROJECT`.** **So a listing shows two projects — *Modernist* and *Industry* — and not this one.** ⚠️ **An absence in a listing was read as an absence of access, and nobody called `get_project` with the id [410](architecture/410-approved-ui-specification.md) had already registered.**
+
+⚡ **This is [D-130](DECISION_REGISTER.md)'s rule turned on a coordination item rather than an endpoint: *verifying a name is not verifying behaviour*.** **The id was recorded, the tool existed, and the office reasoned about access instead of requesting it.** **[TASK-467](BACKLOG.md), [TASK-468](BACKLOG.md) and [TASK-471](BACKLOG.md) were blocked for two days on that.**
+
+**The access route, recorded so no lane repeats the search:** ⚡ **`DesignSync` · `projectId` `1d043179-1ee9-4c9f-b59e-592e04297cad` · `get_file` with the screen's document path.**
 
 ## C-420 · Two words carry two concepts each — `Owner` and `Match`
 

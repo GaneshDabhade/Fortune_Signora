@@ -959,6 +959,36 @@ promoted commit SHA  ==  certified commit SHA
 
 **Losing a race costs one commit and no code.** That is the entire point of the ordering, and it is why the protocol reads as more ceremony than it costs.
 
+### An implementation task references a design the implementing lane can open
+
+**Ratified 2026-08-06, product owner, [D-137](docs/DECISION_REGISTER.md). Drafted by Lane C on that instruction.**
+
+> ## **Every implementation task that references an approved design must reference a design artifact that is directly accessible to the implementing lane.**
+>
+> **Product Office must never create implementation work against a design the assigned lane cannot access.** **The approved design remains the single source of truth. Access — not duplication — is the required dependency.**
+
+⛔ **Never introduce:** **a copied specification · an exported checklist · a duplicated design document · a summarized design artifact · an intermediate implementation guide.** **Each can drift from the approved design, and the copy is always the one somebody reads.**
+
+**If a lane cannot access the canonical design, that is a dependency raised immediately, before implementation begins** — ⛔ **never a reason to write a substitute.**
+
+> ⚠️ **The rule is written from a failure, and the failure was not access.** **[C-421](docs/LANE_COORDINATION.md) held three prepared slices for two days on the belief that no lane could read the design. ⚡ It was readable the whole time** — **`DesignSync`, project `1d043179-1ee9-4c9f-b59e-592e04297cad`, twenty-six screen documents** — **and nobody had tried.** **A listing showed two other projects, and an absence in a listing was read as an absence of access.**
+>
+> ⛔ **So the rule has a second half: *accessible* is a claim to be tested, never assumed in either direction.** **Verify a lane can open the artifact before writing the task, and verify it again before reporting that it cannot.**
+
+### The five product milestones, and they are not one thing
+
+**Ratified 2026-08-06, product owner, [D-137](docs/DECISION_REGISTER.md) §7.** **Repository status reports distinguish these permanently.**
+
+| | |
+|---|---|
+| **Implemented** | The code exists and runs |
+| **Design Compliant** | ⚡ **Derived from the finalized design documents** — not from an earlier implementation and not from an interpretation |
+| **Functionally Complete** | Every state the screen owns: loading · empty · error · permissions |
+| **Production Ready** | Real infrastructure, real failure paths, observable |
+| **Enterprise Ready** | What a buyer asks about — audit, export, field permissions, accessibility, SSO |
+
+> ⛔ **A screen can be *Implemented* and not *Design Compliant*, and on 2026-08-06 every screen audited was exactly that** ([478](docs/architecture/478-design-conformance-audit.md)). **Reporting one number for five questions is how that stayed invisible.**
+
 ### Four classes of repository change, and planning corrections are one
 
 **Ratified 2026-08-06, product owner, [D-136](docs/DECISION_REGISTER.md). Drafted by Lane C on that instruction.**
