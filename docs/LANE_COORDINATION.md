@@ -3231,7 +3231,7 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 | **Owner** | **Lane C** — Product Office. *Duplicate-engineering prevention* |
 | **Requesting lane** | **QE**, from a merge-collision check rather than a merge |
 | **Category** | Duplicate engineering · cross-lane coordination |
-| **Status** | **`READY FOR LANE C`** |
+| **Status** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-124](DECISION_REGISTER.md).** **The answer is recorded above; the requesting lane closes** |
 | **Blocks** | Nothing today. **It will be a merge conflict the moment both candidates are promoted** |
 | **Raised** | 2026-08-04, before either candidate reached `integration` |
 
@@ -3305,7 +3305,7 @@ backend/tests/integrations/test_public_contract.py
 | **Owner** | **Lane C** — Product Office. *Governance workflow* |
 | **Requesting lane** | **QE**, from a measurement rather than an inconvenience |
 | **Category** | Governance workflow · defect communication |
-| **Status** | **`READY FOR LANE C`** |
+| **Status** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-124](DECISION_REGISTER.md).** **The answer is recorded above; the requesting lane closes** |
 | **Blocks** | Nothing being implemented. **It blocks two lanes from learning that their branch cannot certify** |
 | **Raised** | 2026-08-04, after both lanes continued building for hours past a blocking defect |
 
@@ -3349,7 +3349,7 @@ origin/integration        rows present:  2
 | **Owner** | **Lane C** — Product Office & Architecture Office. *Governance workflow design* |
 | **Requesting lane** | **QE**, from a Repository Health measurement |
 | **Category** | Governance workflow · Change Budget · documentation synchronization |
-| **Status** | **`READY FOR LANE C`** — 2026-08-03. **Lane C is operational and the product owner has assigned this as its first governance analysis.** Claimable now |
+| **Status** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-124](DECISION_REGISTER.md).** **The answer is recorded above; the requesting lane closes** |
 | **Blocks** | Nothing being implemented. **It blocks `06-events.md` from staying true without a manual correction every time** |
 | **Raised** | 2026-08-03, by QE, after measuring the drift rather than encountering it |
 
@@ -4298,11 +4298,14 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 
 ## C-324 · Where does Epic A's rendering stop being Lane B's?
 
+> ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-125](DECISION_REGISTER.md), by a registry that postdates the question.** **It asked where Epic A's *rendering* stops being Lane B's, from two product-owner sentences on one day.** ⚡ **[`modules.toml`](coordination/modules.toml) now answers it without interpretation**: **`product_surface` — *"every screen, the shell, routing and the customer's vocabulary"* — is Lane A's, `transition = "settled"`.** **So Epic A's backend, read models, public contracts and API composition are Lane B's, and every screen that renders them is Lane A's.** ✅ **§20e made that registry authoritative on 2026-08-04 precisely so this class of question stops being answered by reading two sentences against each other** — **[C-213](#c-213--the-buying-committee-is-not-exported-from-commercial_profilepublic) is what it cost when it was.**
+
+
 | | |
 |---|---|
 | **Raised by** | Lane B, 2026-08-03, on the ownership clarification |
 | **Owner** | **Lane C** — roadmap decomposition and implementation planning, per the coordination model ratified the same day |
-| **Status** | `OPEN` — **not blocking today, blocking before A5** |
+| **Status** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-125](DECISION_REGISTER.md)** |
 | **Blocks** | A5's and A6's frontend halves. **Nothing in A1**, which the product owner approved explicitly |
 
 **The two sentences, both from the product owner, both on 2026-08-03.**
@@ -5128,12 +5131,15 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 ## C-217 · Lane A is AVAILABLE and requests its next Product Surface epic
 
+> ✅ **`CLOSED` — Lane C, 2026-08-06, [D-125](DECISION_REGISTER.md). Moot by events, and the mechanism that replaced it is named.** **Its `Blocks` field said *"Lane A's implementation capacity, entirely"*.** ⚡ **Lane A holds ten eligible rows at shortfall zero today, every one an approved screen or a released capability.** ⛔ **And the *request* model it describes is gone**: [D-070](DECISION_REGISTER.md) replaced *a lane asks and waits* with [`queues/lane-a.toml`](coordination/queues/lane-a.toml), continuously populated and read at Startup step 3 — **so a lane no longer requests an epic, it reads one.**
+
+
 | | |
 |---|---|
 | **Owner** | **Lane C** — Product Office, which now owns roadmap sequencing and implementation assignment |
 | **Requesting lane** | Lane A |
 | **Category** | Work assignment |
-| **Status** | `OPEN` — **awaiting an epic** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-06, [D-125](DECISION_REGISTER.md)** |
 | **Blocks** | **Lane A's implementation capacity, entirely.** Nothing else |
 | **Raised** | 2026-08-03, on the product owner's direction: *"Notify Lane C that Lane A is AVAILABLE"* |
 
@@ -5210,12 +5216,15 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 ## C-218 · A lane can report AVAILABLE, and the office that assigns cannot see it
 
+> ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-125](DECISION_REGISTER.md).** **It asked for a path by which *"a lane reports `AVAILABLE`"* reaches the office that assigns.** ⚡ **That path was built and it runs the other way, which is better**: **the office writes the queue continuously ([D-070](DECISION_REGISTER.md)) and the lane reads it — so nothing has to be *reported* for work to be waiting.** ✅ **And the reverse direction — *is a lane about to run dry?* — is now measured rather than reported**: **[C-333](#c-333--lane-b-has-no-claimable-work-and-the-file-whose-job-is-to-say-so-reports-no-shortfall)'s eight queue checks fire on every `state-check` run**, and [D-100](DECISION_REGISTER.md) makes investigating a dry queue a standing Product Office duty **before the lane reports it**. ⚠️ **The item's own framing was right and its remedy was upside down: the fix was not a better signal from the lane, it was removing the need for one.**
+
+
 | | |
 |---|---|
 | **Owner** | **Lane C** (the model) · **QE** (the mechanism) |
 | **Requesting lane** | Lane A |
 | **Category** | Coordination model |
-| **Status** | `OPEN` |
+| **Status** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-125](DECISION_REGISTER.md)** |
 | **Blocks** | **Every implementation lane's idle time, structurally.** Not one assignment — the signal that triggers all of them |
 | **Raised** | 2026-08-03, immediately after [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) was pushed and turned out to be invisible |
 
@@ -5971,7 +5980,7 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 |---|---|
 | **Raised by** | **Lane A**, on claiming [TASK-439](BACKLOG.md) and running the reuse audit **before writing a line** |
 | **Owner** | **Lane C.** ⛔ **Not a defect and not a ruling** — the row says what to do with it in its own words: *"if a section turns out to need one, that is a finding to raise, not a change to make"* |
-| **Status** | **`READY FOR LANE C`** — nothing blocks the investigation, and the measurement is below |
+| **Status** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [D-124](DECISION_REGISTER.md).** **The answer is recorded above; the requesting lane closes** |
 | **Blocks** | **[TASK-439](BACKLOG.md) whole.** Not partially: without a workspace-wide read there is no list, and without a write surface nothing leaves it |
 
 ### The row's sequencing line does not survive checking, and neither does the audit's scope
