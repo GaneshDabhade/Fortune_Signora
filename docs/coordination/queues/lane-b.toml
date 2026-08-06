@@ -57,8 +57,18 @@ depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-202"
-next    = "TASK-472"
+next    = ""
 future  = []
+
+# ✅ **TASK-472 CLAIMED 2026-08-06 — and C-422's notification is why.**
+# The advisory in lane-a.toml named this row as the dependency Lane A's
+# TASK-440 account table now waits on, and it was claimed the same cycle.
+# ⚡ **First measured instance of D-136 ④ working**: a lane learned of a
+# dependency from a queue notice rather than from a merge.
+#
+# 🔴 **CAPACITY — 1 eligible.** Everything behind TASK-202 is the Action
+# Batch chain (TASK-462…466), sequential by construction, and TASK-461 is
+# CLAIMED. ⛔ Not padded — a sequence cannot be widened by planning it harder.
 
 # ⚡ **TASK-461 claimed 2026-08-06 — the Action Batch contract is under way,
 # and the five slices behind it (462…466) become eligible as it lands.**
@@ -166,8 +176,8 @@ future  = []
 # a bottleneck the product owner can see; a shortfall papered over is a lane
 # that runs dry with a healthy-looking queue file** — which is the exact failure
 # D-070 created this field to end.
-eligible_count = 2
-shortfall      = 3
+eligible_count = 1
+shortfall      = 4
 
 [rationale]
 "TASK-427" = "M-D · the People domain — a person, and an affiliation with an end. ✅ READY 2026-08-06. ⚡ Placed FIRST because it is the prerequisite of what sits behind it, which is fitness and not priority: TASK-202's own row says 'phase 4 needs Epic C', so a lane taking TASK-202 first meets this at phase 4. ⛔ Position remains the product owner's and can be reordered freely. The owner of the new `people` context is Lane B, assigned by the product owner at D-103 — modules.toml carries the row and the directory does not exist yet, deliberately. Authority to build is D-074 (the domain approved, NOT the full People Intelligence feature set) and ADR-0400 is the ratified ADR a new bounded context requires. ⛔ SCOPE BOUND C-221, unchanged: no person's name anywhere — role-based and organization-level only. ⛔ FORBIDDEN in this row: no seniority_score, no is_key_contact, no priority, no ordered list read as a ranking; influence is buying_score_engine's and stays there. Needs NO provider: the intervals derive from RoleChangeValue(title, seniority, direction) + occurred_on + company, which flow in production today."

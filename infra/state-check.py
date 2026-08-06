@@ -257,6 +257,52 @@ def _staleness_findings() -> list[str]:
 _PLANNING_SYNC = "Planning-Sync: required"
 
 
+def _structured_file_findings() -> list[str]:
+    """Every coordination `.toml` parses, and no key is defined twice.
+
+    **Earned by two lanes hitting one defect in a single cycle**, which is the
+    bar `CLAUDE.md` §20e sets — *"one lane's inconvenience is not evidence; two
+    lanes' is."* **Lane C union-resolved `lane-c.toml` during a rebase and
+    produced three `future =` lines; QE did the same to `lane-a.toml` and got
+    `Cannot overwrite a value` at line 149.** **Neither was careless: the union
+    strategy is correct for the append-only markdown registers beside these
+    files, and nothing marked the difference.**
+
+    ⚡ **The rule both lanes arrived at independently — union-resolve markdown,
+    never structured files — is the kind a machine should keep.**
+
+    ⛔ **The parse is the whole check, and a second one was written and
+    removed within the hour.** A line-prefix scan for repeated `key =` was
+    added to name the offending key, and it reported `task`, `note`, `owner`
+    and `blocker` on all five files — which repeat correctly, once per
+    `[[blocked]]` entry. **B-101's shape: counting by line prefix where the
+    question is about structure.** **A duplicate key is unrepresentable in
+    valid TOML, so `tomllib` refusing the file is the entire signal**, and the
+    docstring above had already said so before the redundant scan was written.
+
+    ⛔ **A conflict marker inside a `.toml` also lands here**, because it makes
+    the file unparseable — which is a stronger signal than the marker check
+    over markdown, and arrives at the same place.
+    """
+    findings: list[str] = []
+    root = REPO_ROOT / "docs" / "coordination"
+    if not root.is_dir():
+        return findings
+    for path in sorted(root.rglob("*.toml")):
+        name = path.relative_to(REPO_ROOT)
+        text = path.read_text()
+        try:
+            tomllib.loads(text)
+        except tomllib.TOMLDecodeError as exc:
+            findings.append(
+                f"{name} does not parse — {exc}. A structured file takes one "
+                f"side of a conflict, never a union: a union is correct for the "
+                f"markdown registers beside it and produces duplicate keys here."
+            )
+            continue
+    return findings
+
+
 def _planning_sync_findings() -> list[str]:
     """Planning corrections written here and not yet visible to any lane.
 
@@ -1142,10 +1188,8 @@ def main() -> int:
     # run.** `if not findings: return` would have skipped every queue check on
     # exactly the day the rest of the repository agreed with itself — which is
     # the one day a silent queue drift would go unseen.
-<<<<<<< HEAD
+    findings.extend(_structured_file_findings())
     findings.extend(_planning_sync_findings())
-=======
->>>>>>> 7c430592 (D-135 — nothing exists without an owner, and §20e appeared to say the opposite)
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
     findings.extend(_execution_state_findings())
