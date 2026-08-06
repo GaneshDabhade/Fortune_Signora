@@ -5995,7 +5995,7 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 |---|---|
 | **Raised by** | **Lane A**, holding [TASK-901](BACKLOG.md), with the module's half built and tested |
 | **Status** | **`OPEN`** |
-| **Blocks** | **The last step of slice 1, and nothing else.** A customer's declaration still does not reach a provider |
+| **Blocks** | ⚡ **Narrowed 2026-08-06, and the narrowing is this lane correcting its own reading.** **Slice 1's `providers` field on `WorkerRuntime` — that alone.** ⛔ **Not the subscriptions, and not slices 2 and 3** |
 
 ### What is built, and what one field is missing
 
@@ -6004,6 +6004,22 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 ⚡ **And the split is [ADR-0404](architecture/adr/0404-platform-composition.md)'s own, in its own words**: *"a typed `Settings` choosing which adapters exist belongs to the module that owns the behaviour — that is `provider_platform`, **Lane A's**. **Only the `WorkerRuntime` field is `apps/`, which is Lane C's.**"* **So this item is not a judgement about ownership; it is the ruling, reached.**
 
 ⛔ **What is missing is two `registry.subscribe()` calls and a provider registry on `WorkerRuntime`** — and **[TASK-419](BACKLOG.md) is that change, in its own words**: *"`WorkerRuntime` gains a `providers` field, built at the worker's composition root exactly as the API's registry already is."* **It is `READY`, unclaimed, and Lane C's** (`apps/`, [C-010](#), ruled 2026-08-05).
+
+### ⚠️ Narrowed the same day — this lane read one sentence more broadly than it says
+
+**The quote that decided the first version of this item was [ADR-0404](architecture/adr/0404-platform-composition.md)'s**: *"a typed `Settings` choosing which adapters exist belongs to the module that owns the behaviour — that is `provider_platform`, **Lane A's**. **Only the `WorkerRuntime` field is `apps/`, which is Lane C's.**"*
+
+⛔ **That sentence is limiting, and this lane read it as assigning.** ***"Only the `WorkerRuntime` field"*** says what belongs to `apps/` — **one field** — and by saying *only*, it says the rest does not.
+
+**Three things agree with the narrower reading, and they were all available when the wider one was written:**
+
+| | |
+|---|---|
+| **[§20a](../CLAUDE.md) lists it explicitly** | *"What the freeze does **not** prohibit: **adding a new subscription**, registering a new event type, adding a worker pool, declaring a new authorization `Resource`."* **A subscription is a use of the platform, not a change to it** |
+| **[TASK-901](BACKLOG.md)'s decomposition only makes sense that way** | **"Seven pipeline modules, one per slice"** — sliced *by module*, so each module's lane wires its own consumer. **If the wiring were Lane C's, the task would be one Lane C row, not seven** |
+| ✅ **Measured, not assumed** | **Slices 2 and 3 need no `WorkerRuntime` change at all.** `generate_from_business_event` and `compute_from_signal` take a use case built from a session the runtime already holds. **Only slice 1 needs a provider registry, and that is the field the ADR names** |
+
+> ⚡ **So this item shrinks to one field and stays open for it.** **Slices 2 and 3 proceed under this lane's own authority**, and slice 1's dispatcher, event and consumer stay finished-and-unwired until [TASK-419](BACKLOG.md) lands.
 
 ### Why this lane did not simply do it
 

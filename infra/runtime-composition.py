@@ -52,6 +52,11 @@ MODULES = REPO_ROOT / "backend" / "modules"
 # blockage is intentional, which is exactly the question a human should answer.
 # **Moving a module out of BLOCKED_BY_C012 is how the architecture records that
 # it now expects live consumption.**
+# ⚡ **`signal_engine` left this list at TASK-901 slice 2, 2026-08-06** — the
+# first pipeline stage to consume what it declares. **A module leaving is how
+# the architecture records that it now expects live consumption**, so its
+# absence here is the assertion, and `--strict` fails if the wiring is ever
+# removed without the row coming back.
 BLOCKED_BY_C012 = {
     "business_event_engine": "pipeline stage — in-process until C-012",
     "buying_score_engine": "pipeline stage — in-process until C-012",
@@ -59,7 +64,6 @@ BLOCKED_BY_C012 = {
     "observation_engine": "pipeline stage — in-process until C-012",
     "opportunity_engine": "pipeline stage — in-process until C-012",
     "provider_platform": "pipeline stage — in-process until C-012",
-    "signal_engine": "pipeline stage — in-process until C-012",
 }
 WORKER = REPO_ROOT / "backend" / "apps" / "worker"
 

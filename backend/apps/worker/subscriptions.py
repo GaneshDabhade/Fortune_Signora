@@ -22,12 +22,13 @@ composition fault, and a fallback would make it a silent one.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Final
 from uuid import UUID
 
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from apps.worker.pools import AI_RESEARCH, READ_MODEL
+from apps.worker.pools import AI_RESEARCH, INTELLIGENCE, READ_MODEL
 from modules.ai_platform.infrastructure.composition import build_provider_registry
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_platform.infrastructure.repository import SqlInferenceRecorder
@@ -46,6 +47,22 @@ from modules.ai_research_engine.interface.handlers import (
     CONSUMER_NAME as RESEARCH_CONSUMER,
 )
 from modules.ai_research_engine.interface.handlers import run_requested_research
+from modules.business_event_engine.infrastructure.composition import (
+    build_queries as build_business_event_queries,
+)
+from modules.commercial_profile.infrastructure.competitor_reader import (
+    SqlDeclaredCompetitorReader,
+)
+from modules.knowledge_graph.infrastructure.composition import (
+    build_queries as build_graph_queries,
+)
+from modules.observation_engine.infrastructure.composition import (
+    build_queries as build_observation_queries,
+)
+from modules.provider_normalization.infrastructure.claim_reader import SqlClaimReader
+from modules.signal_engine.infrastructure.composition import build_generate_signals
+from modules.signal_engine.interface.handlers import CONSUMER_NAME as SIGNAL_CONSUMER
+from modules.signal_engine.interface.handlers import generate_from_business_event
 from modules.timeline.domain.projection import PROJECTIONS
 from modules.timeline.infrastructure.composition import build_project_event
 from modules.timeline.interface.handlers import CONSUMER_NAME as TIMELINE_CONSUMER
@@ -85,6 +102,18 @@ RESEARCH_REQUESTED: str = RESEARCH_REQUESTED_EVENT
 #: nobody *did* a projection — but `app.user_id` must still be set, because
 #: `tenant_scoped_session` establishes both keys and the platform requires it.
 SYSTEM_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
+
+#: What Signal Engine consumes, named here as strings.
+#:
+#: ⚠️ **Not imported from `business_event_engine.domain.events`, because there
+#: is nothing there to import.** Both wire names exist only as defaults on
+#: `slots=True` dataclasses, and reading `BusinessEventDetected.event_type`
+#: yields a descriptor repr rather than the string — the trap
+#: `ai_research_engine` hit and then fixed by declaring `Final` constants
+#: beside its events. **That module has not, so this composition root spells
+#: them out and says why.** Reported rather than fixed: the constants belong
+#: in the module that owns the vocabulary, and it is not this lane's.
+SIGNAL_INPUTS: Final = ("business_event.detected", "business_event.superseded")
 
 
 class RuntimeNotInstalled(RuntimeError):
@@ -218,6 +247,43 @@ async def _project_to_timeline(envelope: EventEnvelope) -> None:
         await session.commit()
 
 
+async def _generate_signals(envelope: EventEnvelope) -> None:
+    """Form hypotheses when a business event is detected (TASK-901 slice 2).
+
+    **The same two-levels-deep chain `apps/api/composition/triage.py` builds**
+    — signals need business events, which need observations, which need the
+    graph — and it is built here for the same reason it is built there: **the
+    composition root is the one place that may legitimately import more than
+    one module's infrastructure** (ADR-0403).
+
+    ⚠️ **The claim reader is workspace-scoped from the envelope**, never from
+    a default. The API takes it from the verified request context; a handler's
+    equivalent is the event's own `workspace_id`, which the relay carries and
+    `tenant_scoped_session` has just established as the RLS key.
+    """
+    current = runtime()
+    async with tenant_scoped_session(
+        current.session_factory,
+        workspace_id=envelope.workspace_id,
+        user_id=SYSTEM_USER_ID,
+    ) as session:
+        graph = build_graph_queries(
+            session, claims=SqlClaimReader(session, workspace_id=envelope.workspace_id)
+        )
+        observations = build_observation_queries(session, graph=graph)
+        events = build_business_event_queries(session, observations=observations)
+        await generate_from_business_event(
+            envelope,
+            generate=build_generate_signals(
+                session,
+                business_events=events,
+                competitors=SqlDeclaredCompetitorReader(session),
+                publisher=PostgresOutboxEventPublisher(),
+            ),
+        )
+        await session.commit()
+
+
 def register() -> None:
     """Register every subscription this deployment runs.
 
@@ -236,6 +302,24 @@ def register() -> None:
         # internal work would let one run starve everything behind it.
         pool=AI_RESEARCH.name,
     )
+
+    # **Signal generation, TASK-901 slice 2 — the second module to consume
+    # what it declares.** Two event types because the module's own handler
+    # documents two: a business event detected, and one superseded. **One
+    # subscription each**, for the reason the Timeline block below states —
+    # the registry keys on `(consumer, event_type)` and the relay needs the
+    # triple to route.
+    #
+    # `intelligence` is the pool `pools.py` declared for exactly this since
+    # M1.1 — *"Business Event, Signal, Buying Score, Opportunity Engines"* —
+    # and it has never had a subscriber.
+    for signal_event in SIGNAL_INPUTS:
+        registry.subscribe(
+            consumer_name=SIGNAL_CONSUMER,
+            event_type=signal_event,
+            handler=_generate_signals,
+            pool=INTELLIGENCE.name,
+        )
 
     # **Nine event types, one handler, one subscription each.** The registry
     # keys on `(consumer, event_type)`, and the relay needs the triple in order

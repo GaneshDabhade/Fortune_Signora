@@ -848,3 +848,22 @@ The outcome discriminators — `actioned`, `assigned`, `snoozed`, `dismissed` �
 
 ⛔ **Nothing is authored here.** §2 — *domain experts own static knowledge* — and the catalog is that artifact. A slice that invented an explanation would be putting authored words where a reviewed one belongs.
 
+## The module consumes what it declares — 2026-08-06 (Lane A, TASK-901 slice 2)
+
+**Signal Engine has had a `CONSUMER_NAME`, a handler and a complete use case since M5, and no subscription in any deployed process.** The only caller of `generate_from_business_event` was `tests/pipeline.py`. **Every gate was green the entire time** — the module's own suite drives `GenerateSignals` directly, and the integration tests drive the handler directly. **A customer running the promoted build would have had a pipeline that formed no hypotheses.**
+
+> ⚡ **That is [B-301](../BUGS.md)'s shape exactly**, one module over: *"a capability that ships complete and does nothing."* **`make runtime-composition` was built to measure it, and it counted this module as *deliberately* waiting** — on [C-012](../LANE_COORDINATION.md), which was closed on 2026-08-05 by [ADR-0404](adr/0404-platform-composition.md).
+
+**What changed is two `registry.subscribe()` calls**, and the module is untouched.
+
+| | |
+|---|---|
+| **Both event types, one subscription each** | `business_event.detected` **and** `business_event.superseded` — what this module's own handler documents. **Subscribing to one would leave superseded events forming no signals**, and nothing else would notice |
+| **The `intelligence` pool** | Declared in `pools.py` since M1.1 as *"Business Event, Signal, Buying Score, Opportunity Engines"* and **never used until now.** A pipeline stage in the read-model pool would let a projection storm delay hypothesis formation |
+| **The chain is the API's, not a new one** | `apps/api/composition/triage.py` already builds signals → business events → observations → graph. **The composition root is the one place that may import more than one module's infrastructure** ([ADR-0403](adr/0403-module-composition.md)), and this is the worker's |
+| **The claim reader is scoped from the envelope** | The API takes the workspace from the verified request; a handler's equivalent is the event's own `workspace_id`, which `tenant_scoped_session` has just established as the RLS key |
+
+⚠️ **A finding for `business_event_engine`'s current assignee, reported rather than fixed.** **Its two wire names exist only as defaults on `slots=True` dataclasses**, so `BusinessEventDetected.event_type` reads as a descriptor repr rather than the string. **`ai_research_engine` hit that exact trap and fixed it by declaring `Final` constants beside its events**; this module's composition root now spells the two names out and says why. **The constants belong in the module that owns the vocabulary.**
+
+⛔ **It still forms no signals in production, and the reason is upstream.** `business_event_engine` is itself unwired, so nothing publishes what this now consumes. **That is the next lane's slice of the same task, and the measure is the same**: `BLOCKED_BY_C012` shrinks by exactly one each time.
+

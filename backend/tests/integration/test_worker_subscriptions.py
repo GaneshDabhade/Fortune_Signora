@@ -23,6 +23,7 @@ import pytest
 from apps.worker import subscriptions
 from apps.worker.pools import POOLS
 from modules.timeline.domain.projection import PROJECTIONS
+from modules.signal_engine.interface.handlers import CONSUMER_NAME as SIGNAL_CONSUMER
 from modules.timeline.interface.handlers import CONSUMER_NAME as TIMELINE_CONSUMER
 from signora_platform.event_bus import registry
 
@@ -80,3 +81,51 @@ class TestEverySubscriptionRoutesSomewhere:
         declared = set(POOLS)
         for pool in registry.pools():
             assert pool in declared, f"subscription routes to undeclared pool {pool!r}"
+
+
+class TestSignalGenerationIsActuallySubscribed:
+    """TASK-901 slice 2 — **the first pipeline stage to consume what it
+    declares.**
+
+    `signal_engine` has had a `CONSUMER_NAME`, a handler and a full use case
+    since M5 and **no subscription in any deployed process**: the only caller
+    of `generate_from_business_event` was `tests/pipeline.py`. That is
+    [B-301](../../../docs/BUGS.md)'s shape exactly — every gate green, and a
+    capability that runs only inside a test.
+    """
+
+    def test_both_business_event_types_reach_the_signal_engine(self) -> None:
+        subscriptions.register()
+
+        missing = [
+            event_type
+            for event_type in subscriptions.SIGNAL_INPUTS
+            if registry.find(consumer_name=SIGNAL_CONSUMER, event_type=event_type) is None
+        ]
+
+        assert missing == []
+
+    def test_it_consumes_what_its_own_handler_documents(self) -> None:
+        """**The list is not free to drift.** The module's handler says it
+        subscribes to a detected event and a superseded one; a composition root
+        quietly subscribing to one of them would leave superseded business
+        events forming no signals, and nothing else would notice."""
+        assert subscriptions.SIGNAL_INPUTS == (
+            "business_event.detected",
+            "business_event.superseded",
+        )
+
+    def test_it_runs_in_the_pool_declared_for_it(self) -> None:
+        """`intelligence` — *"Business Event, Signal, Buying Score, Opportunity
+        Engines"*, declared since M1.1 and until now with no subscriber. A
+        pipeline stage sharing the read-model pool would let a projection storm
+        delay hypothesis formation."""
+        subscriptions.register()
+
+        found = registry.find(
+            consumer_name=SIGNAL_CONSUMER, event_type="business_event.detected"
+        )
+
+        assert found is not None
+        assert found.pool == POOLS["intelligence"].name
+
