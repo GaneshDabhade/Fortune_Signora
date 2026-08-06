@@ -94,9 +94,27 @@ updated      = 2026-08-06
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-901"
+current = ""
 next    = ""
 future  = []
+
+# 🔴 **0 CLAIMABLE — 2026-08-06. TASK-901 claimed, and it was the last one.**
+# ⛔ **NOT IDLE, and the distinction is the whole point of this field.** This
+# lane holds ten rows in flight and its branch is nine commits ahead of
+# integration. `eligible_count` counts what is CLAIMABLE; it has never
+# counted what is executable.
+#
+# ⚡ **The next supply is one row away and it is not a decision.**
+#   TASK-467, 468, 471 — the design refinement slices — wait on TASK-448
+#   ALONE now that C-421 is closed. TASK-448 is IN PROGRESS with this lane.
+#   ✅ When it lands, three rows become eligible at once.
+# ⛔ Nothing to decide, nothing to decompose, and no scope this office may
+#   invent. Reported rather than padded.
+#
+# ✅ **And they are genuinely readable now**: docs/design-snapshot/ holds all
+#   26 approved designs locally (D-138). Reference a screen by path, e.g.
+#   docs/design-snapshot/screens/Fortune Signora Authentication.dc.html
+#   ⚠️ 478 measured that surface: 1 of 11 design elements is implemented.
 
 # 🔴 **CAPACITY — 1 eligible, and it is the least certain row in the queue.**
 # TASK-447 claimed 2026-08-06. TASK-901 is seven slices behind TASK-900,
@@ -263,8 +281,8 @@ future  = []
 # ⚠️ **Counted wrong once and corrected by the gate**: `current` + `next` + three
 # `future` is 5, not 4. **The instrument caught its author** — which is the only
 # reason C-333's count check exists.
-eligible_count = 1
-shortfall      = 4
+eligible_count = 0
+shortfall      = 5
 
 [rationale]
 "TASK-439" = "⚡ THE SIGNAL CENTER — the first approved screen this lane ships under D-104, and it is a RENDER. 447 traced ten elements: 6 built, 2 amber, 2 red — and BOTH reds are already moving: Resource.SIGNAL is TASK-405 (IN VALIDATION, with QE) and signal.resolved is TASK-432 (above, this lane's). No other approved screen has both blockers in flight. Already built and not to be rebuilt: the aggregate and its scoring; Actioned/Assigned/Snoozed/Dismissed/Resolution, all four; Snoozed.until as a read-time predicate; DismissalReason; and the triage counts in lib/state/triage.ts, which partition and never re-rank. ⛔ OUT OF SCOPE, named so it is not discovered late: the readable audit surface (R-07, 🟡) and rule precision (downstream of TASK-432 — without signal.resolved there is nothing to aggregate). 🟢 Render only: no endpoint, no event, no migration. If a section needs one, raise it. ⚠️ AND THE ONE RULE: a failed read must never render as an empty queue — P-A and C-226. 'Nothing to triage' and 'we could not find out' are opposite messages to a seller, and this is the screen where the difference costs most. Sequence after TASK-405 promotes; TASK-432 may run in parallel."

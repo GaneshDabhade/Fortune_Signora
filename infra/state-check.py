@@ -435,6 +435,50 @@ def _backlog_states(backlog: str) -> dict[str, str]:
 _PARKED = frozenset({"SEQUENCED", "BLOCKED", "WAITING", "DISPOSED"})
 
 
+def _declared_state(cell: str) -> str:
+    """The backticked state token in a Status cell, or a readable stand-in.
+
+    **Never `re.match(...).group()` inline** — a cell with no token returns
+    `None` and the traceback would be inside the check that exists to report
+    a malformed row.
+    """
+    token = re.search(r"`([A-Z][A-Z ]*)`", cell)
+    return token.group(1).strip() if token else cell.strip()[:20] or "(blank)"
+
+
+def _duplicate_state_findings(backlog: str) -> list[str]:
+    """A task block declaring its state twice.
+
+    **Found by a shipped defect, not by imagination.** `TASK-440` reached
+    `origin/integration` with two `Status` rows — Product Office's `BLOCKED`
+    and Lane A's `CLAIMED` — because a union conflict resolution is correct
+    for an append-only register and wrong for a field that holds one value.
+    **The same mistake as the TOML union**, one file format over.
+
+    ⛔ **It is the silent kind.** Every reader here — `_backlog_states`, the
+    dashboard, a lane — takes the first match, so the repository answered
+    *BLOCKED* for a row a lane was holding, and both rows looked deliberate.
+
+    ⚡ **This is the markdown half of what `_structured_file_findings` does for
+    TOML**: a field that may hold one value, holding two.
+    """
+    findings: list[str] = []
+    for block in re.split(r"(?=^### TASK-\d+)", backlog, flags=re.M):
+        head = re.match(r"^### (TASK-\d+)", block)
+        if head is None:
+            continue
+        body = block.split("\n### ", 1)[0]
+        rows = re.findall(r"^\|\s*\*\*Status\*\*\s*\|([^|]*)\|", body, re.M)
+        if len(rows) > 1:
+            findings.append(
+                f"{head.group(1)} declares its state {len(rows)} times — "
+                + " / ".join(_declared_state(r) for r in rows)
+                + ". Every reader takes the first, so the repository answers with "
+                f"whichever was written higher. A state holds one value."
+            )
+    return findings
+
+
 def _ownership_findings(backlog: str) -> list[str]:
     """Rows nobody is executing and nobody is accountable for.
 
@@ -1190,6 +1234,7 @@ def main() -> int:
     # the one day a silent queue drift would go unseen.
     findings.extend(_structured_file_findings())
     findings.extend(_planning_sync_findings())
+    findings.extend(_duplicate_state_findings(backlog))
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
     findings.extend(_execution_state_findings())

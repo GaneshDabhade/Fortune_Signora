@@ -44,16 +44,6 @@
 
 ---
 
-## ⛔ C-421 · A lane cannot read the design it is implementing against — EXTERNAL
-
-| | |
-|---|---|
-| **The ask** | ⚡ **Nothing to decide. Something to provide.** **That Lane A can open the canonical design set** — the location registered in [410](architecture/410-approved-ui-specification.md) |
-| **Blocks** | **[TASK-467](BACKLOG.md) · [TASK-468](BACKLOG.md) · [TASK-471](BACKLOG.md)** — **every slice whose first act is a gap analysis against the design.** ✅ **[TASK-469](BACKLOG.md) and [TASK-470](BACKLOG.md) carry backend work that is not blocked** |
-| **Priority** | **P1 — three prepared slices, sequenced, and none can begin** |
-| ⛔ **Why it is an item and not a note** | **The workaround was proposed and refused.** **This office suggested extracting the design's states into a conformance checklist a row could reference; [D-129](DECISION_REGISTER.md) ruled against it** — *"the only acceptable derived artifacts are implementation tasks, measurable gap analyses, and test cases. The design itself must remain the single source of truth."* ⚡ **So the slices reference the design directly and the access gap is raised rather than absorbed — the difference between a dependency and a silent assumption** |
-| **Recommended** | ✅ **Grant read access to the registered design location.** ⛔ **Not a copy, not an export into the repository, not a checklist** — all three are what D-129 forbids |
-
 ## ⛔ C-229 · Opportunity Intelligence needs a door, and D38 closed that one deliberately
 
 | | |
@@ -223,6 +213,19 @@
 | **Recommended** | ✅ **Rule that the design is authoritative *and* that the fourteen findings are inputs to the gap analysis** — ⛔ **not a veto over it.** ⚡ **[D-129](DECISION_REGISTER.md) already permits exactly this artifact: a measurable gap analysis is one of the three, and *"the design already handles this"* is a legitimate finding for each of the fourteen** |
 
 ## Closed on 2026-08-06
+> ✅ **[C-421](LANE_COORDINATION.md) left this page 2026-08-06.** **It was never an access problem** — the design was readable throughout and [`docs/design-snapshot/`](design-snapshot/MANIFEST.md) now holds it locally ([D-138](DECISION_REGISTER.md)). ⛔ **It blocked three prepared slices for two days on a call nobody made.**
+
+## ⛔ C-421 · A lane cannot read the design it is implementing against — EXTERNAL
+
+| | |
+|---|---|
+| **The ask** | ⚡ **Nothing to decide. Something to provide.** **That Lane A can open the canonical design set** — the location registered in [410](architecture/410-approved-ui-specification.md) |
+| **Blocks** | **[TASK-467](BACKLOG.md) · [TASK-468](BACKLOG.md) · [TASK-471](BACKLOG.md)** — **every slice whose first act is a gap analysis against the design.** ✅ **[TASK-469](BACKLOG.md) and [TASK-470](BACKLOG.md) carry backend work that is not blocked** |
+| **Priority** | **P1 — three prepared slices, sequenced, and none can begin** |
+| ⛔ **Why it is an item and not a note** | **The workaround was proposed and refused.** **This office suggested extracting the design's states into a conformance checklist a row could reference; [D-129](DECISION_REGISTER.md) ruled against it** — *"the only acceptable derived artifacts are implementation tasks, measurable gap analyses, and test cases. The design itself must remain the single source of truth."* ⚡ **So the slices reference the design directly and the access gap is raised rather than absorbed — the difference between a dependency and a silent assumption** |
+| **Recommended** | ✅ **Grant read access to the registered design location.** ⛔ **Not a copy, not an export into the repository, not a checklist** — all three are what D-129 forbids |
+
+
 
 > **Seven rows left this page because they were decided, not because they were dropped.** **[D-131](DECISION_REGISTER.md) ①**: *"a decision recorded only in prose is effectively invisible to the repository"* — **so each item's `Status` field and its index row were written in the same change as this removal, and `decision-queue.py --check` is what proves it.**
 
