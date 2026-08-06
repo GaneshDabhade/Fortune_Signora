@@ -49,7 +49,7 @@ updated      = 2026-08-06
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = ""
+current = "TASK-432"
 next    = ""
 future  = []
 
@@ -88,10 +88,11 @@ future  = []
 # **`eligible` means *claimable now*, and TASK-400 is already claimed** — so
 # the count stays 0 and the narrative changes. **Both facts belong here,
 # because the number alone reads as idleness.**
-eligible_count = 0
-shortfall      = 5
+eligible_count = 1
+shortfall      = 4
 
 [rationale]
+"TASK-432" = "A triaged signal says so, and the pipeline hears it. ✅ Set READY by Lane C on 2026-08-06 — fitness, not priority (§20e), placed last and reordering nothing. The domain is BUILT: signal_engine/domain/resolution.py already has Resolution · Actioned · Assigned · Snoozed · Dismissed · DismissalReason. This adds ONE event type on the envelope the catalog already uses 34 times — explicitly 'a use of the platform, not a change to it' (§20a). ⛔ No notification: ADR-0040 is deferred by D-027 and this does not touch it. ⚡ Its SEQUENCED trigger read 'the next signal_engine slice — small enough to travel with one'; that is a bundling convenience rather than a dependency, no such slice is queued, and the row's own cost is 'every day without it loses evidence that cannot be recovered.'"
 
 # **Was empty, and that was the finding.** Both rows this file listed were claimed
 # within the hour of being listed — which is the queue working — and nothing

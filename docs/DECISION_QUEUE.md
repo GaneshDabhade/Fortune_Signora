@@ -60,7 +60,20 @@
 | **Why it is here rather than in the `READY` queue** | **Your instruction**: *"do not assign implementation immediately… make it part of the planned execution sequence so implementation begins at the correct time."* **The row is prepared and unplaced.** A lane may not insert a `READY` task and Lane C may not reprioritize — **so one move by you is the whole remaining step** |
 | **Impact** | **Four screens across waves 1–4.** Account 360 has already shipped two ⬜ stated absences; **AI Copilot is the next one to pay** |
 | **Blocked tasks** | **[TASK-428](BACKLOG.md) entirely.** TASK-429 and TASK-430 have their own, later triggers |
-| **Lanes waiting** | **None yet, and that is the argument for placing it now rather than the argument against.** Epic C is assigned to **Lane A** |
+| **Lanes waiting** | **None yet, and that is the argument for placing it now rather than the argument against.** ⚠️ ~~Epic C is assigned to **Lane A**~~ — **wrong, corrected 2026-08-06; see below** |
+
+> ## ⚠️ **Corrected 2026-08-06 — this entry named the wrong lane, and the row's real blocker is narrower than *"placement."***
+>
+> **Measured, not recalled:** **[`modules.toml`](coordination/modules.toml) gives `knowledge_graph` and `commercial_profile` to Lane B · [`queues/lane-b.toml`](coordination/queues/lane-b.toml) is the only queue naming `TASK-201` · and this entry said Lane A.** **Two governance documents named different lanes for one epic** — **[C-213](LANE_COORDINATION.md)'s class exactly, in a document this office wrote.**
+>
+> ⚡ **And the sharper finding: `modules.toml` has no `people` row at all.** **[TASK-427](BACKLOG.md)'s own Module cell says so — *"`modules.toml` gains a row when this is placed, not before."***
+
+| | |
+|---|---|
+| ⚡ **So the ask is one line, not a priority act** | **A `[people]` row in [`modules.toml`](coordination/modules.toml) naming an owner.** ⛔ **Module ownership is never Lane C's** (§20e, *what Lane C never does*), so this office cannot write it however obvious the answer looks |
+| ✅ **The answer does look obvious, and that is offered as input** | **Lane B holds `knowledge_graph`, `commercial_profile` and the `TASK-201` parent row.** §20e's precedence — **① product architecture · ② bounded context · ③ long-term maintenance** — points the same way |
+| ⚠️ **Why `READY` alone would not have worked** | **Setting it `READY` is this office's** (§20e — *fitness, not priority*), **and a `READY` row in a module no lane owns is unclaimable** — the [C-412](LANE_COORDINATION.md) defect. **So this row is the one place where fitness genuinely is not enough** |
+| 🟢 **What it is not** | **Not a ruling.** [D-074](DECISION_REGISTER.md) approved the domain; [ADR-0400](architecture/adr/0400-person-as-an-entity.md) is ratified; [441](architecture/441-people-roadmap.md) is the plan; the trigger fired on 2026-08-05. **One registry line and a queue position** |
 | **Priority** | **P1 — it is in front of a wave that is claimable today** |
 | **Recommended** | ✅ **Place [TASK-427](BACKLOG.md) in `READY` above [TASK-202](BACKLOG.md).** **Nothing gates it** — no ruling, no provider, no missing module. **Alternative, if wave 2 should not wait**: place it immediately *below* TASK-202 and accept that AI Copilot's phase 4 stalls where phases 1–3 do not |
 
