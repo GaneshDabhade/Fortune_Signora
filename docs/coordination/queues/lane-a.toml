@@ -49,9 +49,9 @@ updated      = 2026-08-06
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-432"
-next    = "TASK-439"
-future  = ["TASK-442", "TASK-441", "TASK-440", "TASK-443"]
+current = "TASK-439"
+next    = "TASK-441"
+future  = ["TASK-440", "TASK-442", "TASK-443"]
 
 # ⚠️ **Rewritten 2026-08-05. This file declared 5 eligible and none of the five
 # was startable.** Every row is now checked against BACKLOG.md rather than
@@ -108,7 +108,10 @@ future  = ["TASK-442", "TASK-441", "TASK-440", "TASK-443"]
 #             and never created the row, which is exactly what D-106 forbids.
 #   TASK-443  R-07's audit surface — attribution is complete in 37 files
 #             and the QUERY is missing. Three screens wait on it.
-eligible_count = 6
+# ✅ 2026-08-06 · TASK-432 CLAIMED by Lane A within the hour of reaching
+# integration. The row this office released on a stale trigger is now in
+# implementation, and TASK-439 — the Signal Center it unblocks — is next.
+eligible_count = 5
 shortfall      = 0
 
 [rationale]
@@ -120,17 +123,10 @@ shortfall      = 0
 # replaced them, which is the queue's owner not keeping up.
 
 
-# ── In progress with this lane — listed so nothing here reads as claimable ────
-[[held]]
+# ── With QE ─────────────────────────────────────────────────────────────────
+[[in_validation]]
 task = "TASK-400"
-note = "Epic A completion. IN PROGRESS — claimed 2026-08-05, and A6 delivered the same day. C-219 was brought four polls late and is now with Lane C for review, which releases the A7 render"
-
-# ── Blocked, keyed to real ids ───────────────────────────────────────────────
-[[held]]
-task    = "TASK-400"
-blocker = []
-owner   = "Lane A — both halves are executable"
-note    = "✅ FULLY UNBLOCKED 2026-08-06. This entry named TWO blockers and both are now gone. ① C-321 is RULED (2026-08-05) — 'Adopt Lane B's proposed behaviour. Proceed.' All six sub-answers stand: appear yes · working list no · score yes · opportunity no · workable never · `Needs identity`, its own queue. A6 had been executable for a full day while this file said otherwise. ② C-219 is RATIFIED by Lane C (2026-08-06): option ③ — freshness renders PER TARGET ACCOUNT, not per entity. ⚡ No join is built because there is nothing to join: TargetAccount is (id, name), its name IS the subject RunProviderSync takes, and the entry carries a stable client-chosen id so the render keys on an id rather than a name. ⛔ Do NOT implement ① name matching — refused as a second resolver by a weaker method than the resolver's. ⛔ Do NOT build ② the binding table — sequenced behind a trigger that has not fired: a screen needing freshness for an account reached through something other than a target declaration. ⚠️ 51 §A7's UX row said 'the same line A4 owns' — that is the brief, and ③ does not render there; the amendment is recorded in C-219. Acceptance ③ already permits it: the A4 sentence is unchanged where the fact is absent. The word `checked` does not ship until it is true; freshness.test.tsx asserts the refusal and is updated by the render slice, never worked around"
+note = "Epic A completion. ✅ SHIPPED 2026-08-06 — 'a seller can see whether Signora is still watching a company'. Both halves landed: A6 was released by C-321's ruling, and A7's render by Lane C's C-219 ratification of option ③ — freshness per TARGET ACCOUNT, no join built because TargetAccount.name IS the subject RunProviderSync takes. ⚡ This is the first customer-visible functionality to ship after three cycles that shipped none."
 
 # ── With QE ──────────────────────────────────────────────────────────────────
 [[in_validation]]

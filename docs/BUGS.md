@@ -164,7 +164,7 @@ def evidence_state(opportunity, score, moment) -> EvidenceState:
 | **Module** | `infra/state-check.py` — the backlog summary line, check 5c |
 | **Current assignee** | **Lane C** — `infra/` is Platform Foundation ([D-022](DECISION_REGISTER.md)), and [B-125](#b-125--the-new-document-location-check-silently-no-ops-on-a-clone-without-originintegration) is already assigned there for this same file |
 | **Severity** | 🟠 · **Reassuring rather than merely wrong.** *"54 READY"* reads as a healthy queue on a day when two rows are `READY` and both are blocked |
-| **Status** | **`OPEN`** — reported with the line identified; **not fixed, another lane's file** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-06.** **QE verifies; the lane that fixed it does not close it.** ⚡ **Fixed independently and hours apart** — this office found the same defect while writing [D-099](DECISION_REGISTER.md)'s queue work and corrected it in the same commit, and Lane B's `B-328` commit dropped as a duplicate on rebase. **Both diagnoses were right and the second cost one rebase to discover** — recorded as [C-103](LANE_COORDINATION.md)'s second instance. **The line now reads `Backlog: 61 task(s), 9 startable (…)`, and it lists the ids** |
 | **Found** | 2026-08-06 by Lane B, checking its own reporting against the gate after [C-333](LANE_COORDINATION.md) added seven queue validations |
 
 ### B-401 · `04-modules.md` disagrees with `backend/modules/` in four places
