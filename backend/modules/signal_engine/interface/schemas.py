@@ -195,6 +195,17 @@ class SignalTypeResponse(BaseModel):
             "descriptions that disagree."
         )
     )
+    why_it_matters: str = Field(
+        description=(
+            "Why this kind of hypothesis is commercially interesting — a fact about the "
+            "**type**, true before any account exhibits it. Added by TASK-456, answering "
+            "C-204: a seller reading a two-word label on a ranked row had no way to learn "
+            "what it meant. **Deliberately the only explanation here.** What a hypothesis "
+            "proposes, cannot prove, and how to check it are per-account questions the "
+            "validation surface already answers, and the same prose in two places means "
+            "one of them goes stale."
+        )
+    )
 
 
 class SignalCatalogResponse(BaseModel):
@@ -232,7 +243,11 @@ class SignalCatalogResponse(BaseModel):
         return cls(
             version=catalog.version,
             types=tuple(
-                SignalTypeResponse(key=definition.key, title=definition.title)
+                SignalTypeResponse(
+                    key=definition.key,
+                    title=definition.title,
+                    why_it_matters=definition.why_it_matters,
+                )
                 for definition in sorted(catalog.types, key=lambda d: d.title)
             ),
         )

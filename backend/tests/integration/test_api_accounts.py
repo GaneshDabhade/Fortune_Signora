@@ -52,9 +52,10 @@ async def client(key_pair: KeyPair) -> AsyncIterator[AsyncClient]:
         jwt_audience=TEST_AUDIENCE,
     )
     app = create_app(settings)
-    async with app.router.lifespan_context(app), AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as http:
+    async with (
+        app.router.lifespan_context(app),
+        AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as http,
+    ):
         yield http
 
 
@@ -253,9 +254,7 @@ class TestTheResponseShapeIsTheOneDocumented:
 
 
 class TestTheEndpointIsRegisteredAndDocumented:
-    async def test_it_appears_in_the_generated_openapi(
-        self, client: AsyncClient
-    ) -> None:
+    async def test_it_appears_in_the_generated_openapi(self, client: AsyncClient) -> None:
         """The API is documented by generation, never by hand (§7)."""
         schema = (await client.get("/openapi.json")).json()
         path = schema["paths"]["/workspaces/{workspace_id}/accounts"]["get"]
@@ -263,9 +262,7 @@ class TestTheEndpointIsRegisteredAndDocumented:
         assert path["summary"] == "Accounts worth attention, most pressing first"
         assert "which accounts should i work on today" in path["description"].lower()
 
-    async def test_every_response_field_is_documented(
-        self, client: AsyncClient
-    ) -> None:
+    async def test_every_response_field_is_documented(self, client: AsyncClient) -> None:
         """A field a customer cannot interpret is a field that should not be on
         the row. Asserted against the generated schema, so a new field without
         a description fails here rather than reaching a client."""
@@ -495,9 +492,7 @@ class TestAccountIdentitiesAreResolvedNotStored:
         mine_workspace, mine_user, _, _ = await _tracked(
             session_factory, admin_session_factory, "northwind"
         )
-        _, _, theirs_entity, _ = await _tracked(
-            session_factory, admin_session_factory, "contoso"
-        )
+        _, _, theirs_entity, _ = await _tracked(session_factory, admin_session_factory, "contoso")
 
         response = await client.get(
             f"/workspaces/{mine_workspace}/account-identities",
@@ -508,9 +503,7 @@ class TestAccountIdentitiesAreResolvedNotStored:
         assert response.status_code == 200
         assert [i for i in response.json() if i["name"] is not None] == []
 
-    async def test_a_non_member_gets_404(
-        self, client: AsyncClient, key_pair: KeyPair
-    ) -> None:
+    async def test_a_non_member_gets_404(self, client: AsyncClient, key_pair: KeyPair) -> None:
         workspace = await _workspace(client, key_pair, uuid4())
 
         response = await client.get(
@@ -704,19 +697,13 @@ class TestTheScoreExplainsItself:
         mine_workspace, mine_user, _, _ = await _tracked(
             session_factory, admin_session_factory, "northwind"
         )
-        _, _, theirs_entity, _ = await _tracked(
-            session_factory, admin_session_factory, "contoso"
-        )
+        _, _, theirs_entity, _ = await _tracked(session_factory, admin_session_factory, "contoso")
 
-        response = await _score(
-            client, key_pair, mine_user, mine_workspace, theirs_entity
-        )
+        response = await _score(client, key_pair, mine_user, mine_workspace, theirs_entity)
 
         assert response.status_code == 404
 
-    async def test_a_non_member_gets_404(
-        self, client: AsyncClient, key_pair: KeyPair
-    ) -> None:
+    async def test_a_non_member_gets_404(self, client: AsyncClient, key_pair: KeyPair) -> None:
         workspace = await _workspace(client, key_pair, uuid4())
 
         response = await _score(client, key_pair, uuid4(), workspace, uuid4())
@@ -863,9 +850,7 @@ class TestTheBriefKnowsWhatChanged:
             session_factory, admin_session_factory, "northwind"
         )
 
-        body = (
-            await _opportunity(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _opportunity(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         if body["score"] is None:
             assert body["score_change_since_open"] is None
@@ -887,9 +872,7 @@ class TestTheBriefKnowsWhatChanged:
             session_factory, admin_session_factory, "northwind"
         )
 
-        body = (
-            await _opportunity(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _opportunity(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         assert (body["score"] is None) == (body["score_change_since_open"] is None)
 
@@ -905,9 +888,9 @@ class TestTheBriefKnowsWhatChanged:
             session_factory, admin_session_factory, "northwind"
         )
 
-        history = (
-            await _opportunity(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()["history"]
+        history = (await _opportunity(client, key_pair, user_id, workspace_id, entity_id)).json()[
+            "history"
+        ]
 
         assert history, "an opportunity with no recorded state cannot explain itself"
         assert [e["occurred_at"] for e in history] == sorted(e["occurred_at"] for e in history)
@@ -928,9 +911,9 @@ class TestTheBriefKnowsWhatChanged:
             session_factory, admin_session_factory, "northwind"
         )
 
-        history = (
-            await _opportunity(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()["history"]
+        history = (await _opportunity(client, key_pair, user_id, workspace_id, entity_id)).json()[
+            "history"
+        ]
 
         assert history[0]["stage"] == "tracking"
         assert history[0]["decided_by"] is None
@@ -958,19 +941,13 @@ class TestTheBriefKnowsWhatChanged:
         mine_workspace, mine_user, _, _ = await _tracked(
             session_factory, admin_session_factory, "northwind"
         )
-        _, _, theirs_entity, _ = await _tracked(
-            session_factory, admin_session_factory, "contoso"
-        )
+        _, _, theirs_entity, _ = await _tracked(session_factory, admin_session_factory, "contoso")
 
-        response = await _opportunity(
-            client, key_pair, mine_user, mine_workspace, theirs_entity
-        )
+        response = await _opportunity(client, key_pair, mine_user, mine_workspace, theirs_entity)
 
         assert response.status_code == 404
 
-    async def test_a_non_member_gets_404(
-        self, client: AsyncClient, key_pair: KeyPair
-    ) -> None:
+    async def test_a_non_member_gets_404(self, client: AsyncClient, key_pair: KeyPair) -> None:
         workspace = await _workspace(client, key_pair, uuid4())
 
         response = await _opportunity(client, key_pair, uuid4(), workspace, uuid4())
@@ -982,9 +959,7 @@ class TestTheBriefKnowsWhatChanged:
     ) -> None:
         workspace = await _workspace(client, key_pair, uuid4())
 
-        response = await client.get(
-            f"/workspaces/{workspace}/accounts/{uuid4()}/opportunity"
-        )
+        response = await client.get(f"/workspaces/{workspace}/accounts/{uuid4()}/opportunity")
 
         assert response.status_code == 401
 
@@ -1120,9 +1095,7 @@ class TestTheBriefCanSpeakPlainly:
         )
         await self._stored(session_factory, workspace_id, entity_id)
 
-        body = (
-            await _narration(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _narration(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         assert body["prompt"] == "explanation_narration@1"
         assert body["model"] == "llama3.1:8b"
@@ -1169,15 +1142,11 @@ class TestTheBriefCanSpeakPlainly:
         )
         await self._stored(session_factory, theirs_workspace, theirs_entity)
 
-        response = await _narration(
-            client, key_pair, mine_user, mine_workspace, theirs_entity
-        )
+        response = await _narration(client, key_pair, mine_user, mine_workspace, theirs_entity)
 
         assert response.status_code == 404
 
-    async def test_a_non_member_gets_404(
-        self, client: AsyncClient, key_pair: KeyPair
-    ) -> None:
+    async def test_a_non_member_gets_404(self, client: AsyncClient, key_pair: KeyPair) -> None:
         workspace = await _workspace(client, key_pair, uuid4())
 
         response = await _narration(client, key_pair, uuid4(), workspace, uuid4())
@@ -1189,9 +1158,7 @@ class TestTheBriefCanSpeakPlainly:
     ) -> None:
         workspace = await _workspace(client, key_pair, uuid4())
 
-        response = await client.get(
-            f"/workspaces/{workspace}/accounts/{uuid4()}/narration"
-        )
+        response = await client.get(f"/workspaces/{workspace}/accounts/{uuid4()}/narration")
 
         assert response.status_code == 401
 
@@ -1296,9 +1263,7 @@ class TestTheBriefCanSpeakPlainly:
         )
         tokens = await self._grounded(session_factory, workspace_id, entity_id)
 
-        body = (
-            await _narration(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _narration(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         cited = {token for s in body["statements"] for token in s["evidence"]}
         resolved = {fact["token"] for fact in body["facts"]}
@@ -1321,9 +1286,7 @@ class TestTheBriefCanSpeakPlainly:
         )
         await self._grounded(session_factory, workspace_id, entity_id)
 
-        body = (
-            await _narration(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _narration(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         tokens = [fact["token"] for fact in body["facts"]]
         assert len(tokens) == len(set(tokens)), f"a fact was repeated: {tokens}"
@@ -1343,9 +1306,7 @@ class TestTheBriefCanSpeakPlainly:
         )
         await self._grounded(session_factory, workspace_id, entity_id)
 
-        body = (
-            await _narration(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _narration(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         for fact in body["facts"]:
             assert fact["summary"].strip(), "a fact a reader cannot read is not evidence"
@@ -1367,9 +1328,7 @@ class TestTheBriefCanSpeakPlainly:
         )
         await self._grounded(session_factory, workspace_id, entity_id)
 
-        body = (
-            await _narration(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _narration(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         assert body["evidence_unchanged"] is True
 
@@ -1387,9 +1346,7 @@ class TestTheBriefCanSpeakPlainly:
         )
         await self._grounded(session_factory, workspace_id, entity_id, digest="c" * 64)
 
-        body = (
-            await _narration(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _narration(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         assert body["evidence_unchanged"] is False
         # The citations still resolve: what moved is the *set*, and the facts
@@ -1412,9 +1369,7 @@ class TestTheBriefCanSpeakPlainly:
         )
         await self._stored(session_factory, workspace_id, entity_id)
 
-        body = (
-            await _narration(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _narration(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         assert body["facts"] == []
         assert body["evidence_unchanged"] is False
@@ -1520,9 +1475,7 @@ class TestTheBriefSaysWhatToCheck:
             session_factory, admin_session_factory
         )
 
-        body = (
-            await _validation(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _validation(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         assert body["hypotheses"]
         for entry in body["hypotheses"]:
@@ -1544,9 +1497,7 @@ class TestTheBriefSaysWhatToCheck:
             session_factory, admin_session_factory
         )
 
-        body = (
-            await _validation(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _validation(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         assert body["hypotheses"]
         for entry in body["hypotheses"]:
@@ -1569,9 +1520,7 @@ class TestTheBriefSaysWhatToCheck:
         )
 
         order = {"primary": 0, "supporting": 1, "contextual": 2, "ignored": 3}
-        body = (
-            await _validation(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _validation(client, key_pair, user_id, workspace_id, entity_id)).json()
         ranks = [order[entry["relevance"]] for entry in body["hypotheses"]]
 
         assert ranks == sorted(ranks)
@@ -1590,9 +1539,7 @@ class TestTheBriefSaysWhatToCheck:
         assert response.status_code == 200, response.text
         assert response.json()["hypotheses"] == []
 
-    async def test_a_non_member_gets_404(
-        self, client: AsyncClient, key_pair: KeyPair
-    ) -> None:
+    async def test_a_non_member_gets_404(self, client: AsyncClient, key_pair: KeyPair) -> None:
         workspace = await _workspace(client, key_pair, uuid4())
 
         response = await _validation(client, key_pair, uuid4(), workspace, uuid4())
@@ -1604,9 +1551,7 @@ class TestTheBriefSaysWhatToCheck:
     ) -> None:
         workspace = await _workspace(client, key_pair, uuid4())
 
-        response = await client.get(
-            f"/workspaces/{workspace}/accounts/{uuid4()}/validation"
-        )
+        response = await client.get(f"/workspaces/{workspace}/accounts/{uuid4()}/validation")
 
         assert response.status_code == 401
 
@@ -1620,13 +1565,9 @@ class TestTheBriefSaysWhatToCheck:
         mine_workspace, mine_user, _, _ = await _tracked(
             session_factory, admin_session_factory, "northwind"
         )
-        _, _, theirs_entity, _ = await _tracked(
-            session_factory, admin_session_factory, "contoso"
-        )
+        _, _, theirs_entity, _ = await _tracked(session_factory, admin_session_factory, "contoso")
 
-        response = await _validation(
-            client, key_pair, mine_user, mine_workspace, theirs_entity
-        )
+        response = await _validation(client, key_pair, mine_user, mine_workspace, theirs_entity)
 
         assert response.status_code == 200
         assert response.json()["hypotheses"] == []
@@ -1662,9 +1603,7 @@ class TestACitationResolvesToARecord:
         account_id: UUID,
     ) -> str:
         """A business event id, taken from a ledger line the way a reader would."""
-        score = (
-            await _score(client, key_pair, user_id, workspace_id, account_id)
-        ).json()
+        score = (await _score(client, key_pair, user_id, workspace_id, account_id)).json()
         return str(score["contributions"][0]["business_event_id"])
 
     async def test_a_ledger_line_opens_to_the_readings_beneath_it(
@@ -1813,9 +1752,7 @@ class TestACitationResolvesToARecord:
     ) -> None:
         workspace = await _workspace(client, key_pair, uuid4())
 
-        response = await client.get(
-            f"/workspaces/{workspace}/business-events/{uuid4()}"
-        )
+        response = await client.get(f"/workspaces/{workspace}/business-events/{uuid4()}")
 
         assert response.status_code == 401
 
@@ -1924,15 +1861,26 @@ class TestTheVocabularyHasOneOwner:
         assert len(body["types"]) >= 1
         assert all(t["key"] and t["title"] for t in body["types"])
 
-    async def test_it_carries_names_and_nothing_else(
+    async def test_it_carries_names_and_type_level_meaning_and_nothing_else(
         self, client: AsyncClient, key_pair: KeyPair
     ) -> None:
-        """What a hypothesis proposes, cannot prove, and how to check it are
+        """**What a hypothesis proposes, cannot prove, and how to check it are
         per-account questions the validation surface already answers. The same
-        prose in two places means one of them goes stale."""
+        prose in two places means one of them goes stale.**
+
+        ⚡ **Widened by TASK-456 to `why_it_matters`, and the refusal above is
+        unchanged.** C-204 found that a seller reading a two-word label on a
+        ranked row had no way to learn what it meant — and `why_it_matters` is
+        the one catalog field surfaced *nowhere*, because it is a fact about
+        the **type** rather than about an account. **It duplicates nothing.**
+
+        ⛔ **`hypothesis`, `limitations` and `suggested_validation` stay out**,
+        and this assertion is what keeps them out: all three are on
+        `HypothesisValidationResponse` already, per account, where they belong.
+        """
         from modules.signal_engine.interface.schemas import SignalTypeResponse
 
-        assert set(SignalTypeResponse.model_fields) == {"key", "title"}
+        assert set(SignalTypeResponse.model_fields) == {"key", "title", "why_it_matters"}
 
     async def test_it_is_ordered_so_two_requests_agree(
         self, client: AsyncClient, key_pair: KeyPair
@@ -1954,9 +1902,7 @@ class TestTheVocabularyHasOneOwner:
 
         assert titles == sorted(titles)
 
-    async def test_a_non_member_gets_404(
-        self, client: AsyncClient, key_pair: KeyPair
-    ) -> None:
+    async def test_a_non_member_gets_404(self, client: AsyncClient, key_pair: KeyPair) -> None:
         """The vocabulary is not secret, and the answer is still 404 — every
         endpoint under a workspace path answers alike, or the ones that do not
         become the way to test whether a workspace exists."""
@@ -2413,9 +2359,7 @@ class TestHowACompanyHasChanged:
         identifier is well-formed and belongs to somebody else, which is the
         shape a scrape takes."""
         mine, my_user, _, _ = await _tracked(session_factory, admin_session_factory, "northwind")
-        _, _, their_entity, _ = await _tracked(
-            session_factory, admin_session_factory, "northwind"
-        )
+        _, _, their_entity, _ = await _tracked(session_factory, admin_session_factory, "northwind")
 
         response = await client.get(
             f"/workspaces/{mine}/accounts/{their_entity}/observations",
@@ -2855,9 +2799,7 @@ class TestTheConclusionCanBeRead:
         )
         await self._stored(session_factory, workspace_id, entity_id)
 
-        body = (
-            await _decision_package(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _decision_package(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         assert body["support"]["contested"] is True
         assert body["support"]["dissenting_signals"] == 1
@@ -2877,9 +2819,7 @@ class TestTheConclusionCanBeRead:
         )
         await self._stored(session_factory, workspace_id, entity_id)
 
-        body = (
-            await _decision_package(client, key_pair, user_id, workspace_id, entity_id)
-        ).json()
+        body = (await _decision_package(client, key_pair, user_id, workspace_id, entity_id)).json()
 
         assert body["model"] == "llama3.1:8b"
         assert body["prompt_name"] == "reasoning"

@@ -830,3 +830,21 @@ The outcome discriminators — `actioned`, `assigned`, `snoozed`, `dismissed` �
 
 **The screen is written and is not on `main`.** `reachability.test.tsx` refuses a route with no entrance, and **giving the Signal Center a sidebar entry is the [D38](39-product-review-findings.md) reversal [C-229](../LANE_COORDINATION.md) asks the product owner about** — not a lane's to take. **The endpoints above are independently useful and independently tested**, so the answer to C-229 now releases a screen rather than starting one.
 
+## The catalog explains itself — 2026-08-06 (Lane A, TASK-456)
+
+**[C-204](../LANE_COORDINATION.md): *"the catalog explains nine words to nobody."*** A seller reading *Expansion opportunity* on a ranked row had no way to learn what Signora meant by it — **and the explanation existed, reviewed, in `signals@1.json`, reaching no screen.**
+
+⚠️ **The row's premise needed narrowing before anything was written**, and the audit is the reason this slice is small. **Three of the catalog's four explanatory fields were already surfaced**: `hypothesis`, `limitations` and `suggested_validation` are on `HypothesisValidationResponse`, per account, on the validation surface. **Exactly one field reached nowhere: `why_it_matters`.**
+
+**So the endpoint gains one field and no more.** `test_it_carries_names_and_nothing_else` — which pinned `SignalTypeResponse` to `{key, title}` — is **widened rather than weakened**, and its original refusal is now explicit in its own body:
+
+> ⛔ **`hypothesis`, `limitations` and `suggested_validation` stay out**, because all three are per-account questions the validation surface answers, and *"the same prose in two places means one of them goes stale."*
+
+**`why_it_matters` duplicates nothing**: it is a fact about the **type**, true before any account exhibits it.
+
+### Where it is rendered, and why not more visibly
+
+**Read by a screen reader, not drawn.** The attention list is **scanned before it is read** (SW-05), and a sentence under every row would make the ranking harder to see while answering a question most rows are not raising. **The place it is drawn is the account brief**, where somebody has already stopped to read — and the validation surface has carried the per-account half of this since A-iii.
+
+⛔ **Nothing is authored here.** §2 — *domain experts own static knowledge* — and the catalog is that artifact. A slice that invented an explanation would be putting authored words where a reviewed one belongs.
+

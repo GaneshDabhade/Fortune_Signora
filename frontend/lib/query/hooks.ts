@@ -346,7 +346,7 @@ export function useSignalCatalog(workspaceId: string | null) {
         `/workspaces/${workspaceId}/signal-catalog`,
         { workspaceId: workspaceId ?? undefined },
       );
-      return new Map(catalog.types.map((type) => [type.key, type.title]));
+      return new Map(catalog.types.map((type) => [type.key, type]));
     },
     enabled: workspaceId !== null,
     staleTime: Infinity,

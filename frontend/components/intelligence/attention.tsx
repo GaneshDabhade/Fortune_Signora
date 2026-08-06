@@ -10,7 +10,7 @@ import {
 
 import { howLongAgo } from '@/components/intelligence/dates';
 import { Badge } from '@/components/ui';
-import type { EvidenceState, Posture, ScoreTrigger, Stage, Trend } from '@/lib/api/types';
+import type { EvidenceState, Posture, ScoreTrigger, Stage, Trend, SignalTypeName } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
 
 /**
@@ -166,13 +166,13 @@ export function WhyNow({ trigger }: { trigger: ScoreTrigger | null }) {
 
 export function Hypothesis({
   signalType,
-  title,
+  definition,
 }: {
   signalType: string | null;
   /** From `useSignalCatalog`. `undefined` while it loads or if the key is one
    * this catalog version does not declare — which is a real possibility, since
    * a score records the catalog version it was formed under. */
-  title: string | undefined;
+  definition: SignalTypeName | undefined;
 }) {
   if (signalType === null) {
     // Not "unknown" and not blank: the opportunity is open and its
@@ -181,8 +181,23 @@ export function Hypothesis({
     // reconcile two statements that are one fact.
     return <span className="text-sm text-content-subtle">No current reading</span>;
   }
-  if (title === undefined) return null;
-  return <span className="text-sm text-content">{title}</span>;
+  if (definition === undefined) return null;
+  return (
+    <span className="text-sm text-content">
+      {definition.title}
+      {/* **C-204: the catalog explained nine words to nobody.** A seller read
+          a two-word label on a ranked row and had no way to learn what it
+          meant — the explanation existed, reviewed, in the catalog, and
+          reached no screen.
+
+          **Read by a screen reader, not drawn.** The list is scanned before
+          it is read (SW-05), and a sentence on every row would make the
+          ranking harder to see while answering a question most rows are not
+          raising. **Where it is drawn is the account brief**, which is where
+          somebody has already stopped to read. */}
+      <span className="sr-only">. {definition.why_it_matters}</span>
+    </span>
+  );
 }
 
 /**

@@ -143,7 +143,7 @@ describe('badges appear only when they carry information', () => {
 
 describe('the row says what is happening, not that something happened', () => {
   it('names the hypothesis in the words the catalog owns', () => {
-    render(<Hypothesis signalType="active_evaluation" title="Active evaluation" />);
+    render(<Hypothesis signalType="active_evaluation" definition={{ key: 'x', title: "Active evaluation", why_it_matters: 'It matters.' }} />);
 
     expect(screen.getByText('Active evaluation')).toBeInTheDocument();
   });
@@ -153,7 +153,7 @@ describe('the row says what is happening, not that something happened', () => {
     // learn that this line is machine output — and this is the line the whole
     // row is read for.
     const { container } = render(
-      <Hypothesis signalType="expansion_opportunity" title={undefined} />,
+      <Hypothesis signalType="expansion_opportunity" definition={undefined} />,
     );
 
     expect(container.textContent).not.toContain('expansion_opportunity');
@@ -164,7 +164,7 @@ describe('the row says what is happening, not that something happened', () => {
     // on it would trade the decision for the label; showing a placeholder
     // would put a shape on screen that then moves.
     const { container } = render(
-      <Hypothesis signalType="active_evaluation" title={undefined} />,
+      <Hypothesis signalType="active_evaluation" definition={undefined} />,
     );
 
     expect(container).toBeEmptyDOMElement();
@@ -173,7 +173,7 @@ describe('the row says what is happening, not that something happened', () => {
   it('says there is no reading when no score is live', () => {
     // The opportunity is still open and its justification has expired. That is
     // a real answer, and it is not the same as "we do not know".
-    render(<Hypothesis signalType={null} title={undefined} />);
+    render(<Hypothesis signalType={null} definition={undefined} />);
 
     expect(screen.getByText('No current reading')).toBeInTheDocument();
   });
@@ -183,7 +183,7 @@ describe('the row says what is happening, not that something happened', () => {
     // invisible when it does.** The proof is that a title the catalog has
     // never contained still renders verbatim.
     render(
-      <Hypothesis signalType="active_evaluation" title="Something Else Entirely" />,
+      <Hypothesis signalType="active_evaluation" definition={{ key: 'x', title: "Something Else Entirely", why_it_matters: 'It matters.' }} />,
     );
 
     expect(screen.getByText('Something Else Entirely')).toBeInTheDocument();
@@ -209,7 +209,7 @@ describe('a contraction risk does not read as a weak opportunity', () => {
     // client never needs the catalog to know which way a row cuts.
     render(
       <>
-        <Hypothesis signalType="contraction_risk" title={undefined} />
+        <Hypothesis signalType="contraction_risk" definition={undefined} />
         <PostureMark posture="contractionary" />
       </>,
     );
@@ -423,3 +423,43 @@ describe('how long an account has been sitting where it sits — LO-06', () => {
     expect(container).toBeEmptyDOMElement();
   });
 });
+
+describe('the catalog explains itself — C-204, TASK-456', () => {
+  const DEFINITION = {
+    key: 'expansion_opportunity',
+    title: 'Expansion opportunity',
+    why_it_matters:
+      'Companies investing ahead of growth buy differently from companies holding steady.',
+  };
+
+  it('a seller can learn what the two-word label means', () => {
+    /** **C-204: the catalog explained nine words to nobody.** The
+     * explanation existed, reviewed, in `signals@1.json`, and reached no
+     * screen — so a row said *Expansion opportunity* and a seller had no way
+     * to find out what Signora meant by it. */
+    render(<Hypothesis signalType="expansion_opportunity" definition={DEFINITION} />);
+
+    expect(screen.getByText(/Companies investing ahead of growth/)).toBeInTheDocument();
+  });
+
+  it('the title is still what is drawn', () => {
+    // **The list is scanned before it is read** (SW-05). A sentence on every
+    // row would make the ranking harder to see while answering a question
+    // most rows are not raising.
+    render(<Hypothesis signalType="expansion_opportunity" definition={DEFINITION} />);
+
+    expect(screen.getByText('Expansion opportunity')).toBeInTheDocument();
+  });
+
+  it('says nothing at all when the catalog does not declare the key', () => {
+    /** A score records the catalog version it was formed under, so a key this
+     * version does not declare is a real possibility — and inventing a label
+     * for it would be the product naming something it cannot define. */
+    const { container } = render(
+      <Hypothesis signalType="retired_type" definition={undefined} />,
+    );
+
+    expect(container.textContent).toBe('');
+  });
+});
+

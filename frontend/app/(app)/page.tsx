@@ -21,7 +21,7 @@ import { NothingRaises, TriageStrip } from '@/components/intelligence/triage';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
-import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
+import type { AccountAttention, AccountIdentity, SignalTypeName } from '@/lib/api/types';
 import {
   useAccountIdentities,
   useAccounts,
@@ -306,8 +306,10 @@ function AccountRow({
   account: AccountAttention;
   identity: AccountIdentity | undefined;
   namesLoading: boolean;
-  /** The catalog's title for this row's leading hypothesis. */
-  hypothesis: string | undefined;
+  /** The catalog's entry for this row's leading hypothesis — its title, and
+   * why the type matters. **The whole entry rather than the title alone**
+   * (C-204): the explanation existed, reviewed, and reached no screen. */
+  hypothesis: SignalTypeName | undefined;
   /** The signed-in reader, so a row they hold can say so. */
   viewerId: string | null;
   /** Who each owner is, by id. **A map rather than a list**: a row asks about
@@ -346,7 +348,7 @@ function AccountRow({
             isLoading={namesLoading}
           />
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <Hypothesis signalType={account.signal_type} title={hypothesis} />
+            <Hypothesis signalType={account.signal_type} definition={hypothesis} />
             <ScoreMovement trend={account.trend} change={account.score_change} />
             {/* **Beside what the evidence says, not among the badges.** This
                 is what the *seller* did and when; the badges to the right are

@@ -161,6 +161,12 @@ export interface AccountAttention {
 export interface SignalTypeName {
   key: string;
   title: string;
+  /** Why this kind of hypothesis is commercially interesting — a fact about
+   * the **type**, true before any account exhibits it. **The only explanation
+   * the catalog carries**: what a hypothesis proposes, cannot prove and how to
+   * check it are per-account questions the validation surface answers, and the
+   * same prose in two places means one of them goes stale. */
+  why_it_matters: string;
 }
 
 /**
