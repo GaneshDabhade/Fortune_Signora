@@ -133,6 +133,20 @@
 
 **When a row has no journey** — a foundation slice, a `public/` contract, a design system — **the field says so and says why.** **[TASK-448](BACKLOG.md) is the worked example: a design system has no customer journey, and asserting one would be the *icon renders* test the directive forbids.**
 
+### 🖼️ 0-G · The page is the evaluation boundary — [D-123](DECISION_REGISTER.md)
+
+> ## ***"A component is not required to express every customer-facing guarantee independently. The guarantee belongs to the composed customer experience."***
+
+**Raise a defect only when the customer can observe incorrect behaviour at the *composed* experience** — ⛔ **never because a component looks incomplete in isolation.**
+
+| | |
+|---|---|
+| ✅ **Evaluate at** | **The page or the workflow**, whenever the behaviour depends on several components together |
+| ⛔ **Do not evaluate at** | **A component**, unless it explicitly owns an independent business guarantee |
+| **The precedent** | **[TASK-442](BACKLOG.md)** — end-to-end assertions at page or journey level |
+
+⚡ **Two lanes proved it independently and from opposite directions.** **[C-226](LANE_COORDINATION.md): a per-component guard *would flag correct code* — `EntityName` falls back to the real identifier and makes no false claim.** **[B-207](BUGS.md): a component that *looks wrong and is not* — `AttentionScore` renders `—` for an expired score, and `EvidenceHealth` renders *"Evidence expired"* immediately beside it.** ⚠️ **Neither cited the other.**
+
 ### ⛔ 0-F · Execution state is the lane's, never Product Office's — [D-122](DECISION_REGISTER.md)
 
 > **`CLAIMED` · `IN PROGRESS` · `IN VALIDATION` are set by the lane** (`CLAUDE.md` §20e). **Product Office sets `READY` and `REVISION REQUESTED` and nothing else on that axis.**
@@ -145,6 +159,10 @@
 | **A `[[blocked]]` entry in the queue with the blocker named** | **An execution state the lane did not set** |
 
 > ## **A blocker is information the lane acts on. A status is a claim about what the lane is doing — and only the lane knows that.**
+
+✅ **Enforced, not asserted — [D-123](DECISION_REGISTER.md): *"have the governance tools enforce it wherever possible."*** **[`state-check`](../infra/state-check.py) compares this branch's backlog against `origin/integration` and reports any lane-owned execution state Product Office has changed.** ⚠️ **Scoped to Lane C branches deliberately** — on a lane's own branch such a change is the lane doing its job, and a check that flagged both would cry wolf on every lane in the repository.
+
+⚡ **Verified by reintroducing the defect**: `TASK-439 (CLAIMED → BLOCKED)` is reported, and the check is silent when the row is restored. ⛔ **The rebase caught this the first time, and a conflict is not a control — it fires when two people touch one line, not when one person breaks a rule.**
 
 ⚡ **The findings themselves were correct and survive**: [C-228](LANE_COORDINATION.md) and [C-229](LANE_COORDINATION.md) are recorded on both rows. **Only the field they were written into was wrong.**
 

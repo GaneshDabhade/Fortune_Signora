@@ -168,6 +168,63 @@ _STARTABLE = {"READY", "CHANGES REQUESTED"}
 _DEPARTED = {"IN VALIDATION", "VERIFIED", "CERTIFIED", "PROMOTED", "DONE", "DISPOSED"}
 _HELD = {"CLAIMED", "IN PROGRESS"}
 
+#: **Execution states Product Office may never write** — [D-123](../docs/DECISION_REGISTER.md).
+#:
+#: > *"Product Office owns planning. Engineering lanes own execution… once a
+#: > lane has moved a task into CLAIMED, IN PROGRESS, IN VALIDATION, CHANGES
+#: > REQUESTED, or any other execution state, Product Office must never
+#: > overwrite that state."*
+#:
+#: **The lane sets the first four; QE sets the rest.** Neither is Product
+#: Office's, and the distinction between them does not matter here — what
+#: matters is that this office wrote none of them.
+_LANE_OWNED_STATES = frozenset({
+    "CLAIMED", "IN PROGRESS", "IN VALIDATION", "CHANGES REQUESTED",
+    "VERIFIED", "CERTIFIED", "PROMOTED", "DONE",
+})
+
+
+def _execution_state_findings() -> list[str]:
+    """**Did Product Office overwrite a state a lane owns?** ([D-123](../docs/DECISION_REGISTER.md))
+
+    **Compares this branch's backlog against `origin/integration`** and reports
+    any task whose *lane-owned* execution state has changed.
+
+    ⚠️ **Scoped to Lane C branches deliberately.** On a lane's own branch such a
+    change is the lane doing its job; on this office's branch it is the defect.
+    **A check that flagged both would cry wolf on every lane in the repository**,
+    which this file has already done twice this week and does not intend to do
+    again.
+
+    ⚡ **Written because the rebase caught what review did not.** `TASK-439` and
+    `TASK-441` were `CLAIMED` on `integration` and `BLOCKED` here — twice in one
+    day — and the only reason it surfaced was a merge conflict. **A conflict is
+    not a control: it fires when two people touch one line, not when one person
+    breaks a rule.**
+    """
+    branch = _git("rev-parse", "--abbrev-ref", "HEAD").strip()
+    if not branch.startswith("lane-c"):
+        return []
+    theirs = _git("show", "origin/integration:docs/BACKLOG.md")
+    if not theirs:
+        return []
+    before = _backlog_states(theirs)
+    after = _backlog_states((REPO_ROOT / "docs" / "BACKLOG.md").read_text())
+    overwritten = sorted(
+        f"{task} ({was} → {now})"
+        for task, was in before.items()
+        if was in _LANE_OWNED_STATES
+        and (now := after.get(task, was)) != was
+    )
+    if not overwritten:
+        return []
+    return [
+        f"Product Office changed a lane-owned execution state: {', '.join(overwritten)}. "
+        f"CLAUDE.md §20e gives CLAIMED, IN PROGRESS, IN VALIDATION and CHANGES "
+        f"REQUESTED to the lane and the rest to QE. Record the finding beneath "
+        f"the row and let the lane decide (D-123)."
+    ]
+
 #: Coordination-item states that need no owner, because the question is settled.
 #: **Kept identical to `decision-queue.py`'s set on purpose** — two files
 #: disagreeing about what *closed* means is how an item becomes invisible to one
@@ -904,6 +961,7 @@ def main() -> int:
     # exactly the day the rest of the repository agreed with itself — which is
     # the one day a silent queue drift would go unseen.
     findings.extend(_queue_findings(backlog))
+    findings.extend(_execution_state_findings())
 
     if not findings:
         print("\nstate-check: governance documents agree with the repository.")
