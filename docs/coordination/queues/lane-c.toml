@@ -42,7 +42,14 @@ depth_target = 5
 
 current = "TASK-419"
 next    = "TASK-454"
-future  = ["TASK-455", "TASK-473"]
+future  = ["TASK-455", "TASK-474", "TASK-473"]
+
+# ⚡ **TASK-474 added 2026-08-06 — D-133 ③, and it is the highest-leverage
+# row in the whole backlog: ten of the fourteen journey gaps in ADR-0406 §6
+# close behind this one capability.**
+# ⛔ Placed AFTER TASK-455 and BEFORE TASK-473: 455 makes the front door
+# walkable, 474 makes the link openable, and only then is a mode indicator
+# reporting something a developer can act on.
 
 # ⚡ **TASK-473 added 2026-08-06 — D-131 ⑥, ADR-0406 §3.**
 # The only requirement in D-131 that is not already satisfied by correct
@@ -98,8 +105,8 @@ future  = ["TASK-455", "TASK-473"]
 #             not a deferral candidate.
 #   TASK-455  a reviewable sign-up — blocks no implementation and
 #             blocks REVIEW, which §2 makes a completion condition.
-eligible_count = 4
-shortfall      = 1
+eligible_count = 5
+shortfall      = 0
 
 [rationale]
 "TASK-418" = "the three signora_platform capabilities ADR-0404 approved: EventHandler takes the dispatcher session, PublishableEvent becomes read-only properties, Action.LEAVE plus two policy lines. ✅ UNBLOCKED 2026-08-05 by C-416 — backend/signora_platform/ is Lane C's as permanent architectural owner. ⚠️ Ownership is not approval: §20a still freezes the tree and ADR-0404 is what makes this buildable. The two existing handlers migrate here, not in TASK-901. Run ADR-0404 §Validation first — all four"

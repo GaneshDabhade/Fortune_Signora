@@ -1,81 +1,163 @@
-# ADR-0406: Authentication has three execution modes, and the running one is always visible
+# ADR-0406: Authentication behaviour is environment-invariant; only infrastructure varies
 
 ## Status
 
-**PRODUCT OWNER DIRECTED — 2026-08-06, [D-131](../../DECISION_REGISTER.md).** Drafted by Lane C on that instruction. **Awaiting ratification.**
+**PRODUCT OWNER DIRECTED — 2026-08-06, [D-131](../../DECISION_REGISTER.md), expanded by [D-133](../../DECISION_REGISTER.md).** Drafted by Lane C on that instruction. **Awaiting ratification.**
 
-> **The directive, verbatim:** *"During development, do not allow missing infrastructure to unnecessarily block UI implementation. However, do not introduce shortcuts that misrepresent production behavior."*
+> ⚠️ **The register has no `D-132`.** **Recorded rather than silently renumbered** (§2, *a record of what was true then*): this ADR was expanded by the directive labelled D-133, and the gap is noted so a future reader does not go looking for a decision that was never taken.
+
+---
+
+## The governing principle
+
+> ## **Authentication behaviour must be environment-invariant. Only infrastructure may vary across environments.**
+
+**Every rule below is a consequence of that sentence, and where a future question is not answered here, that sentence answers it.**
+
+⛔ **The test to apply to any proposed authentication change: *would this make the backend believe something different because of where it is running?* If yes, it is refused, however convenient.**
 
 ---
 
 ## Context
 
-**[C-320](../../LANE_COORDINATION.md) has been open since 2026-08-03 and states the problem exactly:**
+**[C-320](../../LANE_COORDINATION.md), open since 2026-08-03:** *"in every environment this team possesses, including Human Review, a new customer's first hour ends at **check your email**."*
 
-> *"Sign-up requires email verification… The link goes to a terminal. **So in every environment this team possesses, including Human Review, a new customer's first hour ends at *"check your email"*.***"
+### What is already true, measured rather than named
 
-⚡ **And the consequence it drew is the one that matters:** *"every account that has ever existed in Signora was created by `demo-users.ts`… **The front door is fully implemented and has never been walked.**"*
-
-### What is already true, and none of it is a defect
-
-**Measured 2026-08-06 under [D-130](../../DECISION_REGISTER.md) — by reading the implementations, not their names:**
+**Read under [D-130](../../DECISION_REGISTER.md) — the implementations, not their titles:**
 
 | | |
 |---|---|
-| **`createEmailTransport`** | Returns a console transport that writes the **real Better Auth link**, with its real token and real expiry, framed so it cannot be missed in a dev server's output. ⚡ ***"Nothing here is mocked."*** |
-| **`loadAuthConfig`** | **Refuses to start** when the console transport is selected in a deployed environment — *"a password-reset link written to a production log is a credential sitting in a log file"* |
-| **`SIGNORA_ENVIRONMENT`** | Already names the **deployment**, separately from `NODE_ENV`. **Found by the build failing**: `NODE_ENV=production` means *an optimised build*, not *deployed* |
-| **`demo-users.ts`** | Creates **real accounts**, mints a **real token**, and redeems it through **`auth.api.verifyEmail`** — *"the route the emailed link resolves"*. **Refuses outside a developer's machine** |
-| **`AuthEmailTransportName`** | A union with **one member**, and `createEmailTransport` deliberately carries **no branch** — *"a branch that cannot fail is Decorative Logic, giving the impression of a choice the build cannot make"* |
+| **`createEmailTransport`** | Writes the **real** Better Auth link, real token, real expiry. ⚡ ***"Nothing here is mocked."*** |
+| **`loadAuthConfig`** | **Refuses to start** with a console transport in a deployed environment — *"a password-reset link written to a production log is a credential sitting in a log file"* |
+| **`SIGNORA_ENVIRONMENT`** | Names the **deployment**, separately from `NODE_ENV`. **Found by the build failing** |
+| **`demo-users.ts`** | **Real accounts, real token, redeemed through `auth.api.verifyEmail`** — *"the route the emailed link resolves"*. Refuses outside a developer's machine |
+| **`AuthEmailTransportName`** | A **one-member union** with no branch, deliberately — *"a branch that cannot fail is Decorative Logic"* |
 
-> ## **All three of the product owner's modes already exist. None of them has a name, and nothing tells you which one is running.**
+> ## **All three modes already exist. None has a name, nothing reports which is running, and no test has ever walked the front door.**
 
-**That is the whole finding.** The engineering is correct and was correct before this ADR; **what is missing is that the modes are implicit**, and [D-131](../../DECISION_REGISTER.md) requires the opposite: *"A user or developer should always know which mode is active."*
+⛔ **The last clause is the measurement that shaped this ADR: `frontend/tests/e2e/` contains 14 authentication tests and *zero* references to sign-up, verify-email, forgot-password or reset-password.** **Every one of them signs in as an account `demo-users.ts` created.** **C-320's *"the front door is fully implemented and has never been walked"* is true of the test suite as well as of the team.**
 
 ---
 
 ## Decision
 
-> ## **Authentication has exactly three execution modes. Each is named, each is explicit, and the active one is observable without reading configuration.**
+### 1 · One authentication implementation
 
-| Mode | What it is | Transport | Accounts |
+**Better Auth is the sole Authentication Authority** (`CLAUDE.md` §13), and **there is exactly one implementation of it.**
+
+> **Authorization, session management, JWTs, permissions, workspace membership, email-verification rules and every security decision behave identically in every environment.**
+
+⛔ **Environment selection never changes authentication semantics. Changing an environment must never change what the backend believes to be true.**
+
+⚡ **The Python tier makes this structurally true and must stay that way**: it only *verifies* RS256 ([ADR-0026](0026-jwt-boundary-architecture.md)), holds no signing key, and **has no concept of a mode.** **A backend that cannot observe the mode cannot behave differently because of it** — which is the governing principle enforced by construction rather than by discipline.
+
+### 2 · Modes replace infrastructure, never behaviour
+
+| | **Production** | **Development** | **Demo** |
 |---|---|---|---|
-| **Production** | **The complete Better Auth flow against real infrastructure** | ⛔ **A real vendor transport. Does not exist yet** — the one genuine gap | Real, by the front door |
-| **Development** | **The flow a developer walks locally.** ✅ **This is today's console transport, named** | Console — **the real link, to stdout** | Real, by the front door |
-| **Demo** | **Seeded accounts for demonstration** | Not used — no link is sent | ✅ **`demo-users.ts`, named** |
+| **Email transport** | Real provider | **Local mailbox** (§3) | Not exercised |
+| **URLs · callbacks** | Real domains, real DNS | Local | Local |
+| **External integrations** | Real | Local or absent | Seeded |
+| **Accounts** | Created by customers | Created by the developer, **by the front door** | **Seeded** (§4) |
 
-### 1 · One flow, three configurations — never three implementations
+**And in every mode, without exception:**
 
-⛔ **This ADR does not add an authentication path.** **Better Auth remains the sole Authentication Authority** (`CLAUDE.md` §13), the Python tier still only verifies RS256, and **every mode walks the same Better Auth flow.** **What varies is where the link goes and whether accounts were seeded — nothing else.**
+> **Better Auth issues the token · Better Auth validates the token · email verification remains required · workspace permissions remain enforced · RBAC remains enforced · session handling is unchanged.**
 
-> ⚡ **The distinction that keeps this safe: a *mode* selects a transport and a seeding policy. A mode never selects an authentication rule.** **`requireEmailVerification` is `true` in all three**, because it is what makes the `email_verified` claim mean anything.
+⛔ **`requireEmailVerification` is `true` in all three.** It is what makes the `email_verified` claim mean anything, and a mode that relaxed it would be a mode in which the backend believes something different.
 
-⛔ **And the rule `CLAUDE.md` §13 already states by name stands unchanged: *never add a "skip auth in development" flag*.** **Development Mode is not that flag.** **It delivers the link somewhere a developer can reach; it does not stop requiring the link to be used.**
+⛔ **`CLAUDE.md` §13 forbids a *"skip auth in development"* flag by name, and this ADR is where somebody would reach for one.** ⚡ **Development Mode is its opposite: it makes the link *reachable*, never *unnecessary*.**
 
-### 2 · A mode never silently imitates production
+### 3 · Development email is a first-class experience, not a `console.log`
 
-**Two obligations, and they point in opposite directions:**
+> ⚠️ **A console line is a transport, not an experience.** **[D-133](../../DECISION_REGISTER.md) asks for the second, and the difference is what a developer can *do*.**
+
+**A developer must be able to, with no external SMTP provider:**
 
 | | |
 |---|---|
-| ⛔ **A non-production mode must be impossible to mistake for production** | The console transport already refuses to load in a deployed environment, and `demo-users.ts` already refuses outside a developer's machine. **Both guards are kept and neither is weakened** |
-| ⛔ **Production must be impossible to run in a non-production configuration** | **The startup refusal is the mechanism**, and it stays a startup failure rather than a runtime one — *"the failure mode of getting this wrong is silent: every flow appears to work and nobody receives anything"* |
+| **See every outbound email** | Not only the one just triggered |
+| **Inspect the rendered template** | ⚡ **The thing a customer actually receives** — and today nothing renders it at all, so no template has ever been reviewed |
+| **Open the verification link** · **the reset link** · **an invitation link** | From the message, as a customer would |
+| **Resend** | Without re-running the flow that produced it |
+| **Inspect delivery history** | What was sent, to whom, when, and for what purpose |
 
-⚡ **This is [ADR-0028](0028-model-runtime-by-environment.md)'s guarantee applied to authentication**, and the sentence transfers exactly: *"a production service answering from a deterministic stub is indistinguishable from one that is working — which is strictly worse than the outage it would be hiding."*
+> ## **It remains a real email pipeline whose final transport is local rather than external.**
 
-### 3 · The active mode is observable, and that is the new requirement
+⛔ **Not a mock, and the distinction is exact:** **Better Auth still mints the token, still builds the URL, still sets the expiry.** **The only substitution is the last hop.** ⚡ **This is the same shape as [ADR-0028](0028-model-runtime-by-environment.md)'s deterministic provider — *the mock follows the contract; the contract never follows the mock*** — **except that here nothing is even mocked: the pipeline is real and its endpoint is local.**
 
-> **The running mode is surfaced to whoever is using the process — not buried in an environment variable somebody has to know to read.**
+⚠️ **A stated consequence, because it will be discovered otherwise: delivery history is a record of credentials being issued.** **It is local-only by construction and must never become reachable in a deployed environment** — the same reason `loadAuthConfig` already refuses the console transport there.
 
-**Because the failure this prevents is specific: a reviewer walking the first hour cannot currently tell whether they signed in as a seeded demo account or created one.** ⚠️ **Those are different products to review**, and a review of the wrong one is worse than no review, because it is reported as a review.
+### 4 · Demo Mode seeds data and never fakes authentication
 
-⛔ **Not decided here: how it is surfaced.** **A banner, a badge, a startup line, a health field — that is a design question and [410](../410-approved-ui-specification.md) is the authority.** **This ADR requires that it is surfaced and refuses to invent the treatment**, which is [D-129](../../DECISION_REGISTER.md)'s rule.
+> ## **A demo user still logs in through Better Auth.**
 
-### 4 · Production Mode's transport stays a vendor decision
+**Seeded:** accounts · workspaces · organizations · memberships · AI data.
+⛔ **Not seeded, ever:** a session · a token · a verified flag written directly · an authorization decision.
 
-⛔ **This ADR does not choose an email vendor.** **That is a dependency decision, it is 🔴, and [ADR-0033](0033-authentication-methods.md) already names it as outstanding.**
+⚡ **`demo-users.ts` already gets this right and is the pattern rather than the exception** — it mints a real token and redeems it through the route the emailed link resolves. **The seeding grows; the discipline does not change.**
 
-✅ **What this ADR does settle is that the absence no longer blocks anything but production itself.** **[C-320](../../LANE_COORDINATION.md) asked *"where, and when, does Signora get an email transport — and until then, how does anybody experience a customer's first hour?"*** **The second half is answered: Development Mode, by the front door, with the real link.** **The first half stays with deployment.**
+⛔ **And §20e still binds: test data enters the way a customer's data enters.** **Seeding is an approved door precisely because it uses the real one.**
+
+### 5 · Production Mode is Development Mode with infrastructure replaced
+
+> **No code path changes. Only configuration changes.**
+
+⚡ **This is a *falsifiable* claim, and it is the strongest guarantee in this document**: if a code path exists that runs in one mode and not another, this principle is violated and the check in *Validation* below finds it. ⛔ **A `if (mode === …)` in an authentication path is the defect this ADR exists to prevent.**
+
+**`createEmailTransport` already demonstrates the shape** — it carries no branch, and adding a vendor adds *a member to a union and a case in one factory*, not a fork through the flow.
+
+### 6 · Seventeen customer journeys, each with a stated readiness
+
+**Every authentication journey must execute successfully in all applicable modes.** **The table below is a *measurable gap analysis*, which is one of the three derived artifacts [D-129](../../DECISION_REGISTER.md) permits** — ⛔ **it is not a conformance checklist and adds no specification.**
+
+**Measured 2026-08-06 against `origin/integration`.**
+
+| # | Journey | Surface | Playwright | Needs | Readiness |
+|---|---|---|---|---|---|
+| 1 | **Registration** | ✅ `(auth)/sign-up` | ⛔ **none** | Dev email | 🟠 **built, never walked** |
+| 2 | **Login** | ✅ `(auth)/sign-in` | ✅ **covered** | — | ✅ |
+| 3 | **Logout** | ✅ | ✅ **covered** | — | ✅ |
+| 4 | **Email verification** | ✅ `(auth)/verify-email` | ⛔ **none** | Dev email | 🔴 **the blocking one** |
+| 5 | **Resend verification** | ✅ `verify-email/resend.tsx` | ⛔ **none** | Dev email | 🟠 |
+| 6 | **Forgot password** | ✅ `(auth)/forgot-password` | ⛔ **none** | Dev email | 🟠 |
+| 7 | **Reset password** | ✅ `(auth)/reset-password` | ⛔ **none** | Dev email | 🟠 |
+| 8 | **Workspace creation** | ✅ `POST /workspaces` | ⚠️ **partial** | — | 🟠 ⚠️ **and [TASK-468](../../BACKLOG.md) replaces the surface entirely** |
+| 9 | **Workspace invitation** | ✅ `POST …/invitations` | ⛔ **none** | Dev email | 🟠 |
+| 10 | **Workspace acceptance** | ✅ `…/invitations/accept` · `(app)/join/[workspaceId]` | ⚠️ **partial** | Dev email | 🟠 |
+| 11 | **Team invitation** | ✅ `settings/team/` · resend · revoke | ⛔ **none** | Dev email | 🟠 |
+| 12 | **Session expiration** | ✅ Better Auth | ⚠️ **`resilience.spec.ts`** | — | 🟠 **not asserted as a journey** |
+| 13 | **Session renewal** | ✅ Better Auth | ⚠️ **partial** | — | 🟠 |
+| 14 | **Multi-tab** | ✅ | ⚠️ **`newPage()` used, not asserted for auth** | — | 🟠 |
+| 15 | **Unauthorized access** | ✅ `route-guard.tsx` | ✅ **covered** — 6 paths, token endpoint, key leakage | — | ✅ |
+| 16 | **Expired links** | ✅ Better Auth token expiry | ⛔ **none** | Dev email | 🟠 |
+| 17 | **Invalid links** | ✅ | ⛔ **none** | Dev email | 🟠 |
+
+> ⚡ **Three of seventeen are green, and the pattern is exact: every journey that needs an email is unwalked, and every journey that does not is covered.** ⛔ **Ten of the fourteen gaps close behind one capability — §3.**
+
+### 7 · Playwright runs the same tests in every mode
+
+> **The only thing that changes between Development and Production is environment configuration. The tests are identical.**
+
+⛔ **A test that branches on the mode is validating an environment rather than a customer** — and it would silently stop testing production the day the branch was wrong.
+
+⚡ **The suite is already built this way and this ADR must not break it**: `auth-journey.spec.ts`'s *"offers a provider button when one is configured, and nothing when not"* reads configuration to decide **what the customer should see**, never **which assertions to run.**
+
+### 8 · Future enterprise capabilities extend this model
+
+**MFA · passkeys · SAML SSO · OIDC · Google · Microsoft · Okta · Azure AD · SCIM · domain-based IdP routing · conditional access · organization policies.**
+
+> **Each extends the authentication model. None replaces it, and none is designed here** (§2, *do not add abstraction for hypothetical futures*).
+
+**What this ADR guarantees for all of them, and it is the only thing it needs to guarantee:**
+
+| | |
+|---|---|
+| **They arrive inside Better Auth** | It stays the sole authority — §13. ⛔ **A second authenticator is what this forbids, whatever it authenticates with** |
+| **The Python tier still only verifies** | **A new factor or a new IdP changes who gets a token, never who validates one.** ⚡ **[ADR-0026](0026-jwt-boundary-architecture.md) needs no amendment for any item on that list**, which is the evidence the boundary was drawn correctly |
+| **They are infrastructure, not behaviour** | **An IdP is a provider.** ⚡ **The existing provider button — *"one when configured, and nothing when not"* — is already this pattern at n=1** |
+| **A mode never grants an exemption** | ⛔ **No *"MFA off in development"*.** **It is §13's forbidden flag wearing a newer coat**, and the governing principle refuses it without further argument |
 
 ---
 
@@ -83,24 +165,26 @@
 
 | | | |
 |---|---|---|
-| **(a)** | **A development-only bypass of verification** | ⛔ **Refused, and it is forbidden by name.** `CLAUDE.md` §13: *never add a "skip auth in development" flag*. ⚡ **It also destroys the thing being reviewed** — the first hour *is* the verification step |
-| **(b)** | ✅ **Three named modes over one flow** | **Directed.** **Each mode changes delivery and seeding; none changes an authentication rule** |
-| **(c)** | **Wait for a production transport** | ⛔ **This is the status quo, and it has held the review of the product's first hour since 2026-08-03.** **D-131: *do not allow missing infrastructure to unnecessarily block UI implementation*** |
-| **(d)** | **A mock Better Auth in development** | ⛔ **Refused.** **A mocked authority is not the authority**, and §13 makes Better Auth the sole one. ⚡ **[ADR-0028](0028-model-runtime-by-environment.md)'s mock exists because a *model* is non-deterministic; an auth flow is not, so the reason does not transfer** |
+| **(a)** | **A development-only verification bypass** | ⛔ **Forbidden by name** (§13). ⚡ **And it destroys the subject** — the first hour *is* the verification step |
+| **(b)** | ✅ **One implementation, three infrastructure configurations** | **Directed** |
+| **(c)** | **Wait for a production transport** | ⛔ **The status quo, and it has blocked review since 2026-08-03** and left ten journeys untested |
+| **(d)** | **A mocked Better Auth in development** | ⛔ **A mocked authority is not the authority.** ⚡ **[ADR-0028](0028-model-runtime-by-environment.md)'s mock exists because a *model* is non-deterministic; an auth flow is not, so the reason does not transfer** |
+| **(e)** | **A hosted dev SMTP sandbox** | ⛔ **An external operational dependency for local development**, which [D-133](../../DECISION_REGISTER.md) explicitly excludes — *"without requiring an external SMTP provider"* |
 
 ---
 
 ## Consequences
 
-✅ **The front door becomes walkable**, and [TASK-455](../../BACKLOG.md) is the slice that walks it.
-✅ **[D-113](../../DECISION_REGISTER.md)'s authentication Playwright journey becomes writable** — a scenario that signs up needs an environment where signing up completes.
-⚠️ **Three modes is three things to keep honest**, and the guards are what keep them honest. ⛔ **Weakening either refusal is how this decision turns into the bypass it refused.**
-⛔ **Nothing in `backend/` changes.** **The Python tier verifies RS256 and knows nothing about modes** — §13, and it stays that way.
+✅ **Ten of fourteen journey gaps close behind one capability**, and it is buildable locally.
+✅ **[D-113](../../DECISION_REGISTER.md)'s authentication journeys become writable** — a scenario that registers needs an environment where registering completes.
+✅ **The email templates get reviewed for the first time.** ⚠️ **Nothing renders them today**, so no human has seen what a customer receives.
+⚠️ **Three modes is three things to keep honest, and the two existing refusals are what keep them honest.** ⛔ **Weakening either is how this becomes the bypass it refused.**
+⛔ **`backend/` changes in no way.** **The Python tier verifies RS256 and has no concept of a mode** — and that is a guarantee, not an omission.
 
 ---
 
 ## Validation
 
-**Each is checkable rather than asserted:**
+**Run before the first slice; each is checkable rather than asserted:**
 
-**①** `requireEmailVerification` is `true` in every mode — **grep, not review** · **②** no code path issues a session without a Better Auth flow having produced it · **③** `loadAuthConfig` still fails at startup for a console transport in a deployed environment · **④** `demo-users.ts` still refuses outside a developer's machine · **⑤** ⚡ **the running mode is reported by the process, and a test asserts the reported value changes with the configuration** — **the one new guarantee, and the only one that would survive somebody deleting this document.**
+**①** `requireEmailVerification` is `true` on every path — **grep, not review** · **②** ⚡ **no authentication code path branches on the mode or on `SIGNORA_ENVIRONMENT`** — **§5 stated as a check, and the strongest one here** · **③** no code path issues a session that a Better Auth flow did not produce · **④** `loadAuthConfig` still fails at **startup** for a console transport in a deployed environment · **⑤** `demo-users.ts` still refuses outside a developer's machine · **⑥** **the running mode is reported, and a test asserts the reported value *changes with the configuration*** — ⛔ **never that it equals today's value** ([B-130](../../BUGS.md)) · **⑦** **no Playwright spec branches on the mode** · **⑧** **the delivery-history surface is unreachable in a deployed environment**, by the same startup refusal as ④.

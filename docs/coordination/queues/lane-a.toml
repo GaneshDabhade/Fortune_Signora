@@ -50,8 +50,13 @@ depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-447"
-next    = "TASK-449"
-future  = ["TASK-456", "TASK-460", "TASK-901"]
+next    = "TASK-456"
+future  = ["TASK-460", "TASK-901"]
+
+# ⚡ **TASK-449 claimed 2026-08-06 — the fifth row this lane has taken today.**
+# ⚡ **TASK-475 added to `blocked`, not to the eligible sequence** — it is
+# BLOCKED on TASK-474 and `future` means startable. Caught by the gate on the
+# same write that introduced it, which is check ③ of C-333 doing its job.
 
 # ⚡ **TASK-445 claimed 2026-08-06 — the fourth row this lane has taken in one
 # session, each within the hour of becoming eligible.** ⚠️ **Eligible is now 4
@@ -180,6 +185,8 @@ eligible_count = 5
 eligible_count = 7
 eligible_count = 6
 shortfall      = 0
+eligible_count = 4
+shortfall      = 1
 
 [rationale]
 "TASK-439" = "⚡ THE SIGNAL CENTER — the first approved screen this lane ships under D-104, and it is a RENDER. 447 traced ten elements: 6 built, 2 amber, 2 red — and BOTH reds are already moving: Resource.SIGNAL is TASK-405 (IN VALIDATION, with QE) and signal.resolved is TASK-432 (above, this lane's). No other approved screen has both blockers in flight. Already built and not to be rebuilt: the aggregate and its scoring; Actioned/Assigned/Snoozed/Dismissed/Resolution, all four; Snoozed.until as a read-time predicate; DismissalReason; and the triage counts in lib/state/triage.ts, which partition and never re-rank. ⛔ OUT OF SCOPE, named so it is not discovered late: the readable audit surface (R-07, 🟡) and rule precision (downstream of TASK-432 — without signal.resolved there is nothing to aggregate). 🟢 Render only: no endpoint, no event, no migration. If a section needs one, raise it. ⚠️ AND THE ONE RULE: a failed read must never render as an empty queue — P-A and C-226. 'Nothing to triage' and 'we could not find out' are opposite messages to a seller, and this is the screen where the difference costs most. Sequence after TASK-405 promotes; TASK-432 may run in parallel."
@@ -293,3 +300,10 @@ task    = "TASK-470"
 blocker = ["TASK-467"]
 owner   = "Lane A"
 note    = "User Profile. ⚠️ NOT render-only — 418 records the backend as API MISSING, and the three-way field-ownership model is the design's own headline with no backend at all. Sequenced rather than bundled for that reason."
+
+# ── D-133 · the authentication journeys, behind the capability they need ─────
+[[blocked]]
+task    = "TASK-475"
+blocker = ["TASK-474"]
+owner   = "Lane C — TASK-474 is infra/, Platform Foundation"
+note    = "The seventeen authentication journeys of ADR-0406 §6 as one Playwright suite. ⛔ Ten of the seventeen cannot be written until a developer can open a verification, reset or invitation link — a test for a link nobody can open has nothing to click. ⚡ MEASURED, not assumed: frontend/tests/e2e/ holds 14 authentication tests and ZERO references to sign-up, verify-email, forgot-password or reset-password. ✅ Login, logout and unauthorized access are already green in auth-journey.spec.ts and are NOT rewritten. ⛔ THE PROPERTY THAT MATTERS MORE THAN COVERAGE: no spec may branch on the mode (D-133 ⑦) — the tests are identical across Development and Production and only configuration differs. The precedent to copy is already in the suite: 'offers a provider button when one is configured, and nothing when not' reads configuration to decide what the customer SHOULD SEE, never which assertions to run. ⛔ Out of scope: MFA, passkeys, SSO, SCIM — ADR-0406 §8 anticipates them and designs none."

@@ -565,6 +565,33 @@
 | **Unblocks** | **The [D-113](DECISION_REGISTER.md) authentication journey** — a Playwright scenario that signs in needs an environment where signing up is possible |
 | ⚡ **Shape ruled 2026-08-06 — [D-131](DECISION_REGISTER.md), [ADR-0406](architecture/adr/0406-authentication-execution-modes.md)** | ✅ **This is *Development Mode*, and it is not new engineering — it is the existing console transport, named.** **Measured under [D-130](DECISION_REGISTER.md) rather than assumed: `createEmailTransport` already writes the *real* Better Auth link with its real token — *"nothing here is mocked"* — and `loadAuthConfig` already refuses it in a deployed environment.** ⛔ **So the slice does not build a transport. It makes the existing one reachable as a reviewable path and names the mode it is.** ⛔ **`requireEmailVerification` stays `true`** — the mode changes where the link goes, **never whether it is required** |
 
+### TASK-474 · A developer can see, open and resend every email the product sends
+
+| | |
+|---|---|
+| **Discovery** | **[ADR-0406](architecture/adr/0406-authentication-execution-modes.md) §3**, on [D-133](DECISION_REGISTER.md) · **[C-320](LANE_COORDINATION.md)** |
+| **Module** | **`infra/` + `frontend/lib/auth/` — Lane C** *(Platform Foundation, [D-022](DECISION_REGISTER.md))* |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06.** **Fitness (§20e); placed by the product owner, not here** |
+| ⚡ **Why this is the highest-leverage row in the backlog** | **Ten of the fourteen journey gaps in [ADR-0406 §6](architecture/adr/0406-authentication-execution-modes.md) close behind this one capability** — registration · email verification · resend · forgot password · reset password · workspace invitation · acceptance · team invitation · expired links · invalid links. ⛔ **Measured, not estimated: `frontend/tests/e2e/` holds 14 authentication tests and *zero* references to sign-up, verify-email, forgot-password or reset-password** |
+| ✅ **Delivers — a local mailbox, and it is an experience rather than a transport** | **See every outbound email** *(not only the last)* · ⚡ **inspect the rendered template — nothing renders one today, so no human has ever seen what a customer receives** · **open the verification, reset and invitation links from the message** · **resend without re-running the flow** · **inspect delivery history** |
+| ⛔ **What it is not** | ⛔ **Not a mock.** **Better Auth still mints the token, still builds the URL, still sets the expiry — *"nothing here is mocked"* is already true of `createEmailTransport` and stays true.** ⚡ **Only the last hop is local.** ⛔ **And not an external sandbox** — [D-133](DECISION_REGISTER.md) excludes it by name: *"without requiring an external SMTP provider"* |
+| ⚠️ **The security bound, stated because it will be discovered otherwise** | ⛔ **Delivery history is a record of credentials being issued.** **It is local-only by construction and must be unreachable in a deployed environment — enforced by the same *startup* refusal `loadAuthConfig` already applies to the console transport**, never by a runtime check. ⚡ **[ADR-0406](architecture/adr/0406-authentication-execution-modes.md) Validation ⑧** |
+| **Change Budget** | 🟠 — **a second member of `AuthEmailTransportName` and a local surface.** ⛔ **No new authentication path, no branch in an auth flow, no weakened guard** |
+| ⚠️ **The rule it must not break** | ⛔ **[ADR-0406](architecture/adr/0406-authentication-execution-modes.md)'s governing principle: *authentication behaviour must be environment-invariant*.** **`requireEmailVerification` stays `true`; this changes where the link goes and nothing about whether it is required** |
+
+### TASK-475 · The seventeen authentication journeys run as one suite, in any mode
+
+| | |
+|---|---|
+| **Discovery** | **[ADR-0406 §6 and §7](architecture/adr/0406-authentication-execution-modes.md)**, on [D-133](DECISION_REGISTER.md) |
+| **Module** | **Product Surface + `frontend/tests/e2e/` — Lane A.** ⚠️ **[D-114](DECISION_REGISTER.md): UI automation is implementation work, owned by the implementing lane** |
+| **Status** | ⏸️ **`BLOCKED`** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be written until a developer can open the link.** **Not a sequencing preference: the test would have nothing to click** |
+| ✅ **Delivers** | **The seventeen journeys of [ADR-0406 §6](architecture/adr/0406-authentication-execution-modes.md) as executable specs** — ⛔ **and the four already green are not rewritten.** **Login, logout and unauthorized access are covered today by `auth-journey.spec.ts`; this row adds what is missing and leaves what works** |
+| ⚡ **The property that matters more than the coverage** | ⛔ **No spec may branch on the mode** ([ADR-0406 §7](architecture/adr/0406-authentication-execution-modes.md)). ***"The only thing that changes between Development and Production is environment configuration. The tests are identical."*** **A test that branches on the environment is validating an environment rather than a customer — and it stops testing production the day the branch is wrong** |
+| ✅ **The precedent is already in the suite and must not be broken** | **`auth-journey.spec.ts`'s *"offers a provider button when one is configured, and nothing when not"*** — ⚡ **it reads configuration to decide *what the customer should see*, never *which assertions to run*.** **That is the shape to copy** |
+| ⛔ **Out of scope** | **MFA · passkeys · SSO · SCIM** — **[ADR-0406 §8](architecture/adr/0406-authentication-execution-modes.md) anticipates them and designs none of them**, and §2 forbids building for requirements that do not exist |
+| **Change Budget** | 🟢 **Tests only** |
+
 ### TASK-473 · A developer can always tell which authentication mode is running
 
 | | |
