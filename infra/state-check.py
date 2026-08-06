@@ -1142,7 +1142,10 @@ def main() -> int:
     # run.** `if not findings: return` would have skipped every queue check on
     # exactly the day the rest of the repository agreed with itself — which is
     # the one day a silent queue drift would go unseen.
+<<<<<<< HEAD
     findings.extend(_planning_sync_findings())
+=======
+>>>>>>> 7c430592 (D-135 — nothing exists without an owner, and §20e appeared to say the opposite)
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
     findings.extend(_execution_state_findings())
