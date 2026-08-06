@@ -81,7 +81,6 @@ Such a row names the code, records **Current assignee: none — not assignable**
 ## Open
 
 ### B-207 · An expired score renders as *no score* — **withdrawn, and the mistake is the interesting part**
-
 | | |
 |---|---|
 | **Module** | **Product Surface** — the attention list. `frontend/components/intelligence/attention.tsx` |
@@ -89,42 +88,26 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Severity** | 🟠 · **Wrong behaviour a customer would hit**, on the first screen they see, about the number the screen is sorted by |
 | **Status** | ⛔ **`CLOSED` — withdrawn by the lane that raised it**, 2026-08-06, within the hour, on checking the composed row rather than the component. **The id is retired and never reused.** **There is no defect: the surface already says *Evidence expired*** — see the correction below |
 | **Found** | 2026-08-06, `bcea8ba` |
-
 **Steps to reproduce.** Open the homepage with an account whose buying score has expired — `score: null` on `AccountAttentionResponse`.
-
 **Expected.** *"We scored this, and the evidence behind it is no longer current."*
-
 **Actual.** An em dash, labelled **`"No current score"`**.
-
 ```tsx
 export function AttentionScore({ score }: { score: number | null }) {
   if (score === null) {
     return <span aria-label="No current score">—</span>;
   }
 ```
-
 ### The API says what null means, and it does not mean absent
-
 **`opportunity_engine/interface/schemas.py`, in the published OpenAPI description a consumer reads:**
-
 > ***"Commercial attention, 0–100… Null when the evidence behind it has expired — the opportunity is still open and the number that justified it is no longer current."***
-
 **So `null` carries a specific, actionable fact and the surface renders it as an absence.** A seller reading `—` concludes *Signora has nothing on this account*; the truth is *Signora had something and it went stale*, on an opportunity that **is still open**. **Those demand opposite actions** — the first is a reason to ignore the row, the second is a reason to distrust the ranking it is sitting in.
-
 ### It is [P-A](DOMAIN_DISCOVERY_REGISTER.md), and the repository already knows the pattern
-
 **[C-226](LANE_COORDINATION.md) is this exact class** — *a failed read rendering as an empty account* — and this lane fixed three sections of it in [TASK-417](BACKLOG.md). **The account brief already does it correctly**: a 404 from the score read renders *"Nothing has scored this account yet"* and any other error renders *"Could not load this account"*, because **never scored** and **could not find out** are different sentences.
-
 > **The list never got the third one.** The brief distinguishes *never* from *failed*; **nothing anywhere distinguishes *expired*** — and expired is the only one of the three that the attention list can actually be showing, because a row is there precisely because an opportunity is open.
-
 ### Why it survived review
-
 **The component is right about everything else and says so at length** — why the score is typographic rather than a gauge, why it is subordinate to the account name. ⚡ **`aria-label="No current score"` is even *literally* true**: there is no current score. **It is the inference a reader draws that is wrong**, which is why no test caught it and why reading the component does not reveal it. **The defect is only visible against the API contract**, and [453](architecture/453-opportunity-intelligence-traceability-audit.md) is what put the two side by side.
-
 ⛔ ### Withdrawn — 2026-08-06, by Lane A, an hour after filing
-
 **Everything above reads `AttentionScore` on its own. The row that composes it already says the thing.**
-
 ```tsx
 // app/(app)/page.tsx — the status lane, immediately before the score column
 <ContestedMark contested={account.contested} />
@@ -132,29 +115,37 @@ export function AttentionScore({ score }: { score: number | null }) {
 ...
 <AttentionScore score={account.score} />          // ← "—"
 ```
-
 **And the two cannot disagree**, which is the fact that settles it:
-
 ```python
 # opportunity_engine/application/queries.py
 def evidence_state(opportunity, score, moment) -> EvidenceState:
     if score is None or not score.is_valid_at(moment):
         return EvidenceState.STALE
 ```
-
 > ## **`score is None` implies `stale`, by construction. Every row with an em dash carries the *Evidence expired* badge, one element to its left.**
-
 **So the surface is correct and is arguably better than what this row proposed.** The badge states *why there is no number*; the em dash states *that there is no number*. **Two facts, each where it belongs** — and putting the word *expired* into the score column would have said one of them twice, in the column the page is scanned down.
-
 ### What this lane got wrong, recorded rather than quietly deleted
-
 **The filing judged an element in isolation and drew a conclusion the composition does not support.** ⚡ **That is the same error this lane had criticised [447](architecture/447-signal-center-traceability-audit.md) for one poll earlier** — counting a thing as present without checking the context it lives in — **committed while writing up [C-228](LANE_COORDINATION.md), which is the item making that criticism.**
-
 **The `aria-label` observation was the tell and was misread.** *"No current score"* is literally true, and this row treated its literal truth as evidence that a reader would infer something false. **The reader is not reading the label alone either.**
-
 ⚠️ **What survives, and it is small.** **`AttentionScore` is also called by `NeedsIdentity`**, where no `EvidenceHealth` badge sits beside it — so a company nobody can name shows an em dash with nothing explaining it. **That is not this row's claim** (it asserted a defect on the attention list, where the badge exists) and it is not a defect either: an account with no identity has no evidence health to state. **Recorded so the next reader does not re-derive it.**
-
 **[TASK-441](BACKLOG.md)'s rule is unaffected and still binds** — *"an expired score must render as expired, never as absent and never as current."* **The lesson for that screen is now concrete rather than theoretical: the badge is where expiry is said, and the new screen must carry it rather than inventing a second way to say the same thing.**
+### B-130 · `D-107` removed `UI_WAVE_TASKS` and left a test binding it
+| | |
+|---|---|
+| **Module** | `backend/tests/certification/test_repository_generators.py:105` |
+| **Current assignee** | **Lane C** — [D-107](DECISION_REGISTER.md) caused it |
+| **Severity** | 🟠 — **a Blocking Quality Defect**: a failing test, and §19 makes that the owning lane's highest priority |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-06.** **QE verifies; the lane that fixed it does not close it** |
+| **Found** | 2026-08-06 by **QE**, cycle 77. ⚠️ **Filed on QE's branch and mirrored here** — the row and its fix were on different branches, which is the [C-103](LANE_COORDINATION.md) condition rather than a numbering choice |
+**Expected.** `D-107` replaced the hardcoded `UI_WAVE_TASKS` frozenset with `ui_wave_tasks(ref)` and updated every reader.
+**Actual.** **It updated the two readers in `repository-dashboard.py` and not the one in the test that binds it.**
+### The fix — repaired, never deleted, and the test says why
+⚡ **The test's own docstring is the argument**: *"the test that catches a constant is not one that checks today's number — it is one that **changes the input and requires the output to follow**."* **QE said the same thing in the row.**
+**That property is preserved exactly. Only the *source* of the wave id changed** — from a named constant to `ui_wave_tasks("HEAD")` — **which is the whole point of [D-107](DECISION_REGISTER.md).** ✅ **Verified: the derived set holds 11 screen rows; all three assertions hold.**
+⚡ **And the bug earned a second test**: `test_the_wave_set_is_derived_from_the_rows_not_from_a_list` **asserts `UI_WAVE_TASKS` never comes back**. **A hardcoded set goes stale *silently* as rows are added — it named one id while the backlog held nine.**
+### ⚠️ The Lane C failure, stated plainly
+**[D-107](DECISION_REGISTER.md) removed a module-level constant and did not grep for its readers.** **The removal was right; leaving a binding test behind was not.**
+⛔ **And *"another lane's file"* was not the obstacle** — **Lane C had already edited this exact file** (the `PRINTING` tuple, D-094). **Not looking was.**
 
 ### B-402 · `ENGINEERING_LAWS.md` is classified `platform`, so editing it demands a DR run
 

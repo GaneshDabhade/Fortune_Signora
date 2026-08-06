@@ -101,11 +101,39 @@ class TestAFigureIsDerivedRatherThanStated:
     """
 
     def test_implemented_counts_the_wave_rows_it_is_given(self) -> None:
+        """**Repaired 2026-08-06 — [B-130](../../../docs/BUGS.md), filed by QE.**
+
+        `D-107` replaced the hardcoded `UI_WAVE_TASKS` frozenset with
+        `ui_wave_tasks(ref)`, which derives the set from the rows themselves,
+        and left this test binding the removed name. **The removal was right
+        and leaving this behind was not.**
+
+        ⚡ **The property the docstring above names is preserved exactly**: the
+        input still changes and the output still has to follow. What changed is
+        only where the wave id comes from — **derived rather than named**,
+        which is the whole point of `D-107`.
+        """
         dashboard = _load("repository-dashboard.py")
-        wave = next(iter(dashboard.UI_WAVE_TASKS))
-        assert dashboard._ui_implemented([(wave, "x", "IN VALIDATION")]) == 1
-        assert dashboard._ui_implemented([(wave, "x", "READY")]) == 0
-        assert dashboard._ui_implemented([("TASK-000", "x", "DONE")]) == 0
+        wave_set = dashboard.ui_wave_tasks("HEAD")
+        assert wave_set, "no screen row declares `Approved screen` — derivation is broken"
+        wave = next(iter(sorted(wave_set)))
+        assert dashboard._ui_implemented([(wave, "x", "IN VALIDATION")], "HEAD") == 1
+        assert dashboard._ui_implemented([(wave, "x", "READY")], "HEAD") == 0
+        assert dashboard._ui_implemented([("TASK-000", "x", "DONE")], "HEAD") == 0
+
+    def test_the_wave_set_is_derived_from_the_rows_not_from_a_list(self) -> None:
+        """**The regression `B-130` exists to prevent, stated as a property.**
+
+        A hardcoded set goes stale *silently* as rows are added — it named one
+        id while the backlog held nine. **A derived set cannot**: a row that
+        declares `Approved screen` is counted, and one that forgets the field
+        is visibly absent from a figure somebody reads every cycle.
+        """
+        dashboard = _load("repository-dashboard.py")
+        assert not hasattr(dashboard, "UI_WAVE_TASKS"), (
+            "UI_WAVE_TASKS is back — a hardcoded wave set is what D-107 removed"
+        )
+        assert callable(dashboard.ui_wave_tasks)
 
     def test_a_state_is_read_from_its_backticks_and_not_from_prose(self) -> None:
         """**The `TASK-415` regression.**
