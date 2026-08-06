@@ -652,6 +652,48 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-133 · TASK-445 left an unused import, and the production image build is what refused it
+
+| | |
+|---|---|
+| **Module** | Product Surface — `frontend/app/(app)/business/page.tsx` |
+| **Current assignee** | **Lane A** — it authored TASK-445 |
+| **Severity** | 🟠 · **Blocking Quality Defect class** — `smoke` fails at Build, so the slice cannot be certified |
+| **Status** | **`OPEN` — `CHANGES REQUESTED`.** One line; **not fixed, another lane's module** |
+| **Found** | 2026-08-06 by QE, cycle 82, by `make certify` |
+
+**Steps to reproduce.**
+
+```bash
+cd infra && docker compose --env-file .env.prod-local -f docker-compose.prod.yml build
+→ Failed to compile.
+  ./app/(app)/business/page.tsx
+  8:10  Error: 'EmptyState' is defined but never used.  @typescript-eslint/no-unused-vars
+```
+
+`9c89b74f` replaced this page's `EmptyState` usage with `StatedAbsence` — *"stated absence becomes one implementation instead of eleven"* — and **left the import behind.**
+
+### Three gates could not see it, and the reason is the interesting part
+
+| | |
+|---|---|
+| **`tsc --noEmit`** | An unused import is **valid TypeScript**. Type-checking is not linting |
+| **`vitest`** | The page renders correctly; the import is inert at runtime |
+| **`pytest`** | Not its layer |
+
+**`next build` runs ESLint**, and the Dockerfile says why in its own comment — *"`ignoreDuringBuilds` to false, so a type error fails the image rather than shipping inside it."* **The production image build is the only gate in the set that lints.**
+
+### ⚡ It is direct evidence for [B-131](#b-131--the-validation-planner-requires-sixteen-gates-the-certification-record-contains-six)
+
+**`eslint` is one of the ten gates the Validation Planner requires and the certification record does not contain.** It is **not absent** — it runs, buried inside `smoke`'s Build stage — but:
+
+> **It is unrecorded, so nothing downstream can tell a cycle where linting passed from one where it never ran**; and **it is reachable only through the slowest gate in the set**, so a lane discovers it after a four-minute image build rather than in seconds.
+
+**A lane running `npx eslint` before handover catches this in under ten seconds.** That is [B-132](#b-132--task-439-widened-the-signalrepository-protocol-and-left-the-fake-behind)'s finding restated by Lane A itself — *"the gap was the lane's gate habit"* — **one cycle later, in the same lane, through a different gate.**
+
+**Lane B and Lane C were not held.** The candidate was rebuilt without TASK-445.
+
+
 ### B-132 · TASK-439 widened the `SignalRepository` protocol and left the fake behind
 
 | | |
