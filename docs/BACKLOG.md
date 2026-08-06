@@ -540,6 +540,47 @@
 | **Delivered** | **`POST /workspaces/{id}/membership/leave`** — no target, no body, no reason. The membership is found from the workspace and the verified token, so **there is no identifier to substitute and no ownership check that could be written wrongly.** The last-owner refusal is the domain's, reused from `Membership.end` rather than restated. 🔴 **The slice found [B-206](BUGS.md) in its own module**: `WorkspaceQueryService.get_membership` — the request-time membership check — **never filtered ended memberships, so removal did not revoke access.** `SqlMembershipRepository.get` did filter, and documented that exact outcome as its reason: two reads of one fact, and authorization consulted the unfiltered one. Fixed, with end-to-end regression tests for both the removed and the departed case. 🟠 **`LastOwnerCannotLeaveError` was mapped to no status code**, so *"Make somebody else an owner first"* reached customers as **500 "An unexpected error occurred."** Now `409`, which repairs `remove` and `demote` too. **`MembershipResponse` gained `ended_at`**, which `remove`'s docstring already claimed. **`make validate` PASSED — 3651 tests, clean migrate, clean `tsc`** |
 | **Governance** | 🟠 — the module's own layers and a route, **announced in the commit message.** **No ADR: the model question was C-207 and it is closed** |
 
+### TASK-445 · Stated absence becomes one implementation instead of nine local ones
+
+| | |
+|---|---|
+| **Discovery** | **[R-15 · Stated absence](DOMAIN_DISCOVERY_REGISTER.md)** — 📐 **[P-A](DOMAIN_DISCOVERY_REGISTER.md)**, ratified 2026-08-05 · **[467](architecture/467-system-states-traceability-audit.md)** |
+| **Module** | ⛔ **Undecided, and that is the blocker rather than a gap in this row** |
+| **Status** | ⏸️ **`BLOCKED`** — **on one ruling, and it is the product owner's** |
+| ⚡ **Blocked on** | **An owner for [R-15](DOMAIN_DISCOVERY_REGISTER.md).** **26 consumers, no module, and nine instances already decided by whoever met one.** ⛔ **Module ownership is never Lane C's** (§20e), so this office cannot choose — **and choosing by implementation is precisely what [D-090](DECISION_REGISTER.md) forbids**: *"ownership should be an architectural decision rather than an implementation accident"* |
+| **The finding, measured** | **9 recorded instances · 0 implementations.** ⚡ **The Register annotated it *"name before the ninth"* — and the ninth arrived as [C-226](LANE_COORDINATION.md), six at once on one screen, fixed by four different lanes.** **Every fix was correct and local, which is how a pattern becomes nine incompatible implementations rather than one capability** |
+| **Predecessor** | **[TASK-442](#task-442--a-page-must-say-when-it-could-not-find-out)** — ✅ `READY`. **It proves the shape on one page and needs no ruling.** ⚡ **So the ruling is not blocking *all* progress on P-A, only its generalisation** |
+| **Successor** | **The repository-wide frontend invariant [C-226](LANE_COORDINATION.md) asks about** — 🔴 §20c, the frozen frontend foundation |
+| ⚠️ **Why it is a row and not only a register entry** | **[D-106](DECISION_REGISTER.md): a discovery is complete only when it has become executable work, or when a *named, owned, currently unmet* dependency is recorded against it.** **This is the second case, stated so the dependency is visible on the board rather than only in a pattern table** |
+| **What differs from [R-00](DOMAIN_DISCOVERY_REGISTER.md)** | ⚡ **[D-077](DECISION_REGISTER.md) caught R-00 with *one* consumer approaching and sequenced the capability ahead of it. R-15 has twenty-six already here.** **The window that ruling used does not exist for this one** |
+
+### TASK-443 · A workspace's history is queryable, not merely recorded
+
+| | |
+|---|---|
+| **Discovery** | **[R-07 · Audit surface](DOMAIN_DISCOVERY_REGISTER.md)** — converged by **Settings · Signal Center · AI Copilot** · owner recommended by **[454 §3](architecture/454-r02-r03-implementation-preparation.md)** |
+| **Module** | **`workspace_tenancy` — Lane A.** ⚡ **Chosen because it already publishes the only history endpoint in the repository**, not because it was free |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-06, [D-109](DECISION_REGISTER.md).** **Fitness; placed last** |
+| **The gap, stated precisely** | ⚡ **Attribution is complete and the *query* is missing.** **`actor_id` is carried in 37 files** and `opportunity_state` is *"append-only, attributed, reasoned"* — **so every write already records who did it.** ⛔ **Nothing lets a customer ask *"what happened in this workspace, and who did it?"*** |
+| **Delivers** | **One workspace-scoped, cursor-paginated history read** over the attributed records that already exist. **No new write path, no new column, no new event** |
+| **Consumers waiting** | **3** — **Settings** *(the audit trail its approved design shows)* · **Signal Center** *("every resolution is auditable · nothing is deleted")* · **AI Copilot** |
+| ⛔ **Out of scope** | **Retention and export** — [TASK-426](#task-426--a-deletion-and-retention-strategy-before-there-is-data-to-regret) owns those and is `SEQUENCED` · **field-level redaction** — [R-13](DOMAIN_DISCOVERY_REGISTER.md), unexpressible today |
+| **Change Budget** | 🟠 **A new endpoint on an existing module.** ⛔ **No migration** — the rows exist |
+| ⚠️ **The rule it must not break** | **Immutability is already proven — no `UPDATE` grant, supersession is the pattern.** ⛔ **A query surface must not become a way to edit history**, and §8 makes that permanent |
+
+### TASK-444 · Dismissal reasons tell the catalog which rules misfire
+
+| | |
+|---|---|
+| **Discovery** | **[447](architecture/447-signal-center-traceability-audit.md)** — *"Dismissal reasons feed rule precision"* |
+| **Module** | **`signal_engine` — Lane A** |
+| **Status** | ⏸️ **`SEQUENCED`** — **and this is a *genuine* dependency, not a deferral.** ⛔ **Blocked on [TASK-432](#task-432--a-triaged-signal-says-so-and-the-pipeline-hears-it): without `signal.resolved` there is nothing to aggregate** |
+| **Predecessor** | **[TASK-432](#task-432--a-triaged-signal-says-so-and-the-pipeline-hears-it)** — `READY`, same lane, same module |
+| **Successor** | **None.** The precision figure is read by Signal Center and ICP Builder and blocks neither |
+| **Delivers** | **Precision per signal type, computed from `DismissalReason` over resolved signals.** *"The catalog learns which rules misfire"* |
+| ⚡ **Why it is a row now rather than when its predecessor lands** | **[D-106](DECISION_REGISTER.md): a validated finding with a *named, owned, currently unmet* dependency is `SEQUENCED` with the dependency stated — not left undocumented until somebody notices.** **The lane that ships TASK-432 inherits this row with it** |
+| **Change Budget** | 🟢 **A projection inside one module.** No new table if it is computed at read time — ⚡ **[P-B](DOMAIN_DISCOVERY_REGISTER.md), and `Snoozed.until` is the precedent in this same module** |
+
 ### TASK-442 · A page must say when it could not find out
 
 | | |

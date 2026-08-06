@@ -51,7 +51,7 @@ depth_target = 5
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-432"
 next    = "TASK-439"
-future  = ["TASK-442", "TASK-441", "TASK-440"]
+future  = ["TASK-442", "TASK-441", "TASK-440", "TASK-443"]
 
 # ⚠️ **Rewritten 2026-08-05. This file declared 5 eligible and none of the five
 # was startable.** Every row is now checked against BACKLOG.md rather than
@@ -106,7 +106,9 @@ future  = ["TASK-442", "TASK-441", "TASK-440"]
 #   TASK-442  the P-A page test — Lane A raised C-226, offered to build it,
 #             and owns the harness. ⚠️ This office endorsed it in a document
 #             and never created the row, which is exactly what D-106 forbids.
-eligible_count = 5
+#   TASK-443  R-07's audit surface — attribution is complete in 37 files
+#             and the QUERY is missing. Three screens wait on it.
+eligible_count = 6
 shortfall      = 0
 
 [rationale]
@@ -170,3 +172,16 @@ product_office_item     = "TASK-418, claimed AND its capability ④ shipped by L
 slices_released         = "TASK-418 → TASK-901's seven slices, of which four sit in Lane A's modules."
 primary_bottleneck      = "Lane C. The office that reports this finding is the one holding the row that resolves it, and it spent the preceding cycles on discovery instead."
 recommended_action      = "Lane C claims and ships TASK-418 before preparing anything else. Stated plainly because a finding that names somebody else would be wrong."
+
+# ── Sequenced behind a named predecessor, D-109 ──────────────────────────────
+[[blocked]]
+task    = "TASK-444"
+blocker = ["TASK-432"]
+owner   = "Lane A — same lane, same module"
+note    = "Rule precision from dismissal reasons. A GENUINE dependency, not a deferral: without signal.resolved there is nothing to aggregate. Listed now rather than when TASK-432 lands so the lane that ships the predecessor inherits the successor with it. ⚡ Compute it at read time — P-B, and Snoozed.until is the precedent in this same module, so no new table."
+
+[[blocked]]
+task    = "TASK-445"
+blocker = ["an owner for R-15 — the product owner's"]
+owner   = "Product owner"
+note    = "Stated absence, one implementation instead of nine local ones. 26 consumers, no module, 9 instances already decided by whoever met one. ⛔ Module ownership is never Lane C's. ✅ NOT blocking all P-A progress — TASK-442 proves the shape on one page and needs no ruling; only the generalisation waits."

@@ -363,6 +363,20 @@ def screen_coverage(ref: str) -> list[str]:
     )
     out.append("     ^ decomposition candidates. ⚠️ counts ⛔ only — a screen")
     out.append("       constrained by a ⚠️ note appears here and is not ready.")
+
+    # **D-109: the view must answer *what next*, not only *how much*.**
+    # **Ranked by lifecycle distance, because that is the only ordering this
+    # script can compute honestly.** A screen already `READY` is nearer
+    # shipping than one with no row, and one with no row is nearer than one
+    # with a ⛔. ⛔ **Customer value is judgement and is emitted as `J`** — a
+    # script ranking screens by worth would be stating opinion in the voice of
+    # arithmetic, which this file's docstring forbids.
+    out.append("")
+    out.append("  NEXT WORK — by lifecycle distance, not by value")
+    ready = sorted(i for i, s in rows.items() if s == "READY")
+    out.append(f"    claimable now            {', '.join(ready) if ready else '—'}")
+    out.append(f"    awaiting decomposition   {', '.join(undecomposed) if undecomposed else '—'}")
+    out.append(f"    highest customer value   {J}")
     return out
 
 
