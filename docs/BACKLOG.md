@@ -540,6 +540,58 @@
 | **Delivered** | **`POST /workspaces/{id}/membership/leave`** — no target, no body, no reason. The membership is found from the workspace and the verified token, so **there is no identifier to substitute and no ownership check that could be written wrongly.** The last-owner refusal is the domain's, reused from `Membership.end` rather than restated. 🔴 **The slice found [B-206](BUGS.md) in its own module**: `WorkspaceQueryService.get_membership` — the request-time membership check — **never filtered ended memberships, so removal did not revoke access.** `SqlMembershipRepository.get` did filter, and documented that exact outcome as its reason: two reads of one fact, and authorization consulted the unfiltered one. Fixed, with end-to-end regression tests for both the removed and the departed case. 🟠 **`LastOwnerCannotLeaveError` was mapped to no status code**, so *"Make somebody else an owner first"* reached customers as **500 "An unexpected error occurred."** Now `409`, which repairs `remove` and `demote` too. **`MembershipResponse` gained `ended_at`**, which `remove`'s docstring already claimed. **`make validate` PASSED — 3651 tests, clean migrate, clean `tsc`** |
 | **Governance** | 🟠 — the module's own layers and a route, **announced in the commit message.** **No ADR: the model question was C-207 and it is closed** |
 
+### TASK-453 · The six verbs become a published contract
+
+| | |
+|---|---|
+| **Discovery** | **[C-419](LANE_COORDINATION.md)** · **[445](architecture/445-ai-copilot-traceability-audit.md)** — *"six verbs and no others"*, and *"17 surfaces, one contract"* |
+| **Module** | **`ai_reasoning_engine` — its `public/`.** ⚡ **Ruled [D-112](DECISION_REGISTER.md): *"the engine owns the language. Screens consume that language."*** **§6: a port belongs to the module that owns the language it represents** |
+| **Status** | ✅ **`READY`** — 2026-08-06 |
+| **Delivers** | **The closed verb set — Explain · Summarize · Predict · Recommend · Generate · Reason — and a surface identifier, published through `public/`** |
+| ⛔ **What the ruling forbids** | ***"Do not duplicate this taxonomy in frontend code."*** ⚡ **Put it in the frontend and the closed set stops being closed the first time a screen needs a seventh** |
+| **Consumers** | **17 surfaces, as *consumers* rather than variants** — AI Copilot, Account 360, and every screen with an AI entry point |
+| **Trade-off, stated** | **One route with a verb parameter is less RESTful than six routes.** **Accepted: the closed set is the product guarantee, and six routes make it six independently-extensible things** |
+| **Change Budget** | 🟠 **A module's `public/`** |
+
+### TASK-449 · Saved View — the `public/` contract, and nothing else
+
+| | |
+|---|---|
+| **Discovery** | **[R-02](DOMAIN_DISCOVERY_REGISTER.md)** — ⚡ *"measured as the highest-leverage capability in the product"* ([452](architecture/452-app-shell-traceability-audit.md)) · **[455 §4](architecture/455-context-definitions-r02-r03.md)** slice 1 |
+| **Module** | **`workspace_tenancy` — Lane A.** **Ruled [D-091](DECISION_REGISTER.md).** ⚡ **The edge already runs**: `opportunity_engine/application/transition.py` imports `WorkspaceQueryPort` from `workspace_tenancy.public` today, **so no import contract changes** |
+| **Status** | ✅ **`READY`** — released 2026-08-06 by [D-112](DECISION_REGISTER.md)'s ruling on [TASK-433](#task-433--segment-already-means-something-else) |
+| **Delivers** | **Four types in `public/`. No implementation, no table, no endpoint.** ⚡ ***"Unblocks every consumer immediately"*** — a consumer lane can compile, type-check and test against the port **before a row is persisted**, and `lint-imports` proves the coupling never forms |
+| **The name** | ✅ **`SavedView`, ratified [D-112](DECISION_REGISTER.md).** ⛔ **`Segment` is not overloaded** — it stays `commercial_profile`'s ICP cohort |
+| ⛔ **Deliberately absent** | **No event.** [P-C](DOMAIN_DISCOVERY_REGISTER.md) — *an event exists when a consumer appears, and none has.* **A context definition is exactly where a speculative event catalog would otherwise be born** · **No projection** — a saved view is the query, ***"not the results"*** |
+| **Change Budget** | 🟠 **A module's `public/`.** No migration |
+
+### TASK-450 · Saved View — domain and persistence
+
+| | |
+|---|---|
+| **Module** | **`workspace_tenancy` — Lane A** · **[455 §4](architecture/455-context-definitions-r02-r03.md)** slice 2 |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-449](#task-449--saved-view--the-public-contract-and-nothing-else)**, same lane, same module |
+| **Delivers** | **The aggregate and its versioning · the migration with `FORCE ROW LEVEL SECURITY` · registration in `tenancy_policy.py` in the same change that creates the table** (§8) |
+| ⚠️ **The bound [D-091](DECISION_REGISTER.md) set** | ⛔ ***"The storage layer never interprets the saved declaration itself. Its responsibility is persistence and retrieval, not execution."*** **A store that evaluates a filter has become a query engine, and that is the erosion this definition exists to prevent** |
+
+### TASK-451 · Saved View — application, interface and permission-aware listing
+
+| | |
+|---|---|
+| **Module** | **`workspace_tenancy` — Lane A** · **[455 §4](architecture/455-context-definitions-r02-r03.md)** slice 3 |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-450](#task-450--saved-view--domain-and-persistence)** |
+| **Delivers** | **Reader · writer · endpoints · permission-aware listing** |
+| ⚠️ **Note** | **A saved view is *per view, not per user*** — [452](architecture/452-app-shell-traceability-audit.md): *"a shared view looks the same for everybody."* ⛔ **Not a user preference, and the shell audit says so explicitly** |
+
+### TASK-452 · Saved View — the screens that use it
+
+| | |
+|---|---|
+| **Module** | **Product Surface — Lane A** · **[455 §4](architecture/455-context-definitions-r02-r03.md)** slice 4 |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessors [TASK-451](#task-451--saved-view--application-interface-and-permission-aware-listing) and the ratified name** ✅ *(now settled)* |
+| **Consumers** | **Companies · App Shell · Global Search · Reports** — **and the shell inherits it into all sixteen screens** |
+| ⛔ **Out of scope** | **Monitored searches** — ⚡ [450](architecture/450-global-search-traceability-audit.md) *narrowed* R-02 by measuring that they leave it: **a monitored search is a subscription, not a view** |
+
 ### TASK-446 · An account's observed attributes have a publisher
 
 | | |

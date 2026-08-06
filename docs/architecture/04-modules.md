@@ -376,7 +376,7 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 ---
 
-### Recommendation Engine
+### Recommendation Engine  ⏸️ *planned — not built*
 
 **Purpose:** Converts AI Reasoning Engine output and opportunity context into concrete, actionable **recommendations** for sales users.
 
@@ -391,6 +391,18 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 **Key Consumed Events:** `ai_reasoning.completed`.
 
 ---
+
+### Integrations
+
+**A customer's own systems, connected.** Connection lifecycle, source adapters, field mapping and sync health — and the capability catalog that decides what the pipeline may advertise (`LIVE_CAPABILITIES`).
+
+⚠️ **Added 2026-08-06 · [D-112](../DECISION_REGISTER.md), ruling [B-401](../BUGS.md).** **This module shipped without an entry here**, and `CLAUDE.md` §1 sends a lane to this document to resolve module ambiguity — so a lane looking it up found nothing.
+
+### Sales Engagement
+
+**What a seller should do next, and why.** The join between a declared committee role and an observed appointment at a target account.
+
+⚠️ **Added 2026-08-06 · [D-112](../DECISION_REGISTER.md), ruling [B-401](../BUGS.md).** **Zero mentions in this document before that date.** **Paired with `commercial_profile`** — [C-213](../LANE_COORDINATION.md) is what an unstabilized interface between two lanes costs.
 
 ### Timeline
 
@@ -408,7 +420,7 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 ---
 
-### Revenue Intelligence Platform
+### Revenue Intelligence Platform  ⏸️ *planned — not built*
 
 **Purpose:** The outward-facing composition domain that aggregates buying score, opportunity, AI research/reasoning, recommendation, and timeline data into the workspace-level views and APIs that constitute the product's core value delivery.
 

@@ -1182,6 +1182,9 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 ## C-020 · M7 has no scope, and Timeline has no design
 
+> ✅ **`RULED` — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md), and acknowledged as a *strategic scope* decision rather than approved silently.** **M7 delivers the six events the repository already publishes; `recommendation.created` stays deferred with the Recommendation Engine.** ⚡ ***"Milestones should represent deliverable capability rather than hypothetical completeness."***
+
+
 > ⏸️ **`DEFERRED` — product owner, 2026-08-05, explicitly.** ⚠️ Half of its premise is already stale — Timeline has [45-timeline.md](architecture/45-timeline.md) and a ratified ADR-0038 — and **[C-215](#c-215) is queued to Lane B as buildable work.**
 
 | | |
@@ -1346,6 +1349,9 @@ Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commer
 ---
 
 ## C-025 · M13 is not a module, and its consumers do not exist yet
+
+> ✅ **`RULED` — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md), and acknowledged as a *strategic scope* decision.** **Day One architecture unchanged.** **Sequence: ① correct the current product promise ([B-024](BUGS.md)) · ② complete the HubSpot integration · ③ OAuth as a dedicated security-architecture decision.** ⛔ ***"Do not merge authentication and integration authorization. Maintain the separation between user identity and provider authorization."***
+
 
 > ⏸️ **`DEFERRED` — product owner, 2026-08-05.**
 
@@ -2347,6 +2353,9 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 
 ## C-201 · Identifier allocation is still only *unlikely* to collide
 
+> ✅ **`RULED` — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). The prefixed strategy is adopted.** ***"Repository growth should remove collision risk completely rather than reducing it probabilistically."*** **Future allocations follow `B-A12` · `C-B03` · `TASK-A07`.**
+
+
 | | |
 |---|---|
 | **Owner** | **QE** (the rules and the tooling) + **product owner** (ratification) |
@@ -3045,6 +3054,9 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 ---
 
 ## C-104 · May a request handler call a vendor synchronously, when the answer *is* the request?
+
+> ✅ **`RULED` — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). Option (a): repair by *reference*.** *"The repository should have one authoritative principle. Other documents should reference it instead of restating it."* **`CLAUDE.md` §7 now cites [02-principles.md §13](architecture/02-principles.md) and carries the four cumulative conditions. Applied.**
+
 
 | | |
 |---|---|
@@ -6080,6 +6092,9 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 ## C-418 · Does Signora forecast revenue? The Executive Dashboard says yes and a ratified principle says no
 
+> ✅ **`RULED` — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). Option B.** ***"Current Signora reports pipeline health. It does not forecast revenue."*** **Revenue forecasting becomes future scope behind Epic E1.** ⛔ *"Do not promise predictive capability before the underlying inputs exist."*
+
+
 **Opened 2026-08-05 · Lane C · current module assignee: `opportunity_engine` (Lane B) · `buying_score_engine` (Lane A) · 🔴**
 
 > **Found by [444](architecture/444-executive-dashboard-domain-assessment.md), assessing one approved screen to its domain.** **Not by implementation reaching it** — which is the point of the method.
@@ -6132,6 +6147,9 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 **Recorded rather than proposed** — it becomes real only on answer **A**. **Coverage and ageing are facts about accounts, not about people.**
 
 ## C-419 · The six verbs have no representation, and *17 surfaces, one contract* is undecided
+
+> ✅ **`RULED` — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md).** **The six verbs belong to `ai_reasoning_engine`** — *"the engine owns the language. Screens consume that language."* ⛔ **Do not duplicate the taxonomy in frontend code.** **Published through the engine's `public/`.** **[TASK-453](BACKLOG.md) implements it.**
+
 
 **Opened 2026-08-05 · Lane C · current module assignee: `ai_reasoning_engine` (Lane B) · 🟠**
 

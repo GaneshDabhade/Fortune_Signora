@@ -123,7 +123,20 @@ Claude must:
 
 - Every API endpoint belongs to exactly one module and is implemented in that module's interface layer. It delegates to that module's application layer immediately — it does not contain business logic itself.
 - Every request handler resolves and verifies workspace context before touching any workspace-owned data, per `docs/architecture/11-tenancy.md`. A workspace identifier supplied by a client is never trusted without server-side membership verification.
-- Endpoints that would trigger pipeline processing (provider calls, AI reasoning, etc.) synchronously are not permitted — that work is dispatched to background workers per `docs/architecture/07-data-flow.md` and `docs/architecture/02-principles.md` (Principle 13). An API handler responds once the request has been durably accepted, not once downstream processing has completed.
+- Endpoints must not perform work that belongs in the background. **The rule and its subject are [02-principles.md §13](docs/architecture/02-principles.md), which is authoritative and is deliberately not restated here**: it governs *work **not required to complete within the request/response cycle*** — provider polling, normalization, the observation/event/signal/opportunity pipeline, AI reasoning, recommendation generation. That work is dispatched to background workers (`docs/architecture/07-data-flow.md`), and a handler responds once the request has been durably accepted.
+
+  > ⚠️ **This bullet previously paraphrased Principle 13 and widened it** — *"provider polling"* became *"provider calls"*, forbidding something the architecture permits. **Repaired 2026-08-06 by [D-112](docs/DECISION_REGISTER.md), ruling [C-104](docs/LANE_COORDINATION.md), by reference rather than by a better paraphrase: a second paraphrase is the same defect one generation later.**
+
+  **A synchronous outbound call is permitted only where all four hold**, and they are cumulative rather than indicative:
+
+  **①** the call's result **is** the response — not a side effect of producing it;
+  **②** nothing about the customer's data is read into the pipeline, stored, normalized, or made visible to any other module;
+  **③** the call is bounded by an explicit timeout owned by the calling module;
+  **④** the vendor is reached only through a port that module owns.
+
+  **`POST /workspaces/{id}/connections/{id}/check` is the worked example and currently the only one** ([C-104](docs/LANE_COORDINATION.md)). It asks whether a door opens and closes it again.
+
+  ⛔ **This is not a latency exemption.** ***Quick* is not one of the four**, and a stage that ingests a single record fails ② however fast it is. **①+② are the load-bearing pair — a pipeline stage fails both, not one.**
 - API contracts (request/response shapes, error shapes, versioning approach) must be applied consistently across modules. Do not invent a new response envelope or error shape per module.
 - The API is REST, built with FastAPI, documented via auto-generated OpenAPI, with every request/response shape a Pydantic v2 model (`docs/architecture/adr/0002-web-framework-and-api-style.md`, `docs/architecture/adr/0004-data-validation-and-serialization.md`). Do not hand-write API documentation that duplicates what OpenAPI generation already produces, and do not introduce a second API paradigm (GraphQL, gRPC) without an RFC and a new ADR.
 - Authorization for every endpoint is a Casbin policy check wired as a FastAPI dependency, evaluated before the request reaches application-layer code, and always includes `workspace_id` in the policy tuple (`docs/architecture/adr/0010-identity-and-access.md`).

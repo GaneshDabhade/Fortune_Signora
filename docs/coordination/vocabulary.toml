@@ -299,7 +299,43 @@ name = "Segment"
 concept     = "SEGMENT"
 parent      = ["ICP"]
 related     = ["ICP_EVALUATION"]
-status = "proposed"
+status = "canonical"
 owner = "commercial_profile"
-means = "DISPUTED. commercial_profile's Segment is a named ICP cohort. Companies' 'segments' may be that, or may be saved filters."
-note = "⬜ Not yet extractable — 446 §0. TASK-433 is the ruling, and the naming question is downstream of a semantic one."
+means = "A named ICP cohort — a commercial grouping of accounts."
+note = """
+✅ RATIFIED 2026-08-06 · D-112, ruling TASK-433. The dispute is closed.
+
+    Saved View = a reusable saved query or view
+    Segment    = an ICP cohort / commercial grouping
+
+⛔ "Do not overload Segment with two different business meanings." Companies'
+saved filters are SAVED VIEWS and are workspace_tenancy's; Segment keeps its
+single meaning and stays commercial_profile's.
+
+⚡ The ruling needed no new word to be invented: ADR-0034's test is that a
+customer would use the word unprompted about their own job, and a customer
+already says "my saved view" and "my segment" about different things.
+"""
+
+[[term]]
+name = "Saved View"
+concept     = "SAVED_VIEW"
+related     = ["SEGMENT", "WORKSPACE"]
+consumed_by = ["COMPANIES", "APP_SHELL", "GLOBAL_SEARCH", "REPORTS"]
+status = "canonical"
+owner = "workspace_tenancy"
+means = "A reusable, named, saved query over a list surface. The query — never its results."
+note = """
+✅ RATIFIED 2026-08-06 · D-112. Owner ruled by D-091; the capability is R-02,
+measured by 452 as the highest-leverage in the product.
+
+⛔ NOT the results. A saved view is the declaration; evaluating it is the
+consumer's, and D-091 bounds the store: "its responsibility is persistence and
+retrieval, not execution."
+
+⛔ NOT per user. 452: "per view, not per user, so a shared view looks the same
+for everybody" — which is why it is not a user preference.
+
+⛔ NOT a monitored search. 450 narrowed R-02 by measuring that monitored
+searches leave it: a monitored search is a subscription, not a view.
+"""
