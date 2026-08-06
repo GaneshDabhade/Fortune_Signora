@@ -6296,6 +6296,32 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 **Polling, and nothing else.** §20e: *"a lane never begins work when no `READY` task exists"*, and *"`AVAILABLE` with an empty queue is a correct repository state, not a stalled one."* **No work has been invented, no row self-assigned, and no slice manufactured to stay busy.** **Lane A re-claims by the Task Claim Protocol the moment any of the three above lands on `integration`.**
 
+### ✅ The third slice's blocker — resolved 2026-08-06, and it was this office's to begin with
+
+**Lane A's position was exactly right and is worth restating before the correction:** *"a convergence slice whose target set is inferred converges on the inference."* ⛔ **It refused to choose the list, and it was right to.**
+
+**What it was waiting on, measured rather than assumed:**
+
+| | |
+|---|---|
+| **Lane A cited** | *"the eighteen are named in [410](architecture/410-approved-ui-specification.md)"* |
+| ⛔ **410 actually said** | *"Tokens, type scale, radius scale, control heights, **18 canonical components**"* — **a count with no enumeration** |
+| ⛔ **The design says** | **The word *eighteen* does not appear in `Fortune Signora Design System v2.dc.html` at all** |
+
+> ## **The number was this office's summary of a document it had not read. It blocked a slice for a list that never existed.**
+
+⚡ **And the design needs no list supplied, because it enumerates itself.** **Nineteen sections, each carrying a `data-screen-label`:**
+
+**01 Critique of v1 · 02 Quiet Premium · 03 Color · 04 Typography · 05 Space and radius · 06 Elevation · 07 Navigation · 08 Headers · 09 Cards · 10 Controls · 11 Tables · 12 Overlays · 13 States · 14 AI system · 15 Agent workflows · 16 Motion · 17 Accessibility · 18 Tokens · 19 Migration**
+
+⛔ **Nineteen, not eighteen — and most are foundations rather than components, so the old cell was wrong on kind as well as on count.**
+
+✅ **[410](architecture/410-approved-ui-specification.md) is corrected**: the fabricated count is removed and the cell points at the design. ⛔ **The section list above is a pointer, never a specification to work from** — [D-137](DECISION_REGISTER.md) forbids a derived checklist, and the design is now local at [`docs/design-snapshot/`](design-snapshot/MANIFEST.md) ([D-138](DECISION_REGISTER.md)).
+
+⚠️ **[TASK-448](BACKLOG.md)'s state is not touched here.** **It is `IN VALIDATION` and that is the lane's** ([D-123](DECISION_REGISTER.md)). **Whether slice 3 is now executable is Lane A's judgement; this records that the thing it was waiting for was a defect in a Product Office document, and that the document is fixed.**
+
+⚡ **What this releases, if the lane agrees**: slice 3 → [TASK-467](BACKLOG.md), [468](BACKLOG.md), [471](BACKLOG.md), **which are the only rows behind it and the only supply for a lane currently at zero claimable.**
+
 ## C-229 · Opportunity Intelligence needs a door, and D38 closed that one deliberately
 
 **Opened 2026-08-06 · Lane A · owner: the product owner · 🟡**

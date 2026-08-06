@@ -78,7 +78,7 @@ Product Office previously prepared backend capability *and* UI assumptions. **Th
 | # | Screen | Reads as |
 |---|---|---|
 | 1 | **App Shell** | The frame every module mounts inside — 22 numbered specifications |
-| 2 | **Design System v2** | Tokens, type scale, radius scale, control heights, 18 canonical components |
+| 2 | **Design System v2** | ⛔ **This cell read *"18 canonical components"* until 2026-08-06 and the number was this office's, not the design's.** **The design does not contain the word *eighteen*.** ⚡ **It enumerates itself** — nineteen sections, each carrying a `data-screen-label`: **01 Critique of v1 · 02 Quiet Premium · 03 Color · 04 Typography · 05 Space and radius · 06 Elevation · 07 Navigation · 08 Headers · 09 Cards · 10 Controls · 11 Tables · 12 Overlays · 13 States · 14 AI system · 15 Agent workflows · 16 Motion · 17 Accessibility · 18 Tokens · 19 Migration.** ⛔ **Most are foundations, not components, so the old cell was wrong on kind as well as count.** **Read [`design-snapshot/screens/Fortune Signora Design System v2.dc.html`](../design-snapshot/screens/) — the section list above is *not* a specification to work from, it is a pointer to where the specification is** ([D-137](../DECISION_REGISTER.md)) |
 | 3 | **Executive Dashboard** | CEO/CRO homepage — forecast, risk, ageing, movements |
 | 4 | **Companies** | 8,412 accounts — table, cards, segments, bulk work, import/export |
 | 5 | **Account 360** | The flagship record page — 27 sections, each in six states |

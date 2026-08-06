@@ -618,7 +618,19 @@ def main() -> int:
     findings: list[str] = []
     notes: list[str] = []
 
-    main_sha = _git("rev-parse", "--short=7", "main")
+    # **`origin/main`, never local `main`** — the shared ref, not a branch a
+    # lane may never check out. Lane C has no local `main` that anything
+    # updates (§20e gives `main` to QE), so this read `19845456` for days
+    # while `origin/main` was twenty-six commits further on, and reported a
+    # certified commit as unpromoted every single cycle.
+    #
+    # ⛔ **D-130's class, in this file**: `main` is a *name*, and what the
+    # check means is *the ref every lane shares*. Reading the name gave a
+    # confident wrong answer, and Product Office relayed it to the product
+    # owner as "QE's cycle stopped after certification" more than once.
+    main_sha = _git("rev-parse", "--short=7", "origin/main") or _git(
+        "rev-parse", "--short=7", "main"
+    )
     status = _read("PROJECT_STATUS.md")
     handoff = _read("docs/SESSION_HANDOFF.md")
     assignments = _read("docs/ACTIVE_ASSIGNMENTS.md")
