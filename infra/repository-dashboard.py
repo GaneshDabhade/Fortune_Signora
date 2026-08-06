@@ -348,7 +348,16 @@ def screen_coverage(ref: str) -> list[str]:
         else "ready" if s == "READY" else "other"
         for s in rows.values()
     )
-    undecomposed = sorted(s for s, b in blocked.items() if not b)
+    # **§20c names the frozen frontend foundation**, and two approved screens
+    # *are* it: the Design System and the Application Shell. **A row for either
+    # modifies the foundation, which is 🔴 — product owner plus ADR — so it is
+    # not Product Office's to write.** They are separated here because
+    # "awaiting decomposition" would name the wrong owner: the first list is
+    # this office's backlog, the second is the product owner's.
+    _FROZEN_FOUNDATION = ("App Shell", "Design System")
+    candidates = sorted(s for s, b in blocked.items() if not b)
+    frozen = [s for s in candidates if s.startswith(_FROZEN_FOUNDATION)]
+    undecomposed = [s for s in candidates if s not in frozen]
 
     out = [section("SCREEN COVERAGE — product completion (D-108)")]
     out.append(f"  Approved screens           {APPROVED_SCREENS}")
@@ -363,6 +372,12 @@ def screen_coverage(ref: str) -> list[str]:
     )
     out.append("     ^ decomposition candidates. ⚠️ counts ⛔ only — a screen")
     out.append("       constrained by a ⚠️ note appears here and is not ready.")
+    out.append(
+        f"  🔴 Frozen foundation (§20c)  {len(frozen)}"
+        f"   {', '.join(frozen) if frozen else '—'}"
+    )
+    out.append("     ^ awaiting a RULING, not decomposition — a row here")
+    out.append("       modifies the frozen frontend foundation")
 
     # **D-109: the view must answer *what next*, not only *how much*.**
     # **Ranked by lifecycle distance, because that is the only ordering this

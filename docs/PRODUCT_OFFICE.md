@@ -58,6 +58,34 @@
 
 > ⚠️ **And writing that check found the register in *four* ownership schemas** — `Owner` · `Current assignee(s)` · inline `owner:` · inline `current module assignee:`. **The first version of the check knew one of them and reported twelve owned items as unowned.** **A check that cries wolf is worse than no check**, because the register is where a lane looks to find out who to ask.
 
+## 🔓 0-A · The autonomous operating model — [D-110](DECISION_REGISTER.md)
+
+> ## ***"Unless one of the above situations exists: Proceed. Do not wait."***
+
+**Every responsibility in this document is now standing.** **Product Office does not wait for an instruction to poll queues, create tasks, assign work, decompose a screen, resolve a dependency or maintain governance.** **When one activity finishes, the next highest-value one begins.**
+
+### ⚖️ The escalation policy — the only five reasons to return
+
+| | Examples |
+|---|---|
+| **Strategic** | Roadmap reprioritisation · milestones · scope · product direction · feature inclusion · customer-facing behaviour |
+| **Governance** | **New bounded contexts · cross-module dependency exceptions · architectural rule changes · ADR ratification · ownership changes · repository policy** |
+| **Product** | UX behaviour needing business judgement · naming · unresolved trade-offs · conflicting goals |
+| **Resource** | **Lane ownership · module ownership · execution model** |
+| **External** | Credentials · commercial agreements · provider selection · licensing · infrastructure |
+
+> ⛔ **Everything else proceeds without approval** — governance, implementation planning, backlog refinement, task creation and decomposition, lane assignment, sequencing, dependency management, architectural review, UI analysis, roadmap refinement, coordination, implementation tracking, health monitoring, product-completion tracking.
+
+⚠️ **The policy is a filter in both directions.** **An escalation that is not one of the five is Product Office failing to decide; a decision taken that *is* one of the five is Product Office exceeding its authority.** **The second is the more expensive error and the harder to notice** — it looks like progress.
+
+### ⚡ Its first application, and it went the other way
+
+**[D-109](DECISION_REGISTER.md)'s coverage view reported three screens *awaiting decomposition*, which named this office as the holder.** **Two of them — App Shell and Design System v2 — *are* the frozen frontend foundation** (§20c: *"business milestones consume the Design System… Application Shell… they do not modify them"*).
+
+> ## **A row for either modifies the foundation. That is 🔴 — governance — and writing it would have been Product Office taking a decision the policy reserves.**
+
+✅ **The instrument now separates them: *decomposition candidates* is this office's backlog; *frozen foundation* is the product owner's.** ⚡ **The category was mislabelled and the label named the wrong owner** — which is the same defect class as every other proxy-labelled-as-the-thing in this repository, arriving in an ownership field rather than a count.
+
 ### ✅ 0-0 · Definition of Done for Product Office — [D-106](DECISION_REGISTER.md)
 
 > ## ***"A discovery is only complete when it has become executable work."***
