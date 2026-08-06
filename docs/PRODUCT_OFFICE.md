@@ -76,6 +76,43 @@
 | **[466 §0](architecture/466-certification-parallelism.md)** | *"The repository records no cause and no duration"* → **`attempts.py` records both, and derives aborts better than the enum proposed** |
 | ⚡ **[467 §0](architecture/467-system-states-traceability-audit.md)** | *"System States needs a foundational capability"* → **it was discovered the previous day, ranked highest, and annotated *name before the ninth*** |
 
+### 📖 0-iii · One canonical rule; everything else references it — [D-103](DECISION_REGISTER.md)
+
+> ***"Every repository rule should have one authoritative source. All other locations should reference that source rather than restating it."***
+
+**Whenever a rule appears in more than one document, three questions, in order:**
+
+**① Which document *owns* it?** · **② Which should only *reference* it?** · **③ Should the duplicated wording be *removed entirely*?**
+
+> ⚡ **[C-104](LANE_COORDINATION.md) is why this is a principle rather than an observation.** **[02-principles.md §13](architecture/02-principles.md) governs *"work not required to complete within the request/response cycle"* and enumerates pipeline stages. `CLAUDE.md` §7 restated it and *"provider polling"* became *"provider calls"*** — **a paraphrase that forbids something the architecture permits.** **§20e had already predicted the mechanism**: *"a rule written in two places is a rule that will eventually contradict itself, and the copy nobody is maintaining is the one somebody will read."*
+
+⚠️ **`CLAUDE.md` §20e's own rulebook table is the model** — it says *where each rule lives* and *where it is performed*, and explicitly **references rather than restates.** **The failure is not that §7 mentions the rule; it is that §7 restated the rule's substance in different words.**
+
+### 🧭 0-iv · Classify a defect before fixing it — [D-103](DECISION_REGISTER.md)
+
+> ***"Whenever possible, solve the highest-level cause."***
+
+| Class | The question it answers | Fix at this level looks like |
+|---|---|---|
+| **Implementation** | The code is wrong | A slice, plus a regression test |
+| **Planning** | The row or its sequencing is wrong | A backlog or queue correction |
+| **Governance** | A *rule* is wrong, absent or duplicated | A ruling, or a canonical source named |
+| **Documentation** | A document disagrees with the repository | A dated correction |
+| ⚡ **Tooling** | **The instrument could have caught it and did not** | **A check** |
+| **Process** | The order of work permits it | A protocol change |
+
+> ## **The test: *would fixing only today's instance leave the same mistake available elsewhere?*** **If yes, the class is higher than it looks.**
+
+**Three worked examples from one week, each solved a level above where it was found:**
+
+| Found as | ⚡ Actually |
+|---|---|
+| **[B-327](BUGS.md)** — four documents wrong about ICP Matching | **Governance** — the register collapsed *implemented* and *usable* into one word. **Naming the distinction fixed all seven** |
+| **`54 READY`** — a wrong number in one report | **Tooling** — a proxy counted and labelled as the thing. **One parser fix, and the same class cannot recur in that file** |
+| **[C-104](LANE_COORDINATION.md)** — one endpoint's legality | **Governance** — **two ratified texts disagree.** Ruling on the endpoint alone would leave the contradiction for the next reader |
+
+⛔ **And the discipline this cuts against**: **it is always cheaper to fix the instance.** **[C-226](LANE_COORDINATION.md) is the counter-example that proves the rule — one defect fixed six times, correctly and locally, by four lanes, before anybody asked what class it was.**
+
 ### 🔁 0-ii · Self-verification — a previous conclusion is not evidence
 
 > ***"Do not assume that a previous Product Office conclusion remains correct after repository evolution. Re-measure when appropriate."***

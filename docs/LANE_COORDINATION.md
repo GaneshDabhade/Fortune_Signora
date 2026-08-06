@@ -3123,6 +3123,59 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 >
 > ⛔ **And the real reason this item drifted is not the field name.** **`OPEN` means *raised, nobody has looked* — and somebody had.** **QE's analysis was complete on 2026-08-04; the item simply never moved to a state that says a decision is available.** **That transition is Lane C's under §20e, and this office did not make it for two days.**
 
+---
+
+### ✅ Accepted in principle — [D-103](DECISION_REGISTER.md). Draft text, ready to paste
+
+> ***"Proceed with preparing the documentation changes required to align the repository with the canonical interpretation. However: do not broaden the exception… The exception should remain intentionally difficult to misuse."***
+
+⛔ **`CLAUDE.md` is the product owner's and Lane C drafts only on instruction** (§20e). **This is the instruction; below is the text and nothing is applied.**
+
+#### The shape of the fix, and it is not a new sentence
+
+⚡ **§7's defect is that it *restated* Principle 13 rather than citing it.** **So the repair is subtraction, not addition** — [§0-iii](PRODUCT_OFFICE.md) applied to the item that produced it. **A second paraphrase, however careful, is the same defect one generation later.**
+
+#### Draft — `CLAUDE.md` §7, replacing the existing bullet
+
+```markdown
+- Endpoints must not perform work that belongs in the background. The rule and
+  its subject are **[02-principles.md §13](docs/architecture/02-principles.md)**,
+  which is authoritative and is deliberately not restated here: it governs
+  *work not required to complete within the request/response cycle* — provider
+  polling, normalization, the observation/event/signal/opportunity pipeline, AI
+  reasoning, recommendation generation. That work is dispatched to background
+  workers, and a handler responds once the request is durably accepted.
+
+  **A synchronous outbound call is permitted only where all four hold**, and
+  they are cumulative rather than indicative:
+
+  ① the call's result **is** the response — not a side effect of producing it;
+  ② nothing about the customer's data is read into the pipeline, stored,
+     normalized, or made visible to any other module;
+  ③ the call is bounded by an explicit timeout owned by the calling module;
+  ④ the vendor is reached only through a port that module owns.
+
+  **`POST /workspaces/{id}/connections/{id}/check` is the worked example and
+  currently the only one** ([C-104](docs/LANE_COORDINATION.md)). It asks
+  whether a door opens and closes it again.
+
+  ⛔ **This is not a latency exemption.** *Quick* is not one of the four, and a
+  stage that ingests a single record fails ② however fast it is.
+```
+
+#### Why this is hard to misuse, stated as the test it must pass
+
+| | |
+|---|---|
+| ⚡ **① and ② together exclude every pipeline stage** | **A stage exists *to* produce a side effect and *to* bring data in.** **It fails both, not one** |
+| **③ and ④ are not the bar** | **They are hygiene every outbound call already owes.** **A proposal satisfying only ③ and ④ has satisfied nothing** |
+| **The named example bounds it** | **One endpoint, named.** ⛔ **A second one is a coordination item, not a precedent already granted** |
+| ⚠️ **What was deliberately *not* written** | **No *"health and liveness"* category.** **A named category invites membership claims** — *"this is a liveness check for the CRM's record count"* — **and the four conditions refuse that without needing to argue about the word** |
+
+#### What still needs deciding, and it is one line
+
+**Whether §7 is repaired by *reference* as drafted, or by narrowing *"provider calls"* to *"provider polling"* in place.** ✅ **Lane C recommends the first** — **the second leaves a paraphrase, and a paraphrase is what produced this item.**
+
 > **The reason to ask is precedent, not this slice.** *"Architecture is agreed explicitly or it is inferred, and inferred architecture is two lanes shipping incompatible halves of one contract"* (§20e). **The next lane that wants a synchronous vendor call will cite this endpoint**, and it should be citing a ruling instead.
 
 ### The alternatives, so a ruling needs no second round-trip

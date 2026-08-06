@@ -150,6 +150,16 @@ def _latest_certification() -> dict[str, object] | None:
 #: **A queue nobody validates drifts within hours, and it drifts silently
 #: because it reads like a plan either way.**
 QUEUES = REPO_ROOT / "docs" / "coordination" / "queues"
+MODULES_TOML = REPO_ROOT / "docs" / "coordination" / "modules.toml"
+MODULES_DOC = REPO_ROOT / "docs" / "architecture" / "04-modules.md"
+BACKEND_MODULES = REPO_ROOT / "backend" / "modules"
+
+#: `modules.toml` rows that describe something other than a `backend/modules/`
+#: directory. **Enumerated rather than inferred**: `apps` and
+#: `platform_foundation` are real ownership boundaries with no module
+#: directory, and a check that silently skipped anything it could not find on
+#: disk would also skip a module somebody deleted.
+_NON_MODULE_ROWS = frozenset({"apps", "meta", "platform_foundation", "product_surface"})
 
 #: States a lane may actually start from. **`CHANGES REQUESTED` belongs here**
 #: — §20e makes a returned task the lane's highest priority, so it is
@@ -814,6 +824,75 @@ def main() -> int:
             f"`current module assignee:` · `State` beside `Status`), and each one "
             f"a single-schema sweep does not see is an item it silently miscounts."
         )
+
+    # 6b — D-103. **Every module has an owner, and the architecture document
+    # describes the modules that exist.**
+    #
+    # > *"Whenever you discover a governance inconsistency manually, ask: can
+    # > this class of mistake be detected automatically in the future? If yes,
+    # > prefer strengthening repository validation over documenting it."*
+    #
+    # **Two classes, both found by hand this week and neither previously
+    # checkable.** ① A module directory with no ownership row is unclaimable
+    # work — the `people` context was exactly this, and the deadlock it caused
+    # (`READY` needs an owner; the owner was to be added "when this is placed")
+    # held TASK-427 shut for two days. ② `04-modules.md` is what `CLAUDE.md` §1
+    # sends a lane to when module ownership is ambiguous, and it disagreed with
+    # `backend/modules/` in four places — [B-401](../docs/BUGS.md).
+    #
+    # ⚠️ **② reports and never adjudicates.** Whether the document should
+    # describe *what exists* or *the intended architecture* is an open ruling,
+    # and the divergence is worth seeing under either answer.
+    if MODULES_TOML.is_file() and BACKEND_MODULES.is_dir():
+        try:
+            registry = tomllib.loads(MODULES_TOML.read_text())
+        except tomllib.TOMLDecodeError as broken:
+            findings.append(f"modules.toml does not parse — {broken}")
+        else:
+            owned = {
+                name
+                for name, row in registry.items()
+                if isinstance(row, dict) and str(row.get("current_owner", "")).strip()
+            }
+            on_disk = {
+                d.name
+                for d in BACKEND_MODULES.iterdir()
+                if d.is_dir() and not d.name.startswith("__")
+            }
+            unowned_modules = sorted(on_disk - owned)
+            if unowned_modules:
+                findings.append(
+                    f"backend/modules/ has no owner in modules.toml: "
+                    f"{', '.join(unowned_modules)}. A module nobody owns is work "
+                    f"no lane may claim (D-100, D-103)."
+                )
+            else:
+                notes.append(
+                    f"Module ownership: {len(on_disk)} module(s) on disk, every one "
+                    f"with a current_owner."
+                )
+
+            if MODULES_DOC.is_file():
+                described = set(
+                    re.findall(r"^### ([A-Z][A-Za-z &]+)\s*$", MODULES_DOC.read_text(), re.M)
+                )
+                normalised = {d.lower().replace(" & ", "_").replace(" ", "_") for d in described}
+                # **Only modules that exist on disk.** A bounded context that
+                # has been *assigned* but not *built* — `people` today — is
+                # correctly absent from the architecture document until it
+                # ships, and flagging it would be the cry-wolf failure this
+                # file has already committed twice this week. **The defect is a
+                # module a lane can import and cannot look up.**
+                expected = {n for n in owned & on_disk if n not in _NON_MODULE_ROWS}
+                undocumented = sorted(expected - normalised)
+                if undocumented:
+                    findings.append(
+                        f"04-modules.md has no Module Reference entry for: "
+                        f"{', '.join(undocumented)}. CLAUDE.md §1 sends a lane to that "
+                        f"document to resolve module ambiguity (B-401). Advisory: whether "
+                        f"it should describe what exists or the intended architecture is "
+                        f"an open ruling, and the divergence matters under either."
+                    )
 
     for note in notes:
         print(f"  ok   {note}")

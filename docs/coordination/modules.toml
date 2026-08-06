@@ -198,6 +198,43 @@ next_milestone = "TASK-205 — A-ii"
 paired_with = "commercial_profile"
 note = "must move together with commercial_profile — an unstabilized interface runs between them (C-213)"
 
+[people]
+context = "A person, and an affiliation with an end"
+current_owner = "Lane B"
+future_owner = "Lane B"
+transition = "settled"
+implementation = 0
+basis = "Not built. The directory does not exist yet — this row exists so it is claimable the moment TASK-427 is READY, rather than after"
+last_work = "none — no lane-attributable work exists"
+next_milestone = "TASK-427 — M-D, the People domain"
+paired_with = "knowledge_graph"
+note = """
+⚡ ASSIGNED BY THE PRODUCT OWNER, 2026-08-06 (D-103). Module ownership is
+never Lane C's, and this row records a ruling rather than a judgement:
+"assign the People bounded context to Lane B, as it aligns with the
+commercial intelligence domain already owned by that lane."
+
+The precedence in §20e agrees and is recorded because the ruling and the
+rule reaching the same answer is worth more than either alone:
+  ① product architecture   — People is commercial intelligence
+  ② bounded context        — knowledge_graph holds EntityKind.PERSON, Lane B's
+  ③ long-term maintenance  — commercial_profile is Lane B's
+  ④ repository continuity  — TASK-201, Epic C's parent, is in lane-b.toml
+
+⚠️ A ROW FOR A DIRECTORY THAT DOES NOT EXIST is deliberate and is the
+narrow exception, not a new practice. TASK-427's own row said
+"modules.toml gains a row when this is placed, not before" — and that
+ordering is what made the task unplaceable: READY is Lane C's to set
+(§20e, fitness not priority), and a READY row in a module no lane owns is
+unclaimable, which is the C-412 defect. Registering ownership first
+inverts the deadlock. It grants no permission to build: TASK-427 is the
+authority for that, and ADR-0400 is the ratified ADR the new bounded
+context requires.
+
+⛔ SCOPE BOUND, C-221, unchanged and not softened by this assignment:
+no person's name, anywhere. Role-based and organization-level only.
+"""
+
 [provider_platform]
 context = "Third-party data acquisition, precedence and dispatch"
 current_owner = "Lane A"

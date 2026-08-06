@@ -56,9 +56,9 @@ updated      = 2026-08-06
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-202"
-next    = "TASK-201"
-future  = []
+current = "TASK-427"
+next    = "TASK-202"
+future  = ["TASK-201"]
 
 # **Rewritten 2026-08-05 after D-077. Four rows moved and every move is checked
 # against BACKLOG.md rather than against this file's own memory.**
@@ -101,20 +101,17 @@ future  = []
 # **A queue that names a claimed task as the next one to take is worse than no
 # queue**, which is the whole reason `current` is checked against BACKLOG.md
 # rather than against what this file said an hour ago.
-eligible_count = 2
-shortfall      = 3
+eligible_count = 3
+shortfall      = 2
 
 [rationale]
+"TASK-427" = "M-D · the People domain — a person, and an affiliation with an end. ✅ READY 2026-08-06. ⚡ Placed FIRST because it is the prerequisite of what sits behind it, which is fitness and not priority: TASK-202's own row says 'phase 4 needs Epic C', so a lane taking TASK-202 first meets this at phase 4. ⛔ Position remains the product owner's and can be reordered freely. The owner of the new `people` context is Lane B, assigned by the product owner at D-103 — modules.toml carries the row and the directory does not exist yet, deliberately. Authority to build is D-074 (the domain approved, NOT the full People Intelligence feature set) and ADR-0400 is the ratified ADR a new bounded context requires. ⛔ SCOPE BOUND C-221, unchanged: no person's name anywhere — role-based and organization-level only. ⛔ FORBIDDEN in this row: no seniority_score, no is_key_contact, no priority, no ordered list read as a ranking; influence is buying_score_engine's and stays there. Needs NO provider: the intervals derive from RoleChangeValue(title, seniority, direction) + occurred_on + company, which flow in production today."
 "TASK-201" = "Epic C — People Intelligence. ✅ UNBLOCKED 2026-08-05 at NARROWED scope, and DECOMPOSED the same day by D-074 into TASK-427 (domain) · TASK-428 (intelligence) · TASK-429 (provider enrichment) · TASK-430 (the screens). ⚠️ TASK-201 is NOT replaced and does not move — its status, position and assignment are the product owner's and unchanged. A claim on it means TASK-427 first and TASK-428 stage 3 second, in that order, which is a statement of fitness and never of priority. ⛔ TASK-427 is not yet claimable: its trigger has fired but the product owner has not placed it. C-221 stands and its narrowing IS the plan — role-based and organization-level intelligence, no person's name anywhere"
 "TASK-202" = "Epic G — Copilot. ✅ UNBLOCKED 2026-08-05, verified on origin/integration rather than inferred: mock.py exists, AIVendor.MOCK is in the enum, and provider is on the evaluation report. C-222 was ruled 2026-08-04 and TASK-415/416 are the mechanism it depends on — both this lane's own, both now landed. The rows read IN VALIDATION, which is not promoted, so this was checked against the tree a lane claims from"
 
 # ── Owned, not startable ─────────────────────────────────────────────────────
 
-[[blocked]]
-task    = "TASK-427"
-blocker = ["placement"]
-owner   = "Product owner"
-note    = "M-D, the People domain. NOT blocked on a decision — D-074 ruled the direction and 441 is the plan. It is SEQUENCED and its trigger has fired: TASK-202 is READY and its own row says 'phase 4 needs Epic C'. What remains is one act, and it is a priority act: moving the row to READY and placing it. Lane C prepared it and may not place it"
+# ⚡ TASK-427 moved out of `blocked` 2026-08-06 — it is now `current`.
 
 # ── In progress with this lane — listed so nothing here reads as claimable ────
 [[held]]
