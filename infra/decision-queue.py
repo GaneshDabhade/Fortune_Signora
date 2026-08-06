@@ -51,6 +51,7 @@ MODULES = ROOT / "docs" / "coordination" / "modules.toml"
 # time somebody picks a different one.
 ROW = re.compile(r"^#{2,3}[^\w\n]*(C-\d+)\s*·", re.M)
 # **A grouped listing is a bold id at the head of a table cell — never a bold
+<<<<<<< HEAD
 # id in prose.** The pattern required `**C-nnn**` literally, so the linked form
 # `**[C-nnn](LANE_COORDINATION.md)**` did not count and twelve rows were
 # reported absent from a table they were in. **Widening it to any bold id then
@@ -62,6 +63,16 @@ ROW = re.compile(r"^#{2,3}[^\w\n]*(C-\d+)\s*·", re.M)
 # direction** — this module exists because absence cannot be seen from inside
 # the document — but a check that cries wolf gets muted, which produces the
 # same silence more slowly.
+=======
+# id in prose.** The literal `**C-nnn**` form missed the linked variant every
+# other register uses and reported twelve rows absent from a table they were
+# in; widening it to any bold id then read prose citations as listings and
+# returned eight decided items as stale. **The anchor is what separates them.**
+#
+# ⚠️ **Restored 2026-08-06 after a rebase dropped it.** The commit carrying it
+# shared a subject line with one already on `integration`, so a skip-duplicates
+# strategy discarded the whole commit including the part that was unique.
+>>>>>>> 73fd72f5 (QE integrated 22 commits, and the rebase quietly reverted three things)
 INLINE = re.compile(r"^\|\s*\*\*\[?(C-\d+)\]?", re.M)
 # **Two heading shapes, because the register has two and pretending otherwise
 # hid seven items.** The convention is `## C-nnn · title`; C-210 through C-216
@@ -285,8 +296,12 @@ def check() -> int:
             stale.append(f"{cid} has a row here and no item in LANE_COORDINATION.md")
         elif not _is_open(reg[cid][1]) and "AWAITING" not in reg[cid][1].upper():
             # **`RULED, awaiting provision` is decided and still needs the
+<<<<<<< HEAD
             # product owner** — D-131 ⑤ calls C-334 *operational configuration*:
             # the ruling was taken and the credential is not yet supplied.
+=======
+            # product owner** — D-131 ⑤ calls C-334 *operational configuration*.
+>>>>>>> 73fd72f5 (QE integrated 22 commits, and the rebase quietly reverted three things)
             # Dropping it from the queue would hide an action; reporting it as
             # stale would train a reader to ignore this check. **It is neither
             # an open question nor finished work**, and the queue is the only

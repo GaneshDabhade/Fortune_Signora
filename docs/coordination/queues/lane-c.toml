@@ -42,11 +42,6 @@ depth_target = 5
 
 current = "TASK-419"
 next    = "TASK-454"
-<<<<<<< HEAD
-future  = ["TASK-455"]
-future  = ["TASK-455", "TASK-474", "TASK-473"]
-future  = ["TASK-455", "TASK-474", "TASK-476", "TASK-473"]
-=======
 future  = ["TASK-455", "TASK-474", "TASK-476", "TASK-473", "TASK-477"]
 
 # ⚡ **TASK-477 added 2026-08-06 — D-135 applied to a recurring finding.**
@@ -74,7 +69,6 @@ future  = ["TASK-455", "TASK-474", "TASK-476", "TASK-473", "TASK-477"]
 # ⛔ Sequenced AFTER TASK-455 deliberately — 455 makes the front door
 # walkable, and a mode indicator before there is a second mode to be in is
 # an indicator with one possible value, which §2 calls the decorative class.
->>>>>>> 2a1bcbb4 (D-133 — the Authentication Operating Model, and the front door has never been walked)
 
 # **0 of 5, and the honest number.** This read 3 while all three entries were
 # blocked on somebody else — the same defect this office corrected in C-412,
@@ -123,15 +117,8 @@ future  = ["TASK-455", "TASK-474", "TASK-476", "TASK-473", "TASK-477"]
 #             not a deferral candidate.
 #   TASK-455  a reviewable sign-up — blocks no implementation and
 #             blocks REVIEW, which §2 makes a completion condition.
-<<<<<<< HEAD
-eligible_count = 3
-shortfall      = 2
-eligible_count = 5
-eligible_count = 6
-=======
 eligible_count = 7
 shortfall      = 0
->>>>>>> 2a1bcbb4 (D-133 — the Authentication Operating Model, and the front door has never been walked)
 
 [rationale]
 "TASK-418" = "the three signora_platform capabilities ADR-0404 approved: EventHandler takes the dispatcher session, PublishableEvent becomes read-only properties, Action.LEAVE plus two policy lines. ✅ UNBLOCKED 2026-08-05 by C-416 — backend/signora_platform/ is Lane C's as permanent architectural owner. ⚠️ Ownership is not approval: §20a still freezes the tree and ADR-0404 is what makes this buildable. The two existing handlers migrate here, not in TASK-901. Run ADR-0404 §Validation first — all four"
