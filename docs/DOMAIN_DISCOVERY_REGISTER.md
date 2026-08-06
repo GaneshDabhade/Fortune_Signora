@@ -56,6 +56,40 @@
 | 15 | **Reports** ✅ [459](architecture/459-reports-traceability-audit.md) | Report definition · block · materialised rendering · **permission-respecting share** | — | ⛔ **R-08.** **And no second aggregation** |
 | 16 | **Settings** ✅ [458](architecture/458-settings-traceability-audit.md) | Workspace · membership · invitation · role · **audit trail** · **seats** | — | ✅ **13 endpoints** · ⛔ **R-05 · R-10** |
 
+## ⚡ A-2 · The ten that were never audited — opened 2026-08-06, [D-101](DECISION_REGISTER.md)
+
+> ***"If implementation lanes have sufficient executable work and Product Office-owned dependencies are under control, continue evaluating the remaining approved UI designs."***
+
+**There are remaining designs, and this register did not show it.** **[418 §1](architecture/418-platform-foundation-assessment.md), measured:**
+
+> ## **Twenty-six approved screens: sixteen business, ten platform foundation. This register held sixteen.**
+
+| | |
+|---|---|
+| **What the ten have** | ✅ **[418](architecture/418-platform-foundation-assessment.md)** — inventory, repository impact, capability assessment, and the ownership overlap with the sixteen |
+| ⛔ **What they have never had** | ⚡ **The screen-by-screen traceability audit.** **418 is dated 2026-08-04; the audit protocol was directed on 2026-08-05 ([D-078](DECISION_REGISTER.md)) and the method did not exist when 418 was written** |
+
+⛔ **This is not reopening an established foundation** ([D-093](DECISION_REGISTER.md)). **418 answered *what do these modules cost the repository?* The audit asks *what must exist for this experience to work correctly?*** — **different questions, and only the second produces foundational capabilities.** ✅ **418's findings stand and are not re-derived.**
+
+| # | Module | Why the audit may find something 418 could not |
+|---|---|---|
+| **1** | **Authentication** | **16 states.** ⛔ **§13 makes Better Auth the sole authority — so the audit's job here is to find what is *not* Better Auth's** |
+| **2** | **Onboarding** | *"asks for four and infers the rest"* — **inference is a lifecycle model** |
+| **3** | **Workspace Setup** | Region · domain verification · **deletion** — ⚡ **[R-05](#) workspace lifecycle's own screen, and R-05 is already discovered** |
+| **4** | **Team Management** | ⚡ **418 calls it *"highest reuse in all 26 screens"*** — invitations, bulk CSV, seats. **Bulk is [R-03](#)** |
+| **5** | **User Profile** | ⚡ **"three field ownerships"** — an ownership question stated by the design itself |
+| **6** | **Security Center** | Sessions · devices · MFA · **step-up** — **step-up is an authorization dimension, [R-13](#)** |
+| **7** | **Notification Center** | **Event × channel matrix · digests · quiet hours** — ⚡ **[R-04](#) is deferred, and this is the screen that would fire its trigger** |
+| **8** | **Billing** | **Annual commitment · true-up · read-only degradation** — ⬜ **a commercial lifecycle nothing in the sixteen touches** |
+| **9** | **Help Center** | **Contractual SLAs · regional status** | 
+| **10** | **System States** | ⚡ **418: *"every screen inherits it"*** — **15 states, one grammar.** **This is [P-A](#)'s screen, and P-A is a ratified pattern** |
+
+> ⚠️ **The honest expectation, stated before the work rather than after**: **the sixteen ended with the final six producing zero new rows** ([D-092](DECISION_REGISTER.md)), **and these ten are platform rather than product.** **A result of *nothing new* is a success here and should be predicted, not treated as a disappointing outcome.**
+>
+> ⚡ **Two are worth doing first on evidence rather than order**: **System States**, because every screen inherits it and 418 already found a defect in 26 screens at once; and **Notification Center**, because [R-04](#) is deferred behind a trigger and this screen is the trigger.
+
+⛔ **Under [D-100](DECISION_REGISTER.md) this is workstream 2 and never precedes repository health.** **The audits proceed while lanes hold executable work, and stop the moment one does not.**
+
 ---
 
 # Part B · The product as one system

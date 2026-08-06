@@ -58,6 +58,32 @@
 
 > ⚠️ **And writing that check found the register in *four* ownership schemas** — `Owner` · `Current assignee(s)` · inline `owner:` · inline `current module assignee:`. **The first version of the check knew one of them and reported twelve owned items as unowned.** **A check that cries wolf is worse than no check**, because the register is where a lane looks to find out who to ask.
 
+### 0a · Two workstreams, and neither waits for the other — [D-101](DECISION_REGISTER.md)
+
+> ***"Neither stream should wait for the other."*** **And the tiebreak is unchanged: *"Repository health remains the first responsibility."***
+
+| **① Operational Governance** | **② Strategic Product Planning** |
+|---|---|
+| queue health · dependency reviews · lane utilisation · backlog sequencing · architecture reviews · implementation support · coordination items · **certification planning** | remaining UI design evaluations · future product capabilities · foundational domain evolution · long-term platform architecture · **AI roadmap** · extensibility · operational tooling · infrastructure evolution |
+
+> ⚡ **The two are not a 50/50 split; they are a *precedence with no idling*.** **Stream ② runs whenever ① is under control, and yields the instant it is not** — which is [§0](#0--the-operating-priority--d-100)'s ordering applied continuously rather than once a cycle.
+
+### 0b · Certification optimisation principles — [D-101](DECISION_REGISTER.md)
+
+> ***"Earlier we attempted to improve certification by sharing infrastructure and resources. While it reduced setup work, it also introduced contention between lanes."***
+
+**Four priorities, in order: determinism · lane isolation · reproducible certification · predictable repository behaviour.** **Raw execution time is secondary to correctness.**
+
+> ## ⛔ **Never trade execution isolation for a marginal runtime improvement.**
+>
+> ## ✅ **Parallel execution is encouraged. Shared mutable execution environments are not.**
+
+**The distinction is the whole rule, and the repository has already paid for learning it**: **cycle 57 aborted on `ALTER ROLE signora_app NOBYPASSRLS` — *tuple concurrently updated* — because a PostgreSQL role is cluster-wide and two suites reached it together** ([B-118](BUGS.md)).
+
+**So every optimisation proposal is tested against one question**: ***does anything here become shared and mutable?*** **[466](architecture/466-certification-parallelism.md) is the worked application** — three static gates run concurrently because they share *nothing*, and parallel `pytest` is refused because `pg_authid` is cluster-wide and a database per worker would not fix it.
+
+⚠️ **Certification implementation and operational execution remain QE's** (§20e). **Product Office prepares the architecture and the operating model, and its output is a *measured recommendation*, never an assumption.**
+
 ### The long-term rhythm
 
 ```

@@ -34,6 +34,14 @@
 >
 > ⚡ **This is now the first thing to fix, ahead of durations.** **A `cause` field — `passed · failed · aborted · skipped` — costs one enum and turns three ambiguous data points into evidence.**
 
+> ## ⚠️ **CORRECTED 2026-08-06 — [466 §0](466-certification-parallelism.md). This section read one file and there are two.**
+>
+> **The claim above is true of `certification/manifest.json` and false of the repository.** **`backend/tests/certification/attempts.py` — a deliberately separate, git-ignored operational log — already records `duration_s` and already distinguishes `certified · failed · aborted`.**
+>
+> ⚡ **And it derives an abort better than the enum proposed here**: `aborted = len(started - set(finished))`. **An attempt that never wrote `finished` aborted.** **An enum can be set wrongly; a missing record cannot lie about itself** — [P-A](../DOMAIN_DISCOVERY_REGISTER.md), implemented before this document recommended inventing it.
+>
+> **What survives, and it is the part that matters:** ⛔ **the gap is at *gate* level, not run level.** **The three failures here were runs that *finished* — `outcome: failed`, `failing_gates: ["smoke"]`.** **The run concluded; the gate never evaluated the repository, and no run-level field can see that.** **§0a's reclassification stands unchanged.**
+
 ---
 
 # 0a · ⚖️ The four outcomes, ruled — [D-099](../DECISION_REGISTER.md)
