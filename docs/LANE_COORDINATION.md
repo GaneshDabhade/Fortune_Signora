@@ -2222,6 +2222,7 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 | [C-411](#c-411--three-findings-reported-but-recorded-nowhere-a-lane-would-look) | Three findings reported but recorded nowhere a lane would look | Lane C | **per finding** | `OPEN` | Nothing |
 | [C-412](#c-412--three-backlog-rows-say-ready-and-are-not-claimable) | Three backlog rows say `READY` and are not claimable | Lane C | **Product owner** | `OPEN` — ⚠️ **corrected 2026-08-05**, it named the wrong lane on both pairs | Nothing |
 | [C-413](#c-413--two-lanes-are-assigned-knowledge_graph) | Two lanes are assigned `knowledge_graph` | Lane C | **Product owner** | `OPEN` | Nothing |
+| [C-104](#c-104--may-a-request-handler-call-a-vendor-synchronously-when-the-answer-is-the-request) | **May a request handler call a vendor synchronously, when the answer *is* the request?** | QE | **Product owner** | ✅ **`READY FOR PRODUCT DECISION`** — 2026-08-06, analysed after drifting since 2026-08-04. ⚡ **`02-principles.md` §13 and `CLAUDE.md` §7 disagree**: the principle governs work *not required to complete within the request/response cycle* and enumerates pipeline stages; the constitution's paraphrase widened *provider polling* into *provider calls* | **Nothing today** — TASK-407 is promoted and passes every gate. **It decides whether this becomes precedent**, and `/check` is the only synchronous outbound vendor call in any `interface/` layer |
 | [C-417](#c-417--adr-0404-approved-three-platform-capabilities-whose-owner-may-not-finish-two-of-them) | **ADR-0404 approved three platform capabilities whose owner may not finish two of them** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — four alternatives, a recommendation and the bound that makes it checkable | **[TASK-418](BACKLOG.md) ① and ②, and [TASK-901](BACKLOG.md)'s seven slices behind them.** ④ ships now |
 | [C-418](#c-418--does-signora-forecast-revenue-the-executive-dashboard-says-yes-and-a-ratified-principle-says-no) | **Does Signora forecast revenue? The Executive Dashboard says yes and a ratified principle says no** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — two answers, a recommendation, and the sequencing each commits to | **Nothing today** — [TASK-438](BACKLOG.md) delivers five of the screen's six sections without it |
 | [C-419](#c-419--the-six-verbs-have-no-representation-and-17-surfaces-one-contract-is-undecided) | **The six verbs have no representation, and *17 surfaces, one contract* is undecided** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — two halves, a recommendation, and the trade-off stated | **Nothing today.** AI Copilot is wave 2 and [TASK-202](BACKLOG.md) is blocked on C-222 for unrelated reasons |
@@ -3046,7 +3047,8 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 |---|---|
 | **Owner** | **Product owner** — an architectural interpretation, not a defect |
 | **Requesting lane** | **QE**, validating TASK-407 |
-| **State** | `OPEN` |
+| **Status** | ✅ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-06. **Analysis below; one ruling, and a recommendation** |
+| **State** | ~~`OPEN`~~ — **superseded by `Status` above.** ⚠️ **This field name is why the item drifted; see the note at the end** |
 | **Raised** | 2026-08-04 |
 | **Blocks** | **Nothing today.** TASK-407 passes every gate and was promoted. **This asks whether it should become precedent** |
 
@@ -3070,6 +3072,55 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 | **The call is bounded** | It reuses `HubSpotCompanies` and its `READ_TIMEOUT_SECONDS`. **There is no unbounded-request defect here**, which is the concrete risk §7 exists to prevent |
 | **The abstraction holds** | `HubSpotReachability` implements a module-owned port. No vendor SDK reaches domain or application code |
 | **It is genuinely arguable** | §7's stated subject is *pipeline processing*. A liveness probe ingests nothing, starts nothing and stores nothing about the customer's records |
+
+---
+
+### ⚡ Lane C's analysis — 2026-08-06. The two texts disagree, and the principle is narrower than the constitution that cites it
+
+**Read at the source rather than in the paraphrase.** **[02-principles.md §13](architecture/02-principles.md), verbatim:**
+
+> ***"Work that is **not required to complete within the request/response cycle** (provider **polling**, normalization, observation/event/signal/opportunity pipeline processing, AI reasoning calls, recommendation generation) is performed by background workers."***
+
+**`CLAUDE.md` §7, restating it:**
+
+> *"Endpoints that would trigger pipeline processing (**provider calls**, AI reasoning, etc.) synchronously are not permitted."*
+
+| | |
+|---|---|
+| ⚡ **The qualifying clause** | **Principle 13 governs work *not required to complete within the request/response cycle*.** **A liveness probe's answer *is* the response** — it is required to complete within the cycle **by definition**, so the principle's own precondition is not met |
+| ⚡ **The enumerated list** | **Every item is a pipeline stage**: polling, normalization, the observation→signal→opportunity chain, AI reasoning, recommendations. ⛔ **A probe is not among them, and it is not one of them** |
+| ⚠️ **The paraphrase widened it** | **`polling` became `calls`.** **Polling is repeated, unbounded and customer-data-bearing; a call is neither** |
+| **The rationale confirms the subject** | *"The core pipeline is inherently asynchronous and often I/O- and LLM-latency-bound"* — **latency the customer is not waiting on.** Here the customer is waiting on exactly this |
+
+> ## **So `CLAUDE.md` §7 forbids something [02-principles.md](architecture/02-principles.md) §13 does not, and §20e already predicted how**: ***"a rule written in two places is a rule that will eventually contradict itself, and the copy nobody is maintaining is the one somebody will read."***
+
+#### Evidence First — measured, not assumed
+
+| | |
+|---|---|
+| ✅ **Is `/check` the only one?** | ⚡ **Yes.** **No other module's `interface/` layer makes a synchronous outbound vendor call** — grepped across all sixteen. **So this is a precedent being set, not one being discovered** |
+| ✅ **Is the abstraction intact?** | **Yes.** `HubSpotReachability` implements a module-owned port; no vendor SDK reaches domain or application code |
+| ✅ **Is it bounded?** | **Yes** — it reuses `HubSpotCompanies` and its `READ_TIMEOUT_SECONDS` |
+
+#### The recommendation, which is input and not authority
+
+> ✅ **Permit it, and bound the precedent by a stated test rather than by case-by-case judgement.**
+
+**The four conditions, all of which `/check` meets and none of which a pipeline stage could:**
+
+**① The call's result *is* the response** — not a side effect of producing it · **② nothing about the customer's data is read into the pipeline, stored, or normalized** · **③ it is bounded by an explicit timeout** · **④ it reaches the vendor only through a module-owned port.**
+
+⛔ **What this must not become:** *"synchronous vendor calls are fine if they are quick."* **①+② are the load-bearing pair** — a stage that ingests a single record fails ② however fast it is, and that is the line §7 exists to hold.
+
+🔴 **And the second half is the product owner's alone: `CLAUDE.md` §7's wording.** **If the ruling is *permit*, §7 says something the architecture does not** — the honest repair is to narrow *"provider calls"* to *"provider polling"* and cite Principle 13. ⛔ **Lane C drafts `CLAUDE.md` amendments only on instruction and never on its own initiative** (§20e).
+
+#### ⚠️ Why this item drifted for two days, and it is this office's finding rather than QE's
+
+**QE reported it as *"on the list of items with no `Status` row, which is part of why it has been easy to leave."*** **That inference was reasonable and the premise was wrong** — **this item declares `State`, not `Status`, and [`state-check`](../infra/state-check.py) knew only the second name.**
+
+> ⚡ **Second instance of one defect in one file, on consecutive days.** **The ownership sweep knew one field name and reported twelve owned items as unowned; the state check knew one field name and reported two stated items as stateless.** **Corrected: both now read every form.** **14 items are genuinely stateless, not 16.**
+>
+> ⛔ **And the real reason this item drifted is not the field name.** **`OPEN` means *raised, nobody has looked* — and somebody had.** **QE's analysis was complete on 2026-08-04; the item simply never moved to a state that says a decision is available.** **That transition is Lane C's under §20e, and this office did not make it for two days.**
 
 > **The reason to ask is precedent, not this slice.** *"Architecture is agreed explicitly or it is inferred, and inferred architecture is two lanes shipping incompatible halves of one contract"* (§20e). **The next lane that wants a synchronous vendor call will cite this endpoint**, and it should be citing a ruling instead.
 
@@ -3128,6 +3179,31 @@ backend/tests/integrations/test_public_contract.py
 **Nothing to the file.** QE reports the collision, and whichever candidate certifies first is promoted unchanged. **The second lane resolves the conflict at its own rebase**, which is where a code conflict belongs.
 
 **QE will not choose between two lanes' tests**, and will say so again if asked — the same line drawn when Lane A's rebase conflicted in `test_api_accounts.py`.
+
+---
+
+### ⚡ Second instance — 2026-08-06, and it names this office
+
+**QE reported at cycle 74: *"Lane B had nothing new after all. Their `B-328` commit dropped entirely as a duplicate on rebase — the `READY`-count fix they wrote is the same one Lane C landed in cycle 73."***
+
+> ## **Two lanes independently fixed the `54 READY` miscount within hours of each other. One of them was this office.**
+
+**The mechanism is identical to the first instance and the source is one step earlier:**
+
+| | First instance, 2026-08-04 | ⚡ This one, 2026-08-06 |
+|---|---|---|
+| **The shared work item** | **[B-109](BUGS.md)** — a bug row naming five uncovered files | **`state-check`'s own output** — *"Backlog: 54 task(s), 54 READY"*, printed on every run |
+| **Who could see it** | **Every lane** | ⚡ **Every lane, every time anybody ran the checker** |
+| **Who owned it** | ⛔ **Nobody** — `integrations` had no current assignee | ⛔ **Nobody.** `infra/` is Lane C's, **but the defect was visible to all three lanes and claimed by none** |
+| **Cost** | One rebase | **One rebase** |
+
+⚠️ **And this instance is worse in one specific way: the first was a *file* two lanes created, so git surfaced it as a conflict. This was a *defect two lanes diagnosed*, and the duplicate work was already finished before either knew.** **No conflict arises when both fixes are correct and one is simply redundant** — **B-328 vanished on rebase, which is the quiet version of the same waste.**
+
+> ⛔ **What this does not license.** **The answer is not a claim protocol for defects** — [B-109](BUGS.md) and this both show the cost is *one rebase*, and §20e's freeze wants proportionate responses to observed problems. **Two instances, both cheap, is evidence of a pattern and not yet evidence for a mechanism.**
+
+✅ **What is worth doing, and it is small:** **a defect visible in a tool's output is a work item with no row.** **When Product Office finds one and intends to fix it, the fix is announced where lanes look** — a `B-` row before the commit, not after. **This office did not do that on 2026-08-06**, and Lane B paid the rebase.
+
+**Recorded as the second instance rather than acted on further.** ⚡ **The third is the trigger** — and if it comes, the pattern will be *three lanes reading one instrument's output as unclaimed work*, which is a different finding from the one this item opened with.
 
 
 ## C-102 · A lane cannot see the defect report that blocks it

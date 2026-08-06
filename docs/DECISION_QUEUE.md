@@ -165,6 +165,24 @@
 | **Priority** | **P2 — trivial now, a rename across a bounded context later** |
 | **Recommended** | ✅ **Rule the name before the second one is built.** **Lane C's suggestion is `SavedView` for the filter and `Segment` unchanged for the ICP concept** — the customer says *"my saved view"* and *"my segment"* about different things already, so [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s test is satisfied without inventing anything |
 
+## C-104 · May a request handler call a vendor synchronously, when the answer *is* the request?
+
+🟢 **Nothing is blocked** — [TASK-407](BACKLOG.md) is promoted and passes every gate. **This decides whether it becomes precedent**, and **`/check` is the only synchronous outbound vendor call in any `interface/` layer** — so it is a precedent being *set*, not one being discovered.
+
+> ⚡ **Two ratified texts disagree, and reading the source settles it.**
+>
+> **[02-principles.md §13](architecture/02-principles.md)** governs *"work **not required to complete within the request/response cycle**"* and enumerates **provider polling, normalization, the observation→signal→opportunity chain, AI reasoning, recommendations** — **every one a pipeline stage.** **A liveness probe's answer *is* the response**, so the principle's own precondition is never met.
+>
+> **`CLAUDE.md` §7 paraphrased it and widened it**: ***provider polling*** **became** ***provider calls***. **§20e predicted exactly this** — *"a rule written in two places is a rule that will eventually contradict itself."*
+
+**Lane C recommends: permit it, bounded by a stated test rather than case-by-case judgement** — ① the call's result **is** the response · ② nothing about the customer's data is read into the pipeline, stored or normalized · ③ an explicit timeout · ④ the vendor is reached only through a module-owned port.
+
+⛔ **What it must not become**: *"synchronous vendor calls are fine if they are quick."* **①+② are load-bearing** — a stage that ingests one record fails ② however fast it is.
+
+🔴 **The second half is yours alone**: if the ruling is *permit*, **`CLAUDE.md` §7 says something the architecture does not**, and the honest repair narrows *"provider calls"* to *"provider polling"*. **Lane C drafts `CLAUDE.md` only on instruction.**
+
+⚠️ **Raised by QE on 2026-08-04 and it drifted for two days.** **Not because it lacked a `Status` row** — QE inferred that from a false positive in this office's own checker, which knew `Status` and not `State`. **It drifted because `OPEN` means *nobody has looked* and somebody had.** **Moving it to a decidable state is Lane C's under §20e, and this office did not.**
+
 ## C-225 · Wave 1's technology stack section has no route
 
 ✅ **Answered by delivery.** Wave 1 shipped **ten sections, not eleven** — [414](architecture/414-wave-1-account-360.md) was corrected before anything was built, and **Lane A built the ten.** **The product owner's half of this item — *does wave 1 ship the subset or wait* — is answered by the subset having shipped.** What remains is **Lane B's**: whether `knowledge_graph` gets a route for `USES_TECHNOLOGY`, which is a capability with no customer-facing edge. **No decision needed from you.**

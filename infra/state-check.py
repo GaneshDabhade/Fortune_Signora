@@ -741,7 +741,15 @@ def main() -> int:
             continue
         item = titled.group(1)
         declared = ""
-        status_row = re.search(r"^\| \*\*Status\*\* \|(.+)$", chunk, re.M)
+        # **`State` and `Status` both, and the second one is a correction.**
+        # The first version of this check knew `Status` alone and reported
+        # C-104 and C-300 as stateless. **Both declare `State`.** That is the
+        # same defect this check was written to catch, committed by the check
+        # itself — and it is the *second* time in one file: the ownership
+        # sweep below knew one field name and miscounted twelve items.
+        # **QE read the false positive and reasoned from it**, concluding that
+        # C-104 had drifted because it had no state row. It has one.
+        status_row = re.search(r"^\| \*\*(?:Status|State)\*\* \|(.+)$", chunk, re.M)
         opened_line = re.search(r"(?m)^\*\*Opened .*$", chunk)
         for source in (
             status_row.group(1) if status_row else "",
@@ -781,7 +789,7 @@ def main() -> int:
             off_schema += 1
         elif field is None:
             off_schema += 1
-        if not re.search(r"^\| \*\*Status\*\* \|", chunk, re.M):
+        if status_row is None:
             stateless.append(item)
 
     if unowned:
@@ -801,8 +809,10 @@ def main() -> int:
         notes.append(
             f"Coordination register: {off_schema} item(s) declare ownership in a "
             f"pre-2026-08-03 form — `Current assignee(s)`, or inline beside "
-            f"`Opened`. Read by this check; three schemas in one register is worth "
-            f"converging, and is why a single-schema sweep miscounts."
+            f"`Opened`. Read by this check. **Five schemas across ownership and "
+            f"state** (`Owner` · `Current assignee(s)` · inline `owner:` · inline "
+            f"`current module assignee:` · `State` beside `Status`), and each one "
+            f"a single-schema sweep does not see is an item it silently miscounts."
         )
 
     for note in notes:
