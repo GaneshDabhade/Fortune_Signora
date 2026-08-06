@@ -454,3 +454,45 @@ Protocol 2 presents a citation as **a bare copyable token** — `signal_contribu
 **The evidence favours Lane C, and it is now checkable rather than a matter of taste.** `reasoning@1` takes **`{facts}` and nothing else** — no question, no parameters — so it reads the identical closed evidence set narration does. A `reasoning` dataset would carry the same `facts` and the same `load_bearing`, which is duplicated truth (§2).
 
 **The one place it might matter, recorded rather than resolved:** `coverage` is *the share of load-bearing facts cited*, and `reasoning@1` rule 1 says **"draw exactly one conclusion, not three"**. A correct conclusion may rest on two of three load-bearing facts and score `0.667` — barely over the `0.66` floor. **Narration is rewarded for breadth and reasoning is instructed against it**, so the shared dataset measures them on subtly different terms. That has not caused a failure yet and is not what is breaking protocol 2, so it is written down rather than acted on.
+
+---
+
+## TASK-202 — `reasoning@2`, and why the credential was never sufficient
+
+**Authored 2026-08-06 by Lane B**, on [C-334](../LANE_COORDINATION.md)'s ruling ([D-111](../DECISION_REGISTER.md)) and the sentence in it that unblocked the row:
+
+> ***"TASK-202 is `READY` today and stays `READY` — the credential gates its prompt release, never its start."***
+
+⚠️ **This lane had been reporting TASK-202 blocked, and was wrong.** The board row said `BLOCKED`, the backlog said `READY`, and the lane trusted the wrong one for several cycles.
+
+### The diagnosis, measured before the credential existed
+
+**Read from the committed manifest, not predicted:**
+
+| Model | Protocol | Grounding failures | Coverage |
+|---|---|---|---|
+| `granite3.3:2b` | 1 | 0 | 0.833 ✅ |
+| **`granite3.3:2b`** | **2** | **2 of 2** | **0.0** |
+
+**Same model, same dataset, same prompt.** With `MINIMUM_COVERAGE = 0.66`, **`reasoning@1` has no passing protocol-2 evaluation and cannot earn one as written — whatever provider serves it.** So the credential is necessary and **was never sufficient**, and saying so early is what let the authoring happen while the provisioning was still pending.
+
+### What was actually wrong with `@1`
+
+**Protocol 2 presents a fact as `kind:uuid — summary`**, a bare copyable token where protocol 1 wrapped the reference in brackets. `reasoning@1` rule 3 says only *"by their exact reference strings"* and **shows nothing** — so nothing tells the model where the reference ends and the summary begins.
+
+**The repository had already solved exactly this, once.** `research_synthesis@1` said *"the exact reference inside the square brackets, without the brackets"*; `@2` replaced it with **copy character for character** plus a **worked example**. `reasoning@1` never had the wrong instruction — **it had no example at all**, which under a bare-token protocol is the same failure.
+
+### What `@2` changes, and nothing else
+
+**Two edits, both to the citation contract:**
+
+1. The preamble now states the presented form and that **the reference is everything before the dash**.
+2. Rule 3 becomes *copy the reference character for character — do not add anything, and do not remove anything*, **with a worked example naming what to drop.**
+
+**Every other rule is byte-identical to `@1`.** A prompt revision that also changed the reasoning rules would make a failed evaluation unattributable — and the one thing being tested here is whether the citation contract is now legible.
+
+### ⛔ Registered with zero evaluations, and that is the honest state
+
+**`reasoning@2` is unreleased**, and `is_released` derives it rather than declaring it: a prompt is usable only where an evaluation supports it. **Nothing may use `@2` until it earns a release**, and `@1` remains the released artifact.
+
+> ⚠️ **A prompt is not code, and no test asserts its content.** The claim this slice makes — *that the worked example fixes protocol-2 grounding* — **is measured by nothing until the evaluation runs.** A green suite says the registry loads it and the fingerprint is right; it says nothing about whether the prompt works. **Stated here so the next reader does not mistake one for the other.**

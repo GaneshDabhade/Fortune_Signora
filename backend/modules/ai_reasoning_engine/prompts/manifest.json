@@ -60,6 +60,13 @@
           "retries": 0
         }
       ]
+    },
+    {
+      "name": "reasoning",
+      "version": 2,
+      "owner": "AI Reasoning Engine",
+      "fingerprint": "b0dc023fae5b7c810c9e4728db540219da675d182236f38cd71a22c280dc0ee3",
+      "evaluations": []
     }
   ]
 }
