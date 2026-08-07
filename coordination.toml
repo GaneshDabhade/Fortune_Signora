@@ -9,46 +9,46 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "a18d2a1"
+generated_from = "8bcff9e"
 task_count     = 89
 
 [lane.Lane_A]
 current            = "TASK-467"
 next               = "TASK-474"
 next_after_that    = "TASK-473"
-assigned_total     = 42
-claimable          = 7
+assigned_total     = 60
+claimable          = 6
 claimable_now      = 6
-awaiting_sync      = 1
-in_flight          = 24
-awaiting_qe_transition = 0
-blocked_on_integration = 1
-supply_state       = "working"
-blocked            = 11
-lane_utilization   = 4.8
-idle_prediction_days   = 1.0
-dependency_wait_days   = 0.1
-blocked_duration_days  = 0.1
-critical_path_max      = 3
-
-[lane.Lane_B]
-current            = "TASK-464"
-next               = "TASK-202"
-next_after_that    = ""
-assigned_total     = 31
-claimable          = 2
-claimable_now      = 2
 awaiting_sync      = 0
-in_flight          = 20
+in_flight          = 33
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 9
-lane_utilization   = 4.0
-idle_prediction_days   = 0.3
-dependency_wait_days   = 0.1
-blocked_duration_days  = 0.1
-critical_path_max      = 3
+blocked            = 21
+lane_utilization   = 6.6
+idle_prediction_days   = 0.9
+dependency_wait_days   = 0.0
+blocked_duration_days  = 0.0
+critical_path_max      = 4
+
+[lane.Lane_B]
+current            = ""
+next               = ""
+next_after_that    = ""
+assigned_total     = 13
+claimable          = 0
+claimable_now      = 0
+awaiting_sync      = 0
+in_flight          = 12
+awaiting_qe_transition = 0
+blocked_on_integration = 0
+supply_state       = "in_flight_only"
+blocked            = 1
+lane_utilization   = 2.4
+idle_prediction_days   = 0.0
+dependency_wait_days   = 0.0
+blocked_duration_days  = 0.0
+critical_path_max      = 0
 
 [lane.Lane_C]
 current            = ""
@@ -66,8 +66,24 @@ blocked            = 7
 lane_utilization   = 1.2
 idle_prediction_days   = 0.0
 dependency_wait_days   = 0.3
-blocked_duration_days  = 0.2
+blocked_duration_days  = 0.3
 critical_path_max      = 0
+
+[[task]]
+id            = "TASK-003"
+title         = "The attributes are engineering's words (R11-06)"
+state         = "BLOCKED"
+declared      = "BLOCKED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lan"
+waiting_for    = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lane raised.** ⚠️ **An architectural blocker, not an implementation one** (§20e): *"
+blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-200"
@@ -84,6 +100,38 @@ estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-201"
+title         = "Epic C — People Intelligence"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-202"
+title         = "Epic G — Copilot"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-467"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 2
+estimated_ready = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approv"
+waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-157](DECIS"
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-400"
@@ -118,6 +166,38 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-415"
+title         = "A deterministic mock AI provider, and development stops needing a model"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-416"
+title         = "An evaluation run states which provider served it"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-417"
 title         = "Account 360 renders what the platform already knows"
 state         = "IN FLIGHT"
@@ -134,6 +214,38 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-420"
+title         = "Epic H — a second hosted vendor reaches production"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = ["TASK-421"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 0
+estimated_ready = "** — **trigger: the approved UI waves are complete and `product_surfac"
+waiting_for    = "** — **trigger: the approved UI waves are complete and `product_surface` is no longer the lowest-implementation module** *(45% today; every other modu"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-421"
+title         = "Epic H — PII never leaves the tenant unmasked"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-420"]
+unblocks       = ["TASK-422", "TASK-423"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 1
+estimated_ready = "when TASK-420 complete"
+waiting_for    = "** — after [TASK-420](#task-420)"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-422"
 title         = "Epic H — a workspace states which providers it allows"
 state         = "WAITING_ARCHITECTURE"
@@ -141,12 +253,76 @@ declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = ["TASK-421"]
 unblocks       = ["TASK-424"]
-next_owner     = ["Lane B"]
-next_lane      = "Lane B"
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
 critical_path  = 2
 estimated_ready = "when TASK-421 complete"
 waiting_for    = "** — after [TASK-421](#task-421), **and blocked on the ADR [437 §3](architecture/437-ai-platform-future-epic.md) calls *ADR-B*: *'where does AI policy"
-blocked_days   = 0.1
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-423"
+title         = "Epic H — prompt injection is detected and recorded"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-421"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 2
+estimated_ready = "when TASK-421 complete"
+waiting_for    = "** — after [TASK-421](#task-421)"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-424"
+title         = "Epic H — a workspace has an AI budget"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-422"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 3
+estimated_ready = "when TASK-422 complete"
+waiting_for    = "** — after [TASK-422](#task-422)"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-427"
+title         = "M-D · The People domain — a person, and an affiliation with an end"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-429"
+title         = "M-E · A provider supplies a person identifier"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "** — **trigger: a provider contract that supplies a person identifier."
+waiting_for    = "** — **trigger: a provider contract that supplies a person identifier.** ⛔ **A commercial decision, not an engineering one**"
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -162,7 +338,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend"
 waiting_for    = "** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend-capability-matrix.md)"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -178,6 +354,22 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-435"
+title         = "A seller sees what changed across every account they hold"
+state         = "WAITING_ARCHITECTURE"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is schedu"
+waiting_for    = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and blocks nothing"
 blocked_days   = 0.0
 on_integration = true
 
@@ -402,7 +594,23 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— after Workflow 1 clears the human review gate, Lane C 2026-08-07.** "
 waiting_for    = "— after Workflow 1 clears the human review gate, Lane C 2026-08-07.** ⚠️ **The reason is re-pointed rather than the state changed, and the old one had"
-blocked_days   = 0.1
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-453"
+title         = "The six verbs become a published contract"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -424,18 +632,18 @@ on_integration = true
 [[task]]
 id            = "TASK-458"
 title         = "Signal Engine reads the People contract"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-460"
@@ -454,6 +662,70 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-462"
+title         = "The Action Batch's domain — proposal, approval, and the window as a predicate"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-463"
+title         = "The Action Batch's persistence — append-only, and no `UPDATE` grant"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-464"
+title         = "The Action Batch's application layer, and the two events"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-467"]
+unblocks       = ["TASK-465"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 2
+estimated_ready = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approv"
+waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-157](DECIS"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-465"
+title         = "Applying a batch asynchronously, and saying so while it runs"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-464"]
+unblocks       = ["TASK-466"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 3
+estimated_ready = "when TASK-464 complete"
+waiting_for    = "** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)**"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-466"
 title         = "Companies bulk — the first consumer, end to end"
 state         = "SEQUENCED"
@@ -463,10 +735,10 @@ depends_on     = ["TASK-465"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 3
+critical_path  = 4
 estimated_ready = "when TASK-465 complete"
 waiting_for    = "** — **predecessor [TASK-465](#task-465--applying-a-batch-asynchronously-and-saying-so-while-it-runs)**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -476,7 +748,7 @@ state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
 depends_on     = ["TASK-478"]
-unblocks       = ["TASK-471", "TASK-480", "TASK-481", "TASK-482"]
+unblocks       = ["TASK-202", "TASK-464", "TASK-471", "TASK-480", "TASK-481", "TASK-482"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 1
@@ -514,7 +786,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-468 complete"
 waiting_for    = "** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not-refined)**. **A first run that cannot create a workspace is not a first run**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -530,7 +802,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — trigger: [TASK-467](#task-467--the-authentication-surface-to-the-"
 waiting_for    = "** — trigger: [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) complete"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -546,7 +818,7 @@ next_lane      = "—"
 critical_path  = 2
 estimated_ready = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approv"
 waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-153](DECIS"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -642,7 +914,7 @@ next_lane      = "—"
 critical_path  = 2
 estimated_ready = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approv"
 waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-153](DECIS"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -658,7 +930,7 @@ next_lane      = "—"
 critical_path  = 2
 estimated_ready = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approv"
 waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-153](DECIS"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -674,7 +946,7 @@ next_lane      = "—"
 critical_path  = 2
 estimated_ready = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approv"
 waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-153](DECIS"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -710,6 +982,22 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-903"
+title         = "A seller can see what their company sells"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-904"
 title         = "An organization can grow"
 state         = "IN FLIGHT"
@@ -737,54 +1025,6 @@ next_owner     = []
 next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-003"
-title         = "The attributes are engineering's words (R11-06)"
-state         = "BLOCKED"
-declared      = "BLOCKED"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lan"
-waiting_for    = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lane raised.** ⚠️ **An architectural blocker, not an implementation one** (§20e): *"
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-201"
-title         = "Epic C — People Intelligence"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-202"
-title         = "Epic G — Copilot"
-state         = "ASSIGNED"
-declared      = "READY"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -886,118 +1126,6 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
-id            = "TASK-415"
-title         = "A deterministic mock AI provider, and development stops needing a model"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-416"
-title         = "An evaluation run states which provider served it"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-420"
-title         = "Epic H — a second hosted vendor reaches production"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = ["TASK-421"]
-next_owner     = ["Lane B"]
-next_lane      = "Lane B"
-critical_path  = 0
-estimated_ready = "** — **trigger: the approved UI waves are complete and `product_surfac"
-waiting_for    = "** — **trigger: the approved UI waves are complete and `product_surface` is no longer the lowest-implementation module** *(45% today; every other modu"
-blocked_days   = 0.1
-on_integration = true
-
-[[task]]
-id            = "TASK-421"
-title         = "Epic H — PII never leaves the tenant unmasked"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane B"
-depends_on     = ["TASK-420"]
-unblocks       = ["TASK-422", "TASK-423"]
-next_owner     = ["Lane A", "Lane B"]
-next_lane      = "—"
-critical_path  = 1
-estimated_ready = "when TASK-420 complete"
-waiting_for    = "** — after [TASK-420](#task-420)"
-blocked_days   = 0.1
-on_integration = true
-
-[[task]]
-id            = "TASK-423"
-title         = "Epic H — prompt injection is detected and recorded"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane B"
-depends_on     = ["TASK-421"]
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 2
-estimated_ready = "when TASK-421 complete"
-waiting_for    = "** — after [TASK-421](#task-421)"
-blocked_days   = 0.1
-on_integration = true
-
-[[task]]
-id            = "TASK-424"
-title         = "Epic H — a workspace has an AI budget"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane B"
-depends_on     = ["TASK-422"]
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 3
-estimated_ready = "when TASK-422 complete"
-waiting_for    = "** — after [TASK-422](#task-422)"
-blocked_days   = 0.1
-on_integration = true
-
-[[task]]
-id            = "TASK-427"
-title         = "M-D · The People domain — a person, and an affiliation with an end"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
 id            = "TASK-428"
 title         = "M-I · What the domain lets other modules say"
 state         = "IN FLIGHT"
@@ -1011,38 +1139,6 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-429"
-title         = "M-E · A provider supplies a person identifier"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "** — **trigger: a provider contract that supplies a person identifier."
-waiting_for    = "** — **trigger: a provider contract that supplies a person identifier.** ⛔ **A commercial decision, not an engineering one**"
-blocked_days   = 0.1
-on_integration = true
-
-[[task]]
-id            = "TASK-435"
-title         = "A seller sees what changed across every account they hold"
-state         = "WAITING_ARCHITECTURE"
-declared      = "SEQUENCED"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is schedu"
-waiting_for    = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and blocks nothing"
-blocked_days   = 0.1
 on_integration = true
 
 [[task]]
@@ -1064,22 +1160,6 @@ on_integration = true
 [[task]]
 id            = "TASK-446"
 title         = "An account's observed attributes have a publisher"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-453"
-title         = "The six verbs become a published contract"
 state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane B"
@@ -1122,7 +1202,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDIN"
 waiting_for    = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1142,88 +1222,8 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
-id            = "TASK-462"
-title         = "The Action Batch's domain — proposal, approval, and the window as a predicate"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-463"
-title         = "The Action Batch's persistence — append-only, and no `UPDATE` grant"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = ["TASK-464"]
-next_owner     = ["Lane B"]
-next_lane      = "Lane B"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-464"
-title         = "The Action Batch's application layer, and the two events"
-state         = "ASSIGNED"
-declared      = "READY"
-lane          = "Lane B"
-depends_on     = ["TASK-463"]
-unblocks       = ["TASK-465"]
-next_owner     = ["Lane B"]
-next_lane      = "Lane B"
-critical_path  = 1
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-465"
-title         = "Applying a batch asynchronously, and saying so while it runs"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane B"
-depends_on     = ["TASK-464"]
-unblocks       = ["TASK-466"]
-next_owner     = ["Lane A"]
-next_lane      = "Lane A"
-critical_path  = 2
-estimated_ready = "** — **predecessor [TASK-464](#task-464--the-action-batchs-application"
-waiting_for    = "** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)**"
-blocked_days   = 0.1
-on_integration = true
-
-[[task]]
 id            = "TASK-472"
 title         = "A workspace can list its accounts, and blank input currently refuses to"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-903"
-title         = "A seller can see what their company sells"
 state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane B"
@@ -1282,7 +1282,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: the Billing screen is scheduled for implementation**"
 waiting_for    = "** — **trigger: the Billing screen is scheduled for implementation**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1298,7 +1298,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: TASK-411 slices 4–5 complete**"
 waiting_for    = "** — **trigger: TASK-411 slices 4–5 complete**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1314,7 +1314,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: a measured certification wall-clock that demonstrably "
 waiting_for    = "** — **trigger: a measured certification wall-clock that demonstrably delayed a promotion, recorded at least twice**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1362,7 +1362,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: the first support request that cannot be answered with"
 waiting_for    = "** — **trigger: the first support request that cannot be answered without database access**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1378,7 +1378,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: whichever comes first —** *(a)* the first customer con"
 waiting_for    = "** — **trigger: whichever comes first —** *(a)* the first customer contract naming a retention or erasure obligation, *(b)* the first workspace deleti"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
