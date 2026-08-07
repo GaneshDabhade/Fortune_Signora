@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `f6df17e`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `16ba152`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `f6df17e`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `16ba152`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`f6df17e`** — the certified commit itself |
+| **`main`** | **`16ba152`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 109 promoted ⚡ **Workflow 1 milestone 3 — the front door, the enterprise route, and the two states between signed in and signed out** |
-| **Certification** | ✅ [`f6df17ef6a87`](certification/reports/f6df17ef6a87.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 110 promoted ⚡ **[427](docs/architecture/427-impact-based-validation.md) step 2 — a run records the profile the planner computed** |
+| **Certification** | ✅ [`16ba152458d9`](certification/reports/16ba152458d9.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1604 frontend tests** *(+38)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 192s *(Build 53s — six new auth screens)* *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1604 frontend tests** *(+38)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 202s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,71 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 109
+## 1d · Release summary — 2026-08-07, cycle 110
+
+**Derived from the promoted commit `16ba152`.** **Sixty-five promotions.** ⚡ **[D-167](docs/DECISION_REGISTER.md)'s first step, and the most useful thing in the cycle is a measurement QE got wrong.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **[427](docs/architecture/427-impact-based-validation.md) step 2** *(QE)* | **A run records the profile the Validation Planner computed for its diff.** ⛔ **`REQUIRED_GATES` unchanged, every gate still runs, `satisfied` never reads the field** |
+
+✅ **The first record carrying one landed this cycle**: `profile: "platform"`.
+
+### D-167 already had a design, and step 1 was already running
+
+⚡ **[427](docs/architecture/427-impact-based-validation.md) is a five-step migration plan, and step 1 — *emit the analysis, change nothing else* — has executed at every certification since TASK-414.** **D-167's safety rule is already the planner's stated law**: *"unknown paths widen it, never narrow it."*
+
+### ⛔ QE tried to answer step 1's exit question and got it wrong
+
+**427**: *"If the classifier disagrees with reality even once during step 1, the framework is not ready."*
+
+**Across 112 runs, seven have a failing gate.** QE re-derived each one's profile and reported:
+
+```
+4d37ede0  smoke   documentation  *** NO — classifier disagreed ***
+4b3da374  pytest  documentation  *** NO — classifier disagreed ***
+6aaf45ef  pytest  documentation  *** NO — classifier disagreed ***
+```
+
+⛔ **Four of seven. That would have declared the framework unsafe — and the measurement was wrong.** QE diffed each failing commit against **its own parent**; every candidate was multi-commit and the last commit was usually QE's own doc-only bug row. **The proxy classified a diff nobody ever certified.**
+
+**Against the real bases:**
+
+```
+4d37ede0  base ace4460d  16 paths  profile=platform  'smoke'  in plan: True
+4b3da374  base f3ec15f2  73 paths  profile=platform  'pytest' in plan: True
+6aaf45ef  base f3ec15f2  72 paths  profile=platform  'pytest' in plan: True
+```
+
+> ⚡ **The classifier was right every time.** **And *"a measurement taken from the wrong range is indistinguishable from a finding"* is precisely the argument for step 2** — record the number when it is computed, rather than reconstructing it from a range nobody kept.
+
+### Two safety properties, both mutation-checked
+
+| | |
+|---|---|
+| **The profile never changes a verdict** | Making `missing_gates` return empty for a `documentation` profile **kills the vacuity test** — the defect [427 §1](docs/architecture/427-impact-based-validation.md) names, where a mis-classification reads as a pass |
+| **An absent profile reads as empty, never inferred** | Defaulting it to `"platform"` kills two tests: **112 historical records would claim a measurement nobody took** |
+
+✅ **All 112 existing records still parse** under `extra="forbid"`; `satisfied` unchanged at 66/112.
+
+⏸️ **Steps 3–5 — actually applying the profile — stay gated on step 1's evidence**, exactly as 427 requires.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** *(+8)* · **1604 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **114 runs recorded, 106 certified** · `promoted == certified` ✓ · `--audit-main` clean · **thirteenth consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · ⚡ **the certification record gained a field for the first time since it was written** |
+| **Dependency** | ✅ Nothing held |
+| **Customer Value** | ⛔ **None directly.** The instrument that decides what ships got one step smarter |
+| **Process** | ⚡ **QE published its own wrong measurement, corrected it, and made the correction the argument for the change** |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 109
 
 **Derived from the promoted commit `f6df17e`.** **Sixty-four promotions.** ⚡ **Workflow 1's third milestone, and the largest frontend slice of the session.**
 
