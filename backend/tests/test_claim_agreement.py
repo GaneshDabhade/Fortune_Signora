@@ -76,12 +76,32 @@ class TestBacklogClaims:
     def test_ready_is_not_a_claim(self) -> None:
         assert state_check._backlog_claims(_backlog(_task(1, "`READY`"))) == {}
 
-    @pytest.mark.parametrize(
-        "status", ["CLAIMED", "ACTIVE", "IN VALIDATION", "CHANGES REQUESTED"]
-    )
+    @pytest.mark.parametrize("status", ["CLAIMED", "ACTIVE", "CHANGES REQUESTED"])
     def test_every_holding_status_counts(self, status: str) -> None:
         text = _backlog(_task(7, f"`{status}` — **Lane A**, 2026-08-02"))
         assert state_check._backlog_claims(text) == {"007": "Lane A"}
+
+    def test_in_validation_is_not_a_claim(self) -> None:
+        """⛔ **`IN VALIDATION` is a handover, not a hold — [B-143](../../docs/BUGS.md).**
+
+        **This case sat in the list above and it should not have.** §20e is
+        explicit: at `IN VALIDATION` *"implementation, tests, module
+        documentation and Slice Handoff are all complete. **The lane's
+        responsibility for this task has ended.**"* ⚡ **The row is with QE and
+        nobody is working it**, so the execution board's `## Current` — which
+        answers *"who is doing what, right now?"* — should not carry it.
+
+        ⚠️ **The finding it produced for days**: `TASK-400`, `IN VALIDATION`
+        since 2026-08-06 with 34 commits on `main` and nothing outstanding,
+        reported every cycle as work a lane held and routed to Lane A each
+        time. **A row nobody could claim.**
+
+        ⛔ **`CHANGES REQUESTED` stays in the list above** — that one *is*
+        returned to the lane, and §20e makes it the lane's highest priority.
+        **The two are opposite directions across the same boundary.**
+        """
+        text = _backlog(_task(7, "`IN VALIDATION` — **Lane A**, 2026-08-02"))
+        assert state_check._backlog_claims(text) == {}
 
     def test_a_note_naming_other_tasks_does_not_claim_them(self) -> None:
         """Why parsing is per block rather than per line.

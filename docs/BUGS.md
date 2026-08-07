@@ -87,7 +87,8 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Platform Foundation — [`infra/state-check.py`](../infra/state-check.py), [`backend/tests/test_claim_agreement.py`](../backend/tests/test_claim_agreement.py) |
 | **Current assignee** | **Lane C** |
 | **Severity** | 🟠 · ⛔ **Blocking Quality Defect class** — a failing test |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-07.** **The case was inverted, not deleted**: `IN VALIDATION` leaves the parametrised list and gains its own test asserting it is *not* a claim, with §20e's sentence as the reason — *"the lane's responsibility for this task has ended."* ✅ **All four exercised directly: `CLAIMED`, `ACTIVE`, `CHANGES REQUESTED` → `{'007': 'Lane A'}`; `IN VALIDATION` → `{}`.** ⛔ **`CHANGES REQUESTED` deliberately stays in the list** — that one *is* returned to the lane. **The two are opposite directions across the same boundary.** ⛔ **`VERIFIED` is QE's** |
+| ⚠️ **What this office should have done** | ⛔ **I changed `HOLDING_STATUSES` and never looked for a test covering it.** ⚡ **I cannot run `pytest`, and I did not need to** — `git grep -l HOLDING_STATUSES -- backend/tests/` names the file in under a second. **The same sweep, run afterwards across every symbol changed this session, found that [B-141](#b-141--the-contention-hypothesis-is-now-the-weaker-one-and-measurement-narrowed-it)'s lease fix had no test at all** — now [`test_environment_lease_key.py`](../backend/tests/test_environment_lease_key.py), **10 assertions, mutation-checked**: reverting the fix makes `_resource()` return the literal again and the no-shell-punctuation assertion fails |
 | **Found** | 2026-08-07 by QE, cycle 91, by `make certify` |
 
 **Steps to reproduce.**
