@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `b5cff6f`, 2026-08-06.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `9ba145f`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `b5cff6f`, 2026-08-06.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `9ba145f`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`b5cff6f`** — the certified commit itself |
+| **`main`** | **`9ba145f`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 85 promoted **four commits** — a small cycle, and **QE narrowed its own conflict guard for the third time, from a denylist to an allowlist** |
-| **Certification** | ✅ [`b5cff6f42bba`](certification/reports/b5cff6f42bba.md) · migration head **`0040`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 86 promoted **six commits across three lanes** — the pipeline's modules now **consume what they declare**, and a second reasoning prompt exists but is **not released** |
+| **Certification** | ✅ [`9ba145fbe2f1`](certification/reports/9ba145fbe2f1.md) · migration head **`0040`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
 | **Validation queue** | **Empty.** ✅ **Lane C's cycle-70 deferral resolved itself** — the lane rebased, and its work is promoted here |
-| **Customer value this cycle** | ⚠️ **Foundational.** **A declaration now asks for a provider read** — the sync path TASK-901 needs, with [C-021](docs/LANE_COORDINATION.md) answered after standing open since 2026-08-02 |
+| **Customer value this cycle** | ⚠️ **Foundational.** **`signal_engine` and `buying_score_engine` now consume what they declare** — the subscriptions were declared since M5 and nothing was wired to them |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3879 backend tests** · **95.36% coverage** *(floor 95)* · **1448 frontend tests** across 67 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **809 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **37 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 162s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3885 backend tests** · **95.30% coverage** *(floor 95)* · **1448 frontend tests** across 67 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **809 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **37 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 143s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,19 +40,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **TASK-901 slice 1**, and **[C-021](docs/LANE_COORDINATION.md) answered** | **TASK-406 · TASK-472** *(cycle 84)* — nothing new this cycle | **D-137**, and a TASK-440 state it corrected against itself | **Cycle 85** |
+| **Last promoted** | **TASK-901 slices 2 · 3** — two modules consume what they declare | **TASK-202** — `reasoning@2`, unreleased | **D-139 · D-140**, both self-caught | **Cycle 86** |
 | **Execution phase** | **Building** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
 | **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
-| **Validation status** | ✅ **Promoted this cycle** | — **nothing new** | ✅ **Promoted this cycle** | — |
+| **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | Next `READY` row | Next `READY` row | Stewardship | **Cycle 86, on the next poll** |
+| **Next executable work** | Next `READY` row | Next `READY` row | Stewardship | **Cycle 87, on the next poll** |
 
-> **A small cycle, and the smallest commit closes the oldest question**: [C-021](docs/LANE_COORDINATION.md) had been open since 2026-08-02, and TASK-901 slice 1 answers it by building the provider read a declaration needs.
+> **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
-> ⚠️ **QE's conflict guard was reshaped rather than re-listed.** It union-merged a Python file and `CLAUDE.md` — no damage, because both matched the owner's branch, **but that was luck.** Three narrowings in three cycles is the signal that a denylist was the wrong shape: **it is now an allowlist of six append-only registers, and everything else stops and asks.**
+> ⚠️ **`reasoning@2` ships unreleased, and QE checked rather than assumed.** Zero evaluations, so under [ADR-0028](docs/architecture/adr/0028-model-runtime-by-environment.md) it is usable with nothing. **That is what a new version looks like, not a regression** — and `prompt-evaluation` stays in the shortfall until a real model measures `@1` or `@2` on this hardware.
 >
-> **Lane C corrected a state against itself** — *"TASK-440 carried two states on `integration`, and the first one was mine."* That is the collision QE declined to adjudicate two cycles ago, resolved by the lane that caused it.
+> **Three lanes, six commits, first attempt, no aborts.**
 
 ---
 
@@ -103,51 +103,51 @@
 
 ---
 
-## 1d · Release summary — 2026-08-06, cycle 85
+## 1d · Release summary — 2026-08-07, cycle 86
 
-**Derived from the promoted commit `b5cff6f`.** **Forty-one promotions.** A small cycle, **and the one where QE learned that its conflict guard had the wrong shape rather than the wrong list.**
+**Derived from the promoted commit `9ba145f`.** **Forty-two promotions.** **Declarations that had existed since M5 finally have consumers** — and a new prompt version arrived with zero evaluations, which is the honest state rather than a defect.
 
 ### What was promoted
 
-**Four commits. A small cycle, and the smallest is the one that closes a five-day-old question.**
+**Six commits, three lanes, and the theme is things finally consuming what they declare.**
 
 | | |
 |---|---|
-| **TASK-901 slice 1** *(Lane A)* | **A declaration asks for a provider read**, and **[C-021](docs/LANE_COORDINATION.md) is answered** — open since 2026-08-02 |
-| **C-232** *(Lane A)* | Closed — *"Lane B built the read, and the held screen now points at the wrong one"* |
-| **D-137** *(Lane C)* | *"C-421 was never an access problem, and no UI is derived from the design"* |
-| **TASK-440 state** *(Lane C)* | *"It carried two states on `integration`, **and the first one was mine**"* |
+| **TASK-901 slice 2** *(Lane A)* | **`signal_engine` consumes what it has declared since M5** |
+| **TASK-901 slice 3** *(Lane A)* | `buying_score_engine` consumes what it declares |
+| **TASK-202** *(Lane B)* | **`reasoning@2`**, *"and why the credential was never sufficient"* |
+| **D-139 · D-140** *(Lane C)* | Both self-caught — *"the test failed twice on the day it was written, and both were mine"*, and *"the protocol's first act was to catch two of my own conclusions"* |
+| **410 corrected** *(Lane C)* | *"The eighteen never existed, and 410 said they did"* |
 
-**Lane B had nothing new** — all four of its commits were promoted in cycle 84.
+> **A declared subscription with no consumer is the shape [B-131](docs/BUGS.md) is about, one layer down**: the declaration was true, nothing acted on it, and no gate could tell the difference. **Slices 2 and 3 close it for two modules**, and `infra/runtime-composition.py` — itself one of the ten unrecorded gates — is what proves it.
 
-### ⚠️ QE's conflict guard had the wrong *shape*, not the wrong list
+### ⚠️ `reasoning@2` exists and is **not released**, which is the honest state
 
-**Resolving Lane C, QE union-merged `infra/decision-queue.py` — a Python file — and `CLAUDE.md`, which is the product owner's and ⚫ in the Change Budget.**
+**QE checked rather than assumed**, because `prompt-evaluation` has appeared in every shortfall this session on account of `reasoning@1`:
 
-**No damage: both came out byte-identical to Lane C's own branch**, and `decision-queue.py` parses. **That was luck, not design.**
+```
+reasoning@1 : 4 evaluations · released: False
+reasoning@2 : 0 evaluations · released: False
+```
 
-> **The guard has now been narrowed three times.** It began as *"union anything"*, became *"not `.toml`"* when TOML broke with duplicate keys, then *"not `.toml/.json/.yaml/.csv`"* — **and a `.py` file and `CLAUDE.md` walked straight through that list.**
->
-> **A denylist has to predict every dangerous format. An allowlist has to name the six files where *keep both sides* is actually correct**, because they are append-only lists of rows. **Three narrowings is the signal that the shape was wrong, not the list.**
+**A new version inherits the limitation rather than resolving it.** Under [ADR-0028](docs/architecture/adr/0028-model-runtime-by-environment.md) a prompt is usable only with the exact `(model, dataset)` pairs it has passed — **and `@2` has passed none.**
 
-**It is now an allowlist** — `BUGS` · `LANE_COORDINATION` · `BACKLOG` · `ACTIVE_ASSIGNMENTS` · `DECISION_REGISTER` · `DECISION_QUEUE` — **and anything else stops and asks.** Verified refusing before it was used again.
+> **This is not a defect and not a regression.** `reasoning@1` has no released model on this hardware because `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` is unmeasurable here. **`@2` starting empty is what a new version looks like**; the standing limitation is unchanged, and **`prompt-evaluation` will keep appearing in the shortfall until a real model measures one of them.**
 
-### Four lease aborts this session, none forced
+### The cheap-gates order picked up a new file type
 
-**Attempt 1 aborted with Lane B holding the lease.** QE waited ~4 minutes across six polls, then relaunched **after verifying the candidate still matched the pinned snapshot** rather than assuming it.
-
-> **Cumulative cost across the session: ~21 minutes of wall-clock and zero correctness.** Every abort was correct behaviour on both sides, and none was ever forced.
+**The candidate added `prompts/manifest.json`.** QE parsed it alongside the TOML before validation started — **not because a rule said to, but because the allowlist rewrite made "is this structured?" the first question about any conflicted or new file.** It parsed; nothing was found; the check cost a second.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3879 backend** *(+7)* · **1448 frontend** — **gated in stage 1** · **95.36%** · **392 invariants** · **809 files typed** · **37 contracts** · `tsc` clean and gated |
-| **Release** | **85 certification runs recorded, 82 certified** · `promoted == certified` ✓ · `--audit-main` clean · **1 abort on the lease, not a verdict** |
+| **Technical** | **3885 backend** *(+6)* · **1448 frontend** — **gated in stage 1** · **95.30%** · **392 invariants** · **809 files typed** · **37 contracts** · `tsc` clean and gated |
+| **Release** | **86 certification runs recorded, 83 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt, no aborts** |
 | **Architecture** | Reachability 0 doorless · migration `0040` **reversible, verified this cycle** · **a new bounded context, with its ADR, its ownership row, its RLS and its invariants all present** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ⚠️ **Foundational.** A declaration asks for a provider read — the sync path, with [C-021](docs/LANE_COORDINATION.md) answered after five days |
-| **Process** | ⚠️ **QE's conflict guard was reshaped, not re-listed.** A denylist let a Python file and `CLAUDE.md` through; it is now an allowlist of six append-only registers and refuses everything else |
+| **Customer Value** | ⚠️ **Foundational.** Two pipeline modules now consume subscriptions they had declared since M5 |
+| **Process** | ✅ **Clean — first attempt, no conflicts in code, no aborts.** ⚠️ **`reasoning@2` ships unreleased with zero evaluations**, which is the correct state for a new version and leaves `prompt-evaluation`'s shortfall exactly where it was |
 
 ### Repository Health Trend
 
