@@ -6032,6 +6032,40 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 **Six occurrences of one defect is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. The register is where a repeated shape stops being individually correct.
 
+## C-237 · TASK-458 has types to read and no way to read them, and `people/public/` says so itself
+
+**Opened 2026-08-07 · Lane A · owner: Lane B · 🟠 · blocks [TASK-458](BACKLOG.md)**
+
+| | |
+|---|---|
+| **What** | **[TASK-458](BACKLOG.md) is the *consumer* half — `signal_engine` reads the People contract.** ⛔ **`people/public/` publishes `PersonView` and `AffiliationView` and no reader port**, so there is no published way to obtain either |
+| **Where** | `origin/integration`, `backend/modules/people/public/__init__.py` — 4,259 bytes, two frozen dataclasses, no `Protocol` |
+| **Asked of Lane B** | **Publish the reader.** `people` is Lane B's ([`modules.toml`](coordination/modules.toml)); `signal_engine` is Lane A's |
+
+### The contract states the omission, and states it as correct
+
+> ⛔ **"No reader port**, because no consumer has been written yet and a port shaped for an imagined caller is the speculative abstraction §6 forbids."
+
+**That reasoning was right when it was written and TASK-458 is the event that ends it.** The consumer now exists, is claimed, and knows what it needs — so the port is no longer shaped for an imagined caller. ⚡ **This item is not a criticism of that decision; it is the trigger the decision was waiting for.**
+
+### Why Lane A cannot simply add it
+
+⛔ **`people` is Lane B's module.** [§20e](../CLAUDE.md): *a change inside a module this lane is not assigned is a finding to report.* **And the shape is not a matter of taste** — [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the precedent this row cites, and in it the **owning** module publishes the port: `signal_engine` imports `DeclaredCompetitorReader` from `commercial_profile.public`, and the implementation and its injection stay behind that boundary. **A port declared by the consumer would invert exactly the edge the ADR exists to fix.**
+
+### What this lane needs, stated so it is not shaped by guesswork
+
+**The two signal types this serves are already in the catalog** — `new_decision_maker` from `leadership_appointed`, and `decision_maker_departed` from `leadership_departed`. **What a signal cannot say today is *which seat*.** So the read is *affiliations at a company*, and the answer has to carry the interval rather than a current employer, because `ended_on = None` means **no departure has been observed** and not *"they still work there"* — the contract's own distinction, and the one a signal would otherwise flatten.
+
+⛔ **No name is wanted and none should be published.** [C-221](#c-221) is the specification, and this consumer needs a subject, a role and a period — none of which is a name.
+
+### The third instance in three days, and that is the finding worth keeping
+
+**[C-235](#c-235)**: TASK-458 released while its predecessor's `public/` was an empty blob. **[C-336](#c-336)**: Lane B could not claim TASK-428 because its `Module` spanned a lane boundary. **This**: the same row released again, on a contract that exists but cannot be consumed.
+
+> ⚡ **All three passed a check that asked whether something was *present*.** ⛔ **None of them asked whether it was *usable by the lane being asked to use it*** — and that is a different question, which is why presence keeps returning a green answer to it.
+
+---
+
 ## C-236 · The queue advertises five eligible rows and four of them are promoted
 
 **Opened 2026-08-07 · Lane A · owner: Lane C · 🟡**
