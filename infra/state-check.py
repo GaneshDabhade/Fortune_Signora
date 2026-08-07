@@ -502,6 +502,42 @@ def _declared_state(cell: str) -> str:
     return token.group(1).strip() if token else cell.strip()[:20] or "(blank)"
 
 
+def _duplicate_index_findings(coordination: str) -> list[str]:
+    """The same coordination item listed twice in the summary index.
+
+    **Accumulated by union conflict resolution across several rebases**, and
+    invisible because each row looked correct on its own: eleven exact
+    duplicates had built up by 2026-08-07, one item listed three times.
+
+    ⚡ **Keyed on `(id, anchor)`, not on the id alone.** [B-405](../docs/BUGS.md)
+    records a dated audit table that legitimately reuses `C-024` and `C-025`
+    for subjects that were later renumbered — **a check keyed on the id would
+    demand that a record of the past be rewritten**, which §2 forbids.
+
+    **Third member of one family**, with the duplicate `Status` row and the
+    TOML union: *a field that holds one value, holding two.*
+    """
+    seen: set[tuple[str, str]] = set()
+    repeats: dict[str, int] = {}
+    for line in coordination.splitlines():
+        m = re.match(r"\|\s*\[(C-\d+)\]\(#([a-z0-9-]+)\)", line)
+        if m is None:
+            continue
+        pair = (m.group(1), m.group(2))
+        if pair in seen:
+            repeats[m.group(1)] = repeats.get(m.group(1), 1) + 1
+        seen.add(pair)
+    if not repeats:
+        return []
+    named = ", ".join(f"{k}×{v}" for k, v in sorted(repeats.items()))
+    return [
+        f"LANE_COORDINATION.md lists {len(repeats)} item(s) more than once in "
+        f"the summary index with the same anchor — {named}. A reader sees "
+        f"whichever row is higher, and a union conflict resolution adds one "
+        f"every time it runs."
+    ]
+
+
 def _duplicate_state_findings(backlog: str) -> list[str]:
     """A task block declaring its state twice.
 
@@ -1302,6 +1338,7 @@ def main() -> int:
     # the one day a silent queue drift would go unseen.
     findings.extend(_structured_file_findings())
     findings.extend(_planning_sync_findings())
+    findings.extend(_duplicate_index_findings(coordination))
     findings.extend(_duplicate_state_findings(backlog))
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
