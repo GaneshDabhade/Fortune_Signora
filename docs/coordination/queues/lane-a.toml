@@ -381,6 +381,47 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🟢  D-163 — DO NOT WAIT TO BE TOLD. 2026-08-07 · product owner
+#
+#   "Lane A should not wait for Product Owner instructions to begin the next
+#    assigned task once the current task has completed and the review gate has
+#    been satisfied."
+#
+# ⚡ THE DISTINCTION YOU NEED, WRITTEN DOWN SO YOU NEVER HAVE TO INFER IT:
+#
+#   WITHIN a workflow — TASK-490 → TASK-483 → TASK-484 — there is NO product
+#   owner gate. Finish one, take the next. Do not report and wait. Do not ask.
+#   This queue's `current` is the answer and it is always current.
+#
+#   BETWEEN workflows the review gate STANDS, unchanged. Workflow 2 begins only
+#   when Workflow 1 reads `approved` in workflows.toml, and only the product
+#   owner sets that. D-163 removes the INSTRUCTION, never the GATE.
+#
+# ⛔ YOU WILL ALWAYS HAVE EXACTLY ONE CLAIMABLE ROW. Not zero — that is this
+#   office failing you, and D-163 ⑤ makes it explicitly ours. Not two — two
+#   would let you choose, and choosing is prioritisation (§20e).
+#
+#   state-check.py now asserts both every run, and it is proved able to fail:
+#   marking a second workflow active makes it fire, restoring makes it silent.
+#   ⚡ If you ever poll and find zero claimable, that is a REPORTABLE DEFECT
+#     against this office, not a drought you work around.
+#
+# ⚠️ depth_target was 15 and is now 1. A deep bench is the model this ruling
+#   replaces — the pipeline is deep in PLANNING (27 workflows in
+#   workflows.toml) and exactly one deep in EXECUTION.
+#
+# ✅ THE SEQUENCE AFTER TASK-490, so you can see the whole run:
+#     TASK-490  the design foundation ......... current, yours
+#     TASK-483  the authentication shell ...... releases automatically
+#     TASK-484  the Workflow 1 journeys ....... releases automatically
+#     ── then this office runs the pixel-level conformance audit ──
+#     ── then, and only then, the product owner reviews Workflow 1 ──
+#     TASK-485  Workflow 2, Registration ...... releases on `approved`
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🔴  D-162 — TASK-490 GATES EVERYTHING, AND AN OVERRIDE IS A FINDING
 #     2026-08-07 · product owner
 #
@@ -1019,8 +1060,8 @@ future  = []
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
 eligible_count = 1
-depth_target   = 15
-shortfall      = 13  # ⛔ by ruling — D-158 §2. Two rows, both Workflow 1.
+depth_target   = 1   # ⚡ D-163: exactly ONE claimable, not a deep bench.
+shortfall      = 0   # ⛔ 1 of 1. A second claimable row would let this lane choose, and choosing is prioritisation.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

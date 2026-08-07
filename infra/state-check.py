@@ -835,6 +835,76 @@ def _ownership_findings(backlog: str) -> list[str]:
     return findings
 
 
+def _pipeline_findings() -> list[str]:
+    """**Exactly one claimable row for the implementing lane, and exactly one
+    active workflow** — [D-163](../docs/DECISION_REGISTER.md).
+
+    ⚡ **The product owner's model in one sentence**: *"keep the implementation
+    pipeline continuously populated and correctly sequenced"*, with **many
+    workflows planned and normally one active**, and **Lane A never waiting on
+    an instruction to start the next task once the review gate is satisfied.**
+
+    **Two ways that fails, and they are opposite:**
+
+    ⛔ **Zero claimable** — the lane idles and only its own report reveals it.
+    **[D-155](../docs/DECISION_REGISTER.md) exists because that happened for
+    six consecutive polls.**
+
+    ⛔ **More than one claimable** — the lane may pick, and picking is
+    prioritisation. **[D-158](../docs/DECISION_REGISTER.md) §2 found exactly
+    this: the generator offered a Workflow 3 enabler while two Workflow 1 rows
+    waited, because it sorts by leverage rather than by journey.**
+
+    ⚠️ **Reported, never repaired.** A second claimable row might be a
+    sequencing error *or* a genuinely parallel slice inside one workflow, and
+    choosing is a governance decision (§20e).
+    """
+    out: list[str] = []
+    source = REPO_ROOT / "docs" / "coordination" / "coordination.toml"
+    flows = REPO_ROOT / "docs" / "coordination" / "workflows.toml"
+    if not source.is_file() or not flows.is_file():
+        return out
+    try:
+        published = tomllib.loads(source.read_text())
+        pipeline = tomllib.loads(flows.read_text())
+    except tomllib.TOMLDecodeError as broken:
+        return [f"the coordination or workflow source does not parse — {broken}"]
+
+    active = [
+        f"{key} ({body.get('name', '?')})"
+        for key, body in pipeline.get("workflow", {}).items()
+        if body.get("state") == "active"
+    ]
+    if len(active) != 1:
+        out.append(
+            f"workflows.toml declares {len(active)} active workflow(s) — {active or 'none'}. "
+            "**Exactly one is normally active** (D-160 ④); many may be planned. "
+            "Zero means implementation has nothing to build; more than one means the "
+            "review gate between journeys has stopped meaning anything."
+        )
+
+    for lane, body in published.get("lane", {}).items():
+        # ⛔ Only lanes that still receive work. Lane B is closed by D-157 and
+        # Lane C implements nothing, so zero is correct for both and flagging
+        # it would teach people to read past this check.
+        if lane in {"Lane_B", "Lane_C"}:
+            continue
+        claimable = int(body.get("claimable", 0) or 0)
+        if claimable == 0:
+            out.append(
+                f"{lane} has nothing claimable. **Keeping the pipeline populated is "
+                "Product Office's responsibility** (D-163) — the lane cannot fix this "
+                "and should not have to report it."
+            )
+        elif claimable > 1:
+            out.append(
+                f"{lane} has {claimable} claimable rows and should normally have one. "
+                "**More than one lets the lane choose, and choosing is prioritisation** "
+                "(§20e). Sequence all but the active journey's next row."
+            )
+    return out
+
+
 def _queue_findings(backlog: str) -> list[str]:
     states = _backlog_states(backlog)
     out: list[str] = []
@@ -1580,6 +1650,7 @@ def main() -> int:
     findings.extend(_duplicate_state_findings(backlog))
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
+    findings.extend(_pipeline_findings())
     findings.extend(_execution_state_findings())
     findings.extend(_staleness_findings())
 
