@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `67fe1a8`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `ba0520a`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `67fe1a8`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `ba0520a`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`67fe1a8`** — the certified commit itself |
+| **`main`** | **`ba0520a`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 102 promoted ⚡ **[B-212](docs/BUGS.md) — a documented command that referenced a file the repository never shipped** |
-| **Certification** | ✅ [`67fe1a81b399`](certification/reports/67fe1a81b399.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 103 promoted ⚡ **TASK-458 — a decision-maker signal can say which seat, and for how long** |
+| **Certification** | ✅ [`ba0520a44906`](certification/reports/ba0520a44906.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4173 backend tests** *(+1)* · **95.37% coverage** *(floor 95)* · **1548 frontend tests** *(+25)* across 66 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **840 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 148s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1548 frontend tests** *(+25)* across 66 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 148s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -46,7 +46,7 @@
 | **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | **TASK-458** — claimed this cycle | Next `READY` row | **[B-145](docs/BUGS.md)** | **Cycle 103, on the next poll** |
+| **Next executable work** | Next `READY` row | Next `READY` row | **Rebase and regenerate** | **Cycle 104, on the next poll** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,40 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 102
+## 1d · Release summary — 2026-08-07, cycle 103
+
+**Derived from the promoted commit `ba0520a`.** **Fifty-eight promotions.** ⚡ **The chain that has been building for a week reaches the pipeline.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **TASK-458** *(Lane A)* | **A decision-maker signal can say which seat, and for how long.** A `Seat` domain value, `GenerateSignals` consuming the `AffiliationReader` port, the worker composition wired, **+20 backend tests** |
+
+> ⚡ **This is the far end of a chain the register has been tracking all week.** [C-235](docs/LANE_COORDINATION.md) refused the row for eleven polls because `people/public/` was git's empty blob. [C-237](docs/LANE_COORDINATION.md) found types with no way to read them. [C-238](docs/LANE_COORDINATION.md) found a `Protocol` nothing implemented. **Lane B published the port, then the reader, then the builder — and this cycle Lane A consumed all three.**
+
+**`make runtime-composition`: 0 unexpected missing wiring, four modules subscribed** — the measure that says a capability does not ship complete and do nothing.
+
+### ⛔ Lane C's commit was excluded, and not for a failing gate
+
+**It conflicted on two *generated* `.toml` files** — `coordination.toml` and `queues/lane-a.toml`. ⛔ **QE does not hand-resolve generated files**, and a union merge on a `.toml` is what broke `lane-a.toml` earlier this session.
+
+⚡ **The right repair is the generator, not the merge**: Lane C rebases and re-emits against the new baseline, which is what `infra/coordination.py` exists for. **Lane A was not held for it.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4193 backend** *(+20)* · **1548 frontend** · **95.38%** · **398 invariants** · **842 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **107 runs recorded, 99 certified** · `promoted == certified` ✓ · `--audit-main` clean · **sixth consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke **148s** · ✅ **runtime-composition 0 unexpected** |
+| **Dependency** | ⚠️ Lane C must rebase and regenerate; Lane B remains a stale ref |
+| **Customer Value** | ⚡ **A signal about a departed decision-maker now carries which seat they held and for how long** — the difference between *someone left* and *the person who signs left last month* |
+| **Process** | ⚡ **Four coordination items, three lanes, one week, and the chain closed without any lane inventing the other's half** |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 102
 
 **Derived from the promoted commit `67fe1a8`.** **Fifty-seven promotions.** ⚡ **A defect Lane A hit by running the command the repository told it to run.**
 
