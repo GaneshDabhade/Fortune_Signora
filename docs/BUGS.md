@@ -80,6 +80,65 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-144 · `main` is red today and was green at certification, because a certification gate reads the clone
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) `premature_releases`, [`backend/tests/test_coordination_source.py`](../backend/tests/test_coordination_source.py) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🔴 · ⛔ **Blocking Quality Defect — nothing in the repository can certify.** `pytest` fails on `main`, on `integration`, and on every candidate built from them |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-07 by QE, cycle 94, on the first poll after connectivity was restored |
+
+**Steps to reproduce.** Against **`origin/main`**, in a clean worktree:
+
+```bash
+git worktree add --detach /tmp/m origin/main
+cd /tmp/m/backend && uv run pytest tests/test_coordination_source.py -q
+→ FAILED test_premature_releases_is_silent_on_a_correct_release
+  1 failed, 16 passed
+```
+
+**Expected.** `17 passed`. ⚡ **This exact tree certified 90 minutes earlier with `pytest 4021 passed`** — [`6fdb6ccbbc5c`](../certification/reports/6fdb6ccbbc5c.md), and `7e33de1e` is its Closeout, which changes nothing executable.
+
+**Actual.** The same tree, the same command, a different answer.
+
+### ⛔ Nothing in the repository changed. A lane pushed a commit message
+
+The test constructs two `Task` objects from fixed text and asserts `premature_releases([done, released]) == []`. **`premature_releases` calls `_outstanding_rows()` internally**, which runs `git cherry origin/integration <lane branch>` and greps the resulting commit messages for task ids.
+
+```
+git log --format="%s%n%b" origin/integration..origin/lane-a-product-surface | grep -o "TASK-4[0-9][0-9]"
+→ TASK-432
+  TASK-458
+```
+
+⚡ **Lane A's `9aa88841` — *"C-238 — the port is typed, and nothing implements it"* — mentions `TASK-432` in its body.** So `TASK-432` reads as outstanding, `_delivered` returns `False`, `TASK-444` is flagged a premature release, and the assertion fails.
+
+> **The test's inputs did not change. The repository's tree did not change. Somebody wrote a task id in a commit message on a branch, and a certification gate changed its answer.**
+
+### ⚠️ This is [B-139](#b-139--_delivered-stopped-reading-its-own-arguments-and-started-reading-the-clone) relocated, not resolved — and the fix's own docstring says what it was for
+
+**`_delivered` is genuinely fixed**: it now takes `outstanding` as a declared argument and is a pure function. `_outstanding_rows` carries this comment:
+
+> *"Every git call `_delivered` used to make, hoisted to one place — B-139. The predicate is now a pure function of its arguments and **this is the only part that reads the clone, so a test can state the world it wants** instead of depending on which refs the machine happens to have."*
+
+⛔ **`premature_releases` has no parameter for it.** It calls `_outstanding_rows(rows)` itself, so **a test calling it cannot state the world it wants** — which is the one property the hoist was performed to obtain. **The hidden input moved up a level and stayed in the call path.**
+
+**The fix is the same one, one frame higher**: `premature_releases(rows, outstanding)`, supplied by the generator and stated by the test. ⛔ **Deleting or loosening the failing case would remove the only detector of a non-deterministic gate.**
+
+### ⚡ Why this is 🔴 rather than 🟠
+
+**`pytest` is a certification gate.** A gate whose result depends on which refs a machine has fetched means:
+
+| | |
+|---|---|
+| **Certification is not reproducible** | `CLAUDE.md` §2 — *"a system whose behaviour varies with something outside its declared inputs cannot be replayed, regression-tested, or explained"* |
+| ⛔ **A past certification cannot be re-verified** | [`6fdb6ccbbc5c`](../certification/reports/6fdb6ccbbc5c.md) is a true record of a run that **cannot be reproduced today** |
+| ⛔ **Nothing can be promoted** | Every candidate inherits the failure from `main` |
+
+**QE cannot fix it** — `infra/coordination.py` is Platform Foundation's, and QE changes no lane code. ⚠️ **The repository is blocked until Lane C lands the parameter.**
+
 ### B-143 · `IN VALIDATION` was removed from `HOLDING_STATUSES` and its test still asserts it
 
 | | |
