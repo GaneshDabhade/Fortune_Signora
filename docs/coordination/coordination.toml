@@ -594,7 +594,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-ever"
 waiting_for    = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be written until "
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -754,7 +754,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lan"
 waiting_for    = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lane raised.** ⚠️ **An architectural blocker, not an implementation one** (§20e): *"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]

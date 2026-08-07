@@ -90,7 +90,13 @@
 
 ---
 
-## 📌 TASK-427 · The People domain's trigger has fired, and placing it is yours
+## ✅ TASK-427 · RESOLVED — Lane B took it, and this entry is stale
+
+> ⛔ **Removed as a question 2026-08-07.** **`TASK-427` is `IN FLIGHT` with Lane B.** ⚡ **The placement question answered itself when a lane claimed it, and this page went on asking for a decision that no longer existed** — **which costs the one thing this page exists to protect, your attention.** ⚠️ **`decision-queue.py --check` did not catch it: it compares `C-` items against the register and does not look at `TASK-` rows.** **Recorded rather than fixed in the instrument — [D-155](DECISION_REGISTER.md) ② forbids expanding tooling while Workflow 1 is unimplemented.**
+
+<details><summary>The original entry, kept because a dated record is not rewritten (§2)</summary>
+
+### TASK-427 · The People domain's trigger has fired, and placing it is yours
 
 **Not a `C-` item and deliberately** — **nothing is undecided.** [D-074](DECISION_REGISTER.md) ruled the direction; **what is left is a position in the queue, which is a priority act and not Lane C's.**
 
@@ -117,7 +123,15 @@
 | **Priority** | **P1 — it is in front of a wave that is claimable today** |
 | **Recommended** | ✅ **Place [TASK-427](BACKLOG.md) in `READY` above [TASK-202](BACKLOG.md).** **Nothing gates it** — no ruling, no provider, no missing module. **Alternative, if wave 2 should not wait**: place it immediately *below* TASK-202 and accept that AI Copilot's phase 4 stalls where phases 1–3 do not |
 
-## ⏱️ TASK-434 · The only time-critical row on this page
+</details>
+
+## ✅ TASK-434 · RESOLVED — `PROMOTED`, and this entry is stale
+
+> ⛔ **Removed as a question 2026-08-07.** **`TASK-434` reads `PROMOTED` in [`BACKLOG.md`](BACKLOG.md) — it is on `main`.** ⚡ **It was correctly flagged as the only time-critical row on this page, the sequencing argument was made, and it shipped.** ⚠️ **Same class as TASK-427 above: a resolved row still asking for a ruling.**
+
+<details><summary>The original entry, kept because a dated record is not rewritten (§2)</summary>
+
+### TASK-434 · The only time-critical row on this page
 
 **Not a shape question — you asked Product Office to determine the architectural home and [443](architecture/443-account-matching-capability.md) determines it, at 🟠 with no ADR and no new dependency edge.** **What is yours is *when*.**
 
@@ -131,6 +145,8 @@
 | **Lanes waiting** | **None.** Lane B is building TASK-406 and would consume this rather than wait for it |
 | **Priority** | **P0 on timing · P3 on difficulty.** Two small slices |
 | **Recommended** | ✅ **Sequence [TASK-434](BACKLOG.md) ahead of TASK-406's backtest slice.** ⚠️ **First slice is a prerequisite regardless of any of this**: **`commercial_profile/public/` publishes thirteen views and *not one is the ICP* — no module can read the criteria at all today**, and every one of the sixteen consumers is blocked on that one missing read port. **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the ratified precedent for exactly this shape** |
+
+</details>
 
 ## 📌 C-338 · TASK-003 as you ruled it would change evidence identity — Lane B stopped rather than shipped it
 
