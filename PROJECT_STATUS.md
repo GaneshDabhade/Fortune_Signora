@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `16ba152`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `9aae52b`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `16ba152`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `9aae52b`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`16ba152`** — the certified commit itself |
+| **`main`** | **`9aae52b`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 110 promoted ⚡ **[427](docs/architecture/427-impact-based-validation.md) step 2 — a run records the profile the planner computed** |
-| **Certification** | ✅ [`16ba152458d9`](certification/reports/16ba152458d9.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 111 promoted ⚡ **Workflow 1 milestone 4 — the workflow is complete to the boundary [D-156](docs/DECISION_REGISTER.md) drew** |
+| **Certification** | ✅ [`9aae52bf6a04`](certification/reports/9aae52bf6a04.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1604 frontend tests** *(+38)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 202s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 198s *(Build 57s)* *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,52 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 110
+## 1d · Release summary — 2026-08-07, cycle 111
+
+**Derived from the promoted commit `9aae52b`.** **Sixty-six promotions.** ⚡ **Workflow 1 is complete, and a lane's poll reported it had not started.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **Workflow 1 milestone 4** *(Lane A)* | ***"what the product says while it waits, and what it says when the answer is no"*** — **the workflow is now complete to the boundary [D-156](docs/DECISION_REGISTER.md) drew** |
+| **TASK-491** *(Lane A)* | **The design foundation's remaining gaps, *measured rather than read off the row*** — the seven the conformance audit found |
+| **D-167 · D-168 · D-169** *(Lane C)* | Including **charting ruled — `visx`**, *"and the second figure is what decides it"* |
+
+**+32 frontend tests.** ⚠️ **`visx` is ruled and not yet installed** — `package.json` is untouched, so no dependency gate applies this cycle.
+
+### ⛔ A lane reported Workflow 1 had not reached `main`. It had, three times
+
+**A poll arrived stating** *"QE has not certified `lane-a-product-surface`, and Workflow 1 has not reached `main`, so the D-158 review gate has not opened."*
+
+**Measured, not argued:**
+
+```
+75b8b464  Workflow 1 milestone 3 — the front door, the enterprise route…
+d103fa39  Workflow 1 milestone 2 — the sign-in experience
+8295fdb1  Workflow 1 milestone 1 — the authentication shell
+```
+
+**All three on `origin/main`, all three CERTIFIED** — cycles 104, 105 and 109. ⚡ **So the review gate was open and the lane was holding on nothing.**
+
+> **The lane's evidence was sound and its inference was not.** *"My branch carries unpromoted commits"* was **true** — TASK-491, three of them, verified `on_main=0`. *"Workflow 1 has not reached `main`"* was **false**. ⛔ **A branch ahead by ref says nothing about whether earlier work was promoted**, because its content lands under different SHAs after a rebase.
+>
+> ⚡ **This is why QE resolves every ahead-count by patch-id before believing it** — a habit that has retired a false *"held"* reading in **eight of the last twelve cycles**, and here it corrected a lane that was blocking itself.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1636 frontend** *(+32)* · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **115 runs recorded, 107 certified** · `promoted == certified` ✓ · `--audit-main` clean · **fourteenth consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke **198s**, `Build 57s` — the frontend shape |
+| **Dependency** | ✅ Nothing held. ⚠️ **`visx` ruled, not installed** — the dependency gate applies when it arrives |
+| **Customer Value** | ⚡ **A customer can sign in end to end** — the front door, the enterprise route, what the product says while it waits, and what it says when the answer is no |
+| **Process** | ⚡ **A measurement corrected a lane that had blocked itself on a condition already satisfied** |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 110
 
 **Derived from the promoted commit `16ba152`.** **Sixty-five promotions.** ⚡ **[D-167](docs/DECISION_REGISTER.md)'s first step, and the most useful thing in the cycle is a measurement QE got wrong.**
 
