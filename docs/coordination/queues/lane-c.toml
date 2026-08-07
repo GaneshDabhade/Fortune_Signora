@@ -38,159 +38,55 @@
 
 lane         = "Lane C"
 updated      = 2026-08-06
-depth_target = 5
 
+# ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-419"
 next    = "TASK-454"
-future  = ["TASK-455", "TASK-474", "TASK-476", "TASK-473", "TASK-477"]
+future  = ["TASK-455", "TASK-473", "TASK-474", "TASK-476", "TASK-477"]
 
-# ⚡ **TASK-477 added 2026-08-06 — D-135 applied to a recurring finding.**
-# Three architecture document numbers each name two documents, and
-# `state-check` has reported it every cycle since 2026-08-03 with nobody
-# owning it. ⛔ A recurring advisory with no row is the "unprocessed idea"
-# D-135 forbids. Placed LAST: it blocks nothing and touches no customer,
-# which is D-131 ②'s tie-break working in the honest direction.
-
-# ⚡ **TASK-476 added 2026-08-06 — D-134 ④.** Headed becomes the default a
-# lane reviews in. ⛔ Found by VERIFYING the existing rule rather than quoting
-# it: CLAUDE.md §19 said "headed by default" and the config defaults to
-# headless. The sentence was wrong, not the config.
-
-# ⚡ **TASK-474 added 2026-08-06 — D-133 ③, and it is the highest-leverage
-# row in the whole backlog: ten of the fourteen journey gaps in ADR-0406 §6
-# close behind this one capability.**
-# ⛔ Placed AFTER TASK-455 and BEFORE TASK-473: 455 makes the front door
-# walkable, 474 makes the link openable, and only then is a mode indicator
-# reporting something a developer can act on.
-
-# ⚡ **TASK-473 added 2026-08-06 — D-131 ⑥, ADR-0406 §3.**
-# The only requirement in D-131 that is not already satisfied by correct
-# engineering: nothing reports which authentication mode is running.
-# ⛔ Sequenced AFTER TASK-455 deliberately — 455 makes the front door
-# walkable, and a mode indicator before there is a second mode to be in is
-# an indicator with one possible value, which §2 calls the decorative class.
-
-# **0 of 5, and the honest number.** This read 3 while all three entries were
-# blocked on somebody else — the same defect this office corrected in C-412,
-# in Lane A's queue and in its own `eligible_count` today. **`eligible` means
-# startable now**, and a queue that counts blocked work is a queue that reports
-# a lane as busy while it waits.
-#
-# **§20e: `AVAILABLE` with an empty queue is a correct repository state, not a
-# stalled one** — every remaining item has an owner who is not this lane.
-#
-# ⚠️ **CORRECTED 2026-08-06 under D-099. That last sentence was false.**
-# **C-219's review is this office's and has been since 2026-08-05**, and this
-# file recorded it as waiting on Lane A — see `[[held]]` below.
-#
-# ⚡ **AND THE COUNT STAYS 0, WHICH IS THE SECOND FINDING.** `eligible_count`
-# counts claimable `TASK-nnn` rows, and a **review obligation is not a task
-# row** — so an office holding the one item blocking another lane reports
-# itself as having nothing to do, correctly, by the schema. **The number was
-# never wrong; it cannot express this.**
-#
-# **Recorded rather than fixed.** Adding an `eligible_reviews` field would be
-# a governance change, and §20e's freeze wants an *observed* execution problem
-# first. **This is one observation. One is not evidence** — if a second review
-# obligation goes unseen the same way, that is the trigger, and it is named
-# here so the next reader does not have to rediscover it.
-#
-# ⚡ **The investigation D-099 requires found the bottleneck inside the office
-# that runs the investigation.** Stated here rather than in a report, because
-# a finding that named another lane would have been wrong.
-# ⚡ CORRECTED 2026-08-06 · D-106's stale-blocker sweep, and the stale blocker
-# was this office's own. TASK-419 read BLOCKED on "provider_platform's typed
-# Settings and a build_provider_registry at its composition root" — TASK-436
-# shipped both and is PROMOTED. Verified by reading the code rather than the
-# row: ProviderSettings in provider_platform/infrastructure/settings.py and
-# build_provider_registry in provider_platform/infrastructure/composition.py.
-#
-# ⚠️ So this office reported itself legitimately empty while holding a
-# startable row. That is the same defect it corrected in Lane A's queue on
-# 2026-08-06 — "zero claimable is not zero executable" — committed here one
-# day later, and found only because D-106 made the sweep standing.
-# ✅ 2026-08-06 · D-116's Tier 3 sweep converted two coordination items
-# into rows this lane owns:
-#   TASK-454  one condition, one wire code — C-003 + C-009 are ONE
-#             defect seen from two ends, and C-003's own note says it
-#             'gets worse with every slice'. A compounding defect is
-#             not a deferral candidate.
-#   TASK-455  a reviewable sign-up — blocks no implementation and
-#             blocks REVIEW, which §2 makes a completion condition.
 eligible_count = 7
-shortfall      = 0
+depth_target   = 15
+shortfall      = 8
+assigned_total = 13
 
-[rationale]
-"TASK-418" = "the three signora_platform capabilities ADR-0404 approved: EventHandler takes the dispatcher session, PublishableEvent becomes read-only properties, Action.LEAVE plus two policy lines. ✅ UNBLOCKED 2026-08-05 by C-416 — backend/signora_platform/ is Lane C's as permanent architectural owner. ⚠️ Ownership is not approval: §20a still freezes the tree and ADR-0404 is what makes this buildable. The two existing handlers migrate here, not in TASK-901. Run ADR-0404 §Validation first — all four"
-"TASK-419" = "ADR-0404 capability 3, the apps/ half. ✅ UNBLOCKED 2026-08-06 — TASK-436 is PROMOTED and shipped both halves it owed: ProviderSettings (provider_platform/infrastructure/settings.py) and build_provider_registry (provider_platform/infrastructure/composition.py), verified by reading the code rather than this row. What remains is the apps/ half alone — a WorkerRuntime field pointing at the registry provider_platform now populates. ⚠️ THE NAME COLLISION IS STILL LIVE: apps/worker/subscriptions.py imports build_provider_registry from ai_platform, a different thing with the same name. ⛔ Wire the provider_platform one; do not assume the import already present is it. Run ADR-0404 §Validation first."
-#: not sequenced — see [[held]] below.
-"_TASK-413" = "change-aware validation — frontend-only skips. SEQUENCED with a trigger that has not fired: a measured certification wall-clock cost. Listed so the sequence is visible; it does not start on a schedule"
+# ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
+# that no lane go dry. `eligible_count` is what is CLAIMABLE today;
+# `assigned_total` is every row this lane owns, parked ones included, each
+# with its blocker named below. ⛔ Nothing here is invented scope: every row
+# already existed and its owner was joined from modules.toml (D-135).
 
-[[held]]
-task    = "TASK-900"
-blocker = ["product owner approval of 435"]
-owner   = "Product owner"
-note    = "The RFC is written and pushed. The task is the RFC only — no module is rewired by it — so the deliverable is complete and nothing further is startable here. Three questions are asked at the end of the document."
+[[blocked]]
+task    = "TASK-411"
+blocker = ["see the backlog row"]
+owner   = "Lane C"
+note    = "Usage Accounting — meter what a workspace consumed"
 
-# ── Discharged ───────────────────────────────────────────────────────────────
-[[disposed]]
-task = "C-219"
-by   = "Lane C, 2026-08-06"
-note = "✅ REVIEWED AND RATIFIED — option ③, freshness per target account. Lane A's A7 render is unblocked and needs nothing further from this office. ⚡ The specification had already delegated the choice: 51 §A7's `hard part` row names ③ as one of its two branches and calls it 'the design decision the slice turns on' — so it was Lane C's to ratify and never needed a ruling. ⚠️ AND IT SAT FOR A DAY BECAUSE THIS FILE SAID LANE A HELD IT. The entry read 'No proposal has arrived' from 2026-08-03; the proposal arrived 2026-08-05. Under D-100 a Product Office-owned dependency blocking a lane is the highest operational priority — this one was invisible to the office that owned it, which is the failure mode that directive exists to end."
+[[blocked]]
+task    = "TASK-412"
+blocker = ["see the backlog row"]
+owner   = "Lane C"
+note    = "Usage & Billing Observability"
 
-[[held]]
-task    = "C-221"
-blocker = ["the product owner's ruling on Epic C's scope"]
-owner   = "Product owner (the epic) · Lane C (the specification)"
-note    = "Lane C owns the specification half and cannot write it. The two options differ by an order of magnitude — acquire a provider capability that carries person names, or narrow Epic C to role changes without identity — and choosing between them is the epic's scope. Specifying for one before the ruling would decide it by implementation."
-
-# ── Delivered, and the remainder is not this lane's to schedule ──────────────
-[[held]]
-task    = "B-118"
-blocker = ["436 change ② — a product owner cost ruling"]
-owner   = "Product owner to rule · Lane C to build"
-note    = "Change ① shipped: the lease is workstation-scoped and a second clone is refused with exit 4, proved in two processes from two directories. That makes contention REFUSED. Making it IMPOSSIBLE is change ②, which costs four PostgreSQL containers, four Redis and four MinIO on one workstation with migrations running four times. `It is enforced mechanically` and `the workstation can carry it` are different claims and only the first is this lane's to make."
-
-[[held]]
-task    = "B-317"
-blocker = ["QE — the conftest half"]
-owner   = "QE"
-note    = "The Makefile half shipped: make test now runs under the lease, verified by causing it. The bare-pytest half is in backend/tests/conftest.py, which changes startup behaviour for every lane on every targeted run and whose fixtures are QE's. Designed in 436 §③, not applied. Obligation to report, never permission to fix — the rule Lane B applied to B-117 in this office's own file."
-
-# ── Sequenced, trigger not fired ─────────────────────────────────────────────
-[[held]]
+[[blocked]]
 task    = "TASK-413"
-blocker = ["a measured certification wall-clock cost"]
-owner   = "Lane C — its own trigger"
-note    = "change-aware validation, frontend-only skips. Moved out of `future` 2026-08-05: a SEQUENCED row whose trigger has not fired is not executable, and listing it in the sequence made this queue declare 5 eligible against 6 entries — the drift its own dashboard check exists to catch. It does not start on a schedule."
+blocker = ["see the backlog row"]
+owner   = "Lane C"
+note    = "Change-aware validation — `frontend/`-only skips `dr`"
 
-# ── Delivered, awaiting QE ───────────────────────────────────────────────────
-[[in_validation]]
-task = "TASK-409"
-note = "a `demo` profile in the environment allocator"
+[[blocked]]
+task    = "TASK-425"
+blocker = ["see the backlog row"]
+owner   = "Lane C"
+note    = "A tenant administration surface"
 
-[[in_validation]]
-task = "TASK-410"
-note = "one `make doctor`"
+[[blocked]]
+task    = "TASK-426"
+blocker = ["see the backlog row"]
+owner   = "Lane C"
+note    = "A deletion and retention strategy, before there is data to regret"
 
-[[in_validation]]
-task = "TASK-414"
-note = "impact analysis, reported and nothing skipped"
-
-# ── Standing, not a task ─────────────────────────────────────────────────────
-# **These have no backlog row and should not get one.** They are the office's
-# continuous responsibilities under the governance freeze, listed so that
-# "Lane C is busy" is never an unexamined claim.
-standing = [
-  "maintain backlog health and queue health",
-  "monitor execution flow and identify bottlenecks",
-  "review implementation packages under D-060",
-  "coordinate dependencies",
-  "keep implementation lanes continuously supplied with work",
-]
-
-# ── Historical: why this row read BLOCKED until 2026-08-06 ───────────────────
-[[disposed]]
-task    = "TASK-419"
-by      = "Lane C, 2026-08-06 — moved out of `blocked`, not closed"
-note    = "Kept as the record of a blocker that outlived its cause by a day. Its blocker read 'provider_platform's Settings and registry builder — Lane A's', and Lane A had shipped both. The rescope on 2026-08-05 was correct and nobody re-read it after TASK-436 promoted."
+[[blocked]]
+task    = "TASK-906"
+blocker = ["C-412"]
+owner   = "Lane C"
+note    = "M14b names its bounded context"

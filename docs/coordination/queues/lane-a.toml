@@ -91,332 +91,103 @@
 
 lane         = "Lane A"
 updated      = 2026-08-06
-depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
 current = ""
 next    = ""
 future  = []
 
-# ⚡ **2026-08-06 — the thing blocking this lane's next three rows was a
-# Product Office defect, and it is fixed.**
-#
-# TASK-448 slice 3 was blocked because 410 cited "18 canonical components"
-# and no document enumerated them. MEASURED: the word "eighteen" does not
-# appear in the design at all — the number was this office's summary of a
-# document it had not read. 410 is corrected and now points at the design.
-#
-# ⚡ The design enumerates ITSELF: 19 sections, each with a data-screen-label,
-#   in docs/design-snapshot/screens/Fortune Signora Design System v2.dc.html
-#   ⛔ That list is a POINTER, not a specification — read the design.
-#
-# ⚠️ TASK-448 is IN VALIDATION and that state is this lane's, untouched.
-#   Whether slice 3 is now executable is Lane A's judgement, not this office's.
-#   ✅ If it is: slice 3 releases TASK-467, 468 and 471 — the only rows behind
-#   it, and the only supply for this lane.
-#
-# 🔴 **0 CLAIMABLE — 2026-08-06. TASK-901 claimed, and it was the last one.**
-# ⛔ **NOT IDLE, and the distinction is the whole point of this field.** This
-# lane holds ten rows in flight and its branch is nine commits ahead of
-# integration. `eligible_count` counts what is CLAIMABLE; it has never
-# counted what is executable.
-#
-# ⚡ **The next supply is one row away and it is not a decision.**
-#   TASK-467, 468, 471 — the design refinement slices — wait on TASK-448
-#   ALONE now that C-421 is closed. TASK-448 is IN PROGRESS with this lane.
-#   ✅ When it lands, three rows become eligible at once.
-# ⛔ Nothing to decide, nothing to decompose, and no scope this office may
-#   invent. Reported rather than padded.
-#
-# ✅ **And they are genuinely readable now**: docs/design-snapshot/ holds all
-#   26 approved designs locally (D-138). Reference a screen by path, e.g.
-#   docs/design-snapshot/screens/Fortune Signora Authentication.dc.html
-#   ⚠️ 478 measured that surface: 1 of 11 design elements is implemented.
-
-# 🔴 **CAPACITY — 1 eligible, and it is the least certain row in the queue.**
-# TASK-447 claimed 2026-08-06. TASK-901 is seven slices behind TASK-900,
-# whose RFC (435) awaits product owner approval — formally READY, practically
-# uncertain. ⛔ Everything else this lane owns is behind C-421 (design access)
-# or C-229 (the navigation entry), both the product owner's.
-# ⚠️ NOT idle: nine rows are in flight with QE. Zero claimable is not zero
-# executable — the distinction this file has recorded since 2026-08-06.
-
-# ⛔ **CORRECTION — 2026-08-06, and this office made the error this file
-# already documents.** The note below was reported to the product owner as
-# "Lane A will be dry within hours". **It will not.** Measured against
-# origin/integration: this lane holds NINE rows in flight — TASK-439 (in
-# progress), 442, 443, 445, 448, 449, 453, 456, 460 — and its branch carries
-# ten commits QE has not yet taken.
-#
-# ⚡ **`eligible_count` counts what is CLAIMABLE, never what is EXECUTABLE**,
-# and the comment eighty lines below says exactly that: *"`eligible_count = 0`
-# is right and 'Lane A is idle' is wrong. Zero claimable is not zero
-# executable."* **Written by this office on 2026-08-06 and forgotten the same
-# day.** The shortfall is real and the urgency was invented.
-#
-# 🟠 **CAPACITY FINDING — restated honestly.** TASK-460 claimed; **the seventh row
-# this lane has taken today.** ⛔ **Eligible is now 1 against a target of 5.**
-# ⚠️ **And TASK-901 is the least certain row here** — seven slices behind
-# TASK-900, whose RFC (435) awaits product owner approval.
-#
-# **The remaining approved screens are behind two product owner decisions:**
-#   ✅ C-421 CLOSED 2026-08-06 — the design was readable the whole time.
-#      DesignSync, project 1d043179-1ee9-4c9f-b59e-592e04297cad, 26 documents.
-#      TASK-467, 468 and 471 now wait on TASK-448 alone.
-#   C-229  navigation entry → blocks TASK-441's entrance
-# **Neither is Lane C's to resolve, and decomposing around them would need
-# scope this office may not introduce (§20e).** ⛔ Reported, not padded.
-
-# ⚡ **TASK-456 claimed 2026-08-06 — the sixth row this lane has taken today,
-# and the D-130 audit that narrowed its surface reached it in time.**
-# ⚠️ **Eligible is 3 against a target of 5, and falling.** This lane consumes
-# roughly one row an hour; the remaining approved screens are behind C-421
-# (design access) and C-229 (the navigation entry), both the product owner's.
-# ⛔ Not padded — decomposing further would need scope this office may not add.
-
-# ⚡ **TASK-449 claimed 2026-08-06 — the fifth row this lane has taken today.**
-# ⚡ **TASK-475 added to `blocked`, not to the eligible sequence** — it is
-# BLOCKED on TASK-474 and `future` means startable. Caught by the gate on the
-# same write that introduced it, which is check ③ of C-333 doing its job.
-
-# ⚡ **TASK-445 claimed 2026-08-06 — the fourth row this lane has taken in one
-# session, each within the hour of becoming eligible.** ⚠️ **Eligible is now 4
-# against a target of 5, and the trend is the finding rather than the number:
-# this lane is consuming faster than approved scope is being decomposed.**
-# ⛔ Not padded — see the capacity note below.
-#
-# TASK-901 moved to the end deliberately: it is seven slices behind TASK-900,
-# whose RFC (435) awaits product owner approval, so it is the least certain
-# row here even though it is formally READY.
-
-# ⚡ TASK-443 claimed by this lane 2026-08-06, within the hour of becoming
-# `next`. Removed from eligible; the queue is doing its job.
-
-# ⛔ **2026-08-06 — TASK-440 removed from `current` and set BLOCKED.** This file
-# put it there on the note *"its workspace-wide read is VERIFIED to exist"*, and
-# **that verified an endpoint's name, not its behaviour.** `GET /accounts` is
-# `attention_list` — open opportunities ranked by buying score — and Companies
-# is a browse of 8,412 rows. `GraphQueries.find_accounts` requires `text` and
-# refuses blank input on purpose. **There is no workspace-wide account listing.**
-#
-# ⚡ **Lane A raised this as C-230 Finding 2 and was right.** It is now
-# TASK-472, Lane B's, and TASK-440 is blocked behind it.
-# ⚠️ **This lane was pointed at unbuildable work by its own queue file** — the
-# failure this file exists to prevent, committed by the file itself.
-
-# ⚡ **2026-08-06 — TASK-448, TASK-442 and TASK-453 removed: this lane claimed
-# all three off `integration` since the last write.** They are the lane's now,
-# not its queue's, and a claimed row left listed as eligible is the one error
-# this file exists to prevent — a lane re-claiming work it is already holding.
-# **Found by `state-check`, not by reading the file**, which is the argument for
-# the check: three stale ids read exactly like three available ones.
-
-# ⚠️ **Rewritten 2026-08-05. This file declared 5 eligible and none of the five
-# was startable.** Every row is now checked against BACKLOG.md rather than
-# against what this file said yesterday.
-#
-#   TASK-904  was `current`   →  IN VALIDATION, with QE
-#   TASK-905  was `next`      →  CLAIMED
-#   TASK-903  was in `future` →  CLAIMED
-#   TASK-419  was in `future` →  NOT LANE A'S ROW. Its module is `apps/`, which
-#                                modules.toml records as Lane C. **A queue
-#                                pointing a lane at another lane's row is C-412**
-#
-# **The work Lane A can actually do behind TASK-419 had no id**, which is why
-# TASK-419 looked like a Lane A row: **TASK-436 now carries it** — a typed
-# Settings for provider_platform and a build_provider_registry at its own
-# composition root. **One slice here unblocks Lane C's TASK-419.**
-#
-# ⚠️ **The two synthetic ids are gone.** `TASK-400-A7-render` and `TASK-400-A6`
-# are not TASK-nnn, and §20e says a row references a real id because **an id is
-# immutable and a title drifts**. The narrowing they carried is real and moves
-# into TASK-400's rationale and its blocked entry, keyed to the id that exists.
-#
-# 🔴 **CAPACITY FINDING — 0 claimable against a target of 5.** Not a lane
-# behaviour; a Product Office planning finding. Stated in full below.
-#
-# ⚠️ **`eligible_count = 0` is right and "Lane A is idle" is wrong**, corrected
-# 2026-08-06 under D-099. **Zero claimable is not zero executable.** This lane
-# HOLDS TASK-400 (IN PROGRESS), and **its A6 half became executable on
-# 2026-08-05 when C-321 was ruled** — a day before this file last said A6 was
-# blocked on it. **A queue reporting a lane as having nothing to do, while the
-# lane holds a row with an unblocked half, is the C-333 defect inverted**: the
-# earlier one hid a dry queue, this one hid available work inside a full one.
-#
-# **`eligible` means *claimable now*, and TASK-400 is already claimed** — so
-# the count stays 0 and the narrative changes. **Both facts belong here,
-# because the number alone reads as idleness.**
-# ✅ 2026-08-06 · D-105 — this lane goes from 0 claimable to 4 in one day, and
-# every one is an approved SCREEN rather than a capability. The finding that
-# produced them: most approved screens had backend rows and no RENDER row, so
-# the work was prepared and never made claimable. Decomposing approved scope
-# is Lane C's under §20e; auditing further screens is not what was missing.
-#
-# ⚠️ ORDERED BY READINESS, NOT BY VALUE — and the order is fitness only:
-#   TASK-432  the event Signal Center needs, and three other consumers want
-#   TASK-439  Signal Center — both its blockers already in flight
-#   TASK-441  Opportunity Intelligence — the MOST complete approved screen
-#             measured: permissions ✅ complete, audit ✅, no events needed,
-#             ONE 🔴 in the whole screen
-#   TASK-440  Companies — 5 of 9 built; the only approved screen that had no
-#             backlog row of any kind
-# ⛔ Position is the product owner's and every one of these can be reordered.
-#   TASK-442  the P-A page test — Lane A raised C-226, offered to build it,
-#             and owns the harness. ⚠️ This office endorsed it in a document
-#             and never created the row, which is exactly what D-106 forbids.
-#   TASK-443  R-07's audit surface — attribution is complete in 37 files
-#             and the QUERY is missing. Three screens wait on it.
-# ✅ 2026-08-06 · TASK-432 CLAIMED by Lane A within the hour of reaching
-# integration. The row this office released on a stale trigger is now in
-# implementation, and TASK-439 — the Signal Center it unblocks — is next.
-# ✅ 2026-08-06 · D-111 ruled seven Tier 1 items and four landed here:
-#   TASK-448  Design System v2 — no backend at all, and every screen
-#             composes from it. Sequenced BEFORE TASK-447.
-#   TASK-447  App Shell — the three complete concerns only
-#   TASK-445  R-15's frontend half, now owned by product_surface
-#   TASK-901  released by C-417 — seven slices, four in this lane
-# ⛔ 447 and 448 are FOUNDATION slices: independently scoped,
-# reviewable and releasable, and NEVER folded into feature work.
-# ✅ 2026-08-06 · D-112 ruled Tier 2 and two more landed here:
-#   TASK-449  Saved View's public/ contract — the name is RATIFIED
-#             (SavedView; Segment stays commercial_profile's). Slice 1
-#             of four, and it unblocks every consumer immediately.
-#   TASK-453  the six verbs, published by ai_reasoning_engine
-# ⛔ 2026-08-06 · TASK-439 and TASK-441 RETURNED TO BLOCKED on C-228 and
-# C-229 — both raised by this lane's reuse audit BEFORE writing a line, and
-# both are Product Office failures rather than lane ones.
-#   TASK-439  no workspace-wide triage read exists at any layer, and
-#             Resource.SIGNAL does not exist so nothing can leave the queue.
-#             This office's sequencing line said TASK-405 added it. It did not.
-#   TASK-441  blocked on its ENTRANCE only — D38 removed that navigation entry
-#             deliberately, and reversing a ratified product decision is the
-#             product owner's.
-# ⚡ TASK-440 becomes current: its workspace-wide read is VERIFIED to exist —
-# opportunity_engine's router publishes four GETs including the account list.
-# ⚡ 11 → 8, 2026-08-06: TASK-448, TASK-442 and TASK-453 were claimed by this
-# lane and are no longer eligible. **Still three above `depth_target`.**
-# ⚠️ **Counted wrong once and corrected by the gate**: `current` + `next` + three
-# `future` is 5, not 4. **The instrument caught its author** — which is the only
-# reason C-333's count check exists.
 eligible_count = 0
-shortfall      = 5
+depth_target   = 15
+shortfall      = 15
+assigned_total = 14
 
-[rationale]
-"TASK-439" = "⚡ THE SIGNAL CENTER — the first approved screen this lane ships under D-104, and it is a RENDER. 447 traced ten elements: 6 built, 2 amber, 2 red — and BOTH reds are already moving: Resource.SIGNAL is TASK-405 (IN VALIDATION, with QE) and signal.resolved is TASK-432 (above, this lane's). No other approved screen has both blockers in flight. Already built and not to be rebuilt: the aggregate and its scoring; Actioned/Assigned/Snoozed/Dismissed/Resolution, all four; Snoozed.until as a read-time predicate; DismissalReason; and the triage counts in lib/state/triage.ts, which partition and never re-rank. ⛔ OUT OF SCOPE, named so it is not discovered late: the readable audit surface (R-07, 🟡) and rule precision (downstream of TASK-432 — without signal.resolved there is nothing to aggregate). 🟢 Render only: no endpoint, no event, no migration. If a section needs one, raise it. ⚠️ AND THE ONE RULE: a failed read must never render as an empty queue — P-A and C-226. 'Nothing to triage' and 'we could not find out' are opposite messages to a seller, and this is the screen where the difference costs most. Sequence after TASK-405 promotes; TASK-432 may run in parallel."
-"TASK-432" = "A triaged signal says so, and the pipeline hears it. ✅ Set READY by Lane C on 2026-08-06 — fitness, not priority (§20e), placed last and reordering nothing. The domain is BUILT: signal_engine/domain/resolution.py already has Resolution · Actioned · Assigned · Snoozed · Dismissed · DismissalReason. This adds ONE event type on the envelope the catalog already uses 34 times — explicitly 'a use of the platform, not a change to it' (§20a). ⛔ No notification: ADR-0040 is deferred by D-027 and this does not touch it. ⚡ Its SEQUENCED trigger read 'the next signal_engine slice — small enough to travel with one'; that is a bundling convenience rather than a dependency, no such slice is queued, and the row's own cost is 'every day without it loses evidence that cannot be recovered.'"
+# ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
+# that no lane go dry. `eligible_count` is what is CLAIMABLE today;
+# `assigned_total` is every row this lane owns, parked ones included, each
+# with its blocker named below. ⛔ Nothing here is invented scope: every row
+# already existed and its owner was joined from modules.toml (D-135).
 
-# **Was empty, and that was the finding.** Both rows this file listed were claimed
-# within the hour of being listed — which is the queue working — and nothing
-# replaced them, which is the queue's owner not keeping up.
+[[blocked]]
+task    = "TASK-422"
+blocker = ["TASK-421"]
+owner   = "Lane A"
+note    = "Epic H — a workspace states which providers it allows"
 
+[[blocked]]
+task    = "TASK-430"
+blocker = ["see the backlog row"]
+owner   = "Lane A"
+note    = "M-U · The People experiences a customer opens"
 
-# ── With QE ─────────────────────────────────────────────────────────────────
-[[in_validation]]
-task = "TASK-400"
-note = "Epic A completion. ✅ SHIPPED 2026-08-06 — 'a seller can see whether Signora is still watching a company'. Both halves landed: A6 was released by C-321's ruling, and A7's render by Lane C's C-219 ratification of option ③ — freshness per TARGET ACCOUNT, no join built because TargetAccount.name IS the subject RunProviderSync takes. ⚡ This is the first customer-visible functionality to ship after three cycles that shipped none."
+[[blocked]]
+task    = "TASK-441"
+blocker = ["C-229"]
+owner   = "Lane A"
+note    = "Opportunity Intelligence — the pursuit, and how it got here"
 
-# ── With QE ──────────────────────────────────────────────────────────────────
-[[in_validation]]
-task = "TASK-903"
-note = "shipped 2026-08-05; moved out of `held` 2026-08-06 by C-333 check ⑧, which reads the arrays describing what a lane is not doing"
-
-[[in_validation]]
-task = "TASK-905"
-note = "shipped 2026-08-05; moved out of `held` 2026-08-06 by C-333 check ⑧, which reads the arrays describing what a lane is not doing"
-
-[[in_validation]]
-task = "TASK-437"
-note = "a member can leave an organization. SHIPPED 2026-08-05 — POST /workspaces/{id}/membership/leave, no target and no body. Created by Lane C the same morning as TASK-418 capability ④ shipped its grant, and claimed within the hour"
-
-[[in_validation]]
-task = "TASK-904"
-note = "an organization can grow — invitation lifecycle and acceptance"
-
-[[in_validation]]
-task = "TASK-417"
-note = "Account 360, wave 1 of the approved UI. Ten sections shipped; 26 screens approved"
-
-[[in_validation]]
-task = "TASK-405"
-note = "A-iii — a signal ends in a decision. C-224 was raised from inside this slice and is now RULED"
-
-# ── 🔴 Capacity finding — reported, not absorbed ─────────────────────────────
-[capacity_finding]
-raised                  = 2026-08-05
-revised                 = 2026-08-05
-assigned_queue_size     = 1
-immediately_executable  = 1
-blocked_assignments     = 0
-reason_not_replenished  = "Not blocked — empty. Lane A shipped TASK-903, TASK-904, TASK-905 and TASK-400's A6 in one day and claimed TASK-436 within the hour of this office creating it. Every Lane A row on the board is IN PROGRESS, IN VALIDATION or DONE. The lane outran its prepared work."
-dependencies            = [
-  "TASK-418 — Lane C's own, and the only row that refills this lane. It releases TASK-901, whose seven slices include signal_engine, buying_score_engine, ai_research_engine and provider_platform, all Lane A's.",
-]
-product_office_item     = "TASK-418, claimed AND its capability ④ shipped by Lane C the same day — which produced TASK-437, the first refill. Capabilities ① and ② wait on C-417, and TASK-901's seven slices behind them are still the bulk of this lane's future work."
-slices_released         = "TASK-418 → TASK-901's seven slices, of which four sit in Lane A's modules."
-primary_bottleneck      = "Lane C. The office that reports this finding is the one holding the row that resolves it, and it spent the preceding cycles on discovery instead."
-recommended_action      = "Lane C claims and ships TASK-418 before preparing anything else. Stated plainly because a finding that names somebody else would be wrong."
-
-# ── Sequenced behind a named predecessor, D-109 ──────────────────────────────
 [[blocked]]
 task    = "TASK-444"
 blocker = ["TASK-432"]
-owner   = "Lane A — same lane, same module"
-note    = "Rule precision from dismissal reasons. A GENUINE dependency, not a deferral: without signal.resolved there is nothing to aggregate. Listed now rather than when TASK-432 lands so the lane that ships the predecessor inherits the successor with it. ⚡ Compute it at read time — P-B, and Snoozed.until is the precedent in this same module, so no new table."
-
+owner   = "Lane A"
+note    = "Dismissal reasons tell the catalog which rules misfire"
 
 [[blocked]]
-task    = "TASK-439"
-blocker = ["C-228"]
-owner   = "Lane C — scope and Change Budget are Product Office's"
-note    = "The Signal Center has no workspace-wide queue to render and no way to leave it. Measured by Lane A and re-verified by Lane C: signal_engine has ZERO write routes, Resource.SIGNAL does not exist in the enforcer or policy.csv, and TriageQueries.queue requires an entity_id. ⛔ Do not start. The row's own sequencing line was false."
+task    = "TASK-450"
+blocker = ["see the backlog row"]
+owner   = "Lane A"
+note    = "Saved View — domain and persistence"
 
-[[held]]
-task    = "TASK-441"
-blocker = []
-owner   = "Lane A — CLAIMED and correctly so"
-note    = "Opportunity Intelligence. ⚠️ Lane C set this BLOCKED for one turn and it was an over-correction, reversed the same turn. C-229's own scope line says it blocks the ENTRANCE and nothing else — not the screen — and this lane raised the item, verified every read, and claimed with eyes open. ⛔ The navigation entry remains the product owner's (reversing D38), and Lane A has since widened C-229 to three screens and one question."
+[[blocked]]
+task    = "TASK-451"
+blocker = ["see the backlog row"]
+owner   = "Lane A"
+note    = "Saved View — application, interface and permission-aware listing"
 
+[[blocked]]
+task    = "TASK-452"
+blocker = ["see the backlog row"]
+owner   = "Lane A"
+note    = "Saved View — the screens that use it"
 
 [[blocked]]
 task    = "TASK-458"
-blocker = ["TASK-457"]
-owner   = "Lane A — the consumer half"
-note    = "signal_engine reads People's public/ contract. Separated from TASK-428 so each side of the boundary sits in one lane. ADR-0403 is the exact precedent: signal_engine reading another module's public/, one edge, no inner layer. ⛔ Do not start before TASK-457 publishes — a consumer written against an unpublished contract is the C-213 shape this decomposition exists to avoid."
+blocker = ["see the backlog row"]
+owner   = "Lane A"
+note    = "Signal Engine reads the People contract"
 
-# ── Design-conformance refinement, D-128/D-129 — sequenced behind the system ──
 [[blocked]]
 task    = "TASK-467"
 blocker = ["TASK-448"]
 owner   = "Lane A"
-note    = "The authentication surface, to the approved design. ⚠️ REFINEMENT, not new work: six surfaces exist and five predate the design — sign-in 2026-07-28, the rest 2026-08-01, built to ADR-0033 rather than to 410. Legacy implementation under D-128. ✅ PRESERVED: Better Auth as sole authority, RS256-only verification, requireEmailVerification, every route and hook. REPLACED: UI and interaction only. ⚡ The slice's first act is a measurable gap analysis against the design document — D-129 permits implementation tasks, gap analyses and test cases, and NOTHING ELSE derived. ⛔ Sequenced after TASK-448 because rebuilding six screens against 9 primitives and then again against v2 is the work twice."
+note    = "The authentication surface, to the approved design"
 
 [[blocked]]
 task    = "TASK-468"
 blocker = ["TASK-448"]
 owner   = "Lane A"
-note    = "Workspace Setup — REPLACE ENTIRELY. Today workspace creation is a text field inside settings/page.tsx (2026-07-28). The approved design is a different screen: region, URL, domain verification, branding, deletion. ✅ POST /workspaces and useCreateWorkspace are reused. ⚠️ This row is the render half only; the five capabilities need their own rows once the gap analysis measures them — writing them now would invent scope against a design this office cannot read."
+note    = "Workspace Setup — replaced, not refined"
+
+[[blocked]]
+task    = "TASK-469"
+blocker = ["see the backlog row"]
+owner   = "Lane A"
+note    = "Onboarding — the guided first run"
+
+[[blocked]]
+task    = "TASK-470"
+blocker = ["see the backlog row"]
+owner   = "Lane A"
+note    = "User Profile"
 
 [[blocked]]
 task    = "TASK-471"
 blocker = ["TASK-448"]
 owner   = "Lane A"
-note    = "Team Management — conformance verified, or refined. ⚠️ settings/team/ shipped 2026-08-04, the SAME DAY the design landed: concurrent, not derived, so neither clearly legacy nor clearly compliant. The gap analysis decides whether this is a refinement or a no-op. ⚡ A gap analysis concluding 'nothing is required' is a successful outcome, not a wasted slice."
+note    = "Team Management — conformance verified, or refined"
 
-[[blocked]]
-task    = "TASK-469"
-blocker = ["TASK-468"]
-owner   = "Lane A"
-note    = "Onboarding — the guided first run. ⚡ Genuinely NOT STARTED: no onboarding route exists anywhere in frontend/app/. Reusable today: POST /workspaces and ProviderCapability.COMPANY_ENRICHMENT, which is how the design 'asks for four and infers the rest'. ⚠️ C-007 raised it as a two-lane build and C-017 records the onboarding honesty principle as homeless — this is the first flow that would breach it."
-
-[[blocked]]
-task    = "TASK-470"
-blocker = ["TASK-467"]
-owner   = "Lane A"
-note    = "User Profile. ⚠️ NOT render-only — 418 records the backend as API MISSING, and the three-way field-ownership model is the design's own headline with no backend at all. Sequenced rather than bundled for that reason."
-
-# ── D-133 · the authentication journeys, behind the capability they need ─────
 [[blocked]]
 task    = "TASK-475"
 blocker = ["TASK-474"]
-owner   = "Lane C — TASK-474 is infra/, Platform Foundation"
-note    = "The seventeen authentication journeys of ADR-0406 §6 as one Playwright suite. ⛔ Ten of the seventeen cannot be written until a developer can open a verification, reset or invitation link — a test for a link nobody can open has nothing to click. ⚡ MEASURED, not assumed: frontend/tests/e2e/ holds 14 authentication tests and ZERO references to sign-up, verify-email, forgot-password or reset-password. ✅ Login, logout and unauthorized access are already green in auth-journey.spec.ts and are NOT rewritten. ⛔ THE PROPERTY THAT MATTERS MORE THAN COVERAGE: no spec may branch on the mode (D-133 ⑦) — the tests are identical across Development and Production and only configuration differs. The precedent to copy is already in the suite: 'offers a provider button when one is configured, and nothing when not' reads configuration to decide what the customer SHOULD SEE, never which assertions to run. ⛔ Out of scope: MFA, passkeys, SSO, SCIM — ADR-0406 §8 anticipates them and designs none."
+owner   = "Lane A"
+note    = "The seventeen authentication journeys run as one suite, in any mode"

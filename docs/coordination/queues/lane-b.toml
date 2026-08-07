@@ -53,236 +53,97 @@
 
 lane         = "Lane B"
 updated      = 2026-08-06
-depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-202"
 next    = ""
 future  = []
 
-# ✅ **TASK-472 CLAIMED 2026-08-06 — and C-422's notification is why.**
-# The advisory in lane-a.toml named this row as the dependency Lane A's
-# TASK-440 account table now waits on, and it was claimed the same cycle.
-# ⚡ **First measured instance of D-136 ④ working**: a lane learned of a
-# dependency from a queue notice rather than from a merge.
-#
-# 🔴 **CAPACITY — 1 eligible.** Everything behind TASK-202 is the Action
-# Batch chain (TASK-462…466), sequential by construction, and TASK-461 is
-# CLAIMED. ⛔ Not padded — a sequence cannot be widened by planning it harder.
-
-# ⚡ **TASK-461 claimed 2026-08-06 — the Action Batch contract is under way,
-# and the five slices behind it (462…466) become eligible as it lands.**
-
-# 🔴 **TASK-472 — URGENCY RAISED 2026-08-06, C-422.** Lane A has CLAIMED
-# TASK-440 and its account table has no read. This row is that read, and a
-# waiting consumer now exists. ⛔ Do not inline it in Product Surface — the
-# module that owns account identity is knowledge_graph.
-#
-# ⚡ **TASK-472 added 2026-08-06 — and it is the highest-leverage row here.**
-# `knowledge_graph` publishes a workspace-wide account listing. **Lane A's
-# Companies screen (TASK-440) is blocked on it**, so this row unblocks another
-# lane rather than only extending this one. **Contract first across a lane
-# boundary — P-E, D-121.**
-
-# ⚡ **2026-08-06 — TASK-201, TASK-446 and TASK-457 removed: this lane claimed
-# all three off `integration` since the last write**, and TASK-457 was listed as
-# eligible *and* blocked at the same time — two answers to one question, which
-# is worse than either alone.
-#
-# ⚠️ **And the removal exposes the real finding: this lane is one row deep.**
-# `depth_target = 5` and `eligible` now holds two. **Everything behind them is
-# the Action Batch chain (TASK-462…466), and each waits on its predecessor by
-# construction** — a sequence cannot be widened by planning it harder.
-# **Recorded as a capacity finding rather than padded**, because inventing a
-# parallel row to reach five would be new scope (§20e), and a queue that reads
-# as healthy while the lane runs dry is the failure this file was built to end.
-
-# **Rewritten 2026-08-05 after D-077. Four rows moved and every move is checked
-# against BACKLOG.md rather than against this file's own memory.**
-#
-# **TASK-434 is `current`, and the product owner placed it — not Lane C.**
-# D-077: *"treat TASK-434 as a prerequisite foundational capability and sequence
-# it ahead of TASK-406's dependent implementation work."* **It is the
-# prerequisite of the slice this lane is already inside**, which is why it
-# arrives at the head rather than in `future`.
-#
-# **TASK-416 left `current` — it is `IN VALIDATION`** and now sits below with the
-# rest of QE's queue. It had been `current` while its own rationale in this file
-# said *"claimed and delivered"*. **A queue whose `current` disagrees with its
-# own note is the C-329 defect**, and it was here in this file.
-#
-# **TASK-003 and TASK-406 left `future` — both are `IN PROGRESS` with this
-# lane.** ⚠️ **TASK-003 was nearly removed on the wrong grounds**: the claim
-# commit reads *"Claim TASK-003"* with no lane in the subject, and checking the
-# backlog rather than the commit title is what caught it. **B-101 avoided by
-# looking at the row.**
-#
-# **Their `blocked` entries went with them — C-018 and C-328 are both ruled**,
-# and each rationale below already said so while the array still said blocked.
-#
-# ⚠️ **Re-measured against QE's Closeout at a104ba6.** TASK-434 was claimed
-# within the hour of being placed, so it moves to `held` — four rows are now in
-# flight with this lane at once, which is worth naming: §20e permits it only
-# while the earlier ones are IN VALIDATION, and TASK-408, TASK-406, TASK-003 and
-# TASK-434 all read IN PROGRESS. **Reported, not corrected — the lane owns its
-# own execution state and this office does not set it.**
-#
-# **TASK-902 left `next`, and it was Lane C's own error.** This file called it
-# executable because *"C-215 is a finished specification"* while BACKLOG.md said
-# `WAITING`. **The queue must never hold the more optimistic of two defensible
-# readings** — that is inventing remaining scope. TASK-902 is DISPOSED and the
-# real work is TASK-435, SEQUENCED on SW-02.
-#
-# **TASK-408 left `next` too — this lane claimed it mid-edit.** Caught on the
-# rebase that followed QE's Closeout rebuild, before this file was published.
-# **A queue that names a claimed task as the next one to take is worse than no
-# queue**, which is the whole reason `current` is checked against BACKLOG.md
-# rather than against what this file said an hour ago.
-# ✅ 2026-08-06 · D-111 — TASK-446 added: knowledge_graph publishes
-# AccountAttributesReader. C-332 ruled, 462 approved exactly as written.
-# It unblocks TASK-406 (this lane's, IN PROGRESS) and makes R-00 usable
-# for 16 consumers. ⚠️ The import contract changes with it: pyproject
-# forbids modules.knowledge_graph to opportunity_engine IN FULL, and it
-# is replaced with the inner-layer form — ADR-0403's exact shape.
-# ⚠️ 2026-08-06 · Lane B reports TASK-201 and TASK-202 as 'both still
-# blocked' while integration's backlog says both are READY. §20e: the
-# backlog wins on state, the queue wins on ownership, and the disagreement
-# is reported — this is that report.
-#   TASK-202  READY on the board. Its dependency is the hosted evaluation
-#             credential, RULED at C-334 and being provided — and that
-#             ruling is not yet on integration, so Lane B cannot see it.
-#             ⚡ The credential gates its PROMPT RELEASE, never its start.
-#   TASK-201  READY, and TASK-427 — its prerequisite — is now CLAIMED by
-#             this lane, so the sequencing is satisfied.
-# ✅ TASK-427 moved to `held`: claimed, and 2 commits ahead awaiting QE.
-# ✅ 2026-08-06 · D-127 — the Action Batch is this lane's, and TASK-461 is
-# READY. R-03 blocks FIVE screens, more than any other capability.
-# ⚡ Slice 1 is the public/ contract ALONE (P-E): a consumer can compile and
-# test against it before a row is persisted, and lint-imports proves the
-# coupling never forms. TASK-462..466 sequence behind it.
-# ⛔ The context owns lifecycle, never business semantics — the consuming
-# domain interprets, validates, executes and implements the inverse.
-# ⚠️ `action_batch` is the DIRECTORY name. No customer-facing word is
-# ratified; ADR-0034's test has not been run and D-127 forbids a placeholder
-# becoming production terminology because implementation started first.
-# ⚠️ **5 → 2, 2026-08-06, and the shortfall is declared rather than hidden.**
-# TASK-201, TASK-446 and TASK-457 were claimed by this lane. What remains is
-# TASK-202 and TASK-461, and **everything behind them is the Action Batch chain
-# (TASK-462…466), each waiting on its predecessor by construction** — a sequence
-# cannot be widened by planning it harder.
-#
-# ⛔ **Not padded to reach the target.** Inventing a parallel row would be new
-# scope (§20e) and Product Office may not introduce it. **A shortfall stated is
-# a bottleneck the product owner can see; a shortfall papered over is a lane
-# that runs dry with a healthy-looking queue file** — which is the exact failure
-# D-070 created this field to end.
 eligible_count = 1
-shortfall      = 4
+depth_target   = 15
+shortfall      = 14
+assigned_total = 14
 
-[rationale]
-"TASK-427" = "M-D · the People domain — a person, and an affiliation with an end. ✅ READY 2026-08-06. ⚡ Placed FIRST because it is the prerequisite of what sits behind it, which is fitness and not priority: TASK-202's own row says 'phase 4 needs Epic C', so a lane taking TASK-202 first meets this at phase 4. ⛔ Position remains the product owner's and can be reordered freely. The owner of the new `people` context is Lane B, assigned by the product owner at D-103 — modules.toml carries the row and the directory does not exist yet, deliberately. Authority to build is D-074 (the domain approved, NOT the full People Intelligence feature set) and ADR-0400 is the ratified ADR a new bounded context requires. ⛔ SCOPE BOUND C-221, unchanged: no person's name anywhere — role-based and organization-level only. ⛔ FORBIDDEN in this row: no seniority_score, no is_key_contact, no priority, no ordered list read as a ranking; influence is buying_score_engine's and stays there. Needs NO provider: the intervals derive from RoleChangeValue(title, seniority, direction) + occurred_on + company, which flow in production today."
-"TASK-201" = "Epic C — People Intelligence. ✅ UNBLOCKED 2026-08-05 at NARROWED scope, and DECOMPOSED the same day by D-074 into TASK-427 (domain) · TASK-428 (intelligence) · TASK-429 (provider enrichment) · TASK-430 (the screens). ⚠️ TASK-201 is NOT replaced and does not move — its status, position and assignment are the product owner's and unchanged. A claim on it means TASK-427 first and TASK-428 stage 3 second, in that order, which is a statement of fitness and never of priority. ⛔ TASK-427 is not yet claimable: its trigger has fired but the product owner has not placed it. C-221 stands and its narrowing IS the plan — role-based and organization-level intelligence, no person's name anywhere"
-"TASK-202" = "Epic G — Copilot. ✅ UNBLOCKED 2026-08-05, verified on origin/integration rather than inferred: mock.py exists, AIVendor.MOCK is in the enum, and provider is on the evaluation report. C-222 was ruled 2026-08-04 and TASK-415/416 are the mechanism it depends on — both this lane's own, both now landed. The rows read IN VALIDATION, which is not promoted, so this was checked against the tree a lane claims from"
-
-# ── Owned, not startable ─────────────────────────────────────────────────────
-
-# ⚡ TASK-427 moved out of `blocked` 2026-08-06 — it is now `current`.
-
-# ── In progress with this lane — listed so nothing here reads as claimable ────
-[[held]]
-task = "TASK-406"
-note = "an ICP criterion scored against outcomes. IN PROGRESS. ⚠️ ITS BACKTEST HALF NOW CONSUMES TASK-434 — 'the backtest reports both cohorts, never in-ICP alone' needs a predicate deciding which an account is, and D-077 sequenced that capability ahead of this slice so it is established once rather than five times. ⛔ Do not inline an in-ICP test here; read commercial_profile/public/. ✅ The per-criterion lift half is unaffected and needs nothing new. C-328 is RULED and its blocked entry is removed"
-
-[[held]]
-task = "TASK-003"
-note = "the attributes are engineering's words. IN PROGRESS with this lane, claimed from the top of the queue 2026-08-05. C-018 is RULED — customer-facing terminology belongs in explanation.py and business language never leaks inward; ADR-0034 holds and AC-28 is untouched. Its blocked entry is removed"
-
-# ── With QE ──────────────────────────────────────────────────────────────────
-[[in_validation]]
-task = "TASK-416"
-note = "an evaluation run states which provider served it. ✅ execution_mode REMOVED from the mandatory fields — this lane challenged it and the product owner agreed: a field constant for every possible record carries no information. CLAUDE.md §10 is amended to five"
-
-[[in_validation]]
-task = "TASK-300"
-note = "Epic A — surface what already exists. Six slices across four modules"
-
-[[in_validation]]
-task = "TASK-402"
-note = "Epic E1 — a customer's CRM becomes a source Signora can read"
-
-[[in_validation]]
-task = "TASK-301"
-note = "Global Search"
-
-[[in_validation]]
-task = "TASK-407"
-note = "B-i — a connection says whether it actually works"
-
-[[in_validation]]
-task = "TASK-205"
-note = "A-ii — Sales Engagement reaches a customer"
-
-# ── Closed by evidence, not by delivery ──────────────────────────────────────
-[[disposed]]
-task     = "TASK-203"
-by       = "Lane C, 2026-08-05"
-note     = "Epic D — Risk Intelligence. Claimed and released the same day: the reuse audit the row itself demanded found all seven elements built. The row's own finding is decisive — 'Epic D has no unbuilt, unblocked slice under this task id.' Phase 1 is TASK-905 (Lane A's), phase 4 needs E1 and phase 5 needs Epic C. Removed from the eligible set rather than left READY, because a READY row that cannot be started is the C-412 defect"
+# ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
+# that no lane go dry. `eligible_count` is what is CLAIMABLE today;
+# `assigned_total` is every row this lane owns, parked ones included, each
+# with its blocker named below. ⛔ Nothing here is invented scope: every row
+# already existed and its owner was joined from modules.toml (D-135).
 
 [[blocked]]
-task    = "TASK-901"
-blocker = ["TASK-418"]
-owner   = "Product owner — an owner for signora_platform/"
-note    = "seven modules consume the events they declare. ADR-0404 approved the capabilities on 2026-08-05 and TASK-418 builds them; three of the four live in signora_platform/, which has no assignable owner. C-010 asked about apps/ AND signora_platform/ and the ruling named apps/ only. Seven slices sit behind one unassigned directory."
+task    = "TASK-420"
+blocker = ["see the backlog row"]
+owner   = "Lane B"
+note    = "Epic H — a second hosted vendor reaches production"
 
-# ⚡ TASK-427 moved from `held` to `in_validation` 2026-08-06 — the backlog has
-# said `IN VALIDATION` since the lane pushed, and this file still said `held`.
-# **A task that has left the lane must not be listed as work the lane is doing**
-# (§20e: execution ownership ends at `IN VALIDATION`).
-[[in_validation]]
-task = "TASK-427"
-note = "M-D, the People domain — the bounded context, Person, Affiliation, RoleInterval and departure matching. Delivered S1 and S2 within a day of the [people] ownership row landing at D-103. ⛔ Scope bound C-221 unchanged: no person's name anywhere."
+[[blocked]]
+task    = "TASK-421"
+blocker = ["TASK-420"]
+owner   = "Lane B"
+note    = "Epic H — PII never leaves the tenant unmasked"
 
-# ── Sequenced, D-120 — decomposed from Lane B's own pre-emption ──────────────
-# ⚡ TASK-457 moved from `blocked` to `held` 2026-08-06 — the lane claimed it,
-# so its blocker is met and it is no longer waiting on anything. It was listed
-# as eligible *and* blocked simultaneously until this write.
-[[held]]
-task = "TASK-457"
-note = "People publishes its public/ contract. CLAIMED by this lane 2026-08-06. ⚡ This lane raised the boundary BEFORE claiming TASK-428, which is the only cheap moment. §20e says two modules with a published-but-unbuilt contract belong to one lane — and the cheaper reading is to BUILD the contract first, which makes the boundary ordinary and moves no ownership. 455 §4 proved the pattern for R-02 at D-091. ⛔ C-221 unchanged: no person's name anywhere. ⛔ TASK-458, its consumer half, stays blocked until this publishes."
+[[blocked]]
+task    = "TASK-423"
+blocker = ["TASK-421"]
+owner   = "Lane B"
+note    = "Epic H — prompt injection is detected and recorded"
+
+[[blocked]]
+task    = "TASK-424"
+blocker = ["TASK-422"]
+owner   = "Lane B"
+note    = "Epic H — a workspace has an AI budget"
+
+[[blocked]]
+task    = "TASK-428"
+blocker = ["see the backlog row"]
+owner   = "Lane B"
+note    = "M-I · What the domain lets other modules say"
+
+[[blocked]]
+task    = "TASK-429"
+blocker = ["see the backlog row"]
+owner   = "Lane B"
+note    = "M-E · A provider supplies a person identifier"
+
+[[blocked]]
+task    = "TASK-435"
+blocker = ["see the backlog row"]
+owner   = "Lane B"
+note    = "A seller sees what changed across every account they hold"
 
 [[blocked]]
 task    = "TASK-459"
-blocker = ["C-334 — the hosted evaluation credential"]
+blocker = ["see the backlog row"]
 owner   = "Lane B"
-note    = "reasoning@2. ⚡ Created because this lane measured what Product Office had asserted loosely: reasoning@1 has no passing protocol-2 evaluation and cannot earn one AS WRITTEN. The credential lets the work start; the prompt revision is the actual first slice and had no row. ⛔ §10: a released version is immutable — this is @2, never an edit of @1."
+note    = "`reasoning@1` earns a protocol-2 evaluation"
 
-# ── R-03's remaining slices, sequenced behind the contract ───────────────────
 [[blocked]]
 task    = "TASK-462"
-blocker = ["TASK-461"]
+blocker = ["see the backlog row"]
 owner   = "Lane B"
-note    = "The domain — proposal, approval, the named unit, and the window AS A PREDICATE. ⛔ `settled` is now() >= applied_at + window, computed at read time and materialised nowhere. Snoozed.until in signal_engine is the precedent and 447 called it 'the pattern R-03 should copy'. A stored is_settled column is two representations of one fact; a scheduler to flip it is the machinery P-B refuses."
+note    = "The Action Batch's domain — proposal, approval, and the window as a pr"
 
 [[blocked]]
 task    = "TASK-463"
-blocker = ["TASK-462"]
+blocker = ["see the backlog row"]
 owner   = "Lane B"
-note    = "Persistence — append-only, no UPDATE grant, ENABLE and FORCE RLS in the creating migration, classified in tenancy_policy.py in the same change. ⚡ TASK-427 is the standard to match: QE called it 'a new bounded context that brought its own guarantees', and the UPDATE policy carried BOTH USING and WITH CHECK — without the second, a row could be updated out of its own workspace."
+note    = "The Action Batch's persistence — append-only, and no `UPDATE` grant"
 
 [[blocked]]
 task    = "TASK-464"
-blocker = ["TASK-463"]
+blocker = ["see the backlog row"]
 owner   = "Lane B"
-note    = "Application layer and the two events — now that a consumer exists (P-C). ⚠️ Catalogue them in 06-events.md in the SAME change: §9, and C-101 is what happens when that slips."
+note    = "The Action Batch's application layer, and the two events"
 
 [[blocked]]
 task    = "TASK-465"
-blocker = ["TASK-464"]
+blocker = ["see the backlog row"]
 owner   = "Lane B"
-note    = "Asynchronous application and the progress surface. ⚠️ P-A applies and 455 says so: a batch STILL RUNNING and a batch that FAILED TO START must never render alike. This is where a progress surface silently becomes a stated absence."
+note    = "Applying a batch asynchronously, and saying so while it runs"
 
 [[blocked]]
 task    = "TASK-466"
-blocker = ["TASK-465"]
+blocker = ["see the backlog row"]
 owner   = "Lane B"
-note    = "Companies bulk — ONE consumer end to end, deliberately. ADR-0403's discipline: a contract proven by one real caller before six adopt it. A port with six simultaneous first callers has no chance of being corrected cheaply. Unblocks Opportunity Intelligence, Workflow Automation, AI Copilot and AI Research once proven."
+note    = "Companies bulk — the first consumer, end to end"
