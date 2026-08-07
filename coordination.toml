@@ -9,20 +9,20 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "d29e19a"
-task_count     = 85
+generated_from = "88ddbae"
+task_count     = 84
 
 [lane.Lane_A]
-current            = "TASK-478"
-next               = "TASK-450"
-next_after_that    = "TASK-441"
+current            = "TASK-450"
+next               = "TASK-441"
+next_after_that    = "TASK-444"
 assigned_total     = 34
-claimable          = 4
-in_flight          = 18
-awaiting_qe_transition = 18
+claimable          = 3
+in_flight          = 19
+awaiting_qe_transition = 19
 blocked            = 12
 lane_utilization   = 0.0
-idle_prediction_days   = 0.6
+idle_prediction_days   = 0.4
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -46,13 +46,13 @@ critical_path_max      = 3
 current            = "TASK-474"
 next               = "TASK-454"
 next_after_that    = "TASK-455"
-assigned_total     = 17
-claimable          = 6
+assigned_total     = 16
+claimable          = 5
 in_flight          = 5
 awaiting_qe_transition = 0
 blocked            = 6
 lane_utilization   = 1.0
-idle_prediction_days   = 0.9
+idle_prediction_days   = 0.7
 dependency_wait_days   = 1.6
 blocked_duration_days  = 1.6
 critical_path_max      = 0
@@ -443,7 +443,7 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "⏸️ **`SEQUENCED`** — **after [TASK-478](#task-478--design-system-v2--s"
+estimated_ready = "when TASK-478 complete"
 waiting_for    = "⏸️ **`SEQUENCED`** — **after [TASK-478](#task-478--design-system-v2--slice-3--the-canonical-set-from-the-designs-own-enumeration)**. ⚡ **Rebuilding si"
 blocked_days   = 0.0
 
@@ -458,7 +458,7 @@ unblocks       = ["TASK-469"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 1
-estimated_ready = "⏸️ **`SEQUENCED`** — after [TASK-478](#task-478--design-system-v2--sli"
+estimated_ready = "when TASK-478 complete"
 waiting_for    = "⏸️ **`SEQUENCED`** — after [TASK-478](#task-478--design-system-v2--slice-3--the-canonical-set-from-the-designs-own-enumeration). ⚡ **Re-pointed 2026-0"
 blocked_days   = 0.0
 
@@ -503,7 +503,7 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "⏸️ **`SEQUENCED`** — after [TASK-478](#task-478--design-system-v2--sli"
+estimated_ready = "when TASK-478 complete"
 waiting_for    = "⏸️ **`SEQUENCED`** — after [TASK-478](#task-478--design-system-v2--slice-3--the-canonical-set-from-the-designs-own-enumeration). ⚡ **Re-pointed 2026-0"
 blocked_days   = 0.0
 
@@ -525,15 +525,15 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-478"
 title         = "Design System v2 · slice 3 — the canonical set, from the design's own enumeration"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-467", "TASK-468", "TASK-471"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 
@@ -848,8 +848,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "**`SEQUENCED`** — **trigger: [SW-02](architecture/51-sales-workspace.m"
-waiting_for    = "**`SEQUENCED`** — **trigger: [SW-02](architecture/51-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and bl"
+estimated_ready = "**`SEQUENCED`** — **trigger: [SW-02](architecture/482-sales-workspace."
+waiting_for    = "**`SEQUENCED`** — **trigger: [SW-02](architecture/482-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and b"
 blocked_days   = 0.0
 
 [[task]]
@@ -1138,21 +1138,6 @@ waiting_for    = ""
 blocked_days   = 0.0
 
 [[task]]
-id            = "TASK-419"
-title         = "A handler can reach a provider adapter"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane C"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-
-[[task]]
 id            = "TASK-425"
 title         = "A tenant administration surface"
 state         = "SEQUENCED"
@@ -1260,15 +1245,15 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-477"
 title         = "Three architecture document numbers each name two documents"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
 lane          = "Lane C"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 
@@ -1315,7 +1300,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 1.6
+blocked_days   = 1.7
 
 [[task]]
 id            = "TASK-901"

@@ -2,15 +2,13 @@
 
 **Read `coordination.toml`. That is the whole of it.**
 
-> ## **Every implementation lane learns what to build next from this ref, and from nothing else — once `CLAUDE.md` on `integration` says so.**
+> ## **Every implementation lane learns what to build next from this ref, and from nothing else.**
 
-> ## ⚠️ **Not yet. Read this first.**
+> ## ✅ **Binding as of 2026-08-07.**
 >
-> **`CLAUDE.md` on `origin/integration` does not yet carry the poll that makes this ref binding, and neither does `479`.** ⛔ **Until it does, this ref is *advisory* and `integration` remains the authority for what to build.**
+> **`CLAUDE.md` §20e on `origin/integration` now carries the poll, and [479](https://github.com/GaneshDabhade/Fortune_Signora/blob/integration/docs/architecture/479-coordination-architecture.md) is there with it.** ⚡ **This file said *"not yet"* for three days and that was correct then; the condition is met and the warning is removed rather than left to age.**
 >
-> ✅ **Poll as currently governed. Reading this file as well is useful and costs one fetch.** ⛔ **Acting on it against `integration` is not.**
->
-> ⚡ **Found by Lane A on the first poll, not by the office that published this** — **[C-425](https://github.com/GaneshDabhade/Fortune_Signora/blob/integration/docs/LANE_COORDINATION.md).**
+> ⚡ **Lane A found the gap on the first poll, before the office that published this did** — **[C-425](https://github.com/GaneshDabhade/Fortune_Signora/blob/integration/docs/LANE_COORDINATION.md).**
 
 **Fetch it:**
 
@@ -19,7 +17,7 @@ git fetch origin coordination
 git show origin/coordination:coordination.toml
 ```
 
-⛔ **Once the amendment lands: do not poll `lane-c-sync`, `lane-qe`, `integration` or commit history to find work.** ⚡ **This ref exists so that planning information does not have to travel through the release pipeline** — **`docs/architecture/479-coordination-architecture.md`, ratified 2026-08-07, currently on `lane-c-sync` and not yet on `integration`.**
+⛔ **Do not poll `lane-c-sync`, `lane-qe`, `integration` or commit history to find work.** ⚡ **This ref exists so that planning information does not have to travel through the release pipeline** — **[479](https://github.com/GaneshDabhade/Fortune_Signora/blob/integration/docs/architecture/479-coordination-architecture.md), ratified 2026-08-07 and on `integration`.**
 
 ## What it holds
 
