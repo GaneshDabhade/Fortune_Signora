@@ -313,6 +313,32 @@ def _staleness_findings() -> list[str]:
 _PLANNING_SYNC = "Planning-Sync: required"
 
 
+def _coordination_findings() -> list[str]:
+    """Is the published coordination source what the generator emits today?
+
+    **[479](../docs/architecture/479-coordination-architecture.md).** Once every
+    lane polls one file, a stale one instructs all of them with an answer that
+    was true earlier — **which is strictly worse than the seven-document read it
+    replaces**, because that at least made its own age visible.
+
+    ⛔ **Reports rather than repairs**, like everything here: regenerating is a
+    one-line command and choosing when to publish is a governance act.
+    """
+    generator = REPO_ROOT / "infra" / "coordination.py"
+    if not generator.exists():
+        return []
+    done = subprocess.run(
+        [sys.executable, str(generator), "--check"],
+        cwd=REPO_ROOT, capture_output=True, text=True,
+    )
+    if done.returncode == 0:
+        return []
+    return [
+        "The canonical coordination source is stale — "
+        + (done.stderr.strip().splitlines() or ["regenerate it"])[0].replace("coordination: ", "")
+    ]
+
+
 def _structured_file_findings() -> list[str]:
     """Every coordination `.toml` parses, and no key is defined twice.
 
@@ -1336,6 +1362,7 @@ def main() -> int:
     # run.** `if not findings: return` would have skipped every queue check on
     # exactly the day the rest of the repository agreed with itself — which is
     # the one day a silent queue drift would go unseen.
+    findings.extend(_coordination_findings())
     findings.extend(_structured_file_findings())
     findings.extend(_planning_sync_findings())
     findings.extend(_duplicate_index_findings(coordination))
