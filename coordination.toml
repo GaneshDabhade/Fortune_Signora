@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "832c874"
+generated_from = "2019c26"
 task_count     = 85
 
 [lane.Lane_A]
@@ -32,16 +32,16 @@ critical_path_max      = 4
 [lane.Lane_B]
 current            = "TASK-463"
 next               = "TASK-202"
-next_after_that    = ""
+next_after_that    = "TASK-479"
 assigned_total     = 32
-claimable          = 2
+claimable          = 3
 in_flight          = 20
 awaiting_qe_transition = 0
-blocked_on_integration = 1
+blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 10
+blocked            = 9
 lane_utilization   = 4.0
-idle_prediction_days   = 0.3
+idle_prediction_days   = 0.4
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 3
@@ -1026,16 +1026,16 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-479"
 title         = "`people` publishes a way to read what it publishes"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane B"
 depends_on     = ["TASK-457"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "when TASK-457 complete"
-waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-457](#task-457--people-publishes-what-other-modules-may-say-about-a-person)**, which delivers the types this "
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
 
 [[task]]
