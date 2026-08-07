@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `5391744`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `18fa051`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `5391744`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `18fa051`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`5391744`** — the certified commit itself |
+| **`main`** | **`18fa051`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 107 promoted ⚡ **TASK-490 — the design foundation, from the canonical source and checked by a test** |
-| **Certification** | ✅ [`5391744e5b88`](certification/reports/5391744e5b88.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 108 promoted **[D-165](docs/DECISION_REGISTER.md) — one implementation lane** ⚡ **and [D-167](docs/DECISION_REGISTER.md) arrived: risk-based certification** |
+| **Certification** | ✅ [`18fa051ff2e2`](certification/reports/18fa051ff2e2.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1566 frontend tests** *(+18)* across 67 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 200s *(Build 56s — the design foundation recompiled)* *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1566 frontend tests** *(+18)* across 67 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 155s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -46,7 +46,7 @@
 | **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | **Workflow 1 milestone 3** | Next `READY` row | Stewardship | **Cycle 108, on the next poll** |
+| **Next executable work** | **Workflow 1 milestone 3** | — | Stewardship | ⚡ **[D-167](docs/DECISION_REGISTER.md) — impact-aware certification** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,50 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 107
+## 1d · Release summary — 2026-08-07, cycle 108
+
+**Derived from the promoted commit `18fa051`.** **Sixty-three promotions.** ⚡ **The organisation changed shape, a new certification strategy arrived, and QE found a defect in its own bookkeeping.**
+
+### What was promoted
+
+| | |
+|---|---|
+| **[D-165](docs/DECISION_REGISTER.md)** *(Lane C)* | **One implementation lane is permanent; Product Office becomes a continuous planning function.** Lane B leaves the *active* model — ⛔ **history intact**, and `queues/lane-b.toml` deleted because the generator emits a block only where rows resolve to it |
+
+**QE read the register entry before certifying**, because §20e is explicit that an ownership change *"requires its own explicit decision… never arriving inside a governance edit."* ✅ **D-165 is that decision, `APPROVED`, in the register.** **Form correct; not QE's to adjudicate further.**
+
+### ⚡ [D-167](docs/DECISION_REGISTER.md) — risk-based certification, and most of it already exists
+
+**The product owner directed impact-aware certification.** ⚡ **The Validation Planner ([D-115](docs/DECISION_REGISTER.md)) already performs the analysis** — profiles `documentation · frontend · module · contract · persistence · security · platform`, a computed gate list, and a journey selection.
+
+> **D-167's safety rule is already the planner's stated law**: *"This plan is computed, not chosen. **Unknown paths widen it, never narrow it.**"*
+
+⛔ **The missing half is exactly [B-131](docs/BUGS.md)**, reported every cycle this session: **the planner requires 16–17 gates and the record contains 6.** **D-167 is the decision B-131 and [B-123](docs/BUGS.md) were waiting on** — closing them means making `REQUIRED_GATES` profile-aware, which changes what *certified* means and could not be done unilaterally.
+
+⚠️ **One constraint QE will preserve**: `make certify` stays optionless. **The scope comes from the computed plan, never from a flag a human picks** — ADR-0032's reasoning, unchanged.
+
+### ⛔ [B-146](docs/BUGS.md) — QE's own bookkeeping, filed against QE
+
+**49 rows read `IN VALIDATION`. 4 read `PROMOTED`.** Across sixty-three promotions, that is not plausible — and **`PROMOTED` is QE's exclusively.** QE reconciled the *board* at every Closeout and never advanced the *backlog*.
+
+⚡ **It surfaced because D-165 reasons from those rows** — *"twelve `IN VALIDATION` rows… need QE, not an implementer"* — **correct governance applied to a state QE never advanced.**
+
+⛔ **QE did not bulk-fix it, and stated why**: the obvious check is `git log --grep`, which matches every commit *mentioning* an id. **That is [B-101](docs/BUGS.md)'s class and what [B-144](docs/BUGS.md) cost when a grep decided a gate.** **Rows advance as each is verified by opening what it claims to have shipped.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4193 backend** · **1566 frontend** · **95.38%** · **398 invariants** · **842 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **112 runs recorded, 104 certified** · `promoted == certified` ✓ · `--audit-main` clean · **eleventh consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke **155s** |
+| **Dependency** | ✅ Nothing held. Lane A fully promoted before the cycle began |
+| **Customer Value** | ⛔ **None directly.** An organisational decision and a certification directive |
+| **Process** | ⚠️ **QE filed a 🟡 against itself and declined to close it with one commit** — an understated board is better than a confidently wrong one |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 107
 
 **Derived from the promoted commit `5391744`.** **Sixty-two promotions.** ⚡ **The palette defect ends the way governance says it should — with a test, not a promise.**
 
