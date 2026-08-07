@@ -381,6 +381,60 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🔴  D-162 — TASK-490 GATES EVERYTHING, AND AN OVERRIDE IS A FINDING
+#     2026-08-07 · product owner
+#
+#   "No customer-visible workflow should proceed on a legacy visual foundation.
+#    TASK-490 becomes the prerequisite for the remainder of the UI migration."
+#
+# ⛔ ELEVEN MORE ROWS NOW SEQUENCE BEHIND TASK-490 — TASK-485 to 489, 469,
+#   447, 471, 480, 481, 482 — on top of 483 and 484. Your claimable set is ONE
+#   row and it is the foundation. That is the ruling, not a drought.
+#
+# 🔴 THE RULE THAT MATTERS MOST, AND IT IS NEW:
+#
+#     "If any remaining visual mismatch cannot be solved through the design
+#      system foundation and shared components, identify it explicitly rather
+#      than compensating with screen-level overrides."
+#
+#   A screen-level override is a FINDING you report, never a fix you ship. If
+#   a shared component stops you matching the design, the COMPONENT is wrong —
+#   D-161 ④ — and you change the component, not the screen.
+#
+# ⚡ THERE IS EXACTLY ONE INSTANCE IN THE WHOLE FRONTEND AND IT IS YOURS,
+#   and it is the right kind:
+#       auth-shell.tsx:70   sm:max-w-[400px]
+#   That is the design's own "one card width across every screen", written as
+#   an arbitrary value because the foundation has no token for it. ⛔ Under
+#   D-162 that is a foundation gap to name. TASK-490 now adds the token; your
+#   screen then consumes it. Nothing about what you wrote was wrong — the
+#   foundation could not express it.
+#
+#   ✅ Measured, not assumed: style={{ · !important · text-[ · p-[ · h-[ ·
+#      bg-[ all return ZERO across app/ and components/. Your discipline here
+#      has been exact.
+#
+# ✅ TASK-490 GREW BY TWO ITEMS, both from the above:
+#     • a card-width token, so max-w-[400px] becomes a token consumption
+#     • extend design-tokens.test.tsx to forbid inline style={{…}},
+#       !important, and arbitrary sizing/spacing (p-[…] w-[…] h-[…] gap-[…])
+#   ⛔ The guard is NOT landed ahead of you, deliberately: it fails today on
+#      that one max-w-[400px], and a gate that is red on arrival is a broken
+#      gate. Land the token FIRST, then the guard, in the same slice.
+#
+# ⚡ THE SUCCESS MEASURE IS NOW FALSIFIABLE. After TASK-490, the shell and the
+#   sign-in form you already rebuilt must inherit the finalized visual
+#   language with ZERO screen-level fixes. If either still needs one, that is
+#   a foundation gap — report it and this office adds the token.
+#
+# 🔴 THEN: tell this office. The pixel-level conformance audit runs BEFORE the
+#   next review request, not after it. You do not have to be ready — you have
+#   to be finished with TASK-490.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🔴  STOP — READ THIS BEFORE YOUR NEXT SLICE. 2026-08-07 · D-161
 #
 # ⚡ THE PRODUCT OWNER REVIEWED LOGIN AND IT STILL LOOKS LIKE THE OLD PRODUCT.
