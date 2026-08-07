@@ -69,6 +69,7 @@ from modules.opportunity_engine.infrastructure.composition import (
     build_queries as build_opportunity_queries,
 )
 from modules.opportunity_engine.interface.handlers import qualify_from_buying_score
+from modules.people.infrastructure.composition import build_affiliation_reader
 from modules.provider_normalization.infrastructure.claim_reader import SqlClaimReader
 from modules.provider_normalization.interface.handlers import normalize_received_record
 from modules.provider_platform.infrastructure.models import RawProviderRecordModel
@@ -281,6 +282,7 @@ async def signal_all(
             # modules' infrastructure at once, which is what it exists for
             # (ADR-0403 §Validation 1).
             competitors=build_declared_competitor_reader(session),
+            affiliations=build_affiliation_reader(session),
             publisher=PostgresOutboxEventPublisher(),
         )
         for envelope in envelopes:

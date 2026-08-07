@@ -8,7 +8,7 @@ composite enriches rather than replaces, and nothing anywhere is a score.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from uuid import UUID, uuid4
 
 import pytest
@@ -22,6 +22,7 @@ from modules.commercial_profile.public import (
     DeclaredCompetitorListView,
     DeclaredCompetitorView,
 )
+from modules.people.public import AffiliationView
 from modules.signal_engine.application.generate import (
     GenerateSignals,
     GenerateSignalsInput,
@@ -192,6 +193,27 @@ def _profile(version: int, *entries: ProfileEntry) -> SignalProfile:
     )
 
 
+class FakeAffiliationReader:
+    """`people`'s published reader, faked (TASK-458).
+
+    ⚡ **Empty by default, and that is the honest default**: nothing populates
+    `people` for the accounts this suite uses, so every existing test asserts
+    the behaviour of a signal whose seat cannot be named — which is exactly
+    what those signals look like in the product today.
+    """
+
+    def __init__(self, views: tuple[AffiliationView, ...] = ()) -> None:
+        self.views = views
+        self.calls: list[tuple[UUID, UUID]] = []
+
+    async def at_company(self, workspace_id: UUID, company_id: UUID) -> tuple[AffiliationView, ...]:
+        self.calls.append((workspace_id, company_id))
+        return tuple(v for v in self.views if v.company_id == company_id)
+
+    async def for_person(self, workspace_id: UUID, person_id: UUID) -> tuple[AffiliationView, ...]:
+        return tuple(v for v in self.views if v.person_id == person_id)
+
+
 class FakeCompetitorReader:
     """A declaration this module reads but does not own (ADR-0403).
 
@@ -213,6 +235,7 @@ def _engine(
     events: Sequence[BusinessEvent],
     profile: SignalProfile | None = None,
     competitors: DeclaredCompetitorListView | None = None,
+    affiliations: tuple[AffiliationView, ...] = (),
 ) -> tuple[GenerateSignals, RecordingPublisher, FakeProfileRepository]:
     publisher = RecordingPublisher()
     profiles = FakeProfileRepository(profile)
@@ -221,6 +244,7 @@ def _engine(
             repository=repository,
             profiles=profiles,
             competitors=FakeCompetitorReader(competitors),
+            affiliations=FakeAffiliationReader(affiliations),
             business_events=FakeBusinessEvents(events),  # type: ignore[arg-type]
             catalog=load_catalog(),
             publisher=publisher,
@@ -683,6 +707,14 @@ def _entries(repository: FakeSignalRepository) -> list[SignalType]:
     return [row.signal_type for row in repository.rows]
 
 
+def _only(repository: FakeSignalRepository, signal_type: SignalType) -> Signal:
+    """The one signal of this type. **Asserts there is exactly one**, so a test
+    reading a rationale cannot silently read the wrong row."""
+    rows = [row for row in repository.rows if row.signal_type is signal_type]
+    assert len(rows) == 1, f"expected one {signal_type.value}, got {len(rows)}"
+    return rows[0]
+
+
 class TestCompetitorEntry:
     """The third detection strategy: evidence that is not grounds on its own.
 
@@ -782,3 +814,192 @@ class TestCompetitorEntry:
         await engine.execute(_input(), correlation_id=uuid4())
 
         assert SignalType.COMPETITOR_ENTRY not in _entries(repository)
+
+
+def _leadership(
+    day: int, *, departed: bool = False, title: str = "VP of Engineering"
+) -> BusinessEvent:
+    """A leadership event as the point rules actually emit one — `facts`
+    carrying `title`, `seniority` and `direction`, which is where the seat's
+    name comes from."""
+    return _event(
+        BusinessEventType.LEADERSHIP_DEPARTED
+        if departed
+        else BusinessEventType.LEADERSHIP_APPOINTED,
+        day,
+        domain=BusinessDomain.LEADERSHIP,
+        summary=f"Their {title} departed" if departed else f"Appointed a new {title}",
+        facts={
+            "title": title,
+            "seniority": "vp",
+            "direction": "left" if departed else "joined",
+        },
+    )
+
+
+def _affiliation(
+    *,
+    title: str = "VP of Engineering",
+    started: date = date(2025, 3, 4),
+    ended: date | None = None,
+    company: UUID | None = None,
+) -> AffiliationView:
+    return AffiliationView(
+        id=uuid4(),
+        workspace_id=WORKSPACE,
+        person_id=uuid4(),
+        company_id=company or ENTITY,
+        title=title,
+        seniority="vp",
+        started_on=started,
+        ended_on=ended,
+    )
+
+
+class TestTheSeatASignalNames:
+    """TASK-458 — what a decision-maker signal could not say before.
+
+    **The title was never missing**: the business event's `facts` carry it and
+    the summary reads it back. ⚡ **The period was**, and it is the half
+    `decision_maker_departed` needs.
+    """
+
+    async def test_a_departure_names_the_period_the_seat_was_held(self) -> None:
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository,
+            [_leadership(1, departed=True)],
+            affiliations=(_affiliation(ended=date(2026, 9, 1)),),
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        rationale = _only(repository, SignalType.DECISION_MAKER_DEPARTED).rationale
+        assert "held from 4 March 2025 to 1 September 2026" in rationale
+
+    async def test_an_appointment_names_the_seat_without_claiming_they_remain(
+        self,
+    ) -> None:
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(repository, [_leadership(1)], affiliations=(_affiliation(),))
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        rationale = _only(repository, SignalType.NEW_DECISION_MAKER).rationale
+        assert "with no departure recorded" in rationale
+
+    async def test_two_holders_of_one_title_produce_no_period_at_all(self) -> None:
+        """⛔ **The refusal, end to end.** Picking one of two would put a claim
+        in a customer's hands that nothing supports."""
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository,
+            [_leadership(1, departed=True)],
+            affiliations=(_affiliation(), _affiliation(ended=date(2026, 9, 1))),
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert "The seat was" not in _only(repository, SignalType.DECISION_MAKER_DEPARTED).rationale
+
+    async def test_an_account_people_knows_nothing_about_still_raises_the_signal(
+        self,
+    ) -> None:
+        """**The state the product is actually in today.** Nothing populates
+        `people` yet, so every real decision-maker signal takes this path — and
+        it must still be a signal, just one that cannot name a period."""
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(repository, [_leadership(1, departed=True)])
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        signal = _only(repository, SignalType.DECISION_MAKER_DEPARTED)
+        assert "The seat was" not in signal.rationale
+        assert "departed" in signal.rationale
+
+    async def test_another_companys_holder_is_never_borrowed(self) -> None:
+        """`at_company` is scoped to this entity precisely because the same
+        title is held at every company in a workspace."""
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository,
+            [_leadership(1, departed=True)],
+            affiliations=(_affiliation(company=uuid4(), ended=date(2026, 9, 1)),),
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert "The seat was" not in _only(repository, SignalType.DECISION_MAKER_DEPARTED).rationale
+
+    async def test_a_different_title_is_not_matched(self) -> None:
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository,
+            [_leadership(1, departed=True, title="VP of Engineering")],
+            affiliations=(_affiliation(title="CFO", ended=date(2026, 9, 1)),),
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert "The seat was" not in _only(repository, SignalType.DECISION_MAKER_DEPARTED).rationale
+
+    async def test_the_rationale_never_carries_a_person_identifier(self) -> None:
+        """C-221 is the specification: a subject, a role and a period — and
+        none of those is a name. `person_id` is dropped at the projection, so
+        there is nothing for a screen to render as a UUID."""
+        affiliation = _affiliation(ended=date(2026, 9, 1))
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository, [_leadership(1, departed=True)], affiliations=(affiliation,)
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        rationale = _only(repository, SignalType.DECISION_MAKER_DEPARTED).rationale
+        assert str(affiliation.person_id) not in rationale
+        assert str(affiliation.id) not in rationale
+
+    async def test_people_is_not_read_when_no_event_names_a_title(self) -> None:
+        """§14 — a query to answer a question nothing on the page asks is a
+        defect at write time, not a future optimisation."""
+        repository = FakeSignalRepository()
+        reader = FakeAffiliationReader(())
+        engine = GenerateSignals(
+            repository=repository,
+            profiles=FakeProfileRepository(None),
+            competitors=FakeCompetitorReader(None),
+            affiliations=reader,
+            business_events=FakeBusinessEvents(  # type: ignore[arg-type]
+                [_event(BusinessEventType.HIRING_SURGE, 1)]
+            ),
+            catalog=load_catalog(),
+            publisher=RecordingPublisher(),
+            session=None,  # type: ignore[arg-type]
+            clock=lambda: NOW,
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert reader.calls == []
+
+    async def test_people_is_read_once_when_a_title_is_present(self) -> None:
+        repository = FakeSignalRepository()
+        reader = FakeAffiliationReader((_affiliation(ended=date(2026, 9, 1)),))
+        engine = GenerateSignals(
+            repository=repository,
+            profiles=FakeProfileRepository(None),
+            competitors=FakeCompetitorReader(None),
+            affiliations=reader,
+            business_events=FakeBusinessEvents(  # type: ignore[arg-type]
+                [_leadership(1, departed=True), _leadership(2, departed=True)]
+            ),
+            catalog=load_catalog(),
+            publisher=RecordingPublisher(),
+            session=None,  # type: ignore[arg-type]
+            clock=lambda: NOW,
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        # Two events, one read: the seat record is per account, not per event.
+        assert reader.calls == [(WORKSPACE, ENTITY)]

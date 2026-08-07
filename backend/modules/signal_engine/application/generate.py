@@ -28,8 +28,9 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from modules.business_event_engine.public import BusinessEventQueries
+from modules.business_event_engine.public import BusinessEvent, BusinessEventQueries
 from modules.commercial_profile.public import DeclaredCompetitorReader
+from modules.people.public import AffiliationReader, AffiliationView
 from modules.signal_engine.application.ports import ProfileRepository, SignalRepository
 from modules.signal_engine.domain.catalog import (
     SignalCatalog,
@@ -44,6 +45,7 @@ from modules.signal_engine.domain.profile import (
     resolve_entry,
 )
 from modules.signal_engine.domain.rules import Grounding, fold, ground
+from modules.signal_engine.domain.seat import TITLE_FACT, Seat, seat_for
 from modules.signal_engine.domain.signal import Signal, relevant_until, signal_id
 from signora_platform.event_bus import EventPublisher
 from signora_platform.observability import get_logger
@@ -79,6 +81,7 @@ class GenerateSignals:
         repository: SignalRepository,
         profiles: ProfileRepository,
         competitors: DeclaredCompetitorReader,
+        affiliations: AffiliationReader,
         business_events: BusinessEventQueries,
         catalog: SignalCatalog,
         publisher: EventPublisher,
@@ -92,6 +95,11 @@ class GenerateSignals:
         # composition root, and consulted at the same moment as the profile —
         # ADR-0403. Nothing here learns that it is backed by SQL.
         self._competitors = competitors
+        # **The second declaration this module reads and does not own**, and
+        # it arrives the same way for the same reason (ADR-0403): the owning
+        # module publishes the port, the composition root supplies the
+        # implementation, and nothing here learns it is backed by SQL.
+        self._affiliations = affiliations
         # Business events are referenced directly through their public
         # contract, never re-derived from observations: two definitions of
         # one concept diverge within a year.
@@ -114,6 +122,7 @@ class GenerateSignals:
         profile = await self._resolve_profile(request)
         version = profile.version if profile is not None else DEFAULT_PROFILE_VERSION
         declared = await self._resolve_competitors(request.workspace_id)
+        seats = await self._resolve_seats(request, events)
 
         if not events:
             return GenerateSignalsResult(generated=0, superseded=0, profile_version=version)
@@ -134,7 +143,7 @@ class GenerateSignals:
                 continue
 
             for grounding in ground(events, definition, entry, declared=declared):
-                signal = self._build(request, definition, entry, grounding, now, version)
+                signal = self._build(request, definition, entry, grounding, now, version, seats)
                 if definition.is_composite:
                     composites.append((signal, grounding))
                 else:
@@ -195,6 +204,32 @@ class GenerateSignals:
             return frozenset()
         return frozenset(fold(competitor.name) for competitor in declaration.competitors)
 
+    async def _resolve_seats(
+        self, request: GenerateSignalsInput, events: Sequence[BusinessEvent]
+    ) -> tuple[Seat, ...]:
+        """Who has held a role at this account, so a signal can name the seat.
+
+        ⚡ **Read only when a business event actually names a title.** Every
+        other pipeline run would otherwise pay a query to answer a question
+        nothing on the page asks — the wasteful pattern §14 calls a defect at
+        write time.
+
+        ⛔ **`at_company` is scoped to this entity on purpose**, and the People
+        contract says why: *"the same title is held at every company in a
+        workspace, and a workspace-wide read would invite a consumer to match
+        on title alone."* **The `entity_id` is the company** — the Knowledge
+        Graph identifier every module cites, which is what lets this join at
+        all.
+
+        ⚠️ **Open and closed intervals both come back**, and the closed ones
+        are the point: *"who left, and when"* is the only question
+        `decision_maker_departed` exists to answer.
+        """
+        if not any(TITLE_FACT in event.facts for event in events):
+            return ()
+        found = await self._affiliations.at_company(request.workspace_id, request.entity_id)
+        return tuple(_to_seat(view) for view in found)
+
     async def _resolve_profile(self, request: GenerateSignalsInput) -> SignalProfile | None:
         if request.profile_version is None:
             return await self._profiles.current(request.workspace_id)
@@ -213,6 +248,7 @@ class GenerateSignals:
         grounding: Grounding,
         now: datetime,
         profile_version: int,
+        seats: tuple[Seat, ...],
     ) -> Signal:
         event_ids = tuple(event.id for event in grounding.events)
         return Signal(
@@ -231,7 +267,7 @@ class GenerateSignals:
             window_end=grounding.window_end,
             generated_at=now,
             relevant_until=relevant_until(grounding.occurred_at, definition.relevance_window_days),
-            rationale=_rationale(definition, entry, grounding),
+            rationale=_rationale(definition, entry, grounding, seats),
             contributing_event_ids=event_ids,
             contributing_event_types=grounding.event_types,
             catalog_version=self._catalog.version,
@@ -272,18 +308,74 @@ class GenerateSignals:
         return written, len(replacements)
 
 
-def _rationale(definition: SignalTypeDefinition, entry: ProfileEntry, grounding: Grounding) -> str:
+def _to_seat(view: AffiliationView) -> Seat:
+    """The published affiliation as this module's own vocabulary.
+
+    ⛔ **`person_id` is deliberately dropped.** A subject identifier that
+    reaches a rationale is an identifier a screen eventually renders, and the
+    only honest thing to render for it is a UUID. **The period is what this
+    signal needed; the subject was never the deliverable**
+    ([C-221](../../../../docs/LANE_COORDINATION.md)).
+    """
+    return Seat(
+        title=view.title,
+        seniority=view.seniority,
+        started_on=view.started_on,
+        ended_on=view.ended_on,
+    )
+
+
+def _rationale(
+    definition: SignalTypeDefinition,
+    entry: ProfileEntry,
+    grounding: Grounding,
+    seats: tuple[Seat, ...],
+) -> str:
     """Two halves, deliberately: the interpretation and the evidence.
 
     A customer must be able to challenge either independently — *"we don't
     actually care about that"* is a different objection from *"that didn't
     happen"*, and only one of them is Signora's mistake.
+
+    ⚡ **A third clause appears only when the evidence supports it** (TASK-458):
+    the period a seat was held, when exactly one holder at this account
+    carried the title the event names. ⛔ **Two holders produce no clause at
+    all** rather than a guess — `seat_for` refuses, and a rationale is the
+    part a customer is invited to argue with.
     """
     basis = "; ".join(event.summary for event in grounding.events)
-    return (
+    rationale = (
         f"{definition.hypothesis} Your profile treats this as a "
         f"{entry.relevance.value} indicator. Based on: {basis}."
     )
+    tenure = _tenure(grounding, seats)
+    return rationale if tenure is None else f"{rationale} {tenure}"
+
+
+def _tenure(grounding: Grounding, seats: tuple[Seat, ...]) -> str | None:
+    """The seat clause, or `None` when nothing singles one out.
+
+    **Silent in three cases and they are not distinguished**: the event names
+    no title, `people` holds nothing for this account, or two holders share
+    the title. ⚡ **All three mean the same thing to a reader — *we cannot say
+    whose seat this was* — and a rationale that explained which kind of
+    silence it was would be explaining the platform rather than the account.**
+    """
+    if not seats:
+        return None
+    described = [
+        seat.tenure
+        for event in grounding.events
+        if (raw := str(event.facts.get(TITLE_FACT, "")))
+        and (seat := seat_for(seats, title=raw)) is not None
+    ]
+    if not described:
+        return None
+    # `dict.fromkeys` rather than a set: two events describing one seat should
+    # collapse, and the order must stay the evidence's rather than a hash's
+    # (§2 — a hidden input is an architecture defect).
+    unique = list(dict.fromkeys(described))
+    return f"The seat was {'; '.join(unique)}."
 
 
 def _constituents_of(grounding: Grounding, singles: Sequence[Signal]) -> tuple[UUID, ...]:

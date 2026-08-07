@@ -43,14 +43,10 @@ from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registr
 from modules.ai_platform.infrastructure.repository import SqlInferenceRecorder
 from modules.ai_platform.infrastructure.settings import AISettings
 from modules.ai_platform.public import Infer, InferencePolicy
-from modules.provider_platform.domain.provider import ProviderRegistry
-from modules.provider_platform.infrastructure.composition import (
-    build_provider_registry as build_data_provider_registry,
-)
+from modules.ai_research_engine.application.run import FinishResearchRun
 from modules.ai_research_engine.domain.events import (
     RESEARCH_REQUESTED as RESEARCH_REQUESTED_EVENT,
 )
-from modules.ai_research_engine.application.run import FinishResearchRun
 from modules.ai_research_engine.infrastructure.composition import (
     PROMPT_DIR,
     build_begin_research_run,
@@ -60,42 +56,22 @@ from modules.ai_research_engine.interface.handlers import (
     CONSUMER_NAME as RESEARCH_CONSUMER,
 )
 from modules.ai_research_engine.interface.handlers import run_requested_research
-from modules.business_event_engine.public import BusinessEventQueries
 from modules.business_event_engine.infrastructure.composition import (
     build_queries as build_business_event_queries,
 )
-from modules.commercial_profile.infrastructure.competitor_reader import (
-    SqlDeclaredCompetitorReader,
-)
-from modules.knowledge_graph.infrastructure.composition import (
-    build_queries as build_graph_queries,
-)
-from modules.observation_engine.infrastructure.composition import (
-    build_queries as build_observation_queries,
-)
-from modules.provider_normalization.infrastructure.claim_reader import SqlClaimReader
+from modules.business_event_engine.public import BusinessEventQueries
 from modules.buying_score_engine.infrastructure.composition import (
     build_compute_buying_score,
+)
+from modules.buying_score_engine.infrastructure.composition import (
+    build_queries as build_buying_score_queries,
 )
 from modules.buying_score_engine.interface.handlers import (
     CONSUMER_NAME as SCORE_CONSUMER,
 )
 from modules.buying_score_engine.interface.handlers import compute_from_signal
-from modules.signal_engine.infrastructure.composition import build_generate_signals
-from modules.signal_engine.infrastructure.composition import (
-    build_queries as build_signal_queries,
-)
-from modules.signal_engine.interface.handlers import CONSUMER_NAME as SIGNAL_CONSUMER
-from modules.signal_engine.interface.handlers import generate_from_business_event
-from modules.timeline.domain.projection import PROJECTIONS
-from modules.timeline.infrastructure.composition import build_project_event
-from modules.timeline.interface.handlers import CONSUMER_NAME as TIMELINE_CONSUMER
-from modules.timeline.interface.handlers import project_to_timeline
-from modules.business_event_engine.infrastructure.composition import (
-    build_queries as build_business_event_queries,
-)
-from modules.buying_score_engine.infrastructure.composition import (
-    build_queries as build_buying_score_queries,
+from modules.commercial_profile.infrastructure.competitor_reader import (
+    SqlDeclaredCompetitorReader,
 )
 from modules.knowledge_graph.infrastructure.composition import (
     build_queries as build_graph_queries,
@@ -107,10 +83,19 @@ from modules.opportunity_engine.application.queries import OpportunityQueries
 from modules.opportunity_engine.infrastructure.composition import (
     build_queries as build_opportunity_queries,
 )
+from modules.people.infrastructure.composition import build_affiliation_reader
 from modules.provider_normalization.infrastructure.claim_reader import SqlClaimReader
+from modules.provider_platform.domain.provider import ProviderRegistry
+from modules.signal_engine.infrastructure.composition import build_generate_signals
 from modules.signal_engine.infrastructure.composition import (
     build_queries as build_signal_queries,
 )
+from modules.signal_engine.interface.handlers import CONSUMER_NAME as SIGNAL_CONSUMER
+from modules.signal_engine.interface.handlers import generate_from_business_event
+from modules.timeline.domain.projection import PROJECTIONS
+from modules.timeline.infrastructure.composition import build_project_event
+from modules.timeline.interface.handlers import CONSUMER_NAME as TIMELINE_CONSUMER
+from modules.timeline.interface.handlers import project_to_timeline
 from signora_platform.db import tenant_scoped_session
 from signora_platform.event_bus import (
     EventEnvelope,
@@ -243,9 +228,7 @@ def _opportunities(session: AsyncSession, workspace_id: UUID) -> OpportunityQuer
     matrix already ratified. Research is the caller that actually needs the
     bottom of it: `explanation()` is what those five layers exist to satisfy.
     """
-    graph = build_graph_queries(
-        session, claims=SqlClaimReader(session, workspace_id=workspace_id)
-    )
+    graph = build_graph_queries(session, claims=SqlClaimReader(session, workspace_id=workspace_id))
     observations = build_observation_queries(session, graph=graph)
     events = build_business_event_queries(session, observations=observations)
     signals = build_signal_queries(session, business_events=events)
@@ -308,9 +291,7 @@ def _business_events(session: AsyncSession, workspace_id: UUID) -> BusinessEvent
     chain to form hypotheses and Buying Score needs it to read them back, and
     two copies would drift the first time an edge changes (§2).
     """
-    graph = build_graph_queries(
-        session, claims=SqlClaimReader(session, workspace_id=workspace_id)
-    )
+    graph = build_graph_queries(session, claims=SqlClaimReader(session, workspace_id=workspace_id))
     observations = build_observation_queries(session, graph=graph)
     return build_business_event_queries(session, observations=observations)
 
@@ -370,6 +351,7 @@ async def _generate_signals(envelope: EventEnvelope) -> None:
                 session,
                 business_events=events,
                 competitors=SqlDeclaredCompetitorReader(session),
+                affiliations=build_affiliation_reader(session),
                 publisher=PostgresOutboxEventPublisher(),
             ),
         )

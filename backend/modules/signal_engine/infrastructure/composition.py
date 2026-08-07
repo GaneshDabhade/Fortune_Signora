@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.business_event_engine.public import BusinessEventQueries
 from modules.commercial_profile.public import DeclaredCompetitorReader
+from modules.people.public import AffiliationReader
 from modules.signal_engine.application.generate import GenerateSignals
 from modules.signal_engine.application.queries import SignalQueries
 from modules.signal_engine.application.resolve import ResolveSignal
@@ -32,15 +33,24 @@ def build_generate_signals(
     *,
     business_events: BusinessEventQueries,
     competitors: DeclaredCompetitorReader,
+    affiliations: AffiliationReader,
     publisher: EventPublisher,
 ) -> GenerateSignals:
-    """**The competitor reader is a parameter, not a construction** — the same
-    rule the business event queries follow, and for the same reason: building
-    it here would mean importing another module's infrastructure (ADR-0403)."""
+    """**Both readers are parameters, not constructions** — the same rule the
+    business event queries follow, and for the same reason: building either
+    here would mean importing another module's infrastructure (ADR-0403).
+
+    ⚡ **`affiliations` arrives on identical terms to `competitors`** (TASK-458).
+    ⛔ **And the distinction [C-238](../../../../docs/LANE_COORDINATION.md) was
+    raised about lives here**: `people` publishes the Protocol *and*
+    `build_affiliation_reader`, so the application composition root has
+    something to pass. A port with no obtainable implementation leaves this
+    function unable to be called at all."""
     return GenerateSignals(
         repository=SqlSignalRepository(session),
         profiles=SqlProfileRepository(session),
         competitors=competitors,
+        affiliations=affiliations,
         business_events=business_events,
         catalog=load_catalog(),
         publisher=publisher,
