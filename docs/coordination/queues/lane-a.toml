@@ -381,6 +381,65 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🟢  D-165 — ONE LANE, PERMANENTLY. AND TWO NUMBERS, NOT ONE.
+#     2026-08-07 · product owner
+#
+# ⚡ THE RECONCILIATION YOU NEED, BECAUSE TWO RULINGS LOOK LIKE THEY DISAGREE:
+#
+#     D-163 ③  "exactly one current CLAIMABLE task"
+#     D-165 §3 "approximately 10-20 actionable implementation tasks"
+#
+#   They are two different depths and both hold:
+#
+#     PREPARED   14 rows, sequenced, with acceptance criteria and design
+#                references. This is D-165 §3's number.
+#     CLAIMABLE   1 row. This is D-163 ③'s number.
+#
+#   D-165 §3's own last sentence settles it: "Lane A should simply complete the
+#   current item and automatically proceed to the next." A sequence, not a
+#   buffet. A second claimable row would let you choose, and choosing is
+#   prioritisation (§20e).
+#
+#   ⛔ If the product owner meant 10-20 SIMULTANEOUSLY CLAIMABLE, this office
+#      has read it wrong and one line overturns it. The reading is recorded
+#      rather than assumed silently.
+#
+# ── THE PREPARED PIPELINE, 14 DEEP, IN ORDER ────────────────────────────────
+#   TASK-490  the design foundation ............ CLAIMABLE NOW
+#   TASK-483  the authentication shell ......... releases automatically
+#   TASK-484  the Workflow 1 journeys .......... releases automatically
+#   ── Product Office conformance audit, then the product owner reviews W1 ──
+#   TASK-485  W2 Registration .................. releases on `approved`
+#   TASK-486  W3 Email Verification
+#   TASK-487  W4 Forgot Password
+#   TASK-488  W5 Password Reset
+#   TASK-489  W7 Invitation Acceptance
+#   TASK-469  W8 Initial Onboarding
+#   TASK-447  W13 Application Shell
+#   TASK-480 · TASK-481 · TASK-482  App Shell surfaces
+#   TASK-471  W10 Team Management
+#
+# ✅ LANE B IS GONE FROM THE ACTIVE MODEL, MEASURED NOT ASSERTED:
+#   • zero rows resolve to it in coordination.toml — the Lane_B block no
+#     longer exists, because the generator emits a block only where rows do
+#   • zero modules name it in modules.toml
+#   • queues/lane-b.toml is deleted; git history keeps it, which is what
+#     "historical records remain intact" means
+#   ⚠️ 13 rows had `— Lane B` HARDCODED in their Module cells, and the
+#     generator gives that precedence over the registry. That is C-213's
+#     defect at scale: an assignee copied into a row outranking the
+#     authoritative source. All 13 now join from modules.toml.
+#
+# ⛔ THE TWELVE IN VALIDATION ROWS ARE NOT YOURS TO RESTART. They are
+#   delivered and awaiting QE; §20e ended the implementing lane's
+#   responsibility when it set that state. They become yours only if QE
+#   returns CHANGES REQUESTED. TASK-406 is the one exception — IN PROGRESS
+#   and genuinely unfinished — and it is priority 6, sequenced, not yours today.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🟢  D-163 — DO NOT WAIT TO BE TOLD. 2026-08-07 · product owner
 #
 #   "Lane A should not wait for Product Owner instructions to begin the next
@@ -1053,14 +1112,16 @@ next    = ""
 # this office was releasing it here, and the rebase kept this office's line.
 # Lane A's CLAIMED is restored in BACKLOG.md and the row is gone from this
 # queue: a lane must never be offered back work it is already holding.
-future  = []
+future  = []   # ⛔ empty by ruling: exactly one claimable (D-163). The prepared
+               # sequence is in the notice above and in workflows.toml.
 
 
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
 eligible_count = 1
-depth_target   = 1   # ⚡ D-163: exactly ONE claimable, not a deep bench.
+prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
+depth_target   = 1   # ⚡ CLAIMABLE depth — D-163. Prepared depth is 14; see prepared_total.
 shortfall      = 0   # ⛔ 1 of 1. A second claimable row would let this lane choose, and choosing is prioritisation.
 assigned_total = 14
 
