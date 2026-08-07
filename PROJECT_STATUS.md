@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `9ba145f`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `d66e223`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `9ba145f`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `d66e223`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`9ba145f`** — the certified commit itself |
+| **`main`** | **`d66e223`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 86 promoted **six commits across three lanes** — the pipeline's modules now **consume what they declare**, and a second reasoning prompt exists but is **not released** |
-| **Certification** | ✅ [`9ba145fbe2f1`](certification/reports/9ba145fbe2f1.md) · migration head **`0040`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 87 promoted **one QE slice** — the certification instrument stopped reporting a failed run as certified. ⛔ **Lane C's fifteen-commit branch was excluded on a Blocking Quality Defect** ([B-136](docs/BUGS.md)) |
+| **Certification** | ✅ [`d66e2238f743`](certification/reports/d66e2238f743.md) · migration head **`0040`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3885 backend tests** · **95.30% coverage** *(floor 95)* · **1448 frontend tests** across 67 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **809 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **37 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 143s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3895 backend tests** *(+10)* · **95.30% coverage** *(floor 95)* · **1448 frontend tests** across 67 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** *(+3)* · mypy strict over **810 files** · migrations `0000`–`0040`, **verified reversible this cycle** · **37 import-linter contracts** *(+1)*, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 145s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,13 +40,13 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **TASK-901 slices 2 · 3** — two modules consume what they declare | **TASK-202** — `reasoning@2`, unreleased | **D-139 · D-140**, both self-caught | **Cycle 86** |
+| **Last promoted** | **TASK-901 slices 2 · 3** — two modules consume what they declare | **TASK-202** — `reasoning@2`, unreleased | **D-139 · D-140**, both self-caught | **Cycle 87** — [B-137](docs/BUGS.md), the instrument that misread its own record |
 | **Execution phase** | **Building** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
-| **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
-| **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
-| **Blocked?** | **No** | **No** | **No** | **No** |
+| **Branch** | Level with `main` | **2 ahead** — B-329, awaiting cycle 88 | ⛔ **15 ahead — excluded on [B-136](docs/BUGS.md)** | Level with `main` |
+| **Validation status** | — | **Awaiting cycle 88** | ⛔ **`CHANGES REQUESTED`** — the worker crash-loops in the production stack | ✅ **Promoted this cycle** |
+| **Blocked?** | ⚠️ **Reads 0 claimable** until Lane C's planning rows integrate | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | Next `READY` row | Next `READY` row | Stewardship | **Cycle 87, on the next poll** |
+| **Next executable work** | Next `READY` row | Next `READY` row | **[B-136](docs/BUGS.md) · [B-134](docs/BUGS.md) · [B-135](docs/BUGS.md)** | **Cycle 88, immediately** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,59 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 86
+## 1d · Release summary — 2026-08-07, cycle 87
+
+**Derived from the promoted commit `d66e223`.** **Forty-three promotions.** ⚡ **The cycle that certification failed, and the reason it is worth a summary is what the failure exposed about the instrument that reports it.**
+
+### What was promoted
+
+**One QE slice, three findings, and a blocked branch.**
+
+| | |
+|---|---|
+| **[B-137](docs/BUGS.md)** *(QE)* | **`state-check` read the last certification *attempt* and called it the last certification.** The manifest records failures deliberately — a failed run is evidence about a commit, and §2 forbids deleting a record of what was true then. So `runs[-1]` is routinely a run that did **not** certify. **It had been correct for eighty-six cycles because every previous cycle ended in a pass** |
+
+> ⛔ **`certification-guard.py` was right throughout and refused the promotion.** Only the advisory view inverted — **and that is the more dangerous half.** A refusal is read once, at the moment it fires. **An advisory is what a cold session reasons from**, and this one would have said a failed commit was certified and merely unpromoted.
+
+**The predicate is now borrowed from the guard, never re-derived.** A second copy of *"did this run certify?"* is a second answer, and only one of them gates a promotion (§2). **Five regression tests on constructed manifests; mutation-checked** — restoring `runs[-1]` fails three.
+
+### ⛔ Lane C's branch was excluded, and the defect is not where it looks
+
+**[B-136](docs/BUGS.md).** TASK-419 wires the data-provider registry into the worker composition root — **ADR-0404 capability 3, and correct.** Its guard refuses simulated adapters outside a local environment — **also correct, and deliberately fail-fast**: a deployed worker serving generated company data would fabricate every score built on it.
+
+**Nothing sets `SIGNORA_PROVIDERS` in `docker-compose.prod.yml`, so the first environment to reach the new code is the one that cannot satisfy it.** The worker crash-loops; `smoke` stops at stage 2 of 24. ⚡ **The fix is one line in the environment. The guard is not the defect and must not be relaxed.**
+
+### ⚡ Three cycles, three defects `make validate` structurally cannot see
+
+| Cycle | Row | Caught by | Why `validate` was blind |
+|---|---|---|---|
+| 84 | [B-132](docs/BUGS.md) | `mypy --strict` | `pytest` is green — Python does not enforce `Protocol` at runtime |
+| 82 | [B-133](docs/BUGS.md) | `next build`'s ESLint, inside `smoke` | An unused import is valid TypeScript |
+| **87** | **[B-136](docs/BUGS.md)** | **`smoke`'s Startup, on the production images** | ⚡ **`validate` never composes the production stack** |
+
+**All three are [B-131](docs/BUGS.md) in the concrete**, and the second and third were both named by the Validation Planner for their change.
+
+### Two more rows against the same branch
+
+| | |
+|---|---|
+| **[B-134](docs/BUGS.md)** 🟠 | **`coordination.py --check` can never pass.** It stamps the running `HEAD` into the file it generates, then compares the whole file including the stamp. **A generated file cannot contain the SHA of the commit that contains it** — so it exits 1 on the commit whose message is *"Regenerate the coordination source"*, and `state-check` calls it on every run. **A guard that cannot pass, which ends where a guard that cannot fail ends** |
+| **[B-135](docs/BUGS.md)** 🟡 | **285 lines of new tooling, zero tests.** Nineteen of twenty-three `infra/` tools are covered, and `test_claim_agreement.py` already loads `state-check.py` by path. **One test catches B-134 on its first run** |
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **3895 backend** *(+10)* · **1448 frontend** — **gated in stage 1** · **95.30%** · **392 invariants** · **810 files typed** · **37 contracts** · `tsc` clean and gated |
+| **Release** | **88 runs recorded, 84 certified** · `promoted == certified` ✓ · `--audit-main` clean · ⚠️ **one failed certification, which is the gate working** |
+| **Architecture** | Migration `0040` **reversible, verified this cycle** · **DR passed — 5 restart stages, nothing lost** · smoke 24 stages in 145s |
+| **Dependency** | ⚠️ **Lane A reads 0 claimable** until Lane C's planning rows integrate |
+| **Customer Value** | ⛔ **None this cycle.** The slice hardened the instrument that measures the others |
+| **Process** | ⚠️ **A certification failed and the pipeline behaved correctly**: the guard refused, the slice was excluded, the owning lane was named, and no other lane was held |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 86
 
 **Derived from the promoted commit `9ba145f`.** **Forty-two promotions.** **Declarations that had existed since M5 finally have consumers** — and a new prompt version arrived with zero evaluations, which is the honest state rather than a defect.
 
