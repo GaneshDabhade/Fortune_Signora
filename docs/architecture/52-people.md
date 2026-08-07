@@ -68,6 +68,27 @@ Two tables, both workspace-owned, both with forced RLS and policies covering `SE
 
 **No foreign key to `entity`.** The company id is carried and joined at read time, the way every module cites an entity; a constraint across a boundary neither context owns would make one module's migration depend on another's table shape.
 
+## What `people` publishes — TASK-457
+
+**Two value types and no reader**: `PersonView` *(an id and a workspace, and there will never be a third field that identifies anybody)* and `AffiliationView` *(person, company, title, seniority, and the interval)*.
+
+⛔ **No reader port, and that is the row's own bound** — *"the types `people` publishes… and nothing that reads them."* **No consumer exists yet**, and a port shaped for an imagined caller is the speculative abstraction §6 forbids. **The first consumer is [TASK-458](../BACKLOG.md)** — `signal_engine`, Lane A's — and the port is designed when there is a caller to design it against.
+
+**What it publishes is a subject, never an identity.** No name, no email, no phone, no provider id — [C-221](../LANE_COORDINATION.md) is the specification, not a limitation. **A test asserts the absence by name**, because *"we did not add one"* is not a property anything can check.
+
+### ⚠️ This contract was `CLAIMED` and empty for a day, and another lane found it
+
+**`people/public/__init__.py` was git's empty blob — `e69de29`, zero bytes — on `integration` and on `main`** while [TASK-457](../BACKLOG.md) read `CLAIMED`. **Lane A found it from the outside** ([C-235](../LANE_COORDINATION.md)) after **TASK-458 had been released against it**.
+
+> **The release check asked *"does the module's `public/` exist and is it reachable?"* and the answer was yes.** ⛔ **The question it needed answered was *"does it export anything?"*** — [B-101](../BUGS.md)'s class, counting by proxy, one register over.
+
+**Two corrections came out of it, and both are code rather than resolve:**
+
+| | |
+|---|---|
+| **The contract exists** | With a test file of its own. **A contract with no test is how an empty one survives a release check** |
+| **`test_boundary.py` now scans `public/` too** | It scanned only `domain/`. **The omission was not deliberate** — when it was written `public/` was empty, so scanning it would have asserted nothing. ⛔ **It is the surface that matters most**: a judgement leaking out of the domain is one module's defect; **a judgement published on the contract is one every consumer inherits.** A second test asserts the scan actually covers something, so it cannot go vacuous again
+
 ## ⛔ What this slice deliberately does not do
 
 **Nothing populates these tables.** No event handler, no use case, no endpoint, no screen — and [441 §4](441-people-roadmap.md) says so in its own sequencing: this milestone is *"(none — no screen)"*.

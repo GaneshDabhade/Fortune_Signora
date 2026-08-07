@@ -81,14 +81,32 @@ def _domain_modules() -> list[str]:
     return found
 
 
+def _scanned_sources() -> dict[str, str]:
+    """Every source this rule covers — **the domain *and* the published contract.**
+
+    ⚠️ **`public/` was added by [TASK-457](../../../docs/BACKLOG.md), and the
+    omission was not deliberate**: when this test was written `people/public/`
+    was an empty file, so scanning it would have asserted nothing.
+
+    ⛔ **It is the surface that matters most.** A judgement leaking out of the
+    domain is a defect in one module; **a judgement published on the contract
+    is one every consumer inherits**, and `is_key_contact` on a view is exactly
+    as wrong as `is_key_contact` on an entity.
+    """
+    sources = {
+        name: inspect.getsource(importlib.import_module(f"{domain.__name__}.{name}"))
+        for name in _domain_modules()
+    }
+    sources["public"] = inspect.getsource(importlib.import_module("modules.people.public"))
+    return sources
+
+
 class TestPeopleIdentifiesAndJudgesNothing:
     def test_no_domain_module_names_a_judgement(self) -> None:
         offenders = {
             f"{name}.{identifier}"
-            for name in _domain_modules()
-            for identifier in _identifiers(
-                inspect.getsource(importlib.import_module(f"{domain.__name__}.{name}"))
-            )
+            for name, source in _scanned_sources().items()
+            for identifier in _identifiers(source)
             for term in FORBIDDEN
             if term in identifier.casefold()
         }
@@ -97,6 +115,23 @@ class TestPeopleIdentifiesAndJudgesNothing:
             f"{sorted(offenders)} name a judgement about a person. This module records "
             "who somebody is and where they have worked; what any of it means about a "
             "deal belongs to the modules that already decide that."
+        )
+
+    def test_the_published_contract_is_actually_in_the_scan(self) -> None:
+        """**Asserted, because the scan silently covered nothing here until
+        TASK-457 wrote the file.**
+
+        An empty `public/` made this half of the rule vacuous without ever
+        failing — [C-235](../../../docs/LANE_COORDINATION.md)'s finding one
+        register over: *reachability was the proxy for published, and nothing
+        asked whether the proxy was sound.*
+        """
+        sources = _scanned_sources()
+
+        assert "public" in sources
+        assert "AffiliationView" in sources["public"], (
+            "people/public is in the scan but publishes nothing — the same empty-contract "
+            "condition C-235 found, and it would make this rule pass vacuously again."
         )
 
     def test_the_scan_would_notice_one(self) -> None:
