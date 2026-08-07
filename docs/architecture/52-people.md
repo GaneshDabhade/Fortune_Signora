@@ -72,7 +72,22 @@ Two tables, both workspace-owned, both with forced RLS and policies covering `SE
 
 **Two value types and no reader**: `PersonView` *(an id and a workspace, and there will never be a third field that identifies anybody)* and `AffiliationView` *(person, company, title, seniority, and the interval)*.
 
-⛔ **No reader port, and that is the row's own bound** — *"the types `people` publishes… and nothing that reads them."* **No consumer exists yet**, and a port shaped for an imagined caller is the speculative abstraction §6 forbids. **The first consumer is [TASK-458](../BACKLOG.md)** — `signal_engine`, Lane A's — and the port is designed when there is a caller to design it against.
+### ⚡ The reader, added when the caller became real — C-237
+
+**TASK-457 published no reader**, on the stated ground that *"a port shaped for an imagined caller is the speculative abstraction §6 forbids"*, and named the trigger that would end it: **the first consumer.** **[TASK-458](../BACKLOG.md) is that consumer**, and Lane A raised [C-237](../LANE_COORDINATION.md) rather than adding the port to a module that is not theirs.
+
+> **`AffiliationReader` — `at_company` and `for_person`, both read-only.**
+
+**It is specified by its caller rather than guessed at**, which is the whole reason the delay was worth it. C-237 stated the requirement in Lane A's own words — *"what a signal cannot say today is **which seat**"* — so:
+
+| | |
+|---|---|
+| **`at_company` returns open *and* closed intervals** | *"Who left, and when"* is what `decision_maker_departed` exists to answer, and a read returning only current holders could not answer it at all |
+| **The answer carries the interval, never a current employer** | C-237 names the reason exactly: `ended_on = None` means **no departure has been observed**, not *"they still work there"* — **the distinction a signal would otherwise flatten** |
+| **Scoped to one company** | The same title is held at every company in a workspace. A workspace-wide read would invite matching on title alone, which is the mistake `match_departure` refuses one layer down |
+| ⛔ **No write, at any point** | Affiliations are opened and closed by this module's own use case. **A judging module must never be able to author the history it reads** |
+
+⚠️ **`for_person` returns one affiliation in almost every case today**, and that is a property of the platform rather than of the port — see the minting note below. **Documented on the method** so a consumer does not read a single-element result as a data gap.
 
 **What it publishes is a subject, never an identity.** No name, no email, no phone, no provider id — [C-221](../LANE_COORDINATION.md) is the specification, not a limitation. **A test asserts the absence by name**, because *"we did not add one"* is not a property anything can check.
 
@@ -89,9 +104,40 @@ Two tables, both workspace-owned, both with forced RLS and policies covering `SE
 | **The contract exists** | With a test file of its own. **A contract with no test is how an empty one survives a release check** |
 | **`test_boundary.py` now scans `public/` too** | It scanned only `domain/`. **The omission was not deliberate** — when it was written `public/` was empty, so scanning it would have asserted nothing. ⛔ **It is the surface that matters most**: a judgement leaking out of the domain is one module's defect; **a judgement published on the contract is one every consumer inherits.** A second test asserts the scan actually covers something, so it cannot go vacuous again
 
+## A role change becomes an affiliation — TASK-428, S3
+
+**`RecordRoleChange` is the use case half of *"nothing populates these tables"*.** An arrival opens an interval; a departure closes **the one the rule can identify, and no other**.
+
+| | |
+|---|---|
+| **`arrived`** | Mints a `Person` and opens an `Affiliation` at that company, dated by **when it happened in the customer's business** — never by when Signora concluded it, which would put an arrival after the departure that followed it |
+| **`departed`** | Reads the open affiliations at that company, asks `match_departure`, and acts on the outcome |
+
+### ⛔ It obeys `match_departure` rather than restating it
+
+**This document told whoever arrived here what to do, before the handler existed** — *"the handler's job is to supply the open affiliations and act on the outcome, including doing nothing on `AMBIGUOUS`, which is the case a handler is most likely to get wrong by picking one."* **The handler does exactly that and inspects `candidates` for nothing but a count.**
+
+**Both refusals are reported, never swallowed:**
+
+| Outcome | What happened | What is written |
+|---|---|---|
+| `MATCHED` | One open holder of that title | **The interval closes** |
+| `NONE_OPEN` | Nobody was recorded in the role | **Nothing.** Signora never saw the arrival — the person was in post before it started watching. **Not an error** |
+| `AMBIGUOUS` | Two or more hold the title | **Nothing**, and `candidate_count` travels with it so a consumer can say *"one of these two left"* rather than nothing at all |
+
+⚠️ **`Departure` carries the outcome rather than a bare success flag**, which is [P-A](../DOMAIN_DISCOVERY_REGISTER.md) one module over: **a departure that closed nothing must never be indistinguishable from one that was never reported.**
+
+### ⚠️ Every arrival mints a new `Person`, and it will sometimes be the same human twice
+
+**Stated here rather than left to be found as a duplicate-person bug.** Signora holds no name, no email and no provider identifier ([C-221](../LANE_COORDINATION.md)), so **there is nothing to match an arrival against** — a heuristic on title alone would merge two strangers who share a job title.
+
+**Joining a person across companies needs a provider identifier**, which is ❓1 of [ADR-0400](adr/0400-person-as-an-entity.md) and gates [TASK-429](../BACKLOG.md). ⛔ **Not a defect in this use case; a capability the module deliberately does not have yet.**
+
 ## ⛔ What this slice deliberately does not do
 
-**Nothing populates these tables.** No event handler, no use case, no endpoint, no screen — and [441 §4](441-people-roadmap.md) says so in its own sequencing: this milestone is *"(none — no screen)"*.
+**No event handler and no subscription yet** — so nothing *calls* `RecordRoleChange` in production, and the tables stay empty until the wiring slice. **The use case is complete and unwired**, which is stated rather than dressed up: it is the same shape as the contract-first slices before it, and [441 §4](441-people-roadmap.md)'s sequencing still reads *"(none — no screen)"*.
+
+⚠️ **And the wiring is not a small remainder.** `business_event.detected` carries `entity_id`, `type_key` and timings — **it does not carry the title or the seniority**, so a handler cannot build a `RoleChange` from the event alone. The role detail lives in `RoleChangeValue`, reachable through `provider_normalization/public`'s `ClaimReader` via the business event's evidence. **Both edges are permitted** — `people`'s import contract forbids the judging modules and neither `business_event_engine` nor `provider_normalization` is among them — **but the read path is a slice of its own, and it is the next one.**
 
 **That is stated rather than dressed up.** Under §2 this is correct work that has not reached a customer, and it is **infrastructure rather than a delivered capability**. Consuming `LEADERSHIP_APPOINTED` / `LEADERSHIP_DEPARTED` into affiliations is **S3**, which also carries the Timeline projection and the committee-seat citation — and S3 has its own dependency: [TASK-901](../BACKLOG.md), because `make runtime-composition` reports 2 of 9 consumers wired and a projection would land dark.
 

@@ -6036,11 +6036,22 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 **Opened 2026-08-07 · Lane A · owner: Lane B · 🟠 · blocks [TASK-458](BACKLOG.md)**
 
+> ✅ **Answered — Lane B, 2026-08-07. The reader is published.** **`AffiliationReader` — `at_company` and `for_person`, both read-only** — is on `lane-b-commercial-profile` awaiting QE, alongside [TASK-428](BACKLOG.md)'s use case.
+>
+> ⚡ **Shaped by this item rather than guessed at, which is why the wait was worth something.** **`at_company` returns open *and* closed intervals**, because *"who left, and when"* is what `decision_maker_departed` exists to answer; **the answer carries the interval and never a current employer**, on the reason stated here — `ended_on = None` means *no departure has been observed*; and **the read is scoped to one company**, because a workspace-wide one would invite matching on title alone.
+>
+> ⛔ **No write on the port at any point.** A judging module must never be able to author the history it reads.
+>
+> ⚠️ **Two things Lane A should know before building against it.** **Nothing populates `people` yet** — `RecordRoleChange` exists and is unwired, so the reader will answer empty until the wiring slice. And **`for_person` returns one affiliation in almost every case**, because this module mints a new subject per arrival and holds no identifier to match one against ([C-221](#c-221), ❓1 of ADR-0400, gated on [TASK-429](BACKLOG.md)). **Neither is a defect to report back; both are stated on the port itself.**
+>
+> ⛔ **Left open for the requesting lane to close** — §20e: the requesting lane closes, and this one is Lane A's.
+
 | | |
 |---|---|
 | **What** | **[TASK-458](BACKLOG.md) is the *consumer* half — `signal_engine` reads the People contract.** ⛔ **`people/public/` publishes `PersonView` and `AffiliationView` and no reader port**, so there is no published way to obtain either |
 | **Where** | `origin/integration`, `backend/modules/people/public/__init__.py` — 4,259 bytes, two frozen dataclasses, no `Protocol` |
 | **Asked of Lane B** | **Publish the reader.** `people` is Lane B's ([`modules.toml`](coordination/modules.toml)); `signal_engine` is Lane A's |
+| **Status** | **`OPEN` — answered by Lane B, 2026-08-07, and awaiting integration.** ⛔ **Not closed here**: §20e gives the close to the *requesting* lane, and this item is Lane A's. ⚠️ **Deliberately not `READY FOR IMPLEMENTATION`** — that state is the product owner's on a ruling, and this was a dependency answered rather than a decision taken |
 
 ### The contract states the omission, and states it as correct
 

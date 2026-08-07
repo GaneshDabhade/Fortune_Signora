@@ -25,10 +25,15 @@ supply one is ❓1 of
 [ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md) and
 gates [TASK-429](../../../../docs/BACKLOG.md) — **not this row**.
 
-**Anything that reads these types.** The row's own bound: *"the types `people`
-publishes… and nothing that reads them."* ⛔ **No reader port**, because no
-consumer has been written yet and a port shaped for an imagined caller is the
-speculative abstraction §6 forbids.
+> ⚡ **The reader arrived on 2026-08-07, and the reason it was withheld is the
+> reason it now exists.** This said *"no reader port, because no consumer has
+> been written yet and a port shaped for an imagined caller is the speculative
+> abstraction §6 forbids."* **[TASK-458](../../../../docs/BACKLOG.md) is the
+> event that ends that** — `signal_engine` is claimed, and it stated what it
+> needs rather than leaving the shape to guesswork
+> ([C-237](../../../../docs/LANE_COORDINATION.md)). **The port is no longer
+> imagined; it is specified by its first caller**, which is the trigger the
+> paragraph named.
 
 **Any judgement.** No score, no rank, no priority, no `is_key_contact`.
 **`test_boundary.py` reads this package as a syntax tree and refuses those
@@ -50,6 +55,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from typing import Protocol
 from uuid import UUID
 
 
@@ -101,4 +107,51 @@ class AffiliationView:
         return self.ended_on is None
 
 
-__all__ = ["AffiliationView", "PersonView"]
+class AffiliationReader(Protocol):
+    """Where another module asks who has held a role at a company.
+
+    **Specified by its first caller**, [TASK-458](../../../../docs/BACKLOG.md):
+    *"what a signal cannot say today is **which seat**."* `signal_engine` raises
+    `new_decision_maker` and `decision_maker_departed` and can name neither the
+    subject nor the period — this is the read that lets it.
+
+    ⛔ **Read-only, and there is no write here at any point.** Affiliations are
+    opened and closed by `people`'s own use case from reported role changes; a
+    port that let a consumer write one would let a judging module author the
+    history it is meant to read.
+    """
+
+    async def at_company(
+        self, workspace_id: UUID, company_id: UUID
+    ) -> tuple[AffiliationView, ...]:
+        """Everyone recorded in a role at this company, **open and closed.**
+
+        ⚠️ **Closed intervals are included deliberately.** *"Who left, and
+        when"* is the question `decision_maker_departed` exists to answer, and
+        a read that returned only current holders could not answer it at all.
+
+        ⛔ **Scoped to one company on purpose.** The same title is held at every
+        company in a workspace, and a workspace-wide read would invite a
+        consumer to match on title alone — which is the mistake
+        `match_departure` refuses one layer down.
+        """
+        ...
+
+    async def for_person(
+        self, workspace_id: UUID, person_id: UUID
+    ) -> tuple[AffiliationView, ...]:
+        """Everywhere this person has been recorded, **oldest first.**
+
+        ⚠️ **Today this returns one affiliation in almost every case**, and that
+        is a property of the platform rather than of the port: **`people` mints
+        a new subject per arrival** because it holds no identifier to match one
+        against ([C-221](../../../../docs/LANE_COORDINATION.md)). **Joining a
+        person across companies needs a provider identifier** — ❓1 of
+        [ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md),
+        gated on [TASK-429](../../../../docs/BACKLOG.md). **Stated so a consumer
+        does not read a single-element result as a data gap.**
+        """
+        ...
+
+
+__all__ = ["AffiliationReader", "AffiliationView", "PersonView"]
