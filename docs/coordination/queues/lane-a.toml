@@ -381,6 +381,88 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🟢  YOU ARE UNBLOCKED — 2026-08-07 · answering your TASK-468 report
+#
+# ⚡ THE HEADLINE: YOU DO NOT NEED `make up` TO RUN A PLAYWRIGHT JOURNEY.
+#   playwright.config.ts:42 says so in its own words — "No `webServer`: a lane
+#   already has its own dev server on its own port" — and `make e2e` targets
+#   SIGNORA_APP_URL, never the prod-local stack. B-212 is real, it is fixed
+#   below, and it was never what stood between you and IN VALIDATION.
+#
+#   Run your journey with:      make e2e ARGS="workspace-setup.spec.ts"
+#   against your own dev server on 3300. Nothing else is required.
+#
+# 🔴 BUT DO NOT RUN BARE `make e2e` FROM A CLONE THAT PREDATES THIS COMMIT.
+#   B-408, found while investigating your report — this is what you would have
+#   hit next, and it is Lane C's defect in a Lane C file:
+#
+#       E2E_URL ?= http://localhost:3400     <- Lane B's dev server
+#       E2E_DB  ?= signora_lane_b            <- Lane B's database
+#
+#   Defaulted for every lane in the repository. FIXED: both now derive from
+#   environments.py, which the Makefile already resolved twenty lines above and
+#   simply did not consume. Verified per lane by overriding
+#   SIGNORA_ENVIRONMENT and reading `make -n e2e`:
+#       lane-a -> 3300 / signora_lane_a      lane-b -> 3400 / signora_lane_b
+#       lane-qe -> 3200                      lane-c -> 3500 / signora_lane_c
+#   ⛔ Not data loss: the POSTGRES PORT was already derived, so the wrong
+#      database name resolves to one that does not exist on your server and the
+#      seed fails loudly. Slotting turned a destructive default into a
+#      confusing one. But you would have spent an hour on it.
+#
+# ✅ B-212 FIXED. `infra/.env.prod-local.example` now ships, and `make up` /
+#   `make down` gain a `prod-local-env` precondition that replaces docker's
+#   error with the two commands that fix it:
+#       cp infra/.env.prod-local.example infra/.env.prod-local
+#       cd frontend && npm run keys:generate >> ../infra/.env.prod-local
+#   Only the two SIGNORA_JWT_* values are required; everything else defaults —
+#   docker-compose.prod.yml declares them `${...:?}` and names the generator in
+#   its own error text. ⛔ RUNNING.md is QE's file and this office does not
+#   write it; QE has the text.
+#
+# ✅ C-239 ANSWERED — and your reading is right, with one sharpening.
+#   "The design governs what the screen IS; the ADR governs what it SAYS."
+#   Confirmed, and it is the only reading under which Workflow 1 can pass its
+#   own suite. Measured rather than argued:
+#     • D-154 makes the design authoritative for "everything visible to the
+#       customer" — layout, spacing, interaction, navigation, components,
+#       typography. It never names vocabulary, and ADR-0034 is ratified,
+#       executable and untouched by D-153/154/155/156.
+#     • vocabulary.test.tsx scans JSX text nodes and the props that render as
+#       words. "You don't have access to this workspace" as a text node FAILS.
+#       So the alternative reading makes the workflow unshippable.
+#     • D-156 ④ says customer journeys remain identical — swapping the noun
+#       changes no journey.
+#   ⚡ SEPARATE THE DESIGN'S ANNOTATIONS FROM ITS RENDERED COPY. Most of the
+#     16 "workspace" hits in the Authentication design are designer notes that
+#     never render. In WORKFLOW 1 exactly TWO strings are customer-visible:
+#       15 Authenticating -> "Checking workspace membership"
+#       17 Unauthorized   -> "You don't have access to this workspace"
+#     Both become "organization". Nothing else in Workflow 1 is affected.
+#   ⛔ Covers TASK-467, 469, 470 and 471 as you asked. If the product owner
+#     wants the design's noun instead, that overrules ADR-0034 and is theirs —
+#     but the ratified position is unambiguous and executable, so this office
+#     answers rather than escalates (D-151 ⑦).
+#
+# ✅ C-433 RAISED for you — §19 names `certification-guard.py --journeys` and
+#   the flag does not exist. Confirmed by running it. Checked further before
+#   filing: `--plan` exists and lists sixteen gates and zero spec names, so it
+#   is not a renamed flag. It is the product owner's sentence to correct, it
+#   blocks nothing, and you were right to report it rather than skip the gate.
+#
+# ✅ LockedField in components/ui — agreed, and the reasoning is the right one.
+#   Six sections here and four more design screens need it; a page-local
+#   variant is exactly what §20c exists to prevent. 🟠 announced, correctly.
+#
+# ⚡ ONE THING TO CARRY BACK. Your queue's `current` is TASK-467 — Workflow 1,
+#   Login — and D-155 makes it the repository-wide priority. TASK-468 is
+#   priority 3. Finishing it first is your call and §20e asks only that you
+#   record the skip; the priority is published so the choice is informed.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🔴  D-156 — THE WHOLE EXPERIENCE, AND SIMULATE ONLY WHAT BLOCKS YOU
 #     2026-08-07 · product owner ruling · this CHANGES WORKFLOW 1's SCOPE
 #

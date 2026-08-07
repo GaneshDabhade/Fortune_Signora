@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: environments reachability event-catalog workstation validate unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy review-first-hour
+.PHONY: prod-local-env environments reachability event-catalog workstation validate unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy review-first-hour
 
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
@@ -62,9 +62,33 @@ dr:
 	@python3 infra/environment-lease.py run dr -- bash ./infra/disaster-recovery.sh
 
 ## Bring the local production stack up / down.
-up:
+##
+## ⚡ **`prod-local-env` added 2026-08-07 — B-212.** `docker compose` fails hard
+## when `--env-file` names a path that does not exist, and its message names
+## neither the file's purpose nor how to make one. **A documented command
+## referencing a file the repository neither shipped nor described** is the §2
+## defect, and Lane A hit it running exactly the command the Makefile offers.
+## **The check costs one `test -f` and replaces a compose error with the two
+## lines that fix it.**
+prod-local-env:
+	@test -f infra/.env.prod-local || { \
+	  echo ""; \
+	  echo "  infra/.env.prod-local does not exist, and docker compose cannot start without it."; \
+	  echo ""; \
+	  echo "  It is gitignored and always will be — it holds this machine's RS256 signing keys."; \
+	  echo "  Two commands create it:"; \
+	  echo ""; \
+	  echo "    cp infra/.env.prod-local.example infra/.env.prod-local"; \
+	  echo "    cd frontend && npm run keys:generate >> ../infra/.env.prod-local"; \
+	  echo ""; \
+	  echo "  Only the two SIGNORA_JWT_* values are required; everything else defaults."; \
+	  echo ""; \
+	  exit 1; \
+	}
+
+up: prod-local-env
 	@python3 infra/environment-lease.py run up -- docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml up -d --build --wait
-down:
+down: prod-local-env
 	@python3 infra/environment-lease.py run down -- docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml down -v --remove-orphans
 
 ## Backend suite. Truncates its target database — hence the explicit opt-in.
@@ -406,8 +430,25 @@ certify: release-preflight
 ##     make e2e ARGS="--project=firefox"
 ##     make e2e-quick                  no re-seed
 ##     make e2e-smoke                  the shortest proof the product is alive
-E2E_URL ?= http://localhost:3400
-E2E_DB  ?= signora_lane_b
+## ⚡ **Derived, not hardcoded — B-408, 2026-08-07.** These two read
+## `http://localhost:3400` and `signora_lane_b`: **Lane B's row, defaulted for
+## every lane in the repository.** `SIGNORA_WEB` and `SIGNORA_DB` are resolved
+## from `environments.py` twenty lines above and were simply not consumed here,
+## so a lane running `make e2e` seeded its **own** PostgreSQL — the port was
+## already derived — under **another lane's database name**, and pointed
+## Playwright at **another lane's dev server**.
+##
+## ⛔ **Not cross-lane data loss, and the reason is worth keeping**: the port
+## *was* derived, so the wrong database name resolves to a database that does
+## not exist on this clone's server and the seed fails loudly. **Slotting is
+## what turned a destructive default into a confusing one.**
+##
+## ⚠️ **The mechanism already existed and nothing called it.** `environments.py`
+## `current()` says so in its own docstring — *"a wrong guess here points a
+## suite at another lane's database, which is the class of defect the whole
+## change exists to end."* **It was right, and these two lines were the gap.**
+E2E_URL ?= http://localhost:$(SIGNORA_WEB)
+E2E_DB  ?= $(SIGNORA_DB)
 E2E_ENV := SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \
            SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \
            SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \

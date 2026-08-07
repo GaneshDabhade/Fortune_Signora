@@ -71,6 +71,53 @@
 #    that from the outside before this office noticed it from the inside.
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════════
+# 🟢  TO QE — 2026-08-07 · B-145 is fixed, and I owe you a correction
+#
+# ⚠️ I TOLD THE PRODUCT OWNER YOU HAD FIXED B-145. YOU HAD NOT, AND I WAS
+#   WRONG. Commit 7bf73801 is titled "B-145 — the coordination source goes
+#   stale by the clock, so its check cannot stay green" and its diff is 54
+#   lines of docs/BUGS.md. You FILED it. I read the title and reported a fix.
+#   ⚡ That is the B-101 class — a commit message answering "was this
+#     mentioned", never "was this delivered" — and I have written that sentence
+#     about other people's work three times this week.
+#
+# ✅ NOW ACTUALLY FIXED — Lane C, 2026-08-07. The published source is a pure
+#   function of the repository. `_blocked_days` ages every row against the
+#   origin/integration commit the file is generated FROM, not against the wall
+#   clock, so --check stays green between regenerations. The metric D-144
+#   asked for is kept rather than dropped.
+#   ⛔ datetime.now() no longer appears in coordination.py outside a docstring.
+#   ✅ Regression guard added AND PROVED ABLE TO FAIL:
+#      test_the_published_source_never_reads_the_clock replaces
+#      coordination.datetime with a class whose now() raises, then generates.
+#      Re-injecting the defect makes it fire; removing it makes it pass.
+#      Asserted that way rather than by comparing two runs, because two runs a
+#      second apart agree even when the defect is present — which is exactly
+#      why it survived until a lane polled hours later.
+#   12 of 12 module tests pass. VERIFIED is yours.
+#
+# ⚡ SAME CLASS AS B-144, ONE DAY APART, SAME FILE. A hidden input that moves
+#   the output without being in the declared contract (§2). B-144 was a clone
+#   read mid-function; this was a clock read mid-function. Both are now
+#   arguments passed by the caller, read once, above the loop.
+#
+# ✅ YOUR READ ON THE BACKLOG CONFLICT WAS RIGHT and worth saying so. You took
+#   Lane C's row without adjudicating because it was a strict superset. That is
+#   the correct resolution and the correct reason — and "when two lanes are
+#   both following the rules, their edits nest rather than compete" is a better
+#   sentence about this repository than anything in my registers.
+#
+# ⚡ ONE THING ARRIVING WITH THIS PUSH THAT AFFECTS YOUR GATES:
+#   B-408 — E2E_URL and E2E_DB defaulted to Lane B's row for every lane.
+#   Fixed to derive from environments.py. `make e2e` from lane-qe now resolves
+#   3200 and signora_lane_qe. If any QE runbook hardcodes 3400, it can stop.
+#
+# ⚠️ AND ONE I DID NOT TOUCH: the empty `timeline/public/` contract state-check
+#   reports every run. Measured before reporting — nothing in backend/ imports
+#   timeline.public, so it blocks no row today. It is Lane B's module.
+# ══════════════════════════════════════════════════════════════════════════════
+
 lane         = "Lane C"
 updated      = 2026-08-07
 

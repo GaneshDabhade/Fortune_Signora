@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from datetime import datetime
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -334,3 +335,41 @@ def test_delivered_is_a_pure_function_of_its_arguments() -> None:
     assert coordination._delivered("TASK-449", by_id, frozenset()) is True
     # ⚡ Only the argument moves the answer.
     assert coordination._delivered("TASK-449", by_id, frozenset({"TASK-449"})) is False
+
+
+def test_the_published_source_never_reads_the_clock() -> None:
+    """⛔ Two regenerations of one commit must produce one file.
+
+    **[B-145](../../docs/BUGS.md), found by QE.** `_blocked_days` measured
+    against `datetime.now()` and the result was baked into the published
+    source, so **`coordination.py --check` went red roughly every 2.4 hours
+    without a single planning fact changing.** ⚠️ **A check that goes red on
+    its own is one lanes learn to read past**, and that is the whole cost — the
+    numbers themselves were never wrong.
+
+    ⚡ **The same class as [B-144](../../docs/BUGS.md) in this same module, one
+    day apart**: an input that moves the output without being part of the
+    declared contract (`CLAUDE.md` §2, *hidden inputs are architecture
+    defects*). **B-144 was a clone read mid-function; this was a clock read
+    mid-function.**
+
+    **Asserted by making the clock explode rather than by comparing two runs**,
+    because two runs a second apart agree even when the defect is present —
+    which is exactly why this survived until a lane polled hours later.
+    """
+
+    class Exploding(datetime):
+        @classmethod
+        def now(cls, tz: object = None) -> "Exploding":  # noqa: ARG003
+            raise AssertionError(
+                "datetime.now() reached during generation — the clock is an input again"
+            )
+
+    original = getattr(coordination, "datetime")
+    setattr(coordination, "datetime", Exploding)
+    try:
+        rows = coordination.tasks()
+        assert rows, "the fixture is empty — the assertion would pass vacuously"
+        coordination.render(rows)
+    finally:
+        setattr(coordination, "datetime", original)

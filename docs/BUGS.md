@@ -87,7 +87,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) `_blocked_days`, `render`, `_content` |
 | **Current assignee** | **Lane C** |
 | **Severity** | 🟡 — **advisory noise, not a gate failure.** ⛔ **It degrades the one instrument every lane is now told to poll** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-07.** ⚡ **The published source is now a pure function of the repository**: `_blocked_days` ages every row against the **`origin/integration` commit the file is generated from**, not against the wall clock. **`--check` stays green between regenerations, and the metric [D-144](DECISION_REGISTER.md) asked for is kept rather than dropped.** ⛔ **`datetime.now()` no longer appears anywhere in `coordination.py` outside a docstring.** ✅ **Regression guard added and *proved able to fail*** — `test_the_published_source_never_reads_the_clock` replaces `coordination.datetime` with a class whose `now()` raises, then generates. **Re-injecting the defect makes it fire; removing it makes it pass.** ⚡ **Asserted by making the clock explode rather than by comparing two runs, because two runs a second apart agree even when the defect is present** — which is exactly why this survived until a lane polled hours later. **12 of 12 module tests pass.** **`VERIFIED` is QE's** |
 | **Found** | 2026-08-07 by QE, cycle 97, running `--check` on a freshly integrated `integration` |
 
 **Steps to reproduce.** On `integration`, minutes after Lane C regenerated and published the file:
@@ -738,6 +738,36 @@ def _load_state_check() -> ModuleType:
 `pytest --cov` measures `backend/`. **`infra/` is tooling, so a gap there is invisible to the floor** — which is why the rule is §11 rather than a percentage, and why this row exists rather than a failing gate.
 
 **Neither `_coordination_findings` nor `_duplicate_index_findings` is exercised.** The first is [B-134](#b-134--coordinationpy---check-can-never-pass-because-it-compares-a-file-against-its-own-commit-stamp).
+
+---
+
+### B-408 · `make e2e` sends every lane at Lane B's dev server and Lane B's database
+
+| | |
+|---|---|
+| **Module** | **`Makefile`** — Platform Foundation, [D-022](DECISION_REGISTER.md) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — **wrong behaviour a lane would hit.** ⛔ **Not 🔴 and not cross-lane data loss**, and the reason is worth keeping: **the PostgreSQL *port* was already derived**, so the wrong database name resolves to a database that does not exist on this clone's server and the seed fails loudly. ⚡ **Slotting is what turned a destructive default into a confusing one** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-07.** **Two lines.** `E2E_URL ?= http://localhost:3400` → `http://localhost:$(SIGNORA_WEB)`; `E2E_DB ?= signora_lane_b` → `$(SIGNORA_DB)`. **`VERIFIED` is QE's** |
+| **Found** | **2026-08-07 by Lane C**, investigating [B-212](#b-212) — ⚡ **Lane A reported it could not run its journey, and this is what it would have hit next** |
+| **Steps** | From any clone that is not Lane B's: `make -n e2e`. **Read the resolved `SIGNORA_APP_URL` and database name** |
+| **Expected** | This clone's own row from [`RUNNING.md` § Running a lane](RUNNING.md#running-a-lane) |
+| **Actual** | **`http://localhost:3400` and `signora_lane_b` — Lane B's row, for every lane in the repository** |
+
+⚡ **The mechanism already existed and nothing consumed it.** **`SIGNORA_WEB` and `SIGNORA_DB` are resolved from `infra/environments.py` twenty lines above the defect** and were simply not used by the three `e2e` targets. ⛔ **`environments.current()` states this exact failure in its own docstring** — *"a wrong guess here points a suite at another lane's database, which is the class of defect the whole change exists to end."* **It was right, and two `?=` lines were the gap.**
+
+✅ **Verified per lane rather than asserted**, by overriding `SIGNORA_ENVIRONMENT` and reading `make -n e2e`:
+
+| From | `SIGNORA_APP_URL` | database |
+|---|---|---|
+| `lane-a` | **3300** | **`signora_lane_a`** |
+| `lane-b` | **3400** | **`signora_lane_b`** |
+| `lane-qe` | **3200** | *(its own)* |
+| `lane-c` | **3500** | **`signora_lane_c`** |
+
+⚡ **Lane B's behaviour is unchanged**, which matters: the fix corrects every other lane without moving the one lane the default happened to suit.
+
+⚠️ **Why nobody found it earlier, stated because it is the useful half.** **The only lane that ran `make e2e` was the lane the default named.** ⛔ **A default that is correct for its author is invisible until somebody else runs it** — and the repository's own allocation table existed for days before anything read it ([436](architecture/436-execution-isolation.md) records that shape once already).
 
 ---
 

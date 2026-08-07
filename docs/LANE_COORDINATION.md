@@ -358,6 +358,7 @@ databaseUrl: required(
 | [C-430](#c-430--frontendlibauth-is-assigned-to-no-lane-and-implementation-has-now-reached-it) | **`frontend/` was assigned to no lane, and implementation reached it** | **Lane C**, 2026-08-07, on confirming a Change Budget | **Lane A** — ⚡ **ruled by the product owner, [D-151](DECISION_REGISTER.md) ①** | ✅ **`CLOSED` — Lane C, 2026-08-07.** **[`modules.toml`](coordination/modules.toml) grants `frontend/` to `product_surface`; the registry is consistent and the item is closed on that** | ✅ **Nothing.** **[TASK-473](BACKLOG.md), [TASK-474](BACKLOG.md), [TASK-476](BACKLOG.md) released to Lane A; [TASK-475](BACKLOG.md) unblocks behind TASK-474** |
 | [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability) | **Three controls the approved sign-in card draws have no backing capability, and one of them is an authentication semantic** | **Lane C**, 2026-08-07, measuring [D-153](DECISION_REGISTER.md) Workflow 1 | ⛔ **Product owner** — [D-153](DECISION_REGISTER.md) ⑦: *"If something in the design is unclear: STOP"* | ✅ **2 of 3 ANSWERED by [D-156](DECISION_REGISTER.md)** — **the counter and SSO are out of Workflow 1; *keep me signed in* is open and may be real rather than simulated** | ⚠️ **Not [TASK-467](BACKLOG.md)'s start** — **it is scoped and buildable today.** **What waits is what the human review gate will be shown** |
 | [C-432](#c-432--20c-freezes-the-frontend-foundation-and-d-154-mandates-changing-it) | **`CLAUDE.md` §20c freezes the frontend foundation, and [D-154](DECISION_REGISTER.md) mandates replacing it** | **Lane C**, 2026-08-07, auditing UI standards for [D-154](DECISION_REGISTER.md) ④ | ⛔ **Product owner** — **`CLAUDE.md` is theirs and this office does not edit it** | 🟡 **OPEN** — **one paragraph, and the ruling that resolves it already exists** | ✅ **Nothing.** ⚡ **D-153 and D-154 *are* §20c's approved-architectural-change exemption** — **what is wrong is that the constitution does not say so** |
+| [C-433](#c-433--19-names-a-command-flag-that-does-not-exist) | **`CLAUDE.md` §19 names `certification-guard.py --journeys`, and the flag does not exist** | **Lane A**, 2026-08-07, running the gate §19 tells it to run · **confirmed by Lane C the same day** | ⛔ **Product owner** — **`CLAUDE.md` is theirs** | 🟡 **OPEN** — **Lane A was right, and it worked around it correctly** | ✅ **Nothing.** ⚡ **Lane A wrote its journey without the flag; the mapping it would have printed is a convenience, not a gate** |
 | [C-429](#c-429--four-live-claims-have-no-row-on-the-execution-board) | Four live claims have no row on the execution board | **Lane C**, 2026-08-07 | **The claiming lanes** — ⛔ **the board is written by the lane that claims (§20e); this office may not fill it in for them** | **`OPEN`** — raised 2026-08-07 | ⛔ **No engineering.** ⚠️ **A lane reading only the board would take work somebody else is doing** |
 | [C-426](#c-426--eighteen-of-lane-as-rows-read-in-validation-and-its-branch-has-nothing-on-it) | Eighteen of Lane A's rows read `IN VALIDATION` and its branch has nothing on it | **Lane C**, 2026-08-07, ⚡ **fo… | ⚡ **QE.** ⛔ **`VERIFIED` · `CERTIFIED` · `PROMOTED` · `DONE` are QE's… | **`OPEN`** — raised 2026-08-07 | ⛔ **No engineering.** ⚠️ **It corrupts every capacity measurement the repository… |
 | [C-423](#c-423--architecture-document-numbers-can-still-collide-and-d-112-already-solved-this-one-class-over) | Architecture document numbers can still collide, and D-112 already solved this one class over | **Lane C**, 2026-08-06, decomp… | **Product owner** — ⚡ **[D-112](DECISION_REGISTER.md) took the identic… | **`READY FOR PRODUCT DECISION`** — **one question, and [TASK-477](BACKLOG.md) proceeds eit… | ⛔ **Nothing.** **[TASK-477](BACKLOG.md) fixes today's three collisions regardles… |
@@ -6215,7 +6216,7 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 | **Where** | **Every ref, measured — not one of them carries an adapter.** `git grep -lE 'class Sql.*Affiliation\|def at_company' <ref> -- backend/modules/people` returns **`public/__init__.py` and nothing else** on `origin/integration`, `origin/main`, `origin/lane-b-commercial-profile` and `origin/lane-c-sync` |
 | **Asked of Lane B** | **Publish the adapter behind its own Protocol** — the shape `commercial_profile` already ships as `SqlDeclaredCompetitorReader`, which is what `apps/worker/subscriptions.py` injects for the competitor half of the identical pattern |
 | **Blocks** | ⛔ **[TASK-458](BACKLOG.md)**, at the composition root only. **The consumer half is buildable and is not built** — see below |
-| **Status** | ✅ **`OPEN` — answered by Lane B, 2026-08-07.** **The adapter exists**: `people/infrastructure/affiliation_reader.py` publishes `SqlAffiliationReader`, and `people/infrastructure/composition.py` publishes **`build_affiliation_reader(session)`** for the composition root to call — the exact shape `commercial_profile` ships as `SqlDeclaredCompetitorReader` / `build_declared_competitor_reader`, which is what this item asked for. **The requesting lane closes** (§20e). **Was:** **`OPEN`** — raised 2026-08-07, measured before raising |
+| **Status** | ✅ **`CLOSED` — Lane A, 2026-08-07** *(the requesting lane closes — §20e)*. ⚠️ **Body synced by Lane C 2026-08-07: the index read `CLOSED` and this line still read `OPEN`, and `decision-queue.py --check` reported the disagreement.** ⚡ **The index was right** — **Lane A closed it by opening `affiliation_reader.py` rather than by reading that Lane B had shipped something.** **Answered by Lane B, 2026-08-07.** **The adapter exists**: `people/infrastructure/affiliation_reader.py` publishes `SqlAffiliationReader`, and `people/infrastructure/composition.py` publishes **`build_affiliation_reader(session)`** for the composition root to call — the exact shape `commercial_profile` ships as `SqlDeclaredCompetitorReader` / `build_declared_competitor_reader`, which is what this item asked for. **The requesting lane closes** (§20e). **Was:** **`OPEN`** — raised 2026-08-07, measured before raising |
 
 ### What exists, and what does not
 
@@ -7803,3 +7804,46 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 > **§20c gains a line naming [D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md) as the standing approved architectural change for the UI migration, and stating that the freeze protects the foundation *from ad-hoc modification*, never from the approved design.**
 
 ⚡ **Offered as wording rather than as a request for a decision — the decision is made, and this is the sentence that records it.** ⛔ **Applied only by the product owner.**
+
+---
+
+## C-433 · §19 names a command flag that does not exist
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-07, ⚡ **running the command `CLAUDE.md` §19 instructs it to run.** ✅ **Confirmed by Lane C the same day, by running it** |
+| **Owner** | **Product owner** — ⛔ **`CLAUDE.md` is the one file this office may never edit** (§20e) |
+| **Status** | 🟡 **`OPEN` — raised 2026-08-07.** **One sentence, and the repository has already written the argument for it** |
+| **Blocks** | ✅ **Nothing.** ⚡ **Lane A wrote its Playwright journey without it and said so** |
+
+### The measurement
+
+**`CLAUDE.md` §19, in the *Customer journey automated and executed* row:**
+
+> ⚡ **"`python3 infra/certification-guard.py --journeys` names which specs the change selects; the mapping is deterministic and not a judgement call."**
+
+```
+$ python3 infra/certification-guard.py --journeys
+certification-guard.py: error: unrecognized arguments: --journeys
+```
+
+⚠️ **Checked further before reporting**, because *"the flag is missing"* and *"the flag is named wrong"* are different defects: **`--plan REV_RANGE` exists and produces a validation plan with sixteen gates — and no Playwright spec names.** ⛔ **So it is not a renamed flag. The mechanism does not exist.**
+
+### ⚡ Why this is worth one sentence rather than a shrug
+
+**`CLAUDE.md` §19 already contains the argument, about a different rule, three paragraphs away:**
+
+> ⛔ **"a rule stated before the mechanism exists is the defect this file warns about, so the row exists rather than the claim."**
+
+**That was written for the headed-execution policy, where the correct resolution was [TASK-476](BACKLOG.md) — a row, not a claim.** ⚡ **The same standard applied here gives the same two options.**
+
+| | |
+|---|---|
+| ✅ **A** — **correct §19** | **One sentence.** **Say the selection is the lane's judgement, or point at `--plan`, which exists.** ⚡ **Recommended today**: [D-155](DECISION_REGISTER.md) and [D-156](DECISION_REGISTER.md) ⑦ both say tooling that does not advance a reviewable journey is deferred, and **Lane A demonstrated the flag is not needed by writing its journey without it** |
+| **B** — **build it** | **Small — the impact map `--plan` already computes would supply it.** ⛔ **But it is developer convenience, and D-156 ⑦ defers exactly that** |
+
+⛔ **This office did not build it, and did not edit §19.** ⚡ **Both would have been the wrong shape**: one is deferred work, the other is the product owner's file.
+
+### ✅ Lane A was right, twice
+
+**It ran the documented command rather than assuming, and it reported the gap instead of quietly skipping the gate** — ⚡ **which is the same discipline that produced [B-212](BUGS.md) in the same report.** **Two governance-vs-reality defects found in one slice, both by running what the repository says to run.**

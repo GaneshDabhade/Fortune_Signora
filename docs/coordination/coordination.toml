@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "56875a3"
+generated_from = "a18d2a1"
 task_count     = 89
 
 [lane.Lane_A]
@@ -22,7 +22,7 @@ claimable_now      = 6
 awaiting_sync      = 1
 in_flight          = 24
 awaiting_qe_transition = 0
-blocked_on_integration = 0
+blocked_on_integration = 1
 supply_state       = "working"
 blocked            = 11
 lane_utilization   = 4.8

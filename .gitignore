@@ -11,6 +11,15 @@ __pycache__/
 .env
 .env.*
 !.env.example
+# **`!.env.example` does not match a nested path** — B-212, 2026-08-07. A
+# negation without a directory only rescues the pattern at the repository
+# root, so `infra/.env.prod-local.example` was silently swallowed by
+# `.env.*` and the commit that added it appeared to succeed. **`make up`
+# would have told every lane to copy a file the repository does not ship**,
+# which is the §2 defect inside the fix for the §2 defect. Caught by
+# `git check-ignore -v` before the push rather than by a lane.
+!.env*.example
+!infra/.env*.example
 
 # Node / frontend
 node_modules/

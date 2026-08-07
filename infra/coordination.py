@@ -322,9 +322,13 @@ def tasks() -> list[Task]:
         )
         row.next_lane = row.next_owner[0] if len(row.next_owner) == 1 else "—"
     _walk(rows, by_id)
+    # **Read once, before the loop** — B-145, and the same shape B-144 forced
+    # on `metrics_for` a day earlier. The baseline is consulted here and
+    # nowhere below, so every row in this pass is aged against one instant.
+    baseline = _baseline()
     for row in rows:
         if row.state not in {ASSIGNED, IN_FLIGHT}:
-            row.blocked_days = _blocked_days(row)
+            row.blocked_days = _blocked_days(row, baseline)
     return rows
 
 
@@ -373,15 +377,51 @@ def _walk(rows: list[Task], by_id: dict[str, Task]) -> None:
 
 
 
-def _blocked_days(task: Task) -> float:
-    """Days the row has held its current declared state.
+def _baseline() -> datetime | None:
+    """**The commit this file is generated *from*, as an instant** — B-145.
+
+    ⛔ **Never `datetime.now()`.** The published source must be a pure function
+    of the repository, and it was not: `_blocked_days` measured against the
+    wall clock and baked the result into the file, so **the file drifted stale
+    against its own `--check` roughly every 2.4 hours** without a single
+    planning fact changing. **A check that goes red on its own is one lanes
+    learn to read past**, which is the whole cost.
+
+    ⚡ **The same defect class as [B-144] in this same module, one day apart**:
+    an input that changes the output without being part of the declared
+    contract (`CLAUDE.md` §2, *hidden inputs are architecture defects*).
+    **B-144 was a clone read mid-function; this is a clock read mid-function.**
+
+    ⚠️ **The metric is kept rather than dropped.** [D-144] asked for starvation
+    to be *"a measurement rather than a report"*, and dating from the baseline
+    keeps every number it wanted. **What changes is only that two regenerations
+    of one commit now produce one file.**
+    """
+    stamp = _git("log", "--format=%cI", "-1", "origin/integration")
+    if not stamp:
+        return None
+    try:
+        return datetime.fromisoformat(stamp)
+    except ValueError:
+        return None
+
+
+def _blocked_days(task: Task, baseline: datetime | None) -> float:
+    """Days the row had held its declared state **as of the baseline commit**.
 
     **Dated from the commit that introduced the state string**, which is the
     only record the repository actually keeps. ⚠️ **It is a lower bound**: a
     row re-stated in a later commit dates from the re-statement, so this
     under-reports rather than over-reports — the safe direction for a metric
     that triggers a coordination defect.
+
+    ⛔ **`baseline` is an argument rather than a call**, for the reason B-144
+    established in this file: a value read inside a function is a hidden input,
+    and the caller reads it once so that every row in one pass is measured
+    against one instant rather than against whatever the clock said in turn.
     """
+    if baseline is None:
+        return 0.0
     if not task.declared or task.declared == "(none)":
         return 0.0
     stamp = _git(
@@ -393,7 +433,10 @@ def _blocked_days(task: Task) -> float:
         then = datetime.fromisoformat(stamp)
     except ValueError:
         return 0.0
-    return round((datetime.now(timezone.utc) - then).total_seconds() / 86400, 1)
+    # **Clamped at zero.** A row whose state commit is *newer* than the
+    # baseline is one written since the last integration — normal on a Product
+    # Office branch, and a negative age would read as nonsense.
+    return max(0.0, round((baseline - then).total_seconds() / 86400, 1))
 
 
 _LANE_BRANCH = {

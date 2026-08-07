@@ -158,6 +158,17 @@
 | **What it holds** | **[TASK-003](BACKLOG.md)**, `IN PROGRESS` with **nothing written** |
 | ⚡ **The question, at its smallest** | **Did [C-018](LANE_COORDINATION.md)'s ruling mean the label reaches the digest, or only the surface?** ⛔ **§2 — *determinism outranks convenience*, and evidence identity is the repository's most load-bearing derived value** |
 
+## 🟡 C-433 · §19 names a command flag that does not exist
+
+✅ **Nothing is blocked and this needs one sentence, not a decision.** ⚡ **Lane A ran the command §19 tells it to run, and reported the gap rather than quietly skipping the gate.**
+
+| | |
+|---|---|
+| **The measurement** | **§19: *"`python3 infra/certification-guard.py --journeys` names which specs the change selects."*** ⛔ **`error: unrecognized arguments: --journeys`.** ⚠️ **Checked further before reporting, because a missing flag and a renamed one are different defects: `--plan` exists and lists sixteen gates and zero Playwright specs.** **It is not renamed; it does not exist** |
+| ✅ **Recommended — correct §19** | **One sentence: say the selection is the lane's judgement, or point at `--plan`, which exists.** ⚡ **[D-156](DECISION_REGISTER.md) ⑦ defers building it — Lane A demonstrated the flag is not needed by writing its journey without it** |
+| ⚡ **§19 already contains the argument** | **Three paragraphs away, about the headed-execution policy: *"a rule stated before the mechanism exists is the defect this file warns about, so the row exists rather than the claim."*** |
+| ⛔ **Why this office neither built it nor edited §19** | **Building it is deferred work; editing §19 is your file.** **Both would have been the wrong shape** |
+
 ## 🟡 C-432 · §20c freezes the frontend foundation, and D-154 mandates replacing it
 
 ✅ **Nothing is blocked and this needs no decision — the decision is already yours and already made.** ⚡ **What is missing is one sentence in the file a cold session reads first.**
