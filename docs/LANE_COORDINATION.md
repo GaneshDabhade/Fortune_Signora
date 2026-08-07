@@ -4500,6 +4500,66 @@ KeyError: '0035'
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
 
+## C-338 · TASK-003 would put customer labels in the file that builds the evidence digest
+
+**Opened 2026-08-07 · Lane B · 🟠 · owner: product owner** *(architectural — the ruling and the code disagree about one file)*
+
+> **Raised rather than worked around.** [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute) is `RULED` and this lane holds [TASK-003](BACKLOG.md), so the obvious move was to implement it. **Implementing it as written would change evidence identity**, and that is not a thing to discover afterwards.
+
+| | |
+|---|---|
+| **Status** | **`READY FOR PRODUCT DECISION`** — **the analysis is done and the alternatives are below.** ⛔ **Not `READY FOR IMPLEMENTATION`**: that is the product owner's on a ruling |
+| **Owner** | **The product owner.** [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute)'s ruling is theirs and this is a question about what it meant |
+| **Blocks** | **[TASK-003](BACKLOG.md)**, which this lane holds `IN PROGRESS` and has **written no code for** |
+
+### ① The problem, measured
+
+**[C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute) ruled: *"Customer-facing terminology belongs in `explanation.py`."*** **There is exactly one `explanation.py` in the repository** — `modules/ai_platform/infrastructure/explanation.py` — **and it is the file that assembles the `EvidenceSet`**, not a file that renders wording:
+
+```
+assemble(explanation: OpportunityExplanation, *, assembled_at: datetime) -> EvidenceSet
+    ... attributes={...}          # three call sites
+```
+
+**Those attribute names reach the digest.** `evidence.py:169` renders each fact as `f"{name}={_canonical(value)}"`, and `digest()` hashes exactly that:
+
+```
+rendered = "|".join(f"{name}={_canonical(value)}" for name, value in self.attributes)
+return hashlib.sha256(f"{self.workspace_id}\x1d{canonical}".encode()).hexdigest()
+```
+
+> ⛔ **So renaming `employee_count` to *headcount* in the file the ruling names does not relabel a display. It changes the identity of every piece of evidence that carries the attribute** — and **every stored artifact citing that identity stops matching**, which is the one thing [ADR-0031](architecture/adr/0031-evidence-citation-protocol.md) and the never-repairing validator exist to make impossible.
+
+### ② The affected modules
+
+**`ai_platform`** — `domain/evidence.py`, `domain/rendering.py`, `infrastructure/explanation.py` · **`knowledge_graph`** — where the attribute names originate · **Product Surface** — the three browser translations C-018 already catalogued, which are Lane A's and must not be converged until this is answered.
+
+### ③ The alternatives
+
+| | What it means | What it costs |
+|---|---|---|
+| **A · The trigger has not fired** | **[R11-06](architecture/39-product-review-findings.md) is *"recorded as a deliberate trade-off, not as debt"*, priority **Low**, milestone ***"on evidence from a real reviewer"*** — and C-018 itself records that **no reviewer evidence exists.** TASK-003 returns to `WAITING` on that trigger | **Nothing.** The three inconsistent browser translations stay, and stay recorded |
+| **B · A label catalog, applied strictly at display** | A reviewed catalog of attribute labels, consumed **downstream of `canonical_form()`** — composed wording only, **never the evidence drawer, never the digest** | A new artifact with an owner, a version and a review process. ⚠️ **And the drawer keeps engineering's words**, which is most of what a seller actually reads |
+| **C · A label catalog applied in `explanation.py` as ruled** | The literal reading of C-018 | ⛔ **Breaks evidence identity.** **Not recommended, and named only so the ruling's literal reading is on the record as having been considered** |
+
+### ④ Recommendation
+
+> ## **A — the trigger has not fired, and R11-06 says so in its own words.**
+
+**C-018 asked three questions and the ruling answered the second.** Question 1 was *"does an attribute get a customer-facing name **at all**, or is R11-06's *the verbatim-ness is the value* still the ruling?"* — and the ruling named **where** terminology lives without saying **that** it is now wanted. **R11-06's milestone is unmet and its reasoning is still true**: *"prettifying `false` into 'No' would show the reader something different from what was cited."*
+
+**If the answer is B**, this lane will build it — **and the boundary must be written into the row**: the catalog reaches composed wording only, and **the evidence drawer keeps the verbatim names**, because that view exists to show what was cited.
+
+### ⑤ The trade-offs
+
+**Choosing A** leaves a seller reading `contested false · delta 0 · ceiling 120`, which is genuinely poor, and leaves three disagreeing browser translations (`employee count` · `Employee count` · `employee_count`). **Choosing B** buys readable composed sentences and **does not fix the drawer**, which is where the unfriendly text mostly appears — so it may buy less than it looks. **Choosing C** buys the same as B and silently invalidates stored evidence.
+
+### ⑥ Implementation impact
+
+**None until this is answered.** ⛔ **This lane has written no code for TASK-003** and will not, because every implementation encodes an answer to question 1. **Lane A must also not converge the three browser translations meanwhile** — C-018 already says converging them *"would encode the answer to this item"*, and that is still true.
+
+---
+
 ## C-337 · SSH to GitHub is intercepted on this workstation, and the obvious fix is the dangerous one
 
 **Opened 2026-08-07 · Lane B · 🟠 · owner: product owner** *(operational — not a repository defect)*
