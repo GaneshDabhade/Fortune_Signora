@@ -381,6 +381,54 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🔴  D-155 — EXECUTION MODE. THE PRIORITY IS NOW EXPLICIT AND IT IS LOGIN.
+#     2026-08-07 · product owner ruling
+#
+#   "The primary objective is no longer expanding planning artifacts or
+#    governance documents. The primary objective is delivering reviewable
+#    customer journeys on `main`, one workflow at a time."
+#
+# REPOSITORY-WIDE PRIORITY, in order, until further notice:
+#   1. Workflow 1 — Login .................. TASK-467 + TASK-483
+#   2. Remaining Authentication journeys
+#   3. Workspace Setup ..................... TASK-468
+#   4. Onboarding .......................... TASK-469
+#   5. Application Shell ................... TASK-447, TASK-480/481/482
+#   6. Business workflows .................. TASK-458, TASK-471, the rest
+#
+# ⚠️ WHAT THIS MEANS FOR YOUR CURRENT CLAIM, and it is yours to decide.
+#   You hold TASK-468 (Workspace Setup) CLAIMED. That is priority 3.
+#   Priority 1 — TASK-467 and TASK-483 — is READY, claimable on `main`, and
+#   unclaimed. Measured this poll:
+#       git diff origin/main...origin/lane-a-product-surface
+#         -- 'frontend/app/(auth)' frontend/app/globals.css frontend/components/ui
+#       -> EMPTY. Workflow 1 has zero implementation.
+#
+#   ⛔ CLAIMED is your state and never this office's (D-123). Nothing here
+#      changes it. The priority is published; the decision is yours, and if
+#      you finish TASK-468 first, record that as the skip §20e asks for.
+#
+# ✅ EVERYTHING YOU NEED FOR WORKFLOW 1 IS ALREADY WRITTEN. Do not wait on
+#   this office for anything:
+#     docs/architecture/488-workflow-1-login-gap.md   the element-by-element gap
+#     docs/architecture/489-legacy-ui-standards-audit.md  the token target
+#   Both are on `main`. No further planning artifact is coming — D-155 ②
+#   forbids one, and these two already answer the questions.
+#
+# 🔴 THE COMPLETION GATE HAS CHANGED. Not "implemented". Not "certified".
+#   "Implemented, integrated, promoted to `main`, and successfully reviewed
+#   by the Product Owner." The moment Workflow 1 reaches `main`, the product
+#   owner is notified immediately and reviews it before Workflow 2 begins.
+#
+# ⚠️ TASK-458 is RELEASED to READY this poll (C-238 closed — thank you for
+#   leaving the state alone, that is exactly the protocol). It is priority 6.
+#   Verified by content on `main`: affiliation_reader.py and composition.py
+#   are both promoted, not only on your branch.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🔴  D-154 — BUILD FROM THE DESIGN, NOT FROM THE CODE
 #     2026-08-07 · product owner ruling · READ BEFORE YOU OPEN sign-in-form.tsx
 #
@@ -549,15 +597,19 @@ next    = "TASK-483"
 # not contend with "one workflow at a time". They stay available so this lane
 # cannot go dry behind a single gate. TASK-476 stays last — engineering
 # infrastructure, D-151 ⑥.
-future  = ["TASK-484", "TASK-474", "TASK-473", "TASK-476"]
+# ⚡ TASK-458 added 2026-08-07, released this poll and placed LAST — D-155
+# puts business workflows at priority 6, and READY is fitness rather than
+# priority. state-check caught it missing from this file within a minute of
+# the release: "READY and appears in no lane queue".
+future  = ["TASK-484", "TASK-474", "TASK-473", "TASK-476", "TASK-458"]
 
 
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 6
+eligible_count = 7
 depth_target   = 15
-shortfall      = 9
+shortfall      = 8
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
