@@ -381,6 +381,54 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🟢  THREE RULINGS LANDED — 2026-08-07 · D-170 · all three are yours to use
+#
+# ✅ CHARTING: visx, approved. ADR-0407 is ACCEPTED. Install only what you use
+#   — @visx/scale shape group axis text network — never the umbrella package,
+#   and verify React 19 peer resolution before committing the install.
+#   ⛔ Use the Design System's colours, typography, spacing and interaction.
+#      NEVER a library default. That is the whole reason visx was chosen over
+#      Recharts: it is unstyled, so there is nothing to override.
+#
+# ✅ §20c IS FIXED. CLAUDE.md now says in terms that the UI Migration Program
+#   is a standing approved architectural change under the fourth exemption.
+#   ⛔ You no longer have to reconcile "the frontend foundation is frozen"
+#      against a queue asking you to replace globals.css. The freeze still
+#      bars ad-hoc modification for ONE PAGE's benefit — the distinction is
+#      the DIRECTION: toward the finalized design is the programme; away from
+#      it, to suit one caller, is the defect.
+#
+# ✅ C-434 RULED, and the social sign-in clarification is the one to read:
+#
+#     Implement Google, Microsoft and every provider the finalized design
+#     defines, EXACTLY as designed. The UI is production ready. The
+#     integration calls the REAL Better Auth abstraction.
+#
+#     Where credentials are unavailable, the CONFIGURATION may be truthfully
+#     simulated. ⛔ NEVER the authentication behaviour. No fake sign-in, no
+#     development-only auth path.
+#
+#     The test: "enabling production later should be CONFIGURATION, not UI
+#     redevelopment."
+#
+#   ⛔ Attempt counter: not simulated. If the backend does not expose it, the
+#      UI must not invent it.
+#   ✅ Rate limiting: enable the real behaviour in development wherever
+#      practical. Development should behave as close to production as
+#      reasonably possible.
+#
+# ⚡ AND THE STANDING INSTRUCTION BEHIND ALL OF IT — D-170 ⑥: build these as
+#   LONG-LIVED PLATFORM CAPABILITIES, not as one screen's needs. Session
+#   revocation, device trust, audit events and step-up are consumed by
+#   Settings, Team Management and Workspace Setup long before Security Center
+#   renders them. If you find yourself writing something a second workflow
+#   will need, it belongs in a shared abstraction — say so and this office
+#   will place it.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🟢  D-169 — YOU NO LONGER WAIT FOR A REVIEW TO START THE NEXT WORKFLOW
 #     2026-08-07 · product owner
 #

@@ -426,6 +426,12 @@ Changes are permitted only for:
 - a **security issue**;
 - an **explicitly approved architectural change** (RFC).
 
+> ⚡ **The UI Migration Program is a standing approved architectural change under the fourth exemption** — **[D-153](docs/DECISION_REGISTER.md), [D-154](docs/DECISION_REGISTER.md) and [D-161](docs/DECISION_REGISTER.md), ruled by the product owner.** **Replacing the design tokens, the shells and the shared components *to match the finalized Signora Design System* is the programme, not a breach of the freeze.**
+>
+> ⛔ **The freeze continues to bar ad-hoc modification for one page's benefit, which is what it was written to prevent.** ⚠️ **The distinction is the direction of the change: *toward* the finalized design is the migration; *away* from it, to suit one caller, is the defect.**
+>
+> **Added 2026-08-07 by [D-170](docs/DECISION_REGISTER.md) §2, on the product owner's explicit instruction and their wording.** ⚡ **This is the one edit Lane C has made to this file, and it was directed rather than drafted** — [C-432](docs/LANE_COORDINATION.md) shows the package it came from. **§20e is otherwise unchanged: `CLAUDE.md` is the product owner's.**
+
 Concretely, Claude must:
 
 - **Compose pages from `components/ui`**, never restyle a shared component for one page's benefit. A component bent to suit one caller is slightly wrong for every other, and the cost lands on whoever writes the next page.
