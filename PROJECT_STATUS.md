@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `d437932`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `2894c40`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `d437932`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `2894c40`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`d437932`** — the certified commit itself |
+| **`main`** | **`2894c40`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 94 promoted **fifteen commits across all three lanes** — ⚡ **the Action Batch's persistence, the Reasoning Engine's contract, and the fix that unblocked the whole repository** |
-| **Certification** | ✅ [`d4379324eaa6`](certification/reports/d4379324eaa6.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 95 promoted **Saved View** — ⚡ **a seller can save a view of their accounts and a colleague can open it** |
+| **Certification** | ✅ [`2894c403b856`](certification/reports/2894c403b856.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4105 backend tests** *(+84)* · **95.38% coverage** *(floor 95)* · **1523 frontend tests** across 65 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **832 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 162s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4162 backend tests** *(+57)* · **95.37% coverage** *(floor 95)* · **1523 frontend tests** across 65 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **837 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 156s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,13 +40,13 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **C-238** — the port is typed and nothing implements it | ⚡ **TASK-463** — the Action Batch's persistence · **TASK-202** | ⚡ **B-144** — the fix that unblocked the repository | **Cycle 94** |
+| **Last promoted** | ⚡ **TASK-451** — a saved view a colleague can open | **TASK-463** — the Action Batch's persistence | **C-430** — a chain that holds two lanes | **Cycle 95** |
 | **Execution phase** | **Building** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
 | **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
 | **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | Next `READY` row | Next `READY` row | Stewardship | **Cycle 95, on the next poll** |
+| **Next executable work** | Next `READY` row | Next `READY` row | Stewardship | **Cycle 96, on the next poll** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,68 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 94
+## 1d · Release summary — 2026-08-07, cycle 95
+
+**Derived from the promoted commit `2894c40`.** **Fifty promotions.** ⚡ **A customer-visible slice, and the first time the promotion audit refused for real.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **TASK-451** *(Lane A)* | **A seller can save a view of their accounts, and a colleague can open it** — the application layer, the interface, and permission-aware listing on top of the aggregate cycle 91 shipped |
+| **C-430** *(Lane C)* | *"holds two lanes, not one — Lane A found the far end of its own chain"* |
+
+**+57 backend tests · 837 files typed · migration `0042` verified reversible again.**
+
+### ⚡ The audit refused, and it was right to — [B-407](docs/BUGS.md) firing for the first time
+
+**Immediately after promoting, `--audit-main` reported:**
+
+```
+REFUSED — 2 commit(s) reached `main` uncertified:
+  · 10aaed2  TASK-451 — a saved view a colleague can open
+  · 2894c40  C-430 holds two lanes, not one
+```
+
+⛔ **`2894c40` was the commit that had *just been certified*.** The cause is the window [B-407](docs/BUGS.md) documents and marks `WONTFIX`: **`make certify` writes the record into the working tree, QE parks it to promote, and it is committed at Closeout** — so between stage 4 and stage 5, `main`'s tip is certified and **`main`'s own tree does not yet say so.** The audit reads the manifest, found no entry, and correctly refused.
+
+**Restoring the record and re-running gave `88 certified · 743 ancestors · the guarantee holds`.**
+
+> ⚡ **Lane C raised B-407 from a `grep` that returned `0` in that window; QE answered it by measurement and closed it `WONTFIX`. This cycle the instrument itself hit the same window and behaved exactly as the row predicts** — **which is the strongest evidence either of us produced, and neither of us had to argue for it.**
+
+**The second flagged commit is the same cause once removed**: `10aaed2` is an ancestor of `2894c40`, and with no record for the descendant it could not be recognised as an ancestor of a certified commit either.
+
+### ⛔ `integration` moved mid-certification, and the gate caught it
+
+The fast-forward into `integration` **aborted** — a claim commit had landed during the run. ✅ **That is the documented model working**: *"`integration` keeps moving, and that is fine. QE certifies C and promotes C."* Promotion is by SHA to `main`, which was unaffected, and `integration` is rebased onto the promoted commit at Closeout.
+
+### Two register conflicts, resolved without adjudicating between lanes
+
+**In each case one side contained the other**, so nothing had to be chosen:
+
+| | |
+|---|---|
+| [`LANE_COORDINATION.md`](../docs/LANE_COORDINATION.md) | Lane C had **widened** a `Blocks` field to three tasks; Lane A's named one, with the same ADR note. **A strict superset** — kept it, and preserved Lane A's genuinely new row |
+| [`ACTIVE_ASSIGNMENTS.md`](../docs/ACTIVE_ASSIGNMENTS.md) | HEAD carried a Lane B claim Lane A's branch predates; Lane A's commit moves `TASK-451` to `IN VALIDATION`. **Kept HEAD's rows, took Lane A's row** |
+
+### ⚠️ The slice touched frozen platform, and it was checked rather than assumed
+
+The plan flagged a **`security`** impact. The whole `signora_platform/**` diff is **one line** — `SAVED_VIEW = "saved_view"` — which **§20a permits by name**: *"a declarative registration, never an authorization grant."* The five grants are append-only rows in `policy.csv`, and `remove` goes to `owner` only.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4162 backend** *(+57)* · **1523 frontend** · **95.37%** · **398 invariants** · **837 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **99 runs recorded, 91 certified** · `promoted == certified` ✓ · `--audit-main` clean · ⚠️ **one lease abort, waited 370s, never forced** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke **156s** · a `Resource` registered without a platform change |
+| **Dependency** | ✅ Lane B fully integrated by content; its branch is only a stale ref |
+| **Customer Value** | ⚡ **A saved view a colleague can open** — the first half of Saved View reached a person rather than a table |
+| **Process** | ✅ **Three gates fired correctly and none was overridden** — the integration fast-forward, the promotion audit, and the lease |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 94
 
 **Derived from the promoted commit `d437932`.** **Forty-nine promotions.** ⚡ **The largest cycle in this series — fifteen commits, all three lanes, first attempt — and it began with the repository unable to certify at all.**
 
