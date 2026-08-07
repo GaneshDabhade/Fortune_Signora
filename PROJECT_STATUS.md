@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `ab1ba57`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `d8f5ab1`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `ab1ba57`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `d8f5ab1`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`ab1ba57`** — the certified commit itself |
+| **`main`** | **`d8f5ab1`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 105 promoted ⚡ **Workflow 1 milestone 2 — the sign-in experience, and the visual foundation replaced** |
-| **Certification** | ✅ [`ab1ba5779e35`](certification/reports/ab1ba5779e35.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 106 promoted **D-162 — the foundation gates everything, and the one override in the repository is the right kind** |
+| **Certification** | ✅ [`d8f5ab17a064`](certification/reports/d8f5ab17a064.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1548 frontend tests** *(+25)* across 66 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 193s *(Build 51s — the sign-in experience recompiled)* *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1548 frontend tests** *(+25)* across 66 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 155s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -46,7 +46,7 @@
 | **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | **Workflow 1 milestone 3** | Next `READY` row | Stewardship | **Cycle 106, on the next poll** |
+| **Next executable work** | **Workflow 1 milestone 3** | Next `READY` row | Stewardship | **Cycle 107, on the next poll** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,36 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 105
+## 1d · Release summary — 2026-08-07, cycle 106
+
+**Derived from the promoted commit `d8f5ab1`.** **Sixty-one promotions.** ⚡ **A short cycle, and the shortest report is the honest one.**
+
+### What was promoted
+
+| | |
+|---|---|
+| **D-162** *(Lane C)* | *"the foundation gates everything, and the one override in the repository is the right kind"* — the sequencing consequence of the palette defect [D-161](docs/DECISION_REGISTER.md) named as its own |
+
+**Lane A was fully promoted before this cycle began** — all four of its commits resolved `dup=1`. ⛔ **A branch four ahead by ref and zero by content is a stale pointer**, and that check is now the first thing every poll does.
+
+### ✅ Smoke 155s — the frontend explanation held
+
+**196s · 193s · 155s.** ⚡ **The two high readings were `Build ~52s` on the cycles Lane A shipped frontend; this cycle shipped none and the gate returned to its norm.** ⛔ **That is not a resolution of [B-141](docs/BUGS.md)** — whose signature is `slowest 14k. Researched account` — **but it does close out the frontend-build explanation as confirmed rather than plausible.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4193 backend** · **1548 frontend** · **95.38%** · **398 invariants** · **842 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **110 runs recorded, 102 certified** · `promoted == certified` ✓ · `--audit-main` clean · **ninth consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · ✅ **smoke 155s** |
+| **Dependency** | ✅ Nothing held. A claim landed mid-cycle and was replayed onto the promotion |
+| **Customer Value** | ⛔ **None directly.** A sequencing decision following the palette correction |
+| **Process** | ⚡ **Nine cycles without a failed gate**, since [B-144](docs/BUGS.md) cleared |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 105
 
 **Derived from the promoted commit `ab1ba57`.** **Sixty promotions.** ⚡ **Two milestones of Workflow 1 in two cycles, and a lane that found its own defect one commit after shipping it.**
 
