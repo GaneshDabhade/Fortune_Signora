@@ -2,7 +2,18 @@ import type { HTMLAttributes } from 'react';
 
 import { cn } from '@/lib/design/cn';
 
-export type BadgeTone = 'neutral' | 'accent' | 'success' | 'warning' | 'danger' | 'info';
+export type BadgeTone =
+  | 'neutral'
+  | 'accent'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  /** §14's reserved hue — *"a machine produced this"*, and nothing else in
+   * the product may use the pairing. Deliberately not `info`: a notice and a
+   * generated claim are different things to a reader deciding whether to
+   * trust what they are looking at. */
+  | 'ai';
 
 const TONES: Record<BadgeTone, string> = {
   neutral: 'bg-surface-sunken text-content-muted',
@@ -11,6 +22,7 @@ const TONES: Record<BadgeTone, string> = {
   warning: 'bg-warning-subtle text-warning',
   danger: 'bg-danger-subtle text-danger',
   info: 'bg-info-subtle text-info',
+  ai: 'bg-ai-subtle text-ai',
 };
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {

@@ -9,8 +9,17 @@ export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from '.
 export { Input, type InputProps } from './input';
 export { Select, type SelectOption, type SelectProps } from './select';
 export { Badge, type BadgeProps, type BadgeTone } from './badge';
+export { Confidence, type ConfidenceProps } from './confidence';
 export { Card, CardBody, CardHeader, CardTitle } from './card';
 export { Dialog, type DialogProps } from './dialog';
+export { Drawer, type DrawerProps } from './drawer';
+export {
+  CommandPalette,
+  KEY_MAP,
+  type CommandItem,
+  type CommandPaletteProps,
+} from './command-palette';
 export { EmptyState, type EmptyStateProps } from './empty-state';
+export { ErrorState, type ErrorStateProps } from './error-state';
 export { Skeleton, SkeletonText, type SkeletonTextProps } from './skeleton';
 export { Table, TBody, TD, TH, THead, TR } from './table';

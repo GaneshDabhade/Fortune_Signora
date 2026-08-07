@@ -55,12 +55,22 @@ export default {
           DEFAULT: 'rgb(var(--color-info) / <alpha-value>)',
           subtle: 'rgb(var(--color-info-subtle) / <alpha-value>)',
         },
+        /* §14's reserved hue. Named `ai` rather than `indigo` because the
+         * token names a role — what produced the content — and a hue name
+         * would make the next theme's choice of colour a rename. */
+        ai: {
+          DEFAULT: 'rgb(var(--color-ai) / <alpha-value>)',
+          subtle: 'rgb(var(--color-ai-subtle) / <alpha-value>)',
+        },
       },
       borderRadius: {
         sm: 'var(--radius-sm)',
         md: 'var(--radius-md)',
         DEFAULT: 'var(--radius)',
         lg: 'var(--radius-lg)',
+        /* The 16px plane §11 and §12 both specify. Added by slice 3, which
+         * is the first slice with a component that needs it. */
+        xl: 'var(--radius-xl)',
       },
       /* **The type scale becomes tokens** (TASK-448). Declared here rather
        * than left to Tailwind's defaults so that `design-tokens.test.tsx` can

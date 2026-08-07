@@ -50,6 +50,19 @@
     --color-info: 2 132 199;
     --color-info-subtle: 240 249 255;
 
+    /* **The reserved hue, and it is reserved by a rule rather than by
+     * convention.** Design System v2 §14: *"Intelligence gets its own
+     * reserved hue — a low-chroma indigo — and a consistent grammar… Nothing
+     * else in the product may use that combination."*
+     *
+     * ⚡ **A hue nothing else may use is only reserved if something refuses
+     * the second user**, which is why `canonical-set.test.tsx` asserts it
+     * rather than this comment. **Distinct from `info`**: `info` is a
+     * neutral notice, and this says a machine produced what you are reading —
+     * the one distinction §14 exists to keep legible. */
+    --color-ai: 79 70 229;
+    --color-ai-subtle: 238 242 255;
+
     --color-focus: 37 99 235;
     /* Modal scrim. A token because the backdrop must darken relative to
      * the *theme*, not to a fixed slate. */
@@ -69,6 +82,19 @@
     --radius-md: 0.375rem;
     --radius: 0.5rem;
     --radius-lg: 0.75rem;
+    /* **The fifth step, and slice 3 is what needed it.** Design System v2
+     * §11 gives a table *"one 16px-radius plane"* and §12 gives dialog,
+     * drawer, palette and toast *"16px radius"* as the first term of the one
+     * language they share. **The scale stopped at 12px, so neither could be
+     * expressed** — and a component reaching `rounded-[16px]` is exactly the
+     * arbitrary value TASK-448 slice 1 spent thirty edits removing.
+     *
+     * ⚡ **Additive, and deliberately so.** The design also renames the lower
+     * steps (its `md` is 8px where this scale's is 6px); **renaming them is a
+     * value change across every rounded corner in the product and is not this
+     * slice's** — slice 3 is the canonical *set*, not a re-tuning of scales
+     * two earlier slices already settled. */
+    --radius-xl: 1rem;
 
     /* The type scale. **Six steps, and they are tokens for the same reason
      * the colours are** (TASK-448): before this, `text-[0.9375rem]` appeared
@@ -151,6 +177,11 @@
     --color-danger-subtle: 69 10 10;
     --color-info: 56 189 248;
     --color-info-subtle: 8 47 73;
+
+    /* The same role, lifted for a dark ground. §14's grammar is the hue plus
+     * the tint field, so both steps move together or the pairing breaks. */
+    --color-ai: 165 180 252;
+    --color-ai-subtle: 30 27 75;
 
     --color-focus: 96 165 250;
     --color-backdrop: 0 0 0;
