@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "2e3d33e"
+generated_from = "ff85253"
 task_count     = 89
 
 [lane.Lane_A]
@@ -22,7 +22,7 @@ claimable_now      = 6
 awaiting_sync      = 3
 in_flight          = 24
 awaiting_qe_transition = 0
-blocked_on_integration = 1
+blocked_on_integration = 2
 supply_state       = "working"
 blocked            = 8
 lane_utilization   = 4.8
@@ -377,7 +377,7 @@ on_integration = true
 id            = "TASK-451"
 title         = "Saved View — application, interface and permission-aware listing"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-452"]
