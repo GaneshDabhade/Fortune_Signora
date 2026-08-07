@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `d8f5ab1`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `5391744`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `d8f5ab1`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `5391744`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`d8f5ab1`** — the certified commit itself |
+| **`main`** | **`5391744`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 106 promoted **D-162 — the foundation gates everything, and the one override in the repository is the right kind** |
-| **Certification** | ✅ [`d8f5ab17a064`](certification/reports/d8f5ab17a064.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 107 promoted ⚡ **TASK-490 — the design foundation, from the canonical source and checked by a test** |
+| **Certification** | ✅ [`5391744e5b88`](certification/reports/5391744e5b88.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1548 frontend tests** *(+25)* across 66 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 155s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1566 frontend tests** *(+18)* across 67 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 200s *(Build 56s — the design foundation recompiled)* *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -46,7 +46,7 @@
 | **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | **Workflow 1 milestone 3** | Next `READY` row | Stewardship | **Cycle 107, on the next poll** |
+| **Next executable work** | **Workflow 1 milestone 3** | Next `READY` row | Stewardship | **Cycle 108, on the next poll** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,47 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 106
+## 1d · Release summary — 2026-08-07, cycle 107
+
+**Derived from the promoted commit `5391744`.** **Sixty-two promotions.** ⚡ **The palette defect ends the way governance says it should — with a test, not a promise.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **TASK-490** *(Lane A)* | **The design foundation, *from the canonical source and checked by a test*** — `globals.css`, `layout.tsx`, `tailwind.config.ts`, and **116 lines of `design-foundation.test.tsx`** |
+| **D-163** *(Lane C)* | *"the queue advances itself, and a check now says so every run"* |
+
+**+18 frontend tests, 67 files.**
+
+### ⚡ Three cycles, and the arc is the point
+
+| | |
+|---|---|
+| **105** | Lane C's **D-161**: *"Lane A built the right screen against the wrong palette, and that is my defect"* |
+| **106** | **D-162**: the foundation gates everything |
+| **107** | ⚡ **TASK-490: the foundation rebuilt from the canonical source, and a test that fails if it drifts again** |
+
+> ⛔ **The defect was not closed by an assertion that it had been fixed.** **§20c already required design tokens to be enforced by test rather than by convention** — *"a theme change must be a token edit, enforced by `design-tokens.test.tsx`"* — **and this slice extends that enforcement to the foundation itself.** ⚡ **A guarantee that needs a person to remember it is not a guarantee.**
+
+### Smoke 200s — the confirmed shape, third time
+
+**`slowest 1. Build 56s`.** ⛔ **Every high smoke reading since cycle 101 has been a frontend cycle, and every one has named `Build` as the slowest stage.** The two [B-141](docs/BUGS.md) outliers named `Researched account` instead. **Two populations, cleanly separated by the field `_slowest_stage` was added to record.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4193 backend** · **1566 frontend** *(+18)* · **95.38%** · **398 invariants** · **842 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **111 runs recorded, 103 certified** · `promoted == certified` ✓ · `--audit-main` clean · **tenth consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke **200s, cause named** |
+| **Dependency** | ✅ Nothing held anywhere |
+| **Customer Value** | ⚡ **Every screen now inherits the approved palette from one source**, and a test refuses the legacy one |
+| **Process** | ⚡ **A defect an office admitted, a lane corrected, and a test now prevents** — three cycles, no `B-` row needed |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 106
 
 **Derived from the promoted commit `d8f5ab1`.** **Sixty-one promotions.** ⚡ **A short cycle, and the shortest report is the honest one.**
 
