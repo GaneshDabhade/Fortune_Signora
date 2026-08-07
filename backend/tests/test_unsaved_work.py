@@ -65,7 +65,7 @@ def test_a_clean_working_copy_reports_nothing_at_risk(unsaved: ModuleType) -> No
         ("backend/modules/ai_platform/evaluation/datasets/x@1.json", "prompt or release artifact"),
         ("frontend/tests/e2e/pages/sign-in.ts", "test suite"),
         ("docs/BUGS.md", "architecture or register"),
-        ("docs/architecture/49-end-to-end-product-validation.md", "architecture or register"),
+        ("docs/architecture/480-end-to-end-product-validation.md", "architecture or register"),
         ("scratch.py", ""),
     ],
 )

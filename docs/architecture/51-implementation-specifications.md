@@ -1,6 +1,6 @@
 # 51 — Implementation Specifications
 
-> **The continuation of [50 — Product Capability Audit](50-product-capability-audit.md) §5**, dated 2026-08-03, by Lane B.
+> **The continuation of [50 — Product Capability Audit](481-product-capability-audit.md) §5**, dated 2026-08-03, by Lane B.
 >
 > **Each specification is written so a lane can claim it and start.** Objective · customer problem · customer value · existing foundation · modules · backend · frontend · UX · API · events · data model · acceptance criteria · risks · dependencies · effort · future evolution.
 >
@@ -134,7 +134,7 @@ provider_sync(provider, capability, status, started_at, finished_at,
 |---|---|
 | **Modules** | `knowledge_graph` (owns names) · Product Surface (the control) |
 | **Backend** | `GET /workspaces/{id}/account-identities?q=<text>&limit=` — a prefix/substring match over resolved names, **workspace-scoped and RLS-enforced like every other read**. Cursor pagination per [19-api-conventions.md](19-api-conventions.md) |
-| **Frontend** | A search control **in the application shell header**, not the sidebar — search is a verb, not a place ([50](50-product-capability-audit.md) §5). Results link straight to `/accounts/{id}` |
+| **Frontend** | A search control **in the application shell header**, not the sidebar — search is a verb, not a place ([481](481-product-capability-audit.md) §5). Results link straight to `/accounts/{id}` |
 | **UX** | Typeahead, keyboard-first, **⌘K** to open. Each result shows the name and its attention score if one is live, so the customer lands informed. **An unresolved account shows its `Needs identity` state rather than a hex string** — see A6 |
 | **API** | One query parameter on an existing endpoint. **No new path** |
 | **Events** | None |
@@ -432,7 +432,7 @@ Champion, economic buyer, blocker — **derived from observed engagement, never 
 Champion departure · usage decline · competitor entry · renewal approaching. **The catalog is the work**, and each entry carries its own *"what this cannot tell you"* like every existing signal. Champion departure depends on C1.
 
 ## D2 · Risk postures in the existing decomposition · **M** · Buying Score
-**Not a second score** ([50](50-product-capability-audit.md) §2.5). A posture within the existing ledger, so a customer still reads one number and can still take it apart. **Acceptance: a contraction risk must never be confusable with a low-scoring opportunity** — they mean opposite things to a CRO scanning a list, which is already [TASK-905](../BACKLOG.md).
+**Not a second score** ([481](481-product-capability-audit.md) §2.5). A posture within the existing ledger, so a customer still reads one number and can still take it apart. **Acceptance: a contraction risk must never be confusable with a low-scoring opportunity** — they mean opposite things to a CRO scanning a list, which is already [TASK-905](../BACKLOG.md).
 
 ## D3 · Which accounts are already customers · **S** · Integrations
 One boolean, from the CRM. Depends on E1. **Unblocks the whole expansion/renewal half of the vision** for very little work.
@@ -508,6 +508,6 @@ Communication, never conclusion. Depends on G1 and C2 — a draft addressed to n
 
 # 10 · What this specification set deliberately does not contain
 
-**Conversation intelligence · marketing attribution · territory management · forecasting.** Each is a product rather than a feature, and each is recorded in [50](50-product-capability-audit.md) as a **deliberate scope exclusion rather than unfinished work** — a distinction that matters, because unfinished work invites somebody to finish it.
+**Conversation intelligence · marketing attribution · territory management · forecasting.** Each is a product rather than a feature, and each is recorded in [481](481-product-capability-audit.md) as a **deliberate scope exclusion rather than unfinished work** — a distinction that matters, because unfinished work invites somebody to finish it.
 
 **And one slice was deleted while this document was being written.** *Mount Timeline* was in the audit's roadmap on the strength of [C-024](../LANE_COORDINATION.md) being `OPEN`. It is mounted — `page.tsx:117` calls `useAccountTimeline`, and a product review walked the rendered feed. **The row was stale, the coordination item is now closed, and a lane was saved a slice it did not need to build.** That is the argument for verifying every specification against the code rather than against the register.

@@ -2,7 +2,7 @@
 
 > **Prepared by Lane C — Product Office. No code was written and none should be.** **Every claim verified against source on 2026-08-04.**
 >
-> ⚠️ **Links to [51-implementation-specifications.md](51-implementation-specifications.md) and [50-product-capability-audit.md](50-product-capability-audit.md) do not resolve on this branch** — both live on `lane-b-commercial-profile` and reach `main` at the next merge. **Everything relied on is quoted inline**, and the event counts below were measured against code on this branch rather than taken from either document.
+> ⚠️ **Links to [51-implementation-specifications.md](51-implementation-specifications.md) and [481-product-capability-audit.md](481-product-capability-audit.md) do not resolve on this branch** — both live on `lane-b-commercial-profile` and reach `main` at the next merge. **Everything relied on is quoted inline**, and the event counts below were measured against code on this branch rather than taken from either document.
 
 > **Approved UI** — **Workflow Automation**. The [Fortune Signora Design Project](410-approved-ui-specification.md) is authoritative for frontend behaviour (2026-08-04). **This package no longer states what the screen looks like; it states what the backend must provide for it.** *"Simulated before it runs, approved before it writes, reversible after it does."* **[ADR-0402](adr/0402-a-rule-is-data.md) §2 is compatible with all three and was written without seeing the screen.** The screen also specifies a marketplace, versioning with canary and rollback, and 72-hour approval expiry — **none of which contradicts a rule being data.**
 
@@ -25,7 +25,7 @@
 
 | | Count | Source |
 |---|---|---|
-| **Claimed** | **82** | [50-product-capability-audit.md](50-product-capability-audit.md), citing `06-events.md` |
+| **Claimed** | **82** | [481-product-capability-audit.md](481-product-capability-audit.md), citing `06-events.md` |
 | **Named in `06-events.md`** | **34** distinct event types | `grep` of the catalog document |
 | **Actually published in code** | **23** | `event_type: str = "…"` across every module's `public/` and `domain/events.py` |
 
@@ -204,6 +204,6 @@
 
 > **🟡 Upcoming — is Notifications (M14a) sequenced before Epic F's phase 5?** Not a blocker for phases 1–4, and **the answer decides whether F ships useful or merely correct.** [ADR-0040](adr/0040-notifications.md) is `Proposed` and already designs everything phase 5 needs. **Lane C's recommendation: ratify ADR-0040 and build M14a before F reaches phase 5** — F is then pure gain and needs no delivery decisions of its own.
 
-> **🟢 Background — is the 82-event figure worth correcting at source?** [50-product-capability-audit.md](50-product-capability-audit.md) reports 82 citing a document naming 34, of which 23 publish. **It is a headline number in a document lanes read for scope.** Not raised as a coordination item — **the audit is a dated record and the correction belongs in whatever supersedes it**, but a lane quoting 82 into a customer-facing builder would be the second-order cost.
+> **🟢 Background — is the 82-event figure worth correcting at source?** [481-product-capability-audit.md](481-product-capability-audit.md) reports 82 citing a document naming 34, of which 23 publish. **It is a headline number in a document lanes read for scope.** Not raised as a coordination item — **the audit is a dated record and the correction belongs in whatever supersedes it**, but a lane quoting 82 into a customer-facing builder would be the second-order cost.
 
 **Not escalated, because engineering can answer them:** how conditions are indexed per trigger · whether match history is its own table or a timeline projection · the builder's interaction model. **None needs a product ruling, and each has an obvious first answer.**

@@ -77,11 +77,11 @@ updated      = 2026-08-07
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-474"
 next    = "TASK-454"
-future  = ["TASK-455", "TASK-473", "TASK-476", "TASK-477"]
+future  = ["TASK-455", "TASK-473", "TASK-476"]
 
-eligible_count = 6
+eligible_count = 5
 depth_target   = 15
-shortfall      = 9
+shortfall      = 10
 assigned_total = 13
 
 # ✅ **TASK-419 DELIVERED 2026-08-07 and is IN VALIDATION.** It was READY and

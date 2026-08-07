@@ -4302,7 +4302,7 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 
 | | |
 |---|---|
-| **Raised by** | Lane B, 2026-08-03, Product Capability Audit ([50](architecture/50-product-capability-audit.md) §2.4, §4b) |
+| **Raised by** | Lane B, 2026-08-03, Product Capability Audit ([481](architecture/481-product-capability-audit.md) §2.4, §4b) |
 | **Owner** | **Product owner**, with `commercial_profile` and `buying_score_engine` |
 | **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-111](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
 | **Blocks** | **Epic B1.** And it is why the product currently contradicts itself on screen |
@@ -5285,7 +5285,7 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 |---|---|---|---|
 | **1** | **`CLAUDE.md` §20e is titled *"Nobody assigns; lanes pull"* and its body carries no amendment to that model** — while [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) on the same branch records `TASK-200`–`203` as *"assigned directly by the product owner"*. **The constitution describes a model the repository is not using** | **Product owner** — `CLAUDE.md` is theirs | Found while hand-merging the three approved amendments ([422](architecture/422-synchronization-plan.md) commit 5). **Deliberately not fixed**: it was outside the three amendments approved |
 | **2** | **[C-326](#c-326--epic-e1-has-no-path-for-a-customers-own-system-to-reach-the-pipeline) is in three states at once** — its body sits after the `## Closed` marker, its `Status` field says `OPEN`, and **it has no index row.** It is genuinely open | **QE**, at register reconciliation | Found 2026-08-04 reading `origin/integration`. **Reported rather than fixed from a branch 151 commits behind** |
-| **3** | **`51-implementation-specifications.md` and `51-sales-workspace.md` both claim number `51`** — two lanes numbered independently and git merged both, **the collision class [C-201](#c-201) names.** `state-check` reports it every run | **QE**, at merge — *"the later claim moves, decided by author timestamp"* | `python3 infra/state-check.py` |
+| **3** | **`51-implementation-specifications.md` and `482-sales-workspace.md` both claim number `51`** — two lanes numbered independently and git merged both, **the collision class [C-201](#c-201) names.** `state-check` reports it every run | **QE**, at merge — *"the later claim moves, decided by author timestamp"* | `python3 infra/state-check.py` |
 
 > **Why one row rather than three.** None is a dependency between lanes, so none earns an item on its own terms. **What they share is the defect: a finding that exists only in a commit message has not been reported** — `git log` is searchable but nobody searches it before a slice. **Closing this row means each finding has reached the document that owns it.**
 
@@ -5583,8 +5583,8 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 | | Lane A, unmerged | Lane B, unmerged |
 |---|---|---|
-| **`50-`** | `50-sales-engagement.md` | `50-product-capability-audit.md` |
-| **`51-`** | `51-sales-workspace.md` | `51-implementation-specifications.md` |
+| **`50-`** | `50-sales-engagement.md` | `481-product-capability-audit.md` |
+| **`51-`** | `482-sales-workspace.md` | `51-implementation-specifications.md` |
 
 **Neither is on `main` or `integration`, so nothing is wrong yet** — and `state-check` already asserts *"Architecture documents: N numbered, none duplicated"*, so it fails the moment both land.
 
@@ -7104,7 +7104,7 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 |---|---|
 | **Raised by** | ⚡ **Lane A**, 2026-08-07, **on the first poll of `origin/coordination`** — and it found the defect from the outside within one fetch |
 | **Owner** | **Lane C** — ⛔ **this is a Product Office defect, not a question for the product owner.** **Architecture governance is Lane C's, and the ruling below needs no ratification** |
-| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-07, ruled in [479](architecture/479-coordination-architecture.md) §11** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-07.** **Ruled in [479](architecture/479-coordination-architecture.md) §11 on the day it was raised; ⚡ the *condition* was met three days later and this row is closed on the fact rather than on the ruling.** ✅ **Measured, not asserted**: `CLAUDE.md` on `origin/integration` matches `origin/coordination` twice, [479](architecture/479-coordination-architecture.md) is present, and `infra/coordination.py` is present. ⚡ **The ref is binding. The README's *"not yet"* block is removed rather than left to age** — **a warning that outlives its condition is the same defect as one that arrives late** |
 | **Blocks** | ⛔ **Nothing.** ⚡ **Both sources agree today, and Lane A said so before asking** |
 
 ### What Lane A saw

@@ -7,7 +7,7 @@
  *
  * ## Why this is not a Playwright test
  *
- * The design study is in [`49-end-to-end-product-validation.md`](../../../docs/architecture/49-end-to-end-product-validation.md)
+ * The design study is in [`480-end-to-end-product-validation.md`](../../../docs/architecture/480-end-to-end-product-validation.md)
  * §6h; the conclusion is short enough to restate. **Playwright's failure model
  * is "stop at the first failed assertion", which is exactly right for a
  * deterministic journey and exactly wrong for endurance**, where the first

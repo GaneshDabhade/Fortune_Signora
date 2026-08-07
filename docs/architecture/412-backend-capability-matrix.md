@@ -32,7 +32,7 @@
 | **`buying_score_engine`** | 1 | 1 | Account 360 · Opportunity Intelligence · Executive Dashboard · Companies | Nothing structural | 🟩 |
 | **`observation_engine`** | 1 | 2 | Account 360 · People · Opportunity Intelligence | Nothing structural | 🟩 |
 | **`business_event_engine`** | 1 | 2 | Account 360 · Signal Center | Nothing structural | 🟩 |
-| **`timeline`** | 1 | 0 | Account 360 · People | Workspace-scoped read *(named in `51-sales-workspace.md` §3)* | 🟠 |
+| **`timeline`** | 1 | 0 | Account 360 · People | Workspace-scoped read *(named in `482-sales-workspace.md` §3)* | 🟠 |
 | **`sales_engagement`** | **0** | 0 | AI Copilot · Opportunity Intelligence · Companies | **An `interface/` layer. Nothing else** | 🟠 |
 | **`ai_reasoning_engine`** | **0** | 1 | AI Copilot | **An `interface/` layer. Nothing else** | 🟠 |
 | **`provider_normalization`** | — | 1 | *(none — pipeline stage)* | CRM claim vocabulary, **if [ADR-0300](adr/0300-inbound-source.md) part 3 is ruled on** | — |

@@ -77,7 +77,7 @@ sudo npx playwright install-deps webkit   # WebKit needs 40 system libraries
 
 **`SIGNORA_APP_URL` has no default and never will.** It used to be `http://localhost:3000` — Human Review's stack — and **this suite writes**: products, watched companies, and permanent attributed decisions. It now refuses to start without an explicit URL, and refuses ports 3000/8000 outright. See `tests/e2e/fixtures/environment.ts`.
 
-**Pass `SIGNORA_AUTH_DATABASE_URL` explicitly to `demo:users`.** The scripts under `scripts/` do not read `.env.local`, and `loadAuthConfig()` supplies a working default — so an unset variable seeds a *different* database rather than failing (recorded as O-3 in [`49-end-to-end-product-validation.md`](../../docs/architecture/49-end-to-end-product-validation.md)).
+**Pass `SIGNORA_AUTH_DATABASE_URL` explicitly to `demo:users`.** The scripts under `scripts/` do not read `.env.local`, and `loadAuthConfig()` supplies a working default — so an unset variable seeds a *different* database rather than failing (recorded as O-3 in [`480-end-to-end-product-validation.md`](../../docs/architecture/480-end-to-end-product-validation.md)).
 
 **`SIGNORA_APP_URL` defaults to `http://localhost:3000`**, which belongs to human review and to no lane. Set it or the suite drives somebody else's stack.
 

@@ -1801,9 +1801,9 @@ python3 infra/state-check.py | grep 'document 25'
 | Number | Claimed by | Assignee |
 |---|---|---|
 | **`25`** | `25-signal-engine.md` · `25-commercial-profile.md` | **Lane B** — it added the second, 2026-08-05 |
-| **`49`** | `49-end-to-end-product-validation.md` · `49-lead-ownership.md` | **Unassigned — needs a ruling** |
-| **`50`** | `50-product-capability-audit.md` · `50-sales-engagement.md` | **Unassigned — needs a ruling** |
-| **`51`** | `51-implementation-specifications.md` · `51-sales-workspace.md` | **Unassigned — needs a ruling** |
+| **`49`** | `480-end-to-end-product-validation.md` · `49-lead-ownership.md` | **Unassigned — needs a ruling** |
+| **`50`** | `481-product-capability-audit.md` · `50-sales-engagement.md` | **Unassigned — needs a ruling** |
+| **`51`** | `51-implementation-specifications.md` · `482-sales-workspace.md` | **Unassigned — needs a ruling** |
 
 **One row, not four**, because it is one class with one resolution: **architecture document numbers have no allocation block.** `B-`, `C-`, `TASK-` and ADR numbers all do (§20e), and none of them has ever collided since. **Document numbers were left out, and they are the only identifier still allocated by *"the highest number I can see"*** — which is precisely the model §20e replaced after `B-024` was allocated twice.
 
