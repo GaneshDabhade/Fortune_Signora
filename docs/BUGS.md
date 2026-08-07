@@ -627,6 +627,38 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-406 · `signal.resolved` is published by code and absent from the event catalog
+
+| | |
+|---|---|
+| **Module** | `signal_engine` — [`domain/events.py`](../backend/modules/signal_engine/domain/events.py), [`06-events.md`](architecture/06-events.md) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
+| **Severity** | 🟡 — **wrong but survivable.** ⛔ **Nothing is broken at runtime**; a consumer that already knows the name subscribes fine. ⚡ **What breaks is discovery: a lane looking for what `signal_engine` publishes reads the catalog and does not find it** |
+| **Status** | **`OPEN`** — **opened by Lane C, 2026-08-07.** ⛔ **Lane C does not fix it** — `backend/modules/` is outside its budget, and finding a defect is never permission to fix it (§20e) |
+| **Found** | 2026-08-07 by Lane C, **content-checking [TASK-444](BACKLOG.md)'s predecessor at [C-235](LANE_COORDINATION.md)'s request** — *"re-test by content rather than by reachability"* |
+
+**Steps to reproduce.** On `origin/integration`:
+
+```bash
+git show origin/integration:backend/modules/signal_engine/domain/events.py | grep event_type
+→ signal.generated · signal.superseded · signal.resolved
+
+git show origin/integration:docs/architecture/06-events.md | grep -c signal.resolved
+→ 0
+```
+
+**Expected.** Three published event types, three catalog entries.
+
+**Actual.** ⛔ **Two of three.** **`signal.generated` appears 7 times and `signal.superseded` twice; `signal.resolved` does not appear at all.**
+
+### Why it is worth a row rather than a note
+
+**[§9](../CLAUDE.md) is explicit**: *"New event types or payload changes are documented in `docs/architecture/06-events.md` in the same change that introduces them."* ⚡ **Its two siblings are catalogued, so this is an omission rather than a convention nobody follows.**
+
+⚠️ **And the catalog is load-bearing under rotation** (§12): **the lane that builds the next consumer of `signal.resolved` is not the lane that published it**, and the catalog plus the module design doc are the whole of what it inherits. ⛔ **An event that exists in code and not in the catalog is an event the next lane will not know it may consume.**
+
+⚡ **[TASK-444](BACKLOG.md) is the near-term consumer** and it is `READY` — **its release stands: the event genuinely exists**, `SignalResolved` with `event_type = "signal.resolved"`, and **the row was verified by opening the file rather than by counting commits.**
+
 ### B-405 · A dated audit table's five links all resolve to nothing, because the ids were renumbered under it
 
 | | |

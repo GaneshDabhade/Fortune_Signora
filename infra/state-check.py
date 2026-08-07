@@ -496,6 +496,23 @@ def _ref_authority_findings() -> list[str]:
     ]
 
 
+def _lane_c_rows(backlog: str) -> set[str]:
+    """Task ids whose `Module` cell resolves to Lane C.
+
+    ⛔ **Read from the row, never stored beside it** ([C-213](../docs/LANE_COORDINATION.md)):
+    a copied assignee is correct until the module moves. **Conservative by
+    construction** — a row this cannot resolve is simply not exempt, so an
+    ambiguous cell fails toward reporting rather than toward silence.
+    """
+    mine: set[str] = set()
+    for block in re.split(r"^### TASK-", backlog, flags=re.M)[1:]:
+        task = re.match(r"(\d+)", block)
+        module = re.search(r"\|\s*\*\*Module\*\*\s*\|([^|]*)\|", block)
+        if task and module and re.search(r"\bLane C\b", module.group(1)):
+            mine.add(f"TASK-{task.group(1)}")
+    return mine
+
+
 def _execution_state_findings() -> list[str]:
     """**Did Product Office overwrite a state a lane owns?** ([D-123](../docs/DECISION_REGISTER.md))
 
@@ -521,12 +538,30 @@ def _execution_state_findings() -> list[str]:
     if not theirs:
         return []
     before = _backlog_states(theirs)
-    after = _backlog_states((REPO_ROOT / "docs" / "BACKLOG.md").read_text())
+    body = (REPO_ROOT / "docs" / "BACKLOG.md").read_text()
+    after = _backlog_states(body)
+    # **Lane C is also an implementing lane, on Platform Foundation** (D-022),
+    # and §20e's `CHANGES REQUESTED` path is explicit about what it must then
+    # do: *"the lane addresses what was asked, re-runs its gates, pushes, and
+    # returns the task to `IN VALIDATION`."*
+    #
+    # ⚠️ **The first version flagged that as an overwrite.** It compared every
+    # row without asking whose row it was, so `TASK-419` — this office's own
+    # slice, returned by QE and repaired — read identically to `TASK-901`,
+    # which was somebody else's and genuinely overwritten.
+    #
+    # ⛔ **The exemption is deliberately narrow.** It applies only where the
+    # row resolves to Lane C *and* the new state is one of the four the lane
+    # sets. **QE's four are never exempt**: this office may repair its own
+    # slice, and may never declare it verified.
+    _LANE_SETTABLE = {"CLAIMED", "IN PROGRESS", "IN VALIDATION", "CHANGES REQUESTED"}
+    mine = _lane_c_rows(body)
     overwritten = sorted(
         f"{task} ({was} → {now})"
         for task, was in before.items()
         if was in _LANE_OWNED_STATES
         and (now := after.get(task, was)) != was
+        and not (task in mine and now in _LANE_SETTABLE)
     )
     if not overwritten:
         return []
