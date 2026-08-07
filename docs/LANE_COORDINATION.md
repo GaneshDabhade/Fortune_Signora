@@ -160,7 +160,7 @@
 
 | | |
 |---|---|
-| **Status** | **`OPEN`** — ⚠️ **assigned 2026-08-04 by the consolidation ([D-058](DECISION_REGISTER.md)) and *still not answered*.** **Whoever builds [TASK-902](BACKLOG.md) inherits it with the module.** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
+| **Status** | ✅ **`OPEN` — answered by Lane B, 2026-08-07**, as `timeline`'s current assignee ([`modules.toml`](coordination/modules.toml), `current_owner = "Lane B"`). **The recommendation is accepted and every technical claim in it was verified against the tree rather than taken on trust** — see *Lane B's answer* below. ⛔ **Not `READY FOR IMPLEMENTATION`**: that state is the product owner's on a ruling, and **the work is [TASK-435](BACKLOG.md), which is `SEQUENCED` and only Lane C may release.** **The requesting lane closes** (§20e). **Was:** **`OPEN`** — ⚠️ **assigned 2026-08-04 by the consolidation ([D-058](DECISION_REGISTER.md)) and *still not answered*.** **Whoever builds [TASK-902](BACKLOG.md) inherits it with the module.** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
 | **Owner** | **The current module assignee for `timeline`** — assigned 2026-08-04 by the consolidation ([D-058](DECISION_REGISTER.md)); **joined from [`modules.toml`](coordination/modules.toml), never stored here.** ⚡ **Field added 2026-08-06 — the owner was declared inline beside `Opened` and no instrument reads prose** ([D-131](DECISION_REGISTER.md)). |
 
 **Opened 2026-08-03 · Lane A · current module assignee: Lane B (`timeline`) · 🟠**
@@ -184,6 +184,39 @@
 **Trade-offs.** Without it the workspace can say what each account's score did, but not *what happened*. Score movement is a number; a leadership appointment is the sentence a seller acts on.
 
 **Implementation impact.** Blocks SW-02 and SW-06. **Blocks nothing else** — SW-03, SW-04 and SW-05 are composition over `GET /accounts`, which is already workspace-scoped, and Lane A has taken SW-03 instead.
+
+
+### ✅ Lane B's answer — accepted, and checked rather than accepted
+
+**Three claims, all verified in the tree on 2026-08-07 at `f3ec15f2`:**
+
+| Claim | Verified |
+|---|---|
+| *"the repository query underneath it is hard-scoped"* | ✅ `repository.py:60-61` — `workspace_id == …` **and** `entity_id == …`, with no variant that omits the second |
+| *"ordered off a `(workspace, entity, occurred_at, id)` index"* | ✅ `0026_timeline_entry.py:85-89` — `ix_timeline_entry_feed` is exactly those four columns, in that order |
+| *"it needs a second index"* | ✅ **Confirmed, and the reason is the column order rather than the column set.** The existing index is **entity-leading after `workspace_id`**, so a workspace-wide scan ordered by `occurred_at` cannot use it — every `entity_id` group would have to be read and re-sorted |
+
+**The contract is accepted as recommended**: `feed_for_workspace(workspace_id, *, entity_ids=None, since=None, after, limit)` beside `feed`, at `GET /workspaces/{id}/timeline`, with `(workspace_id, occurred_at, id)` added. ✅ **And `since` as a declared input rather than stored state is right** — §6, *build for the requirement in front of you*. **A server-side read state later changes no contract**, which is what makes deferring it free.
+
+### ⚠️ One correction, and it is about the sentence the item is built on
+
+> **[C-215] *"Three Target Accounts became **significantly more active** since you last looked."***
+
+⛔ **That sentence contains a judgement, and `timeline` must not be the module that makes it.** **Timeline returns what happened, in order.** *Significant*, *more active* and *three* are a ranking over those entries — **and the item's own guard says so**: *"Timeline ranks nothing and explains nothing, and this must not become the place that starts."*
+
+⚡ **Both halves are true and they point at different modules.** The feed is Timeline's; **deciding which accounts moved and by how much is `buying_score_engine`'s**, which already owns movement, or the consumer's composition. **Named here because a motivating example is what an implementer builds toward**, and this one would walk `feed_for_workspace` into a `significance` parameter one release later.
+
+### ⛔ Two things the implementing slice must not assume
+
+**① `entity_ids` and `occurred_at` ordering do not share an index.** Filtering by a set of entities *and* ordering by time is served well by neither the existing index nor the proposed one. **It is fine — the set is small and bounded by what a seller holds — but it should be a deliberate choice rather than a discovery**, and the slice should say which access path it expects.
+
+**② `timeline/public/__init__.py` is 0 bytes**, and that is **not** a blocker here. ✅ **This contract is consumed over HTTP** — `GET /workspaces/{id}/timeline` — so no consumer needs the Python contract, and **nothing should be parked waiting for it.** ⚠️ **It is the second empty `public/` Lane C's new check found** (the other was `people`, now filled); recorded so the emptiness is understood as *no consumer yet* rather than as a gap under this item.
+
+### What this unblocks, and what it does not
+
+**[TASK-435](BACKLOG.md) is the row that carries this work and it is `SEQUENCED` on *"SW-02 is scheduled"*.** ⛔ **This lane has not claimed it and has written no code** — `READY` is Lane C's to set on fitness (§20e), and **the specification being finished is what makes it a new row rather than a live one**, exactly as [TASK-902](BACKLOG.md)'s disposal recorded.
+
+**So the answer this item was waiting for exists as of today. Whether TASK-435 is scheduled is a sequencing decision and remains Lane C's and the product owner's.**
 
 ### C-216 — the setup scripts do not load `.env.local`, and fall back silently
 

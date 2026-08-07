@@ -155,10 +155,53 @@ class TestTheModuleIsScaffoldedUnderCleanArchitecture:
             assert f"@router.{verb}(" not in source, verb
         assert "@router.get(" in source, "a router that serves nothing is not a surface"
 
-    def test_the_public_contract_exports_nothing_yet(self) -> None:
-        """Scaffolded, not started. Asserted so that the first export is a
-        deliberate act rather than something that appeared while the module
-        was being wired."""
+    def test_the_public_contract_publishes_language_and_never_the_conclusion(self) -> None:
+        """**Replaced rather than deleted, on the same grounds as the slice
+        above** — and by the test's own terms.
+
+        It read ``public.__all__ == []`` and said why: *"asserted so that the
+        first export is a **deliberate act** rather than something that
+        appeared while the module was being wired."* ⚡ **That is exactly what
+        happened.** The first export is [TASK-453](../../../docs/BACKLOG.md),
+        ruled onto this module by
+        [D-112](../../../docs/DECISION_REGISTER.md) — *"the engine owns the
+        language. Screens consume that language."* **The guard fired, a human
+        ruled, and the condition it protected has been discharged.**
+
+        ⛔ **The successor is strictly stronger, because "nothing" stops being
+        assertable the moment anything is published.** What is now at risk is
+        not *whether* the module exports, but *what*: this module holds the
+        `DecisionPackage` aggregate, its evidence set and its grounding
+        report, and **publishing any of them would put the conclusion itself
+        on the contract** — where a consumer would render it instead of
+        inspecting it, and where §5's *only via `public/`* would start
+        carrying the domain rather than the language.
+
+        **So: the two ruled types, and nothing that concludes, writes or
+        ranks.**
+        """
         from modules.ai_reasoning_engine import public
 
-        assert public.__all__ == []
+        assert public.__all__ == ["ReasoningVerb", "Surface"]
+
+        published = {name for name in public.__all__}
+
+        # The conclusion and its machinery stay inside the module. A consumer
+        # asks in this language; it never receives the aggregate.
+        forbidden = {
+            "DecisionPackage",
+            "EvidenceSet",
+            "GroundedOutput",
+            "GroundingReport",
+            "SupportBasis",
+            "SupportLevel",
+            "ReasonedOutput",
+        }
+        assert not published & forbidden
+
+        # Nothing here may write, rank, or decide. Same rule as every other
+        # published reader in the platform.
+        for name in published:
+            exported = getattr(public, name)
+            surface = {a for a in dir(exported) if not a.startswith("_")}
+            assert not {a for a in surface if a.startswith(("save", "write", "create", "rank"))}

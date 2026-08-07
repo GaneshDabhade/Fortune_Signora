@@ -496,3 +496,83 @@ Protocol 2 presents a citation as **a bare copyable token** — `signal_contribu
 **`reasoning@2` is unreleased**, and `is_released` derives it rather than declaring it: a prompt is usable only where an evaluation supports it. **Nothing may use `@2` until it earns a release**, and `@1` remains the released artifact.
 
 > ⚠️ **A prompt is not code, and no test asserts its content.** The claim this slice makes — *that the worked example fixes protocol-2 grounding* — **is measured by nothing until the evaluation runs.** A green suite says the registry loads it and the fingerprint is right; it says nothing about whether the prompt works. **Stated here so the next reader does not mistake one for the other.**
+
+---
+
+# The published language — `ReasoningVerb` and `Surface`
+
+**[TASK-453](../BACKLOG.md), 2026-08-07.** Ruled onto this module by
+[D-112](../DECISION_REGISTER.md) at [C-419](../LANE_COORDINATION.md):
+
+> **"The engine owns the language. Screens consume that language."**
+
+**Two types in `public/`, and nothing else.** Before this the module's contract
+was `__all__ = []` — a scaffold registered so the layering was enforced from
+the first line of code — and [445](445-ai-copilot-traceability-audit.md) had
+recorded the gap as *"🔴 missing entirely. No verb, intent or capability
+taxonomy exists in any `domain/` layer."*
+
+## `ReasoningVerb` — closed, and closed in code rather than in a document
+
+**Explain · Summarize · Predict · Recommend · Generate · Reason.**
+[410](410-approved-ui-specification.md) calls the set closed; until this slice
+**nothing closed it**.
+
+⚡ **The closure is structural.** Python refuses to subclass an enum that has
+members, so **a seventh verb cannot be added from outside this file** — which
+is precisely what a frontend copy of the taxonomy would have allowed, and why
+D-112 forbids one. Adding a verb is a product decision with a diff.
+
+**It carries `SupportLevel`'s refusals** — no ordering, no numeric conversion —
+for the same reason that type has them: *a type that can be ordered is a type
+somebody will rank*, and ranking verbs invites an escalation rule the design
+does not have. **Equality still works**, because a consumer has to dispatch.
+
+## `Surface` — provenance, and never an input
+
+> ## **The answer must not differ because of where it was asked.**
+
+**That is what *"17 surfaces, one contract"* means.** It is the same rule the AI
+Platform already holds about vendors — *"recorded as provenance on every
+inference and never consulted for a decision"* (§10) — and it is asserted the
+same way: **by reading the source**, not by trusting the docstring.
+
+⛔ **The type carries no category, no capability and no tier.** No `is_copilot`,
+no `.kind`, no `allows()` — **nothing to branch on, because a field to branch on
+is a branch somebody will write.** A test parses `domain/`, `application/` and
+`public/` and fails on any comparison against a surface outside `Surface`'s own
+constructor. **The exclusion is narrow and deliberate**: a type constraining its
+own key at construction is not a decision about which surface it is. **The scan
+is proved able to fail** by running it against a synthetic module that does the
+forbidden thing.
+
+### ⚠️ Why this one is not a closed enum
+
+**Because the six verbs are named in the design and the seventeen surfaces are
+not.** [410](410-approved-ui-specification.md) asserts the *count* —
+*"17 surfaces, one contract"* — and **no document in this repository lists
+them**. Enumerating seventeen members would have been inventing architecture
+(§21), and the invented names would then be the ones every screen had to use.
+
+**So the form is constrained and the membership is not**: lowercase,
+dot-or-underscore separated, bounded at 64 — `account.360`, `copilot`,
+`opportunity.next_actions`. **One operational record holding `account-360`,
+`account_360` and `Account360` can be counted by nothing**, which would defeat
+the only reason the surface is carried.
+
+⚡ **Narrowing this to a reviewed registry later is additive and breaks no
+consumer.** It is the least-powerful-author ladder climbed only as far as
+correctness currently requires, and **the rung above is available the moment
+somebody names the seventeen.**
+
+## What the next assignee needs
+
+**This slice published the language and nothing that uses it.** There is no
+route, no request shape and no Decision Package in `public/` — those are
+Epic G's ([TASK-202](../BACKLOG.md)), which is blocked whole on the hosted
+evaluation credential ([C-334](../LANE_COORDINATION.md)).
+
+**When the route arrives it takes a verb and a surface as parameters**, and the
+surface must reach the inference record as provenance. ⛔ **If it ever reaches a
+branch, the guarantee that made one route defensible instead of seventeen has
+been lost** — and the test above is what will say so.

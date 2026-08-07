@@ -19,9 +19,177 @@ ranking, and no next action** in this surface. A Decision Package is a
 decision *input*; the action belongs to the Recommendation Engine (M11), and
 committing to it belongs to a human — *intelligence suggests; humans commit*.
 
-Nothing here is exported yet: the module is scaffolded and its boundary
-contracts are registered, so the layering is enforced from the first line of
-code rather than after it (T122).
+### What this publishes — [TASK-453](../../../../docs/BACKLOG.md)
+
+**The language a customer asks in**, ruled onto this module by
+[D-112](../../../../docs/DECISION_REGISTER.md) at
+[C-419](../../../../docs/LANE_COORDINATION.md): *"the engine owns the language.
+Screens consume that language."*
+
+> ⛔ **Do not duplicate this taxonomy in frontend code.** Put it in the
+> frontend and **the closed set stops being closed the first time a screen
+> needs a seventh** — which is the whole property `ReasoningVerb` exists to
+> hold.
+
+**Seventeen surfaces, one contract.** The surface is carried so an answer can
+be attributed to where it was asked from — and **never so the answer can
+differ**. See `Surface`, where that is the load-bearing sentence.
 """
 
-__all__: list[str] = []
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+from enum import StrEnum
+
+_NOT_ORDERED = (
+    "reasoning verbs have no order. Explain is not 'less than' Predict — they are "
+    "six different things a customer may ask for, and ranking them would invite an "
+    "escalation rule that the design does not have."
+)
+
+_NOT_A_NUMBER = (
+    "a reasoning verb is not a number. It names what was asked, and arithmetic over "
+    "what was asked is not a question this product answers."
+)
+
+
+class ReasoningVerb(StrEnum):
+    """What a customer may ask the assistant for. **Six, and no others.**
+
+    **The closed taxonomy**, asserted by
+    [410](../../../../docs/architecture/410-approved-ui-specification.md) and
+    ruled onto this module by [D-112](../../../../docs/DECISION_REGISTER.md).
+    Before this existed the set was closed **in a design document and nowhere
+    in the code** — [445](../../../../docs/architecture/445-ai-copilot-traceability-audit.md)
+    recorded it as *"🔴 missing entirely. No verb, intent or capability
+    taxonomy exists in any `domain/` layer"*.
+
+    ⚡ **Closed is the property, not the count.** Python already refuses to
+    subclass an enum that has members, so **a seventh verb cannot be added
+    from outside this file** — a test asserts that rather than trusting it.
+    Adding one here is a product decision with a diff, which is exactly the
+    rung of the least-powerful-author ladder this belongs on (§2).
+    """
+
+    EXPLAIN = "explain"
+    """Why did Signora conclude this? **The one verb the Decision Package was
+    built for**, and the only one whose answer is entirely derivable from
+    evidence the platform already holds."""
+
+    SUMMARIZE = "summarize"
+    """What does all of this say, shorter? ⚠️ **Compression, never
+    conclusion** — a summary that adds a proposition its input did not contain
+    is an `EXPLAIN` wearing a cheaper coat, and it is graded differently."""
+
+    PREDICT = "predict"
+    """What is likely to happen next? **The only verb that is allowed to be
+    wrong about the future**, which is why its confidence must carry its basis
+    rather than a number."""
+
+    RECOMMEND = "recommend"
+    """What should I do? ⛔ **Proposes; never commits.** The action belongs to
+    the Recommendation Engine and committing to it belongs to a human — this
+    module answers the question and stops."""
+
+    GENERATE = "generate"
+    """Draft something for me. **The only verb whose output is intended to be
+    edited by the customer**, rather than inspected and challenged."""
+
+    REASON = "reason"
+    """Work this through. **Multi-step, and still single-call** — agentic
+    research is `ai_research_engine`'s and has a different latency, cost and
+    failure profile (§10). Asking for reasoning here must never become asking
+    for research."""
+
+    def __int__(self) -> int:
+        raise TypeError(_NOT_A_NUMBER)
+
+    def __float__(self) -> float:
+        raise TypeError(_NOT_A_NUMBER)
+
+    def __lt__(self, other: object) -> bool:
+        raise TypeError(_NOT_ORDERED)
+
+    def __le__(self, other: object) -> bool:
+        raise TypeError(_NOT_ORDERED)
+
+    def __gt__(self, other: object) -> bool:
+        raise TypeError(_NOT_ORDERED)
+
+    def __ge__(self, other: object) -> bool:
+        raise TypeError(_NOT_ORDERED)
+
+
+#: A surface key is lowercase, dot-separated and bounded — `account.360`,
+#: `copilot`, `opportunity.next_actions`. **Constrained in form precisely
+#: because it is not constrained in membership**: without this, one operational
+#: record holds `account-360`, `account_360` and `Account360` and nothing can
+#: be counted.
+_SURFACE_KEY = re.compile(r"^[a-z][a-z0-9]*(?:[._][a-z0-9]+)*$")
+
+_SURFACE_MAX = 64
+
+
+@dataclass(frozen=True, slots=True)
+class Surface:
+    """Where the assistant was asked. **Provenance, never an input.**
+
+    > ## **The answer must not differ because of where it was asked.**
+
+    **That is what *"17 surfaces, one contract"* means**, and it is the same
+    rule the AI Platform already holds about vendors: *"recorded as provenance
+    on every inference and **never consulted for a decision**"* (§10, vendor
+    neutrality). **A surface that changed the answer would make this seventeen
+    contracts that happen to share a route** — which is the outcome
+    [445 §3](../../../../docs/architecture/445-ai-copilot-traceability-audit.md)
+    names as *"17 chances for one of the five guarantees to be implemented
+    differently, and no way to check that they were not."*
+
+    ⛔ **So this type carries no category, no capability and no tier.** There is
+    no `is_copilot`, no `.kind`, no `allows()` — **nothing to branch on**,
+    because a field to branch on is a branch somebody will write. A test reads
+    this module as a syntax tree and refuses comparisons against a surface in
+    its own decision paths.
+
+    ### ⚠️ Why this is not a closed enum, when `ReasoningVerb` is
+
+    **Because the six verbs are named in the design and the seventeen surfaces
+    are not.** [410](../../../../docs/architecture/410-approved-ui-specification.md)
+    asserts the *count* — *"17 surfaces, one contract"* — and **no document in
+    this repository lists them**. Enumerating seventeen members here would be
+    inventing architecture rather than implementing it (§21), and the invented
+    names would then be the ones every screen had to use.
+
+    **The form is constrained instead of the membership**, so the operational
+    record stays countable while the set stays open. ⚡ **Narrowing this to a
+    reviewed registry later is additive and breaks no consumer** — it is the
+    least-powerful-author ladder climbed only as far as correctness currently
+    requires, and the rung above is available the moment somebody names the
+    seventeen.
+    """
+
+    key: str
+
+    def __post_init__(self) -> None:
+        if not self.key:
+            raise ValueError(
+                "an AI surface must say where it is. An unattributed inference cannot "
+                "be counted, compared, or explained to whoever asks why the assistant "
+                "answered differently on two screens."
+            )
+        if len(self.key) > _SURFACE_MAX:
+            raise ValueError(
+                f"a surface key of {len(self.key)} characters is a sentence, not an "
+                f"identifier. The limit is {_SURFACE_MAX}."
+            )
+        if not _SURFACE_KEY.match(self.key):
+            raise ValueError(
+                f"{self.key!r} is not a surface key. Lowercase, digits, and `.` or `_` "
+                "between parts — `account.360`, `copilot`, `opportunity.next_actions`. "
+                "One record holding `account-360` and `Account360` can be counted by "
+                "nothing."
+            )
+
+
+__all__ = ["ReasoningVerb", "Surface"]
