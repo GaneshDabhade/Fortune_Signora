@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "c89fd55"
+generated_from = "c1e9385"
 task_count     = 96
 
 [lane.Lane_A]
@@ -1254,7 +1254,7 @@ on_integration = true
 id            = "TASK-490"
 title         = "The design foundation — every screen inherits the finalized visual language, or none does"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
