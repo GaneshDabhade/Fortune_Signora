@@ -80,6 +80,60 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-138 · One test annotation fails `mypy --strict`, and it is holding sixteen commits and Lane A's whole queue
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`backend/tests/test_coordination_source.py`](../backend/tests/test_coordination_source.py) line 167 |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 · ⛔ **Blocking Quality Defect class** — `mypy --strict` is a certification gate, so nothing on this branch can be certified |
+| **Status** | **`OPEN`** — the fix is confirmed by QE in a scratch copy and **not applied**; QE changes no lane code |
+| **Found** | 2026-08-07 by QE, cycle 89, cheap gates before certification |
+
+**Steps to reproduce.**
+
+```bash
+cd backend && uv run mypy --strict .
+→ tests/test_coordination_source.py:167: error: Name "coordination.Task" is not defined  [name-defined]
+  Found 1 error in 1 file (checked 811 source files)
+```
+
+**Expected.** Clean, as it is on `integration`.
+
+**Actual.** One error. **`coordination` is loaded at runtime by `importlib`, so mypy has no static symbol for it.** Every *other* use in the file is an attribute access on a `ModuleType` — `Any`, and fine. **Line 167 is the only place the module is used in an annotation:**
+
+```python
+def row(task_id: str, unblocks: list[str]) -> coordination.Task:
+```
+
+**The fix is one word.** QE confirmed it in a scratch copy and restored the file: annotating the helper `-> Any` gives *"Success: no issues found in 811 source files"*. **Any equivalent works** — the constraint is only that a dynamically-loaded module cannot name a type.
+
+### ⚡ Everything else on the branch is genuinely fixed, and QE checked rather than assumed
+
+| | |
+|---|---|
+| [B-136](#b-136--the-worker-crash-loops-in-every-non-local-environment-because-the-composition-root-now-calls-a-guard-nothing-satisfies) | ✅ `SIGNORA_PROVIDERS: ""` in `docker-compose.prod.yml` |
+| [B-134](#b-134--coordinationpy---check-can-never-pass-because-it-compares-a-file-against-its-own-commit-stamp) | ✅ **`--check` returns `0` on a detached checkout of the branch tip** — the exact steady state where it failed every time before |
+| [B-135](#b-135--285-lines-of-new-governance-tooling-ship-with-no-tests) | ✅ 180 lines of tests, **38 passing**, and `import-linter` 37 kept / 0 broken |
+
+**Three findings closed, one gate left red.** ⛔ **This is the second consecutive return of the same branch, and both blockers were `mypy --strict`-class or `smoke`-class — neither needs the backend suite.**
+
+### The pattern is worth more than the fix
+
+**Lane C's stated constraint is that the backend suite truncates the demo stack's database on this workstation, so the suite stays with QE.** ⚡ **That constraint does not apply to `mypy --strict`.** It touches no database, no Docker stack and no port; it took **40 seconds** here and named the file, the line and the symbol.
+
+> **Both returns of this branch would have been caught before the push by a gate the lane can already run.**
+
+### ⚠️ What the return costs, stated rather than left implicit
+
+**Lane A cannot claim anything.** `origin/coordination` names `TASK-478` as its `current` — and **`git show origin/integration:docs/BACKLOG.md | grep -c TASK-478` returns `0`.** The row exists only on `lane-c-sync`.
+
+**That is `CLAUDE.md` §20e's own sentence arriving in practice** — *"a `TASK-nnn` existing only on a lane branch is invisible to every lane"* — and [`state-check`](../infra/state-check.py) says the same thing from the other side: *"`origin/coordination` is published and `CLAUDE.md` on `integration` does not yet carry the poll that makes it binding, so the ref is advisory and `integration` remains the authority."*
+
+⛔ **QE did not weigh that against the gate.** A failing gate excludes the slice and no other lane is held for it (`CLAUDE.md` §20e); **making a lane's gate pass is the one thing *QE removes its own blockers* explicitly does not license.** The cost is recorded here because it is real, not because it changes the answer.
+
+---
+
 ### B-137 · `state-check` read the last certification *attempt* and called it the last certification
 
 | | |
