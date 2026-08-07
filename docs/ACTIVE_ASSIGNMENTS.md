@@ -71,7 +71,7 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-07, `dae6417`
+## Current — as of 2026-08-07, `02fe658`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Since |
 |---|---|---|---|---|---|---|---|---|
