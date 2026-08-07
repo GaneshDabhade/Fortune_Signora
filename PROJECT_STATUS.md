@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `6fdb6cc`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `d437932`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `6fdb6cc`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `d437932`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`6fdb6cc`** — the certified commit itself |
+| **`main`** | **`d437932`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 93 promoted **Lane C's eighteen-commit branch** — held five polls, released by a one-word fix. ⚡ **The environment lease keyed on an unexpanded shell variable and now does not** |
-| **Certification** | ✅ [`6fdb6ccbbc5c`](certification/reports/6fdb6ccbbc5c.md) · migration head **`0041`** · protocol **v2** · ⚠️ **11 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 94 promoted **fifteen commits across all three lanes** — ⚡ **the Action Batch's persistence, the Reasoning Engine's contract, and the fix that unblocked the whole repository** |
+| **Certification** | ✅ [`d4379324eaa6`](certification/reports/d4379324eaa6.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4021 backend tests** *(+23)* · **95.34% coverage** *(floor 95)* · **1523 frontend tests** across 65 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** · mypy strict over **824 files** · migrations `0000`–`0041`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 153s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4105 backend tests** *(+84)* · **95.38% coverage** *(floor 95)* · **1523 frontend tests** across 65 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **832 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 162s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,13 +40,13 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **TASK-478 · 450 · 441 · 444** | **TASK-428** — a role change becomes an affiliation | ⚡ **TASK-455 · 463 · 479 · the lease fix · B-139 · B-143** | **Cycle 93** |
+| **Last promoted** | **C-238** — the port is typed and nothing implements it | ⚡ **TASK-463** — the Action Batch's persistence · **TASK-202** | ⚡ **B-144** — the fix that unblocked the repository | **Cycle 94** |
 | **Execution phase** | **Building** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
-| **Branch** | Level with `main` | Level with `main` | ✅ **Level with `main`** | Level with `main` |
-| **Validation status** | — | — | ✅ **Promoted this cycle** — **eighteen commits, first attempt** | — |
+| **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
+| **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | Next `READY` row | Next `READY` row | Stewardship | **Cycle 94, on the next poll** |
+| **Next executable work** | Next `READY` row | Next `READY` row | Stewardship | **Cycle 95, on the next poll** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,61 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 93
+## 1d · Release summary — 2026-08-07, cycle 94
+
+**Derived from the promoted commit `d437932`.** **Forty-nine promotions.** ⚡ **The largest cycle in this series — fifteen commits, all three lanes, first attempt — and it began with the repository unable to certify at all.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **[B-144](docs/BUGS.md) fixed** *(Lane C)* | **The fix that unblocked everything.** QE found the hidden input in `premature_releases`; ⛔ **Lane C found it in three functions rather than one** — *"the hidden input had moved up one frame, and it was in three functions rather than one"* |
+| ⚡ **TASK-463** *(Lane B)* | **The Action Batch's persistence** — append-only, **no `UPDATE` grant**, migration `0042` with its `tenancy_policy.py` registration in the same change |
+| **TASK-202** *(Lane B)* | The Reasoning Engine's public contract — 176 lines, with 266 of contract tests |
+| **C-238** *(Lane A)* | *"The port is typed, and nothing implements it"* |
+| **484 · 485 · 486** *(Lane C)* | UI conformance, platform readiness, and cross-application experience audits |
+
+**+84 backend tests · +6 Security Invariants · migration `0042` verified reversible to base and back.**
+
+### ⛔ The repository could not certify at the start of this cycle, twice over
+
+**[B-144](docs/BUGS.md) made `main` red** — a certification gate reading the clone, so a lane writing a task id in a commit message changed the answer. **Four polls reported it and stopped.** Lane C's fix is one parameter, applied three times.
+
+**And then the gate could not run at all.** `make certify` provisions its disposable database from a **hardcoded** `localhost:5432`:
+
+```python
+ADMIN: Final = "postgresql://signora:signora@localhost:5432/postgres"
+_HOST: Final = "localhost:5432"
+```
+
+**That is the shared review cluster, and it had been stopped.** QE restored it — *make the documented gate runnable, never make it pass.*
+
+### ⚠️ Which sharpens [B-141](docs/BUGS.md) rather than closing it
+
+**Lane C's [483](docs/architecture/483-environment-isolation-audit.md) concluded the stacks are isolated — three separate PostgreSQL clusters — and that is true.** ⛔ **But certification's own database is created inside the *review* cluster on `5432`, not inside QE's on `5632`.** [`infra/environments.py`](../infra/environments.py) states the consequence itself:
+
+> *"A PostgreSQL **role** is cluster-wide: two suites reaching `ALTER ROLE` collide however many databases they own, **which is what aborted cycle 57.** Per-database separation cannot reach a shared cluster; a separate cluster has separate roles."*
+
+⚡ **So the contention hypothesis for B-141 is stronger than QE recorded, and by a mechanism the repository had already written down.** **Measured, not concluded** — the row stays open.
+
+### ⚡ A poll nearly reported a false regression
+
+The measurement came back `17 errors` instead of the familiar `1 failed`, on an unchanged `main` — **which is precisely B-144's own symptom.** ⛔ **It was `ConnectionRefusedError` on a stopped stack: an abort, not a failure.** Reporting it as a regression would have put a false lead in front of the lane already fixing it. **QE then removed the dependency rather than the symptom**, bringing up its own lane cluster so the poll no longer needs anybody else's.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4105 backend** *(+84)* · **1523 frontend** · **95.38%** · **398 invariants** *(+6)* · **832 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **97 runs recorded, 90 certified** · `promoted == certified` ✓ · `--audit-main` clean · ⚡ **first attempt, no aborts** |
+| **Architecture** | ✅ **Migration `0042` reversible, verified** · **DR nothing lost** · smoke **162s** · a new table with RLS registered in the same change |
+| **Dependency** | ✅ **Every branch level with `main`** |
+| **Customer Value** | ⚡ **A batch of actions now survives a restart** — proposed, approved, reversible, and append-only by grant rather than by convention |
+| **Process** | ✅ **A four-poll block cleared, and both halves of why it took four polls are on the record** |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 93
 
 **Derived from the promoted commit `6fdb6cc`.** **Forty-eight promotions.** ⚡ **Eighteen commits held across five polls, released by one word, certified on the first attempt.**
 
