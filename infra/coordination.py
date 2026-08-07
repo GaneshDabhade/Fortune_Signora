@@ -469,7 +469,15 @@ def render(rows: list[Task]) -> str:
         "",
         "[meta]",
         'generator      = "infra/coordination.py"',
-        f'generated_from = "{_git("rev-parse", "--short=7", "HEAD") or "unknown"}"',
+        # **`origin/integration`, not `HEAD` — B-134.** [479](../docs/architecture/479-coordination-architecture.md)
+        # §2 specified *"the integration commit the projection was taken at"*
+        # and this line read `HEAD`, which made `--check` **unable to pass by
+        # construction**: regenerating stamped the current `HEAD`, committing
+        # the file moved `HEAD`, and the next comparison re-rendered a
+        # different stamp. ⛔ **The file recorded a value that writing the file
+        # invalidated.** ⚡ QE found it on a detached checkout with nothing
+        # stale — the honest steady state, where it fails every time.
+        f'generated_from = "{_git("rev-parse", "--short=7", "origin/integration") or "unknown"}"',
         f"task_count     = {len(rows)}",
         "",
     ]
@@ -532,6 +540,25 @@ def render(rows: list[Task]) -> str:
     return "\n".join(out)
 
 
+def _content(source: str) -> str:
+    """The part of the source that staleness is actually about.
+
+    ⛔ **`[meta]` is provenance, not content** — it says *when* and *from what*,
+    and comparing it makes the check answer a different question from the one
+    it asks. **Belt and braces with the `origin/integration` stamp above**: that
+    fix alone would leave `--check` failing whenever `integration` moved, even
+    though every task and every metric was still correct, and a check that
+    reports *stale* about an accurate file teaches a reader to ignore it.
+
+    **B-134**, found by QE. ⚠️ **I reported this instrument clean last cycle.**
+    It was — for the minutes between regenerating and committing, which is
+    exactly the window I ran it in. **Running a check only where it passes is
+    not running it.**
+    """
+    body = source.split("\n[lane.", 1)
+    return body[1] if len(body) > 1 else source
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
@@ -545,7 +572,7 @@ def main() -> int:
         if not OUT.exists():
             print("coordination: docs/coordination/coordination.toml is missing", file=sys.stderr)
             return 1
-        if OUT.read_text() != fresh:
+        if _content(OUT.read_text()) != _content(fresh):
             print(
                 "coordination: the published source does not match what the generator "
                 "emits today — regenerate it. A stale coordination source instructs "

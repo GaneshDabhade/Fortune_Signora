@@ -197,7 +197,7 @@ REFUSED — 4d37ede has a certification record, and it did not pass.
 | **Module** | Platform Foundation — [`backend/apps/worker/main.py`](../backend/apps/worker/main.py), [`infra/docker-compose.prod.yml`](../infra/docker-compose.prod.yml) |
 | **Current assignee** | **Lane C** — it authored TASK-419, and `infra/**` is its remit ([D-022](DECISION_REGISTER.md)) |
 | **Severity** | 🟠 · ⛔ **Blocking Quality Defect class** — `make smoke` fails at Startup, so **nothing can be certified while it stands** |
-| **Status** | **`OPEN`** — reproduced from the container logs. **QE changes no production code** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-07.** **One line, and the guard is untouched**: `SIGNORA_PROVIDERS: ""` beside `SIGNORA_ENVIRONMENT` in the `x-backend-env` anchor, so it merges into `api`, `worker` and `relay` together — **verified by resolving the YAML and reading all three.** ⚡ **Placed there rather than on `worker` because the two lines are one statement**: declaring an environment production without declaring what it may serve is half of it, and the worker crash-looped on the other half. ✅ **Proven, not inferred** — with `SIGNORA_ENVIRONMENT=production-local` and `SIGNORA_PROVIDERS=""` the registry builds; **without it the guard still raises**, checked in the same run. ⛔ **`VERIFIED` is QE's** |
 | **Found** | 2026-08-07 by QE, cycle 87, by `make certify` |
 
 **Steps to reproduce.**
@@ -257,7 +257,7 @@ docker compose --env-file .env.prod-local -f docker-compose.prod.yml logs worker
 | **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py), [`infra/state-check.py`](../infra/state-check.py) |
 | **Current assignee** | **Lane C** — Platform Foundation is Lane C's ([D-022](DECISION_REGISTER.md)), and it authored both |
 | **Severity** | 🟠 — **wrong behaviour, and it is a governance instrument reporting a condition that is not true.** ⛔ **Not a Blocking Quality Defect**: `state-check.py` reports rather than fails, so no gate is held |
-| **Status** | **`OPEN`** — measured, not fixed. **QE changes no production code** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-07.** **Two changes, and the diagnosis was exactly right.** ⚡ **`generated_from` now stamps `origin/integration`, which is what [479](architecture/479-coordination-architecture.md) §2 specified all along** — *"the integration commit the projection was taken at"* — **and I implemented `HEAD`.** ✅ **`--check` compares content and not `[meta]`**, so provenance can never read as staleness. ⚡ **Demonstrated the way it failed**: regenerate, commit, re-run — **exit 0 after the commit**, the condition it could never survive. ⛔ **`VERIFIED` is QE's** |
 | **Found** | 2026-08-07 by QE, cycle 87, validating Lane C's nine commits |
 
 **Steps to reproduce.** On the branch that introduced the check — no rebase, no edit, nothing stale:
@@ -322,7 +322,7 @@ So `state-check` acquires a permanent false finding. **That is the same family a
 | **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) (new, 285 lines), [`infra/state-check.py`](../infra/state-check.py) (`_coordination_findings`, `_duplicate_index_findings`) |
 | **Current assignee** | **Lane C** |
 | **Severity** | 🟡 — **wrong but survivable.** The generator's *output* is correct today; QE regenerated it and diffed. ⛔ **Nothing prevents that from stopping being true** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-07.** **[`backend/tests/test_coordination_source.py`](../backend/tests/test_coordination_source.py) — 12 assertions over fixed text, never the live source**, because asserting the real file is current would pass identically with the code deleted. ⚡ **It pins B-134 both ways** — a changed stamp is not staleness, **and a changed pipeline still is**, so the fix cannot become a guard that cannot fail. **Plus `_delivered`'s seven rows** ([C-427](LANE_COORDINATION.md)) **and the leverage ordering.** ⚠️ **Lane C did not run pytest**: `clean_database` is autouse and truncates every table, and the only PostgreSQL here is the demo stack. **Every assertion was exercised directly against the module instead — 12/12 — and QE runs the suite.** ⛔ **`VERIFIED` is QE's** |
 | **Found** | 2026-08-07 by QE, cycle 87 |
 
 **Steps to reproduce.**

@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "499619f"
+generated_from = "64bd59a"
 task_count     = 85
 
 [lane.Lane_A]
@@ -28,16 +28,16 @@ blocked_duration_days  = 0.0
 critical_path_max      = 4
 
 [lane.Lane_B]
-current            = "TASK-462"
-next               = "TASK-202"
-next_after_that    = "TASK-428"
+current            = "TASK-202"
+next               = "TASK-428"
+next_after_that    = ""
 assigned_total     = 31
-claimable          = 3
-in_flight          = 18
+claimable          = 2
+in_flight          = 19
 awaiting_qe_transition = 0
 blocked            = 10
-lane_utilization   = 3.6
-idle_prediction_days   = 0.4
+lane_utilization   = 3.8
+idle_prediction_days   = 0.3
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 3
@@ -945,15 +945,15 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-462"
 title         = "The Action Batch's domain — proposal, approval, and the window as a predicate"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane B"
 depends_on     = []
 unblocks       = ["TASK-463"]
 next_owner     = ["Lane B"]
 next_lane      = "Lane B"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 
@@ -968,7 +968,7 @@ unblocks       = ["TASK-464"]
 next_owner     = ["Lane B"]
 next_lane      = "Lane B"
 critical_path  = 1
-estimated_ready = "⏸️ **`SEQUENCED`** — **predecessor [TASK-462](#task-462--the-action-ba"
+estimated_ready = "when TASK-462 complete"
 waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-462](#task-462--the-action-batchs-domain--proposal-approval-and-the-window-as-a-predicate)**"
 blocked_days   = 0.0
 
@@ -1141,7 +1141,7 @@ blocked_days   = 0.0
 id            = "TASK-419"
 title         = "A handler can reach a provider adapter"
 state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
+declared      = "CHANGES REQUESTED"
 lane          = "Lane C"
 depends_on     = []
 unblocks       = []

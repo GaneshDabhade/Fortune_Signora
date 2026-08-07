@@ -39,6 +39,17 @@ x-backend-image: &backend-image
 # not the container's — a mismatch mints tokens the API rejects with no clue why.
 x-backend-env: &backend-env
   SIGNORA_ENVIRONMENT: production-local
+  # B-136. Paired with the line above, and it has to be: `build_provider_registry`
+  # refuses simulated adapters outside `local`, and `ProviderSettings.providers`
+  # defaults to every provider. Declaring the environment production without
+  # declaring what it may serve is half a statement, and the worker crash-looped
+  # on the other half from the first commit that called the builder.
+  #
+  # Empty means no ingestion, which is correct here: no production provider
+  # adapter exists in this repository yet. The guard is not relaxed and must not
+  # be — a service running on generated company data would fabricate every score
+  # and signal built on top of it.
+  SIGNORA_PROVIDERS: ""
   SIGNORA_REDIS_URL: redis://redis:6379/0
   SIGNORA_LOG_LEVEL: INFO
   SIGNORA_JWT_ISSUER: http://localhost:3100
