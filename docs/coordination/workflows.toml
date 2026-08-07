@@ -225,7 +225,7 @@ state  = "planned"
 design = "Fortune Signora Executive Dashboard.dc.html"
 tasks  = ["TASK-438"]
 owner  = "Lane A"
-blocker = "charting has no ratified library — D-149, and the ADR waits"
+unblocked = "⚡ D-167 §3, 2026-08-07 — ADR-0407 drafted. The design has ONE data visualization here: a 760x220 column figure of 13 marks. No library needed."
 
 [workflow.20]
 name   = "Opportunity Intelligence"
@@ -247,7 +247,7 @@ state  = "planned"
 design = "Fortune Signora Reports.dc.html"
 tasks  = []
 owner  = "Lane A"
-blocker = "charting — same as workflow 19"
+unblocked = "⚡ D-167 §3 — Reports has ZERO data visualizations. Its blocker was inherited from an assumption and never measured."
 
 [workflow.23]
 name   = "Security Center"
