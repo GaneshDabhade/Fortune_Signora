@@ -9,22 +9,22 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "64df6b8"
+generated_from = "89fffe9"
 task_count     = 85
 
 [lane.Lane_A]
-current            = "TASK-444"
+current            = ""
 next               = ""
 next_after_that    = ""
 assigned_total     = 34
-claimable          = 1
-in_flight          = 21
+claimable          = 0
+in_flight          = 22
 awaiting_qe_transition = 0
 blocked            = 12
-lane_utilization   = 4.2
-idle_prediction_days   = 0.1
-dependency_wait_days   = 0.0
-blocked_duration_days  = 0.0
+lane_utilization   = 4.4
+idle_prediction_days   = 0.0
+dependency_wait_days   = 0.1
+blocked_duration_days  = 0.1
 critical_path_max      = 4
 
 [lane.Lane_B]
@@ -154,9 +154,9 @@ state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-444"]
-next_owner     = ["Lane A"]
-next_lane      = "Lane A"
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
@@ -255,15 +255,15 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-444"
 title         = "Dismissal reasons tell the catalog which rules misfire"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
-depends_on     = ["TASK-432"]
+depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 1
-estimated_ready = "now"
+critical_path  = 0
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 
@@ -520,7 +520,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "⏸️ **`BLOCKED`** on **[TASK-474](#task-474--a-developer-can-see-open-a"
 waiting_for    = "⏸️ **`BLOCKED`** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be "
-blocked_days   = 0.0
+blocked_days   = 0.1
 
 [[task]]
 id            = "TASK-478"
