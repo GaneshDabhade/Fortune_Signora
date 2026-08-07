@@ -120,7 +120,7 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-422"
 title         = "Epic H — a workspace states which providers it allows"
-state         = "WAITING_ARCHITECTURE"
+state         = "WAITING_PRODUCT_OWNER"
 declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = ["TASK-421"]
@@ -129,7 +129,7 @@ next_owner     = ["Lane B"]
 next_lane      = "Lane B"
 critical_path  = 2
 estimated_ready = "when TASK-421 complete"
-waiting_for    = "**`SEQUENCED`** — after [TASK-421](#task-421), **and blocked on ADR-B**"
+waiting_for    = "**`SEQUENCED`** — after [TASK-421](#task-421), **and blocked on the ADR [437 §3](architecture/437-ai-platform-future-epic.md) calls *ADR-B*: *'where d"
 blocked_days   = 0.0
 
 [[task]]
