@@ -80,6 +80,54 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-146 · Forty-nine backlog rows read `IN VALIDATION`, and advancing them is QE's alone
+
+| | |
+|---|---|
+| **Module** | Repository state — [`docs/BACKLOG.md`](BACKLOG.md) |
+| **Current assignee** | **QE** — ⛔ **`VERIFIED · CERTIFIED · PROMOTED · DONE` are QE's exclusively** (`CLAUDE.md` §20e); *"a feature lane never writes one of these"* |
+| **Severity** | 🟡 — **wrong but survivable.** No gate fails and no lane is stopped. ⛔ **What it breaks is what the backlog says about QE's own queue** |
+| **Status** | **`OPEN`** — **measured, and deliberately not resolved in bulk.** See below |
+| **Found** | 2026-08-07 by QE, cycle 108, while reading [D-165](DECISION_REGISTER.md) |
+
+**Steps to reproduce.** Take the first state token of each `Status` cell, before any `*(Previously …)*`:
+
+```
+IN VALIDATION   49
+SEQUENCED       35
+PROMOTED         4
+DONE             4
+```
+
+**Expected.** `IN VALIDATION` means *the lane has pushed and QE is validating*. Across **sixty-two promotions**, four rows reaching `PROMOTED` is not plausible.
+
+**Actual.** ⛔ **QE has been reconciling [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) at every Closeout and never advancing `BACKLOG.md`.** Closeout activity 3 says *"promoted claims marked `COMPLETE` and then removed"* — **QE read that as the board only.**
+
+### ⚠️ Why it matters now rather than as tidying
+
+**[D-165](DECISION_REGISTER.md) reasons from these rows**: *"Twelve `IN VALIDATION` rows were deliberately not reassigned — §20e ends the implementing lane's responsibility at that state; **they need QE, not an implementer**."*
+
+⚡ **That is correct governance applied to a state QE never advanced.** **A row that has been on `main` for fifty cycles is not waiting for QE**, and the planning that treats it as such is planning around a number QE produced.
+
+### ⛔ What QE is NOT claiming, and the reason is a defect this repository has fixed twice
+
+**QE has not verified that all forty-nine are promoted.** The obvious check —
+
+```bash
+git log --oneline origin/main --grep="TASK-nnn"
+```
+
+— **matches every commit that *mentions* an id, including the one that wrote the row.** That is [B-101](#b-101)'s class, the same defect [C-427](LANE_COORDINATION.md) records inside `_delivered`, and [B-144](#b-144--main-is-red-today-and-was-green-at-certification-because-a-certification-gate-reads-the-clone) is what it cost when a grep decided a gate.
+
+> ⚡ **So the certain half is stated and the uncertain half is not.** **Certain**: QE owns these transitions and has performed four. **Uncertain**: which of the forty-nine are genuinely promoted, which are legitimately with QE, and which were abandoned.
+
+### The fix, and it is deliberately not a bulk edit
+
+**Each row is advanced when its content is verified on `main` by opening what it claims to have shipped** — the check [C-235](LANE_COORDINATION.md), [C-237](LANE_COORDINATION.md) and [C-428](LANE_COORDINATION.md) all converged on, and the one that has been right every time. ⛔ **A bulk `sed` would replace an understated board with a confidently wrong one**, which is strictly worse.
+
+**QE advances them as it verifies them, and reports the count each cycle** rather than closing this row with one commit.
+
+
 ### B-145 · The coordination source goes stale by the clock, so its freshness check cannot stay green
 
 | | |
