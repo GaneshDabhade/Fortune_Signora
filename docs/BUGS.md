@@ -80,6 +80,60 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-145 · The coordination source goes stale by the clock, so its freshness check cannot stay green
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) `_blocked_days`, `render`, `_content` |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟡 — **advisory noise, not a gate failure.** ⛔ **It degrades the one instrument every lane is now told to poll** |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-07 by QE, cycle 97, running `--check` on a freshly integrated `integration` |
+
+**Steps to reproduce.** On `integration`, minutes after Lane C regenerated and published the file:
+
+```bash
+python3 infra/coordination.py --check
+→ coordination: the published source does not match what the generator emits
+  today — regenerate it.
+  exit 1
+```
+
+**Expected.** Exit `0` — nothing about the backlog changed between the two runs.
+
+**Actual.** Exit `1`, and **most of the 70 differing lines are elapsed time**:
+
+```diff
+-dependency_wait_days   = 0.2       +dependency_wait_days   = 0.0
+-blocked_duration_days  = 0.2       +blocked_duration_days  = 0.0
+-blocked_days   = 0.2               +blocked_days   = 0.0
+```
+
+### The cause, and it is one line
+
+```python
+return round((datetime.now(timezone.utc) - then).total_seconds() / 86400, 1)
+```
+
+⚡ **`blocked_days` is baked into the published file at generation time, at 0.1-day granularity.** So **the file drifts every ~2.4 hours with nothing changing anywhere**, and `--check` — which `state-check` calls on every run — reports *stale* about a file that is entirely accurate.
+
+### ⛔ This is [B-134](#b-134--coordinationpy---check-can-never-pass-because-it-compares-a-file-against-its-own-commit-stamp)'s family, arriving through a different door
+
+| | | |
+|---|---|---|
+| [**B-134**](#b-134--coordinationpy---check-can-never-pass-because-it-compares-a-file-against-its-own-commit-stamp) | The **`[meta]` stamp** made `--check` never pass | ✅ Fixed by `_content()` excluding `[meta]` |
+| **B-145** | The **body** carries a continuously-varying input, so it cannot *stay* passing | **Open** |
+
+**`_content()` already establishes the shape of the fix** — and its own docstring states the principle: *"`[meta]` is provenance, not content… comparing it makes the check answer a different question from the one it asks."* ⚡ **An elapsed-time metric is the same category**: it is a measurement *about* the moment of generation, not a statement about what a lane should build.
+
+**Two directions, and the second is better:** exclude the `*_days` fields from `_content()`, **or** stop baking them in and compute them when the file is read. ⛔ **The second removes the drift rather than hiding it**, and a reader wanting *blocked for how long* gets a current answer instead of one from whenever the file was last published.
+
+### ⚠️ Why it matters more than a stale-file warning normally would
+
+**[§20e](../CLAUDE.md), amended 2026-08-07: *"A lane learns what to build from `origin/coordination`."*** **A check that cries stale every 2.4 hours trains every lane to ignore the one signal that would tell them the queue really is out of date** — which is precisely what [B-134](#b-134--coordinationpy---check-can-never-pass-because-it-compares-a-file-against-its-own-commit-stamp)'s row warned about, in the row's own words: *a guard that cannot pass ends where a guard that cannot fail ends.*
+
+⛔ **Not blocking, and QE did not treat it as such.** `--check` is not a certification gate; `state-check` reports and never fails. **This cycle certified with it red, deliberately and on the record.**
+
 ### B-144 · `main` is red today and was green at certification, because a certification gate reads the clone
 
 | | |
