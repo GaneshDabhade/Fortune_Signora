@@ -242,6 +242,43 @@ updated      = 2026-08-07
 #    ordered to put a claimable-today row first whenever one exists.
 #
 # ══════════════════════════════════════════════════════════════════════════════
+# 🔴  LEGACY UI — 2026-08-07 · D-152 · read before the next screen
+#
+# The product owner's first human UI review found the login experience and the
+# post-login shell are NOT the finalized design. Measured across all 26
+# designs (487): nine of the ten screens with a surface show no evidence of
+# derivation. ZERO fully match. ZERO are production ready.
+#
+# ⛔ THE ONE THAT MATTERS MOST IS THE SHELL. `App Shell` scores 0 of 29
+#    distinctive phrases, and every screen renders inside it. That is why one
+#    review of one login screen is evidence about the application.
+#
+# ⚠️ TASK-447 — "The App Shell the approved design describes" — is yours and
+#    IN VALIDATION. It delivered structure; nothing has checked it against the
+#    design its title names. ⛔ Not a defect claim: derivation-by-language is a
+#    proxy and a shell can be structurally right with no shared phrase. Read
+#    the shell design against the implementation before that slice closes.
+#
+# ✅ AND THE GOOD NEWS, in the design's own words: "v1 is not deprecated; it
+#    is the substrate… almost all of it lands through tokens rather than
+#    markup." Eleven of its fourteen Critique-of-v1 findings are TOKEN-LEVEL
+#    against globals.css's 78 already-centralized properties, which §20c
+#    enforces. Three need component work: page headers, inline-editable table
+#    cells, the twelve embedded AI patterns.
+#    ⚡ This is a token migration plus three component families, NOT a rewrite,
+#      and TASK-448 + TASK-478 are already three slices into it.
+#
+# ⚠️ THE COST OF BUILDING NOW, recorded rather than acted on — priority is the
+#    product owner's (§20e). TASK-480–484 are new surfaces on a shell that is
+#    0 of 29, so each would be migrated twice. Against that: the token pass
+#    moves every screen at once including ones built meanwhile, so only the
+#    shell and the unread design need a second look.
+#
+# 📄 487-legacy-ui-migration-status.md — the classification, the five answers,
+#    and the missing global components.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🟢  JOURNEY READINESS — 2026-08-07 · D-151 ② · measured, not read from a table
 #
 # D-151 ②: "continue using complete customer journeys as the implementation
