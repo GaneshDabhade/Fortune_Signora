@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useId, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 
 import { Button, Input } from '@/components/ui';
 import { signIn, signInWithPassword } from '@/lib/auth/client';
 
 import { AuthLink } from '../auth-shell';
+import { Throttled } from './throttled';
 
 const OAUTH_LABELS: Record<string, string> = {
   google: 'Continue with Google',
@@ -68,6 +69,20 @@ export function SignInForm({
   const [fieldMessage, setFieldMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
+  // **Throttled is a state of this screen, not a route.** The design lists
+  // `/throttled`, and the remaining window is a fact only the sign-in response
+  // carries — a route reached by navigation would have to be *told* the
+  // number by whoever sent it there, and a number a screen is told rather than
+  // reads is the fabricated-data trap in its politest form.
+  const [throttled, setThrottled] = useState<{ retryAfterSeconds?: number } | null>(null);
+
+  // Stable, because `Throttled` holds it in a `useEffect` dependency list —
+  // a fresh closure each render would restart the countdown every second.
+  const resume = useCallback(() => {
+    setThrottled(null);
+    setError(null);
+    setPending(null);
+  }, []);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -108,6 +123,15 @@ export function SignInForm({
       router.push('/');
       return;
     }
+    // **The throttle is answered before the credential is**, because the
+    // server refused the request before it evaluated anything: reporting a
+    // rate limit as a credential failure tells somebody whose password is
+    // correct that it is wrong, and the retry it invites extends the block.
+    if (result.throttled) {
+      setThrottled({ retryAfterSeconds: result.retryAfterSeconds });
+      setPending(null);
+      return;
+    }
     // **Never *"no such account"*.** The design's second rationale: *"this
     // costs a little clarity and removes account enumeration entirely."*
     setError(result.error ?? "That email and password don't match.");
@@ -116,6 +140,13 @@ export function SignInForm({
     setPending(null);
     passwordRef.current?.focus();
   };
+
+  // ⛔ **It replaces the card rather than sitting above it.** Leaving the form
+  // in place under a pause notice offers a control the server will refuse for
+  // the next several seconds — and every use of it makes the wait longer.
+  if (throttled) {
+    return <Throttled retryAfterSeconds={throttled.retryAfterSeconds} onExpire={resume} />;
+  }
 
   if (!passwordEnabled && oauthMethods.length === 0) {
     return (

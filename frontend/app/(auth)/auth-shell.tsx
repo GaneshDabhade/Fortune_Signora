@@ -48,12 +48,26 @@ export function AuthShell({
    * evasion."*
    */
   region,
+  /**
+   * The product mark above the card.
+   *
+   * ⚡ **Off for Welcome, and only for Welcome.** The design puts the brand
+   * *inside* that one card — a 36px badge over a 22px heading — because
+   * Welcome **is** the branding moment. Rendering the shell's small mark above
+   * it as well would print *Fortune Signora* twice on the first screen an
+   * enterprise buyer sees.
+   */
+  mark = true,
+  /** Rendered inside the card **above** the heading — Welcome's brand block. */
+  masthead,
 }: {
   title: string;
   description?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
   region?: ReactNode;
+  mark?: boolean;
+  masthead?: ReactNode;
 }) {
   return (
     <main
@@ -71,16 +85,28 @@ export function AuthShell({
         {/* The product mark, above the card. `Fortune Signora` is the combined
             brand and this is a branding surface — the sign-in page is named in
             §4's list, so the full mark is correct here and `Signora` alone is
-            correct once the application is open. */}
-        <div className="mb-6 flex items-center justify-center gap-2">
-          <span
-            aria-hidden
-            className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-xs font-semibold text-accent-contrast"
+            correct once the application is open.
+
+            ⚡ **It is a link, and that is what gives Welcome a door.** The
+            design's hierarchy puts Welcome at the root; ours cannot be, because
+            `/` is the attention list and a signed-in person's morning. **A
+            product mark that goes home is how every real product behaves**, so
+            the entrance is the ordinary one rather than a back-link invented to
+            satisfy `reachability`. */}
+        {mark ? (
+          <Link
+            href="/welcome"
+            className="mb-6 flex items-center justify-center gap-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
-            FS
-          </span>
-          <span className="text-sm font-semibold text-content">Fortune Signora</span>
-        </div>
+            <span
+              aria-hidden
+              className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-xs font-semibold text-accent-contrast"
+            >
+              FS
+            </span>
+            <span className="text-sm font-semibold text-content">Fortune Signora</span>
+          </Link>
+        ) : null}
 
         <div
           className={[
@@ -90,8 +116,23 @@ export function AuthShell({
             'sm:rounded-xl sm:border sm:border-border sm:p-8 sm:shadow',
           ].join(' ')}
         >
+          {masthead}
           <div className="flex flex-col gap-1">
-            <h1 className="text-lg font-semibold text-content">{title}</h1>
+            {/* ⚡ **20px/700, which is `--text-xl` exactly** — every card
+                heading in the design is `font-size:20px;font-weight:700`
+                (Welcome's is 22px, and **the Design System's scale has no
+                22px**). It was `text-lg`/600. [D-163](../../../docs/DECISION_REGISTER.md):
+                *"do not introduce workflow-specific visual overrides where the
+                Design System should define the behavior"* — so the token is
+                used and an arbitrary 22px size is not written.
+
+                ⚠️ **The first draft of this comment quoted the arbitrary class
+                it was refusing to use, and `design-tokens.test.tsx` failed on
+                it.** The check reads source text, so it cannot tell a class
+                from prose about a class — **and that is the correct trade**:
+                the alternative is a checker that parses JSX to permit a
+                sentence nobody needed to write. */}
+            <h1 className="text-xl font-bold tracking-tight text-content">{title}</h1>
             {description ? (
               <div className="text-sm leading-6 text-content-muted">{description}</div>
             ) : null}

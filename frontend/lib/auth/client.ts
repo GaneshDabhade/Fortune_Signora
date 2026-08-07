@@ -54,6 +54,31 @@ export async function signIn(provider: string): Promise<void> {
 export interface AuthResult {
   ok: boolean;
   error?: string;
+  /**
+   * **The request was refused before the credential was evaluated.**
+   *
+   * A flag rather than a sentence a caller matches on: the message is
+   * customer copy and will be reworded, and a screen that branched on its
+   * wording would silently start reporting a throttle as a bad password the
+   * first time somebody improved it.
+   */
+  throttled?: boolean;
+  /**
+   * **Sign-in was refused for the device, not for the credential.**
+   *
+   * Better Auth rate-limits `/sign-in` at **three attempts per ten seconds**
+   * and answers `429` with an `X-Retry-After` header
+   * (`api/rate-limiter` — a default special rule, not something configured
+   * here). ⚡ **The seconds are read off that header**, so the countdown a
+   * customer watches is the vendor's own remaining window rather than a
+   * number this screen chose.
+   *
+   * ⛔ **It used to be reported as a wrong password**, which is the worst
+   * available answer: it tells somebody whose credentials are correct that
+   * they are not, and the advice it implies — try again, then reset your
+   * password — is the one action that extends the block.
+   */
+  retryAfterSeconds?: number;
 }
 
 function failed(message: string): AuthResult {
@@ -64,10 +89,23 @@ export async function signInWithPassword(
   email: string,
   password: string,
 ): Promise<AuthResult> {
+  // Read off the response rather than the error: the vendor's error object
+  // carries a status and a message and no headers, and the remaining window
+  // is only ever in a header.
+  let retryAfterSeconds: number | undefined;
+
   const { error } = await authClient.signIn.email({
     email,
     password,
     callbackURL: AFTER_SIGN_IN,
+    fetchOptions: {
+      onResponse: (context: { response: Response }) => {
+        const header = context.response.headers.get('X-Retry-After');
+        if (header === null) return;
+        const seconds = Number.parseInt(header, 10);
+        if (Number.isFinite(seconds) && seconds > 0) retryAfterSeconds = seconds;
+      },
+    },
   });
 
   if (!error) return { ok: true };
@@ -75,6 +113,21 @@ export async function signInWithPassword(
   // failure a person can act on and the one that is not a credential hint.
   if (error.status === 403) {
     return failed('Verify your email address before signing in.');
+  }
+  // **429 is the throttle, and it is not a credential answer at all.** Better
+  // Auth never checked the password — the request was refused before it
+  // reached the handler — so saying the pair does not match asserts something
+  // the server did not evaluate.
+  if (error.status === 429) {
+    return {
+      ok: false,
+      throttled: true,
+      error: 'For your protection, sign-in is paused for this device.',
+      // ⚠️ **Absent when the header is missing, never defaulted to a number.**
+      // A countdown invented to fill a gap is a promise about when sign-in
+      // resumes that nothing supports (P-A).
+      retryAfterSeconds,
+    };
   }
   return failed('That email and password do not match an account.');
 }

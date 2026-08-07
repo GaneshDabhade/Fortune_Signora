@@ -147,6 +147,65 @@ test.describe('Workflow 1 · the sign-in experience', () => {
   });
 });
 
+test.describe('Workflow 1 · the front door and the enterprise route', () => {
+  test('Welcome offers sign in, create, and SSO under its own divider', async ({
+    page,
+  }) => {
+    // Design 01. The `Enterprise` divider is the point: an SSO route offered
+    // *beside* password sign-in reads as an afterthought to the buyer whose
+    // security team is reading this screen.
+    await page.goto('/welcome');
+    await expect(page.getByRole('heading', { name: 'Fortune Signora' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Create an organization' })).toBeVisible();
+    // `exact`, because the lead paragraph says *enterprise teams* — the
+    // divider is the standalone word.
+    await expect(page.getByText('Enterprise', { exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign in with SSO' })).toBeVisible();
+  });
+
+  test('the status line under the card is answered, not decorative', async ({ page }) => {
+    // The design's own rationale — *"a live status dot. Buyers check both."*
+    // It reads `/api/health`, so it reports whether anybody can actually sign
+    // in. **It must leave `Checking`**, which is what proves it is wired.
+    await page.goto('/welcome');
+    await expect(page.locator('[data-status]')).not.toHaveAttribute(
+      'data-status',
+      'checking',
+    );
+  });
+
+  test('🔴 "Use single sign-on" now leads somewhere', async ({ page }) => {
+    // Milestone 2 shipped this link with no route behind it: every enterprise
+    // buyer who followed the one link addressed to them got the not-found
+    // page.
+    await page.goto('/sign-in');
+    await page.getByRole('link', { name: 'Use single sign-on' }).click();
+    await expect(page.getByRole('heading', { name: 'Single sign-on' })).toBeVisible();
+  });
+
+  test('SSO names no identity provider it cannot actually resolve', async ({ page }) => {
+    // The design resolves the domain — *"northwind.com uses Okta"*. Nothing
+    // maps a domain to a provider here, so the field is locked and the reason
+    // is given rather than a provider name being printed.
+    await page.goto('/sso');
+    await expect(page.getByText(/cannot yet look up a provider/i)).toBeVisible();
+    await expect(page.getByText('Okta')).toHaveCount(0);
+  });
+
+  test('the product mark is the way back to the front door', async ({ page }) => {
+    await page.goto('/sign-in');
+    await page.getByRole('link', { name: 'Fortune Signora' }).click();
+    await expect(page).toHaveURL(/\/welcome$/);
+  });
+
+  test('recovery is offered once, where the design puts it', async ({ page }) => {
+    // Milestone 2 left a second link to the same destination below the button.
+    await page.goto('/sign-in');
+    await expect(page.getByRole('link', { name: /forgot/i })).toHaveCount(1);
+  });
+});
+
 test.describe('Workflow 1 · the finalized visual identity', () => {
   test('the ground is the design\'s warm #faf8f6, not a cool grey', async ({ page }) => {
     // D-162: the review found the screen still read as the legacy UI. It did,

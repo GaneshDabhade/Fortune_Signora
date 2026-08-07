@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 
+import { SessionLock } from '@/components/auth/session-lock';
 import { AppShell } from '@/components/shell/app-shell';
 import { RouteGuard } from '@/components/shell/route-guard';
 import { Button, SkeletonText } from '@/components/ui';
@@ -111,6 +112,11 @@ function ShellForViewer({ email, children }: { email: string; children: ReactNod
       ) : (
         <SkeletonText lines={3} />
       )}
+      {/* **Mounted once, over everything** — design `18` requires
+          re-authentication to happen *over* the current view rather than
+          instead of it, so it lives at the shell and not on a page. It renders
+          nothing until the session it is watching actually expires. */}
+      <SessionLock email={email} />
     </AppShell>
   );
 }
