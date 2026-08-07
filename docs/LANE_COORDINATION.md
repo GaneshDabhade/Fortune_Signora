@@ -373,12 +373,9 @@ databaseUrl: required(
 | [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) | **`reasoning@1` earns a release under protocol 2, on a model this workstation cannot measure in time** | Lane A | **Product owner** · QE | **`READY FOR IMPLEMENTATION`** — ruled 2026-08-04 | **Only a live G1 inference.** The prompt is refused at runtime until a protocol-2 release exists |
 | [C-223](#c-223--competitor_entry-cannot-be-implemented-across-the-current-dependency-graph) | **`competitor_entry` cannot be implemented across the current dependency graph** | Lane A | **Product office** · Product owner | `OPEN` — [TASK-203](BACKLOG.md) claimed, everything else built | **Only the detection half of Epic D phase 1.** The declaration, its API and its screen are shipped |
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | **`RULED`** — 2026-08-05 · [D-073](DECISION_REGISTER.md) · a `Resource` is a **declaration**, never a grant · **[`CLAUDE.md` §20a](../CLAUDE.md) amended** | **[TASK-405](BACKLOG.md)'s last route is unblocked.** Authorization is granted only through `policy.csv`; a `Resource` entry without policy rows provides no runtime capability, so the two authorities were never governing the same thing |
-| [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
-| [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
-| [C-234](#c-234--task-901s-first-slice-is-complete-inside-the-module-and-the-wiring-is-task-419s) | **TASK-901's first slice is complete inside the module, and the wiring is TASK-419's** | Lane A | **Lane C** — `apps/` is its in [`modules.toml`](coordination/modules.toml), and [TASK-419](BACKLOG.md) names the exact change | **`OPEN`** — raised 2026-08-06 from inside [TASK-901](BACKLOG.md) | **The last step of TASK-901 slice 1.** Everything below it is built and tested |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, a | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [467 §3](architecture/467-system-states-traceability-audit.md).** ⚡ **The invariant it asks for already exists: it is [P-A / R-15](DOMAIN_DISCOVERY_REGISTER.md), r | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
-| [C-234](#c-234--task-901s-first-slice-is-complete-inside-the-module-and-the-wiring-is-task-419s) | **TASK-901's first slice is complete inside the module, and the wiring is TASK-419's** | Lane A | **Lane C** — `apps/` is its in [`modules.toml`](coordination/modules.toml), and [TASK-419](BACKLOG.md) names the exact change | ✅ **`ANSWERED`** — Lane C, 2026-08-07. **No ruling needed: the wiring is [TASK-419](BACKLOG.md), which is Lane C's, `READY` and unstarted.** | **The last step of TASK-901 slice 1.** Everything below it is built and tested |
+| [C-234](#c-234--task-901s-first-slice-is-complete-inside-the-module-and-the-wiring-is-task-419s) | **TASK-901's first slice is complete inside the module, and the wiring is TASK-419's** | Lane A | **Lane C** — `apps/` is its in [`modules.toml`](coordination/modules.toml), and [TASK-419](BACKLOG.md) names the exact change | ✅ **`CLOSED`** — Lane C, 2026-08-07. **The wiring is [TASK-419](BACKLOG.md), and it is delivered** (`c8386135`, on `lane-c-sync`, awaiting QE). | **The last step of TASK-901 slice 1.** Everything below it is built and tested |
 | [C-233](#c-233--the-app-shells-22-numbered-specifications-are-not-in-the-repository) | **The App Shell's 22 numbered specifications are not in the repository** | Lane A | **Lane C** *(three documents quote the specification; none records it)* | **`OPEN`** — raised 2026-08-06 from inside [TASK-447](BACKLOG.md) | **Nothing today.** The buildable part of the row shipped; **what cannot be built is what cannot be read** |
 | [C-232](#c-232--companies-shows-what-signora-tracks-and-the-audit-called-it-what-the-customer-declared) | **Companies shows what Signora *tracks*, and the audit called it what the customer *declared*** | Lane A | **Lane B** *(`commercial_profile` holds the declaration)* · **the product owner** *(whether the two should be one list)* | ✅ **`CLOSED`** — **Lane A, 2026-08-06, the dependency no longer exists.** [TASK-472](BACKLOG.md) shipped `GET /accounts-list` | **Nothing.** The screen ships over the read that exists and says which set it is |
 | [C-231](#c-231--the-organization-history-is-paged-and-its-fetch-is-not-yet-bounded) | **The organization history is paged, and its fetch is not yet bounded** | Lane A | **Lane A** — its own module, recorded so the half-fix is not mistaken for the whole | **`OPEN`** — raised 2026-08-06 from inside [TASK-443](BACKLOG.md), by this lane against itself | **Nothing.** The contract is fixed and the cost is not |
@@ -6817,6 +6814,39 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 ⚠️ **There is no `Resource` for reasoning.** **`Resource.RESEARCH` exists precisely because *"reading an account is free and asking for research spends a model call, and one resource could not express both without making every reader a spender."***
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
+
+## C-425 · The coordination ref asserts an authority that is not in the authoritative state
+
+| | |
+|---|---|
+| **Raised by** | ⚡ **Lane A**, 2026-08-07, **on the first poll of `origin/coordination`** — and it found the defect from the outside within one fetch |
+| **Owner** | **Lane C** — ⛔ **this is a Product Office defect, not a question for the product owner.** **Architecture governance is Lane C's, and the ruling below needs no ratification** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-07, ruled in [479](architecture/479-coordination-architecture.md) §11** |
+| **Blocks** | ⛔ **Nothing.** ⚡ **Both sources agree today, and Lane A said so before asking** |
+
+### What Lane A saw
+
+> **"`origin/coordination` instructs lanes to stop reading `integration` for sequence, but its authority ([479](architecture/479-coordination-architecture.md)) is not on `integration`. Both sources currently say the same thing, so nothing is blocked. ⚡ The moment they disagree I need a ruling on which wins."**
+
+✅ **Verified, all three parts:** **`docs/architecture/479-coordination-architecture.md` — absent from `origin/integration`** · **`infra/coordination.py` — absent** · **`CLAUDE.md` on `origin/integration` — zero matches for `origin/coordination`.**
+
+⚠️ **And Lane A's second observation is the one that matters more:** **the ref's own `[lane.Lane_A]` block and `integration`'s queue give the same answer** — `claimable = 0`. ⚡ **It checked the two sources against each other before reporting a conflict it had not measured.**
+
+### The ruling
+
+> ## **The coordination source is never the tiebreaker. Its value is latency, not authority.**
+
+**Every disagreement resolves toward the integration-side source, and the disagreement is a Product Office defect rather than a competing truth. The full table is [479](architecture/479-coordination-architecture.md) §11.**
+
+✅ **Lane A's behaviour was correct and does not change today**: **poll as currently governed; read the ref as well if useful; ⛔ never act on it against `integration`.**
+
+### Why this office did not see it
+
+⚠️ **The ref is published by Lane C directly; the rule that makes it binding travels through QE like every other governance change.** ⛔ **Between those two moments the ref exists and the rule does not** — **and the repository said nothing about which state a lane was in**, so Lane A had to derive it from an absence.
+
+✅ **Now measured rather than derived:** **`infra/state-check.py` reports the condition on every run**, naming this item.
+
+⚡ **This is [B-101](BUGS.md)'s class one level up** — **the subsystem was verified by fetching the ref back and reading it, which proves the file exists and says nothing about whether a lane may obey it.** ⛔ **Verifying an artifact is not the same as verifying its standing** — **[D-130](DECISION_REGISTER.md), and this office wrote that sentence down four days ago.**
 
 ## C-424 · The finalized rail links four screens the design set does not contain
 

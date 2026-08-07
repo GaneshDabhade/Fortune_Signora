@@ -431,6 +431,40 @@ def _planning_sync_findings() -> list[str]:
     ]
 
 
+def _ref_authority_findings() -> list[str]:
+    """Does the coordination ref instruct on an authority `integration` carries?
+
+    **Found by Lane A on 2026-08-07, from the outside, on the ref's first
+    poll** — and it is the sharpest reading this office has been given:
+    *"`origin/coordination` instructs lanes to stop reading `integration` for
+    sequence, but its authority is not on `integration`."* **A mechanism cannot
+    confer authority on itself from outside the authoritative state.**
+
+    ⚠️ **The ref is published by this office directly; the rule that makes it
+    binding travels through QE like every other governance change.** Between
+    those two moments the ref exists and is advisory, and **nothing in the
+    repository said which one a lane was looking at** — so Lane A had to derive
+    it. **This is that derivation, made a measurement.**
+
+    ⛔ **Reports rather than fails.** Clearing it needs a QE integration, which
+    is not this lane's to perform (D-136).
+    """
+    ref = _git("rev-parse", "--verify", "-q", "origin/coordination").strip()
+    if not ref:
+        return []
+    governing = _git("show", "origin/integration:CLAUDE.md")
+    if "origin/coordination" in governing:
+        return []
+    return [
+        "`origin/coordination` is published and `CLAUDE.md` on `integration` "
+        "does not yet carry the poll that makes it binding — **so the ref is "
+        "advisory and `integration` remains the authority for what to build** "
+        "(C-425). A lane polling it is reading a projection whose rule has not "
+        "landed; where the two disagree the integration-side source wins and "
+        "the disagreement is this office's defect."
+    ]
+
+
 def _execution_state_findings() -> list[str]:
     """**Did Product Office overwrite a state a lane owns?** ([D-123](../docs/DECISION_REGISTER.md))
 
@@ -1365,6 +1399,7 @@ def main() -> int:
     findings.extend(_coordination_findings())
     findings.extend(_structured_file_findings())
     findings.extend(_planning_sync_findings())
+    findings.extend(_ref_authority_findings())
     findings.extend(_duplicate_index_findings(coordination))
     findings.extend(_duplicate_state_findings(backlog))
     findings.extend(_ownership_findings(backlog))

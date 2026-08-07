@@ -187,10 +187,51 @@ blocker_owner = "—"
 | **④ `CLAUDE.md` §20e** | ✅ **Amended** — *A lane learns what to build from `origin/coordination`* |
 | **⑤ The lanes** | ✅ **Told, in all three queue files** |
 
-✅ **All five are done as of 2026-08-07. The subsystem is in use.**
+✅ **All five are done as of 2026-08-07.**
+
+> ⚠️ **This line said *"the subsystem is in use"* and that was not true when it was written.** ⛔ **The ref was published; no lane had polled it, and the first lane to try declined — correctly.** **See §11.** ⚡ **Corrected the same day, and it is the exact defect §2 names: a document must not assert a state the repository is not in.**
 
 > ## **v1 ships deliberately unfinished, and [D-144](../DECISION_REGISTER.md) is why.**
 >
 > ⛔ **`planning_latency` and `assignment_latency` are specified and not emitted** — both need the moment a blocker *cleared*, and the repository records when a state *string appeared*. **Computing them would mean inventing a number.**
 >
 > ⚡ **They are the first thing to learn from use rather than to perfect on paper**: *"this metric isn't useful · this dependency should be automatic · this queue should predict starvation · this assignment should happen earlier"* — **each of those is cheaper to find in a running system than to specify in advance.**
+
+---
+
+# 11 · ⚡ The precedence rule — what wins when two sources disagree
+
+**Added 2026-08-07, [C-425](../LANE_COORDINATION.md). Lane A found this on the ref's first poll, from the outside, and stated it exactly:**
+
+> **"`origin/coordination` instructs lanes to stop reading `integration` for sequence, but its authority ([479](479-coordination-architecture.md)) is not on `integration`. Both sources currently say the same thing, so nothing is blocked. ⚡ The moment they disagree I need a ruling on which wins."**
+
+✅ **Lane A was right, and its behaviour was correct.** ⛔ **It did not switch its polling source, and it should not have.**
+
+## The defect, stated plainly
+
+⚠️ **This office publishes the ref directly. The rule that makes the ref binding travels through QE like every other governance change.** ⛔ **Between those two moments the ref exists and the rule does not** — and **nothing in the repository said which of those a lane was looking at**, so Lane A had to derive it from the absence of `479` on `integration`.
+
+## The ruling, and it is permanent rather than transitional
+
+> ## **The coordination source is never the tiebreaker. Its value is latency, not authority.**
+
+| Disagreement | Wins | Why |
+|---|---|---|
+| **The ref vs `CLAUDE.md` on `integration`, before the §20e amendment lands** | ⚡ **`integration`.** **The ref is advisory** | **A mechanism cannot confer authority on itself from outside the authoritative state** |
+| **The ref vs [`BACKLOG.md`](../BACKLOG.md), ever** | ⚡ **The backlog** | **The ref is a projection of it** — §2, *truth has exactly one authoritative representation* |
+| **The ref vs [`modules.toml`](../coordination/modules.toml) on ownership** | ⚡ **`modules.toml`** | Same reason |
+
+⛔ **In every row the integration-side source wins, and the disagreement is a Product Office defect** — **a stale projection, never a competing truth.** ⚡ **So the answer Lane A asked for does not change when the amendment lands; what changes is only whether a lane may *save the read*.**
+
+## What a lane does today
+
+| | |
+|---|---|
+| ⚠️ **Until `CLAUDE.md` on `integration` carries the poll** | **Poll as currently governed.** ✅ **Reading the ref as well is useful and costs one fetch** — ⛔ **acting on it against `integration` is not** |
+| ✅ **Once it lands** | **The ref is the poll for *what to build next*, and the table above still governs every disagreement** |
+
+**Measured, not remembered:** **`infra/state-check.py` reports the condition every run** — *the ref is published and `integration` does not yet carry the poll* — **so the gap has an age rather than a recollection.**
+
+## What it does not excuse
+
+⛔ **Eleven planning corrections sit on `lane-c-sync` and not on `integration`**, and **[TASK-419](../BACKLOG.md) — which unblocks Lane A — is one of them.** ⚡ **The coordination ref does not fix that and was never going to: it carries the *plan*, and a lane needs the *code*.** **§9 said the ref does not reduce QE's queue; this is what that sentence costs in practice.**
