@@ -7847,3 +7847,62 @@ certification-guard.py: error: unrecognized arguments: --journeys
 ### ✅ Lane A was right, twice
 
 **It ran the documented command rather than assuming, and it reported the gap instead of quietly skipping the gate** — ⚡ **which is the same discipline that produced [B-212](BUGS.md) in the same report.** **Two governance-vs-reality defects found in one slice, both by running what the repository says to run.**
+
+---
+
+## C-434 · Three of Login's remaining screens need a decision, not a build — and one of them is already shipped
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-07, ⚡ **implementing Workflow 1 milestone 3 and opening `node_modules` rather than reasoning about it** ([D-137](DECISION_REGISTER.md): *accessible is a claim to be tested, never assumed in either direction*) |
+| **Owner** | **Product owner** — ⛔ **all three are authentication semantics or scope, and [D-151](DECISION_REGISTER.md) ④ places both here** |
+| **Status** | 🟡 **`OPEN` — raised 2026-08-07** |
+| **Blocks** | ✅ **Nothing built.** ⚠️ **It changes what the Workflow 1 review gate is shown**, which [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability) established should be known going in rather than discovered at the review |
+
+> ⚡ **This is [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability) one step later, from inside the implementation.** That item measured three controls from the outside and [D-156](DECISION_REGISTER.md) answered two. **Building the screens produced three further facts, and one of them says a ruled-out control shipped anyway.**
+
+### ① 🔴 `Use single sign-on` was ruled out of Workflow 1, and this lane shipped it
+
+**[D-156](DECISION_REGISTER.md) via [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability):** ***"`Use single sign-on` is out on ④ rather than on scope — domain→IdP routing is an authorization semantic."***
+
+⛔ **Milestone 2 put the control on the sign-in card anyway, pointing at `/sso`, which did not exist.** **Every enterprise buyer who followed the one link addressed to them reached the not-found page.** ⚠️ **This lane's defect, and it is named rather than folded into the next change.**
+
+**Milestone 3 gave it an honest destination instead of removing it**, and the reasoning is stated so it can be overruled in one line:
+
+| | |
+|---|---|
+| ⛔ **What was *not* built** | **No domain→IdP lookup.** No table, no setting, no endpoint. **The field renders through [`LockedField`](../frontend/components/ui/locked.tsx) with its reason and no value**, and there is deliberately **no email input** — a control whose outcome cannot depend on its input is a false affordance |
+| ✅ **What is real** | **The configured `socialProviders`** — the same `signIn(provider)` call the sign-in card makes, producing the same session ([ADR-0033](architecture/adr/0033-sign-in-methods.md)). ⛔ **Not an alternate journey**: the existing one, offered from a second place |
+| ⚠️ **Why not simply delete the control** | **[D-158](DECISION_REGISTER.md) and [D-162](DECISION_REGISTER.md) both post-date D-156 and both say the finalized design wins.** **Journey 3 of the design's five is `SSO-enforced`** — a Login the product owner reviews with no SSO entry point is a different review |
+
+> ### **Does the reviewed Login keep an SSO entry point that names no provider, or is the control removed until domain→IdP routing exists?**
+
+### ② Account lockout does not exist, and Better Auth will not be made to fake it
+
+**Design `03` — *"You have **3 attempts** left before the account locks for 15 minutes"* — and the whole of `11 · Account locked`.**
+
+✅ **Measured in the vendor rather than inferred:** `better-auth@1.6.25` rate-limits **per `ip + path`**, three attempts per ten seconds on `/sign-in`, answering `429` with `X-Retry-After`. ⛔ **There is no per-account lockout, no attempt counter and no unlock time.**
+
+⚡ **The design's own footnote on `12` says why that is the better control**: *"throttling is per device and IP, not per account, so an attacker cannot lock a colleague out by guessing at their address."* **The two screens contradict each other, and the vendor implements the one the design defends.**
+
+**Built:** `12 · Too many attempts`, with the countdown read off `X-Retry-After`. **Not built:** the attempt counter and `/locked`. ⛔ **A counter would be a fabricated number about a security control; a lockout rule would be a business rule this lane invented.** ✅ **Consistent with D-156's answer to C-431, and recorded because it now covers two more screens than that item measured.**
+
+⚠️ **One line of `12` is also not rendered**: *"doubles with each further attempt."* **Better Auth's window is a fixed rolling ten seconds** — printing it would misstate a security control by a factor of two.
+
+### ③ The throttle is invisible outside production, and the fix is one option
+
+`better-auth/dist/context/create-context.mjs`:
+
+```js
+enabled: options.rateLimit?.enabled ?? isProduction,
+```
+
+⛔ **So the rate limiter — the only real brute-force control the product has — is **off** in development and in every test run.** ⚠️ **A security control that exists only where nobody looks at it is a control no review and no journey has ever seen**, which is the shape [P-A](DOMAIN_DISCOVERY_REGISTER.md) and [§2](../CLAUDE.md) both name.
+
+⚡ **Setting `rateLimit: { enabled: true }` uses the vendor as intended and **strengthens** rather than weakens it — [D-158](DECISION_REGISTER.md)'s *"never weaken Better Auth"* points the same way.** ⛔ **This lane did not make the change**: it alters the Authentication Authority's configuration in every environment, and the vendor's `max: 3 / window: 10` on `/sign-in` would apply to the e2e suites of every lane.
+
+> ### **Is the rate limiter enabled in all modes, so the throttled state is reviewable and the control is real outside production?**
+
+### ⛔ And one that is a decision rather than a gap
+
+**Magic link — design `05`.** ✅ **`better-auth/plugins/magic-link` is present in `node_modules`**, so this is not a build problem. ⛔ **It adds an authentication *method*, which is not the customer-visible presentation layer [D-159](DECISION_REGISTER.md) bounds this work to.** **No row exists. Raised so it is scheduled rather than discovered missing at the Workflow 3 gate.**
