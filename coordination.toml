@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "64bd59a"
+generated_from = "d29e19a"
 task_count     = 85
 
 [lane.Lane_A]
@@ -53,8 +53,8 @@ awaiting_qe_transition = 0
 blocked            = 6
 lane_utilization   = 1.0
 idle_prediction_days   = 0.9
-dependency_wait_days   = 1.5
-blocked_duration_days  = 1.5
+dependency_wait_days   = 1.6
+blocked_duration_days  = 1.6
 critical_path_max      = 0
 
 [[task]]
@@ -1285,7 +1285,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "**`WAITING`** — **trigger: implementation naturally reaches M14b.** ⚠️"
 waiting_for    = "**`WAITING`** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md"
-blocked_days   = 1.5
+blocked_days   = 1.6
 
 [[task]]
 id            = "TASK-300"
