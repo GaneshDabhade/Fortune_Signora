@@ -22,6 +22,9 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('@/lib/query/hooks/team', () => ({ useAcceptInvitation: accept }));
 
+const signOut = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/auth/client', () => ({ signOut }));
+
 import JoinPage from '@/app/(app)/join/[workspaceId]/page';
 
 const IDLE = {
@@ -140,6 +143,46 @@ describe('a refusal is repeated, not rewritten', () => {
     render(<JoinPage />);
 
     expect(screen.getByRole('alert')).toHaveTextContent(/could not be reached/i);
+  });
+
+  it('🔴 a refusal offers a way out, rather than the button that just refused', async () => {
+    // **Design `17 · Unauthorized`** — *"three routes out, in the order most
+    // people need them"*, and the module's rule that **none is a dead end.**
+    // Until milestone 4 a refusal here left one control on screen: *Accept
+    // invitation*, which had just been refused and would be again.
+    accept.mockReturnValue({
+      ...IDLE,
+      error: new ApiError(404, {
+        code: 'invitation_not_found',
+        message: 'There is no invitation to this organization for your address.',
+        correlation_id: '33333333-3333-4333-8333-333333333333',
+      }),
+    });
+
+    render(<JoinPage />);
+
+    expect(screen.queryByRole('button', { name: 'Accept invitation' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in as someone else' }));
+    expect(signOut).toHaveBeenCalled();
+  });
+
+  it('⛔ never offers to request access, because nothing can grant it', () => {
+    // The design's primary route out needs a request-to-join capability —
+    // no endpoint, no table, no row. **A button that quietly did nothing is
+    // worse than its absence**, which is the rule the shell already applies
+    // to controls the server will refuse.
+    accept.mockReturnValue({
+      ...IDLE,
+      error: new ApiError(404, {
+        code: 'invitation_not_found',
+        message: 'There is no invitation to this organization for your address.',
+        correlation_id: '44444444-4444-4444-8444-444444444444',
+      }),
+    });
+
+    render(<JoinPage />);
+
+    expect(screen.queryByText(/request access/i)).not.toBeInTheDocument();
   });
 
   it('sends the new member to a route that exists', async () => {

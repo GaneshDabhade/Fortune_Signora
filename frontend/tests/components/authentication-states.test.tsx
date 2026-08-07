@@ -20,6 +20,8 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Authenticating } from '@/app/(auth)/sign-in/authenticating';
+import { ErrorDetail } from '@/app/(auth)/error/error-detail';
 import { Throttled } from '@/app/(auth)/sign-in/throttled';
 import { SignInForm } from '@/app/(auth)/sign-in/sign-in-form';
 import { SsoMethods } from '@/app/(auth)/sso/sso-methods';
@@ -28,10 +30,12 @@ import { SessionLock } from '@/components/auth/session-lock';
 
 const refresh = vi.fn();
 const push = vi.fn();
+let search = new URLSearchParams();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh, push }),
   usePathname: () => '/',
+  useSearchParams: () => search,
 }));
 
 const signInWithPassword = vi.fn();
@@ -49,6 +53,144 @@ vi.mock('@/lib/auth/client', () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   session.mockReturnValue({ data: null });
+  search = new URLSearchParams();
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Design 15 · Authenticating
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('signing you in — design 15', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it('⛔ shows nothing at all below 800ms', () => {
+    // *"Named steps replace a bare spinner past 800ms."* Below it the button
+    // is already saying **Signing in…**, and swapping the whole card out for
+    // one frame is a flash rather than feedback.
+    vi.useFakeTimers();
+    const { container } = render(
+      <Authenticating stage="credentials" onCancel={vi.fn()} />,
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('names the step that is actually running, once it is worth explaining', async () => {
+    vi.useFakeTimers();
+    render(<Authenticating stage="credentials" onCancel={vi.fn()} />);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(800);
+    });
+
+    expect(screen.getByRole('heading', { name: 'Signing you in…' })).toBeVisible();
+    expect(screen.getByText('Checking your credentials')).toBeVisible();
+    expect(screen.getByText('Preparing your organization')).toBeVisible();
+  });
+
+  it('⛔ narrates only the two stages it can observe, never the third', async () => {
+    // The design names **verified credentials · checking membership · loading
+    // permissions**. Permissions resolve in the authenticated shell *after*
+    // the navigation, against a session that does not exist while this card
+    // is on screen — so a third step would be this screen narrating work it
+    // cannot see, which is the fabricated-progress trap in its most
+    // convincing form.
+    vi.useFakeTimers();
+    render(<Authenticating stage="credentials" onCancel={vi.fn()} />);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(800);
+    });
+
+    expect(screen.queryByText(/permission/i)).not.toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('offers an escape past 8 seconds, and it cancels rather than hides', async () => {
+    // *"Past 8 seconds the card offers to cancel and try another method — it
+    // never hangs silently."*
+    vi.useFakeTimers();
+    const onCancel = vi.fn();
+    render(<Authenticating stage="credentials" onCancel={onCancel} />);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(800);
+    });
+    expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(7200);
+    });
+    expect(screen.getByText(/taking longer than usual/i)).toBeVisible();
+
+    vi.useRealTimers();
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('a completed step reads as completed without relying on the tick', async () => {
+    // 1.4.1 — the mark is decorative, so the state lives in the text.
+    vi.useFakeTimers();
+    render(<Authenticating stage="organization" onCancel={vi.fn()} />);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(800);
+    });
+
+    expect(screen.getByText('— done')).toBeInTheDocument();
+    expect(screen.getByText('— in progress')).toBeInTheDocument();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Design 16 · Authentication error
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('the identity provider refused — design 16', () => {
+  it("quotes the provider's own words rather than paraphrasing them", () => {
+    // Both values are Better Auth's own query parameters — the OAuth fields
+    // the provider returned. A paraphrase would be a claim about somebody
+    // else's system.
+    search = new URLSearchParams({
+      error: 'access_denied',
+      error_description: 'user not assigned to this application',
+    });
+    render(<ErrorDetail />);
+
+    expect(screen.getByText('user not assigned to this application')).toBeVisible();
+    expect(screen.getByText(/your IT team assigns it/i)).toBeVisible();
+  });
+
+  it('⛔ says the provider gave no reason, rather than inventing one', () => {
+    search = new URLSearchParams({ error: 'server_error' });
+    render(<ErrorDetail />);
+
+    expect(screen.getByText(/sent no reason/i)).toBeVisible();
+  });
+
+  it("the copyable reference is the provider's code, not a generated one", async () => {
+    // ⚡ **An identifier this screen made up would be meaningless to the only
+    // people who can act on it.** What an IT team pastes into a ticket has to
+    // be what their own provider logged.
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('navigator', { clipboard: { writeText } });
+    search = new URLSearchParams({ error: 'access_denied', error_description: 'nope' });
+    render(<ErrorDetail />);
+
+    await userEvent.click(screen.getByRole('button', { name: /copy/i }));
+    expect(writeText).toHaveBeenCalledWith('access_denied — nope');
+    vi.unstubAllGlobals();
+  });
+
+  it('⛔ never names a provider it was not told', () => {
+    // The design's heading is *"Okta rejected the sign-in"*. Better Auth's
+    // error redirect carries no provider, and naming a guess would put a
+    // wrong vendor in front of a customer's IT team.
+    search = new URLSearchParams({ error: 'access_denied' });
+    render(<ErrorDetail />);
+
+    expect(screen.queryByText(/okta|entra|azure|google/i)).not.toBeInTheDocument();
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════

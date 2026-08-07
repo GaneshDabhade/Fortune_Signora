@@ -40,8 +40,29 @@ export const authClient = createAuthClient();
  */
 const AFTER_SIGN_IN = '/';
 
+/**
+ * Where a failed federated sign-in lands.
+ *
+ * 🔴 **Without this, it lands on Better Auth's own error page** — a complete
+ * `<!DOCTYPE html>` document the vendor serves from `/api/auth/error`, with
+ * its own font stack and its own colours. **Every OAuth failure took a Signora
+ * customer out of Signora**, and the screen the design draws for exactly this
+ * moment (`16 · Authentication error`) had nothing pointing at it.
+ *
+ * ⚡ **A per-call option, not a change to the auth server.** `errorCallbackURL`
+ * is part of the sign-in request Better Auth already accepts, so the
+ * Authentication Authority is untouched
+ * ([D-159](../../../docs/DECISION_REGISTER.md): only the customer-visible
+ * presentation layer is replaced).
+ */
+const ON_SIGN_IN_ERROR = '/error';
+
 export async function signIn(provider: string): Promise<void> {
-  await authClient.signIn.social({ provider, callbackURL: AFTER_SIGN_IN });
+  await authClient.signIn.social({
+    provider,
+    callbackURL: AFTER_SIGN_IN,
+    errorCallbackURL: ON_SIGN_IN_ERROR,
+  });
 }
 
 /**
@@ -88,6 +109,16 @@ function failed(message: string): AuthResult {
 export async function signInWithPassword(
   email: string,
   password: string,
+  /**
+   * Abandons the attempt.
+   *
+   * ⚡ **The design's own escape**: *"past 8 seconds the card offers to cancel
+   * and try another method — it never hangs silently."* **A real abort rather
+   * than a screen that stops looking**: without it, cancelling would leave the
+   * request in flight and a session could be established under a person who
+   * had just told the product to stop.
+   */
+  signal?: AbortSignal,
 ): Promise<AuthResult> {
   // Read off the response rather than the error: the vendor's error object
   // carries a status and a message and no headers, and the remaining window
@@ -99,6 +130,7 @@ export async function signInWithPassword(
     password,
     callbackURL: AFTER_SIGN_IN,
     fetchOptions: {
+      signal,
       onResponse: (context: { response: Response }) => {
         const header = context.response.headers.get('X-Retry-After');
         if (header === null) return;

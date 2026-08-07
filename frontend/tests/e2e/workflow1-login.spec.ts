@@ -206,6 +206,38 @@ test.describe('Workflow 1 · the front door and the enterprise route', () => {
   });
 });
 
+test.describe('Workflow 1 · when the provider says no', () => {
+  test('🔴 a refused sign-in lands in Signora, not on the vendor\'s error page', async ({
+    page,
+  }) => {
+    // Better Auth serves a complete HTML document from `/api/auth/error` — its
+    // own fonts, its own colours — and until milestone 4 that is where every
+    // refused federated sign-in landed. This is design 16 in its place.
+    await page.goto('/error?error=access_denied&error_description=user+not+assigned');
+    await expect(page.getByRole('heading', { name: 'Sign-in was rejected' })).toBeVisible();
+    // `exact`, because the provider's words appear twice on purpose: quoted in
+    // the sentence a person reads, and again inside the reference an IT team
+    // pastes into a ticket.
+    await expect(page.getByText('user not assigned', { exact: true })).toBeVisible();
+  });
+
+  test('it renders on the product\'s own ground, which is the point', async ({ page }) => {
+    await page.goto('/error?error=access_denied');
+    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    expect(bg).toBe('rgb(250, 248, 246)');
+  });
+
+  test('the reference is the provider\'s code, and it offers a way back', async ({
+    page,
+  }) => {
+    await page.goto('/error?error=access_denied');
+    await expect(page.getByText('access_denied')).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Try another way to sign in' }),
+    ).toBeVisible();
+  });
+});
+
 test.describe('Workflow 1 · the finalized visual identity', () => {
   test('the ground is the design\'s warm #faf8f6, not a cool grey', async ({ page }) => {
     // D-162: the review found the screen still read as the legacy UI. It did,

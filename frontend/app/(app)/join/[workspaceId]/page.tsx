@@ -4,6 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 
 import { Button, Card, CardBody } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
+import { signOut } from '@/lib/auth/client';
 import { useAcceptInvitation } from '@/lib/query/hooks/team';
 
 /**
@@ -99,12 +100,36 @@ export default function JoinPage() {
           </p>
         )}
 
-        <Button
-          onClick={() => accept.mutate()}
-          disabled={accept.isPending || workspaceId === null}
-        >
-          {accept.isPending ? 'Joining…' : 'Accept invitation'}
-        </Button>
+        {/* **Design `17 · Unauthorized`, and the half of it this platform can
+            honestly render.**
+            ⚡ *"Three routes out, in the order most people need them"* — and
+            the design's own reason for a screen like this is that **none is a
+            dead end.** Until now a refusal here was exactly that: a sentence,
+            and a button that would refuse again.
+            ⛔ **Two of the design's three are built and the third is not.**
+            *Request access* needs a request-to-join capability that does not
+            exist — no endpoint, no table, no row — and a button that quietly
+            did nothing would be worse than its absence.
+            ⚠️ **And the workspace is still not named.** The design names it;
+            [C-208](../../../../../docs/LANE_COORDINATION.md) is why we cannot,
+            and that trade-off is recorded above rather than worked around. */}
+        {refusal !== null ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="secondary" onClick={() => router.push('/')}>
+              Go to your organization
+            </Button>
+            <Button variant="ghost" onClick={() => void signOut()}>
+              Sign in as someone else
+            </Button>
+          </div>
+        ) : (
+          <Button
+            onClick={() => accept.mutate()}
+            disabled={accept.isPending || workspaceId === null}
+          >
+            {accept.isPending ? 'Joining…' : 'Accept invitation'}
+          </Button>
+        )}
       </CardBody>
     </Card>
   );

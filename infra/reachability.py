@@ -69,6 +69,23 @@ ENTERED_FROM_OUTSIDE: Final = {
         "reached from the invitation link, by design — the only screen shown to "
         "somebody who is not yet a member of the workspace it names"
     ),
+    # **Reached from the identity provider, which is as outside as it gets.**
+    # A federated sign-in that fails is redirected here by Better Auth, via the
+    # `errorCallbackURL` on the sign-in request — so the only inbound reference
+    # in the product is a constant in `lib/auth/client.ts`, and there is
+    # deliberately no in-product link: nobody navigates to an error.
+    #
+    # **This route exists because the alternative was the vendor's own page.**
+    # Better Auth serves a complete HTML document from `/api/auth/error`, and
+    # without `errorCallbackURL` every refused OAuth sign-in landed there —
+    # outside Signora, in another product's typography.
+    #
+    # **Declared by Lane A on the same delegation as the row above** (B-123):
+    # the lane that knows why a route has no entrance is the lane that built it.
+    "/error": (
+        "reached by redirect from the identity provider when a federated "
+        "sign-in is refused — design 16, and nobody navigates to an error"
+    ),
 }
 
 

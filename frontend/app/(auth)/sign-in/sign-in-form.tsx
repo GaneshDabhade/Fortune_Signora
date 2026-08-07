@@ -7,6 +7,7 @@ import { Button, Input } from '@/components/ui';
 import { signIn, signInWithPassword } from '@/lib/auth/client';
 
 import { AuthLink } from '../auth-shell';
+import { Authenticating, type AuthStage } from './authenticating';
 import { Throttled } from './throttled';
 
 const OAUTH_LABELS: Record<string, string> = {
@@ -75,6 +76,9 @@ export function SignInForm({
   // number by whoever sent it there, and a number a screen is told rather than
   // reads is the fabricated-data trap in its politest form.
   const [throttled, setThrottled] = useState<{ retryAfterSeconds?: number } | null>(null);
+  // Design 15. `null` while the form is on screen; a stage while it is not.
+  const [stage, setStage] = useState<AuthStage | null>(null);
+  const attempt = useRef<AbortController | null>(null);
 
   // Stable, because `Throttled` holds it in a `useEffect` dependency list —
   // a fresh closure each render would restart the countdown every second.
@@ -108,9 +112,31 @@ export function SignInForm({
     setFieldError(null);
     setFieldMessage(null);
     setPending('password');
+    setStage('credentials');
     setError(null);
-    const result = await signInWithPassword(email, password);
+
+    const controller = new AbortController();
+    attempt.current = controller;
+
+    let result;
+    try {
+      result = await signInWithPassword(email, password, controller.signal);
+    } catch {
+      // **The abort lands here, and so does a dropped connection.** Both mean
+      // the same thing to the person: nothing happened and the form should
+      // come back. `cancel()` has already restored it in the first case, so
+      // this only has to avoid leaving the card stuck on a stage.
+      setStage(null);
+      setPending(null);
+      return;
+    }
+
     if (result.ok) {
+      // ⚡ **The second step of design 15, and it is a real one.** The refresh
+      // and the navigation below are what *preparing your organization*
+      // names — the server tree is rebuilt against the new session before the
+      // person is moved onto it.
+      setStage('organization');
       // `router.refresh()` first: the session cookie was just set, and a
       // client-side navigation alone would render the destination against a
       // server component tree that still believes nobody is signed in.
@@ -129,9 +155,11 @@ export function SignInForm({
     // correct that it is wrong, and the retry it invites extends the block.
     if (result.throttled) {
       setThrottled({ retryAfterSeconds: result.retryAfterSeconds });
+      setStage(null);
       setPending(null);
       return;
     }
+    setStage(null);
     // **Never *"no such account"*.** The design's second rationale: *"this
     // costs a little clarity and removes account enumeration entirely."*
     setError(result.error ?? "That email and password don't match.");
@@ -146,6 +174,21 @@ export function SignInForm({
   // the next several seconds — and every use of it makes the wait longer.
   if (throttled) {
     return <Throttled retryAfterSeconds={throttled.retryAfterSeconds} onExpire={resume} />;
+  }
+
+  // Design 15. It renders nothing for the first 800ms, so a fast sign-in never
+  // sees it and the card does not flash.
+  if (stage !== null) {
+    return (
+      <Authenticating
+        stage={stage}
+        onCancel={() => {
+          attempt.current?.abort();
+          setStage(null);
+          setPending(null);
+        }}
+      />
+    );
   }
 
   if (!passwordEnabled && oauthMethods.length === 0) {
