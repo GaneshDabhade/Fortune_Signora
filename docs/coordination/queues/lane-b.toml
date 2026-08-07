@@ -89,6 +89,14 @@
 lane         = "Lane B"
 updated      = 2026-08-07
 
+# ⚠️  2 claimable, but only 1 claimable TODAY.
+#    1 row(s) are READY here and still read otherwise in
+#    BACKLOG.md on origin/integration — the backlog every claim is pushed
+#    against. ⛔ Claiming one would contradict it (C-425: the backlog wins,
+#    and the disagreement is Product Office's defect).
+#    ⚡ They are released and waiting on QE, not on planning. `current` is
+#    ordered to put a claimable-today row first whenever one exists.
+#
 # ── Executable today, in order ───────────────────────────────────────────────
 #
 # ⚡ RELEASED 2026-08-07 — C-427. Every row below was parked behind a
@@ -97,8 +105,8 @@ updated      = 2026-08-07
 #    QE's exclusively — so the successor waited on a state nobody could
 #    move. Each release carries its evidence in the backlog row.
 #    `state-check` now reports this condition every run.
-current = "TASK-463"
-next    = "TASK-202"
+current = "TASK-202"
+next    = "TASK-463"
 future  = []
 
 eligible_count = 2

@@ -74,6 +74,8 @@
 lane         = "Lane C"
 updated      = 2026-08-07
 
+# ✅ All 2 claimable row(s) agree with BACKLOG.md on integration.
+#
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-473"
 next    = "TASK-476"

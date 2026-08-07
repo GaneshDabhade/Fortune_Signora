@@ -233,6 +233,14 @@
 lane         = "Lane A"
 updated      = 2026-08-07
 
+# ⚠️  4 claimable, but only 0 claimable TODAY.
+#    4 row(s) are READY here and still read otherwise in
+#    BACKLOG.md on origin/integration — the backlog every claim is pushed
+#    against. ⛔ Claiming one would contradict it (C-425: the backlog wins,
+#    and the disagreement is Product Office's defect).
+#    ⚡ They are released and waiting on QE, not on planning. `current` is
+#    ordered to put a claimable-today row first whenever one exists.
+#
 # ── Executable today, in order ───────────────────────────────────────────────
 #
 # ⚡ RELEASED 2026-08-07 — C-427. Every row below was parked behind a

@@ -100,6 +100,19 @@ class Task:
     estimated_ready: str = "—"
     #: How long the row has held its current declared state, in days.
     blocked_days: float = 0.0
+    #: **Does `origin/integration` agree with this row's declared state?**
+    #:
+    #: ⛔ **Raised by Lane A, 2026-08-07.** This source is generated from
+    #: `lane-c-sync`'s backlog and stamped with `integration`'s commit, so it
+    #: advertised five rows as claimable — `TASK-451`, `463`, `467`, `468`,
+    #: `471` — that read `SEQUENCED` on `integration`. **A lane taking one
+    #: would push a claim contradicting the authoritative backlog.**
+    #:
+    #: ⚡ **[C-425](../docs/LANE_COORDINATION.md) ruled this exact case and
+    #: ruled against this office**: *"where the ref disagrees with
+    #: `BACKLOG.md`, the backlog wins and the disagreement is a defect."*
+    #: **The ref does not get to be ahead; it gets to be fast.**
+    on_integration: bool = True
 
 
 def _git(*args: str) -> str:
@@ -230,8 +243,29 @@ def _classify(declared: str, blocker_text: str, lane: str | None) -> str:
     return FUTURE_MILESTONE
 
 
+def _integration_states() -> dict[str, str]:
+    """Each row's declared state on `origin/integration`, or empty if unreadable.
+
+    ⚡ **Read once per run.** This is the authoritative backlog every lane
+    claims against, and the only thing that makes `on_integration` a fact
+    rather than an assumption about how recently QE integrated.
+    """
+    text = _git("show", "origin/integration:docs/BACKLOG.md")
+    if not text:
+        return {}
+    states: dict[str, str] = {}
+    for block in re.split(r"(?=^### TASK-\d+)", text, flags=re.M):
+        head = re.match(r"^### (TASK-\d+)", block)
+        status = _cell(block.split("\n### ", 1)[0], "Status")
+        token = re.search(r"`([A-Z][A-Z ]+)`", status) if status else None
+        if head and token:
+            states[head.group(1)] = token.group(1).strip()
+    return states
+
+
 def tasks() -> list[Task]:
     owners = _owners()
+    upstream = _integration_states()
     text = BACKLOG.read_text()
     rows: list[Task] = []
     for block in re.split(r"(?=^### TASK-\d+)", text, flags=re.M):
@@ -268,6 +302,10 @@ def tasks() -> list[Task]:
                 lane=lane or "—",
                 depends_on=depends,
                 waiting_for=blocker.strip()[:200],
+                # ⛔ **Empty upstream means unreadable, not disagreeing.** A
+                # clone that cannot reach `origin/integration` must not report
+                # every row as unsynchronised.
+                on_integration=(not upstream) or upstream.get(head.group(1)) == declared,
             )
         )
     # `unblocks` is the inverse of `depends_on`, computed rather than restated:
@@ -614,7 +652,10 @@ def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
             else "in_flight_only" if in_flight
             else "starved"
         )
+        claimable_now = [r for r in claimable if r.on_integration]
         out[lane] = {
+            "claimable_now": len(claimable_now),
+            "awaiting_sync": len(claimable) - len(claimable_now),
             "blocked_on_integration": pending,
             "supply_state": supply,
             "claimable": len(claimable),
@@ -676,9 +717,17 @@ def render(rows: list[Task]) -> str:
         # point of holding a dependency graph is to know which row buys the
         # most. **This is also what made the queue files and this source
         # disagree**: the queue was hand-ordered by leverage and correct.
+        # ⛔ **A row a lane cannot claim yet is not `current` — 2026-08-07.**
+        # This source is generated from `lane-c-sync` and read by lanes that
+        # claim against `integration`. **Lane A was told to start `TASK-451`
+        # while `integration` still read `SEQUENCED`**, and a claim on it would
+        # have contradicted the authoritative backlog ([C-425](../docs/LANE_COORDINATION.md)).
+        # ⚡ **Ordering by `on_integration` first keeps every benefit of the
+        # ref — a lane still sees the row coming — while `current` stays
+        # something it can act on today.**
         pipeline = sorted(
             (r for r in mine if r.state == ASSIGNED),
-            key=lambda r: (-len(r.unblocks), r.critical_path, r.id),
+            key=lambda r: (not r.on_integration, -len(r.unblocks), r.critical_path, r.id),
         )
         m = stats[lane]
         out += [
@@ -688,6 +737,8 @@ def render(rows: list[Task]) -> str:
             f'next_after_that    = "{pipeline[2].id if len(pipeline) > 2 else ""}"',
             f"assigned_total     = {len(mine)}",
             f"claimable          = {m['claimable']}",
+            f"claimable_now      = {m['claimable_now']}",
+            f"awaiting_sync      = {m['awaiting_sync']}",
             f"in_flight          = {m['in_flight']}",
             f"awaiting_qe_transition = {m['awaiting_qe_transition']}",
             f"blocked_on_integration = {m['blocked_on_integration']}",
@@ -716,6 +767,7 @@ def render(rows: list[Task]) -> str:
             f'estimated_ready = "{row.estimated_ready.replace(chr(34), chr(39))[:110]}"',
             f'waiting_for    = "{row.waiting_for.replace(chr(34), chr(39))[:150]}"',
             f"blocked_days   = {row.blocked_days}",
+            f"on_integration = {str(row.on_integration).lower()}",
             "",
         ]
     return "\n".join(out)
