@@ -39,6 +39,7 @@ from registers import (  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MIGRATIONS = REPO_ROOT / "backend" / "migrations" / "versions"
+MANIFEST = REPO_ROOT / "certification" / "manifest.json"
 
 
 def _git(*args: str) -> str:
@@ -135,12 +136,67 @@ def _board_claims(assignments: str) -> dict[str, set[str]]:
     return claims
 
 
+def _satisfied(run: dict[str, object]) -> bool:
+    """Did this run certify? **Borrowed from `certification-guard.py`, never
+    re-derived**, because a second copy of this predicate is a second answer to
+    *"is this commit certified?"* and only one of them gates a promotion
+    (`CLAUDE.md` §2 — truth has exactly one authoritative representation).
+
+    The guard is loaded by path because its filename is not a Python
+    identifier, the same way `test_claim_agreement.py` loads this file.
+    **If it cannot be loaded, no run is treated as certified** — an absent
+    predicate must not read as a passing one.
+    """
+    import importlib.util
+
+    guard = sys.modules.get("certification_guard")
+    if guard is None:
+        spec = importlib.util.spec_from_file_location(
+            "certification_guard", REPO_ROOT / "infra" / "certification-guard.py"
+        )
+        if spec is None or spec.loader is None:
+            return False
+        guard = importlib.util.module_from_spec(spec)
+        # **Registered before execution, and that is not optional.** The guard
+        # declares `@dataclass(slots=True)`, which resolves its own annotations
+        # through `sys.modules[cls.__module__]` while the class body runs — so a
+        # module executed before it is registered raises `AttributeError` on
+        # `None.__dict__`, several frames from anything that names the cause.
+        sys.modules[spec.name] = guard
+        try:
+            spec.loader.exec_module(guard)
+        except (OSError, ImportError):
+            del sys.modules[spec.name]
+            return False
+    ok, _ = guard._satisfied(run)  # type: ignore[attr-defined]
+    return bool(ok)
+
+
 def _latest_certification() -> dict[str, object] | None:
-    manifest = REPO_ROOT / "certification" / "manifest.json"
-    if not manifest.exists():
+    """The most recent run **that certified** — never merely the most recent run.
+
+    ⚠️ **This returned `runs[-1]` and it was wrong** ([B-137](../docs/BUGS.md)).
+    The manifest records every *attempt*, failed ones included, because an
+    attempt that failed is evidence about the commit and deleting it would be
+    the one edit this repository never permits. So the last entry is routinely
+    a run that did **not** certify — and three findings downstream then reported
+    a failed run as the repository's certification state, including the one
+    that says *"a certified commit that never reached `main` is not protected
+    by anything."*
+
+    **The instrument said the cycle had stopped after certification when
+    certification was what had stopped.** `certification-guard.py` was right
+    throughout and refused the promotion; only the advisory view was inverted,
+    which is the more dangerous half to get wrong — a refusal is read once, an
+    advisory is what a session reasons from.
+    """
+    if not MANIFEST.exists():
         return None
-    runs = json.loads(manifest.read_text()).get("runs") or []
-    return runs[-1] if runs else None
+    runs = json.loads(MANIFEST.read_text()).get("runs") or []
+    for run in reversed(runs):
+        if _satisfied(run):
+            return run
+    return None
 
 
 #: **The seven queue validations — C-333.** *"The queue must always represent

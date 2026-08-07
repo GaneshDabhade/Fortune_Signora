@@ -80,6 +80,62 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-137 · `state-check` read the last certification *attempt* and called it the last certification
+
+| | |
+|---|---|
+| **Module** | QE tooling — [`infra/state-check.py`](../infra/state-check.py) |
+| **Current assignee** | **QE** — *"a defect in a gate that stops QE certifying is QE's to fix"* (`CLAUDE.md` §20e) |
+| **Severity** | 🟠 — **the instrument reported the inverse of the truth**, on the one line a cold session reasons from |
+| **Status** | ✅ **`FIXED`** by QE, 2026-08-07, with five regression tests and a mutation check. **`VERIFIED` after promotion** |
+| **Found** | 2026-08-07 by QE, cycle 87, by reading `state-check`'s output after a certification that failed |
+
+**Steps to reproduce.** Run `make certify` on a commit whose `smoke` gate fails, then:
+
+```bash
+python3 infra/state-check.py
+→ · `4d37ede` is certified and is NOT on `main` (ace4460). The cycle stopped
+    after certification: promotion, Closeout, synchronization and Repository
+    Ready have not run.
+  · PROJECT_STATUS.md names `9ba145f`, which predates the latest certification
+    (4d37ede).
+```
+
+**Expected.** `4d37ede` did not certify — its `smoke` gate is recorded `passed: false`. The repository's certification state is still `9ba145f`, which **is** on `main`.
+
+**Actual.** Both findings above, and both false. **The cycle stopped *at* certification, not after it** — which is the opposite diagnosis, and it points a session at the promotion step instead of at the failing gate.
+
+### The cause is one line, and the reason it survived is the interesting part
+
+```python
+runs = json.loads(manifest.read_text()).get("runs") or []
+return runs[-1] if runs else None          # ← the last *attempt*
+```
+
+⚡ **The manifest deliberately records failures.** *"A failure is a statement about the commit; an abort is a statement about the run"* — a failed attempt is evidence and is never deleted, because §2 forbids rewriting a record of what was true then. **So the last entry is routinely a run that did not certify**, and every finding derived from it inherits that.
+
+**It had been correct for eighty-six cycles** for one reason: every previous cycle's last manifest entry happened to be a passing one. **The first cycle to end in a failed gate is the first cycle where the reading is wrong** — and it is exactly the cycle where somebody most needs the reading.
+
+### ⛔ `certification-guard.py` was right throughout
+
+```
+$ python3 infra/certification-guard.py 4d37ede0…
+REFUSED — 4d37ede has a certification record, and it did not pass.
+  · gate 'smoke' failed
+```
+
+**The promotion path never wavered.** Only the advisory view inverted — ⚡ **and that is the more dangerous half to get wrong.** A refusal is read once, at the moment it fires. **An advisory is what a session reasons from**, and this one would have told a cold session that a failed commit was certified and merely unpromoted.
+
+### The fix
+
+`_latest_certification()` now walks backwards to the newest run that **satisfied** — and borrows the predicate from `certification-guard.py` rather than re-deriving it, because **a second copy of *"did this run certify?"* is a second answer, and only one of them gates a promotion** (§2).
+
+**Five regression tests**, [`backend/tests/test_certification_state_reading.py`](../backend/tests/test_certification_state_reading.py), on constructed manifests — the live one would pass identically with the fix reverted. **Mutation-checked**: restoring `runs[-1]` fails three of them, including *no passing run is no certification, not the last failure*.
+
+⚠️ **One trap on the way, worth recording** because it costs an hour if it is not: the guard declares `@dataclass(slots=True)`, which resolves its own annotations through `sys.modules[cls.__module__]` **while the class body runs**. Loading it by path without registering it in `sys.modules` **first** raises `AttributeError: 'NoneType' object has no attribute '__dict__'` several frames from anything naming the cause.
+
+---
+
 ### B-136 · The worker crash-loops in every non-local environment, because the composition root now calls a guard nothing satisfies
 
 | | |
