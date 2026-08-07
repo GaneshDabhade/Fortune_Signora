@@ -381,6 +381,50 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🟢  D-169 — YOU NO LONGER WAIT FOR A REVIEW TO START THE NEXT WORKFLOW
+#     2026-08-07 · product owner
+#
+#   "Completion of one workflow should automatically release the next prepared
+#    workflow… Lane A should never stop and wait for explicit Product Owner
+#    approval before beginning the next workflow."
+#
+# ⚡ TWO RELEASE TRIGGERS, AND CONFUSING THEM IS THE C-427 TRAP:
+#
+#     BETWEEN workflows  →  the predecessor reaching `main` releases the next.
+#                           NOT the product owner's approval. That is now a
+#                           checkpoint recorded after the fact.
+#     WITHIN a workflow  →  YOUR OWN `IN VALIDATION` releases the next row.
+#                           Never a promotion you do not control.
+#
+#   Twelve rows that read "after X reaches the human review gate" now read
+#   "after X is promoted to `main`". TASK-483 and TASK-484 are the exception
+#   and release on TASK-491's IN VALIDATION, because they are inside Workflow 1
+#   with it — a row parked behind a state only QE can move is a row nobody can
+#   start, and this office has reported that defect to other lanes twice.
+#
+# ⛔ WHAT DID NOT CHANGE, AND IT MATTERS MORE NOW: the pixel-level conformance
+#   audit. It is mandatory before any review request and it is now the ONLY
+#   gate between your work and the product owner's attention. Tell this office
+#   when a workflow is on `main`; do not request a review yourself.
+#
+# ⚠️ AND ONE CONSEQUENCE TO CARRY: throughput now outruns feedback. You may be
+#   two workflows past the one being reviewed. That is safe ONLY because
+#   D-161 ④ and D-162 ④ require a mismatch to be fixed in the FOUNDATION or a
+#   SHARED COMPONENT, never on a screen — so a review finding propagates to
+#   everything built meanwhile instead of needing each screen revisited.
+#   ⛔ If you ever fix a review finding on one screen, you have broken the
+#      property that makes continuous execution safe. Fix it in the foundation
+#      or report it as a foundation gap.
+#
+# ⛔ EXCEPTIONS STOP ONLY THE AFFECTED WORK. Design ambiguity, conflicting
+#   documents, architectural uncertainty, product, security, tenancy or
+#   business-rule decisions — raise a targeted decision package and keep
+#   building everything else.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🟢  CHARTING IS RULED — visx. 2026-08-07 · D-167 §3 · ADR-0407
 #
 # ⛔ NOT NEEDED YET. Workflows 19 and 22 are far down the queue. This is here
@@ -1164,7 +1208,8 @@ updated      = 2026-08-07
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-490"
+current = ""   # ⛔ nothing claimable and TWO rows in hand — TASK-467 and
+               # TASK-491. Not a drought: 483/484 release on 491's IN VALIDATION.
 next    = ""
 # ⚠️ The last three are RELEASED and NOT CLAIMABLE TODAY — their READY is on
 # `lane-c-sync` and you claim against BACKLOG.md on `integration` (C-425).
@@ -1205,7 +1250,7 @@ future  = []   # ⛔ empty by ruling: exactly one claimable (D-163). The prepare
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 1
+eligible_count = 0
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
 depth_target   = 1   # ⚡ CLAIMABLE depth — D-163. Prepared depth is 14; see prepared_total.
 shortfall      = 0   # ⛔ 1 of 1. A second claimable row would let this lane choose, and choosing is prioritisation.

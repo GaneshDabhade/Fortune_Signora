@@ -890,11 +890,18 @@ def _pipeline_findings() -> list[str]:
         if lane in {"Lane_B", "Lane_C"}:
             continue
         claimable = int(body.get("claimable", 0) or 0)
-        if claimable == 0:
+        in_flight = int(body.get("in_flight", 0) or 0)
+        # ⚠️ **Refined 2026-08-07, the same day it was written.** The first
+        # version flagged zero-claimable alone and fired on a lane holding two
+        # rows it was actively building. **A check that cries wolf is one people
+        # learn to read past**, which is the failure this whole file is written
+        # against. **The condition that matters is a lane with nothing claimable
+        # AND nothing in hand** — that lane is genuinely stopped.
+        if claimable == 0 and in_flight == 0:
             out.append(
-                f"{lane} has nothing claimable. **Keeping the pipeline populated is "
-                "Product Office's responsibility** (D-163) — the lane cannot fix this "
-                "and should not have to report it."
+                f"{lane} has nothing claimable and nothing in flight — it is stopped. "
+                "**Keeping the pipeline populated is Product Office's responsibility** "
+                "(D-163) — the lane cannot fix this and should not have to report it."
             )
         elif claimable > 1:
             out.append(

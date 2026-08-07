@@ -28,9 +28,9 @@
 #   in_progress  a lane holds a row inside it
 #   in_validation the lane has pushed and set the state
 #   awaiting_qe  with QE for certification
-#   on_main      promoted
+#   on_main      promoted — ⚡ THIS is what releases the next workflow (D-169)
 #   awaiting_review  the product owner has been notified
-#   approved     reviewed and approved — this is what releases the next workflow
+#   approved     reviewed and approved — ⚠️ a CHECKPOINT since D-169, not a gate
 #   complete     approved and closed out
 #
 # ⛔ **Generated views read this file; nothing restates a workflow's state.**
@@ -39,7 +39,8 @@
 authority   = "docs/design-snapshot/screens/"
 ruling      = "D-160"
 updated     = 2026-08-07
-active_rule = "exactly one workflow may be `active`; the product owner's review releases the next"
+active_rule = "exactly one workflow may be `active`; reaching `on_main` releases the next — D-169"
+release_rule = "⚡ D-169, 2026-08-07. TWO triggers, and confusing them is the C-427 trap. BETWEEN workflows: `on_main` releases the next. WITHIN a workflow: the lane's own `IN VALIDATION` releases the next row, because a row parked behind a state only QE can move is a row nobody can start. `approved` is a CHECKPOINT recorded after the fact, never a prerequisite. The pixel-level conformance audit remains mandatory before any review is requested, and is now the only gate."
 
 # ══════════════════════════════════════════════════════════════════════════════
 # THE AUTHENTICATION JOURNEYS — Fortune Signora Authentication.dc.html
