@@ -6824,7 +6824,7 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-06, under [D-140](DECISION_REGISTER.md) — **after exhausting the design set, the Design System, the related screens, the ADRs and the implementation** |
 | **Owner** | **Product owner** — ⛔ **this is missing *design intent*, not a missing decision about architecture** |
-| **Status** | **`READY FOR PRODUCT DECISION`** — ⚡ **one precise question, and it needs a pointer rather than an explanation** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-07, [D-141](DECISION_REGISTER.md) ③.** ⛔ **Resolved by measurement, not by ruling. No screen is missing.** |
 | **Blocks** | ⛔ **Nothing today.** **Every screen currently in flight is one the design set contains** |
 
 ### The question, at its smallest
@@ -6850,6 +6850,29 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 **Four rail entries with no design is either four missing screens or four items that should not be built.** ⛔ **A lane implementing the App Shell has to render the rail, and will otherwise either invent four destinations or silently drop them** — **which is exactly the drift [D-140](DECISION_REGISTER.md) exists to prevent.**
 
 ⚡ **`Accounts` is the worked example of why guessing is dangerous**: it carries `8,412`, the exact row count [TASK-440](BACKLOG.md) cites, so it maps to **Companies** — **a mapping no filename would have suggested.** **Three of the remaining four may map similarly, and one guess in four is a screen nobody designed.**
+
+
+### ✅ Closed 2026-08-07 — all four exist, and none of them is a screen
+
+**[D-141](DECISION_REGISTER.md) ③: *"Compare every referenced rail entry directly against the locally copied canonical design documents… the screen exists → correct the references and close; the screen genuinely does not exist → update the architecture and close."*** ⚡ **Measured across all 26 designs. The answer is a third thing the item did not anticipate: each of the four resolves to a *section* or an *entity type*, not to a screen of its own.**
+
+| Rail entry | What it actually is | Evidence |
+|---|---|---|
+| **`Home`** | ✅ **The Executive Dashboard** | **That design's own header reads `Home`**, and it carries `Executive summary`, `Revenue forecast`, `Pipeline health`, `Top risks`, `Signals feed`, `Recommended actions` |
+| **`Forecast`** | ✅ **A section of the Executive Dashboard — `Revenue forecast`** | ⚡ **And a capability toggle**: Onboarding says *"Signora will switch on Forecast, Signal Center and Renewal risk"*, and Settings carries a `Forecast scenarios` flag at `on: false` |
+| **`Pipeline`** | ✅ **A section of the Executive Dashboard — `Pipeline health`** | **`Open funnel` sits beneath it.** System States renders its failure as *"Pipeline trend could not load"* |
+| **`Deals`** | ✅ **An entity type, and Opportunity Intelligence's parent** | **Global Search declares `entityPages: Account · Deal · Person · Conversation` and renders `Deals · 286 · complete`** |
+| **`Conversations`** | ✅ **An entity type, and an Account 360 tab** | **The same `entityPages` list; Account 360 carries `['Conversations', '96']`; Global Search renders `Conversations · unavailable` with a retry** |
+
+> ## **The rail links four *destinations that already have designs* — one dashboard and three entity lists the design defines through Global Search's entity model.**
+
+⛔ **So nothing is missing and no architecture update is required.** ⚡ **What was wrong was this office's assumption that a rail entry implies a screen document.** **The design's structure is a rail of destinations, a dashboard that answers three of them, and an entity model that answers the rest.**
+
+### ⚠️ What this changes for implementation
+
+**A lane rendering the rail should not look for four missing designs.** ✅ **`Home`, `Forecast` and `Pipeline` are one screen — [418](architecture/418-platform-foundation-assessment.md)'s Executive Dashboard.** ✅ **`Deals` and `Conversations` are entity lists whose shape Global Search specifies and whose records are Opportunity Intelligence and Account 360.**
+
+⛔ **Lane A's [C-233](#c-233--the-app-shells-22-numbered-specifications-are-not-in-the-repository) is a different finding and is not closed by this** — it is about the App Shell's own 22 numbered specifications, not about the rail's targets.
 
 ## C-423 · Architecture document numbers can still collide, and D-112 already solved this one class over
 

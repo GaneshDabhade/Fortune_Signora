@@ -44,17 +44,6 @@
 
 ---
 
-## 📌 C-424 · Four rail entries, no design — **one pointer answers it**
-
-| | |
-|---|---|
-| **The question** | **The App Shell rail specifies `Forecast`, `Pipeline`, `Deals`, `Conversations`. No design in the set defines them.** ⚡ **Is each one: ① a design I have not found · ② out of scope for this wave · or ③ still to be designed?** |
-| **Blocks** | ⛔ **Nothing today** — every screen in flight is one the set contains |
-| **Priority** | **P2 — it becomes P1 the moment a lane renders the rail**, which is [TASK-447](BACKLOG.md), currently `CLAIMED` |
-| **What was exhausted** | **All 26 designs · the App Shell's own `navItems` definition · the related screens · the ADRs · [D38](architecture/39-product-review-findings.md) · `frontend/app/`.** ⚡ **`Deals` is confirmed real — Opportunity Intelligence's breadcrumb reads `Deals / EMEA enterprise / Vantage renewal`. The other three appear nowhere else** |
-| ⚠️ **Why guessing is dangerous here** | **`Accounts` maps to the *Companies* design — proven by its `8,412`, the exact row count [TASK-440](BACKLOG.md) cites.** ⛔ **No filename would have suggested that mapping.** **Three of the remaining four may map similarly, and one wrong guess in four is a screen nobody designed** |
-| **Recommended** | ⚪ **None offered — this needs design intent, not a judgement.** ⚡ **Answerable by pointing: a filename, "out of scope", or "not yet designed", per name** |
-
 ## ✅ Recommendation — **contextual, reached by drilling. Not a first-class destination.**
 
 ⚡ **[D-139](DECISION_REGISTER.md) ① asked for a navigation model rather than a question, and the finalized design answers it directly.** **Measured from [`design-snapshot/screens/Fortune Signora Opportunity Intelligence.dc.html`](../design-snapshot/screens/), which this office could not read when the item was raised.**
@@ -229,6 +218,19 @@
 | **Recommended** | ✅ **Rule that the design is authoritative *and* that the fourteen findings are inputs to the gap analysis** — ⛔ **not a veto over it.** ⚡ **[D-129](DECISION_REGISTER.md) already permits exactly this artifact: a measurable gap analysis is one of the three, and *"the design already handles this"* is a legitimate finding for each of the fourteen** |
 
 ## Closed on 2026-08-06
+
+> ✅ **[C-424](LANE_COORDINATION.md) closed 2026-08-07, [D-141](DECISION_REGISTER.md) ③ — by measurement, not by ruling.** **All four rail entries exist and none of them is a screen**: `Home`, `Forecast` and `Pipeline` are the Executive Dashboard and two of its sections; `Deals` and `Conversations` are entity types the design declares through Global Search's `entityPages`. ⛔ **Nothing was missing.**
+
+## 📌 C-424 · Four rail entries, no design — **one pointer answers it**
+
+| | |
+|---|---|
+| **The question** | **The App Shell rail specifies `Forecast`, `Pipeline`, `Deals`, `Conversations`. No design in the set defines them.** ⚡ **Is each one: ① a design I have not found · ② out of scope for this wave · or ③ still to be designed?** |
+| **Blocks** | ⛔ **Nothing today** — every screen in flight is one the set contains |
+| **Priority** | **P2 — it becomes P1 the moment a lane renders the rail**, which is [TASK-447](BACKLOG.md), currently `CLAIMED` |
+| **What was exhausted** | **All 26 designs · the App Shell's own `navItems` definition · the related screens · the ADRs · [D38](architecture/39-product-review-findings.md) · `frontend/app/`.** ⚡ **`Deals` is confirmed real — Opportunity Intelligence's breadcrumb reads `Deals / EMEA enterprise / Vantage renewal`. The other three appear nowhere else** |
+| ⚠️ **Why guessing is dangerous here** | **`Accounts` maps to the *Companies* design — proven by its `8,412`, the exact row count [TASK-440](BACKLOG.md) cites.** ⛔ **No filename would have suggested that mapping.** **Three of the remaining four may map similarly, and one wrong guess in four is a screen nobody designed** |
+| **Recommended** | ⚪ **None offered — this needs design intent, not a judgement.** ⚡ **Answerable by pointing: a filename, "out of scope", or "not yet designed", per name** |
 
 > ✅ **[C-229](LANE_COORDINATION.md) closed 2026-08-07, [D-141](DECISION_REGISTER.md) ①** — **the finalized App Shell defines the navigation rail, so the decision was already made.** ⛔ **It stayed on this page for two days after the design became readable, which is what ① exists to stop.**
 
