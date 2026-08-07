@@ -298,6 +298,9 @@ def _exports() -> int:
         print(f"SIGNORA_REDIS_PORT={REDIS_BASE}")
         print(f"SIGNORA_MINIO_PORT={MINIO_BASE}")
         print(f"SIGNORA_MINIO_CONSOLE_PORT={MINIO_CONSOLE_BASE}")
+        # **`signora` by history**, and this branch is the only place that name
+        # is correct: it is the shared stack a clone falls back to.
+        print("SIGNORA_DATABASE=signora")
         return 0
     print(f"# {environment.name} — {environment.purpose}")
     print(f"COMPOSE_PROJECT_NAME={environment.compose_project}")
@@ -307,6 +310,13 @@ def _exports() -> int:
     print(f"SIGNORA_MINIO_CONSOLE_PORT={environment.minio_console_port}")
     print(f"SIGNORA_WEB_PORT={environment.web_port}")
     print(f"SIGNORA_API_PORT={environment.api_port}")
+    # **The database name, published for the same reason as the ports —
+    # TASK-455.** `Environment.database` has always known it; nothing emitted
+    # it, so the Makefile hardcoded `/signora` and every slot but `review`
+    # pointed at a database that is not its own. ⛔ **The `demo` environment is
+    # slot 7 with `signora_demo`, and `make demo` was reaching `signora` on
+    # slot 7's port** — a name that exists only because slot 0 is historical.
+    print(f"SIGNORA_DATABASE={environment.database}")
     return 0
 
 

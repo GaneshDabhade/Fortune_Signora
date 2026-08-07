@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "5e83b46"
+generated_from = "7c1d7b9"
 task_count     = 85
 
 [lane.Lane_A]
@@ -18,12 +18,12 @@ next               = ""
 next_after_that    = ""
 assigned_total     = 34
 claimable          = 0
-in_flight          = 22
-awaiting_qe_transition = 0
-blocked_on_integration = 4
-supply_state       = "blocked_on_integration"
-blocked            = 12
-lane_utilization   = 4.4
+in_flight          = 23
+awaiting_qe_transition = 23
+blocked_on_integration = 0
+supply_state       = "in_flight_only"
+blocked            = 11
+lane_utilization   = 0.0
 idle_prediction_days   = 0.0
 dependency_wait_days   = 0.1
 blocked_duration_days  = 0.1
@@ -47,20 +47,20 @@ blocked_duration_days  = 0.0
 critical_path_max      = 3
 
 [lane.Lane_C]
-current            = "TASK-474"
-next               = "TASK-454"
-next_after_that    = "TASK-455"
+current            = "TASK-473"
+next               = "TASK-476"
+next_after_that    = ""
 assigned_total     = 16
-claimable          = 5
-in_flight          = 5
+claimable          = 2
+in_flight          = 6
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 6
-lane_utilization   = 1.0
-idle_prediction_days   = 0.7
+blocked            = 8
+lane_utilization   = 1.2
+idle_prediction_days   = 0.3
 dependency_wait_days   = 1.7
-blocked_duration_days  = 1.7
+blocked_duration_days  = 1.2
 critical_path_max      = 0
 
 [[task]]
@@ -396,16 +396,16 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-458"
 title         = "Signal Engine reads the People contract"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
-depends_on     = ["TASK-479"]
+depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 2
-estimated_ready = "when TASK-479 complete"
-waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-479](#task-479--people-publishes-a-way-to-read-what-it-publishes).** ⛔ **Returned to `SEQUENCED` 2026-08-07, "
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
 blocked_days   = 0.0
 
 [[task]]
@@ -524,7 +524,7 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "⏸️ **`BLOCKED`** on **[TASK-474](#task-474--a-developer-can-see-open-a"
+estimated_ready = "when TASK-474 complete"
 waiting_for    = "⏸️ **`BLOCKED`** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be "
 blocked_days   = 0.1
 
@@ -907,7 +907,7 @@ blocked_days   = 0.0
 id            = "TASK-457"
 title         = "People publishes what other modules may say about a person"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane B"
 depends_on     = []
 unblocks       = ["TASK-479"]
@@ -1030,9 +1030,9 @@ state         = "SEQUENCED"
 declared      = "SEQUENCED"
 lane          = "Lane B"
 depends_on     = ["TASK-457"]
-unblocks       = ["TASK-428", "TASK-458"]
-next_owner     = ["Lane A", "Lane B"]
-next_lane      = "—"
+unblocks       = ["TASK-428"]
+next_owner     = ["Lane B"]
+next_lane      = "Lane B"
 critical_path  = 1
 estimated_ready = "when TASK-457 complete"
 waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-457](#task-457--people-publishes-what-other-modules-may-say-about-a-person)**, which delivers the types this "
@@ -1191,30 +1191,30 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-454"
 title         = "One condition, one wire code"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "WAITING_PRODUCT_OWNER"
+declared      = "WAITING"
 lane          = "Lane C"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
+estimated_ready = "⏸️ **`WAITING`** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE"
+waiting_for    = "⏸️ **`WAITING`** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected fro"
+blocked_days   = 1.7
 
 [[task]]
 id            = "TASK-455"
 title         = "A customer can complete a sign-up in a reviewable environment"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
 lane          = "Lane C"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 
@@ -1236,17 +1236,17 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-474"
 title         = "A developer can see, open and resend every email the product sends"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "WAITING_PRODUCT_OWNER"
+declared      = "BLOCKED"
 lane          = "Lane C"
 depends_on     = []
 unblocks       = ["TASK-475"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
+estimated_ready = "⏸️ **`BLOCKED` — Lane C, 2026-08-07, on module ownership.** ⛔ **Not im"
+waiting_for    = "⏸️ **`BLOCKED` — Lane C, 2026-08-07, on module ownership.** ⛔ **Not implementable by this lane as scoped**: its Module cell claims `frontend/lib/auth/"
+blocked_days   = 0.1
 
 [[task]]
 id            = "TASK-476"
@@ -1321,7 +1321,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 1.7
+blocked_days   = 1.8
 
 [[task]]
 id            = "TASK-901"

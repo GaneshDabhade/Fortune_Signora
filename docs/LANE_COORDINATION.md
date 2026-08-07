@@ -6991,6 +6991,47 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
 
+## C-430 · `frontend/lib/auth/` is assigned to no lane, and implementation has now reached it
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-07, ⚡ **on trying to implement [TASK-474](BACKLOG.md) and confirming the Change Budget first, which is what found it** |
+| **Owner** | **Product owner** — ⛔ **[§20e](../CLAUDE.md): *any future ownership transfer requires its own explicit decision, raised as a coordination item, ruled by the product owner*.** **This office may not assign a path to itself** |
+| **Status** | **`READY FOR PRODUCT DECISION`** — ⚡ **the evidence is measured and nothing else blocks it** |
+| **Blocks** | **[TASK-474](BACKLOG.md)**, ⚡ **and [ADR-0406 §6](architecture/adr/0406-authentication-execution-modes.md) says ten of the fourteen authentication journey gaps close behind that one row** |
+
+### The question, at its smallest
+
+> ## **Which lane owns `frontend/lib/auth/`?**
+
+⛔ **That is the whole of it.** **Not how the mailbox works, not what the transport should be** — **who may write the file.**
+
+### Measured, not assumed
+
+| | |
+|---|---|
+| ✅ **[`modules.toml`](coordination/modules.toml) grants Lane C** | `platform_foundation` → `infra/`, `Makefile`, `backend/signora_platform/` · `apps` → `backend/apps/` |
+| ⛔ **`frontend/lib/auth/` is in neither** | **And `product_surface` — Lane A's — declares no paths at all** |
+| ⛔ **No lane branch has ever touched it** | **`lane-a-product-surface` 0 commits · `lane-b-commercial-profile` 0 · `lane-qe` 0.** ⚡ **Its history is entirely pre-lane** — `M12.3`, `B-104`, the first-run work |
+
+### ⚠️ This office wrote the row that claims it
+
+**[TASK-474](BACKLOG.md)'s Module cell reads *"`infra/` + `frontend/lib/auth/` — Lane C"*.** ⛔ **The registry does not support the second half, and this office wrote it.** ⚡ **[C-213](#c-213--task-205-names-an-assignee-that-moved)'s class exactly: an assignee stored beside a row instead of joined from the registry** — **and the check that catches a *stale* assignee does not catch an *invented* one.**
+
+### What [§20e](../CLAUDE.md) already says about this exact case
+
+> *"When ownership is genuinely unclear, leave it unassigned and mark it **review at first implementation**. **Ownership becomes obvious when implementation reaches a module**; predicting it earlier buys nothing and can be wrong."*
+
+⚡ **Implementation reached it today.** **The three candidates, stated without a recommendation this office is not entitled to make:**
+
+| | |
+|---|---|
+| **Lane A** | ⚡ **It owns `product_surface` and every screen that signs a customer in.** ⛔ **But it has never touched this directory, and it is the busiest lane** |
+| **Lane C** | ⚡ **The row is Platform Foundation work and the rest of it is `infra/`.** ⛔ **But `frontend/` is named in §20e as what this lane *does not* build**, and taking it would widen the office that is meant to prepare rather than implement |
+| ⚪ **Split** | **The mailbox lives in `infra/`; the transport member is one line in `frontend/lib/auth/config.ts`.** ⚠️ **A two-lane slice for one line is the coordination cost §20e warns about** |
+
+⛔ **No recommendation offered on purpose.** ⚡ **[D-139](DECISION_REGISTER.md): *bring me only the decision, not the investigation* — and the decision here is one word, while a recommendation from the lane that would benefit is not worth much.**
+
 ## C-429 · Four live claims have no row on the execution board, and the check that should have said so was broken in both directions
 
 | | |

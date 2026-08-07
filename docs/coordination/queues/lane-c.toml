@@ -77,13 +77,13 @@ updated      = 2026-08-07
 # ✅ SUPPLY STATE: working — claimable rows are listed below.
 #
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-474"
-next    = "TASK-454"
-future  = ["TASK-455", "TASK-473", "TASK-476"]
+current = "TASK-473"
+next    = "TASK-476"
+future  = []
 
-eligible_count = 5
+eligible_count = 2
 depth_target   = 15
-shortfall      = 10
+shortfall      = 13
 assigned_total = 13
 
 # ✅ **TASK-419 DELIVERED 2026-08-07 and is IN VALIDATION.** It was READY and

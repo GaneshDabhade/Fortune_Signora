@@ -108,8 +108,16 @@ test:
 ## exports name the historical shared stack, out loud.
 SIGNORA_STACK := $(shell python3 infra/environments.py --exports | grep -v '^\#')
 SIGNORA_PG_PORT := $(shell python3 infra/environments.py --exports | sed -n 's/^SIGNORA_POSTGRES_PORT=//p')
+# **The database this environment owns, from the allocation — TASK-455.**
+# `OWNER_DATABASE_URL` said `/signora` on every slot, which is the name only
+# slot 0 has. The `demo` environment is slot 7 with `signora_demo`, so
+# `make demo` prepared a database nothing would read and then told the
+# reviewer to open slot 0.
+SIGNORA_DB := $(shell python3 infra/environments.py --exports | sed -n 's/^SIGNORA_DATABASE=//p')
+SIGNORA_WEB := $(shell python3 infra/environments.py --exports | sed -n 's/^SIGNORA_WEB_PORT=//p')
+SIGNORA_API := $(shell python3 infra/environments.py --exports | sed -n 's/^SIGNORA_API_PORT=//p')
 DEV_COMPOSE := env $(SIGNORA_STACK) docker compose -f infra/docker-compose.yml
-OWNER_DATABASE_URL := postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/signora
+OWNER_DATABASE_URL := postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(SIGNORA_DB)
 
 ## Everything a reviewer needs, in one command: stack up, schema migrated,
 ## Better Auth's own tables created, four sign-in accounts, twelve accounts of
@@ -120,9 +128,11 @@ OWNER_DATABASE_URL := postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_P
 ## definition rather than two.
 demo: demo-prepare
 	@echo ""
-	@echo "  backend   cd backend && uv run uvicorn apps.api.main:create_app --factory --reload --port 8000"
+	@echo "  backend   cd backend && uv run uvicorn apps.api.main:create_app --factory --reload --port $(SIGNORA_API)"
 	@echo "  frontend  cd frontend && npm run dev"
-	@echo "  then      http://localhost:3000 — sign in as dana.reyes@northwind.example"
+	@echo "  then      http://localhost:$(SIGNORA_WEB) — sign in as dana.reyes@northwind.example"
+	@echo "  sign up   http://localhost:$(SIGNORA_WEB)/sign-up — the verification link"
+	@echo "            prints to the frontend console; requireEmailVerification stays on"
 	@echo "  password  see docs/RUNNING.md"
 
 ## The preparation itself, with nothing said about what to do next.
