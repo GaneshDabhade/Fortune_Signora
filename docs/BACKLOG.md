@@ -786,6 +786,70 @@
 | ⚡ **Playwright journey** ([D-113](DECISION_REGISTER.md)) | **A seller types a company name into the shell and reaches that account** — ⚡ **[MC-1](PRODUCT_EXPERIENCE.md) calls it *"the first thing every evaluator types"*, so it is the first thing the journey does** |
 | ⚠️ **The rule it must not break** | **[P-A](DOMAIN_DISCOVERY_REGISTER.md).** **No results and a failed query must never render alike** — ⛔ *"nothing matched"* and *"we could not look"* are opposite answers to somebody who typed a name they know exists |
 
+### TASK-484 · The two journeys that work and nobody verifies
+
+| | |
+|---|---|
+| **Approved screen** | ****Authentication** · **Global Search**** — [`design-snapshot/screens/`](design-snapshot/MANIFEST.md), the implementation authority ([D-138](DECISION_REGISTER.md)) |
+| **Module** | **`product_surface` — Lane A** *(joined from [`modules.toml`](coordination/modules.toml), never stored here — [C-213](LANE_COORDINATION.md))* |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-07, on [486](architecture/486-cross-application-experience-audit.md).** ⚡ **Fitness only** (§20e); **placed by the product owner, not here** |
+| ⚡ **The reusable capability** | ⛔ **No new component.** ⚡ **Two Playwright journeys for behaviour that already exists** — *Search → Open Result* and *Registration → Verification → Login* |
+| ⛔ **The journey it blocks** | ⚠️ **Neither is blocked; both are unverified.** **`account-search.tsx` pushes to the account and no e2e test mentions search; `sign-up-form` pushes to `verify-email` and only a fixture names it** ([D-113](DECISION_REGISTER.md)) |
+| **Sequence** | ⚡ **First — it verifies what exists and is the cheapest row here** |
+| ⛔ **Not cosmetic** | **[D-150](DECISION_REGISTER.md): *only create work where measurable reusable capability is missing or where a customer journey cannot be completed*.** **This is the former, and [486](architecture/486-cross-application-experience-audit.md) names the latter** |
+| ✅ **Measured, not assumed** | **110 e2e tests across 15 specs; zero mention search, and none covers registration through to a session** |
+
+### TASK-481 · A global search surface, composing the one that already works
+
+| | |
+|---|---|
+| **Approved screen** | ****App Shell** *(§08)* · **Global Search**** — [`design-snapshot/screens/`](design-snapshot/MANIFEST.md), the implementation authority ([D-138](DECISION_REGISTER.md)) |
+| **Module** | **`product_surface` — Lane A** *(joined from [`modules.toml`](coordination/modules.toml), never stored here — [C-213](LANE_COORDINATION.md))* |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-07, on [486](architecture/486-cross-application-experience-audit.md).** ⚡ **Fitness only** (§20e); **placed by the product owner, not here** |
+| ⚡ **The reusable capability** | **App Shell §08.** ⚡ **`account-search.tsx` already does the hard part** — debounced query, `useAccountSearch`, keyboard `active` index, aria listbox, `router.push`. **This lifts it to a shell surface** |
+| ⛔ **The journey it blocks** | ⛔ **Search across the application.** **Today a customer can search accounts from one place and nothing else** |
+| **Sequence** | **Second — it composes a built component rather than starting one** |
+| ⛔ **Not cosmetic** | **[D-150](DECISION_REGISTER.md): *only create work where measurable reusable capability is missing or where a customer journey cannot be completed*.** **This is the former, and [486](architecture/486-cross-application-experience-audit.md) names the latter** |
+| ⚠️ **The bound** | ⛔ **Do not rewrite `account-search.tsx`.** **§20c: a component bent to suit one caller is slightly wrong for every other** |
+
+### TASK-480 · The notification platform
+
+| | |
+|---|---|
+| **Approved screen** | ****App Shell** *(§10)* · **Notification Center**** — [`design-snapshot/screens/`](design-snapshot/MANIFEST.md), the implementation authority ([D-138](DECISION_REGISTER.md)) |
+| **Module** | **`product_surface` — Lane A** *(joined from [`modules.toml`](coordination/modules.toml), never stored here — [C-213](LANE_COORDINATION.md))* |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-07, on [486](architecture/486-cross-application-experience-audit.md).** ⚡ **Fitness only** (§20e); **placed by the product owner, not here** |
+| ⚡ **The reusable capability** | **App Shell §10.** **Badge · panel · read/unread · empty state · navigate-to-context** |
+| ⛔ **The journey it blocks** | ⛔ ***Notification → Navigate to Context*, which cannot start.** ⚡ **Zero files under `frontend/` mention notifications — an absent surface, not a partial one** |
+| **Sequence** | **Third** |
+| ⛔ **Not cosmetic** | **[D-150](DECISION_REGISTER.md): *only create work where measurable reusable capability is missing or where a customer journey cannot be completed*.** **This is the former, and [486](architecture/486-cross-application-experience-audit.md) names the latter** |
+| ⚠️ **Ask before building** | ⛔ **Nothing publishes a notification today.** **Whether the badge counts a domain event, an outbox row or an unread record is a question for the design, and [D-140](DECISION_REGISTER.md) says ask one precise question rather than make one convenient assumption** |
+
+### TASK-482 · The AI Copilot entry and side panel
+
+| | |
+|---|---|
+| **Approved screen** | ****App Shell** *(§12, §13)* · **AI Copilot**** — [`design-snapshot/screens/`](design-snapshot/MANIFEST.md), the implementation authority ([D-138](DECISION_REGISTER.md)) |
+| **Module** | **`product_surface` — Lane A** *(joined from [`modules.toml`](coordination/modules.toml), never stored here — [C-213](LANE_COORDINATION.md))* |
+| **Status** | ✅ **`READY`** — **Lane C, 2026-08-07, on [486](architecture/486-cross-application-experience-audit.md).** ⚡ **Fitness only** (§20e); **placed by the product owner, not here** |
+| ⚡ **The reusable capability** | **App Shell §12 and §13** — the assistant entry point and the utility panel it opens into |
+| ⛔ **The journey it blocks** | ⛔ ***AI Copilot → Execute Action*, which cannot start.** ⚡ **The intelligence is already rendered — `narration`, `evidence`, `contributions` and a labelled evidence drawer all exist. There is nowhere to ask it anything** |
+| **Sequence** | ⛔ **Fourth, and the largest** — **`AI Copilot` has 24 distinct design phrases and none in the code** ([484](architecture/484-ui-conformance-and-gap-audit.md)) |
+| ⛔ **Not cosmetic** | **[D-150](DECISION_REGISTER.md): *only create work where measurable reusable capability is missing or where a customer journey cannot be completed*.** **This is the former, and [486](architecture/486-cross-application-experience-audit.md) names the latter** |
+| ⚠️ **Prerequisite** | **[C-419](LANE_COORDINATION.md) — *the six verbs have no representation, and 17 surfaces one contract is undecided*. ⛔ This row is the surface; that item is the contract** |
+
+### TASK-483 · The authentication shell
+
+| | |
+|---|---|
+| **Approved screen** | **Authentication** — [`design-snapshot/screens/`](design-snapshot/MANIFEST.md) |
+| ⛔ **Module** | **UNRESOLVED — [C-430](LANE_COORDINATION.md).** **`frontend/lib/auth/` and `(auth)/` are assigned to no lane in [`modules.toml`](coordination/modules.toml)**, and this office may not assign a path to itself |
+| **Status** | ⏸️ **`BLOCKED` on [C-430](LANE_COORDINATION.md)** — **a ruling on ownership, not on design.** ⛔ **Not `READY`: a row nobody may build is not fit** |
+| ⚡ **The reusable capability** | **`(auth)/layout.tsx`** — the shared card, branding and visual hierarchy. ⛔ **There is no authentication layout at all**: five `page.tsx` files, each re-stating its own frame |
+| ⛔ **Why it matters beyond tidiness** | ⚡ **[478](architecture/478-design-conformance-audit.md) measured the *content* at 1 of 11 named elements. This is the structural half** — **five screens cannot be made consistent with each other, let alone with the design, while nothing holds them together** |
+| **Sequence** | ⛔ **Unsequenceable until [C-430](LANE_COORDINATION.md) is ruled** |
+| ⛔ **Not cosmetic** | **The design specifies one authentication frame. The implementation has five** |
+
 ### TASK-479 · `people` publishes a way to read what it publishes
 
 | | |
