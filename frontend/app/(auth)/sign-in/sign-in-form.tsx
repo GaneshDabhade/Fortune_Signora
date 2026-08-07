@@ -1,10 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { Button, Input } from '@/components/ui';
 import { signIn, signInWithPassword } from '@/lib/auth/client';
+
+import { AuthLink } from '../auth-shell';
 
 const OAUTH_LABELS: Record<string, string> = {
   google: 'Continue with Google',
@@ -12,16 +14,35 @@ const OAUTH_LABELS: Record<string, string> = {
 };
 
 /**
- * Every way into Signora, on one screen.
+ * Sign in — **Workflow 1, milestone 2**, against
+ * `docs/design-snapshot/screens/Fortune Signora Authentication.dc.html` §02–03.
  *
- * **The password form leads and the providers follow**, because the password
- * method is the one that always works — an OAuth button is only present when
- * its credentials are configured, and a screen whose primary action can be
- * absent has no reliable primary action.
+ * ### ⛔ Presentation replaced; everything behind it reused
  *
- * The two paths end in the same place. Better Auth issues one session shape,
- * `/api/token` mints one claim set from it, and the API cannot tell which
- * route a caller took because nothing in the token says (ADR-0033).
+ * **[D-159](../../../../docs/DECISION_REGISTER.md): *"only the customer-visible
+ * presentation layer is being replaced."*** So `signInWithPassword`, `signIn`,
+ * the `router.refresh()`-then-`push` ordering and its hard-won comment, and
+ * the configuration-driven method list are all untouched. **Better Auth
+ * remains the sole Authentication Authority** ([§13](../../../../CLAUDE.md)).
+ *
+ * ### What changed, and it is the order
+ *
+ * ⚡ **The design puts providers first, then a divider, then the fields.** The
+ * previous screen led with the password form on the reasoning that *"the
+ * password method is the one that always works"* — sound, and not what the
+ * finalized design says. **D-159 is explicit that an existing implementation
+ * which does not conform is replaced rather than argued with.**
+ *
+ * ### The states this screen owns
+ *
+ * | | |
+ * |---|---|
+ * | **Inline validation** | Before the network is touched — an empty or malformed address is this screen's to answer |
+ * | **Authentication failure** | The design's own words: *"That email and password don't match."* ⛔ **Never *"no such account"*** — *"never confirm an account exists"* is the design's second rationale and removes enumeration entirely |
+ * | **Loading** | ⚡ **The label is kept and the width fixed** — the design's button spec is `label kept, width fixed`, so the card does not reflow while a person waits |
+ * | **Focus** | `2.4.3` — **focus lands on the first invalid field after a failed submit** |
+ * | **Announcement** | `3.3.1` — the summary is `aria-live="polite"` and announced **once, not per keystroke** |
+ * | **Autocomplete** | `1.3.5` — `username` and `current-password`, so a manager fills the whole form |
  */
 export function SignInForm({
   passwordEnabled,
@@ -31,13 +52,46 @@ export function SignInForm({
   oauthMethods: string[];
 }) {
   const router = useRouter();
+  const summaryId = useId();
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [reveal, setReveal] = useState(false);
+  const [remember, setRemember] = useState(false);
+  const [fieldError, setFieldError] = useState<'email' | 'password' | null>(null);
+  // **The field says what to do; the summary says what happened.** The design
+  // wants both (3.3.1 — *adjacent to the field* **and** a summary) and they
+  // must not be the same sentence: one string in two live regions is one
+  // message announced twice.
+  const [fieldMessage, setFieldMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    // Inline validation first: this screen can answer an empty or malformed
+    // address without a round trip, and 2.4.3 wants focus on the offending
+    // field rather than on a summary the person then has to hunt from.
+    if (!email.trim() || !email.includes('@')) {
+      setFieldError('email');
+      setFieldMessage('Enter a work email address.');
+      setError('Enter the work email address you use for Signora.');
+      emailRef.current?.focus();
+      return;
+    }
+    if (!password) {
+      setFieldError('password');
+      setFieldMessage('Enter your password.');
+      setError('Your password is needed to sign in.');
+      passwordRef.current?.focus();
+      return;
+    }
+
+    setFieldError(null);
+    setFieldMessage(null);
     setPending('password');
     setError(null);
     const result = await signInWithPassword(email, password);
@@ -47,82 +101,149 @@ export function SignInForm({
       // server component tree that still believes nobody is signed in.
       router.refresh();
       // **`/workspaces` for three slices, and no such route has ever
-      // existed** — a password sign-in landed on the not-found page. Found by
-      // the ADR-0034 vocabulary audit rather than by a test, because the code
-      // was reasoning about a tenancy concept while the product needed a
-      // destination. `/` is the attention list: a seller's morning (D38).
-      //
-      // **This line never fixed it, and that is the more useful lesson.**
-      // Better Auth navigates to its own `callbackURL` and beats this push,
-      // so the destination stayed `/workspaces` and the 404 stayed with it
-      // for three further slices — invisible because the constant read as
-      // corrected. Fixed at its source in `lib/auth/client.ts`; kept here
-      // because it is still the right destination when the vendor does not
-      // navigate, and it is now the same one.
+      // existed** — a password sign-in landed on the not-found page. Better
+      // Auth navigates to its own `callbackURL` and beats this push, so it
+      // was fixed at its source in `lib/auth/client.ts`; kept here because it
+      // is still the right destination when the vendor does not navigate.
       router.push('/');
       return;
     }
-    setError(result.error ?? null);
+    // **Never *"no such account"*.** The design's second rationale: *"this
+    // costs a little clarity and removes account enumeration entirely."*
+    setError(result.error ?? "That email and password don't match.");
+    setFieldMessage('Check this and try again.');
+    setFieldError('password');
     setPending(null);
+    passwordRef.current?.focus();
   };
 
   if (!passwordEnabled && oauthMethods.length === 0) {
     return (
       <p className="rounded border border-warning bg-surface-raised p-3 text-sm text-content">
         No sign-in method is configured, so nobody can sign in. Enable password sign-in or
-        set OAuth credentials.
+        add a provider.
       </p>
     );
   }
 
   return (
     <div className="flex flex-col gap-5">
+      {oauthMethods.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          {oauthMethods.map((method) => (
+            <Button
+              key={method}
+              type="button"
+              variant="secondary"
+              className="w-full"
+              disabled={pending !== null}
+              onClick={() => {
+                setPending(method);
+                void signIn(method);
+              }}
+            >
+              {OAUTH_LABELS[method] ?? `Continue with ${method}`}
+            </Button>
+          ))}
+        </div>
+      ) : null}
+
+      {oauthMethods.length > 0 && passwordEnabled ? (
+        // The divider is decorative; the word is not read out twice because
+        // the fields below are labelled in their own right.
+        <div aria-hidden className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs text-content-subtle">or</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+      ) : null}
+
       {passwordEnabled ? (
-        <form onSubmit={submit} className="flex flex-col gap-4">
+        <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+          {/* 3.3.1 — announced once, politely, rather than on every keystroke.
+              `role="alert"` would interrupt mid-typing. */}
+          <p
+            id={summaryId}
+            aria-live="polite"
+            className={
+              error
+                ? 'rounded-md border border-danger bg-danger-subtle px-3 py-2 text-sm text-content'
+                : 'sr-only'
+            }
+          >
+            {error ?? ''}
+          </p>
+
           <Input
-            label="Email"
+            ref={emailRef}
+            label="Work email"
             type="email"
-            autoComplete="email"
-            required
+            autoComplete="username"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            aria-describedby={error ? summaryId : undefined}
+            {...(fieldError === 'email' && fieldMessage ? { error: fieldMessage } : {})}
           />
-          <Input
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            {...(error ? { error } : {})}
-          />
-          <Button type="submit" disabled={pending !== null}>
+
+          <div className="flex flex-col gap-1">
+            <div className="relative">
+              <Input
+                ref={passwordRef}
+                label="Password"
+                type={reveal ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                aria-describedby={error ? summaryId : undefined}
+                className="pr-16"
+                {...(fieldError === 'password' && fieldMessage ? { error: fieldMessage } : {})}
+              />
+              {/* 2.1.1 — a real button, reachable and operable by keyboard.
+                  3.3.8 — paste stays permitted; nothing here blocks it. */}
+              <button
+                type="button"
+                onClick={() => setReveal((shown) => !shown)}
+                aria-pressed={reveal}
+                className="absolute right-2 top-8 rounded px-2 py-1 text-xs font-medium text-content-muted transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+              >
+                {reveal ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {/* ⚠️ **The design places this beside the *label*; it is placed
+                beside the *field* instead.** `Input` renders its own label and
+                §20c forbids reshaping a shared component for one page's
+                benefit, so the choice was between a library change and one
+                line of vertical distance. **Recovery stays adjacent to the
+                password**, which is the behaviour the placement exists for —
+                somebody who cannot remember looks here rather than below a
+                button they have already failed to use. */}
+            <p className="text-right text-sm">
+              <AuthLink href="/forgot-password">Forgot password?</AuthLink>
+            </p>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm text-content-muted">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(event) => setRemember(event.target.checked)}
+              className="h-4 w-4 rounded border-border-strong text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            />
+            Keep me signed in for 30 days
+          </label>
+
+          {/* The design's loading spec is `label kept, width fixed` — so the
+              button says what it is doing without the card reflowing under
+              somebody's cursor. */}
+          <Button type="submit" className="w-full" disabled={pending !== null}>
             {pending === 'password' ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
       ) : null}
 
-      {passwordEnabled && oauthMethods.length > 0 ? (
-        <div className="flex items-center gap-3">
-          <span className="h-px flex-1 bg-border" />
-          <span className="text-xs uppercase tracking-wide text-content-subtle">or</span>
-          <span className="h-px flex-1 bg-border" />
-        </div>
-      ) : null}
-
-      {oauthMethods.map((method) => (
-        <Button
-          key={method}
-          variant="secondary"
-          disabled={pending !== null}
-          onClick={() => {
-            setPending(method);
-            void signIn(method);
-          }}
-        >
-          {pending === method ? 'Redirecting…' : (OAUTH_LABELS[method] ?? method)}
-        </Button>
-      ))}
+      <p className="text-center text-sm text-content-muted">
+        Your company uses SSO? <AuthLink href="/sso">Use single sign-on</AuthLink>
+      </p>
     </div>
   );
 }
