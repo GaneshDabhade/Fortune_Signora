@@ -80,6 +80,66 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-136 · The worker crash-loops in every non-local environment, because the composition root now calls a guard nothing satisfies
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`backend/apps/worker/main.py`](../backend/apps/worker/main.py), [`infra/docker-compose.prod.yml`](../infra/docker-compose.prod.yml) |
+| **Current assignee** | **Lane C** — it authored TASK-419, and `infra/**` is its remit ([D-022](DECISION_REGISTER.md)) |
+| **Severity** | 🟠 · ⛔ **Blocking Quality Defect class** — `make smoke` fails at Startup, so **nothing can be certified while it stands** |
+| **Status** | **`OPEN`** — reproduced from the container logs. **QE changes no production code** |
+| **Found** | 2026-08-07 by QE, cycle 87, by `make certify` |
+
+**Steps to reproduce.**
+
+```bash
+make smoke
+→ 2. Startup
+    ✗ worker is 'restarting', expected running
+  SMOKE FAILED at: 2. Startup    (3 stages in 26s)
+```
+
+```bash
+docker compose --env-file .env.prod-local -f docker-compose.prod.yml logs worker
+→ File "/app/apps/worker/main.py", line 155, in startup
+      provider_registry=build_data_provider_registry(ProviderSettings()),
+  ProviderRegistrationError: simulated provider adapters were selected in
+  environment 'production-local'. … set SIGNORA_PROVIDERS to an empty value
+  to run without ingestion.
+```
+
+**Expected.** The worker starts. `smoke` runs its 24 stages.
+
+**Actual.** The worker crash-loops. `smoke` stops at stage 2 of 24.
+
+### ⚡ The guard is right. The slice made it reachable without giving anything a way to satisfy it
+
+**Nothing here is wrong except the arithmetic of two defaults**, and both are defensible on their own:
+
+| | | |
+|---|---|---|
+| `ProviderSettings.providers` | `tuple(ProviderName)` | **Every provider**, because *"a process that recognises a provider architecturally and cannot serve it is half-configured"* |
+| `docker-compose.prod.yml` | `SIGNORA_ENVIRONMENT: production-local` | Correct — it is the production-image stack |
+| `build_provider_registry` | refuses `providers and environment != "local"` | ⚡ **Correct, and deliberately fail-fast**: *"a service running on them would fabricate every score and signal built on top"* |
+
+**The guard has existed and been right for some time. `36cbcb7d` is the first commit that *calls* it from a deployed process** — ADR-0404 capability 3 — **and no non-local environment sets `SIGNORA_PROVIDERS`.** So the first environment to reach the new code is the one that cannot satisfy it.
+
+**The fix is one line in the environment, not in the guard**, and the error message already names it: `SIGNORA_PROVIDERS: ""` in [`infra/docker-compose.prod.yml`](../infra/docker-compose.prod.yml). ⛔ **Do not relax the guard** — §2 and the guard's own docstring: *"it is the one guard here that may never fail open."*
+
+### Three cycles, three defects `make validate` structurally cannot see
+
+⚡ **This is the third consecutive cycle where the only gate that caught the defect was one certification runs and `validate` does not.**
+
+| Cycle | Row | Caught by | Why `validate` was blind |
+|---|---|---|---|
+| 84 | [B-132](#b-132--task-439-widened-the-signalrepository-protocol-and-left-the-fake-behind) | `mypy --strict` | `pytest` is green — Python does not enforce `Protocol` at runtime |
+| 82 | [B-133](#b-133--task-445-left-an-unused-import-and-the-production-image-build-is-what-refused-it) | `next build`'s ESLint, inside `smoke` | An unused import is valid TypeScript |
+| **87** | **B-136** | **`smoke`'s Startup, on the production images** | ⚡ **`validate` never builds or starts the production stack.** A composition root that cannot start is invisible to a test suite that never composes it |
+
+**All three are [B-131](#b-131--the-validation-planner-requires-sixteen-gates-the-certification-record-contains-six) in the concrete.** The Validation Planner named `smoke` and `runtime-composition` for this change; **`runtime-composition` still leaves no trace in the certification record**, and a lane running the planner's own list before handover catches this in four minutes rather than at certification.
+
+---
+
 ### B-134 · `coordination.py --check` can never pass, because it compares a file against its own commit stamp
 
 | | |
