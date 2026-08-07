@@ -73,6 +73,13 @@
 
 ## Current — as of 2026-08-07, `d66e223`
 
+| Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Since |
+|---|---|---|---|---|---|---|---|---|
+| **Lane C** | **[TASK-419](BACKLOG.md) — a handler can reach a provider adapter** | `lane-c-sync` | **`apps/`** — Platform Foundation, [C-010](LANE_COORDINATION.md) | one slice | **`IN VALIDATION`** | — | ⚡ **With QE.** `WorkerRuntime.provider_registry` built at the worker composition root. **`mypy --strict` clean · 37 import contracts · 7 app tests · the deployed-environment guard verified still firing.** ⛔ **Unblocks [C-234](LANE_COORDINATION.md) and [TASK-901](BACKLOG.md) slice 1, which Lane A is holding** | 2026-08-07 |
+
+> ⚠️ **This is Lane C's first row on this board, and its absence is why nothing reached QE.** **[§20e](../CLAUDE.md) step 6 is explicit — *"Backup, not a trigger… QE does not poll"* — so a lane tells QE by claiming, which puts its row here, on `integration`, where QE reads.** ⛔ **Lane C has been pushing to `lane-c-sync` and never writing a row, so nine commits sat unseen while two lanes reported work stranded.** ⚡ **Lane A measured it from the outside before this office noticed it from the inside.**
+
+
 ## Module assignment — the product owner's ruling, 2026-08-04 (second ruling, same day)
 
 > **One implementation module → one implementation lane → one current assignee → one source of truth.** **Dual ownership of an implementation module is not permitted** (`CLAUDE.md` §20e, *module assignment is authoritative*).

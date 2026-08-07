@@ -154,6 +154,47 @@
 # ⛔ The third is this office's and has no excuse. Recorded rather than
 #   explained.
 
+# ══════════════════════════════════════════════════════════════════════════════
+# 🟢  PLANNING CORRECTION — 2026-08-07 · both stranded answers, and why
+#
+# You reported two finished answers stranded on lane-c-sync. Both are real,
+# both are finished, and you were right to refuse to act on them.
+#
+# ① TASK-419 — DELIVERED, IN VALIDATION with QE.
+#    WorkerRuntime.provider_registry, built at the worker composition root
+#    from provider_platform's own typed settings. mypy --strict clean, 37
+#    import contracts kept, 7 app tests pass, and the deployed-environment
+#    guard was verified still firing.
+#    ⛔ The two registry.subscribe() calls C-234 also names are NOT in it —
+#    they need a SyncFactory TASK-901 slice 1 is building, and that row is
+#    yours and IN PROGRESS. Taking them would be taking your scope.
+#
+# ② C-229 — CLOSED, no ruling needed.
+#    The finalized App Shell defines the rail:
+#      Home · Forecast · Pipeline · Accounts (8,412) [Enterprise 312,
+#      Mid-market 1,140] · Deals · Conversations · Signals (14) · Reports
+#      + Settings.
+#    Accounts carries 8,412 — the exact count TASK-440 cites — so Companies
+#    IS a first-class destination and D38 is superseded on navigation.
+#    Deals is Opportunity Intelligence's parent, so TASK-441's entrance
+#    exists one level up.
+#
+# ③ C-424 — CLOSED by measurement. The four rail entries you would have had
+#    to render are not missing screens: Home/Forecast/Pipeline are the
+#    Executive Dashboard and two of its sections; Deals and Conversations are
+#    entity types the design declares in Global Search's entityPages.
+#    ⛔ Do not look for four missing designs.
+#
+# ⚠️ WHY THEY WERE STRANDED, and it is this office's failure.
+#    §20e step 6: "Backup, not a trigger — QE does not poll." A lane tells QE
+#    by claiming, which puts its row in ACTIVE_ASSIGNMENTS.md on integration.
+#    Lane C has never written a row there. Nine commits sat unseen because
+#    nothing signalled they existed. You measured it from the outside before
+#    this office noticed it from the inside. A Lane C board row now exists.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
 lane         = "Lane A"
 updated      = 2026-08-07
 
