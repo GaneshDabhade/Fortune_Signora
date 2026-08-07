@@ -1,6 +1,10 @@
 # 479 · The Coordination subsystem — planning flows without waiting for release
 
-**Lane C · Product Office · 2026-08-07.** **[D-142](../DECISION_REGISTER.md) §10, strengthened by [D-143](../DECISION_REGISTER.md).**
+✅ **RATIFIED — product owner, 2026-08-07, [D-144](../DECISION_REGISTER.md).** *"It has the right foundation. Let Lane C implement and use the coordination subsystem, and refine it based on real repository behavior rather than continuing to redesign it theoretically."*
+
+**Lane C · Product Office · 2026-08-07.** **[D-142](../DECISION_REGISTER.md) §10, strengthened by [D-143](../DECISION_REGISTER.md), ratified by [D-144](../DECISION_REGISTER.md).**
+
+> ⚡ **v1 is live.** **`origin/coordination` carries `coordination.toml` and a README, on an orphan ref with no history — a lane fetches two files, not a repository.** ⛔ **§10's steps ③ to ⑤ are done: the ref exists, `CLAUDE.md` §20e is amended, and all three lanes are notified.**
 
 > ## ⛔ **This is a subsystem, not a generated file.**
 >
@@ -177,10 +181,16 @@ blocker_owner = "—"
 
 | | |
 |---|---|
-| **① This document** | ✅ **Ratified by the product owner before anything is built** — it changes how every lane polls |
-| **② `infra/coordination.py`** | **The generator, and `state-check` gains a check that the published ref matches what the generator would emit today** |
-| **③ The `coordination` ref** | **Created and published** |
-| **④ `CLAUDE.md` §20e** | **Amended: the poll reads the coordination source** |
-| **⑤ The lanes** | **Told once, through their queue files, which is the channel that already works** |
+| **① This document** | ✅ **Ratified 2026-08-07, [D-144](../DECISION_REGISTER.md)** |
+| **② `infra/coordination.py`** | ✅ **Built and running** — the generator, and `state-check` gains a check that the published ref matches what the generator would emit today** |
+| **③ The `coordination` ref** | ✅ **Created and published** — `origin/coordination`, orphan, two files |
+| **④ `CLAUDE.md` §20e** | ✅ **Amended** — *A lane learns what to build from `origin/coordination`* |
+| **⑤ The lanes** | ✅ **Told, in all three queue files** |
 
-⛔ **Nothing changes for a lane until ④.** ⚡ **Until then the existing queue files stay authoritative, so this redesign cannot itself cause the drought it exists to end.**
+✅ **All five are done as of 2026-08-07. The subsystem is in use.**
+
+> ## **v1 ships deliberately unfinished, and [D-144](../DECISION_REGISTER.md) is why.**
+>
+> ⛔ **`planning_latency` and `assignment_latency` are specified and not emitted** — both need the moment a blocker *cleared*, and the repository records when a state *string appeared*. **Computing them would mean inventing a number.**
+>
+> ⚡ **They are the first thing to learn from use rather than to perfect on paper**: *"this metric isn't useful · this dependency should be automatic · this queue should predict starvation · this assignment should happen earlier"* — **each of those is cheaper to find in a running system than to specify in advance.**

@@ -195,6 +195,41 @@
 # ⛔ ADVISORY ONLY (D-136). No execution state changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════════
+# 🟢  THE POLL HAS CHANGED — 2026-08-07 · D-144 · read this once
+#
+# Your poll is now one fetch and one read:
+#
+#     git fetch origin coordination
+#     git show origin/coordination:coordination.toml
+#
+# Find the [lane.<you>] block. It carries current, next and next_after_that —
+# a pipeline three deep — plus claimable, in_flight, blocked, utilization,
+# idle prediction, dependency wait and critical path. Every open task is
+# listed with depends_on, unblocks, next_owner, critical_path,
+# estimated_ready and waiting_for.
+#
+# ⛔ DO NOT poll lane-c-sync, lane-qe, another lane's branch, or commit
+#    history to find work. That is what this ref exists to end: planning
+#    information no longer travels through the release pipeline.
+#
+# ✅ UNCHANGED: Startup steps 3 and 5 — you still read BUGS.md and
+#    LANE_COORDINATION.md for awareness. The Task Claim Protocol is
+#    unchanged; a claim still goes to integration. Everything QE does is
+#    unchanged.
+#
+# ⚠️ IF THE SOURCE DISAGREES WITH BACKLOG.md, the backlog wins and the
+#    disagreement is a defect to report. The source is a projection; a drifted
+#    projection is stale, not authoritative.
+#
+# ⛔ THIS FILE IS NOW SUPPORTING DOCUMENTATION. It stays for the notices and
+#    the reasoning it carries; coordination.toml is where the assignment is.
+#
+# ⚡ WHY IT EXISTS: three times this week a finished answer sat on a Product
+#    Office branch while a lane reported itself blocked on it. Lane A measured
+#    that from the outside before this office noticed it from the inside.
+# ══════════════════════════════════════════════════════════════════════════════
+
 lane         = "Lane A"
 updated      = 2026-08-07
 

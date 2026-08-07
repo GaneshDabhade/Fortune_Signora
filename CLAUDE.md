@@ -1009,6 +1009,35 @@ promoted commit SHA  ==  certified commit SHA
 
 > ⛔ **A screen can be *Implemented* and not *Design Compliant*, and on 2026-08-06 every screen audited was exactly that** ([478](docs/architecture/478-design-conformance-audit.md)). **Reporting one number for five questions is how that stayed invisible.**
 
+### A lane learns what to build from `origin/coordination`
+
+**Ratified 2026-08-07, product owner, [D-144](docs/DECISION_REGISTER.md), on [479](docs/architecture/479-coordination-architecture.md). Drafted by Lane C on that instruction.**
+
+> ## **Planning information flows through the Coordination subsystem. Release information flows through QE. They share a repository and nothing else.**
+
+**A lane's poll is one fetch and one read:**
+
+```
+git fetch origin coordination
+git show origin/coordination:coordination.toml
+```
+
+⛔ **A lane does not poll `lane-c-sync`, `lane-qe`, another lane's branch, or commit history to discover work.** ⚡ **It reads the row where `lane` is its own, takes `current`, and starts.**
+
+| The source carries | |
+|---|---|
+| **`current` · `next` · `next_after_that`** | **A pipeline three deep, so there is no planning latency between slices** |
+| **`depends_on` · `unblocks` · `next_owner` · `critical_path` · `estimated_ready` · `waiting_for`** | **A dependency graph, walked rather than rediscovered** |
+| **utilization · idle prediction · dependency wait · blocked duration** | **Starvation as a measurement rather than a report** |
+
+⛔ **It is generated and never edited.** **[`BACKLOG.md`](docs/BACKLOG.md) remains authoritative for scope, [`modules.toml`](docs/coordination/modules.toml) for ownership, [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) for dependencies** — **the coordination source is their published projection, and editing it makes it wrong rather than true** (§2).
+
+**What is unchanged:** ✅ **Startup steps 3 and 5** — a lane still reads [`BUGS.md`](docs/BUGS.md) and [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) for *awareness*. ✅ **The Task Claim Protocol** — a claim still goes to `integration`. ✅ **Everything QE does.**
+
+> ⚠️ **If the coordination source disagrees with `BACKLOG.md`, the backlog wins and the disagreement is a defect to report** — the source is a projection, and a projection that has drifted is stale rather than authoritative. **`infra/state-check.py` reports it, and `infra/coordination.py --check` is what it runs.**
+
+**Product Office republishes the ref as part of every planning cycle** — ⛔ **not on a schedule and not by automation** (§20c-2). **A planning change that is not published has not been made.**
+
 ### Four classes of repository change, and planning corrections are one
 
 **Ratified 2026-08-06, product owner, [D-136](docs/DECISION_REGISTER.md). Drafted by Lane C on that instruction.**
