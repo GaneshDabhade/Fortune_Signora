@@ -80,6 +80,60 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-139 · `_delivered` stopped reading its own arguments and started reading the clone
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) `_delivered`, [`backend/tests/test_coordination_source.py`](../backend/tests/test_coordination_source.py) |
+| **Current assignee** | **Lane C** — it authored C-428 |
+| **Severity** | 🟠 · ⛔ **Blocking Quality Defect class** — a failing test. Nothing on the branch can be certified |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-07 by QE, cycle 90, by `make certify` |
+
+**Steps to reproduce.**
+
+```bash
+cd backend && uv run pytest tests/test_coordination_source.py -q
+→ FAILED test_delivered_reads_the_branch_not_only_the_declaration[`IN VALIDATION` — Lane A-3-False]
+  AssertionError: assert True is False
+  1 failed, 6 passed
+```
+
+**Expected.** The same 12 passes `integration` gives. **QE checked rather than inferred**: on `origin/integration` without C-428, `12 passed`. **The regression is entirely `0307f1fa`.**
+
+### The visible half — the test was not moved with the function
+
+`_delivered` changed from **lane-scoped** to **row-scoped**, and the reasoning is good:
+
+> *"The lane's branch carries nothing"* meant **a lane starting any new work made every finished row it owned read as undelivered.** `TASK-427` flipped because Lane B pushed `TASK-462`, which has nothing to do with it.
+
+**But the parametrised case still passes `ahead={"Lane A": 3}` and expects `False`** — and the new implementation never reads `ahead`. The old contract's test is asserting against the new contract.
+
+### ⚡ The half worth more than the fix — `ahead` is now a hidden input's stand-in
+
+```python
+def _delivered(dep: str, by_id: dict[str, Task], ahead: dict[str, int]) -> bool:
+    ...
+    return not _git("log", "--oneline", f"origin/integration..{branch}", f"--grep={dep}").strip()
+```
+
+⛔ **`ahead` is no longer read by any path.** The answer now comes from **`git log` against real refs in the running clone** — so:
+
+| | |
+|---|---|
+| **The test does not test the function** | It supplies `ahead` and the function ignores it. **The case would pass or fail identically with `ahead` deleted** — the Decorative Logic §2 names, in a test rather than in a branch |
+| **The result varies by workstation** | It depends on which refs are fetched and where each lane branch happens to point. ⚠️ **That is very likely why this passed where it was written and fails here** |
+
+**`CLAUDE.md` §2: *"Hidden inputs are architecture defects… it makes the same declared inputs produce different results, which defeats replay, regression testing, and every guarantee proven by removal."*** ⚡ **A predicate that takes three arguments and answers from the filesystem has exactly that shape.**
+
+**The direction the fix should go is the repository's own:** either the git read becomes a **declared input** the caller supplies — as `ahead` already was — or the parameter goes and the test builds the refs it means. ⛔ **Deleting the failing case would leave a function nothing exercises**, which is worse than the red.
+
+### ✅ Lane B was not held
+
+**`TASK-462` is innocent and was certified separately.** The candidate was rebuilt as `integration` + Lane B alone — *"a failing gate is a row against the owning lane and the slice is excluded; other lanes are never held for it."*
+
+---
+
 ### B-138 · One test annotation fails `mypy --strict`, and it is holding sixteen commits and Lane A's whole queue
 
 | | |
