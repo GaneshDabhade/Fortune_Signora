@@ -233,12 +233,6 @@
 lane         = "Lane A"
 updated      = 2026-08-07
 
-# ⚡ SUPPLY STATE: blocked_on_integration — NOT starved.
-#    This lane has 4 row(s) parked behind its OWN finished work, sitting on
-#    its own branch and not yet on integration. `eligible_count = 0` here means
-#    waiting on QE, not waiting on planning. ⛔ Do not read it as idle, and this
-#    office will not pad the queue to hide it — the rows exist and are owned.
-#
 # ── Executable today, in order ───────────────────────────────────────────────
 #
 # ⚡ RELEASED 2026-08-07 — C-427. Every row below was parked behind a
@@ -247,13 +241,13 @@ updated      = 2026-08-07
 #    QE's exclusively — so the successor waited on a state nobody could
 #    move. Each release carries its evidence in the backlog row.
 #    `state-check` now reports this condition every run.
-current = ""
-next    = ""
-future  = []
+current = "TASK-451"
+next    = "TASK-468"
+future  = ["TASK-467", "TASK-471"]
 
-eligible_count = 0
+eligible_count = 4
 depth_target   = 15
-shortfall      = 15
+shortfall      = 11
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

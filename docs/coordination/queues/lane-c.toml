@@ -74,8 +74,6 @@
 lane         = "Lane C"
 updated      = 2026-08-07
 
-# ✅ SUPPLY STATE: working — claimable rows are listed below.
-#
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-473"
 next    = "TASK-476"

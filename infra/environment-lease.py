@@ -103,10 +103,40 @@ def _compose_project_from_file() -> str | None:
     try:
         for line in compose.read_text().splitlines():
             if m := re.match(r"^name:\s*(\S+)\s*$", line):
-                return m.group(1)
+                return _expand(m.group(1))
     except OSError:
         return None
     return None
+
+
+def _expand(value: str) -> str | None:
+    """`${VAR:-default}` as Compose reads it, or `None` if it resolves to nothing.
+
+    ⛔ **[B-141](../docs/BUGS.md) / [483](../docs/architecture/483-environment-isolation-audit.md).**
+    The compose file's line is `name: ${COMPOSE_PROJECT_NAME:-signora-v2}`.
+    **Docker expands that; the regex above did not** — so every clone without
+    the variable exported computed the *literal string* as its resource name,
+    and they all computed the same one.
+
+    ⚡ **The live lease file was named `${COMPOSE_PROJECT_NAME:-signora-v2}.lease`,
+    character for character**, and QE held it while three separate stacks ran.
+    **Two aborts this session, 270s and 120s, were that.**
+
+    ⚠️ **The `"signora-v2"` fallback in `_resource()` was also unreachable**: this
+    function returned a truthy literal, so the `or` chain never reached its
+    third term. **A default nothing can take is not a default.**
+
+    ⛔ **Deliberately not a general shell expander.** It reads the one form the
+    compose file uses, and **returns `None` for anything else** so the caller
+    falls back rather than inventing a name — `CLAUDE.md` §2's *build for the
+    requirement in front of you*.
+    """
+    if not value.startswith("${"):
+        return value or None
+    m = re.fullmatch(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}", value)
+    if m is None:
+        return None
+    return os.environ.get(m.group(1)) or m.group(2) or None
 
 
 def _lease_path() -> Path:
