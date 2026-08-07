@@ -9,46 +9,27 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "10a1a60"
-task_count     = 95
+generated_from = "c89fd55"
+task_count     = 96
 
 [lane.Lane_A]
-current            = "TASK-490"
+current            = "TASK-491"
 next               = ""
 next_after_that    = ""
-assigned_total     = 66
+assigned_total     = 80
 claimable          = 1
-claimable_now      = 1
-awaiting_sync      = 0
-in_flight          = 34
+claimable_now      = 0
+awaiting_sync      = 1
+in_flight          = 47
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 31
-lane_utilization   = 6.8
+blocked            = 32
+lane_utilization   = 9.4
 idle_prediction_days   = 0.1
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 5
-
-[lane.Lane_B]
-current            = ""
-next               = ""
-next_after_that    = ""
-assigned_total     = 13
-claimable          = 0
-claimable_now      = 0
-awaiting_sync      = 0
-in_flight          = 12
-awaiting_qe_transition = 0
-blocked_on_integration = 0
-supply_state       = "in_flight_only"
-blocked            = 1
-lane_utilization   = 2.4
-idle_prediction_days   = 0.0
-dependency_wait_days   = 0.0
-blocked_duration_days  = 0.0
-critical_path_max      = 0
 
 [lane.Lane_C]
 current            = ""
@@ -134,6 +115,54 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-204"
+title         = "A-i — the AI Reasoning Engine reaches a customer"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-205"
+title         = "A-ii — Sales Engagement reaches a customer"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-301"
+title         = "Global Search — a result says what kind of thing it is, and why it matched"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-400"
 title         = "Epic A completion — the surfaces that expose what the platform already knows"
 state         = "IN FLIGHT"
@@ -150,8 +179,56 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-402"
+title         = "Epic E1 — a customer's CRM becomes a source Signora can read"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-405"
 title         = "A-iii — a signal ends in a decision"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-406"
+title         = "A-iv — an ICP criterion is scored against outcomes"
+state         = "IN FLIGHT"
+declared      = "IN PROGRESS"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-407"
+title         = "B-i — a connection says whether it actually works"
 state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane A"
@@ -310,6 +387,22 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-428"
+title         = "M-I · What the domain lets other modules say"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-429"
 title         = "M-E · A provider supplies a person identifier"
 state         = "SEQUENCED"
@@ -376,6 +469,22 @@ on_integration = true
 [[task]]
 id            = "TASK-437"
 title         = "A member can leave an organization, and the last owner cannot"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-438"
+title         = "The Executive Dashboard's five sections that need nothing new"
 state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane A"
@@ -488,6 +597,22 @@ on_integration = true
 [[task]]
 id            = "TASK-445"
 title         = "Stated absence becomes one implementation instead of nine local ones"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-446"
+title         = "An account's observed attributes have a publisher"
 state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane A"
@@ -630,6 +755,22 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-457"
+title         = "People publishes what other modules may say about a person"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-458"
 title         = "Signal Engine reads the People contract"
 state         = "IN FLIGHT"
@@ -646,8 +787,40 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-459"
+title         = "`reasoning@1` earns a protocol-2 evaluation"
+state         = "WAITING_EXTERNAL"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDIN"
+waiting_for    = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)**"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-460"
 title         = "Global Search — one box, four kinds of answer"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-461"
+title         = "The Action Batch's `public/` contract, and nothing else"
 state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane A"
@@ -822,6 +995,22 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-472"
+title         = "A workspace can list its accounts, and blank input currently refuses to"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-473"
 title         = "A developer can always tell which authentication mode is running"
 state         = "SEQUENCED"
@@ -955,13 +1144,13 @@ title         = "The authentication shell"
 state         = "SEQUENCED"
 declared      = "SEQUENCED"
 lane          = "Lane A"
-depends_on     = ["TASK-490"]
+depends_on     = ["TASK-491"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "— after [TASK-490](#task-490--the-design-foundation--every-screen-inhe"
-waiting_for    = "— after [TASK-490](#task-490--the-design-foundation--every-screen-inherits-the-finalized-visual-language-or-none-does), Lane C 2026-08-07 on [D-161](D"
+estimated_ready = "— after [TASK-491](#task-491--the-design-foundation-the-seven-gaps-the"
+waiting_for    = "— after [TASK-491](#task-491--the-design-foundation-the-seven-gaps-the-conformance-audit-found), Lane C 2026-08-07.** ⚡ **Re-pointed, not re-parked**:"
 blocked_days   = 0.0
 on_integration = true
 
@@ -971,13 +1160,13 @@ title         = "The two journeys that work and nobody verifies"
 state         = "SEQUENCED"
 declared      = "SEQUENCED"
 lane          = "Lane A"
-depends_on     = ["TASK-490"]
+depends_on     = ["TASK-491"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "— after [TASK-490](#task-490--the-design-foundation--every-screen-inhe"
-waiting_for    = "— after [TASK-490](#task-490--the-design-foundation--every-screen-inherits-the-finalized-visual-language-or-none-does), Lane C 2026-08-07 on [D-161](D"
+estimated_ready = "— after [TASK-491](#task-491--the-design-foundation-the-seven-gaps-the"
+waiting_for    = "— after [TASK-491](#task-491--the-design-foundation-the-seven-gaps-the-conformance-audit-found), Lane C 2026-08-07.** ⚡ **Re-pointed, not re-parked**:"
 blocked_days   = 0.0
 on_integration = true
 
@@ -1064,6 +1253,22 @@ on_integration = true
 [[task]]
 id            = "TASK-490"
 title         = "The design foundation — every screen inherits the finalized visual language, or none does"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-491"
+title         = "The design foundation, the seven gaps the conformance audit found"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
@@ -1075,7 +1280,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-903"
@@ -1115,214 +1320,6 @@ title         = "A contraction risk stops looking like an opportunity"
 state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-204"
-title         = "A-i — the AI Reasoning Engine reaches a customer"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-205"
-title         = "A-ii — Sales Engagement reaches a customer"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-301"
-title         = "Global Search — a result says what kind of thing it is, and why it matched"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-402"
-title         = "Epic E1 — a customer's CRM becomes a source Signora can read"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-406"
-title         = "A-iv — an ICP criterion is scored against outcomes"
-state         = "IN FLIGHT"
-declared      = "IN PROGRESS"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-407"
-title         = "B-i — a connection says whether it actually works"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-428"
-title         = "M-I · What the domain lets other modules say"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-438"
-title         = "The Executive Dashboard's five sections that need nothing new"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-446"
-title         = "An account's observed attributes have a publisher"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-457"
-title         = "People publishes what other modules may say about a person"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-459"
-title         = "`reasoning@1` earns a protocol-2 evaluation"
-state         = "WAITING_EXTERNAL"
-declared      = "SEQUENCED"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDIN"
-waiting_for    = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)**"
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-461"
-title         = "The Action Batch's `public/` contract, and nothing else"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-472"
-title         = "A workspace can list its accounts, and blank input currently refuses to"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane B"
 depends_on     = []
 unblocks       = []
 next_owner     = []
