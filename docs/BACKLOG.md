@@ -786,6 +786,21 @@
 | ⚡ **Playwright journey** ([D-113](DECISION_REGISTER.md)) | **A seller types a company name into the shell and reaches that account** — ⚡ **[MC-1](PRODUCT_EXPERIENCE.md) calls it *"the first thing every evaluator types"*, so it is the first thing the journey does** |
 | ⚠️ **The rule it must not break** | **[P-A](DOMAIN_DISCOVERY_REGISTER.md).** **No results and a failed query must never render alike** — ⛔ *"nothing matched"* and *"we could not look"* are opposite answers to somebody who typed a name they know exists |
 
+### TASK-479 · `people` publishes a way to read what it publishes
+
+| | |
+|---|---|
+| **Discovery** | ⚡ **Lane C, 2026-08-07, content-checking [TASK-457](#task-457--people-publishes-what-other-modules-may-say-about-a-person) *before* releasing the rows behind it** — **the third time this week that opening a file changed a planning answer, and the first time it did so before the mistake rather than after** |
+| **Module** | **`people/public/` — Lane B.** ⛔ **One module, one lane. No ownership moves** |
+| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-457](#task-457--people-publishes-what-other-modules-may-say-about-a-person)**, which delivers the types this reads |
+| ⚡ **Trigger steward** | **Lane B** — it holds `people` in [`modules.toml`](coordination/modules.toml) |
+| ⛔ **Why it exists** | **[TASK-457](#task-457--people-publishes-what-other-modules-may-say-about-a-person) says so in its own words: *"the types `people` publishes — a person, an affiliation interval — and nothing that reads them."*** ⚡ **That bound is deliberate and correct as a slice.** ⛔ **But [TASK-428](#task-428--m-i--what-the-domain-lets-other-modules-say) and [TASK-458](#task-458--m-h--the-people-a-customer-opens) both *consume* `people` data, and [§5](../CLAUDE.md) lets them cross only through `public/`** — **so when [TASK-457](#task-457--people-publishes-what-other-modules-may-say-about-a-person) integrates they will have the shape and no way to obtain one** |
+| ✅ **Measured, not inferred** | **`people/public/__init__.py` on `origin/lane-b-commercial-profile` is 104 lines and exports exactly `PersonView` and `AffiliationView`.** ⛔ **`git grep -lE "class .*(Reader\|Writer\|Port)"` across `backend/modules/people/` returns nothing.** ⚡ **Compare [TASK-449](#task-449--saved-view--the-public-contract-and-nothing-else), the same repository's own precedent: it shipped `SavedViewReader` and `SavedViewWriter` alongside its views** |
+| ⛔ **Not new scope** | **[TASK-428](#task-428--m-i--what-the-domain-lets-other-modules-say) is already approved and cannot be built without this.** ⚡ **A decomposition of approved scope is [§20e](../CLAUDE.md)'s definition of what Product Office may write** — *"decompositions of already-approved scope — never new scope, never a reordering."* **It is placed last and reorders nothing** |
+| **Delivers** | **A read port on `people/public/`, and nothing else** — the shape [TASK-449](#task-449--saved-view--the-public-contract-and-nothing-else) already set for `SavedView`. ⛔ **No endpoint, no event, no domain change** |
+| ⛔ **Scope bound, inherited** | **[C-221](LANE_COORDINATION.md), unchanged: no person's name anywhere.** **Role-based and organization-level only** |
+| **Change Budget** | 🟠 **`people/public/`** — a module's own published contract, announced in the commit message |
+
 ### TASK-457 · People publishes what other modules may say about a person
 
 | | |
