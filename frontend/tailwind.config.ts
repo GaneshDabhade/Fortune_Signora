@@ -36,6 +36,7 @@ export default {
           DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)',
           hover: 'rgb(var(--color-accent-hover) / <alpha-value>)',
           contrast: 'rgb(var(--color-accent-contrast) / <alpha-value>)',
+          soft: 'rgb(var(--color-accent-soft) / <alpha-value>)',
           subtle: 'rgb(var(--color-accent-subtle) / <alpha-value>)',
         },
         success: {
@@ -70,7 +71,9 @@ export default {
         lg: 'var(--radius-lg)',
         /* The 16px plane §11 and §12 both specify. Added by slice 3, which
          * is the first slice with a component that needs it. */
+        xs: 'var(--radius-xs)',
         xl: 'var(--radius-xl)',
+        '2xl': 'var(--radius-2xl)',
       },
       /* **The type scale becomes tokens** (TASK-448). Declared here rather
        * than left to Tailwind's defaults so that `design-tokens.test.tsx` can

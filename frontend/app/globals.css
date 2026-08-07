@@ -20,7 +20,7 @@
     --color-canvas: 250 248 246;
     --color-surface: 255 255 255;
     --color-surface-raised: 253 252 251;
-    --color-surface-sunken: 250 248 246;
+    --color-surface-sunken: 244 241 237;
 
     /* Text, by decreasing emphasis. Named for role, never for lightness —
      * "muted" still means muted after dark mode inverts the value. */
@@ -37,6 +37,7 @@
     --color-accent: 19 78 118;
     --color-accent-hover: 15 61 92;
     --color-accent-contrast: 255 255 255;
+    --color-accent-soft: 160 196 222;
     --color-accent-subtle: 230 241 248;
 
     /* Status. Each carries a subtle pair so a badge never has to guess. */
@@ -78,11 +79,14 @@
      * was therefore a token edit for three of the four steps and a sweep
      * through fifteen files for the fourth — which is the defect this
      * whole file exists to prevent. */
-    /* The finalized design's body font, its token copied verbatim.
-       ⚠️ The face itself is not yet bundled, so this resolves to the system
-       stack until it is — stated rather than left to look intentional. */
-    --font-body: "Archivo", system-ui, sans-serif;
+    /* The Design System's body font. `--font-archivo` is the self-hosted
+       family `next/font` emits in `layout.tsx`; the literal name and the
+       system stack follow it so the token still resolves if the face ever
+       fails to load. */
+    --font-body: var(--font-archivo), "Archivo", system-ui, sans-serif;
+    --ease: cubic-bezier(0.32, 0.72, 0, 1);
 
+    --radius-xs: 0.25rem;
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius: 0.5rem;
@@ -100,6 +104,7 @@
      * slice's** — slice 3 is the canonical *set*, not a re-tuning of scales
      * two earlier slices already settled. */
     --radius-xl: 1rem;
+    --radius-2xl: 1.25rem;
 
     /* The type scale. **Six steps, and they are tokens for the same reason
      * the colours are** (TASK-448): before this, `text-[0.9375rem]` appeared
@@ -171,6 +176,7 @@
     --color-accent: 79 163 209;
     --color-accent-hover: 156 207 232;
     --color-accent-contrast: 13 20 24;
+    --color-accent-soft: 30 70 88;
     --color-accent-subtle: 20 48 62;
 
     --color-success: 79 174 135;
