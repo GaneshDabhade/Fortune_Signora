@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `18fa051`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `f6df17e`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `18fa051`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `f6df17e`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`18fa051`** — the certified commit itself |
+| **`main`** | **`f6df17e`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 108 promoted **[D-165](docs/DECISION_REGISTER.md) — one implementation lane** ⚡ **and [D-167](docs/DECISION_REGISTER.md) arrived: risk-based certification** |
-| **Certification** | ✅ [`18fa051ff2e2`](certification/reports/18fa051ff2e2.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 109 promoted ⚡ **Workflow 1 milestone 3 — the front door, the enterprise route, and the two states between signed in and signed out** |
+| **Certification** | ✅ [`f6df17ef6a87`](certification/reports/f6df17ef6a87.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1566 frontend tests** *(+18)* across 67 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 155s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1604 frontend tests** *(+38)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 192s *(Build 53s — six new auth screens)* *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,44 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 108
+## 1d · Release summary — 2026-08-07, cycle 109
+
+**Derived from the promoted commit `f6df17e`.** **Sixty-four promotions.** ⚡ **Workflow 1's third milestone, and the largest frontend slice of the session.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **Workflow 1 milestone 3** *(Lane A)* | **The front door, the enterprise route, and the two states between signed in and signed out** — Welcome, SSO, throttled sign-in, service status, session lock, an auth client, **307 lines of state tests** and **59 more lines of journey**. **1,206 insertions** |
+| **C-434** *(Lane A)* | *"three of Login's remaining screens need a decision, and one of them shipped against a ruling"* |
+| **D-166** *(Lane C)* | *"testing metadata on eight rows, and the forward pass found Welcome has no route"* |
+
+**+38 frontend tests, 68 files.**
+
+### ⚡ Two lanes found the same gap from opposite ends, in one cycle
+
+**Lane C's forward pass through the design found *"Welcome has no route."*** **Lane A's C-434, working backward from what it had just built, found *"three of Login's remaining screens need a decision, and one of them shipped against a ruling."***
+
+> ⛔ **Neither is a `B-` row, and neither should be.** **One is planning discovering a gap before implementation reaches it; the other is implementation discovering a decision it needs.** ⚡ **They met in the same cycle because the design snapshot is one artifact and both lanes read it** — which is what [D-138](docs/DECISION_REGISTER.md) made it for.
+
+### The frontend smoke signature, fourth consecutive confirmation
+
+**`slowest 1. Build 53s`** on a cycle adding **six screens**. ⛔ **Every high smoke reading since cycle 101 names `Build`; the two [B-141](docs/BUGS.md) outliers name `Researched account`.** **The two populations have not overlapped once in nine cycles.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4193 backend** · **1604 frontend** *(+38)* · **95.38%** · **398 invariants** · **842 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **113 runs recorded, 105 certified** · `promoted == certified` ✓ · `--audit-main` clean · **twelfth consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke **192s, cause named** |
+| **Dependency** | ✅ Nothing held |
+| **Customer Value** | ⚡ **A customer can now meet the front door, take the enterprise route, and be told honestly when the service is down or their session has locked** — the states a login screen usually pretends do not exist |
+| **Process** | ⚡ **[B-146](docs/BUGS.md) is open against QE and is not being closed by a bulk edit** |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 108
 
 **Derived from the promoted commit `18fa051`.** **Sixty-three promotions.** ⚡ **The organisation changed shape, a new certification strategy arrived, and QE found a defect in its own bookkeeping.**
 

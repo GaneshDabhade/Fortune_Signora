@@ -8342,6 +8342,83 @@
         ]
       ],
       "tree_clean": true
+    },
+    {
+      "certified_at": "2026-08-07T17:27:10.386248+00:00",
+      "commit": "f6df17ef6a878aed2f4f4bb007c423aacbd989ef",
+      "conditions": {
+        "migration_head": "0042",
+        "prompt_releases": [
+          {
+            "fingerprint": "bafc9d282d53e4e3ae7a10748d41e9128acb63c9ae1e6d5e00390871db2debfb",
+            "model": "llama3.1:8b",
+            "reference": "research_planning@2"
+          },
+          {
+            "fingerprint": "409a6b2e38a92f1b72022a7b205bfaf299e93e4213e83afcfe486e65fa80d3b6",
+            "model": "llama3.1:8b",
+            "reference": "research_synthesis@2"
+          }
+        ],
+        "rendering_protocol_version": 2,
+        "scenario_fingerprint": "0cf6b2c581e47477152bf43d15cb3bc438e49fcbec7089d4320cd41f01b2514f"
+      },
+      "coverage": 95.38,
+      "gates": [
+        {
+          "detail": "37 kept, 0 broken",
+          "name": "import-linter",
+          "passed": true
+        },
+        {
+          "detail": "strict, clean over 842 files",
+          "name": "mypy",
+          "passed": true
+        },
+        {
+          "detail": "4193 passed",
+          "name": "pytest",
+          "passed": true
+        },
+        {
+          "detail": "398 invariants",
+          "name": "security-invariants",
+          "passed": true
+        },
+        {
+          "detail": "24 stages in 192s, slowest 1. Build 53s",
+          "name": "smoke",
+          "passed": true
+        },
+        {
+          "detail": "clean",
+          "name": "tsc",
+          "passed": true
+        }
+      ],
+      "record_version": 1,
+      "scenarios": [
+        {
+          "detail": "190 assertions",
+          "name": "baseline@1 research lifecycle",
+          "passed": true
+        }
+      ],
+      "tools": [
+        [
+          "mypy",
+          "2.3.0"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ],
+        [
+          "python",
+          "3.13.14"
+        ]
+      ],
+      "tree_clean": true
     }
   ]
 }
