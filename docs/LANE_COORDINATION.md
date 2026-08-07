@@ -4464,6 +4464,32 @@ KeyError: '0035'
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
 
+## C-336 · TASK-428 spans two lanes' modules, and its signal half already has a row of its own
+
+**Opened 2026-08-07 · Lane B · 🟠 · owner: Lane C** *(backlog decomposition)*
+
+> **This lane cannot claim [TASK-428](BACKLOG.md) as written**, and the reason is one word in its `Module` field. **Raised rather than worked around** — §20e: *a change inside a module this lane is not assigned is a finding to raise, never a change to make.*
+
+| | |
+|---|---|
+| **What** | **TASK-428's `Module` is `timeline` · `commercial_profile` · `signal_engine` · `people`.** **Three are this lane's; `signal_engine` is Lane A's** ([`modules.toml`](coordination/modules.toml)). **One implementation module → one implementation lane** |
+| **Why it is not just a labelling nit** | **S3's third deliverable is *"`new_decision_maker` and `decision_maker_departed` naming what changed"*, and both live in Lane A's artifacts** — `signal_engine/catalog/signals@1.json` and `buying_score_engine/scoring/scoring_model@1.json`. **Checked in the tree, not inferred from the field** |
+| ⚡ **And the work already has a row** | **[TASK-458](BACKLOG.md) — *"Signal Engine reads the People contract"* — says so itself: *"it is the **consumer** half, and separating it is what keeps the boundary inside one lane each."*** **That is this exact split, already made.** ⛔ **So TASK-428 naming `signal_engine` looks like the pre-split scope surviving the decomposition** |
+
+### The recommendation, and it is small
+
+> **Narrow TASK-428 to `timeline` · `commercial_profile` · `people` — the two deliverables that are wholly this lane's** — *a timeline event with a subject*, and *a committee seat that cites a real affiliation*. **Leave the signal half to TASK-458, where the decomposition already put it.**
+
+**Neither of the two depends on the signal work**, so the narrowed row is independently completable and independently demonstrable. ⛔ **This lane has not assumed the answer**: nothing is claimed and no code is written, because *"the correct output is approval"* is Lane C's to give, not this lane's to infer.
+
+### ⚠️ A correction to the row's own sequencing evidence
+
+**TASK-428 reads *"S3 after [TASK-901](BACKLOG.md) — `runtime-composition` reports **2 of 9** consumers wired, and a projection would land dark."***
+
+**Measured today, `make runtime-composition` reports four wired — `ai_research_engine`, `buying_score_engine`, `signal_engine` and `timeline`** — with five deliberately waiting on [C-012](#c-012). ⚡ **`timeline` is wired, so the condition that gate was protecting against is satisfied**, and the figure in the row is stale rather than wrong-in-principle. **Recorded here rather than edited into the row**, which is Lane C's.
+
+---
+
 ## C-335 · Epic C's next stage is four deep, and two of the four are nobody's to fix quickly
 
 **Opened 2026-08-06 · Lane B · 🟠 · owners: Lane C · product owner**
@@ -6116,6 +6142,25 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 > ⚠️ **The window is still open, and this is the part that needs Lane C rather than this lane.** **[TASK-458](BACKLOG.md) reads `✅ READY` on `integration` right now**, released on the same structural reasoning this item calls unsound — while **the fix exists only on `lane-b-commercial-profile`, awaiting QE.** ⛔ **A lane claiming TASK-458 before that branch is integrated still finds an empty file.** **This lane cannot close that gap**: a feature lane may push nothing but a claim to `integration` (§20e), so the sequencing is Lane C's and the integration is QE's.
 >
 > **Unchanged and untouched by this note:** the re-test of the other twenty-one releases, which is what this item actually asks for.
+
+> ⛔ **Lane B, 2026-08-07, second measurement — it has happened again, and the re-verification is what produced it.**
+>
+> **[TASK-458](BACKLOG.md)'s release note now reads: *"Verified structurally, not by reading a status string: TASK-457 has 6 commits on `main` and `origin/lane-b-commercial-profile` carries nothing for it that `origin/integration` lacks — **what `people` publishes is published**."*** ⚠️ **The last clause is false at the time of writing.**
+>
+> ```
+> $ git ls-tree -r --long origin/integration backend/modules/people/public/
+> 100644 blob e69de29…       0    …/people/public/__init__.py     ← still the empty blob
+> $ git ls-tree -r --long origin/lane-b-commercial-profile backend/modules/people/public/
+> 100644 blob 56b848f…    4259    …/people/public/__init__.py     ← the contract
+> ```
+>
+> **`main` is the empty blob too.** ⚡ **The premise *"the lane branch carries nothing `integration` lacks"* was true when TASK-457 was unwritten and became false the moment it was written** — so a check built on it reports *published* most confidently in exactly the window where it is wrong.
+>
+> ⛔ **This is the same predicate this item was opened to retire, applied a second time after the correction.** **It is still asking whether the two refs agree, and the question is still whether the file exports anything.** **Reachability was the proxy; now ref-equality is the proxy. Neither is the property.**
+>
+> **The cheap fix is one line and it is a machine's job, not a reader's:** *does `people/public/__init__.py` have a non-zero size on the ref the consumer will build from?* — **which is `state-check`'s kind of check, and it would have failed both times.**
+>
+> ⚠️ **Live exposure while this stands:** **TASK-458 is `READY` on `integration` and claimable now**, and the contract it consumes is on a lane branch awaiting QE. ⛔ **This lane cannot close that gap** — a feature lane may push nothing but a claim to `integration` (§20e). **Sequencing is Lane C's; integration is QE's.**
 
 | | |
 |---|---|
