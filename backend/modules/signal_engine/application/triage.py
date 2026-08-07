@@ -41,6 +41,7 @@ from uuid import UUID
 
 from modules.signal_engine.application.ports import ResolutionRepository
 from modules.signal_engine.application.queries import SignalQueries
+from modules.signal_engine.domain.precision import RulePrecision
 from modules.signal_engine.domain.resolution import Resolution, Snoozed
 from modules.signal_engine.domain.signal import Signal
 from signora_platform.pagination import (
@@ -242,6 +243,25 @@ class TriageQueries:
         new record rather than an edit.
         """
         return await self._resolutions.history_for_signal(workspace_id, signal_id)
+
+    async def precision(self, workspace_id: UUID) -> tuple[RulePrecision, ...]:
+        """How often each rule was right, for every type anybody has judged.
+
+        **The catalog learning which rules misfire** —
+        [447](../../../../docs/architecture/447-signal-center-traceability-audit.md).
+
+        ⛔ **A type nobody has judged is not in the result**, and this method
+        does not helpfully add it with zeroes. A rule with no judgements and a
+        rule that is always wrong are opposite facts; `0.0` renders them the
+        same way and a reader takes the second meaning. **The caller decides
+        what *not judged yet* looks like**, which is the only place that
+        decision can honestly be made.
+
+        ⚡ **Computed, never stored** — no table, and `Snoozed.until` is this
+        module's precedent. A stored figure is stale from the first resolution
+        written after it.
+        """
+        return await self._resolutions.judgements_by_type(workspace_id)
 
 
 __all__ = ["QueueState", "TriageQueries", "TriagedSignal", "state_of"]

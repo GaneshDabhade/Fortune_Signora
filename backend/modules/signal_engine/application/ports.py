@@ -14,6 +14,7 @@ from typing import Protocol
 from uuid import UUID
 
 from modules.signal_engine.domain.catalog import SignalType
+from modules.signal_engine.domain.precision import RulePrecision
 from modules.signal_engine.domain.profile import SignalProfile
 from modules.signal_engine.domain.resolution import Resolution
 from modules.signal_engine.domain.signal import Signal
@@ -132,4 +133,22 @@ class ResolutionRepository(Protocol):
     ) -> tuple[Resolution, ...]:
         """Every decision ever recorded about this signal, oldest first —
         *"nothing is deleted: every resolution is auditable."*"""
+        ...
+
+    async def judgements_by_type(self, workspace_id: UUID) -> tuple[RulePrecision, ...]:
+        """How often each signal type was acted on versus dismissed.
+
+        **Only the two outcomes that are judgements** — `Assigned` is routing
+        and `Snoozed` is deferral, and neither is anybody saying the rule was
+        right or wrong (`domain/precision.py`).
+
+        ⛔ **Only currently-in-force resolutions**, on `current_for_signals`'
+        reasoning exactly: a superseded dismissal is a decision somebody
+        already changed their mind about, and counting it would hold a rule to
+        a judgement that has been withdrawn.
+
+        **A type nobody has judged is absent from the result rather than
+        present with zeroes** — the caller decides what *no judgements yet*
+        renders as, which is the only way P-A survives the trip to a screen.
+        """
         ...

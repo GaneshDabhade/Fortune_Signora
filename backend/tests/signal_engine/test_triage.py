@@ -28,6 +28,7 @@ from modules.signal_engine.application.resolve import (
 )
 from modules.signal_engine.application.triage import QueueState, state_of
 from modules.signal_engine.domain.events import SignalResolved
+from modules.signal_engine.domain.precision import RulePrecision
 from modules.signal_engine.domain.resolution import (
     ACTIONED,
     ASSIGNED,
@@ -62,6 +63,9 @@ class FakeResolutions:
 
     def __init__(self) -> None:
         self.rows: list[Resolution] = []
+        #: Which type each signal was, since a resolution names a signal and
+        #: not its type — the SQL query gets this from a join.
+        self.types: dict[UUID, str] = {}
 
     async def record(self, resolution: Resolution) -> None:
         self.rows.append(resolution)
@@ -89,6 +93,33 @@ class FakeResolutions:
         is what exposed the defect in both.
         """
         return _in_chain_order(tuple(r for r in self.rows if r.signal_id == signal_id))
+
+    async def judgements_by_type(self, workspace_id: UUID) -> tuple[RulePrecision, ...]:
+        """**The same two exclusions the SQL query makes**, for the same reason
+        the methods above mirror it: a double that counts differently turns a
+        divergence into a green suite.
+
+        Superseded resolutions are excluded, and only `actioned` and
+        `dismissed` are counted — `Assigned` is routing and `Snoozed` is
+        deferral.
+        """
+        replaced = {row.supersedes for row in self.rows if row.supersedes is not None}
+        by_type: dict[str, dict[str, int]] = {}
+        for row in self.rows:
+            if row.id in replaced:
+                continue
+            outcome = row.outcome
+            if not isinstance(outcome, Actioned | Dismissed):
+                continue
+            signal_type = self.types.get(row.signal_id)
+            if signal_type is None:
+                continue
+            tally = by_type.setdefault(signal_type, {"actioned": 0, "dismissed": 0})
+            tally["actioned" if isinstance(outcome, Actioned) else "dismissed"] += 1
+        return tuple(
+            RulePrecision(signal_type=name, actioned=t["actioned"], dismissed=t["dismissed"])
+            for name, t in sorted(by_type.items())
+        )
 
 
 def _stored(signals: FakeSignalRepository) -> Signal:
@@ -566,3 +597,89 @@ class TestThePipelineHearsTheDecision:
             )
 
         assert publisher.published == []
+
+
+class TestPrecisionCountsJudgementsAndNothingElse:
+    """**TASK-444.** Precision over all four outcomes would look correct,
+    produce a figure for every type, and be wrong invisibly. These are the
+    exclusions."""
+
+    @staticmethod
+    def _judged(fake: FakeResolutions, signal_type: str, outcome: object) -> None:
+        row = _resolution(outcome)
+        fake.rows.append(row)
+        fake.types[row.signal_id] = signal_type
+
+    async def test_actioned_counts_as_right_and_dismissed_as_wrong(self) -> None:
+        fake = FakeResolutions()
+        self._judged(fake, "hiring_surge", Actioned())
+        self._judged(fake, "hiring_surge", Actioned())
+        self._judged(fake, "hiring_surge", Dismissed(DismissalReason("not a real hire")))
+
+        (rule,) = await fake.judgements_by_type(uuid4())
+
+        assert rule.signal_type == "hiring_surge"
+        assert (rule.actioned, rule.dismissed) == (2, 1)
+        assert rule.ratio == pytest.approx(2 / 3)
+
+    async def test_assigning_is_routing_and_counts_as_neither(self) -> None:
+        """⛔ *"Still open. Assigning is routing, not resolving"* — the domain's
+        own words. As a success it flatters every rule whose signals get passed
+        around; as a failure it punishes the busiest queue."""
+        fake = FakeResolutions()
+        self._judged(fake, "hiring_surge", Assigned(uuid4()))
+
+        assert await fake.judgements_by_type(uuid4()) == ()
+
+    async def test_snoozing_is_deferral_and_counts_as_neither(self) -> None:
+        """*Later* is not *wrong*. A snooze counted against a rule would punish
+        it for arriving at a bad moment."""
+        fake = FakeResolutions()
+        self._judged(fake, "hiring_surge", Snoozed(NOW + timedelta(days=1)))
+
+        assert await fake.judgements_by_type(uuid4()) == ()
+
+    async def test_a_withdrawn_judgement_is_not_held_against_the_rule(self) -> None:
+        """**Superseded resolutions are excluded**, the same currency rule the
+        queue uses. Somebody who dismissed a signal and then changed their mind
+        has withdrawn the judgement, and counting it would make this figure
+        disagree with the queue a seller is looking at."""
+        fake = FakeResolutions()
+        first = _resolution(Dismissed(DismissalReason("wrong, I think")))
+        fake.rows.append(first)
+        fake.types[first.signal_id] = "hiring_surge"
+        correction = Resolution(
+            id=uuid4(),
+            workspace_id=first.workspace_id,
+            signal_id=first.signal_id,
+            outcome=Actioned(),
+            actor_id=ACTOR,
+            recorded_at=NOW,
+            supersedes=first.id,
+        )
+        fake.rows.append(correction)
+
+        (rule,) = await fake.judgements_by_type(uuid4())
+
+        assert (rule.actioned, rule.dismissed) == (1, 0)
+
+    async def test_a_type_nobody_has_judged_is_absent_rather_than_zero(self) -> None:
+        """⛔ **P-A survives as far as the caller.** A row of zeroes would let a
+        screen render *0%* for a rule nobody has ruled on."""
+        fake = FakeResolutions()
+        self._judged(fake, "hiring_surge", Actioned())
+        self._judged(fake, "funding_round", Assigned(uuid4()))
+
+        names = [rule.signal_type for rule in await fake.judgements_by_type(uuid4())]
+
+        assert names == ["hiring_surge"]
+
+    async def test_each_type_is_counted_separately(self) -> None:
+        fake = FakeResolutions()
+        self._judged(fake, "funding_round", Actioned())
+        self._judged(fake, "hiring_surge", Dismissed(DismissalReason("noise")))
+
+        rules = {rule.signal_type: rule for rule in await fake.judgements_by_type(uuid4())}
+
+        assert rules["funding_round"].ratio == 1.0
+        assert rules["hiring_surge"].ratio == 0.0

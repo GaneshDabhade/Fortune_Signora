@@ -19,12 +19,13 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select, tuple_
+from sqlalchemy import func, select, tuple_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.business_event_engine.public import BusinessEventType
 from modules.signal_engine.domain.catalog import Relevance, SignalType
+from modules.signal_engine.domain.precision import RulePrecision
 from modules.signal_engine.domain.profile import ProfileEntry, SignalProfile
 from modules.signal_engine.domain.resolution import (
     ACTIONED,
@@ -471,6 +472,53 @@ class SqlResolutionRepository:
             .order_by(SignalResolutionModel.recorded_at, SignalResolutionModel.id)
         )
         return _in_chain_order(tuple(_to_resolution(row) for row in rows.scalars()))
+
+    async def judgements_by_type(self, workspace_id: UUID) -> tuple[RulePrecision, ...]:
+        """One grouped read, and **the join is what makes it one**.
+
+        A resolution stores no signal type — it names a signal — so the type
+        comes from `signal`. Counting per type in Python would mean loading
+        every resolution in the workspace to produce at most a few dozen rows.
+
+        **Superseded resolutions are excluded**, the same `not_in` this file
+        already uses for currency: a dismissal somebody has since revised is a
+        judgement that was withdrawn, and holding a rule to it would make the
+        figure disagree with the queue a seller is looking at.
+
+        ⛔ **Types with no judgements do not appear.** The `WHERE` admits only
+        the two outcomes that are judgements, so a type nobody has ruled on
+        produces no row at all — which is P-A surviving as far as the caller
+        rather than arriving there as a zero.
+        """
+        replaced = select(SignalResolutionModel.supersedes).where(
+            SignalResolutionModel.workspace_id == workspace_id,
+            SignalResolutionModel.supersedes.is_not(None),
+        )
+        rows = await self._session.execute(
+            select(
+                SignalModel.signal_type,
+                func.count().filter(SignalResolutionModel.outcome == "actioned").label("actioned"),
+                func.count()
+                .filter(SignalResolutionModel.outcome == "dismissed")
+                .label("dismissed"),
+            )
+            .join(SignalModel, SignalModel.id == SignalResolutionModel.signal_id)
+            .where(
+                SignalResolutionModel.workspace_id == workspace_id,
+                SignalResolutionModel.outcome.in_(("actioned", "dismissed")),
+                SignalResolutionModel.id.not_in(replaced),
+            )
+            .group_by(SignalModel.signal_type)
+            .order_by(SignalModel.signal_type)
+        )
+        return tuple(
+            RulePrecision(
+                signal_type=row.signal_type,
+                actioned=row.actioned,
+                dismissed=row.dismissed,
+            )
+            for row in rows
+        )
 
 
 def _in_chain_order(resolutions: tuple[Resolution, ...]) -> tuple[Resolution, ...]:
