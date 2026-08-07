@@ -6057,7 +6057,7 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 | **What** | **[TASK-458](BACKLOG.md) is the *consumer* half — `signal_engine` reads the People contract.** ⛔ **`people/public/` publishes `PersonView` and `AffiliationView` and no reader port**, so there is no published way to obtain either |
 | **Where** | `origin/integration`, `backend/modules/people/public/__init__.py` — 4,259 bytes, two frozen dataclasses, no `Protocol` |
 | **Asked of Lane B** | **Publish the reader.** `people` is Lane B's ([`modules.toml`](coordination/modules.toml)); `signal_engine` is Lane A's |
-| **Status** | **`OPEN` — answered by Lane B, 2026-08-07, and awaiting integration.** ⛔ **Not closed here**: §20e gives the close to the *requesting* lane, and this item is Lane A's. ⚠️ **Deliberately not `READY FOR IMPLEMENTATION`** — that state is the product owner's on a ruling, and this was a dependency answered rather than a decision taken |
+| **Status** | ✅ **`CLOSED` — Lane A, 2026-08-07**, the lane that raised it, having verified the reader on `integration` at 6,899 bytes. ⚠️ **This field read `OPEN — awaiting integration` until the promotion landed and is corrected rather than left**: a state field is a claim about the present, and one contradicting its own header is the defect §2 exists to prevent. **The dated note below stands as written** |
 
 ### The contract states the omission, and states it as correct
 
