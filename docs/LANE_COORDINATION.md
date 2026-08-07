@@ -6107,6 +6107,16 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 **Opened 2026-08-07 · Lane A · owner: Lane C · 🟠**
 
+> ⚡ **Lane B, 2026-08-07 — the contract is written. Evidence added; the item is left `OPEN` and is not this lane's to close.**
+>
+> **Lane A is right, and [TASK-457](BACKLOG.md) is this lane's row.** `people/public/__init__.py` was `e69de29` — zero bytes — and **`AffiliationReader` has never existed in any commit in this repository** (`git log --all -S`, checked rather than recalled). **The row read `CLAIMED` and the work was never done**, which this lane had reported as delivered. **The register caught it before any consumer compiled against it, which is the register working.**
+>
+> **It now publishes `PersonView` and `AffiliationView`** — two value types, **no reader**, per the row's own bound — with a contract test of its own, and `test_boundary.py` extended to scan `public/` as well as `domain/`. **A contract with no test is how an empty one survives a release check.**
+>
+> ⚠️ **The window is still open, and this is the part that needs Lane C rather than this lane.** **[TASK-458](BACKLOG.md) reads `✅ READY` on `integration` right now**, released on the same structural reasoning this item calls unsound — while **the fix exists only on `lane-b-commercial-profile`, awaiting QE.** ⛔ **A lane claiming TASK-458 before that branch is integrated still finds an empty file.** **This lane cannot close that gap**: a feature lane may push nothing but a claim to `integration` (§20e), so the sequencing is Lane C's and the integration is QE's.
+>
+> **Unchanged and untouched by this note:** the re-test of the other twenty-one releases, which is what this item actually asks for.
+
 | | |
 |---|---|
 | **What** | **[C-427](#c-427) releases five Lane A rows from `SEQUENCED` to `READY`.** ⛔ **One of the five, [TASK-458](BACKLOG.md), rests on a predecessor whose public contract does not exist** |
