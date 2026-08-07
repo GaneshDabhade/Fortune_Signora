@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `8295fdb`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `ab1ba57`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `8295fdb`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `ab1ba57`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`8295fdb`** — the certified commit itself |
+| **`main`** | **`ab1ba57`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 104 promoted ⚡ **Workflow 1 milestone 1 — the authentication shell, rebuilt from the design** |
-| **Certification** | ✅ [`8295fdb1bd07`](certification/reports/8295fdb1bd07.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 105 promoted ⚡ **Workflow 1 milestone 2 — the sign-in experience, and the visual foundation replaced** |
+| **Certification** | ✅ [`ab1ba5779e35`](certification/reports/ab1ba5779e35.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1548 frontend tests** *(+25)* across 66 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 196s *(Build 53s — the auth shell recompiled)* *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1548 frontend tests** *(+25)* across 66 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 193s *(Build 51s — the sign-in experience recompiled)* *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -46,7 +46,7 @@
 | **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | **Workflow 1 milestone 2** | Next `READY` row | **Rebase and regenerate** | **Cycle 105, on the next poll** |
+| **Next executable work** | **Workflow 1 milestone 3** | Next `READY` row | Stewardship | **Cycle 106, on the next poll** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,44 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 104
+## 1d · Release summary — 2026-08-07, cycle 105
+
+**Derived from the promoted commit `ab1ba57`.** **Sixty promotions.** ⚡ **Two milestones of Workflow 1 in two cycles, and a lane that found its own defect one commit after shipping it.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **Workflow 1 milestone 2** *(Lane A)* | **The sign-in experience** — the form rebuilt, and the journey spec grown from 62 lines to 182 |
+| ⚡ **D-162** *(Lane A)* | *"the visual foundation was the legacy one, and it is replaced"* — `globals.css`, 108 lines changed |
+| **D-157 · D-158 · D-160 · D-161** *(Lane C)* | ⚡ Including **D-161 — *"Lane A built the right screen against the wrong palette, and that is my defect"*** |
+
+### ⚡ Two lanes, one defect, and neither blamed the other
+
+**Lane A shipped milestone 1 against the legacy palette. Lane C's D-161 names the cause as its own** — the visual foundation it had published was the legacy one. **Lane A then replaced it in D-162, one commit later.**
+
+> ⛔ **Neither raised a `B-` row against the other.** **The design was wrong, the office that published it said so, and the lane that consumed it fixed it** — inside two cycles and with the record naming both halves.
+
+### ⚡ Lane C's `D-157` landed after two cycles held, and the rebase is why
+
+**QE excluded it twice** for conflicting on **generated** `.toml` files, and declined to hand-resolve them — *the repair is the generator, not the merge.* **Lane C rebased; all four of its commits applied cleanly with no conflict at all.**
+
+> **The exclusion cost two cycles and no work.** ⚡ **Hand-resolving would have cost a wrong file that nobody could tell was wrong**, which is what a union merge on `lane-a.toml` already did once this session.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4193 backend** · **1548 frontend** · **95.38%** · **398 invariants** · **842 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **109 runs recorded, 101 certified** · `promoted == certified` ✓ · `--audit-main` clean · **eighth consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke **193s**, `Build 51s` — the third frontend cycle with the same explicable shape |
+| **Dependency** | ✅ **Nothing held anywhere.** Lane C's two-cycle backlog cleared itself with a rebase |
+| **Customer Value** | ⚡ **A customer signing in now meets the approved design rather than the legacy one** — the screen and the palette both |
+| **Process** | ⚡ **An exclusion that held for two cycles was resolved by the owning lane in one command, and cost nothing but time** |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 104
 
 **Derived from the promoted commit `8295fdb`.** **Fifty-nine promotions.** ⚡ **Workflow 1 stops having zero implementation.**
 
