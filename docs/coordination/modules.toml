@@ -23,6 +23,28 @@
 # Read with stdlib `tomllib`. PyYAML is not a declared project dependency and
 # adding one is a red-budget change requiring an ADR (§6).
 #
+# ── ⚡ D-157 — SINGLE IMPLEMENTATION LANE, 2026-08-07 ────────────────────────
+# **Thirteen modules moved from Lane B to Lane A in one edit**, on the product
+# owner's ruling: *"Lane A becomes the sole implementation lane for the current
+# migration program… all implementation work should be sequenced through Lane
+# A."* **This is the ruling §20e requires — *any future ownership transfer
+# requires its own explicit decision* — and it is the product owner's, not
+# drafted by this office.**
+#
+#   action_batch · ai_platform · ai_reasoning_engine · business_event_engine
+#   commercial_profile · integrations · knowledge_graph · observation_engine
+#   opportunity_engine · people · provider_normalization · sales_engagement
+#   timeline
+#
+# ⛔ **Ownership is not execution state.** **Twenty Lane B rows are `CLAIMED`,
+# `IN PROGRESS` or `IN VALIDATION` and remain Lane B's to land and QE's to
+# validate** (D-123). **This file says who receives *new* work; it does not
+# reach into a slice somebody is holding.**
+#
+# ⚡ **Four `gate` fields were dropped rather than left true-but-moot** — each
+# named a Lane B row as the condition for a transfer that has now happened by
+# ruling instead. **A gate nobody will ever open is the decorative class (§2).**
+#
 # ── Who writes this file ────────────────────────────────────────────────────
 # The product owner. Module assignment is authoritative and is theirs alone
 # (D-057). Lane C drafts a change and never lands one unruled.
@@ -65,8 +87,8 @@ default_review_owner = "Lane C"
 
 [integrations]
 context = "Customer-held systems — CRM, calendar, mail"
-current_owner = "Lane B"
-future_owner = "Lane B"
+current_owner = "Lane A"
+future_owner = "Lane A"
 transition = "settled"
 implementation = 50
 basis = "Epic E1 built end to end; nothing customer-visible yet, and the lane said so first"
@@ -75,8 +97,8 @@ next_milestone = "C-300 ruled: who builds 409's steps 3-5"
 
 [provider_normalization]
 context = "Vendor payloads become canonical claims"
-current_owner = "Lane B"
-future_owner = "Lane B"
+current_owner = "Lane A"
+future_owner = "Lane A"
 transition = "settled"
 implementation = 65
 basis = "TASK-301 shipped; E1's canonical shape with no vocabulary extension"
@@ -85,8 +107,8 @@ next_milestone = "follows integrations"
 
 [knowledge_graph]
 context = "Entity identity — which company is this provider talking about"
-current_owner = "Lane B"
-future_owner = "Lane B"
+current_owner = "Lane A"
+future_owner = "Lane A"
 transition = "settled"
 implementation = 70
 basis = "resolution, bindings and claim-set query built; Global Search shipped; pgvector embeddings planned, not built"
@@ -96,8 +118,8 @@ note = "11 backlog references — the most of any module, so continuity is worth
 
 [observation_engine]
 context = "The atomic factual history of change over time"
-current_owner = "Lane B"
-future_owner = "Lane B"
+current_owner = "Lane A"
+future_owner = "Lane A"
 transition = "settled"
 implementation = 75
 basis = "thirteen fields computed since M4; A5 backend shipped"
@@ -106,8 +128,8 @@ next_milestone = "none scheduled"
 
 [timeline]
 context = "What has happened to an account, readable in order"
-current_owner = "Lane B"
-future_owner = "Lane B"
+current_owner = "Lane A"
+future_owner = "Lane A"
 transition = "settled"
 implementation = 55
 basis = "M7 S01-S04a shipped; TASK-902 is the remainder"
@@ -119,10 +141,9 @@ carries = ["C-215"]
 
 [opportunity_engine]
 context = "Qualification, and the lifecycle of a lead"
-current_owner = "Lane B"
+current_owner = "Lane A"
 future_owner = "Lane A"
-transition = "gated"
-gate = "Lead lifecycle promoted, then Lane A resumes"
+transition = "settled"
 implementation = 90
 basis = "Lead Lifecycle feature-complete for v1 — nine slices, LO-08 parked deliberately"
 last_work = "Lane A — LO-09"
@@ -131,10 +152,9 @@ note = "design doc §19-§29 are an explicit handover package — the module bes
 
 [ai_reasoning_engine]
 context = "Structured, single-call reasoning"
-current_owner = "Lane B"
+current_owner = "Lane A"
 future_owner = "Lane A"
-transition = "gated"
-gate = "TASK-202 completes — Lane B claimed it 2026-08-05"
+transition = "settled"
 implementation = 65
 basis = "A-i shipped — Signora's conclusion reaches a customer"
 last_work = "Lane A — A-i"
@@ -175,10 +195,9 @@ next_milestone = "TASK-905"
 
 [commercial_profile]
 context = "What the customer sells, and to whom"
-current_owner = "Lane B"
+current_owner = "Lane A"
 future_owner = "Lane A"
-transition = "gated"
-gate = "TASK-205 completes — Lane B claimed it 2026-08-05 and is inside this module"
+transition = "settled"
 implementation = 75
 basis = "M12.5 slices 1-5 shipped — catalog, ICP, buying committee, business priorities, target accounts"
 last_work = "Lane A — Epic D"
@@ -187,10 +206,9 @@ paired_with = "sales_engagement"
 
 [sales_engagement]
 context = "What a seller should do next, and why"
-current_owner = "Lane B"
+current_owner = "Lane A"
 future_owner = "Lane A"
-transition = "gated"
-gate = "TASK-205 completes — Lane B claimed it 2026-08-05"
+transition = "settled"
 implementation = 60
 basis = "SE-09d shipped; A-ii unbuilt — 39 exported names with no interface layer"
 last_work = "Lane A — SE-09d"
@@ -200,8 +218,8 @@ note = "must move together with commercial_profile — an unstabilized interface
 
 [people]
 context = "A person, and an affiliation with an end"
-current_owner = "Lane B"
-future_owner = "Lane B"
+current_owner = "Lane A"
+future_owner = "Lane A"
 transition = "settled"
 implementation = 0
 basis = "Not built. The directory does not exist yet — this row exists so it is claimable the moment TASK-427 is READY, rather than after"
@@ -237,8 +255,8 @@ no person's name, anywhere. Role-based and organization-level only.
 
 [action_batch]
 context = "A change is proposed, approved, applied as one named thing, and can be taken back"
-current_owner = "Lane B"
-future_owner = "Lane B"
+current_owner = "Lane A"
+future_owner = "Lane A"
 transition = "settled"
 implementation = 0
 basis = "Not built. ADR-0405 ratified 2026-08-06; six slices are TASK-461..466"
@@ -310,9 +328,9 @@ note = "flagged by the product owner as a candidate for Platform if it becomes f
 
 [ai_platform]
 context = "Vendor abstraction, model-centric resolution, the prompt registry"
-current_owner = "Lane B"
-future_owner = "undecided"
-transition = "review-at-first-implementation"
+current_owner = "Lane A"
+future_owner = "Lane A"
+transition = "settled"
 implementation = 75
 basis = "provider registry, evaluation harness and prompt lifecycle built"
 last_work = "M12.3 — pre-lane; no lane-attributable work exists"
@@ -328,9 +346,9 @@ note = "consumers are ai_reasoning_engine and ai_research_engine, both future La
 
 [business_event_engine]
 context = "What a change means in business terms"
-current_owner = "Lane B"
-future_owner = "undecided"
-transition = "review-at-first-implementation"
+current_owner = "Lane A"
+future_owner = "Lane A"
+transition = "settled"
 implementation = 60
 basis = "M12.3-era; consumed by signal_engine today"
 last_work = "M12.3 — pre-lane; no lane-attributable work exists"

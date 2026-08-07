@@ -381,6 +381,58 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🔴  D-157 — YOU ARE NOW THE ONLY IMPLEMENTATION LANE
+#     2026-08-07 · product owner ruling
+#
+#   "Lane A becomes the sole implementation lane for the current migration
+#    program. Until further notice, all implementation work should be sequenced
+#    through Lane A" — frontend, backend, API integration, customer journeys,
+#    UI migration, workflow implementation, production refinement.
+#
+# ⚡ THIRTEEN MODULES ARRIVED. modules.toml now assigns you 19 of 21:
+#   action_batch · ai_platform · ai_reasoning_engine · business_event_engine ·
+#   commercial_profile · integrations · knowledge_graph · observation_engine ·
+#   opportunity_engine · people · provider_normalization · sales_engagement ·
+#   timeline — plus the six you held.
+#
+# ⛔ THIS DOES NOT MEAN THIRTEEN MODULES OF WORK ARRIVED. It means one fewer
+#   lane to coordinate with. Your queue is UNCHANGED below and `current` is
+#   still TASK-467. The priority did not move:
+#     1 Login · 2 Authentication · 3 Workspace Setup · 4 Onboarding ·
+#     5 Application Shell · 6 business workflows
+#
+# ⛔ TWENTY LANE B ROWS ARE STILL LANE B'S. They are CLAIMED, IN PROGRESS or IN
+#   VALIDATION, and ownership moving does not reach into a slice somebody is
+#   holding (D-123). Do not claim, restart or "help with" any of:
+#     TASK-201 · 204 · 205 · 301 · 402 · 406 · 407 · 415 · 416 · 427
+#     TASK-428 · 438 · 446 · 453 · 457 · 461 · 462 · 463 · 472 · 903
+#   They land with Lane B and validate with QE. You inherit the MODULES, not
+#   the in-flight slices.
+#
+# ⚠️ ELEVEN ROWS WERE PARKED, NOT HANDED TO YOU — D-157 ④ says in terms "do not
+#   blindly copy Lane B's queue to Lane A", so each was re-evaluated and none
+#   is in journeys 1-5: TASK-202 · 464 · 465 · 420 · 421 · 423 · 424 · 429 ·
+#   003 · 435 · 459. All keep their ids, states and triggers. ⛔ Do not pull
+#   them forward.
+#
+# ✅ TWO DEFECTS DID MOVE TO YOU, and they are Workflow 1 work rather than
+#   inherited debt:
+#     B-315  every dialog claims the same HTML id, so a screen reader cannot
+#            tell them apart
+#     B-312  a dialog a keyboard cannot reach anything inside
+#   §20c makes accessibility a defect class that never waits for a milestone,
+#   and D-156 ⑤ names dialogs, modals, keyboard interaction and accessibility
+#   behaviours INSIDE the complete customer experience. Workflow 1 has dialogs.
+#   ⛔ B-329 (101 ruff errors) is parked; the reason is in the row.
+#
+# ⚡ THE MEASUREMENT BEHIND ALL OF THIS: every row in journeys 1 to 5 is
+#   `product_surface`, which was already yours. The migration program needed
+#   nothing from Lane B — which is why this transition costs no handover.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🟢  YOU ARE UNBLOCKED — 2026-08-07 · answering your TASK-468 report
 #
 # ⚡ THE HEADLINE: YOU DO NOT NEED `make up` TO RUN A PLAYWRIGHT JOURNEY.
@@ -738,15 +790,19 @@ next    = "TASK-483"
 # puts business workflows at priority 6, and READY is fitness rather than
 # priority. state-check caught it missing from this file within a minute of
 # the release: "READY and appears in no lane queue".
-future  = ["TASK-484", "TASK-474", "TASK-473", "TASK-476", "TASK-458"]
+# ⚠️ TASK-458 REMOVED 2026-08-07 — Lane A claimed it on `integration` while
+# this office was releasing it here, and the rebase kept this office's line.
+# Lane A's CLAIMED is restored in BACKLOG.md and the row is gone from this
+# queue: a lane must never be offered back work it is already holding.
+future  = ["TASK-484", "TASK-474", "TASK-473", "TASK-476"]
 
 
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 7
+eligible_count = 6
 depth_target   = 15
-shortfall      = 8
+shortfall      = 9
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

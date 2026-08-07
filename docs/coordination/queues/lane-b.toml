@@ -86,6 +86,68 @@
 #    that from the outside before this office noticed it from the inside.
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════════
+# 🔴  THIS LANE IS CLOSING — 2026-08-07 · D-157 · read this and stop claiming
+#
+#   "Effective immediately, stop assigning new implementation work to Lane B.
+#    Lane B will no longer receive implementation tasks for the current UI
+#    migration program. The current Lane B implementation session will be
+#    closed after any in-flight work is safely recorded."
+#
+# ⛔ CLAIM NOTHING FURTHER. `current`, `next` and `future` are empty below and
+#   that is deliberate, not a drought.
+#
+# ✅ WHAT YOU STILL DO, AND IT IS THE WHOLE OF IT: land what you are holding.
+#   Twenty rows are CLAIMED, IN PROGRESS or IN VALIDATION and every one of them
+#   is still yours to finish and QE's to validate. Ownership moving does not
+#   reach into a slice somebody is holding (D-123).
+#
+#     TASK-201 · 204 · 205 · 301 · 402 · 406 · 407 · 415 · 416 · 427
+#     TASK-428 · 438 · 446 · 453 · 457 · 461 · 462 · 463 · 472 · 903
+#
+#   Finish them, push them, set IN VALIDATION, write the Slice Handoff. The
+#   handoff matters more than usual: under rotation it is the ONLY context the
+#   next assignee inherits (§12), and that assignee is now Lane A for every one
+#   of your thirteen modules.
+#
+# ⚡ THIRTEEN MODULES MOVED TO LANE A in modules.toml, by the product owner's
+#   ruling rather than by this office: action_batch · ai_platform ·
+#   ai_reasoning_engine · business_event_engine · commercial_profile ·
+#   integrations · knowledge_graph · observation_engine · opportunity_engine ·
+#   people · provider_normalization · sales_engagement · timeline.
+#
+# ⚠️ WHAT WAS PARKED, AND EACH WAS RE-EVALUATED RATHER THAN COPIED. D-157 ④ is
+#   explicit — "Do not blindly copy Lane B's queue to Lane A." Eleven rows were
+#   claimable, sequenced or blocked, and NONE is in journeys 1-5:
+#
+#     TASK-202  Epic G Copilot ......... priority 6 + waits on C-334 credential
+#     TASK-464  Action Batch app layer . priority 6
+#     TASK-465  Action Batch async ..... priority 6, behind 464
+#     TASK-420/421/423/424  Epic H ..... priority 6; 420 waits on the credential
+#     TASK-429  M-E person identifier .. priority 6
+#     TASK-003  attribute vocabulary ... blocked on C-338, the product owner's
+#     TASK-435  cross-account changes .. blocked on C-215
+#     TASK-459  reasoning@1 protocol-2 . waits on the hosted credential
+#
+#   ⛔ Parked, never deleted. Every row keeps its id, its state and its trigger.
+#
+# ✅ YOUR DEFECTS WERE RE-EVALUATED TOO, and two moved rather than parked:
+#     B-315 · B-312   dialog accessibility -> LANE A, and NOT parked. §20c
+#                     makes accessibility a defect class that never waits, and
+#                     D-156 ⑤ names dialogs and keyboard interaction inside
+#                     Workflow 1. They are migration work now.
+#     B-329           101 ruff errors -> parked, with the reason recorded in
+#                     the row rather than left to be inferred from silence.
+#
+# ⚡ THE MEASUREMENT THAT MADE THIS EASY, and it is worth your knowing: every
+#   row in journeys 1 to 5 is `product_surface`, which was already Lane A's.
+#   The migration program needs nothing from this lane. That is why the
+#   transition costs no handover — not because your work did not matter.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice; every
+#   one of your twenty in-flight rows stays exactly where you left it.
+# ══════════════════════════════════════════════════════════════════════════════
+
 lane         = "Lane B"
 updated      = 2026-08-07
 
@@ -112,13 +174,15 @@ updated      = 2026-08-07
 # and `action_batch/public/__init__.py` is 169 lines of real exports.
 # ⛔ It was listed here last cycle as `blocked_on_integration`, waiting on QE.
 # QE integrated; it is now yours.
-current = "TASK-202"
-next    = "TASK-464"
+# ⛔ EMPTY BY RULING, NOT BY DROUGHT — D-157, 2026-08-07. This lane receives
+# no further implementation work. Zero claimable is the CORRECT state here.
+current = ""
+next    = ""
 future  = []
 
-eligible_count = 2
-depth_target   = 15
-shortfall      = 13
+eligible_count = 0
+depth_target   = 5
+shortfall      = 5   # ⛔ by ruling, not by drought — D-157. See the notice above.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

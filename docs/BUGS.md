@@ -1067,7 +1067,7 @@ sed -n '2042,2044p' docs/BUGS.md
 | | |
 |---|---|
 | **Module** | **Ten of this lane's thirteen** — `integrations` 41 · `knowledge_graph` 20 · `opportunity_engine` 13 · `timeline` 5 · `commercial_profile` 5 · `sales_engagement` 5 · `people` 5 · `action_batch` 3 · `ai_platform` 3 · `observation_engine` 1 |
-| **Current assignee** | **Lane B** for the code. ⚠️ **The `N818` group below is *not* Lane B's to decide** — see the split |
+| **Current assignee** | ⏸️ **Lane A on paper, parked in practice — [D-157](DECISION_REGISTER.md) ④, 2026-08-07.** ⚡ **Lint debt, not a customer-visible defect.** ⛔ **It moves no journey forward, so it waits behind the migration** — *"Anything that does not materially move these journeys forward should be deferred unless it blocks the active workflow."* ✅ **Traceability preserved: the row stays open and assigned, and the reason it is not being worked is stated here rather than left to be inferred from silence** |
 | **Severity** | 🟠 · **not blocking today.** Nothing invokes ruff ([B-211](#b-211--ruff-check--fails-with-238-errors-on-integration-and-no-gate-has-ever-run-it)), so no gate is red because of these. **It becomes blocking the moment QE wires the gate in**, which is what B-211 exists to do |
 | **Status** | **`OPEN`** |
 | **Found** | 2026-08-07 by **Lane B**, measuring its own share after B-211 landed |
@@ -3592,7 +3592,7 @@ winner = pick(claims)          # a second surface deciding which name wins
 | | |
 |---|---|
 | **Module** | Frontend foundation — `frontend/components/ui/dialog.tsx` (frozen, §20c) |
-| **Current assignee** | **QE** — `components/ui` is theirs. Reported by Lane B |
+| **Current assignee** | ⚡ **Lane A — moved from Lane B 2026-08-07 by [D-157](DECISION_REGISTER.md), and moved rather than parked deliberately.** ⛔ **[§20c](../CLAUDE.md): an accessibility issue is a *defect class*, not an enhancement, and *never waits for a business milestone to justify it*.** ✅ **And it is Workflow 1's**: [D-156](DECISION_REGISTER.md) ⑤ names *dialogs*, *modals*, *keyboard interactions* and *accessibility behaviours* inside the complete customer experience** |
 | **Severity** | 🟡 — invisible to a sighted user, wrong for everybody else |
 | **Status** | `OPEN` |
 | **Found** | 2026-08-03, by Lane B, during the product review |
@@ -3672,7 +3672,7 @@ Opened at 20, 5 weeks ago      -10 since            ← the score has fallen
 | | |
 |---|---|
 | **Module** | Frontend foundation — `frontend/components/ui/dialog.tsx` (frozen, §20c) |
-| **Current assignee** | **QE** — `components/ui` is theirs. **Reported by Lane B, attempted and reverted** (below) |
+| **Current assignee** | ⚡ **Lane A — moved from Lane B 2026-08-07 by [D-157](DECISION_REGISTER.md), and moved rather than parked deliberately.** ⛔ **[§20c](../CLAUDE.md): an accessibility issue is a *defect class*, not an enhancement, and *never waits for a business milestone to justify it*.** ✅ **And it is Workflow 1's**: [D-156](DECISION_REGISTER.md) ⑤ names *dialogs*, *modals*, *keyboard interactions* and *accessibility behaviours* inside the complete customer experience** |
 | **Severity** | 🟡 — the modal works with a mouse and strands a keyboard |
 | **Status** | **`OPEN`** — and **asserted executably**: `interaction-boundaries.spec.ts` carries a `test.fail()` that passes while the defect exists and turns red the moment it is fixed |
 | **Found** | 2026-08-03, by Lane B, probing where focus actually goes during an open modal |
