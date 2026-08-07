@@ -29,11 +29,24 @@ import httpx
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from apps.worker.pools import AI_RESEARCH, INTELLIGENCE, READ_MODEL
-from modules.ai_platform.infrastructure.composition import build_provider_registry
+
+# **Two `build_provider_registry` functions exist and they are different
+# things.** `ai_platform`'s resolves a *model* to a vendor adapter;
+# `provider_platform`'s resolves a *data provider* to its adapter. ADR-0404
+# tripped over the collision and TASK-419's row warns about it by name, so
+# both are imported under explicit aliases here rather than one shadowing the
+# other by import order.
+from modules.ai_platform.infrastructure.composition import (
+    build_provider_registry as build_ai_provider_registry,
+)
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_platform.infrastructure.repository import SqlInferenceRecorder
 from modules.ai_platform.infrastructure.settings import AISettings
 from modules.ai_platform.public import Infer, InferencePolicy
+from modules.provider_platform.domain.provider import ProviderRegistry
+from modules.provider_platform.infrastructure.composition import (
+    build_provider_registry as build_data_provider_registry,
+)
 from modules.ai_research_engine.domain.events import (
     RESEARCH_REQUESTED as RESEARCH_REQUESTED_EVENT,
 )
@@ -145,6 +158,20 @@ class WorkerRuntime:
     session_factory: async_sessionmaker[AsyncSession]
     http: httpx.AsyncClient
     ai: AISettings
+    #: The **data** provider adapters this deployment serves —
+    #: [ADR-0404](../../../docs/architecture/adr/0404-platform-composition.md)
+    #: capability 3, and the half `apps/` owes.
+    #:
+    #: **Named `provider_registry` rather than `providers`**, because `ai` above
+    #: already carries the AI provider registry and the two are different
+    #: things. ADR-0404 tripped over exactly that collision.
+    #:
+    #: **No default.** A handler reaching a provider is the capability this
+    #: field exists for; a default would let a worker start with an empty
+    #: registry and surface as *"no adapter registered"* at call time, which is
+    #: a composition fault reported as a data problem. `runtime()` already
+    #: refuses to invent a runtime for the same reason.
+    provider_registry: ProviderRegistry
 
     @property
     def model(self) -> str:
@@ -197,7 +224,7 @@ def _infer(current: WorkerRuntime) -> Infer:
     a model was called (ADR-0029).
     """
     return Infer(
-        providers=build_provider_registry(current.ai, client=current.http),
+        providers=build_ai_provider_registry(current.ai, client=current.http),
         prompts=load_prompt_registry(PROMPT_DIR),
         recorder=SqlInferenceRecorder(current.session_factory),
         # Two attempts, matching the Playground's narration pass. A research

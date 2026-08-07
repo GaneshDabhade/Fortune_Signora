@@ -18,6 +18,10 @@ from arq.connections import RedisSettings
 from apps.worker import subscriptions
 from apps.worker.pools import POOLS, resolve_pool
 from modules.ai_platform.infrastructure.settings import AISettings
+from modules.provider_platform.infrastructure.composition import (
+    build_provider_registry as build_data_provider_registry,
+)
+from modules.provider_platform.infrastructure.settings import ProviderSettings
 from signora_platform.db import create_engine, create_session_factory
 from signora_platform.event_bus import (
     MAX_ATTEMPTS,
@@ -134,7 +138,21 @@ async def startup(ctx: dict[str, Any]) -> None:
     ctx["http"] = http
     subscriptions.install(
         subscriptions.WorkerRuntime(
-            session_factory=session_factory, http=http, ai=AISettings()
+            session_factory=session_factory,
+            http=http,
+            ai=AISettings(),
+            # **The data-provider registry, built here and nowhere else.**
+            # ADR-0404 capability 3: `provider_platform` decides *which*
+            # adapters exist from its own typed settings, and the composition
+            # root is the only place allowed to ask it. A handler building one
+            # would be a second composition root, which is what `runtime()`
+            # exists to prevent.
+            #
+            # It raises at startup if simulated adapters are selected outside a
+            # local environment — deliberately, because a deployed worker
+            # serving generated company data is indistinguishable from one that
+            # is working, and every score built on it would be fabricated.
+            provider_registry=build_data_provider_registry(ProviderSettings()),
         )
     )
 

@@ -40,15 +40,20 @@ lane         = "Lane C"
 updated      = 2026-08-06
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-419"
-next    = "TASK-454"
-future  = ["TASK-455", "TASK-473", "TASK-474", "TASK-476", "TASK-477"]
+current = "TASK-454"
+next    = "TASK-455"
+future  = ["TASK-473", "TASK-474", "TASK-476", "TASK-477"]
 
-eligible_count = 7
+eligible_count = 5
 depth_target   = 15
 shortfall      = 8
 assigned_total = 13
 
+# ✅ **TASK-419 DELIVERED 2026-08-07 and is IN VALIDATION.** It was READY and
+# unstarted while Lane A sat blocked on it (C-234) and this office held seven
+# claimable rows. The product owner's instruction was explicit: finish it
+# before further governance work. Done.
+#
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
 # that no lane go dry. `eligible_count` is what is CLAIMABLE today;
 # `assigned_total` is every row this lane owns, parked ones included, each
