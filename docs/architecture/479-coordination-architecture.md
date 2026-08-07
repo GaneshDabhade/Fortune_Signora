@@ -1,6 +1,10 @@
-# 479 · The coordination architecture — planning flows without waiting for release
+# 479 · The Coordination subsystem — planning flows without waiting for release
 
-**Lane C · Product Office · 2026-08-07.** **[D-142](../DECISION_REGISTER.md) §10.**
+**Lane C · Product Office · 2026-08-07.** **[D-142](../DECISION_REGISTER.md) §10, strengthened by [D-143](../DECISION_REGISTER.md).**
+
+> ## ⛔ **This is a subsystem, not a generated file.**
+>
+> **[D-143](../DECISION_REGISTER.md) §1: its responsibility is to be the single operational source every implementation lane consults for day-to-day execution.** ⛔ **No lane derives work from `BACKLOG.md`, the registers, commit history or QE state.** ⚡ **Coordination *projects the current executable view of the repository* — and it computes that view by walking a dependency graph, not by re-deriving relationships every cycle.**
 
 > ⚠️ **The directive arrived labelled `D-137`, which is already allocated to Canonical Design Accessibility. Registered as `D-142`** — §20e forbids two rows under one id, and [C-423](../LANE_COORDINATION.md) is the open item about making that unrepresentable.
 

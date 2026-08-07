@@ -24,6 +24,7 @@ import subprocess
 import sys
 import tomllib
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -83,8 +84,21 @@ class Task:
     declared: str
     lane: str
     depends_on: list[str]
+    #: **Why it cannot start**, in the row's own words — not a restatement.
+    waiting_for: str = ""
     unblocks: list[str] = field(default_factory=list)
     next_owner: list[str] = field(default_factory=list)
+    next_lane: str = "—"
+    #: **Longest chain of unfinished predecessors ending here.** `0` means
+    #: nothing precedes it. ⚡ **This is what makes a queue an ordering rather
+    #: than a list**: the deepest chain is where a lane's supply actually
+    #: comes from, and shortening it is worth more than adding a row.
+    critical_path: int = 0
+    #: **The condition, never a date.** A date would be a forecast this office
+    #: cannot make; a condition is checkable by whoever holds the blocker.
+    estimated_ready: str = "—"
+    #: How long the row has held its current declared state, in days.
+    blocked_days: float = 0.0
 
 
 def _git(*args: str) -> str:
@@ -124,6 +138,40 @@ def _lane_for(module_cell: str, body: str, owners: dict[str, str]) -> str | None
             return owners[key]
     steward = re.search(r"Trigger steward\*\*\s*\|\s*\*\*(Lane [ABC])", body)
     return steward.group(1) if steward else None
+
+
+#: The words a blocker clause actually uses, **counted across the backlog
+#: rather than guessed**: `predecessor` 9 · `after` 8 · `on` 2 · `behind` 1 ·
+#: `predecessors` 1. ⚠️ **The first version omitted `predecessor` and so
+#: missed nine edges of thirteen** — the most common form, absent because the
+#: pattern was written from three examples somebody remembered.
+_BLOCKER_PHRASE = re.compile(
+    r"(?:predecessors?|after|on|behind)\s+\*?\*?\[?(TASK-\d+)"
+)
+
+
+def _dependencies(declared: str, status: str) -> list[str]:
+    """The tasks this row actually waits on.
+
+    ⛔ **Only from a row that declares itself blocked, and only from the
+    clause that follows the state token.** A blocker is written immediately
+    after the state — ``BLOCKED on [TASK-472]``, ``SEQUENCED — after
+    [TASK-448]`` — and everything past that is narrative.
+
+    **Reading the whole cell instead produced a false edge on the first run**:
+    `TASK-440`'s status explains a precedent — *"reversed the identical block
+    on TASK-441"* — and a scan for *on TASK-nnn* took the sentence for a
+    dependency. **B-101's class inside the graph the graph exists to
+    compute**, and a wrong edge is worse than a missing one because a lane
+    would wait on it.
+    """
+    if declared not in {"BLOCKED", "SEQUENCED", "WAITING"}:
+        return []
+    token = re.search(r"`(?:BLOCKED|SEQUENCED|WAITING)`", status)
+    if token is None:
+        return []
+    clause = status[token.end(): token.end() + 130]
+    return sorted(set(_BLOCKER_PHRASE.findall(clause)))
 
 
 def _cell(body: str, label: str) -> str:
@@ -174,7 +222,7 @@ def tasks() -> list[Task]:
             continue
         module_cell = _cell(body, "Module")
         lane = _lane_for(module_cell, body, owners)
-        depends = sorted(set(re.findall(r"(?:on|after|behind)\s+\*?\*?\[?(TASK-\d+)", status)))
+        depends = _dependencies(declared, status)
         blocker = status if declared in {"BLOCKED", "SEQUENCED", "WAITING"} else ""
         rows.append(
             Task(
@@ -184,6 +232,7 @@ def tasks() -> list[Task]:
                 declared=declared or "(none)",
                 lane=lane or "—",
                 depends_on=depends,
+                waiting_for=blocker.strip()[:200],
             )
         )
     # `unblocks` is the inverse of `depends_on`, computed rather than restated:
@@ -198,7 +247,113 @@ def tasks() -> list[Task]:
         row.next_owner = sorted(
             {by_id[s].lane for s in row.unblocks if by_id[s].lane != "—"}
         )
+        row.next_lane = row.next_owner[0] if len(row.next_owner) == 1 else "—"
+    _walk(rows, by_id)
+    for row in rows:
+        if row.state not in {ASSIGNED, IN_FLIGHT}:
+            row.blocked_days = _blocked_days(row)
     return rows
+
+
+def _walk(rows: list[Task], by_id: dict[str, Task]) -> None:
+    """Depth of the longest unfinished chain ending at each task.
+
+    **[D-143](../docs/DECISION_REGISTER.md) §3: compute executable work by
+    walking the graph rather than rediscovering relationships every cycle.**
+
+    ⚠️ **Cycles are treated as depth-0 rather than crashing.** A dependency
+    cycle is a real planning defect and the generator should report the rest
+    of the graph while it exists — a tool that refuses to run because one row
+    is wrong tells a lane nothing about the other eighty-three.
+    """
+    depth: dict[str, int] = {}
+    visiting: set[str] = set()
+
+    def measure(task_id: str) -> int:
+        if task_id in depth:
+            return depth[task_id]
+        if task_id in visiting:      # a cycle; see the docstring
+            return 0
+        task = by_id.get(task_id)
+        if task is None or not task.depends_on:
+            depth[task_id] = 0
+            return 0
+        visiting.add(task_id)
+        deepest = max(
+            (measure(d) + 1 for d in task.depends_on if d in by_id), default=0
+        )
+        visiting.discard(task_id)
+        depth[task_id] = deepest
+        return deepest
+
+    for row in rows:
+        row.critical_path = measure(row.id)
+        unfinished = [
+            by_id[d].id for d in row.depends_on
+            if d in by_id and by_id[d].state != ASSIGNED
+        ]
+        row.estimated_ready = (
+            "now" if row.state == ASSIGNED
+            else ("when " + ", ".join(unfinished) + " complete") if unfinished
+            else (row.waiting_for[:70] or "—")
+        )
+
+
+
+def _blocked_days(task: Task) -> float:
+    """Days the row has held its current declared state.
+
+    **Dated from the commit that introduced the state string**, which is the
+    only record the repository actually keeps. ⚠️ **It is a lower bound**: a
+    row re-stated in a later commit dates from the re-statement, so this
+    under-reports rather than over-reports — the safe direction for a metric
+    that triggers a coordination defect.
+    """
+    if not task.declared or task.declared == "(none)":
+        return 0.0
+    stamp = _git(
+        "log", "--format=%cI", "-1", "-S", f"`{task.declared}`", "--", "docs/BACKLOG.md"
+    )
+    if not stamp:
+        return 0.0
+    try:
+        then = datetime.fromisoformat(stamp)
+    except ValueError:
+        return 0.0
+    return round((datetime.now(timezone.utc) - then).total_seconds() / 86400, 1)
+
+
+def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
+    """Per-lane coordination metrics — [D-143](../docs/DECISION_REGISTER.md) §6.
+
+    ⛔ **`idle_prediction` is the one that matters and the one to read
+    carefully.** It divides claimable rows by an observed claim rate, so it is
+    a projection of a past week onto a future one. **A lane at zero claimable
+    reports `0.0` days, which is not a prediction — it is a statement that
+    starvation has already happened.**
+    """
+    out: dict[str, dict[str, float | int | str]] = {}
+    for lane in sorted({r.lane for r in rows if r.lane != "—"}):
+        mine = [r for r in rows if r.lane == lane]
+        claimable = [r for r in mine if r.state == ASSIGNED]
+        in_flight = [r for r in mine if r.state == IN_FLIGHT]
+        blocked = [r for r in mine if r.state not in {ASSIGNED, IN_FLIGHT}]
+        waits = [r.blocked_days for r in blocked if r.blocked_days]
+        out[lane] = {
+            "claimable": len(claimable),
+            "in_flight": len(in_flight),
+            "blocked": len(blocked),
+            # **In flight against a five-slice reference**, which is §20e's own
+            # number rather than one invented here.
+            "lane_utilization": round(len(in_flight) / 5, 2),
+            # Claimable ÷ the rate a lane has actually claimed at. **Lane A
+            # took seven rows in one day**, so 7/day is measured, not assumed.
+            "idle_prediction_days": round(len(claimable) / 7, 1),
+            "dependency_wait_days": round(max(waits, default=0.0), 1),
+            "blocked_duration_days": round(sum(waits) / len(waits), 1) if waits else 0.0,
+            "critical_path_max": max((r.critical_path for r in mine), default=0),
+        }
+    return out
 
 
 def render(rows: list[Task]) -> str:
@@ -219,14 +374,31 @@ def render(rows: list[Task]) -> str:
         f"task_count     = {len(rows)}",
         "",
     ]
+    stats = metrics_for(rows)
     for lane in lanes:
         mine = [r for r in rows if r.lane == lane]
-        claimable = [r for r in mine if r.state == ASSIGNED]
+        # **The pipeline, three deep** — D-143 §4. Ordered by shallowest
+        # critical path first: a row with nothing in front of it is the one a
+        # lane can start now, and the ordering is the graph's, not a preference.
+        pipeline = sorted(
+            (r for r in mine if r.state == ASSIGNED),
+            key=lambda r: (r.critical_path, r.id),
+        )
+        m = stats[lane]
         out += [
             f"[lane.{lane.replace(' ', '_')}]",
-            f"assigned_total = {len(mine)}",
-            f"claimable      = {len(claimable)}",
-            "claimable_ids  = " + str([r.id for r in claimable]).replace("'", '"'),
+            f'current            = "{pipeline[0].id if pipeline else ""}"',
+            f'next               = "{pipeline[1].id if len(pipeline) > 1 else ""}"',
+            f'next_after_that    = "{pipeline[2].id if len(pipeline) > 2 else ""}"',
+            f"assigned_total     = {len(mine)}",
+            f"claimable          = {m['claimable']}",
+            f"in_flight          = {m['in_flight']}",
+            f"blocked            = {m['blocked']}",
+            f"lane_utilization   = {m['lane_utilization']}",
+            f"idle_prediction_days   = {m['idle_prediction_days']}",
+            f"dependency_wait_days   = {m['dependency_wait_days']}",
+            f"blocked_duration_days  = {m['blocked_duration_days']}",
+            f"critical_path_max      = {m['critical_path_max']}",
             "",
         ]
     for row in sorted(rows, key=lambda r: (r.lane, r.id)):
@@ -237,9 +409,14 @@ def render(rows: list[Task]) -> str:
             f'state         = "{row.state}"',
             f'declared      = "{row.declared}"',
             f'lane          = "{row.lane}"',
-            "depends_on    = " + str(row.depends_on).replace("'", '"'),
-            "unblocks      = " + str(row.unblocks).replace("'", '"'),
-            "next_owner    = " + str(row.next_owner).replace("'", '"'),
+            "depends_on     = " + str(row.depends_on).replace("'", '"'),
+            "unblocks       = " + str(row.unblocks).replace("'", '"'),
+            "next_owner     = " + str(row.next_owner).replace("'", '"'),
+            f'next_lane      = "{row.next_lane}"',
+            f"critical_path  = {row.critical_path}",
+            f'estimated_ready = "{row.estimated_ready.replace(chr(34), chr(39))[:110]}"',
+            f'waiting_for    = "{row.waiting_for.replace(chr(34), chr(39))[:150]}"',
+            f"blocked_days   = {row.blocked_days}",
             "",
         ]
     return "\n".join(out)
