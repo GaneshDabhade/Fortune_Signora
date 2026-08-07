@@ -254,9 +254,16 @@ updated      = 2026-08-07
 # left at the head of a queue is the one failure this file exists to prevent:
 # the lane that claimed it re-reads its own queue and sees its own work
 # offered back. Found by `state-check.py`, not by a lane hitting it.
+# ⚡ ORDER ALIGNED TO THE GENERATOR — 2026-08-07. This file had `next =
+# TASK-467`; coordination.toml computes `next = TASK-480`, because the
+# pipeline is ordered by LEVERAGE and not by identifier (there is a test named
+# for it). Both files were right about the set and disagreed about the order,
+# which is §2's two-representations defect in the two files a lane reads on
+# one poll. ⛔ D-144 makes coordination.toml the authority for assignment;
+# this file follows it rather than restating it differently.
 current = "TASK-468"
-next    = "TASK-467"
-future  = ["TASK-471", "TASK-480", "TASK-481", "TASK-482", "TASK-484"]
+next    = "TASK-480"
+future  = ["TASK-481", "TASK-467", "TASK-471", "TASK-482", "TASK-484"]
 
 eligible_count = 7
 depth_target   = 15
