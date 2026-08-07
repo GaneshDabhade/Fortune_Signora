@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "418e24a"
+generated_from = "eed6f19"
 task_count     = 84
 
 [lane.Lane_A]
@@ -19,8 +19,9 @@ next_after_that    = ""
 assigned_total     = 33
 claimable          = 0
 in_flight          = 18
+awaiting_qe_transition = 18
 blocked            = 15
-lane_utilization   = 3.6
+lane_utilization   = 0.0
 idle_prediction_days   = 0.0
 dependency_wait_days   = 0.4
 blocked_duration_days  = 0.4
@@ -33,6 +34,7 @@ next_after_that    = ""
 assigned_total     = 31
 claimable          = 1
 in_flight          = 18
+awaiting_qe_transition = 0
 blocked            = 12
 lane_utilization   = 3.6
 idle_prediction_days   = 0.1
@@ -47,6 +49,7 @@ next_after_that    = "TASK-473"
 assigned_total     = 17
 claimable          = 6
 in_flight          = 5
+awaiting_qe_transition = 0
 blocked            = 6
 lane_utilization   = 1.0
 idle_prediction_days   = 0.9
