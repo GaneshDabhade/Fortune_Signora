@@ -6969,6 +6969,42 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
 
+## C-429 · Four live claims have no row on the execution board, and the check that should have said so was broken in both directions
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-07, ⚡ **after repairing the check — the gaps were invisible until it worked** |
+| **Owner** | ⛔ **The claiming lanes.** **[§20e](../CLAUDE.md): the board row is written by the claiming lane, at once.** **Lane C may not write another lane's row** |
+| **Status** | **`OPEN`** — raised 2026-08-07 |
+| **Blocks** | ⛔ **Nothing today.** ⚠️ **[B-404](BUGS.md) is what it costs when it is left** |
+
+### The four
+
+| Row | Claimed by | Board row under `## Current` |
+|---|---|---|
+| **[TASK-440](BACKLOG.md)** | **Lane A** | ⛔ absent |
+| **[TASK-453](BACKLOG.md)** | **Lane B** | ⛔ absent |
+| **[TASK-457](BACKLOG.md)** | **Lane B** | ⛔ absent |
+| **[TASK-462](BACKLOG.md)** | **Lane B** | ⛔ absent |
+
+✅ **[TASK-478](BACKLOG.md) and [TASK-450](BACKLOG.md) are *not* on this list** — **Lane A wrote board rows for both**, so this is four older gaps rather than a lane ignoring the rule.
+
+### ⛔ Why nobody saw it: the check was wrong in both directions at once
+
+**`_backlog_claims` searched for the lane as `**Lane A**`, a standalone bold span.** ⚡ **Every row actually writes `**\`CLAIMED\` — Lane A**` — the lane sits *inside* the same bold span as the state.**
+
+> ## **So it matched no correctly formatted claim at all, and the only finding it ever produced was a false one.**
+
+⚠️ **That false positive was [TASK-400](BACKLOG.md)**, `IN VALIDATION` since 2026-08-06 with **34 commits on `main` and nothing outstanding** — **whose narrative happens to contain a standalone `**Lane A**`.** ⛔ **It was reported every cycle for days and routed to Lane A each time, against a row nobody could claim.**
+
+**A second defect in the same function**: it substring-matched *any* state token in the cell, and **a backlog row narrates its own history there** — *"Previously **`CHANGES REQUESTED`** — …"*. ⚡ **[B-101](BUGS.md)'s class, and the same defect [`registers.py`](../infra/registers.py) exists to fix on the bug side.**
+
+### ⚠️ And the repair went wrong before it went right
+
+**The first attempt delegated to `_backlog_states` and reported *nothing at all***, missing all six live claims. ⛔ **Over-reporting became a guard that cannot fail, which is strictly worse**, and it was caught only by testing against real rows rather than synthetic ones. **The synthetic cases passed while the repository's own formatting did not.**
+
+✅ **Now verified in both directions against the live backlog**: six claims found — [TASK-440](BACKLOG.md), [TASK-450](BACKLOG.md), [TASK-453](BACKLOG.md), [TASK-457](BACKLOG.md), [TASK-462](BACKLOG.md), [TASK-478](BACKLOG.md) — **and [TASK-400](BACKLOG.md) and [TASK-419](BACKLOG.md) correctly absent.**
+
 ## C-428 · Releasing a row deleted the evidence that the release was wrong
 
 | | |

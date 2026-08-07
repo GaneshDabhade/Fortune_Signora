@@ -87,7 +87,23 @@ def _newest_named_commit(text: str, head: str) -> str | None:
     return newest
 
 
-HOLDING_STATUSES = ("CLAIMED", "ACTIVE", "IN VALIDATION", "CHANGES REQUESTED")
+#: States in which a lane is genuinely *working* the row, so the execution
+#: board should show it under `## Current`.
+#:
+#: ⚠️ **`IN VALIDATION` was in this set and is removed — 2026-08-07.** §20e is
+#: explicit that it means *"implementation, tests, module documentation and
+#: Slice Handoff are all complete. The lane's responsibility for this task has
+#: ended."* **The row is with QE, and nobody is working it.**
+#:
+#: ⛔ **The finding's own justification did not hold**: it said *"a lane reading
+#: only the board would take work somebody else is doing"*, and **an
+#: `IN VALIDATION` row is not claimable from any source** — a lane pulls
+#: `READY` rows from `BACKLOG.md`. **It fired every cycle for days on
+#: `TASK-400`, which has 34 commits on `main` and nothing outstanding.**
+#:
+#: ✅ **`CHANGES REQUESTED` stays**: that one *is* returned to the lane, and
+#: §20e makes it the lane's highest priority.
+HOLDING_STATUSES = ("CLAIMED", "ACTIVE", "CHANGES REQUESTED")
 
 
 def _backlog_claims(backlog: str) -> dict[str, str]:
@@ -104,9 +120,38 @@ def _backlog_claims(backlog: str) -> dict[str, str]:
         if task is None or status is None:
             continue
         row = status.group(1)
-        if not any(f"`{state}`" in row for state in HOLDING_STATUSES):
+        # ⛔ **The FIRST state token in the cell, never any token in it.**
+        # A backlog row narrates its own history in the same cell — *"…
+        # Previously **`CHANGES REQUESTED`** — …"* — and this read
+        # `any(f"`{state}`" in row ...)`. **So `TASK-400`, `IN VALIDATION`
+        # since 2026-08-06 with 34 commits on `main`, read as held**, and the
+        # finding fired every cycle for days against a row nobody could claim.
+        #
+        # ⚡ **[B-101](../docs/BUGS.md)'s class, and the same defect
+        # `registers.py` exists to fix on the bug side**, where substring
+        # counting put nine rows in two buckets because a row records a fix and
+        # names the state it has *not* reached.
+        #
+        # ⚠️ **The first repair delegated to `_backlog_states` and reported
+        # nothing at all** — it missed `TASK-478` and `TASK-450`, both
+        # genuinely `CLAIMED`. **Over-reporting became a guard that cannot
+        # fail, which is worse.** This is the smaller change: the cell opens
+        # with its current state, so the first token is the declared one.
+        first = re.search(r"`([A-Z][A-Z ]+)`", row)
+        if first is None or first.group(1).strip() not in HOLDING_STATUSES:
             continue
-        lane = re.search(r"\*\*(Lane [A-Z]|QE)\*\*", row)
+        # ⛔ **The lane named right after the state, not a standalone bold span.**
+        # This searched for `**Lane A**` and rows write
+        # **``CLAIMED`` — Lane A** — the lane sits *inside* the same bold span
+        # as the state. ⚠️ **So the check silently matched no correctly
+        # formatted claim at all**, and the only finding it ever produced was
+        # the false positive on `TASK-400`, whose narrative happens to contain
+        # a standalone `**Lane A**`.
+        #
+        # ⚡ **It reported the one row that was fine and missed the four that
+        # were real** — `TASK-478`, `TASK-450`, `TASK-457`, `TASK-462`. **A
+        # check can be wrong in both directions at once, and this one was.**
+        lane = re.search(r"(Lane [A-Z]|QE)\b", row[first.end():first.end() + 90])
         if lane is not None:
             claims[task.group(1)] = lane.group(1)
     return claims

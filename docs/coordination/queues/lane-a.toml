@@ -241,13 +241,13 @@ updated      = 2026-08-07
 #    QE's exclusively — so the successor waited on a state nobody could
 #    move. Each release carries its evidence in the backlog row.
 #    `state-check` now reports this condition every run.
-current = "TASK-450"
-next    = "TASK-441"
-future  = ["TASK-444"]
+current = "TASK-441"
+next    = "TASK-444"
+future  = []
 
-eligible_count = 3
+eligible_count = 2
 depth_target   = 15
-shortfall      = 12
+shortfall      = 13
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
