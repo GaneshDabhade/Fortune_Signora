@@ -10,7 +10,7 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "2019c26"
-task_count     = 85
+task_count     = 84
 
 [lane.Lane_A]
 current            = "TASK-451"
@@ -32,16 +32,16 @@ critical_path_max      = 4
 [lane.Lane_B]
 current            = "TASK-463"
 next               = "TASK-202"
-next_after_that    = "TASK-479"
-assigned_total     = 32
-claimable          = 3
+next_after_that    = ""
+assigned_total     = 31
+claimable          = 2
 in_flight          = 20
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 9
 lane_utilization   = 4.0
-idle_prediction_days   = 0.4
+idle_prediction_days   = 0.3
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 3
@@ -126,7 +126,7 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-422"
 title         = "Epic H — a workspace states which providers it allows"
-state         = "WAITING_PRODUCT_OWNER"
+state         = "WAITING_ARCHITECTURE"
 declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = ["TASK-421"]
@@ -135,7 +135,7 @@ next_owner     = ["Lane B"]
 next_lane      = "Lane B"
 critical_path  = 2
 estimated_ready = "when TASK-421 complete"
-waiting_for    = "**`SEQUENCED`** — after [TASK-421](#task-421), **and blocked on the ADR [437 §3](architecture/437-ai-platform-future-epic.md) calls *ADR-B*: *'where d"
+waiting_for    = "** — after [TASK-421](#task-421), **and blocked on the ADR [437 §3](architecture/437-ai-platform-future-epic.md) calls *ADR-B*: *'where does AI policy"
 blocked_days   = 0.0
 
 [[task]]
@@ -149,8 +149,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "**`SEQUENCED`** — **trigger: wave 6, unchanged.** [412 §4](architectur"
-waiting_for    = "**`SEQUENCED`** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend-capability-matrix.md)"
+estimated_ready = "** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend"
+waiting_for    = "** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend-capability-matrix.md)"
 blocked_days   = 0.0
 
 [[task]]
@@ -374,8 +374,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 2
-estimated_ready = "⏸️ **`SEQUENCED`** — **predecessors [TASK-451](#task-451--saved-view--"
-waiting_for    = "⏸️ **`SEQUENCED`** — **predecessors [TASK-451](#task-451--saved-view--application-interface-and-permission-aware-listing) and the ratified name** ✅ *("
+estimated_ready = "** — **predecessors [TASK-451](#task-451--saved-view--application-inte"
+waiting_for    = "** — **predecessors [TASK-451](#task-451--saved-view--application-interface-and-permission-aware-listing) and the ratified name** ✅ *(now settled)*"
 blocked_days   = 0.0
 
 [[task]]
@@ -396,16 +396,16 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-458"
 title         = "Signal Engine reads the People contract"
-state         = "WAITING_PRODUCT_OWNER"
-declared      = "BLOCKED"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
-depends_on     = []
+depends_on     = ["TASK-428"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 0
-estimated_ready = "⏸️ **`BLOCKED` on [C-237](LANE_COORDINATION.md) — Lane A**, 2026-08-07"
-waiting_for    = "⏸️ **`BLOCKED` on [C-237](LANE_COORDINATION.md) — Lane A**, 2026-08-07, **and the claim is released.** ⛔ **`people/public/` publishes `PersonView` and"
+critical_path  = 1
+estimated_ready = "when TASK-428 complete"
+waiting_for    = "** — **predecessor [TASK-428](#task-428--m-i--what-the-domain-lets-other-modules-say)**, which carries the reader this row consumes. ⚡ **Re-pointed 20"
 blocked_days   = 0.0
 
 [[task]]
@@ -435,7 +435,7 @@ next_owner     = []
 next_lane      = "—"
 critical_path  = 4
 estimated_ready = "when TASK-465 complete"
-waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-465](#task-465--applying-a-batch-asynchronously-and-saying-so-while-it-runs)**"
+waiting_for    = "** — **predecessor [TASK-465](#task-465--applying-a-batch-asynchronously-and-saying-so-while-it-runs)**"
 blocked_days   = 0.0
 
 [[task]]
@@ -479,8 +479,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 2
-estimated_ready = "⏸️ **`SEQUENCED`** — **predecessor [TASK-468](#task-468--workspace-set"
-waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not-refined)**. **A first run that cannot create a workspace is not"
+estimated_ready = "** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not"
+waiting_for    = "** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not-refined)**. **A first run that cannot create a workspace is not a first run**"
 blocked_days   = 0.0
 
 [[task]]
@@ -494,8 +494,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "⏸️ **`SEQUENCED`** — trigger: [TASK-467](#task-467--the-authentication"
-waiting_for    = "⏸️ **`SEQUENCED`** — trigger: [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) complete"
+estimated_ready = "** — trigger: [TASK-467](#task-467--the-authentication-surface-to-the-"
+waiting_for    = "** — trigger: [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) complete"
 blocked_days   = 0.0
 
 [[task]]
@@ -525,7 +525,7 @@ next_owner     = []
 next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-474 complete"
-waiting_for    = "⏸️ **`BLOCKED`** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be "
+waiting_for    = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be written until "
 blocked_days   = 0.0
 
 [[task]]
@@ -749,8 +749,8 @@ unblocks       = ["TASK-421"]
 next_owner     = ["Lane B"]
 next_lane      = "Lane B"
 critical_path  = 0
-estimated_ready = "**`SEQUENCED`** — **trigger: the approved UI waves are complete and `p"
-waiting_for    = "**`SEQUENCED`** — **trigger: the approved UI waves are complete and `product_surface` is no longer the lowest-implementation module** *(45% today; eve"
+estimated_ready = "** — **trigger: the approved UI waves are complete and `product_surfac"
+waiting_for    = "** — **trigger: the approved UI waves are complete and `product_surface` is no longer the lowest-implementation module** *(45% today; every other modu"
 blocked_days   = 0.0
 
 [[task]]
@@ -765,7 +765,7 @@ next_owner     = ["Lane A", "Lane B"]
 next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-420 complete"
-waiting_for    = "**`SEQUENCED`** — after [TASK-420](#task-420)"
+waiting_for    = "** — after [TASK-420](#task-420)"
 blocked_days   = 0.0
 
 [[task]]
@@ -780,7 +780,7 @@ next_owner     = []
 next_lane      = "—"
 critical_path  = 2
 estimated_ready = "when TASK-421 complete"
-waiting_for    = "**`SEQUENCED`** — after [TASK-421](#task-421)"
+waiting_for    = "** — after [TASK-421](#task-421)"
 blocked_days   = 0.0
 
 [[task]]
@@ -795,7 +795,7 @@ next_owner     = []
 next_lane      = "—"
 critical_path  = 3
 estimated_ready = "when TASK-422 complete"
-waiting_for    = "**`SEQUENCED`** — after [TASK-422](#task-422)"
+waiting_for    = "** — after [TASK-422](#task-422)"
 blocked_days   = 0.0
 
 [[task]]
@@ -820,9 +820,9 @@ state         = "IN FLIGHT"
 declared      = "CLAIMED"
 lane          = "Lane B"
 depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
+unblocks       = ["TASK-458"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
@@ -839,8 +839,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "**`SEQUENCED`** — **trigger: a provider contract that supplies a perso"
-waiting_for    = "**`SEQUENCED`** — **trigger: a provider contract that supplies a person identifier.** ⛔ **A commercial decision, not an engineering one**"
+estimated_ready = "** — **trigger: a provider contract that supplies a person identifier."
+waiting_for    = "** — **trigger: a provider contract that supplies a person identifier.** ⛔ **A commercial decision, not an engineering one**"
 blocked_days   = 0.0
 
 [[task]]
@@ -854,8 +854,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "**`SEQUENCED`** — **trigger: [SW-02](architecture/482-sales-workspace."
-waiting_for    = "**`SEQUENCED`** — **trigger: [SW-02](architecture/482-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and b"
+estimated_ready = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is schedu"
+waiting_for    = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and blocks nothing"
 blocked_days   = 0.0
 
 [[task]]
@@ -910,9 +910,9 @@ state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane B"
 depends_on     = []
-unblocks       = ["TASK-479"]
-next_owner     = ["Lane B"]
-next_lane      = "Lane B"
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
@@ -929,8 +929,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "⏸️ **`SEQUENCED`** — **trigger: the hosted evaluation credential ([C-3"
-waiting_for    = "⏸️ **`SEQUENCED`** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)**"
+estimated_ready = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDIN"
+waiting_for    = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)**"
 blocked_days   = 0.0
 
 [[task]]
@@ -989,8 +989,8 @@ unblocks       = ["TASK-465"]
 next_owner     = ["Lane B"]
 next_lane      = "Lane B"
 critical_path  = 2
-estimated_ready = "⏸️ **`SEQUENCED`** — **predecessor [TASK-463](#task-463--the-action-ba"
-waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-463](#task-463--the-action-batchs-persistence--append-only-and-no-update-grant)**"
+estimated_ready = "** — **predecessor [TASK-463](#task-463--the-action-batchs-persistence"
+waiting_for    = "** — **predecessor [TASK-463](#task-463--the-action-batchs-persistence--append-only-and-no-update-grant)**"
 blocked_days   = 0.0
 
 [[task]]
@@ -1005,7 +1005,7 @@ next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 3
 estimated_ready = "when TASK-464 complete"
-waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)**"
+waiting_for    = "** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)**"
 blocked_days   = 0.0
 
 [[task]]
@@ -1020,21 +1020,6 @@ next_owner     = []
 next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-
-[[task]]
-id            = "TASK-479"
-title         = "`people` publishes a way to read what it publishes"
-state         = "ASSIGNED"
-declared      = "READY"
-lane          = "Lane B"
-depends_on     = ["TASK-457"]
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 1
-estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
 
@@ -1094,8 +1079,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "**`SEQUENCED`** — **trigger: the Billing screen is scheduled for imple"
-waiting_for    = "**`SEQUENCED`** — **trigger: the Billing screen is scheduled for implementation**"
+estimated_ready = "** — **trigger: the Billing screen is scheduled for implementation**"
+waiting_for    = "** — **trigger: the Billing screen is scheduled for implementation**"
 blocked_days   = 0.0
 
 [[task]]
@@ -1109,8 +1094,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "**`SEQUENCED`** — **trigger: TASK-411 slices 4–5 complete**"
-waiting_for    = "**`SEQUENCED`** — **trigger: TASK-411 slices 4–5 complete**"
+estimated_ready = "** — **trigger: TASK-411 slices 4–5 complete**"
+waiting_for    = "** — **trigger: TASK-411 slices 4–5 complete**"
 blocked_days   = 0.0
 
 [[task]]
@@ -1124,8 +1109,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "**`SEQUENCED`** — **trigger: a measured certification wall-clock that "
-waiting_for    = "**`SEQUENCED`** — **trigger: a measured certification wall-clock that demonstrably delayed a promotion, recorded at least twice**"
+estimated_ready = "** — **trigger: a measured certification wall-clock that demonstrably "
+waiting_for    = "** — **trigger: a measured certification wall-clock that demonstrably delayed a promotion, recorded at least twice**"
 blocked_days   = 0.0
 
 [[task]]
@@ -1169,8 +1154,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "**`SEQUENCED`** — **trigger: the first support request that cannot be "
-waiting_for    = "**`SEQUENCED`** — **trigger: the first support request that cannot be answered without database access**"
+estimated_ready = "** — **trigger: the first support request that cannot be answered with"
+waiting_for    = "** — **trigger: the first support request that cannot be answered without database access**"
 blocked_days   = 0.0
 
 [[task]]
@@ -1184,8 +1169,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "**`SEQUENCED`** — **trigger: whichever comes first —** *(a)* the first"
-waiting_for    = "**`SEQUENCED`** — **trigger: whichever comes first —** *(a)* the first customer contract naming a retention or erasure obligation, *(b)* the first wor"
+estimated_ready = "** — **trigger: whichever comes first —** *(a)* the first customer con"
+waiting_for    = "** — **trigger: whichever comes first —** *(a)* the first customer contract naming a retention or erasure obligation, *(b)* the first workspace deleti"
 blocked_days   = 0.0
 
 [[task]]
@@ -1199,8 +1184,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "⏸️ **`WAITING`** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE"
-waiting_for    = "⏸️ **`WAITING`** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected fro"
+estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
+waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
 blocked_days   = 0.0
 
 [[task]]
@@ -1236,7 +1221,7 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-474"
 title         = "A developer can see, open and resend every email the product sends"
-state         = "WAITING_PRODUCT_OWNER"
+state         = "BLOCKED"
 declared      = "BLOCKED"
 lane          = "Lane C"
 depends_on     = []
@@ -1244,8 +1229,8 @@ unblocks       = ["TASK-475"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "⏸️ **`BLOCKED` — Lane C, 2026-08-07, on module ownership.** ⛔ **Not im"
-waiting_for    = "⏸️ **`BLOCKED` — Lane C, 2026-08-07, on module ownership.** ⛔ **Not implementable by this lane as scoped**: its Module cell claims `frontend/lib/auth/"
+estimated_ready = "— Lane C, 2026-08-07, on module ownership.** ⛔ **Not implementable by "
+waiting_for    = "— Lane C, 2026-08-07, on module ownership.** ⛔ **Not implementable by this lane as scoped**: its Module cell claims `frontend/lib/auth/`, and [`module"
 blocked_days   = 0.0
 
 [[task]]
@@ -1281,7 +1266,7 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-906"
 title         = "M14b names its bounded context"
-state         = "WAITING_PRODUCT_OWNER"
+state         = "WAITING_EXTERNAL"
 declared      = "WAITING"
 lane          = "Lane C"
 depends_on     = []
@@ -1289,8 +1274,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "**`WAITING`** — **trigger: implementation naturally reaches M14b.** ⚠️"
-waiting_for    = "**`WAITING`** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md"
+estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
+waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
 blocked_days   = 0.0
 
 [[task]]

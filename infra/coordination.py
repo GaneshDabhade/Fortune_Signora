@@ -191,6 +191,18 @@ def _cell(body: str, label: str) -> str:
     return match.group(1).strip() if match else ""
 
 
+def _blocker_clause(status: str) -> str:
+    """The text stating *why* a row is parked, and nothing after it.
+
+    **Bounded the same way `_dependencies` bounds itself**: from the state
+    token to the end of the clause, before the row's narrative resumes.
+    ⚠️ **Generous at 260 characters** — wide enough for a real reason with its
+    links, narrow enough to exclude the release boilerplate that follows.
+    """
+    token = re.search(r"`(?:BLOCKED|SEQUENCED|WAITING)`", status)
+    return status[token.end(): token.end() + 260] if token else status
+
+
 def _classify(declared: str, blocker_text: str, lane: str | None) -> str:
     """One of eight, or a refusal.
 
@@ -235,7 +247,18 @@ def tasks() -> list[Task]:
         module_cell = _cell(body, "Module")
         lane = _lane_for(module_cell, body, owners)
         depends = _dependencies(declared, status)
-        blocker = status if declared in {"BLOCKED", "SEQUENCED", "WAITING"} else ""
+        # ⛔ **The blocker clause, not the whole cell — 2026-08-07.**
+        # `_classify` substring-matches this for *"product owner"*, *"credential"*,
+        # *"adr"* and so on, and a Status cell carries its own history. **This
+        # office writes *"placed by the product owner, not here"* on every row it
+        # releases**, so a row released and later re-parked read as
+        # `WAITING_PRODUCT_OWNER` on its own boilerplate. **`TASK-458` did,
+        # within a minute of being re-pointed at `TASK-428`.**
+        #
+        # ⚡ **`_dependencies` already reads only the clause following the state
+        # token**, for exactly this reason and with a comment saying so. **The
+        # two functions parse the same cell and only one of them was careful.**
+        blocker = _blocker_clause(status) if declared in {"BLOCKED", "SEQUENCED", "WAITING"} else ""
         rows.append(
             Task(
                 id=head.group(1),
