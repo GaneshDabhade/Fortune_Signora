@@ -331,9 +331,27 @@ def _coordination_findings() -> list[str]:
         [sys.executable, str(generator), "--check"],
         cwd=REPO_ROOT, capture_output=True, text=True,
     )
+    findings: list[str] = []
+    stale = subprocess.run(
+        [sys.executable, "-c",
+         "import sys; sys.path.insert(0, 'infra'); import coordination as c; "
+         "rows = c.tasks(); c._walk(rows, {r.id: r for r in rows}); "
+         "print(' '.join(r.id for r in c.stale_sequencing(rows)))"],
+        cwd=REPO_ROOT, capture_output=True, text=True,
+    )
+    parked = stale.stdout.split()
+    if parked:
+        findings.append(
+            f"{len(parked)} row(s) are parked behind a predecessor that has already "
+            f"been handed over — {', '.join(parked[:8])}. **A `SEQUENCED` row is "
+            "released by this office, and nothing re-asks the question**: the only "
+            "state that would move the predecessor is `VERIFIED`, which is QE's "
+            "exclusively. **On 2026-08-07 this was twenty-two rows and both "
+            "implementation lanes were idle** (C-426)."
+        )
     if done.returncode == 0:
-        return []
-    return [
+        return findings
+    return findings + [
         "The canonical coordination source is stale — "
         + (done.stderr.strip().splitlines() or ["regenerate it"])[0].replace("coordination: ", "")
     ]

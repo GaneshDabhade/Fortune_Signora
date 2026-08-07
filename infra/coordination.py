@@ -25,6 +25,7 @@ import sys
 import tomllib
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -345,6 +346,70 @@ def _unpushed(lane: str) -> int | None:
         return None
     out = _git("rev-list", "--count", f"origin/integration..{branch}").strip()
     return int(out) if out.isdigit() else None
+
+
+#: States a lane sets only when its responsibility for the row has **ended**.
+#: §20e: `IN VALIDATION` means *"implementation, tests, module documentation and
+#: Slice Handoff are all complete."* ⛔ `CLAIMED` and `IN PROGRESS` are not here.
+_HANDED_OVER = frozenset({"IN VALIDATION", "VERIFIED", "CERTIFIED"})
+
+
+def _delivered(dep: str, by_id: dict[str, Task], ahead: dict[str, int]) -> bool:
+    """Has this predecessor's work actually been handed over?
+
+    ⚡ **The predicate that ends the sweep this was written after.** On
+    2026-08-07 both implementation lanes reported themselves idle while
+    twenty-two rows sat `SEQUENCED`, and **every root of that wall was a
+    predecessor whose work was already on `main`** — `TASK-432`, `TASK-448`,
+    `TASK-449`, `TASK-457`, `TASK-461`. **The rows were correct when written
+    and nobody re-asked**, because the only thing that would have moved them is
+    `VERIFIED`, which is QE's exclusively (§20e, [D-123](../docs/DECISION_REGISTER.md)).
+
+    ⛔ **The first version of this asked `git log origin/main --grep=TASK-nnn`
+    and was wrong.** A grep matches every commit that *mentions* an id —
+    including the commit that wrote the row — so **every task ever discussed on
+    `main` read as delivered**, and it reported six rows unblocked that were
+    not. ⚠️ **[B-101](../docs/BUGS.md)'s class, inside the function written to
+    end it**, and the reason it is named here rather than quietly repaired.
+
+    **What replaced it, and both halves are required:**
+
+    **①** the row declares a state a lane sets **only when it has handed over**
+    — `IN VALIDATION`, `VERIFIED`, `CERTIFIED`; ⛔ never `CLAIMED` or
+    `IN PROGRESS`, which mean somebody is holding it right now — and
+    **②** that lane's branch carries **nothing** `integration` lacks.
+
+    ⚡ **② is what stops a declaration being taken at its word.** A row can say
+    `IN VALIDATION` while the branch still carries it; the branch cannot lie.
+
+    **A predecessor absent from the graph is delivered** — the generator drops
+    `DONE`, `DISPOSED` and `PROMOTED`, so absence here means closed.
+    """
+    row = by_id.get(dep)
+    if row is None:
+        return True
+    if not any(s in row.declared for s in _HANDED_OVER):
+        return False
+    return ahead.get(row.lane, 1) == 0
+
+
+def stale_sequencing(rows: list[Task]) -> list[Task]:
+    """Rows parked behind a predecessor that has already been handed over.
+
+    ⛔ **Reports; never reclassifies.** **A `SEQUENCED` row is a Product Office
+    judgement**, and a generator that silently promoted one would be making a
+    fitness decision inside a projection — the *"editing this file makes it
+    wrong rather than true"* defect wearing the opposite coat.
+    """
+    by_id = {r.id: r for r in rows}
+    ahead = {lane: (_unpushed(lane) or 0) for lane in _LANE_BRANCH}
+    return [
+        r
+        for r in rows
+        if r.state in {SEQUENCED, BLOCKED}
+        and r.depends_on
+        and all(_delivered(dep, by_id, ahead) for dep in r.depends_on)
+    ]
 
 
 def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:

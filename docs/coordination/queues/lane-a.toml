@@ -234,13 +234,20 @@ lane         = "Lane A"
 updated      = 2026-08-07
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = ""
-next    = ""
-future  = []
+#
+# ⚡ RELEASED 2026-08-07 — C-427. Every row below was parked behind a
+#    predecessor whose work is already on `main`. The predecessor's row
+#    stops at IN VALIDATION because the next state is VERIFIED, which is
+#    QE's exclusively — so the successor waited on a state nobody could
+#    move. Each release carries its evidence in the backlog row.
+#    `state-check` now reports this condition every run.
+current = "TASK-478"
+next    = "TASK-444"
+future  = ["TASK-450", "TASK-458", "TASK-441"]
 
-eligible_count = 0
+eligible_count = 5
 depth_target   = 15
-shortfall      = 15
+shortfall      = 10
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
@@ -262,24 +269,6 @@ owner   = "Lane A"
 note    = "M-U · The People experiences a customer opens"
 
 [[blocked]]
-task    = "TASK-441"
-blocker = ["C-229"]
-owner   = "Lane A"
-note    = "Opportunity Intelligence — the pursuit, and how it got here"
-
-[[blocked]]
-task    = "TASK-444"
-blocker = ["TASK-432"]
-owner   = "Lane A"
-note    = "Dismissal reasons tell the catalog which rules misfire"
-
-[[blocked]]
-task    = "TASK-450"
-blocker = ["see the backlog row"]
-owner   = "Lane A"
-note    = "Saved View — domain and persistence"
-
-[[blocked]]
 task    = "TASK-451"
 blocker = ["see the backlog row"]
 owner   = "Lane A"
@@ -290,12 +279,6 @@ task    = "TASK-452"
 blocker = ["see the backlog row"]
 owner   = "Lane A"
 note    = "Saved View — the screens that use it"
-
-[[blocked]]
-task    = "TASK-458"
-blocker = ["see the backlog row"]
-owner   = "Lane A"
-note    = "Signal Engine reads the People contract"
 
 [[blocked]]
 task    = "TASK-467"

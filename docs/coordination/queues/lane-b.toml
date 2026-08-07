@@ -90,13 +90,20 @@ lane         = "Lane B"
 updated      = 2026-08-07
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-202"
-next    = ""
-future  = []
+#
+# ⚡ RELEASED 2026-08-07 — C-427. Every row below was parked behind a
+#    predecessor whose work is already on `main`. The predecessor's row
+#    stops at IN VALIDATION because the next state is VERIFIED, which is
+#    QE's exclusively — so the successor waited on a state nobody could
+#    move. Each release carries its evidence in the backlog row.
+#    `state-check` now reports this condition every run.
+current = "TASK-462"
+next    = "TASK-428"
+future  = ["TASK-202"]
 
-eligible_count = 1
+eligible_count = 3
 depth_target   = 15
-shortfall      = 14
+shortfall      = 12
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
@@ -130,12 +137,6 @@ owner   = "Lane B"
 note    = "Epic H — a workspace has an AI budget"
 
 [[blocked]]
-task    = "TASK-428"
-blocker = ["see the backlog row"]
-owner   = "Lane B"
-note    = "M-I · What the domain lets other modules say"
-
-[[blocked]]
 task    = "TASK-429"
 blocker = ["see the backlog row"]
 owner   = "Lane B"
@@ -152,12 +153,6 @@ task    = "TASK-459"
 blocker = ["see the backlog row"]
 owner   = "Lane B"
 note    = "`reasoning@1` earns a protocol-2 evaluation"
-
-[[blocked]]
-task    = "TASK-462"
-blocker = ["see the backlog row"]
-owner   = "Lane B"
-note    = "The Action Batch's domain — proposal, approval, and the window as a pr"
 
 [[blocked]]
 task    = "TASK-463"

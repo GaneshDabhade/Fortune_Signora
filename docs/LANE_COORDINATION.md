@@ -6815,6 +6815,55 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
 
+## C-427 · A `SEQUENCED` row is never re-asked, and that is why two lanes were idle with 93 tasks on the board
+
+| | |
+|---|---|
+| **Raised by** | ⚡ **The product owner**, 2026-08-07 — *"they are still sitting idle when we have so many tasks to complete… we can't afford to lose velocity just because of lack of coordination"* |
+| **Owner** | ⛔ **Lane C.** **Every row named below was written by this office and released by this office. No lane could have moved one** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-07.** **Seven rows released, one decomposed, and the predicate that would have caught it now runs every cycle** |
+| **Blocks** | ⛔ **Nothing now.** ⚠️ **It blocked both implementation lanes for two days** |
+
+### The mechanism, in one paragraph
+
+**A row reads `SEQUENCED — after [TASK-nnn]`. It was correct when written.** ⛔ **The predecessor ships. Its row goes to `IN VALIDATION`, and stops there — because the next state is `VERIFIED`, which is [QE's exclusively](../CLAUDE.md) ([D-123](DECISION_REGISTER.md)).** ⚡ **So the successor is parked behind a state that will never change without a Closeout, nobody re-asks the question, and the row sits.**
+
+> ## **Every root of the wall was a predecessor already on `main`.**
+
+| Root | On `main` | Outstanding on its lane branch | Rows it was holding |
+|---|---|---|---|
+| **[TASK-432](BACKLOG.md)** | 15 commits | ⛔ **0** | [TASK-444](BACKLOG.md) |
+| **[TASK-449](BACKLOG.md)** | 11 | ⛔ **0** | [TASK-450](BACKLOG.md) → 451 → 452 |
+| **[TASK-457](BACKLOG.md)** | 6 | ⛔ **0** | [TASK-458](BACKLOG.md) |
+| **[TASK-461](BACKLOG.md)** | 12 | ⛔ **0** | [TASK-462](BACKLOG.md) → 463 → 464 → 465 → 466 |
+| **[TASK-427](BACKLOG.md)** | 23 | ⛔ **0** | [TASK-428](BACKLOG.md) — ⚠️ **the same trigger released [TASK-457](BACKLOG.md) on 2026-08-06 and this row was not re-asked** |
+| **[C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately)** | **closed 2026-08-07** | — | [TASK-441](BACKLOG.md), ⛔ **still `BLOCKED` a day after its blocker closed** |
+| **[TASK-448](BACKLOG.md)** slice 3 | — | — | [TASK-467](BACKLOG.md), [TASK-468](BACKLOG.md), [TASK-471](BACKLOG.md) → 469, 470 |
+
+### The result
+
+| | Before | After |
+|---|---|---|
+| **Lane A claimable** | 🔴 **0** | ✅ **5** — [TASK-441](BACKLOG.md) · [TASK-444](BACKLOG.md) · [TASK-450](BACKLOG.md) · [TASK-458](BACKLOG.md) · [TASK-478](BACKLOG.md) |
+| **Lane B claimable** | 🔴 **1**, and that one blocked on a credential | ✅ **3** — [TASK-202](BACKLOG.md) · [TASK-428](BACKLOG.md) · [TASK-462](BACKLOG.md) |
+| **Rows parked behind a delivered predecessor** | 🔴 **22** | ✅ **0** |
+
+⛔ **No scope was invented and no priority was changed.** **Every release is `READY` set on fitness** (§20e — *"`READY` states that a package is fit to implement; position in the queue states what it is worth, and that remains the product owner's"*), **and each row carries the structural evidence that released it.**
+
+### [TASK-478](BACKLOG.md) — the one decomposition
+
+⛔ **[TASK-448](BACKLOG.md) carried two states in one row**: `IN VALIDATION` for slices 1 and 2, `BLOCKED` for slice 3. **Its state is Lane A's to move, not this office's**, so **the slice is decomposed out rather than the row rewritten.**
+
+⚡ **And slice 3's blocker was this office's fabrication.** **The row cited *"eighteen canonical components"* and nothing enumerated which eighteen** — because **the word *eighteen* appears nowhere in the design.** **[410](architecture/410-approved-ui-specification.md) was corrected on 2026-08-06 and [TASK-448](BACKLOG.md) was not**, so the blocker outlived the belief that created it by a day.
+
+### What now runs every cycle
+
+✅ **`infra/coordination.py` exposes `stale_sequencing()`, and `state-check` reports it.** **A row is flagged when every predecessor has been *handed over*** — **declares `IN VALIDATION`/`VERIFIED`/`CERTIFIED` *and* that lane's branch carries nothing `integration` lacks.**
+
+⛔ **It reports and never reclassifies.** **A `SEQUENCED` row is a fitness judgement**; a generator that silently promoted one would be editing the projection, **which makes it wrong rather than true.**
+
+> ⚠️ **The first version of the predicate asked `git log origin/main --grep=TASK-nnn` and was wrong.** **A grep matches every commit that *mentions* an id — including the commit that wrote the row — so every task ever discussed on `main` read as delivered**, and it reported six rows unblocked that were not. ⛔ **[B-101](BUGS.md)'s class, inside the function written to end it.** ✅ **Caught before publishing, by running it and reading all six.**
+
 ## C-426 · Eighteen of Lane A's rows read `IN VALIDATION` and its branch has nothing on it
 
 | | |
