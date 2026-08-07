@@ -349,7 +349,7 @@ databaseUrl: required(
 
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
-| [C-238](#c-238--affiliationreader-has-a-protocol-and-no-implementation-so-the-composition-root-has-nothing-to-inject) | `AffiliationReader` has a Protocol and no implementation, so the composition root has nothing to inject | Lane A | **Lane B** — `people` is its module in [`modules.toml`](coordination/modules.toml) | **`OPEN`** — raised 2026-08-07, measured across every ref | ⛔ **[TASK-458](BACKLOG.md)**, at the composition root |
+| [C-238](#c-238--affiliationreader-has-a-protocol-and-no-implementation-so-the-composition-root-has-nothing-to-inject) | `AffiliationReader` has a Protocol and no implementation, so the composition root has nothing to inject | Lane A | **Lane B** — `people` is its module in [`modules.toml`](coordination/modules.toml) | ✅ **`CLOSED`** — Lane A, 2026-08-07. **Lane B published `SqlAffiliationReader` *and* its composition builder; verified by opening the file** | ⛔ **Nothing.** **[TASK-458](BACKLOG.md)'s blocker has cleared** |
 | [C-235](#c-235--task-458-was-released-against-an-empty-public-and-the-structural-check-is-the-reason-it-looked-safe) | TASK-458 was released against an empty `public/`, and the structural check is the reason it looked safe | Lane A | **Lane C** — this office released the row | ✅ **`ANSWERED`** — Lane C, 2026-08-07. **Both asks done; ask 2 found a second wrong release ([TASK-428](BACKLOG.md))** | ⛔ **Nothing today** — reported before it reached `integration` |
 | [C-210](#c-210--will-signora-hold-personal-data) | will Signora hold personal data? | Lane B | **Product owner** — ⚡ **a product decision about what the platform stores, not an engineering one** | **`OPEN`** — **grouped with People Intelligence** alongside [C-203](#c-203--nothing-in-the-product-can-render-a-persons-name) | **Nothing today** — ⛔ **no row depends on it, and it is listed so it does not disappear** |
 | [C-338](#c-338--task-003-would-put-customer-labels-in-the-file-that-builds-the-evidence-digest) | **TASK-003 as ruled would change evidence identity** | Lane B, 2026-08-07 | **Product owner** — ⚡ **a question about what [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute)'s ruling meant** | **`READY FOR PRODUCT DECISION`** — the alternatives are prepared | ⛔ **[TASK-003](BACKLOG.md)**, held `IN PROGRESS` with **no code written** — raised rather than worked around |
@@ -6170,7 +6170,15 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 ## C-238 · `AffiliationReader` has a Protocol and no implementation, so the composition root has nothing to inject
 
-**Opened 2026-08-07 · Lane A · owner: Lane B · 🟠**
+**Opened 2026-08-07 · Lane A · owner: Lane B · 🟠 · ✅ CLOSED 2026-08-07 by Lane A, the lane that raised it**
+
+> ✅ **Closed by the check it was raised about, applied to its own resolution.** ⛔ **Not by reading that Lane B shipped something** — by opening `backend/modules/people/infrastructure/affiliation_reader.py` on `integration` and `main` and reading what `at_company` does.
+>
+> ⚡ **`SqlAffiliationReader.at_company` has no `ended_on` predicate at all**, and its docstring names the reason this item gave: *"this one must include closed ones, because 'who left, and when' is the question `decision_maker_departed` exists to answer."* **Ordered `started_on, id` so two consumers get the same answer.** ✅ **And `build_affiliation_reader(session)` exists in `people/infrastructure/composition.py`** — which is the half that was actually missing, because a Protocol with an implementation nobody can construct would have left `GenerateSignals` exactly as unwireable as before.
+>
+> ⚡ **Three questions, asked in order, and the fifth instance is what asking only the first two would have produced**: does the type exist · does something implement it · **can the composition root obtain one**. **All three answer yes.**
+>
+> ⛔ **What this does not do is make [TASK-458](BACKLOG.md) `READY`.** **That state is Lane C's** (§20e). **This lane set the row `BLOCKED` and can say the blocker has cleared; it cannot set the row claimable.** **Recorded on the row so the transition is not waiting on somebody noticing.**
 
 | | |
 |---|---|
