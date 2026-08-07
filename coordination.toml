@@ -18,6 +18,8 @@ next               = "TASK-468"
 next_after_that    = "TASK-467"
 assigned_total     = 34
 claimable          = 4
+claimable_now      = 0
+awaiting_sync      = 4
 in_flight          = 23
 awaiting_qe_transition = 23
 blocked_on_integration = 0
@@ -30,11 +32,13 @@ blocked_duration_days  = 0.0
 critical_path_max      = 4
 
 [lane.Lane_B]
-current            = "TASK-463"
-next               = "TASK-202"
+current            = "TASK-202"
+next               = "TASK-463"
 next_after_that    = ""
 assigned_total     = 31
 claimable          = 2
+claimable_now      = 1
+awaiting_sync      = 1
 in_flight          = 20
 awaiting_qe_transition = 0
 blocked_on_integration = 0
@@ -52,6 +56,8 @@ next               = "TASK-476"
 next_after_that    = ""
 assigned_total     = 16
 claimable          = 2
+claimable_now      = 2
+awaiting_sync      = 0
 in_flight          = 6
 awaiting_qe_transition = 0
 blocked_on_integration = 0
@@ -77,6 +83,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-400"
@@ -92,6 +99,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-405"
@@ -107,6 +115,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-417"
@@ -122,6 +131,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-422"
@@ -137,6 +147,7 @@ critical_path  = 2
 estimated_ready = "when TASK-421 complete"
 waiting_for    = "** — after [TASK-421](#task-421), **and blocked on the ADR [437 §3](architecture/437-ai-platform-future-epic.md) calls *ADR-B*: *'where does AI policy"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-430"
@@ -152,6 +163,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend"
 waiting_for    = "** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend-capability-matrix.md)"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-432"
@@ -167,6 +179,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-437"
@@ -182,6 +195,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-439"
@@ -197,6 +211,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-440"
@@ -212,6 +227,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-441"
@@ -227,6 +243,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-442"
@@ -242,6 +259,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-443"
@@ -257,6 +275,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-444"
@@ -272,6 +291,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-445"
@@ -287,6 +307,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-447"
@@ -302,6 +323,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-448"
@@ -317,6 +339,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-449"
@@ -332,6 +355,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-450"
@@ -347,6 +371,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-451"
@@ -362,6 +387,7 @@ critical_path  = 1
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-452"
@@ -377,6 +403,7 @@ critical_path  = 2
 estimated_ready = "** — **predecessors [TASK-451](#task-451--saved-view--application-inte"
 waiting_for    = "** — **predecessors [TASK-451](#task-451--saved-view--application-interface-and-permission-aware-listing) and the ratified name** ✅ *(now settled)*"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-456"
@@ -392,6 +419,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-458"
@@ -407,6 +435,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-460"
@@ -422,6 +451,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-466"
@@ -437,6 +467,7 @@ critical_path  = 4
 estimated_ready = "when TASK-465 complete"
 waiting_for    = "** — **predecessor [TASK-465](#task-465--applying-a-batch-asynchronously-and-saying-so-while-it-runs)**"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-467"
@@ -452,6 +483,7 @@ critical_path  = 1
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-468"
@@ -467,6 +499,7 @@ critical_path  = 1
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-469"
@@ -482,6 +515,7 @@ critical_path  = 2
 estimated_ready = "** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not"
 waiting_for    = "** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not-refined)**. **A first run that cannot create a workspace is not a first run**"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-470"
@@ -497,6 +531,7 @@ critical_path  = 0
 estimated_ready = "** — trigger: [TASK-467](#task-467--the-authentication-surface-to-the-"
 waiting_for    = "** — trigger: [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) complete"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-471"
@@ -512,6 +547,7 @@ critical_path  = 1
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-475"
@@ -527,6 +563,7 @@ critical_path  = 1
 estimated_ready = "when TASK-474 complete"
 waiting_for    = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be written until "
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-478"
@@ -542,6 +579,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-904"
@@ -557,6 +595,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-905"
@@ -572,6 +611,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-003"
@@ -587,6 +627,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-201"
@@ -602,6 +643,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-202"
@@ -617,6 +659,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-204"
@@ -632,6 +675,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-205"
@@ -647,6 +691,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-301"
@@ -662,6 +707,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-402"
@@ -677,6 +723,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-406"
@@ -692,6 +739,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-407"
@@ -707,6 +755,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-415"
@@ -722,6 +771,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-416"
@@ -737,6 +787,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-420"
@@ -752,6 +803,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: the approved UI waves are complete and `product_surfac"
 waiting_for    = "** — **trigger: the approved UI waves are complete and `product_surface` is no longer the lowest-implementation module** *(45% today; every other modu"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-421"
@@ -767,6 +819,7 @@ critical_path  = 1
 estimated_ready = "when TASK-420 complete"
 waiting_for    = "** — after [TASK-420](#task-420)"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-423"
@@ -782,6 +835,7 @@ critical_path  = 2
 estimated_ready = "when TASK-421 complete"
 waiting_for    = "** — after [TASK-421](#task-421)"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-424"
@@ -797,6 +851,7 @@ critical_path  = 3
 estimated_ready = "when TASK-422 complete"
 waiting_for    = "** — after [TASK-422](#task-422)"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-427"
@@ -812,6 +867,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-428"
@@ -827,6 +883,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-429"
@@ -842,6 +899,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: a provider contract that supplies a person identifier."
 waiting_for    = "** — **trigger: a provider contract that supplies a person identifier.** ⛔ **A commercial decision, not an engineering one**"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-435"
@@ -857,6 +915,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is schedu"
 waiting_for    = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and blocks nothing"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-438"
@@ -872,6 +931,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-446"
@@ -887,6 +947,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-453"
@@ -902,6 +963,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-457"
@@ -917,6 +979,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-459"
@@ -932,6 +995,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDIN"
 waiting_for    = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)**"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-461"
@@ -947,6 +1011,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-462"
@@ -962,6 +1027,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-463"
@@ -977,6 +1043,7 @@ critical_path  = 1
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-464"
@@ -992,6 +1059,7 @@ critical_path  = 2
 estimated_ready = "** — **predecessor [TASK-463](#task-463--the-action-batchs-persistence"
 waiting_for    = "** — **predecessor [TASK-463](#task-463--the-action-batchs-persistence--append-only-and-no-update-grant)**"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-465"
@@ -1007,6 +1075,7 @@ critical_path  = 3
 estimated_ready = "when TASK-464 complete"
 waiting_for    = "** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)**"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-472"
@@ -1022,6 +1091,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-903"
@@ -1037,6 +1107,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-409"
@@ -1052,6 +1123,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-410"
@@ -1067,6 +1139,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-411"
@@ -1082,6 +1155,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: the Billing screen is scheduled for implementation**"
 waiting_for    = "** — **trigger: the Billing screen is scheduled for implementation**"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-412"
@@ -1097,6 +1171,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: TASK-411 slices 4–5 complete**"
 waiting_for    = "** — **trigger: TASK-411 slices 4–5 complete**"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-413"
@@ -1112,6 +1187,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: a measured certification wall-clock that demonstrably "
 waiting_for    = "** — **trigger: a measured certification wall-clock that demonstrably delayed a promotion, recorded at least twice**"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-414"
@@ -1127,6 +1203,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-418"
@@ -1142,6 +1219,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-425"
@@ -1157,6 +1235,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: the first support request that cannot be answered with"
 waiting_for    = "** — **trigger: the first support request that cannot be answered without database access**"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-426"
@@ -1172,6 +1251,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: whichever comes first —** *(a)* the first customer con"
 waiting_for    = "** — **trigger: whichever comes first —** *(a)* the first customer contract naming a retention or erasure obligation, *(b)* the first workspace deleti"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-454"
@@ -1187,6 +1267,7 @@ critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
 blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-455"
@@ -1202,6 +1283,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-473"
@@ -1217,6 +1299,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-474"
@@ -1232,6 +1315,7 @@ critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-07, on module ownership.** ⛔ **Not implementable by "
 waiting_for    = "— Lane C, 2026-08-07, on module ownership.** ⛔ **Not implementable by this lane as scoped**: its Module cell claims `frontend/lib/auth/`, and [`module"
 blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-476"
@@ -1247,6 +1331,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-477"
@@ -1262,6 +1347,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-906"
@@ -1277,6 +1363,7 @@ critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-300"
@@ -1292,6 +1379,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
 
 [[task]]
 id            = "TASK-900"
@@ -1307,6 +1395,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 1.8
+on_integration = true
 
 [[task]]
 id            = "TASK-901"
@@ -1322,3 +1411,4 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
+on_integration = true
