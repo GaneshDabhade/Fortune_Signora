@@ -106,21 +106,26 @@ def test_content_survives_a_source_with_no_lane_block() -> None:
 
 
 @pytest.mark.parametrize(
-    ("declared", "ahead", "expected"),
+    ("declared", "outstanding", "expected"),
     [
-        ("`IN VALIDATION` — Lane A, 2026-08-06", 0, True),
-        ("`VERIFIED` — QE", 0, True),
-        ("`CERTIFIED` — QE", 0, True),
+        ("`IN VALIDATION` — Lane A, 2026-08-06", frozenset(), True),
+        ("`VERIFIED` — QE", frozenset(), True),
+        ("`CERTIFIED` — QE", frozenset(), True),
         # ⛔ Someone is holding it right now. Not delivered.
-        ("`CLAIMED` — Lane A", 0, False),
-        ("`IN PROGRESS` — Lane A", 0, False),
-        ("`READY` — Lane C", 0, False),
-        # ⚡ The branch is what stops a declaration being taken at its word.
-        ("`IN VALIDATION` — Lane A", 3, False),
+        ("`CLAIMED` — Lane A", frozenset(), False),
+        ("`IN PROGRESS` — Lane A", frozenset(), False),
+        ("`READY` — Lane C", frozenset(), False),
+        # ⚡ Outstanding work on the branch stops a declaration being taken at
+        # its word — **and this row is what B-139 found untested.** It passed
+        # `ahead={"Lane A": 3}` into a body that had stopped reading the
+        # argument, so it would have passed identically with the argument
+        # deleted, and the real answer came from whichever refs the running
+        # clone happened to have.
+        ("`IN VALIDATION` — Lane A", frozenset({"TASK-449"}), False),
     ],
 )
-def test_delivered_reads_the_branch_not_only_the_declaration(
-    declared: str, ahead: int, expected: bool
+def test_delivered_reads_outstanding_work_not_only_the_declaration(
+    declared: str, outstanding: frozenset[str], expected: bool
 ) -> None:
     """A predecessor is handed over only if its lane has nothing outstanding.
 
@@ -143,7 +148,7 @@ def test_delivered_reads_the_branch_not_only_the_declaration(
         depends_on=[],
     )
     assert (
-        coordination._delivered("TASK-449", {"TASK-449": row}, {"Lane A": ahead})
+        coordination._delivered("TASK-449", {"TASK-449": row}, outstanding)
         is expected
     )
 
@@ -154,7 +159,7 @@ def test_a_predecessor_absent_from_the_graph_is_delivered() -> None:
     So absence means closed, and a successor must not wait on a row nobody
     can find.
     """
-    assert coordination._delivered("TASK-001", {}, {"Lane A": 0}) is True
+    assert coordination._delivered("TASK-001", {}, frozenset()) is True
 
 
 def test_the_pipeline_is_ordered_by_leverage_not_by_identifier() -> None:
@@ -243,3 +248,27 @@ def test_premature_releases_is_silent_on_a_correct_release() -> None:
         declared="READY", lane="Lane A", depends_on=["TASK-432"],
     )
     assert coordination.premature_releases([done, released]) == []
+
+
+def test_delivered_is_a_pure_function_of_its_arguments() -> None:
+    """⛔ The same declared inputs must produce the same result, anywhere.
+
+    **[B-139](../../docs/BUGS.md), found by QE.** `_delivered` took `ahead` and
+    stopped reading it, answering instead from `git log` against real refs in
+    the running clone. ⚡ **So it passed on the workstation where it was
+    written and failed on the one where it was run** — `CLAUDE.md` §2's
+    *hidden inputs are architecture defects*, exactly.
+
+    **This asserts the property rather than the repair**: called twice with
+    identical arguments it returns identically, and the only thing that changes
+    the answer is an argument.
+    """
+    row = coordination.Task(
+        id="TASK-449", title="p", state=coordination.IN_FLIGHT,
+        declared="`IN VALIDATION` — Lane A", lane="Lane A", depends_on=[],
+    )
+    by_id = {"TASK-449": row}
+    assert coordination._delivered("TASK-449", by_id, frozenset()) is True
+    assert coordination._delivered("TASK-449", by_id, frozenset()) is True
+    # ⚡ Only the argument moves the answer.
+    assert coordination._delivered("TASK-449", by_id, frozenset({"TASK-449"})) is False

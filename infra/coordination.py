@@ -365,7 +365,26 @@ def _unpushed(lane: str) -> int | None:
 _HANDED_OVER = frozenset({"IN VALIDATION", "VERIFIED", "CERTIFIED"})
 
 
-def _delivered(dep: str, by_id: dict[str, Task], ahead: dict[str, int]) -> bool:
+def _outstanding_rows(rows: list[Task]) -> frozenset[str]:
+    """Ids with a commit on their lane's branch that `integration` lacks.
+
+    ⚡ **Every git call `_delivered` used to make, hoisted to one place** —
+    [B-139](../docs/BUGS.md). **The predicate is now a pure function of its
+    arguments and this is the only part that reads the clone**, so a test can
+    state the world it wants instead of depending on which refs the machine
+    happens to have.
+    """
+    out: set[str] = set()
+    for lane, branch in _LANE_BRANCH.items():
+        ids = [r.id for r in rows if r.lane == lane]
+        if not ids:
+            continue
+        log = _git("log", "--oneline", f"origin/integration..{branch}")
+        out |= {i for i in ids if i in log}
+    return frozenset(out)
+
+
+def _delivered(dep: str, by_id: dict[str, Task], outstanding: frozenset[str]) -> bool:
     """Has this predecessor's work actually been handed over?
 
     ⚡ **The predicate that ends the sweep this was written after.** On
@@ -401,7 +420,21 @@ def _delivered(dep: str, by_id: dict[str, Task], ahead: dict[str, int]) -> bool:
     has nothing to do with it. ⛔ **A predicate about one row must not depend
     on what else its author is doing.**
 
-    ⚡ **This is a `--grep` and that is deliberate here.** [B-101](../docs/BUGS.md)
+    ⛔ **`outstanding` is an argument, and it was a `git log` inside this
+    function — [B-139](../docs/BUGS.md), found by QE.** The C-428 change made
+    the answer come from real refs in the running clone while the signature
+    still took `ahead`, **which the body never read**. ⚡ **So the test did not
+    test the function — the parametrised case would pass or fail identically
+    with the argument deleted — and the result varied by workstation.** **It
+    passed where it was written and failed where it was run.**
+
+    ⚠️ **[§2](../../CLAUDE.md), by name: *hidden inputs are architecture
+    defects* — an input that influences behaviour without being part of the
+    declared contract makes the same declared inputs produce different
+    results.** **Every git call now happens in `_outstanding_rows()`, once, at
+    the caller.**
+
+    ⚡ **The `--grep` is deliberate and lives there now.** [B-101](../docs/BUGS.md)
     bites when a grep is asked *"was this delivered?"* — it matches every
     mention, including the commit that wrote the row. **Asked *"is there
     outstanding work for this?"* a spurious match reads as *not delivered*,
@@ -416,12 +449,7 @@ def _delivered(dep: str, by_id: dict[str, Task], ahead: dict[str, int]) -> bool:
         return True
     if not any(s in row.declared for s in _HANDED_OVER):
         return False
-    branch = _LANE_BRANCH.get(row.lane)
-    if branch is None:
-        return False
-    return not _git(
-        "log", "--oneline", f"origin/integration..{branch}", f"--grep={dep}"
-    ).strip()
+    return dep not in outstanding
 
 
 def stale_sequencing(rows: list[Task]) -> list[Task]:
@@ -433,13 +461,13 @@ def stale_sequencing(rows: list[Task]) -> list[Task]:
     wrong rather than true"* defect wearing the opposite coat.
     """
     by_id = {r.id: r for r in rows}
-    ahead = {lane: (_unpushed(lane) or 0) for lane in _LANE_BRANCH}
+    outstanding = _outstanding_rows(rows)
     return [
         r
         for r in rows
         if r.state in {SEQUENCED, BLOCKED}
         and r.depends_on
-        and all(_delivered(dep, by_id, ahead) for dep in r.depends_on)
+        and all(_delivered(dep, by_id, outstanding) for dep in r.depends_on)
     ]
 
 
@@ -458,13 +486,13 @@ def premature_releases(rows: list[Task]) -> list[Task]:
     **zero lines**. ⛔ **Lane A found it by opening the file.**
     """
     by_id = {r.id: r for r in rows}
-    ahead = {lane: (_unpushed(lane) or 0) for lane in _LANE_BRANCH}
+    outstanding = _outstanding_rows(rows)
     return [
         r
         for r in rows
         if r.state == ASSIGNED
         and r.depends_on
-        and not all(_delivered(dep, by_id, ahead) for dep in r.depends_on)
+        and not all(_delivered(dep, by_id, outstanding) for dep in r.depends_on)
     ]
 
 
