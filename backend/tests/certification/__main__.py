@@ -258,6 +258,36 @@ def _plan_shortfall(recorded: set[str]) -> tuple[list[str] | None, str]:
     return sorted(set(plan.gates) - recorded), str(plan.profile)
 
 
+def _computed_profile() -> str:
+    """The impact profile the Validation Planner computes for this run's diff.
+
+    **[427](../../../docs/architecture/427-impact-based-validation.md) step 2**,
+    and it is deliberately the smallest possible change: **the profile is
+    recorded and nothing acts on it.** `REQUIRED_GATES` is unchanged, every gate
+    still runs, and `satisfied` never reads this field.
+
+    ⚡ **What it buys is that step 1's exit question becomes answerable.** 427
+    says *"if the classifier disagrees with reality even once during step 1, the
+    framework is not ready"* — **and that cannot be checked from a record which
+    does not say what the classifier said.**
+
+    ⚠️ **QE tried to check it by reconstruction and got the wrong answer.**
+    Re-deriving each failing run's profile from `<commit>^..<commit>` reported
+    *"the classifier disagreed"* on four of seven runs. **It had not**: every
+    candidate was multi-commit and the last commit was usually a doc-only bug
+    row, so the proxy classified a diff nobody certified. Against the real
+    bases all three were `platform` and all three named the failing gate.
+
+    **Reuses `_plan_shortfall`'s reasoning and its loader**, because a second
+    call answering "what profile?" separately from "which gates?" is two answers
+    to one question (`CLAUDE.md` §2).
+    """
+    _, note = _plan_shortfall(set())
+    if note in {"no change against origin/main"} or note.startswith(("certification-guard", "no origin/main")):
+        return ""
+    return note.split(":")[0].strip()
+
+
 def _report_plan_shortfall(gates: tuple[GateResult, ...]) -> None:
     missing, note = _plan_shortfall({gate.name for gate in gates})
     if missing is None:
@@ -431,6 +461,7 @@ def _certify(target: disposable_database.Disposable) -> int:
         scenarios=scenarios,
         coverage=coverage,
         tools=_tools(),
+        profile=_computed_profile(),
     )
 
     append(run)

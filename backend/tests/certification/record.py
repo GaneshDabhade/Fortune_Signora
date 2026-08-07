@@ -187,6 +187,29 @@ class CertificationRun:
     #: Sorted `(tool, version)` pairs — the toolchain a reader would need to
     #: reproduce this. Small on purpose: a full lockfile belongs in the lockfile.
     tools: tuple[tuple[str, str], ...]
+    #: The impact profile the Validation Planner computed for this run's diff —
+    #: **[427](../../../docs/architecture/427-impact-based-validation.md) step 2,
+    #: and it changes nothing about what runs.**
+    #:
+    #: ⛔ **Recorded, never applied.** `REQUIRED_GATES` is unchanged and every
+    #: gate still executes. What this buys is that step 1's exit question —
+    #: *"did the classifier ever disagree with reality?"* — becomes answerable
+    #: **from the record** instead of reconstructed afterwards.
+    #:
+    #: ⚠️ **And reconstruction is why this field exists.** QE tried to answer it
+    #: by re-deriving each failing run's profile from `<commit>^..<commit>`, and
+    #: got *"the classifier disagreed"* four times out of seven. **It had not.**
+    #: Every candidate was multi-commit and the last commit was usually a
+    #: doc-only bug row, so the proxy classified the wrong diff. Recomputed
+    #: against the real bases, all three were `platform` and all three named the
+    #: gate that caught the defect. **A measurement taken from the wrong range is
+    #: indistinguishable from a finding**, which is the whole argument for
+    #: recording the number at the moment it was computed.
+    #:
+    #: **Empty on records written before this field existed**, and `satisfied`
+    #: does not read it — an older record is judged by exactly the rule it was
+    #: judged by then.
+    profile: str = ""
     record_version: int = RECORD_VERSION
 
     def __post_init__(self) -> None:

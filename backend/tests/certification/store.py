@@ -92,6 +92,9 @@ class _RunRecord(BaseModel):
     certified_at: datetime
     record_version: int
     coverage: float
+    #: 427 step 2. **Optional**, because every record written before it exists
+    #: has no such key and `extra="forbid"` must keep accepting them.
+    profile: str = ""
     conditions: _ConditionsRecord
     gates: tuple[_GateRecord, ...]
     scenarios: tuple[_ScenarioRecord, ...]
@@ -149,6 +152,7 @@ def _as_json(run: CertificationRun) -> dict[str, Any]:
         "certified_at": run.certified_at.isoformat(),
         "record_version": run.record_version,
         "coverage": run.coverage,
+        "profile": run.profile,
         "conditions": {
             "rendering_protocol_version": run.conditions.rendering_protocol_version,
             "migration_head": run.conditions.migration_head,
@@ -173,6 +177,7 @@ def _run(record: _RunRecord) -> CertificationRun:
         certified_at=record.certified_at,
         record_version=record.record_version,
         coverage=record.coverage,
+        profile=record.profile,
         conditions=Conditions(
             rendering_protocol_version=record.conditions.rendering_protocol_version,
             migration_head=record.conditions.migration_head,
