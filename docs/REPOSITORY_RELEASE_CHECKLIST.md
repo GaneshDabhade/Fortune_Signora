@@ -285,7 +285,28 @@ git log --grep="Slice-Handoff" main~10..main  # what the lanes reported
 # `integration` and `main` diverge every cycle by construction: Closeout commits
 # land on `main` and never on `integration`. So `integration` is rebased onto the
 # promoted commit — replaying whatever arrived during certification on top of it.
-git switch integration && git rebase main || exit 1
+#
+# ⛔ SYNCHRONIZE THE LOCAL BRANCH FIRST, AND LET THE FAILURE END THE SEQUENCE.
+# B-142: local `integration` was three commits behind, the `--ff-only` refused
+# exactly as it should, `git rebase main` ran anyway on a branch with nothing to
+# replay, and the force-push removed two lanes' claims from a shared branch.
+#
+# `--force-with-lease` does not protect against this and cannot: the lease was
+# current. It asks whether somebody else pushed between fetch and push. It never
+# asks whether what you are pushing still contains what was there.
+git fetch origin || exit 1
+git switch integration || exit 1
+git merge --ff-only origin/integration || {
+  echo "ABORT — local integration is stale; a rebase here would discard what it lacks"
+  exit 1
+}
+git rebase main || exit 1
+
+# What went to `origin` still contains what arrived during the cycle. Measured,
+# not assumed: a rebase that replayed nothing looks identical to one that had
+# nothing to replay.
+git merge-base --is-ancestor origin/main HEAD || { echo "ABORT — main is not an ancestor"; exit 1; }
+git log --oneline main..HEAD   # every commit that arrived during certification, replayed
 
 # Before any branch operation: refuse rather than discard. A cycle's own output
 # — the manifest `certify` just wrote — lives in the working tree until it is

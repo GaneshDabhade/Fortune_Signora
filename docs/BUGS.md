@@ -80,6 +80,56 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-142 · QE force-pushed `integration` from a stale local branch and dropped two lanes' claims
+
+| | |
+|---|---|
+| **Module** | QE procedure — [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md), Closeout step 10 |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — **two commits were removed from a shared branch.** ✅ **Recovered in full; nothing was lost** |
+| **Status** | ✅ **`FIXED`** — recovered 2026-08-07, and the checklist step made fail-fast in the same change |
+| **Found** | 2026-08-07 by QE, cycle 90, **by checking its own synchronization rather than assuming it** |
+
+**What happened.** Closeout step 10 rebases `integration` onto `main`. The sequence run was:
+
+```bash
+git switch integration
+git merge --ff-only origin/integration     # ⛔ FAILED — "Not possible to fast-forward"
+git rebase main                            # ran anyway, on a STALE local branch
+git push --force-with-lease origin integration
+→ + 89fffe97...04190646 integration -> integration (forced update)
+```
+
+**Local `integration` was three commits behind `origin/integration`.** The `--ff-only` **refused**, correctly — and **the next command ran regardless.** So the rebase replayed *nothing*, and the force-push moved the shared branch back to `main`, **discarding Lane A's claims of `TASK-450`, `TASK-441` and `TASK-444`.**
+
+⚠️ **`--force-with-lease` did not stop it, and could not**: the lease was held and current. **It protects against somebody else's push landing between fetch and push. It does not ask whether what you are pushing contains what was there.**
+
+### ⛔ This is the exact defect QE has been filing against lanes all week
+
+**[B-128](#b-128), and QE's own [§0c-2](QUALITY_ENGINEERING.md): *a comparison that does not gate the next step is decoration.*** The `--ff-only` printed a refusal into a terminal and **nothing consumed it.**
+
+> ⚡ **It is also [B-136](#b-136--the-worker-crash-loops-in-every-non-local-environment-because-the-composition-root-now-calls-a-guard-nothing-satisfies)'s shape one level up.** A guard fired correctly, and the system carried on past it.
+
+### Recovery — by replay, never by reconstruction
+
+**The commits still existed**; `89fffe97` was reachable locally. They were **rebased onto the promoted commit and pushed**, and all three verified present by `--grep` afterwards, with `main` re-confirmed an ancestor so the next promotion can still fast-forward.
+
+⛔ **No claim was re-typed by hand.** A hand-written claim is indistinguishable from a real one to every future reader — the same reason a hand-written certification record is never acceptable.
+
+### The fix, and it is procedural rather than clever
+
+**Closeout step 10 now asserts before it acts**, in the shape §0e-2 already requires everywhere else:
+
+```bash
+git switch integration
+git merge --ff-only origin/integration || { echo "ABORT — local integration is stale"; exit 1; }
+git rebase main || exit 1
+```
+
+⚠️ **Every step of that sequence already existed.** **What was missing was that a failure ended the sequence** — and QE wrote the rule that says so, three cycles ago, about somebody else.
+
+---
+
 ### B-141 · Two pytest runs behaved abnormally in one cycle, and the record now names one of them
 
 | | |
