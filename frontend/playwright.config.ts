@@ -144,7 +144,10 @@ export default defineConfig({
       // Everything reachable without a session. Runs first and depends on
       // nothing, so a broken sign-in still reports a meaningful result.
       name: 'anonymous',
-      testMatch: /auth-journey\.spec\.ts/,
+      // Workflow 1's own spec joins the anonymous project: signing in is by
+      // definition something a signed-out person does, so it cannot run under
+      // a project that arrives already authenticated (TASK-467, D-158).
+      testMatch: /(auth-journey|workflow1-login)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
     {
