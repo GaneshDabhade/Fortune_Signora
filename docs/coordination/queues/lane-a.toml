@@ -381,6 +381,59 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🟢  THE QUEUE IS NOW ORDERED BY CUSTOMER JOURNEY — 2026-08-07 · D-158 §2
+#
+#   "Confirm that Lane A's implementation queue has been reordered around
+#    customer journeys rather than around historical epics or technical
+#    modules… I do not want implementation hopping between unrelated workflows
+#    while an earlier customer journey remains incomplete."
+#
+# ⚠️ IT WAS NOT, AND THAT IS WORTH SAYING PLAINLY. The generator sorts by
+#   LEVERAGE — (on_integration, unblocks, critical_path, id) — and the moment
+#   you claimed TASK-467 it computed `current = TASK-474`, which is a Workflow
+#   3 enabler. Two Workflow 1 rows were sitting behind it. Fixed in the DATA,
+#   not in this comment: TASK-474, TASK-473 and TASK-476 are SEQUENCED behind
+#   Workflow 1's review gate, and the generator now computes Workflow 1 by
+#   itself.
+#
+# ── THE JOURNEY SEQUENCE, and it is the product owner's, not this office's ──
+#
+#   W1  LOGIN ......................... ACTIVE, and it is the only claimable
+#         TASK-467  authentication surface ........ CLAIMED by you ✅
+#         TASK-483  the authentication shell ...... current
+#         TASK-484  the Playwright journeys ....... next
+#         B-315 · B-312  dialog accessibility ..... yours, and Workflow 1's
+#         ⛔ Scope is 488 §6: screens 02, 03, 15, 17 — NOT the whole module.
+#
+#         ↓  human review on `main` before anything below is claimed
+#
+#   W2  REGISTRATION ..... design screen 06 ....... inside TASK-467's title,
+#   W3  EMAIL VERIFICATION design screen 07          not yet its own row.
+#   W4  FORGOT PASSWORD .. design screen 08          ⛔ NOT decomposed, and
+#   W5  PASSWORD RESET ... design screens 09, 10        deliberately: D-155 ②
+#         TASK-474 enables W2-W5 (a developer can open the link)              
+#         ⚡ Decomposed the day W1 clears the gate, never before.
+#   W6  WORKSPACE CREATION  TASK-468 .............. CLAIMED by you
+#   W7  INVITATION ACCEPT.  design screens 13, 14 .. no row yet
+#   W8  INITIAL ONBOARDING  TASK-469 .............. READY, sequenced
+#
+#   deferred, no workflow: TASK-473 · TASK-476 (engineering infrastructure)
+#   deferred, priority 6:  TASK-202 · 464 · 465 · 420 · 421 · 423 · 424 · 429
+#                          TASK-003 · 435 · 459 · 471 · 480 · 481 · 482
+#
+# ⛔ YOUR CLAIMABLE SET IS TWO ROWS AND BOTH ARE WORKFLOW 1. That is the ruling
+#   working, not a drought. You cannot hop workflows because there is nothing
+#   in another workflow to hop to.
+#
+# ⚡ WHY TASK-474 MOVED DOWN, since it was `next` for two cycles: Login needs
+#   no email. ADR-0406 §6 puts ten of fourteen authentication journey gaps
+#   behind it — and every one of those ten is W2 through W5. It is the head of
+#   Workflow 3, not a predecessor of Workflow 1.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🔴  D-157 — YOU ARE NOW THE ONLY IMPLEMENTATION LANE
 #     2026-08-07 · product owner ruling
 #
@@ -760,8 +813,8 @@ updated      = 2026-08-07
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-467"
-next    = "TASK-483"
+current = "TASK-483"
+next    = "TASK-484"
 # ⚠️ The last three are RELEASED and NOT CLAIMABLE TODAY — their READY is on
 # `lane-c-sync` and you claim against BACKLOG.md on `integration` (C-425).
 # They are listed here rather than hidden because a row the backlog offers
@@ -794,15 +847,15 @@ next    = "TASK-483"
 # this office was releasing it here, and the rebase kept this office's line.
 # Lane A's CLAIMED is restored in BACKLOG.md and the row is gone from this
 # queue: a lane must never be offered back work it is already holding.
-future  = ["TASK-484", "TASK-474", "TASK-473", "TASK-476"]
+future  = []
 
 
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 6
+eligible_count = 2
 depth_target   = 15
-shortfall      = 9
+shortfall      = 13  # ⛔ by ruling — D-158 §2. Two rows, both Workflow 1.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
