@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `ba0520a`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `8295fdb`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `ba0520a`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `8295fdb`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`ba0520a`** — the certified commit itself |
+| **`main`** | **`8295fdb`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 103 promoted ⚡ **TASK-458 — a decision-maker signal can say which seat, and for how long** |
-| **Certification** | ✅ [`ba0520a44906`](certification/reports/ba0520a44906.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 104 promoted ⚡ **Workflow 1 milestone 1 — the authentication shell, rebuilt from the design** |
+| **Certification** | ✅ [`8295fdb1bd07`](certification/reports/8295fdb1bd07.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1548 frontend tests** *(+25)* across 66 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 148s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4193 backend tests** *(+20)* · **95.38% coverage** *(floor 95)* · **1548 frontend tests** *(+25)* across 66 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **842 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 196s *(Build 53s — the auth shell recompiled)* *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -46,7 +46,7 @@
 | **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | Next `READY` row | Next `READY` row | **Rebase and regenerate** | **Cycle 104, on the next poll** |
+| **Next executable work** | **Workflow 1 milestone 2** | Next `READY` row | **Rebase and regenerate** | **Cycle 105, on the next poll** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,49 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 103
+## 1d · Release summary — 2026-08-07, cycle 104
+
+**Derived from the promoted commit `8295fdb`.** **Fifty-nine promotions.** ⚡ **Workflow 1 stops having zero implementation.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **Workflow 1 milestone 1** *(Lane A)* | **The authentication shell, rebuilt from the design** — plus `workflow1-login.spec.ts`, a 62-line journey the lane wrote itself |
+
+> ⚡ **[D-153](docs/DECISION_REGISTER.md) measured Workflow 1 as *"3 of 12 elements plus one file of colours"*. [D-155](docs/DECISION_REGISTER.md) placed it above every business workflow and recorded that it had **zero implementation**. This is the first commit against it.**
+
+### ⚠️ It touches `playwright.config.ts`, which governance names by file
+
+**`CLAUDE.md` cites that file directly under [D-134](docs/DECISION_REGISTER.md)** — the headed-execution policy — **and [TASK-476](docs/BACKLOG.md) exists to change its default.** QE read the diff rather than waving it through:
+
+```diff
+-      testMatch: /auth-journey\.spec\.ts/,
++      testMatch: /(auth-journey|workflow1-login)\.spec\.ts/,
+```
+
+✅ **One line, adding the new spec to the `anonymous` project**, with the reason in the file: *"signing in is by definition something a signed-out person does, so it cannot run under a project that arrives already authenticated."* ⛔ **The `headless` default is untouched**, so **D-134 and TASK-476 are unaffected. Within budget.**
+
+**The planner selected `ALL` journeys** — correctly, since `playwright.config.ts` is shared infrastructure — **and they remain among the ten unrecorded gates** ([B-131](docs/BUGS.md)).
+
+### Smoke 196s, and the shape is the explicable one
+
+**`slowest 1. Build 53s`** — the same signature as cycle 101's 201s, when Lane A last shipped frontend. ⛔ **Not [B-141](docs/BUGS.md)'s pattern**, which is `slowest 14k. Researched account`. **A recompiled shell costs build time; that is a cause, not a mystery.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4193 backend** · **1548 frontend** · **95.38%** · **398 invariants** · **842 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **108 runs recorded, 100 certified** · `promoted == certified` ✓ · `--audit-main` clean · **seventh consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke **196s, cause named** |
+| **Dependency** | ⚠️ **Lane C's `D-157` has not landed for two cycles** — it conflicts on generated `.toml` files and needs a rebase, not a fix |
+| **Customer Value** | ⚡ **The sign-in screen a customer meets first now matches the approved design** — and the top-priority workflow has an implementation for the first time |
+| **Process** | ⚡ **A change to a governance-named file was read before it was gated**, and it turned out to be one line and correct |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 103
 
 **Derived from the promoted commit `ba0520a`.** **Fifty-eight promotions.** ⚡ **The chain that has been building for a week reaches the pipeline.**
 
