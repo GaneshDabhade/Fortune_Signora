@@ -635,7 +635,7 @@ def _load_state_check() -> ModuleType:
 | **Module** | **Release engineering** — `certification/manifest.json`, the promotion step |
 | **Current assignee** | ⚡ **QE.** ⛔ **Promotion, certification and everything `main` asserts are QE's exclusively** ([§20e](../CLAUDE.md)) |
 | **Severity** | 🟠 — ⛔ **Not a Blocking Quality Defect**: no gate is failing and no lane is stopped. ⚡ **What it breaks is the claim the repository makes about itself** — *"every commit on `main` was itself certified"* |
-| **Status** | **`OPEN`** — **opened by Lane C, 2026-08-07.** ⛔ **Lane C changes nothing here; `main` and the manifest are QE's** |
+| **Status** | ⛔ **`WONTFIX` — QE, 2026-08-07, after running the audit.** ⚡ **The guarantee holds and the finding is a transient-window artifact. Measured three ways below.** ✅ **Correctly raised, and correctly not diagnosed by the raiser** |
 | **Found** | 2026-08-07 by Lane C, **polling — `main` moved to a lane's `IN VALIDATION` commit, which is not the shape of a promotion** |
 
 **Steps to reproduce.**
@@ -673,6 +673,54 @@ git merge-base --is-ancestor 02fe658a8d70 origin/main
 ⚡ **[§20e](../CLAUDE.md) has the instrument for exactly this**: `python3 infra/certification-guard.py --audit-main`. ⛔ **Lane C did not run it** — it is QE's gate, and this row exists so QE points it at the right commit rather than so this office pre-empts the answer.
 
 ⚠️ **[B-142](#b-142--qe-force-pushed-integration-from-a-stale-local-branch-and-dropped-two-lanes-claims) is the near neighbour**, and its lesson was *a comparison that does not gate the next step is decoration*. **The promotion equality rule — `promoted == certified` — is a comparison, and something did not gate on it.**
+
+### ⚡ QE's answer, 2026-08-07 — the guarantee holds, measured three ways
+
+**Lane C did the right thing twice: it raised this rather than assuming, and it did not run QE's gate to pre-empt the answer.** ⛔ **The conclusion is wrong, and the reason is the one case [§20e](../CLAUDE.md) spends a paragraph on.**
+
+#### ① `e64f64fb` is an ancestor of a certified commit, which is explicitly permitted
+
+```bash
+git merge-base --is-ancestor e64f64fb e932b87dbbcc4e2fb088f7a3a73b59afceab1041
+→ 0                                       # YES
+```
+
+**`e932b87d` is certified**, and `e64f64fb` is the commit before it on the same fast-forward. **§20e, verbatim:**
+
+> *"Every commit on `main` is **the certified commit itself**, **an ancestor of one that was promoted**, or **a Closeout commit that provably changes nothing executable.** … **The middle case is not a loophole; it is what a fast-forward does.** … they are intermediate states of the snapshot whose *tip* the gates ran against, and **they can never be individually certified because they were never individually a candidate**."*
+
+⚡ **The rule anticipates production code arriving as an ancestor.** **What it forbids is a commit that is an ancestor of *nothing* certified** — which this is not.
+
+#### ② The audit says so, and it checks paths rather than commit messages
+
+```
+85 certified — a promotion target
+700 inside a certified snapshot — an ancestor of one
+1 Closeout — changing nothing executable
+
+No commit reached `main` outside a certified snapshot. The guarantee holds.
+```
+
+#### ③ The `grep` returned `0` because of *when* it ran, not *what* is true
+
+```bash
+git show origin/main:certification/manifest.json | grep -c e932b87dbbcc…
+→ 1                                       # today
+```
+
+⚡ **A certification record cannot contain its own commit hash** — §20e's *"one bounded exception"*. `make certify` writes the record for commit *X* into the **working tree**; QE parks it, promotes *X*, and commits the record at Closeout. ⛔ **So between stage 4 and stage 5 there is a real window in which `main`'s tip is certified and `main`'s own tree does not yet say so.** **Lane C polled inside that window** — `main == integration == lane-b == e932b87d` is exactly the shape of *promoted, not yet closed out*.
+
+### ⚠️ What is genuinely true here, and it is not nothing
+
+> **A cold session polling between promotion and Closeout cannot verify the guarantee from `main`'s tree alone.**
+
+⛔ **It can verify it from the gate** — `--audit-branch` reads the manifest from every ref, not only from `main` — and that is what the gate is for. **But the window is real, it is inherent to the ordering, and Lane C found it by doing exactly what a lane should do.**
+
+**`WONTFIX` rather than fixed**, because every available repair is worse: writing the record before promoting means recording a certification for a commit that has not been promoted; writing a placeholder means a record that is not evidence; and closing the window means merging Closeout into promotion, which **§20e forbids for the reason it states — a Closeout commit cannot be certified.**
+
+**⛔ The near-neighbour comparison to [B-142](#b-142--qe-force-pushed-integration-from-a-stale-local-branch-and-dropped-two-lanes-claims) does not hold, and the difference matters.** B-142 was a comparison that **did not gate**. **Here the comparison gated and passed**: `promoted == certified` was asserted and equal before the push, and the audit confirms it after. **This is the same instrument reporting correctly, read at a moment when one of its inputs had not yet been committed.**
+
+---
 
 ### B-406 · `signal.resolved` is published by code and absent from the event catalog
 
