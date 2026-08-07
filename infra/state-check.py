@@ -914,11 +914,23 @@ def main() -> int:
     # Not "is there a backlog" — a file existing proves nothing. What breaks is a
     # lane sitting idle because a document told it to wait for an allocation that
     # nobody is going to make, which is the bottleneck the model removed.
-    if assignments:
+    # ⚠️ **Scoped to `## Current`, and narrowed, 2026-08-07.** The first version
+    # read the whole file and matched any row containing *await* and *assign* —
+    # so it flagged `TASK-900`'s row, which says the RFC *"awaits product owner
+    # approval"* inside the module-assignment section. **Neither word was about
+    # allocation**, and the row was not even in the section a lane reads.
+    # **B-101's class**: two words co-occurring is a proxy for a sentence.
+    # The sibling checks below already say why the scope matters — *"a row
+    # elsewhere in the file does not count"* — and this one did not honour it.
+    if "## Current" in assignments:
+        current_rows = assignments.split("## Current", 1)[1].split("\n## ", 1)[0]
         waiting = [
             line.strip()
-            for line in assignments.splitlines()
-            if line.startswith("| ") and ("to assign" in line or "await" in line.lower() and "assign" in line.lower())
+            for line in current_rows.splitlines()
+            if line.startswith("| ")
+            and re.search(r"(?:waiting|awaiting|wait)\s+(?:for\s+)?(?:an?\s+)?"
+                          r"(?:assignment|allocation|work to be assigned)"
+                          r"|to be assigned|nobody has assigned", line, re.I)
         ]
         if waiting:
             findings.append(

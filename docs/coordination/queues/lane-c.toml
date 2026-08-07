@@ -75,9 +75,9 @@ lane         = "Lane C"
 updated      = 2026-08-07
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-454"
-next    = "TASK-455"
-future  = ["TASK-473", "TASK-474", "TASK-476", "TASK-477"]
+current = "TASK-474"
+next    = "TASK-454"
+future  = ["TASK-455", "TASK-473", "TASK-476", "TASK-477"]
 
 eligible_count = 6
 depth_target   = 15

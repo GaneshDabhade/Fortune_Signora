@@ -479,9 +479,19 @@ def render(rows: list[Task]) -> str:
         # **The pipeline, three deep** — D-143 §4. Ordered by shallowest
         # critical path first: a row with nothing in front of it is the one a
         # lane can start now, and the ordering is the graph's, not a preference.
+        # **Leverage first, then depth, then id — corrected 2026-08-07.**
+        # The first version sorted by `(critical_path, id)` alone. ⚠️ Every
+        # claimable row sits at depth 0 by definition — nothing unfinished
+        # precedes a startable row — **so the tiebreak was doing all the work
+        # and the tiebreak was the id.** `TASK-441` came first because 441 <
+        # 478, while `TASK-478` releases three rows and 441 releases none.
+        # **A queue ordered by identifier is not an ordering**, and the whole
+        # point of holding a dependency graph is to know which row buys the
+        # most. **This is also what made the queue files and this source
+        # disagree**: the queue was hand-ordered by leverage and correct.
         pipeline = sorted(
             (r for r in mine if r.state == ASSIGNED),
-            key=lambda r: (r.critical_path, r.id),
+            key=lambda r: (-len(r.unblocks), r.critical_path, r.id),
         )
         m = stats[lane]
         out += [

@@ -9,13 +9,13 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "0d8267c"
+generated_from = "499619f"
 task_count     = 85
 
 [lane.Lane_A]
-current            = "TASK-441"
-next               = "TASK-444"
-next_after_that    = "TASK-450"
+current            = "TASK-478"
+next               = "TASK-450"
+next_after_that    = "TASK-441"
 assigned_total     = 34
 claimable          = 5
 in_flight          = 18
@@ -23,14 +23,14 @@ awaiting_qe_transition = 18
 blocked            = 11
 lane_utilization   = 0.0
 idle_prediction_days   = 0.7
-dependency_wait_days   = 0.4
-blocked_duration_days  = 0.4
+dependency_wait_days   = 0.0
+blocked_duration_days  = 0.0
 critical_path_max      = 4
 
 [lane.Lane_B]
-current            = "TASK-202"
-next               = "TASK-428"
-next_after_that    = "TASK-462"
+current            = "TASK-462"
+next               = "TASK-202"
+next_after_that    = "TASK-428"
 assigned_total     = 31
 claimable          = 3
 in_flight          = 18
@@ -38,14 +38,14 @@ awaiting_qe_transition = 0
 blocked            = 10
 lane_utilization   = 3.6
 idle_prediction_days   = 0.4
-dependency_wait_days   = 0.4
-blocked_duration_days  = 0.4
+dependency_wait_days   = 0.0
+blocked_duration_days  = 0.0
 critical_path_max      = 3
 
 [lane.Lane_C]
-current            = "TASK-454"
-next               = "TASK-455"
-next_after_that    = "TASK-473"
+current            = "TASK-474"
+next               = "TASK-454"
+next_after_that    = "TASK-455"
 assigned_total     = 17
 claimable          = 6
 in_flight          = 5
@@ -54,7 +54,7 @@ blocked            = 6
 lane_utilization   = 1.0
 idle_prediction_days   = 0.9
 dependency_wait_days   = 1.5
-blocked_duration_days  = 0.6
+blocked_duration_days  = 1.5
 critical_path_max      = 0
 
 [[task]]
@@ -130,7 +130,7 @@ next_lane      = "Lane B"
 critical_path  = 2
 estimated_ready = "when TASK-421 complete"
 waiting_for    = "**`SEQUENCED`** — after [TASK-421](#task-421), **and blocked on ADR-B**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-430"
@@ -145,7 +145,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "**`SEQUENCED`** — **trigger: wave 6, unchanged.** [412 §4](architectur"
 waiting_for    = "**`SEQUENCED`** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend-capability-matrix.md)"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-432"
@@ -355,7 +355,7 @@ next_lane      = "Lane A"
 critical_path  = 1
 estimated_ready = "⏸️ **`SEQUENCED`** — **predecessor [TASK-450](#task-450--saved-view--d"
 waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-450](#task-450--saved-view--domain-and-persistence)**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-452"
@@ -370,7 +370,7 @@ next_lane      = "—"
 critical_path  = 2
 estimated_ready = "when TASK-451 complete"
 waiting_for    = "⏸️ **`SEQUENCED`** — **predecessors [TASK-451](#task-451--saved-view--application-interface-and-permission-aware-listing) and the ratified name** ✅ *("
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-456"
@@ -430,7 +430,7 @@ next_lane      = "—"
 critical_path  = 4
 estimated_ready = "when TASK-465 complete"
 waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-465](#task-465--applying-a-batch-asynchronously-and-saying-so-while-it-runs)**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-467"
@@ -445,7 +445,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "⏸️ **`SEQUENCED`** — **after [TASK-478](#task-478--design-system-v2--s"
 waiting_for    = "⏸️ **`SEQUENCED`** — **after [TASK-478](#task-478--design-system-v2--slice-3--the-canonical-set-from-the-designs-own-enumeration)**. ⚡ **Rebuilding si"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-468"
@@ -460,7 +460,7 @@ next_lane      = "Lane A"
 critical_path  = 1
 estimated_ready = "⏸️ **`SEQUENCED`** — after [TASK-478](#task-478--design-system-v2--sli"
 waiting_for    = "⏸️ **`SEQUENCED`** — after [TASK-478](#task-478--design-system-v2--slice-3--the-canonical-set-from-the-designs-own-enumeration). ⚡ **Re-pointed 2026-0"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-469"
@@ -475,7 +475,7 @@ next_lane      = "—"
 critical_path  = 2
 estimated_ready = "when TASK-468 complete"
 waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not-refined)**. **A first run that cannot create a workspace is not"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-470"
@@ -490,7 +490,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "⏸️ **`SEQUENCED`** — trigger: [TASK-467](#task-467--the-authentication"
 waiting_for    = "⏸️ **`SEQUENCED`** — trigger: [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) complete"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-471"
@@ -505,7 +505,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "⏸️ **`SEQUENCED`** — after [TASK-478](#task-478--design-system-v2--sli"
 waiting_for    = "⏸️ **`SEQUENCED`** — after [TASK-478](#task-478--design-system-v2--slice-3--the-canonical-set-from-the-designs-own-enumeration). ⚡ **Re-pointed 2026-0"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-475"
@@ -520,7 +520,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "⏸️ **`BLOCKED`** on **[TASK-474](#task-474--a-developer-can-see-open-a"
 waiting_for    = "⏸️ **`BLOCKED`** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be "
-blocked_days   = 0.3
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-478"
@@ -745,7 +745,7 @@ next_lane      = "Lane B"
 critical_path  = 0
 estimated_ready = "**`SEQUENCED`** — **trigger: the approved UI waves are complete and `p"
 waiting_for    = "**`SEQUENCED`** — **trigger: the approved UI waves are complete and `product_surface` is no longer the lowest-implementation module** *(45% today; eve"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-421"
@@ -760,7 +760,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-420 complete"
 waiting_for    = "**`SEQUENCED`** — after [TASK-420](#task-420)"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-423"
@@ -775,7 +775,7 @@ next_lane      = "—"
 critical_path  = 2
 estimated_ready = "when TASK-421 complete"
 waiting_for    = "**`SEQUENCED`** — after [TASK-421](#task-421)"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-424"
@@ -790,7 +790,7 @@ next_lane      = "—"
 critical_path  = 3
 estimated_ready = "when TASK-422 complete"
 waiting_for    = "**`SEQUENCED`** — after [TASK-422](#task-422)"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-427"
@@ -835,7 +835,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "**`SEQUENCED`** — **trigger: a provider contract that supplies a perso"
 waiting_for    = "**`SEQUENCED`** — **trigger: a provider contract that supplies a person identifier.** ⛔ **A commercial decision, not an engineering one**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-435"
@@ -850,7 +850,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "**`SEQUENCED`** — **trigger: [SW-02](architecture/51-sales-workspace.m"
 waiting_for    = "**`SEQUENCED`** — **trigger: [SW-02](architecture/51-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and bl"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-438"
@@ -925,7 +925,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "⏸️ **`SEQUENCED`** — **trigger: the hosted evaluation credential ([C-3"
 waiting_for    = "⏸️ **`SEQUENCED`** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-461"
@@ -970,7 +970,7 @@ next_lane      = "Lane B"
 critical_path  = 1
 estimated_ready = "⏸️ **`SEQUENCED`** — **predecessor [TASK-462](#task-462--the-action-ba"
 waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-462](#task-462--the-action-batchs-domain--proposal-approval-and-the-window-as-a-predicate)**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-464"
@@ -985,7 +985,7 @@ next_lane      = "Lane B"
 critical_path  = 2
 estimated_ready = "when TASK-463 complete"
 waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-463](#task-463--the-action-batchs-persistence--append-only-and-no-update-grant)**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-465"
@@ -1000,7 +1000,7 @@ next_lane      = "Lane A"
 critical_path  = 3
 estimated_ready = "when TASK-464 complete"
 waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-472"
@@ -1075,7 +1075,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "**`SEQUENCED`** — **trigger: the Billing screen is scheduled for imple"
 waiting_for    = "**`SEQUENCED`** — **trigger: the Billing screen is scheduled for implementation**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-412"
@@ -1090,7 +1090,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "**`SEQUENCED`** — **trigger: TASK-411 slices 4–5 complete**"
 waiting_for    = "**`SEQUENCED`** — **trigger: TASK-411 slices 4–5 complete**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-413"
@@ -1105,7 +1105,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "**`SEQUENCED`** — **trigger: a measured certification wall-clock that "
 waiting_for    = "**`SEQUENCED`** — **trigger: a measured certification wall-clock that demonstrably delayed a promotion, recorded at least twice**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-414"
@@ -1165,7 +1165,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "**`SEQUENCED`** — **trigger: the first support request that cannot be "
 waiting_for    = "**`SEQUENCED`** — **trigger: the first support request that cannot be answered without database access**"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-426"
@@ -1180,7 +1180,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "**`SEQUENCED`** — **trigger: whichever comes first —** *(a)* the first"
 waiting_for    = "**`SEQUENCED`** — **trigger: whichever comes first —** *(a)* the first customer contract naming a retention or erasure obligation, *(b)* the first wor"
-blocked_days   = 0.4
+blocked_days   = 0.0
 
 [[task]]
 id            = "TASK-454"

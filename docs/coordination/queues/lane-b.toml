@@ -98,8 +98,8 @@ updated      = 2026-08-07
 #    move. Each release carries its evidence in the backlog row.
 #    `state-check` now reports this condition every run.
 current = "TASK-462"
-next    = "TASK-428"
-future  = ["TASK-202"]
+next    = "TASK-202"
+future  = ["TASK-428"]
 
 eligible_count = 3
 depth_target   = 15
