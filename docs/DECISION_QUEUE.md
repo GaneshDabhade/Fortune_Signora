@@ -142,6 +142,18 @@
 | **What it holds** | **[TASK-003](BACKLOG.md)**, `IN PROGRESS` with **nothing written** |
 | ⚡ **The question, at its smallest** | **Did [C-018](LANE_COORDINATION.md)'s ruling mean the label reaches the digest, or only the surface?** ⛔ **§2 — *determinism outranks convenience*, and evidence identity is the repository's most load-bearing derived value** |
 
+## 🟠 C-431 · Three controls on the approved sign-in card have no backing capability
+
+⛔ **Raised because [D-153](DECISION_REGISTER.md) ⑦ requires it rather than because Lane A is stuck.** ***"No lane may simplify the design. No lane may reinterpret the design. If something in the design is unclear: STOP."*** ✅ **Workflow 1 is buildable today and this changes what the review gate is shown, not what gets built first.**
+
+| | |
+|---|---|
+| ⚡ **The measurement** | **The design's sign-in card draws three controls with nothing behind them.** **`Use single sign-on`** — [418 §1](architecture/418-platform-foundation-assessment.md) lists **domain→IdP routing** and **per-workspace SSO enforcement** among Authentication's named absences. **`Keep me signed in for 30 days`** — `frontend/lib/auth/server.ts:86` fixes `expiresIn` at **seven days**, and it is not electable. **The attempt counter** — *"3 attempts left before the account locks for 15 minutes"*: **`rateLimit`, `lockout`, `maxAttempts` and `failedAttempts` return zero across the whole repository** |
+| **Owner** | **Yours.** ⛔ **The middle one is an authentication *semantic*, and [D-151](DECISION_REGISTER.md) ④ is explicit — *"Only the infrastructure boundary may change."* Session lifetime is not the infrastructure boundary** |
+| ✅ **Recommended — option C** | **Workflow 1 delivers every element of screens `02`, `03` and `15` whose capability exists; these three become rows behind Login.** ⚡ **Not a simplification — the same distinction [TASK-467](BACKLOG.md) already drew with your approval when it put magic link, MFA, SSO enforcement, domain→IdP routing and session-expiry state out of scope by name** |
+| ⛔ **Why not the alternatives** | **A — build all three inside Workflow 1**: three backend capabilities with no rows, and Workflow 1 stops being a presentation-layer replacement, which is the one thing D-153 says it is. **B — render them and route them somewhere**: a control that does not do what it says is worse than an absent one, and the attempt counter would be a fiction about our own product |
+| ⚠️ **What you should know going in** | **Under C you review a login screen with no SSO entry point and no *keep me signed in*.** **Better discovered here than at the gate** |
+
 ## ⚙️ C-337 · SSH to GitHub is intercepted here — and the obvious fix is the dangerous one
 
 ⛔ **Not a repository defect and not blocking.** **The remote is HTTPS and pushes cleanly.** ⚡ **It is here because the remediation every lane will reach for — `ssh-keygen -R github.com` — is precisely what converts a *caught* interception into a *successful* one.**

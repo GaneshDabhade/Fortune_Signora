@@ -355,6 +355,7 @@ databaseUrl: required(
 | [C-338](#c-338--task-003-would-put-customer-labels-in-the-file-that-builds-the-evidence-digest) | **TASK-003 as ruled would change evidence identity** | Lane B, 2026-08-07 | **Product owner** — ⚡ **a question about what [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute)'s ruling meant** | **`READY FOR PRODUCT DECISION`** — the alternatives are prepared | ⛔ **[TASK-003](BACKLOG.md)**, held `IN PROGRESS` with **no code written** — raised rather than worked around |
 | [C-337](#c-337--ssh-to-github-is-intercepted-on-this-workstation-and-the-obvious-fix-is-the-dangerous-one) | **SSH to GitHub is intercepted; the obvious fix is the dangerous one** | Lane B, 2026-08-07 | **Product owner** — ⛔ **the network, not the repository** (§20e, [B-011](BUGS.md)) | ⚙️ **`OPEN` — operational.** **Not blocking: the remote is HTTPS and pushes cleanly** | ⛔ **Nothing today.** ⚠️ **It costs the moment a remote is switched back to SSH** |
 | [C-430](#c-430--frontendlibauth-is-assigned-to-no-lane-and-implementation-has-now-reached-it) | **`frontend/` was assigned to no lane, and implementation reached it** | **Lane C**, 2026-08-07, on confirming a Change Budget | **Lane A** — ⚡ **ruled by the product owner, [D-151](DECISION_REGISTER.md) ①** | ✅ **`CLOSED` — Lane C, 2026-08-07.** **[`modules.toml`](coordination/modules.toml) grants `frontend/` to `product_surface`; the registry is consistent and the item is closed on that** | ✅ **Nothing.** **[TASK-473](BACKLOG.md), [TASK-474](BACKLOG.md), [TASK-476](BACKLOG.md) released to Lane A; [TASK-475](BACKLOG.md) unblocks behind TASK-474** |
+| [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability) | **Three controls the approved sign-in card draws have no backing capability, and one of them is an authentication semantic** | **Lane C**, 2026-08-07, measuring [D-153](DECISION_REGISTER.md) Workflow 1 | ⛔ **Product owner** — [D-153](DECISION_REGISTER.md) ⑦: *"If something in the design is unclear: STOP"* | 🟠 **OPEN** — **three options in [488 §5](architecture/488-workflow-1-login-gap.md), C recommended** | ⚠️ **Not [TASK-467](BACKLOG.md)'s start** — **it is scoped and buildable today.** **What waits is what the human review gate will be shown** |
 | [C-429](#c-429--four-live-claims-have-no-row-on-the-execution-board) | Four live claims have no row on the execution board | **Lane C**, 2026-08-07 | **The claiming lanes** — ⛔ **the board is written by the lane that claims (§20e); this office may not fill it in for them** | **`OPEN`** — raised 2026-08-07 | ⛔ **No engineering.** ⚠️ **A lane reading only the board would take work somebody else is doing** |
 | [C-426](#c-426--eighteen-of-lane-as-rows-read-in-validation-and-its-branch-has-nothing-on-it) | Eighteen of Lane A's rows read `IN VALIDATION` and its branch has nothing on it | **Lane C**, 2026-08-07, ⚡ **fo… | ⚡ **QE.** ⛔ **`VERIFIED` · `CERTIFIED` · `PROMOTED` · `DONE` are QE's… | **`OPEN`** — raised 2026-08-07 | ⛔ **No engineering.** ⚠️ **It corrupts every capacity measurement the repository… |
 | [C-423](#c-423--architecture-document-numbers-can-still-collide-and-d-112-already-solved-this-one-class-over) | Architecture document numbers can still collide, and D-112 already solved this one class over | **Lane C**, 2026-08-06, decomp… | **Product owner** — ⚡ **[D-112](DECISION_REGISTER.md) took the identic… | **`READY FOR PRODUCT DECISION`** — **one question, and [TASK-477](BACKLOG.md) proceeds eit… | ⛔ **Nothing.** **[TASK-477](BACKLOG.md) fixes today's three collisions regardles… |
@@ -7684,3 +7685,44 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 ⚠️ **A second `C-333` section stood here until 2026-08-06.** **It recorded the resolution while the item it resolved sat 1,500 lines above still reading `READY FOR LANE C`, and neither referenced the other.** **Merged into the single item above.**
 
 ⚡ **It also claimed `B-327` and `C-333` were *"both verified absent from every register"*. That was wrong on both counts** — each id already carried a live row raised by Lane B the day before. **`state-check`'s duplicate-identifier check found it; the sentence asserting the verification is exactly what a check exists to disbelieve.**
+
+---
+
+## C-431 · Three controls on the approved sign-in card have no backing capability
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-07, ⚡ **measuring Workflow 1 against the approved design for [D-153](DECISION_REGISTER.md) — before Lane A starts, rather than when it reaches the control** |
+| **Owner** | **Product owner** — ⛔ **[D-153](DECISION_REGISTER.md) ⑦: *"If something in the design is unclear: STOP. Raise a precise Product Office question."* Two of the three are scope; the third is an authentication semantic, which [D-151](DECISION_REGISTER.md) ④ places here too** |
+| **Status** | 🟠 **`OPEN` — raised 2026-08-07.** **Three options in [488 §5](architecture/488-workflow-1-login-gap.md), C recommended.** ⛔ **Not `READY FOR PRODUCT DECISION` by accident — it is that today: the options, trade-offs and recommendation are prepared and it waits only on a ruling** |
+| **Blocks** | ✅ **Nothing.** ⚠️ **It shapes what the human review gate is shown, not what Lane A builds first** — **nine of Workflow 1's ten parts do not touch it** |
+
+**Full measurement: [488 §5](architecture/488-workflow-1-login-gap.md).**
+
+> ⛔ **This is raised under [D-153](DECISION_REGISTER.md) ⑦ — *"No lane may simplify the design. No lane may reinterpret the design. If something in the design is unclear: STOP"* — and under [D-140](DECISION_REGISTER.md), which requires one precise question rather than one convenient assumption.**
+
+### What the design draws, and what exists behind it
+
+**`Fortune Signora Authentication.dc.html`, screen `02 · Sign in`, at real width. Three of its controls have no capability behind them, measured rather than assumed:**
+
+| Control | The measurement | Why it is not a task |
+|---|---|---|
+| **`Use single sign-on`** — and `Sign in with SSO` on `01 · Welcome` | ⛔ **[418 §1](architecture/418-platform-foundation-assessment.md) lists *per-workspace SSO enforcement* and *domain→IdP routing* among Authentication's named absences** | **Journey 3 of the design's five is `SSO-enforced`.** ⚡ **A login journey "exactly as designed" has an SSO branch point in it, so omitting the control changes what the review gate reviews** |
+| **`Keep me signed in for 30 days`** | ⚠️ **`frontend/lib/auth/server.ts:86` — `expiresIn: 60 * 60 * 24 * 7`. Seven days, fixed, and not electable by the customer** | ⛔ **The one item in Workflow 1 that is an authentication *semantic*.** **[D-151](DECISION_REGISTER.md) ④: *"Only the infrastructure boundary may change."* Session lifetime is not the infrastructure boundary** |
+| **The attempt counter** — *"You have **3 attempts** left before the account locks for 15 minutes"* | ⛔ **`grep -rn "rateLimit\|lockout\|maxAttempts\|failedAttempts"` across `frontend/lib/auth/` and `backend/` returns **zero**.** ⚠️ **418 does not list it, because 418 audited what the design *shows* and this is what its copy *implies*** | **Screen `03 · Sign in — failed` is a Workflow 1 screen and its entire message is a lockout message.** **Screens `11 · Account locked` and `12 · Too many attempts` are the same absent capability** |
+
+### The question
+
+> ## **Does Workflow 1 deliver these three, defer them behind Login as their own rows, or render them?**
+
+| | Option | This office's reading |
+|---|---|---|
+| **A** | **Deliver them inside Workflow 1** | ⛔ **Three backend capabilities with no rows. Workflow 1 stops being a presentation-layer replacement, which is the one thing [D-153](DECISION_REGISTER.md) says it is** |
+| **B** | **Render the controls and route them somewhere** | ⛔ **A control that does not do what it says is worse than an absent one, and `03`'s counter would be a fiction about our own product.** **[D-151](DECISION_REGISTER.md) ⑤ permits simulating a *provider's response*; it does not permit simulating Signora's behaviour** |
+| ✅ **C** | **Workflow 1 delivers every element of `02`, `03` and `15` whose capability exists; these three become rows behind Login** | ⚡ **Recommended. This is not a simplification — it is the distinction [TASK-467](BACKLOG.md) already drew with the product owner's approval when it put magic link, MFA, per-workspace SSO enforcement, domain→IdP routing and session-expiry state out of scope by name** |
+
+⚠️ **Stated plainly because it affects the gate rather than the code: under C the product owner reviews a login screen with no SSO entry point and no *keep me signed in*.** ⛔ **That should be known going in rather than discovered at the review.**
+
+### ⛔ What this does *not* block
+
+**[TASK-467](BACKLOG.md) is scoped and buildable today.** ✅ **The palette, the card geometry, the three responsive layouts, the six field states, the six button states, the failure state's summary and remedy, the authenticating state and the product mark are nine of Workflow 1's ten parts, and none of them touches this question.** ⚡ **[D-151](DECISION_REGISTER.md) ⑦ is the instruction being followed: bring the question, and do not pause the work for it.**

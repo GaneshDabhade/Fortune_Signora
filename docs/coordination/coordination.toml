@@ -9,36 +9,36 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "ff85253"
+generated_from = "ba90459"
 task_count     = 89
 
 [lane.Lane_A]
-current            = "TASK-480"
-next               = "TASK-481"
-next_after_that    = "TASK-482"
-assigned_total     = 41
-claimable          = 9
-claimable_now      = 6
-awaiting_sync      = 3
+current            = "TASK-467"
+next               = "TASK-474"
+next_after_that    = "TASK-473"
+assigned_total     = 42
+claimable          = 6
+claimable_now      = 5
+awaiting_sync      = 1
 in_flight          = 24
 awaiting_qe_transition = 0
 blocked_on_integration = 2
 supply_state       = "working"
-blocked            = 8
+blocked            = 12
 lane_utilization   = 4.8
-idle_prediction_days   = 1.3
+idle_prediction_days   = 0.9
 dependency_wait_days   = 0.2
 blocked_duration_days  = 0.2
 critical_path_max      = 3
 
 [lane.Lane_B]
-current            = "TASK-202"
-next               = "TASK-464"
+current            = "TASK-464"
+next               = "TASK-202"
 next_after_that    = ""
 assigned_total     = 31
 claimable          = 2
-claimable_now      = 1
-awaiting_sync      = 1
+claimable_now      = 2
+awaiting_sync      = 0
 in_flight          = 20
 awaiting_qe_transition = 0
 blocked_on_integration = 0
@@ -476,9 +476,9 @@ state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
 depends_on     = ["TASK-478"]
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
+unblocks       = ["TASK-471", "TASK-480", "TASK-481", "TASK-482"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
 critical_path  = 1
 estimated_ready = "now"
 waiting_for    = ""
@@ -536,18 +536,18 @@ on_integration = true
 [[task]]
 id            = "TASK-471"
 title         = "Team Management — conformance verified, or refined"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
-depends_on     = ["TASK-478"]
+depends_on     = ["TASK-467"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 1
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
+critical_path  = 2
+estimated_ready = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approv"
+waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-153](DECIS"
+blocked_days   = 0.2
+on_integration = false
 
 [[task]]
 id            = "TASK-473"
@@ -563,7 +563,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-474"
@@ -579,7 +579,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-475"
@@ -611,7 +611,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-478"
@@ -620,7 +620,7 @@ state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-467", "TASK-471"]
+unblocks       = ["TASK-467"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
@@ -632,38 +632,54 @@ on_integration = true
 [[task]]
 id            = "TASK-480"
 title         = "The notification platform"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
-depends_on     = []
+depends_on     = ["TASK-467"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
+critical_path  = 2
+estimated_ready = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approv"
+waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-153](DECIS"
+blocked_days   = 0.2
+on_integration = false
 
 [[task]]
 id            = "TASK-481"
 title         = "A global search surface, composing the one that already works"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
-depends_on     = []
+depends_on     = ["TASK-467"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
+critical_path  = 2
+estimated_ready = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approv"
+waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-153](DECIS"
+blocked_days   = 0.2
+on_integration = false
 
 [[task]]
 id            = "TASK-482"
 title         = "The AI Copilot entry and side panel"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-467"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 2
+estimated_ready = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approv"
+waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-153](DECIS"
+blocked_days   = 0.2
+on_integration = false
+
+[[task]]
+id            = "TASK-483"
+title         = "The authentication shell"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
@@ -675,7 +691,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-484"
@@ -1171,7 +1187,7 @@ critical_path  = 1
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-465"
@@ -1442,22 +1458,6 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-483"
-title         = "The authentication shell"
-state         = "BLOCKED"
-declared      = "BLOCKED"
-lane          = "—"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "on [C-430](LANE_COORDINATION.md)** — **a ruling on ownership, not on d"
-waiting_for    = "on [C-430](LANE_COORDINATION.md)** — **a ruling on ownership, not on design.** ⛔ **Not `READY`: a row nobody may build is not fit**"
 blocked_days   = 0.0
 on_integration = true
 

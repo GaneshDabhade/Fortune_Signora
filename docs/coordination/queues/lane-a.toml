@@ -378,8 +378,83 @@ updated      = 2026-08-07
 # TASK-473 reports the active mode. TASK-476 is engineering infrastructure
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
-current = "TASK-480"
-next    = "TASK-481"
+# ══════════════════════════════════════════════════════════════════════════════
+# 🔴  D-153 — THE UI REPLACEMENT PROGRAM STARTS, AND WORKFLOW 1 IS LOGIN
+#     2026-08-07 · product owner ruling · this queue is re-sequenced by it
+#
+# **WHAT CHANGED.** The first human UI review confirmed the visible application
+# is still largely legacy. The response is not refinement — it is a controlled,
+# workflow-by-workflow replacement of the PRESENTATION LAYER ONLY.
+#
+#   ⛔ "Do not delete the UI first. Replace it workflow-by-workflow."
+#   ⛔ "Do not attempt to incrementally improve it."
+#   ✅ "If a component already conforms to the approved design, reuse it."
+#
+# **WORKFLOW 1 IS LOGIN, AND IT IS THE ONLY WORKFLOW MIGRATING.**
+#   current = TASK-467 (the surface) + TASK-483 (the shell it renders in)
+#
+# ⚡ YOUR GAP ANALYSIS IS ALREADY DONE. TASK-467 names "a measurable gap
+#   analysis" as its own first act; Lane C ran it so you start on measurement
+#   rather than on reading:
+#
+#       docs/architecture/488-workflow-1-login-gap.md
+#
+#   Headline numbers, all measured from files, none inferred:
+#     • the sign-in screen implements 3 of the 12 elements its design specifies
+#     • the card is max-w-sm (384px); the design says 400px, --r-xl, --e2
+#     • app/(auth)/ contains ZERO breakpoints against three specified layouts
+#     • field states 2 of 6 · primary-button states 3 of 6
+#     • globals.css holds 78 custom properties and ZERO of the design's
+#       sixteen colours — the palette is Tailwind's default slate+blue ramp,
+#       which is Design System v2's own critique word for word
+#
+# ✅ FOUR THINGS ALREADY CONFORM. REUSE THEM, DO NOT REBUILD THEM (D-153 ⑤):
+#     • :focus-visible is 2px at 2px offset — the design's SC 2.4.7 exactly
+#     • prefers-reduced-motion is honoured globally
+#     • a dark theme exists at :root[data-theme='dark'] and the design ships
+#       a dark palette, so dark mode is a value swap
+#     • no component in components/ui holds a literal colour
+#
+# ⛔ BETTER AUTH IS UNTOUCHED. Nothing in Workflow 1 changes lib/auth/server.ts,
+#   RS256 verification, requireEmailVerification, or any route. Authentication
+#   semantics, authorization, RBAC, sessions, routing, contracts, validation
+#   and the backend are ASSETS — reuse them (D-153 ③).
+#
+# ⚠️ ONE OPEN QUESTION, AND IT DOES NOT BLOCK YOUR START — C-431.
+#   Three controls the design draws have no backing capability:
+#     "Use single sign-on" · "Keep me signed in for 30 days" · the attempt
+#     counter ("3 attempts left before the account locks for 15 minutes").
+#   Measured: 418 §1 lists domain→IdP routing as absent; server.ts fixes
+#   expiresIn at 7 days; and rateLimit/lockout/maxAttempts/failedAttempts
+#   return ZERO across the repository.
+#   ⛔ DO NOT render a control that cannot do what it says, and DO NOT
+#      simplify the design to avoid the question (D-153 ⑦). Nine of Workflow
+#      1's ten parts do not touch it. Build those.
+#
+# 🔴 THE HUMAN REVIEW GATE. Implement → certify → integration → main → notify.
+#   Workflow 2 (Registration) begins only after the product owner has LOOKED
+#   at Login. ⛔ "No assumptions should be made about design conformance until
+#   a human review has confirmed it."
+#
+# ⏸️ FOUR ROWS ARE NOW SEQUENCED BEHIND THAT GATE, and this is the ruling
+#   rather than this office's preference:
+#     TASK-480 · TASK-481 · TASK-482 — App Shell surfaces, and 487 scores that
+#       shell at 0 of 29. Built now, each is migrated twice.
+#     TASK-471 — Team Management, a later workflow's presentation layer.
+#   ⚠️ TASK-471 was released yesterday and is re-parked today. The release was
+#   correct under the rules then in force and D-153 changed the rule (D-141).
+#
+# ✅ YOU ARE NOT DRY: 6 claimable, 5 claimable today.
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ⚡ ORDER COMPUTED, NOT HAND-WRITTEN — and this time the two files agreed on
+# the first attempt. Three times this week this office hand-ordered a queue and
+# the generator disagreed and was right. So D-153 was applied to the DATA —
+# four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
+# current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
+current = "TASK-467"
+next    = "TASK-483"
 # ⚠️ The last three are RELEASED and NOT CLAIMABLE TODAY — their READY is on
 # `lane-c-sync` and you claim against BACKLOG.md on `integration` (C-425).
 # They are listed here rather than hidden because a row the backlog offers
@@ -389,15 +464,29 @@ next    = "TASK-481"
 # 🔴 THE MOMENT THEY LAND, TASK-474 GOES FIRST — ahead of everything above it.
 # D-151 ⑥, and not a preference: ADR-0406 §6 puts TEN OF FOURTEEN
 # authentication journey gaps behind that one row.
-future  = ["TASK-482", "TASK-467", "TASK-471", "TASK-484", "TASK-474", "TASK-473", "TASK-476"]
+# ⚠️ TASK-483 is Workflow 1 and is NOT CLAIMABLE TODAY — its release to READY
+# is on `lane-c-sync` and you claim against BACKLOG.md on `integration`,
+# where it still reads BLOCKED on C-430 (C-425). It is listed first because
+# it is the shell TASK-467 renders inside; take it the moment it lands.
+#
+# ⚡ TASK-484 IS PART OF WORKFLOW 1's SUCCESS CRITERIA, not a separate errand.
+# D-153: Login is complete only when "Playwright passes". 484 is the
+# Authentication journey nobody verifies. Its Global Search half is not
+# Workflow 1 and is not a reason to hold the row.
+#
+# ⚡ TASK-474, 473 and 476 are NOT presentation-layer replacement, so they do
+# not contend with "one workflow at a time". They stay available so this lane
+# cannot go dry behind a single gate. TASK-476 stays last — engineering
+# infrastructure, D-151 ⑥.
+future  = ["TASK-484", "TASK-474", "TASK-473", "TASK-476"]
 
 
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 9
+eligible_count = 6
 depth_target   = 15
-shortfall      = 6
+shortfall      = 9
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
