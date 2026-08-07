@@ -10,6 +10,18 @@
 >
 > ⚡ **Lane A found the gap on the first poll, before the office that published this did** — **[C-425](https://github.com/GaneshDabhade/Fortune_Signora/blob/integration/docs/LANE_COORDINATION.md).**
 
+> ## 🔴 **THE UI MIGRATION PROGRAM IS LIVE — 2026-08-07 · [D-153](https://github.com/GaneshDabhade/Fortune_Signora/blob/lane-c-sync/docs/DECISION_REGISTER.md) and [D-154](https://github.com/GaneshDabhade/Fortune_Signora/blob/lane-c-sync/docs/DECISION_REGISTER.md)**
+>
+> **This ref carries assignments and has no field for a ruling, so the one thing a lane could get wrong without reading further is stated here and nothing else is:**
+>
+> ⛔ **Do not start a UI slice from the existing implementation.** ***"Do not begin from the legacy implementation and iterate toward the design. Begin from the design and connect it to the existing backend, Better Auth integration, routing, and business logic."***
+>
+> ⛔ **Existing UI code has no architectural authority merely because it exists.** **Where an implementation differs from the finalized design, the design wins — always.** ✅ **Everything below the presentation layer is an asset: backend, Better Auth, routing, state, business logic, validation, public contracts, conforming accessibility, infrastructure.**
+>
+> ⚡ **One workflow migrates at a time and it is Login.** **The measurement you would otherwise take yourself is already published** — **[488](https://github.com/GaneshDabhade/Fortune_Signora/blob/lane-c-sync/docs/architecture/488-workflow-1-login-gap.md)** *(the Login gap, element by element)* and **[489](https://github.com/GaneshDabhade/Fortune_Signora/blob/lane-c-sync/docs/architecture/489-legacy-ui-standards-audit.md)** *(the token target: `globals.css` is the only file in the repository that asserts a visual value)*.
+>
+> ⚠️ **A pointer, never a copy** — [D-137](https://github.com/GaneshDabhade/Fortune_Signora/blob/lane-c-sync/docs/DECISION_REGISTER.md) forbids an intermediate specification, and the register on `integration` remains authoritative. **Removed once these rulings are on `integration`.**
+
 **Fetch it:**
 
 ```
