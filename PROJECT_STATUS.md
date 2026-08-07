@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `7bf7380`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `6555968`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `7bf7380`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `6555968`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`7bf7380`** — the certified commit itself |
+| **`main`** | **`6555968`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 97 promoted **planning that the instrument classified as executable** — ⚡ **and [B-145](docs/BUGS.md), a freshness check that cannot stay green** |
-| **Certification** | ✅ [`7bf7380136c9`](certification/reports/7bf7380136c9.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 98 promoted **D-154 and the legacy-UI standards audit** — ⚡ **the planner named the cycle again, and the poll heuristic did not** |
+| **Certification** | ✅ [`6555968c25fc`](certification/reports/6555968c25fc.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4172 backend tests** *(+10)* · **95.37% coverage** *(floor 95)* · **1523 frontend tests** across 65 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **840 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 188s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4172 backend tests** *(+10)* · **95.37% coverage** *(floor 95)* · **1523 frontend tests** across 65 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **840 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 184s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -46,7 +46,7 @@
 | **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | Next `READY` row | Next `READY` row | **[B-145](docs/BUGS.md)** | **Cycle 98, on the next poll** |
+| **Next executable work** | Next `READY` row | Next `READY` row | **[B-145](docs/BUGS.md)** | **Cycle 99, on the next poll** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,42 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 97
+## 1d · Release summary — 2026-08-07, cycle 98
+
+**Derived from the promoted commit `6555968`.** **Fifty-three promotions.** ⚡ **The second consecutive cycle the planner named and the poll heuristic would have missed.**
+
+### What was promoted
+
+| | |
+|---|---|
+| **D-154** *(Lane C)* | *"one file asserts a visual value, and one test is why"* — with [489](docs/architecture/489-legacy-ui-standards-audit.md), the legacy UI standards audit |
+
+### ⚡ Twice now, and the lesson has stuck
+
+**Lane C's single commit touched no `backend/`, `frontend/` or `infra/` path.** By the poll's own wording it was documentation. **The planner classified it `platform`**, because it changes `docs/coordination/coordination.toml` and `queues/lane-a.toml` — **files that `coordination.py --check`, `state-check` and `test_coordination_source.py` all read.**
+
+> ⚡ **QE now asks the planner instead of matching path prefixes.** [D-115](docs/DECISION_REGISTER.md): *"This plan is computed, not chosen. Unknown paths widen it, never narrow it."*
+
+### ⚠️ And a cherry-pick range that was too wide
+
+The first attempt picked from the merge-base and **conflicted on `DECISION_REGISTER.md` against a `D-153` row already integrated.** ⛔ **Two of the three commits in that range were duplicates by patch-id — QE had already measured that and picked the range anyway.**
+
+**Aborted, picked the one genuinely new commit, clean.** ⚡ **The patch-id check is only worth running if its answer is then used**, which is [B-142](docs/BUGS.md)'s lesson — *a comparison that does not gate the next step is decoration* — arriving in a third place.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4172 backend** · **1523 frontend** · **95.37%** · **398 invariants** · **840 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **102 runs recorded, 94 certified** · `promoted == certified` ✓ · `--audit-main` clean · first attempt, no aborts |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · ⚠️ **smoke 184s**, second consecutive run above the 149–162s norm — [B-141](docs/BUGS.md) |
+| **Dependency** | ✅ Lane A and Lane B remain stale refs, resolved by patch-id |
+| **Customer Value** | ⛔ **None directly.** Planning and an audit |
+| **Process** | ⚡ **The planner named the cycle for the second time running** |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 97
 
 **Derived from the promoted commit `7bf7380`.** **Fifty-two promotions.** ⚡ **The cycle QE would have skipped, and the repository's own instrument said otherwise.**
 
