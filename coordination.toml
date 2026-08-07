@@ -9,20 +9,20 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "1843710"
-task_count     = 84
+generated_from = "64df6b8"
+task_count     = 85
 
 [lane.Lane_A]
-current            = "TASK-441"
-next               = "TASK-444"
+current            = "TASK-444"
+next               = ""
 next_after_that    = ""
 assigned_total     = 34
-claimable          = 2
-in_flight          = 20
+claimable          = 1
+in_flight          = 21
 awaiting_qe_transition = 0
 blocked            = 12
-lane_utilization   = 4.0
-idle_prediction_days   = 0.3
+lane_utilization   = 4.2
+idle_prediction_days   = 0.1
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -31,11 +31,11 @@ critical_path_max      = 4
 current            = "TASK-202"
 next               = ""
 next_after_that    = ""
-assigned_total     = 31
+assigned_total     = 32
 claimable          = 1
 in_flight          = 19
 awaiting_qe_transition = 0
-blocked            = 11
+blocked            = 12
 lane_utilization   = 3.8
 idle_prediction_days   = 0.1
 dependency_wait_days   = 0.0
@@ -210,15 +210,15 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-441"
 title         = "Opportunity Intelligence — the pursuit, and how it got here"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 
@@ -393,13 +393,13 @@ title         = "Signal Engine reads the People contract"
 state         = "SEQUENCED"
 declared      = "SEQUENCED"
 lane          = "Lane A"
-depends_on     = ["TASK-457"]
+depends_on     = ["TASK-479"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 1
-estimated_ready = "when TASK-457 complete"
-waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-457](#task-457--people-publishes-what-other-modules-may-say-about-a-person).** ⛔ **Returned to `SEQUENCED` 20"
+critical_path  = 2
+estimated_ready = "when TASK-479 complete"
+waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-479](#task-479--people-publishes-a-way-to-read-what-it-publishes).** ⛔ **Returned to `SEQUENCED` 2026-08-07, "
 blocked_days   = 0.0
 
 [[task]]
@@ -813,13 +813,13 @@ title         = "M-I · What the domain lets other modules say"
 state         = "SEQUENCED"
 declared      = "SEQUENCED"
 lane          = "Lane B"
-depends_on     = ["TASK-457"]
+depends_on     = ["TASK-479"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 1
-estimated_ready = "when TASK-457 complete"
-waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-457](#task-457--people-publishes-what-other-modules-may-say-about-a-person), not [TASK-427](#task-427--m-d--t"
+critical_path  = 2
+estimated_ready = "when TASK-479 complete"
+waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-479](#task-479--people-publishes-a-way-to-read-what-it-publishes), not [TASK-427](#task-427--m-d--the-people-"
 blocked_days   = 0.0
 
 [[task]]
@@ -904,9 +904,9 @@ state         = "IN FLIGHT"
 declared      = "CLAIMED"
 lane          = "Lane B"
 depends_on     = []
-unblocks       = ["TASK-428", "TASK-458"]
-next_owner     = ["Lane A", "Lane B"]
-next_lane      = "—"
+unblocks       = ["TASK-479"]
+next_owner     = ["Lane B"]
+next_lane      = "Lane B"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
@@ -1015,6 +1015,21 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
+blocked_days   = 0.0
+
+[[task]]
+id            = "TASK-479"
+title         = "`people` publishes a way to read what it publishes"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane B"
+depends_on     = ["TASK-457"]
+unblocks       = ["TASK-428", "TASK-458"]
+next_owner     = ["Lane A", "Lane B"]
+next_lane      = "—"
+critical_path  = 1
+estimated_ready = "when TASK-457 complete"
+waiting_for    = "⏸️ **`SEQUENCED`** — **predecessor [TASK-457](#task-457--people-publishes-what-other-modules-may-say-about-a-person)**, which delivers the types this "
 blocked_days   = 0.0
 
 [[task]]
