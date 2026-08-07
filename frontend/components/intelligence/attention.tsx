@@ -397,8 +397,12 @@ export function HeldSince({ stage, since }: { stage: Stage; since: string }) {
 }
 
 /** What a stage is called where there is room for one word. The brief spells
- * each of them out; a list row has to be scannable. */
-const STAGE_MARK: Record<Stage, string> = {
+ * each of them out; a list row has to be scannable.
+ *
+ * **Exported from TASK-441**, so the stage-grouped view names a stage the same
+ * way the row inside it does. A second table would be a second vocabulary, and
+ * the copy is always the one that drifts. */
+export const STAGE_MARK: Record<Stage, string> = {
   tracking: 'Tracking',
   engaged: 'Being worked',
   closed_won: 'Won',

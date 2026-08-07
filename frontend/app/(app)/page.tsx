@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 
 import {
   AttentionScore,
+  STAGE_MARK,
   ContestedMark,
   EvidenceHealth,
   Hypothesis,
@@ -22,7 +23,7 @@ import { NothingRaises, TriageStrip } from '@/components/intelligence/triage';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
-import type { AccountAttention, AccountIdentity, SignalTypeName } from '@/lib/api/types';
+import type { AccountAttention, AccountIdentity, SignalTypeName, Stage } from '@/lib/api/types';
 import {
   useAccountIdentities,
   useAccounts,
@@ -38,6 +39,7 @@ import {
   withScope,
   type OwnerScope,
 } from '@/lib/state/owner-scope';
+import { STANDING_WORDS, standingFrom, withStanding } from '@/lib/state/standing';
 import { raisedFrom, raises, triage } from '@/lib/state/triage';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -76,6 +78,10 @@ export default function AttentionPage() {
   // **Which question the list is narrowed to**, in the URL beside the scope and
   // for the same three reasons: a refresh, a browser back and a second tab.
   const raised = raisedFrom(params.get('raises'));
+  // **Where does everything stand** — C-229's answer B, in the URL beside the
+  // scope and for the same three reasons. A view over the list already loaded,
+  // never a second read.
+  const standing = standingFrom(params.get('by'));
   const { data, isLoading, isError } = useAccounts(activeWorkspace?.id ?? null, scope);
   // Names arrive in a second request and the rows do not wait for them: the
   // score and the reason are what a seller triages on, and blocking the list
@@ -195,22 +201,47 @@ export default function AttentionPage() {
           **Only once there is an organization**: a filter above an empty
           screen is a control over nothing. */}
       {activeWorkspace !== null ? (
-        <nav aria-label="Whose work" className="flex items-center gap-1">
-          {(['all', 'mine', 'unassigned'] as const).map((one) => (
-            <Link
-              key={one}
-              href={withScope('/', one)}
-              aria-current={one === scope ? 'page' : undefined}
-              className={
-                one === scope
-                  ? 'rounded bg-accent-subtle px-2.5 py-1 text-sm font-medium text-accent'
-                  : 'rounded px-2.5 py-1 text-sm text-content-muted transition-colors hover:bg-surface-sunken hover:text-content'
-              }
-            >
-              {SCOPE_WORDS[one]}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <nav aria-label="Whose work" className="flex items-center gap-1">
+            {(['all', 'mine', 'unassigned'] as const).map((one) => (
+              <Link
+                key={one}
+                // **Carries the arrangement.** Changing whose work you are
+                // looking at must not silently rearrange the list — that is
+                // two changes from one click, and the seller made one.
+                href={withStanding('/', one, standing)}
+                aria-current={one === scope ? 'page' : undefined}
+                className={
+                  one === scope
+                    ? 'rounded bg-accent-subtle px-2.5 py-1 text-sm font-medium text-accent'
+                    : 'rounded px-2.5 py-1 text-sm text-content-muted transition-colors hover:bg-surface-sunken hover:text-content'
+                }
+              >
+                {SCOPE_WORDS[one]}
+              </Link>
+            ))}
+          </nav>
+          {/* **C-229's answer B, and deliberately a view rather than a
+              destination.** Two links, beside the scope, over the list already
+              on screen — no fourth sidebar entry, and no second copy of the
+              list (D38). */}
+          <nav aria-label="How the list is arranged" className="flex items-center gap-1">
+            {(['flat', 'stage'] as const).map((one) => (
+              <Link
+                key={one}
+                href={withStanding('/', scope, one)}
+                aria-current={one === standing ? 'page' : undefined}
+                className={
+                  one === standing
+                    ? 'rounded bg-accent-subtle px-2.5 py-1 text-sm font-medium text-accent'
+                    : 'rounded px-2.5 py-1 text-sm text-content-muted transition-colors hover:bg-surface-sunken hover:text-content'
+                }
+              >
+                {STANDING_WORDS[one]}
+              </Link>
+            ))}
+          </nav>
+        </div>
       ) : null}
       {isLoading ? <Loading /> : null}
       {isError ? <Unavailable /> : null}
@@ -247,23 +278,35 @@ export default function AttentionPage() {
         <NothingRaises raised={raised} scope={scope} />
       ) : null}
       {data && shown.length > 0 ? (
-        <ol className="flex flex-col gap-2">
-          {shown.map((account) => (
-            <li key={account.id}>
-              <AccountRow
-                account={account}
-                identity={identities?.get(account.account_id)}
-                namesLoading={namesLoading}
-                hypothesis={
-                  account.signal_type ? catalog?.get(account.signal_type) : undefined
-                }
-                viewerId={viewerId}
-                owners={owners}
-                scope={scope}
-              />
-            </li>
-          ))}
-        </ol>
+        standing === 'stage' ? (
+          <ByStage
+            accounts={shown}
+            identities={identities}
+            namesLoading={namesLoading}
+            catalog={catalog}
+            viewerId={viewerId}
+            owners={owners}
+            scope={scope}
+          />
+        ) : (
+          <ol className="flex flex-col gap-2">
+            {shown.map((account) => (
+              <li key={account.id}>
+                <AccountRow
+                  account={account}
+                  identity={identities?.get(account.account_id)}
+                  namesLoading={namesLoading}
+                  hypothesis={
+                    account.signal_type ? catalog?.get(account.signal_type) : undefined
+                  }
+                  viewerId={viewerId}
+                  owners={owners}
+                  scope={scope}
+                />
+              </li>
+            ))}
+          </ol>
+        )
       ) : null}
 
       {/* **Below the working list and above what was decided** (A6). This is
@@ -283,6 +326,91 @@ export default function AttentionPage() {
         viewerId={viewerId}
         people={owners}
       />
+    </div>
+  );
+}
+
+/**
+ * The attention list, grouped by where each pursuit stands.
+ *
+ * **[C-229](../../../../docs/LANE_COORDINATION.md)'s answer B.** Not a screen
+ * and not a second read — the same `shown` array the flat list renders, over
+ * `AccountRow`, arranged by `stage`.
+ *
+ * ### Every stage present is shown, and empty ones are not invented
+ *
+ * ⛔ **A group is rendered because the list has accounts in it**, never because
+ * the `Stage` union has five members. **A stage with no accounts is not the
+ * same claim as a stage a seller has not reached**, and drawing five empty
+ * headings would assert the second while meaning neither.
+ *
+ * **The order is the pipeline's**, not the data's: a seller reads *tracking →
+ * being worked → decided*, and sorting groups by size would rearrange the page
+ * under them every time an account moved.
+ */
+function ByStage({
+  accounts,
+  identities,
+  namesLoading,
+  catalog,
+  viewerId,
+  owners,
+  scope,
+}: {
+  accounts: AccountAttention[];
+  identities: ReadonlyMap<string, AccountIdentity> | undefined;
+  namesLoading: boolean;
+  catalog: ReadonlyMap<string, SignalTypeName> | undefined;
+  viewerId: string | null;
+  owners?: ReadonlyMap<string, string> | undefined;
+  scope: OwnerScope;
+}) {
+  // The pipeline's order, stated once. `STAGE_MARK` supplies the words — a
+  // second table here would be a second vocabulary.
+  const ORDER: readonly Stage[] = [
+    'tracking',
+    'engaged',
+    'closed_won',
+    'closed_lost',
+    'dismissed',
+  ];
+
+  const groups = ORDER.map((stage) => ({
+    stage,
+    items: accounts.filter((account) => account.stage === stage),
+  })).filter((group) => group.items.length > 0);
+
+  return (
+    <div className="flex flex-col gap-6">
+      {groups.map((group) => (
+        <section key={group.stage} className="flex flex-col gap-2">
+          <h2 className="flex items-baseline gap-2 text-sm font-semibold text-content">
+            {STAGE_MARK[group.stage]}
+            {/* The count is what makes this answer *where does everything
+                stand* rather than merely reordering the page. */}
+            <span className="text-xs font-normal text-content-subtle">
+              {group.items.length}
+            </span>
+          </h2>
+          <ol className="flex flex-col gap-2">
+            {group.items.map((account) => (
+              <li key={account.id}>
+                <AccountRow
+                  account={account}
+                  identity={identities?.get(account.account_id)}
+                  namesLoading={namesLoading}
+                  hypothesis={
+                    account.signal_type ? catalog?.get(account.signal_type) : undefined
+                  }
+                  viewerId={viewerId}
+                  owners={owners}
+                  scope={scope}
+                />
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))}
     </div>
   );
 }
