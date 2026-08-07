@@ -6,7 +6,10 @@ domain model means a domain refactor becomes a client-breaking change
 (19-api-conventions.md).
 """
 
+from __future__ import annotations
+
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -22,6 +25,7 @@ from modules.workspace_tenancy.domain.entities import (
     WorkspaceRole,
 )
 from modules.workspace_tenancy.domain.invitation import Invitation, InvitationState
+from modules.workspace_tenancy.domain.saved_view import SavedView
 
 
 class CreateWorkspaceRequest(BaseModel):
@@ -46,7 +50,7 @@ class WorkspaceResponse(BaseModel):
     updated_at: datetime
 
     @classmethod
-    def from_domain(cls, workspace: Workspace) -> "WorkspaceResponse":
+    def from_domain(cls, workspace: Workspace) -> WorkspaceResponse:
         return cls(
             id=workspace.id,
             name=workspace.name,
@@ -82,7 +86,7 @@ class MembershipResponse(BaseModel):
     ended_at: datetime | None = None
 
     @classmethod
-    def from_domain(cls, membership: Membership) -> "MembershipResponse":
+    def from_domain(cls, membership: Membership) -> MembershipResponse:
         return cls(
             member_email=membership.member_email,
             id=membership.id,
@@ -127,7 +131,7 @@ class InvitationResponse(BaseModel):
     invited_by: UUID
 
     @classmethod
-    def from_domain(cls, invitation: Invitation, *, at: datetime) -> "InvitationResponse":
+    def from_domain(cls, invitation: Invitation, *, at: datetime) -> InvitationResponse:
         return cls(
             id=invitation.id,
             workspace_id=invitation.workspace_id,
@@ -196,7 +200,7 @@ class HistoryEntryResponse(BaseModel):
     reason: str | None
 
     @classmethod
-    def from_domain(cls, entry: HistoryEntry) -> "HistoryEntryResponse":
+    def from_domain(cls, entry: HistoryEntry) -> HistoryEntryResponse:
         return cls(
             occurred_at=entry.occurred_at,
             kind=entry.kind,
@@ -208,4 +212,64 @@ class HistoryEntryResponse(BaseModel):
             previous_role=entry.previous_role,
             new_role=entry.new_role,
             reason=entry.reason,
+        )
+
+
+class SaveViewRequest(BaseModel):
+    """Declaring a view, or revising one.
+
+    ⛔ **`declaration` is `dict[str, Any]` and stays that way.** A typed schema
+    here would make this module know what a *filter* is, which is exactly what
+    [D-091](../../../../docs/DECISION_REGISTER.md) puts outside it — and the
+    schema would then have to change every time a screen added a control.
+    """
+
+    name: str = Field(description="What the person called it — the customer's own words.")
+    declaration: dict[str, Any] = Field(
+        description="The query as the owning screen wrote it. Never parsed here."
+    )
+    saved_view_id: UUID | None = Field(
+        default=None,
+        description=(
+            "Optional client-supplied identity, so a retry is idempotent rather than "
+            "creating a second view."
+        ),
+    )
+
+
+class ReviseViewRequest(BaseModel):
+    """A new version replacing an existing one.
+
+    **Both fields optional, and omitting both is legitimate**: it records that
+    somebody re-affirmed the view unchanged, under their own name and at a new
+    time — which is a fact the supersession chain should carry.
+    """
+
+    name: str | None = None
+    declaration: dict[str, Any] | None = None
+
+
+class SavedViewResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    workspace_id: UUID
+    name: str
+    declaration: dict[str, Any]
+    created_by: UUID
+    created_at: datetime
+    supersedes: UUID | None
+    retired_at: datetime | None
+
+    @classmethod
+    def from_domain(cls, view: SavedView) -> SavedViewResponse:
+        return cls(
+            id=view.id,
+            workspace_id=view.workspace_id,
+            name=view.name,
+            declaration=view.declaration,
+            created_by=view.created_by,
+            created_at=view.created_at,
+            supersedes=view.supersedes,
+            retired_at=view.retired_at,
         )

@@ -101,8 +101,8 @@ class SavedView:
         return cls(
             id=saved_view_id or uuid4(),
             workspace_id=workspace_id,
-            name=_checked_name(name),
-            declaration=_checked_declaration(declaration),
+            name=checked_name(name),
+            declaration=checked_declaration(declaration),
             created_by=created_by,
             created_at=now or datetime.now(UTC),
             supersedes=None,
@@ -135,8 +135,8 @@ class SavedView:
         return SavedView(
             id=saved_view_id or uuid4(),
             workspace_id=self.workspace_id,
-            name=_checked_name(self.name if name is None else name),
-            declaration=_checked_declaration(
+            name=checked_name(self.name if name is None else name),
+            declaration=checked_declaration(
                 self.declaration if declaration is None else declaration
             ),
             created_by=created_by,
@@ -162,7 +162,7 @@ class SavedView:
         return self.retired_at is not None
 
 
-def _checked_name(name: str) -> str:
+def checked_name(name: str) -> str:
     """A name the customer would recognise, and never one derived from the
     declaration — *"a view named by its filters would rename itself when they
     changed"* (`public/saved_views.py`)."""
@@ -176,7 +176,7 @@ def _checked_name(name: str) -> str:
     return stripped
 
 
-def _checked_declaration(declaration: dict[str, Any]) -> dict[str, Any]:
+def checked_declaration(declaration: dict[str, Any]) -> dict[str, Any]:
     """⛔ **The only check, and deliberately the weakest one possible.**
 
     That the declaration exists — **not that any key in it means anything**.
@@ -192,4 +192,13 @@ def _checked_declaration(declaration: dict[str, Any]) -> dict[str, Any]:
     return dict(declaration)
 
 
-__all__ = ["MAX_SAVED_VIEW_NAME_LENGTH", "SavedView"]
+#: Exported because `public/`'s writer must apply the same two rules to a
+#: view a consumer constructed. **The rule stays here and is called from
+#: there** — a second copy in the adapter is how two strengths of one check
+#: start disagreeing (§2).
+__all__ = [
+    "MAX_SAVED_VIEW_NAME_LENGTH",
+    "SavedView",
+    "checked_declaration",
+    "checked_name",
+]

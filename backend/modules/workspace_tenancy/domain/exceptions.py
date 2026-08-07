@@ -46,6 +46,20 @@ class EmptyDeclarationError(WorkspaceTenancyError):
     """
 
 
+class SavedViewNotFoundError(WorkspaceTenancyError):
+    """No such view in this workspace — **and the two are one answer.**
+
+    ⛔ **Deliberately not split into *absent* and *another workspace's*.** Under
+    RLS a view outside the caller's workspace reads as absent, and an error
+    that could tell them apart would confirm the id exists somewhere — the
+    enumeration `WorkspaceNotFoundError` refuses for the same reason.
+    """
+
+    def __init__(self, saved_view_id: UUID) -> None:
+        super().__init__(f"Saved view {saved_view_id} does not exist")
+        self.saved_view_id = saved_view_id
+
+
 class SavedViewAlreadyRetiredError(WorkspaceTenancyError):
     """Retired once, and the first timestamp is the one that happened."""
 

@@ -10,6 +10,7 @@ from typing import Any
 from uuid import UUID
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
+from modules.workspace_tenancy.domain.saved_view import SavedView
 from signora_platform.pagination import CursorPosition
 
 
@@ -141,3 +142,46 @@ class FakeRoleChangeLog:
                 "at": at,
             }
         )
+
+
+class FakeSavedViewRepository:
+    """In memory, and **honest about liveness rather than approximating it.**
+
+    ⚠️ *Live* is derived here exactly as the SQL derives it — not retired, and
+    not named by any other row's `supersedes`. **A fake that answered a
+    slightly different question would let a test pass against behaviour the
+    database does not have**, which is the defect `FakeSignalRepository` was
+    returned for (B-2xx, `signal_engine`).
+    """
+
+    def __init__(self) -> None:
+        self.views: dict[UUID, SavedView] = {}
+
+    async def add(self, view: SavedView) -> None:
+        self.views[view.id] = view
+
+    async def get(self, workspace_id: UUID, saved_view_id: UUID) -> SavedView | None:
+        found = self.views.get(saved_view_id)
+        return found if found is not None and found.workspace_id == workspace_id else None
+
+    async def list_live_page(
+        self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
+    ) -> list[SavedView]:
+        replaced = {v.supersedes for v in self.views.values() if v.supersedes is not None}
+        live = [
+            v
+            for v in self.views.values()
+            if v.workspace_id == workspace_id and v.retired_at is None and v.id not in replaced
+        ]
+        ordered = sorted(live, key=lambda v: (v.created_at, v.id), reverse=True)
+        if after is not None:
+            ordered = [v for v in ordered if (v.created_at, v.id) < (after.created_at, after.id)]
+        return ordered[:limit]
+
+    async def mark_retired(self, view: SavedView) -> None:
+        """**Refuses to re-stamp**, mirroring the `retired_at IS NULL` guard in
+        the real `UPDATE`: without it a test could retire twice here and pass
+        against SQL that would have matched no rows."""
+        existing = self.views.get(view.id)
+        if existing is not None and existing.retired_at is None:
+            self.views[view.id] = view

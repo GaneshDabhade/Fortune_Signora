@@ -12,10 +12,12 @@ from sqlalchemy import Select, func, literal, select, tuple_, update
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
+from modules.workspace_tenancy.domain.saved_view import SavedView
 from modules.workspace_tenancy.infrastructure.models import (
     InvitationModel,
     MembershipModel,
     MembershipRoleChangeModel,
+    SavedViewModel,
     WorkspaceModel,
 )
 from signora_platform.db import SqlAlchemyRepository
@@ -50,7 +52,7 @@ def _membership_to_domain(model: MembershipModel) -> Membership:
     )
 
 
-def _apply_keyset[M: MembershipModel | WorkspaceModel](
+def _apply_keyset[M: MembershipModel | SavedViewModel | WorkspaceModel](
     statement: Select[tuple[M]],
     model: type[M],
     after: CursorPosition | None,
@@ -359,3 +361,95 @@ __all__ = [
     "SqlAlchemyMembershipRepository",
     "SqlAlchemyWorkspaceRepository",
 ]
+
+
+def _saved_view_to_domain(model: SavedViewModel) -> SavedView:
+    return SavedView(
+        id=model.id,
+        workspace_id=model.workspace_id,
+        name=model.name,
+        declaration=model.declaration,
+        created_by=model.created_by,
+        created_at=model.created_at,
+        supersedes=model.supersedes,
+        retired_at=model.retired_at,
+    )
+
+
+class SqlAlchemySavedViewRepository(SqlAlchemyRepository):
+    """Saved views, stored and read back. **No `update` path for a
+    declaration** — the one write that touches an existing row stamps
+    `retired_at`, and the table carries no `UPDATE` grant for anything else.
+    """
+
+    async def add(self, view: SavedView) -> None:
+        self._session.add(
+            SavedViewModel(
+                id=view.id,
+                workspace_id=view.workspace_id,
+                name=view.name,
+                declaration=view.declaration,
+                supersedes=view.supersedes,
+                retired_at=view.retired_at,
+                created_by=view.created_by,
+                updated_by=view.created_by,
+            )
+        )
+        await self._session.flush()
+
+    async def get(self, workspace_id: UUID, saved_view_id: UUID) -> SavedView | None:
+        statement = select(SavedViewModel).where(
+            SavedViewModel.id == saved_view_id,
+            # Defence in depth beside RLS (11-tenancy.md): the policy is the
+            # authoritative control and the predicate is stated anyway.
+            SavedViewModel.workspace_id == workspace_id,
+        )
+        model = (await self._session.execute(statement)).scalar_one_or_none()
+        return None if model is None else _saved_view_to_domain(model)
+
+    async def list_live_page(
+        self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
+    ) -> list[SavedView]:
+        """In force: **not retired, and not replaced by a later version.**
+
+        ⚡ **Both halves are derived from the rows themselves.** The supersession
+        chain already records which version was replaced, so a `is_live` column
+        beside it would be the same fact twice — and the partial index
+        `ix_saved_view_live` exists precisely so deriving it stays cheap.
+        """
+        replaced = select(SavedViewModel.supersedes).where(
+            SavedViewModel.workspace_id == workspace_id,
+            SavedViewModel.supersedes.is_not(None),
+        )
+        statement = _apply_keyset(
+            select(SavedViewModel).where(
+                SavedViewModel.workspace_id == workspace_id,
+                SavedViewModel.retired_at.is_(None),
+                SavedViewModel.id.not_in(replaced),
+            ),
+            SavedViewModel,
+            after,
+        ).limit(limit)
+        models = (await self._session.execute(statement)).scalars().all()
+        return [_saved_view_to_domain(model) for model in models]
+
+    async def mark_retired(self, view: SavedView) -> None:
+        """Stamp a retirement onto the row it belongs to.
+
+        ⛔ **Guarded by `retired_at IS NULL` in the `WHERE`**, so two concurrent
+        retirements cannot overwrite the first timestamp. The aggregate refuses
+        the second in memory; this refuses it in the database, and the fact
+        that both do is the point — *a guard that cannot fail is documentation
+        pretending to be code* (§2).
+        """
+        statement = (
+            update(SavedViewModel)
+            .where(
+                SavedViewModel.id == view.id,
+                SavedViewModel.workspace_id == view.workspace_id,
+                SavedViewModel.retired_at.is_(None),
+            )
+            .values(retired_at=view.retired_at, updated_by=view.created_by)
+        )
+        await self._session.execute(statement)
+        await self._session.flush()

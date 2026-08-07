@@ -97,6 +97,7 @@ class Resource(StrEnum):
     #: catalog learns from, and one resource could not express both without
     #: making every reader an author.
     SIGNAL = "signal"
+    SAVED_VIEW = "saved_view"
 
 
 class Action(StrEnum):

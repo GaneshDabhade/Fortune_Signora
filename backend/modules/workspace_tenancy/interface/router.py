@@ -27,9 +27,16 @@ from modules.workspace_tenancy.application.use_cases.change_role import ChangeRo
 from modules.workspace_tenancy.application.use_cases.invite_member import InviteMemberCommand
 from modules.workspace_tenancy.application.use_cases.leave_workspace import LeaveWorkspaceCommand
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMemberCommand
+from modules.workspace_tenancy.application.use_cases.saved_views import (
+    DeclareSavedViewInput,
+    ListSavedViewsInput,
+    RetireSavedViewInput,
+    ReviseSavedViewInput,
+)
 from modules.workspace_tenancy.application.use_cases.transfer_ownership import (
     TransferOwnershipCommand,
 )
+from modules.workspace_tenancy.domain.exceptions import SavedViewNotFoundError
 from modules.workspace_tenancy.infrastructure.acceptance import accepting_workspace
 from modules.workspace_tenancy.infrastructure.composition import (
     build_query_service,
@@ -44,6 +51,9 @@ from modules.workspace_tenancy.interface.schemas import (
     InviteMemberRequest,
     MembershipResponse,
     RemoveMemberRequest,
+    ReviseViewRequest,
+    SavedViewResponse,
+    SaveViewRequest,
     TransferOwnershipRequest,
     WorkspaceResponse,
 )
@@ -73,7 +83,8 @@ def _position_after(cursor: str | None) -> CursorPosition | None:
 
 
 def _next_cursor(
-    items: list[WorkspaceResponse] | list[MembershipResponse], has_more: bool
+    items: list[WorkspaceResponse] | list[MembershipResponse] | list[SavedViewResponse],
+    has_more: bool,
 ) -> str | None:
     """The cursor for the following page, or ``None`` on the last page.
 
@@ -550,3 +561,135 @@ async def accept_invitation(context: CurrentUser, workspace_id: UUID) -> Members
             correlation_id=context.correlation_id,
         )
     return MembershipResponse.from_domain(membership)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/saved-views",
+    response_model=CursorPage[SavedViewResponse],
+    summary="The saved views this organization shares",
+)
+async def list_saved_views(
+    context: CurrentWorkspace,
+    limit: LimitParam = DEFAULT_PAGE_LIMIT,
+    cursor: CursorParam = None,
+) -> CursorPage[SavedViewResponse]:
+    """**Everybody in the workspace sees the same list.**
+
+    ⚡ **Permission-aware, and the awareness is that a view is shared rather
+    than personal** — [452](../../../../docs/architecture/452-app-shell-traceability-audit.md):
+    *"a shared view looks the same for everybody."* ⛔ **There is deliberately
+    no *my views* filter**, because filtering by author would make a shared
+    capability read as a private one and the four screens that asked for this
+    all asked for the shared reading.
+
+    **Retired and superseded versions are excluded**, derived from the rows
+    rather than from a stored flag.
+    """
+    context.authorize(Resource.SAVED_VIEW, Action.READ)
+    result = await build_use_cases(context.session).list_saved_views.execute(
+        ListSavedViewsInput(
+            workspace_id=context.workspace_id, limit=limit, after=_position_after(cursor)
+        )
+    )
+    items = [SavedViewResponse.from_domain(v) for v in result.views]
+    return CursorPage(
+        items=items, next_cursor=_next_cursor(items, result.has_more), has_more=result.has_more
+    )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/saved-views/{saved_view_id}",
+    response_model=SavedViewResponse,
+    summary="One saved view",
+)
+async def get_saved_view(context: CurrentWorkspace, saved_view_id: UUID) -> SavedViewResponse:
+    """**404 covers both *no such view* and *another workspace's view***, which
+    is the same non-enumeration rule the workspace endpoints keep."""
+    context.authorize(Resource.SAVED_VIEW, Action.READ)
+    view = await build_use_cases(context.session).get_saved_view.execute(
+        context.workspace_id, saved_view_id
+    )
+    if view is None:
+        raise SavedViewNotFoundError(saved_view_id)
+    return SavedViewResponse.from_domain(view)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/saved-views",
+    status_code=status.HTTP_201_CREATED,
+    response_model=SavedViewResponse,
+    summary="Save a view",
+)
+async def declare_saved_view(context: CurrentWorkspace, body: SaveViewRequest) -> SavedViewResponse:
+    """**The author comes from the verified token, never from the body** — an
+    author a caller could supply is an author they would supply somebody
+    else's."""
+    context.authorize(Resource.SAVED_VIEW, Action.ADD)
+    view = await build_use_cases(context.session).declare_saved_view.execute(
+        DeclareSavedViewInput(
+            workspace_id=context.workspace_id,
+            name=body.name,
+            declaration=body.declaration,
+            created_by=context.principal.user_id,
+            saved_view_id=body.saved_view_id,
+        ),
+        now=datetime.now(UTC),
+    )
+    return SavedViewResponse.from_domain(view)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/saved-views/{saved_view_id}/revisions",
+    status_code=status.HTTP_201_CREATED,
+    response_model=SavedViewResponse,
+    summary="Revise a saved view",
+)
+async def revise_saved_view(
+    context: CurrentWorkspace, saved_view_id: UUID, body: ReviseViewRequest
+) -> SavedViewResponse:
+    """⚡ **A `POST` creating a revision, never a `PUT` editing the view.**
+
+    The URL says so on purpose: a declaration is never edited, so the resource
+    being created is *a revision*, and the one it replaces stays readable at
+    its own id. **A `PUT` here would be a verb the storage model cannot honour**
+    — the table carries no `UPDATE` grant for a declaration.
+
+    **Revising requires the same grant as declaring**, because it is the same
+    act: writing down a question under your own name.
+    """
+    context.authorize(Resource.SAVED_VIEW, Action.ADD)
+    view = await build_use_cases(context.session).revise_saved_view.execute(
+        ReviseSavedViewInput(
+            workspace_id=context.workspace_id,
+            saved_view_id=saved_view_id,
+            created_by=context.principal.user_id,
+            name=body.name,
+            declaration=body.declaration,
+        ),
+        now=datetime.now(UTC),
+    )
+    return SavedViewResponse.from_domain(view)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/saved-views/{saved_view_id}/retirement",
+    response_model=SavedViewResponse,
+    summary="Retire a saved view",
+)
+async def retire_saved_view(context: CurrentWorkspace, saved_view_id: UUID) -> SavedViewResponse:
+    """⚡ **Owner only, and this is the one asymmetry in the resource.**
+
+    Reading and writing are every member's, because a shared view is ordinary
+    collaboration. **Retiring is not symmetric with creating**: it removes a
+    capability *from everybody else*, which is the same shape as
+    `member, remove` and is granted the same way.
+
+    ⛔ **Retired, never deleted.** A view that explained a decision must still
+    explain it afterwards, so the row stays and only stops being offered.
+    """
+    context.authorize(Resource.SAVED_VIEW, Action.REMOVE)
+    view = await build_use_cases(context.session).retire_saved_view.execute(
+        RetireSavedViewInput(workspace_id=context.workspace_id, saved_view_id=saved_view_id),
+        now=datetime.now(UTC),
+    )
+    return SavedViewResponse.from_domain(view)

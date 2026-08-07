@@ -188,6 +188,4 @@ class SavedViewModel(Base, TimestampMixin, AuditMixin):
         ForeignKey("saved_view.id", ondelete="SET NULL"),
         nullable=True,
     )
-    retired_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    retired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

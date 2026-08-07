@@ -16,7 +16,11 @@ from modules.workspace_tenancy.application.use_cases.leave_workspace import NotA
 from modules.workspace_tenancy.domain.entities import LastOwnerCannotLeaveError
 from modules.workspace_tenancy.domain.exceptions import (
     DuplicateMembershipError,
+    EmptyDeclarationError,
+    InvalidSavedViewNameError,
     InvalidWorkspaceNameError,
+    SavedViewAlreadyRetiredError,
+    SavedViewNotFoundError,
     WorkspaceNotFoundError,
 )
 from modules.workspace_tenancy.domain.invitation import InvitationNotPendingError
@@ -27,6 +31,13 @@ ERROR_MAPPING: ErrorMapping = {
     # indistinguishable from one that does not exist, or workspace ids
     # become enumerable (18-authentication.md).
     WorkspaceNotFoundError: (status.HTTP_404_NOT_FOUND, "workspace_not_found"),
+    SavedViewNotFoundError: (status.HTTP_404_NOT_FOUND, "saved_view_not_found"),
+    InvalidSavedViewNameError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_saved_view_name"),
+    # **422 rather than 400**: the request is well-formed and the declaration
+    # is empty, which is a semantic refusal. ⛔ It is the *only* thing this
+    # module may say about a declaration's contents (D-091).
+    EmptyDeclarationError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "empty_declaration"),
+    SavedViewAlreadyRetiredError: (status.HTTP_409_CONFLICT, "saved_view_already_retired"),
     DuplicateMembershipError: (status.HTTP_409_CONFLICT, "membership_already_exists"),
     InvalidWorkspaceNameError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_workspace_name"),
     # **404, covering never invited, already accepted and withdrawn alike.**

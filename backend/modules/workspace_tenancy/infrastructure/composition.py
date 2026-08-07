@@ -28,6 +28,13 @@ from modules.workspace_tenancy.application.use_cases.invite_member import (
 )
 from modules.workspace_tenancy.application.use_cases.leave_workspace import LeaveWorkspace
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMember
+from modules.workspace_tenancy.application.use_cases.saved_views import (
+    DeclareSavedViewUseCase,
+    GetSavedViewUseCase,
+    ListSavedViewsUseCase,
+    RetireSavedViewUseCase,
+    ReviseSavedViewUseCase,
+)
 from modules.workspace_tenancy.application.use_cases.transfer_ownership import TransferOwnership
 from modules.workspace_tenancy.infrastructure.adapters import (
     OutboxEventPublisherAdapter,
@@ -39,8 +46,10 @@ from modules.workspace_tenancy.infrastructure.repositories import (
     SqlAlchemyInvitationRepository,
     SqlAlchemyMembershipRepository,
     SqlAlchemyRoleChangeLog,
+    SqlAlchemySavedViewRepository,
     SqlAlchemyWorkspaceRepository,
 )
+from modules.workspace_tenancy.infrastructure.saved_view_service import SavedViewService
 from modules.workspace_tenancy.infrastructure.settings import load_tenancy_settings
 from signora_platform.event_bus import PostgresOutboxEventPublisher
 
@@ -61,12 +70,18 @@ class WorkspaceTenancyUseCases:
     resend_invitation: ResendInvitation
     change_role: ChangeRole
     transfer_ownership: TransferOwnership
+    declare_saved_view: DeclareSavedViewUseCase
+    revise_saved_view: ReviseSavedViewUseCase
+    retire_saved_view: RetireSavedViewUseCase
+    list_saved_views: ListSavedViewsUseCase
+    get_saved_view: GetSavedViewUseCase
 
 
 def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
     workspace_repository = SqlAlchemyWorkspaceRepository(session)
     membership_repository = SqlAlchemyMembershipRepository(session)
     invitation_repository = SqlAlchemyInvitationRepository(session)
+    saved_view_repository = SqlAlchemySavedViewRepository(session)
     tenant_context = SessionTenantContext(session)
     # **Constructed here, at the composition root**, from the module's own
     # settings rather than from `os.environ` anywhere downstream (§6, §20b).
@@ -123,7 +138,35 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
             invitations=invitation_repository,
             delivery=delivery,
         ),
+        declare_saved_view=DeclareSavedViewUseCase(
+            workspaces=workspace_repository, saved_views=saved_view_repository
+        ),
+        revise_saved_view=ReviseSavedViewUseCase(
+            workspaces=workspace_repository, saved_views=saved_view_repository
+        ),
+        retire_saved_view=RetireSavedViewUseCase(
+            workspaces=workspace_repository, saved_views=saved_view_repository
+        ),
+        list_saved_views=ListSavedViewsUseCase(
+            workspaces=workspace_repository, saved_views=saved_view_repository
+        ),
+        get_saved_view=GetSavedViewUseCase(
+            workspaces=workspace_repository, saved_views=saved_view_repository
+        ),
     )
+
+
+def build_saved_view_service(session: AsyncSession) -> SavedViewService:
+    """The `public/` reader and writer, for consumers outside this module.
+
+    ⚡ **A parameter nowhere and a construction here**, unlike the ports this
+    module *consumes*: `SavedViewReader` and `SavedViewWriter` are
+    `workspace_tenancy`'s own contract, so building the adapter behind them is
+    this composition root's job rather than another lane's — which is the
+    distinction [C-238](../../../../docs/LANE_COORDINATION.md) was raised
+    about, seen from the owning side.
+    """
+    return SavedViewService(SqlAlchemySavedViewRepository(session))
 
 
 def build_query_service(session: AsyncSession) -> WorkspaceQueryService:

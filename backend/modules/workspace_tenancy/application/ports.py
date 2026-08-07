@@ -12,6 +12,7 @@ from uuid import UUID
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
+from modules.workspace_tenancy.domain.saved_view import SavedView
 from signora_platform.pagination import CursorPosition
 
 
@@ -108,3 +109,37 @@ class InvitationDelivery(Protocol):
     """
 
     async def send(self, invitation: Invitation, *, workspace_name: str) -> None: ...
+
+
+class SavedViewRepository(Protocol):
+    """Persistence for saved views. **Speaks the aggregate, never the view.**
+
+    ⚡ **The public contract's `SavedViewReader`/`SavedViewWriter` speak
+    `SavedViewView`, and this one deliberately does not.** A use case handed a
+    view would have no way to run `declare`, `revise` or `retire` — the rules
+    live on the aggregate, and a port that skipped it would let a caller write
+    a nameless view or revive a retired one. **Other modules get the views;
+    this module's own use cases get the type that can refuse.**
+    """
+
+    async def add(self, view: SavedView) -> None: ...
+    async def get(self, workspace_id: UUID, saved_view_id: UUID) -> SavedView | None: ...
+
+    async def list_live_page(
+        self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
+    ) -> list[SavedView]:
+        """Views in force, newest first. **Superseded and retired excluded.**
+
+        ⛔ **Live is derived here, never stored** — a boolean beside the
+        supersession chain would be one fact twice, and the two would disagree
+        the first time a version landed.
+        """
+        ...
+
+    async def mark_retired(self, view: SavedView) -> None:
+        """Stamp the retirement the aggregate already decided.
+
+        ⛔ **The only write that touches an existing row**, and it sets a
+        timestamp that was `NULL`. A declaration is still never edited.
+        """
+        ...

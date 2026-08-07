@@ -46,3 +46,8 @@ p, owner, *, signal, read
 p, member, *, signal, read
 p, owner, *, signal, resolve
 p, member, *, signal, resolve
+p, owner, *, saved_view, read
+p, member, *, saved_view, read
+p, owner, *, saved_view, add
+p, member, *, saved_view, add
+p, owner, *, saved_view, remove
