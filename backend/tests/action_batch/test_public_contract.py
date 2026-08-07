@@ -140,13 +140,28 @@ class TestItIsAContractAndNotAnImplementation:
         reader: ActionBatchReader = Fake()
         assert reader is not None
 
-    def test_the_module_has_no_layer_but_public(self) -> None:
-        """**Slice 1 is the contract and nothing else** — no domain, no table,
-        no endpoint, no events (P-C: an event exists when a consumer
-        appears)."""
+    def test_the_context_has_no_persistence_application_or_interface_yet(self) -> None:
+        """**No table, no endpoint, no events** — P-C: an event exists when a
+        consumer appears.
+
+        ⚠️ **Re-aimed by slice 2, which is chartered to add `domain/`.** This
+        read `== {"public"}` and pinned *"slice 1 is the contract and nothing
+        else"*, which was exactly right for one slice and expires the moment
+        the next one lands.
+
+        ⛔ **Re-aimed rather than deleted, and it is strictly stronger here.**
+        The property worth keeping was never *"only `public` exists"* — it was
+        that **this context still persists nothing, exposes nothing and
+        publishes no event**, which is what slices 3 and 4 exist to add and
+        what a lane could otherwise smuggle in early. **Naming the three
+        forbidden layers asserts that; counting to one only asserted it by
+        accident.**
+        """
         from pathlib import Path
 
         import modules.action_batch as context
 
         present = {p.name for p in Path(context.__file__).parent.iterdir() if p.is_dir()}
-        assert present - {"__pycache__"} == {"public"}
+
+        assert present - {"__pycache__"} == {"public", "domain"}
+        assert not present & {"infrastructure", "interface", "application"}

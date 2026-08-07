@@ -47,49 +47,33 @@ rendering it must take its wording from the ratified name when there is one.
 
 ### What is deliberately absent
 
-**No domain, no table, no endpoint, no events.** Events are slice 4 and neither
-is designed — **[P-C](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): an event
+**No table, no endpoint, no events.** Events are slice 4 and neither is
+designed — **[P-C](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): an event
 exists when a consumer appears.**
+
+> ⚠️ **Updated by slice 2.** `ApprovalState` was **defined here** while there
+> was no domain to hold it. **It now lives in
+> [`domain/batch.py`](../domain/batch.py) and is re-exported from here** —
+> §6, *a port belongs to the module that owns the language it represents… it
+> lives in that module's `domain/` and is published through its `public/`*,
+> and the shape `knowledge_graph/public/attributes.py` and
+> `commercial_profile/public/` both already use.
+>
+> ⚡ **The published API is unchanged**: same names, same `__all__`, same
+> import path for every consumer. **What changed is which layer defines them**,
+> and it changed because the alternative was `domain/` importing from
+> `public/` — a dependency pointing outward, which every later slice would
+> have inherited.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import StrEnum
 from typing import Protocol
 from uuid import UUID
 
-
-class ApprovalState(StrEnum):
-    """Where an action stands in its lifecycle.
-
-    **Five states, and every one is a different thing a customer can see.**
-    Whether the reversible window has elapsed is **not** among them — see
-    `ActionBatchView.is_settled`, which computes it.
-    """
-
-    PROPOSED = "proposed"
-    """Assembled and waiting for a decision. **Nothing has happened yet**, and
-    a consumer must not describe it as pending *execution*."""
-
-    APPROVED = "approved"
-    """Somebody decided it should happen. ⚠️ **Not the same as done** — the
-    action is effective from here, and `applied_at` is what says it ran."""
-
-    WITHDRAWN = "withdrawn"
-    """Taken back **before** approval, by whoever proposed it. A decision that
-    was never made, rather than one that was reversed."""
-
-    REVERSED = "reversed"
-    """Undone **after** it took effect, inside the reversible window.
-    ⛔ **The inverse is performed by the consuming domain**, never here — this
-    context records that a reversal happened."""
-
-    REJECTED = "rejected"
-    """Somebody decided it should not happen. **Distinct from `WITHDRAWN`**:
-    one is the proposer changing their mind, the other is a reviewer
-    declining, and a customer reading a history needs to tell them apart."""
+from modules.action_batch.domain.batch import ApprovalState, has_settled
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,10 +119,14 @@ class ActionBatchView:
         **An action that never applied is not settled** — it has no window to
         have elapsed — and neither is one with no window declared, which means
         reversal was never offered rather than that it has expired.
+
+        ⚡ **Slice 2: this delegates rather than restates.** The rule is
+        `domain.batch.has_settled`, and the aggregate that *enforces* the
+        window on reversal calls the same function. **Two implementations of
+        one window would eventually disagree about whether a customer may
+        still undo something** (§2, *behaviour exists exactly once*).
         """
-        if self.applied_at is None or self.reversible_for is None:
-            return False
-        return now >= self.applied_at + self.reversible_for
+        return has_settled(self.applied_at, self.reversible_for, now=now)
 
 
 class ActionBatchReader(Protocol):
