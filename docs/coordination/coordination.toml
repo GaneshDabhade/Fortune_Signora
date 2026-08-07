@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "89fffe9"
+generated_from = "5e83b46"
 task_count     = 85
 
 [lane.Lane_A]
@@ -53,8 +53,8 @@ awaiting_qe_transition = 0
 blocked            = 6
 lane_utilization   = 1.0
 idle_prediction_days   = 0.7
-dependency_wait_days   = 1.6
-blocked_duration_days  = 1.6
+dependency_wait_days   = 1.7
+blocked_duration_days  = 1.7
 critical_path_max      = 0
 
 [[task]]
@@ -211,7 +211,7 @@ blocked_days   = 0.0
 id            = "TASK-441"
 title         = "Opportunity Intelligence — the pursuit, and how it got here"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -256,7 +256,7 @@ blocked_days   = 0.0
 id            = "TASK-444"
 title         = "Dismissal reasons tell the catalog which rules misfire"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -331,7 +331,7 @@ blocked_days   = 0.0
 id            = "TASK-450"
 title         = "Saved View — domain and persistence"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-451"]
@@ -526,7 +526,7 @@ blocked_days   = 0.1
 id            = "TASK-478"
 title         = "Design System v2 · slice 3 — the canonical set, from the design's own enumeration"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-467", "TASK-468", "TASK-471"]
@@ -946,7 +946,7 @@ blocked_days   = 0.0
 id            = "TASK-462"
 title         = "The Action Batch's domain — proposal, approval, and the window as a predicate"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane B"
 depends_on     = []
 unblocks       = ["TASK-463"]
@@ -1285,7 +1285,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "**`WAITING`** — **trigger: implementation naturally reaches M14b.** ⚠️"
 waiting_for    = "**`WAITING`** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md"
-blocked_days   = 1.6
+blocked_days   = 1.7
 
 [[task]]
 id            = "TASK-300"
