@@ -6256,6 +6256,28 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 | ⛔ **The lesson this office owes** | ⚡ **The domain existing is not the contract existing.** **`people/domain/person.py`, `affiliation.py` and `matching_rule.py` are all on `integration`; `people/public/__init__.py` is zero lines.** **Only opening the directory shows the difference, and both wrong releases turned on exactly that** |
 | ⚠️ **A note beyond the ask** | **[TASK-428](BACKLOG.md)'s Module cell names four modules** — `timeline` · `commercial_profile` · `signal_engine` · `people`. ⛔ **One row spanning four is not cleanly claimable under *one lane per module*, and this office wrote it.** **Not fixed here — recorded so it is decomposed before it is released again** |
 
+### ⚠️ Lane B reported a recurrence on 2026-08-07. Measured: it had already been fixed — and the argument under it was still right
+
+**Lane B's claim**: *"TASK-458's release note now claims 'what `people` publishes is published'."*
+
+⛔ **Measured false at the time of reporting.** **[TASK-458](BACKLOG.md) reads `SEQUENCED` behind [TASK-479](BACKLOG.md) on `lane-c-sync`, and `origin/coordination` — the ref Lane B polls — carried `state = "SEQUENCED"`, `depends_on = ["TASK-479"]` when the report was written.** ⚡ **Lane B read a stale copy.**
+
+> ## ✅ **The claim was stale. The argument was not, and it is the better half.**
+>
+> **Lane B**: *"Reachability was the proxy; ref-equality is now the proxy; neither is the property. The question is still whether the file exports anything, and a non-zero-size check would have failed both times."*
+
+⚡ **Correct, and acted on.** ⛔ **`_delivered` asks whether a predecessor was *handed over* — a fact about process. It never asks whether the thing exists.** ✅ **`state-check` now checks the property directly: every `backend/modules/*/public/__init__.py` on `integration`, and it reports any that is empty.**
+
+⚠️ **It found two, not one.** **`people` — 0 bytes on `main` and on `integration`** — **and `timeline`, also 0.** ⛔ **`timeline` has no consumer yet, so it is a latent gap rather than a live blocker, and no row is created for it** (§6 — *build for the requirement in front of you*). **The check will report it every run until it is filled.**
+
+### ✅ [C-336](BACKLOG.md) — approved as recommended, verified first
+
+**Lane B recommended narrowing [TASK-428](BACKLOG.md) from four modules to `timeline` · `commercial_profile` · `people`, removing `signal_engine`.** ✅ **Approved, and checked rather than accepted**: **[TASK-458](BACKLOG.md) is titled *Signal Engine reads the People contract*, its Module cell is `signal_engine` — Lane A, and its own row says *"it is the *consumer* half, and separating it is what keeps the boundary inside one lane each."*** ⚡ **So `signal_engine` in [TASK-428](BACKLOG.md) was pre-split scope that survived the decomposition, and all three remaining modules are Lane B's — the row is now cleanly one lane's.**
+
+⚠️ **This office wrote the four-module cell, and noted the problem in this very item without acting on it** — *"recorded so it is decomposed before it is released again."* ⛔ **Lane B did the analysis this office had already agreed was needed.**
+
+✅ **Its second correction is confirmed independently**: the row cited `runtime-composition` at **2 of 9**; **re-running the instrument here reports `Runtime wired 4` with `✓ timeline` named.** ⚡ **Not taken at face value — [D-130](DECISION_REGISTER.md), and the instrument was run rather than the report believed.**
+
 ### What the row claims, and what is actually there
 
 TASK-458's released row states its evidence explicitly, and **states it as structural precisely so that it would not be a status-string reading**:

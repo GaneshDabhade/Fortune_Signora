@@ -558,6 +558,54 @@ def _lane_c_rows(backlog: str) -> set[str]:
     return mine
 
 
+def _empty_contract_findings() -> list[str]:
+    """A module publishes a `public/` package that exports nothing.
+
+    ⚡ **Lane B's argument, 2026-08-07, and it is right even though the claim
+    attached to it was stale**: *"Reachability was the proxy; ref-equality is
+    now the proxy; neither is the property. The question is still whether the
+    file exports anything, and a non-zero-size check would have failed both
+    times."*
+
+    **Both times it would have.** `people/public/__init__.py` is **0 bytes on
+    `main` and on `integration`**, and two rows were released against it —
+    [C-428](../docs/LANE_COORDINATION.md), then [TASK-428](../docs/BACKLOG.md)
+    on the same file a day later.
+
+    ⛔ **`_delivered` in `coordination.py` cannot see this.** It asks whether a
+    predecessor was *handed over*, which is a fact about process; **this asks
+    whether the thing exists, which is a fact about the tree.** ⚡ **Two
+    different questions, and only the second one would have stopped either
+    release.**
+
+    **[§5](../CLAUDE.md) is what makes it a defect rather than a curiosity**: a
+    module's `public/` is the only route another module may cross by, so an
+    empty one is a boundary that cannot be used and a contract that cannot be
+    consumed. **Measured against `origin/integration`**, because that is what
+    a lane builds from.
+    """
+    listing = _git("ls-tree", "-r", "--name-only", "origin/integration",
+                   "--", "backend/modules/")
+    empty = []
+    for path in listing.splitlines():
+        if not path.endswith("/public/__init__.py"):
+            continue
+        blob = _git("rev-parse", f"origin/integration:{path}")
+        size = _git("cat-file", "-s", blob) if blob else ""
+        if size.strip() == "0":
+            empty.append(path.split("/")[2])
+    if not empty:
+        return []
+    return [
+        f"{len(empty)} module(s) publish an empty `public/` contract on "
+        f"`integration` — {', '.join(sorted(empty))}. **A module's `public/` is "
+        "the only route another module may cross by (§5), so an empty one is a "
+        "boundary nothing can use.** Two rows were released against "
+        "`people`'s before it was noticed (C-428), and a third was written "
+        "against it a day later."
+    ]
+
+
 def _execution_state_findings() -> list[str]:
     """**Did Product Office overwrite a state a lane owns?** ([D-123](../docs/DECISION_REGISTER.md))
 
@@ -1523,6 +1571,7 @@ def main() -> int:
     findings.extend(_structured_file_findings())
     findings.extend(_planning_sync_findings())
     findings.extend(_ref_authority_findings())
+    findings.extend(_empty_contract_findings())
     findings.extend(_duplicate_index_findings(coordination))
     findings.extend(_duplicate_state_findings(backlog))
     findings.extend(_ownership_findings(backlog))
