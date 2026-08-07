@@ -249,13 +249,18 @@ updated      = 2026-08-07
 #    QE's exclusively — so the successor waited on a state nobody could
 #    move. Each release carries its evidence in the backlog row.
 #    `state-check` now reports this condition every run.
-current = "TASK-451"
-next    = "TASK-468"
-future  = ["TASK-467", "TASK-471", "TASK-480", "TASK-481", "TASK-482", "TASK-484"]
+# ⚠️ TASK-451 removed 2026-08-07 — Lane A claimed it at 3e02a3ef on
+# `integration` and this file still advertised it as executable. A claimed row
+# left at the head of a queue is the one failure this file exists to prevent:
+# the lane that claimed it re-reads its own queue and sees its own work
+# offered back. Found by `state-check.py`, not by a lane hitting it.
+current = "TASK-468"
+next    = "TASK-467"
+future  = ["TASK-471", "TASK-480", "TASK-481", "TASK-482", "TASK-484"]
 
-eligible_count = 8
+eligible_count = 7
 depth_target   = 15
-shortfall      = 7
+shortfall      = 8
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

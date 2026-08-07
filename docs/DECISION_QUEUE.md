@@ -132,6 +132,23 @@
 | **Priority** | **P0 on timing · P3 on difficulty.** Two small slices |
 | **Recommended** | ✅ **Sequence [TASK-434](BACKLOG.md) ahead of TASK-406's backtest slice.** ⚠️ **First slice is a prerequisite regardless of any of this**: **`commercial_profile/public/` publishes thirteen views and *not one is the ICP* — no module can read the criteria at all today**, and every one of the sixteen consumers is blocked on that one missing read port. **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the ratified precedent for exactly this shape** |
 
+## 🔴 C-430 · Who owns `frontend/`? — one word, and it is the only thing Lane C is short of
+
+⛔ **[C-430](LANE_COORDINATION.md) is `READY FOR PRODUCT DECISION`, and it is not a design question.** **The question at its smallest: *which lane may write files under `frontend/`?*** ⚡ **Not how authentication works, not what a screen looks like — who may write the file.**
+
+> ⚠️ **Raised on 2026-08-07 against `frontend/lib/auth/`, and widened the same day after this office walked into it.** **Lane C wrote production code for [TASK-473](BACKLOG.md) into that directory before reading the register, and reverted it on reading the row it had itself raised the day before.** ⛔ **Recorded rather than dropped** — an office tripping over its own item is evidence about how visible the item is.
+
+| | |
+|---|---|
+| ⛔ **Measured, and it is total** | **`git grep frontend docs/coordination/modules.toml` returns nothing.** **`platform_foundation` is `["infra/", "Makefile", "backend/signora_platform/"]`; `apps` is `["backend/apps/"]`; `product_surface` declares no `paths` key at all.** ⚡ **Verified against `origin/integration`, not only a local tree** |
+| ⛔ **What it holds** | **[TASK-473](BACKLOG.md) · [TASK-474](BACKLOG.md) · [TASK-476](BACKLOG.md)** — ⚡ **both of Lane C's claimable rows.** **The lane reports `claimable = 0` and this is the whole reason** |
+| ⚡ **The cost, in one line** | **[ADR-0406](architecture/adr/0406-authentication-execution-modes.md) §6 puts *ten of the fourteen* authentication journey gaps behind `TASK-474` alone** |
+| ⛔ **No recommendation, and for two reasons** | **①** **§20e — *an ownership transfer is ruled, never adopted*, and this office may not assign a path to itself.** **②** ⚡ **the answer may not be one lane**: product screens, the authentication tier and the test launcher are **three questions that happen to share a directory** |
+
+**§20e already anticipated this case** — *"when ownership is genuinely unclear, leave it unassigned and mark it review at first implementation. Ownership becomes obvious when implementation reaches a module."* ⚡ **Implementation reached it.**
+
+**On a ruling: `modules.toml` gains the path or paths, the three rows go `READY`, and Lane C has a queue again. Nothing else waits.**
+
 ## 🔴 The Action Batch needs an owner — one registry line, brought with the decomposition
 
 ✅ **[D-126](DECISION_REGISTER.md) is ruled and executed**: [ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) is drafted, and **[TASK-461](BACKLOG.md)–[TASK-466](BACKLOG.md)** are the six slices. ⛔ **One thing remains and it is not mine: the new bounded context has no owner, and module ownership is never Lane C's** (§20e).

@@ -164,15 +164,15 @@ note    = "`reasoning@1` earns a protocol-2 evaluation"
 
 [[blocked]]
 task    = "TASK-463"
-blocker = ["see the backlog row"]
+blocker = ["not blocked — CLAIMED by Lane B and in flight"]
 owner   = "Lane B"
-note    = "The Action Batch's persistence — append-only, and no `UPDATE` grant"
+note    = "The Action Batch's persistence — append-only, and no `UPDATE` grant. ⚠️ Listed here in error: it is CLAIMED on `integration` (bd0a320d) and Lane B set it `IN VALIDATION` at 65356748 on its own branch. A row a lane is actively building must never sit in its own blocked list — that reads as 'nothing to do' about work in progress."
 
 [[blocked]]
 task    = "TASK-464"
-blocker = ["see the backlog row"]
-owner   = "Lane B"
-note    = "The Action Batch's application layer, and the two events"
+blocker = ["TASK-463 — waiting on QE to integrate `lane-b-commercial-profile`"]
+owner   = "QE"
+note    = "The Action Batch's application layer, and the two events. ⚡ Re-tested 2026-08-07: this is `blocked_on_integration`, not starved. TASK-463 is `IN VALIDATION` on Lane B's branch, which `_HANDED_OVER` accepts — so this releases the moment QE fast-forwards it, with no further planning. ⛔ Not promoted here: §20e — prepared work that has not reached `integration` does not exist for planning purposes, and the state on a lane branch is not the state a queue may read."
 
 [[blocked]]
 task    = "TASK-465"
