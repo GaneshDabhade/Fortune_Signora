@@ -1,8 +1,9 @@
 """Where somebody has worked, as an interval that closes rather than a field
 that is overwritten.
 
-**The load-bearing choice of [ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md)**,
-in its own words:
+**The load-bearing choice of
+[ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md)**, in
+its own words:
 
 > ***"Priya left Acme"* is not a mutation of Priya — it is an interval
 > closing.** Storing a current employer as a field would destroy the history
@@ -73,7 +74,7 @@ class RoleInterval:
         and only the first is one this module can make."""
         return self.ended_on is None
 
-    def closed_on(self, moment: date) -> "RoleInterval":
+    def closed_on(self, moment: date) -> RoleInterval:
         """The same interval, ended. **A new value, never a mutation.**
 
         Refuses to close twice: an affiliation that already ended and is being
@@ -136,7 +137,7 @@ class Affiliation:
         says what it actually means."""
         return self.interval.is_open
 
-    def ended(self, *, on: date) -> "Affiliation":
+    def ended(self, *, on: date) -> Affiliation:
         """Close this affiliation. **A new value; nothing is overwritten.**"""
         return Affiliation(
             id=self.id,

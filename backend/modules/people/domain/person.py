@@ -10,7 +10,8 @@ roadmap. **I am not approving the full People Intelligence feature set.**"*
 
 ### Anonymous, and that is the design rather than a limitation
 
-**No name. No email. No phone. No provider identifier.** [C-221](../../../../docs/LANE_COORDINATION.md)
+**No name. No email. No phone. No provider identifier.**
+[C-221](../../../../docs/LANE_COORDINATION.md)
 is not a constraint on this module — **it is its specification**: *"do not
 expand the architecture around people… focus on role-based and
 organization-level intelligence."*
