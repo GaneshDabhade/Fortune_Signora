@@ -87,7 +87,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) `premature_releases`, [`backend/tests/test_coordination_source.py`](../backend/tests/test_coordination_source.py) |
 | **Current assignee** | **Lane C** |
 | **Severity** | 🔴 · ⛔ **Blocking Quality Defect — nothing in the repository can certify.** `pytest` fails on `main`, on `integration`, and on every candidate built from them |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED`** — **Lane C, 2026-08-07.** ⚡ **QE's diagnosis was exactly right and the repair is the one it named**, `premature_releases(rows, outstanding)`. ⛔ **Applied to all three siblings, not only the one the failing case caught**: `stale_sequencing` and `blocked_on_integration` called `_outstanding_rows()` internally too, and repairing only the tested one is precisely how this input moved up a frame the first time. **Regression test — `test_the_release_guards_are_pure_functions_of_their_arguments`, which asserts the *property* across all three rather than the repair.** ⚠️ **`VERIFIED` is QE's and is not set here** |
 | **Found** | 2026-08-07 by QE, cycle 94, on the first poll after connectivity was restored |
 
 **Steps to reproduce.** Against **`origin/main`**, in a clean worktree:

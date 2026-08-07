@@ -538,16 +538,18 @@ def _delivered(dep: str, by_id: dict[str, Task], outstanding: frozenset[str]) ->
     return dep not in outstanding
 
 
-def stale_sequencing(rows: list[Task]) -> list[Task]:
+def stale_sequencing(rows: list[Task], outstanding: frozenset[str]) -> list[Task]:
     """Rows parked behind a predecessor that has already been handed over.
 
     ⛔ **Reports; never reclassifies.** **A `SEQUENCED` row is a Product Office
     judgement**, and a generator that silently promoted one would be making a
     fitness decision inside a projection — the *"editing this file makes it
     wrong rather than true"* defect wearing the opposite coat.
+
+    ⚡ **`outstanding` is declared, not fetched** — [B-144](../docs/BUGS.md).
+    See `premature_releases` for why all three of these take it.
     """
     by_id = {r.id: r for r in rows}
-    outstanding = _outstanding_rows(rows)
     return [
         r
         for r in rows
@@ -557,8 +559,34 @@ def stale_sequencing(rows: list[Task]) -> list[Task]:
     ]
 
 
-def premature_releases(rows: list[Task]) -> list[Task]:
+def premature_releases(rows: list[Task], outstanding: frozenset[str]) -> list[Task]:
     """Rows this office set `READY` whose predecessor is **not** handed over.
+
+    ⛔ **`outstanding` is an argument because a gate must answer the same way
+    twice — [B-144](../docs/BUGS.md), found by QE.** **This called
+    `_outstanding_rows()` internally**, which shells out to `git cherry` and
+    greps commit *messages* for task ids. ⚡ **So the answer depended on which
+    refs the running clone happened to have fetched, and on what other lanes
+    had recently typed in a commit body.** **`origin/main` went from green to
+    red with no change to the repository at all**: Lane A pushed `9aa88841`,
+    whose body mentions `TASK-432`, and a test building two `Task` objects from
+    fixed text started failing. **Same tree, same command, different answer.**
+
+    ⚠️ **This is [B-139](../docs/BUGS.md) relocated rather than resolved, and
+    `_outstanding_rows`'s own docstring said so** — *"this is the only part
+    that reads the clone, so a test can state the world it wants"*. **That was
+    true of `_delivered` and false of every caller of it**, because the hidden
+    input had simply moved up one frame and stayed in the call path. ⛔ **The
+    repair is applied to all three siblings at once** — `stale_sequencing` and
+    `blocked_on_integration` had the identical defect and no test had caught
+    them yet. **Fixing only the one the test found is how a hidden input moves
+    up one frame a second time.**
+
+    ⚡ **[§2](../../CLAUDE.md), by name: *hidden inputs are architecture
+    defects*** — *"it makes the same declared inputs produce different results,
+    which defeats replay, regression testing, and every guarantee proven by
+    removal."* **A certification gate is exactly where that costs most: a run
+    that cannot be reproduced is not evidence.**
 
     ⚡ **The mirror of `stale_sequencing`, and the half that was missing.**
     That check asks *"is this row parked behind work that is finished?"* — it
@@ -572,7 +600,6 @@ def premature_releases(rows: list[Task]) -> list[Task]:
     **zero lines**. ⛔ **Lane A found it by opening the file.**
     """
     by_id = {r.id: r for r in rows}
-    outstanding = _outstanding_rows(rows)
     return [
         r
         for r in rows
@@ -582,7 +609,9 @@ def premature_releases(rows: list[Task]) -> list[Task]:
     ]
 
 
-def blocked_on_integration(rows: list[Task], lane: str) -> list[Task]:
+def blocked_on_integration(
+    rows: list[Task], lane: str, outstanding: frozenset[str]
+) -> list[Task]:
     """This lane's parked rows that would release if QE integrated its own work.
 
     ⚡ **The distinction the product owner had to ask for, 2026-08-07.** Lane A
@@ -598,9 +627,11 @@ def blocked_on_integration(rows: list[Task], lane: str) -> list[Task]:
     ⚠️ **[C-426](../docs/LANE_COORDINATION.md)'s class exactly**, one level up:
     that was a metric saying *busy* about an idle lane; this is a metric saying
     *nothing to do* about a lane blocked on release.
+
+    ⚡ **`outstanding` is declared, not fetched** — [B-144](../docs/BUGS.md).
+    See `premature_releases` for why all three of these take it.
     """
     by_id = {r.id: r for r in rows}
-    outstanding = _outstanding_rows(rows)
     return [
         r
         for r in rows
@@ -627,6 +658,10 @@ def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
     starvation has already happened.**
     """
     out: dict[str, dict[str, float | int | str]] = {}
+    # **Read once, before the loop** — B-144. The clone is consulted here and
+    # nowhere below, so every lane in this pass is measured against one world
+    # rather than against whatever the refs said when its turn came.
+    outstanding = _outstanding_rows(rows)
     for lane in sorted({r.lane for r in rows if r.lane != "—"}):
         mine = [r for r in rows if r.lane == lane]
         claimable = [r for r in mine if r.state == ASSIGNED]
@@ -642,7 +677,7 @@ def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
         ahead = _unpushed(lane)
         stranded = len(in_flight) if ahead == 0 else 0
         working = len(in_flight) - stranded
-        pending = len(blocked_on_integration(rows, lane))
+        pending = len(blocked_on_integration(rows, lane, outstanding))
         # ⛔ **Never let "0 claimable" stand alone.** It is the same number for
         # a starved lane and for one whose next rows are behind its own
         # finished work, and those need opposite responses.

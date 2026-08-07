@@ -234,11 +234,22 @@ def test_premature_releases_fires_on_a_predecessor_still_held() -> None:
         id="TASK-458", title="r", state=coordination.ASSIGNED,
         declared="READY", lane="Lane A", depends_on=["TASK-457"],
     )
-    assert [r.id for r in coordination.premature_releases([held, released])] == ["TASK-458"]
+    assert [
+        r.id for r in coordination.premature_releases([held, released], frozenset())
+    ] == ["TASK-458"]
 
 
 def test_premature_releases_is_silent_on_a_correct_release() -> None:
-    """⛔ A guard that always fires is as useless as one that cannot."""
+    """⛔ A guard that always fires is as useless as one that cannot.
+
+    ⚠️ **This case is [B-144](../../docs/BUGS.md)'s detector and it did its
+    job.** It began failing on a tree that had certified green, with nothing in
+    the repository changed — `premature_releases` called `_outstanding_rows()`
+    internally, which greps lane branches for task ids, and **another lane
+    typed `TASK-432` in a commit body.** ⛔ **Never repair a failure here by
+    loosening the assertion: a gate that answers differently on two clones is
+    the defect, and this is what notices.**
+    """
     done = coordination.Task(
         id="TASK-432", title="p", state=coordination.IN_FLIGHT,
         declared="IN VALIDATION", lane="Lane A", depends_on=[],
@@ -247,7 +258,58 @@ def test_premature_releases_is_silent_on_a_correct_release() -> None:
         id="TASK-444", title="r", state=coordination.ASSIGNED,
         declared="READY", lane="Lane A", depends_on=["TASK-432"],
     )
-    assert coordination.premature_releases([done, released]) == []
+    assert coordination.premature_releases([done, released], frozenset()) == []
+
+
+def test_the_release_guards_are_pure_functions_of_their_arguments() -> None:
+    """⛔ A certification gate must answer the same way on every clone.
+
+    **[B-144](../../docs/BUGS.md), found by QE.** `_delivered` was hoisted for
+    exactly this reason ([B-139](../../docs/BUGS.md)) and **the hidden input
+    moved up one frame and stayed in the call path**: all three of these called
+    `_outstanding_rows()` internally, so their answers depended on which refs
+    the running clone had fetched and on what other lanes had typed in a commit
+    message. **`origin/main` went green to red with the tree unchanged.**
+
+    ⚡ **This asserts the property, not the repair** — the same rows with two
+    different worlds must give two different answers, and the *only* thing that
+    may move the answer is an argument. **It covers all three siblings**,
+    because fixing only the one a test caught is how the input moved frames the
+    first time.
+    """
+    done = coordination.Task(
+        id="TASK-432", title="p", state=coordination.IN_FLIGHT,
+        declared="IN VALIDATION", lane="Lane A", depends_on=[],
+    )
+    released = coordination.Task(
+        id="TASK-444", title="r", state=coordination.ASSIGNED,
+        declared="READY", lane="Lane A", depends_on=["TASK-432"],
+    )
+    rows = [done, released]
+
+    # Nothing outstanding: the predecessor is handed over, so the release stands.
+    assert coordination.premature_releases(rows, frozenset()) == []
+    assert coordination.premature_releases(rows, frozenset()) == []
+    # ⚡ Only the argument moves it — this is the world that used to arrive
+    # through `git cherry` on whichever refs the machine happened to hold.
+    assert [
+        r.id for r in coordination.premature_releases(rows, frozenset({"TASK-432"}))
+    ] == ["TASK-444"]
+
+    parked = coordination.Task(
+        id="TASK-445", title="s", state=coordination.SEQUENCED,
+        declared="SEQUENCED", lane="Lane A", depends_on=["TASK-432"],
+    )
+    seq = [done, parked]
+    assert [r.id for r in coordination.stale_sequencing(seq, frozenset())] == ["TASK-445"]
+    assert coordination.stale_sequencing(seq, frozenset({"TASK-432"})) == []
+
+    # `blocked_on_integration` reads the same world and took it the same way.
+    assert coordination.blocked_on_integration(seq, "Lane A", frozenset()) == []
+    assert [
+        r.id
+        for r in coordination.blocked_on_integration(seq, "Lane A", frozenset({"TASK-432"}))
+    ] == ["TASK-445"]
 
 
 def test_delivered_is_a_pure_function_of_its_arguments() -> None:

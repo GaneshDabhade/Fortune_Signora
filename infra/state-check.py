@@ -381,8 +381,12 @@ def _coordination_findings() -> list[str]:
         [sys.executable, "-c",
          "import sys; sys.path.insert(0, 'infra'); import coordination as c; "
          "rows = c.tasks(); c._walk(rows, {r.id: r for r in rows}); "
-         "print(' '.join(r.id for r in c.stale_sequencing(rows))); "
-         "print(' '.join(r.id for r in c.premature_releases(rows)))"],
+         # **B-144.** These take `outstanding` as an argument now, so the
+         # clone is read here — once, explicitly — instead of inside each
+         # predicate where nothing could state the world it wanted.
+         "outstanding = c._outstanding_rows(rows); "
+         "print(' '.join(r.id for r in c.stale_sequencing(rows, outstanding))); "
+         "print(' '.join(r.id for r in c.premature_releases(rows, outstanding)))"],
         cwd=REPO_ROOT, capture_output=True, text=True,
     )
     out = (stale.stdout.splitlines() + ["", ""])[:2]
