@@ -4467,6 +4467,40 @@ KeyError: '0035'
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
 
+## C-337 · SSH to GitHub is intercepted on this workstation, and the obvious fix is the dangerous one
+
+**Opened 2026-08-07 · Lane B · 🟠 · owner: product owner** *(operational — not a repository defect)*
+
+> **Recorded because the remediation every lane will reach for is `ssh-keygen -R github.com`, and running it is what turns a caught interception into a successful one.**
+
+| | |
+|---|---|
+| **Status** | **`OPEN`** — ⚙️ **operational, and not blocking today.** The remote is HTTPS and pushes cleanly; **this costs nothing until somebody switches a remote back to SSH** |
+| **Owner** | **The product owner.** ⛔ **Not a lane's**: it is the network this workstation is on, not anything in the repository (§20e — *a workstation gap must never be recorded as a repository defect*, [B-011](BUGS.md)) |
+| **Raised by** | **Lane B**, 2026-08-07, on `git fetch` failing mid-slice with `REMOTE HOST IDENTIFICATION HAS CHANGED` |
+
+### The measurement, because the conclusion depends on it
+
+| | Key size | Fingerprint |
+|---|---|---|
+| **GitHub's official RSA**, from `api.github.com/meta` **over HTTPS** | **3072-bit** | `uNiVztksCsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s` |
+| **What answers `github.com:22`** | **2048-bit** | `7zYnlSpxx6z0t477lR5vNYfelxewzWwu8N1X6v+wsZA` |
+| **What answers `ssh.github.com:443`** | **2048-bit** | **the same impostor key** |
+
+⚡ **Two different ports, one key, and only RSA offered** — GitHub serves ed25519, ECDSA **and** RSA. **A key rotation would not lose two key types or change the key size**, and it would be published. **`known_hosts` holds all three genuine keys and SSH refused correctly.**
+
+### Why HTTPS is trustworthy when SSH is not
+
+**Separate transport, separate validation, and the two disagree in the direction that settles it.** TLS to `github.com` verifies against **Sectigo** — GitHub's genuine public issuer, not a local or enterprise CA — and **that same HTTPS path returned the real fingerprints, which contradict the key SSH is being offered.** ⛔ **Anything able to forge both would have made them agree.**
+
+### ⛔ What no lane should do
+
+**Do not run `ssh-keygen -R github.com`.** It is the first result for this error message and it **deletes the evidence that caught the problem**, after which SSH silently trusts whatever answers. **Use the HTTPS remote**, which is what this clone now does.
+
+### What is actually being asked
+
+**Nothing from any lane.** **The product owner decides whether this is a corporate or ISP middlebox to accept or to escalate** — DNS resolves `github.com` to `20.207.73.82`, which is inside GitHub's own Azure range, so **the interception is on the path rather than at the destination.** **Close this when the network is understood**, or leave it open as the standing reason SSH is not used here.
+
 ## C-336 · TASK-428 spans two lanes' modules, and its signal half already has a row of its own
 
 **Opened 2026-08-07 · Lane B · 🟠 · owner: Lane C** *(backlog decomposition)*
