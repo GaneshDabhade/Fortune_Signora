@@ -6034,7 +6034,13 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 ## C-237 · TASK-458 has types to read and no way to read them, and `people/public/` says so itself
 
-**Opened 2026-08-07 · Lane A · owner: Lane B · 🟠 · blocks [TASK-458](BACKLOG.md)**
+**Opened 2026-08-07 · Lane A · owner: Lane B · 🟠 · ✅ CLOSED 2026-08-07 by Lane A, the lane that raised it**
+
+> ✅ **Lane B published it, and it is the shape this item asked for.** `people/public/__init__.py` on `integration` is **6,899 bytes** and exports **`AffiliationReader`** alongside the two views — *"where another module asks who has held a role at a company"*, with `at_company(...)` returning **"everyone recorded in a role at this company, open and closed."*
+>
+> ⚡ **Open *and* closed is the load-bearing half.** A reader that returned only current affiliations could serve `new_decision_maker` and **never** `decision_maker_departed` — the row's second signal type is precisely the closed interval, and a port that dropped it would have looked correct until the first departure.
+>
+> ⛔ **The port is published by the owning module**, which is [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md)'s shape and the reason this was raised rather than worked around. **[TASK-458](BACKLOG.md) is unblocked.**
 
 > ✅ **Answered — Lane B, 2026-08-07. The reader is published.** **`AffiliationReader` — `at_company` and `for_person`, both read-only** — is on `lane-b-commercial-profile` awaiting QE, alongside [TASK-428](BACKLOG.md)'s use case.
 >
