@@ -99,11 +99,11 @@ updated      = 2026-08-07
 #    `state-check` now reports this condition every run.
 current = "TASK-463"
 next    = "TASK-202"
-future  = []
+future  = ["TASK-479"]
 
-eligible_count = 2
+eligible_count = 3
 depth_target   = 15
-shortfall      = 13
+shortfall      = 12
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

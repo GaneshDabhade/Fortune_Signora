@@ -269,28 +269,10 @@ owner   = "Lane A"
 note    = "M-U · The People experiences a customer opens"
 
 [[blocked]]
-task    = "TASK-451"
-blocker = ["see the backlog row"]
-owner   = "Lane A"
-note    = "Saved View — application, interface and permission-aware listing"
-
-[[blocked]]
 task    = "TASK-452"
 blocker = ["see the backlog row"]
 owner   = "Lane A"
 note    = "Saved View — the screens that use it"
-
-[[blocked]]
-task    = "TASK-467"
-blocker = ["TASK-448"]
-owner   = "Lane A"
-note    = "The authentication surface, to the approved design"
-
-[[blocked]]
-task    = "TASK-468"
-blocker = ["TASK-448"]
-owner   = "Lane A"
-note    = "Workspace Setup — replaced, not refined"
 
 [[blocked]]
 task    = "TASK-469"
@@ -303,12 +285,6 @@ task    = "TASK-470"
 blocker = ["see the backlog row"]
 owner   = "Lane A"
 note    = "User Profile"
-
-[[blocked]]
-task    = "TASK-471"
-blocker = ["TASK-448"]
-owner   = "Lane A"
-note    = "Team Management — conformance verified, or refined"
 
 [[blocked]]
 task    = "TASK-475"

@@ -379,8 +379,33 @@ def _outstanding_rows(rows: list[Task]) -> frozenset[str]:
         ids = [r.id for r in rows if r.lane == lane]
         if not ids:
             continue
-        log = _git("log", "--oneline", f"origin/integration..{branch}")
-        out |= {i for i in ids if i in log}
+        # ⛔ **`git cherry`, not `git log` — 2026-08-07.** This read
+        # `log origin/integration..<branch>`, which is **hash reachability**:
+        # after a lane rebases, its commits get new hashes and every one of
+        # them reads as outstanding even when the identical content is already
+        # upstream. ⚡ **`git cherry` compares by patch-id and prefixes `-` for
+        # a commit that has an upstream equivalent**, so only `+` lines are
+        # genuinely outstanding.
+        #
+        # **Found by content, on `TASK-479`.** `people/public/__init__.py` is
+        # **byte-identical** on `origin/integration` and
+        # `origin/lane-b-commercial-profile` — same blob `56b848f4edd5` — while
+        # four commits naming `TASK-457` still showed as ahead. **The row was
+        # held against a contract that had already landed.**
+        #
+        # ⚠️ **This is the proxy Lane B named in [C-235](../docs/LANE_COORDINATION.md)**:
+        # *"reachability was the proxy; ref-equality is now the proxy; neither
+        # is the property."* **Patch equivalence is nearer the property, and
+        # `git cherry` is what already computes it.**
+        unmerged = [
+            line[2:]
+            for line in _git("cherry", "origin/integration", branch).splitlines()
+            if line.startswith("+")
+        ]
+        subjects = "\n".join(
+            _git("log", "--format=%s%n%b", "-1", sha.strip()) for sha in unmerged if sha.strip()
+        )
+        out |= {i for i in ids if i in subjects}
     return frozenset(out)
 
 
