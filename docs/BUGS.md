@@ -80,6 +80,42 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-141 · Two pytest runs behaved abnormally in one cycle, and the record now names one of them
+
+| | |
+|---|---|
+| **Module** | QE tooling — [`infra/smoke.sh`](../infra/smoke.sh) stage `14d`, and the certification harness |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — **wrong but survivable.** Both runs ultimately produced correct verdicts; ⛔ **neither is explained** |
+| **Status** | **`OPEN`** — ⚡ **recorded as a measurement, deliberately not diagnosed.** Two hypotheses below and no conclusion |
+| **Found** | 2026-08-07 by QE, cycle 90 |
+
+**What was measured, in one cycle, on one workstation.**
+
+| | |
+|---|---|
+| **Attempt 2** — `6aaf45ef` | `pytest` gate **failed** reporting `3928 passed`. ⛔ **The same command, re-run twice, gave `3931 passed` and exit `0`** — once via `make validate`, once via certify's exact invocation against a disposable database |
+| **Attempt 3** — `dae64177` | ✅ Certified. **`smoke` took `2652s` against a normal `142`–`179s`** — **18×** — and `slowest 14d. Change detection 2495s` |
+
+**Both are pytest runs.** Stage `14d` is `uv run pytest tests/observation_engine`, and — unlike the suite gate, which certification provisions a disposable database for — **it connects to the shared stack at `localhost:5433`**.
+
+### Two hypotheses, and QE is not choosing between them
+
+| | |
+|---|---|
+| **Resource contention** | Other lanes were active on this workstation throughout. **The environment lease serialises `certify`, `smoke`, `up` and `test`** — it does not and cannot cover a process that never asks for it |
+| **Something in the suite itself** | ⛔ **Nothing rules this out.** Three fewer passes is not noise-shaped, and a 41-minute stage is not load-shaped either |
+
+⚠️ **Naming a cause on this evidence would be the [B-136](#b-136--the-worker-crash-loops-in-every-non-local-environment-because-the-composition-root-now-calls-a-guard-nothing-satisfies) mistake in reverse** — attributing a failure to the first plausible component. **The row exists so the next occurrence has a predecessor to compare against**, which is precisely what `_slowest_stage` was added for:
+
+> *"Across 28 runs the smoke gate sat between 104s and 193s except twice — 4830s and 1096s, both completing every stage. **Neither was explainable afterwards, because the record kept one number.**"*
+
+⚡ **This is the first outlier where the record names the stage.** [B-140](#b-140--a-failing-gate-reported-its-verdict-and-discarded-its-evidence), fixed in the same cycle, means **the next failing gate will name the test.** Two instruments, both added because this cycle needed them and did not have them.
+
+**Addressed if it recurs** (§20e: *observations found during certification do not expand its scope*). ⛔ **Never by re-running until green** — that is the habit both fixes exist to make unnecessary.
+
+---
+
 ### B-140 · A failing gate reported its verdict and discarded its evidence
 
 | | |
