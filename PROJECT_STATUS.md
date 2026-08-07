@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `9aae52b`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `1e09e25`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `9aae52b`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `1e09e25`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`9aae52b`** — the certified commit itself |
+| **`main`** | **`1e09e25`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 111 promoted ⚡ **Workflow 1 milestone 4 — the workflow is complete to the boundary [D-156](docs/DECISION_REGISTER.md) drew** |
-| **Certification** | ✅ [`9aae52bf6a04`](certification/reports/9aae52bf6a04.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 112 promoted **[D-170](docs/DECISION_REGISTER.md) and [D-171](docs/DECISION_REGISTER.md)** — ⚡ **an operating-model critique that names six weaknesses in the model that asked for it** |
+| **Certification** | ✅ [`1e09e25faabc`](certification/reports/1e09e25faabc.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 198s *(Build 57s)* *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 141s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,51 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 111
+## 1d · Release summary — 2026-08-07, cycle 112
+
+**Derived from the promoted commit `1e09e25`.** **Sixty-seven promotions.** ⚡ **A governance edit QE read before certifying, and the fastest smoke of the session.**
+
+### What was promoted
+
+| | |
+|---|---|
+| **[D-170](docs/DECISION_REGISTER.md)** *(Lane C)* | Three rulings applied — ⚡ **including the one edit Product Office has ever made to `CLAUDE.md`** |
+| **[D-171](docs/DECISION_REGISTER.md)** *(Lane C)* | **[490](docs/architecture/490-operating-model-critique.md) — the operating model, critiqued as it asked, and six weaknesses named with evidence** |
+
+### ⚠️ The `CLAUDE.md` edit, checked rather than waved through
+
+**`CLAUDE.md` is the product owner's** (§20e); Lane C drafts amendments **on their instruction and nowhere else.** The diff is six lines under **§20c**, the frontend foundation freeze:
+
+> *"The UI Migration Program is a standing approved architectural change under the fourth exemption… **Replacing the design tokens, the shells and the shared components to match the finalized Signora Design System is the programme, not a breach of the freeze.**"*
+
+**Three things made it certifiable without QE adjudicating governance:**
+
+| | |
+|---|---|
+| **It names its authority** | [D-170](docs/DECISION_REGISTER.md) §2, *"on the product owner's explicit instruction and their wording"*, resting on **D-153 · D-154 · D-161**, all ruled |
+| **It clarifies rather than changes** | §20c already exempts *"an explicitly approved architectural change (RFC)"* — **this says the migration is one**, not that the freeze is narrower |
+| ⚡ **It preserves what the freeze exists for** | *"The freeze continues to bar ad-hoc modification for one page's benefit… **the distinction is the direction of the change: toward the finalized design is the migration; away from it, to suit one caller, is the defect.**"* |
+
+> **That is the second governance-shaped commit QE has read this session before certifying it** — [D-165](docs/DECISION_REGISTER.md) removed a lane from the active model. **Both named a ruling; neither needed QE to decide anything.** ⛔ **The check is cheap and the alternative is certifying a rule change nobody authorised.**
+
+### ✅ Smoke 141s — the fastest reading of the session
+
+**No frontend in the candidate, and the gate returns to the low end of its band.** ⚡ **`Build` has named the slowest stage on every frontend cycle and none of the others** — the separation `_slowest_stage` was added to expose, holding across ten cycles now.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1636 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **116 runs recorded, 108 certified** · `promoted == certified` ✓ · `--audit-main` clean · **fifteenth consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · ✅ **smoke 141s** |
+| **Dependency** | ✅ Nothing held. Lane A level with `main` |
+| **Customer Value** | ⛔ **None directly.** Governance and a self-critique |
+| **Process** | ⚡ **The operating model was asked to critique itself and named six weaknesses with evidence** — [490](docs/architecture/490-operating-model-critique.md) |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 111
 
 **Derived from the promoted commit `9aae52b`.** **Sixty-six promotions.** ⚡ **Workflow 1 is complete, and a lane's poll reported it had not started.**
 
