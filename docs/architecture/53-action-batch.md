@@ -92,24 +92,44 @@
 
 **So nothing here names the concept in customer language**, and a consumer rendering it takes its wording from the ratified name when there is one.
 
-## ⛔ What slices 1–2 deliberately do not contain
+## The store is two tables, and the split is what keeps it append-only
 
-**No table, no endpoint, no events, and no write path.** The reader is read-only because **a port that could write before the application layer exists would let a consumer commit to a lifecycle nobody has built.**
+**Slice 3, migration `0042`.** **`action_batch` is the identity, written once and never touched again**; every lifecycle event afterwards is a row in **`action_batch_transition`**. A single table carrying `state`, `applied_at` and `reversal` would need `UPDATE` on all three — and **an approval that can be edited is an approval nobody can cite** (§2).
 
-**Persistence is slice 3** — append-only, **no `UPDATE` grant**, `ENABLE` *and* `FORCE ROW LEVEL SECURITY` in the creating migration, and classification in `tenancy_policy.py` in the same change (§8). ⚡ **The standard to match is [TASK-427](../BACKLOG.md)**, whose Closeout called it *"a new bounded context that brought its own guarantees"* — both tables forced, separate `SELECT`/`INSERT`/`DELETE` policies, and the one `UPDATE` policy carrying **both** `USING` and `WITH CHECK`, *"without the second, a row could be updated out of its own workspace."*
+> ⚡ **The precedent is `opportunity_state`** (migration 0014), copied deliberately rather than re-invented: *"append-only, each row a **complete** statement of workflow state rather than a delta. The status **is** the audit log rather than something kept beside it, so the two cannot drift."*
+
+**Neither table carries `UPDATE`, and no exception is argued.** `affiliation` in `0040` **is** an exception and argues itself at length — `ended_on` moves exactly once and nothing else is touched. **Nothing here has that shape**: every row is a fact about a moment, and a fact about a moment is never corrected in place. **Both are registered in `tenancy_policy.py`** — in `TENANT_OWNED_TABLES` *and* `IMMUTABLE_TENANT_TABLES` — which is what earns them the Security Invariants rather than a local test restating them.
+
+**There is no `state` column and no `applied_at` column.** Both derive from the log (§2), and a stored copy is the one that eventually disagrees with the record an audit cites. **`reversible_for` *is* stored**, because it is *declared* at proposal; whether it has elapsed is still computed by `has_settled`.
+
+### ⚠️ `actor_id` is nullable on the log, and slice 2's handoff said it never would be
+
+**Both statements are right about different things, and the difference is worth keeping.** `Decision.actor_id` in the domain is non-nullable and always will be. **The log's `actor_id` is nullable for exactly one transition — `applied` —** because `applied_on` takes no actor: application is performed by the consuming domain **on the authority of the approval already recorded**, and inventing a second actor there would attribute the write to whoever happened to flush it.
+
+⛔ **It is not a loosened rule; it is a constrained one.** A `CHECK` permits `NULL` **only** for `applied`, so the database refuses an unattributed approval — the same device `opportunity_state` uses for *"intelligence suggests; humans commit."*
+
+### The current state is derived by replaying the log through the domain
+
+**Reconstruction calls `approved_by` / `applied_on` / `reversed_by`**, never sets fields behind them. So **the domain's guards run on load**: a log that could not have been produced legally raises rather than yielding an aggregate that is quietly wrong. ⚡ **Replay is deterministic because no domain method reads a clock** — a reversal replays with the moment it was recorded at, so it is inside its window forever.
+
+> ⚠️ **A defect the round-trip tests caught, recorded because it is not obvious.** The transition a decision represents is **not** simply the current state: **a reversal overwrites `state` with `REVERSED`**, so reading it off the state recorded an approval *as* a reversal — leaving a batch that replayed as something nobody ever approved. **It is still derived rather than stored**: only an approved batch can be applied and only an applied one reversed, so `applied_at` entails the approval.
+
+## ⛔ What slices 1–3 deliberately do not contain
+
+**No endpoint, no events, and no write path a consumer can reach.** The published reader is read-only because **a port that could write before the application layer exists would let a consumer commit to a lifecycle nobody has built.**
 
 **Events are slice 4 and neither of the two is designed** — [P-C](../DOMAIN_DISCOVERY_REGISTER.md): *an event exists when a consumer appears.*
 
-> ⚠️ **A test pinned slice 1's scope as *"the module has no layer but `public`"*, and slice 2 is chartered to break it.** **Re-aimed rather than deleted, and strictly stronger**: it now asserts the context has **no `infrastructure`, `interface` or `application`** — which is what slices 3 and 4 add and what a lane could otherwise smuggle in early. **Counting the layers to one asserted that only by accident.**
+> ⚠️ **A test pinned slice 1's scope as *"the module has no layer but `public`"*, and every slice since has been chartered to break it.** **Re-aimed twice rather than deleted, and stronger each time**: it no longer counts directories at all. It asserts that **nothing here is reachable from outside the process and nothing here announces itself** — by reading the source for `OutboxEvent`, `publish(` and `event_bus`, which is where slice 4 will add them and where a directory check would never look.
 
 ## What the next assignee needs, and it is one paragraph
 
-**Slice 3 persists this aggregate and nothing more.** `ActionBatch` is the shape to store: five states, two `Decision` records (`decided`, `reversal`), `applied_at`, and `reversible_for`. ⛔ **Do not add an `is_settled` column** — that is the one thing this context has said no to twice, in the ADR and in the code. **`Decision` is a value object, not a table**; whether it becomes two columns or an embedded type is slice 3's call, but **`actor_id` is never nullable**.
+**Slice 4 is the application layer and the two events.** The port is already published at `application/ports.py` — **`add`, `record`, `get`, and deliberately no `update`** — and `SqlActionBatchRepository` implements it. **`record` appends whatever transition the aggregate most recently underwent, and derives its position from the aggregate's own history**, which is what makes it idempotent: re-recording the same aggregate writes the same `sequence` and collides with `uq_action_batch_transition_sequence` instead of storing the fact twice. ⛔ **Do not replace that with `max(sequence) + 1`** — it would silently duplicate.
 
-**The domain refuses invalid transitions and the repository must not re-implement those checks** — a second copy of the lifecycle in SQL is the duplicated truth §2 forbids. **Persist the result of a transition; never decide one.**
+**The domain refuses invalid transitions and the repository does not re-implement those checks** — a second copy of the lifecycle in SQL is the duplicated truth §2 forbids. **Persist the result of a transition; never decide one.**
 
 ## How to see it
 
-**You cannot, and that is still true after slice 2.** The demonstration belongs to **slice 6 — one consumer end to end**, recommended as Companies bulk, *"because a contract proven by one real caller before six adopt it"* is the discipline [ADR-0403](adr/0403-signal-engine-reads-a-declaration.md) used. **A port with seven simultaneous first callers has no chance of being corrected cheaply.**
+**You cannot, and that is still true after slice 3.** The demonstration belongs to **slice 6 — one consumer end to end**, recommended as Companies bulk, *"because a contract proven by one real caller before six adopt it"* is the discipline [ADR-0403](adr/0403-signal-engine-reads-a-declaration.md) used. **A port with seven simultaneous first callers has no chance of being corrected cheaply.**
 
 ⚠️ **So this slice is not a completed product slice under §2** — it is infrastructure that has not reached a customer, and it is reported as such rather than as a demoable increment.

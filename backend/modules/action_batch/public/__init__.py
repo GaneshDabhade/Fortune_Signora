@@ -2,14 +2,18 @@
 
 **The contract, and nothing else** — slice 1 of six
 ([455 §5](../../../../docs/architecture/455-context-definitions-r02-r03.md)),
-ratified by [ADR-0405](../../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md)
+ratified by
+[ADR-0405](../../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md)
 and assigned to Lane B by [D-127](../../../../docs/DECISION_REGISTER.md).
 
 > ## **This context coordinates lifecycle. Business domains own business behaviour.**
 
 | **This context owns** | **The consuming domain owns** |
 |---|---|
-| The action as the canonical unit of work · approval · withdrawal · approval state · the reversible window · execution metadata · **this contract** | **Interpreting** the action · **performing** the operation · **validating** business rules · **executing** the change · **implementing the inverse** |
+| The action as the canonical unit of work · approval · withdrawal · approval
+state · the reversible window · execution metadata · **this contract** |
+**Interpreting** the action · **performing** the operation · **validating**
+business rules · **executing** the change · **implementing the inverse** |
 
 ⛔ **It is not responsible for business semantics**, and that sentence is the
 whole boundary. It is [ADR-0402](../../../../docs/architecture/adr/0402-a-rule-is-data.md)'s
@@ -113,7 +117,8 @@ class ActionBatchView:
         would be two representations of one fact (§2), and a scheduler to flip
         it is machinery [P-B](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md)
         exists to refuse. **The precedent is `Snoozed.until` in
-        `signal_engine`**, which [447](../../../../docs/architecture/447-signal-center-traceability-audit.md)
+        `signal_engine`**, which
+        [447](../../../../docs/architecture/447-signal-center-traceability-audit.md)
         named *"the pattern R-03 should copy."*
 
         **An action that never applied is not settled** — it has no window to

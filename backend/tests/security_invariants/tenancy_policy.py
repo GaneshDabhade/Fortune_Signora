@@ -97,6 +97,17 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # migration: `ended_on` moves exactly once, from NULL to a date, and
         # nothing else in the row is ever touched.
         "affiliation",
+        # The Action Batch context (TASK-463), migration 0042. **Two tables,
+        # and the split is what keeps them append-only**: `action_batch` is the
+        # identity, written once, and every lifecycle event afterwards is a row
+        # in `action_batch_transition`. A single table carrying `state` and
+        # `applied_at` would need UPDATE on both.
+        "action_batch",
+        # The log the current state derives from. Tenant-owned rather than
+        # infrastructure despite looking like an event stream: it records one
+        # workspace's decisions about one workspace's work, and an approval
+        # visible across tenants is the defect the platform exists to refuse.
+        "action_batch_transition",
         # Buying Score Engine (M5B), migration 0013. `workspace_scoring_model`
         # is the **second** customer-authored table — a workspace's own
         # weighting, which cannot be regenerated from anything.
@@ -334,6 +345,13 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # legitimate in-place change in the module, and it is not an edit of a
         # fact. See migration 0040, which argues it rather than assuming it.
         "person",
+        # Both Action Batch tables, and neither argues an exception. An
+        # approval that can be edited is an approval nobody can cite, and
+        # nothing here has `affiliation`'s shape — every row is a fact about a
+        # moment, and a fact about a moment is never corrected in place
+        # (migration 0042; TASK-463).
+        "action_batch",
+        "action_batch_transition",
         "buying_score",
         "workspace_scoring_model",
         "opportunity",

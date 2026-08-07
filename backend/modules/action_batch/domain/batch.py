@@ -73,6 +73,40 @@ class ApprovalState(StrEnum):
     declining, and a customer reading a history needs to tell them apart."""
 
 
+class Transition(StrEnum):
+    """What happened to a batch — the lifecycle alphabet, named once.
+
+    **Added by slice 3, because persistence had to name these and infrastructure
+    may not invent domain vocabulary** (§4). Every member is a verb
+    `ActionBatch` already has a method for, and `test_batch.py` asserts that
+    correspondence executably rather than trusting it — so a sixth transition
+    cannot be added to one without the other noticing.
+
+    ⚠️ **Not the same set as `ApprovalState`, and the difference is the point.**
+    `APPLIED` is not a state: an applied batch is still `APPROVED`, and
+    `applied_at` is what says it ran. `PROPOSED` is not a transition: it is how
+    a batch begins, so it is recorded on the batch itself rather than in its
+    log.
+    """
+
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    WITHDRAWN = "withdrawn"
+    APPLIED = "applied"
+    REVERSED = "reversed"
+
+    @property
+    def is_attributed(self) -> bool:
+        """Whether this transition names an actor.
+
+        **Application is the only one that does not**, on the authority of the
+        approval already recorded — which is why `applied_on` takes no
+        `actor_id`. Stated here so the database constraint and the repository
+        derive from one rule rather than restating it twice (§2).
+        """
+        return self is not Transition.APPLIED
+
+
 def has_settled(
     applied_at: datetime | None,
     reversible_for: timedelta | None,
@@ -298,5 +332,6 @@ __all__ = [
     "ActionBatchError",
     "ApprovalState",
     "Decision",
+    "Transition",
     "has_settled",
 ]

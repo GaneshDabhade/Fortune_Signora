@@ -140,28 +140,43 @@ class TestItIsAContractAndNotAnImplementation:
         reader: ActionBatchReader = Fake()
         assert reader is not None
 
-    def test_the_context_has_no_persistence_application_or_interface_yet(self) -> None:
-        """**No table, no endpoint, no events** — P-C: an event exists when a
-        consumer appears.
+    def test_the_context_exposes_nothing_and_publishes_no_event_yet(self) -> None:
+        """**No endpoint, no events** — P-C: an event exists when a consumer
+        appears.
 
-        ⚠️ **Re-aimed by slice 2, which is chartered to add `domain/`.** This
-        read `== {"public"}` and pinned *"slice 1 is the contract and nothing
-        else"*, which was exactly right for one slice and expires the moment
-        the next one lands.
+        ⚠️ **Re-aimed twice, and each time by the slice chartered to add the
+        layer it was forbidding.** Slice 1 asserted `== {"public"}`; slice 2
+        re-aimed it to name the three forbidden layers; **slice 3 is chartered
+        to add persistence, so `infrastructure/` and its port leave the list.**
 
-        ⛔ **Re-aimed rather than deleted, and it is strictly stronger here.**
-        The property worth keeping was never *"only `public` exists"* — it was
-        that **this context still persists nothing, exposes nothing and
-        publishes no event**, which is what slices 3 and 4 exist to add and
-        what a lane could otherwise smuggle in early. **Naming the three
-        forbidden layers asserts that; counting to one only asserted it by
-        accident.**
+        ⛔ **Re-aimed rather than deleted, because the property outlives the
+        count.** What is worth pinning was never *"which directories exist"* —
+        it is that **nothing here is reachable from outside the process and
+        nothing here announces itself**, which is what slice 4 adds and what a
+        lane could otherwise smuggle in while building the tables. **A
+        directory listing asserted that only by accident; this asserts it
+        directly.**
         """
         from pathlib import Path
 
         import modules.action_batch as context
 
-        present = {p.name for p in Path(context.__file__).parent.iterdir() if p.is_dir()}
+        root = Path(context.__file__).parent
+        present = {p.name for p in root.iterdir() if p.is_dir()} - {"__pycache__"}
 
-        assert present - {"__pycache__"} == {"public", "domain"}
-        assert not present & {"infrastructure", "interface", "application"}
+        # Persistence arrived with this slice; an HTTP surface has not.
+        assert "infrastructure" in present
+        assert "interface" not in present
+
+        # **No event is published by anything in this context.** Checked by
+        # reading the source rather than the directory names, because slice 4
+        # will add events *inside* `application/` — where a directory check
+        # would never look.
+        sources = "\n".join(
+            p.read_text() for p in root.rglob("*.py") if "__pycache__" not in str(p)
+        )
+        for announcement in ("OutboxEvent", "publish(", "event_bus"):
+            assert announcement not in sources, (
+                f"{announcement!r} appears in action_batch, which publishes no event until "
+                "slice 4. P-C: an event exists when a consumer appears."
+            )
