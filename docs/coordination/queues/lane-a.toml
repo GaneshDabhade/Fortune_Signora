@@ -381,6 +381,69 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🔴  STOP — READ THIS BEFORE YOUR NEXT SLICE. 2026-08-07 · D-161
+#
+# ⚡ THE PRODUCT OWNER REVIEWED LOGIN AND IT STILL LOOKS LIKE THE OLD PRODUCT.
+#   ⛔ IT IS NOT YOUR DEFECT, AND THE MEASUREMENT SAYS SO PLAINLY.
+#
+#   You rebuilt auth-shell.tsx and sign-in-form.tsx from the design across two
+#   milestones. Measured on your branch: `sm:` nine times, `lg:` twice,
+#   rounded-xl, shadow-none on mobile — the three responsive layouts the
+#   design specifies — composed entirely from semantic tokens, with not one
+#   literal colour. That is exactly what §20c and D-154 ask for.
+#
+#   And globals.css is BYTE-IDENTICAL on main, integration and your branch.
+#   Zero of the design's sixteen colours. Still Tailwind's slate and blue.
+#
+#     You built the right screen against the wrong palette.
+#     bg-surface is #ffffff. text-content is slate-900. bg-accent is blue-600.
+#     The structure is the design's; the visual language is the foundation's,
+#     and the foundation never moved.
+#
+# ⚠️ THAT IS THIS OFFICE'S FAILURE, NOT YOURS. 489 measured globals.css as the
+#   only file in the repository asserting a visual value, and named it as "the
+#   token target" IN A FIELD OF TASK-467's ROW. A field is not something a
+#   lane can claim. globals.css is the frozen frontend foundation (🔴) and was
+#   in nobody's Change Budget — so you were CORRECT not to touch it. The lever
+#   was identified, published, and never scheduled.
+#
+# ✅ TASK-490 NOW EXISTS AND IS YOUR `current`. It carries the 🔴 authorization
+#   D-161 supplies, and it is one file plus a font:
+#     • the sixteen colour values (zero are present today)
+#     • the radius scale, shifted one whole step: sm is 4px against 6,
+#       md is 6px against 8; xs and 2xl absent
+#     • four warm elevations replacing three tinted slate-900
+#     • --ease: cubic-bezier(.32,.72,0,1) — no easing token exists
+#     • Archivo — the product declares NO typeface anywhere
+#     • eleven missing token roles: --font-body --ease --r-xs --r-2xl
+#       --bg-rail --ink-4 --brand-ink --brand-line --ai-ink --ai-line --e4
+#
+#   ⛔ DO NOT rename the existing 48 tokens. A custom property is not visible
+#      to a customer; a rename touches every component for zero visible change.
+#   ⛔ DO NOT weaken design-tokens.test.tsx. It pins no value, only the
+#      discipline, and it is the single reason this is one file and not a
+#      rewrite.
+#
+# ⚡ WHY IT IS SMALL AND WHY IT PAYS IMMEDIATELY: tailwind.config.ts maps names
+#   onto custom properties and holds no value; no components/ui primitive holds
+#   a literal colour. Change the values and every screen you have already
+#   built moves with them — including the shell.
+#
+# ⛔ TASK-483 AND TASK-484 ARE SEQUENCED BEHIND IT, and it is a genuine
+#   technical dependency rather than a preference: built before the tokens
+#   move, they are built twice. Your claimable set is ONE row.
+#
+# 🔴 AND A NEW GATE THAT SAVES YOU A REVIEW CYCLE — D-161 ⑦. Before any
+#   customer-visible workflow goes to the product owner, THIS OFFICE performs a
+#   pixel-level conformance audit against the finalized design and catches
+#   legacy tokens, layouts and components first. You will get that audit
+#   BEFORE the review, not after it. Ask for it when you think a workflow is
+#   done; do not wait to be offered it.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🟢  THE PIPELINE IS NOW SEVERAL WORKFLOWS DEEP — 2026-08-07 · D-160
 #
 #   "Product Office should always stay ahead of implementation by planning and
@@ -861,8 +924,8 @@ updated      = 2026-08-07
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-483"
-next    = "TASK-484"
+current = "TASK-490"
+next    = ""
 # ⚠️ The last three are RELEASED and NOT CLAIMABLE TODAY — their READY is on
 # `lane-c-sync` and you claim against BACKLOG.md on `integration` (C-425).
 # They are listed here rather than hidden because a row the backlog offers
@@ -901,7 +964,7 @@ future  = []
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 2
+eligible_count = 1
 depth_target   = 15
 shortfall      = 13  # ⛔ by ruling — D-158 §2. Two rows, both Workflow 1.
 assigned_total = 14
