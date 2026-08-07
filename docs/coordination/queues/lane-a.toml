@@ -381,6 +381,54 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🟢  THE PIPELINE IS NOW SEVERAL WORKFLOWS DEEP — 2026-08-07 · D-160
+#
+#   "Product Office should always stay ahead of implementation by planning and
+#    decomposing future work, while implementation remains focused on a single
+#    customer journey at a time."
+#
+# ⚡ NEW FILE, AND IT IS THE ONE TO READ: docs/coordination/workflows.toml
+#   27 workflows across the 26 finalized designs, each with an explicit state.
+#   Exactly one is `active`. You will never again have to ask what comes next.
+#
+# ✅ FIVE JOURNEYS DECOMPOSED THIS CYCLE, each with all fifteen fields D-160
+#   asks for — features, dependencies, reusable components, shared layout,
+#   backend reuse, API reuse, Better Auth reuse, simulation, Playwright,
+#   component coverage, review gate, Definition of Done:
+#
+#     TASK-485  W2 Registration ......... screens 01, 06
+#     TASK-486  W3 Email Verification ... screen 07
+#     TASK-487  W4 Forgot Password ...... screen 08
+#     TASK-488  W5 Password Reset ....... screens 09, 10
+#     TASK-489  W7 Invitation Acceptance  screens 13, 14, declined, wrong account
+#
+#   ⛔ ALL FIVE ARE SEQUENCED, NOT READY. You cannot claim them and should not
+#      try. Each releases when its predecessor is `approved` in workflows.toml,
+#      which only the product owner's review sets.
+#
+# ⚡ THE MEASUREMENT THAT CAME OUT OF DECOMPOSING THEM, and it is good news:
+#   WORKFLOWS 2 TO 5 NEED ZERO BACKEND WORK. Measured in lib/auth/, not
+#   assumed — signUpWithPassword, resendVerification, requestPasswordReset and
+#   resetPassword all exist; sendVerificationEmail and sendResetPassword are
+#   configured on the server. Four complete customer journeys are pure
+#   presentation replacement.
+#   ⚠️ Workflow 7's four invitation endpoints ship too. Its gap is EXPIRY —
+#      7 days, single-use, address-bound — which is a business rule, so it is
+#      NOT simulated and screen 14's enforcement is explicitly out of scope.
+#
+# ⚠️ ONE FINDING FROM W7 WORTH KNOWING EARLY: a join surface already exists at
+#   app/(app)/join/[workspaceId]/ — 111 lines, INSIDE the App Shell — and the
+#   design puts invitation acceptance in the AUTHENTICATION card. An invited
+#   person is not signed in yet. Recorded in TASK-489 rather than discovered
+#   when you reach it.
+#
+# ⛔ YOUR CLAIMABLE SET IS UNCHANGED: TASK-483, then TASK-484. Both Workflow 1.
+#   105 backlog rows, 2 startable. Planning ran ahead; implementation did not.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🟢  THE QUEUE IS NOW ORDERED BY CUSTOMER JOURNEY — 2026-08-07 · D-158 §2
 #
 #   "Confirm that Lane A's implementation queue has been reordered around

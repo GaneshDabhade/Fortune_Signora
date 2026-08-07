@@ -1,0 +1,295 @@
+# The customer-journey pipeline — D-160.
+#
+# **One workflow is implemented at a time; many are planned ahead of it.** This
+# file is where that distinction is stored, because [D-160](../DECISION_REGISTER.md)
+# asks for *"an explicit state"* per workflow and a state kept in prose is a
+# state the generator cannot read — a lesson this office has now paid for three
+# times (D-155, D-157, D-158, each corrected by moving a ruling into the data).
+#
+# ⛔ **This is not a specification.** [D-137](../DECISION_REGISTER.md) forbids a
+# copied specification, an exported checklist or an intermediate implementation
+# guide, and [D-138](../DECISION_REGISTER.md) makes
+# [`design-snapshot/`](../design-snapshot/MANIFEST.md) the implementation
+# authority. **Every workflow below names the design document it derives from
+# and stores no design content of its own.** The decomposition lives in
+# `BACKLOG.md` rows, which is the artifact §20e permits Product Office to write.
+#
+# ⚡ **The pipeline is planned many workflows deep and active exactly one deep.**
+# **`active` is the only state an implementation lane may build in**, and it
+# advances only when the product owner has reviewed the previous workflow on
+# `main` ([D-153](../DECISION_REGISTER.md) ⑥).
+#
+# ── The twelve states, as D-160 names them ──────────────────────────────────
+#   planned      the journey is identified and its design document is named
+#   decomposed   epic, tasks, slices, dependencies and reuse are written
+#   sequenced    placed in the queue behind its predecessor's review gate
+#   ready        claimable — dependencies resolved, owner assigned
+#   active       being implemented. ⛔ NORMALLY EXACTLY ONE
+#   in_progress  a lane holds a row inside it
+#   in_validation the lane has pushed and set the state
+#   awaiting_qe  with QE for certification
+#   on_main      promoted
+#   awaiting_review  the product owner has been notified
+#   approved     reviewed and approved — this is what releases the next workflow
+#   complete     approved and closed out
+#
+# ⛔ **Generated views read this file; nothing restates a workflow's state.**
+
+[meta]
+authority   = "docs/design-snapshot/screens/"
+ruling      = "D-160"
+updated     = 2026-08-07
+active_rule = "exactly one workflow may be `active`; the product owner's review releases the next"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# THE AUTHENTICATION JOURNEYS — Fortune Signora Authentication.dc.html
+#
+# ⚡ The design names five journeys of its own and twenty-four screens. The
+# workflow split below is the PRODUCT OWNER'S (D-158), not this office's, and
+# the screen assignment is measured from the design rather than invented —
+# see 488 §6 and §6a.
+# ══════════════════════════════════════════════════════════════════════════════
+
+[workflow.1]
+name        = "Login"
+state       = "active"
+design      = "Fortune Signora Authentication.dc.html"
+screens     = ["02 Sign in", "03 Sign in — failed", "15 Authenticating", "17 Unauthorized"]
+tasks       = ["TASK-467", "TASK-483", "TASK-484"]
+defects     = ["B-315", "B-312"]
+gap_analysis = "docs/architecture/488-workflow-1-login-gap.md"
+owner       = "Lane A"
+# ⛔ Screens deliberately EXCLUDED, each with its reason — 488 §6a.
+excluded    = [
+  "16 Authentication error — quotes an identity provider verbatim; there is no SSO",
+  "11 Account locked · 12 Too many attempts — no lockout capability exists (C-431)",
+  "18 Session expired — renders over the App Shell, which is workflow 13",
+]
+
+[workflow.2]
+name        = "Registration"
+state       = "decomposed"
+design      = "Fortune Signora Authentication.dc.html"
+screens     = ["01 Welcome", "06 Create account"]
+tasks       = ["TASK-485"]
+owner       = "Lane A"
+depends_on  = ["workflow.1"]
+
+[workflow.3]
+name        = "Email Verification"
+state       = "decomposed"
+design      = "Fortune Signora Authentication.dc.html"
+screens     = ["07 Verify email"]
+tasks       = ["TASK-474", "TASK-486"]
+owner       = "Lane A"
+depends_on  = ["workflow.2"]
+# ⚡ TASK-474 is the enabler and it is REAL infrastructure, not a simulation of
+# a business rule: a developer must be able to open the verification link.
+# ADR-0406 §6 puts ten of fourteen journey gaps behind it.
+
+[workflow.4]
+name        = "Forgot Password"
+state       = "decomposed"
+design      = "Fortune Signora Authentication.dc.html"
+screens     = ["08 Forgot password"]
+tasks       = ["TASK-487"]
+owner       = "Lane A"
+depends_on  = ["workflow.3"]
+
+[workflow.5]
+name        = "Password Reset"
+state       = "decomposed"
+design      = "Fortune Signora Authentication.dc.html"
+screens     = ["09 Set a new password", "10 Success"]
+tasks       = ["TASK-488"]
+owner       = "Lane A"
+depends_on  = ["workflow.4"]
+
+[workflow.6]
+name        = "Workspace Creation"
+state       = "in_progress"
+design      = "Fortune Signora Workspace Setup.dc.html"
+tasks       = ["TASK-468"]
+owner       = "Lane A"
+# ⚠️ `in_progress` while workflow 1 is `active`, and that is a real exception
+# rather than a slip: Lane A claimed TASK-468 before D-155 published the
+# priority. D-123 makes CLAIMED the lane's state and this office does not
+# unclaim. It lands or it is set aside by Lane A, never by here.
+
+[workflow.7]
+name        = "Invitation Acceptance"
+state       = "decomposed"
+design      = "Fortune Signora Authentication.dc.html"
+screens     = ["13 Accept invitation", "14 Invitation expired", "declined", "wrong account"]
+tasks       = ["TASK-489"]
+owner       = "Lane A"
+depends_on  = ["workflow.5"]
+
+[workflow.8]
+name        = "Initial Onboarding"
+state       = "sequenced"
+design      = "Fortune Signora Onboarding.dc.html"
+tasks       = ["TASK-469"]
+owner       = "Lane A"
+depends_on  = ["workflow.6"]
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BEYOND THE AUTHENTICATION AND SETUP JOURNEYS
+#
+# ⚠️ `planned` means the journey is IDENTIFIED and its design named — not that
+# its epic, slices and reuse are written. **Honest state beats a full-looking
+# pipeline**, and calling these `decomposed` would be the defect this file
+# exists to prevent. They are decomposed in priority order, continuously, and
+# ⛔ never faster than they can be decomposed truthfully.
+# ══════════════════════════════════════════════════════════════════════════════
+
+[workflow.9]
+name   = "User Profile"
+state  = "planned"
+design = "Fortune Signora User Profile.dc.html"
+tasks  = ["TASK-470"]
+owner  = "Lane A"
+blocker = "C-307 — the first user-scoped table, and the tenancy model has no classification for one"
+
+[workflow.10]
+name   = "Team Management"
+state  = "planned"
+design = "Fortune Signora Team Management.dc.html"
+tasks  = ["TASK-471"]
+owner  = "Lane A"
+note   = "418 calls it the highest reuse in all 26 screens — 8 of 13 endpoints already ship"
+
+[workflow.11]
+name   = "Settings"
+state  = "planned"
+design = "Fortune Signora Settings.dc.html"
+tasks  = []
+owner  = "Lane A"
+
+[workflow.12]
+name   = "CRM Integrations"
+state  = "planned"
+design = "Fortune Signora CRM Integrations.dc.html"
+tasks  = ["TASK-402"]
+owner  = "Lane A"
+
+[workflow.13]
+name   = "Application Shell"
+state  = "planned"
+design = "Fortune Signora App Shell.dc.html"
+tasks  = ["TASK-447", "TASK-480", "TASK-481", "TASK-482"]
+owner  = "Lane A"
+# ⛔ 487 scores this shell at 0 of 29 distinctive phrases and EVERY screen
+# renders inside it. It is priority 5 under D-155 and that is the product
+# owner's; the cost of building surfaces into it first is recorded in 487 §5.
+
+[workflow.14]
+name   = "Companies"
+state  = "planned"
+design = "Fortune Signora Companies.dc.html"
+tasks  = ["TASK-440"]
+owner  = "Lane A"
+
+[workflow.15]
+name   = "Account 360"
+state  = "planned"
+design = "Fortune Signora Account 360.dc.html"
+tasks  = []
+owner  = "Lane A"
+
+[workflow.16]
+name   = "Global Search"
+state  = "planned"
+design = "Fortune Signora Global Search.dc.html"
+tasks  = ["TASK-481"]
+owner  = "Lane A"
+
+[workflow.17]
+name   = "Notification Center"
+state  = "planned"
+design = "Fortune Signora Notification Center.dc.html"
+tasks  = ["TASK-480"]
+owner  = "Lane A"
+blocker = "ADR-0040 unratified; MESSAGE_DELIVERY absent from LIVE_CAPABILITIES"
+
+[workflow.18]
+name   = "AI Copilot"
+state  = "planned"
+design = "Fortune Signora AI Copilot.dc.html"
+tasks  = ["TASK-482", "TASK-202"]
+owner  = "Lane A"
+
+[workflow.19]
+name   = "Executive Dashboard"
+state  = "planned"
+design = "Fortune Signora Executive Dashboard.dc.html"
+tasks  = ["TASK-438"]
+owner  = "Lane A"
+blocker = "charting has no ratified library — D-149, and the ADR waits"
+
+[workflow.20]
+name   = "Opportunity Intelligence"
+state  = "planned"
+design = "Fortune Signora Opportunity Intelligence.dc.html"
+tasks  = ["TASK-441"]
+owner  = "Lane A"
+
+[workflow.21]
+name   = "Signal Center"
+state  = "planned"
+design = "Fortune Signora Signal Center.dc.html"
+tasks  = ["TASK-439"]
+owner  = "Lane A"
+
+[workflow.22]
+name   = "Reports"
+state  = "planned"
+design = "Fortune Signora Reports.dc.html"
+tasks  = []
+owner  = "Lane A"
+blocker = "charting — same as workflow 19"
+
+[workflow.23]
+name   = "Security Center"
+state  = "planned"
+design = "Fortune Signora Security Center.dc.html"
+tasks  = []
+owner  = "Lane A"
+blocker = "418: BACKEND MISSING — sessions, devices, MFA, step-up, the Secure-my-account cascade"
+
+[workflow.24]
+name   = "Billing"
+state  = "planned"
+design = "Fortune Signora Billing.dc.html"
+tasks  = ["TASK-411", "TASK-412"]
+owner  = "Lane A"
+
+[workflow.25]
+name   = "AI Research"
+state  = "planned"
+design = "Fortune Signora AI Research.dc.html"
+tasks  = []
+owner  = "Lane A"
+
+[workflow.26]
+name   = "Workflow Automation"
+state  = "planned"
+design = "Fortune Signora Workflow Automation.dc.html"
+tasks  = []
+owner  = "Lane A"
+
+[workflow.27]
+name   = "Help Center"
+state  = "planned"
+design = "Fortune Signora Help Center.dc.html"
+tasks  = []
+owner  = "Lane A"
+
+# ── Not customer journeys, and deliberately not numbered as workflows ────────
+# `Design System v2` is the component library every workflow composes from
+# (TASK-448, TASK-478). `System States` is cross-cutting — loading, empty,
+# error and permission states that belong INSIDE each workflow rather than
+# beside them, which is exactly what D-156 ⑤ requires. `Design Review` is a
+# pre-refactor record, not a screen. **Three of the twenty-six designs are not
+# journeys, which is why this file holds twenty-seven workflows and not
+# twenty-six or twenty-four.**

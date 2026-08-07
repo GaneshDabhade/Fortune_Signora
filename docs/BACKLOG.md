@@ -857,6 +857,123 @@
 | ⛔ **Why it matters beyond tidiness** | ⚡ **[478](architecture/478-design-conformance-audit.md) measured the *content* at 1 of 11 named elements. This is the structural half** — **and the design's own rationale says why it is the cheap half: *"A single 400px card carries all 24 screens… engineering builds one layout with a content slot instead of twenty-four pages"*** |
 | **Change Budget** | 🔴 **`frontend/app/(auth)/`** — **carried by [D-153](DECISION_REGISTER.md), which approves presentation-layer replacement for the workflow under migration** |
 
+### TASK-485 · Workflow 2 — Registration, to the approved design
+
+| | |
+|---|---|
+| ⚡ **Workflow 2 in [`workflows.toml`](coordination/workflows.toml)** | **Decomposed under [D-160](DECISION_REGISTER.md) so implementation can begin the moment the gate releases it.** ⛔ **`SEQUENCED`, never `READY`, until then** |
+| **Approved screens** | **`01 Welcome` · `06 Create account`** — *"Step 1 of 2 · takes about a minute"* |
+| **Module** | **`product_surface`** — assignee joined from [`modules.toml`](coordination/modules.toml) |
+| **Status** | ⏸️ **`SEQUENCED` — after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGISTER.md): *"Planning may run many workflows ahead. Implementation proceeds one workflow at a time."*** |
+| **Features** | **The welcome card with its two entrances** · **full name, work email, password** · **the four-rule password strength list the design enumerates** — *at least 12 characters · upper and lower case · a number or symbol · not found in a breach corpus* · **the Terms and Privacy line** · **the domain-already-has-a-workspace branch** |
+| ⚠️ **The one thing this row must not do** | ⛔ **Registration exists today at `app/(auth)/sign-up/` and predates the design by five days.** **[D-154](DECISION_REGISTER.md): begin from the design and connect it to the backend — never iterate from the existing screen** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **Complete and unchanged.** **`signUpWithPassword` exists in `lib/auth/client.ts`; `sendVerificationEmail` is configured on the server.** ⛔ **Zero backend work in this row** |
+| ✅ **API reuse** | ✅ **None needed** — Better Auth owns the whole path |
+| **Reusable components required** | **`Input` · `Button` · `Card`** — ⚠️ **and the password-rule list, which `components/ui` has no equivalent for.** ⛔ **Add to the library, never beside it** (§20c) |
+| **Shared layout** | **`(auth)/auth-shell.tsx`** — ✅ **already correct once [TASK-483](#task-483--the-authentication-shell) lands. This row composes it and does not touch it** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authentication.dc.html` and nothing else** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement, no intermediate guide** ([D-137](DECISION_REGISTER.md)) |
+| ✅ **Better Auth reuse — unchanged, and this is the whole point** | ⛔ **Nothing in this row touches `lib/auth/server.ts`, RS256 verification, `requireEmailVerification` or any route.** **Better Auth remains the sole Authentication Authority** (§13) |
+| ⛔ **Development simulation** | ⚠️ **The only substitution permitted is the mailbox** — [TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends). ⛔ **Real tokens, real URLs, real expiry, real authorization** ([D-151](DECISION_REGISTER.md) ④). **A state whose *data* is missing is built against seeded data of the production shape; a state whose *business rule* is missing is not built at all** ([D-156](DECISION_REGISTER.md) ④) |
+| ⛔ **Manual review gate** | **Certify → integration → `main` → notify → the product owner reviews before the next workflow activates** ([D-153](DECISION_REGISTER.md) ⑥). ⚡ **This row does not begin until its predecessor is `approved` in [`workflows.toml`](coordination/workflows.toml)** |
+| **Change Budget** | 🔴 **`frontend/app/(auth)/` and `components/ui`** — **carried by [D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md), which approve presentation-layer replacement for the workflow under migration** |
+| ⚡ **Playwright coverage** ([D-113](DECISION_REGISTER.md)) | **Extends `auth-journey.spec.ts`, never replaces it.** **A person creates an account and reaches verification.** ⛔ **Plus the failure path the design draws: an email whose domain already has a workspace is offered a request to join** |
+| **Component coverage** | **The four password rules render and evaluate** · **the Terms line is present** · **`design-tokens.test.tsx` unrelaxed** · **`vocabulary.test.tsx` — the design says *workspace* and the screen says *organization*** ([C-239](LANE_COORDINATION.md)) |
+| ⛔ **Definition of Done** | **Every state on both screens · the journey passes headed · certified · on `main` · reviewed and approved by the product owner** ([D-156](DECISION_REGISTER.md)) |
+
+
+### TASK-486 · Workflow 3 — Email Verification, to the approved design
+
+| | |
+|---|---|
+| ⚡ **Workflow 3 in [`workflows.toml`](coordination/workflows.toml)** | **Decomposed under [D-160](DECISION_REGISTER.md) so implementation can begin the moment the gate releases it.** ⛔ **`SEQUENCED`, never `READY`, until then** |
+| **Approved screens** | **`07 Verify email`** — a six-digit code, `autocomplete="one-time-code"` |
+| **Module** | **`product_surface`** — assignee joined from [`modules.toml`](coordination/modules.toml) |
+| **Status** | ⏸️ **`SEQUENCED` — after [TASK-485](#task-485--workflow-2--registration-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGISTER.md): *"Planning may run many workflows ahead. Implementation proceeds one workflow at a time."*** |
+| **Features** | **Six single-character boxes** · ⚡ **paste fills every box** · **resend with the doubling timer the design specifies** · ⛔ **a wrong code shows inline and *keeps the digits* — it never clears what was typed** |
+| ⚡ **Why this row waits on [TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** | ⛔ **The journey cannot be executed without opening the link, and [§19](../CLAUDE.md) requires a UI slice's journey to be written *and passing*.** **That is infrastructure, not a simulated business rule** ([D-156](DECISION_REGISTER.md) ②) |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **Complete.** **`resendVerification` exists; `sendVerificationEmail` is configured.** ⛔ **Zero backend work** |
+| ✅ **API reuse** | ✅ **None needed** |
+| **Reusable components required** | ⚠️ **An OTP input — `components/ui` has none.** **One component, six boxes, one paste handler** |
+| **Shared layout** | **`(auth)/auth-shell.tsx`**, composed |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authentication.dc.html` and nothing else** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement, no intermediate guide** ([D-137](DECISION_REGISTER.md)) |
+| ✅ **Better Auth reuse — unchanged, and this is the whole point** | ⛔ **Nothing in this row touches `lib/auth/server.ts`, RS256 verification, `requireEmailVerification` or any route.** **Better Auth remains the sole Authentication Authority** (§13) |
+| ⛔ **Development simulation** | ⚠️ **The only substitution permitted is the mailbox** — [TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends). ⛔ **Real tokens, real URLs, real expiry, real authorization** ([D-151](DECISION_REGISTER.md) ④). **A state whose *data* is missing is built against seeded data of the production shape; a state whose *business rule* is missing is not built at all** ([D-156](DECISION_REGISTER.md) ④) |
+| ⛔ **Manual review gate** | **Certify → integration → `main` → notify → the product owner reviews before the next workflow activates** ([D-153](DECISION_REGISTER.md) ⑥). ⚡ **This row does not begin until its predecessor is `approved` in [`workflows.toml`](coordination/workflows.toml)** |
+| **Change Budget** | 🔴 **`frontend/app/(auth)/` and `components/ui`** — **carried by [D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md), which approve presentation-layer replacement for the workflow under migration** |
+| ⚡ **Playwright coverage** ([D-113](DECISION_REGISTER.md)) | **A person verifies with the emailed code and reaches the product**, ⚡ **through [TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)'s mailbox — a real token, a real URL, a real expiry.** **Plus the wrong-code path, asserting the digits survive** |
+| **Component coverage** | **Paste fills all six** · **`one-time-code` autocomplete present** · **a wrong code does not clear the field** — ⚠️ **this last one is the assertion a component test catches and a journey does not** |
+| ⛔ **Definition of Done** | **Every state · journey headed · certified · `main` · approved** |
+
+
+### TASK-487 · Workflow 4 — Forgot Password, to the approved design
+
+| | |
+|---|---|
+| ⚡ **Workflow 4 in [`workflows.toml`](coordination/workflows.toml)** | **Decomposed under [D-160](DECISION_REGISTER.md) so implementation can begin the moment the gate releases it.** ⛔ **`SEQUENCED`, never `READY`, until then** |
+| **Approved screens** | **`08 Reset your password`** |
+| **Module** | **`product_surface`** — assignee joined from [`modules.toml`](coordination/modules.toml) |
+| **Status** | ⏸️ **`SEQUENCED` — after [TASK-486](#task-486--workflow-3--email-verification-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGISTER.md): *"Planning may run many workflows ahead. Implementation proceeds one workflow at a time."*** |
+| **Features** | **Work email · `Send reset link` · `Back to sign in`** · ⛔ **conditional wording that never reveals whether an account exists** — *"If an account exists, you'll get a reset link that works once and expires in 30 minutes"* · ⚠️ **the SSO-enforced branch replaces this screen entirely, and there is no SSO** ([C-431](LANE_COORDINATION.md)) |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **Complete.** **`requestPasswordReset` exists; `sendResetPassword` is configured on the server.** ⛔ **Zero backend work** |
+| ✅ **API reuse** | ✅ **None needed** |
+| **Reusable components required** | **`Input` · `Button`** — ✅ **nothing new** |
+| **Shared layout** | **`(auth)/auth-shell.tsx`**, composed |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authentication.dc.html` and nothing else** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement, no intermediate guide** ([D-137](DECISION_REGISTER.md)) |
+| ✅ **Better Auth reuse — unchanged, and this is the whole point** | ⛔ **Nothing in this row touches `lib/auth/server.ts`, RS256 verification, `requireEmailVerification` or any route.** **Better Auth remains the sole Authentication Authority** (§13) |
+| ⛔ **Development simulation** | ⚠️ **The only substitution permitted is the mailbox** — [TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends). ⛔ **Real tokens, real URLs, real expiry, real authorization** ([D-151](DECISION_REGISTER.md) ④). **A state whose *data* is missing is built against seeded data of the production shape; a state whose *business rule* is missing is not built at all** ([D-156](DECISION_REGISTER.md) ④) |
+| ⛔ **Manual review gate** | **Certify → integration → `main` → notify → the product owner reviews before the next workflow activates** ([D-153](DECISION_REGISTER.md) ⑥). ⚡ **This row does not begin until its predecessor is `approved` in [`workflows.toml`](coordination/workflows.toml)** |
+| **Change Budget** | 🔴 **`frontend/app/(auth)/` and `components/ui`** — **carried by [D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md), which approve presentation-layer replacement for the workflow under migration** |
+| ⚡ **Playwright coverage** ([D-113](DECISION_REGISTER.md)) | **A person requests a reset and receives a link.** ⛔ **Asserting the *wording*, not only the flow: the response must be identical for a known and an unknown address** — ⚡ **that is an account-enumeration property, and it is the one thing here worth a test of its own** |
+| **Component coverage** | **The conditional wording is asserted verbatim** · **`design-tokens.test.tsx` unrelaxed** |
+| ⛔ **Definition of Done** | **Every state · journey headed · certified · `main` · approved** |
+
+
+### TASK-488 · Workflow 5 — Password Reset, to the approved design
+
+| | |
+|---|---|
+| ⚡ **Workflow 5 in [`workflows.toml`](coordination/workflows.toml)** | **Decomposed under [D-160](DECISION_REGISTER.md) so implementation can begin the moment the gate releases it.** ⛔ **`SEQUENCED`, never `READY`, until then** |
+| **Approved screens** | **`09 Set a new password` · `10 Password updated`** |
+| **Module** | **`product_surface`** — assignee joined from [`modules.toml`](coordination/modules.toml) |
+| **Status** | ⏸️ **`SEQUENCED` — after [TASK-487](#task-487--workflow-4--forgot-password-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGISTER.md): *"Planning may run many workflows ahead. Implementation proceeds one workflow at a time."*** |
+| **Features** | **New password with a `Show` toggle · confirm · the device-count warning the design draws** — *"This signs you out of 4 other devices"* · **the success screen with a visible, cancellable countdown** — ⛔ ***"it never moves without warning"*** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **`resetPassword` exists.** ⚠️ **The device count is the one datum with no source measured today** — **[D-156](DECISION_REGISTER.md) ⑥: build the state to the design and use the simplest truthful simulation until the capability lands.** ⛔ **A count is data, not a business rule, so simulating it is permitted where simulating a lockout is not** |
+| ✅ **API reuse** | ✅ **None needed for the reset itself** |
+| **Reusable components required** | **`Input` with a reveal toggle** — ⚠️ **the same `Show` affordance Workflow 1 adds to Login; ⛔ built once, in `components/ui`, or it is the variant §20c exists to prevent** |
+| **Shared layout** | **`(auth)/auth-shell.tsx`**, composed |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authentication.dc.html` and nothing else** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement, no intermediate guide** ([D-137](DECISION_REGISTER.md)) |
+| ✅ **Better Auth reuse — unchanged, and this is the whole point** | ⛔ **Nothing in this row touches `lib/auth/server.ts`, RS256 verification, `requireEmailVerification` or any route.** **Better Auth remains the sole Authentication Authority** (§13) |
+| ⛔ **Development simulation** | ⚠️ **The only substitution permitted is the mailbox** — [TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends). ⛔ **Real tokens, real URLs, real expiry, real authorization** ([D-151](DECISION_REGISTER.md) ④). **A state whose *data* is missing is built against seeded data of the production shape; a state whose *business rule* is missing is not built at all** ([D-156](DECISION_REGISTER.md) ④) |
+| ⛔ **Manual review gate** | **Certify → integration → `main` → notify → the product owner reviews before the next workflow activates** ([D-153](DECISION_REGISTER.md) ⑥). ⚡ **This row does not begin until its predecessor is `approved` in [`workflows.toml`](coordination/workflows.toml)** |
+| **Change Budget** | 🔴 **`frontend/app/(auth)/` and `components/ui`** — **carried by [D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md), which approve presentation-layer replacement for the workflow under migration** |
+| ⚡ **Playwright coverage** ([D-113](DECISION_REGISTER.md)) | **A person resets and signs in with the new password.** **Plus the countdown: it is visible, and cancelling it stops the redirect** |
+| **Component coverage** | **The reveal toggle · the countdown is cancellable · other-device wording present** |
+| ⛔ **Definition of Done** | **Every state · journey headed · certified · `main` · approved** |
+
+
+### TASK-489 · Workflow 7 — Invitation Acceptance, to the approved design
+
+| | |
+|---|---|
+| ⚡ **Workflow 7 in [`workflows.toml`](coordination/workflows.toml)** | **Decomposed under [D-160](DECISION_REGISTER.md) so implementation can begin the moment the gate releases it.** ⛔ **`SEQUENCED`, never `READY`, until then** |
+| **Approved screens** | **`13 Accept invitation` · `14 Invitation expired` · declined · wrong account** |
+| **Module** | **`product_surface`** — assignee joined from [`modules.toml`](coordination/modules.toml) |
+| **Status** | ⏸️ **`SEQUENCED` — after [TASK-488](#task-488--workflow-5--password-reset-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGISTER.md): *"Planning may run many workflows ahead. Implementation proceeds one workflow at a time."*** |
+| **Features** | **The workspace identity and member count · the inviter's name · ⚡ the role shown *before* acceptance, with its four permission lines** — ⛔ ***"the role is shown before acceptance because it determines what the person can see on day one"*** · **accept · decline · expired, with one-click re-request · the wrong-account branch that names both addresses and offers to switch** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **Endpoints exist and were measured, not assumed**: **`POST /workspaces/{id}/invitations`**, **`/invitations/accept`**, **`/invitations/{id}/resend`**, **`/invitations/{id}/revoke`**. ⚠️ **[418](architecture/418-platform-foundation-assessment.md) lists invitation *expiry* — 7 days, single-use, address-bound — as absent, and screen `14` is the expiry screen** |
+| ✅ **API reuse** | ✅ **Four of the four this journey needs are shipped**; **expiry is the gap and it is a business rule, so ⛔ it is not simulated** ([D-156](DECISION_REGISTER.md) ④) |
+| **Reusable components required** | **`Card` · `Button` · `Badge`** · ⚠️ **a permission list — the same shape Workflow 2's password rules need. ⛔ One component, not two** |
+| **Shared layout** | ⚠️ **`(auth)/auth-shell.tsx` — and this is the finding.** ⛔ **A surface exists today at `app/(app)/join/[workspaceId]/` (111 lines), which is *inside the App Shell*, and the design puts invitation acceptance in the authentication card.** ⚡ **An invited person is not signed in yet** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authentication.dc.html` and nothing else** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement, no intermediate guide** ([D-137](DECISION_REGISTER.md)) |
+| ✅ **Better Auth reuse — unchanged, and this is the whole point** | ⛔ **Nothing in this row touches `lib/auth/server.ts`, RS256 verification, `requireEmailVerification` or any route.** **Better Auth remains the sole Authentication Authority** (§13) |
+| ⛔ **Development simulation** | ⚠️ **The only substitution permitted is the mailbox** — [TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends). ⛔ **Real tokens, real URLs, real expiry, real authorization** ([D-151](DECISION_REGISTER.md) ④). **A state whose *data* is missing is built against seeded data of the production shape; a state whose *business rule* is missing is not built at all** ([D-156](DECISION_REGISTER.md) ④) |
+| ⛔ **Manual review gate** | **Certify → integration → `main` → notify → the product owner reviews before the next workflow activates** ([D-153](DECISION_REGISTER.md) ⑥). ⚡ **This row does not begin until its predecessor is `approved` in [`workflows.toml`](coordination/workflows.toml)** |
+| **Change Budget** | 🔴 **`frontend/app/(auth)/` and `components/ui`** — **carried by [D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md), which approve presentation-layer replacement for the workflow under migration** |
+| ⚡ **Playwright coverage** ([D-113](DECISION_REGISTER.md)) | **An invited person accepts and lands in the workspace.** **Plus expired and wrong-account** — ⚠️ **expired asserts the *surface*, and its 7-day rule waits on the capability** |
+| **Component coverage** | **The role and its permissions render before the accept control** — ⚡ **the design's stated reason, asserted rather than assumed** |
+| ⛔ **Definition of Done** | **Every state whose capability exists · journey headed · certified · `main` · approved.** ⛔ **Expiry's 7-day enforcement is explicitly out of scope and named here rather than discovered late** |
+
+
 ### TASK-479 · `people` publishes a way to read what it publishes
 
 | | |
