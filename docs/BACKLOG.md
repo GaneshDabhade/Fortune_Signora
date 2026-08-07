@@ -658,7 +658,7 @@
 | | |
 |---|---|
 | **Module** | The Action Batch context · **[455 §5](architecture/455-context-definitions-r02-r03.md)** slice 2 |
-| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-461](#task-461--the-action-batchs-public-contract-and-nothing-else)** |
+| **Status** | ✅ **`CLAIMED` — Lane B, 2026-08-07, by the Task Claim Protocol.** ⚡ **The predecessor's trigger fired and nobody re-asked.** **[TASK-461](#task-461--the-action-batchs-public-contract-and-nothing-else) is promoted** — `backend/modules/action_batch/public/__init__.py` is present on `main`, **verified against the tree rather than read off a status field**, which is the check TASK-202's own row records as the right one. **Released by the product owner's direct instruction, 2026-08-07** (§20e — *a higher-priority task explicitly assigned by the product owner*), the row having stood at `SEQUENCED` after its condition was already satisfied |
 | **Delivers** | **The proposal · approval · withdrawal · the named unit · and the reversible window** |
 | ⚠️ **The rule this slice exists to get right** | ⛔ **`settled` is `now() >= applied_at + window`, computed at read time and materialised nowhere.** ⚡ **`Snoozed.until` in `signal_engine` is the precedent, and [447](architecture/447-signal-center-traceability-audit.md) called it *"the pattern R-03 should copy"*.** ⛔ **A stored `is_settled` column is two representations of one fact; a scheduler to flip it is the machinery [P-B](DOMAIN_DISCOVERY_REGISTER.md) refuses** |
 | ⛔ **What the context must never learn** | **Business semantics.** ***"The Action context coordinates lifecycle. Business domains own business behaviour"*** ([D-126](DECISION_REGISTER.md)) |
