@@ -261,13 +261,17 @@ updated      = 2026-08-07
 # which is §2's two-representations defect in the two files a lane reads on
 # one poll. ⛔ D-144 makes coordination.toml the authority for assignment;
 # this file follows it rather than restating it differently.
-current = "TASK-468"
-next    = "TASK-480"
-future  = ["TASK-481", "TASK-467", "TASK-471", "TASK-482", "TASK-484"]
+# ⚡ TASK-468 REMOVED 2026-08-07 — Lane A claimed it at 2e3d33e0, minutes after
+# this file and the coordination ref both advertised it as `current`. Second
+# instance today (TASK-451 was the first, C-236's class): a queue goes stale
+# the moment a lane claims, and only this office republishes it.
+current = "TASK-480"
+next    = "TASK-481"
+future  = ["TASK-467", "TASK-471", "TASK-482", "TASK-484"]
 
-eligible_count = 7
+eligible_count = 6
 depth_target   = 15
-shortfall      = 8
+shortfall      = 9
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
