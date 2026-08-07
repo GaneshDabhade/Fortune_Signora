@@ -87,7 +87,8 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Platform Foundation — [`backend/tests/test_coordination_source.py`](../backend/tests/test_coordination_source.py) line 167 |
 | **Current assignee** | **Lane C** |
 | **Severity** | 🟠 · ⛔ **Blocking Quality Defect class** — `mypy --strict` is a certification gate, so nothing on this branch can be certified |
-| **Status** | **`OPEN`** — the fix is confirmed by QE in a scratch copy and **not applied**; QE changes no lane code |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-07.** **`-> Any`, exactly as QE confirmed in its scratch copy.** ⚡ **`coordination` is loaded through `importlib`, so it is a `ModuleType`: attribute access on it is `Any` and fine, while an *annotation* is a name lookup and fails** — which is why one line of the file was red and none of the others. ✅ **Verified here, not assumed: `mypy --strict` over 811 source files, `Success: no issues found` — the same 811 QE counted.** ✅ **`lint-imports` 37 kept, 0 broken.** ⛔ **`VERIFIED` is QE's** |
+| ⛔ **The lesson, and it cost two returns** | ⚠️ **This lane's stated constraint was *never run gates*, and the real constraint is narrower: `clean_database` is autouse and truncates every table, so the *backend suite* stays with QE.** ⚡ **`mypy --strict` and `lint-imports` need no database, no stack and no port — 40 seconds, and this one named the file, the line and the symbol.** ⛔ **Treating a specific prohibition as a general one is how a lane hands QE a branch it could have checked itself**, and QE said so plainly: *"that constraint does not apply to `mypy --strict`."* ✅ **Both now run before every push from this lane** |
 | **Found** | 2026-08-07 by QE, cycle 89, cheap gates before certification |
 
 **Steps to reproduce.**

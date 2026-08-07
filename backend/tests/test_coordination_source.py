@@ -30,6 +30,7 @@ import importlib.util
 import sys
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 import pytest
 
@@ -164,7 +165,12 @@ def test_the_pipeline_is_ordered_by_leverage_not_by_identifier() -> None:
     441 < 478. **A queue ordered by identifier is not an ordering.**
     """
 
-    def row(task_id: str, unblocks: list[str]) -> coordination.Task:
+    # ⛔ **`-> Any`, not `-> coordination.Task` — B-138.** `coordination` is
+    # loaded through `importlib`, so it is a `ModuleType` and mypy has no static
+    # symbol behind the dot. **Attribute access on it is `Any` and fine; an
+    # annotation is a name lookup and fails.** Every other reference in this
+    # file is the former, which is why this was the only red line in 811.
+    def row(task_id: str, unblocks: list[str]) -> Any:
         return coordination.Task(
             id=task_id,
             title=task_id,
