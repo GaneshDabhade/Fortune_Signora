@@ -681,7 +681,7 @@
 | | |
 |---|---|
 | **Module** | The Action Batch context · **[455 §5](architecture/455-context-definitions-r02-r03.md)** slice 4 |
-| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-463](#task-463--the-action-batchs-persistence--append-only-and-no-update-grant)** |
+| **Status** | ✅ **`READY`** — **released from `SEQUENCED` after [TASK-463](#task-463--the-action-batchs-persistence--append-only-and-no-update-grant), Lane C 2026-08-07.** ⚡ **Fitness only** (§20e); **placed by the product owner, not here.** ✅ **Verified by content on `integration`, never by the predecessor's state string** ([C-428](LANE_COORDINATION.md)): **`0042_action_batch.py` creates both tables with RLS *enabled and forced*, and grants `SELECT, INSERT, DELETE` and no `UPDATE`** — the append-only guarantee this slice builds on, rather than a claim that it exists. **Both tables are registered in `tenancy_policy.py`.** ⛔ **And the check TASK-458 failed**: `action_batch/public/__init__.py` is **169 lines exporting `ActionBatchReader`, `ActionBatchView` and `ApprovalState`** — ⚡ **not the zero-line contract two rows were once released against.** ⚠️ **Found by `stale_sequencing`**, not by a person re-reading the row |
 | **Delivers** | **The application layer, and the two events — *now* that a consumer exists** ([P-C](DOMAIN_DISCOVERY_REGISTER.md)) |
 | ⚠️ **Catalogue them in the same change** | **§9, and [C-101](LANE_COORDINATION.md) is what happens when that slips** — 25 declared in code, 24 in the catalogue |
 

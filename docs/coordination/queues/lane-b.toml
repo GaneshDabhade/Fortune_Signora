@@ -105,13 +105,20 @@ updated      = 2026-08-07
 #    QE's exclusively — so the successor waited on a state nobody could
 #    move. Each release carries its evidence in the backlog row.
 #    `state-check` now reports this condition every run.
+# ⚡ TASK-464 RELEASED 2026-08-07 — QE integrated TASK-463 at ac206a55, so the
+# predecessor is `IN VALIDATION` on `integration` rather than on this lane's
+# branch alone. Verified by content before release (C-428): migration
+# `0042_action_batch` creates both tables with RLS forced and no UPDATE grant,
+# and `action_batch/public/__init__.py` is 169 lines of real exports.
+# ⛔ It was listed here last cycle as `blocked_on_integration`, waiting on QE.
+# QE integrated; it is now yours.
 current = "TASK-202"
-next    = ""
+next    = "TASK-464"
 future  = []
 
-eligible_count = 1
+eligible_count = 2
 depth_target   = 15
-shortfall      = 14
+shortfall      = 13
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
@@ -167,12 +174,6 @@ task    = "TASK-463"
 blocker = ["not blocked — CLAIMED by Lane B and in flight"]
 owner   = "Lane B"
 note    = "The Action Batch's persistence — append-only, and no `UPDATE` grant. ⚠️ Listed here in error: it is CLAIMED on `integration` (bd0a320d) and Lane B set it `IN VALIDATION` at 65356748 on its own branch. A row a lane is actively building must never sit in its own blocked list — that reads as 'nothing to do' about work in progress."
-
-[[blocked]]
-task    = "TASK-464"
-blocker = ["TASK-463 — waiting on QE to integrate `lane-b-commercial-profile`"]
-owner   = "QE"
-note    = "The Action Batch's application layer, and the two events. ⚡ Re-tested 2026-08-07: this is `blocked_on_integration`, not starved. TASK-463 is `IN VALIDATION` on Lane B's branch, which `_HANDED_OVER` accepts — so this releases the moment QE fast-forwards it, with no further planning. ⛔ Not promoted here: §20e — prepared work that has not reached `integration` does not exist for planning purposes, and the state on a lane branch is not the state a queue may read."
 
 [[blocked]]
 task    = "TASK-465"

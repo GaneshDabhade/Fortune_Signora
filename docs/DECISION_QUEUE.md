@@ -132,6 +132,26 @@
 | **Priority** | **P0 on timing · P3 on difficulty.** Two small slices |
 | **Recommended** | ✅ **Sequence [TASK-434](BACKLOG.md) ahead of TASK-406's backtest slice.** ⚠️ **First slice is a prerequisite regardless of any of this**: **`commercial_profile/public/` publishes thirteen views and *not one is the ICP* — no module can read the criteria at all today**, and every one of the sixteen consumers is blocked on that one missing read port. **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the ratified precedent for exactly this shape** |
 
+## 📌 C-338 · TASK-003 as you ruled it would change evidence identity — Lane B stopped rather than shipped it
+
+⚡ **[C-018](LANE_COORDINATION.md) is `RULED` and Lane B holds [TASK-003](BACKLOG.md).** ⛔ **Implementing the ruling as written would put customer-facing labels into the file that builds the evidence digest — which changes what an evidence identity *is*.** **Lane B raised it and wrote no code**, which is the correct order and worth saying so.
+
+| | |
+|---|---|
+| **State** | **`READY FOR PRODUCT DECISION`** — ⚡ **the analysis and the alternatives are already in the row.** ⛔ **Lane B did not mark it `READY FOR IMPLEMENTATION`**: that is yours on a ruling |
+| **What it holds** | **[TASK-003](BACKLOG.md)**, `IN PROGRESS` with **nothing written** |
+| ⚡ **The question, at its smallest** | **Did [C-018](LANE_COORDINATION.md)'s ruling mean the label reaches the digest, or only the surface?** ⛔ **§2 — *determinism outranks convenience*, and evidence identity is the repository's most load-bearing derived value** |
+
+## ⚙️ C-337 · SSH to GitHub is intercepted here — and the obvious fix is the dangerous one
+
+⛔ **Not a repository defect and not blocking.** **The remote is HTTPS and pushes cleanly.** ⚡ **It is here because the remediation every lane will reach for — `ssh-keygen -R github.com` — is precisely what converts a *caught* interception into a *successful* one.**
+
+| | |
+|---|---|
+| ✅ **Measured twice, independently** | **Lane B raised it; Lane C hit the same failure in the same window and measured before reading the row.** **Both found a single 2048-bit RSA key, `SHA256:7zYnlSpxx6z0t477lR5vNYfelxewzWwu8N1X6v+wsZA`, with no ed25519 or ecdsa offered**, against the three genuine fingerprints in `known_hosts`. ⚡ **Two lanes, one answer — not a transient** |
+| **Owner** | **Yours** — ⛔ **the network this workstation is on, never the repository** (§20e; [B-011](BUGS.md) is the worked example of that distinction) |
+| ⚠️ **What it costs, and when** | **Nothing today.** ⛔ **The moment any remote is switched back to SSH, every lane's fetch fails — or worse, somebody clears the key and it stops failing** |
+
 ## 🔴 C-430 · Who owns `frontend/`? — one word, and it is the only thing Lane C is short of
 
 ⛔ **[C-430](LANE_COORDINATION.md) is `READY FOR PRODUCT DECISION`, and it is not a design question.** **The question at its smallest: *which lane may write files under `frontend/`?*** ⚡ **Not how authentication works, not what a screen looks like — who may write the file.**
