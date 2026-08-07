@@ -9,27 +9,27 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "f85d134"
-task_count     = 89
+generated_from = "4f79850"
+task_count     = 94
 
 [lane.Lane_A]
 current            = "TASK-483"
 next               = "TASK-484"
 next_after_that    = ""
-assigned_total     = 60
+assigned_total     = 65
 claimable          = 2
 claimable_now      = 2
 awaiting_sync      = 0
 in_flight          = 34
 awaiting_qe_transition = 0
-blocked_on_integration = 9
+blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 24
+blocked            = 29
 lane_utilization   = 6.8
 idle_prediction_days   = 0.3
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
-critical_path_max      = 3
+critical_path_max      = 5
 
 [lane.Lane_B]
 current            = ""
@@ -748,7 +748,7 @@ state         = "IN FLIGHT"
 declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-202", "TASK-464", "TASK-471", "TASK-473", "TASK-474", "TASK-476", "TASK-480", "TASK-481", "TASK-482"]
+unblocks       = ["TASK-202", "TASK-464", "TASK-471", "TASK-473", "TASK-474", "TASK-476", "TASK-480", "TASK-481", "TASK-482", "TASK-485"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
@@ -980,6 +980,86 @@ estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-485"
+title         = "Workflow 2 — Registration, to the approved design"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-467"]
+unblocks       = ["TASK-486"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 1
+estimated_ready = "when TASK-467 complete"
+waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGI"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-486"
+title         = "Workflow 3 — Email Verification, to the approved design"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-485"]
+unblocks       = ["TASK-487"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 2
+estimated_ready = "when TASK-485 complete"
+waiting_for    = "— after [TASK-485](#task-485--workflow-2--registration-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGIST"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-487"
+title         = "Workflow 4 — Forgot Password, to the approved design"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-486"]
+unblocks       = ["TASK-488"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 3
+estimated_ready = "when TASK-486 complete"
+waiting_for    = "— after [TASK-486](#task-486--workflow-3--email-verification-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-488"
+title         = "Workflow 5 — Password Reset, to the approved design"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-487"]
+unblocks       = ["TASK-489"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 4
+estimated_ready = "when TASK-487 complete"
+waiting_for    = "— after [TASK-487](#task-487--workflow-4--forgot-password-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REG"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-489"
+title         = "Workflow 7 — Invitation Acceptance, to the approved design"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-488"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 5
+estimated_ready = "when TASK-488 complete"
+waiting_for    = "— after [TASK-488](#task-488--workflow-5--password-reset-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGI"
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-903"
@@ -1474,7 +1554,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 2.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
