@@ -349,6 +349,7 @@ databaseUrl: required(
 
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
+| [C-238](#c-238--affiliationreader-has-a-protocol-and-no-implementation-so-the-composition-root-has-nothing-to-inject) | `AffiliationReader` has a Protocol and no implementation, so the composition root has nothing to inject | Lane A | **Lane B** — `people` is its module in [`modules.toml`](coordination/modules.toml) | **`OPEN`** — raised 2026-08-07, measured across every ref | ⛔ **[TASK-458](BACKLOG.md)**, at the composition root |
 | [C-235](#c-235--task-458-was-released-against-an-empty-public-and-the-structural-check-is-the-reason-it-looked-safe) | TASK-458 was released against an empty `public/`, and the structural check is the reason it looked safe | Lane A | **Lane C** — this office released the row | ✅ **`ANSWERED`** — Lane C, 2026-08-07. **Both asks done; ask 2 found a second wrong release ([TASK-428](BACKLOG.md))** | ⛔ **Nothing today** — reported before it reached `integration` |
 | [C-210](#c-210--will-signora-hold-personal-data) | will Signora hold personal data? | Lane B | **Product owner** — ⚡ **a product decision about what the platform stores, not an engineering one** | **`OPEN`** — **grouped with People Intelligence** alongside [C-203](#c-203--nothing-in-the-product-can-render-a-persons-name) | **Nothing today** — ⛔ **no row depends on it, and it is listed so it does not disappear** |
 | [C-430](#c-430--frontendlibauth-is-assigned-to-no-lane-and-implementation-has-now-reached-it) | **`frontend/` is assigned to no lane, and implementation has reached it** | **Lane C**, 2026-08-07, on confirming a Change Budget | **Product owner** — ⛔ **§20e: an ownership transfer is ruled, never adopted. This office may not assign a path to itself** | **`READY FOR PRODUCT DECISION`** — ⚡ **widened 2026-08-07: `modules.toml` declares no `frontend/` path at all, not merely none for `lib/auth/`** | ⛔ **[TASK-473](BACKLOG.md) · [TASK-474](BACKLOG.md) · [TASK-476](BACKLOG.md)** — **both of Lane C's claimable rows.** ⚡ **ADR-0406 §6 puts ten of fourteen auth journey gaps behind TASK-474** |
@@ -6161,6 +6162,47 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 Lane A's recommendation, offered rather than taken: **a page-level test rather than a per-component one.** Render the account brief with every hook erroring and assert the page says so — one test, no new prop on any component, and it cannot be silenced by adding a field. `brief.test.tsx` already has the harness. **Lane A will build it on request**; it is not being built unasked because the assertion would reach sections other lanes own.
 
 **Six occurrences of one defect is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. The register is where a repeated shape stops being individually correct.
+
+## C-238 · `AffiliationReader` has a Protocol and no implementation, so the composition root has nothing to inject
+
+**Opened 2026-08-07 · Lane A · owner: Lane B · 🟠**
+
+| | |
+|---|---|
+| **What** | ⛔ **`modules.people.public.AffiliationReader` is a `Protocol` with no class satisfying it anywhere in the repository.** ⚡ **[TASK-458](BACKLOG.md) can consume the *type* and cannot be *wired*** — `GenerateSignals` takes the port by injection ([ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md)), and the application composition root has nothing to pass |
+| **Where** | **Every ref, measured — not one of them carries an adapter.** `git grep -lE 'class Sql.*Affiliation\|def at_company' <ref> -- backend/modules/people` returns **`public/__init__.py` and nothing else** on `origin/integration`, `origin/main`, `origin/lane-b-commercial-profile` and `origin/lane-c-sync` |
+| **Asked of Lane B** | **Publish the adapter behind its own Protocol** — the shape `commercial_profile` already ships as `SqlDeclaredCompetitorReader`, which is what `apps/worker/subscriptions.py` injects for the competitor half of the identical pattern |
+| **Blocks** | ⛔ **[TASK-458](BACKLOG.md)**, at the composition root only. **The consumer half is buildable and is not built** — see below |
+| **Status** | **`OPEN`** — raised 2026-08-07, measured before raising |
+
+### What exists, and what does not
+
+**`people/infrastructure/repository.py` has `open_at_company`** — `ended_on IS NULL`, open intervals only. ⛔ **That is not `at_company`**, whose contract is *"everyone recorded in a role at this company, **open and closed**"*, and the closed interval is the whole reason the port was shaped this way: **`decision_maker_departed` is answerable from nothing else.** **The two methods differ in exactly the half that matters.**
+
+⛔ **`SqlPeopleRepository` therefore does not satisfy `AffiliationReader`**, and no other class attempts to.
+
+### Why Lane A does not simply write it
+
+⛔ **`people` is Lane B's in [`modules.toml`](coordination/modules.toml)**, and [§20e](../CLAUDE.md) is the same sentence that produced [C-237](#c-237): *a change inside a module this lane is not assigned is a finding to report.* ⚡ **The adapter is that module's infrastructure behind that module's own contract**, which is the least ambiguous case the rule has.
+
+### ⚠️ This is the fourth instance in three days, and it is one step deeper than the third
+
+| | What was checked | What was not |
+|---|---|---|
+| **[C-235](#c-235)** | The file was **reachable** | It was **empty** |
+| **[C-336](#c-336)** | The row **existed** | Its `Module` **spanned a lane boundary** |
+| **[C-237](#c-237)** | The types were **published** | **Nothing could read them** |
+| ⚡ **This** | The port is **published and typed** | ⛔ **Nothing *implements* it** |
+
+⚡ **C-237's own closing paragraph named this class and this lane still walked into it**: *"none of them asked whether it was usable by the lane being asked to use it."* ⛔ **I verified the contract was consumable as a type and did not verify it was injectable as an object** — **one step later than the check should have run, again.** **The general form, recorded because the specific fix will not prevent the fifth: *a contract is usable when something implements it*, and every proxy short of constructing one has now failed in turn.**
+
+### ⛔ What Lane A is deliberately not building meanwhile
+
+**Not the domain half on its own.** ⚡ **A `Seat` value and a selection rule that nothing constructs is the speculative abstraction [§6](../CLAUDE.md) forbids** — **and it is precisely the reasoning Lane B applied when it declined to publish this port before a consumer existed.** ⛔ **Taking the opposite side of an argument this lane accepted three days ago would be worth less than the wait.**
+
+⚠️ **Nothing is lost by waiting.** **The design is settled and recorded on the port itself**: `at_company(workspace_id, company_id)` scoped to the entity being generated for, the seat matched on the folded `title` fact the `leadership_*` rules already emit, and **`match_departure`'s refusal reproduced as a read — one candidate names the seat, more than one names none.** **The period is the deliverable; no name is wanted** ([C-221](#c-221)).
+
+---
 
 ## C-237 · TASK-458 has types to read and no way to read them, and `people/public/` says so itself
 
