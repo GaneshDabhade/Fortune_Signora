@@ -153,13 +153,30 @@
 
 | Workflow | The design's screens |
 |---|---|
-| **1 · Login** *(this document)* | **`02` Sign in · `03` Sign in failed · `15` Authenticating**, plus the shell, palette and component states |
+| **1 · Login** *(this document)* | ⚡ **AMENDED 2026-08-07 by [D-156](../DECISION_REGISTER.md) ⑤ — three screens became four.** **`02` Sign in · `03` Sign in failed · `15` Authenticating · `17` Unauthorized**, plus the shell, palette and component states, **and every customer-visible state on that path**: validation messages · inline field errors · loading and skeleton states · success confirmations · toasts · focus management · keyboard interaction · the three responsive layouts |
 | **2 · Registration** | `01` Welcome · `06` Create account · `07` Verify email |
 | **3 · Recovery** | `08` Forgot · `09` Set new password · `10` Success |
 | **4 · Invitation** | `13` Accept · `14` Expired · declined · wrong account |
 | **5 · Blocked & interrupted** | `04` SSO discovery · `05` Magic link · `11` Locked · `12` Throttled · `16` Auth error · `17` Unauthorized · `18` Session expired |
 
 ⛔ **No rows are written for 2–5, and none should be until Login is reviewed.**
+
+### ⚡ 6a · What [D-156](../DECISION_REGISTER.md) ⑤ added, and what it deliberately did not
+
+**[D-156](../DECISION_REGISTER.md): *"do not focus only on the happy path… implement the entire user experience defined by the design—not just the primary screen layout."*** ⛔ **So the three-screen scope above was too narrow, and it is corrected rather than defended** ([D-141](../DECISION_REGISTER.md)).
+
+| Screen | In Workflow 1? | Why |
+|---|---|---|
+| **`02` Sign in** | ✅ | The primary surface |
+| **`03` Sign in — failed** | ✅ | ⛔ **Minus the attempt counter** — see below |
+| **`15` Authenticating** | ✅ | **Named steps past 800ms, cancel past 8s.** ⚡ **The capability is the sign-in call itself; nothing new is needed** |
+| **`17` Unauthorized** | ✅ **ADDED** | ⚡ **The capability already exists**: [§7](../../CLAUDE.md) requires server-side membership verification on every request, and a non-member gets `404` by design. **D-156 ⑤ names *session-related messages* and *authentication failures*** |
+| **`16` Authentication error** | ⛔ | **It quotes an identity provider verbatim — *"Okta rejected the sign-in… user not assigned to this application"*.** **There is no SSO, so there is no provider to quote** |
+| **`11` Locked · `12` Too many attempts** | ⛔ | ⚡ **Settled by ⑤'s own parenthetical — *where backed by implemented capability*.** **`rateLimit`, `lockout`, `maxAttempts` and `failedAttempts` return zero across the repository** |
+| **`18` Session expired** | ⛔ | **The design calls it *"the only journey that starts inside the product"* and renders it over the current view.** **It needs the App Shell — [D-155](../DECISION_REGISTER.md) priority 5** |
+
+> ⚡ **The distinction ⑥ draws, and it is the one worth holding onto.** **A state whose *data* is missing is built to the design against seeded data that matches the production shape.** ⛔ **A state whose *business rule* is missing is not built at all** — **because simulating a lockout counter simulates a security rule, and ④ forbids exactly that: *"Never simulate or weaken business rules, authentication semantics, authorization."*** **The attempt counter is the second kind. Seeded Companies are the first.**
+
 
 ---
 

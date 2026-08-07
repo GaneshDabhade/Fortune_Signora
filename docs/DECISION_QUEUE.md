@@ -170,7 +170,23 @@
 | ✅ **The recommendation, as wording rather than a question** | **§20c gains a line naming [D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md) as the standing approved architectural change for the UI migration, and stating that the freeze protects the foundation *from ad-hoc modification*, never from the approved design** |
 | ⛔ **Why this office did not simply write it** | **`CLAUDE.md` is the one file Lane C may never edit** (§20e). ⚡ **And [§2](../CLAUDE.md): *governance describes reality; it never quietly changes it*** |
 
-## 🟠 C-431 · Three controls on the approved sign-in card have no backing capability
+## ✅ C-431 · TWO OF THREE ANSWERED BY D-156 — one narrow question left
+
+> ⚡ **[D-156](DECISION_REGISTER.md) settled this without a separate ruling, and both answers came out of its own text rather than out of a judgement here.**
+>
+> ⛔ **The attempt counter** — *"3 attempts left before the account locks"* — **is out of Workflow 1 by ⑤'s own parenthetical: *lock or rate-limit messaging (where backed by implemented capability)*, and there is none.**
+>
+> ⛔ **`Use single sign-on` is out on ④ rather than on scope.** **Domain→IdP routing is an authorization semantic, not an infrastructure boundary** — ⑥ permits simulating a missing *data source*, and ④ forbids substituting an *authorization* one.
+>
+> ## ⚠️ **What is left is one question, and it may not be a question at all:** **`Keep me signed in for 30 days`.**
+>
+> **Raised as *no capability*; under ① it may be a *real* implementation.** **Better Auth owns session lifetime and `server.ts:86` merely fixes `expiresIn` at seven days.** ⛔ **This office has no `node_modules` and did not open the package, so it asserts nothing** ([D-137](DECISION_REGISTER.md)). ✅ **Lane A verifies by opening it. If Better Auth exposes it, it is ordinary work and needs nothing from you. If it does not, it defers with the other two.**
+>
+> ⚡ **So: no action expected. It is listed only so that a question raised to you is visibly closed rather than quietly dropped.**
+
+<details><summary>The original entry, kept because a dated record is not rewritten (§2)</summary>
+
+### C-431 · Three controls on the approved sign-in card have no backing capability
 
 ⛔ **Raised because [D-153](DECISION_REGISTER.md) ⑦ requires it rather than because Lane A is stuck.** ***"No lane may simplify the design. No lane may reinterpret the design. If something in the design is unclear: STOP."*** ✅ **Workflow 1 is buildable today and this changes what the review gate is shown, not what gets built first.**
 
@@ -181,6 +197,8 @@
 | ✅ **Recommended — option C** | **Workflow 1 delivers every element of screens `02`, `03` and `15` whose capability exists; these three become rows behind Login.** ⚡ **Not a simplification — the same distinction [TASK-467](BACKLOG.md) already drew with your approval when it put magic link, MFA, SSO enforcement, domain→IdP routing and session-expiry state out of scope by name** |
 | ⛔ **Why not the alternatives** | **A — build all three inside Workflow 1**: three backend capabilities with no rows, and Workflow 1 stops being a presentation-layer replacement, which is the one thing D-153 says it is. **B — render them and route them somewhere**: a control that does not do what it says is worse than an absent one, and the attempt counter would be a fiction about our own product |
 | ⚠️ **What you should know going in** | **Under C you review a login screen with no SSO entry point and no *keep me signed in*.** **Better discovered here than at the gate** |
+
+</details>
 
 ## ⚙️ C-337 · SSH to GitHub is intercepted here — and the obvious fix is the dangerous one
 

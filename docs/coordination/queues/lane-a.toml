@@ -381,6 +381,61 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🔴  D-156 — THE WHOLE EXPERIENCE, AND SIMULATE ONLY WHAT BLOCKS YOU
+#     2026-08-07 · product owner ruling · this CHANGES WORKFLOW 1's SCOPE
+#
+# ⚡ WORKFLOW 1 IS FOUR SCREENS, NOT THREE. 488 §6 said 02/03/15 and that was
+#   too narrow. Added: 17 Unauthorized — "You don't have access to this
+#   workspace" — because its capability already exists (§7 requires
+#   server-side membership verification on every request, and a non-member
+#   gets 404 by design).
+#
+#   IN:  02 Sign in · 03 Sign in failed · 15 Authenticating · 17 Unauthorized
+#   OUT: 16 Authentication error (quotes an IdP verbatim; there is no SSO)
+#        11 Locked · 12 Too many attempts (no lockout capability exists)
+#        18 Session expired (renders over the app shell — priority 5)
+#
+# ⛔ AND NOT ONLY THE SCREENS. Every customer-visible state on that path:
+#   validation messages · inline field errors · authentication failures ·
+#   success confirmations · loading and skeleton states · toasts ·
+#   informational popups · accessibility behaviours · responsive layouts ·
+#   keyboard interaction · focus management.
+#   "The objective is to implement the ENTIRE user experience defined by the
+#    design — not just the primary screen layout."
+#
+# ✅ C-431 IS EFFECTIVELY ANSWERED. Two of three closed by this ruling:
+#     • the attempt counter  -> OUT, by ⑤'s own "(where backed by
+#                               implemented capability)". There is none.
+#     • "Use single sign-on" -> OUT, by ④. Domain→IdP routing is an
+#                               AUTHORIZATION semantic, not an infrastructure
+#                               boundary, so it may not be simulated.
+#     • "Keep me signed in for 30 days" -> ⚠️ VERIFY BEFORE DECIDING.
+#       It was raised as "no capability". Under ① it may be a REAL
+#       implementation: Better Auth owns session lifetime and server.ts:86
+#       merely fixes expiresIn at 7 days, not electable.
+#       ⛔ This office did NOT verify it — Lane C has no node_modules and did
+#          not open the package. D-137: accessible is a claim to be tested,
+#          never assumed in either direction. OPEN IT, then build or defer.
+#
+# ⚡ THE LINE THAT DECIDES EVERY SIMULATION QUESTION, and it is worth holding:
+#     A state whose DATA is missing  -> build it, against seeded data that
+#                                       matches the production shape exactly.
+#     A state whose BUSINESS RULE is missing -> do not build it at all.
+#   Seeded Companies are the first kind. A lockout counter is the second,
+#   because simulating it simulates a security rule — which ④ forbids in
+#   terms: "Never simulate or weaken business rules, authentication
+#   semantics, authorization, or production contracts."
+#
+# ⛔ AND DO NOT BUILD A SIMULATOR. "The simulation should be just sufficient
+#   to unblock implementation. Do not spend engineering effort building
+#   sophisticated simulation frameworks." The prioritisation test for every
+#   piece of work from here: does this move us closer to a reviewable
+#   customer journey? If not, defer it unless it blocks implementation.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🔴  D-155 — EXECUTION MODE. THE PRIORITY IS NOW EXPLICIT AND IT IS LOGIN.
 #     2026-08-07 · product owner ruling
 #
