@@ -80,6 +80,53 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-140 · A failing gate reported its verdict and discarded its evidence
+
+| | |
+|---|---|
+| **Module** | QE tooling — [`backend/tests/certification/__main__.py`](../backend/tests/certification/__main__.py) |
+| **Current assignee** | **QE** — *"a defect in a gate that stops QE certifying is QE's to fix"* (`CLAUDE.md` §20e) |
+| **Severity** | 🟠 — **the instrument that decides whether a commit ships cannot say why it refused** |
+| **Status** | ✅ **`FIXED`** by QE, 2026-08-07, with eight regression tests and two mutation checks. **`VERIFIED` after promotion** |
+| **Found** | 2026-08-07 by QE, cycle 90, by a certification failure it could not diagnose |
+
+**Steps to reproduce.** Run `make certify` on a commit where any gate fails.
+
+```
+  pytest              3928 passed
+  ...
+NOT CERTIFIED
+  · gate 'pytest' failed: 3928 passed
+```
+
+**Expected.** Something that names what failed.
+
+**Actual.** ⛔ **`3928 passed` beside a red verdict, and nothing else — anywhere.** `_run()` captures each gate's stdout and stderr, the builders read a number out of it with a regex, and **the output is dropped on the floor.** By the time the verdict prints, the transcript no longer exists in any file, in any log, or in the record.
+
+### Why it mattered on the day it was found
+
+**The identical invocation passed on re-run**: `uv run pytest --cov -q -p no:randomly` against a disposable database — certify's exact command — gave `EXIT 0, 3931 passed`. `make validate` on the same commit gave `3931 passed`, green.
+
+> ⚠️ **So the cycle held a certification failure that reported three fewer tests than a passing run of the same command, and there was nothing left to read.**
+
+⛔ **A gate that reports a verdict without the evidence forces the next step to be *"run it again and hope"*** — which is how a flake becomes indistinguishable from a defect, **and how a real defect gets re-run until it hides.** That is the same family as [B-137](#b-137--state-check-read-the-last-certification-attempt-and-called-it-the-last-certification) and QE's own [§0a-2](QUALITY_ENGINEERING.md), *the verdict is not the only thing a gate prints*.
+
+### The fix
+
+`_Outcome` carries the gate's output, and **`NOT CERTIFIED` is followed by the last 40 lines of every failing gate** — enough to carry `pytest`'s `short test summary info` block, which is the last thing it prints and the only part that names anything.
+
+⛔ **It prints and never records.** The certification record states *what a commit satisfied*; a transcript of one run is not that, and putting it in the manifest would make an immutable evidence file grow without bound.
+
+**Three properties the tests hold**, [`test_gate_output.py`](../backend/tests/certification/test_gate_output.py), **mutation-checked twice** — returning early kills 4, printing for passing gates kills 2:
+
+| | |
+|---|---|
+| **Only failing gates speak** | A green run stays readable. A gate that always printed its transcript would bury the six lines anybody reads |
+| **The elision is stated** | ⚠️ **Silent truncation is a worse instrument than no truncation** — a reader who cannot tell lines were dropped reasons from a tail as though it were the whole run |
+| **An absent transcript is never silence** | *"no output was captured"*, never a blank. §2, and the same rule the plan-shortfall report already applies to itself |
+
+---
+
 ### B-139 · `_delivered` stopped reading its own arguments and started reading the clone
 
 | | |

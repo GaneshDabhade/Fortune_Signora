@@ -53,6 +53,10 @@ _CONTRACTS = re.compile(r"Contracts: (\d+) kept, (\d+) broken")
 class _Outcome:
     passed: bool
     detail: str
+    #: The gate's own output, kept **only so a failure can be diagnosed** — B-140.
+    #: It never reaches the certification record: the record states *what a
+    #: commit satisfied*, and a transcript of a run is not that.
+    output: str = ""
 
 
 def summarise_suite(output: str) -> str:
@@ -113,7 +117,7 @@ def _pytest() -> tuple[_Outcome, float, _Outcome]:
     code, output = _run(
         ["uv", "run", "pytest", "--cov", "-q", "-p", "no:randomly"], cwd=BACKEND_ROOT
     )
-    suite = _Outcome(passed=code == 0, detail=summarise_suite(output))
+    suite = _Outcome(passed=code == 0, detail=summarise_suite(output), output=output)
 
     invariant_code, invariant_output = _run(
         ["uv", "run", "pytest", "tests/security_invariants", "-q", "-p", "no:randomly"],
@@ -122,13 +126,14 @@ def _pytest() -> tuple[_Outcome, float, _Outcome]:
     invariants = _Outcome(
         passed=invariant_code == 0,
         detail=summarise_suite(invariant_output).replace("passed", "invariants"),
+        output=invariant_output,
     )
     return suite, coverage_of(output), invariants
 
 
 def _mypy() -> _Outcome:
     code, output = _run(["uv", "run", "mypy", "--strict", "."], cwd=BACKEND_ROOT)
-    return _Outcome(passed=code == 0, detail=files_checked(output))
+    return _Outcome(passed=code == 0, detail=files_checked(output), output=output)
 
 
 def _typescript() -> _Outcome:
@@ -150,12 +155,16 @@ def _typescript() -> _Outcome:
     """
     code, output = _run(["npx", "tsc", "--noEmit"], cwd=REPOSITORY_ROOT / "frontend")
     errors = len(re.findall(r"error TS\d+", output))
-    return _Outcome(passed=code == 0, detail="clean" if code == 0 else f"{errors} error(s)")
+    return _Outcome(
+        passed=code == 0,
+        detail="clean" if code == 0 else f"{errors} error(s)",
+        output=output,
+    )
 
 
 def _import_linter() -> _Outcome:
     code, output = _run(["uv", "run", "lint-imports"], cwd=BACKEND_ROOT)
-    return _Outcome(passed=code == 0, detail=contracts_of(output))
+    return _Outcome(passed=code == 0, detail=contracts_of(output), output=output)
 
 
 def _smoke() -> _Outcome:
@@ -165,7 +174,7 @@ def _smoke() -> _Outcome:
     detail = f"{stage_count(output)} stages in {elapsed}s"
     if slowest := _slowest_stage(output):
         detail = f"{detail}, slowest {slowest}"
-    return _Outcome(passed=code == 0, detail=detail)
+    return _Outcome(passed=code == 0, detail=detail, output=output)
 
 
 def _slowest_stage(output: str) -> str:
@@ -313,6 +322,44 @@ def main() -> int:
         return _certify(target)
 
 
+#: How much of a failing gate's output to show. **Enough to carry pytest's
+#: `short test summary info` block**, which is the last thing it prints and the
+#: only part that names anything.
+_TAIL_LINES = 40
+
+
+def _report_gate_output(
+    gates: list[GateResult], captured: dict[str, _Outcome]
+) -> None:
+    """The tail of every failing gate's own output — **B-140**.
+
+    ⚠️ **Written after a certification failed and could not be diagnosed.**
+    `pytest` recorded `3928 passed` beside a red verdict; the run that produced
+    it had already been discarded, the same invocation passed on re-run, and
+    there was **nothing left to read.** A gate that reports a verdict without
+    the evidence forces the next step to be *"run it again and hope"*, which is
+    how a flake becomes indistinguishable from a defect.
+
+    ⛔ **It prints and never records.** The certification record states what a
+    commit satisfied; a transcript of one run is not that, and putting it in the
+    manifest would make an immutable evidence file grow without bound.
+    """
+    for gate in gates:
+        if gate.passed:
+            continue
+        outcome = captured.get(gate.name)
+        if outcome is None or not outcome.output.strip():
+            print(f"\n  {gate.name} — no output was captured")
+            continue
+        lines = outcome.output.rstrip().splitlines()
+        shown = lines[-_TAIL_LINES:]
+        elided = len(lines) - len(shown)
+        print(f"\n  {gate.name} — last {len(shown)} line(s)"
+              + (f", {elided} elided" if elided else ""))
+        for line in shown:
+            print(f"    {line}")
+
+
 def _certify(target: disposable_database.Disposable) -> int:
     """The gates, against a database this run created and will destroy.
 
@@ -412,6 +459,9 @@ def _certify(target: disposable_database.Disposable) -> int:
     print("\nNOT CERTIFIED")
     for reason in run.failures:
         print(f"  · {reason}")
+    _report_gate_output(gates, {"pytest": suite, "security-invariants": invariants,
+                                "mypy": types, "import-linter": contracts,
+                                "tsc": typescript, "smoke": smoke})
     return 1
 
 
