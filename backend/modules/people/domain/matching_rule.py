@@ -38,9 +38,9 @@ that owns none.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Sequence
 from uuid import UUID
 
 from modules.people.domain.affiliation import Affiliation

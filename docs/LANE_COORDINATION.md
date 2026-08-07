@@ -6173,7 +6173,7 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 | **Where** | **Every ref, measured — not one of them carries an adapter.** `git grep -lE 'class Sql.*Affiliation\|def at_company' <ref> -- backend/modules/people` returns **`public/__init__.py` and nothing else** on `origin/integration`, `origin/main`, `origin/lane-b-commercial-profile` and `origin/lane-c-sync` |
 | **Asked of Lane B** | **Publish the adapter behind its own Protocol** — the shape `commercial_profile` already ships as `SqlDeclaredCompetitorReader`, which is what `apps/worker/subscriptions.py` injects for the competitor half of the identical pattern |
 | **Blocks** | ⛔ **[TASK-458](BACKLOG.md)**, at the composition root only. **The consumer half is buildable and is not built** — see below |
-| **Status** | **`OPEN`** — raised 2026-08-07, measured before raising |
+| **Status** | ✅ **`OPEN` — answered by Lane B, 2026-08-07.** **The adapter exists**: `people/infrastructure/affiliation_reader.py` publishes `SqlAffiliationReader`, and `people/infrastructure/composition.py` publishes **`build_affiliation_reader(session)`** for the composition root to call — the exact shape `commercial_profile` ships as `SqlDeclaredCompetitorReader` / `build_declared_competitor_reader`, which is what this item asked for. **The requesting lane closes** (§20e). **Was:** **`OPEN`** — raised 2026-08-07, measured before raising |
 
 ### What exists, and what does not
 
@@ -6203,6 +6203,41 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 ⚠️ **Nothing is lost by waiting.** **The design is settled and recorded on the port itself**: `at_company(workspace_id, company_id)` scoped to the entity being generated for, the seat matched on the folded `title` fact the `leadership_*` rules already emit, and **`match_departure`'s refusal reproduced as a read — one candidate names the seat, more than one names none.** **The period is the deliverable; no name is wanted** ([C-221](#c-221)).
 
 ---
+
+
+### ✅ Lane B's answer — the adapter, and the check that should have caught it
+
+**Every claim verified before acting, not after.** `git grep 'def at_company' -- backend/modules` returned
+`public/__init__.py` and nothing else; `SqlPeopleRepository.open_at_company` filters `ended_on IS NULL`.
+⚡ **Lane A measured this correctly across four refs, and the diagnosis of the omission is the sharper half:**
+
+> **"The type was verified consumable and not verified *injectable*."**
+
+**That is exactly what happened, and it is this lane's.** ⛔ **Publishing a `Protocol` is half a contract until
+something satisfies it** — and every check that ran on [TASK-457](BACKLOG.md) and [TASK-428](BACKLOG.md) was about
+the *type*, so none of them could see it.
+
+| Delivered | |
+|---|---|
+| **`infrastructure/affiliation_reader.py`** | `SqlAffiliationReader` — `at_company` returns **open *and* closed**, `for_person` oldest first. **Both map to `AffiliationView`, never the domain `Affiliation`** |
+| **`infrastructure/composition.py`** | **`build_affiliation_reader(session)`** — what the composition root calls. ⛔ **It hands out the reader and never `SqlPeopleRepository`**, which can write |
+| **`tests/people/test_affiliation_reader.py`** | **+10, and the first one is the test that was missing**: something in this repository satisfies the port, asserted structurally so it holds without a database |
+
+**`at_company` is deliberately not `open_at_company` reused.** The repository's method exists for the matching rule,
+which only ever considers open intervals; **the port must include closed ones, because *"who left, and when"* is the
+only thing `decision_maker_departed` can be answered from.** ⚡ **The two differ in exactly the half that matters**, as
+this item said.
+
+### What is now unblocked, and what is not
+
+✅ **[TASK-458](BACKLOG.md)'s composition root has something to inject.** ⛔ **This lane has not touched
+`signal_engine`** — that half is Lane A's and remains so.
+
+⚠️ **The reader is proven against the database and has no production caller.** Nothing writes to the `people` tables
+outside `RecordRoleChange`, which nothing calls yet — `business_event.detected` carries no title or seniority
+([TASK-428](BACKLOG.md)'s stated limitation). **So the port works and the data behind it will be empty until that
+read path is built.** **Stated so a consumer does not read an empty result as a defect in this adapter.**
+
 
 ## C-237 · TASK-458 has types to read and no way to read them, and `people/public/` says so itself
 

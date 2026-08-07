@@ -156,3 +156,53 @@ Two tables, both workspace-owned, both with forced RLS and policies covering `SE
 **Read `match_departure` before writing a handler.** The handler's job is to supply the open affiliations and act on the outcome — **including doing nothing on `AMBIGUOUS`**, which is the case a handler is most likely to get wrong by picking one.
 
 **`AMBIGUOUS` carries its candidates deliberately.** A consumer can honestly say *"one of these two left"*; what it must not do is choose. If the product decides it should choose, **that is a product ruling and the rule changes here, in one place.**
+
+---
+
+# The published read side — `SqlAffiliationReader`
+
+**[C-238](../LANE_COORDINATION.md), 2026-08-07.** `public/` published
+`AffiliationReader` as a `Protocol` and **nothing implemented it**, so
+[TASK-458](../BACKLOG.md) could consume the type and its composition root had
+nothing to pass. Lane A measured it across four refs and raised it.
+
+> ⚠️ **The lesson is the shape of the check, not the omission.** **The type was
+> verified consumable and not verified injectable** — and every gate that ran
+> was about the type, so none of them could see it. **Publishing a `Protocol`
+> is half a contract until something satisfies it**, and
+> `tests/people/test_affiliation_reader.py` now asserts that structurally,
+> without needing a database.
+
+## Two readers, and they are not interchangeable
+
+| | Returns | For |
+|---|---|---|
+| **`SqlPeopleRepository.open_at_company`** | **Open intervals only** (`ended_on IS NULL`) | This module's own matching rule, which never considers a closed one |
+| **`SqlAffiliationReader.at_company`** | ⚡ **Open *and* closed** | Another module, through `public/` |
+
+⛔ **The second is not the first reused, and the difference is the whole reason
+the port was shaped this way.** *"Who left, and when"* is what
+`decision_maker_departed` exists to answer, and **a read returning only current
+holders cannot answer it at all.**
+
+**Separated into its own file on `commercial_profile`'s terms**: everything in
+`repository.py` serves this module's use cases and may change freely;
+**everything in `affiliation_reader.py` is a contract with somebody else and
+may not.** The mapping is the boundary — a consumer receives `AffiliationView`,
+never the domain `Affiliation`.
+
+## The composition root calls a builder, never a constructor
+
+`infrastructure/composition.py` publishes **`build_affiliation_reader(session)`**,
+matching `build_declared_competitor_reader`. ⛔ **It hands out the reader and
+never `SqlPeopleRepository`** — a consumer able to reach the repository could
+author the history it is meant to read.
+
+## ⚠️ The port works; the data behind it is empty
+
+**Nothing writes to these tables outside `RecordRoleChange`, and nothing calls
+that yet** — `business_event.detected` carries `entity_id` and `type_key` but
+**no title and no seniority**, so the read path through
+`provider_normalization/public`'s `ClaimReader` is a slice of its own and has no
+row. **Stated here so a consumer does not read an empty result as a defect in
+the adapter.**
