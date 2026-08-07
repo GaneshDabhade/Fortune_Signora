@@ -146,3 +146,37 @@ test.describe('Workflow 1 · the sign-in experience', () => {
     await expect(keep).toBeChecked();
   });
 });
+
+test.describe('Workflow 1 · the finalized visual identity', () => {
+  test('the ground is the design\'s warm #faf8f6, not a cool grey', async ({ page }) => {
+    // D-162: the review found the screen still read as the legacy UI. It did,
+    // because the tokens were Tailwind slate+blue — a cool system — and the
+    // finalized design is a warm one. This asserts the actual value.
+    await page.goto('/sign-in');
+    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    expect(bg).toBe('rgb(250, 248, 246)');
+  });
+
+  test('the brand is the design\'s deep blue, not Tailwind blue-600', async ({ page }) => {
+    await page.goto('/sign-in');
+    const accent = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim(),
+    );
+    expect(accent).toBe('19 78 118');
+  });
+
+  test('ink is the design\'s warm near-black, not slate-900', async ({ page }) => {
+    await page.goto('/sign-in');
+    const ink = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--color-content').trim(),
+    );
+    expect(ink).toBe('33 31 29');
+  });
+
+  test('the card carries the design\'s 16px radius', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/sign-in');
+    const card = page.getByRole('heading', { level: 1 }).locator('xpath=../..');
+    await expect(card).toHaveCSS('border-radius', '16px');
+  });
+});

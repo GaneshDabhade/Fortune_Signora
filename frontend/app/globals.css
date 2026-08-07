@@ -17,36 +17,36 @@
 @layer base {
   :root {
     /* Surfaces, back to front. */
-    --color-canvas: 248 250 252;
+    --color-canvas: 250 248 246;
     --color-surface: 255 255 255;
-    --color-surface-raised: 255 255 255;
-    --color-surface-sunken: 241 245 249;
+    --color-surface-raised: 253 252 251;
+    --color-surface-sunken: 250 248 246;
 
     /* Text, by decreasing emphasis. Named for role, never for lightness —
      * "muted" still means muted after dark mode inverts the value. */
-    --color-content: 15 23 42;
-    --color-content-muted: 71 85 105;
-    --color-content-subtle: 148 163 184;
-    --color-content-inverted: 248 250 252;
+    --color-content: 33 31 29;
+    --color-content-muted: 92 85 78;
+    --color-content-subtle: 133 125 117;
+    --color-content-inverted: 250 248 246;
 
-    --color-border: 226 232 240;
-    --color-border-strong: 203 213 225;
+    --color-border: 222 215 207;
+    --color-border-strong: 163 154 145;
 
     /* One accent. A second would need a stated reason: two accents means
      * every future component asks which, and the answer drifts. */
-    --color-accent: 37 99 235;
-    --color-accent-hover: 29 78 216;
+    --color-accent: 19 78 118;
+    --color-accent-hover: 15 61 92;
     --color-accent-contrast: 255 255 255;
-    --color-accent-subtle: 239 246 255;
+    --color-accent-subtle: 230 241 248;
 
     /* Status. Each carries a subtle pair so a badge never has to guess. */
-    --color-success: 22 163 74;
-    --color-success-subtle: 240 253 244;
-    --color-warning: 202 138 4;
-    --color-warning-subtle: 254 252 232;
-    --color-danger: 220 38 38;
-    --color-danger-hover: 185 28 28;
-    --color-danger-subtle: 254 242 242;
+    --color-success: 31 122 92;
+    --color-success-subtle: 232 245 240;
+    --color-warning: 165 105 31;
+    --color-warning-subtle: 251 242 228;
+    --color-danger: 168 51 41;
+    --color-danger-hover: 140 42 33;
+    --color-danger-subtle: 252 239 237;
     --color-info: 2 132 199;
     --color-info-subtle: 240 249 255;
 
@@ -78,8 +78,13 @@
      * was therefore a token edit for three of the four steps and a sweep
      * through fifteen files for the fourth — which is the defect this
      * whole file exists to prevent. */
-    --radius-sm: 0.25rem;
-    --radius-md: 0.375rem;
+    /* The finalized design's body font, its token copied verbatim.
+       ⚠️ The face itself is not yet bundled, so this resolves to the system
+       stack until it is — stated rather than left to look intentional. */
+    --font-body: "Archivo", system-ui, sans-serif;
+
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
     --radius: 0.5rem;
     --radius-lg: 0.75rem;
     /* **The fifth step, and slice 3 is what needed it.** Design System v2
@@ -118,9 +123,9 @@
      * to an arbitrary value, which is what this slice removed. */
     --text-display: 2.25rem;
 
-    --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05);
-    --shadow: 0 1px 3px 0 rgb(15 23 42 / 0.1), 0 1px 2px -1px rgb(15 23 42 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1);
+    --shadow-sm: 0 1px 2px rgb(33 31 29 / 0.04), 0 1px 3px rgb(33 31 29 / 0.05);
+    --shadow: 0 1px 2px rgb(33 31 29 / 0.04), 0 4px 12px -2px rgb(33 31 29 / 0.07);
+    --shadow-lg: 0 2px 5px -1px rgb(33 31 29 / 0.05), 0 12px 28px -6px rgb(33 31 29 / 0.12);
 
     /* The control heights. **Three steps, and every interactive control in
      * the product is one of them** (TASK-448).
@@ -150,31 +155,31 @@
    * construction rather than by discipline.
    */
   :root[data-theme='dark'] {
-    --color-canvas: 2 6 23;
-    --color-surface: 15 23 42;
-    --color-surface-raised: 30 41 59;
-    --color-surface-sunken: 2 6 23;
+    --color-canvas: 13 20 24;
+    --color-surface: 21 32 39;
+    --color-surface-raised: 27 39 47;
+    --color-surface-sunken: 13 20 24;
 
-    --color-content: 248 250 252;
-    --color-content-muted: 148 163 184;
-    --color-content-subtle: 100 116 139;
-    --color-content-inverted: 15 23 42;
+    --color-content: 234 240 243;
+    --color-content-muted: 168 182 190;
+    --color-content-subtle: 132 147 156;
+    --color-content-inverted: 13 20 24;
 
-    --color-border: 30 41 59;
-    --color-border-strong: 51 65 85;
+    --color-border: 47 63 72;
+    --color-border-strong: 101 115 124;
 
-    --color-accent: 59 130 246;
-    --color-accent-hover: 96 165 250;
-    --color-accent-contrast: 15 23 42;
-    --color-accent-subtle: 30 41 59;
+    --color-accent: 79 163 209;
+    --color-accent-hover: 156 207 232;
+    --color-accent-contrast: 13 20 24;
+    --color-accent-subtle: 20 48 62;
 
-    --color-success: 74 222 128;
-    --color-success-subtle: 5 46 22;
-    --color-warning: 250 204 21;
-    --color-warning-subtle: 66 32 6;
-    --color-danger: 248 113 113;
-    --color-danger-hover: 252 165 165;
-    --color-danger-subtle: 69 10 10;
+    --color-success: 79 174 135;
+    --color-success-subtle: 19 41 31;
+    --color-warning: 211 160 90;
+    --color-warning-subtle: 43 33 19;
+    --color-danger: 224 128 116;
+    --color-danger-hover: 240 168 158;
+    --color-danger-subtle: 46 26 23;
     --color-info: 56 189 248;
     --color-info-subtle: 8 47 73;
 
@@ -186,8 +191,8 @@
     --color-focus: 96 165 250;
     --color-backdrop: 0 0 0;
 
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.5);
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.30);
+    --shadow: 0 1px 3px rgb(0 0 0 / 0.40), 0 6px 16px -3px rgb(0 0 0 / 0.45);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.6);
   }
 
@@ -198,6 +203,7 @@
   body {
     background-color: rgb(var(--color-canvas));
     color: rgb(var(--color-content));
+    font-family: var(--font-body);
   }
 
   /* Visible focus, once, globally. Every component inherits it rather than
