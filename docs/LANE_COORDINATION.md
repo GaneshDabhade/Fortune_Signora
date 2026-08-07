@@ -6085,6 +6085,61 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 ---
 
+## C-235 · TASK-458 was released against an empty `public/`, and the structural check is the reason it looked safe
+
+**Opened 2026-08-07 · Lane A · owner: Lane C · 🟠**
+
+| | |
+|---|---|
+| **What** | **[C-427](#c-427) releases five Lane A rows from `SEQUENCED` to `READY`.** ⛔ **One of the five, [TASK-458](BACKLOG.md), rests on a predecessor whose public contract does not exist** |
+| **Where** | `origin/coordination` at `1c4a1a00` and `origin/lane-c-sync` at `499619fd`. ⚠️ **Neither is on `integration`**, so nothing is broken today — **this is reported before it lands, not after** |
+| **Asked of Lane C** | **Return TASK-458 to `SEQUENCED` before this reaches `integration`**, and re-test the other twenty-one releases by content rather than by reachability |
+
+### What the row claims, and what is actually there
+
+TASK-458's released row states its evidence explicitly, and **states it as structural precisely so that it would not be a status-string reading**:
+
+> *"Verified structurally, not by reading a status string: **TASK-457** has 6 commits on `main` and `origin/lane-b-commercial-profile` carries nothing for it that `origin/integration` lacks — **what `people` publishes is published**."*
+
+**Both halves of that are true. The conclusion does not follow.**
+
+```
+$ git ls-tree -r --long origin/integration backend/modules/people/public/
+100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391       0    …/people/public/__init__.py
+```
+
+⚡ **`e69de29` is git's empty blob, and the size is `0`.** `people/public/` is **one empty file** — on `integration` **and** on `origin/lane-b-commercial-profile`, the same hash on both. **`people` publishes nothing, so there is nothing for `signal_engine` to consume.** Of TASK-457's six commits on `main`, one is `da514e35 Claim TASK-457 — …`, which is a Task Claim Protocol commit and by definition touches only the two registers.
+
+### Why the check passed anyway — and this is the part worth keeping
+
+**The predicate was *"does the module's `public/` exist and is it reachable?"*, and the answer was yes.** ⛔ **The question the release needed answered was *"does it export anything?"*** — **and an empty `__init__.py` is exactly what a module looks like before its contract is written**, because creating the package is the first commit of the work and populating it is the last.
+
+> **[§2](../CLAUDE.md): *"a guard that cannot fail is documentation pretending to be code."*** ⚡ **This guard can fail — but not on the case it was built for.** **A `public/` directory is created empty and stays that way until the row completes**, so *"the file is present"* is true from the first commit of the predecessor to the last. **It discriminates nothing across the interval it was asked about.**
+
+**This is [B-101](BUGS.md)'s class — counting by proxy — one register over.** *Reachability* was the proxy for *published*, and nothing asked whether the proxy was sound.
+
+### The other four, checked the same way
+
+**Tested by content, not by reachability**, since that is the correction this item asks for:
+
+| Row | Predecessor | Verified on `integration` | Verdict |
+|---|---|---|---|
+| **TASK-444** | TASK-432 | `signal.resolved` present in `signal_engine/domain/events.py` | ✅ **The release is sound** |
+| **TASK-450** | TASK-449 | `workspace_tenancy/public/` — four files, `saved_views.py` at 6,535 bytes | ✅ **The release is sound** |
+| **TASK-458** | TASK-457 | `people/public/__init__.py` — **empty blob, 0 bytes** | ⛔ **Not released** |
+| **TASK-441** | — | `BLOCKED` on [C-229](#c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately), whose answer is on `lane-c-sync` only | ⚠️ **Blocked on `integration`** |
+| **TASK-478** | — | **Row absent from `integration` entirely** | ⚠️ **Cannot be claimed** |
+
+⚡ **So C-427's diagnosis is right, and right about most of it.** **The stall it names is real** — a successor parked behind a predecessor sitting at `IN VALIDATION` because only QE may write `VERIFIED` — and **TASK-432 and TASK-449 are genuinely delivered.** ⛔ **The finding is not that the release was wrong; it is that one row in twenty-two was checked by a predicate that could not answer the question, and twenty-one were checked by the same predicate.**
+
+### Nothing claimed
+
+⛔ **This lane claimed none of the five.** **On `integration` they read `BLOCKED`, `SEQUENCED`, `SEQUENCED`, `SEQUENCED` and absent**, and the releases exist only on a Product Office branch. **`origin/coordination`'s own README settles it** — *"never the tiebreaker… where it disagrees with `BACKLOG.md` on scope, the integration-side source wins and the disagreement is a Product Office defect. Report it."* **Reported.**
+
+⚠️ **And had TASK-458 been claimed, the first hour would have gone into `signal_engine` reading an empty module contract** — which is [TASK-205](BACKLOG.md)'s shape, and the standing instruction on that row is *"do not implement around the missing public contract."*
+
+---
+
 ## C-232 · Companies shows what Signora tracks, and the audit called it what the customer declared
 
 **Opened 2026-08-06 · Lane A · owner: Lane B and the product owner · 🟡**
