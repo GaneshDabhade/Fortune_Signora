@@ -158,6 +158,74 @@
 | **What it holds** | **[TASK-003](BACKLOG.md)**, `IN PROGRESS` with **nothing written** |
 | ⚡ **The question, at its smallest** | **Did [C-018](LANE_COORDINATION.md)'s ruling mean the label reaches the digest, or only the surface?** ⛔ **§2 — *determinism outranks convenience*, and evidence identity is the repository's most load-bearing derived value** |
 
+## 🟠 C-434 · Login's last three screens — DECISION PACKAGE · three questions, one recommendation each
+
+⚡ **Raised by Lane A from inside the implementation, against its own work.** ⛔ **Nothing is blocked; all three change what your Workflow 1 review is shown, which [C-431](#-c-431--two-of-three-answered-by-d-156--one-narrow-question-left) established should be known going in rather than discovered at the review.**
+
+### ① 🔴 `Use single sign-on` was ruled out of Workflow 1, and Lane A shipped it
+
+| | |
+|---|---|
+| **Background** | **[D-156](DECISION_REGISTER.md) put SSO outside Workflow 1** — ⛔ **domain→IdP routing is an *authorization semantic*, and ④ forbids substituting one.** ⚡ **Lane A then built an `/sso` route in milestone 3 and reported itself rather than leaving it to be found** |
+| **Current implementation** | **`app/(auth)/sso/sso-methods.tsx`, 57 lines, on `main`.** **It presents provider choice; there is no domain→IdP resolution behind it** |
+| **The design expects** | **Screen `02` carries *"Your company uses SSO? → Use single sign-on"*, and `04 · SSO — domain discovery` resolves an email domain to a provider — *"northwind.com uses Okta. You'll be redirected."*** |
+| **Options** | **A — remove the control until routing exists.** ✅ **Truthful; ⛔ the review sees a login screen the design does not draw.** **B — keep it as provider *selection* without domain discovery.** ⚡ **Honest and useful: Google and Microsoft already work through Better Auth, so the control does something real.** ⛔ **It is not screen `04`.** **C — build domain→IdP routing now.** ⛔ **A backend capability with no row, inside Workflow 1** |
+| ✅ **Recommendation — B, and amend D-156 to say so** | ⚡ **The measured reason: `signIn(provider)` already exists and `oauthMethods()` renders a button only when both credential halves are present.** **So the control is backed by real capability today — it selects a *configured provider*, which is not the same as *discovering one from a domain*.** ⛔ **What must not ship is a control implying domain discovery that does not happen** |
+| **Impact after the decision** | **B: keep the route, and the row states plainly that screen `04` is Workflow 5's.** **A: one deletion.** **C: a new backend row and Workflow 1 slips** |
+
+### ② Account lockout does not exist, and Better Auth will not be made to fake it
+
+| | |
+|---|---|
+| **Background** | **Screen `03` reads *"You have 3 attempts left before the account locks for 15 minutes."*** ⛔ **`rateLimit`, `lockout`, `maxAttempts` and `failedAttempts` return zero across the repository** |
+| **Already ruled** | ⚡ **[D-156](DECISION_REGISTER.md) ⑤ answered this — *lock and rate-limit messaging **where backed by implemented capability***. There is none, so it is out** |
+| ✅ **Recommendation — no decision needed; confirm the existing ruling** | ⛔ **Do not simulate it.** **An attempt counter is a security rule, and [D-156](DECISION_REGISTER.md) ④ forbids simulating one** — **a fake *"3 attempts left"* is a claim about protection the product does not have** |
+| **Impact** | **None on Workflow 1. Account lockout becomes its own row when Security Center is scoped** — ⚡ **and [§6](#) of [D-168](DECISION_REGISTER.md) is where that gets decided properly** |
+
+### ③ The throttle is invisible outside production
+
+| | |
+|---|---|
+| **The question Lane A asks** | ***"Is the rate limiter enabled in all modes, so the throttled state is reviewable and the control is real outside production?"*** |
+| ✅ **Recommendation — enable it in all modes** | ⚡ **This is the one of the three that is *infrastructure configuration*, not a business rule** — **which is exactly the substitution [D-167](DECISION_REGISTER.md) ① permits, in the direction it prefers: make development behave like production rather than less like it.** ⛔ **A state that cannot be seen outside production cannot be reviewed, and [§20e](../CLAUDE.md) says every defect that has mattered here was found by *using* the product** |
+| **Impact** | **A configuration change, no code path.** ✅ **The throttled state becomes reviewable and its Playwright assertion becomes possible** |
+
+> ⚡ **What this package does not do: change anything.** ⛔ **All three are yours, and Lane A is building the rest of Workflow 1 meanwhile** ([D-168](DECISION_REGISTER.md) §8).
+
+## 🟡 C-432 · §20c — DECISION PACKAGE · one sentence, and I recommend approving it
+
+⚡ **[D-168](DECISION_REGISTER.md) §4: *"Do not simply tell me a sentence needs changing. Show existing wording, proposed wording, why it no longer matches repository reality, consequences if left unchanged."*** **All four below.**
+
+### ① Existing wording — `CLAUDE.md` §20c, line 420
+
+> **"From M1.5, the frontend foundation is **frozen** on the same terms as the platform (§20a). Business milestones **consume** the Design System, Shared Components, Application Shell, Query Layer, Authentication integration, and Routing; **they do not modify them**."**
+
+**Change is then permitted for four reasons only: a production defect · an accessibility issue · a security issue · an explicitly approved architectural change (RFC).**
+
+### ② Proposed wording — one sentence appended, nothing removed
+
+> **"⚡ The UI Migration Program is a standing approved architectural change under the fourth exemption — [D-153](DECISION_REGISTER.md), [D-154](DECISION_REGISTER.md) and [D-161](DECISION_REGISTER.md), ruled by the product owner. Replacing the design tokens, the shells and the shared components *to match the finalized Signora Design System* is the programme, not a breach of the freeze. ⛔ The freeze continues to bar ad-hoc modification for one page's benefit, which is what it was written to prevent."**
+
+### ③ Why it no longer matches repository reality
+
+⛔ **`TASK-490` replaced every design token in `globals.css` and is on `main`.** ⛔ **`TASK-491` will replace seven more.** ⛔ **`TASK-483` rebuilds the authentication shell.** **All three are `frontend foundation` by §20c's own list, and all three are correct.**
+
+⚡ **A cold session reading §20c literally would conclude the repository is in breach of its own constitution** — and the resolution is four documents away in a register it may not have read.
+
+### ④ Consequences if left unchanged
+
+| | |
+|---|---|
+| ⛔ **Nothing breaks today** | **The rulings exist and are ratified; the fourth exemption already covers this** |
+| ⚠️ **The cost is a lane's judgement, and it lands in the expensive direction** | **A new session reads *"frozen… they do not modify them"*, then finds a queue asking it to rewrite `globals.css`.** ⚡ **It will resolve the contradiction — and a careful lane resolves it CONSERVATIVELY, by asking rather than building.** **That is a cycle lost to a sentence** |
+| ⚡ **And it is the [§2](../CLAUDE.md) defect the file names about itself** | ***"The repository itself should always tell the truth"*** — **a governance document that reads as forbidding the programme the repository is executing is exactly that** |
+
+### ✅ Recommendation — approve
+
+⛔ **No architectural implication.** **It changes no rule; it records one already made.** ⚡ **[§2](../CLAUDE.md)'s other half is why this office drafted rather than wrote it: *governance describes reality; it never quietly changes it* — and `CLAUDE.md` is the one file Lane C may never edit** (§20e).
+
+**Implementation impact after the decision: one paragraph appended to §20c by the product owner. No code, no rows, no re-sequencing.**
+
 ## 🟡 C-433 · §19 names a command flag that does not exist
 
 ✅ **Nothing is blocked and this needs one sentence, not a decision.** ⚡ **Lane A ran the command §19 tells it to run, and reported the gap rather than quietly skipping the gate.**

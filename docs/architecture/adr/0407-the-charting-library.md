@@ -1,6 +1,23 @@
 # ADR-0407 · The charting library — visx
 
-**Status: PROPOSED.** **Drafted by Lane C, 2026-08-07, on [D-167](../../DECISION_REGISTER.md) §3; revised the same day on the product owner's ruling.** ⛔ **A draft is a recommendation, never a ratification** (§20e).
+**Status: ACCEPTED — product owner, 2026-08-07, [D-168](../../DECISION_REGISTER.md) §1.** ⚡ ***"I approve the direction of preferring visx."*** **Approval was conditional on three re-verifications; all three are recorded in [§0](#0--the-three-re-verifications-d-168-1-required) below and all three hold.**
+
+**Drafted by Lane C, 2026-08-07, on [D-167](../../DECISION_REGISTER.md) §3; revised the same day when the product owner overruled its first recommendation.**
+
+---
+
+## 0 · The three re-verifications [D-168](../../DECISION_REGISTER.md) §1 required
+
+| Asked | Measured | |
+|---|---|---|
+| **Does any finalized design specify a different charting technology?** | ⛔ **No.** **All 26 screen documents *and* `design-system/styles.css` searched for fourteen names — Recharts · Chart.js · D3 · visx · nivo · ECharts · Plotly · Victory · ApexCharts · Highcharts · amCharts · Observable Plot · Vega.** **Zero hits.** | ✅ |
+| **Does an existing dependency already satisfy it?** | ⛔ **No.** **33 dependencies; the only one adjacent to drawing is `lucide-react@^0.468.0`, which is an icon set.** **No `d3`, no SVG toolkit, nothing that plots** | ✅ |
+| **Is visx still the best match on the six criteria?** | ✅ **Yes, and the deciding one is unchanged**: `@visx/network` renders the *Relationship graph* Account 360 specifies, and **Recharts has no node-link primitive at all.** ⚡ **On Design-System fit it also wins by construction rather than by effort — visx is unstyled, so tokens apply with nothing to override** | ✅ |
+
+⚠️ **One thing the re-verification changed: nothing.** ⛔ **Recorded because a verification that never overturns anything is one nobody will run again** — **the searches, the file counts and the dependency list are above so the next reader can re-run them rather than trust this line.**
+
+---
+
 
 > ⚠️ **This ADR's first version recommended *no charting library*. The product owner overruled it: *"use either visx or Recharts."*** ⛔ **The earlier recommendation is recorded in [§4](#4--what-this-adr-first-recommended-and-why-it-was-overruled) rather than deleted** (§2, *a record of what was true then is dated, not rewritten*). ✅ **The measurement that produced it stands and is what decides between the two.**
 
