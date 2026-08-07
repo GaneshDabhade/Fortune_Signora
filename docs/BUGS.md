@@ -838,6 +838,37 @@ git show origin/main:certification/manifest.json | grep -c e932b87dbbcc…
 
 ---
 
+### B-212 · `make up` names an env file that is gitignored and documented nowhere, so no lane can run the stack
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — [`Makefile`](../Makefile) `up`/`down`, [`docs/RUNNING.md`](RUNNING.md) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
+| **Severity** | 🟠 — ⛔ **Not a Blocking Quality Defect**: no gate is failing and `pytest`, `mypy`, `ruff`, `tsc`, `eslint` and `vitest` all run. ⚡ **What it blocks is [D-113](DECISION_REGISTER.md)'s requirement that a lane *execute* its Playwright journey**, which needs the application running |
+| **Status** | **`OPEN`** — reported by Lane A, 2026-08-07, on trying to run [TASK-468](BACKLOG.md)'s journey |
+| **Found** | 2026-08-07 by Lane A, **executing a customer journey rather than only writing one** — which is the half [D-113](DECISION_REGISTER.md) added precisely because it gets skipped |
+
+**Steps to reproduce.** From a clean clone, as any lane:
+
+```bash
+make up
+→ couldn't find env file: /…/signora-lane-a/infra/.env.prod-local
+```
+
+**Expected.** The stack comes up, or the command names what to create and how.
+
+**Actual.** ⛔ **It fails on a file that cannot be obtained.** **`.gitignore:38` ignores `infra/.env.prod-local`**, no template or `.example` exists anywhere in the tree, and **`docs/RUNNING.md` — the document §20e makes authoritative for environments — never mentions it.** `git grep prod-local` returns the two `Makefile` lines and nothing else.
+
+### ⚠️ Why this is a repository defect and not a workstation gap
+
+**[§20e](../CLAUDE.md) draws the line and it matters**: *"a workstation gap must never be recorded as a repository defect"* — a missing `docker` or `make` is the lane's to install. ⛔ **This is the opposite shape.** **The tooling is installed and working**; what is missing is a file **the repository deliberately does not ship and does not describe**. **No amount of local setup authority lets a lane invent the contents of a secrets file nobody has documented.**
+
+### ⚡ What it costs, stated precisely
+
+**Every gate a lane can run, runs.** ⛔ **The one that cannot is the customer journey** — and [§19](../CLAUDE.md) is explicit that *"a UI slice is not complete until its scenario is written and passing"*, with [`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) L-15 gate 8 saying the same. **So this does not slow a slice down; it makes a UI slice unable to reach its own Definition of Done**, and it will do that to [TASK-469](BACKLOG.md), [TASK-470](BACKLOG.md), [TASK-467](BACKLOG.md) and [TASK-471](BACKLOG.md) in turn.
+
+⚠️ **Related and separate**: **`python3 infra/certification-guard.py --journeys` does not exist** — `error: unrecognized arguments: --journeys` — though §19 names it as what *"names which specs the change selects"*. **Recorded here rather than as its own row because both are the same surface and one fix visit covers them**; ⛔ **split it if that judgement is wrong.**
+
 ### B-406 · `signal.resolved` is published by code and absent from the event catalog
 
 | | |

@@ -349,6 +349,7 @@ databaseUrl: required(
 
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
+| [C-239](#c-239--the-approved-designs-say-workspace-and-a-customer-may-not-be-shown-that-word) | The approved designs say *workspace*, and a customer may not be shown that word | Lane A | **Lane C** | **`OPEN`** — raised 2026-08-07 | ⛔ **Nothing** — TASK-468 proceeds on the stated reading |
 | [C-238](#c-238--affiliationreader-has-a-protocol-and-no-implementation-so-the-composition-root-has-nothing-to-inject) | `AffiliationReader` has a Protocol and no implementation, so the composition root has nothing to inject | Lane A | **Lane B** — `people` is its module in [`modules.toml`](coordination/modules.toml) | ✅ **`CLOSED`** — Lane A, 2026-08-07. **Lane B published `SqlAffiliationReader` *and* its composition builder; verified by opening the file** | ⛔ **Nothing.** **[TASK-458](BACKLOG.md)'s blocker has cleared** |
 | [C-235](#c-235--task-458-was-released-against-an-empty-public-and-the-structural-check-is-the-reason-it-looked-safe) | TASK-458 was released against an empty `public/`, and the structural check is the reason it looked safe | Lane A | **Lane C** — this office released the row | ✅ **`ANSWERED`** — Lane C, 2026-08-07. **Both asks done; ask 2 found a second wrong release ([TASK-428](BACKLOG.md))** | ⛔ **Nothing today** — reported before it reached `integration` |
 | [C-210](#c-210--will-signora-hold-personal-data) | will Signora hold personal data? | Lane B | **Product owner** — ⚡ **a product decision about what the platform stores, not an engineering one** | **`OPEN`** — **grouped with People Intelligence** alongside [C-203](#c-203--nothing-in-the-product-can-render-a-persons-name) | **Nothing today** — ⛔ **no row depends on it, and it is listed so it does not disappear** |
@@ -6167,6 +6168,34 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 Lane A's recommendation, offered rather than taken: **a page-level test rather than a per-component one.** Render the account brief with every hook erroring and assert the page says so — one test, no new prop on any component, and it cannot be silenced by adding a field. `brief.test.tsx` already has the harness. **Lane A will build it on request**; it is not being built unasked because the assertion would reach sections other lanes own.
 
 **Six occurrences of one defect is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. The register is where a repeated shape stops being individually correct.
+
+## C-239 · The approved designs say *workspace*, and a customer may not be shown that word
+
+**Opened 2026-08-07 · Lane A · owner: Lane C · 🟡**
+
+| | |
+|---|---|
+| **What** | ⚡ **Two binding authorities give different answers about the words on a screen.** **[D-138](../CLAUDE.md) makes the design snapshot the implementation authority**; **[ADR-0034](architecture/adr/0034-ubiquitous-language.md) and [§4](../CLAUDE.md) forbid `workspace` in any sentence a customer reads**, and `frontend/tests/components/vocabulary.test.tsx` enforces it executably |
+| **Where** | `docs/design-snapshot/screens/Workspace Setup.dc.html` — *"Workspace setup"*, *"Workspace name"*, *"Workspace URL"*, *"Create a workspace"*, *"This is your only workspace"*. ⚡ **Measured, not sampled: `workspace` appears in the visible copy of six of its ten sections** |
+| **Asked of Lane C** | **Confirm the reading below, or rule otherwise** — ⛔ **and say it once for every design screen rather than per row**, because four more are queued behind this one |
+| **Blocks** | ⛔ **Nothing.** **[TASK-468](BACKLOG.md) proceeds** — see below |
+| **Status** | **`OPEN`** — raised 2026-08-07 |
+
+### Why this is not a blocker, and why it is still worth a row
+
+⚡ **There is only one shippable option today, so proceeding encodes no assumption.** **A screen rendering *"Workspace name"* fails `vocabulary.test.tsx` and cannot reach QE at all** — so the constraint decides it, not this lane's preference. **[TASK-468](BACKLOG.md) is being built with the design's structure and behaviour, rendered in the customer's vocabulary**: *Organization setup*, *Organization name*, *Organization URL*.
+
+⛔ **What is genuinely open is whether that reading is the intended one**, and it is worth one answer rather than five: **[TASK-469](BACKLOG.md), [TASK-470](BACKLOG.md), [TASK-467](BACKLOG.md) and [TASK-471](BACKLOG.md) are all design screens** and every one of them will meet the same word.
+
+### The reading this lane is proceeding on
+
+> **[D-138](../CLAUDE.md) governs *what the screen is*. [ADR-0034](architecture/adr/0034-ubiquitous-language.md) governs *what it says*.**
+
+⚡ **ADR-0034 already states the mechanism**: *"the translation lives at the frontend edge and never travels inward."* **A design authored upstream is upstream of that edge**, so it naming the platform's term is expected rather than contradictory — the same way `POST /workspaces` keeps its path while the screen above it says *organization*. ⛔ **The alternative reading — that a design's copy overrides the ADR — would make `vocabulary.test.tsx` a test the approved designs are expected to fail**, and a test nobody can satisfy is one somebody eventually deletes.
+
+⚠️ **Stated rather than assumed, because the cost of being wrong is small and visible**: if Lane C rules the other way, the change is string constants and one test, in one commit.
+
+---
 
 ## C-238 · `AffiliationReader` has a Protocol and no implementation, so the composition root has nothing to inject
 

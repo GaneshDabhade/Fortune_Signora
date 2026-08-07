@@ -145,6 +145,19 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Organization setup</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <p className="text-sm text-content-muted">
+            Identity and defaults for everyone here — and, stated plainly, the settings
+            this product cannot change yet.
+          </p>
+          <SettingsLink href="/settings/organization">Organization setup</SettingsLink>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Your team</CardTitle>
         </CardHeader>
         <CardBody>
