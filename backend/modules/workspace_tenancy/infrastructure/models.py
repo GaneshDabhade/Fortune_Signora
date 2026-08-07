@@ -7,10 +7,12 @@ free of any SQLAlchemy dependency (docs/architecture/15-project-structure.md).
 """
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy import Enum as SqlEnum
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -146,4 +148,46 @@ class MembershipRoleChangeModel(Base, TimestampMixin, AuditMixin):
             values_callable=lambda enum_cls: [member.value for member in enum_cls],
         ),
         nullable=False,
+    )
+
+
+class SavedViewModel(Base, TimestampMixin, AuditMixin):
+    """A named, shared declaration of a query — one row per *version*.
+
+    **The declaration is `JSONB` and this module never reads inside it**
+    ([D-091](../../../../docs/DECISION_REGISTER.md)). ⚡ **No GIN index, and
+    that is the reason**: an index on the document's keys exists to answer
+    questions *about* the declaration, and asking one here is the first step
+    to `workspace_tenancy` owning another module's semantics.
+
+    ⛔ **No `is_live` column.** Live is derived from the supersession chain —
+    a boolean beside it would be the same fact stored twice, and the two would
+    disagree the first time a version landed (§2).
+    """
+
+    __tablename__ = "saved_view"
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("workspace.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    declaration: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    # `created_by` is AuditMixin's — the author the public contract names is
+    # the same fact the audit column already holds, and declaring it twice
+    # would be two columns for one truth.
+    supersedes: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        # **`SET NULL`, not `CASCADE`.** A superseded version is never deleted
+        # in normal operation, but if one ever were, the versions after it must
+        # survive: the chain is history, and losing a later reading because an
+        # earlier one went is exactly what versioning exists to prevent.
+        ForeignKey("saved_view.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    retired_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
     )

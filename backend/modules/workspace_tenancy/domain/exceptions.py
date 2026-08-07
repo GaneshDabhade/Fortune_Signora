@@ -29,3 +29,26 @@ class DuplicateMembershipError(WorkspaceTenancyError):
         super().__init__(f"User {user_id} is already a member of workspace {workspace_id}")
         self.workspace_id = workspace_id
         self.user_id = user_id
+
+
+class InvalidSavedViewNameError(WorkspaceTenancyError):
+    """The name is the customer's own words, so it has to be some words."""
+
+
+class EmptyDeclarationError(WorkspaceTenancyError):
+    """A saved view records a question, and this one asks nothing.
+
+    ⛔ **The only thing this module may say about a declaration's contents.**
+    [D-091](../../../../docs/DECISION_REGISTER.md) puts interpretation outside
+    `workspace_tenancy` entirely — so this reports *that it is absent*, never
+    that it is wrong, and there is deliberately no `InvalidDeclarationError`
+    beside it.
+    """
+
+
+class SavedViewAlreadyRetiredError(WorkspaceTenancyError):
+    """Retired once, and the first timestamp is the one that happened."""
+
+    def __init__(self, saved_view_id: UUID) -> None:
+        super().__init__(f"Saved view {saved_view_id} is already retired")
+        self.saved_view_id = saved_view_id

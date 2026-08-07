@@ -57,6 +57,12 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # grant carries no UPDATE, which is the enforcement rather than the
         # convention.
         "membership_role_change",
+        # Saved View (R-02, 455 §4), migration 0041. **Not append-only, and
+        # the difference is deliberate**: `membership_role_change` records
+        # what *was* true, while a saved view is still in use and retiring one
+        # changes its present state. `UPDATE` is granted and only retirement
+        # uses it — a revision is an INSERT naming the version it replaces.
+        "saved_view",
         # Provider Normalization (M2.2), migration 0008.
         "claim",
         "normalization_outcome",
