@@ -351,6 +351,25 @@ last_work = "Lane A — CX-07"
 next_milestone = "wave 1 of 412"
 carries = ["C-025", "C-008"]
 note = "not a backend module; the largest continuity cost in the table if it moves wrongly"
+# **`frontend/` entire, from 2026-08-07** ([D-151](../DECISION_REGISTER.md) ①,
+# closing [C-430](../LANE_COORDINATION.md)). Until today **no module declared a
+# single `frontend/` path** — `git grep frontend` against this file returned
+# nothing — so the whole frontend was unattributable by machine and three rows
+# named a lane the registry could not support.
+#
+# **Product owner: *"Lane A owns the application UI composition, the Design
+# System implementation, page composition and customer-facing experiences.
+# Authentication journeys ultimately become customer journeys, which belong
+# with the application layer rather than Product Office."***
+#
+# ⛔ **This is the whole directory, deliberately.** A narrower grant would have
+# left the next unlisted subdirectory to be discovered the same way this one
+# was — by a lane writing code into it and reverting.
+#
+# ⚡ **Lane C keeps planning, decomposition, readiness assessment and journey
+# sequencing.** Ownership here is *implementation*, and §20e's distinction
+# holds: a module is permanent, a lane is a temporary execution resource.
+paths = ["frontend/"]
 
 # ── Platform Foundation — not production modules ────────────────────────────
 # **Phase 0 of the execution-queue migration** ([434](../architecture/434-execution-queue-governance-package.md)),

@@ -265,13 +265,55 @@ updated      = 2026-08-07
 # this file and the coordination ref both advertised it as `current`. Second
 # instance today (TASK-451 was the first, C-236's class): a queue goes stale
 # the moment a lane claims, and only this office republishes it.
+# ⚡ FRONTEND IS NOW THIS LANE'S — 2026-08-07, D-151 ① closing C-430.
+# `modules.toml` grants `frontend/` to product_surface. Three rows moved here
+# from Lane C and are released: TASK-474, TASK-473, TASK-476.
+#
+# ⚡ TASK-474 IS FIRST, and the order is D-151 ⑥ rather than a preference:
+# ADR-0406 §6 puts TEN OF FOURTEEN authentication journey gaps behind that one
+# row — every journey that needs an email is currently unwalked. TASK-473
+# reports the active mode; TASK-476 is engineering infrastructure and is last.
+# ⛔ "Prefer making one more finalized customer journey functional unless
+#    architectural correctness would be compromised."
+#
+# ⚠️ TASK-476 has a Lane C half: the Makefile e2e targets name the mode so
+# certification stays headless. One line, supplied on request — not a claim.
+# ⛔ CORRECTED BEFORE PUBLISHING. This office first wrote `current = TASK-474`
+# on D-151 ⑥'s journey-first ordering, and the generator disagreed — rightly.
+# Its key sorts `on_integration` FIRST (C-425): TASK-474's release to READY is
+# on `lane-c-sync`, and you claim against BACKLOG.md on `integration`, where
+# the row still reads BLOCKED. A claim on it today would contradict the
+# authoritative backlog. ⚡ Same lesson as TASK-464 an hour earlier.
+#
+# ✅ So: 9 claimable, 6 CLAIMABLE TODAY. TASK-474, TASK-473 and TASK-476 are
+# released and awaiting QE integration — `awaiting_sync = 3`.
+#
+# ⚡ THE MOMENT THEY LAND, TASK-474 GOES FIRST. That is D-151 ⑥ and not a
+# preference: ADR-0406 §6 puts TEN OF FOURTEEN authentication journey gaps
+# behind it, and every journey needing an email is currently unwalked.
+# TASK-473 reports the active mode. TASK-476 is engineering infrastructure
+# and stays last — "prefer making one more finalized customer journey
+# functional unless architectural correctness would be compromised."
 current = "TASK-480"
 next    = "TASK-481"
-future  = ["TASK-467", "TASK-471", "TASK-482", "TASK-484"]
+# ⚠️ The last three are RELEASED and NOT CLAIMABLE TODAY — their READY is on
+# `lane-c-sync` and you claim against BACKLOG.md on `integration` (C-425).
+# They are listed here rather than hidden because a row the backlog offers
+# must be visible in the queue; `coordination.toml` carries the split as
+# claimable = 9, claimable_now = 6, awaiting_sync = 3.
+#
+# 🔴 THE MOMENT THEY LAND, TASK-474 GOES FIRST — ahead of everything above it.
+# D-151 ⑥, and not a preference: ADR-0406 §6 puts TEN OF FOURTEEN
+# authentication journey gaps behind that one row.
+future  = ["TASK-482", "TASK-467", "TASK-471", "TASK-484", "TASK-474", "TASK-473", "TASK-476"]
 
-eligible_count = 6
+
+# ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
+# waiting on QE, and counting them here would overstate what this lane can
+# start — the overstatement §20e names.
+eligible_count = 9
 depth_target   = 15
-shortfall      = 9
+shortfall      = 6
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

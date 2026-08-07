@@ -16,17 +16,17 @@ task_count     = 89
 current            = "TASK-480"
 next               = "TASK-481"
 next_after_that    = "TASK-482"
-assigned_total     = 38
-claimable          = 6
+assigned_total     = 41
+claimable          = 9
 claimable_now      = 6
-awaiting_sync      = 0
+awaiting_sync      = 3
 in_flight          = 24
 awaiting_qe_transition = 0
 blocked_on_integration = 1
 supply_state       = "working"
 blocked            = 8
 lane_utilization   = 4.8
-idle_prediction_days   = 0.9
+idle_prediction_days   = 1.3
 dependency_wait_days   = 0.2
 blocked_duration_days  = 0.2
 critical_path_max      = 3
@@ -54,7 +54,7 @@ critical_path_max      = 3
 current            = ""
 next               = ""
 next_after_that    = ""
-assigned_total     = 16
+assigned_total     = 13
 claimable          = 0
 claimable_now      = 0
 awaiting_sync      = 0
@@ -62,7 +62,7 @@ in_flight          = 6
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "in_flight_only"
-blocked            = 10
+blocked            = 7
 lane_utilization   = 1.2
 idle_prediction_days   = 0.0
 dependency_wait_days   = 0.2
@@ -550,6 +550,38 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-473"
+title         = "A developer can always tell which authentication mode is running"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-474"
+title         = "A developer can see, open and resend every email the product sends"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = ["TASK-475"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
 id            = "TASK-475"
 title         = "The seventeen authentication journeys run as one suite, in any mode"
 state         = "BLOCKED"
@@ -560,10 +592,26 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "when TASK-474 complete"
+estimated_ready = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-ever"
 waiting_for    = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be written until "
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-476"
+title         = "Headed becomes the default a lane reviews in, and the rule stops being untrue"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-478"
@@ -1346,54 +1394,6 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-473"
-title         = "A developer can always tell which authentication mode is running"
-state         = "BLOCKED"
-declared      = "BLOCKED"
-lane          = "Lane C"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "** — **Lane C, 2026-08-07, on [C-430](LANE_COORDINATION.md).** ⚡ **The"
-waiting_for    = "** — **Lane C, 2026-08-07, on [C-430](LANE_COORDINATION.md).** ⚡ **The row's own Module cell is the blocker: `frontend/lib/auth/` belongs to no module"
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-474"
-title         = "A developer can see, open and resend every email the product sends"
-state         = "BLOCKED"
-declared      = "BLOCKED"
-lane          = "Lane C"
-depends_on     = []
-unblocks       = ["TASK-475"]
-next_owner     = ["Lane A"]
-next_lane      = "Lane A"
-critical_path  = 0
-estimated_ready = "— Lane C, 2026-08-07, on module ownership.** ⛔ **Not implementable by "
-waiting_for    = "— Lane C, 2026-08-07, on module ownership.** ⛔ **Not implementable by this lane as scoped**: its Module cell claims `frontend/lib/auth/`, and [`module"
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-476"
-title         = "Headed becomes the default a lane reviews in, and the rule stops being untrue"
-state         = "BLOCKED"
-declared      = "BLOCKED"
-lane          = "Lane C"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "** — **Lane C, 2026-08-07, on [C-430](LANE_COORDINATION.md).** ⚡ **The"
-waiting_for    = "** — **Lane C, 2026-08-07, on [C-430](LANE_COORDINATION.md).** ⚡ **The `Makefile` half is unambiguously Lane C's; `frontend/playwright.config.ts` is i"
 blocked_days   = 0.0
 on_integration = true
 
