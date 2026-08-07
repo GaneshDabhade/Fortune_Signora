@@ -202,6 +202,23 @@ git rebase main || exit 1
 | **Resource contention** | Other lanes were active on this workstation throughout. **The environment lease serialises `certify`, `smoke`, `up` and `test`** — it does not and cannot cover a process that never asks for it |
 | **Something in the suite itself** | ⛔ **Nothing rules this out.** Three fewer passes is not noise-shaped, and a 41-minute stage is not load-shaped either |
 
+### ⚡ Update 2026-08-07, cycle 92 — the contention hypothesis is now the weaker one
+
+**Lane C's [483](architecture/483-environment-isolation-audit.md) reports that the lease key is an unexpanded shell variable. QE verified it rather than accepting it:**
+
+```python
+_compose_project_from_file()  →  '${COMPOSE_PROJECT_NAME:-signora-v2}'
+_resource()                   →  '${COMPOSE_PROJECT_NAME:-signora-v2}'
+```
+
+⛔ **Docker Compose expands that line. The regex reading it does not.** So every clone computes the same lease name, **and the `"signora-v2"` fallback is unreachable because the middle term returns a truthy literal.**
+
+**What that does to this row.** The lease has been **over-serializing** — QE's two aborts this session, 270s and 120s, were waits on a key naming no stack. ⚠️ **But it was still serializing**, so **nothing else was touching the shared `5433` stack while stage `14d` took 2495s**, and certification provisions its **own disposable database** for the suite gate.
+
+> ⚡ **So contention explains the *waiting* and not the *anomalies*.** Both hypotheses stay open; the first is now the less likely, **and it was narrowed by measurement rather than by argument.**
+
+⛔ **The lease is Lane C's** — [D-146](DECISION_REGISTER.md) assigned the audit and Lane C is on it. **QE verified the claim and did not fix the file.**
+
 ⚠️ **Naming a cause on this evidence would be the [B-136](#b-136--the-worker-crash-loops-in-every-non-local-environment-because-the-composition-root-now-calls-a-guard-nothing-satisfies) mistake in reverse** — attributing a failure to the first plausible component. **The row exists so the next occurrence has a predecessor to compare against**, which is precisely what `_slowest_stage` was added for:
 
 > *"Across 28 runs the smoke gate sat between 104s and 193s except twice — 4830s and 1096s, both completing every stage. **Neither was explainable afterwards, because the record kept one number.**"*
