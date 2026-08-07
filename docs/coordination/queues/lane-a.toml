@@ -241,6 +241,53 @@ updated      = 2026-08-07
 #    ⚡ They are released and waiting on QE, not on planning. `current` is
 #    ordered to put a claimable-today row first whenever one exists.
 #
+# ══════════════════════════════════════════════════════════════════════════════
+# 🟢  JOURNEY READINESS — 2026-08-07 · D-151 ② · measured, not read from a table
+#
+# D-151 ②: "continue using complete customer journeys as the implementation
+# unit instead of isolated screens." Measured against origin/integration today
+# rather than taken from ADR-0406 §6, which was counted on 2026-08-06.
+#
+#   ①  Registration → Verification → Login → Workspace Setup → Onboarding
+#      surfaces: sign-up ✅ verify-email ✅ sign-in ✅ · Workspace Setup is
+#      TASK-468 (CLAIMED, yours) · Onboarding has NO ROUTE — TASK-469,
+#      correctly sequenced behind TASK-468
+#      walked: ⛔ no        blocked on: TASK-474, then TASK-468 → TASK-469
+#
+#   ②  Login → Dashboard
+#      walked: ✅ YES — auth-journey.spec.ts, "@smoke a person with an address
+#      and a password reaches their morning"
+#      ⚡ THE ONLY ONE OF THE FIVE THAT WORKS AND IS VERIFIED TODAY
+#
+#   ③  Forgot Password → Reset Password → Login
+#      surfaces: forgot-password ✅ reset-password ✅ sign-in ✅ — ALL EXIST
+#      walked: ⛔ no        blocked on: TASK-474, AND NOTHING ELSE
+#      ⚡ THE CHEAPEST COMPLETE JOURNEY IN THE REPOSITORY. No new screen, no
+#      new route, no new contract — one row makes a finalized journey work.
+#
+#   ④  Invitation → Join Workspace → Onboarding
+#      surfaces: settings/team ✅ join/[workspaceId] ✅ · Onboarding NO ROUTE
+#      walked: ⛔ no        blocked on: TASK-474, then TASK-469
+#
+#   ⑤  Team Invitation → Account Activation → First Login
+#      surfaces: settings/team ✅
+#      walked: ⛔ no        blocked on: TASK-474
+#
+# ⛔ THE MEASUREMENT BEHIND "walked: no". Zero e2e specs reference
+#    verify-email, reset-password, forgot-password, invitation or join/.
+#    `sign-up` appears only in personas.ts, a helper. Four of the five
+#    journeys the product owner named are entirely unwalked.
+#
+# 🔴 SO TASK-474 IS ON THE CRITICAL PATH OF FOUR OF FIVE. That is why it goes
+#    first the moment QE integrates it — D-151 ⑥, measured rather than asserted.
+#
+# ⚠️ ORDER BELOW IS NOT REORDERED BY JOURNEY, deliberately. D-151 ② makes the
+#    journey the PLANNING UNIT; it is not a licence to put a row with an
+#    unfinished predecessor ahead of one with none, and priority remains the
+#    product owner's (§20e). TASK-467 serves journeys ①②③ and is claimable,
+#    but carries critical_path = 1 where TASK-480 carries 0.
+# ══════════════════════════════════════════════════════════════════════════════
+
 # ── Executable today, in order ───────────────────────────────────────────────
 #
 # ⚡ RELEASED 2026-08-07 — C-427. Every row below was parked behind a
