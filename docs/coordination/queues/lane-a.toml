@@ -89,6 +89,71 @@
 # CLAIMED and it is yours. Nothing here bypasses QE integration.
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════════
+# 🟢  PLANNING CORRECTION — 2026-08-07 · C-229 IS ANSWERED · advisory
+#
+# **WHAT CHANGED.** You reported C-229 (the Companies entrance) as a Product
+# Owner decision. It is answered, and it needed no ruling. The answer is on
+# lane-c-sync and not yet on integration, which is why you cannot see it.
+#
+# **WHY.** The finalized App Shell design defines the navigation rail, and its
+# items are in the file — this office had previously and wrongly reported them
+# as unreadable. Measured from
+#   docs/design-snapshot/screens/Fortune Signora App Shell.dc.html
+# the rail is:
+#   Home · Forecast · Pipeline · Accounts (8,412) [Enterprise 312,
+#   Mid-market 1,140] · Deals · Conversations · Signals (14) · Reports
+#   + Settings in the utility rail.
+#
+# ⚡ **Accounts carries 8,412 — the exact row count TASK-440 Companies cites.**
+#   So Companies IS a first-class navigation destination in the approved
+#   design, and D38's removal is superseded. D-128 already permits that: the
+#   design is the authority and historical UI is not.
+#
+# ⚡ **Deals is also a rail entry**, which is Opportunity Intelligence's parent
+#   — its breadcrumb reads "Deals / EMEA enterprise / Vantage renewal — Q4
+#   FY26". So TASK-441's entrance exists one level up.
+#
+# **STILL EXECUTABLE.** Nothing about your rows changes. TASK-440's entrance
+# question is settled; its account-table blocker (TASK-472) is separate and
+# is IN VALIDATION with Lane B.
+#
+# **SHOULD WAIT.** C-424 — four rail entries (Forecast, Pipeline, Deals,
+# Conversations) name screens no design in the set defines. That is with the
+# product owner and is answerable by pointing. ⛔ Do not invent those four.
+#
+# **YOUR REPORT WAS CORRECT IN EVERY RESPECT.** You refused to treat work on a
+# Product Office branch as claimable, which is exactly what C-422 recorded,
+# and you named the drought as a synchronization gap rather than an absence
+# of work. Both readings are right.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── D-136 ⑥ · the synchronization measurement, taken 2026-08-07 ──────────────
+# Lane A reports a sixth consecutive poll at eligible_count = 0 and reads the
+# cause as a synchronization gap. ⚠️ MEASURED, and the reading is half right.
+#
+#   QE's last integration : 14 minutes ago
+#   QE's cycles today     : 5 (14m, 6h, 7h, 8h, 8h ago)
+#   Lane C's oldest unsynchronized commit : 13 minutes
+#
+# ⛔ So QE is not the constraint. This office published five commits in the
+#   last thirteen minutes and QE has not taken them yet, which is normal.
+#
+# ⚡ The deeper answer is less comfortable: even fully synchronized, this lane
+#   would be at 0 claimable, because all 14 of its rows are parked behind
+#   named blockers — not because the work is missing.
+#
+#   The three that matter, in order of what they release:
+#     C-424      four rail entries name screens no design defines  -> product owner
+#     TASK-448 s3 the design system's third slice                  -> Lane A's own
+#     TASK-419   the WorkerRuntime providers field                 -> LANE C'S, and
+#                it is READY, unstarted, and blocks TASK-901 slice 1 (C-234)
+#
+# ⛔ The third is this office's and has no excuse. Recorded rather than
+#   explained.
+
 lane         = "Lane A"
 updated      = 2026-08-06
 

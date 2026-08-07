@@ -378,6 +378,7 @@ databaseUrl: required(
 | [C-234](#c-234--task-901s-first-slice-is-complete-inside-the-module-and-the-wiring-is-task-419s) | **TASK-901's first slice is complete inside the module, and the wiring is TASK-419's** | Lane A | **Lane C** — `apps/` is its in [`modules.toml`](coordination/modules.toml), and [TASK-419](BACKLOG.md) names the exact change | **`OPEN`** — raised 2026-08-06 from inside [TASK-901](BACKLOG.md) | **The last step of TASK-901 slice 1.** Everything below it is built and tested |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | ✅ **`CLOSED`** — Lane C, 2026-08-06, [D-116](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, a | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | ✅ **`ANSWERED` — Lane C, 2026-08-06, [467 §3](architecture/467-system-states-traceability-audit.md).** ⚡ **The invariant it asks for already exists: it is [P-A / R-15](DOMAIN_DISCOVERY_REGISTER.md), r | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
+| [C-234](#c-234--task-901s-first-slice-is-complete-inside-the-module-and-the-wiring-is-task-419s) | **TASK-901's first slice is complete inside the module, and the wiring is TASK-419's** | Lane A | **Lane C** — `apps/` is its in [`modules.toml`](coordination/modules.toml), and [TASK-419](BACKLOG.md) names the exact change | ✅ **`ANSWERED`** — Lane C, 2026-08-07. **No ruling needed: the wiring is [TASK-419](BACKLOG.md), which is Lane C's, `READY` and unstarted.** | **The last step of TASK-901 slice 1.** Everything below it is built and tested |
 | [C-233](#c-233--the-app-shells-22-numbered-specifications-are-not-in-the-repository) | **The App Shell's 22 numbered specifications are not in the repository** | Lane A | **Lane C** *(three documents quote the specification; none records it)* | **`OPEN`** — raised 2026-08-06 from inside [TASK-447](BACKLOG.md) | **Nothing today.** The buildable part of the row shipped; **what cannot be built is what cannot be read** |
 | [C-232](#c-232--companies-shows-what-signora-tracks-and-the-audit-called-it-what-the-customer-declared) | **Companies shows what Signora *tracks*, and the audit called it what the customer *declared*** | Lane A | **Lane B** *(`commercial_profile` holds the declaration)* · **the product owner** *(whether the two should be one list)* | ✅ **`CLOSED`** — **Lane A, 2026-08-06, the dependency no longer exists.** [TASK-472](BACKLOG.md) shipped `GET /accounts-list` | **Nothing.** The screen ships over the read that exists and says which set it is |
 | [C-231](#c-231--the-organization-history-is-paged-and-its-fetch-is-not-yet-bounded) | **The organization history is paged, and its fetch is not yet bounded** | Lane A | **Lane A** — its own module, recorded so the half-fix is not mistaken for the whole | **`OPEN`** — raised 2026-08-06 from inside [TASK-443](BACKLOG.md), by this lane against itself | **Nothing.** The contract is fixed and the cost is not |
@@ -6004,6 +6005,9 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 | **Raised by** | **Lane A**, holding [TASK-901](BACKLOG.md), with the module's half built and tested |
 | **Status** | **`OPEN`** |
 | **Blocks** | ⚡ **Narrowed 2026-08-06, and the narrowing is this lane correcting its own reading.** **Slice 1's `providers` field on `WorkerRuntime` — that alone.** ⛔ **Not the subscriptions, and not slices 2 and 3** |
+| **Status** | ✅ **`ANSWERED` — Lane C, 2026-08-07.** ⛔ **And the answer is not a ruling: it is that the work is this office's and has not been done.** |
+| **Owner** | **Lane C** — `apps/` is Platform Foundation ([D-022](DECISION_REGISTER.md)) |
+| **Blocks** | **The last step of slice 1, and nothing else.** A customer's declaration still does not reach a provider |
 
 ### What is built, and what one field is missing
 
@@ -6038,6 +6042,23 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 > ⚡ **Two lanes could close this in one commit each, and either is fine.** **Lane C claims [TASK-419](BACKLOG.md)** and the subscriptions come with it. **Or Lane C says the subscriptions are Lane A's to add**, and this lane adds them the same hour — the code below them is finished and tested.
 
 ---
+
+
+### ✅ Answered 2026-08-07 — nothing here needs deciding
+
+**Lane A is right on every point, and [ADR-0404](architecture/adr/0404-platform-composition.md) already made the split it cites.** ⛔ **There is no ownership question left**: the module half is `provider_platform`'s and is built; the `WorkerRuntime` field is `apps/`'s, which is this office's.
+
+> ## **[TASK-419](BACKLOG.md) is that change. It is `READY`, unclaimed, and it is `current` in [`queues/lane-c.toml`](coordination/queues/lane-c.toml).**
+
+⚠️ **So the honest answer is uncomfortable and belongs on the record.** **Lane A finished its half, raised the boundary properly, and is now waiting on a Product Office row that has sat `READY` and unstarted while this office has been writing governance.**
+
+| | |
+|---|---|
+| **What blocks slice 1** | **Two `registry.subscribe()` calls and a `providers` field on `WorkerRuntime`** |
+| **Who owns it** | **Lane C**, and it has owned it since [C-010](#c-010--who-owns-apps-and-signora_platform) |
+| **How long it has been claimable** | **[TASK-419](BACKLOG.md) was released on 2026-08-06 by [C-230](#c-230--lane-as-assignable-work-is-exhausted--every-row-and-its-reason) Finding 1** — **and Lane A is the lane that found it was unblocked** |
+
+⛔ **This office has seven claimable rows and has executed none of them.** ⚡ **That is the finding [D-139](DECISION_REGISTER.md)'s *execution velocity* objective is aimed at, arriving from the outside.**
 
 ## C-233 · The App Shell's 22 numbered specifications are not in the repository
 
