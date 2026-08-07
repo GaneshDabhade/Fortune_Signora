@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "e932b87"
+generated_from = "f082e37"
 task_count     = 84
 
 [lane.Lane_A]
@@ -18,11 +18,11 @@ next               = "TASK-468"
 next_after_that    = "TASK-467"
 assigned_total     = 34
 claimable          = 4
-in_flight          = 22
-awaiting_qe_transition = 22
+in_flight          = 23
+awaiting_qe_transition = 23
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 8
+blocked            = 7
 lane_utilization   = 0.0
 idle_prediction_days   = 0.6
 dependency_wait_days   = 0.0
@@ -36,11 +36,11 @@ next_after_that    = ""
 assigned_total     = 31
 claimable          = 2
 in_flight          = 20
-awaiting_qe_transition = 20
+awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 9
-lane_utilization   = 0.0
+lane_utilization   = 4.0
 idle_prediction_days   = 0.3
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
@@ -396,16 +396,16 @@ blocked_days   = 0.0
 [[task]]
 id            = "TASK-458"
 title         = "Signal Engine reads the People contract"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
-depends_on     = ["TASK-428"]
+depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 1
-estimated_ready = "when TASK-428 complete"
-waiting_for    = "** — **predecessor [TASK-428](#task-428--m-i--what-the-domain-lets-other-modules-say)**, which carries the reader this row consumes. ⚡ **Re-pointed 20"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
 blocked_days   = 0.0
 
 [[task]]
@@ -820,9 +820,9 @@ state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane B"
 depends_on     = []
-unblocks       = ["TASK-458"]
-next_owner     = ["Lane A"]
-next_lane      = "Lane A"
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
