@@ -166,6 +166,17 @@ def _dependencies(declared: str, status: str) -> list[str]:
     compute**, and a wrong edge is worse than a missing one because a lane
     would wait on it.
     """
+    if declared == "READY":
+        # ⚡ **A released row keeps its edge — 2026-08-07.**
+        # Rewriting `SEQUENCED — after [TASK-457]` into `READY` **deleted the
+        # only record of what the row had been waiting for**, so `TASK-458`
+        # became claimable with an empty `depends_on` and no check could see
+        # that its predecessor was still `CLAIMED`. ⛔ **Releasing a row
+        # destroyed the evidence that the release was wrong**, which is the
+        # worst shape a planning edit can have. **Lane A found it by opening
+        # `people/public/__init__.py` and seeing nothing in it.**
+        released = re.search(r"[Rr]eleased from `?(?:SEQUENCED|BLOCKED)`?[^.|]*", status)
+        return sorted(set(_BLOCKER_PHRASE.findall(released.group(0)))) if released else []
     if declared not in {"BLOCKED", "SEQUENCED", "WAITING"}:
         return []
     token = re.search(r"`(?:BLOCKED|SEQUENCED|WAITING)`", status)
@@ -377,10 +388,25 @@ def _delivered(dep: str, by_id: dict[str, Task], ahead: dict[str, int]) -> bool:
     **①** the row declares a state a lane sets **only when it has handed over**
     — `IN VALIDATION`, `VERIFIED`, `CERTIFIED`; ⛔ never `CLAIMED` or
     `IN PROGRESS`, which mean somebody is holding it right now — and
-    **②** that lane's branch carries **nothing** `integration` lacks.
+    **②** that lane's branch carries no commit **naming this row** that
+    `integration` lacks.
 
     ⚡ **② is what stops a declaration being taken at its word.** A row can say
     `IN VALIDATION` while the branch still carries it; the branch cannot lie.
+
+    ⚠️ **② was lane-scoped and is now row-scoped — corrected 2026-08-07.**
+    *"The lane's branch carries nothing"* meant **a lane starting any new work
+    made every finished row it owned read as undelivered.** `TASK-427` flipped
+    from delivered to not-delivered because Lane B pushed `TASK-462`, which
+    has nothing to do with it. ⛔ **A predicate about one row must not depend
+    on what else its author is doing.**
+
+    ⚡ **This is a `--grep` and that is deliberate here.** [B-101](../docs/BUGS.md)
+    bites when a grep is asked *"was this delivered?"* — it matches every
+    mention, including the commit that wrote the row. **Asked *"is there
+    outstanding work for this?"* a spurious match reads as *not delivered*,
+    which is the conservative direction.** **The same tool, and the safety
+    depends entirely on which way a false match falls.**
 
     **A predecessor absent from the graph is delivered** — the generator drops
     `DONE`, `DISPOSED` and `PROMOTED`, so absence here means closed.
@@ -390,7 +416,12 @@ def _delivered(dep: str, by_id: dict[str, Task], ahead: dict[str, int]) -> bool:
         return True
     if not any(s in row.declared for s in _HANDED_OVER):
         return False
-    return ahead.get(row.lane, 1) == 0
+    branch = _LANE_BRANCH.get(row.lane)
+    if branch is None:
+        return False
+    return not _git(
+        "log", "--oneline", f"origin/integration..{branch}", f"--grep={dep}"
+    ).strip()
 
 
 def stale_sequencing(rows: list[Task]) -> list[Task]:
@@ -409,6 +440,31 @@ def stale_sequencing(rows: list[Task]) -> list[Task]:
         if r.state in {SEQUENCED, BLOCKED}
         and r.depends_on
         and all(_delivered(dep, by_id, ahead) for dep in r.depends_on)
+    ]
+
+
+def premature_releases(rows: list[Task]) -> list[Task]:
+    """Rows this office set `READY` whose predecessor is **not** handed over.
+
+    ⚡ **The mirror of `stale_sequencing`, and the half that was missing.**
+    That check asks *"is this row parked behind work that is finished?"* — it
+    only ever looks at rows still `SEQUENCED`, **so a row released in error
+    left its scope the moment the error was made.**
+
+    **`TASK-458`, 2026-08-07.** Released on the reasoning *"`TASK-457` has 6
+    commits on `main` and nothing outstanding"* — the `--grep` count that
+    [C-427](../docs/LANE_COORDINATION.md) records as B-101's class. `TASK-457`
+    is `CLAIMED`: Lane B is holding it, and `people/public/__init__.py` is
+    **zero lines**. ⛔ **Lane A found it by opening the file.**
+    """
+    by_id = {r.id: r for r in rows}
+    ahead = {lane: (_unpushed(lane) or 0) for lane in _LANE_BRANCH}
+    return [
+        r
+        for r in rows
+        if r.state == ASSIGNED
+        and r.depends_on
+        and not all(_delivered(dep, by_id, ahead) for dep in r.depends_on)
     ]
 
 

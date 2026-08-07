@@ -184,3 +184,62 @@ def test_the_pipeline_is_ordered_by_leverage_not_by_identifier() -> None:
     rows = [row("TASK-441", []), row("TASK-478", ["a", "b", "c"]), row("TASK-450", ["a"])]
     ordered = sorted(rows, key=lambda r: (-len(r.unblocks), r.critical_path, r.id))
     assert [r.id for r in ordered] == ["TASK-478", "TASK-450", "TASK-441"]
+
+
+def test_a_released_row_keeps_the_edge_it_was_released_from() -> None:
+    """⛔ Rewriting `SEQUENCED` into `READY` must not delete the predecessor.
+
+    **`TASK-458`, 2026-08-07.** Its status was rewritten from
+    `SEQUENCED — predecessor [TASK-457]` to `READY`, which left it claimable
+    with an empty `depends_on` — **so `stale_sequencing` could not see it (it
+    only reads `SEQUENCED` rows) and nothing else was looking.** ⚡ **Releasing
+    a row destroyed the evidence that the release was wrong.**
+
+    **Lane A found it by opening `people/public/__init__.py` and seeing zero
+    lines in it.** That is the check this asserts is no longer needed.
+    """
+    status = (
+        "| **Status** | ✅ **`READY`** — **released from `SEQUENCED` after "
+        "[TASK-457](#task-457--people-publishes), Lane C 2026-08-07.** More prose. |"
+    )
+    assert coordination._dependencies("READY", status) == ["TASK-457"]
+
+
+def test_a_ready_row_with_no_release_marker_has_no_edge() -> None:
+    """⚡ An ordinary `READY` row was never sequenced and must claim no edge.
+
+    Without this, the pattern above could match any prose mentioning a task and
+    invent dependencies — the false-edge defect `_dependencies` already carries
+    a comment about, one release later.
+    """
+    assert coordination._dependencies("READY", "| **Status** | ✅ **`READY`** — see [TASK-457](#x) |") == []
+
+
+def test_premature_releases_fires_on_a_predecessor_still_held() -> None:
+    """The mirror of `stale_sequencing`, and the half that was missing.
+
+    ⛔ `stale_sequencing` only reads rows still `SEQUENCED`, **so a row
+    released in error leaves its scope at the moment the error is made.**
+    """
+    held = coordination.Task(
+        id="TASK-457", title="p", state=coordination.IN_FLIGHT,
+        declared="CLAIMED", lane="Lane B", depends_on=[],
+    )
+    released = coordination.Task(
+        id="TASK-458", title="r", state=coordination.ASSIGNED,
+        declared="READY", lane="Lane A", depends_on=["TASK-457"],
+    )
+    assert [r.id for r in coordination.premature_releases([held, released])] == ["TASK-458"]
+
+
+def test_premature_releases_is_silent_on_a_correct_release() -> None:
+    """⛔ A guard that always fires is as useless as one that cannot."""
+    done = coordination.Task(
+        id="TASK-432", title="p", state=coordination.IN_FLIGHT,
+        declared="IN VALIDATION", lane="Lane A", depends_on=[],
+    )
+    released = coordination.Task(
+        id="TASK-444", title="r", state=coordination.ASSIGNED,
+        declared="READY", lane="Lane A", depends_on=["TASK-432"],
+    )
+    assert coordination.premature_releases([done, released]) == []

@@ -336,10 +336,23 @@ def _coordination_findings() -> list[str]:
         [sys.executable, "-c",
          "import sys; sys.path.insert(0, 'infra'); import coordination as c; "
          "rows = c.tasks(); c._walk(rows, {r.id: r for r in rows}); "
-         "print(' '.join(r.id for r in c.stale_sequencing(rows)))"],
+         "print(' '.join(r.id for r in c.stale_sequencing(rows))); "
+         "print(' '.join(r.id for r in c.premature_releases(rows)))"],
         cwd=REPO_ROOT, capture_output=True, text=True,
     )
-    parked = stale.stdout.split()
+    out = (stale.stdout.splitlines() + ["", ""])[:2]
+    parked = out[0].split()
+    early = out[1].split()
+    if early:
+        findings.append(
+            f"{len(early)} row(s) are `READY` behind a predecessor that is NOT "
+            f"handed over — {', '.join(early[:8])}. **This office released them "
+            "and the release erased the edge that would have shown it wrong.** "
+            "TASK-458 is the worked example: released on a count of commits "
+            "mentioning TASK-457, which Lane B still holds `CLAIMED`, and "
+            "`people/public/__init__.py` is zero lines. Lane A found it by "
+            "opening the file (C-427)."
+        )
     if parked:
         findings.append(
             f"{len(parked)} row(s) are parked behind a predecessor that has already "

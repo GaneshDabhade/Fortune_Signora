@@ -6961,6 +6961,45 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
 
+## C-428 · Releasing a row deleted the evidence that the release was wrong
+
+| | |
+|---|---|
+| **Raised by** | ⚡ **Lane A**, 2026-08-07 — *"[TASK-458](BACKLOG.md) still lands as `READY` against an empty `public/` when that branch finally certifies"* |
+| **Owner** | ⛔ **Lane C.** **This office released the row, on reasoning it had already condemned in [C-427](#c-427--a-sequenced-row-is-never-re-asked-and-that-is-why-two-lanes-were-idle-with-93-tasks-on-the-board)** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-07.** **Row corrected, predicate corrected, and the gap that hid it now has a check** |
+| **Blocks** | ⛔ **Nothing.** ⚠️ **It would have blocked Lane A on its first claim after integration** |
+
+### What Lane A did that no instrument did
+
+> ## **It opened the file.** **`backend/modules/people/public/__init__.py` on `integration` is zero lines.**
+
+⛔ **[TASK-458](BACKLOG.md) consumes what `people` publishes, and `people` publishes nothing.** ⚡ **[TASK-457](BACKLOG.md) reads `CLAIMED` — Lane B is holding it, not finished with it.**
+
+### How this office released it
+
+⛔ **On *"6 commits on `main`, nothing outstanding"*** — **a count of commits that *mention* an identifier.** ⚠️ **[C-427](#c-427--a-sequenced-row-is-never-re-asked-and-that-is-why-two-lanes-were-idle-with-93-tasks-on-the-board) records that exact reasoning as [B-101](BUGS.md)'s class and says so in its own last paragraph.** ⚡ **The predicate was corrected in the same commit that made the manual releases — and the releases were never re-checked against it.**
+
+### ⚡ The structural defect, which is worse than the row
+
+> ## **Rewriting `SEQUENCED — predecessor [TASK-457]` into `READY` deleted the only record of what the row was waiting for.**
+
+⛔ **`depends_on` became empty, so `stale_sequencing` could not see it** — that check reads rows still `SEQUENCED`, **and a row released in error leaves its scope at the moment the error is made.** ⚡ **The act of releasing a row destroyed the evidence that the release was wrong.**
+
+### Three fixes, and the second one is the general lesson
+
+| | |
+|---|---|
+| ✅ **The row** | **[TASK-458](BACKLOG.md) is `SEQUENCED` again**, carrying what was measured rather than what was assumed |
+| ✅ **A release keeps its edge** | **`released from `SEQUENCED` after [TASK-nnn]`** is now parsed, so `depends_on` survives the release. ⚡ **A planning edit must never remove the thing that makes it checkable** |
+| ✅ **`premature_releases()`** | **The mirror of `stale_sequencing`** — rows this office set `READY` behind a predecessor that is *not* handed over. ⛔ **Proven to fire on `TASK-458`'s exact shape and stay silent on `TASK-444`'s**, because a guard that always fires is as useless as one that cannot |
+
+### ⚠️ And a second defect found while checking
+
+**`_delivered`'s branch test was lane-scoped**: *"that lane's branch carries nothing `integration` lacks."* ⛔ **So a lane starting any new work made every finished row it owned read as undelivered.** **[TASK-427](BACKLOG.md) flipped to *not delivered* because Lane B pushed [TASK-462](BACKLOG.md), which has nothing to do with it** — and [TASK-428](BACKLOG.md) would have been reverted for no reason. ✅ **Now row-scoped.**
+
+⚡ **That fix is a `--grep`, deliberately.** **[B-101](BUGS.md) bites when a grep is asked *"was this delivered?"* — it matches every mention.** **Asked *"is there outstanding work for this?"* a spurious match reads as *not delivered*, which is the safe direction.** ⛔ **The same tool; the safety is entirely in which way a false match falls.**
+
 ## C-427 · A `SEQUENCED` row is never re-asked, and that is why two lanes were idle with 93 tasks on the board
 
 | | |
