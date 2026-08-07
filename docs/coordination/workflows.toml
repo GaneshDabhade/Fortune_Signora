@@ -225,7 +225,7 @@ state  = "planned"
 design = "Fortune Signora Executive Dashboard.dc.html"
 tasks  = ["TASK-438"]
 owner  = "Lane A"
-unblocked = "⚡ D-167 §3, 2026-08-07 — ADR-0407 drafted. The design has ONE data visualization here: a 760x220 column figure of 13 marks. No library needed."
+unblocked = "⚡ D-167 §3, 2026-08-07 — charting ruled: visx (ADR-0407). ONE data visualization here: a 760x220 column figure of 13 marks."
 
 [workflow.20]
 name   = "Opportunity Intelligence"

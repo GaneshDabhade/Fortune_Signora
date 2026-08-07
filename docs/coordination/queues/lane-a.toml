@@ -381,6 +381,47 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🟢  CHARTING IS RULED — visx. 2026-08-07 · D-167 §3 · ADR-0407
+#
+# ⛔ NOT NEEDED YET. Workflows 19 and 22 are far down the queue. This is here
+#   so you never have to ask, and so nobody installs a chart library on a whim.
+#
+# ⚡ WHAT THE DESIGN ACTUALLY NEEDS, measured across the five screens everyone
+#   called "chart-heavy": 29 <svg> elements, 27 of them ICONS at 28px or less,
+#   and TWO data visualizations. Zero <canvas>. Zero library references in any
+#   of the 26 designs.
+#     Executive Dashboard  760x220, 13 marks — a column figure
+#     Account 360          340x210, 20 marks — labelled "Relationship graph",
+#                          a node-link diagram of the buying committee
+#     Opportunity Intelligence · Signal Center · Reports:  ZERO
+#
+# ✅ THE RULING: visx. The product owner offered visx or Recharts, and the
+#   second figure decides it — @visx/network renders a node-link diagram and
+#   Recharts has no such primitive. It composes line, bar, area, pie, radar
+#   and scatter; a buying-committee graph is none of them.
+#
+#   And visx is unstyled by construction, so --color-brand and --ink-3 apply
+#   directly with nothing to override — which is what D-161 requires of a
+#   product that is migrating to having exactly ONE visual language.
+#
+#   ⚠️ Honest cost: visx is MORE code for the plain column figure. Recharts
+#      would be ~10 lines there. The asymmetry still decides it.
+#
+# ⛔ WHEN YOU GET THERE:
+#   • install only what you use — @visx/scale @visx/shape @visx/group
+#     @visx/axis @visx/text @visx/network. NEVER the @visx/visx umbrella.
+#   • ⚠️ VERIFY React 19 peer resolution BEFORE committing the install. This
+#     office has no node_modules and did not open the package (D-137). If a
+#     package does not resolve, that is a finding to raise — never --force.
+#   • both figures go in components/ui with tokens and tests, composed FROM
+#     visx: MetricFigure and RelationshipGraph. Never page-local.
+#
+# ⚠️ ADR-0407 is PROPOSED, not ratified. Do not install until it is.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🟢  D-166 — YOU NO LONGER ANALYSE THE DESIGN BEFORE YOU CODE
 #     2026-08-07 · product owner
 #
