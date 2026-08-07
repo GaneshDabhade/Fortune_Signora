@@ -369,8 +369,10 @@ updated      = 2026-08-07
 # the row still reads BLOCKED. A claim on it today would contradict the
 # authoritative backlog. ⚡ Same lesson as TASK-464 an hour earlier.
 #
-# ✅ So: 9 claimable, 6 CLAIMABLE TODAY. TASK-474, TASK-473 and TASK-476 are
-# released and awaiting QE integration — `awaiting_sync = 3`.
+# ⚠️ HISTORY, not the current number — this said "9 claimable, 6 CLAIMABLE
+# TODAY, awaiting_sync = 3" on 2026-08-07 before QE integrated. All three
+# landed at 6555968. Kept because it records WHY the order was what it was;
+# ⛔ coordination.toml carries the live count and this block never does.
 #
 # ⚡ THE MOMENT THEY LAND, TASK-474 GOES FIRST. That is D-151 ⑥ and not a
 # preference: ADR-0406 §6 puts TEN OF FOURTEEN authentication journey gaps
@@ -527,15 +529,16 @@ next    = "TASK-483"
 # `lane-c-sync` and you claim against BACKLOG.md on `integration` (C-425).
 # They are listed here rather than hidden because a row the backlog offers
 # must be visible in the queue; `coordination.toml` carries the split as
-# claimable = 9, claimable_now = 6, awaiting_sync = 3.
+# claimable = 9, claimable_now = 6, awaiting_sync = 3 — ⚠️ superseded, see above.
 #
 # 🔴 THE MOMENT THEY LAND, TASK-474 GOES FIRST — ahead of everything above it.
 # D-151 ⑥, and not a preference: ADR-0406 §6 puts TEN OF FOURTEEN
 # authentication journey gaps behind that one row.
-# ⚠️ TASK-483 is Workflow 1 and is NOT CLAIMABLE TODAY — its release to READY
-# is on `lane-c-sync` and you claim against BACKLOG.md on `integration`,
-# where it still reads BLOCKED on C-430 (C-425). It is listed first because
-# it is the shell TASK-467 renders inside; take it the moment it lands.
+# ✅ TASK-483 IS CLAIMABLE NOW — corrected 2026-08-07 on the poll after QE
+# promoted 6555968. Last cycle this block said "NOT CLAIMABLE TODAY" because
+# its release to READY was on `lane-c-sync`; it is on `main` now, and a queue
+# that keeps yesterday's answer is the one failure this file exists to
+# prevent. awaiting_sync is 0 and all six are claimable today.
 #
 # ⚡ TASK-484 IS PART OF WORKFLOW 1's SUCCESS CRITERIA, not a separate errand.
 # D-153: Login is complete only when "Playwright passes". 484 is the
