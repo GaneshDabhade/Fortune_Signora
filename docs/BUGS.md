@@ -627,6 +627,52 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-407 · One commit of production code is on `main` without a certification run
+
+| | |
+|---|---|
+| **Module** | **Release engineering** — `certification/manifest.json`, the promotion step |
+| **Current assignee** | ⚡ **QE.** ⛔ **Promotion, certification and everything `main` asserts are QE's exclusively** ([§20e](../CLAUDE.md)) |
+| **Severity** | 🟠 — ⛔ **Not a Blocking Quality Defect**: no gate is failing and no lane is stopped. ⚡ **What it breaks is the claim the repository makes about itself** — *"every commit on `main` was itself certified"* |
+| **Status** | **`OPEN`** — **opened by Lane C, 2026-08-07.** ⛔ **Lane C changes nothing here; `main` and the manifest are QE's** |
+| **Found** | 2026-08-07 by Lane C, **polling — `main` moved to a lane's `IN VALIDATION` commit, which is not the shape of a promotion** |
+
+**Steps to reproduce.**
+
+```bash
+git rev-parse origin/main origin/integration origin/lane-b-commercial-profile
+→ e932b87d, e932b87d, e932b87d          # all three identical
+
+git show origin/main:certification/manifest.json | grep -c e932b87d
+→ 0                                      # no run names main's tip
+
+git merge-base --is-ancestor 02fe658a8d70 origin/main
+→ 0                                      # the newest certified commit is an ANCESTOR
+```
+
+**Expected.** [§20e](../CLAUDE.md): *"Every commit on `main` is **the certified commit itself**, **an ancestor of one that was promoted**, or **a Closeout commit that provably changes nothing executable**."*
+
+**Actual.** ⛔ **`main` is twelve commits past the newest certified commit**, and the certified one is an ancestor rather than the tip.
+
+### ⚡ The finding is one commit wide, and that is worth saying precisely
+
+**Eleven of the twelve are permitted by the rule** — claims, board rows, coordination items and a Closeout, none touching an executable path.
+
+| | |
+|---|---|
+| ⛔ **`e64f64fb`** — *TASK-428 — a role change becomes an affiliation, and C-237's reader* | **Touches `backend/modules/people/`.** ⚡ **Production code on `main` with no certification run naming it** |
+
+⚠️ **Measured rather than asserted**: each of the twelve was checked against `backend/(modules\|apps\|signora_platform)/`, `frontend/(app\|components\|lib)/` and `infra/`. **Only that one matched.**
+
+### What this office is not claiming
+
+⛔ **Not that the code is wrong.** [TASK-428](BACKLOG.md) looks well built and Lane B's handoff is thorough. **This is about the record, not the change.**
+⛔ **Not a diagnosis.** ⚡ **`main` fast-forwarded legitimately from `c03277bd`** — it was not rewritten — **so this is a promotion that moved to `integration`'s head rather than to a certified SHA, or a certification whose record was not written.** **Which of those it is, is QE's to determine.**
+
+⚡ **[§20e](../CLAUDE.md) has the instrument for exactly this**: `python3 infra/certification-guard.py --audit-main`. ⛔ **Lane C did not run it** — it is QE's gate, and this row exists so QE points it at the right commit rather than so this office pre-empts the answer.
+
+⚠️ **[B-142](#b-142--qe-force-pushed-integration-from-a-stale-local-branch-and-dropped-two-lanes-claims) is the near neighbour**, and its lesson was *a comparison that does not gate the next step is decoration*. **The promotion equality rule — `promoted == certified` — is a comparison, and something did not gate on it.**
+
 ### B-406 · `signal.resolved` is published by code and absent from the event catalog
 
 | | |
