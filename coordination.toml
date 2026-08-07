@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "4f79850"
+generated_from = "ab1ba57"
 task_count     = 95
 
 [lane.Lane_A]
@@ -18,8 +18,8 @@ next               = ""
 next_after_that    = ""
 assigned_total     = 66
 claimable          = 1
-claimable_now      = 0
-awaiting_sync      = 1
+claimable_now      = 1
+awaiting_sync      = 0
 in_flight          = 34
 awaiting_qe_transition = 0
 blocked_on_integration = 0
@@ -131,7 +131,7 @@ critical_path  = 1
 estimated_ready = "when TASK-467 complete"
 waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-157](DECIS"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-400"
@@ -707,7 +707,7 @@ critical_path  = 1
 estimated_ready = "when TASK-467 complete"
 waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) reaches the human review gate, Lane C 2026-08-07.** ⛔ **[D-157](DECIS"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-465"
@@ -785,7 +785,7 @@ next_owner     = []
 next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-468 complete"
-waiting_for    = "** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not-refined)**. **A first run that cannot create a workspace is not a first run**"
+waiting_for    = "** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not-refined)**. **A first run that cannot create a workspace is not a first run** ⛔"
 blocked_days   = 0.0
 on_integration = true
 
@@ -835,7 +835,7 @@ critical_path  = 1
 estimated_ready = "when TASK-467 complete"
 waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) clears the human review gate, Lane C 2026-08-07.** ⚡ **[D-158](DECISI"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-474"
@@ -851,7 +851,7 @@ critical_path  = 1
 estimated_ready = "when TASK-467 complete"
 waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) clears the human review gate, Lane C 2026-08-07.** ⚡ **[D-158](DECISI"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-475"
@@ -883,7 +883,7 @@ critical_path  = 1
 estimated_ready = "when TASK-467 complete"
 waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) clears the human review gate, Lane C 2026-08-07.** ⚡ **[D-158](DECISI"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-478"
@@ -963,7 +963,7 @@ critical_path  = 1
 estimated_ready = "— after [TASK-490](#task-490--the-design-foundation--every-screen-inhe"
 waiting_for    = "— after [TASK-490](#task-490--the-design-foundation--every-screen-inherits-the-finalized-visual-language-or-none-does), Lane C 2026-08-07 on [D-161](D"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-484"
@@ -979,7 +979,7 @@ critical_path  = 1
 estimated_ready = "— after [TASK-490](#task-490--the-design-foundation--every-screen-inhe"
 waiting_for    = "— after [TASK-490](#task-490--the-design-foundation--every-screen-inherits-the-finalized-visual-language-or-none-does), Lane C 2026-08-07 on [D-161](D"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-485"
@@ -995,7 +995,7 @@ critical_path  = 1
 estimated_ready = "when TASK-467 complete"
 waiting_for    = "— after [TASK-467](#task-467--the-authentication-surface-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGI"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-486"
@@ -1011,7 +1011,7 @@ critical_path  = 2
 estimated_ready = "when TASK-485 complete"
 waiting_for    = "— after [TASK-485](#task-485--workflow-2--registration-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGIST"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-487"
@@ -1027,7 +1027,7 @@ critical_path  = 3
 estimated_ready = "when TASK-486 complete"
 waiting_for    = "— after [TASK-486](#task-486--workflow-3--email-verification-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-488"
@@ -1043,7 +1043,7 @@ critical_path  = 4
 estimated_ready = "when TASK-487 complete"
 waiting_for    = "— after [TASK-487](#task-487--workflow-4--forgot-password-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REG"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-489"
@@ -1059,7 +1059,7 @@ critical_path  = 5
 estimated_ready = "when TASK-488 complete"
 waiting_for    = "— after [TASK-488](#task-488--workflow-5--password-reset-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGI"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-490"
@@ -1075,7 +1075,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-903"
