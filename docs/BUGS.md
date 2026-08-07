@@ -476,6 +476,20 @@ sed -n '2042,2044p' docs/BUGS.md
 
 **What this row buys:** the 238 is now fully attributed — **101 Lane B · 26 Lane A · 111 shared surface** (`tests/integration` 57, `migrations/versions` 27, `apps/` 10, and the rest) — so B-211's fix can be planned against a known total instead of a headline number.
 
+#### Three findings from tracing the gate, 2026-08-07 — and each changes what B-211 has to plan for
+
+**① `ruff format --check` is a second gate in the same workflow, and nobody has measured it.** `backend.yml` defines **four** steps — `ruff check`, **`ruff format --check`**, `mypy` and import-linter. B-211 measured the first. The second reports **169 files would be reformatted, 73 of them this lane's** (`integrations` 27 · `opportunity_engine` 11 · `knowledge_graph` 9 · `ai_platform` 5 · `commercial_profile` 4 · `sales_engagement` 4 · `timeline` 3 · six modules with 2 each).
+
+**② ruff has *zero* live callers, not one.** ⚠️ **B-211 states *"the only remaining caller is the production image build"*. Measured, it is not a caller** — `grep -rn ruff` across `Dockerfile*`, `Makefile`, `*.sh`, `*.yml` returns only `.pre-commit-config.yaml` and the `workflow_dispatch`-only workflow. ⛔ **And `.git/hooks/` contains nothing but samples, with `core.hooksPath` unset**, so the pre-commit config is **configured and uninstalled**. **A third gate that cannot fail** — the same shape as B-211's own finding, one layer further out. ⛔ **Not corrected in B-211 itself: that row is QE's, and §20e makes this a report rather than an edit.**
+
+**③ Installing pre-commit today would rewrite code on commit.** `.pre-commit-config.yaml` runs **`ruff check --fix`**, not `--check`. ✅ **The obvious hazard was checked and does not exist**: **no `F401` in the repository sits in a `public/__init__.py`**, so no deliberate re-export would be deleted. **All nine are genuinely unused imports.** ⚡ **Recorded because the check is what makes the reassurance worth anything** — the risk was real enough to test, and asserting it either way without testing would have been the guess this register exists to prevent.
+
+#### Why no sweep, restated on evidence rather than on precedent
+
+⚠️ **The first version of this row argued from Lane A's identical decision. Finding ① gives a better reason.** **`ruff format` overlaps `ruff check` on the largest rule in the set**: **44 of this lane's 101 are `E501`**, and line length is precisely what a formatter rewrites. **Fixing them by hand is work `ruff format` would redo**, against a configuration nobody has chosen yet — `line-length` is currently 100, `N818` may be ignored or enforced, and both are repository-wide settings.
+
+> ⛔ **So the sequencing is not a preference.** **Decide the configuration · run the formatter once · then fix what `ruff check` still reports.** **A lane hand-fixing 101 errors first produces a ~150-file diff that conflicts with every other lane's rebase and is then partly reformatted anyway.** ⚡ **That is an argument about cost and order, not about willingness** — the code half is this lane's and it will be done the moment the configuration is settled.
+
 ---
 
 ### B-211 · `ruff check .` fails with 238 errors on `integration`, and no gate has ever run it
