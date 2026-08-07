@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "2019c26"
+generated_from = "e932b87"
 task_count     = 84
 
 [lane.Lane_A]
@@ -36,11 +36,11 @@ next_after_that    = ""
 assigned_total     = 31
 claimable          = 2
 in_flight          = 20
-awaiting_qe_transition = 0
+awaiting_qe_transition = 20
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 9
-lane_utilization   = 4.0
+lane_utilization   = 0.0
 idle_prediction_days   = 0.3
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
@@ -817,7 +817,7 @@ blocked_days   = 0.0
 id            = "TASK-428"
 title         = "M-I · What the domain lets other modules say"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane B"
 depends_on     = []
 unblocks       = ["TASK-458"]
