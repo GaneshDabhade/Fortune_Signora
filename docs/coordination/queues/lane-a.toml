@@ -379,6 +379,74 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🔴  D-154 — BUILD FROM THE DESIGN, NOT FROM THE CODE
+#     2026-08-07 · product owner ruling · READ BEFORE YOU OPEN sign-in-form.tsx
+#
+#   ⛔ "Do not begin from the legacy implementation and iterate toward the
+#      design. Begin from the design and connect it to the existing backend,
+#      Better Auth integration, routing, and business logic."
+#   ⛔ "Existing UI code does not have architectural authority merely because
+#      it exists. If an existing visual implementation differs from the
+#      finalized design, the design wins. Always."
+#
+# ⚡ WHY THIS IS NOT A WORDING CHANGE. Iterating from sign-in-form.tsx
+#   inherits three decisions the design contradicts, and each is defended in
+#   a comment that will read as reasoning rather than as legacy:
+#     • the password form ABOVE the provider buttons — the design puts
+#       providers first, and the file argues at length for the inversion
+#     • the label "Email" where the design says "Work email"
+#     • the card: max-w-sm, rounded-lg, no elevation
+#   Starting from the design inherits none of them.
+#
+# ✅ WHAT EXISTING CODE STILL HAS AUTHORITY FOR — reuse all of it (D-154 ②):
+#   backend integration · Better Auth · routing · state management · business
+#   logic · validation · public contracts · accessibility implementations that
+#   already conform · infrastructure.
+#
+#   ⛔ AND FOUR VISUAL THINGS ALREADY CONFORM. DO NOT REBUILD THEM:
+#     • :focus-visible is 2px at 2px offset — the design's SC 2.4.7 exactly
+#     • prefers-reduced-motion is honoured globally
+#     • the dark theme is already a token swap (:root[data-theme='dark'])
+#     • no components/ui primitive holds a literal colour
+#
+# ⚡ YOUR TOKEN TARGET IS EXACT — docs/architecture/489-legacy-ui-standards-audit.md
+#   frontend/app/globals.css is the ONLY file in this repository that asserts
+#   a visual value. 48 tokens. Everything else — tailwind.config.ts,
+#   lib/design/theme.ts, all thirteen ui primitives — holds names and no
+#   values. Swept with controls: zero palette classes in code, zero hex
+#   literals in .ts/.tsx, zero arbitrary text-[…] or rounded-[…].
+#
+#   What that one file gets wrong:
+#     • colour     0 of the design's 16 values. It is Tailwind slate+blue —
+#                  which is Design System v2's own critique, word for word
+#     • radius     the design's scale SHIFTED ONE STEP: sm is 4px where the
+#                  design says 6, md is 6px where it says 8. Only lg and xl
+#                  agree. globals.css:92 already said so and deferred it
+#     • elevation  3 shadows, all tinted slate-900. The design has 4, warm
+#     • motion     no easing token. The design gives cubic-bezier(.32,.72,0,1)
+#     • typeface   NONE DECLARED ANYWHERE. The design says Archivo
+#     • coverage   27 of the design's 38 roles map; ELEVEN have no equivalent:
+#                  --font-body --ease --r-xs --r-2xl --bg-rail --ink-4
+#                  --brand-ink --brand-line --ai-ink --ai-line --e4
+#
+#   ⛔ DO NOT RENAME THE EXISTING 48. A CSS custom property is not visible to
+#      a customer, so the design has no authority over its name — and a
+#      rename touches every component for zero visible change. Correct the
+#      VALUES, add the eleven missing ROLES, keep the names.
+#
+#   ⛔ DO NOT "clean up" design-tokens.test.tsx. It pins no value, only the
+#      discipline — and it is the single reason this migration is one file
+#      rather than a rewrite.
+#
+# ⚠️ §20c SAYS THE FRONTEND FOUNDATION IS FROZEN. That is C-432, it is raised
+#   with the product owner, and it does NOT block you: D-153 and D-154 are
+#   §20c's own "explicitly approved architectural change" exemption, ruled by
+#   the product owner, and TASK-467's Change Budget records it.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🔴  D-153 — THE UI REPLACEMENT PROGRAM STARTS, AND WORKFLOW 1 IS LOGIN
 #     2026-08-07 · product owner ruling · this queue is re-sequenced by it
 #

@@ -142,6 +142,18 @@
 | **What it holds** | **[TASK-003](BACKLOG.md)**, `IN PROGRESS` with **nothing written** |
 | ⚡ **The question, at its smallest** | **Did [C-018](LANE_COORDINATION.md)'s ruling mean the label reaches the digest, or only the surface?** ⛔ **§2 — *determinism outranks convenience*, and evidence identity is the repository's most load-bearing derived value** |
 
+## 🟡 C-432 · §20c freezes the frontend foundation, and D-154 mandates replacing it
+
+✅ **Nothing is blocked and this needs no decision — the decision is already yours and already made.** ⚡ **What is missing is one sentence in the file a cold session reads first.**
+
+| | |
+|---|---|
+| **The inconsistency** | **`CLAUDE.md` §20c: *"the frontend foundation is **frozen**… Business milestones **consume** the Design System, Shared Components, Application Shell… **they do not modify them**."*** **[D-154](DECISION_REGISTER.md): *"The finalized Signora Design System is the baseline. Legacy UI is not the baseline… the design wins. Always."*** |
+| ✅ **Why Lane A may proceed today** | ⚡ **[D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md) *are* §20c's fourth exemption — an explicitly approved architectural change, ruled by the product owner, which is the exact authority §20c names.** **[TASK-467](BACKLOG.md)'s Change Budget records it** |
+| ⚠️ **Why it still costs something** | **A lane arriving next week reads *"frozen… they do not modify them"* and then finds a queue asking it to replace `globals.css` wholesale.** ⛔ **It will resolve the contradiction correctly, and it may resolve it *conservatively* — which is the expensive direction** |
+| ✅ **The recommendation, as wording rather than a question** | **§20c gains a line naming [D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md) as the standing approved architectural change for the UI migration, and stating that the freeze protects the foundation *from ad-hoc modification*, never from the approved design** |
+| ⛔ **Why this office did not simply write it** | **`CLAUDE.md` is the one file Lane C may never edit** (§20e). ⚡ **And [§2](../CLAUDE.md): *governance describes reality; it never quietly changes it*** |
+
 ## 🟠 C-431 · Three controls on the approved sign-in card have no backing capability
 
 ⛔ **Raised because [D-153](DECISION_REGISTER.md) ⑦ requires it rather than because Lane A is stuck.** ***"No lane may simplify the design. No lane may reinterpret the design. If something in the design is unclear: STOP."*** ✅ **Workflow 1 is buildable today and this changes what the review gate is shown, not what gets built first.**

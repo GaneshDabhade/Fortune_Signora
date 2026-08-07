@@ -356,6 +356,7 @@ databaseUrl: required(
 | [C-337](#c-337--ssh-to-github-is-intercepted-on-this-workstation-and-the-obvious-fix-is-the-dangerous-one) | **SSH to GitHub is intercepted; the obvious fix is the dangerous one** | Lane B, 2026-08-07 | **Product owner** — ⛔ **the network, not the repository** (§20e, [B-011](BUGS.md)) | ⚙️ **`OPEN` — operational.** **Not blocking: the remote is HTTPS and pushes cleanly** | ⛔ **Nothing today.** ⚠️ **It costs the moment a remote is switched back to SSH** |
 | [C-430](#c-430--frontendlibauth-is-assigned-to-no-lane-and-implementation-has-now-reached-it) | **`frontend/` was assigned to no lane, and implementation reached it** | **Lane C**, 2026-08-07, on confirming a Change Budget | **Lane A** — ⚡ **ruled by the product owner, [D-151](DECISION_REGISTER.md) ①** | ✅ **`CLOSED` — Lane C, 2026-08-07.** **[`modules.toml`](coordination/modules.toml) grants `frontend/` to `product_surface`; the registry is consistent and the item is closed on that** | ✅ **Nothing.** **[TASK-473](BACKLOG.md), [TASK-474](BACKLOG.md), [TASK-476](BACKLOG.md) released to Lane A; [TASK-475](BACKLOG.md) unblocks behind TASK-474** |
 | [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability) | **Three controls the approved sign-in card draws have no backing capability, and one of them is an authentication semantic** | **Lane C**, 2026-08-07, measuring [D-153](DECISION_REGISTER.md) Workflow 1 | ⛔ **Product owner** — [D-153](DECISION_REGISTER.md) ⑦: *"If something in the design is unclear: STOP"* | 🟠 **OPEN** — **three options in [488 §5](architecture/488-workflow-1-login-gap.md), C recommended** | ⚠️ **Not [TASK-467](BACKLOG.md)'s start** — **it is scoped and buildable today.** **What waits is what the human review gate will be shown** |
+| [C-432](#c-432--20c-freezes-the-frontend-foundation-and-d-154-mandates-changing-it) | **`CLAUDE.md` §20c freezes the frontend foundation, and [D-154](DECISION_REGISTER.md) mandates replacing it** | **Lane C**, 2026-08-07, auditing UI standards for [D-154](DECISION_REGISTER.md) ④ | ⛔ **Product owner** — **`CLAUDE.md` is theirs and this office does not edit it** | 🟡 **OPEN** — **one paragraph, and the ruling that resolves it already exists** | ✅ **Nothing.** ⚡ **D-153 and D-154 *are* §20c's approved-architectural-change exemption** — **what is wrong is that the constitution does not say so** |
 | [C-429](#c-429--four-live-claims-have-no-row-on-the-execution-board) | Four live claims have no row on the execution board | **Lane C**, 2026-08-07 | **The claiming lanes** — ⛔ **the board is written by the lane that claims (§20e); this office may not fill it in for them** | **`OPEN`** — raised 2026-08-07 | ⛔ **No engineering.** ⚠️ **A lane reading only the board would take work somebody else is doing** |
 | [C-426](#c-426--eighteen-of-lane-as-rows-read-in-validation-and-its-branch-has-nothing-on-it) | Eighteen of Lane A's rows read `IN VALIDATION` and its branch has nothing on it | **Lane C**, 2026-08-07, ⚡ **fo… | ⚡ **QE.** ⛔ **`VERIFIED` · `CERTIFIED` · `PROMOTED` · `DONE` are QE's… | **`OPEN`** — raised 2026-08-07 | ⛔ **No engineering.** ⚠️ **It corrupts every capacity measurement the repository… |
 | [C-423](#c-423--architecture-document-numbers-can-still-collide-and-d-112-already-solved-this-one-class-over) | Architecture document numbers can still collide, and D-112 already solved this one class over | **Lane C**, 2026-08-06, decomp… | **Product owner** — ⚡ **[D-112](DECISION_REGISTER.md) took the identic… | **`READY FOR PRODUCT DECISION`** — **one question, and [TASK-477](BACKLOG.md) proceeds eit… | ⛔ **Nothing.** **[TASK-477](BACKLOG.md) fixes today's three collisions regardles… |
@@ -7726,3 +7727,42 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 ### ⛔ What this does *not* block
 
 **[TASK-467](BACKLOG.md) is scoped and buildable today.** ✅ **The palette, the card geometry, the three responsive layouts, the six field states, the six button states, the failure state's summary and remedy, the authenticating state and the product mark are nine of Workflow 1's ten parts, and none of them touches this question.** ⚡ **[D-151](DECISION_REGISTER.md) ⑦ is the instruction being followed: bring the question, and do not pause the work for it.**
+
+---
+
+## C-432 · §20c freezes the frontend foundation, and D-154 mandates changing it
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-07, ⚡ **auditing UI standards for [D-154](DECISION_REGISTER.md) ④ — [489 §5](architecture/489-legacy-ui-standards-audit.md)** |
+| **Owner** | **Product owner** — ⛔ **`CLAUDE.md` is the one file this office may never edit** (§20e, *Shared files have one owner*) |
+| **Status** | 🟡 **`OPEN` — raised 2026-08-07.** ⚡ **Not a decision so much as a sentence: the ruling that resolves it already exists and the constitution has not caught up** |
+| **Blocks** | ✅ **Nothing** |
+
+### The inconsistency, stated exactly
+
+**`CLAUDE.md` §20c — *Frontend Foundation*:**
+
+> **"From M1.5, the frontend foundation is **frozen** on the same terms as the platform (§20a). Business milestones **consume** the Design System, Shared Components, Application Shell, Query Layer, Authentication integration, and Routing; **they do not modify them**."**
+
+**Change is permitted for four reasons only: a production defect · an accessibility issue · a security issue · an explicitly approved architectural change (RFC).**
+
+**[D-154](DECISION_REGISTER.md) requires the opposite, in terms:**
+
+> **"The finalized Signora Design System is the baseline. Legacy UI is not the baseline… If an existing visual implementation differs from the finalized design, the design wins. Always."**
+
+### ✅ Why nothing is blocked
+
+⚡ **[D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md) are §20c's fourth exemption — *an explicitly approved architectural change*, ruled by the product owner, which is exactly the authority §20c names.** ⛔ **[TASK-467](BACKLOG.md)'s Change Budget already records this**, and Lane A may proceed today.
+
+### ⚠️ Why it is still worth one paragraph
+
+⛔ **§20c is in the constitution a cold session reads before it reads anything else.** **A lane arriving next week reads *"the frontend foundation is frozen; they do not modify them"* and then finds a queue asking it to replace `globals.css` wholesale.** ⚡ **It will resolve the contradiction correctly — the rulings are in the register — but it will spend the time, and it may resolve it *conservatively*, which is the expensive direction.**
+
+> ⛔ **[§2](../CLAUDE.md): *the repository itself should always tell the truth*, and a governance document that reads as forbidding the program the repository is executing is that defect.** ⚠️ **Equally §2's other half: *governance describes reality; it never quietly changes it* — which is precisely why this office raises the sentence rather than writing it.**
+
+### The recommendation, in one sentence
+
+> **§20c gains a line naming [D-153](DECISION_REGISTER.md) and [D-154](DECISION_REGISTER.md) as the standing approved architectural change for the UI migration, and stating that the freeze protects the foundation *from ad-hoc modification*, never from the approved design.**
+
+⚡ **Offered as wording rather than as a request for a decision — the decision is made, and this is the sentence that records it.** ⛔ **Applied only by the product owner.**
