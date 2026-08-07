@@ -74,16 +74,30 @@
 lane         = "Lane C"
 updated      = 2026-08-07
 
-# ✅ All 2 claimable row(s) agree with BACKLOG.md on integration.
+# ⛔ ZERO CLAIMABLE — 2026-08-07, C-430. Read this before reporting a shortfall.
+#
+# Both rows that stood here are BLOCKED, and on the same word. `modules.toml`
+# declares no `frontend/` path in any module — `git grep frontend` against it
+# returns nothing — so TASK-473 (`frontend/lib/auth/`) and TASK-476
+# (`frontend/playwright.config.ts`) both name a path the registry cannot
+# attribute to any lane. **This office wrote both Module cells**, which is why
+# the rows looked eligible and were not.
+#
+# ⚠️ Found by implementing, not by auditing: Lane C wrote TASK-473's production
+# code before reading LANE_COORDINATION.md and reverted it on reading C-430 —
+# the row this same office raised the day before, on the same directory.
+#
+# ⛔ Zero claimable is not idle (§20e), and this one is not a supply problem:
+# it is an architectural blocker awaiting one ruling. Do not pad this file.
 #
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-473"
-next    = "TASK-476"
+current = ""
+next    = ""
 future  = []
 
-eligible_count = 2
+eligible_count = 0
 depth_target   = 15
-shortfall      = 13
+shortfall      = 15
 assigned_total = 13
 
 # ✅ **TASK-419 DELIVERED 2026-08-07 and is IN VALIDATION.** It was READY and

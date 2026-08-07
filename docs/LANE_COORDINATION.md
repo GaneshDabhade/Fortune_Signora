@@ -6998,7 +6998,7 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 | **Raised by** | **Lane C**, 2026-08-07, ⚡ **on trying to implement [TASK-474](BACKLOG.md) and confirming the Change Budget first, which is what found it** |
 | **Owner** | **Product owner** — ⛔ **[§20e](../CLAUDE.md): *any future ownership transfer requires its own explicit decision, raised as a coordination item, ruled by the product owner*.** **This office may not assign a path to itself** |
 | **Status** | **`READY FOR PRODUCT DECISION`** — ⚡ **the evidence is measured and nothing else blocks it** |
-| **Blocks** | **[TASK-474](BACKLOG.md)**, ⚡ **and [ADR-0406 §6](architecture/adr/0406-authentication-execution-modes.md) says ten of the fourteen authentication journey gaps close behind that one row** |
+| **Blocks** | **[TASK-473](BACKLOG.md) · [TASK-474](BACKLOG.md) · [TASK-476](BACKLOG.md)** — ⚠️ **widened 2026-08-07, see *The scope was measured too narrowly* below.** ⚡ **[ADR-0406 §6](architecture/adr/0406-authentication-execution-modes.md) says ten of the fourteen authentication journey gaps close behind `TASK-474` alone** |
 
 ### The question, at its smallest
 
@@ -7031,6 +7031,28 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 | ⚪ **Split** | **The mailbox lives in `infra/`; the transport member is one line in `frontend/lib/auth/config.ts`.** ⚠️ **A two-lane slice for one line is the coordination cost §20e warns about** |
 
 ⛔ **No recommendation offered on purpose.** ⚡ **[D-139](DECISION_REGISTER.md): *bring me only the decision, not the investigation* — and the decision here is one word, while a recommendation from the lane that would benefit is not worth much.**
+
+### ⚠️ The scope was measured too narrowly — amended 2026-08-07, Lane C
+
+> ## **It is not `frontend/lib/auth/`. `git grep frontend docs/coordination/modules.toml` returns nothing at all.**
+
+⛔ **No module in the registry declares a single `frontend/` path.** **`platform_foundation` is `["infra/", "Makefile", "backend/signora_platform/"]`; `apps` is `["backend/apps/"]`; `product_surface` declares no `paths` key.** ⚡ **The entire frontend is unattributable by machine** — **the original row measured one directory and reported one directory, and the same query run against the whole tree answers the same way everywhere.**
+
+⚠️ **This was found the way the first half was: by trying to implement and confirming the budget.** ⛔ **Lane C wrote production code into `frontend/lib/auth/config.ts` and `frontend/lib/auth/health.ts` for [TASK-473](BACKLOG.md) before reading this register, and reverted it on reading this row.** ⚡ **Recorded rather than quietly dropped** — **the office that raised C-430 then walked into it, which is evidence about how visible the row is, not only about the ownership gap.**
+
+**Three rows this office wrote now claim a `frontend/` path the registry does not support:**
+
+| Row | The Module cell says | The registry says |
+|---|---|---|
+| **[TASK-473](BACKLOG.md)** | *"`infra/` + the frontend edge — Lane C"* | ⛔ **`frontend/lib/auth/` is in no module** |
+| **[TASK-474](BACKLOG.md)** | *"`infra/` + `frontend/lib/auth/` — Lane C"* | ⛔ **as above — the original finding** |
+| **[TASK-476](BACKLOG.md)** | *"`frontend/playwright.config.ts` + the `Makefile` e2e targets — Lane C"* | ⚠️ **the `Makefile` half is Lane C's; the config is in no module** |
+
+> ⛔ **Both of Lane C's claimable rows are behind this one word.** **The queue reports `claimable = 2` — `TASK-473` as `current` and `TASK-476` as `next` — and neither is buildable.** ⚡ **That is an *architectural* blocker by §20e's test: *a dependency on a decision nobody has made is architectural however small the code would be.***
+
+⚠️ **`TASK-476` may be the easier half and it is still not this office's to answer.** **A launcher configuration reads like *environment profiles and launchers*, which [D-022](DECISION_REGISTER.md) grants Lane C** — ⛔ **but `frontend/playwright.config.ts` is not `infra/`, and *"it reads like"* is exactly the reasoning that produced the three invented Module cells above.** ⚡ **The registry is the authority and it is silent; the fix is a ruling, not a better reading.**
+
+⛔ **Still no recommendation, and now for a second reason:** **the answer may not be one lane.** **Product screens, the authentication tier and the test launcher are three different questions that happen to share a directory**, and this office is not entitled to decide they share an answer.
 
 ## C-429 · Four live claims have no row on the execution board, and the check that should have said so was broken in both directions
 
