@@ -80,6 +80,52 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-143 · `IN VALIDATION` was removed from `HOLDING_STATUSES` and its test still asserts it
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`infra/state-check.py`](../infra/state-check.py), [`backend/tests/test_claim_agreement.py`](../backend/tests/test_claim_agreement.py) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 · ⛔ **Blocking Quality Defect class** — a failing test |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-07 by QE, cycle 91, by `make certify` |
+
+**Steps to reproduce.**
+
+```bash
+cd backend && uv run pytest tests/test_claim_agreement.py -q
+→ FAILED TestBacklogClaims::test_every_holding_status_counts[IN VALIDATION]
+  AssertionError: assert {} == {'007': 'Lane A'}
+```
+
+**Expected.** The 7 passes `integration` gives. **Attribution measured in a clean worktree**, not inferred — `git worktree add --detach /tmp/attr origin/integration` then the same command: **`7 passed`.**
+
+> ⚠️ **QE's first attribution attempt was wrong and is worth recording.** It ran `git switch --detach origin/integration` **while a cherry-pick sequencer was active**, so the working tree still carried candidate content and the test "failed on `integration`" too. **A checkout that did not happen looks exactly like one that did.** The worktree is the honest instrument, and it reversed the answer.
+
+### The change is right; the test was left behind
+
+`HOLDING_STATUSES` becomes `("CLAIMED", "ACTIVE", "CHANGES REQUESTED")` — **`IN VALIDATION` removed**, and the reasoning is `CLAUDE.md` §20e itself: *execution ownership ends at `IN VALIDATION`*, so the lane no longer holds the row. ✅ **`CHANGES REQUESTED` correctly stays** — that one *is* returned to the lane.
+
+**But [`test_claim_agreement.py`](../backend/tests/test_claim_agreement.py) still parametrises `IN VALIDATION` among the holding statuses**, and it is not a test the commit touched.
+
+### ⛔ Third instance of one shape in three cycles, all Lane C, all in `infra/`
+
+| | | |
+|---|---|---|
+| [B-138](#b-138--one-test-annotation-fails-mypy---strict-and-it-is-holding-sixteen-commits-and-lane-as-whole-queue) | cycle 89 | An annotation naming a type behind an `importlib`-loaded module |
+| [B-139](#b-139--_delivered-stopped-reading-its-own-arguments-and-started-reading-the-clone) | cycle 90 | `_delivered` made row-scoped; **its test left asserting the old contract** |
+| **B-143** | **cycle 91** | **`HOLDING_STATUSES` narrowed; its test left asserting the old contract** |
+
+⚡ **Each change is well-reasoned and documented in the code.** **The pattern is not bad thinking — it is that the change and its existing test are being moved at different times**, and the second and third are the same defect twice.
+
+**Every one is caught by a gate needing no database**: `mypy --strict`, or `pytest tests/test_claim_agreement.py`, which runs in **0.32 seconds** on constructed text. ⛔ **The suite that truncates the demo database — genuinely QE's — is not what any of these needed.**
+
+### ✅ Lane A and Lane B were not held
+
+**Sixteen commits were rebuilt as eight.** Lane A's four slices — **TASK-478, TASK-450, TASK-441, TASK-444** — and Lane B's **TASK-457** and its two coordination closures certified without Lane C. ⚠️ **Lane C's own [B-139](#b-139--_delivered-stopped-reading-its-own-arguments-and-started-reading-the-clone) fix is on that branch and waits with it.**
+
+---
+
 ### B-142 · QE force-pushed `integration` from a stale local branch and dropped two lanes' claims
 
 | | |
