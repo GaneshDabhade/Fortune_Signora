@@ -6815,6 +6815,47 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
 
+## C-426 · Eighteen of Lane A's rows read `IN VALIDATION` and its branch has nothing on it
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-07, ⚡ **found by the coordination generator reporting `lane_utilization = 3.6` for a lane that had just reported itself completely idle** |
+| **Owner** | ⚡ **QE.** ⛔ **`VERIFIED` · `CERTIFIED` · `PROMOTED` · `DONE` are QE's exclusively** ([§20e](../CLAUDE.md), [D-123](DECISION_REGISTER.md)) — **neither the lane nor this office may advance one of these rows** |
+| **Status** | **`OPEN`** — raised 2026-08-07 |
+| **Blocks** | ⛔ **No engineering.** ⚠️ **It corrupts every capacity measurement the repository takes**, which is how it stayed invisible |
+
+### The measurement
+
+| | Lane A | Lane B | Lane C |
+|---|---|---|---|
+| **Rows reading `IN VALIDATION`** | **16** *(+1 `IN PROGRESS`, +1 `CLAIMED`)* | 14 | — |
+| ⚡ **Commits its branch has that `integration` does not** | ⛔ **0** | **8** | **12** |
+| **`lane_utilization` before this was measured** | 🔴 **3.6** | 3.6 | 1.0 |
+| ✅ **After** | ⚡ **0.0** | **3.6** | **1.0** |
+
+> ## **A lane with zero commits ahead of `integration` has handed everything over. There is nothing there for QE to validate.**
+
+⛔ **So Lane A's eighteen rows are not with QE. They are waiting for a state transition that nobody has written**, and **the lane cannot write it, and neither can this office.**
+
+### What was verified, and how far
+
+| | |
+|---|---|
+| ✅ **Structural, exhaustive** | **`git rev-list --count origin/integration..origin/lane-a-product-surface` → 0.** ⚡ **This is not a proxy and not a count of anything textual** |
+| ⚠️ **Sampled, not exhaustive** | **5 rows checked individually** — [TASK-200](BACKLOG.md), [TASK-405](BACKLOG.md), [TASK-417](BACKLOG.md), [TASK-432](BACKLOG.md), [TASK-437](BACKLOG.md) — **each has commits on `main` carrying its id, and each still reads `IN VALIDATION`, dated 2026-08-05.** ⛔ **The other eleven are inferred from the branch state, not individually checked** |
+
+⚡ **[TASK-417](BACKLOG.md) is the clearest**: **its `Status` field is byte-identical on `lane-c-sync` and on `integration`**, says `IN VALIDATION — Lane A, 2026-08-05`, and **21 commits naming it are on `main`.**
+
+### Why it matters even though it blocks nothing
+
+⚠️ **`lane_utilization` read `3.6` for a lane that had just reported *"nothing requires Lane A action"* across three consecutive polls.** ⛔ **A metric that says *heavily loaded* about an idle lane is worse than no metric** — **it is the reason starvation was reported by the lane rather than detected by the instrument built to detect it.**
+
+✅ **Fixed in the generator the same day**: **`awaiting_qe_transition` is now emitted per lane and excluded from utilization.** ⚡ **This is [D-144](DECISION_REGISTER.md) working exactly as instructed** — *"refine it based on real repository behavior rather than continuing to redesign it theoretically."* **v1 was live for one poll and the first thing it got wrong was found by a lane using it.**
+
+### What QE is being asked for
+
+**Nothing urgent, and no gate is involved.** ⚡ **Reconcile the rows against `main` at the next Closeout** — [§20e](../CLAUDE.md) activity 3 already requires exactly this: *"promoted claims marked `COMPLETE` and then removed."* ⛔ **This item exists so the backlog stops asserting a state the repository is not in** ([§2](../CLAUDE.md)), **not to add work.**
+
 ## C-425 · The coordination ref asserts an authority that is not in the authoritative state
 
 | | |

@@ -323,6 +323,30 @@ def _blocked_days(task: Task) -> float:
     return round((datetime.now(timezone.utc) - then).total_seconds() / 86400, 1)
 
 
+_LANE_BRANCH = {
+    "Lane A": "origin/lane-a-product-surface",
+    "Lane B": "origin/lane-b-commercial-profile",
+    "Lane C": "origin/lane-c-sync",
+}
+
+
+def _unpushed(lane: str) -> int | None:
+    """Commits on a lane's branch that `integration` does not have.
+
+    **The structural test behind `awaiting_qe_transition`.** ⛔ **Not a proxy
+    and not a count of anything textual**: a lane with zero commits ahead of
+    `integration` has handed everything over, whatever its rows say.
+
+    Returns `None` when the branch cannot be read, so an unknown is never
+    silently reported as a zero.
+    """
+    branch = _LANE_BRANCH.get(lane)
+    if not branch:
+        return None
+    out = _git("rev-list", "--count", f"origin/integration..{branch}").strip()
+    return int(out) if out.isdigit() else None
+
+
 def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
     """Per-lane coordination metrics — [D-143](../docs/DECISION_REGISTER.md) §6.
 
@@ -339,13 +363,23 @@ def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
         in_flight = [r for r in mine if r.state == IN_FLIGHT]
         blocked = [r for r in mine if r.state not in {ASSIGNED, IN_FLIGHT}]
         waits = [r.blocked_days for r in blocked if r.blocked_days]
+        # **The first thing v1 got wrong in real use, and a lane found it.**
+        # `lane_utilization` read 3.6 for a lane with nothing to do, because
+        # every row a lane had handed to QE still counted as work in progress.
+        # A row at `IN VALIDATION` on a lane whose branch is level with
+        # `integration` has nothing outstanding to validate — it is waiting on
+        # a state transition only QE may write (§20e), not on engineering.
+        ahead = _unpushed(lane)
+        stranded = len(in_flight) if ahead == 0 else 0
+        working = len(in_flight) - stranded
         out[lane] = {
             "claimable": len(claimable),
             "in_flight": len(in_flight),
+            "awaiting_qe_transition": stranded,
             "blocked": len(blocked),
             # **In flight against a five-slice reference**, which is §20e's own
             # number rather than one invented here.
-            "lane_utilization": round(len(in_flight) / 5, 2),
+            "lane_utilization": round(working / 5, 2),
             # Claimable ÷ the rate a lane has actually claimed at. **Lane A
             # took seven rows in one day**, so 7/day is measured, not assumed.
             "idle_prediction_days": round(len(claimable) / 7, 1),
@@ -393,6 +427,7 @@ def render(rows: list[Task]) -> str:
             f"assigned_total     = {len(mine)}",
             f"claimable          = {m['claimable']}",
             f"in_flight          = {m['in_flight']}",
+            f"awaiting_qe_transition = {m['awaiting_qe_transition']}",
             f"blocked            = {m['blocked']}",
             f"lane_utilization   = {m['lane_utilization']}",
             f"idle_prediction_days   = {m['idle_prediction_days']}",
