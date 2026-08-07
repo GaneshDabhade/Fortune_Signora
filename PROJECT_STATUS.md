@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `e932b87`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `6fdb6cc`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `e932b87`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `6fdb6cc`, 2026-08-07.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`e932b87`** — the certified commit itself |
+| **`main`** | **`6fdb6cc`** — the certified commit itself |
 | **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 92 promoted **TASK-428** — a role change becomes an affiliation. ⛔ **Lane C excluded for a fourth poll on [B-143](docs/BUGS.md)** |
-| **Certification** | ✅ [`e932b87dbbcc`](certification/reports/e932b87dbbcc.md) · migration head **`0041`** · protocol **v2** · ⚠️ **11 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 93 promoted **Lane C's eighteen-commit branch** — held five polls, released by a one-word fix. ⚡ **The environment lease keyed on an unexpanded shell variable and now does not** |
+| **Certification** | ✅ [`6fdb6ccbbc5c`](certification/reports/6fdb6ccbbc5c.md) · migration head **`0041`** · protocol **v2** · ⚠️ **11 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3998 backend tests** *(+11)* · **95.34% coverage** *(floor 95)* · **1523 frontend tests** across 65 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** · mypy strict over **822 files** · migrations `0000`–`0041`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 149s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4021 backend tests** *(+23)* · **95.34% coverage** *(floor 95)* · **1523 frontend tests** across 65 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **392 Security Invariants** · mypy strict over **824 files** · migrations `0000`–`0041`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 153s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,13 +40,13 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **TASK-478 · 450 · 441 · 444** | ⚡ **TASK-428** — a role change becomes an affiliation | **The Coordination subsystem ([D-144](docs/DECISION_REGISTER.md))** | **Cycle 92** |
+| **Last promoted** | **TASK-478 · 450 · 441 · 444** | **TASK-428** — a role change becomes an affiliation | ⚡ **TASK-455 · 463 · 479 · the lease fix · B-139 · B-143** | **Cycle 93** |
 | **Execution phase** | **Building** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
-| **Branch** | Level with `main` | Level with `main` | ⛔ **16 ahead — excluded on [B-143](docs/BUGS.md)** | Level with `main` |
-| **Validation status** | — | ✅ **Promoted this cycle** | ⛔ **`CHANGES REQUESTED`** — ⚠️ **fourth poll, and the row is on its own branch reading `OPEN`** | — |
-| **Blocked?** | **No** | **No** | **No** — ⚠️ **TASK-455, TASK-463, the D-146 lease fix and its own [B-139](docs/BUGS.md) fix all wait behind one test case** | **No** |
+| **Branch** | Level with `main` | Level with `main` | ✅ **Level with `main`** | Level with `main` |
+| **Validation status** | — | — | ✅ **Promoted this cycle** — **eighteen commits, first attempt** | — |
+| **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | Next `READY` row | Next `READY` row | **[B-143](docs/BUGS.md)** — one parametrised case, 0.39s | **Cycle 93, on the next poll** |
+| **Next executable work** | Next `READY` row | Next `READY` row | Stewardship | **Cycle 94, on the next poll** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,57 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 92
+## 1d · Release summary — 2026-08-07, cycle 93
+
+**Derived from the promoted commit `6fdb6cc`.** **Forty-eight promotions.** ⚡ **Eighteen commits held across five polls, released by one word, certified on the first attempt.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **The environment lease is fixed** *([D-146](docs/DECISION_REGISTER.md), [483](docs/architecture/483-environment-isolation-audit.md))* | **`_resource()` read the compose `name:` line with a regex and got back the literal `'${COMPOSE_PROJECT_NAME:-signora-v2}'`** — Docker Compose expands that; the regex did not. **So every clone contended on one key naming no stack, and the `"signora-v2"` fallback was unreachable because the middle term returned a truthy literal.** ✅ **QE verified the fix by executing it: `_resource()` now returns `'signora-v2'`** |
+| **TASK-455 · TASK-463 · TASK-479** | The demo environment gains a pointer; a release; a disposal — *"Lane B built the port inside the row that needed it"* |
+| **[B-139](docs/BUGS.md) · [B-143](docs/BUGS.md)** | ✅ **Both closed by Lane C** |
+| **49 · 50 · 51 renumbered** | ✅ **Three document-number collisions, open for days, are gone** |
+
+**+23 backend tests**, including two new files that did not exist before — `test_environment_exports.py` and `test_environment_lease_key.py`. ⚡ **The lease defect now has a test that would have caught it.**
+
+### ⛔ The cost of the hold, stated because it was real
+
+**Five polls.** The branch reached eighteen commits behind a parametrised case that ran in **0.39 seconds**, and QE reported it every poll without escalating: queue order is the lane's, the row named the fix, and the gate was doing exactly what it exists to do.
+
+> ⚡ **When it moved, it moved cleanly**: `mypy` over 824 files, 37 contracts, 64 passes across the five touched test files, and **certification on the first attempt with no aborts.**
+
+### ⚠️ Lane C raised [B-407](docs/BUGS.md) against QE, and QE answered it by measuring
+
+***"One commit of production code is on `main` without a certification run."*** ⛔ **The conclusion is wrong and the observation was real.** QE checked three ways:
+
+| | |
+|---|---|
+| ① | **`e64f64fb` is an ancestor of the certified `e932b87d`** — §20e's explicit middle case: *"not a loophole; it is what a fast-forward does"* |
+| ② | `--audit-main`: **85 certified · 700 ancestors · 1 Closeout · the guarantee holds** |
+| ③ | Their `grep -c → 0` **returns `1` today** |
+
+⚡ **③ is the finding.** A certification record cannot contain its own commit hash, so `certify` writes it to the working tree, QE parks it, promotes, and commits it at Closeout. **Between stage 4 and stage 5 `main`'s tip is certified and `main`'s own tree does not yet say so** — and Lane C polled inside that window.
+
+**`WONTFIX`, because every repair is worse**: recording before promotion certifies a commit that was not promoted; a placeholder is not evidence; and closing the window merges Closeout into promotion, which §20e forbids for the reason it states.
+
+> ⛔ **Their [B-142](docs/BUGS.md) comparison does not hold, and the difference is the whole answer.** **There, a comparison did not gate. Here it gated and passed** — `promoted == certified` was asserted equal before the push, and the audit confirms it after.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4021 backend** *(+23)* · **1523 frontend** · **95.34%** · **392 invariants** · **824 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **96 runs recorded, 89 certified** · `promoted == certified` ✓ · `--audit-main` clean · ⚡ **first attempt, no aborts, no lease wait** |
+| **Architecture** | Migration `0041` **reversible, verified this cycle** · **DR nothing lost** · smoke **153s** · ✅ **three document-number collisions closed** |
+| **Dependency** | ✅ **Every branch level with `main`** — nothing held anywhere |
+| **Customer Value** | ⛔ **None directly.** The cycle repaired the instruments the other cycles run on |
+| **Process** | ✅ **A lane audited QE, QE measured rather than defended, and both records say what happened** |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 92
 
 **Derived from the promoted commit `e932b87`.** **Forty-seven promotions.** ⚡ **A clean cycle — one lane, one slice, first attempt, no aborts.**
 
