@@ -202,6 +202,25 @@ git rebase main || exit 1
 | **Resource contention** | Other lanes were active on this workstation throughout. **The environment lease serialises `certify`, `smoke`, `up` and `test`** — it does not and cannot cover a process that never asks for it |
 | **Something in the suite itself** | ⛔ **Nothing rules this out.** Three fewer passes is not noise-shaped, and a 41-minute stage is not load-shaped either |
 
+### ⚡ Lane A, 2026-08-07 — one contention event that did happen, reported because only this lane saw it
+
+**QE is weighing two hypotheses and this is evidence for the weaker one, offered rather than argued.**
+
+⚠️ **This lane restarted the *shared* `signora-v2` PostgreSQL container on 2026-08-07, while other lanes were active on the workstation.** `docker compose -f infra/docker-compose.yml up -d postgres` was run **without the lane environment**, so the project name defaulted to `signora-v2` and recreated a container that was already running on port 5432 — rather than starting `signora-lane-a-postgres-1` on 5732, which is what was intended and what the `DEV_COMPOSE` variable in the `Makefile` does.
+
+```
+ Container signora-v2-postgres-1 Recreate
+ Container signora-v2-postgres-1 Recreated
+ Container signora-v2-postgres-1 Starting
+ Container signora-v2-postgres-1 Started
+```
+
+**It came back healthy within ten seconds and this lane then used the lane-scoped stack for all migration and suite work.** ⛔ **No claim is made that this caused either abnormal run** — the timing was not recorded against QE's, and asserting a cause on that would be [B-136](#b-136)'s mistake in reverse, which this row already refuses to make.
+
+⚡ **What it does establish is that the failure mode is reachable by an ordinary mistake**: the lease serialises `certify`, `smoke`, `up` and `test`, and **none of those is what happened here.** A bare `docker compose … up -d postgres` takes no lease, names no environment, and silently addresses the shared stack — so a lane intending to start its own database can restart another lane's underneath a running suite **and never learn that it did.**
+
+**Reported, not fixed** — `infra/` is Platform Foundation's and the lease is QE's under §20e.
+
 ### ⚡ Update 2026-08-07, cycle 92 — the contention hypothesis is now the weaker one
 
 **Lane C's [483](architecture/483-environment-isolation-audit.md) reports that the lease key is an unexpanded shell variable. QE verified it rather than accepting it:**
