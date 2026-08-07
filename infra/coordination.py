@@ -496,6 +496,41 @@ def premature_releases(rows: list[Task]) -> list[Task]:
     ]
 
 
+def blocked_on_integration(rows: list[Task], lane: str) -> list[Task]:
+    """This lane's parked rows that would release if QE integrated its own work.
+
+    ⚡ **The distinction the product owner had to ask for, 2026-08-07.** Lane A
+    read `claimable = 0` and `current = ""` for four cycles and was reported as
+    *not idle* each time — **but nothing in the source said what it was waiting
+    on, so *"0 claimable"* and *"starved"* looked identical.**
+
+    ⛔ **They are opposites.** **A starved lane needs planning; a lane waiting on
+    integration needs QE, and giving it more rows would be padding.** Lane A had
+    shipped four slices in the previous two hours and every one of its next four
+    rows sat behind two of them.
+
+    ⚠️ **[C-426](../docs/LANE_COORDINATION.md)'s class exactly**, one level up:
+    that was a metric saying *busy* about an idle lane; this is a metric saying
+    *nothing to do* about a lane blocked on release.
+    """
+    by_id = {r.id: r for r in rows}
+    outstanding = _outstanding_rows(rows)
+    return [
+        r
+        for r in rows
+        if r.lane == lane
+        and r.state in {SEQUENCED, BLOCKED}
+        and r.depends_on
+        and all(
+            (p := by_id.get(dep)) is not None
+            and p.lane == lane
+            and p.state == IN_FLIGHT
+            and dep in outstanding
+            for dep in r.depends_on
+        )
+    ]
+
+
 def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
     """Per-lane coordination metrics — [D-143](../docs/DECISION_REGISTER.md) §6.
 
@@ -521,7 +556,19 @@ def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
         ahead = _unpushed(lane)
         stranded = len(in_flight) if ahead == 0 else 0
         working = len(in_flight) - stranded
+        pending = len(blocked_on_integration(rows, lane))
+        # ⛔ **Never let "0 claimable" stand alone.** It is the same number for
+        # a starved lane and for one whose next rows are behind its own
+        # finished work, and those need opposite responses.
+        supply = (
+            "working" if claimable
+            else "blocked_on_integration" if pending
+            else "in_flight_only" if in_flight
+            else "starved"
+        )
         out[lane] = {
+            "blocked_on_integration": pending,
+            "supply_state": supply,
             "claimable": len(claimable),
             "in_flight": len(in_flight),
             "awaiting_qe_transition": stranded,
@@ -595,6 +642,8 @@ def render(rows: list[Task]) -> str:
             f"claimable          = {m['claimable']}",
             f"in_flight          = {m['in_flight']}",
             f"awaiting_qe_transition = {m['awaiting_qe_transition']}",
+            f"blocked_on_integration = {m['blocked_on_integration']}",
+            f'supply_state       = "{m["supply_state"]}"',
             f"blocked            = {m['blocked']}",
             f"lane_utilization   = {m['lane_utilization']}",
             f"idle_prediction_days   = {m['idle_prediction_days']}",

@@ -233,6 +233,12 @@
 lane         = "Lane A"
 updated      = 2026-08-07
 
+# ⚡ SUPPLY STATE: blocked_on_integration — NOT starved.
+#    This lane has 4 row(s) parked behind its OWN finished work, sitting on
+#    its own branch and not yet on integration. `eligible_count = 0` here means
+#    waiting on QE, not waiting on planning. ⛔ Do not read it as idle, and this
+#    office will not pad the queue to hide it — the rows exist and are owned.
+#
 # ── Executable today, in order ───────────────────────────────────────────────
 #
 # ⚡ RELEASED 2026-08-07 — C-427. Every row below was parked behind a

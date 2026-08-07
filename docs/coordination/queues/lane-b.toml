@@ -89,6 +89,8 @@
 lane         = "Lane B"
 updated      = 2026-08-07
 
+# ✅ SUPPLY STATE: working — claimable rows are listed below.
+#
 # ── Executable today, in order ───────────────────────────────────────────────
 #
 # ⚡ RELEASED 2026-08-07 — C-427. Every row below was parked behind a
