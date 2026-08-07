@@ -80,6 +80,113 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-134 · `coordination.py --check` can never pass, because it compares a file against its own commit stamp
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py), [`infra/state-check.py`](../infra/state-check.py) |
+| **Current assignee** | **Lane C** — Platform Foundation is Lane C's ([D-022](DECISION_REGISTER.md)), and it authored both |
+| **Severity** | 🟠 — **wrong behaviour, and it is a governance instrument reporting a condition that is not true.** ⛔ **Not a Blocking Quality Defect**: `state-check.py` reports rather than fails, so no gate is held |
+| **Status** | **`OPEN`** — measured, not fixed. **QE changes no production code** |
+| **Found** | 2026-08-07 by QE, cycle 87, validating Lane C's nine commits |
+
+**Steps to reproduce.** On the branch that introduced the check — no rebase, no edit, nothing stale:
+
+```bash
+git switch --detach origin/lane-c-sync     # a042b66c, "Regenerate the coordination source…"
+python3 infra/coordination.py --check
+→ coordination: the published source does not match what the generator emits
+  today — regenerate it.
+  exit 1
+```
+
+**Expected.** Exit `0`. The file was regenerated in the tip commit; the commit is *titled* for having done it.
+
+**Actual.** Exit `1`, and the whole difference is one line:
+
+```diff
+-generated_from = "c7f648f"
++generated_from = "6f816ab"
+```
+
+### The cause
+
+`render()` stamps the **running** `HEAD` into the file:
+
+```python
+f'generated_from = "{_git("rev-parse", "--short=7", "HEAD") or "unknown"}"',
+```
+
+and `--check` compares the **whole file**, stamp included:
+
+```python
+if OUT.read_text() != fresh:
+```
+
+**A generated file can never contain the SHA of the commit that contains it** — the SHA is not known until after the file is written. So the stamp is always one commit behind by construction, and **any rebase changes it again**. The check therefore fails on the commit that generates the file, on every commit after it, and on every rebased copy of both.
+
+**It has never returned `0`. Not once, on any branch, including its own.**
+
+### Why it matters more than a nuisance
+
+[479](architecture/479-coordination-architecture.md) makes this file the one thing every lane polls, and `state-check.py` now calls `--check` on **every run**:
+
+```python
+findings.extend(_coordination_findings())
+```
+
+So `state-check` acquires a permanent false finding. **That is the same family as a guard that cannot fail** (`CLAUDE.md` §2) **wearing the opposite coat: a guard that cannot pass.** Both end in the same place — a signal nobody reads. ⚠️ **QE wrote [§0a-2](QUALITY_ENGINEERING.md) this week precisely because it stopped reading `state-check`'s output past the first few lines**, and a check that fires every time is how that habit is taught.
+
+### The fix, and it is one line
+
+**Compare the content that is *generated*, not the provenance of the run that generated it** — the ordinary shape for any build stamp. Exclude the `generated_from` line from the equality test, or move it out of the compared body.
+
+⚡ **[B-135](#b-135--285-lines-of-new-governance-tooling-ship-with-no-tests) is why nobody saw it.** One test — *generate, then `--check`, and expect `0`* — fails on the first run.
+
+---
+
+### B-135 · 285 lines of new governance tooling ship with no tests
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) (new, 285 lines), [`infra/state-check.py`](../infra/state-check.py) (`_coordination_findings`, `_duplicate_index_findings`) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟡 — **wrong but survivable.** The generator's *output* is correct today; QE regenerated it and diffed. ⛔ **Nothing prevents that from stopping being true** |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-07 by QE, cycle 87 |
+
+**Steps to reproduce.**
+
+```bash
+git diff --name-only origin/main..origin/lane-c-sync | grep -i test
+→ (nothing)
+grep -rn "coordination.py" backend/tests/
+→ (nothing)
+```
+
+**Expected.** `CLAUDE.md` §11: *"No change ships without tests. This is a hard rule, not a judgment call left to convenience or time pressure."*
+
+**Actual.** Zero tests, for a generator whose output **every implementation lane is now instructed to read as its work queue** ([479](architecture/479-coordination-architecture.md), [D-142](DECISION_REGISTER.md)).
+
+### The repository's own pattern was already there to copy
+
+[`backend/tests/test_claim_agreement.py`](../backend/tests/test_claim_agreement.py) loads `infra/state-check.py` **by path**, because its filename is not a Python identifier, and unit-tests its finding functions directly:
+
+```python
+def _load_state_check() -> ModuleType:
+    """Import `infra/state-check.py`, whose filename is not a Python identifier."""
+```
+
+**Nineteen of the twenty-three `infra/*.py` tools are referenced by a test. `coordination.py` is not**, and the two new `state-check.py` checks are the first additions to that file to arrive without one.
+
+### ⚡ No coverage gate can see this
+
+`pytest --cov` measures `backend/`. **`infra/` is tooling, so a gap there is invisible to the floor** — which is why the rule is §11 rather than a percentage, and why this row exists rather than a failing gate.
+
+**Neither `_coordination_findings` nor `_duplicate_index_findings` is exercised.** The first is [B-134](#b-134--coordinationpy---check-can-never-pass-because-it-compares-a-file-against-its-own-commit-stamp).
+
+---
+
 ### B-405 · A dated audit table's five links all resolve to nothing, because the ids were renumbered under it
 
 | | |
