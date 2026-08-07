@@ -29,6 +29,13 @@
     --color-content-subtle: 133 125 117;
     --color-content-inverted: 250 248 246;
 
+    /* ⚡ **TASK-491 gap ③ — the design specifies *two* hairline weights and
+     * only one had a token.** Design System v2's own critique is *"2px
+     * dividers → 1px warm hairlines"*, and it draws the quiet one at
+     * `--line-soft: #eae5df` against `--line: #ded7cf`. **With one token, every
+     * divider in the product was drawn at the strong weight** — which is the
+     * heaviness the critique is about. */
+    --color-border-soft: 234 229 223;
     --color-border: 222 215 207;
     --color-border-strong: 163 154 145;
 
@@ -61,13 +68,24 @@
      * rather than this comment. **Distinct from `info`**: `info` is a
      * neutral notice, and this says a machine produced what you are reading —
      * the one distinction §14 exists to keep legible. */
-    --color-ai: 79 70 229;
-    --color-ai-subtle: 238 242 255;
+    /* ⚡ **TASK-491 gap ②.** This was `79 70 229` — **Tailwind `indigo-600`,
+     * the one legacy value that survived TASK-490's pass.** The Design System
+     * says `--ai: #4b5ec4`, and its tint `--ai-tint: #f0f1fc`. */
+    --color-ai: 75 94 196;
+    --color-ai-subtle: 240 241 252;
 
-    --color-focus: 37 99 235;
-    /* Modal scrim. A token because the backdrop must darken relative to
-     * the *theme*, not to a fixed slate. */
-    --color-backdrop: 15 23 42;
+    /* ⚠️ **Neither of these is in the Design System's `tokens()` block, and
+     * both were still Tailwind's cool ramp** — `blue-600` and `slate-900` in a
+     * warm system. **Not among TASK-491's seven; found by reading the file
+     * rather than the row.**
+     *
+     * ⛔ **Derived from the design rather than invented**: its accessibility
+     * section specifies a **2px brand focus ring**, so the focus token *is*
+     * `--brand`; and a scrim is the page's ink at low alpha, so it is `--ink`.
+     * **A cool scrim over a warm ground reads as a colour cast**, which is the
+     * whole of what [D-162](../../docs/DECISION_REGISTER.md) was raised about. */
+    --color-focus: 19 78 118;
+    --color-backdrop: 33 31 29;
 
     /* The radius scale. **Four steps, and every rounded corner in the
      * product is one of them** — enforced by design-tokens.test.tsx, which
@@ -131,6 +149,12 @@
     --shadow-sm: 0 1px 2px rgb(33 31 29 / 0.04), 0 1px 3px rgb(33 31 29 / 0.05);
     --shadow: 0 1px 2px rgb(33 31 29 / 0.04), 0 4px 12px -2px rgb(33 31 29 / 0.07);
     --shadow-lg: 0 2px 5px -1px rgb(33 31 29 / 0.05), 0 12px 28px -6px rgb(33 31 29 / 0.12);
+    /* ⚡ **TASK-491 gap ⑤ — the design has four elevations and we had three.**
+     * `--e4` is what a surface that sits *over the page* casts, and the
+     * session-expired overlay is the first thing that needs it: the design
+     * draws that card at `--e4` precisely because it must read as floating
+     * above content that is still visible underneath it. */
+    --shadow-xl: 0 4px 10px -2px rgb(33 31 29 / 0.07), 0 28px 60px -14px rgb(33 31 29 / 0.20);
 
     /* The control heights. **Three steps, and every interactive control in
      * the product is one of them** (TASK-448).
@@ -151,6 +175,19 @@
      * shell, so the sidebar width is one edit and not three. */
     --sidebar-width: 15rem;
     --topbar-height: 3.5rem;
+
+    /* ⚡ **TASK-491 gap ⑦ — the authentication card's width becomes a token.**
+     * **[D-162](../../docs/DECISION_REGISTER.md) ④ named the line it replaces**:
+     * `auth-shell.tsx` carried `sm:max-w-[400px]`, an arbitrary value on the
+     * one measurement the design states most often — *"a single 400px card
+     * carries all 24 screens."*
+     *
+     * ⛔ **A token, not a comment, because `design-tokens.test.tsx` can only
+     * refuse what it can name.** The arbitrary class was invisible to it: the
+     * check forbids arbitrary *type* sizes and had nothing to compare a width
+     * against. **The token is what makes the refusal expressible**, and the
+     * test is extended in the same change. */
+    --card-width: 25rem;
   }
 
   /*
@@ -170,6 +207,7 @@
     --color-content-subtle: 132 147 156;
     --color-content-inverted: 13 20 24;
 
+    --color-border-soft: 36 50 57;
     --color-border: 47 63 72;
     --color-border-strong: 101 115 124;
 
@@ -191,15 +229,21 @@
 
     /* The same role, lifted for a dark ground. §14's grammar is the hue plus
      * the tint field, so both steps move together or the pairing breaks. */
-    --color-ai: 165 180 252;
-    --color-ai-subtle: 30 27 75;
+    --color-ai: 143 154 232;
+    --color-ai-subtle: 26 31 56;
 
-    --color-focus: 96 165 250;
+    --color-focus: 79 163 209;
     --color-backdrop: 0 0 0;
 
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.30);
     --shadow: 0 1px 3px rgb(0 0 0 / 0.40), 0 6px 16px -3px rgb(0 0 0 / 0.45);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.6);
+    /* ⚠️ **This was Tailwind's dark `shadow-lg` and the audit did not name
+     * it** — the light `--shadow-lg` was already the design's `--e3` and the
+     * dark one had never been moved, so **the two themes cast different
+     * shapes.** The design's dark `--e3` is a deeper, wider cast because a
+     * shadow on a dark ground has almost no contrast to work with. */
+    --shadow-lg: 0 3px 8px -2px rgb(0 0 0 / 0.45), 0 16px 34px -8px rgb(0 0 0 / 0.55);
+    --shadow-xl: 0 6px 14px -3px rgb(0 0 0 / 0.5), 0 32px 68px -16px rgb(0 0 0 / 0.65);
   }
 
   * {

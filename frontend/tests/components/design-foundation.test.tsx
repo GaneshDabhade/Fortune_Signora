@@ -61,6 +61,16 @@ describe('the palette is the finalized one, value by value', () => {
     ['--pos', '--color-success'],
     ['--warn', '--color-warning'],
     ['--risk', '--color-danger'],
+    // **TASK-491 gap ②.** `--color-ai` was Tailwind `indigo-600` — the one
+    // legacy value that survived TASK-490's pass, on the hue §14 reserves for
+    // AI-authored content. It was invisible because no test asserted the
+    // *value* of a token that every component correctly used.
+    ['--ai', '--color-ai'],
+    ['--ai-tint', '--color-ai-subtle'],
+    // **Gap ③.** The design specifies two hairline weights and only the
+    // strong one had a token, so every divider was drawn heavy — which is
+    // exactly what Design System v2's own critique is about.
+    ['--line-soft', '--color-border-soft'],
   ];
 
   for (const [design, ours] of mapping) {
@@ -93,6 +103,45 @@ describe('the scales the Design System defines', () => {
     expect(curve(cssToken('--ease'))).toEqual(curve(designToken('--ease')));
   });
 
+  it('carries all four elevations, and they are the design\'s own casts', () => {
+    // **TASK-491 gap ⑤.** Three of four shipped. `--e4` is what a surface
+    // cast *over* the page looks like, and the session-expired overlay is the
+    // first thing that needs it — the design draws that card at `--e4`
+    // precisely because content stays visible underneath it.
+    //
+    // Compared as numbers so `rgba(33,31,29,.04)` and `rgb(33 31 29 / 0.04)`
+    // are one value written two ways rather than a failure about syntax.
+    const cast = (raw: string) => (raw.match(/[\d.]+/g) ?? []).map(Number);
+    for (const [ours, theirs] of [
+      ['--shadow-sm', '--e1'],
+      ['--shadow', '--e2'],
+      ['--shadow-lg', '--e3'],
+      ['--shadow-xl', '--e4'],
+    ] as [string, string][]) {
+      expect(cast(cssToken(ours)), `${ours} is the design's ${theirs}`).toEqual(
+        cast(designToken(theirs)),
+      );
+    }
+  });
+
+  it('carries the card width as a token, and no screen restates it', () => {
+    // **TASK-491 gap ⑦**, and D-162 ④ named the line: `auth-shell.tsx` held
+    // `sm:max-w-[400px]` — an arbitrary value on the measurement the design
+    // states most often, *"a single 400px card carries all 24 screens."*
+    expect(cssToken('--card-width')).toBe('25rem');
+
+    // ⚡ **The refusal, not just the token.** A token nothing consumes is a
+    // token that drifts; the point of gap ⑦ is that the arbitrary class is
+    // gone from the screen, so this asserts its absence rather than the
+    // token's presence.
+    const shell = readFileSync(
+      join(__dirname, '..', '..', 'app', '(auth)', 'auth-shell.tsx'),
+      'utf8',
+    );
+    expect(shell).toContain('max-w-card');
+    expect(shell, 'no screen restates the card width').not.toMatch(/max-w-\[\d/);
+  });
+
   it('names Archivo as the body face, and self-hosts it', () => {
     expect(cssToken('--font-body')).toContain('Archivo');
     const layout = readFileSync(join(__dirname, '..', '..', 'app', 'layout.tsx'), 'utf8');
@@ -112,5 +161,33 @@ describe('the dark theme is the design\'s, not an inversion', () => {
       ?? /prefers-color-scheme: dark[\s\S]*?--color-canvas:\s*([^;]+);/.exec(CSS);
     expect(dark, 'a dark canvas is defined').not.toBeNull();
     expect((dark![1] ?? '').trim()).toBe(hexToRgb('#0d1418'));
+  });
+
+  it('casts the design\'s dark elevations, not Tailwind\'s', () => {
+    // ⚠️ **The audit did not name this one.** The *light* `--shadow-lg` was
+    // already the design's `--e3` and the dark one had never been moved — so
+    // the two themes cast different shapes, and every check passed because
+    // none of them ever read the dark block.
+    const darkBlock = /\[data-theme='dark'\]\s*\{([\s\S]*?)\n {2}\}/.exec(CSS);
+    expect(darkBlock, 'the dark block is found').not.toBeNull();
+    const value = (token: string) =>
+      (new RegExp(`${token}:\\s*([^;]+);`).exec(darkBlock![1] ?? '')?.[1] ?? '')
+        .match(/[\d.]+/g)
+        ?.map(Number);
+    // The design's dark casts are deeper and wider: a shadow on a dark ground
+    // has almost no contrast to work with.
+    const designDark = (token: string) => {
+      const all = [...DESIGN.matchAll(new RegExp(`'${token}'\\s*:\\s*'([^']*)'`, 'g'))];
+      // The dark theme is the *second* definition in the design's tokens().
+      return (all[1]?.[1] ?? '').match(/[\d.]+/g)?.map(Number);
+    };
+    for (const [ours, theirs] of [
+      ['--shadow-lg', '--e3'],
+      ['--shadow-xl', '--e4'],
+    ] as [string, string][]) {
+      expect(value(ours), `dark ${ours} is the design's ${theirs}`).toEqual(
+        designDark(theirs),
+      );
+    }
   });
 });

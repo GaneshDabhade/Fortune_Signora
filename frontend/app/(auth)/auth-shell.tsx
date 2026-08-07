@@ -81,7 +81,11 @@ export function AuthShell({
         'lg:justify-center lg:py-16',
       ].join(' ')}
     >
-      <div className="flex w-full flex-col sm:max-w-[400px]">
+      {/* ⚡ **`max-w-card`, not an arbitrary 400px** — TASK-491 gap ⑦, and
+          [D-162](../../../docs/DECISION_REGISTER.md) ④ named this exact line.
+          **The measurement is the Design System's**, so the screen consumes it
+          rather than restating it. */}
+      <div className="flex w-full flex-col sm:max-w-card">
         {/* The product mark, above the card. `Fortune Signora` is the combined
             brand and this is a branding surface — the sign-in page is named in
             §4's list, so the full mark is correct here and `Signora` alone is

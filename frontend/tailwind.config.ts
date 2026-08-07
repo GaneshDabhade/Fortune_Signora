@@ -29,6 +29,10 @@ export default {
           inverted: 'rgb(var(--color-content-inverted) / <alpha-value>)',
         },
         border: {
+          /* The design specifies two hairline weights; `soft` is the quiet
+           * one (TASK-491 gap ③). A divider between rows of one list is
+           * `soft`; a divider between two regions is the default. */
+          soft: 'rgb(var(--color-border-soft) / <alpha-value>)',
           DEFAULT: 'rgb(var(--color-border) / <alpha-value>)',
           strong: 'rgb(var(--color-border-strong) / <alpha-value>)',
         },
@@ -93,6 +97,15 @@ export default {
         sm: 'var(--shadow-sm)',
         DEFAULT: 'var(--shadow)',
         lg: 'var(--shadow-lg)',
+        /* The design's fourth elevation (TASK-491 gap ⑤) — what a surface
+         * cast *over the page* looks like, rather than one sitting on it. */
+        xl: 'var(--shadow-xl)',
+      },
+      maxWidth: {
+        /* *"A single 400px card carries all 24 screens."* Named so the
+         * arbitrary value it replaces becomes refusable rather than only
+         * discouraged (TASK-491 gap ⑦). */
+        card: 'var(--card-width)',
       },
       spacing: {
         sidebar: 'var(--sidebar-width)',

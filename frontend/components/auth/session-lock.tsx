@@ -154,7 +154,11 @@ export function SessionLock({ email }: { email: string }) {
     <dialog
       ref={dialog}
       aria-labelledby="session-lock-title"
-      className="w-[min(400px,calc(100vw-2.5rem))] rounded-xl border border-border bg-surface p-6 text-content shadow-lg backdrop:bg-backdrop/40"
+      // `shadow-xl` is the design's `--e4`, and this is the surface it exists
+      // for: a card over content that is still visible underneath it. It read
+      // `shadow-lg` — the elevation of something sitting *on* the page —
+      // until TASK-491 gave the fourth step a token.
+      className="w-[calc(100vw-2.5rem)] max-w-card rounded-xl border border-border bg-surface p-6 text-content shadow-xl backdrop:bg-backdrop/40"
     >
       <form onSubmit={unlock} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
