@@ -432,6 +432,52 @@ sed -n '2042,2044p' docs/BUGS.md
 
 ---
 
+### B-329 · 101 of B-211's 238 ruff errors are Lane B's, and twelve of them ask for an API rename no lane may make
+
+| | |
+|---|---|
+| **Module** | **Ten of this lane's thirteen** — `integrations` 41 · `knowledge_graph` 20 · `opportunity_engine` 13 · `timeline` 5 · `commercial_profile` 5 · `sales_engagement` 5 · `people` 5 · `action_batch` 3 · `ai_platform` 3 · `observation_engine` 1 |
+| **Current assignee** | **Lane B** for the code. ⚠️ **The `N818` group below is *not* Lane B's to decide** — see the split |
+| **Severity** | 🟠 · **not blocking today.** Nothing invokes ruff ([B-211](#b-211--ruff-check--fails-with-238-errors-on-integration-and-no-gate-has-ever-run-it)), so no gate is red because of these. **It becomes blocking the moment QE wires the gate in**, which is what B-211 exists to do |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-07 by **Lane B**, measuring its own share after B-211 landed |
+
+**Steps.** From `backend/`, on `integration` with a clean tree:
+
+```
+.venv/bin/ruff check . --output-format=concise | grep -E '^(modules|tests)/(integrations|provider_normalization|knowledge_graph|observation_engine|timeline|opportunity_engine|ai_reasoning_engine|commercial_profile|sales_engagement|people|action_batch|ai_platform|business_event_engine)/' | wc -l
+```
+
+**Expected.** `0`, or a named defect explaining why not.
+
+**Actual.** **101.** ⚡ **This is the largest single share of B-211's 238 — four times Lane A's 26 — and B-211 does not mention it**, because that row was written by the lane that measured its own modules and correctly stopped there. **Recorded here so the total is accounted for rather than discovered a third time.**
+
+#### The split is the finding, not the 101
+
+| Rule | Count | Fixable by this lane? |
+|---|---|---|
+| `E501` line length · `I001` import order · `F401` unused import · `UP037` quoted annotation | **77** | ✅ **Yes — mechanical.** `F401` needs reading first: an unused import inside a `public/__init__.py` is a **deliberate re-export**, not a defect |
+| `UP035` deprecated import · `B905` bare `zip` · `B008` call in a default · `B017` blind `except` · `SIM102` · `SIM113` | **12** | ⚠️ **Case by case.** `B905` changes runtime behaviour — `strict=` turns a silent truncation into a raise, which is usually right and is never a lint fix |
+| **`N818`** exception name lacks an `Error` suffix | **12** | ⛔ **No. This one needs a ruling** |
+
+#### Why `N818` is not a lint fix
+
+`AlreadyConnected` · `UnknownIntegration` · `ConnectionNotFound` · `SecretNotFound` · `CredentialUnreadable` · `ConnectionUnusable` · `GrantExpired` · `GrantRevoked` · `CrmTransient` · `CrmPermanent` · `OpportunityNotFound` · `UnprojectableEvent`.
+
+**Every one of them is a domain exception named in domain vocabulary**, which is what [§4](../CLAUDE.md) asks for. `GrantExpired` is the ubiquitous language; `GrantExpiredError` is the linter's. ⚡ **The two rules disagree, and a lane picking the linter over the constitution would be taking an architectural decision inside a tidy-up** — the exact shape [§20e](../CLAUDE.md) warns about, *"the change that follows is always small, which is why nobody notices it was a decision."*
+
+⛔ **And one of the twelve is published.** `ConnectionUnusable` is exported from `modules/integrations/public/__init__.py`, so renaming it is a **published-contract change** — 🟠 at best, and ⚫ *Rename an API* on its face. **The other eleven are module-internal**, which is why this is a ruling about a convention rather than twelve separate questions.
+
+> **Three outcomes are available and all are defensible**: adopt the suffix and rename · **add `N818` to `[tool.ruff.lint] ignore` with the DDD reason stated in `pyproject.toml`** · keep the rule and add per-file exemptions for domain layers. **This lane's recommendation is the second** — the convention it enforces is a Python-stdlib habit, and this repository has an explicit, ratified rule that domain vocabulary wins at the module boundary. ⛔ **Recommendation only; the ruff configuration is repository-wide and not this lane's to change.**
+
+#### Left unfixed, deliberately, and this is the part to sequence
+
+⛔ **No sweep was performed.** Lane A reached the identical decision on its 26 one commit earlier, for the identical reason: **the queue is at `eligible_count = 1` and that one row is blocked, but a dry queue is not a licence to self-assign** ([§20e](../CLAUDE.md)). **A repository-wide lint sweep is also better done once, sequenced by whoever owns the gate, than by three lanes independently rewriting import blocks that will conflict on every rebase.**
+
+**What this row buys:** the 238 is now fully attributed — **101 Lane B · 26 Lane A · 111 shared surface** (`tests/integration` 57, `migrations/versions` 27, `apps/` 10, and the rest) — so B-211's fix can be planned against a known total instead of a headline number.
+
+---
+
 ### B-211 · `ruff check .` fails with 238 errors on `integration`, and no gate has ever run it
 
 | | |
