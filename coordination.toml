@@ -10,23 +10,23 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "f082e37"
-task_count     = 84
+task_count     = 89
 
 [lane.Lane_A]
 current            = "TASK-451"
 next               = "TASK-468"
-next_after_that    = "TASK-467"
-assigned_total     = 34
-claimable          = 4
+next_after_that    = "TASK-480"
+assigned_total     = 38
+claimable          = 8
 claimable_now      = 0
-awaiting_sync      = 4
+awaiting_sync      = 8
 in_flight          = 23
 awaiting_qe_transition = 23
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 7
 lane_utilization   = 0.0
-idle_prediction_days   = 0.6
+idle_prediction_days   = 1.1
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -580,6 +580,70 @@ estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-480"
+title         = "The notification platform"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-481"
+title         = "A global search surface, composing the one that already works"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-482"
+title         = "The AI Copilot entry and side panel"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-484"
+title         = "The two journeys that work and nobody verifies"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-904"
@@ -1380,6 +1444,22 @@ estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-483"
+title         = "The authentication shell"
+state         = "BLOCKED"
+declared      = "BLOCKED"
+lane          = "—"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "on [C-430](LANE_COORDINATION.md)** — **a ruling on ownership, not on d"
+waiting_for    = "on [C-430](LANE_COORDINATION.md)** — **a ruling on ownership, not on design.** ⛔ **Not `READY`: a row nobody may build is not fit**"
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-900"
