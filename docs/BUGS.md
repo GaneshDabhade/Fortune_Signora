@@ -206,6 +206,38 @@ sed -n '2042,2044p' docs/BUGS.md
 **`unclosed_fence(text) -> int | None`** in `infra/registers.py`, checked by `state-check` across all four registers **before** the marker check, so a reader learns the structure is broken rather than reading a conclusion drawn from broken structure. **Five tests**, including one asserting the blindness directly — **the only half no assertion about `conflict_markers` could catch, since its answer is empty either way.**
 
 **What it does not fix.** The register is still hand-merged, so the **next** corruption is a different shape again. ⛔ **This is now the third time that sentence has been written in this file**, and RC-4's actual answer remains ADR-0039's to propose and the product owner's to schedule.
+
+---
+
+### B-211 · `ruff check .` fails with 238 errors on `integration`, and no gate has ever run it
+
+| | |
+|---|---|
+| **Module** | **The backend gate set** — `Makefile` (`validate`) and `.github/workflows/backend.yml` |
+| **Current assignee** | **QE.** The `Makefile` is Platform Foundation's ([D-022](DECISION_REGISTER.md)), **but the gate half is QE's under §20e's own test** — this changes *what a lane is told to run before handing over*, not what a target means. Same split recorded on [B-107](#b-107) |
+| **Severity** | 🟠 · **Blocking Quality Defect.** No customer behaviour is wrong. **A required check is red across the whole tree and nothing invokes it**, so every lane hands over believing it passed |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-07 by Lane A, checking `apps/worker/subscriptions.py` after a duplicate-import report from another lane |
+
+**Steps.** From `backend/`, on `integration` with a clean tree: `.venv/bin/ruff check .`
+
+**Expected.** Clean, or a named defect explains why it is not.
+
+**Actual.** **238 errors, 67 fixable.** The ruff in the tree is **0.16.0 — byte-identical to the version `uv.lock` pins**, so this is not version skew; CI would report the same 238.
+
+**Why nothing caught it — and this is the finding, not the 238.** The check exists and is correct. **Nothing calls it.**
+
+- **`.github/workflows/backend.yml` defines `ruff check .`, `ruff format --check .`, `mypy .` and import-linter — and its only trigger is `workflow_dispatch`.** The file opens *"⚠️ INTENTIONALLY DISABLED — Local-First Development Policy"* and instructs that `push:` and `pull_request:` are not to be added. **That policy is deliberate and is not the defect**; it rests on the premise that *"every check below already runs locally"*.
+- **`make validate` runs migrate · tsc · vitest · pytest.** It does not run ruff. **So the premise does not hold**, and the only remaining caller is the production image build.
+
+> ⚡ **This is [B-115](#b-115--task-301-fails-mypy---strict-on-a-test-helper-narrower-than-the-type-it-builds)'s class for the third time, and the first time for Python's linter.** B-115 established that *"the gate is `mypy --strict .` from `backend/`, and the difference is `tests/`"*; [B-133](#b-133) established the same for `eslint .`. **Both lessons were recorded as *widen the path you check*. Neither noticed that one of the four checks had no path at all** — a gate that cannot fail (§2), by never being invoked rather than by being wrong.
+
+**The instance that surfaced it.** `apps/worker/subscriptions.py` reports **7 errors: five `F811` redefinitions, one `I001`, one pre-existing `N818`.** The five are `build_business_event_queries`, `build_graph_queries`, `build_observation_queries`, `SqlClaimReader` and `build_signal_queries`, each imported twice. **Every second import binds the same name to the same object, so this is genuinely redundant and not a shadow** — verified by reading both import lists, not inferred from the rule name. ⛔ **Not fixed here.** `apps/` is not this lane's, the file is in flight, and §20e is explicit: *finding a defect outside your assignment is an obligation to report it, never permission to fix it.*
+
+**What is Lane A's.** **26 of the 238 fall in this lane's six modules** — 24 in `ai_research_engine` and its tests, one `SIM102` in `workspace_tenancy`, one `UP037` in `buying_score_engine`. **Two are `F401` unused imports, which is [B-133](#b-133)'s exact defect class.** All were last written 2026-07-31 → 2026-08-03 and **predate this lane's current slices**, so they are accumulation, not regression. ⛔ **Left unfixed deliberately**: the queue is at `eligible_count = 0` and a lane does not self-assign (§20e). **They are named here so they can be sequenced rather than discovered again.**
+
+---
+
 ### B-210 · The journey plan names a Playwright spec that does not exist
 
 | | |
