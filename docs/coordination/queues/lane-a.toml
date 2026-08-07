@@ -381,6 +381,51 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🟢  D-166 — YOU NO LONGER ANALYSE THE DESIGN BEFORE YOU CODE
+#     2026-08-07 · product owner
+#
+#   "Lane A should receive implementation-ready work rather than needing to
+#    analyze the design documents before coding. Your role is to perform the
+#    implementation homework so implementation becomes straightforward."
+#
+# ✅ EVERY ROW YOU WILL CLAIM NEXT NOW CARRIES TESTING METADATA — modules,
+#   routes, shared components, APIs, Playwright specs, component tests,
+#   integration tests and accessibility criteria. Eight rows: TASK-491, 483,
+#   484 and the five journey rows 485-489.
+#
+#   ⛔ It says what is EXPECTED TO CHANGE. It does not say how to certify —
+#      that is QE's, and the split is deliberate.
+#   ⚡ TASK-491's entry has the useful case: visual.spec.ts is the one test
+#      that SHOULD change, and a diff there is the evidence the token pass
+#      worked. A slice whose expected-change set is "nothing" would be a slice
+#      with no observable effect.
+#
+# 🔴 AND THE FORWARD PASS ALREADY FOUND SOMETHING YOU WOULD HAVE HIT IN W2:
+#
+#     THE DESIGN'S `01 Welcome` HAS NO ROUTE AND CANNOT BE REACHED.
+#
+#   app/(app)/layout.tsx:35 is `if (!session?.user) redirect('/sign-in')`,
+#   there is no app/page.tsx, and there is no middleware. An unauthenticated
+#   visitor to / is sent straight past Welcome to the sign-in card.
+#
+#   Three things live only on that screen: the two entrances (Sign in /
+#   Create a workspace), the enterprise "Sign in with SSO" branch, and the
+#   region-and-status line the design says buyers check —
+#   "EU · eu.signora.app and a live status dot."
+#
+#   ⚠️ It is ARCHITECTURAL — a public root outside (app) — not a screen you
+#      can add. Recorded in TASK-485 so it is settled before you reach it.
+#      ⛔ Do not invent the route group when you get there. Ask.
+#
+# ⚡ THE INVARIANT IS CONFIRMED AND UNCHANGED: one active workflow, one
+#   current task, one claimable task. The 10-20 number is PLANNING DEPTH, and
+#   the product owner has now said so in terms. prepared_total stays 14;
+#   eligible_count stays 1.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🟢  D-165 — ONE LANE, PERMANENTLY. AND TWO NUMBERS, NOT ONE.
 #     2026-08-07 · product owner
 #
