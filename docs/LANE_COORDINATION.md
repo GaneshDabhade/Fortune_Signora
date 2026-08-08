@@ -8164,6 +8164,24 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 ⚠️ **This is [C-435](#c-435--a-planning-correction-that-unblocks-an-idle-lane-has-no-trigger-of-its-own)'s fifth recorded instance, and Lane C names it as such.** ⛔ **Not re-argued here** — the class is theirs and already filed.
 
+### ⚡ UPDATE — 2026-08-08, later the same day: ① has grown from four rows to six
+
+**Measured again, row by row, on both refs.** ⛔ **Every one is `READY` on `lane-c-sync` and `SEQUENCED` on `origin/integration`** — **so all six are invisible to the Task Claim Protocol**, which claims from `integration` and nowhere else.
+
+| Row | `origin/integration` | `origin/lane-c-sync` |
+|---|---|---|
+| **[TASK-483](BACKLOG.md)** · the authentication shell | ⏸️ `SEQUENCED` | ✅ **`READY`** |
+| **[TASK-484](BACKLOG.md)** | ⏸️ `SEQUENCED` | ✅ **`READY`** |
+| **[TASK-474](BACKLOG.md)** · the developer mailbox | ⏸️ `SEQUENCED` | ✅ **`READY`** |
+| **[TASK-498](BACKLOG.md)** · the authentication configuration surface | ⏸️ `SEQUENCED` | ✅ **`READY`** |
+| **[TASK-488](BACKLOG.md)** · **[TASK-489](BACKLOG.md)** | ⏸️ `SEQUENCED` | ✅ **`READY`** |
+
+✅ **[TASK-487](BACKLOG.md) is not in the table** — it reached `integration`, this lane claimed it, built it and it is `IN VALIDATION`. ⚡ **That is the proof the mechanism works the moment the ref moves**: one fast-forward, and the lane went from idle to a delivered workflow inside one poll.
+
+⚠️ **Two of the six are rows Lane C says it should have released yesterday** — **[TASK-483](BACKLOG.md) and [TASK-484](BACKLOG.md)**, both reading *"released the moment [TASK-491](BACKLOG.md) reaches `IN VALIDATION`"*, **which happened 2026-08-07 and is `PROMOTED` now.** ⛔ **Recorded, not re-argued**: Lane C found it, named it as [B-101](BUGS.md)'s class for the third time this session, and owns the fix.
+
+> ⛔ **The count is the finding, not the wait.** **Six claimable rows exist and zero are claimable**, and the gap is a ref rather than a decision. ⚡ **[D-183](DECISION_REGISTER.md) has just widened the queue from one claimable row to several *precisely so a lane does not idle when its single row blocks*** — **and the widening cannot take effect while the rows are on a branch the protocol may not read.**
+
 ### ② ✅ The `lib/auth/server.ts` dependency — RESOLVED, and it was never a ruling
 
 **Four things were stuck behind *"no row may touch this file"***, and this lane escalated it three times as though a decision were missing. ⛔ **It was not. It was a row, and rows are Lane C's to write.**
