@@ -407,3 +407,66 @@ depends_on  = []
 # ✅ Workflow 6 references the longer one and that reference is authoritative
 #   until the next refresh, when the other should be removed.
 
+# ══════════════════════════════════════════════════════════════════════════════
+# ⚡ WORKFLOW 29 IS NOT A WORKFLOW. It is a PLATFORM SPECIFICATION, adopted by
+#   D-193 as the single authority for everything after authentication succeeds.
+#   Recorded here because workflows.toml is where a lane looks — and because
+#   every workflow from 1 to 28 now depends on it.
+# ══════════════════════════════════════════════════════════════════════════════
+
+[workflow.29]
+name        = "Authenticated Entry"
+state       = "planned"
+design      = "Fortune Signora Authenticated Entry.dc.html"
+owner       = "Lane A"
+kind        = "platform"
+# ⛔ NOT a feature. D-193: "Treat it as a platform specification, not a feature
+#   specification." One engine, consumed by every authenticated workflow.
+#
+# ⚡ WHAT IT SPECIFIES, read from the document rather than summarised:
+#   · resolveEntry(session, intent) → { route, reason }   — PURE, no network call
+#   · 24 routing rules, evaluated top to bottom, first match wins
+#   · 21 reason codes, written to the session and shown in the diagnostics bundle
+#   · SIX gates in fixed order; a gate that fails produces a DESIGNED SCREEN
+#     rather than a redirect loop
+#   · ONE route — /w/:workspace/home — and Home is a SLOT, not a screen
+#   · FOUR compositions of that one slot: executive · seller · revops · activation
+#   · twelve workspace cases; the chooser is a LAST RESORT
+#   · four responsibility layers with no overlap
+#
+# 🔴 IT RESOLVES D-192'S OPEN QUESTIONS AND CONTRADICTS ONE OF ITS ASSUMPTIONS.
+#   D-192 concluded "App Shell → Home → Executive Dashboard (Workflow 19)".
+#   The specification says Home is not a route to a dashboard: the Executive
+#   Dashboard already built IS THE EXECUTIVE COMPOSITION of Home. There is one
+#   route and four compositions, not a route that leads to another screen.
+#   ✅ That is a better answer and this office's was wrong.
+#
+# ⚠️ IT ALSO AUDITS OUR SHIPPED SPECIFICATIONS. §01 is titled "Three challenged
+#   assumptions — contradictions found in the shipped specifications", and its
+#   own text says the design system "contains four" and that each resolution is
+#   "binding on both documents". Those four must be reconciled against
+#   workflows 1-8 before more authenticated work is built.
+#
+# 🔴 NOT DECOMPOSED, and the reason is not judgement: D-193 §4 lists ~25
+#   implementation areas and Lane C's identifier block 400-499 is FULLY
+#   ALLOCATED. Decomposition needs roughly twenty new rows and this office
+#   cannot allocate one. Escalated in DECISION_QUEUE.md.
+reason_codes = [
+  "ACCOUNT_DELETED", "ACCOUNT_LOCKED", "ACCOUNT_SUSPENDED", "ENGINE_ERROR",
+  "FELL_THROUGH", "FIRST_RUN", "INTENT_FORBIDDEN", "INTENT_HONOURED",
+  "INTENT_MISSING", "INTENT_NOT_MEMBER", "INVITE_ACCEPTED", "LAST_USED",
+  "NO_WORKSPACE", "ROLE_CHANGED", "SESSION_EXPIRED", "SOLE_WORKSPACE",
+  "STEPUP_REQUIRED", "USER_DEFAULT", "WS_ARCHIVED", "WS_DELETED", "WS_SUSPENDED",
+]
+routes      = ["/w/:workspace/home", "/w/:ws/archived", "/w/:ws/suspended", "/w/:ws/deleted", "/onboarding/"]
+compositions = ["executive", "seller", "revops", "activation"]
+consumed_by = ["workflow.1", "workflow.2", "workflow.3", "workflow.6", "workflow.7",
+               "workflow.8", "workflow.9", "workflow.13", "workflow.19", "workflow.28"]
+
+# ── ⚠️ TWO FURTHER UPSTREAM DOCUMENTS, NOT YET IMPORTED — see MANIFEST.md ────
+#   Fortune Signora ICP Builder.dc.html          a full customer surface
+#   Fortune Signora People Intelligence.dc.html  listed upstream, unread
+# ⛔ Deliberately not imported in the same cycle: D-138 makes a refresh a NEW
+#   BASELINE whose impact is assessed BEFORE it propagates, and TASK-406 — an
+#   ICP criterion scored against outcomes — is IN PROGRESS right now.
+

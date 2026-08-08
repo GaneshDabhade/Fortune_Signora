@@ -6,12 +6,12 @@
 
 | | |
 |---|---|
-| **Snapshot date** | **2026-08-06** |
+| **Snapshot date** | **2026-08-06**, ⚡ **partially refreshed 2026-08-08 — see the refresh record below** |
 | **Upstream authority** | **Claude Design project `1d043179-1ee9-4c9f-b59e-592e04297cad`** — *"Signora design system specification"* |
 | **Upstream reference** | `https://claude.ai/design/p/1d043179-1ee9-4c9f-b59e-592e04297cad` |
 | **Design system** | **Modernist** — `c798a756-9b5d-4587-a7bc-6f61a447ebab`, the version every screen links |
 | **Design version** | ⚠️ **The project exposes none.** **This snapshot's identity is the content hashes below** — stated rather than invented |
-| **Contents** | **27 files · 2,035,654 bytes · 26 screen designs** |
+| **Contents** | **28 files · 2,124,212 bytes · 27 screen designs** — ⚠️ **and the upstream project now holds 30; see below** |
 | **Retrieved with** | `DesignSync` · `get_file`, one call per path |
 
 ---
@@ -77,3 +77,33 @@
 ⛔ **Not a specification anybody rewrote.** **These are the upstream files unchanged** — [D-137](../DECISION_REGISTER.md) forbids copied specifications, exported checklists and summarised artifacts, and a byte-identical snapshot is none of those. **It is the same document, stored where the lanes can open it.**
 
 ⚠️ **Not evidence of conformance.** **[478](../architecture/478-design-conformance-audit.md) measured the authentication surface against this design and found one of eleven named elements present.** **Having the design and following it are different milestones** — `CLAUDE.md` §20e, *the five product milestones*.
+
+---
+
+## ⚡ Refresh record — 2026-08-08, partial and deliberately so
+
+**Instructed by the product owner** ([D-193](../DECISION_REGISTER.md)) **to adopt `Fortune Signora Authenticated Entry` as the authority for all post-authentication behaviour.**
+
+| | |
+|---|---|
+| **Retrieved** | **`Fortune Signora Authenticated Entry.dc.html`** — **98,921 bytes** |
+| **sha256** | `515d333563d4eedcbfe716928ffd2412…` |
+| **Method** | `DesignSync` · `get_file`, one call, against project `1d043179-1ee9-4c9f-b59e-592e04297cad` |
+| **Workflow** | **29** in [`workflows.toml`](../coordination/workflows.toml) |
+
+### 🔴 The refresh found the snapshot stale by THREE documents, not one
+
+⛔ **`list_files` on the upstream project returns 30 paths where this snapshot held 26.** ⚡ **Two documents besides the instructed one exist upstream and have never been imported:**
+
+| Upstream document | Status here |
+|---|---|
+| **`Fortune Signora Authenticated Entry.dc.html`** | ✅ **Imported 2026-08-08** |
+| ⚠️ **`Fortune Signora ICP Builder.dc.html`** | ⛔ **NOT IMPORTED** — **read and confirmed to exist; a full customer surface with seven criterion groups, a scoring model, TAM funnel, backtest and validation rules** |
+| ⚠️ **`Fortune Signora People Intelligence.dc.html`** | ⛔ **NOT IMPORTED** — **listed upstream, not yet read** |
+
+> ## ⛔ **This is [D-138](../DECISION_REGISTER.md)'s own failure mode.** **The snapshot is the implementation authority *because* it is refreshed deliberately — and a deliberate refresh that imports one file while two others sit unimported leaves the authority incomplete in a way nothing detects.**
+
+⚡ **Recorded rather than quietly completed, for two reasons.** ⛔ **① [D-138](../DECISION_REGISTER.md) says *"a refresh is a new baseline"* and *"Product Office assesses whether already-planned work is affected BEFORE the new snapshot propagates"* — importing two further customer surfaces is a second baseline change and deserves its own assessment.** ⛔ **② [TASK-406](../BACKLOG.md) — *an ICP criterion is scored against outcomes* — is `IN PROGRESS` right now, and a design document for that surface arriving mid-slice is exactly the case D-138 asks to be assessed rather than dropped on a lane.**
+
+✅ **Action: both are imported in the next cycle with an impact assessment against [TASK-406](../BACKLOG.md) and the People Intelligence rows ([C-203](../LANE_COORDINATION.md), [C-307](../LANE_COORDINATION.md)).**
+

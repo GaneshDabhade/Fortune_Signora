@@ -15,6 +15,32 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## 🔴 Authenticated Entry is adopted, and decomposing it needs identifiers I do not have
+
+> ## ✅ **Imported, recorded as workflow 29, and treated as a platform specification rather than a feature.** ⛔ **Decomposition is blocked at step one.**
+
+📁 **[D-193](DECISION_REGISTER.md) §4 lists roughly twenty-five implementation areas** — entry engine, reason-code framework, session diagnostics, decision engine, workspace resolution, deep-link handling, intent preservation, session restoration, multi-workspace behaviour, four compositions, the composition framework, the card catalogue, card contracts, registration mechanisms, diagnostics bundle, redirect logging, the routing test suite, accessibility, responsive, motion.
+
+⛔ **That is ~20 rows. `TASK-400`–`499` is fully allocated — 95 rows, zero free.** ⚡ **The block table is [`CLAUDE.md`](../CLAUDE.md)'s and is yours; this office has not edited it.**
+
+### ⚡ Three findings the specification produced, before any decomposition
+
+| | |
+|---|---|
+| ✅ **It corrects [D-192](DECISION_REGISTER.md), which was this office's** | **That package concluded *App Shell → Home → Executive Dashboard (workflow 19)*.** ⛔ **Wrong.** 📁 **The spec: Home is a SLOT, not a screen, and *"the Executive Dashboard already built is the executive composition of Home."*** ⚡ **One route, four compositions — not a route leading to another screen.** ✅ **A better answer, and it means workflow 19 does not need to move: it needs to become a composition** |
+| 🔴 **It audits our shipped specifications, and says so in its own title** | 📁 **§01 — *"Three challenged assumptions · Contradictions found in the shipped specifications"*, whose text reads *"It contains four. Each is resolved here, and the resolution is binding on both documents."*** ⛔ **Four contradictions in workflows 1–8, four of which are on `main`.** ⚠️ **They must be reconciled before more authenticated work is built** |
+| ⚠️ **The snapshot was stale by THREE documents, not one** | ⛔ **Upstream holds 30 paths; the snapshot held 26.** **`ICP Builder` and `People Intelligence` have never been imported** — 🔴 **and [TASK-406](BACKLOG.md), *an ICP criterion scored against outcomes*, is `IN PROGRESS` right now.** ✅ **Deliberately NOT imported in the same cycle: [D-138](DECISION_REGISTER.md) makes a refresh a new baseline whose impact is assessed *before* it propagates** |
+
+### ✅ What this office recommends, in order
+
+| | |
+|---|---|
+| **① Extend the identifier block** | ⚡ **`1400`+ for Lane C. One line, and nothing below starts without it** |
+| **② Reconcile the four contradictions first** | ⛔ **Before decomposing.** **Four shipped workflows are affected and the spec says its resolutions bind them** |
+| **③ Then decompose workflow 29 as platform work** | ✅ **The engine, the reason codes and the composition framework precede every consumer** — **which is [D-188](DECISION_REGISTER.md) §5 applied at the largest scale it has yet had** |
+| ⚠️ **④ Reconsider [D-192](DECISION_REGISTER.md)'s recommendation** | **This office recommended moving workflow 13 forward.** ⚡ **That still holds — but 29 now precedes it, because the shell consumes the engine rather than containing it** |
+
+
 ## ⚠️ One blocking decision is not queued yet — it is still on Lane A's branch
 
 > 🔴 **May an invitation link alone reveal a company's name, headcount, employee and role?** ⛔ **It is why [Workflow 7](coordination/workflows.toml) is `blocked`, and it is the product owner's.** *(Lane A filed it; the id is theirs and is deliberately not repeated in a heading here, because a heading is what makes this a queue row.)*
