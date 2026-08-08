@@ -22,7 +22,7 @@
 | **Certification** | ✅ [`c6e9278c8cec`](certification/reports/c6e9278c8cec.md) · migration head **`0042`** · protocol **v2** · ⚡ profile **`documentation+frontend`** — **the first non-`platform` profile of the session** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None.** ⛔ **[B-150](docs/BUGS.md) was 🔴 for one cycle** — QE promoted a conflict marker to `main` and repaired it in the next |
+| **Blocking Quality Defects** | 🔴 **Two, and this line said `None` for eleven cycles.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
 | **Customer value this cycle** | ✅ ⚡ **Three controls the screens were built without now work** — breach-corpus checking, rate limiting reachable outside production, and the 6-digit code |

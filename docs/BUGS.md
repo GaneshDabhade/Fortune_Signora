@@ -80,6 +80,51 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-151 · QE published "Blocking Quality Defects: None" for eleven cycles while two were open
+
+| | |
+|---|---|
+| **Module** | Repository state — [`PROJECT_STATUS.md`](../PROJECT_STATUS.md) |
+| **Current assignee** | **QE** — the dashboard is QE's, exclusively |
+| **Severity** | 🟠 — **the executive dashboard's single most consequential line was false.** ⛔ No code is wrong; **what is wrong is what the repository says about itself** (§2) |
+| **Status** | ✅ **`FIXED`** — corrected in the cycle it was found |
+| **Found** | 2026-08-08 by QE, cycle 126, **answering a direct question rather than by any gate or check** |
+
+**Steps to reproduce.** Read the one-minute view on any promotion from cycle 115 onward, then read the register:
+
+```
+PROJECT_STATUS.md   | Blocking Quality Defects | ✅ None |
+
+docs/BUGS.md        B-209  🔴 Blocking Quality Defect — eleven journeys failing
+                    B-211  🟠 Blocking Quality Defect — ruff red, no gate runs it
+```
+
+**Expected.** The dashboard's blocking-defect line is derived from the register.
+
+**Actual.** ⛔ **It was typed.** **B-209 has been open since 2026-08-06 and B-211 since 2026-08-07**, and QE wrote `None` in every Closeout across that span.
+
+### ⛔ The mechanism, and it is the one [B-150](#b-150--qe-promoted-a-conflict-marker-to-main-and-the-check-that-names-it-was-skipped-rather-than-missing) already named one file over
+
+**QE re-measures the certification figures every cycle — tests, coverage, invariants, contracts — and *transcribed* everything around them.** ⚡ **Cycle 118 caught four stale figures this way and fixed them.** ⛔ **It did not ask what else on the page was typed rather than read.**
+
+**The same habit produced a second instance in the same period**: QE's poll report closed with a fixed six-row findings list — *"B-148, B-146, B-145, B-141, B-131/B-123, B-113"* — **carried from the poll prompt and never measured.** ⚡ **The register holds 41 rows that are not closed, 21 of them QE's.**
+
+> ⛔ **§20d states the rule and QE quotes it in its own Closeouts**: *"repository metrics are measured, never transcribed"*, and *"a figure carried forward describes a repository that no longer exists."* **QE applied it to the numbers and not to the sentences.**
+
+### ⚠️ What made it survive eleven cycles
+
+**`state-check` does read the register's blocking rule** — it reported *"No unresolved 🔴 across 122 bug row(s) — promotion is not blocked"* every run. ⚡ **That is a different question.** **It asks whether a 🔴 is unresolved by its own parse; it does not compare the register against what the dashboard claims.**
+
+⛔ **So nothing was lying and nothing was broken. Two true instruments answered two questions, and the sentence between them was written by hand.**
+
+### ✅ The correction
+
+**The line now names both rows, their severities, their finders and their dates**, and records that it read `None`. ⚡ **B-211 was re-measured before the row was written: `232 errors, exit 1`** — the row said 238 on 2026-08-07, so it is smaller and still red.
+
+⛔ **B-209 is not re-measured and QE does not claim it.** **`make e2e` has no launchable environment for QE** — the finding already recorded inside [B-149](#b-149--task-485s-journey-cannot-address-its-own-password-field-and-three-of-its-scenarios-fail-on-any-machine) — **so QE is carrying Lane A's measurement as Lane A's.**
+
+---
+
 ### B-213 · A second conflict marker is on `main`, in the file [B-150](#b-150--qe-promoted-a-conflict-marker-to-main-and-the-check-that-names-it-was-skipped-rather-than-missing)'s check does not read
 
 | | |
