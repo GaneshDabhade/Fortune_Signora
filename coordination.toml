@@ -10,7 +10,7 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "50e8113"
-task_count     = 101
+task_count     = 102
 
 [lane.Lane_A]
 current            = "TASK-494"
@@ -36,7 +36,7 @@ critical_path_max      = 6
 current            = ""
 next               = ""
 next_after_that    = ""
-assigned_total     = 13
+assigned_total     = 14
 claimable          = 0
 claimable_now      = 0
 awaiting_sync      = 0
@@ -45,12 +45,12 @@ actionable         = 0
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "in_flight_only"
-blocked            = 7
+blocked            = 8
 lane_utilization   = 1.2
 idle_prediction_days   = 0.0
 dependency_wait_days   = 1.0
 blocked_duration_days  = 1.0
-critical_path_max      = 0
+critical_path_max      = 1
 
 [[task]]
 id            = "TASK-003"
@@ -1323,9 +1323,9 @@ state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-474", "TASK-486"]
-next_owner     = ["Lane A"]
-next_lane      = "Lane A"
+unblocks       = ["TASK-474", "TASK-486", "TASK-497"]
+next_owner     = ["Lane A", "Lane C"]
+next_lane      = "—"
 critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
@@ -1603,6 +1603,22 @@ estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-497"
+title         = "Planning state reaches a lane without waiting for a certification cycle"
+state         = "WAITING_EXTERNAL"
+declared      = "SEQUENCED"
+lane          = "Lane C"
+depends_on     = ["TASK-494"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 1
+estimated_ready = "— behind [TASK-494](#task-494--email-leaves-the-process-through-the-ra"
+waiting_for    = "— behind [TASK-494](#task-494--email-leaves-the-process-through-the-ratified-vendor), Lane C 2026-08-08.** ⛔ **Deliberately NOT ahead of it.** ⚡ **[D-"
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-906"
