@@ -15,6 +15,39 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## 🔴 The Authenticated Entry reconciliation — what it found, and what it cannot fix
+
+> ## ⚡ **The audit ran. The findings are concrete and one of them is in shipped code.** ⛔ **Turning them into work needs identifiers, and Lane C's block is fully allocated.**
+
+### ① 🔴 The entry decision already exists — hardcoded, in a module, racing another mechanism
+
+📁 **`frontend/app/(auth)/sign-in/sign-in-form.tsx:148` — `router.push('/')`.** ⛔ **That IS the entry decision, made by a module, and the specification forbids exactly it**: ***"no module performs its own entry redirect."***
+
+⚠️ **And the file's own comment records a second problem this office had not seen:** ***"Auth navigates to its own `callbackURL` and beats this push"*** — **so there are TWO redirect mechanisms racing, and which wins is timing.**
+
+✅ **Six files perform redirects today**: `sign-in-form`, `sign-up-form`, `reset-password-form`, `join/[workspaceId]`, `(app)/layout`, `accounts/[accountId]`. ⚡ **Under the spec, the first five are entry decisions that belong to one engine.**
+
+### ② 🔴 Two rows Lane A HOLDS RIGHT NOW have the defect the spec names
+
+📁 **Contradiction ④, verbatim: *"Onboarding completes and lands somewhere unspecified; workspace creation success also lands somewhere unspecified. Two flows with no defined exit."*** ✅ **Resolution: *"Both exit through the routing engine with `intent=null`… Neither flow chooses a destination itself."***
+
+⛔ **[TASK-468](BACKLOG.md) and [TASK-469](BACKLOG.md) are both `CLAIMED` and neither said anything about its exit.** ✅ **Both now carry the constraint, and — because a queue file reaches a lane only through `integration` — it also went out on the notice channel, which does not wait for QE.**
+
+### ③ ⚠️ Two contradictions are between documents in our own snapshot
+
+⛔ **The Executive Dashboard's breadcrumb *Home › Executive Dashboard*, and the navigation rail listing Home with the dashboard unlisted.** ⚡ **Both are superseded by *Home is one route with four compositions* — so two approved design documents now disagree with a third, inside the authority [D-138](DECISION_REGISTER.md) makes authoritative.** ✅ **Neither is built, so the cost is zero if the snapshot is corrected at the next refresh; it is a defect only if a lane implements the older one first.**
+
+### ✅ What remains compliant
+
+**Workflows 1, 2, 3 and 4 are on `main` and none is contradicted** — ⚡ **they end *at* the entry decision rather than making one, except for the single `router.push('/')` above.** ✅ **Workflow 7 is `blocked` for unrelated reasons and its invitation routing is rule 12's, which the spec now defines.**
+
+### ⛔ What this office cannot deliver, and why
+
+📁 **[D-194](DECISION_REGISTER.md) §4: *"Do not silently record it… create an implementation task, create an epic, create implementation slices."*** ⛔ **Every finding above needs a row. `TASK-400`–`499` is fully allocated — 95 of 100, zero free, and the seven apparent gaps are live references.**
+
+> ## 🔴 **This is the third ruling in a row whose central instruction this office cannot execute, and the blocker is the same line in `CLAUDE.md` each time.** ⚡ **Extending Lane C to `1400`+ unblocks D-192's Workflow 28, D-193's twenty platform rows, and this reconciliation's five.**
+
+
 ## 🔴 Authenticated Entry is adopted, and decomposing it needs identifiers I do not have
 
 > ## ✅ **Imported, recorded as workflow 29, and treated as a platform specification rather than a feature.** ⛔ **Decomposition is blocked at step one.**

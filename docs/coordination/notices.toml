@@ -1,15 +1,9 @@
 # ONE LINE PER LANE — the thing it must know that BACKLOG.md cannot tell it.
-#
-# ⚡ Published to `origin/coordination`, which is the ONLY channel that reaches
-# a lane without QE integrating (D-144). ⛔ This office kept writing urgent
-# answers into `queues/lane-a.toml` — a file a lane reads FROM `integration`,
-# which is the ref the answer is stuck behind. B-214 cost a full cycle that way.
-#
-# ⛔ One line. A notice that grows into a message log becomes a second
-# coordination register, and LANE_COORDINATION.md is the first.
+# ⚡ Published to `origin/coordination`, the ONLY channel that reaches a lane
+# without QE integrating (D-144). ⛔ One line; a message log is a second register.
 
 ["Lane A"]
-notice = "B-214 NEEDS NO ROW — fix it now. workspace_tenancy is YOUR module (modules.toml) and the map is modules/workspace_tenancy/interface/errors.py, NOT signora_platform. Change Budget green covers 'a bug fix inside it', freely. Announce it in the commit because it changes an error contract. Reasoning: queues/lane-a.toml when QE integrates."
+notice = "D-193/D-194: 'Authenticated Entry' is now the authority for ALL post-login behaviour. TASK-468 and TASK-469 (both yours) have NO DEFINED EXIT and the spec says both must exit through resolveEntry with intent=null — do NOT choose a destination in either flow. Also: sign-in-form.tsx:148 router.push('/') is the entry decision hardcoded in a module, which the spec forbids; it is a finding, not yours to fix mid-slice. Reasoning: workflows.toml [workflow.29]."
 
 ["Lane C"]
 notice = ""
