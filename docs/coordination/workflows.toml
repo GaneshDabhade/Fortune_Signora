@@ -35,6 +35,31 @@
 #
 # ⛔ **Generated views read this file; nothing restates a workflow's state.**
 
+# ── ⚡ WATCHED ARCHITECTURAL TRIGGERS — 496, 2026-08-08 ─────────────────────
+# **Conditions that change a ratified decision, watched here rather than left
+# in a document.** ⛔ 496 §5 attack ③ is why: this office identified the design
+# tokens, published the finding, and never scheduled the work — and a lane paid
+# for it. A trigger in a document is a trigger nobody checks.
+#
+# [trigger.object_level_sharing]
+#   watch   = "any finalized design showing one person sharing one record with
+#              another named person"
+#   then    = "adopt OpenFGA behind the existing enforcer port (496 §2.2)"
+#   why     = "RLS and a role matrix both stop being sufficient on the same day"
+#   status  = "NOT MET — checked across all 26 designs 2026-08-08"
+#
+# [trigger.formal_verification]
+#   watch   = "formal verification becomes an enterprise buying requirement,
+#              or the capability matrix passes ~500 rules (today: 53)"
+#   then    = "replace Casbin with Cedar behind the same port"
+#   status  = "NOT MET"
+#
+# [trigger.better_auth_authz]
+#   watch   = "Better Auth ships workspace-scoped ABAC with non-human subjects"
+#   then    = "reopen D-175 — this is the evidence that would change it"
+#   status  = "NOT MET — 1.5 trajectory is identity, not domain authorization"
+# ───────────────────────────────────────────────────────────────────────────
+
 [meta]
 authority   = "docs/design-snapshot/screens/"
 ruling      = "D-160"
