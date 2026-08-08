@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "034ad46"
+generated_from = "3249740"
 task_count     = 102
 
 [lane.Lane_A]
@@ -19,8 +19,8 @@ next               = ""
 next_after_that    = ""
 assigned_total     = 85
 claimable          = 1
-claimable_now      = 1
-awaiting_sync      = 0
+claimable_now      = 0
+awaiting_sync      = 1
 in_flight          = 56
 actionable         = 7
 awaiting_qe_transition = 0
@@ -40,8 +40,8 @@ next               = ""
 next_after_that    = ""
 assigned_total     = 14
 claimable          = 1
-claimable_now      = 0
-awaiting_sync      = 1
+claimable_now      = 1
+awaiting_sync      = 0
 in_flight          = 6
 actionable         = 0
 awaiting_qe_transition = 0
@@ -980,7 +980,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-471"
@@ -996,7 +996,7 @@ critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
 waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-472"
@@ -1028,7 +1028,7 @@ critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
 waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-474"
@@ -1044,7 +1044,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-475"
@@ -1076,7 +1076,7 @@ critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
 waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-478"
@@ -1220,7 +1220,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-489"
@@ -1620,7 +1620,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-906"
