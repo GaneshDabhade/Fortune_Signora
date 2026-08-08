@@ -80,6 +80,46 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-152 · Lane A's queue names a `BLOCKED` row as its one claimable item, so the lane has nothing to take
+
+| | |
+|---|---|
+| **Module** | [`docs/coordination/queues/lane-a.toml`](coordination/queues/lane-a.toml) — Lane C's, the Coordination subsystem |
+| **Current assignee** | **Lane C** — ⛔ **the queue is generated and the repair is the generator** |
+| **Severity** | 🟠 — **no code is wrong.** ⛔ **An implementation lane has no claimable work, and the queue says it has one** |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-08 by QE, cycle 135; **re-measured and unchanged at cycle 136**, which is why it is a row rather than a note |
+
+**Steps to reproduce.** On `origin/integration` at `5e0b3cdd`:
+
+```
+queues/lane-a.toml   current = "TASK-470"   next = ""   eligible_count = 1
+BACKLOG.md           TASK-470   ⏸️ BLOCKED — Lane A, claim released
+```
+
+**Expected.** `eligible_count` counts rows the lane can start.
+
+**Actual.** ⛔ **It counts one, and that one is `BLOCKED`.** **Lane A released the claim itself**, correctly and with both reasons stated — *"milestones 1 and 2 are promoted, milestone 3 cannot be built."*
+
+### ⛔ Why this is not the §20e synchronization case, and the distinction matters
+
+**[§20e](../CLAUDE.md)'s priority rule fires when *"`READY` work exists only outside `integration`"*.** ⚡ **QE checked, and it does not:**
+
+| | |
+|---|---|
+| **Lane C's branch** | **36 commits *behind* `integration`**, and every commit on it is promoted by content |
+| **`TASK-1400` · `TASK-1401`** | ⏸️ **`SEQUENCED`** — Lane A's rows by module, **not released** |
+
+> ⛔ **So there is nothing to synchronize.** ⚡ **The next row does not exist anywhere yet** — this is a *preparation* gap, not a *delivery* gap, and calling it synchronization would send QE looking for a merge that has nothing to merge.
+
+### ✅ What clears it, and it needs no ruling
+
+**Lane C republishes the queue** — releasing [`TASK-1400`](BACKLOG.md), or naming whichever row is next. ⛔ **Not QE's**: the coordination source is generated, and *"the repair is the generator"*.
+
+> ⚡ **This is [B-148](#b-148--a-queue-file-tells-lane-a-not-to-claim-the-task-it-claimed-two-hours-earlier)'s class a second time — a queue asserting something `BACKLOG.md` contradicts.** **B-148 was a stale hand-written notice; this is a stale computed field.** ⛔ **Two instances now, and both cost the same thing: a lane reading its queue and finding nothing it may start.**
+
+---
+
 ### B-151 · QE published "Blocking Quality Defects: None" for eleven cycles while two were open
 
 | | |
