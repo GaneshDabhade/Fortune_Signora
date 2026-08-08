@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `a85d852`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `2fe9843`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `a85d852`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `2fe9843`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`a85d852`** — the certified commit itself |
+| **`main`** | **`2fe9843`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 131 promoted the preference store and B-214's fix**, plus **[D-193](docs/DECISION_REGISTER.md) — onboarding stops choosing where a person lands** |
-| **Certification** | ✅ [`a85d8520885c`](certification/reports/a85d8520885c.md) · migration head **`0044`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 132 promoted Workflow 9's profile** — **and three of the design's seven fields deliberately do not ship** |
+| **Certification** | ✅ [`2fe98430886e`](certification/reports/2fe98430886e.md) · migration head **`0044`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | 🔴 **Two, and this line said `None` for eleven cycles.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ✅ ⚡ **An expired invitation no longer looks like a withdrawn one**, and a person's preferences have somewhere to live |
+| **Customer value this cycle** | ✅ ⚡ **A person can see who they are and set language and time format** — the two fields they actually own |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4267 backend tests** *(+16)* · **95.19% coverage** *(floor 95)* · **1768 frontend tests** *(+38)* across **77 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **849 files** · **45 migrations**, `0000`–`0044`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **218s** *(`Build 57s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4272 backend tests** *(+5)* · **95.07% coverage** ⚠️ *(floor 95 — third consecutive fall)* *(floor 95)* · **1799 frontend tests** *(+31)* across **78 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **45 migrations**, `0000`–`0044`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **226s** *(`Build 70s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,59 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 131
+## 1d · Release summary — 2026-08-08, cycle 132
+
+**Derived from the promoted commit `2fe9843`.** **Eighty-seven promotions.** ⚡ **Three of the design's seven profile fields do not ship, and the design's own headline number is why.**
+
+### ✅ What a customer gets
+
+**Workflow 9 screens `01` and `02`, composed into `/profile`** — the identity the account holds, **the two fields a person actually owns**, language, time format, and the timezone prompt.
+
+### ⛔ The three that do not ship, and the number that decided it
+
+> **The design's headline number on this screen is `0` — *"edits accepted that a sync would undo"* — and the three field kinds exist to keep it true.**
+
+**Measured: no directory integration exists anywhere in the repository.** So:
+
+| Field | Why not |
+|---|---|
+| **Job title · Department** | Drawn *"From directory"*. ⛔ **Nothing in the product knows them.** *"A locked field with no sync behind it is a rule the product does not have painted as one it does"* ([D-156](docs/DECISION_REGISTER.md) ④) |
+| **Mobile number** | Drawn under *"Verified 14 Mar 2026"*. ⛔ **Nothing stores a number and nothing verifies one** |
+
+> ⚡ **This is the fifth consecutive workflow where the lane refused to render what the product cannot honour** — `/join`, `/sso`, screen 07's OTP boxes, Workflow 5's device count, and now three profile fields. **Every one measured first.**
+
+### ✅ No shell, deliberately
+
+> *"The panels stand alone because the App Shell is Workflow 13 and not built, so there is no shell here and building one would be the §20d defect."*
+
+⚡ **[§20d](CLAUDE.md) is *strict milestone ownership*, and the lane named it rather than borrowing ahead.**
+
+### ✅ The second `Resource` this session, on the same terms
+
+**`Resource.PREFERENCES` + four `policy.csv` rows.** ⛔ **Its own resource *"because a preference is one person's, and every other resource here is the workspace's."*** ✅ **And the scoping is stated as the endpoint's and the RLS policy's, not the policy file's** — *"a grant cannot be widened into reading a colleague's preferences by editing `policy.csv`."*
+
+### ⚠️ Coverage has fallen three cycles running
+
+```
+95.38%  →  95.18%  →  95.19%  →  95.07%     floor 95
+```
+
+⛔ **Still above the floor and no gate has failed.** ⚠️ **But it is 0.31 points off in four cycles, and the margin is now 0.07** — **recorded here so the fourth fall is met with a measurement rather than a surprise.** ⚡ **The cause is visible and benign so far: three large slices landed backend code faster than backend tests**, and each carried its own module suite.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4272 backend** *(+5)* · **1799 frontend** *(+31)* · ⚠️ **95.07%** *(floor 95)* · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **137 runs recorded, 129 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0044` **reversible, verified** · **DR nothing lost** · smoke 226s |
+| **Dependency** | ⚠️ **`resolveEntry` still ruled and unbuilt** — `TASK-1400` |
+| **Customer Value** | ✅ ⚡ **A person's profile, honest about what it cannot do** |
+| **Process** | ⚡ **A design's own success metric was used as the argument for shipping less of it** — the strongest form of the refusal this lane keeps making |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 131
 
 **Derived from the promoted commit `a85d852`.** **Eighty-six promotions.** ⚡ **A lane received a ruling through the notice channel, verified it was not yet actionable, and built the half that was — without inventing the half that was not.**
 
