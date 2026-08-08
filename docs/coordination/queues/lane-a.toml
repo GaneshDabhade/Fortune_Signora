@@ -23,41 +23,57 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 🟡  NINE, NOT TEN — and here is exactly why, measured rather than asserted
+# 🟡  YOU WERE RIGHT — THE COUNT WAS STALE. AND 25 IS NOT REACHABLE.
 #     2026-08-08
 #
-# D-184 sets your floor at 10. You are at 9 and this office cannot lift it
-# without an identifier it does not have. Every remaining candidate was
-# checked, and none of them can honestly be released:
+# ✅ YOUR CORRECTION IS ACCEPTED AND THE DEFECT WAS MINE.
+#   eligible_count read 10 while listing TASK-483 and TASK-498 (PROMOTED) and
+#   TASK-474 (IN VALIDATION). You measured 6 from the backlog and you were
+#   right: §20e makes the backlog authoritative on STATE and this file
+#   authoritative on OWNERSHIP only. That is B-148's fifth instance and it
+#   recurs because removal is manual.
 #
-#   TASK-452  Saved View screens   ⛔ its OWN row argues against release:
-#             "building it now would mean building it twice" — a business
-#             surface at D-155 priority 6, and D-153 says legacy UI does not
-#             accumulate additions while an earlier workflow is migrating.
-#             That reasoning still holds and this office will not override it.
-#   TASK-464  action_batch layer   ⛔ 6 cells, and chained behind TASK-476
-#   TASK-493  Better Auth plugins  ⛔ behind TASK-492, which you have not
-#                                     started yet
-#   TASK-497  planning sync        ⛔ NOT YOURS — it is Lane C's own row
-#                                     (platform_foundation, D-022). This
-#                                     office briefly counted it and was wrong.
+# ✅ And your second point is the one this office should have made first:
+#   "claimable is not the same as startable in order." D-183 gives depth
+#   WITHOUT choice. Six was the depth behind you, never six things to pick
+#   between. That framing is exactly right and is now quoted in the register.
 #
-# ✅ So the honest report is a SHORTFALL, not a widened definition — which is
-#    what _DEPTH_FLOOR's own docstring commits this office to.
+# 🔴 THE PRODUCT OWNER ASKED FOR 25 CLAIMABLE. IT IS NOT REACHABLE, AND HERE
+#   IS THE ARITHMETIC RATHER THAN AN ASSERTION.
 #
-# ⚡ NINE PREPARED ROWS IS NOT A DROUGHT, and eight of them are claimable on
-#   integration right now. You are not idle and nothing here needs your action.
+#   The whole backlog holds 24 SEQUENCED rows. That is the entire pool.
+#   Reading every one of their triggers VERBATIM rather than pattern-matching:
 #
-#      ① TASK-474  the developer mailbox
-#      ② TASK-488  Workflow 5 · Password Reset            22/22
-#      ③ TASK-489  Workflow 7 · Invitation Acceptance     22/22
-#      ④ TASK-469  Workflow 8 · Initial Onboarding        22/22
-#      ⑤ TASK-470  Workflow 9 · User Profile              22/22
-#      ⑥ TASK-471  Workflow 10 · Team Management          22/22
-#      ⑦ TASK-473  which authentication mode is running
-#      ⑧ TASK-476  headed becomes the default
-#      ⑨ TASK-492  the security event stream — ⚡ four journeys are on main
-#                  producing authentication facts and nothing records them
+#     ✅ 2 releasable    TASK-499 (498 is IN VALIDATION) · TASK-452 (its
+#                        trigger — Workflow 1 on main — fired). Both released.
+#     ⛔ 14 blocked      on C-334, C-215, an unstarted row, or a chain whose
+#                        predecessor is genuinely unbuilt (420→421→422→423/424,
+#                        464→465→466). Releasing a chain offers unbuildable work.
+#     ⛔ 8 parked on a condition that HAS NOT OCCURRED, and each is a product
+#        or commercial fact, not a planning omission:
+#          TASK-411  "the Billing screen is scheduled"        — the PO's call
+#          TASK-413  "a certification wall-clock that delayed a promotion,
+#                     recorded at least twice"                 — has not happened
+#          TASK-420  "the approved UI waves are complete"      — 4 of 27
+#          TASK-425  "the first support request that needs database access"
+#          TASK-429  "a provider contract supplying a person identifier"
+#                                                              — commercial
+#          TASK-430  "wave 6"
+#          TASK-495  Workflow 17 reaches `decomposed`          — still `planned`
+#          TASK-496  Workflow 16 reaches `decomposed`          — still `planned`
+#
+#   ⛔ Releasing those eight would mean asserting a condition that is false.
+#      That is the C-412 defect at scale: a READY row you cannot start.
+#
+# ⚡ SO THE CEILING FROM THE EXISTING BACKLOG IS 9. Reaching 25 needs ~16 NEW
+#   rows, and the only honest source is decomposing the 19 `planned` workflows
+#   — which needs identifiers, and Lane C's block 400-499 is fully allocated.
+#   The path is: extend the block → decompose 6-8 workflows → 25 becomes real.
+#   Escalated; it is one line in CLAUDE.md and it is the product owner's.
+#
+#      ① TASK-488 (in hand) · ② TASK-489 · ③ TASK-469 · ④ TASK-470
+#      ⑤ TASK-471 · ⑥ TASK-473 · ⑦ TASK-476 · ⑧ TASK-492
+#      ⑨ TASK-499 route map · ⑩ TASK-452 saved-view screens ⚡ released today
 #
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1425,8 +1441,8 @@ updated      = 2026-08-08
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-488"          # ① Workflow 5 · Password Reset — 22/22
-next    = "TASK-489"          # ② Workflow 7 · Invitation Acceptance — 22/22
+current = "TASK-489"          # ① Workflow 7 · Invitation Acceptance
+next    = "TASK-469"          # ② Workflow 8 · Initial Onboarding
 # ④ TASK-498 · lib/auth/server.ts — C-240 ①② + email-otp registration
 # ⑤ TASK-474 · the developer mailbox
 #
@@ -1469,8 +1485,8 @@ next    = "TASK-489"          # ② Workflow 7 · Invitation Acceptance — 22/2
 # this office was releasing it here, and the rebase kept this office's line.
 # Lane A's CLAIMED is restored in BACKLOG.md and the row is gone from this
 # queue: a lane must never be offered back work it is already holding.
-future  = ["TASK-469", "TASK-470", "TASK-471", "TASK-473", "TASK-476",
-           "TASK-492"]
+future  = ["TASK-470", "TASK-471", "TASK-473", "TASK-476", "TASK-492",
+           "TASK-499", "TASK-452"]
 # ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation,
 #    D-022) and cannot fill this lane's floor. This office briefly counted
 #    it and was wrong.
@@ -1493,11 +1509,11 @@ future  = ["TASK-469", "TASK-470", "TASK-471", "TASK-473", "TASK-476",
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 8   # 🔴 BELOW the D-184 floor of 10 — identifier-blocked.
+eligible_count = 9   # ⚡ Recount. The previous 10 was STALE — Lane A caught it.
                      # reported "one of the two is stale" and it was the count.
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
 depth_target   = 10  # ⚡ D-184 — was 3 (D-183), was 1 (D-163).
-shortfall      = 2   # 🔴 8 of 10.
+shortfall      = 1   # ⚠️ 9 of 10 — and 25 is not reachable. See the notice.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
@@ -1506,11 +1522,6 @@ assigned_total = 14
 # with its blocker named below. ⛔ Nothing here is invented scope: every row
 # already existed and its owner was joined from modules.toml (D-135).
 
-[[blocked]]
-task    = "TASK-499"
-blocker = ["TASK-498"]
-owner   = "Lane A"
-note    = "The route map — / becomes Welcome. D-185 §2: five renames plus a move"
 
 [[blocked]]
 task    = "TASK-422"
@@ -1524,11 +1535,6 @@ blocker = ["see the backlog row"]
 owner   = "Lane A"
 note    = "M-U · The People experiences a customer opens"
 
-[[blocked]]
-task    = "TASK-452"
-blocker = ["see the backlog row"]
-owner   = "Lane A"
-note    = "Saved View — the screens that use it"
 
 
 

@@ -15,6 +15,43 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## 🔴 Twenty-five claimable rows is not reachable, and the arithmetic says why
+
+> ⚡ **Asked for on 2026-08-08. This office cannot deliver it and is reporting the ceiling rather than manufacturing the number.**
+
+**The entire pool is 24 `SEQUENCED` rows. Every trigger was read *verbatim* rather than pattern-matched — a scan that matched ids reported ten as free and was wrong on eight of them.**
+
+| | | |
+|---|---|---|
+| ✅ **2** | **Genuinely releasable** | **[TASK-499](BACKLOG.md)** *(its predecessor is `IN VALIDATION`)* · **[TASK-452](BACKLOG.md)** *(its trigger — Workflow 1 on `main` — fired)*. **Both released today** |
+| ⛔ **14** | **Genuinely blocked** | **On [C-334](LANE_COORDINATION.md), [C-215](LANE_COORDINATION.md), an unstarted row, or a *chain* whose predecessor is unbuilt** — `420→421→422→423/424`, `464→465→466`. ⚡ **Releasing a chain offers work that cannot be done** |
+| ⛔ **8** | **Parked on a condition that has not occurred** | **And every one is a product or commercial fact, not a planning omission** |
+
+### ⛔ The eight, with the condition each is waiting for — verbatim
+
+| Row | Its trigger | Occurred? |
+|---|---|---|
+| **[TASK-411](BACKLOG.md)** | ***"the Billing screen is scheduled for implementation"*** | ⛔ **Your scheduling decision** |
+| **[TASK-413](BACKLOG.md)** | ***"a certification wall-clock that demonstrably delayed a promotion, recorded at least twice"*** | ⛔ **Has not happened** |
+| **[TASK-420](BACKLOG.md)** | ***"the approved UI waves are complete"*** | ⛔ **4 of 27** |
+| **[TASK-425](BACKLOG.md)** | ***"the first support request that cannot be answered without database access"*** | ⛔ |
+| **[TASK-429](BACKLOG.md)** | ***"a provider contract that supplies a person identifier"*** | ⛔ **Commercial, stated as such in the row** |
+| **[TASK-430](BACKLOG.md)** | ***"wave 6"*** | ⛔ |
+| **[TASK-495](BACKLOG.md)** | **Workflow 17 reaches `decomposed`** | ⛔ **Still `planned`** |
+| **[TASK-496](BACKLOG.md)** | **Workflow 16 reaches `decomposed`** | ⛔ **Still `planned`** |
+
+> ## ⛔ **Releasing those eight means asserting a condition that is false.** ⚡ **That is [C-412](LANE_COORDINATION.md) at scale — a `READY` row the lane cannot start — and this office wrote that rule.**
+
+### ✅ The path to 25, and step one is one line of yours
+
+| | |
+|---|---|
+| **① Extend Lane C's identifier block** | 🔴 **`400`–`499` is fully allocated. Nothing below can start without it** |
+| **② Decompose 6–8 of the 19 `planned` workflows** | ⚡ **The only honest source of ~16 new rows. Workflow 13 first — it gates fourteen others** |
+| **③ 25 becomes real** | ✅ **And it stays real, because each new row is a *prepared* row rather than a relabelled one** |
+
+⚠️ **Worth weighing before you decide it is the right target.** ⚡ **[Lane A's own framing](LANE_COORDINATION.md), which this office endorses: *"claimable is not the same as startable in order."*** **[D-183](DECISION_REGISTER.md) gives depth WITHOUT choice — the lane takes the topmost row it can start, descending only past a genuinely blocked one.** ⛔ **So 25 buys *resilience against blocking*, not parallelism.** **At Lane A's current rate that is roughly ten days of runway against the ~1 blocked row per day observed this week** — ✅ **a real benefit, and worth naming so the target is chosen on what it buys.**
+
 ## 🔴 Lane C's identifier block is exhausted, and it is now blocking
 
 > ## ⛔ **`TASK-400`–`499` is Lane C's block under [§20e](../CLAUDE.md). **95 allocated, zero free.** `TASK-499` was the last.**
