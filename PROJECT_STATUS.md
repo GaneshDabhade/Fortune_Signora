@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `2f858a3`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `5e06adc`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `2f858a3`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `5e06adc`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`2f858a3`** — the certified commit itself |
+| **`main`** | **`5e06adc`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⛔ **Cycle 120 certified a planning-only candidate on purpose** — **Lane A's queue on `integration` was pointing at a task QE promoted two cycles earlier** |
-| **Certification** | ✅ [`2f858a3c9f79`](certification/reports/2f858a3c9f79.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 121 promoted Workflow 4 · Forgot Password** — **claimed one minute after cycle 120 unblocked it, delivered in the next cycle** |
+| **Certification** | ✅ [`5e06adc53cef`](certification/reports/5e06adc53cef.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **[B-149](docs/BUGS.md) is `VERIFIED`** — returned in cycle 115, fixed and promoted in 116 |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ⛔ **None.** ⚡ **The cycle's product is an unblocked lane** — `TASK-487`, Workflow 4 · Forgot Password, is now claimable where finished work stood |
+| **Customer value this cycle** | ✅ ⚡ **A person who has forgotten their password can reset it** — and the screen **prints the true expiry rather than the design's number** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1686 frontend tests** *(+14)* across **71 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **143s** *(`Startup 19s` — a backend-only cycle, **the reading holds an eighth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1694 frontend tests** *(+8)* across **72 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **195s** *(`Build 55s` — a frontend cycle, **the reading holds a ninth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,62 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 120
+## 1d · Release summary — 2026-08-08, cycle 121
+
+**Derived from the promoted commit `5e06adc`.** **Seventy-six promotions.** ⚡ **Workflow 4 shipped one cycle after the unblock that made it claimable — and the screen tells the truth about a credential's lifetime rather than repeating the design.**
+
+### ✅ What a customer gets
+
+| | |
+|---|---|
+| ⚡ **Workflow 4 · Forgot Password** *(Lane A)* | **A person who has forgotten their password can reset it.** Screen `08 Reset your password`, to the approved design |
+
+### ⚡ The expiry it prints is true, and that is the slice's best decision
+
+**The design says the link expires in 30 minutes. It expires in an hour.** ⛔ **`better-auth`'s `resetPasswordTokenExpiresIn` defaults to `3600`** — *"`dist/api/routes/password.mjs`, read rather than assumed"* — **and `lib/auth/server.ts` does not configure it.**
+
+> ⚡ **Printing the design's number would state a false thing about a credential's lifetime**: *"a customer returning at forty minutes would believe a working link was dead."* ✅ **So the screen prints the true number inside the design's own sentence.**
+>
+> **This is the third consecutive slice where Lane A opened the dependency rather than reasoning about it** — the OTP port in cycle 119, `emailOTP`'s registration state, and now a token TTL in a vendor's compiled output. **Each time the finding changed what shipped.**
+
+### ✅ The security property is one sentence, and it is mutation-tested
+
+> *"The response must be identical for a known and an unknown address."*
+
+**It is the one page nobody has to authenticate to reach, so a form that distinguished them would be an enumeration oracle open to the internet.** ✅ **The confirmation renders on success *and* on a refusal this screen cannot distinguish from success, and the server's words about the address are withheld deliberately.** ⚡ **Mutation-tested: surfacing the refusal fails the test that exists for it** — which is §2's own standard, *a guard that cannot fail is documentation pretending to be code*.
+
+### ⛔ Two Lane C commits excluded, and QE did not adjudicate
+
+**`docs/BACKLOG.md` collided on `TASK-486`'s `Features` line.** ⚡ **QE checked three things before deciding rather than picking a side:**
+
+| Check | Result |
+|---|---|
+| Did any Lane A commit touch it? | ⛔ **No — 0 hunks across all three** |
+| Did Lane C's two earlier commits touch it? | ⛔ **No** |
+| Does Lane C's tip still carry the line? | ⛔ **No — the deletion is deliberate** |
+
+**So neither side contains the other**: Lane C means to delete it, and `integration` holds a longer version Lane C's base never had. ⛔ **That is a content judgement between two lanes and it is not QE's.**
+
+> ✅ **[D-183](docs/DECISION_REGISTER.md) and [D-184](docs/DECISION_REGISTER.md) are excluded and Lane C rebases.** ⚡ **It cost one rebase and held nothing of Lane A's** — the executable slice and Lane C's two earlier commits all promoted in the same cycle.
+
+### ✅ The unblock loop, measured end to end
+
+**Cycle 120 promoted the queue repair. Lane A claimed `TASK-487` within a minute. Cycle 121 promoted the delivered screen.** ⚡ **Two cycles from *"the queue advertises finished work"* to *"a customer can reset their password"*.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1694 frontend** *(+8)* · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **126 runs recorded, 118 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 195s |
+| **Dependency** | ⚠️ **Two Lane C commits excluded** on an unadjudicable register conflict — **rebase, not a defect** |
+| **Customer Value** | ✅ ⚡ **Workflows 1–4 are all on `main`** — sign in, register, verify, reset |
+| **Process** | ⚡ **QE excluded rather than resolved, and said which three checks made that the answer** — the alternative was QE silently choosing one lane's text over another's |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 120
 
 **Derived from the promoted commit `2f858a3`.** **Seventy-five promotions.** ⛔ **The first cycle QE has run on a candidate with no executable change — and the reason is a rule, not a judgement.**
 
