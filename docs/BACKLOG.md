@@ -859,6 +859,33 @@
 | **Change Budget** | 🔴 **`frontend/app/(auth)/`** — **carried by [D-153](DECISION_REGISTER.md), which approves presentation-layer replacement for the workflow under migration** |
 | ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) — **what this slice is expected to touch.** ⛔ **Product Office says *what changes*; QE decides *how to certify it*** | **Modules** `frontend/app/(auth)/` · **Routes** `/sign-in` `/sign-up` `/verify-email` `/forgot-password` `/reset-password` — ⚡ **all five share the shell** · **Shared components** **`auth-shell.tsx`** — ⛔ **shared by five routes, so a change here is five screens** · **APIs** ✅ **None** · **Playwright** **`workflow1-login.spec.ts` · `auth-journey.spec.ts`** · **Unit / component** **`design-tokens.test.tsx`** · **Integration** ✅ **None** · **Accessibility** **`accessibility.spec.ts`** — **focus order and the card heading on route change** *(SC 2.4.3)* |
 
+### TASK-492 · The security event stream — one append-only record every module writes to
+
+| | |
+|---|---|
+| ⚡ **Why first** | ⛔ **It is the only capability on [493](architecture/493-security-platform-architecture.md)'s roadmap whose data cannot be recovered later.** **[§2](../CLAUDE.md): *"the record cannot be added retroactively — the runs that would have explained the problem are gone."*** **Workflow 1 is producing authentication facts on `main` today and nothing records them** |
+| **Status** | ⏸️ **`SEQUENCED` — after [TASK-485](#task-485--workflow-2--registration-to-the-approved-design), Lane C 2026-08-08.** ⛔ **Not ahead of Workflow 2: [D-174](DECISION_REGISTER.md) §8 says workflow implementation continues uninterrupted** |
+| **Module** | **`workspace_tenancy`** — ⚡ **it already owns `membership_role_change`, which is an audit row that does not know it** |
+| ⚡ **Not a security log** | ⛔ **An *account activity* stream.** **A security-only log means building the second one later** — **compliance, support and the customer's own timeline all read the same facts** ([493 §5](architecture/493-security-platform-architecture.md)) |
+| **Delivers** | **One append-only table, workspace-tenanted, no `UPDATE` grant and no `UPDATE` policy** *(the shape [TASK-463](#task-463) set for `action_batch`)* · **a typed `SecurityEvent` published through `public/`** · **the first producers: sign-in, sign-out, password reset, role change** |
+| ⛔ **Out of scope** | **Any screen.** **Risk evaluation.** **Export.** ⚡ **A consumer appears when a workflow needs one** ([P-C](DOMAIN_DISCOVERY_REGISTER.md)) |
+| **Consumed by** | **Login history · audit · compliance · risk signals · Team Management · Settings · Security Center** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `workspace_tenancy` · **Routes** none · **Shared components** none · **APIs** none yet · **Playwright** none — ⛔ *not a customer-visible slice* · **Integration** a real-database test proving no `UPDATE` path exists · **Security Invariants** the append-only guarantee, and workspace isolation on the new table |
+| **Change Budget** | 🟠 **A new table with its `tenancy_policy.py` registration, announced in the commit** |
+
+### TASK-493 · Better Auth plugins — four capabilities, one file
+
+| | |
+|---|---|
+| ⚡ **Why one slice and not four** | ⛔ **Passkey, two-factor, multi-session and SSO are four configuration blocks in `lib/auth/server.ts`.** **Spreading them across four workflows means four migrations and four review cycles for one change** ([493 §5](architecture/493-security-platform-architecture.md)) |
+| **Status** | ⏸️ **`SEQUENCED` — after [TASK-492](#task-492--the-security-event-stream--one-append-only-record-every-module-writes-to), Lane C 2026-08-08** |
+| **Module** | **`product_surface`** — `frontend/lib/auth/` |
+| 🔴 **What it unblocks, and this is the finding** | ⚡ **The SSO plugin provides domain→IdP routing, SAML 2.0, per-organization SSO *and* DNS TXT domain verification.** ⛔ **[418](architecture/418-platform-foundation-assessment.md) lists three of those as separate Signora builds across two workflows.** ✅ **[C-431](LANE_COORDINATION.md)'s SSO half · Workflow 1's `Use single sign-on` · Workflow 5 screen `04` · Workspace Setup's domain verification** |
+| ⛔ **What it must NOT adopt** | **The organization plugin's *roles*.** ⚡ **[§13](../CLAUDE.md) makes Casbin the authorization decision and [§7](../CLAUDE.md) requires `workspace_id` in every policy tuple.** **Two role systems is [§2](../CLAUDE.md)'s two-representations defect inside the security layer** |
+| **Delivers** | **`passkey` · `twoFactor` · `multiSession` · `sso` configured, with their tables migrated into `authSchema`** · ⛔ **no screen** |
+| ⚡ **Testing metadata** | **Modules** `frontend/lib/auth/` · **Routes** the Better Auth catch-all · **APIs** ⛔ **none of Signora's change** · **Playwright** `auth-journey.spec.ts` must still pass unchanged — ⚡ **that is the assertion: adding plugins changes no existing journey** · **Security Invariants** RS256-only verification still holds |
+| **Change Budget** | 🔴 **New dependencies** — **product owner plus ADR.** ⚡ **[493](architecture/493-security-platform-architecture.md) is the analysis; the ADR is drafted when this row is claimed** |
+
 ### TASK-491 · The design foundation, the seven gaps the conformance audit found
 
 | | |

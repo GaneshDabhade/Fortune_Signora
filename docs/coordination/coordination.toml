@@ -10,13 +10,13 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "018195f"
-task_count     = 96
+task_count     = 98
 
 [lane.Lane_A]
 current            = "TASK-485"
 next               = ""
 next_after_that    = ""
-assigned_total     = 80
+assigned_total     = 82
 claimable          = 1
 claimable_now      = 0
 awaiting_sync      = 1
@@ -25,7 +25,7 @@ actionable         = 4
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 31
+blocked            = 33
 lane_utilization   = 9.6
 idle_prediction_days   = 0.1
 dependency_wait_days   = 0.5
@@ -1179,7 +1179,7 @@ state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-486"]
+unblocks       = ["TASK-486", "TASK-492"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
@@ -1283,6 +1283,38 @@ estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-492"
+title         = "The security event stream — one append-only record every module writes to"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-485"]
+unblocks       = ["TASK-493"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 1
+estimated_ready = "— after [TASK-485](#task-485--workflow-2--registration-to-the-approved"
+waiting_for    = "— after [TASK-485](#task-485--workflow-2--registration-to-the-approved-design), Lane C 2026-08-08.** ⛔ **Not ahead of Workflow 2: [D-174](DECISION_REG"
+blocked_days   = 0.4
+on_integration = false
+
+[[task]]
+id            = "TASK-493"
+title         = "Better Auth plugins — four capabilities, one file"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-492"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 2
+estimated_ready = "when TASK-492 complete"
+waiting_for    = "— after [TASK-492](#task-492--the-security-event-stream--one-append-only-record-every-module-writes-to), Lane C 2026-08-08**"
+blocked_days   = 0.4
+on_integration = false
 
 [[task]]
 id            = "TASK-903"

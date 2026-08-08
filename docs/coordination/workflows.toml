@@ -265,7 +265,7 @@ state  = "planned"
 design = "Fortune Signora Security Center.dc.html"
 tasks  = []
 owner  = "Lane A"
-blocker = "418: BACKEND MISSING — sessions, devices, MFA, step-up, the Secure-my-account cascade"
+unblocked = "⚡ D-174 §, 2026-08-08 — 493 answers it. Most of the list is Better Auth plugins (passkey, two-factor, multi-session, SSO with SAML 2.0 and domain→IdP routing), not builds. Signora builds three things: the security event stream, the workspace policy object, and risk signals. TASK-492 and TASK-493 are the platform slices."
 
 [workflow.24]
 name   = "Billing"
