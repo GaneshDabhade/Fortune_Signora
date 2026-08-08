@@ -9,27 +9,27 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "d785327"
+generated_from = "55bfe11"
 task_count     = 102
 
 [lane.Lane_A]
-current            = "TASK-489"
+current            = "TASK-469"
 next               = ""
 next_after_that    = ""
 assigned_total     = 85
 claimable          = 1
 claimable_now      = 1
 awaiting_sync      = 0
-in_flight          = 55
-actionable         = 6
+in_flight          = 56
+actionable         = 7
 awaiting_qe_transition = 0
 blocked_on_integration = 1
 supply_state       = "working"
-blocked            = 29
-lane_utilization   = 11.0
+blocked            = 28
+lane_utilization   = 11.2
 idle_prediction_days   = 0.1
-dependency_wait_days   = 1.1
-blocked_duration_days  = 1.1
+dependency_wait_days   = 1.2
+blocked_duration_days  = 1.2
 critical_path_max      = 3
 
 [lane.Lane_C]
@@ -48,8 +48,8 @@ supply_state       = "working"
 blocked            = 7
 lane_utilization   = 1.2
 idle_prediction_days   = 0.1
-dependency_wait_days   = 1.5
-blocked_duration_days  = 1.5
+dependency_wait_days   = 1.6
+blocked_duration_days  = 1.6
 critical_path_max      = 0
 
 [[task]]
@@ -65,7 +65,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lan"
 waiting_for    = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lane raised.** ⚠️ **An architectural blocker, not an implementation one** (§20e): *"
-blocked_days   = 1.1
+blocked_days   = 1.2
 on_integration = true
 
 [[task]]
@@ -951,18 +951,18 @@ on_integration = true
 [[task]]
 id            = "TASK-469"
 title         = "Workflow 8 — Initial Onboarding, to the approved design"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
-waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-470"
@@ -1057,7 +1057,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-474 complete"
 waiting_for    = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be written until "
-blocked_days   = 1.1
+blocked_days   = 1.2
 on_integration = true
 
 [[task]]
@@ -1223,15 +1223,15 @@ on_integration = true
 [[task]]
 id            = "TASK-489"
 title         = "Workflow 7 — Invitation Acceptance, to the approved design"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -1569,7 +1569,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 1.5
+blocked_days   = 1.6
 on_integration = true
 
 [[task]]
@@ -1633,7 +1633,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 1.5
+blocked_days   = 1.6
 on_integration = true
 
 [[task]]
@@ -1665,7 +1665,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 1.1
+blocked_days   = 1.2
 on_integration = true
 
 [[task]]
