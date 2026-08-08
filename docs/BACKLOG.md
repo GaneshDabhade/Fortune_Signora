@@ -1139,6 +1139,144 @@
 | ⚠️ **Risk** | 🔴 **This touches four workflows that are on `main`.** ⚡ **It is exactly the rework [D-195](DECISION_REGISTER.md) §2 says to prefer over carrying the inconsistency** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
+### TASK-1402 · The intent resolver — what the person was trying to reach
+
+| | |
+|---|---|
+| **Epic** | **E1 · Entry Engine** — **[workflow 29](coordination/workflows.toml)**, `kind = platform` |
+| ⚡ **Why it exists** | 📁 **The spec: *"Authentication hands over an identity AND AN INTENT — the route the person was trying to reach."*** ⛔ **Four of the 21 reason codes are intent codes — `INTENT_HONOURED`, `INTENT_MISSING`, `INTENT_FORBIDDEN`, `INTENT_NOT_MEMBER` — so intent is a first-class input, not a query parameter** |
+| **Module** | **`product_surface`** — ⛔ **presentational routing, never authorization** ([§20c](../CLAUDE.md)) |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ② in [workflow 29](coordination/workflows.toml)'s platform sequence** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
+| ⚡ **Delivers** | **Capture the attempted route before authentication · carry it through the whole flow · classify it into the four intent codes · and DISCARD it safely when it names a workspace the person is not in** |
+| ✅ **Backend reuse — measured, not assumed** | ⛔ **Nothing to reuse — no intent survives login today.** 🔴 **`sign-in-form.tsx` pushes to `/` unconditionally, which DISCARDS intent, and that is the defect [TASK-1401](#task-1401--the-five-hardcoded-redirects-become-one-call-site) repairs** |
+| **Reusable components required** | ✅ **None — no surface** |
+| **Shared layout** | ✅ **n/a** |
+| **Manual review gate** | ✅ **n/a — no customer surface.** ⛔ **Stated rather than skipped** |
+| **Change Budget** | 🟢 **`frontend/lib/entry/**`** · 🟠 **nothing** · 🔴 **nothing** |
+| **Component coverage** | **A forbidden intent yields `INTENT_FORBIDDEN` and NOT a 403 page** — ⚡ **the spec routes rather than errors** · **an intent naming a non-member workspace yields `INTENT_NOT_MEMBER`, never a leak of whether that workspace exists** ([§7](../CLAUDE.md): a non-member gets 404, never 403) |
+| **Playwright coverage** | ⛔ **None unless stated — not a customer journey** ([§19](../CLAUDE.md)) |
+| **Definition of Done** | **All four intent codes reachable, and an intent for a workspace the caller is not in NEVER discloses its existence** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `frontend/lib/entry/` · **Unit** the four classifications · **Security Invariant** 🔴 **intent must not become a workspace-enumeration oracle — asserted, not assumed** |
+| ✅ **Verification strategy** | **The four codes are the verification, table-driven from the document** |
+| ⚠️ **Risk, named before it is met** | 🔴 **An intent is attacker-controlled input.** ⛔ **Honouring it without membership re-verification is precisely [§13](../CLAUDE.md)'s *a client-supplied workspace identifier is never trusted*** — ⚡ **the resolver classifies; the server still decides** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's own domain** |
+
+### TASK-1403 · Reason codes become a diagnosable record, not a log line
+
+| | |
+|---|---|
+| **Epic** | **E2 · Reason codes & diagnostics** — **[workflow 29](coordination/workflows.toml)**, `kind = platform` |
+| ⚡ **Why it exists** | 📁 **The spec: the code is *"written to the session, logged with the redirect, and shown to support in the diagnostics bundle — so 'why did I land here' is answerable WITHOUT REPRODUCING THE LOGIN."*** ⚡ **That last clause is the requirement; everything else is implementation** |
+| **Module** | **`product_surface`** — ⛔ **presentational routing, never authorization** ([§20c](../CLAUDE.md)) |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ③ in [workflow 29](coordination/workflows.toml)'s platform sequence** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
+| ⚡ **Delivers** | **The reason written to the session · the redirect logged with it · and a support-readable bundle** — ⛔ **all three, because any two of them still require reproducing the login** |
+| ✅ **Backend reuse — measured, not assumed** | 📁 **`correlation_id` propagation already exists** ([§16](../CLAUDE.md), [§17](../CLAUDE.md)) — ⚡ **the reason joins the record the platform already keeps.** ⛔ **Absent: the session field and the bundle** |
+| **Reusable components required** | ✅ **None — no surface** |
+| **Shared layout** | ✅ **n/a** |
+| **Manual review gate** | ✅ **n/a — no customer surface.** ⛔ **Stated rather than skipped** |
+| **Change Budget** | 🟢 **`frontend/lib/entry/**`** · 🟠 **a session field — announced in the commit** · 🔴 **nothing** |
+| **Component coverage** | **Every redirect emits exactly one reason** · ⛔ **a redirect with no reason FAILS the test** — ⚡ **that is what makes the guarantee real rather than aspirational** |
+| **Playwright coverage** | ⛔ **None unless stated — not a customer journey** ([§19](../CLAUDE.md)) |
+| **Definition of Done** | **Support can answer *why did I land here* from the bundle alone, without a reproduction** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `frontend/lib/entry/` · **Unit** one reason per redirect, always · **Security Invariant** ⛔ **the bundle must never carry another workspace's data** ([§11](../CLAUDE.md)) |
+| ✅ **Verification strategy** | **A support engineer answering the question from the bundle, with no session, is the verification** |
+| ⚠️ **Risk, named before it is met** | ⚠️ **A diagnostics bundle is a data-egress surface.** ⛔ **It is workspace-tenanted like everything else, and that is stated here rather than assumed because a debug artifact is where tenancy is usually forgotten** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's own domain** |
+
+### TASK-1404 · The workspace resolver, and the four states a workspace can be in
+
+| | |
+|---|---|
+| **Epic** | **E3 · Workspace resolution** — **[workflow 29](coordination/workflows.toml)**, `kind = platform` |
+| ⚡ **Why it exists** | 📁 **The spec names twelve workspace cases and says *"the chooser is a LAST RESORT."*** ⛔ **Six reason codes are workspace codes — `SOLE_WORKSPACE`, `LAST_USED`, `USER_DEFAULT`, `WS_ARCHIVED`, `WS_SUSPENDED`, `WS_DELETED` — and three of them are *unavailability*, which today has no screen at all** |
+| **Module** | **`product_surface`** — ⛔ **presentational routing, never authorization** ([§20c](../CLAUDE.md)) |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ④ in [workflow 29](coordination/workflows.toml)'s platform sequence** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
+| ⚡ **Delivers** | **Sole membership · last-used · user default · and the three unavailable states, each with the route the spec names** — `/w/:ws/archived`, `/w/:ws/suspended`, `/w/:ws/deleted` |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **`workspace_tenancy` owns membership and it is already RLS-enforced.** ⛔ **Absent: last-used, a user default, and any notion of archived or suspended** — ⚠️ **those are STATE the platform does not model, so this row adds it** |
+| **Reusable components required** | ✅ **None — no surface** |
+| **Shared layout** | ✅ **n/a** |
+| **Manual review gate** | ✅ **n/a — no customer surface.** ⛔ **Stated rather than skipped** |
+| **Change Budget** | 🟢 **`frontend/lib/entry/**`, `modules/workspace_tenancy/**`** · 🟠 **workspace lifecycle state + its `tenancy_policy.py` registration, one migration** · 🔴 **nothing** |
+| **Component coverage** | **A suspended workspace routes to its own screen and NOT to an error** — 📁 **the spec: *"it never drops the user on an error"*** · **the chooser appears only when no rule resolves** |
+| **Playwright coverage** | ⛔ **None unless stated — not a customer journey** ([§19](../CLAUDE.md)) |
+| **Definition of Done** | **Twelve cases, twelve outcomes, and the chooser reachable only as rule 13** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface`, `workspace_tenancy` · **Unit** the twelve cases · **Security Invariant** ⛔ **last-used must not leak a workspace the person has left — revocation clears it** |
+| ✅ **Verification strategy** | **The twelve-case table, derived from the document** |
+| ⚠️ **Risk, named before it is met** | 🔴 **Last-used is a stored preference that outlives membership.** ⛔ **If it is not cleared on removal, a departed member's next login routes at a workspace they can no longer see — an authorization failure wearing a convenience feature's clothes** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's own domain** |
+
+### TASK-1405 · Home is one route and four compositions
+
+| | |
+|---|---|
+| **Epic** | **E4 · Home composition** — **[workflow 29](coordination/workflows.toml)**, `kind = platform` |
+| ⚡ **Why it exists** | 📁 **The spec: *"Home is a slot, not a screen… one route, four compositions."*** 🔴 **And it settles a question this office got wrong in [D-192](DECISION_REGISTER.md): *"the Executive Dashboard already built IS THE EXECUTIVE COMPOSITION of Home"*** — ⛔ **not a separate screen it leads to** |
+| **Module** | **`product_surface`** — ⛔ **presentational routing, never authorization** ([§20c](../CLAUDE.md)) |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1404](#task-1404), Lane C 2026-08-08.** ⚡ **Position ⑤ in [workflow 29](coordination/workflows.toml)'s platform sequence** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
+| ⚡ **Delivers** | **The single route `/w/:workspace/home`** · **a composition resolver** · ⛔ **and the guarantee the App Shell depends on: *a composition always resolves*, so Home ALWAYS renders** |
+| ✅ **Backend reuse — measured, not assumed** | 🔴 **The Executive Dashboard is designed and NOT built** ([workflow 19](coordination/workflows.toml)). ⚡ **This row delivers the SLOT and one honest empty composition; the executive composition is workflow 19's content moved into it, not rebuilt** |
+| **Reusable components required** | ✅ **None — no surface** |
+| **Shared layout** | ✅ **n/a** |
+| **Manual review gate** | ✅ **n/a — no customer surface.** ⛔ **Stated rather than skipped** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/w/[workspace]/home/**`** · 🟠 **a `components/ui` composition container** · 🔴 **nothing** |
+| **Component coverage** | **Home renders for every session the engine can resolve** — ⚡ **including one with no cards, because *always renders* is the App Shell's fallback guarantee and an empty Home is a designed state, not a failure** |
+| **Playwright coverage** | ⛔ **None unless stated — not a customer journey** ([§19](../CLAUDE.md)) |
+| **Definition of Done** | **One route · four named compositions · Home always renders** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Routes** `/w/:workspace/home` · **Playwright** ⚡ **a customer signs in and reaches Home — the FIRST journey that ends somewhere, and it closes [D-192](DECISION_REGISTER.md)'s finding** |
+| ✅ **Verification strategy** | **The sign-in journey ending at Home is the verification, and it is the one thing four shipped workflows currently cannot do** |
+| ⚠️ **Risk, named before it is met** | ⚠️ **The temptation is to build four screens.** ⛔ **Four screens is what the spec exists to prevent — it is one route whose contents differ, and the difference is a registry lookup, not a router branch** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's own domain** |
+
+### TASK-1406 · The card registry — modules contribute capabilities, never navigation
+
+| | |
+|---|---|
+| **Epic** | **E4 · Home composition** — **[workflow 29](coordination/workflows.toml)**, `kind = platform` |
+| ⚡ **Why it exists** | 📁 **The spec's principle, and [D-193](DECISION_REGISTER.md) §5 repeats it: *"modules register capabilities rather than issuing redirects."*** ⚡ **A composition is a filtered, ordered read of a registry — which is what makes a fifth composition free and a sixth module additive** |
+| **Module** | **`product_surface`** — ⛔ **presentational routing, never authorization** ([§20c](../CLAUDE.md)) |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1405](#task-1405), Lane C 2026-08-08.** ⚡ **Position ⑥ in [workflow 29](coordination/workflows.toml)'s platform sequence** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
+| ⚡ **Delivers** | **A card contract · a registration mechanism · ordering · visibility · and permission filtering** — ⛔ **filtering is PRESENTATIONAL: Casbin still decides, this only hides what the caller cannot use** ([§20c](../CLAUDE.md)) |
+| ✅ **Backend reuse — measured, not assumed** | 📁 **The pattern exists twice already** — `policy.csv` and `tenancy_policy.py` are registries every lane appends to ([§20e](../CLAUDE.md)). ⚡ **This is the third, and it should look like them** |
+| **Reusable components required** | ✅ **None — no surface** |
+| **Shared layout** | ✅ **n/a** |
+| **Manual review gate** | ✅ **n/a — no customer surface.** ⛔ **Stated rather than skipped** |
+| **Change Budget** | 🟢 **`frontend/lib/home/**`** · 🟠 **the card contract in `components/ui`** · 🔴 **nothing** |
+| **Component coverage** | **A module registering a card causes NO change to the composition code** — ⚡ **that is the assertion, and a composition that needs editing to accept a card has failed the design** · **a card the caller may not see is absent, not disabled** |
+| **Playwright coverage** | ⛔ **None unless stated — not a customer journey** ([§19](../CLAUDE.md)) |
+| **Definition of Done** | **Four compositions read one registry; adding a card touches no composition** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Unit** registration is additive · **Security Invariant** ⛔ **a hidden card must not have already fetched its data — visibility is decided BEFORE the read, or hiding is theatre** |
+| ✅ **Verification strategy** | **Adding a fifth card without editing a composition is the verification** |
+| ⚠️ **Risk, named before it is met** | 🔴 **The failure mode is a card that hides itself AFTER fetching.** ⛔ **That leaks exactly what the permission was protecting, and it is invisible in the UI — which is why the invariant is on the read and not on the render** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's own domain** |
+
+### TASK-1407 · The engine admits a non-human principal, before one exists
+
+| | |
+|---|---|
+| **Epic** | **E5 · Future capability** — **[workflow 29](coordination/workflows.toml)**, `kind = platform` |
+| ⚡ **Why it exists** | ⚡ **[D-196](DECISION_REGISTER.md) §8 asks the engine to support AI agents, service accounts, delegated access and SSO *without architectural redesign*.** 📁 **[495](architecture/495-principal-and-identity-boundary.md) already ratified the model: one principal type, a `kind`, and `acting_for`.** ⛔ **The engine's input type is where that is cheap now and expensive later** |
+| **Module** | **`product_surface`** — ⛔ **presentational routing, never authorization** ([§20c](../CLAUDE.md)) |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ⑦ — ⚡ **deliberately early** in [workflow 29](coordination/workflows.toml)'s platform sequence** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
+| ⚡ **Delivers** | **`resolveEntry` takes a PRINCIPAL, not a user** — **`kind` · `subject_id` · `workspace_id` · `acting_for`** — ⛔ **and a machine principal resolves to no Home at all, because an agent has no screen to land on** |
+| ✅ **Backend reuse — measured, not assumed** | 📁 **[495](architecture/495-principal-and-identity-boundary.md)'s model is ratified and unbuilt.** ⚡ **This row does NOT build the principal model — it makes the engine's signature admit one, which is a type change while there is exactly one caller** |
+| **Reusable components required** | ✅ **None — no surface** |
+| **Shared layout** | ✅ **n/a** |
+| **Manual review gate** | ✅ **n/a — no customer surface.** ⛔ **Stated rather than skipped** |
+| **Change Budget** | 🟢 **`frontend/lib/entry/**`** · 🟠 **nothing** · 🔴 **nothing** |
+| **Component coverage** | **A non-human `kind` returns no route and a reason saying why** — ⛔ **never a redirect to Home, which would put an agent in a human's session** |
+| **Playwright coverage** | ⛔ **None unless stated — not a customer journey** ([§19](../CLAUDE.md)) |
+| **Definition of Done** | **The signature admits every `kind` [495](architecture/495-principal-and-identity-boundary.md) names, and non-human kinds resolve to no route** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `frontend/lib/entry/` · **Unit** each `kind` · **Security Invariant** ⛔ **the intersection rule — an agent's effective permission is the intersection of its own and the one it acts for** ([496 §3](architecture/496-security-architecture-blueprint.md)) — **asserted here while it is cheap and unwritable after the first agent ships** |
+| ✅ **Verification strategy** | **The type admitting every kind is the verification; no behaviour is added** |
+| ⚠️ **Risk, named before it is met** | ⚠️ **This is speculative generality and [§6](../CLAUDE.md) forbids it — so the justification is stated rather than assumed.** ✅ **It is not a new abstraction: [495](architecture/495-principal-and-identity-boundary.md) RATIFIED this model, and the row only widens a signature while one caller exists.** ⛔ **After the shell, the compositions and the cards consume it, the same change is a refactor across every consumer** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's own domain** |
+
 ### TASK-497 · Planning state reaches a lane without waiting for a certification cycle
 
 | | |

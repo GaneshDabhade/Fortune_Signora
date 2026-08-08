@@ -417,7 +417,28 @@ depends_on  = []
 [workflow.29]
 name        = "Authenticated Entry"
 state       = "decomposed"
-tasks       = ["TASK-1400", "TASK-1401"]
+tasks       = ["TASK-1400", "TASK-1402", "TASK-1403", "TASK-1404",
+               "TASK-1405", "TASK-1406", "TASK-1407", "TASK-1401"]
+# ── THE EPIC DECOMPOSITION — D-196, 2026-08-08 ──────────────────────────────
+#   E1 · Entry Engine        TASK-1400 resolver · TASK-1402 intent
+#   E2 · Reason & diagnostics TASK-1403
+#   E3 · Workspace resolution TASK-1404
+#   E4 · Home composition     TASK-1405 slot · TASK-1406 card registry
+#   E5 · Future capability    TASK-1407 the principal-shaped signature
+#   E6 · Routing ownership    TASK-1401 five redirects → one call site
+#
+# ⚡ SEQUENCING, and the reasoning: the ENGINE is first because everything
+#   calls it; the PRINCIPAL SIGNATURE (1407) is early and out of dependency
+#   order deliberately, because widening a type with one caller is a type
+#   change and widening it with six is a refactor across all of them.
+#   TASK-1401 is LAST of these seven despite being the repair, because it
+#   touches four workflows on `main` and should land against a finished engine
+#   rather than a moving one.
+#
+# ⛔ STILL TO DECOMPOSE: the four compositions' CONTENT, telemetry, feature
+#   flags, the shell's own integration and the routing test harness. Those are
+#   consumers of the seven above and are prepared as those land — D-196 §9's
+#   pipeline rather than one batch.
 # ✅ 2026-08-08 — first two rows created the moment D-195 §8 extended Lane C's
 #   identifier block. Platform-first per D-195 §4: the ENGINE precedes its
 #   callers, and TASK-1401 replaces five hardcoded redirects with one call site.
