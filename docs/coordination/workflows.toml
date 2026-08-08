@@ -377,3 +377,33 @@ owner  = "Lane A"
 # pre-refactor record, not a screen. **Three of the twenty-six designs are not
 # journeys, which is why this file holds twenty-seven workflows and not
 # twenty-six or twenty-four.**
+
+[workflow.28]
+name        = "System States"
+state       = "planned"
+design      = "Fortune Signora System States.dc.html"
+owner       = "Lane A"
+screens     = ["01 Scope ladder", "02 Not found & forbidden", "03 Server error & the global error boundary"]
+# 🔴 FOUND 2026-08-08 by the D-192 journey audit — a design document with NO
+#   workflow. "Platform foundation · Module 10", and it is customer-visible:
+#   404, 403, 500, the error-boundary scope ladder.
+# ⛔ It went unnoticed because workflows.toml was built from the PRODUCT OWNER'S
+#   journey list (D-158) and never checked BACK against the snapshot. 22 of 26
+#   documents were referenced; this is the one that is a surface and was missed.
+# ⚡ Every workflow from 13 onward hits these states, and each would otherwise
+#   invent its own — the design's rules are specific enough that improvising
+#   them would be wrong: "403 names the missing role, never the data", and
+#   "your unsaved note on Corrigan Health was kept."
+# 🔴 It should be prepared BEFORE workflow 13, and it has no rows because
+#   Lane C's identifier block is fully allocated.
+depends_on  = []
+
+# ── ⚠️ THE SNAPSHOT HOLDS TWO WORKSPACE SETUP DOCUMENTS — D-192 audit ────────
+#   Workspace Setup.dc.html                  88,918 bytes  sha 25f1f806…
+#   Fortune Signora Workspace Setup.dc.html  89,041 bytes  sha b35a3edc…
+# ⛔ Different content, both present, and D-138 makes the snapshot THE
+#   implementation authority. Two revisions of one screen set is the
+#   one-authoritative-representation defect INSIDE the design authority.
+# ✅ Workflow 6 references the longer one and that reference is authoritative
+#   until the next refresh, when the other should be removed.
+
