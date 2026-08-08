@@ -87,8 +87,9 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | `product_surface` — [`frontend/tests/e2e/auth-journey.spec.ts`](../frontend/tests/e2e/auth-journey.spec.ts) · [`frontend/components/ui/password-strength.tsx`](../frontend/components/ui/password-strength.tsx) |
 | **Current assignee** | **Lane A** — [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🔴 **Blocking Quality Defect — a failing test.** ⛔ **`TASK-485` milestone 1 is excluded from cycle 115 and returned as `CHANGES REQUESTED`** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED` — QE, cycle 116, at `50e81139`.** ⚠️ **Verified in part, and the limit is stated below rather than hidden** |
 | **Found** | 2026-08-08 by QE, cycle 115, running the journey §19 requires the implementing lane to have run |
+| **Fixed** | 2026-08-08 by **Lane A**, `de294bca` — ⚡ **found independently, and the same repair QE would have named**: `getByLabel('Password', { exact: true })` at all three call sites |
 
 **Steps to reproduce.** Against `a91f2518`, with the product served anywhere:
 
@@ -123,6 +124,24 @@ Error: locator.fill: strict mode violation: getByLabel('Password') resolved to 2
 **Proved rather than assumed:** QE ran against the local production stack without the playground seed, and **that stack has no `user` table at all** — Better Auth's tables are created by `npm run auth:migrate`, which nothing ran there. ⚡ **A sign-in test cannot pass against a database with nobody in it**, and reporting it would have put a false lead in front of the lane.
 
 > ⚡ **The three that are Lane A's are environment-independent and that is why they are reportable.** **A strict-mode violation is pure DOM** — no database, no API, no session, no seed. **It fails identically on every machine, which is exactly what makes it a statement about the commit rather than about the run.**
+
+### ✅ How QE verified it, and what QE could not verify
+
+**Re-run at `50e81139` against the same unseeded production stack that found it:** ⚡ **6 passed, 1 failed** — where the same selection was **3 failed** before.
+
+| Scenario | Then | Now |
+|---|---|---|
+| *the strength meter answers the password as it is typed* | ⛔ strict-mode violation | ✅ **passes** |
+| *the strength list reports and never gates* | ⛔ strict-mode violation | ✅ **passes** |
+| **`@journey` *creates an account and reaches verification*** | ⛔ strict-mode violation | ⚠️ **`TimeoutError` waiting for `/verify-email`** |
+
+⛔ **The third is not evaluated and QE is not claiming it.** **That stack has `0` of the four Better Auth tables** — `user`, `account`, `session`, `verification` — **measured, not assumed** — and the scenario creates a real account through Better Auth. ⚡ **It cannot reach verification against a database that cannot hold a user**, which is the same environmental abort recorded below.
+
+> ✅ **What is proved is the defect this row was opened for.** **A strict-mode violation is pure DOM and fails identically everywhere**; it no longer fires. ⚡ **Lane A reports the full journey at 7 of 7 headed on a provisioned environment**, and Workflow 1 re-run at 27 of 27 as a regression check on the `PasswordField` extraction.
+>
+> ⛔ **QE records the lane's claim as the lane's claim.** **The two scenarios QE could evaluate independently, it evaluated.**
+
+---
 
 ### ⚠️ Second finding, recorded and not filed separately: the journey has no supported environment
 
@@ -162,6 +181,14 @@ Error: locator.fill: strict mode violation: getByLabel('Password') resolved to 2
 > *"WHAT UNBLOCKS YOU, precisely: QE integrating `lane-c-sync`. Nothing else."*
 
 **Cycle 113 integrated `f6f9c851`. Cycle 114 integrated `81689ce1` — both commits the notice names by SHA.** ⛔ **The block is discharged and the notice still reads red.**
+
+### ⛔ Still present at `50e8113`, and now two cycles stale
+
+**Re-checked 2026-08-08, cycle 116.** ⚡ **`queues/lane-a.toml` was regenerated this cycle — the stale-coordination-source finding cleared — and the block survived the regeneration**, which is the row's own argument made visible: **nothing computes it, so nothing removes it.**
+
+⛔ **`TASK-485` is no longer merely claimed. It is delivered, certified and on `main`**, and the file still opens with *"DO NOT CLAIM TASK-485 YET"*.
+
+---
 
 ### ⚠️ Why this is a different defect from [B-145](BUGS.md)
 
