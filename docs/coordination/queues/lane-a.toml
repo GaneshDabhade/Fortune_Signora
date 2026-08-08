@@ -1487,10 +1487,10 @@ future  = []          # ⛔ EMPTY BY RULING — D-187 §1. A row in `future` rea
 
 # ⚡ THE PREPARED SEQUENCE — D-187 §1. Fully decomposed, in release order.
 # ⛔ NOT claimable. Each becomes `current` automatically when its turn comes.
-prepared = ["TASK-471", "TASK-473", "TASK-476", "TASK-492", "TASK-499",
-            "TASK-452", "TASK-481", "TASK-480", "TASK-482", "TASK-493",
-            "TASK-495", "TASK-496", "TASK-464", "TASK-465", "TASK-466",
-            "TASK-475", "TASK-412"]
+prepared = ["TASK-1400", "TASK-1401", "TASK-471", "TASK-473", "TASK-476",
+            "TASK-492", "TASK-499", "TASK-452", "TASK-481", "TASK-480",
+            "TASK-482", "TASK-493", "TASK-495", "TASK-496", "TASK-464",
+            "TASK-465", "TASK-466", "TASK-475", "TASK-412"]
 # ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation,
 #    D-022) and cannot fill this lane's floor. This office briefly counted
 #    it and was wrong.

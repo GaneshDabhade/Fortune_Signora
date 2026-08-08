@@ -10,14 +10,14 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "3249740"
-task_count     = 102
+task_count     = 104
 
 [lane.Lane_A]
 notice             = "D-193/D-194: 'Authenticated Entry' is now the authority for ALL post-login behaviour. TASK-468 and TASK-469 (both yours) have NO DEFINED EXIT and the spec says both must exit through resolveEntry with intent=null — do NOT choose a destination in either flow. Also: sign-in-form.tsx:148 router.push('/') is the entry decision hardcoded in a module, which the spec forbids; it is a finding, not yours t"
 current            = "TASK-470"
 next               = ""
 next_after_that    = ""
-assigned_total     = 85
+assigned_total     = 87
 claimable          = 1
 claimable_now      = 0
 awaiting_sync      = 1
@@ -26,7 +26,7 @@ actionable         = 5
 awaiting_qe_transition = 0
 blocked_on_integration = 1
 supply_state       = "working"
-blocked            = 28
+blocked            = 30
 lane_utilization   = 11.2
 idle_prediction_days   = 0.1
 dependency_wait_days   = 0.0
@@ -69,6 +69,38 @@ estimated_ready = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), whi
 waiting_for    = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lane raised.** ⚠️ **An architectural blocker, not an implementation one** (§20e): *"
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-1400"
+title         = "The Authenticated Entry Engine — one resolver, twenty-one reason codes"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = ["TASK-1401"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 0
+estimated_ready = "— ahead of every other workflow-29 row and behind nothing, Lane C 2026"
+waiting_for    = "— ahead of every other workflow-29 row and behind nothing, Lane C 2026-08-08.** ⛔ **It is the row the other three depend on**"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1401"
+title         = "The five hardcoded redirects become one call site"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-1400"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 1
+estimated_ready = "when TASK-1400 complete"
+waiting_for    = "— behind [TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes), Lane C 2026-08-08.** ⛔ **There is nothing to c"
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-200"

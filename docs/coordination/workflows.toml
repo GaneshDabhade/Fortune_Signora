@@ -416,7 +416,14 @@ depends_on  = []
 
 [workflow.29]
 name        = "Authenticated Entry"
-state       = "planned"
+state       = "decomposed"
+tasks       = ["TASK-1400", "TASK-1401"]
+# ✅ 2026-08-08 — first two rows created the moment D-195 §8 extended Lane C's
+#   identifier block. Platform-first per D-195 §4: the ENGINE precedes its
+#   callers, and TASK-1401 replaces five hardcoded redirects with one call site.
+# ⚠️ Not fully decomposed — D-193 §4 lists ~25 areas. The compositions, the card
+#   catalogue, diagnostics and the routing test suite follow; the engine and the
+#   redirect consolidation are what unblock everything else.
 design      = "Fortune Signora Authenticated Entry.dc.html"
 owner       = "Lane A"
 kind        = "platform"

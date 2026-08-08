@@ -1092,6 +1092,53 @@
 | ✅ **Verification strategy** | **Four shipped customer journeys passing unchanged on new paths IS the verification.** ⚠️ **If any needs its assertions changed rather than its URLs, the rename has altered behaviour and the slice stops** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
+### TASK-1400 · The Authenticated Entry Engine — one resolver, twenty-one reason codes
+
+| | |
+|---|---|
+| 🔴 **Why this is first, and it is platform** | 📁 **[D-193](DECISION_REGISTER.md): *"Treat it as a platform specification, not a feature specification."*** ⚡ **Every workflow from 1 to 28 consumes it.** ⛔ **[D-195](DECISION_REGISTER.md) §4: solve it once in shared infrastructure rather than in each workflow** |
+| **Epic** | **Authenticated Entry** — **[workflow 29](coordination/workflows.toml)**, the first of its rows |
+| **Module** | **`product_surface`** — ⚡ **the resolver is presentational routing, not authorization** ([§20c](../CLAUDE.md): a client check is a courtesy, never enforcement) |
+| **Status** | ⏸️ **`SEQUENCED` — ahead of every other workflow-29 row and behind nothing, Lane C 2026-08-08.** ⛔ **It is the row the other three depend on** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html` and nothing else** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
+| ⚡ **Delivers** | **`resolveEntry(session, intent) → { route, reason }`** · **the 24 rules in the document's order, first match wins** · **the 21 reason codes as a closed type** · **the six gates** |
+| 🔴 **The properties that are the point** | ⛔ **PURE: same inputs, same destination, and NO NETWORK CALL inside the decision** — 📁 **the spec says so in terms.** ⚡ **That makes the whole engine unit-testable without a browser, a session or a database, which is why the test suite is cheap and total** |
+| ⛔ **Closed, not open** | **The 21 reason codes are a closed type — a twenty-second cannot be added from outside the module.** ⚡ **Same shape as `ReasoningVerb`, which [TASK-453](#task-453) already proved in this repository** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **Everything the engine reads already exists**: session (Better Auth), membership and workspace state (`workspace_tenancy`), onboarding completion. ⛔ **Absent: nothing.** ⚡ **The engine computes, it does not fetch — that is what *pure* buys** |
+| **Reusable components required** | ✅ **None — no surface** |
+| **Shared layout** | ✅ **n/a** |
+| **Change Budget** | 🟢 **`frontend/lib/entry/**` and its tests** · 🟠 **nothing** · 🔴 **nothing** — ⚡ **a pure module with no dependency is the cheapest possible first slice of a platform capability** |
+| **Playwright coverage** | ⛔ **None — not a customer journey** ([§19](../CLAUDE.md)) |
+| **Component coverage** | 🔴 **All 24 rules, table-driven, one case per rule** · ⚡ **plus the property that decides correctness: for every session/intent pair the engine returns exactly one route AND one reason, never a route with no reason** · **and `FELL_THROUGH` is reachable — a fallthrough that cannot occur is [§2](../CLAUDE.md)'s decorative guard** |
+| **Definition of Done** | **24 rules, 21 codes, six gates, pure** · ⛔ **no caller yet — this row ships the engine and wires nothing** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `frontend/lib/entry/` · **Routes** none · **APIs** none · **Unit** the 24-rule table · **Security Invariant** ⛔ **the engine must never be the only check — [§20c](../CLAUDE.md), Casbin on the server decides and this chooses a screen** |
+| ✅ **Verification strategy** | **The rule table is the verification, and it is derived from the design document rather than restated** |
+| ⚠️ **Risk, named before it is met** | 🔴 **The temptation is to fetch inside a rule** — *"just look up whether the workspace is archived."* ⛔ **That destroys purity, testability and the diagnostics guarantee at once, and the spec forbids it in one sentence** |
+| **Build-vs-Buy** | ✅ **n/a — this is Signora's own domain** |
+
+### TASK-1401 · The five hardcoded redirects become one call site
+
+| | |
+|---|---|
+| 🔴 **The defect this repairs** | 📁 **Found by [D-194](DECISION_REGISTER.md)'s reconciliation.** **`sign-in-form.tsx:148` is `router.push('/')` — the entry decision, made by a module, which the spec forbids: *"no module performs its own entry redirect."*** ⚠️ **And its own comment records a race: *"Auth navigates to its own `callbackURL` and beats this push"*** |
+| **Epic** | **Authenticated Entry** — [workflow 29](coordination/workflows.toml) |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes), Lane C 2026-08-08.** ⛔ **There is nothing to call until the engine exists** |
+| **Design authority** | ⛔ **`Fortune Signora Authenticated Entry.dc.html`** ([D-138](DECISION_REGISTER.md)) |
+| ⚡ **The five** | **`sign-in-form` · `sign-up-form` · `reset-password-form` · `join/[workspaceId]` · `(app)/layout`** — **each replaced by one call to the engine.** ✅ **`accounts/[accountId]` is NOT one: it is in-app navigation, not an entry decision, and is left alone** |
+| 🔴 **The race is the real finding** | ⛔ **Better Auth's `callbackURL` and the manual push both navigate, and which wins is timing.** ✅ **One of them must go, and it is the manual push** — ⚡ **`callbackURL` is set from the engine's answer, so there is one mechanism and it is the specified one** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **[TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes)'s engine, and nothing else.** ⛔ **Absent: nothing** |
+| **Reusable components required** | ✅ **None** |
+| **Shared layout** | ✅ **n/a** |
+| **Change Budget** | 🟢 **the five files and their tests** · 🟠 **`lib/auth/server.ts` if `callbackURL` moves — announced in the commit** · 🔴 **nothing** |
+| **Playwright coverage** | 🔴 **Every one of the four shipped journeys must pass UNCHANGED** — ⚡ **that is the assertion: replacing five decisions with one engine must change no journey a customer already has** · **plus a new scenario asserting the reason code is written to the session** |
+| **Component coverage** | **No module contains a post-authentication `router.push` or `redirect`** — ⚡ **asserted by a scan over `app/`, not by review**, ⛔ **the same shape as the AST scan `Surface` already uses** |
+| **Definition of Done** | **One call site, one mechanism, four journeys unchanged** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Routes** the five · **APIs** none · **Playwright** the four shipped journeys · **Unit** the scan |
+| ✅ **Verification strategy** | ⛔ **If a shipped journey needs its ASSERTIONS changed rather than its setup, the engine has changed behaviour and the slice stops** |
+| ⚠️ **Risk** | 🔴 **This touches four workflows that are on `main`.** ⚡ **It is exactly the rework [D-195](DECISION_REGISTER.md) §2 says to prefer over carrying the inconsistency** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
 ### TASK-497 · Planning state reaches a lane without waiting for a certification cycle
 
 | | |

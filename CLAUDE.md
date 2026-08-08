@@ -1592,7 +1592,7 @@ It compares what the governance documents *say* against what git, the migrations
 | **QE** | `100`+ | `100`+ | — *(QE writes nothing in the backlog)* | `0100`+ |
 | **Lane A** | `200`+ | `200`+ | `200`+ | `0200`+ |
 | **Lane B** | `300`+ | `300`+ | `300`+ | `0300`+ |
-| **Lane C** *(Product Office)* | `400`+ | `400`+ | `400`+ | `0400`+ |
+| **Lane C** *(Product Office)* | `400`–`499`, **then `1400`+** | `400`–`499`, **then `1400`+** | `400`–`499`, **then `1400`+** | `0400`–`0499`, **then `1400`+** |
 | **Lane D** | `500`+ | `500`+ | `500`+ | `0500`+ |
 | **Lane E** | `600`+ | `600`+ | `600`+ | `0600`+ |
 | **Product owner** | `900`+ | `900`+ | `900`+ | `0900`+ |
@@ -1604,6 +1604,16 @@ It compares what the governance documents *say* against what git, the migrations
 **Chronological traceability is not lost.** It never lived in the number: every row carries `Found`, and `git log` carries the rest. **`B-301` after `B-105` is not out of order; it is a different allocator.**
 
 **Enforced twice.** `infra/state-check.py` refuses a duplicate in any class — `B-`, `C-`, `TASK-` and ADR filenames — so a fat-finger *inside* a block is caught even though a collision *across* blocks is impossible. **The range prevents; the check detects.**
+
+> ⚡ **Lane C gained a second range on 2026-08-08, on the product owner's explicit approval and instruction** ([D-195](docs/DECISION_REGISTER.md) §8: *"I approve extending the Lane C task allocation… perform the extension in a way that preserves existing references and avoids unnecessary renumbering or migration"*).
+>
+> **`400`–`499` is exhausted — 95 of 100 allocated, and the five apparent gaps are live references.** ⛔ **It had blocked three consecutive rulings**: [D-192](docs/DECISION_REGISTER.md)'s Workflow 28, [D-193](docs/DECISION_REGISTER.md)'s platform decomposition, and [D-194](docs/DECISION_REGISTER.md)'s reconciliation work.
+>
+> ✅ **`1400`+ and not `1000`+, deliberately.** **It leaves `500`–`900` untouched for Lanes D and E and the product owner, so no future lane inherits a range this office has eaten into** — and **a four-digit id starting `14` can never be mistaken for one in another block**, which is the property the whole scheme exists for.
+>
+> ⛔ **Nothing is renumbered and nothing migrates.** **`TASK-400`–`499` keep their ids, their references and their history**; the second range is additive, exactly as §8 required. **The rule is unchanged: a lane allocates only from its own block, and Lane C now has two.**
+>
+> ⚠️ **This is the second edit Lane C has made to this file, and like the first it was *directed rather than drafted*** ([D-170](docs/DECISION_REGISTER.md) §2 was the other). **`CLAUDE.md` remains the product owner's.**
 
 **Migrations are deliberately exempt**, and are the one identifier that must stay dense: Alembic's `down_revision` is a linear chain, so a gap is not a cosmetic oddity but a broken migration graph. **The existing practice is correct and stays** — a lane that finds its number taken renumbers on rebase and says so in the commit message, as Lane A did twice for `0026`. **The chain is the identity; the filename follows it.**
 
