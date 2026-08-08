@@ -18,7 +18,10 @@ from modules.workspace_tenancy.domain.invitation import (
     INVITATION_VALID_FOR,
     InvalidInvitationEmailError,
     Invitation,
+    InvitationAlreadyAcceptedError,
+    InvitationExpiredError,
     InvitationNotPendingError,
+    InvitationRevokedError,
     InvitationState,
     normalize_email,
 )
@@ -178,3 +181,96 @@ class TestTheOfferStands:
         # reproducible (§2, hidden inputs).
         with pytest.raises(TypeError):
             offer().state()  # type: ignore[call-arg]
+
+
+class TestASettledInvitationSaysWhichSettledStateItIs:
+    """**[B-214](../../../../docs/BUGS.md)** — the regression test.
+
+    ⛔ **The domain has always known, and nothing could read it.**
+    `InvitationNotPendingError` carried the state from the day it was written
+    and its own docstring said *"'this was withdrawn' and 'this expired' are
+    different sentences to a customer"* — **and the API answered
+    `invitation_not_pending` for all three**, so the design's screen
+    `14 Invitation expired` could not be reached.
+    """
+
+    def _settled(self, state: InvitationState) -> Invitation:
+        now = datetime(2026, 8, 8, 12, 0, tzinfo=UTC)
+        invitation = Invitation.offer(
+            workspace_id=uuid4(),
+            email="m.reinhardt@northwind.com",
+            role=WorkspaceRole.MEMBER,
+            invited_by=uuid4(),
+            now=now,
+        )
+        if state is InvitationState.EXPIRED:
+            return invitation
+        if state is InvitationState.REVOKED:
+            return invitation.revoke(at=now)
+        return invitation.accept(at=now)
+
+    @pytest.mark.parametrize(
+        ("state", "expected"),
+        [
+            (InvitationState.EXPIRED, InvitationExpiredError),
+            (InvitationState.REVOKED, InvitationRevokedError),
+            (InvitationState.ACCEPTED, InvitationAlreadyAcceptedError),
+        ],
+    )
+    def test_each_settled_state_raises_its_own_type(
+        self, state: InvitationState, expected: type[Exception]
+    ) -> None:
+        invitation = self._settled(state)
+        # Far enough past the offer that an untouched invitation has expired.
+        later = datetime(2027, 1, 1, tzinfo=UTC)
+
+        with pytest.raises(expected):
+            invitation.require_pending(later)
+
+    def test_no_two_settled_states_share_an_error_type(self) -> None:
+        """🔴 **The assertion the defect actually was**, and the one that can
+        still fail.
+
+        ⛔ **Two settled states sharing a type is exactly what made screen `14`
+        unreachable** — an expired invitation and a withdrawn one arrived
+        identical. **Counting distinct types catches a future state added to
+        the enum and forgotten in the map**, which is how this would come back.
+
+        ⚠️ **A first draft asserted `type(expired) is not type(revoked)` inside
+        two `pytest.raises` blocks and `mypy --strict` refused it**: the raises
+        narrow the types, so the comparison was statically decided and the test
+        could not fail. **§2 — a guard that cannot fail is documentation
+        pretending to be code** — so it was replaced rather than silenced.
+        """
+        settled = sorted(set(InvitationState) - {InvitationState.PENDING})
+        produced = [type(InvitationNotPendingError.for_state(s)) for s in settled]
+
+        assert len(set(produced)) == len(settled)
+        assert InvitationNotPendingError not in produced
+
+    def test_they_are_still_the_error_every_existing_caller_catches(self) -> None:
+        """⚡ **Subclasses, not replacements.** Anything already written as
+        `except InvitationNotPendingError` keeps working — the state moved into
+        the type without moving out of the instance."""
+        later = datetime(2027, 1, 1, tzinfo=UTC)
+
+        with pytest.raises(InvitationNotPendingError) as caught:
+            self._settled(InvitationState.EXPIRED).require_pending(later)
+
+        assert caught.value.state is InvitationState.EXPIRED
+
+    def test_the_api_gives_each_one_its_own_code(self) -> None:
+        """🔴 **The half that was actually broken.** The domain distinguished
+        them; the transport did not, and a screen only ever sees the code."""
+        from modules.workspace_tenancy.interface.errors import ERROR_MAPPING
+
+        codes = {
+            ERROR_MAPPING[e][1]
+            for e in (
+                InvitationExpiredError,
+                InvitationRevokedError,
+                InvitationAlreadyAcceptedError,
+            )
+        }
+
+        assert codes == {"invitation_expired", "invitation_revoked", "invitation_already_accepted"}

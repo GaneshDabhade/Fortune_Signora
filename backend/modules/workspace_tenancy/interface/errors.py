@@ -27,7 +27,12 @@ from modules.workspace_tenancy.domain.exceptions import (
     TooManyGoalsError,
     WorkspaceNotFoundError,
 )
-from modules.workspace_tenancy.domain.invitation import InvitationNotPendingError
+from modules.workspace_tenancy.domain.invitation import (
+    InvitationAlreadyAcceptedError,
+    InvitationExpiredError,
+    InvitationNotPendingError,
+    InvitationRevokedError,
+)
 from signora_platform.api import ErrorMapping
 
 ERROR_MAPPING: ErrorMapping = {
@@ -72,6 +77,30 @@ ERROR_MAPPING: ErrorMapping = {
     UnverifiedEmailError: (status.HTTP_403_FORBIDDEN, "email_not_verified"),
     # A settled offer, with the aggregate's own sentence: withdrawn, expired
     # and already accepted are different things to say to a person.
+    # 🔴 **[B-214](../../../docs/BUGS.md) — the three settled states are three
+    # codes, because they are three sentences to a customer.** ⛔ **The domain
+    # has always known which one it was** and this table collapsed all of them
+    # into `invitation_not_pending`, so the design's screen `14 Invitation
+    # expired` could not be reached: an expired invitation and a withdrawn one
+    # arrived identical.
+    #
+    # ⚡ **The base stays, and it is a fallback rather than a duplicate.**
+    # Starlette resolves a handler by walking `type(exc).__mro__` and taking
+    # the first registered class, so the subclasses always win and **the order
+    # of this dict is irrelevant** — checked in `starlette._exception_handler`
+    # rather than assumed, because the first draft of this comment asserted
+    # that order decided it, which would have been a false claim about a
+    # mechanism sitting in the file that depends on it (§2).
+    #
+    # ⛔ **So the base is what a NEW settled state would fall back to**: a
+    # fourth `InvitationState` with no entry answers `invitation_not_pending`
+    # and a 409 rather than a 500, which is the honest degradation.
+    InvitationExpiredError: (status.HTTP_409_CONFLICT, "invitation_expired"),
+    InvitationRevokedError: (status.HTTP_409_CONFLICT, "invitation_revoked"),
+    InvitationAlreadyAcceptedError: (
+        status.HTTP_409_CONFLICT,
+        "invitation_already_accepted",
+    ),
     InvitationNotPendingError: (status.HTTP_409_CONFLICT, "invitation_not_pending"),
     # **409, and the mapping is the point of the row that added it.** The
     # domain has raised this since M1 — from `end`, from `change_role`, and now

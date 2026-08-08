@@ -73,11 +73,62 @@ class InvitationNotPendingError(InvitationError):
     Carries the state it actually found, because *"this was withdrawn"* and
     *"this expired"* are different sentences to a customer and only one of them
     offers a next step.
+
+    ### 🔴 The three subclasses below, and why they exist — [B-214](../../../../docs/BUGS.md)
+
+    ⛔ **This class carried the distinction and nothing could read it.** The
+    comment above has said since it was written that the two sentences differ,
+    **and the API answered `invitation_not_pending` for all three states** —
+    so a screen could not tell an expired invitation from a withdrawn one, and
+    the design's `14 Invitation expired` was unreachable.
+
+    ⚡ **The error map is keyed by *type***, so one class cannot yield three
+    codes. **Three subclasses can**, and they are subclasses rather than
+    replacements so **every existing `except InvitationNotPendingError` keeps
+    working unchanged** — the state that was already on the instance is now
+    also in the type, which is [§2](../../../../CLAUDE.md)'s *types should make
+    incorrect architecture impossible* applied to a distinction that was
+    already true and merely unreadable.
+
+    ⚠️ **`for_state` is the only constructor callers use.** A caller choosing
+    the subclass itself could raise *expired* for a revoked invitation, which
+    is the misattribution the split exists to end.
     """
 
     def __init__(self, state: InvitationState) -> None:
         super().__init__(f"This invitation is {state.value} and can no longer be changed.")
         self.state = state
+
+    @staticmethod
+    def for_state(state: InvitationState) -> InvitationNotPendingError:
+        """The error that says which settled state it actually is."""
+        return _NOT_PENDING_BY_STATE.get(state, InvitationNotPendingError)(state)
+
+
+class InvitationExpiredError(InvitationNotPendingError):
+    """It ran out of time. ⚡ **The one settled state with a next step** — the
+    person can be invited again, and screen `14` exists to say so."""
+
+
+class InvitationRevokedError(InvitationNotPendingError):
+    """Somebody withdrew it. ⛔ **Deliberately not merged with expiry**: one is
+    the clock and the other is a decision, and only the first is worth
+    offering to redo."""
+
+
+class InvitationAlreadyAcceptedError(InvitationNotPendingError):
+    """Already accepted. **A second acceptance is not a failure to explain as
+    one** — the person is a member, which is what they were trying to be."""
+
+
+#: ⛔ **Exhaustive over the settled states, and `PENDING` is deliberately
+#: absent** — a pending invitation never reaches this map, and an entry for it
+#: would be a branch that cannot fire (§2, *a guard that cannot fail*).
+_NOT_PENDING_BY_STATE: dict[InvitationState, type[InvitationNotPendingError]] = {
+    InvitationState.EXPIRED: InvitationExpiredError,
+    InvitationState.REVOKED: InvitationRevokedError,
+    InvitationState.ACCEPTED: InvitationAlreadyAcceptedError,
+}
 
 
 def normalize_email(value: str) -> str:
@@ -172,4 +223,7 @@ class Invitation:
         """
         current = self.state(at=at)
         if current is not InvitationState.PENDING:
-            raise InvitationNotPendingError(current)
+            # **`for_state`, never the base class directly** — B-214. Raising
+            # the base here would put the distinction back out of the type's
+            # reach, which is the whole defect.
+            raise InvitationNotPendingError.for_state(current)
