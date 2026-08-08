@@ -160,38 +160,6 @@
 
 </details>
 
-## 🟠 C-436 · Two password controls that are already ruled or already designed, in the one file Workflow 2 may not touch
-
-> ## ⚡ **Raised by Lane A while implementing [TASK-485](BACKLOG.md), by opening `node_modules` rather than reasoning about it.** ⛔ **Neither is a build problem, and that is the finding: Better Auth 1.6.25 ships both, and each is one line in `lib/auth/server.ts` — the file [TASK-485](BACKLOG.md) states in terms it does not touch.**
->
-> ✅ **Lane A did not touch it. Finding a change is never permission to make it** ([§20e](../CLAUDE.md)), **and a row that quietly widened its own budget would be the worse precedent.**
->
-> | | |
-> |---|---|
-> | **State** | **`OPEN`** — ⛔ **the product owner's: both are authentication semantics** ([D-151](DECISION_REGISTER.md) ④) |
-> | **What it holds** | ✅ **Nothing.** **Screen `06` ships without both, each drawn out rather than faked** |
-> | 🔴 **What it changes** | **What the Workflow 2 review is shown** — ⚡ **exactly what [C-434](LANE_COORDINATION.md) established for Workflow 1: known going in, never discovered at the review** |
->
-> ⚠️ **One of the two is *already ruled* and simply has no row that may execute it — which is [D-179](DECISION_REGISTER.md)'s subject appearing a third time this week.** ✅ **If the ruling is *"enable both"*, this becomes a one-line row against `lib/auth/server.ts` and nothing about Workflow 2 changes.**
->
-> ⚠️ **Indexed here 2026-08-08.** **The item was renumbered from `C-435` after the block-model collision, the body moved and the index did not — `decision-queue --check` reported it `UNLISTED`/`MISSING` and this row is the answer.** ⛔ **A renumber that lands in one place is an item findable only by grep.**
-
-## 🔴 C-435 · Planning synchronization — THE GUARD IS BUILT; THE DECISION IS ONE WORD
-
-> ## ⚡ **Raised by Lane A while implementing [TASK-485](BACKLOG.md), by opening `node_modules` rather than reasoning about it.** ⛔ **Neither is a build problem, and that is the finding: Better Auth 1.6.25 ships both, and each is one line in `lib/auth/server.ts` — the file [TASK-485](BACKLOG.md) states in terms it does not touch.**
->
-> ✅ **Lane A did not touch it. Finding a change is never permission to make it** ([§20e](../CLAUDE.md)), **and a row that quietly widened its own budget would be the worse precedent.**
->
-> | | |
-> |---|---|
-> | **State** | **`OPEN`** — ⛔ **the product owner's: both are authentication semantics** ([D-151](DECISION_REGISTER.md) ④) |
-> | **What it holds** | ✅ **Nothing.** **Screen `06` ships without both, each drawn out rather than faked** |
-> | 🔴 **What it changes** | **What the Workflow 2 review is shown** — ⚡ **exactly what [C-434](LANE_COORDINATION.md) established for Workflow 1: known going in, never discovered at the review** |
->
-> ⚠️ **One of the two is *already ruled* and simply has no row that may execute it — which is [D-179](DECISION_REGISTER.md)'s subject appearing a third time this week.** ✅ **If the ruling is *"enable both"*, this becomes a one-line row against `lib/auth/server.ts` and nothing about Workflow 2 changes.**
->
-> ⚠️ **Indexed here 2026-08-08.** **The item was renumbered from `C-435` after the block-model collision, the body moved and the index did not — `decision-queue --check` reported it `UNLISTED`/`MISSING` and this row is the answer.** ⛔ **A renumber that lands in one place is an item findable only by grep.**
-
 ## 🟡 C-433 · §19 names a command flag that does not exist
 
 ✅ **Nothing is blocked and this needs one sentence, not a decision.** ⚡ **Lane A ran the command §19 tells it to run, and reported the gap rather than quietly skipping the gate.**
