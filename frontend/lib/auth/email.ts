@@ -15,7 +15,9 @@
  */
 
 import { AUTH_EVENTS, emitAuthEvent } from '@/lib/auth/events';
-import type { AuthConfig } from '@/lib/auth/config';
+import { Resend } from 'resend';
+
+import type { AuthConfig, ResendConfig } from '@/lib/auth/config';
 
 export interface AuthEmail {
   to: string;
@@ -60,17 +62,79 @@ const consoleTransport: AuthEmailTransport = async (email) => {
 };
 
 /**
+ * Delivers through **Resend**, the vendor [`09-build-vs-buy.md`](../../../docs/architecture/09-build-vs-buy.md)
+ * ratified and [ADR-0015](../../../docs/architecture/adr/0015-communication-email-and-calendar-integrations.md)
+ * approved — [TASK-494](../../../docs/BACKLOG.md).
+ *
+ * ⚡ **The URL is passed through untouched**, which this file has required
+ * since it was written: *"a transport that rewrote a link would be able to
+ * invalidate it, and the failure would look like an expired token."* **So the
+ * link is not wrapped in click tracking**, and that is a deliberate vendor
+ * setting rather than an omission — Resend rewrites URLs when tracking is on,
+ * and a rewritten verification link is a broken one.
+ *
+ * ⛔ **A failure is raised, never swallowed.** Better Auth is awaiting this;
+ * if it resolves quietly on a rejected send, the customer is told to check an
+ * inbox nothing was sent to — **the silent failure the console guard exists
+ * to prevent, arriving through the vendor instead.**
+ */
+function createResendTransport(config: ResendConfig): AuthEmailTransport {
+  // Constructed once, outside the returned closure: the client is a thin
+  // wrapper over `fetch` and rebuilding it per send would be work per email
+  // for no isolation.
+  const client = new Resend(config.apiKey);
+
+  return async (email) => {
+    const { error } = await client.emails.send({
+      from: config.from,
+      to: email.to,
+      subject: PROMPT[email.purpose],
+      // **Plain text, and this is the honest limit of this row.** The design
+      // snapshot has no email template — screen `07` draws the *code entry*,
+      // not the message — and inventing a branded HTML email would be
+      // designing a customer-visible surface nobody approved (§21).
+      // ⚡ **The link is what the flow needs and it is here in full.**
+      text: `${PROMPT[email.purpose]}:\n\n${email.url}\n`,
+    });
+
+    if (error) {
+      // The vendor's own words. A second phrasing here would be the message
+      // nobody maintains, and this one reaches a log rather than a customer.
+      throw new Error(`Resend refused to deliver a ${email.purpose} email: ${error.message}`);
+    }
+  };
+}
+
+/**
  * The transport this build will use.
  *
- * **No selection, because there is nothing to select between.**
- * `AuthEmailTransportName` has one member and `loadAuthConfig` refuses any
- * other value, so a `config.emailTransport === 'console' ? … : …` here would
- * be a branch that cannot fail — Decorative Logic, giving the impression of a
- * choice the build cannot make. The `config` parameter stays because the
- * *shape* is the point: adding a vendor adds a member to the union and a case
- * here, and every caller is already passing what that case will need.
+ * ⚡ **Now a real selection, and it reads the resolved configuration rather
+ * than the environment.** This function used to document why it did *not*
+ * branch — *"a branch that cannot fail is Decorative Logic"* — and predicted
+ * exactly this change: *"adding a vendor adds a member to the union and a
+ * case here, and every caller is already passing what that case will need."*
+ * **Every caller was; none of them changed.**
+ *
+ * ⛔ **`config.resend` is non-null whenever the name is `resend`**, because
+ * `loadAuthConfig` resolves the credential at startup. The throw below is
+ * therefore unreachable through `loadAuthConfig` and exists for the one
+ * caller that constructs an `AuthConfig` by hand — a test — where a silent
+ * fallback to the console would make a suite pass while asserting the wrong
+ * transport.
  */
-export function createEmailTransport(_config: AuthConfig): AuthEmailTransport {
+export function createEmailTransport(config: AuthConfig): AuthEmailTransport {
+  const deliver =
+    config.emailTransport === 'resend'
+      ? createResendTransport(
+          config.resend ??
+            (() => {
+              throw new Error(
+                "emailTransport is 'resend' and no Resend configuration was resolved.",
+              );
+            })(),
+        )
+      : consoleTransport;
+
   return async (email) => {
     // Recorded before delivery and without the URL. The event says an address
     // was asked to do something; the link is a credential and belongs in
@@ -80,6 +144,6 @@ export function createEmailTransport(_config: AuthConfig): AuthEmailTransport {
         ? AUTH_EVENTS.VERIFICATION_REQUESTED
         : AUTH_EVENTS.PASSWORD_RESET_REQUESTED,
     );
-    await consoleTransport(email);
+    await deliver(email);
   };
 }

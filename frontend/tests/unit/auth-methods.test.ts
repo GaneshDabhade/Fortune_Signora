@@ -49,6 +49,7 @@ function config(overrides: Partial<AuthConfig> = {}): AuthConfig {
     apiBaseUrl: 'http://localhost:8000',
     passwordEnabled: true,
     emailTransport: 'console',
+    resend: null,
     ...overrides,
   };
 }

@@ -6,7 +6,17 @@
  * config that is wrong is not something to discover in production traffic.
  */
 
-export type AuthEmailTransportName = 'console';
+/**
+ * ⚡ **A union with two members, and that is the change** — [TASK-494](../../../docs/BACKLOG.md).
+ *
+ * **`resend` is not a new decision.** [`09-build-vs-buy.md`](../../../docs/architecture/09-build-vs-buy.md)
+ * ratified it — *"transactional delivery/deliverability reputation is a
+ * solved, specialized problem"* — and [ADR-0015](../../../docs/architecture/adr/0015-communication-email-and-calendar-integrations.md)
+ * is the approval. **[D-179](../../../docs/DECISION_REGISTER.md) is why it is
+ * being built now rather than rediscovered later:** *"no architectural
+ * decision should remain only as documentation."*
+ */
+export type AuthEmailTransportName = 'console' | 'resend';
 
 export interface AuthConfig {
   databaseUrl: string;
@@ -27,9 +37,24 @@ export interface AuthConfig {
    * as an OAuth sign-in, because the token carries no record of how anybody
    * signed in. */
   passwordEnabled: boolean;
-  /** How verification and reset links leave the process. One implementation
-   * today; see `lib/auth/email.ts` for why it is a port anyway. */
+  /** How verification and reset links leave the process. Two implementations
+   * now; see `lib/auth/email.ts` for why it was a port before there were. */
   emailTransport: AuthEmailTransportName;
+  /** The Resend credential, present only when `emailTransport` is `resend`.
+   *
+   * ⛔ **Read here rather than inside the adapter**, so a missing key is a
+   * startup failure like every other authentication misconfiguration —
+   * **not a delivery that silently does nothing on a customer's first
+   * sign-up.** */
+  resend: ResendConfig | null;
+}
+
+export interface ResendConfig {
+  apiKey: string;
+  /** The envelope sender. **Resend refuses any address on an unverified
+   * domain**, so this is a real deployment decision and has no default: a
+   * fallback would be a value that works in this file and fails at the API. */
+  from: string;
 }
 
 export interface OAuthProviderConfig {
@@ -84,6 +109,12 @@ function developmentDefault(name: string, fallback: string): string {
 }
 
 export function loadAuthConfig(): AuthConfig {
+  // Resolved once, and both fields read it. **Selection happens here and the
+  // adapter is handed the answer** — `createEmailTransport` switches on this
+  // value rather than re-reading the environment, which is what makes the
+  // choice testable without setting process-wide state.
+  const transport = resolveEmailTransport();
+
   return {
     // Connects as `signora_auth`, never as the database owner. Migration
     // 0005 revokes `signora_app` from the auth schema; that isolation only
@@ -128,7 +159,8 @@ export function loadAuthConfig(): AuthConfig {
     // without an external service, and a product whose only sign-in requires
     // a Google account has assumed something about its customers.
     passwordEnabled: process.env.SIGNORA_AUTH_PASSWORD_ENABLED !== 'false',
-    emailTransport: resolveEmailTransport(),
+    emailTransport: transport,
+    resend: transport === 'resend' ? resolveResend() : null,
   };
 }
 
@@ -155,13 +187,17 @@ export function loadAuthConfig(): AuthConfig {
 function resolveEmailTransport(): AuthEmailTransportName {
   const configured = process.env.SIGNORA_AUTH_EMAIL_TRANSPORT ?? 'console';
 
-  if (configured !== 'console') {
+  if (configured !== 'console' && configured !== 'resend') {
     throw new Error(
       `SIGNORA_AUTH_EMAIL_TRANSPORT='${configured}' is not a transport this build has. ` +
-        "Only 'console' ships today; a production provider is an outstanding decision " +
-        '(ADR-0033) and adding one is a dependency choice, not a configuration value.',
+        "It offers 'console' and 'resend'. Adding a third is a dependency choice " +
+        'and its own ADR, not a configuration value.',
     );
   }
+  // **Resend needs no deployment check, and that is the point of the row.**
+  // The guard below exists because the console transport writes a credential
+  // to stdout; a real transport is what the guard has always been asking for.
+  if (configured === 'resend') return 'resend';
   if (isDeployed()) {
     throw new Error(
       'The console email transport writes verification and password-reset links to stdout, ' +
@@ -211,4 +247,22 @@ export function signInMethods(config: AuthConfig): string[] {
  * to know the difference. */
 export function oauthMethods(config: AuthConfig): string[] {
   return signInMethods(config).filter((method) => method !== 'password');
+}
+
+/**
+ * The Resend credential, read at startup because a missing one must stop a
+ * process rather than a customer.
+ *
+ * ⛔ **No defaults, either of them.** An API key has no safe fallback for the
+ * reason `required` already documents. **And `from` has none because Resend
+ * refuses any address on a domain the account has not verified** — a default
+ * like `noreply@signora.app` would typecheck, boot, and fail at the vendor on
+ * the first customer's sign-up, which is exactly the silent failure the
+ * console-in-production guard was written to prevent.
+ */
+function resolveResend(): ResendConfig {
+  return {
+    apiKey: required('RESEND_API_KEY'),
+    from: required('SIGNORA_AUTH_EMAIL_FROM'),
+  };
 }
