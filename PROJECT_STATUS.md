@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3ed76cf`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `adce341`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `3ed76cf`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `adce341`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`3ed76cf`** — the certified commit itself |
+| **`main`** | **`adce341`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 122 released the six rows QE was holding** — **`eligible_count` went from 1 to 10 on `main`** |
-| **Certification** | ✅ [`3ed76cf1480a`](certification/reports/3ed76cf1480a.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⛔ **Cycle 123 restored a line QE deleted in cycle 122** — [B-411](docs/BUGS.md), **filed by Lane C against QE, and correct** |
+| **Certification** | ✅ [`adce341f879f`](certification/reports/adce341f879f.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **[B-149](docs/BUGS.md) is `VERIFIED`** — returned in cycle 115, fixed and promoted in 116 |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ⛔ **None directly.** ⚡ **Ten claimable rows where there was one** — the constraint on the next several cycles was QE's own exclusion |
+| **Customer value this cycle** | ⚡ **A journey delivered and one honestly bounded** — `TASK-484`, the two journeys that work and nobody verifies |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1694 frontend tests** *(+8)* across **72 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **154s** *(`Startup 19s` — a backend-only cycle, **the reading holds a tenth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1694 frontend tests** *(+8)* across **72 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **172s** *(⚠️ **`Researched account 22s` — the slow-population stage naming itself on a *fast* run**, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,69 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 122
+## 1d · Release summary — 2026-08-08, cycle 123
+
+**Derived from the promoted commit `adce341`.** **Seventy-eight promotions.** ⛔ **QE deleted a line from the backlog in cycle 122 and restored it here — and a lane caught it, not a gate.**
+
+### ⛔ [B-411](docs/BUGS.md) — Lane C filed it against QE, and it is correct
+
+**Cycle 121 excluded `D-183`/`D-184` on `TASK-486`'s `Features` line, checked three things, and concluded *"Lane C's tip genuinely carries no such line — so the deletion is deliberate."***
+
+⚡ **The observation was exact. The inference was wrong.** **Lane C deleted it by accident**, and the mechanism is worth carrying:
+
+> **`re.S` makes `.` match newlines, so a non-greedy `.*?` in a `Status`-cell pattern stops at the *next row's* terminator whenever the target cell has none.** ⛔ **The match succeeds, the regex looks correct, nothing errors, and the row below is silently replaced.**
+
+**And the commit that did it was the one *restoring* a lane-owned state Lane C had overwritten** — *"fixing one violation while committing a silent deletion, because a correction is written quickly and reviewed as 'just putting it back.'"*
+
+### ⛔ Where QE went wrong, stated exactly
+
+**Cycle 121's caution was right. Cycle 122's resolution was the error.**
+
+⚡ **QE proved *authorship*** — `git log -L` named `6e7fc924`, a Lane C package — **and then answered a different question with it.**
+
+| | |
+|---|---|
+| **What authorship establishes** | ✅ **That a conflict is not cross-lane.** QE was entitled to act |
+| **What it says about intent** | ⛔ **Nothing at all** |
+
+**QE inferred intent from absence, which is precisely what B-411 says cannot be done.** ⚠️ **Cycle 122's summary calls that resolution correct; it is left standing as the dated record it is** (§2 — *falsifying history to make the repository look consistent is the same failure wearing the opposite coat*).
+
+### ✅ The repair, and why it had to be QE's
+
+⛔ **No commit on `lane-c-sync` restores the line.** **Its tip carries it from its *base* at `3f22184b`, which predates the removal** — so cherry-picking could never bring it back. ⚡ **A deletion that exists only as a difference between two bases is not an edit anybody made.**
+
+**QE restored it from the pre-removal blob**, and verified rather than asserted: **byte-identical to Lane C's repaired tip, and at the same offset (9 lines) within `TASK-486`.**
+
+> ✅ **The check QE adds, and it is one line: when a conflict is a pure deletion, ask whether any commit on the branch performs it.**
+
+### ✅ What else was promoted
+
+| | |
+|---|---|
+| ⚡ **`TASK-484`** *(Lane A)* | **The two journeys that work and nobody verifies** — *"one journey delivered, one honestly bounded"*. A new `search-journey.spec.ts` |
+| **[D-185](docs/DECISION_REGISTER.md)** *(Lane C)* | Both decisions applied — *"and §5 caught me inside its own commit"* |
+| **[C-242](docs/LANE_COORDINATION.md) · [C-243](docs/LANE_COORDINATION.md)** *(Lane C)* | Indexed, **and one of them is a real decision** |
+
+⛔ **Lane C's rebased `D-183` was skipped** — `main` already carries it, and the incoming version conflicted across **two generated files** (`coordination.toml`, `queues/lane-a.toml`) plus `state-check.py`. **The repair for a generated file is the generator** (§20e).
+
+### ⚠️ Smoke named `Researched account` on a *fast* run
+
+**172s, and the slowest stage is `Researched account 22s`** — the stage that named itself on both 2652s outliers and on the 621s run. ⛔ **The three-population reading QE has repeated ten times does not explain this one**, and it is recorded as the first observation that complicates it rather than confirms it.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1694 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **128 runs recorded, 120 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 172s |
+| **Dependency** | ✅ Nothing held |
+| **Customer Value** | ⚡ **One journey delivered, one bounded and said so** |
+| **Process** | 🔴 **A gate did not catch this and could not have** — the loss was one line of markdown inside a register. ⚡ **A lane re-measured its own file against `integration` and found it**, which is §20e's claim about this repository restated from the other side |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 122
 
 **Derived from the promoted commit `3ed76cf`.** **Seventy-seven promotions.** ⛔ **QE released a hold it had placed itself — and the evidence that resolved it was one `git log -L` away the whole time.**
 
