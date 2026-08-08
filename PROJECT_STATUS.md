@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `891e2c4`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `67d662e`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `891e2c4`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `67d662e`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`891e2c4`** — the certified commit itself |
+| **`main`** | **`67d662e`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 118 promoted `TASK-494` — email leaves the process through Resend**, the first *adoption* of a ratified buy decision under [D-179](docs/DECISION_REGISTER.md) |
-| **Certification** | ✅ [`891e2c464d02`](certification/reports/891e2c464d02.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 119 promoted Workflow 3's screen 07 — and the six boxes the design draws are deliberately absent**, with a test asserting their absence |
+| **Certification** | ✅ [`67d662ee7e72`](certification/reports/67d662ee7e72.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **[B-149](docs/BUGS.md) is `VERIFIED`** — returned in cycle 115, fixed and promoted in 116 |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ⚡ **Indirect but load-bearing.** **A verification email can now leave the process** — what Workflows 3, 4 and 5 were each about to build around |
+| **Customer value this cycle** | ✅ **A person who has just registered sees where to go next** — screen `07 Verify email`, with a resend timer that starts on a successful send rather than on the click |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1672 frontend tests** *(+8)* across **70 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **233s** *(`Build 92s` — a frontend cycle, **the reading holds a sixth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1686 frontend tests** *(+14)* across **71 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **194s** *(`Build 54s` — a frontend cycle, **the reading holds a seventh time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,54 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 118
+## 1d · Release summary — 2026-08-08, cycle 119
+
+**Derived from the promoted commit `67d662e`.** **Seventy-four promotions.** ⚡ **A slice whose most valuable output is the thing it refused to build — and a test that asserts the refusal.**
+
+### ✅ What was promoted
+
+| | |
+|---|---|
+| ⚡ **`TASK-486` milestone 1 — screen `07 Verify email`** *(Lane A)* | **A person who has just registered sees where to go next.** The resend timer is the design's — *"starts at 45s and doubles; the third resend suggests checking spam and the corporate filter"* — and **the remaining time is printed rather than the control merely disabled**, which the design's own accessibility note asks for |
+| **[D-182](docs/DECISION_REGISTER.md)** *(Lane C)* | Workflow 8 decomposed, *"because it was the cliff"* |
+
+### ⛔ The six boxes are not built, and that is the finding rather than the omission
+
+**The design draws six single-character boxes for a 6-digit code. This screen sends a *link*.** ⚡ **Lane A opened the code rather than reasoning about it**: `lib/auth/server.ts:73` sends `{ user, url }`, the port's `AuthEmail` carries `url` and nothing else, and **no endpoint would accept a typed code.**
+
+**`better-auth/plugins/email-otp` is installed and unregistered** — and registering it means editing `lib/auth/server.ts`, **the one file `TASK-486` states in terms it does not touch**, plus choosing `otpLength`, *"a security parameter nobody has chosen."* ✅ **Raised as [C-241](docs/LANE_COORDINATION.md), from Lane A's own `200+` block.**
+
+> ⚡ **Six boxes wired to nothing would be a false affordance, and the strongest version of one: *"it looks like it worked right up until it does not."*** **The lane has now refused that three times** — `/join` never offers *Request access* because nothing can grant it, `/sso` locks its domain field and gives the reason, and this.
+>
+> ✅ **A test asserts the boxes' absence rather than leaving it to be noticed.** ⛔ **That is the difference between a declared limitation and a discovered one**, and it is [P-A](docs/DOMAIN_DISCOVERY_REGISTER.md) answered before it could happen.
+
+### ✅ Two details worth keeping
+
+| | |
+|---|---|
+| **The countdown starts on a successful send, never on the click** | *"A failure that began a 45-second wait would punish somebody for the product's own error and leave them no way to retry"* |
+| **`useResendTimer` goes into `components/ui`, not beside the page** | §20c — **screens `08` and `09` draw the same control.** ⚡ **Added *to* the library rather than beside it**, which is the rule most often lost under time pressure |
+
+### ✅ Planning travelled the way §20e intends
+
+**[D-182](docs/DECISION_REGISTER.md) sat unintegrated across three polls** because it changed nothing executable — **and rode in the moment Lane A pushed a screen.** ⛔ **QE declined to open a cycle for it on its own** and declined equally to decide [C-435](docs/LANE_COORDINATION.md), the open deadlock about whether it should have: **acting either way would have been QE ruling an unruled governance question.**
+
+> ⚡ **What it cost, measured rather than argued: one planning commit, held 11 minutes at the first poll and integrated within the hour, with no lane starved at any point.** **That is the evidence [D-136](docs/DECISION_REGISTER.md) asks for.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1686 frontend** *(+14)* · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **124 runs recorded, 116 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 194s |
+| **Dependency** | ⚠️ **[C-241](docs/LANE_COORDINATION.md) opened** — the OTP plugin is installed, unregistered, and its length is an unmade security decision |
+| **Customer Value** | ✅ **Workflow 3 has its first screen**, and it does not pretend to do what it cannot |
+| **Process** | ⚡ **The best slice of the session on one measure: it names what it did not build, says why in the product's own code, files the decision, and tests the absence** |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 118
 
 **Derived from the promoted commit `891e2c4`.** **Seventy-three promotions.** ⚡ **A ratified decision became working software for the first time under [D-179](docs/DECISION_REGISTER.md) — and QE found three of its own dashboard figures stale while measuring it.**
 
