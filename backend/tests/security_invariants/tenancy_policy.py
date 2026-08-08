@@ -63,6 +63,22 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # changes its present state. `UPDATE` is granted and only retirement
         # uses it — a revision is an INSERT naming the version it replaces.
         "saved_view",
+        # Person preferences (TASK-470, Workflow 9), migration 0044.
+        # 🔴 **The first table in the platform whose ROWS are filtered by
+        # `app.user_id`** — 492 §0's *narrowing of tenant-owned, never a
+        # parallel to it*. It is fully tenant-owned (non-nullable
+        # `workspace_id`, RLS forced, separate read and write policies) **and
+        # then narrower**: every policy also requires
+        # `user_id = current_setting('app.user_id')`.
+        #
+        # ⚠️ **TASK-470's row calls these preferences *account*-scoped and this
+        # disagrees with it**, on 418: *"a profile preference, a notification
+        # matrix and a session belong to a person within a workspace."*
+        # ⛔ **Account-global has no lawful home today** — a table without
+        # `workspace_id` could only be platform infrastructure, which a
+        # business module may never query, and a profile panel queries this on
+        # every render. Recorded at C-247 rather than settled here.
+        "person_preferences",
         # Onboarding (TASK-469, Workflow 8), migration 0043. **Every answer
         # column is nullable and the table is still tenant-owned** — a
         # skippable step is a nullable column, not an exempt table, and the

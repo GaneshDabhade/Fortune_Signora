@@ -8245,6 +8245,28 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 ---
 
+## C-247 · A person in two organizations gets two themes, and TASK-470's row says otherwise
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-08, **implementing [TASK-470](BACKLOG.md) — the row asked for this answer rather than leaving it assumed** |
+| **Owner** | **Product owner** — ⚡ **it is a product question wearing a tenancy question's clothes**: *does a person have one Signora, or one per organization?* |
+| **Status** | **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **Preferences ship person-within-workspace**, which is what the architecture already says |
+| **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is a customer's experience of belonging to two organizations**, which nobody has yet |
+
+**[TASK-470](BACKLOG.md)'s row says the preferences are *account*-scoped**: *"Theme, density, locale and AI preference are account-scoped, not workspace-scoped — which makes this the first row in the migration whose data is not workspace-owned."*
+
+**[418](architecture/418-platform-foundation-assessment.md) says otherwise**, and [492 §2](architecture/492-person-scoped-tenancy.md) quotes it: *"A profile preference, a notification matrix and a session belong to a **person within a workspace**."*
+
+| | |
+|---|---|
+| ✅ **What shipped, and why** | **Person within a workspace** — migration `0044`, `PRIMARY KEY (workspace_id, user_id)`, registered in `TENANT_OWNED_TABLES`, **with every RLS policy carrying `user_id = current_setting('app.user_id')` on top of the tenant predicate.** ⚡ **[492 §0](architecture/492-person-scoped-tenancy.md)'s *narrowing of tenant-owned, never a parallel to it*** |
+| ⛔ **Why not account-global** | **It has no lawful home today.** [§8](../CLAUDE.md) offers two classes: tenant-owned needs a non-nullable `workspace_id`, and platform-infrastructure tables are *"owned exclusively by platform services… a business module must never query one"* — **and a profile panel queries this on every render.** A third class would change what the Security Invariants mean, which is not a feature row's to introduce |
+| ⚡ **Why the design does not settle it** | *"Applies to this account on every device you sign in from, **not to this browser**"* contrasts the account with the **browser**, never with the organization. **It settles that preferences are server-persisted — which they are** |
+| ⚠️ **What it costs, stated plainly** | **A person in two organizations has two preference rows and could see two themes.** ⛔ **Nobody has two organizations yet**, so this is cheap to change now and expensive later |
+
+**The decision, in one sentence:** ⚡ **confirm that a preference belongs to a person *within* an organization — the architecture's answer, and what ships — or rule that theme, density and locale are one person's everywhere**, in which case a third tenancy class is needed and [492](architecture/492-person-scoped-tenancy.md) has already designed it.
+
 ## C-246 · The onboarding design labels a step *Workspace* and ADR-0034 says a customer reads *Organization*
 
 | | |
