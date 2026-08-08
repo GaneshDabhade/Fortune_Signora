@@ -1425,8 +1425,8 @@ updated      = 2026-08-08
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-474"          # ① the developer mailbox
-next    = "TASK-488"          # ② Workflow 5 · Password Reset — 22/22
+current = "TASK-488"          # ① Workflow 5 · Password Reset — 22/22
+next    = "TASK-489"          # ② Workflow 7 · Invitation Acceptance — 22/22
 # ④ TASK-498 · lib/auth/server.ts — C-240 ①② + email-otp registration
 # ⑤ TASK-474 · the developer mailbox
 #
@@ -1469,8 +1469,8 @@ next    = "TASK-488"          # ② Workflow 5 · Password Reset — 22/22
 # this office was releasing it here, and the rebase kept this office's line.
 # Lane A's CLAIMED is restored in BACKLOG.md and the row is gone from this
 # queue: a lane must never be offered back work it is already holding.
-future  = ["TASK-489", "TASK-469", "TASK-470", "TASK-471", "TASK-473",
-           "TASK-476", "TASK-492"]
+future  = ["TASK-469", "TASK-470", "TASK-471", "TASK-473", "TASK-476",
+           "TASK-492"]
 # ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation,
 #    D-022) and cannot fill this lane's floor. This office briefly counted
 #    it and was wrong.
@@ -1493,11 +1493,11 @@ future  = ["TASK-489", "TASK-469", "TASK-470", "TASK-471", "TASK-473",
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 9   # 🔴 BELOW the D-184 floor of 10 — measured below.
+eligible_count = 8   # 🔴 BELOW the D-184 floor of 10 — identifier-blocked.
                      # reported "one of the two is stale" and it was the count.
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
 depth_target   = 10  # ⚡ D-184 — was 3 (D-183), was 1 (D-163).
-shortfall      = 1   # 🔴 9 of 10.
+shortfall      = 2   # 🔴 8 of 10.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

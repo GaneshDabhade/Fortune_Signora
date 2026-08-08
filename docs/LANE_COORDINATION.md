@@ -7498,6 +7498,27 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 
 **Nothing urgent, and no gate is involved.** ⚡ **Reconcile the rows against `main` at the next Closeout** — [§20e](../CLAUDE.md) activity 3 already requires exactly this: *"promoted claims marked `COMPLETE` and then removed."* ⛔ **This item exists so the backlog stops asserting a state the repository is not in** ([§2](../CLAUDE.md)), **not to add work.**
 
+
+### ⚡ Measured on the 2026-08-08 project audit — it is 63, not 18, and five days deep
+
+**This item was raised at eighteen rows. The audit counted the register.**
+
+| | |
+|---|---|
+| **Rows reading `IN VALIDATION` on `integration`** | **63 of 115** |
+| **Oldest** | **2026-08-03 — five days** |
+| **By day** | `08-03` 2 · `08-04` 6 · `08-05` 13 · `08-06` 17 · `08-07` 17 · `08-08` 8 |
+
+⛔ **And they are not with QE.** ✅ **Seven rows whose code is provably on `main` were tested by content — the design tokens (`--color-accent: 19 78 118`), the `(auth)` routes, four `on_main` journeys.** 🔴 **Five of the seven still read `IN VALIDATION`**: [TASK-467](BACKLOG.md), [485](BACKLOG.md), [487](BACKLOG.md), [490](BACKLOG.md), [491](BACKLOG.md). **Only [TASK-486](BACKLOG.md) and [494](BACKLOG.md) carry `PROMOTED`.**
+
+> ## ⛔ **So `BACKLOG.md` cannot answer *what has shipped*.** ⚡ **A reader would conclude 63 slices are outstanding when most are live. Only [`workflows.toml`](coordination/workflows.toml) and git tell the truth, and nothing warns a reader of that.**
+
+⚠️ **This is [§2](../CLAUDE.md)'s defect in its purest form** — *the repository asserting something untrue of itself* — **and it is the one class this repository treats as worse than an absent record, because it is trusted.**
+
+⛔ **Lane C cannot repair a single row.** 📁 **[§20e](../CLAUDE.md): `VERIFIED`, `CERTIFIED`, `PROMOTED` and `DONE` are QE's exclusively, *always, including on Lane C's own rows*** ([D-123](DECISION_REGISTER.md)). ✅ **The measurement is offered as input to the lane that can.**
+
+⚡ **A mechanical suggestion, offered and not prescribed**: **QE already knows the certified SHA at each promotion, and a row's slice is greppable from its commit.** ⛔ **Sixty-three rows is a Closeout-sized job by hand and a small one by script — and [§20e](../CLAUDE.md)'s Closeout step 13 already asks QE to reconcile the *board*; this is the same reconciliation one register over.**
+
 ## C-425 · The coordination ref asserts an authority that is not in the authoritative state
 
 | | |
