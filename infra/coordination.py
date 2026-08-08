@@ -806,6 +806,35 @@ def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
     return out
 
 
+NOTICES = ROOT / "docs" / "coordination" / "notices.toml"
+
+
+def _notice(lane: str) -> str:
+    """The one thing this lane must know that `BACKLOG.md` cannot tell it.
+
+    ⚡ **`origin/coordination` is the ONLY channel that reaches a lane without
+    QE** ([D-144](../docs/DECISION_REGISTER.md)), and this office kept writing
+    urgent answers into `queues/lane-a.toml` — **a file a lane reads from
+    `integration`, which is exactly the ref the answer is stuck behind.**
+
+    ⛔ **The cost was concrete on 2026-08-08.** Lane A filed [B-214](../docs/BUGS.md)
+    and asked for a backlog row. It needs none — `workspace_tenancy` is its own
+    module and §20e's 🟢 tier covers *a bug fix inside it*. **That answer sat on
+    `lane-c-sync` while Lane A reported the same blocker twice.**
+
+    ⚠️ **One line, deliberately.** A notice that grows into a message log becomes
+    a second coordination register, and `LANE_COORDINATION.md` is the first.
+    **It carries the answer and points at where the reasoning lives.**
+    """
+    if not NOTICES.exists():
+        return ""
+    try:
+        text = tomllib.loads(NOTICES.read_text()).get(lane, {}).get("notice", "")
+    except tomllib.TOMLDecodeError:
+        return ""
+    return str(text)[:400].replace('"', "'")
+
+
 def render(rows: list[Task]) -> str:
     lanes = sorted({r.lane for r in rows if r.lane != "—"})
     out = [
@@ -863,6 +892,7 @@ def render(rows: list[Task]) -> str:
         m = stats[lane]
         out += [
             f"[lane.{lane.replace(' ', '_')}]",
+            f'notice             = "{_notice(lane)}"',
             f'current            = "{pipeline[0].id if pipeline else ""}"',
             f'next               = "{pipeline[1].id if len(pipeline) > 1 else ""}"',
             f'next_after_that    = "{pipeline[2].id if len(pipeline) > 2 else ""}"',
