@@ -882,6 +882,20 @@
 | ⚠️ **Why it matters more than it looks** | ⛔ **Workflow 17 was blocked until 2026-08-08 on *notification delivery infrastructure* — the outbox, relay, dispatch, idempotency and dead-lettering** — ⚡ **which is precisely what `09` already says not to build.** **The blocker was a decision that had been made and never carried into a row** |
 | **Module** | **`product_surface`** and the notification port, when Workflow 17 is decomposed |
 
+### TASK-497 · Planning state reaches a lane without waiting for a certification cycle
+
+| | |
+|---|---|
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-494](#task-494--email-leaves-the-process-through-the-ratified-vendor), Lane C 2026-08-08.** ⛔ **Deliberately NOT ahead of it.** ⚡ **[D-180](DECISION_REGISTER.md) ⑤ and [D-181](DECISION_REGISTER.md) ⑤ both say the same thing: the customer journey is the unit of progress, and this is infrastructure for the office rather than for a customer.** ⚠️ **The condition it fixes is currently NOT occurring — QE integrated within hours on the last three instances** |
+| **Module** | **`platform_foundation`** — [D-022](DECISION_REGISTER.md). ⛔ **Lane C's, and it is the one lane that may not verify governance it authored** ([§20e](../CLAUDE.md)) |
+| **The ruling** | ✅ **[D-181](DECISION_REGISTER.md) §6 — [C-435](LANE_COORDINATION.md), **Option 3**.** ⛔ **This row does not re-decide it and must not re-open it** |
+| ⚡ **The one open question, and it is the whole slice** | **`coordination.toml` already carries every fact a lane needs to *choose* — `current`, `next`, `depends_on`, `waiting_for`, the metrics.** ⛔ **What it does not carry is a row's *scope text*, which is what [§20e](../CLAUDE.md) step 3b goes to `BACKLOG.md` for.** **So: does the scope travel to the ref, or does a lane take its *order* from the ref and read *scope* from `integration`?** ⚡ **[491](architecture/491-planning-synchronization-architecture.md) is the analysis; this row is the answer, measured** |
+| ⛔ **What must remain true** | **① `ACTIVE_ASSIGNMENTS.md` does not move — it is the claim protocol's arbitration point.** **② Nothing executable can reach the ref, and that must stay *unrepresentable* rather than guarded.** **③ QE's authority over `integration` is untouched.** **④ [`--publish`](../infra/coordination.py) stays the only route, with its contract widened in the same change if the contract changes** |
+| **Delivers** | **The migration, [§20e](../CLAUDE.md) step 3b amended to match, and a lane able to poll one ref for both order and scope** — ⛔ **or the measured finding that it should not, which is an equally valid outcome and closes the row** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `infra/` · **Routes** none · **APIs** none · **Playwright** none — ⛔ **not customer-visible, and [§2](../CLAUDE.md)'s demoability rule says so plainly rather than pretending otherwise** · **Unit** `--self-test` extended to the widened contract; a case proving `ACTIVE_ASSIGNMENTS.md` is still refused |
+| **Change Budget** | 🟠 **`infra/coordination.py`, `docs/coordination/`** · 🔴 **[`CLAUDE.md`](../CLAUDE.md) §20e step 3b — the product owner's, and drafted only on instruction** |
+| ⚠️ **The fallback is kept, not deleted** | 📁 **`certification-guard.py --audit-planning` is Option 2, built and verified and now unused.** ⛔ **It stays.** ⚡ **If this migration proves worse than the problem, the alternative is one word away rather than one rebuild away** |
+
 ### TASK-496 · Search infrastructure through the ratified vendor
 
 | | |

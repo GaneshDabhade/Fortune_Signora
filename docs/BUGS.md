@@ -946,6 +946,52 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-410 · The entire repository tree was published onto `origin/coordination`, and every lane's poll broke
+
+| | |
+|---|---|
+| **Module** | **`infra/`** — Platform Foundation, [D-022](DECISION_REGISTER.md) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🔴 — ⛔ **shared infrastructure, and it broke the *one command* [D-144](DECISION_REGISTER.md) gives every lane.** ⚡ **`git show origin/coordination:coordination.toml` returned `fatal: path does not exist`. A lane polling during that window learns nothing and has no fallback that is not the 14,392 lines the ref exists to replace** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-08, [D-181](DECISION_REGISTER.md).** **Recovered to `5f7b7a24`; `--publish` and `--self-test` added; `_git_strict` added.** **`VERIFIED` is QE's** |
+| **Found** | **2026-08-08, by Lane C, one line after causing it** — ⚡ **on the *output* of the next command, not on the output of the failing one, which is the whole defect** |
+| **Steps** | **Run `git push origin HEAD:coordination --force-with-lease 2>&1\|tail -2 \|\| echo "…republish separately"`** |
+| **Expected** | **A refusal, or a two-file tree** |
+| **Actual** | ⛔ **A 1609-file, 257-directory repository tree on an orphan ref that is flat by contract** |
+
+## ⚡ The root cause is not the push. It is that a push existed to hand-roll.
+
+> ## ⛔ **The command was written to *tolerate* failure and therefore could not report *unexpected success*.**
+>
+> ## ⚡ **Commands intended to tolerate failure must never obscure unexpected success.** — [D-181](DECISION_REGISTER.md) §2, the product owner's wording.
+
+**`|| echo "coordination ref: separate orphan, republish separately"` was appended in the expectation that the push would be rejected.** ⛔ **It was not.** **The fallback text never printed — and its *absence* was the only signal, in a shell where absence of output is the normal case.** ⚠️ **The wrong action and the handled skip were typographically identical on screen.**
+
+### 🔴 The same defect, one layer down, in code
+
+📁 **`_git()` in `infra/coordination.py` returns `.stdout.strip()` and discards the return code.** ⚡ **That is correct for reading** — an absent ref is a legitimate answer to *"what does `integration` say about this row?"* — ⛔ **and wrong for anything that writes, where an empty string and a successful push are indistinguishable.**
+
+> ⚠️ **A `--publish` built on it would have printed *published* over a rejected push**, which is this same bug re-committed in the fix for it.
+
+✅ **`_git_strict()` raises. Reads keep the tolerant form deliberately, and the docstring says which is which and why.**
+
+### ✅ What actually prevents recurrence
+
+⛔ **Not a warning beside the old procedure — the old procedure is gone.** **`python3 infra/coordination.py --publish` regenerates, builds the two-file tree, validates it, and moves the ref only if every clause holds.** **Hand-rolling is no longer the convenient path.**
+
+| Clause | Checked by |
+|---|---|
+| **Destination is exactly `coordination`** | **name comparison, not a prefix** |
+| **No subtrees** | ⚡ **a directory on a flat ref *is* the repository-tree case** |
+| **No unexpected file · no contract file absent** | **by *name*** — ⛔ **a count alone passes a two-file tree holding the wrong two files** |
+| **`coordination.toml` parses and carries `[meta]`, `[lane]`, `[task]`** | **a file without `[lane]` answers nothing a lane asked** |
+
+✅ **`--self-test` proves it fails**, rather than asserting it: 🔴 **REFUSES the repository tree** — *257 directories, 1609 unexpected files, `coordination.toml` absent* — 🔴 **REFUSES the correct tree aimed at `integration`**, ✅ **ACCEPTS the published tree.** ⚡ **[§2](../CLAUDE.md): *a guard that cannot fail is documentation pretending to be code*, and [B-409](#b-409--the-starvation-check-counted-work-the-lane-had-already-finished-so-it-never-fired) is this office's own worked example of what an unproved guard is worth.**
+
+⚠️ **What this row does not claim.** **The recovery required the product owner's approval and did not happen without it** — the push was refused by the permission classifier, this office stopped, and [D-181](DECISION_REGISTER.md) is the grant. ✅ **That part of the sequence worked.**
+
+---
+
 ### B-409 · The starvation check counted work the lane had already finished, so it never fired
 
 | | |

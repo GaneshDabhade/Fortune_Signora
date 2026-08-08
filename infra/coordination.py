@@ -14,6 +14,13 @@ change it.
 
     python3 infra/coordination.py            # write docs/coordination/coordination.toml
     python3 infra/coordination.py --check    # exit 1 if the published file is stale
+    python3 infra/coordination.py --publish  # validate, then move origin/coordination
+    python3 infra/coordination.py --self-test  # prove the publish guard refuses
+
+⛔ **Never publish this ref by hand.** `--publish` builds the two-file tree,
+validates it against the contract, and only then moves the ref — because on
+2026-08-08 a hand-rolled `git push` put the *entire repository tree* on it and
+broke every lane's poll ([D-181](../docs/DECISION_REGISTER.md)).
 """
 
 from __future__ import annotations
@@ -128,10 +135,39 @@ class Task:
     on_integration: bool = True
 
 
-def _git(*args: str) -> str:
+def _git(*args: str, stdin: str | None = None) -> str:
+    """Read-only git. **Returns empty on failure, deliberately** — a missing ref
+    is a normal answer to *"what does `integration` say about this row?"*
+    """
     return subprocess.run(
-        ["git", *args], cwd=ROOT, capture_output=True, text=True
+        ["git", *args], cwd=ROOT, capture_output=True, text=True, input=stdin
     ).stdout.strip()
+
+
+class GitFailed(RuntimeError):
+    pass
+
+
+def _git_strict(*args: str, stdin: str | None = None) -> str:
+    """Git that **raises when it fails**, for anything that writes.
+
+    ⚡ **D-181's root cause, one layer down.** The published account of that
+    failure is *"a command that treated success and failure identically"* — and
+    `_git` above is exactly such a command. It is correct for reading, where an
+    absent ref is an answer; it is **wrong for a push, where an empty string and
+    a successful push are indistinguishable**, which would let `--publish` print
+    *published* over a rejection.
+
+    ⛔ **The lesson generalises past the shell: a helper that cannot express
+    failure will eventually be used where failure matters.**
+    """
+    done = subprocess.run(
+        ["git", *args], cwd=ROOT, capture_output=True, text=True, input=stdin
+    )
+    if done.returncode != 0:
+        raise GitFailed(f"git {' '.join(args[:3])} exited {done.returncode}: "
+                        f"{(done.stderr or done.stdout).strip()[:300]}")
+    return done.stdout.strip()
 
 
 def _owners() -> dict[str, str]:
@@ -888,10 +924,152 @@ def _content(source: str) -> str:
     return body[1] if len(body) > 1 else source
 
 
+COORD_REF = "coordination"
+COORD_CONTRACT = ("README.md", "coordination.toml")
+COORD_SECTIONS = ("meta", "lane", "task")
+
+
+def _coordination_findings(tree: str, ref: str) -> list[str]:
+    """Everything that must hold before a tree may become `origin/coordination`.
+
+    ⚡ **D-181, and it is written from the failure rather than from foresight.**
+    On 2026-08-08 this office pushed the *entire repository tree* onto this ref
+    with a hand-rolled `git push`, and the tell was hidden by a `|| echo`
+    fallback that made a successful wrong push read like a handled skip. Every
+    lane's poll — `git show origin/coordination:coordination.toml` — returned
+    `fatal: path does not exist` until it was restored.
+
+    ⛔ **The root cause was not the push; it was that a push existed to hand-roll
+    at all.** So the fix is not a warning added beside the old procedure — it is
+    that publishing is now one command that refuses to run on a tree that is not
+    the contract. **A guard that cannot fail is documentation pretending to be
+    code** (§2), and this one is proved able to fail by `--self-test`.
+
+    ⚠️ **The repository-tree case is checked by *name*, deliberately.** A count
+    alone would pass a two-file tree holding the wrong two files, and a
+    contamination check that looks only for `backend/` would pass a tree whose
+    contamination happened to be a `Makefile`.
+    """
+    findings: list[str] = []
+
+    if ref != COORD_REF:
+        findings.append(
+            f"destination is `{ref}`, and the only ref this publishes to is "
+            f"`{COORD_REF}`. **A planning projection pushed anywhere else is "
+            f"either invisible or destructive.**"
+        )
+
+    entries = _git("ls-tree", "-r", "-t", "--format=%(objecttype) %(path)", tree)
+    listed = [line.split(" ", 1) for line in entries.splitlines() if line]
+    names = sorted(path for kind, path in listed if kind == "blob")
+    subtrees = sorted(path for kind, path in listed if kind == "tree")
+
+    if subtrees:
+        findings.append(
+            f"the tree carries {len(subtrees)} director(ies) — {', '.join(subtrees[:6])}. "
+            f"**The coordination ref is flat by contract; a directory here means a "
+            f"repository tree is being published, which is exactly the 2026-08-08 defect.**"
+        )
+    unexpected = [n for n in names if n not in COORD_CONTRACT]
+    if unexpected:
+        findings.append(
+            f"{len(unexpected)} unexpected file(s) — {', '.join(unexpected[:6])}"
+            + (" …" if len(unexpected) > 6 else "")
+            + f". **The contract is exactly {', '.join(COORD_CONTRACT)}.**"
+        )
+    missing = [n for n in COORD_CONTRACT if n not in names]
+    if missing:
+        findings.append(
+            f"{len(missing)} contract file(s) absent — {', '.join(missing)}. "
+            f"**`coordination.toml` missing is a broken poll for every lane; "
+            f"`README.md` missing is a ref nobody arriving cold can read.**"
+        )
+
+    if "coordination.toml" in names:
+        raw = _git("cat-file", "blob", f"{tree}:coordination.toml")
+        try:
+            parsed = tomllib.loads(raw)
+        except tomllib.TOMLDecodeError as exc:
+            findings.append(f"`coordination.toml` does not parse — {exc}")
+        else:
+            absent = [s for s in COORD_SECTIONS if s not in parsed]
+            if absent:
+                findings.append(
+                    f"`coordination.toml` parses but has no {', '.join(absent)} section. "
+                    f"**A lane reads `[lane.<its own>]`; a file without one answers nothing.**"
+                )
+    return findings
+
+
+def _publish(dry_run: bool) -> int:
+    """Build the two-file tree, validate it, and only then move the ref."""
+    readme = _git_strict("rev-parse", f"origin/{COORD_REF}:README.md")
+    toml_blob = _git_strict("hash-object", "-w", str(OUT))
+    tree = _git_strict(
+        "mktree",
+        stdin=f"100644 blob {readme}\tREADME.md\n100644 blob {toml_blob}\tcoordination.toml\n",
+    )
+
+    findings = _coordination_findings(tree, COORD_REF)
+    if findings:
+        print("coordination: REFUSED — the candidate tree is not the contract", file=sys.stderr)
+        for f in findings:
+            print(f"  · {f}", file=sys.stderr)
+        return 1
+
+    parent = _git("rev-parse", f"origin/{COORD_REF}")
+    if _git("rev-parse", f"{parent}^{{tree}}") == tree:
+        print(f"coordination: already published at {parent[:8]} — nothing to do")
+        return 0
+
+    print(f"coordination: tree {tree[:8]} validated — "
+          f"{', '.join(COORD_CONTRACT)}, no subtrees, parses, {len(COORD_SECTIONS)} sections")
+    if dry_run:
+        print(f"coordination: --dry-run, not pushing. Parent would be {parent[:8]}")
+        return 0
+
+    message = (f"Coordination republished — {len(tasks())} task(s)\n\n"
+               f"Validated against the D-181 contract before the ref moved: "
+               f"{', '.join(COORD_CONTRACT)}, no subtrees, parses, "
+               f"{len(COORD_SECTIONS)} sections, destination `{COORD_REF}`.\n")
+    commit = _git_strict("commit-tree", tree, "-p", parent, stdin=message)
+    _git_strict("push", f"--force-with-lease={COORD_REF}:{parent}",
+                "origin", f"{commit}:{COORD_REF}")
+    print(f"coordination: published {commit[:8]} → origin/{COORD_REF}")
+    return 0
+
+
+def _self_test() -> int:
+    """⚡ Prove the guard fails on the case that caused D-181, not only that it passes."""
+    cases = [
+        ("the repository tree itself", _git("rev-parse", "HEAD^{tree}"), COORD_REF),
+        ("the correct tree, wrong destination", _git("rev-parse", f"origin/{COORD_REF}^{{tree}}"), "integration"),
+    ]
+    ok = True
+    for name, tree, ref in cases:
+        found = _coordination_findings(tree, ref)
+        print(f"  {'✅ REFUSED' if found else '🔴 ACCEPTED'}  {name}")
+        for f in found:
+            print(f"       · {f[:118]}")
+        ok = ok and bool(found)
+    good = _coordination_findings(_git("rev-parse", f"origin/{COORD_REF}^{{tree}}"), COORD_REF)
+    print(f"  {'✅ ACCEPTED' if not good else '🔴 REFUSED'}  the published tree, correct destination")
+    ok = ok and not good
+    return 0 if ok else 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--publish", action="store_true",
+                        help="validate against the coordination contract, then move the ref")
+    parser.add_argument("--dry-run", action="store_true", help="with --publish: validate only")
+    parser.add_argument("--self-test", action="store_true",
+                        help="prove the publish guard refuses a repository tree")
     args = parser.parse_args()
+
+    if args.self_test:
+        return _self_test()
 
     rows = tasks()
     fresh = render(rows)
@@ -913,6 +1091,19 @@ def main() -> int:
         return 0
 
     OUT.write_text(fresh)
+
+    if args.publish:
+        # ⚡ Regenerate first, always. Publishing a stale projection is the
+        # failure D-144 created this ref to prevent, and `--publish` reaching
+        # for whatever happened to be on disk would reintroduce it quietly.
+        try:
+            return _publish(args.dry_run)
+        except GitFailed as exc:
+            print(f"coordination: PUBLISH FAILED — {exc}", file=sys.stderr)
+            print("  · ⛔ The ref was NOT moved. **A write that fails must say so** "
+                  "— D-181's root cause was a command that could not.", file=sys.stderr)
+            return 1
+
     for lane in sorted({r.lane for r in rows if r.lane != "—"}):
         mine = [r for r in rows if r.lane == lane]
         print(f"  {lane}: {sum(1 for r in mine if r.state == ASSIGNED)} claimable "
