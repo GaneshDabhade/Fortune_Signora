@@ -7974,3 +7974,67 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 > ## **Planning depth has never been the constraint. Lane A idled 136 cycles with prepared, sequenced, owned work waiting — and the thing in the way was an integration step, not an analysis gap.**
 
 ⚠️ **Adding more planning depth to a repository whose bottleneck is synchronization makes the bottleneck worse**, because every additional prepared row is another thing waiting on the same step. ✅ **This item is what [D-171](DECISION_REGISTER.md) §11 asks for: an improvement to the operating model, brought forward with evidence rather than waited for.**
+
+## C-436 · Two ruled or designed password controls live in the one file Workflow 2 may not touch
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-08, ⚡ **implementing [TASK-485](BACKLOG.md) milestone 1 and opening `node_modules` rather than reasoning about it** ([D-137](DECISION_REGISTER.md): *accessible is a claim to be tested, never assumed in either direction*) |
+| **Owner** | **Product owner** — ⛔ **both are authentication semantics, which [D-151](DECISION_REGISTER.md) ④ places here**, and one of them is **already ruled and simply has no row that may execute it** |
+| **Status** | **`OPEN`** |
+| **Blocks** | ⛔ **Nothing is stopped.** ✅ **Screen `06` ships without both**, and each is drawn out rather than faked. ⚠️ **What it changes is what the Workflow 2 review is shown** — the same thing [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability) established should be known going in rather than discovered at the review |
+
+> ⚡ **Neither of these is a build problem, and that is the finding.** **Better Auth 1.6.25 already ships both capabilities**, verified by reading `node_modules` rather than the changelog. **Each is one line of configuration in `lib/auth/server.ts`** — and **[TASK-485](BACKLOG.md) states in terms that nothing in it touches that file**: *"⛔ Nothing in this row touches `lib/auth/server.ts`, RS256 verification, `requireEmailVerification` or any route."*
+>
+> ⛔ **So this lane did not touch it.** **Finding a change is never permission to make it** ([§20e](../CLAUDE.md)), and a row that quietly widened its own budget would be a worse precedent than either gap.
+
+### ① 🟡 The design's fourth password rule is real, shipped in the dependency, and not enabled
+
+**The design enumerates four rules on screen `06`** — *At least 12 characters · Upper and lower case · A number or symbol · **Not found in a breach corpus***.
+
+✅ **The first three are answered from the typed string and ship.** ⛔ **The fourth is a server check and is not drawn**, because a row a client could only guess at would be **a rule the product does not check painted as one it does** ([D-156](DECISION_REGISTER.md) ④: *a state whose business rule is missing is not built at all*).
+
+| | |
+|---|---|
+| **It exists** | ✅ **`better-auth/plugins/haveibeenpwned` is present**, read at `frontend/node_modules/better-auth/dist/plugins/haveibeenpwned/index.mjs` |
+| **It is privacy-preserving** | ⚡ **k-anonymity**: it SHA-1s the password, sends **the first five hex characters only** to `api.pwnedpasswords.com/range/…` with `Add-Padding: true`, and matches the suffix locally. ⛔ **The password never leaves the process** |
+| **Where it hooks** | **`init()` wraps `ctx.password.hash`** and gates on the request path — by default `/sign-up/email`, `/change-password`, `/reset-password` and four more. ⚠️ **So it cannot be a live per-keystroke check**; it answers at submit, which is exactly how the design draws it — **the mock shows a filled password with this one rule unmet** |
+| **The cost of enabling it** | ⚠️ **An outbound call to a third-party API on every password set.** ⛔ **That is a data-flow decision and a dependency on an external service's availability, not a lane's judgement** — the plugin raises `INTERNAL_SERVER_ERROR` when the range API cannot be reached, so **an outage becomes an inability to register** |
+
+> ⚠️ **The last row is why this is a ruling rather than a task.** Enabling it is one line; **deciding that Signora will not accept a registration while `api.pwnedpasswords.com` is unreachable is a product decision**, and the failure mode is invisible until the day it happens.
+
+### ② 🟡 [D-170](DECISION_REGISTER.md) §3 ③ is ruled, and no row may execute it
+
+**The ruling is already made** — [C-434](#c-434--three-of-logins-remaining-screens-need-a-decision-not-a-build--and-one-of-them-is-already-shipped) ③, [D-170](DECISION_REGISTER.md) §3: ***"rate limiting is enabled in development wherever practical — development should behave as close to production as reasonably possible."***
+
+⛔ **It is not enabled.** **`lib/auth/server.ts` passes no `rateLimit` option**, and Better Auth's default is `enabled: options.rateLimit?.enabled ?? isProduction` — **so it is off in development**, which is every mode the product owner reviews in.
+
+⚠️ **The screen that needs it is built and cannot be seen working.** **Workflow 1 milestone 3 shipped `sign-in/throttled.tsx`** against the real `429` and the real `X-Retry-After` header — Better Auth's sign-in rule is **3 attempts per 10 seconds, keyed on `ip + path`** — and **nothing in development can produce that response**, so the state is unreachable at the review.
+
+| | |
+|---|---|
+| **What it needs** | **`rateLimit: { enabled: true }`** in `lib/auth/server.ts`. ✅ **Nothing else** — the window, the limit and the `/sign-in` special case are Better Auth's own |
+| **Why it is not in [TASK-485](BACKLOG.md)** | ⛔ **Same file, same prohibition.** ⚠️ **And it is Workflow 1's state, not Workflow 2's** — [TASK-467](BACKLOG.md) is `IN VALIDATION` and closed to this lane |
+| **The smallest fix** | ⚡ **A row that owns `lib/auth/server.ts`**, or **one line added to [TASK-485](BACKLOG.md)'s Change Budget by the product owner.** ⛔ **Not a lane's to widen** |
+
+### ③ ⚠️ The agreement screen `06` asks for cannot be read
+
+**The design's line is *"By continuing you agree to the Terms and Privacy Notice"* with both words linked.** ⛔ **No legal route, page, document or configured URL exists anywhere in this repository**, checked rather than assumed — **and the design's own markup points both at `#legal`**, a placeholder.
+
+✅ **The sentence ships and the words are not links.** **Two dead links is precisely the defect Workflow 1 shipped at `Use single sign-on`** and had to repair in milestone 4; **a person is not sent to a not-found page from the screen where they are agreeing to something.**
+
+⛔ **Writing the documents is not this lane's and not any lane's** — they are legal text, and inventing them would be worse than omitting them ([§21](../CLAUDE.md)). ⚠️ **Recorded because *"agree to terms you cannot read"* is a commercial exposure rather than a cosmetic gap**, and because the destinations are almost certainly a hosted URL rather than a product route.
+
+### ④ ⚠️ The design's self-serve branch has no capability, and the lookup would be a disclosure
+
+**Journey 2 in the design:** ***"A work email on a domain that already has a workspace is offered a request to join instead of a second workspace."*** **[TASK-485](BACKLOG.md) carries it under Features and under Playwright coverage.**
+
+⛔ **Nothing behind it exists**, verified by content:
+
+| | |
+|---|---|
+| **No domain** | **`Workspace` carries no domain field** — `backend/modules/workspace_tenancy/domain/entities.py` |
+| **No route** | ⛔ **None of `workspace_tenancy`'s twenty paths is a request-to-join.** ⚡ **The same absence already stopped the *Request access* control on `/join`** — `tests/components/join.test.tsx` asserts it is never offered, *"because nothing can grant it"* |
+| 🔴 **And the lookup itself is the question** | ⚠️ **It must answer an unauthenticated caller** — a person registering has no session. **So *"does this company use Signora?"* becomes answerable by anyone with the sign-up form**, from any email domain, one guess at a time. ⛔ **That is the account-enumeration trade the sign-in screen's wording exists to refuse**, one level up: **not *does this person exist* but *is this company a customer*** |
+
+> ⚡ **This is not a build estimate; it is a disclosure decision.** **The design draws a genuinely better journey** — being offered a request to join beats creating a second workspace for the same company — **and the mechanism it needs publishes the customer list to unauthenticated callers.** ⛔ **A lane should not settle that quietly**, which is [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability)'s own lesson.
