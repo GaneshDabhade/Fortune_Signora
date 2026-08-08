@@ -825,6 +825,33 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-409 · The starvation check counted work the lane had already finished, so it never fired
+
+| | |
+|---|---|
+| **Module** | **`infra/`** — Platform Foundation, [D-022](DECISION_REGISTER.md) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **and it is this office's, twice over: the defect and the failure to notice it.** ⚡ **Lane A reported 136 consecutive idle cycles. The check written to catch exactly that stayed silent throughout** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-08.** **`coordination.py` now emits `actionable`; `state-check.py` reads it instead of `in_flight`.** **`VERIFIED` is QE's** |
+| **Found** | **2026-08-08 by Lane A**, reporting its 136th idle cycle. ⛔ **Not by this office, and [§20e](../CLAUDE.md) says plainly that it should have been**: *"Lane C reports this condition itself and does not wait to be told"* |
+| **Steps** | **A lane finishes everything claimable and sets it `IN VALIDATION`.** **Run `state-check.py`** |
+| **Expected** | **The starvation finding fires — the lane has nothing it can act on** |
+| **Actual** | ⛔ **Silence.** **`in_flight` read 48, the check saw a large number and concluded the lane was busy** |
+
+⚡ **The defect in one line: `IN FLIGHT` collapses eight declared states and only three are work a lane can touch.**
+
+**`_HELD` contains `CLAIMED` · `IN PROGRESS` · `IN VALIDATION` · `CHANGES REQUESTED` · `VERIFIED` · `CERTIFIED` · `PROMOTED` · `DONE`.** ⛔ **Five of those have left the lane entirely** — **[§20e](../CLAUDE.md) is explicit that at `IN VALIDATION` *"the lane's responsibility for this task has ended."*** ⚠️ **So a lane that has shipped everything reads as maximally busy.**
+
+> ## ⛔ **A starvation check that counts finished work cannot see starvation.**
+
+✅ **Fixed at the source rather than in the check**: **`coordination.py` publishes `actionable` — rows whose declared state is `CLAIMED`, `IN PROGRESS` or `CHANGES REQUESTED`** — **so every future consumer gets the honest number rather than each one re-deriving it.**
+
+✅ **Proved able to fail, against Lane A's real numbers**: **`claimable = 0`, `in_flight = 48`, `actionable = 0` makes it fire; the current state leaves it silent.**
+
+⚠️ **The check was written on 2026-08-07 and refined the same day** — **the refinement added `and in_flight == 0` to stop it crying wolf on a lane holding two rows it was building.** ⛔ **That refinement is what introduced this hole.** ⚡ **The first version would have fired.** **A correction that makes a check quieter is exactly the change that needs the failing case re-proved, and it was not.**
+
+---
+
 ### B-408 · `make e2e` sends every lane at Lane B's dev server and Lane B's database
 
 | | |

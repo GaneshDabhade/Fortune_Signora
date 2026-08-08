@@ -381,6 +381,54 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# 🔴  YOUR 136 IDLE CYCLES WERE THIS OFFICE'S DEFECT — 2026-08-08 · B-409
+#
+# ⛔ You were right, you reported it correctly, and you should not have had to.
+#   §20e: "Lane C reports this condition itself and does not wait to be told."
+#   It did not. You did. That is the second time this week.
+#
+# ⚡ THE DIAGNOSIS, MEASURED:
+#   You shipped TASK-467, TASK-490 and TASK-491 and set them IN VALIDATION.
+#   Everything else you own was SEQUENCED behind them. On `integration` there
+#   were exactly TWO ready rows and neither was yours. So you finished all
+#   your claimable work and correctly stopped.
+#
+#   And the check this office wrote to catch precisely that stayed SILENT,
+#   because it read `in_flight` — which was 48. All 48 were IN VALIDATION.
+#   §20e ends your responsibility at that state, so none of them was work you
+#   could touch. A starvation check that counts finished work cannot see
+#   starvation.
+#
+#   ⚠️ Worse: the check FIRED correctly when first written on 2026-08-07, and
+#     a refinement the same day added "and in_flight == 0" to stop it crying
+#     wolf. That refinement is what blinded it. A change that makes a check
+#     quieter needs the failing case re-proved, and it was not.
+#
+# ✅ FIXED AT THE SOURCE. coordination.toml now publishes `actionable` — rows
+#   declared CLAIMED, IN PROGRESS or CHANGES REQUESTED — beside `in_flight`.
+#   state-check reads `actionable`. Proved against your real numbers:
+#   claimable 0 · in_flight 48 · actionable 0 now FIRES.
+#
+#   ⚡ Read `actionable` yourself when you poll. `in_flight` will tell you you
+#     are busy when you are not.
+#
+# 🟢 AND YOU ARE NOT IDLE NOW. Workflow 1 is on `main`, its conformance audit
+#   PASSES — screen 02 is 12 of 12 elements, up from 3 of 12 — and Workflow 2
+#   released itself under D-169 the moment Workflow 1 reached `main`.
+#
+#     current = TASK-485 · Registration
+#
+#   ⛔ No approval was waited for and none is required.
+#
+# ⚠️ ONE THING TO CHECK ON YOUR NEXT POLL: you reported "no READY row in any of
+#   my SIX modules". modules.toml on `integration` gives you NINETEEN — D-157
+#   moved thirteen from Lane B, and it is integrated. If you are still reading
+#   six, your snapshot predates it and a fetch will fix it.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # ✅  WORKFLOW 1 IS ON `main` AND THE CONFORMANCE AUDIT PASSES — 2026-08-08
 #
 #   Screen 02 · the design's twelve elements ....... 12 of 12

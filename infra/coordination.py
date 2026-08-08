@@ -55,6 +55,19 @@ _HELD = frozenset({
     "VERIFIED", "CERTIFIED", "PROMOTED", "DONE",
 })
 _CLOSED = frozenset({"DONE", "DISPOSED", "PROMOTED"})
+
+#: **Rows a lane can still act on** — B-409, 2026-08-08.
+#:
+#: ⛔ `IN FLIGHT` collapses eight declared states, and only three of them are
+#: work the lane can touch. **`IN VALIDATION` has left the lane entirely**
+#: (§20e: *"the lane's responsibility for this task has ended"*), and so have
+#: `VERIFIED`, `CERTIFIED`, `PROMOTED` and `DONE`.
+#:
+#: ⚠️ **This mattered because a check read `in_flight` as "the lane has work".**
+#: **Lane A idled 136 cycles holding 48 in-flight rows, every one of them
+#: `IN VALIDATION` and untouchable**, while the check that exists to catch an
+#: idle lane stayed silent because the number was large.
+_ACTIONABLE = frozenset({"CLAIMED", "IN PROGRESS", "CHANGES REQUESTED"})
 _STARTABLE = frozenset({"READY", "CHANGES REQUESTED"})
 
 #: Prose forms of a `modules.toml` key. **The registry is keyed
@@ -738,6 +751,10 @@ def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
             "supply_state": supply,
             "claimable": len(claimable),
             "in_flight": len(in_flight),
+            # ⚡ **B-409** — the number a starvation check must read. `in_flight`
+            # counts eight declared states and only three are work the lane can
+            # touch; `IN VALIDATION` has left it entirely (§20e).
+            "actionable": sum(1 for r in mine if r.declared in _ACTIONABLE),
             "awaiting_qe_transition": stranded,
             "blocked": len(blocked),
             # **In flight against a five-slice reference**, which is §20e's own
@@ -818,6 +835,7 @@ def render(rows: list[Task]) -> str:
             f"claimable_now      = {m['claimable_now']}",
             f"awaiting_sync      = {m['awaiting_sync']}",
             f"in_flight          = {m['in_flight']}",
+            f"actionable         = {m['actionable']}",  # ⚡ B-409 — what a starvation check must read
             f"awaiting_qe_transition = {m['awaiting_qe_transition']}",
             f"blocked_on_integration = {m['blocked_on_integration']}",
             f'supply_state       = "{m["supply_state"]}"',
