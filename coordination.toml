@@ -13,6 +13,7 @@ generated_from = "034ad46"
 task_count     = 102
 
 [lane.Lane_A]
+notice             = "B-214 NEEDS NO ROW — fix it now. workspace_tenancy is YOUR module (modules.toml) and the map is modules/workspace_tenancy/interface/errors.py, NOT signora_platform. Change Budget green covers 'a bug fix inside it', freely. Announce it in the commit because it changes an error contract. Reasoning: queues/lane-a.toml when QE integrates."
 current            = "TASK-470"
 next               = ""
 next_after_that    = ""
@@ -33,6 +34,7 @@ blocked_duration_days  = 0.0
 critical_path_max      = 3
 
 [lane.Lane_C]
+notice             = ""
 current            = "TASK-497"
 next               = ""
 next_after_that    = ""
