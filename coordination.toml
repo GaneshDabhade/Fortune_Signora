@@ -13,14 +13,13 @@ generated_from = "034ad46"
 task_count     = 102
 
 [lane.Lane_A]
-notice             = "B-214 NEEDS NO ROW — fix it now. workspace_tenancy is YOUR module (modules.toml) and the map is modules/workspace_tenancy/interface/errors.py, NOT signora_platform. Change Budget green covers 'a bug fix inside it', freely. Announce it in the commit because it changes an error contract. Reasoning: queues/lane-a.toml when QE integrates."
-current            = "TASK-469"
+current            = "TASK-470"
 next               = ""
 next_after_that    = ""
 assigned_total     = 85
 claimable          = 1
-claimable_now      = 0
-awaiting_sync      = 1
+claimable_now      = 1
+awaiting_sync      = 0
 in_flight          = 56
 actionable         = 7
 awaiting_qe_transition = 0
@@ -29,12 +28,11 @@ supply_state       = "working"
 blocked            = 28
 lane_utilization   = 11.2
 idle_prediction_days   = 0.1
-dependency_wait_days   = 1.2
-blocked_duration_days  = 1.2
+dependency_wait_days   = 0.0
+blocked_duration_days  = 0.0
 critical_path_max      = 3
 
 [lane.Lane_C]
-notice             = ""
 current            = "TASK-497"
 next               = ""
 next_after_that    = ""
@@ -67,7 +65,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lan"
 waiting_for    = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lane raised.** ⚠️ **An architectural blocker, not an implementation one** (§20e): *"
-blocked_days   = 1.2
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -953,6 +951,22 @@ on_integration = true
 [[task]]
 id            = "TASK-469"
 title         = "Workflow 8 — Initial Onboarding, to the approved design"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-470"
+title         = "Workflow 9 — User Profile, to the approved design"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
@@ -964,23 +978,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
-
-[[task]]
-id            = "TASK-470"
-title         = "Workflow 9 — User Profile, to the approved design"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
-waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
-blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-471"
@@ -1059,7 +1057,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-474 complete"
 waiting_for    = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be written until "
-blocked_days   = 1.2
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1225,18 +1223,18 @@ on_integration = true
 [[task]]
 id            = "TASK-489"
 title         = "Workflow 7 — Invitation Acceptance, to the approved design"
-state         = "IN FLIGHT"
-declared      = "CLAIMED"
+state         = "BLOCKED"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
+estimated_ready = "— Lane A, 2026-08-08. Claim released.** ⛔ **Both approved screens are "
+waiting_for    = "— Lane A, 2026-08-08. Claim released.** ⛔ **Both approved screens are blocked on capabilities that do not exist**, found by building rather than by pl"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-490"
