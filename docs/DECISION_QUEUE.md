@@ -160,6 +160,41 @@
 
 </details>
 
+## 🔴 C-435 · The synchronization deadlock — DECISION PACKAGE, and it is the one that matters
+
+⚡ **Unprompted, under [D-171](DECISION_REGISTER.md) §7 and §11.** ⛔ **This is a bigger finding than anything in [490](architecture/490-operating-model-critique.md), and it contradicts the premise of [D-171](DECISION_REGISTER.md) §1.**
+
+### The deadlock, in two rules that are each correct
+
+> **[§20e](../CLAUDE.md): *"Only executable change opens a cycle."*** **[D-136](DECISION_REGISTER.md): a planning correction is *"high-priority synchronization."*** ⛔ **The second orders corrections *within* a cycle; the first decides whether a cycle happens. Neither can start one.**
+
+> ## **When a lane is idle there is no executable change coming, so no cycle is warranted, so the correction that would unblock it cannot land. The condition that makes it urgent is the condition that prevents it landing.**
+
+### The evidence, right now
+
+| | |
+|---|---|
+| **Lane A** | **136 consecutive idle cycles** — **reported by Lane A, not by this office** |
+| **Published source** | **`current = TASK-485` · `claimable = 1` · `claimable_now = 0`** |
+| **`integration`** | **`TASK-485` reads `SEQUENCED`** |
+| **In between** | **Three `Planning-Sync: required` commits this office cannot integrate** |
+
+### ✅ Recommendation — option C
+
+**`Planning-Sync: required` warrants an integration on its own when a lane is starved** — **integrate, do not certify**, because nothing executable changed and `--audit-main` already proves that by paths rather than by trust.
+
+⚡ **No authority moves. No new file. No second source of truth.** ⛔ **The alternatives are worse: A grants a second lane write access to `integration`, which [D-142](DECISION_REGISTER.md) declined twice; B makes the coordination ref authoritative for claimability, contradicting [D-144](DECISION_REGISTER.md) and creating the two-representations defect.**
+
+⚠️ **The cost, stated: it weakens *"a cycle is warranted by executable change"*, and that rule exists because certifying documentation alone is *"how a team learns to skip cycles."*** ✅ **C is an integration without certification, and the trigger is narrow — a lane at zero `actionable` and zero `claimable_now`, which [B-409](BUGS.md) just made measurable.**
+
+### ⛔ And the part that challenges the direction
+
+**[D-171](DECISION_REGISTER.md) §1 asks for deeper planning. [490](architecture/490-operating-model-critique.md) argued the depth would go stale. Both of us were arguing about the wrong variable.**
+
+> ## ⚡ **Planning depth has never been the constraint. Lane A idled 136 cycles with prepared, sequenced, owned work waiting — and what stood in the way was an integration step, not an analysis gap.**
+
+⛔ **Adding planning depth to a repository whose bottleneck is synchronization makes the bottleneck worse**, because every additional prepared row is one more thing queued behind the same step. ✅ **Fix the step first; the depth question then answers itself.**
+
 ## 🟡 C-433 · §19 names a command flag that does not exist
 
 ✅ **Nothing is blocked and this needs one sentence, not a decision.** ⚡ **Lane A ran the command §19 tells it to run, and reported the gap rather than quietly skipping the gate.**

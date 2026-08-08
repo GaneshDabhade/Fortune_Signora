@@ -360,6 +360,7 @@ databaseUrl: required(
 | [C-432](#c-432--20c-freezes-the-frontend-foundation-and-d-154-mandates-changing-it) | **`CLAUDE.md` §20c freezes the frontend foundation, and [D-154](DECISION_REGISTER.md) mandates replacing it** | **Lane C**, 2026-08-07, auditing UI standards for [D-154](DECISION_REGISTER.md) ④ | ⛔ **Product owner** — **`CLAUDE.md` is theirs and this office does not edit it** | ✅ **`CLOSED` — applied 2026-08-07, [D-170](DECISION_REGISTER.md) §2** | ✅ **Nothing.** ⚡ **D-153 and D-154 *are* §20c's approved-architectural-change exemption** — **what is wrong is that the constitution does not say so** |
 | [C-433](#c-433--19-names-a-command-flag-that-does-not-exist) | **`CLAUDE.md` §19 names `certification-guard.py --journeys`, and the flag does not exist** | **Lane A**, 2026-08-07, running the gate §19 tells it to run · **confirmed by Lane C the same day** | ⛔ **Product owner** — **`CLAUDE.md` is theirs** | 🟡 **OPEN** — **Lane A was right, and it worked around it correctly** | ✅ **Nothing.** ⚡ **Lane A wrote its journey without the flag; the mapping it would have printed is a convenience, not a gate** |
 | [C-434](#c-434--three-of-logins-remaining-screens-need-a-decision-not-a-build--and-one-of-them-is-already-shipped) | **Three of Login's remaining screens need a decision, not a build — and one is already shipped** | **Lane A**, 2026-08-07, implementing Workflow 1 milestone 3 | ⛔ **Product owner** — **all three are authentication semantics** ([D-151](DECISION_REGISTER.md) ④) | ✅ **`RULED` — product owner, 2026-08-07, [D-170](DECISION_REGISTER.md) §3** | ✅ **Nothing built.** ⚠️ **It changes what the Workflow 1 review gate is shown** |
+| [C-435](#c-435--a-planning-correction-that-unblocks-an-idle-lane-has-no-trigger-of-its-own) | **A planning correction that unblocks an idle lane has no trigger of its own — the two rules deadlock** | **Lane C**, 2026-08-08, ⚡ **on Lane A's 136th idle cycle, and exercising [D-171](DECISION_REGISTER.md) §7** | ⛔ **Product owner** — **it is a governance change, and [§20e](../CLAUDE.md)'s freeze reserves those** | 🟠 **OPEN** — **three options, C recommended, in [`DECISION_QUEUE.md`](DECISION_QUEUE.md)** | 🔴 **Lane A, right now.** ⚡ **`claimable = 1`, `claimable_now = 0`** |
 | [C-429](#c-429--four-live-claims-have-no-row-on-the-execution-board) | Four live claims have no row on the execution board | **Lane C**, 2026-08-07 | **The claiming lanes** — ⛔ **the board is written by the lane that claims (§20e); this office may not fill it in for them** | **`OPEN`** — raised 2026-08-07 | ⛔ **No engineering.** ⚠️ **A lane reading only the board would take work somebody else is doing** |
 | [C-426](#c-426--eighteen-of-lane-as-rows-read-in-validation-and-its-branch-has-nothing-on-it) | Eighteen of Lane A's rows read `IN VALIDATION` and its branch has nothing on it | **Lane C**, 2026-08-07, ⚡ **fo… | ⚡ **QE.** ⛔ **`VERIFIED` · `CERTIFIED` · `PROMOTED` · `DONE` are QE's… | **`OPEN`** — raised 2026-08-07 | ⛔ **No engineering.** ⚠️ **It corrupts every capacity measurement the repository… |
 | [C-423](#c-423--architecture-document-numbers-can-still-collide-and-d-112-already-solved-this-one-class-over) | Architecture document numbers can still collide, and D-112 already solved this one class over | **Lane C**, 2026-08-06, decomp… | **Product owner** — ⚡ **[D-112](DECISION_REGISTER.md) took the identic… | **`READY FOR PRODUCT DECISION`** — **one question, and [TASK-477](BACKLOG.md) proceeds eit… | ⛔ **Nothing.** **[TASK-477](BACKLOG.md) fixes today's three collisions regardles… |
@@ -7919,3 +7920,56 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 ### ⛔ And one that is a decision rather than a gap
 
 **Magic link — design `05`.** ✅ **`better-auth/plugins/magic-link` is present in `node_modules`**, so this is not a build problem. ⛔ **It adds an authentication *method*, which is not the customer-visible presentation layer [D-159](DECISION_REGISTER.md) bounds this work to.** **No row exists. Raised so it is scheduled rather than discovered missing at the Workflow 3 gate.**
+
+---
+
+## C-435 · A planning correction that unblocks an idle lane has no trigger of its own
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-08, ⚡ **on Lane A's 136th consecutive idle cycle** — **and as the first unprompted exercise of [D-171](DECISION_REGISTER.md) §7** |
+| **Owner** | ⛔ **Product owner.** **It proposes changing a rule, and the governance freeze reserves that** |
+| **Status** | 🟠 **`OPEN` — raised 2026-08-08.** **Three options prepared, C recommended** |
+| **Blocks** | 🔴 **Lane A, at this moment.** **`claimable = 1` and `claimable_now = 0`** |
+
+### ⚡ The deadlock, stated as two rules that are each correct
+
+> **① [§20e](../CLAUDE.md): *"Only executable change opens a cycle; documentation, claims, planning and board maintenance still accumulate until an executable slice reaches `IN VALIDATION`."***
+>
+> **② [D-136](DECISION_REGISTER.md): a planning correction is *"high-priority synchronization — ahead of ordinary feature work in the integration order."***
+
+⛔ **② orders planning corrections *within* a cycle. ① decides whether a cycle happens at all. Neither can start one.**
+
+> ## ⚡ **So: when a lane is idle, there is by definition no executable change coming — therefore no cycle is warranted — therefore the planning correction that would unblock the lane cannot be integrated.** ⛔ **The condition that makes the correction urgent is the same condition that prevents it landing.**
+
+### The measurement
+
+| | |
+|---|---|
+| **Lane A** | **136 consecutive idle cycles**, reported by Lane A rather than by this office |
+| **The published source right now** | **`current = TASK-485` · `claimable = 1` · `claimable_now = 0`** |
+| **`integration`'s backlog** | **`TASK-485` reads `SEQUENCED`** |
+| ⚡ **What separates them** | **Three `Planning-Sync: required` commits on `lane-c-sync`** |
+| ⛔ **What Product Office can do about it** | **Nothing.** **It cannot push to `integration` and is not asking to** |
+
+⚠️ **[D-144](DECISION_REGISTER.md) built `origin/coordination` to bypass exactly this, and the bypass is half-built.** **Planning *information* flows through the ref — but claim *eligibility* still flows through QE, because [C-425](#c-425) correctly requires a claim to agree with `BACKLOG.md` on `integration`.** ⚡ **A lane can now *learn* what to build without QE and still cannot *start* it.**
+
+### The three options
+
+| | | |
+|---|---|---|
+| **A** | **Let Product Office fast-forward `integration` with a backlog-only commit** — the same shape as the claim-commit exception, bounded by `certification-guard.py --audit-claims` extended to a `--audit-planning` mode that refuses anything touching code | ⚡ **Cleanest and fastest.** ⛔ **It grants a second lane write access to `integration`, and [D-142](DECISION_REGISTER.md) declined that twice** |
+| **B** | **Make the coordination ref authoritative for claimability** | ⛔ **Contradicts [D-144](DECISION_REGISTER.md) in terms — *\"if the coordination source disagrees with `BACKLOG.md`, the backlog wins\"* — and creates the two-representations defect [§2](../CLAUDE.md) forbids** |
+| ✅ **C — recommended** | **`Planning-Sync: required` warrants a cycle on its own when a lane is starved.** **QE runs the short path — integrate, no certification — because nothing executable changed and `--audit-main` already proves that by paths rather than by trust** | ✅ **No authority moves. No new file. No second truth.** ⚡ **It closes the loop by making the *starvation* the trigger, which is the fact that actually matters** |
+
+### ⚠️ What C costs, stated rather than hidden
+
+⛔ **It weakens *\"a cycle is warranted by executable change\"*, and that rule exists for a good reason: [§20e](../CLAUDE.md) says certifying documentation alone *\"is how a team learns to skip cycles.\"*** ✅ **The mitigation is that C is not a full cycle — it is an integration without certification, which the audit already distinguishes by paths.** ⚡ **And the trigger is narrow: a lane at zero `actionable` and zero `claimable_now`, which [B-409](BUGS.md) just made measurable.**
+
+### ⚡ Why this is the challenge worth making
+
+**[490](architecture/490-operating-model-critique.md) argued that [D-171](DECISION_REGISTER.md) §1's planning depth would produce stale plans.** ⛔ **That critique was right and it was not the most important thing.**
+
+> ## **Planning depth has never been the constraint. Lane A idled 136 cycles with prepared, sequenced, owned work waiting — and the thing in the way was an integration step, not an analysis gap.**
+
+⚠️ **Adding more planning depth to a repository whose bottleneck is synchronization makes the bottleneck worse**, because every additional prepared row is another thing waiting on the same step. ✅ **This item is what [D-171](DECISION_REGISTER.md) §11 asks for: an improvement to the operating model, brought forward with evidence rather than waited for.**
