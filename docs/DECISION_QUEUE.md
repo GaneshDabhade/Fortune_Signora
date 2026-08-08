@@ -15,6 +15,74 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## 🟠 D-191 · Workflow-level certification — the premise does not hold, and the cost is elsewhere
+
+> ## ⛔ **Recommendation: keep certification as it is. Neither Option A nor Option B addresses what is actually consuming cycles.**
+>
+> ⚡ **You asked to be challenged rather than agreed with. The measurement disagrees with the premise, and that is the most useful thing this package can say.**
+
+### ① The premise, tested — only 37% of cycles certify a slice
+
+**120 certification cycles on `main`, classified by what each one actually promoted:**
+
+| | | |
+|---|---|---|
+| **Governance / other** | **53** | **44%** |
+| ⚡ **Slice certification** | **45** | **37%** |
+| 🔴 **QE's own corrections** | **18** | **15%** |
+| **Planning-only** | **4** | **3%** |
+
+> ## ⛔ **Batching slice certification per workflow addresses 37% of the cycles.** ⚡ **59% are governance and QE repairing its own defects — and that is where the overhead lives.**
+
+### ② The batching you want is already the rule, and already happening
+
+📁 **[§20e](../CLAUDE.md), verbatim: *"Every slice at `IN VALIDATION` is taken at once — never held because more are expected in the same implementation area."*** ⚡ **QE certifies a *snapshot*, not a slice.** **Measured: 20 of 45 slice cycles carried more than one row; the mean is 1.7.**
+
+⛔ **So the model already permits what Option B asks for.** ⚠️ **What it does not permit is deferring *promotion*, and that is the part that would break something.**
+
+### ③ 🔴 The evidence that decides it — certification has never cost throughput
+
+**Searched the backlog, the coordination register and the bug register for a lane blocked on QE.** ✅ **Zero instances.** 📁 **[§20e](../CLAUDE.md)'s *Continuous execution* is why: *"the moment a lane sets `IN VALIDATION`, it returns to `BACKLOG.md` and claims the next `READY` task."*** **Lane A's own reports confirm it every cycle.**
+
+**What has actually idled Lane A, from the record:**
+
+| | |
+|---|---|
+| 🔴 **Planning depth** | **136 consecutive idle cycles** |
+| 🔴 **Synchronization** | **[C-435](LANE_COORDINATION.md), five instances in two days, one of which shipped a test asserting the opposite of a ruling** |
+| 🔴 **Missing capability** | **[C-245](LANE_COORDINATION.md), [B-214](BUGS.md) — Workflow 7 blocked on both** |
+| ✅ **Certification** | **Never** |
+
+> ## ⚡ **Certification frequency costs QE's time. It has never cost Lane A's, and Lane A is the constraint.** ⛔ **Optimising a non-constraint moves nothing.**
+
+### ④ ⚠️ What Option B would break, in the repository's own words
+
+📁 ***"Every commit on `main` was itself certified, by the repository-wide certification process, before it was promoted."*** 📁 ***`promoted commit SHA == certified commit SHA`.***
+
+⛔ **Certifying once per workflow means either promoting commits that were never certified — which voids the central release guarantee — or not promoting until the workflow ends, which is the large-batch anti-pattern you correctly rejected.** ⚡ **There is no third reading: [§20e](../CLAUDE.md) binds promotion to certification by SHA equality.**
+
+🔴 **And there is direct counter-evidence for deeper batches.** 📁 **QE's own dashboard: *"QE certified and promoted four Timeline slices without noticing. Every gate was green because a composition root is the one file no module's own suite covers."*** ⚠️ **A defect already survived four slices. A workflow-deep batch is ten to fifteen — ⛔ the failure this model has already had, made three times deeper.**
+
+### ⑤ ✅ Option D — the recommendation
+
+| | |
+|---|---|
+| **Certification** | ⛔ **Unchanged.** **Per snapshot, taking every `IN VALIDATION` slice at once — which is already the rule** |
+| ⚡ **Attack the 59%** | 📁 **[§20e](../CLAUDE.md) already says *"A cycle is warranted by executable change, not by movement"* — and 44% of cycles are governance.** 🔴 **The rule exists and is not being applied.** ✅ **`make certified ARGS="--next-cycle"` already answers *does anything here change what the software does* — the mechanism is built and unused** |
+| ⚡ **The 15% is closing** | **QE's own corrections are the [B-411](BUGS.md)/[B-412](BUGS.md) class — scripted edits damaging registers.** ✅ **`_structural_findings` now refuses an unannounced row deletion, and the same discipline applies to QE's tooling** |
+| ✅ **The customer milestone you want already exists** | ⚡ **[D-169](DECISION_REGISTER.md) made Product Owner review a *checkpoint per workflow*, not per slice.** ⛔ **You are describing a **review cadence**, and it is already once-per-journey.** **Certification is a quality gate; the milestone is the review** |
+
+> ## ⚡ **The distinction worth keeping: certify continuously because it is cheap and catches defects next to the code that caused them; review per workflow because that is where a customer journey becomes meaningful.** ✅ **Signora already does both.**
+
+### ⑥ What would change my recommendation
+
+⚠️ **Stated so this is falsifiable rather than a defence of the status quo:**
+
+⛔ **If a cycle's wall-clock ever delays a promotion twice — measured, not felt — [TASK-413](BACKLOG.md) already exists for exactly that trigger and this recommendation reverses.** ⚡ **Today `make smoke` runs ~200s and no promotion has been recorded as delayed by it.**
+
+⛔ **Or if slice cycles rise above ~60% of the total, batching starts to matter.** **They are 37%.**
+
+
 ## 🔴 Twenty-five claimable rows is not reachable, and the arithmetic says why
 
 > ⚡ **Asked for on 2026-08-08. This office cannot deliver it and is reporting the ceiling rather than manufacturing the number.**
