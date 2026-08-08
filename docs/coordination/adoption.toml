@@ -77,12 +77,19 @@ adr = "adr/0011-background-processing-and-event-bus-transport.md"
 [capability.email]
 verdict = "buy"
 vendor = "Resend"
-state = "ratified"
+state = "planned"
 adr = "adr/0015-communication-email-and-calendar-integration.md"
 task = "TASK-494"
 consumed_by = ["workflow.2", "workflow.3", "workflow.4", "workflow.5", "workflow.7"]
-first_consumer_state = "ready"
-# 🔴 **THE URGENT ONE.** Workflow 3 is `ready` and Lane A reaches it next.
+first_consumer_state = "active"
+# ✅ 2026-08-08 — `ratified` → `planned`. TASK-494 is READY on `integration`
+# and is Lane A's `current`. This is what D-179 asks a ratified decision to do:
+# become a row a lane can claim, rather than wait to be rediscovered by the
+# workflow that needs it. It moves to `adopted` when TASK-494 reaches `DONE`.
+# ⚠️ The check that reported this fired within a minute of the file existing
+# and went on firing until the row was actually queued — which is the point:
+# a capability at `ratified` beside a consumer that has arrived is a Product
+# Office defect, and it stays reported until it stops being true.
 # `lib/auth/email.ts` is a port with one implementation and its own comment
 # says *"what arrives later is a vendor"*. `TASK-474`'s developer mailbox
 # exists because none is wired. ⚡ The port is correct; the vendor is missing.

@@ -42,14 +42,34 @@
 #      so it propagates to anything built meanwhile. The audit still runs on
 #      `main` before any review request; it no longer gates the next workflow.
 #
-# 🔴 BUT YOU STILL CANNOT CLAIM IT YET, AND THAT IS C-435 FOR THE THIRD TIME
-#   TODAY. TASK-486's READY is on lane-c-sync; you claim against integration.
-#   claimable_now = 0. Instance 1 was your 136 idle cycles. Instance 2 was
-#   hours later. This is instance 3.
+# ✅ CLEARED — QE INTEGRATED. Re-measured 2026-08-08 on the routine poll.
+#   integration is 50e81139 and it carries TASK-494 READY and TASK-486 READY.
+#   claimable_now was 0 and is 1. The third instance of C-435 lasted hours,
+#   not days, and it ended the way the rule says it should: QE integrated.
 #
-#   ⛔ Do not claim from lane-c-sync. QE integrating is what unblocks you, and
-#      the package that would end this class permanently is with the product
-#      owner as C-435.
+#   ⚠️ C-435 IS STILL OPEN and still worth deciding. What closed here is the
+#      instance, never the class — the condition that makes a planning
+#      correction urgent is still the condition that prevents it landing.
+#      The package is with the product owner and costs one word.
+#
+# 🔴 CLAIM TASK-494 FIRST, NOT TASK-486 — this is a CHANGE since the last poll
+#   and it is this office correcting itself, not you.
+#
+#   TASK-486's own row has always said the journey cannot be executed without
+#   opening the verification link, and §19 requires a UI slice's journey
+#   written AND PASSING. That was written in a CELL and not in the STATE, so
+#   both rows read READY and you had two claimable — which lets you choose,
+#   and choosing is prioritisation (§20e). state-check reported it as
+#   "Lane_A has 2 claimable rows and should normally have one".
+#
+#   ✅ TASK-486 is now SEQUENCED behind TASK-494 and releases on TASK-494
+#      reaching IN VALIDATION — the same one-trigger rule, no QE wait.
+#   ⚡ TASK-494 is the Resend adapter behind the port lib/auth/email.ts
+#      ALREADY DEFINES. ADR-0015 is the dependency approval and is ratified,
+#      so the 🔴 budget item is pre-approved; announce it in the commit.
+#   ⛔ It does not replace TASK-474. The developer mailbox is the DEVELOPMENT
+#      route and this is the PRODUCTION adapter; both sit behind one port,
+#      selected by configuration (D-167 ⑦).
 #
 # ⚡ AND YOUR NOTE ON THE TRIGGER BLOCK IS EXACTLY RIGHT, so it is recorded
 #   here rather than only agreed. You wrote that the watched-triggers block
@@ -278,7 +298,7 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 lane         = "Lane A"
-updated      = 2026-08-07
+updated      = 2026-08-08
 
 # ⚠️  4 claimable, but only 0 claimable TODAY.
 #    4 row(s) are READY here and still read otherwise in
@@ -1432,9 +1452,11 @@ updated      = 2026-08-07
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-486"  # ⚠️ READY on lane-c-sync; claimable_now = 0 until QE integrates
-               # TASK-491. Not a drought: 483/484 release on 491's IN VALIDATION.
-next    = ""
+current = "TASK-494"  # ✅ READY ON `integration` — 50e81139. Claim it.
+next    = ""          # ⛔ EMPTY BY RULING — D-163, exactly one claimable. TASK-486
+                      # is SEQUENCED behind TASK-494 and is not startable; a queue
+                      # that lists it offers work the backlog refuses. The prepared
+                      # sequence lives in the notice above and in workflows.toml.
 # ⚠️ The last three are RELEASED and NOT CLAIMABLE TODAY — their READY is on
 # `lane-c-sync` and you claim against BACKLOG.md on `integration` (C-425).
 # They are listed here rather than hidden because a row the backlog offers
@@ -1474,7 +1496,8 @@ future  = []   # ⛔ empty by ruling: exactly one claimable (D-163). The prepare
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 2
+eligible_count = 1   # ⚡ TASK-494. Was 2 beside a sequence of 1 — state-check
+                     # reported "one of the two is stale" and it was the count.
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
 depth_target   = 1   # ⚡ CLAIMABLE depth — D-163. Prepared depth is 14; see prepared_total.
 shortfall      = 0   # ⛔ 1 of 1. A second claimable row would let this lane choose, and choosing is prioritisation.

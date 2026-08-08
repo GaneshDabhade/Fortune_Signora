@@ -101,8 +101,11 @@ excluded    = [
 
 [workflow.2]
 name        = "Registration"
-state       = "in_progress"
+state       = "in_validation"
 # ⚡ DELIVERED 2026-08-08 — TASK-485 IN VALIDATION with a headed journey pass.
+# ⚠️ Was `in_progress` until 2026-08-08. The row moved to IN VALIDATION and the
+# workflow's state did not follow — the same defect one level up, and the state
+# a lane reads is this one. `awaiting_qe` / `on_main` are QE's to trigger.
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["01 Welcome", "06 Create account"]
 tasks       = ["TASK-485"]
@@ -111,12 +114,20 @@ depends_on  = ["workflow.1"]
 
 [workflow.3]
 name        = "Email Verification"
-state       = "ready"
+state       = "active"
 # ⚡ RELEASED 2026-08-08 on Workflow 2's IN VALIDATION, not on `main` — see
 # release_rule above. Lane A must not idle a QE cycle at every boundary.
+# ⚠️ Set `active` 2026-08-08, corrected from `ready`. The header says `active`
+# is THE ONLY STATE AN IMPLEMENTATION LANE MAY BUILD IN — and this workflow's
+# rows were claimable while no workflow was `active` at all, which state-check
+# reported as "declares 0 active workflow(s)". A lane holding a claimable row
+# inside a workflow that is not `active` is a contradiction in the data, and
+# the data is what every lane reads.
+# ⚡ TASK-494 goes FIRST: the vendor adapter, then the screen. TASK-486 is
+# SEQUENCED behind it — the journey cannot pass without an openable link.
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["07 Verify email"]
-tasks       = ["TASK-474", "TASK-486"]
+tasks       = ["TASK-494", "TASK-474", "TASK-486"]
 owner       = "Lane A"
 depends_on  = ["workflow.2"]
 # ⚡ TASK-474 is the enabler and it is REAL infrastructure, not a simulation of
@@ -147,10 +158,13 @@ state       = "in_progress"
 design      = "Fortune Signora Workspace Setup.dc.html"
 tasks       = ["TASK-468"]
 owner       = "Lane A"
-# ⚠️ `in_progress` while workflow 1 is `active`, and that is a real exception
-# rather than a slip: Lane A claimed TASK-468 before D-155 published the
-# priority. D-123 makes CLAIMED the lane's state and this office does not
+# ⚠️ `in_progress` alongside workflow 3 being `active`, and that is a real
+# exception rather than a slip: Lane A claimed TASK-468 before D-155 published
+# the priority. D-123 makes CLAIMED the lane's state and this office does not
 # unclaim. It lands or it is set aside by Lane A, never by here.
+# ⚠️ Corrected 2026-08-08 — this note said "while workflow 1 is `active`", and
+# workflow 1 reached `on_main`. A comment naming a state its subject has left
+# is the class §2 forbids: the repository asserting something untrue of it.
 
 [workflow.7]
 name        = "Invitation Acceptance"
