@@ -24,7 +24,10 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell
       title="Reset your password"
-      description="Give us the address on your account and we will send you a link."
+      // The design's own sentence, with one word changed and the reason
+      // recorded in the form: the link really does live an hour, not thirty
+      // minutes, so printing thirty would misstate a credential's lifetime.
+      description="Enter your work email. If an account exists, you'll get a reset link that works once and expires in an hour."
       footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
     >
       <ForgotPasswordForm />

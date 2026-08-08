@@ -8180,3 +8180,29 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 ### ④ ⛔ Not a dependency, recorded so it is not mistaken for one
 
 **[B-406](BUGS.md)** — `signal.resolved` is published and uncatalogued — **is the only `OPEN` bug row in any of this lane's six modules.** ⛔ **It is not blocking anything and is not fixable by any lane**: the repair is one table row in `06-events.md`, which is 🔴, and it closes when the `CLAUDE.md` amendment [C-101](#c-101) asks for lands. ⚡ **Recorded here only so a reader of this map does not count it as work Lane A is sitting on.**
+
+---
+
+## C-243 · The reset link lives an hour and the design says thirty minutes
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-08, **building [TASK-487](BACKLOG.md) and reading `node_modules` rather than trusting either number** |
+| **Owner** | **Product owner** — ⛔ **a credential's lifetime is a security parameter**, which [D-151](DECISION_REGISTER.md) ④ places here |
+| **Status** | **`OPEN`** |
+| **Blocks** | ⛔ **Nothing.** ✅ **Screen `08` ships and states the true number.** ⚠️ **What is open is which number should be true** |
+
+**The design's sentence, verbatim:** *"Enter your work email. If an account exists, you'll get a reset link that works once and **expires in 30 minutes**."*
+
+| | |
+|---|---|
+| 🔴 **What the platform actually does** | **`better-auth`'s `resetPasswordTokenExpiresIn` defaults to `3600`** — `dist/api/routes/password.mjs` reads `resetPasswordTokenExpiresIn \|\| 3600 * 1` — **and `lib/auth/server.ts` does not configure it.** ⚡ **The link lives one hour** |
+| ✅ **What the screen prints** | ***"expires in an hour"*** — **the true number**, in the design's own sentence otherwise unchanged |
+| ⛔ **Why not the design's number** | **It would state a false thing about a credential's lifetime.** ⚠️ **A customer returning at forty minutes would believe a working link was dead**, and stop. ⚡ **The reverse error is worse**: a screen promising thirty minutes for a token that lives sixty is telling a security-conscious buyer the window is half what it is |
+| **What it would take** | **`resetPasswordTokenExpiresIn: 1800` in `lib/auth/server.ts`** — ⛔ **the file [TASK-487](BACKLOG.md) states it does not touch**, and **[TASK-498](BACKLOG.md) already owns that file** |
+
+> ⚡ **This is the fourth instance of one pattern and the first where the two answers are both defensible.** [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch) ①②, [C-241](#c-241--workflow-3s-approved-screen-needs-the-one-file-its-row-forbids-and-this-is-the-third-instance) and this all need `lib/auth/server.ts`; the first three had a right answer already recorded. **Here the design and the platform simply disagree, and either could be corrected.**
+>
+> ⛔ **This lane did not pick.** **It printed what is true today** and named the choice, because [D-138](../CLAUDE.md) makes the snapshot the implementation authority for *design* and [§13](../CLAUDE.md) makes Better Auth the authority for *authentication* — **and this is the seam where those two authorities meet.**
+
+**The decision, in one sentence:** ⚡ **shorten the token to thirty minutes and match the design, or amend the design to an hour and match the platform.** ✅ **Either is one line; the screen follows whichever lands.**

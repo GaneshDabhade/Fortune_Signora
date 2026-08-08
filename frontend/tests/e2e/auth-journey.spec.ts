@@ -336,3 +336,44 @@ test.describe('Workflow 3 · verifying an email', () => {
     await expect(page).toHaveURL(/\/sign-up$/);
   });
 });
+
+/**
+ * **Workflow 4 · Forgot Password** — [TASK-487](../../../docs/BACKLOG.md),
+ * screen `08 Reset your password`.
+ *
+ * 🔴 **The row names the assertion: the response must be identical for a known
+ * and an unknown address.** That is an account-enumeration property, on the
+ * one page nobody has to authenticate to reach.
+ */
+test.describe('Workflow 4 · asking for a reset link', () => {
+  test('the screen the design draws is the screen that renders', async ({ page }) => {
+    await page.goto('/forgot-password');
+
+    await expect(page.getByRole('heading', { name: 'Reset your password' })).toBeVisible();
+    await expect(page.getByLabel('Work email')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Send reset link' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Back to sign in' })).toBeVisible();
+  });
+
+  test('🔴 a known and an unknown address get the same answer', async ({ page }) => {
+    const answers: string[] = [];
+    for (const address of ['m.reinhardt@northwind.com', 'nobody.at.all@northwind.example']) {
+      await page.goto('/forgot-password');
+      await page.getByLabel('Work email').fill(address);
+      await page.getByRole('button', { name: 'Send reset link' }).click();
+      answers.push(((await page.getByRole('status').textContent()) ?? '').trim());
+    }
+    expect(answers[0]).toBe(answers[1]);
+    expect(answers[0]).toMatch(/if an account exists/i);
+  });
+
+  test('the expiry it prints is the expiry the platform has', async ({ page }) => {
+    // resetPasswordTokenExpiresIn defaults to 3600 and is not configured, so
+    // the link lives an hour. The design says thirty minutes — C-243.
+    await page.goto('/forgot-password');
+    await page.getByLabel('Work email').fill('m.reinhardt@northwind.com');
+    await page.getByRole('button', { name: 'Send reset link' }).click();
+
+    await expect(page.getByRole('status')).toContainText('expires in an hour');
+  });
+});
