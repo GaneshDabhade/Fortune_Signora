@@ -65,7 +65,7 @@ authority   = "docs/design-snapshot/screens/"
 ruling      = "D-160"
 updated     = 2026-08-07
 active_rule = "exactly one workflow may be `active`; reaching `on_main` releases the next — D-169"
-release_rule = "⚡ D-169, 2026-08-07. TWO triggers, and confusing them is the C-427 trap. BETWEEN workflows: `on_main` releases the next. WITHIN a workflow: the lane's own `IN VALIDATION` releases the next row, because a row parked behind a state only QE can move is a row nobody can start. `approved` is a CHECKPOINT recorded after the fact, never a prerequisite. The pixel-level conformance audit remains mandatory before any review is requested, and is now the only gate."
+release_rule = "⚡ AMENDED 2026-08-08. ONE trigger, not two: the lane's own `IN VALIDATION` releases the next row, within a workflow AND between workflows. D-169 set the between-workflow trigger to `on_main`, and applied literally that made a lane idle a full QE cycle every time it finished a workflow — the exact waiting D-169 exists to remove, reappearing at the boundary. Safe because D-161 ④ and D-162 ④ require conformance findings to be fixed in the foundation, so they propagate to anything built meanwhile. The audit still runs on `main` before any review request; it no longer gates the next workflow. `approved` is a CHECKPOINT recorded after the fact, never a prerequisite. The pixel-level conformance audit remains mandatory before any review is requested, and is now the only gate."
 
 # ══════════════════════════════════════════════════════════════════════════════
 # THE AUTHENTICATION JOURNEYS — Fortune Signora Authentication.dc.html
@@ -101,9 +101,8 @@ excluded    = [
 
 [workflow.2]
 name        = "Registration"
-state       = "ready"
-# ⚡ RELEASED 2026-08-08 by D-169 — Workflow 1 reached `main`. No approval was
-# waited for, and none is required.
+state       = "in_progress"
+# ⚡ DELIVERED 2026-08-08 — TASK-485 IN VALIDATION with a headed journey pass.
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["01 Welcome", "06 Create account"]
 tasks       = ["TASK-485"]
@@ -112,7 +111,9 @@ depends_on  = ["workflow.1"]
 
 [workflow.3]
 name        = "Email Verification"
-state       = "decomposed"
+state       = "ready"
+# ⚡ RELEASED 2026-08-08 on Workflow 2's IN VALIDATION, not on `main` — see
+# release_rule above. Lane A must not idle a QE cycle at every boundary.
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["07 Verify email"]
 tasks       = ["TASK-474", "TASK-486"]

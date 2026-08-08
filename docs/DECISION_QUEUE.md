@@ -160,6 +160,14 @@
 
 </details>
 
+## 🔴 C-435 · Planning synchronization — THIRD OCCURRENCE IN ONE DAY
+
+> 🔴 **2026-08-08, and this is the measurement that should decide it.** **Lane A has *delivered* Workflow 2 — `TASK-485` `IN VALIDATION`, headed journey passing. `TASK-486` is released for Workflow 3. `claimable_now = 0`, because the release is on `lane-c-sync`.**
+>
+> ⚡ **Instance 1 was 136 idle cycles. Instance 2 was hours later. This is instance 3.** ⛔ **Three occurrences of one cause in one day, and the only thing between a working lane and its next workflow is a QE integration of a file certification already classifies as non-executable.**
+>
+> ⚠️ **And a second finding arrived with it: [D-169](DECISION_REGISTER.md)'s between-workflow trigger was `on_main`, which made Lane A idle a full QE cycle at *every* workflow boundary — the exact waiting D-169 exists to remove, reappearing at the boundary.** ✅ **Amended to the lane's own `IN VALIDATION`, reported rather than slipped in.** ⛔ **It does not fix C-435: the amendment itself is on `lane-c-sync`.**
+
 ## 🔴 C-435 · Planning synchronization — the ARCHITECTURE package, superseding the first one
 
 > ⛔ **Option C is withdrawn.** **You rejected it and you were right: it weakened *"a cycle is warranted by executable change"* to buy one cycle.**

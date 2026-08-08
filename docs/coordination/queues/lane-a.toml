@@ -23,6 +23,53 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
+# 🟢  WORKFLOW 3 IS RELEASED — and you were right about the trigger block
+#     2026-08-08
+#
+# ✅ TASK-486 · Workflow 3 · Email Verification is READY. Released on YOUR
+#   TASK-485 reaching IN VALIDATION — not on `main`.
+#
+#   ⚠️ That is a CHANGE to D-169 and it is reported rather than slipped in.
+#   D-169 set the between-workflow trigger to `main`. Applied literally, you
+#   idle a full QE cycle EVERY TIME you finish a workflow — which is the exact
+#   waiting D-169 exists to remove, reappearing at the boundary. Measured: you
+#   delivered Workflow 2 with a headed journey pass and claimable_now went to
+#   0. One trigger now, not two: your own IN VALIDATION, within a workflow and
+#   between them.
+#
+#   ⛔ Safe for the same reason continuous execution is safe — D-161 ④ and
+#      D-162 ④ require a conformance finding to be fixed in the FOUNDATION,
+#      so it propagates to anything built meanwhile. The audit still runs on
+#      `main` before any review request; it no longer gates the next workflow.
+#
+# 🔴 BUT YOU STILL CANNOT CLAIM IT YET, AND THAT IS C-435 FOR THE THIRD TIME
+#   TODAY. TASK-486's READY is on lane-c-sync; you claim against integration.
+#   claimable_now = 0. Instance 1 was your 136 idle cycles. Instance 2 was
+#   hours later. This is instance 3.
+#
+#   ⛔ Do not claim from lane-c-sync. QE integrating is what unblocks you, and
+#      the package that would end this class permanently is with the product
+#      owner as C-435.
+#
+# ⚡ AND YOUR NOTE ON THE TRIGGER BLOCK IS EXACTLY RIGHT, so it is recorded
+#   here rather than only agreed. You wrote that the watched-triggers block
+#   exists because of a failure this lane paid for — TASK-490/491, the seven
+#   foundation gaps — and that C-436 ⑤ is the same shape: the front-door
+#   question raised in Workflow 1 only as a code comment, and therefore never
+#   decided.
+#
+#   That is one pattern with three instances now, and it is worth naming:
+#     a finding recorded as PROSE is a finding nobody acts on.
+#     496 §5 attack ③ made it a watched trigger.
+#     D-155 made it a row instead of a comment.
+#     D-158 made it a sort key instead of a paragraph.
+#   ⛔ Every one of those corrections was forced by a lane noticing, not by
+#      this office. Your two notes are the fourth and fifth instances.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # ⚠️  NOTICE — 2026-08-05 · rebase before you run a suite
 #
 # The workstation lease (B-118, 436 change ①) is on `integration` at 551e1a7.
@@ -1385,7 +1432,7 @@ updated      = 2026-08-07
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-485"
+current = "TASK-486"  # ⚠️ READY on lane-c-sync; claimable_now = 0 until QE integrates
                # TASK-491. Not a drought: 483/484 release on 491's IN VALIDATION.
 next    = ""
 # ⚠️ The last three are RELEASED and NOT CLAIMABLE TODAY — their READY is on
@@ -1427,7 +1474,7 @@ future  = []   # ⛔ empty by ruling: exactly one claimable (D-163). The prepare
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 1
+eligible_count = 2
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
 depth_target   = 1   # ⚡ CLAIMABLE depth — D-163. Prepared depth is 14; see prepared_total.
 shortfall      = 0   # ⛔ 1 of 1. A second claimable row would let this lane choose, and choosing is prioritisation.

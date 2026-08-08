@@ -9,28 +9,28 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "018195f"
+generated_from = "992afa3"
 task_count     = 98
 
 [lane.Lane_A]
 current            = "TASK-485"
-next               = ""
+next               = "TASK-486"
 next_after_that    = ""
 assigned_total     = 82
-claimable          = 1
+claimable          = 2
 claimable_now      = 0
-awaiting_sync      = 1
+awaiting_sync      = 2
 in_flight          = 48
 actionable         = 4
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 33
+blocked            = 32
 lane_utilization   = 9.6
-idle_prediction_days   = 0.1
-dependency_wait_days   = 0.5
-blocked_duration_days  = 0.5
-critical_path_max      = 4
+idle_prediction_days   = 0.3
+dependency_wait_days   = 0.6
+blocked_duration_days  = 0.6
+critical_path_max      = 3
 
 [lane.Lane_C]
 current            = ""
@@ -48,8 +48,8 @@ supply_state       = "in_flight_only"
 blocked            = 7
 lane_utilization   = 1.2
 idle_prediction_days   = 0.0
-dependency_wait_days   = 0.9
-blocked_duration_days  = 0.9
+dependency_wait_days   = 1.0
+blocked_duration_days  = 1.0
 critical_path_max      = 0
 
 [[task]]
@@ -65,7 +65,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lan"
 waiting_for    = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lane raised.** ⚠️ **An architectural blocker, not an implementation one** (§20e): *"
-blocked_days   = 0.5
+blocked_days   = 0.6
 on_integration = true
 
 [[task]]
@@ -1057,7 +1057,7 @@ next_lane      = "—"
 critical_path  = 2
 estimated_ready = "when TASK-474 complete"
 waiting_for    = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be written until "
-blocked_days   = 0.5
+blocked_days   = 0.6
 on_integration = true
 
 [[task]]
@@ -1179,7 +1179,7 @@ state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-486", "TASK-492"]
+unblocks       = ["TASK-492"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
@@ -1191,18 +1191,18 @@ on_integration = false
 [[task]]
 id            = "TASK-486"
 title         = "Workflow 3 — Email Verification, to the approved design"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
-depends_on     = ["TASK-485"]
+depends_on     = []
 unblocks       = ["TASK-487"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
-critical_path  = 1
-estimated_ready = "— after [TASK-485](#task-485--workflow-2--registration-to-the-approved"
-waiting_for    = "— after [TASK-485](#task-485--workflow-2--registration-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGIST"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-487"
@@ -1214,8 +1214,8 @@ depends_on     = ["TASK-486"]
 unblocks       = ["TASK-488"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
-critical_path  = 2
-estimated_ready = "when TASK-486 complete"
+critical_path  = 1
+estimated_ready = "— after [TASK-486](#task-486--workflow-3--email-verification-to-the-ap"
 waiting_for    = "— after [TASK-486](#task-486--workflow-3--email-verification-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_"
 blocked_days   = 0.0
 on_integration = true
@@ -1230,7 +1230,7 @@ depends_on     = ["TASK-487"]
 unblocks       = ["TASK-489"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
-critical_path  = 3
+critical_path  = 2
 estimated_ready = "when TASK-487 complete"
 waiting_for    = "— after [TASK-487](#task-487--workflow-4--forgot-password-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REG"
 blocked_days   = 0.0
@@ -1246,7 +1246,7 @@ depends_on     = ["TASK-488"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 4
+critical_path  = 3
 estimated_ready = "when TASK-488 complete"
 waiting_for    = "— after [TASK-488](#task-488--workflow-5--password-reset-to-the-approved-design) is approved on `main`, Lane C 2026-08-07.** ⚡ **[D-160](DECISION_REGI"
 blocked_days   = 0.0
@@ -1521,7 +1521,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 0.9
+blocked_days   = 1.0
 on_integration = true
 
 [[task]]
@@ -1569,7 +1569,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 0.9
+blocked_days   = 1.0
 on_integration = true
 
 [[task]]
@@ -1601,7 +1601,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 0.5
+blocked_days   = 0.6
 on_integration = true
 
 [[task]]
