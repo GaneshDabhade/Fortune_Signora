@@ -15,6 +15,29 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## 🔴 Lane C's identifier block is exhausted, and it is now blocking
+
+> ## ⛔ **`TASK-400`–`499` is Lane C's block under [§20e](../CLAUDE.md). **95 allocated, zero free.** `TASK-499` was the last.**
+>
+> ⚡ **This is no longer a forecast — it stopped work in this cycle.** [D-185](DECISION_REGISTER.md) §1 ruled the reset token at thirty minutes; Lane A had already delivered [TASK-498](BACKLOG.md) *without* it, against a row that did not yet carry the cell. **The remedy is a small follow-up row and this office cannot allocate one.**
+
+| | |
+|---|---|
+| **What is blocked today** | **The 30-minute configuration + screen `08`'s copy + retiring the test that asserts the config stays unset** |
+| **What is blocked next** | ⚠️ **Sixteen workflows still need decomposition** ([D-182](DECISION_REGISTER.md)). **Workflow 13 — the Application Shell — gates fourteen others and is the one delay that compounds** |
+| ⛔ **Why this office cannot self-serve** | 📁 **[§20e](../CLAUDE.md): *"a lane allocates only from its own block."*** **Taking `500+` is Lane D's; taking a gap is a live reference.** ⚡ **The block model is working exactly as designed — it made collision unrepresentable, and exhaustion is its honest failure mode** |
+
+### ✅ The fix is one line in `CLAUDE.md`'s allocation table, and it is yours
+
+| | |
+|---|---|
+| ⚡ **Recommended** | **Extend Lane C to a second range — `1400`+ — leaving `500`–`900` untouched for future lanes.** ✅ **No renumbering, no migration, and the *"allocate from your own block"* rule is unchanged** |
+| **Alternative** | **Widen every block to four digits.** ⛔ **Larger change, same effect, and it rewrites a table that is working** |
+
+⚠️ **This office is not editing `CLAUDE.md`.** 📁 **[§20e](../CLAUDE.md)'s shared-files table makes it the product owner's, and the one prior edit was made on explicit instruction and recorded as directed rather than drafted** ([D-170](DECISION_REGISTER.md) §2).
+
+⛔ **Until it is resolved, Lane A sits at nine claimable against [D-184](DECISION_REGISTER.md)'s floor of ten, and `state-check` reports the shortfall every cycle.** ✅ **Nine prepared rows is not a drought and the lane is not idle** — **what is blocked is this office's ability to keep the promise you set.**
+
 ## What the ruling released
 
 | | |

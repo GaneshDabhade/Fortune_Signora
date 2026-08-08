@@ -931,6 +931,62 @@ def _ordered(lane: str) -> bool:
     return bool(queue.get("current")) and bool(queue.get("next"))
 
 
+def _item_owner_findings() -> list[str]:
+    """Does every coordination item awaiting somebody name who? — **D-186.**
+
+    ⛔ **An item with no owner looks unowned and is asked about. An item whose
+    owner is buried in `Status` prose looks *answered*** — every lane reads it,
+    finds no route, and moves on. **That is [C-213](../docs/LANE_COORDINATION.md)'s
+    defect, which blocked `TASK-205` for two days on one word.**
+
+    ⚡ **Found on the 2026-08-08 audit: five open items stated their owner inside
+    `Status` text and three named nobody at all.** ⛔ **No instrument could see
+    any of them, because *derivable is not visible*** — the same sentence §20e
+    already uses about a lane's queue.
+
+    ⚠️ **The state filter is deliberately narrow.** `CLOSED`, `ANSWERED`,
+    `RULED` and `READY FOR IMPLEMENTATION` are *finished* and need no owner;
+    only an item somebody still owes an answer on is reported. **A first pass
+    that counted `READY FOR IMPLEMENTATION` as open reported 42 items where
+    there were 27, and a check that overstates is one people learn to skim.**
+    """
+    out: list[str] = []
+    path = REPO_ROOT / "docs" / "LANE_COORDINATION.md"
+    if not path.exists():
+        return out
+    lines = path.read_text().split("\n")
+    heads = [(i, l) for i, l in enumerate(lines) if re.match(r"^## C-\d+ ", l)]
+    awaiting = re.compile(r"`(OPEN|IN ANALYSIS|READY FOR LANE C|READY FOR PRODUCT DECISION)`")
+    finished = re.compile(r"`(CLOSED|ANSWERED|READY FOR IMPLEMENTATION|RULED|OPERATIONAL)`")
+    actor = re.compile(r"Lane [ACD]|QE|[Pp]roduct owner")
+
+    for n, (i, head) in enumerate(heads):
+        end = heads[n + 1][0] if n + 1 < len(heads) else len(lines)
+        body = lines[i:end]
+        status = next((x for x in body if x.startswith("| **Status**")), "")
+        if finished.search(status) or not awaiting.search(status):
+            continue
+        cid = head.split(" · ")[0].replace("## ", "")
+        owner = next((x for x in body if x.startswith("| **Owner**")), "")
+        if not owner:
+            out.append(
+                f"{cid} is awaiting somebody and has no `Owner` cell. **A row "
+                f"nobody is named on is a row nobody answers** (C-213)."
+            )
+        elif not actor.search(owner):
+            out.append(
+                f"{cid}'s `Owner` names no lane, QE or the product owner. "
+                f"**An owner a reader cannot route to is an absent owner.**"
+            )
+        elif "Lane B" in owner:
+            out.append(
+                f"{cid} is owned by **Lane B**, which D-165 closed. "
+                f"**An item assigned to a lane that cannot answer is worse than "
+                f"one visibly unowned, because it looks answered** (§20e)."
+            )
+    return out
+
+
 def _structural_findings() -> list[str]:
     """Did a scripted edit silently delete part of a row? — **B-411, D-185 §5.**
 
@@ -1817,6 +1873,7 @@ def main() -> int:
     findings.extend(_duplicate_state_findings(backlog))
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
+    findings.extend(_item_owner_findings())
     findings.extend(_structural_findings())
     findings.extend(_pipeline_findings())
     findings.extend(_adoption_findings())

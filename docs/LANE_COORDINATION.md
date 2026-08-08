@@ -1216,6 +1216,7 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 | | |
 |---|---|
+| **Owner** | **QE** — 📁 **the item's own title says so**: accessibility and performance testing are QE's remit ([§20e](../CLAUDE.md), *Quality Engineering*), **owned and not yet built.** ⛔ **Not Lane C's to schedule and not a lane's to build.** ⚠️ **Owner cell added 2026-08-08 on the ownership audit** — **the item carried none, so no instrument could route it and no reader could find it** ([C-213](#c-213)'s class). |
 | **Decision required** | Milestone numbers for two responsibilities QE already holds |
 | **Participating modules** | none — repository-wide |
 | **Current assignee(s)** | **Product owner** · QE waiting |
@@ -3584,6 +3585,7 @@ frontend/playwright.config.ts                       modified
 
 | | |
 |---|---|
+| **Owner** | **QE** — **repository-wide automated tests.** ⚠️ **Owner cell added 2026-08-08 — the item stated its owner inside `Status` prose, where no instrument can read it and no reader can find it.** ⛔ **That is [C-213](#c-213)'s class: an owner that is *derivable* rather than *visible*, and derivable is not visible.** |
 | **Decision required** | Whether a repository-wide assertion of the deployed subscription set is built, and by whom |
 | **Participating modules** | `apps/worker/` — a composition root no module's suite covers · every module that will ever add a consumer |
 | **Current assignee(s)** | **QE** — repository-wide automated tests are QE's; lanes own the tests specific to their slices (`CLAUDE.md` §20e) |
@@ -3921,6 +3923,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 
 | | |
 |---|---|
+| **Owner** | ⛔ **Product owner** — **it asks a question about `CLAUDE.md`, which is theirs.** ⚡ **A standing review question, not a blocker and not closeable.** ⚠️ **Owner cell added 2026-08-08 — the item stated its owner inside `Status` prose, where no instrument can read it and no reader can find it.** ⛔ **That is [C-213](#c-213)'s class: an owner that is *derivable* rather than *visible*, and derivable is not visible.** |
 | **Decision required** | Where a repository-wide review question belongs, and whether it is adopted |
 | **Participating modules** | none — review practice |
 | **Current assignee(s)** | **Product owner** — `CLAUDE.md` is theirs, and a review practice is governance |
@@ -3972,6 +3975,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 
 | | |
 |---|---|
+| **Owner** | ⛔ **Product owner** — **two principles that outgrew their ADR, and `CLAUDE.md` is theirs.** ⚠️ **Owner cell added 2026-08-08 — the item stated its owner inside `Status` prose, where no instrument can read it and no reader can find it.** ⛔ **That is [C-213](#c-213)'s class: an owner that is *derivable* rather than *visible*, and derivable is not visible.** |
 | **Decision required** | Whether two rules discovered in [ADR-0041](architecture/adr/0041-icp-aggregate.md) become repository principles, and where they live |
 | **Participating modules** | `commercial_profile` · `ai_platform` · `opportunity_engine` · `notifications` *(proposed)* — **each already exhibits one or both** |
 | **Current assignee(s)** | **Product owner** — `CLAUDE.md` §2 is governance |
@@ -4032,6 +4036,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 
 | | |
 |---|---|
+| **Owner** | ⛔ **Product owner** — ⚡ **it argues *against* work**, and whether to rebuild an experience that already exists is a scope decision, never a lane's. 📁 **[§20e](../CLAUDE.md): *a lane never reorders, reprioritizes, removes or inserts work without the product owner*.** ⚠️ **Owner cell added 2026-08-08 on the ownership audit** — **the item carried none, so no instrument could route it and no reader could find it** ([C-213](#c-213)'s class). |
 | **Decision required** | How a capability spanning **one lane's assigned module** and **three unassigned ones** is executed without two lanes inside one module |
 | **Participating modules** | Product Surface (**Lane A — assigned, and not released**) · `opportunity_engine` · `signal_engine` · `buying_score_engine` (**all unassigned**) |
 | **Current assignee(s)** | **Product owner** |
@@ -4138,6 +4143,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 
 | | |
 |---|---|
+| **Owner** | ⛔ **Product owner** — **it is a product-capability question** (*"the product cannot tell me who my colleagues are"*), **grouped with People Intelligence beside [C-203](#c-203--nothing-in-the-product-can-render-a-persons-name) and [C-210](#c-210--will-signora-hold-personal-data).** ⚠️ **Owner cell added 2026-08-08 — the item stated its owner inside `Status` prose, where no instrument can read it and no reader can find it.** ⛔ **That is [C-213](#c-213)'s class: an owner that is *derivable* rather than *visible*, and derivable is not visible.** |
 | **Decision required** | Where a person's **display identity** lives, given that Better Auth owns the account and the Python tier only verifies tokens |
 | **Participating modules** | `signora_platform/auth` (frozen 🔴, verification only) · `workspace_tenancy` (**Lane A — Team Management**) · Product Surface (**Lane A**) · a new home, unowned |
 | **Current assignee(s)** | **Product owner** — a recommendation is stated below and **Lane B is proceeding on it rather than waiting** |
@@ -5342,6 +5348,7 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 | | |
 |---|---|
+| **Owner** | **Lane A** — ⚡ **joined from [`modules.toml`](coordination/modules.toml) at read time, never stored** ([C-213](#c-213)). ⚠️ **Owner cell added 2026-08-08 — the item stated its owner inside `Status` prose, where no instrument can read it and no reader can find it.** ⛔ **That is [C-213](#c-213)'s class: an owner that is *derivable* rather than *visible*, and derivable is not visible.** |
 | **Raised by** | Lane C, 2026-08-04 |
 | **Status** | ✅ **`READY FOR IMPLEMENTATION`** — **ruled 2026-08-04** ([D-056](DECISION_REGISTER.md)): `knowledge_graph` → Lane A, and consolidated to Lane B the same day by [D-058](DECISION_REGISTER.md). **The register said `OPEN` for a day after the ruling** — found by the 2026-08-05 portfolio audit, and it is the C-213 defect wearing the opposite coat: **an item that looks unanswered when it has been answered** |
 | **Class** | **Ownership Decision** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §1) |
@@ -6445,6 +6452,7 @@ read path is built.** **Stated so a consumer does not read an empty result as a 
 
 | | |
 |---|---|
+| **Owner** | **Lane C** — ⚡ **it is a *decomposition* gap, which is this office's: the App Shell's 22 numbered specifications are not in the backlog.** 📁 **Workflow 13 measured 15 of 22 at [D-182](DECISION_REGISTER.md) and gates every screen from 14 to 27 — the one delay that compounds.** ✅ **Closes when Workflow 13 is decomposed, which is this office's next after Workflow 11.** ⚠️ **Owner cell added 2026-08-08 on the ownership audit** — **the item carried none, so no instrument could route it and no reader could find it** ([C-213](#c-213)'s class). |
 | **Raised by** | **Lane A**, holding [TASK-447](BACKLOG.md), after delivering the part that is specified |
 | **Status** | **`OPEN`** |
 | **Blocks** | **Nothing today.** The row's buildable content shipped. **This is about the next shell slice, not this one** |
