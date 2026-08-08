@@ -299,3 +299,40 @@ test.describe('Workflow 2 · creating an account', () => {
     await expect(page).toHaveURL(new RegExp(encodeURIComponent(address).replace(/\./g, '\\.')));
   });
 });
+
+/**
+ * **Workflow 3 · Email Verification** — [TASK-486](../../../docs/BACKLOG.md),
+ * screen `07 Verify email`.
+ *
+ * ⛔ **The design's six digit boxes are not here and one test says so.**
+ * `lib/auth/server.ts` sends a link, `better-auth/plugins/email-otp` is
+ * installed and unregistered, and no endpoint would accept a typed code —
+ * [C-241](../../../docs/LANE_COORDINATION.md).
+ */
+test.describe('Workflow 3 · verifying an email', () => {
+  const ADDRESS = 'm.reinhardt@northwind.com';
+  const verify = `/verify-email?email=${encodeURIComponent(ADDRESS)}`;
+
+  test('the screen names the address it sent to', async ({ page }) => {
+    await page.goto(verify);
+
+    await expect(page.getByRole('heading', { name: 'Verify your email' })).toBeVisible();
+    await expect(page.getByText(ADDRESS, { exact: false })).toBeVisible();
+    await expect(page.getByLabel('Work email')).toHaveValue(ADDRESS);
+  });
+
+  test('⛔ no code boxes, because nothing would verify them', async ({ page }) => {
+    await page.goto(verify);
+
+    // One field — the editable address — and not six.
+    await expect(page.getByRole('textbox')).toHaveCount(1);
+    await expect(page.getByText(/6-digit|six-digit/i)).toHaveCount(0);
+  });
+
+  test('the resend offers a way out to a different address', async ({ page }) => {
+    // The design's own line under the control.
+    await page.goto(verify);
+    await page.getByRole('link', { name: 'Use a different email' }).click();
+    await expect(page).toHaveURL(/\/sign-up$/);
+  });
+});

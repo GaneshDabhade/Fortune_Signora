@@ -9,6 +9,13 @@ export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from '.
 export { Input, type InputProps } from './input';
 export { PasswordField, type PasswordFieldProps } from './password-field';
 export { PasswordStrength, evaluatePassword, type PasswordRule } from './password-strength';
+export {
+  useResendTimer,
+  formatRemaining,
+  ATTEMPTS_BEFORE_FILTER_HINT,
+  FIRST_RESEND_DELAY_SECONDS,
+  type ResendTimer,
+} from './resend-timer';
 export { Select, type SelectOption, type SelectProps } from './select';
 export { Badge, type BadgeProps, type BadgeTone } from './badge';
 export { Confidence, type ConfidenceProps } from './confidence';

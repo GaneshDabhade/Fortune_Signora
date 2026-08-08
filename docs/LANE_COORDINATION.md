@@ -8079,3 +8079,46 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 | **What it costs either way** | ✅ **One line.** ⚠️ **It changes the first thing every returning customer sees** — a signed-out seller reopening a bookmark meets a marketing card instead of the password field they came for, which is the argument *for* the current behaviour and worth ruling on rather than inheriting |
 
 > ⛔ **Raised in Workflow 1 as a code comment and never as an item, which is the process defect here.** **A decision recorded only where the implementing lane can see it is a decision nobody made** — [§20e](../CLAUDE.md), and the reason [C-421](#c-421--a-lane-must-be-able-to-read-the-design-it-is-implementing-against) exists.
+
+---
+
+## C-241 · Workflow 3's approved screen needs the one file its row forbids, and this is the third instance
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-08, ⚡ **on claiming [TASK-486](BACKLOG.md) and reading `node_modules` before building** ([D-137](DECISION_REGISTER.md): *accessible is a claim to be tested, never assumed*) |
+| **Owner** | **Product owner** — ⛔ **an authentication semantic, which [D-151](DECISION_REGISTER.md) ④ places here** |
+| **Status** | **`OPEN`** |
+| **Blocks** | ⚠️ **The screen's *primary control*, not a detail.** ⛔ **Screen `07` is the six-digit code.** ✅ **Everything else on the row is buildable and is being built** |
+
+> ⚡ **This is [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch)'s exact shape, one workflow later, and that is why it is filed rather than absorbed.** **C-240 ① and ② were configuration in `lib/auth/server.ts` that a row forbade; so is this.** ⛔ **The difference is severity: those were a strength rule and a rate limit. This is the control the screen exists for.**
+
+### The contradiction, stated plainly
+
+| | |
+|---|---|
+| **The design** | **`07 Verify email` — *"Enter the 6-digit code we sent to…"***, six single-character boxes, `autocomplete="one-time-code"`, *"paste the whole code and it fills every box"* |
+| **[TASK-486](BACKLOG.md)'s Features** | **Repeats it exactly** — *"six single-character boxes · paste fills every box · resend with the doubling timer · a wrong code shows inline and keeps the digits"* |
+| ⛔ **[TASK-486](BACKLOG.md)'s own constraint** | ***"Nothing in this row touches `lib/auth/server.ts`, RS256 verification, `requireEmailVerification` or any route."*** **And** *"✅ Zero backend work"* |
+| 🔴 **What is actually deployed** | **A link, not a code.** **`lib/auth/server.ts:73` reads `sendVerificationEmail: async ({ user, url })`** — Better Auth mints a token and builds a **URL**; `lib/auth/email.ts`'s `AuthEmail` carries `url` and nothing else. **There is no code to type and no endpoint that would accept one** |
+
+### ✅ The capability exists and is one registration — measured, not assumed
+
+**`better-auth/plugins/email-otp` is present in `node_modules`**, read directly:
+
+| | |
+|---|---|
+| **Routes it adds** | **`/email-otp/send-verification-otp`** · **`/email-otp/verify-email`** · **`/email-otp/check-verification-otp`** *(plus password-reset and change-email variants)* |
+| **How it is configured** | **`emailOTP({ sendVerificationOTP, otpLength, expiresIn })`** in the server's plugin list |
+| ⛔ **Where that goes** | **`lib/auth/server.ts`** — **the file this row states it does not touch**, and **`otpLength` is a security parameter nobody has chosen**, exactly as `password.ts` says of a length the product never picked |
+| ⚠️ **And it changes the port** | **`AuthEmail` carries `url`.** **An OTP is not a URL** — the port gains a variant, which is `lib/auth/email.ts`, in budget, **but pointless until the plugin exists** |
+
+### ⛔ What this lane built instead, and why it is not the six boxes
+
+**Six boxes wired to nothing is a false affordance** — the rule this lane already applied twice: **`/join`'s *Request access* is never offered *"because nothing can grant it"***, and **`/sso`'s domain field is locked with its reason given** rather than accepting input it cannot act on. ⚡ **A control whose outcome cannot depend on its input is worse than its absence**, and a customer typing six digits into a screen that cannot check them is the strongest version of that failure: **it looks like it worked right up until it does not.**
+
+✅ **So the screen is rebuilt to the design for the flow that exists** — the link — **and the six boxes are not drawn.** **The resend, its timer, the inline failure and the visual language are all real and all shipped.**
+
+### The decision, in one sentence
+
+> **Does Signora verify email by a link or by a six-digit code?** ⚡ **The design says a code; the platform ships a link; the plugin that closes the gap is installed and unregistered.** ⛔ **Registering it is one line and a chosen `otpLength`, and it needs a row that may touch `lib/auth/server.ts`** — **which is the same row [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch)'s three ruled items have been waiting for.**

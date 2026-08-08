@@ -22,13 +22,23 @@ export default async function VerifyEmailPage({
 
   return (
     <AuthShell
-      title="Confirm your email"
+      title="Verify your email"
       description={
         email
-          ? `We sent a link to ${email}. Follow it and you will be signed in.`
+          ? // ⚠️ **The design says *"Enter the 6-digit code we sent to…"*.**
+            // This sends a link, and the sentence says the true thing rather
+            // than the designed one — C-241. Same shape, same address in the
+            // same place; only the instrument differs, and it differs because
+            // `email-otp` is installed and unregistered.
+            `We sent a link to ${email}. Follow it and you will be signed in.`
           : 'We sent you a link. Follow it and you will be signed in.'
       }
-      footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
+      // The design's own words under the control: *"Didn't get it?"*
+      footer={
+        <>
+          Wrong address? <AuthLink href="/sign-up">Use a different email</AuthLink>
+        </>
+      }
     >
       <ResendVerification email={email ?? null} />
     </AuthShell>
