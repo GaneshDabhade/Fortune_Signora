@@ -17,16 +17,11 @@ import { expect, test } from '@playwright/test';
  */
 
 test.describe('Workflow 9 · a person makes Signora theirs', () => {
-  // 🔴 **Fails, and it is reporting a real defect** — [B-215](../../../docs/BUGS.md).
-  // The `PATCH` returns `200`, the row is created, and every column is `NULL`:
-  // the body is arriving empty. ⛔ **Not skipped and not weakened.** A journey
-  // that was softened to pass would remove the only thing currently telling
-  // anybody that *Saved* is a lie on this screen.
+  // ✅ **Passes again — [B-215](../../../docs/BUGS.md) is fixed.** It was
+  // marked `test.fail()` for exactly one cycle while the defect stood, rather
+  // than skipped or softened, and this is the scenario that found it: a slow
+  // read was erasing the typed value before the save.
   test('@journey a display name and a timezone survive signing out', async ({ page }) => {
-    // Inside the body on purpose: at describe scope this marks every test
-    // after it, which is how the first attempt turned three passing
-    // scenarios red.
-    test.fail();
     await page.goto('/profile');
 
     await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();

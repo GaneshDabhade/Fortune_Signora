@@ -47,8 +47,29 @@ export function ProfilePanel({ name, email }: { name: string | null; email: stri
       .then((loaded) => {
         if (!live) return;
         setPrefs(loaded);
-        setDisplayName(loaded.display_name ?? '');
-        setPronouns(loaded.pronouns ?? '');
+        // ⛔ **Never over the top of a person's typing.** The server's copy
+        // seeds an untouched form and loses to a touched one, because the
+        // newer fact is the one in front of them.
+        /**
+         * 🔴 **[B-215](../../../../docs/BUGS.md) — a slow read was erasing what
+         * somebody had already typed.**
+         *
+         * ⛔ **The seed loses to anything the person has entered.** If this
+         * effect resolves after the first keystroke, assigning the server's
+         * copy overwrites it — and `Save` then sends the empty field as
+         * `null`, the row stores nothing, and the screen says *"Saved"*.
+         * **That was the whole defect**, and it was here rather than in the
+         * transport: the endpoint and the proxy each handle a `PATCH` body
+         * correctly, proved by sending one through each.
+         *
+         * ⚡ **Guarded through the setter, not through a flag.** A `hasEdited`
+         * boolean read inside this callback would be the value captured when
+         * the effect ran — always `false` — so it would have been a fix that
+         * never fired. **The updater sees the state at resolution time**,
+         * which is the only moment that can answer the question.
+         */
+        setDisplayName((current) => (current === '' ? (loaded.display_name ?? '') : current));
+        setPronouns((current) => (current === '' ? (loaded.pronouns ?? '') : current));
       })
       // ⛔ **A failed read renders as an error, never as an empty form** — P-A,
       // and the shape C-226 found six times on one screen. Blank fields here

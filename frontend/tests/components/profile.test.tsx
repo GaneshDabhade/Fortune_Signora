@@ -240,3 +240,48 @@ describe('screen 03 · appearance is the account\'s, not the browser\'s', () => 
     expect(changePreferences).toHaveBeenCalledWith('ws-1', { density: 'compact' });
   });
 });
+
+
+describe('B-215 · a slow read must not erase what somebody has typed', () => {
+  it('🔴 keeps the typed value when the server answer arrives afterwards', async () => {
+    /**
+     * **This was B-215, and it presented as a lost request.** It was a lost
+     * keystroke: the load effect seeded the inputs after the first character,
+     * `Save` then sent the empty field as `null`, the row stored nothing —
+     * and the screen said *"Saved"*.
+     *
+     * ⛔ **The endpoint and the proxy were both fine**, each proved by sending
+     * a `PATCH` through it directly. **A defect register entry that had
+     * blamed either would have cost the next person the same afternoon.**
+     */
+    let release!: (value: unknown) => void;
+    getPreferences.mockReturnValue(
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+    );
+
+    render(<ProfilePanel name="A" email="a@b.com" />);
+    await userEvent.type(screen.getByLabelText('Display name'), 'Aurélie');
+
+    // The read lands late, carrying the older, empty value.
+    release({ ...DEFAULTS });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(changePreferences).toHaveBeenCalledWith('ws-1', {
+      display_name: 'Aurélie',
+      pronouns: null,
+    });
+  });
+
+  it('still seeds an untouched form from the server', async () => {
+    // The guard must not cost the ordinary case: somebody arriving at a
+    // profile they have filled in before still sees it.
+    getPreferences.mockResolvedValue({ ...DEFAULTS, display_name: 'Aurélie' });
+
+    render(<ProfilePanel name="A" email="a@b.com" />);
+
+    expect(await screen.findByDisplayValue('Aurélie')).toBeInTheDocument();
+  });
+});
