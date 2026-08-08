@@ -235,3 +235,48 @@ describe('the form the design draws', () => {
     expect(push).not.toHaveBeenCalled();
   });
 });
+
+describe('the states the design enumerates', () => {
+  it('keeps the label and holds the width while it is submitting', async () => {
+    // The design's button spec: **Loading — *"label kept, width fixed"***.
+    // The label grows from `Continue` to `Creating your account…`, so an
+    // intrinsically-sized button would jump the moment it is pressed.
+    let release: (value: { ok: true }) => void = () => {};
+    signUpWithPassword.mockReturnValue(
+      new Promise<{ ok: true }>((resolve) => {
+        release = resolve;
+      }),
+    );
+
+    render(<SignUpForm />);
+    await userEvent.type(screen.getByLabelText('Full name'), 'Marta Reinhardt');
+    await userEvent.type(screen.getByLabelText('Work email'), 'm.reinhardt@northwind.com');
+    await userEvent.type(screen.getByLabelText('Password'), STRONG);
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    const submitting = await screen.findByRole('button', { name: 'Creating your account…' });
+    expect(submitting).toBeDisabled();
+    expect(submitting).toHaveClass('w-full');
+
+    release({ ok: true });
+  });
+
+  it('does not submit twice while it is submitting', async () => {
+    let release: (value: { ok: true }) => void = () => {};
+    signUpWithPassword.mockReturnValue(
+      new Promise<{ ok: true }>((resolve) => {
+        release = resolve;
+      }),
+    );
+
+    render(<SignUpForm />);
+    await userEvent.type(screen.getByLabelText('Full name'), 'Marta Reinhardt');
+    await userEvent.type(screen.getByLabelText('Work email'), 'm.reinhardt@northwind.com');
+    await userEvent.type(screen.getByLabelText('Password'), STRONG);
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Creating your account…' }));
+
+    expect(signUpWithPassword).toHaveBeenCalledOnce();
+    release({ ok: true });
+  });
+});

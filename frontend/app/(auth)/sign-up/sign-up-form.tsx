@@ -144,7 +144,12 @@ export function SignUpForm() {
         </p>
       ) : null}
 
-      <Button type="submit" disabled={pending}>
+      {/* ⚡ **`w-full` is the design's *width fixed*, not a layout preference.**
+          The button's Loading spec is *"label kept, width fixed"* — and this
+          label grows from **Continue** to **Creating your account…**, so an
+          intrinsically-sized button would jump the moment it is pressed. **The
+          card must not reflow while somebody waits.** */}
+      <Button type="submit" className="w-full" disabled={pending}>
         {pending ? 'Creating your account…' : 'Continue'}
       </Button>
     </form>
