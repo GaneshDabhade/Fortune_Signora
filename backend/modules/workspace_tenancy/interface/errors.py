@@ -19,8 +19,12 @@ from modules.workspace_tenancy.domain.exceptions import (
     EmptyDeclarationError,
     InvalidSavedViewNameError,
     InvalidWorkspaceNameError,
+    OnboardingRunAlreadyFinishedError,
+    OnboardingRunNotFoundError,
     SavedViewAlreadyRetiredError,
     SavedViewNotFoundError,
+    TeamSizeOutOfRangeError,
+    TooManyGoalsError,
     WorkspaceNotFoundError,
 )
 from modules.workspace_tenancy.domain.invitation import InvitationNotPendingError
@@ -38,6 +42,22 @@ ERROR_MAPPING: ErrorMapping = {
     # module may say about a declaration's contents (D-091).
     EmptyDeclarationError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "empty_declaration"),
     SavedViewAlreadyRetiredError: (status.HTTP_409_CONFLICT, "saved_view_already_retired"),
+    # **404 rather than an invented empty run.** A run nobody started is
+    # genuinely absent, and answering with a blank one would make the resume
+    # banner permanent — there would be no state in which nobody had begun.
+    OnboardingRunNotFoundError: (status.HTTP_404_NOT_FOUND, "onboarding_run_not_found"),
+    # **409, because the request is well-formed and the state refuses it.**
+    # Onboarding answers become settings the moment the run ends, and the
+    # Settings screens own them from there.
+    OnboardingRunAlreadyFinishedError: (
+        status.HTTP_409_CONFLICT,
+        "onboarding_run_already_finished",
+    ),
+    # ⚠️ **422 and not a clamp.** Somebody typing `0` is telling the product
+    # something; answering `1` would overwrite them silently.
+    TeamSizeOutOfRangeError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "team_size_out_of_range"),
+    # ⛔ *"The fourth selection is disabled, not silently ignored."*
+    TooManyGoalsError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "too_many_goals"),
     DuplicateMembershipError: (status.HTTP_409_CONFLICT, "membership_already_exists"),
     InvalidWorkspaceNameError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_workspace_name"),
     # **404, covering never invited, already accepted and withdrawn alike.**

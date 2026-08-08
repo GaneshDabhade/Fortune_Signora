@@ -33,3 +33,12 @@ export { EmptyState, type EmptyStateProps } from './empty-state';
 export { ErrorState, type ErrorStateProps } from './error-state';
 export { Skeleton, SkeletonText, type SkeletonTextProps } from './skeleton';
 export { Table, TBody, TD, TH, THead, TR } from './table';
+export { StepRail, type RailStep, type StepRailProps } from './step-rail';
+export {
+  ChoiceCards,
+  MultiChoiceCards,
+  type Choice,
+  type ChoiceCardsProps,
+  type MultiChoiceCardsProps,
+} from './choice-cards';
+export { Inferred, type InferredProps } from './inferred';

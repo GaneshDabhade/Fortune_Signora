@@ -10,6 +10,7 @@ from typing import Any
 from uuid import UUID
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
+from modules.workspace_tenancy.domain.onboarding import OnboardingRun
 from modules.workspace_tenancy.domain.saved_view import SavedView
 from signora_platform.pagination import CursorPosition
 
@@ -185,3 +186,22 @@ class FakeSavedViewRepository:
         existing = self.views.get(view.id)
         if existing is not None and existing.retired_at is None:
             self.views[view.id] = view
+
+
+class FakeOnboardingRunRepository:
+    """In memory, keyed the way the table is keyed.
+
+    ⚠️ **`(workspace_id, person_id)`, not a run id** — a fake keyed on
+    something the table is not would let a test pass against an identity the
+    database does not have, which is the class of defect `FakeSignalRepository`
+    was returned for.
+    """
+
+    def __init__(self) -> None:
+        self.runs: dict[tuple[UUID, UUID], OnboardingRun] = {}
+
+    async def get(self, workspace_id: UUID, person_id: UUID) -> OnboardingRun | None:
+        return self.runs.get((workspace_id, person_id))
+
+    async def save(self, run: OnboardingRun) -> None:
+        self.runs[(run.workspace_id, run.person_id)] = run

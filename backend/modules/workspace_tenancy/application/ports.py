@@ -12,6 +12,7 @@ from uuid import UUID
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
+from modules.workspace_tenancy.domain.onboarding import OnboardingRun
 from modules.workspace_tenancy.domain.saved_view import SavedView
 from signora_platform.pagination import CursorPosition
 
@@ -143,3 +144,17 @@ class SavedViewRepository(Protocol):
         timestamp that was `NULL`. A declaration is still never edited.
         """
         ...
+
+
+class OnboardingRunRepository(Protocol):
+    """A person's onboarding run — **TASK-469**.
+
+    ⚡ **`save` rather than `add` and `update`.** The design's autosave sends
+    the same run repeatedly (*"every step saves on advance and on blur"*), so
+    a split would push *"is this the first save?"* into every caller and make
+    a lost race look like a duplicate-key error to a person who simply
+    clicked Back.
+    """
+
+    async def get(self, workspace_id: UUID, person_id: UUID) -> OnboardingRun | None: ...
+    async def save(self, run: OnboardingRun) -> None: ...

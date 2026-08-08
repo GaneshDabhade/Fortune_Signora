@@ -6,17 +6,28 @@ between domain entities and ORM models in both directions.
 """
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import Select, func, literal, select, tuple_, update
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
+from modules.workspace_tenancy.domain.onboarding import (
+    Answer,
+    CompanySizeBand,
+    Goal,
+    OnboardingRun,
+    OnboardingStep,
+    Provenance,
+    Role,
+)
 from modules.workspace_tenancy.domain.saved_view import SavedView
 from modules.workspace_tenancy.infrastructure.models import (
     InvitationModel,
     MembershipModel,
     MembershipRoleChangeModel,
+    OnboardingRunModel,
     SavedViewModel,
     WorkspaceModel,
 )
@@ -452,4 +463,115 @@ class SqlAlchemySavedViewRepository(SqlAlchemyRepository):
             .values(retired_at=view.retired_at, updated_by=view.created_by)
         )
         await self._session.execute(statement)
+        await self._session.flush()
+
+
+def _answer(value: object | None, provenance: str | None) -> Answer[Any] | None:
+    """Rebuild a value and where it came from, or neither.
+
+    ⛔ **Both columns or nothing.** A value whose provenance went missing
+    cannot be rendered honestly — the screen would either drop the *Inferred*
+    badge off something inferred, or attach it to something the person typed —
+    so a half-written pair reads as unanswered rather than as a guess.
+    """
+    if value is None or provenance is None:
+        return None
+    return Answer(value=value, provenance=Provenance(provenance))
+
+
+def _onboarding_to_domain(model: OnboardingRunModel) -> OnboardingRun:
+    size = _answer(model.company_size, model.company_size_provenance)
+    role = _answer(model.role, model.role_provenance)
+    return OnboardingRun(
+        workspace_id=model.workspace_id,
+        person_id=model.person_id,
+        started_at=model.started_at,
+        current_step=OnboardingStep(model.current_step),
+        completed_steps=frozenset(OnboardingStep(step) for step in model.completed_steps),
+        industry=_answer(model.industry, model.industry_provenance),
+        company_size=(
+            None if size is None else Answer(CompanySizeBand(size.value), size.provenance)
+        ),
+        region=_answer(model.region, model.region_provenance),
+        timezone=_answer(model.timezone, model.timezone_provenance),
+        role=None if role is None else Answer(Role(role.value), role.provenance),
+        team_size=_answer(model.team_size, model.team_size_provenance),
+        goals=tuple(Goal(goal) for goal in model.goals),
+        finished_at=model.finished_at,
+        skipped_at=model.skipped_at,
+        updated_at=model.updated_at,
+    )
+
+
+def _columns(run: OnboardingRun) -> dict[str, object]:
+    """The aggregate flattened onto its row.
+
+    ⛔ **`features` is deliberately absent** — it is derived from `goals` and
+    storing it would be the second representation that eventually disagrees
+    (§2).
+    """
+    return {
+        "started_at": run.started_at,
+        "current_step": run.current_step.value,
+        "completed_steps": sorted(step.value for step in run.completed_steps),
+        "industry": None if run.industry is None else run.industry.value,
+        "industry_provenance": None if run.industry is None else run.industry.provenance.value,
+        "company_size": None if run.company_size is None else run.company_size.value.value,
+        "company_size_provenance": (
+            None if run.company_size is None else run.company_size.provenance.value
+        ),
+        "region": None if run.region is None else run.region.value,
+        "region_provenance": None if run.region is None else run.region.provenance.value,
+        "timezone": None if run.timezone is None else run.timezone.value,
+        "timezone_provenance": None if run.timezone is None else run.timezone.provenance.value,
+        "role": None if run.role is None else run.role.value.value,
+        "role_provenance": None if run.role is None else run.role.provenance.value,
+        "team_size": None if run.team_size is None else run.team_size.value,
+        "team_size_provenance": None if run.team_size is None else run.team_size.provenance.value,
+        "goals": [goal.value for goal in run.goals],
+        "finished_at": run.finished_at,
+        "skipped_at": run.skipped_at,
+    }
+
+
+class SqlAlchemyOnboardingRunRepository(SqlAlchemyRepository):
+    """A person's onboarding run, stored and read back — **TASK-469**.
+
+    ⚡ **`save` is an upsert on *(workspace, person)*, and the shape follows
+    the design**: *"every step saves on advance and on blur"* means the client
+    sends the same run repeatedly, and a create/update split at this layer
+    would push the question *"is this the first save?"* into every caller.
+    """
+
+    async def get(self, workspace_id: UUID, person_id: UUID) -> OnboardingRun | None:
+        statement = select(OnboardingRunModel).where(
+            OnboardingRunModel.workspace_id == workspace_id,
+            # Defence in depth beside RLS (11-tenancy.md): the policy is the
+            # authoritative control and the predicate is stated anyway.
+            OnboardingRunModel.person_id == person_id,
+        )
+        model = (await self._session.execute(statement)).scalar_one_or_none()
+        return None if model is None else _onboarding_to_domain(model)
+
+    async def save(self, run: OnboardingRun) -> None:
+        statement = select(OnboardingRunModel).where(
+            OnboardingRunModel.workspace_id == run.workspace_id,
+            OnboardingRunModel.person_id == run.person_id,
+        )
+        model = (await self._session.execute(statement)).scalar_one_or_none()
+        columns = _columns(run)
+        if model is None:
+            self._session.add(
+                OnboardingRunModel(
+                    workspace_id=run.workspace_id,
+                    person_id=run.person_id,
+                    created_by=run.person_id,
+                    updated_by=run.person_id,
+                    **columns,
+                )
+            )
+        else:
+            for column, value in columns.items():
+                setattr(model, column, value)
+            model.updated_by = run.person_id
         await self._session.flush()

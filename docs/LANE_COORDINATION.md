@@ -8245,6 +8245,25 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 ---
 
+## C-246 · The onboarding design labels a step *Workspace* and ADR-0034 says a customer reads *Organization*
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-08, **implementing [TASK-469](BACKLOG.md) — found by a guard rather than by reading** |
+| **Owner** | **Product Office** — the design snapshot and [ADR-0034](architecture/adr/0034-ubiquitous-language.md) are both theirs, and this is the seam between them |
+| **Status** | **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **The screen ships reading *Organization***, which is what [ADR-0034](architecture/adr/0034-ubiquitous-language.md) requires and what `vocabulary.test.tsx` enforces |
+| **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 8 review is shown** — a reviewer holding the design will see one label differ, and this is so they read it as a ruled translation rather than a slip |
+
+**The design's flow table names step 2 `Workspace`.** [ADR-0034](architecture/adr/0034-ubiquitous-language.md) is explicit that **`workspace` is platform vocabulary and never reaches a screen**: *"A customer says Organization… the platform says workspace,"* and *"the translation lives at the frontend edge and never travels inward."*
+
+| | |
+|---|---|
+| ✅ **What shipped** | **`{ id: 'workspace', label: 'Organization' }`** — the id, the route and the API path are unchanged, and only the rendered word moves |
+| ⚡ **How it was found** | **`frontend/tests/components/vocabulary.test.tsx` failed the build.** ⛔ **Not by review** — §4's own justification, *"a glossary nobody can violate is documentation pretending to be code,"* demonstrated on the first screen that violated it |
+| ⚠️ **Why it is raised rather than just fixed** | **This lane cannot edit the design snapshot** ([D-138](DECISION_REGISTER.md): it is immutable for the wave), and **the same word appears on TASK-468's screen `03`**, which is a different row. ⛔ **Two rows quietly translating one label differently is worse than either choice** |
+
+**The decision, in one sentence:** ⚡ **confirm the ADR governs and the snapshot's `Workspace` is platform vocabulary that the frontend translates**, so every row does it the same way — **or rule that this label is the exception, and say why.**
+
 ## C-243 · The reset link lives an hour and the design says thirty minutes
 
 | | |

@@ -98,6 +98,21 @@ class Resource(StrEnum):
     #: making every reader an author.
     SIGNAL = "signal"
     SAVED_VIEW = "saved_view"
+    #: Registered by [TASK-469](../../../docs/BACKLOG.md) (Workflow 8), on the
+    #: same terms as every member above — a *use* of the platform rather than
+    #: a change to it (§20a), and the distinction
+    #: [C-224](../../../docs/LANE_COORDINATION.md) ruled: **a `Resource`
+    #: member declares that a resource exists; who may act on it is granted
+    #: only in `policy.csv`.** This member on its own confers nothing.
+    #:
+    #: ⚡ **Its own resource rather than a reuse of `WORKSPACE`.** Onboarding
+    #: records what *one person* confirmed on their way in, and a workspace
+    #: grant would have made every owner able to read a colleague's run —
+    #: which is a different admission from anything else in the workspace.
+    #: ⛔ **The scoping to self is the endpoint's**, exactly as `LEAVE`'s is:
+    #: the run is looked up by the caller's own verified identity, so another
+    #: person's id never enters the request.
+    ONBOARDING = "onboarding"
 
 
 class Action(StrEnum):

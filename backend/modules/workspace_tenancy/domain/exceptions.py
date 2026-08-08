@@ -66,3 +66,39 @@ class SavedViewAlreadyRetiredError(WorkspaceTenancyError):
     def __init__(self, saved_view_id: UUID) -> None:
         super().__init__(f"Saved view {saved_view_id} is already retired")
         self.saved_view_id = saved_view_id
+
+
+class OnboardingRunNotFoundError(WorkspaceTenancyError):
+    """Nobody has started onboarding here.
+
+    ⛔ **Distinct from a run that was skipped**, which exists and is
+    resumable — the design's banner offers to continue something, and offering
+    to continue nothing is how a first-run experience reappears forever.
+    """
+
+
+class OnboardingRunAlreadyFinishedError(WorkspaceTenancyError):
+    """The run completed, so this is a settings change wearing onboarding's hat.
+
+    ⚡ **Onboarding answers become settings the moment the run ends**, and the
+    Settings screens own them from there. Editing through this path afterwards
+    would give one fact two write paths ([§2](../../../../CLAUDE.md)).
+    """
+
+
+class TeamSizeOutOfRangeError(WorkspaceTenancyError):
+    """Outside 1–10,000, refused rather than clamped.
+
+    ⚠️ **Zero is the case worth naming.** The design answers it with copy —
+    *"Zero explains that they count"* — and a clamp to `1` would answer the
+    person by overwriting what they typed.
+    """
+
+
+class TooManyGoalsError(WorkspaceTenancyError):
+    """More than three outcomes.
+
+    ⛔ **The screen disables the fourth and this refuses it**, deliberately
+    both: *"The fourth selection is disabled, not silently ignored."* A limit
+    kept only in the client is a limit a request body does not have.
+    """

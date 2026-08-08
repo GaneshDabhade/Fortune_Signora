@@ -9,6 +9,7 @@ domain model means a domain refactor becomes a client-breaking change
 from __future__ import annotations
 
 from datetime import datetime
+from enum import StrEnum
 from typing import Any
 from uuid import UUID
 
@@ -25,6 +26,16 @@ from modules.workspace_tenancy.domain.entities import (
     WorkspaceRole,
 )
 from modules.workspace_tenancy.domain.invitation import Invitation, InvitationState
+from modules.workspace_tenancy.domain.onboarding import (
+    MAX_GOALS,
+    MAX_TEAM_SIZE,
+    MIN_TEAM_SIZE,
+    Answer,
+    Goal,
+    OnboardingRun,
+    OnboardingStep,
+    Provenance,
+)
 from modules.workspace_tenancy.domain.saved_view import SavedView
 
 
@@ -272,4 +283,135 @@ class SavedViewResponse(BaseModel):
             created_at=view.created_at,
             supersedes=view.supersedes,
             retired_at=view.retired_at,
+        )
+
+
+class AnswerPayload(BaseModel):
+    """A value and where it came from — **never one without the other.**
+
+    ⛔ **`provenance` is required on the wire for the same reason it has no
+    default in the domain**: a request that could omit it would let a client
+    store a guess indistinguishable from a person's answer, and the *Inferred*
+    badge the design requires would then be missing exactly where it matters.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    value: str
+    provenance: Provenance
+
+
+class TeamSizePayload(BaseModel):
+    """The one answer that is a number rather than a choice."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: ⚠️ **Bounded here, on the aggregate and in the database.** Three layers
+    #: sounds like duplication and is not: this one turns a bad request into a
+    #: `422` with a field name, and the other two hold for anything that never
+    #: passes through this schema.
+    value: int = Field(ge=MIN_TEAM_SIZE, le=MAX_TEAM_SIZE)
+    provenance: Provenance
+
+
+class ConfirmCompanyRequest(BaseModel):
+    """Screen `04`. **Every field optional and omitting one leaves it alone** —
+    the step is skippable and partially answerable, and a request meaning to
+    change the timezone must not clear the industry."""
+
+    model_config = ConfigDict(frozen=True)
+
+    industry: AnswerPayload | None = None
+    company_size: AnswerPayload | None = None
+    region: AnswerPayload | None = None
+    timezone: AnswerPayload | None = None
+
+
+class DescribePersonRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    role: AnswerPayload | None = None
+    team_size: TeamSizePayload | None = None
+
+
+class ChooseGoalsRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    #: ⛔ **`max_length` rather than a silent truncation.** *"The fourth
+    #: selection is disabled, not silently ignored"* — a request carrying four
+    #: is refused with the reason rather than quietly having one dropped.
+    goals: list[Goal] = Field(default_factory=list, max_length=MAX_GOALS)
+
+
+class AdvanceOnboardingRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    step: OnboardingStep
+
+
+class AnswerResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    value: str
+    provenance: Provenance
+
+    @classmethod
+    def from_domain(cls, answer: Answer[Any] | None) -> AnswerResponse | None:
+        if answer is None:
+            return None
+        value = answer.value
+        return cls(
+            value=str(value.value if isinstance(value, StrEnum) else value),
+            provenance=answer.provenance,
+        )
+
+
+class OnboardingRunResponse(BaseModel):
+    """What every onboarding screen renders from.
+
+    ⚡ **`features` is on the response and in no table.** The goals imply it
+    deterministically, so it is derived on read — a stored copy would be the
+    representation that eventually disagrees (§2).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    workspace_id: UUID
+    current_step: OnboardingStep
+    completed_steps: list[OnboardingStep]
+    industry: AnswerResponse | None
+    company_size: AnswerResponse | None
+    region: AnswerResponse | None
+    timezone: AnswerResponse | None
+    role: AnswerResponse | None
+    team_size: AnswerResponse | None
+    goals: list[Goal]
+    features: list[str]
+    started_at: datetime
+    finished_at: datetime | None
+    #: ⚡ **The resume banner reads this**, and it is why *left* is a separate
+    #: fact from *finished*.
+    skipped_at: datetime | None
+
+    @classmethod
+    def from_domain(cls, run: OnboardingRun) -> OnboardingRunResponse:
+        return cls(
+            workspace_id=run.workspace_id,
+            current_step=run.current_step,
+            # Sorted for a stable body; the rail draws from the step order it
+            # already knows, never from this list's arrangement.
+            completed_steps=sorted(
+                run.completed_steps, key=lambda s: list(OnboardingStep).index(s)
+            ),
+            industry=AnswerResponse.from_domain(run.industry),
+            company_size=AnswerResponse.from_domain(run.company_size),
+            region=AnswerResponse.from_domain(run.region),
+            timezone=AnswerResponse.from_domain(run.timezone),
+            role=AnswerResponse.from_domain(run.role),
+            team_size=AnswerResponse.from_domain(run.team_size),
+            goals=list(run.goals),
+            features=list(run.features),
+            started_at=run.started_at,
+            finished_at=run.finished_at,
+            skipped_at=run.skipped_at,
         )

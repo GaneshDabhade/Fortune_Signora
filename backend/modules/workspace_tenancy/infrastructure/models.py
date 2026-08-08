@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -189,3 +189,66 @@ class SavedViewModel(Base, TimestampMixin, AuditMixin):
         nullable=True,
     )
     retired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class OnboardingRunModel(Base, TimestampMixin, AuditMixin):
+    """One person's run through onboarding, in one workspace — **TASK-469**.
+
+    ⚡ **Every answer column is nullable, and that is the design rather than
+    laxity.** *"An abandoned onboarding still produces a customer"* — a
+    `NOT NULL` industry would turn the person who left at step 3 into a row
+    that cannot be written, which is the opposite of what skippable means.
+
+    ⛔ **No `features` column.** The goals imply them deterministically and the
+    aggregate derives them on read (§2, *truth has exactly one authoritative
+    representation*). **A stored copy is the one that disagrees** the first
+    time the mapping changes — and a customer would then see a home page built
+    from a rule the product no longer holds.
+
+    ⚠️ **Each answer carries its provenance in its own column**, because the
+    design requires *"every inferred value marked as inferred and
+    correctable"*. **One shared provenance would be wrong for three of the
+    four company facts the moment a person corrected any one of them.**
+    """
+
+    __tablename__ = "onboarding_run"
+
+    workspace_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("workspace.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    # **Composite key, not a surrogate id.** A workspace has many members and
+    # each arrives once, so *(workspace, person)* is the identity — and it is
+    # what stops a second member resuming the first member's run.
+    person_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    current_step: Mapped[str] = mapped_column(String(16), nullable=False)
+    # The rail's done marks. **A list of names rather than a count**, because
+    # a person can go back: *"Back is always available, never destructive."*
+    completed_steps: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+
+    industry: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    industry_provenance: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    company_size: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    company_size_provenance: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    region: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    region_provenance: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # An IANA zone. The design's fallback to UTC is *visible*, so the stored
+    # value is the real one and the note is the screen's, not a magic string.
+    timezone: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    timezone_provenance: Mapped[str | None] = mapped_column(String(16), nullable=True)
+
+    role: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    role_provenance: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    team_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    team_size_provenance: Mapped[str | None] = mapped_column(String(16), nullable=True)
+
+    # **Ordered**, because the design says the goals order the home page.
+    goals: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # ⚡ **Separate from `finished_at` on purpose.** *Left* and *completed* are
+    # different facts and the resume banner reads the difference.
+    skipped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -63,6 +63,13 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # changes its present state. `UPDATE` is granted and only retirement
         # uses it — a revision is an INSERT naming the version it replaces.
         "saved_view",
+        # Onboarding (TASK-469, Workflow 8), migration 0043. **Every answer
+        # column is nullable and the table is still tenant-owned** — a
+        # skippable step is a nullable column, not an exempt table, and the
+        # confirmations a person gave about their company are as much theirs
+        # as anything else in the workspace. `UPDATE` is granted because
+        # autosave is an update: *"every step saves on advance and on blur."*
+        "onboarding_run",
         # Provider Normalization (M2.2), migration 0008.
         "claim",
         "normalization_outcome",

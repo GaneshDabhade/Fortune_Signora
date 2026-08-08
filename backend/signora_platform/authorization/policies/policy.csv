@@ -51,3 +51,7 @@ p, member, *, saved_view, read
 p, owner, *, saved_view, add
 p, member, *, saved_view, add
 p, owner, *, saved_view, remove
+p, owner, *, onboarding, read
+p, member, *, onboarding, read
+p, owner, *, onboarding, update
+p, member, *, onboarding, update

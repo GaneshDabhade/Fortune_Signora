@@ -26,6 +26,14 @@ from modules.workspace_tenancy.application.use_cases.accept_invitation import (
 from modules.workspace_tenancy.application.use_cases.change_role import ChangeRoleCommand
 from modules.workspace_tenancy.application.use_cases.invite_member import InviteMemberCommand
 from modules.workspace_tenancy.application.use_cases.leave_workspace import LeaveWorkspaceCommand
+from modules.workspace_tenancy.application.use_cases.onboarding import (
+    AdvanceOnboardingInput,
+    ChooseGoalsInput,
+    ConfirmCompanyInput,
+    DescribePersonInput,
+    FinishOnboardingInput,
+    StartOnboardingInput,
+)
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMemberCommand
 from modules.workspace_tenancy.application.use_cases.saved_views import (
     DeclareSavedViewInput,
@@ -37,6 +45,7 @@ from modules.workspace_tenancy.application.use_cases.transfer_ownership import (
     TransferOwnershipCommand,
 )
 from modules.workspace_tenancy.domain.exceptions import SavedViewNotFoundError
+from modules.workspace_tenancy.domain.onboarding import Answer, CompanySizeBand, Role
 from modules.workspace_tenancy.infrastructure.acceptance import accepting_workspace
 from modules.workspace_tenancy.infrastructure.composition import (
     build_query_service,
@@ -44,12 +53,18 @@ from modules.workspace_tenancy.infrastructure.composition import (
 )
 from modules.workspace_tenancy.interface.schemas import (
     AddMemberRequest,
+    AdvanceOnboardingRequest,
+    AnswerPayload,
     ChangeRoleRequest,
+    ChooseGoalsRequest,
+    ConfirmCompanyRequest,
     CreateWorkspaceRequest,
+    DescribePersonRequest,
     HistoryEntryResponse,
     InvitationResponse,
     InviteMemberRequest,
     MembershipResponse,
+    OnboardingRunResponse,
     RemoveMemberRequest,
     ReviseViewRequest,
     SavedViewResponse,
@@ -693,3 +708,187 @@ async def retire_saved_view(context: CurrentWorkspace, saved_view_id: UUID) -> S
         now=datetime.now(UTC),
     )
     return SavedViewResponse.from_domain(view)
+
+
+def _answer(payload: AnswerPayload | None) -> Answer[str] | None:
+    return None if payload is None else Answer(value=payload.value, provenance=payload.provenance)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/onboarding",
+    status_code=status.HTTP_200_OK,
+    response_model=OnboardingRunResponse,
+    summary="Begin onboarding, or resume the run already in progress",
+)
+async def start_onboarding(context: CurrentWorkspace) -> OnboardingRunResponse:
+    """⛔ **`200`, not `201`, and the code is the contract.**
+
+    *"Returning to a step shows what was chosen, not an empty form"* — this is
+    idempotent by design, and the person most likely to call it twice is the
+    one arriving from the resume banner. **A `201` would tell them something
+    was created when their existing answers were handed back.**
+
+    **The person is the verified caller, never the body** — a person id a
+    client could supply is a person id they would supply somebody else's, and
+    onboarding answers are the one record here that is one member's rather
+    than the workspace's.
+    """
+    context.authorize(Resource.ONBOARDING, Action.UPDATE)
+    run = await build_use_cases(context.session).start_onboarding.execute(
+        StartOnboardingInput(workspace_id=context.workspace_id, person_id=context.principal.user_id)
+    )
+    return OnboardingRunResponse.from_domain(run)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/onboarding",
+    response_model=OnboardingRunResponse,
+    summary="This person's onboarding run",
+)
+async def get_onboarding(context: CurrentWorkspace) -> OnboardingRunResponse:
+    """**Own run only, and there is no parameter that could ask for another's.**
+
+    ⚡ **The scoping to self is here rather than in the policy**, exactly as
+    `leave`'s is: no identity enters the request tuple, so a grant cannot be
+    widened into reading a colleague's answers by editing `policy.csv`.
+    """
+    context.authorize(Resource.ONBOARDING, Action.READ)
+    run = await build_use_cases(context.session).get_onboarding.execute(
+        context.workspace_id, context.principal.user_id
+    )
+    return OnboardingRunResponse.from_domain(run)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/onboarding/step",
+    response_model=OnboardingRunResponse,
+    summary="Move to a step, saving the one being left",
+)
+async def advance_onboarding(
+    context: CurrentWorkspace, body: AdvanceOnboardingRequest
+) -> OnboardingRunResponse:
+    """⚡ **This is the autosave the design promises**: *"every step saves on
+    advance and on blur."* The transition is persisted rather than held in the
+    client, which is what makes *"you can leave at any point"* true."""
+    context.authorize(Resource.ONBOARDING, Action.UPDATE)
+    run = await build_use_cases(context.session).advance_onboarding.execute(
+        AdvanceOnboardingInput(
+            workspace_id=context.workspace_id,
+            person_id=context.principal.user_id,
+            step=body.step,
+        )
+    )
+    return OnboardingRunResponse.from_domain(run)
+
+
+@router.patch(
+    "/workspaces/{workspace_id}/onboarding/company",
+    response_model=OnboardingRunResponse,
+    summary="Confirm or correct the company facts",
+)
+async def confirm_company(
+    context: CurrentWorkspace, body: ConfirmCompanyRequest
+) -> OnboardingRunResponse:
+    """⚡ **`PATCH`, and the verb is the rule.** Every field is optional and an
+    omitted one is left alone — *"four confirmations, no typing"* means a
+    person may answer one and leave three, and a `PUT` would clear whatever
+    the request did not repeat."""
+    context.authorize(Resource.ONBOARDING, Action.UPDATE)
+    size = body.company_size
+    run = await build_use_cases(context.session).confirm_company.execute(
+        ConfirmCompanyInput(
+            workspace_id=context.workspace_id,
+            person_id=context.principal.user_id,
+            industry=_answer(body.industry),
+            company_size=(
+                None
+                if size is None
+                # ⛔ **Parsed into the band here, so an unknown string is a
+                # `422` rather than a row nothing can benchmark.**
+                else Answer(CompanySizeBand(size.value), size.provenance)
+            ),
+            region=_answer(body.region),
+            timezone=_answer(body.timezone),
+        )
+    )
+    return OnboardingRunResponse.from_domain(run)
+
+
+@router.patch(
+    "/workspaces/{workspace_id}/onboarding/person",
+    response_model=OnboardingRunResponse,
+    summary="Role and team size",
+)
+async def describe_person(
+    context: CurrentWorkspace, body: DescribePersonRequest
+) -> OnboardingRunResponse:
+    context.authorize(Resource.ONBOARDING, Action.UPDATE)
+    role = body.role
+    size = body.team_size
+    run = await build_use_cases(context.session).describe_person.execute(
+        DescribePersonInput(
+            workspace_id=context.workspace_id,
+            person_id=context.principal.user_id,
+            role=None if role is None else Answer(Role(role.value), role.provenance),
+            team_size=None if size is None else Answer(size.value, size.provenance),
+        )
+    )
+    return OnboardingRunResponse.from_domain(run)
+
+
+@router.put(
+    "/workspaces/{workspace_id}/onboarding/goals",
+    response_model=OnboardingRunResponse,
+    summary="Up to three outcomes",
+)
+async def choose_goals(
+    context: CurrentWorkspace, body: ChooseGoalsRequest
+) -> OnboardingRunResponse:
+    """⚡ **`PUT`, deliberately unlike the two `PATCH`es above.** The goals are
+    a whole selection rather than independent fields: deselecting one is a
+    request that sends the remaining two, and a partial verb could not express
+    it. **An empty list is a valid selection** — *"skipping entirely is
+    permitted."*"""
+    context.authorize(Resource.ONBOARDING, Action.UPDATE)
+    run = await build_use_cases(context.session).choose_goals.execute(
+        ChooseGoalsInput(
+            workspace_id=context.workspace_id,
+            person_id=context.principal.user_id,
+            goals=tuple(body.goals),
+        )
+    )
+    return OnboardingRunResponse.from_domain(run)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/onboarding/completion",
+    response_model=OnboardingRunResponse,
+    summary="Finish onboarding",
+)
+async def finish_onboarding(context: CurrentWorkspace) -> OnboardingRunResponse:
+    context.authorize(Resource.ONBOARDING, Action.UPDATE)
+    run = await build_use_cases(context.session).finish_onboarding.execute(
+        FinishOnboardingInput(
+            workspace_id=context.workspace_id, person_id=context.principal.user_id
+        )
+    )
+    return OnboardingRunResponse.from_domain(run)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/onboarding/skip",
+    response_model=OnboardingRunResponse,
+    summary="Leave onboarding, keeping what was answered",
+)
+async def skip_onboarding(context: CurrentWorkspace) -> OnboardingRunResponse:
+    """⛔ **A separate resource from `completion`, because leaving is not
+    finishing.** *"The dialog says what gets worse in product terms and lets
+    them go. No second ask, no guilt copy"* — and the two states have to be
+    distinguishable or the resume banner cannot decide whether to appear."""
+    context.authorize(Resource.ONBOARDING, Action.UPDATE)
+    run = await build_use_cases(context.session).skip_onboarding.execute(
+        FinishOnboardingInput(
+            workspace_id=context.workspace_id, person_id=context.principal.user_id
+        )
+    )
+    return OnboardingRunResponse.from_domain(run)

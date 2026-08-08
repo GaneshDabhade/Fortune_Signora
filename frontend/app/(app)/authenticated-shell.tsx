@@ -9,6 +9,7 @@ import { RouteGuard } from '@/components/shell/route-guard';
 import { Button, SkeletonText } from '@/components/ui';
 import { signOut, useSession } from '@/lib/auth/client';
 import { useViewerRole } from '@/lib/query/hooks/team';
+import { ResumeOnboarding } from '@/components/workspace/resume-onboarding';
 import { WorkspaceProvider, useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -105,6 +106,10 @@ function ShellForViewer({ email, children }: { email: string; children: ReactNod
 
   return (
     <AppShell role={resolved ? role : null} signOut={<SignOutButton email={email} />}>
+      {/* ⚡ **Onboarding's only entrance** — TASK-469. It renders nothing
+          unless this person has a run that is unfinished, and a dismissal
+          sticks: *"no second ask, no guilt copy."* */}
+      <ResumeOnboarding />
       {resolved ? (
         <RouteGuard pathname={pathname} role={role}>
           {children}

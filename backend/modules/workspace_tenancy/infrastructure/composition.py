@@ -27,6 +27,16 @@ from modules.workspace_tenancy.application.use_cases.invite_member import (
     RevokeInvitation,
 )
 from modules.workspace_tenancy.application.use_cases.leave_workspace import LeaveWorkspace
+from modules.workspace_tenancy.application.use_cases.onboarding import (
+    AdvanceOnboardingUseCase,
+    ChooseGoalsUseCase,
+    ConfirmCompanyUseCase,
+    DescribePersonUseCase,
+    FinishOnboardingUseCase,
+    GetOnboardingUseCase,
+    SkipOnboardingUseCase,
+    StartOnboardingUseCase,
+)
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMember
 from modules.workspace_tenancy.application.use_cases.saved_views import (
     DeclareSavedViewUseCase,
@@ -45,6 +55,7 @@ from modules.workspace_tenancy.infrastructure.query_service import WorkspaceQuer
 from modules.workspace_tenancy.infrastructure.repositories import (
     SqlAlchemyInvitationRepository,
     SqlAlchemyMembershipRepository,
+    SqlAlchemyOnboardingRunRepository,
     SqlAlchemyRoleChangeLog,
     SqlAlchemySavedViewRepository,
     SqlAlchemyWorkspaceRepository,
@@ -75,6 +86,14 @@ class WorkspaceTenancyUseCases:
     retire_saved_view: RetireSavedViewUseCase
     list_saved_views: ListSavedViewsUseCase
     get_saved_view: GetSavedViewUseCase
+    start_onboarding: StartOnboardingUseCase
+    get_onboarding: GetOnboardingUseCase
+    advance_onboarding: AdvanceOnboardingUseCase
+    confirm_company: ConfirmCompanyUseCase
+    describe_person: DescribePersonUseCase
+    choose_goals: ChooseGoalsUseCase
+    finish_onboarding: FinishOnboardingUseCase
+    skip_onboarding: SkipOnboardingUseCase
 
 
 def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
@@ -82,6 +101,7 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
     membership_repository = SqlAlchemyMembershipRepository(session)
     invitation_repository = SqlAlchemyInvitationRepository(session)
     saved_view_repository = SqlAlchemySavedViewRepository(session)
+    onboarding_repository = SqlAlchemyOnboardingRunRepository(session)
     tenant_context = SessionTenantContext(session)
     # **Constructed here, at the composition root**, from the module's own
     # settings rather than from `os.environ` anywhere downstream (§6, §20b).
@@ -153,6 +173,20 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         get_saved_view=GetSavedViewUseCase(
             workspaces=workspace_repository, saved_views=saved_view_repository
         ),
+        # ⚡ **Only `start` needs the workspace repository.** Every other
+        # onboarding use case loads the run, and a run existing is already
+        # proof the workspace did — asking again would be a second check of
+        # something the first one settled.
+        start_onboarding=StartOnboardingUseCase(
+            workspaces=workspace_repository, runs=onboarding_repository
+        ),
+        get_onboarding=GetOnboardingUseCase(runs=onboarding_repository),
+        advance_onboarding=AdvanceOnboardingUseCase(runs=onboarding_repository),
+        confirm_company=ConfirmCompanyUseCase(runs=onboarding_repository),
+        describe_person=DescribePersonUseCase(runs=onboarding_repository),
+        choose_goals=ChooseGoalsUseCase(runs=onboarding_repository),
+        finish_onboarding=FinishOnboardingUseCase(runs=onboarding_repository),
+        skip_onboarding=SkipOnboardingUseCase(runs=onboarding_repository),
     )
 
 
