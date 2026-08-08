@@ -8293,3 +8293,31 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 > ⚠️ **[TASK-498](BACKLOG.md) was written to be that row and it has already shipped** — so the pattern now has a home, and **this item is a request to schedule a second pass rather than to invent a place to put one.**
 
 **The decision, in one sentence:** ⚡ **should a password reset end every other session?** ✅ **If yes it is one line in the row that owns that file, and the screen can then say so truthfully.** ⛔ **The device count and its "iPad" are a separate, larger capability and are not bundled into that answer.**
+
+---
+
+## C-245 · Screen `13` shows a reader six facts they are not permitted to see
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-08, **implementing [TASK-489](BACKLOG.md) under [D-190](DECISION_REGISTER.md)** — ⚡ **reported and implementation continued on the half that is real**, as [D-190](DECISION_REGISTER.md) §3 directs |
+| **Owner** | **Product owner** — ⛔ **a disclosure boundary, not a build estimate** |
+| **Status** | **`OPEN`** |
+| **Blocks** | ⚠️ **Most of screen `13`.** ✅ **Screen `14`'s shape and the accept/decline journey are buildable and are being built** |
+
+**The design's screen `13`, verbatim:** *"**Northwind Global** · Enterprise workspace · **142 members** · **Anders Hald invited you** · You'll join as an **Analyst**, with access to EMEA accounts"*, above **four named permissions**.
+
+| | |
+|---|---|
+| 🔴 **Every one of those is inside the tenant the reader has not entered** | **[C-208](#c-208) established this for the *name* and it is broader**: the member count, the inviter, the role and the permission list are all workspace data, and **the reader is definitionally not a member yet** |
+| ⛔ **And no endpoint could serve them** | **Measured, not assumed**: `workspace_tenancy` exposes **`/workspaces/{id}/invitations`, `/accept`, `/{id}/resend`, `/{id}/revoke`** — **all scoped to a workspace and all requiring membership or admin.** ⚡ **There is no lookup-by-token and no unauthenticated read of an invitation** |
+| 🔴 **Adding one is the decision, and it is not small** | **A token-addressed endpoint returning a workspace's name, size, an employee's name and a role is an unauthenticated disclosure of organizational data**, gated only on possession of a link that arrives by email and lives in inboxes and mail logs. ⛔ **That is a product decision about what an invitation link is worth**, not an implementation detail |
+| ✅ **What the platform *does* return** | **`role`, on `accept` — after the membership exists.** ⚡ **Which is exactly what `join.test.tsx` already asserts**: *"names the role only once the membership exists"* |
+
+> ⚡ **This is the same shape as [C-241](#c-241--workflows-3s-approved-screen-needs-the-one-file-its-row-forbids-and-this-is-the-third-instance) and [C-244](#c-244--screen-09-promises-a-password-reset-signs-other-devices-out-and-nothing-does), with one difference that matters**: those needed a *configuration line* in a file the row forbade. ⛔ **This needs a new endpoint and a ruling about what it may disclose** — **the first of the five that is genuinely a capability rather than a switch.**
+
+### ⛔ And the second half of the row has the same problem
+
+**Screen `14` offers *"Request a new invitation"*** — *"one click notifies the original inviter and the workspace admins."* ⛔ **Nothing can grant it**: `tests/components/join.test.tsx` already asserts the control is never offered ***"because nothing can grant it"*** — no endpoint, no table, no row — **and that assertion was written by this lane against the same absence.**
+
+**The decision, in one sentence:** ⚡ **may an invitation link, on its own, reveal a company's name, headcount, an employee's name and a role?** ✅ **If yes, that is an endpoint and an ADR.** ⛔ **If no, screen `13` is a different screen and the design needs amending** — **and until either lands, `/join` shows what a non-member may truthfully be shown.**
