@@ -113,6 +113,17 @@ class Resource(StrEnum):
     #: the run is looked up by the caller's own verified identity, so another
     #: person's id never enters the request.
     ONBOARDING = "onboarding"
+    #: Registered by [TASK-470](../../../docs/BACKLOG.md) (Workflow 9), on the
+    #: same terms as every member above — a *use* of the platform rather than a
+    #: change to it (§20a), and [C-224](../../../docs/LANE_COORDINATION.md)'s
+    #: distinction: **declaring that a resource exists grants nothing.**
+    #:
+    #: ⚡ **Its own resource because a preference is one person's**, and every
+    #: other resource here is the workspace's. ⛔ **The scoping to self is the
+    #: endpoint's and the RLS policy's**, not the policy file's: the caller's
+    #: own verified id is the only one that enters, so a grant cannot be
+    #: widened into reading a colleague's preferences by editing `policy.csv`.
+    PREFERENCES = "preferences"
 
 
 class Action(StrEnum):

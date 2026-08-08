@@ -13,6 +13,7 @@ from uuid import UUID
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
 from modules.workspace_tenancy.domain.onboarding import OnboardingRun
+from modules.workspace_tenancy.domain.preferences import PersonPreferences
 from modules.workspace_tenancy.domain.saved_view import SavedView
 from signora_platform.pagination import CursorPosition
 
@@ -158,3 +159,16 @@ class OnboardingRunRepository(Protocol):
 
     async def get(self, workspace_id: UUID, person_id: UUID) -> OnboardingRun | None: ...
     async def save(self, run: OnboardingRun) -> None: ...
+
+
+class PersonPreferencesRepository(Protocol):
+    """A person's preferences — **TASK-470**.
+
+    ⚡ **`get` returns preferences, never `None`.** Somebody who has never
+    opened the screen has the defaults, and a port that could answer *nothing*
+    would push that reasoning into every caller — the first one to forget it
+    renders a blank profile to a new account.
+    """
+
+    async def get(self, workspace_id: UUID, person_id: UUID) -> PersonPreferences: ...
+    async def save(self, preferences: PersonPreferences) -> None: ...

@@ -252,3 +252,34 @@ class OnboardingRunModel(Base, TimestampMixin, AuditMixin):
     # ⚡ **Separate from `finished_at` on purpose.** *Left* and *completed* are
     # different facts and the resume banner reads the difference.
     skipped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
+    """What one person chose, inside one workspace — **TASK-470**.
+
+    🔴 **The first table whose *rows* are filtered by `app.user_id`** — 492 §0's
+    *narrowing of tenant-owned, never a parallel to it*. `workspace_id` is
+    non-nullable and every tenancy guarantee still applies; the person
+    predicate is added on top, in the policy as well as in the query.
+
+    ⛔ **`timezone` is nullable and is not defaulted to UTC.** *Not chosen* and
+    *chose UTC* are different facts, and the design's timezone prompt can only
+    be offered while the first one is still true.
+    """
+
+    __tablename__ = "person_preferences"
+
+    workspace_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("workspace.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+
+    theme: Mapped[str] = mapped_column(String(16), nullable=False, default="system")
+    density: Mapped[str] = mapped_column(String(16), nullable=False, default="comfortable")
+    timezone: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    language: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    time_format: Mapped[str] = mapped_column(String(8), nullable=False, default="24h")
+    pronouns: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    display_name: Mapped[str | None] = mapped_column(String(32), nullable=True)

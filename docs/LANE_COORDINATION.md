@@ -8245,6 +8245,30 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 ---
 
+## C-248 · Four profile fields are locked as *"Managed by Northwind IT"* and no directory sync exists
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-08, **building [TASK-470](BACKLOG.md) screen `01` and grepping for the sync before drawing the lock** |
+| **Owner** | **Product owner** — ⚡ **it is a promise about who owns a customer's identity data**, not a build estimate |
+| **Status** | **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **Screen `01` ships with the fields that are real**, and the ones with no source are absent rather than drawn locked |
+| **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is how complete screen `01` looks at review** — named here so it reads as a stated absence rather than an omission |
+
+**The design's own headline statistic on this screen is `0` — *"Edits accepted that a sync would undo."*** ⚡ **That is not decoration: it is the invariant the three field kinds exist to keep** — *Yours* · *From directory* · *Workspace policy*.
+
+**Four fields are drawn `From directory`, with the note *"Managed by Northwind IT · request a change"*:** **Full name · Work email · Job title · Department.**
+
+| | |
+|---|---|
+| ⛔ **Measured** | **No directory integration exists anywhere in the repository** — `scim`, `directory_sync` and `directorysync` return nothing across `backend/` and `frontend/` |
+| ✅ **`Work email` is genuinely locked, and ships locked** | **For a real reason that is not the directory**: [§13](../CLAUDE.md) makes Better Auth the sole Authentication Authority, and the design says it itself — *"Changing this creates a new identity — IT must do it."* **The lock is true; only the attribution would be wrong** |
+| 🔴 **`Job title` and `Department` have no source at all** | **Nothing in the product knows them.** ⛔ **Not built** — [D-156](DECISION_REGISTER.md) ④: *a state whose data is missing is built against seeded data of the production shape; a state whose business rule is missing is not built at all.* **A locked field with no sync behind it is a rule the product does not have, painted as one it does** |
+| ⚠️ **`Full name` is the interesting one** | **Better Auth holds it and can change it.** **So it is editable today and the design says it is not** — locking it would refuse an edit nothing would undo, which is the *opposite* of the invariant the `0` protects |
+
+> ⚡ **The design is not wrong; it is drawn for a customer who has a directory.** **Northwind is that customer.** The question is what Signora shows the ones who are not, and that is a product answer rather than an implementation detail.
+
+**The decision, in one sentence:** ⚡ **do these four become editable until a directory integration exists — with the lock arriving alongside the sync that justifies it — or is a directory assumed, in which case the integration is a dependency Workflow 9 sits behind?**
+
 ## C-247 · A person in two organizations gets two themes, and TASK-470's row says otherwise
 
 | | |

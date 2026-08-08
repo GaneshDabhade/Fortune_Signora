@@ -179,6 +179,22 @@ git show origin/main:docs/BUGS.md | grep -n '^>>>>>>>'
 
 ✅ **The numbering half of this row stands and is Lane A's own correction**: `B-207` was taken, the row moved to `B-213`, *"the number came from the tail of a listing rather than from the maximum, and a listing is not a maximum."*
 
+### B-215 · A `PATCH` reaches the API with an empty body, so a saved preference stores nothing
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — the frontend request path, `frontend/lib/api/client.ts` and the `/api/proxy` route it goes through |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
+| **Severity** | 🟠 — **wrong behaviour a customer would hit.** ⚡ **The screen says *Saved* and nothing was saved**, which is worse than an error: the person believes their change took |
+| **Status** | **`OPEN`** — **found by Lane A, 2026-08-08**, running [TASK-470](BACKLOG.md)'s journey headed. ⛔ **Not fixed in that slice**: the cause is in the shared request path rather than the panel, and changing it blind would be guessing |
+| **Commit found** | `lane-a-product-surface`, TASK-470 milestone 1 |
+| **Steps** | Open `/profile`, type a display name, press **Save** |
+| **Expected** | The value is stored and is still there after a reload |
+| **Actual** | ⚡ **The request succeeds — `PATCH … 200`** — **and the row is created with every column `NULL`.** Measured directly: `SELECT user_id, display_name FROM person_preferences` returns the row with `display_name IS NULL`. **After a reload the field is empty** |
+| ⚡ **What is already ruled out** | ✅ **The read works** — `GET …/preferences` returns `200` and the panel renders the defaults. ✅ **The endpoint works** — its use-case tests cover the partial write, and `model_fields_set` is what carries *absent* versus `null`. ⛔ **So the body is arriving empty**, and the row being created at all proves the request reached the handler |
+| ⚠️ **The hypothesis, stated as one** | **The `/api/proxy` hop appears not to forward a `PATCH` body.** ⛔ **Unconfirmed** — every other write in the product is a `POST` or a `PUT`, so `PATCH` may simply never have been exercised through it. **Recorded as a symptom with evidence rather than a diagnosis**, because the fix follows from which hop drops it |
+| 🔎 **Why it matters beyond this screen** | **[TASK-469](BACKLOG.md)'s company step is also a `PATCH`** (`/onboarding/company`), so the same silence may apply to the four confirmations screen `04` collects. ⚠️ **That journey asserts navigation rather than persistence, so it would not have caught this** |
+
 ### B-214 · The domain knows an invitation expired and the API cannot say so
 
 | | |

@@ -22,12 +22,19 @@ from modules.workspace_tenancy.domain.onboarding import (
     Provenance,
     Role,
 )
+from modules.workspace_tenancy.domain.preferences import (
+    Density,
+    PersonPreferences,
+    Theme,
+    TimeFormat,
+)
 from modules.workspace_tenancy.domain.saved_view import SavedView
 from modules.workspace_tenancy.infrastructure.models import (
     InvitationModel,
     MembershipModel,
     MembershipRoleChangeModel,
     OnboardingRunModel,
+    PersonPreferencesModel,
     SavedViewModel,
     WorkspaceModel,
 )
@@ -574,4 +581,71 @@ class SqlAlchemyOnboardingRunRepository(SqlAlchemyRepository):
             for column, value in columns.items():
                 setattr(model, column, value)
             model.updated_by = run.person_id
+        await self._session.flush()
+
+
+def _preferences_to_domain(model: PersonPreferencesModel) -> PersonPreferences:
+    return PersonPreferences(
+        workspace_id=model.workspace_id,
+        person_id=model.user_id,
+        theme=Theme(model.theme),
+        density=Density(model.density),
+        timezone=model.timezone,
+        language=model.language,
+        time_format=TimeFormat(model.time_format),
+        pronouns=model.pronouns,
+        display_name=model.display_name,
+    )
+
+
+class SqlAlchemyPersonPreferencesRepository(SqlAlchemyRepository):
+    """A person's preferences, stored and read back — **TASK-470**.
+
+    ⚡ **`get` never returns `None`.** A person who has never opened the screen
+    has preferences — the defaults — and **the absence of a row is not the
+    absence of an answer.** Returning `None` would push that reasoning into
+    every caller, and the first one to forget it renders a blank profile.
+    """
+
+    async def get(self, workspace_id: UUID, person_id: UUID) -> PersonPreferences:
+        statement = select(PersonPreferencesModel).where(
+            PersonPreferencesModel.workspace_id == workspace_id,
+            # Defence in depth beside the RLS policy, which carries the same
+            # two predicates (11-tenancy.md, 492 §0).
+            PersonPreferencesModel.user_id == person_id,
+        )
+        model = (await self._session.execute(statement)).scalar_one_or_none()
+        if model is None:
+            return PersonPreferences(workspace_id=workspace_id, person_id=person_id)
+        return _preferences_to_domain(model)
+
+    async def save(self, preferences: PersonPreferences) -> None:
+        statement = select(PersonPreferencesModel).where(
+            PersonPreferencesModel.workspace_id == preferences.workspace_id,
+            PersonPreferencesModel.user_id == preferences.person_id,
+        )
+        model = (await self._session.execute(statement)).scalar_one_or_none()
+        columns = {
+            "theme": preferences.theme.value,
+            "density": preferences.density.value,
+            "timezone": preferences.timezone,
+            "language": preferences.language,
+            "time_format": preferences.time_format.value,
+            "pronouns": preferences.pronouns,
+            "display_name": preferences.display_name,
+        }
+        if model is None:
+            self._session.add(
+                PersonPreferencesModel(
+                    workspace_id=preferences.workspace_id,
+                    user_id=preferences.person_id,
+                    created_by=preferences.person_id,
+                    updated_by=preferences.person_id,
+                    **columns,
+                )
+            )
+        else:
+            for column, value in columns.items():
+                setattr(model, column, value)
+            model.updated_by = preferences.person_id
         await self._session.flush()

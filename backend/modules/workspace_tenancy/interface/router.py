@@ -34,6 +34,7 @@ from modules.workspace_tenancy.application.use_cases.onboarding import (
     FinishOnboardingInput,
     StartOnboardingInput,
 )
+from modules.workspace_tenancy.application.use_cases.preferences import ChangePreferencesInput
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMemberCommand
 from modules.workspace_tenancy.application.use_cases.saved_views import (
     DeclareSavedViewInput,
@@ -55,6 +56,7 @@ from modules.workspace_tenancy.interface.schemas import (
     AddMemberRequest,
     AdvanceOnboardingRequest,
     AnswerPayload,
+    ChangePreferencesRequest,
     ChangeRoleRequest,
     ChooseGoalsRequest,
     ConfirmCompanyRequest,
@@ -65,6 +67,7 @@ from modules.workspace_tenancy.interface.schemas import (
     InviteMemberRequest,
     MembershipResponse,
     OnboardingRunResponse,
+    PreferencesResponse,
     RemoveMemberRequest,
     ReviseViewRequest,
     SavedViewResponse,
@@ -892,3 +895,55 @@ async def skip_onboarding(context: CurrentWorkspace) -> OnboardingRunResponse:
         )
     )
     return OnboardingRunResponse.from_domain(run)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/preferences",
+    response_model=PreferencesResponse,
+    summary="This person's preferences",
+)
+async def get_preferences(context: CurrentWorkspace) -> PreferencesResponse:
+    """**Own preferences only, and there is no parameter that could ask for
+    another's.**
+
+    ⚡ **Never 404.** Somebody who has never opened the profile has the
+    defaults, so this always answers — which is what leaves the panels with no
+    *no preferences yet* branch to write, and therefore none to get wrong.
+    """
+    context.authorize(Resource.PREFERENCES, Action.READ)
+    prefs = await build_use_cases(context.session).get_preferences.execute(
+        context.workspace_id, context.principal.user_id
+    )
+    return PreferencesResponse.from_domain(prefs)
+
+
+@router.patch(
+    "/workspaces/{workspace_id}/preferences",
+    response_model=PreferencesResponse,
+    summary="Change some of this person's preferences",
+)
+async def change_preferences(
+    context: CurrentWorkspace, body: ChangePreferencesRequest
+) -> PreferencesResponse:
+    """⚡ **`PATCH`, and only what the request actually carried is applied.**
+
+    🔴 **`model_fields_set` is what makes that true.** The profile is several
+    panels edited independently, so *Appearance* sending a theme must not clear
+    the pronouns *Profile* set — and a plain `null` cannot say *I did not
+    mention this*, because clearing a field is itself a legitimate request.
+    """
+    context.authorize(Resource.PREFERENCES, Action.UPDATE)
+    sent = body.model_fields_set
+    supplied = {name: getattr(body, name) for name in sent}
+    prefs = await build_use_cases(context.session).change_preferences.execute(
+        ChangePreferencesInput(
+            workspace_id=context.workspace_id,
+            # ⛔ **The caller's own verified id, never the body.** A person id a
+            # client could supply is a person id they would supply somebody
+            # else's, and preferences are the one record here that is one
+            # member's rather than the workspace's.
+            person_id=context.principal.user_id,
+            **supplied,
+        )
+    )
+    return PreferencesResponse.from_domain(prefs)

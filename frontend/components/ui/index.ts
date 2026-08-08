@@ -42,3 +42,4 @@ export {
   type MultiChoiceCardsProps,
 } from './choice-cards';
 export { Inferred, type InferredProps } from './inferred';
+export { FieldOriginTag, type FieldOrigin, type FieldOriginTagProps } from './field-origin';

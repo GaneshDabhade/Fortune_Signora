@@ -36,6 +36,12 @@ from modules.workspace_tenancy.domain.onboarding import (
     OnboardingStep,
     Provenance,
 )
+from modules.workspace_tenancy.domain.preferences import (
+    Density,
+    PersonPreferences,
+    Theme,
+    TimeFormat,
+)
 from modules.workspace_tenancy.domain.saved_view import SavedView
 
 
@@ -415,3 +421,61 @@ class OnboardingRunResponse(BaseModel):
             finished_at=run.finished_at,
             skipped_at=run.skipped_at,
         )
+
+
+class PreferencesResponse(BaseModel):
+    """What every profile panel renders from.
+
+    ⚡ **Never partial and never empty.** A person who has never opened the
+    screen gets the defaults, so a panel has no *no preferences yet* branch to
+    write — and therefore none to get wrong.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    theme: Theme
+    density: Density
+    time_format: TimeFormat
+    #: ⛔ **`null` means *not chosen*, and the timezone prompt depends on it.**
+    #: A default of UTC here would be an answer nobody gave, and the design's
+    #: offer could never be shown.
+    timezone: str | None
+    language: str | None
+    pronouns: str | None
+    display_name: str | None
+
+    @classmethod
+    def from_domain(cls, prefs: PersonPreferences) -> PreferencesResponse:
+        return cls(
+            theme=prefs.theme,
+            density=prefs.density,
+            time_format=prefs.time_format,
+            timezone=prefs.timezone,
+            language=prefs.language,
+            pronouns=prefs.pronouns,
+            display_name=prefs.display_name,
+        )
+
+
+class ChangePreferencesRequest(BaseModel):
+    """A partial change.
+
+    🔴 **Absent and `null` mean different things, and Pydantic is what keeps
+    them apart**: `model_fields_set` records what the request actually carried,
+    so *clear my pronouns* and *I am only changing the theme* stay
+    distinguishable. ⛔ **Collapsing them would let one panel erase another
+    panel's field** simply by not mentioning it.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    theme: Theme | None = None
+    density: Density | None = None
+    time_format: TimeFormat | None = None
+    timezone: str | None = Field(default=None, max_length=64)
+    language: str | None = Field(default=None, max_length=16)
+    pronouns: str | None = Field(default=None, max_length=32)
+    #: *"Used in mentions and comments. 2–32 characters"* — the design's own
+    #: bound, and `min_length` is on the value rather than the field so that
+    #: clearing it stays possible.
+    display_name: str | None = Field(default=None, min_length=2, max_length=32)

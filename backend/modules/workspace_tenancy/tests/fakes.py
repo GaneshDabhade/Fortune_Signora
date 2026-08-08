@@ -11,6 +11,7 @@ from uuid import UUID
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.onboarding import OnboardingRun
+from modules.workspace_tenancy.domain.preferences import PersonPreferences
 from modules.workspace_tenancy.domain.saved_view import SavedView
 from signora_platform.pagination import CursorPosition
 
@@ -205,3 +206,21 @@ class FakeOnboardingRunRepository:
 
     async def save(self, run: OnboardingRun) -> None:
         self.runs[(run.workspace_id, run.person_id)] = run
+
+
+class FakePersonPreferencesRepository:
+    """In memory, and **it answers the defaults rather than `None`** — the same
+    contract the SQL one keeps, because a fake that could return *nothing*
+    would let a test pass against a shape the database never produces."""
+
+    def __init__(self) -> None:
+        self.saved: dict[tuple[UUID, UUID], PersonPreferences] = {}
+
+    async def get(self, workspace_id: UUID, person_id: UUID) -> PersonPreferences:
+        return self.saved.get(
+            (workspace_id, person_id),
+            PersonPreferences(workspace_id=workspace_id, person_id=person_id),
+        )
+
+    async def save(self, preferences: PersonPreferences) -> None:
+        self.saved[(preferences.workspace_id, preferences.person_id)] = preferences

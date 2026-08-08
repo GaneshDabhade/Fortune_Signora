@@ -7,6 +7,8 @@ import { SessionLock } from '@/components/auth/session-lock';
 import { AppShell } from '@/components/shell/app-shell';
 import { RouteGuard } from '@/components/shell/route-guard';
 import { Button, SkeletonText } from '@/components/ui';
+import Link from 'next/link';
+
 import { signOut, useSession } from '@/lib/auth/client';
 import { useViewerRole } from '@/lib/query/hooks/team';
 import { ResumeOnboarding } from '@/components/workspace/resume-onboarding';
@@ -151,7 +153,19 @@ function SignOutButton({ email }: { email: string }) {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="hidden text-sm text-content-muted sm:inline">{email}</span>
+      {/* ⚡ **The profile's entrance, and the smallest one that is honest** —
+          TASK-470. The design puts it in the App Shell's utility rail, which
+          is Workflow 13 and not built; ⛔ **this row may not build that shell**,
+          so the link goes where the identity already is. The email was already
+          printed here and was not a link, which is exactly the "route with no
+          entrance" `infra/reachability.py` refused. */}
+      <Link
+        href="/profile"
+        className="hidden rounded text-sm text-content-muted underline decoration-border underline-offset-4 transition-colors hover:text-content hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:inline"
+      >
+        {email}
+      </Link>
+      <span className="text-sm text-content-muted sm:hidden">{email}</span>
       <Button
         type="button"
         variant="secondary"

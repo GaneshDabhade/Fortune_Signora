@@ -37,6 +37,10 @@ from modules.workspace_tenancy.application.use_cases.onboarding import (
     SkipOnboardingUseCase,
     StartOnboardingUseCase,
 )
+from modules.workspace_tenancy.application.use_cases.preferences import (
+    ChangePreferencesUseCase,
+    GetPreferencesUseCase,
+)
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMember
 from modules.workspace_tenancy.application.use_cases.saved_views import (
     DeclareSavedViewUseCase,
@@ -56,6 +60,7 @@ from modules.workspace_tenancy.infrastructure.repositories import (
     SqlAlchemyInvitationRepository,
     SqlAlchemyMembershipRepository,
     SqlAlchemyOnboardingRunRepository,
+    SqlAlchemyPersonPreferencesRepository,
     SqlAlchemyRoleChangeLog,
     SqlAlchemySavedViewRepository,
     SqlAlchemyWorkspaceRepository,
@@ -94,6 +99,8 @@ class WorkspaceTenancyUseCases:
     choose_goals: ChooseGoalsUseCase
     finish_onboarding: FinishOnboardingUseCase
     skip_onboarding: SkipOnboardingUseCase
+    get_preferences: GetPreferencesUseCase
+    change_preferences: ChangePreferencesUseCase
 
 
 def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
@@ -102,6 +109,7 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
     invitation_repository = SqlAlchemyInvitationRepository(session)
     saved_view_repository = SqlAlchemySavedViewRepository(session)
     onboarding_repository = SqlAlchemyOnboardingRunRepository(session)
+    preferences_repository = SqlAlchemyPersonPreferencesRepository(session)
     tenant_context = SessionTenantContext(session)
     # **Constructed here, at the composition root**, from the module's own
     # settings rather than from `os.environ` anywhere downstream (§6, §20b).
@@ -187,6 +195,8 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         choose_goals=ChooseGoalsUseCase(runs=onboarding_repository),
         finish_onboarding=FinishOnboardingUseCase(runs=onboarding_repository),
         skip_onboarding=SkipOnboardingUseCase(runs=onboarding_repository),
+        get_preferences=GetPreferencesUseCase(preferences=preferences_repository),
+        change_preferences=ChangePreferencesUseCase(preferences=preferences_repository),
     )
 
 
