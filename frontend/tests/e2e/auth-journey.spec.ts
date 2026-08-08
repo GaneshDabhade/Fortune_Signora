@@ -235,7 +235,7 @@ test.describe('Workflow 2 · creating an account', () => {
     const meter = page.getByRole('meter', { name: 'Password strength' });
 
     await expect(meter).toHaveAttribute('aria-valuenow', '0');
-    await page.getByLabel('Password').fill('Correct-Horse-9');
+    await page.getByLabel('Password', { exact: true }).fill('Correct-Horse-9');
     await expect(meter).toHaveAttribute('aria-valuenow', '3');
   });
 
@@ -246,7 +246,7 @@ test.describe('Workflow 2 · creating an account', () => {
     // rule the platform deliberately does not have.
     await page.goto('/sign-up');
 
-    await page.getByLabel('Password').fill('anappleadayxx');
+    await page.getByLabel('Password', { exact: true }).fill('anappleadayxx');
     await expect(page.getByRole('meter', { name: 'Password strength' })).toHaveAttribute(
       'aria-valuenow',
       '1',
@@ -291,7 +291,7 @@ test.describe('Workflow 2 · creating an account', () => {
     await page.goto('/sign-up');
     await page.getByLabel('Full name').fill('Marta Reinhardt');
     await page.getByLabel('Work email').fill(address);
-    await page.getByLabel('Password').fill('Correct-Horse-9');
+    await page.getByLabel('Password', { exact: true }).fill('Correct-Horse-9');
     await page.getByRole('button', { name: 'Continue' }).click();
 
     await page.waitForURL(/\/verify-email/, { timeout: 30_000 });

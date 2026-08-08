@@ -114,7 +114,12 @@ export function PasswordStrength({ rules }: { rules: PasswordRule[] }) {
               ].join(' ')}
             >
               {rule.met ? (
-                <svg viewBox="0 0 10 10" className="h-2 w-2" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                // `aria-hidden` on the `svg` itself, not only on the wrapper.
+                // The inherited value already hides it from a screen reader;
+                // `accessibility.spec.ts` counts `main svg:not([aria-hidden])`
+                // and reads the element, so the repository's convention is to
+                // mark the icon — which `welcome/page.tsx` already follows.
+                <svg aria-hidden viewBox="0 0 10 10" className="h-2 w-2" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M1.5 5.2 4 7.5 8.5 2.5" />
                 </svg>
               ) : null}
