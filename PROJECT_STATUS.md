@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `089a119`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `a85d852`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `089a119`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `a85d852`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`089a119`** — the certified commit itself |
+| **`main`** | **`a85d852`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 130 promoted Workflow 8's guided onboarding** — **a new customer is set up in ninety seconds and can walk away mid-way without losing anything** |
-| **Certification** | ✅ [`089a1193ef07`](certification/reports/089a1193ef07.md) · migration head **`0043`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 131 promoted the preference store and B-214's fix**, plus **[D-193](docs/DECISION_REGISTER.md) — onboarding stops choosing where a person lands** |
+| **Certification** | ✅ [`a85d8520885c`](certification/reports/a85d8520885c.md) · migration head **`0044`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | 🔴 **Two, and this line said `None` for eleven cycles.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ✅ ⚡ **A new customer is guided into Signora** — four screens, a resumable run, and a banner that offers to finish |
+| **Customer value this cycle** | ✅ ⚡ **An expired invitation no longer looks like a withdrawn one**, and a person's preferences have somewhere to live |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4251 backend tests** *(+50)* · **95.18% coverage** *(floor 95)* · **1768 frontend tests** *(+38)* across **77 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **847 files** · **44 migrations**, `0000`–`0043`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **207s** *(`Build 59s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4267 backend tests** *(+16)* · **95.19% coverage** *(floor 95)* · **1768 frontend tests** *(+38)* across **77 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **849 files** · **45 migrations**, `0000`–`0044`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **218s** *(`Build 57s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,52 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 130
+## 1d · Release summary — 2026-08-08, cycle 131
+
+**Derived from the promoted commit `a85d852`.** **Eighty-six promotions.** ⚡ **A lane received a ruling through the notice channel, verified it was not yet actionable, and built the half that was — without inventing the half that was not.**
+
+### ⚡ The notice channel carried its first ruling, and the lane checked it
+
+**[D-193](docs/DECISION_REGISTER.md)/[D-194](docs/DECISION_REGISTER.md) reached Lane A through the channel Lane C built two cycles ago:**
+
+> *"'Authenticated Entry' is now the authority for ALL post-login behaviour. `TASK-468` and `TASK-469` have NO DEFINED EXIT… do NOT choose a destination in either flow."*
+
+✅ **The lane measured rather than assumed:** *"`resolveEntry` exists nowhere on `origin/integration`, and D-193/D-194 are not in its decision register. **So the ruling is authoritative and not yet actionable** — §20e, executable work comes from `integration` and nowhere else, and a decision is actionable when `integration` records it."*
+
+> ⛔ ***"`resolveEntry` was NOT written here. Inventing the spec's shape is how the next lane inherits a guess."*** ⚡ **So onboarding stopped choosing a destination, and did not invent the mechanism that will choose one.** **That is the [five states of a decision](CLAUDE.md) applied exactly** — authoritative at ruling, actionable at `integration`.
+
+### ✅ [B-214](docs/BUGS.md) fixed by the lane that found it, in its own module
+
+**An expired invitation and a withdrawn one no longer arrive identical.**
+
+> *"The domain always knew which settled state it was. `InvitationNotPendingError` has carried `state` since it was written, and its own docstring says **'this was withdrawn' and 'this expired' are different sentences to a customer and only one of them offers a next step.**"*
+
+⚡ **No backlog row was needed** — *"the bug register is the authority for a defect and the module's current assignee fixes it"* — **and it corrects what this lane reported one cycle earlier.**
+
+### ✅ `TASK-470` — the preference store, and the scoping question it refused to assume
+
+**Migration `0044`, `person_preferences`.** ✅ **Verified by QE: classified in `TENANT_OWNED_TABLES` (54 tables), inside the invariant loops, and `0044` reverses to base and re-applies.**
+
+### ⚠️ What QE had to resolve carefully, and nearly lost
+
+**`docs/BACKLOG.md` conflicted in two regions where `THEIRS` carried *two* lines: a stale status **and a new [D-193](docs/DECISION_REGISTER.md) constraint row Lane C had added.**
+
+⛔ **A naive "take ours" would have silently dropped both constraint rows** — the [B-411](docs/BUGS.md) failure exactly. ✅ **Resolved as the lane's newer status *plus* Lane C's new row, asserted line by line**, and the apparent duplicate afterwards was checked and is benign: **the same constraint deliberately applied to `TASK-468` and `TASK-469`.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4267 backend** *(+16)* · **1768 frontend** · **95.19%** *(floor 95)* · **398 invariants** · **849 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **136 runs recorded, 128 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | ⚡ **Migration `0044`, reversed and re-applied** · **54 tenant-owned tables** · **DR nothing lost** · smoke 218s |
+| **Dependency** | ⚠️ **`resolveEntry` is ruled and unbuilt** — `TASK-1400` carries it, and two workflows now correctly exit nowhere until it lands |
+| **Customer Value** | ✅ ⚡ **An expired invitation says so** |
+| **Process** | ⚡ **The notice channel's first delivery worked, and the receiving lane still verified the claim against `integration` before acting on it.** **Both halves are the model working** |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 130
 
 **Derived from the promoted commit `089a119`.** **Eighty-five promotions.** ⚡ **The largest slice of the session — 41 files, a new module aggregate, migration `0043` — and the lane named what it had *not* run and handed it to QE.**
 
