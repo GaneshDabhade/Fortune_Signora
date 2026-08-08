@@ -9,25 +9,25 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "6693d38"
+generated_from = "9bf375e"
 task_count     = 102
 
 [lane.Lane_A]
 current            = "TASK-474"
-next               = "TASK-498"
-next_after_that    = "TASK-469"
+next               = "TASK-469"
+next_after_that    = "TASK-470"
 assigned_total     = 85
-claimable          = 10
-claimable_now      = 7
+claimable          = 9
+claimable_now      = 6
 awaiting_sync      = 3
-in_flight          = 52
-actionable         = 6
+in_flight          = 53
+actionable         = 7
 awaiting_qe_transition = 0
-blocked_on_integration = 0
+blocked_on_integration = 1
 supply_state       = "working"
 blocked            = 23
-lane_utilization   = 10.4
-idle_prediction_days   = 1.4
+lane_utilization   = 10.6
+idle_prediction_days   = 1.3
 dependency_wait_days   = 0.8
 blocked_duration_days  = 0.8
 critical_path_max      = 3
@@ -1335,15 +1335,15 @@ on_integration = true
 [[task]]
 id            = "TASK-498"
 title         = "The authentication configuration surface, and the three controls already ruled"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-499"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -1359,7 +1359,7 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "— behind [TASK-498](#task-498--the-authentication-configuration-surfac"
+estimated_ready = "when TASK-498 complete"
 waiting_for    = "— behind [TASK-498](#task-498--the-authentication-configuration-surface-and-the-three-controls-already-ruled), Lane C 2026-08-08.** ⚡ **Both touch the"
 blocked_days   = 0.0
 on_integration = false
