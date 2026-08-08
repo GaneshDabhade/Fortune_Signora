@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `2ecfe98`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `9378e82`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `2ecfe98`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `9378e82`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`2ecfe98`** — the certified commit itself |
+| **`main`** | **`9378e82`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 133 promoted appearance-as-account-preference** — **and a lane withdrew its own wrong hypothesis from the defect register** |
-| **Certification** | ✅ [`2ecfe9882a26`](certification/reports/2ecfe9882a26.md) · migration head **`0044`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 134 promoted AI preferences and found [B-215](docs/BUGS.md)'s real cause** — **a lost keystroke, not a lost request** |
+| **Certification** | ✅ [`9378e829cb86`](certification/reports/9378e829cb86.md) · migration head **`0045`** · protocol **v2** · profile **`documentation+frontend+module+persistence`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | 🔴 **Two, and this line said `None` for eleven cycles.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ✅ ⚡ **A person's theme follows their account, not their browser** — chosen once, right on every device |
+| **Customer value this cycle** | ✅ ⚡ **A person chooses what Signora may do on their behalf** — and the profile now actually saves what they type |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4272 backend tests** · **95.07% coverage** ✅ *(floor 95 — held; the three-cycle fall stopped)* *(floor 95)* · **1814 frontend tests** *(+15)* across **78 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **45 migrations**, `0000`–`0044`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **228s** *(`Build 59s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4272 backend tests** · **95.08% coverage** ✅ *(floor 95 — recovering)* *(floor 95)* · **1827 frontend tests** *(+13)* across **78 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **198s** *(`Build 55s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,46 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 133
+## 1d · Release summary — 2026-08-08, cycle 134
+
+**Derived from the promoted commit `9378e82`.** **Eighty-nine promotions.** ⚡ **[B-215](docs/BUGS.md) closed on its third hypothesis — and the two wrong ones were cleared by measurement, not argument.**
+
+### ✅ [B-215](docs/BUGS.md) — it was a lost keystroke, not a lost request
+
+> **The profile said *"Saved"* and stored nothing.**
+
+**The cause was in the panel, not the transport:** *"the load effect seeded the inputs from the server, and when it resolved after the first character it overwrote what had been typed. Save then sent the empty field as `null`, the row stored `null`, and the screen confirmed a save that had happened exactly as instructed."*
+
+⚡ **Both earlier suspects were cleared by measurement rather than argument** — a `PATCH` straight to the API stored the value; the same `PATCH` through `/api/proxy` stored it too. ***"Only after both came back correct was it obvious that nothing was lost in transit."***
+
+> ⛔ **Three hypotheses, two withdrawn, one right.** ✅ **The lane never softened a wrong lead into a maybe** — cycle 133 deleted the proxy theory outright, and this cycle names the actual line.
+>
+> ⚠️ **And the defect class is the expensive one: a UI that *confirms* a write it did not make.** **Nothing downstream was wrong** — the row stored exactly what it was sent.
+
+### ✅ Screen 04 — five preferences, and two of them are policies
+
+**Migration `0045` adds five columns to the table `0044` created** — ⚡ *"five columns rather than a second table, because they are the same person's choices in the same workspace and splitting them would give one aggregate two rows to keep in step."* **Verified down to `0044` and back.**
+
+> ✅ **Consent is never inferred, and the defaults are where that is said.** *"Everything unexpressed sits at the conservative end. Two default to on and that is not a contradiction: **neither is a permission over the customer's data.**"*
+
+### ✅ Milestone 3 blocked, with both reasons stated
+
+**`TASK-470` reports milestones 1 and 2 delivered and milestone 3 blocked** — **named rather than silently deferred**, which is the `Limitations` field doing its job again.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4272 backend** · **1827 frontend** *(+13)* · ✅ **95.08%** *(recovering)* · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **139 runs recorded, 131 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | ⚡ **Migration `0045`, reversed to base and re-applied** · **no new table — columns on `person_preferences`, so no classification needed** · **DR nothing lost** · smoke 198s |
+| **Dependency** | ⚠️ **`resolveEntry` still ruled and unbuilt** — `TASK-1400` |
+| **Customer Value** | ✅ ⚡ **A person chooses what Signora may do for them — and the screen no longer lies about saving it** |
+| **Process** | ⚡ **A defect register that carried three hypotheses and ended with one, having deleted the other two.** **That is the register staying believable**, which is the only property that makes it worth reading |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 133
 
 **Derived from the promoted commit `2ecfe98`.** **Eighty-eight promotions.** ⚡ **A lane withdrew its own hypothesis from the defect register rather than softening it — and a sentence in the design decided where a value is stored.**
 
