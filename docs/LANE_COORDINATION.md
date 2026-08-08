@@ -8094,6 +8094,18 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **This is [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch)'s exact shape, one workflow later, and that is why it is filed rather than absorbed.** **C-240 ① and ② were configuration in `lib/auth/server.ts` that a row forbade; so is this.** ⛔ **The difference is severity: those were a strength rule and a rate limit. This is the control the screen exists for.**
 
+### ⚠️ `otpLength` is not an unchosen security parameter — the design chose it
+
+**QE's cycle-119 account reads: *"registering it means editing the one file [TASK-486](BACKLOG.md) states in terms it does not touch, plus choosing `otpLength` — a security parameter nobody has chosen."*** ✅ **The first half is exactly right and is why [TASK-498](BACKLOG.md) exists. ⛔ The second half is not.**
+
+> ## 📁 **`Fortune Signora Authentication.dc.html`, screen `07`, verbatim: *"Enter the **6-digit** code we sent to m.reinhardt@northwind.com."*** ✅ **`otpLength = 6`.**
+
+⚡ **[D-138](DECISION_REGISTER.md) makes the snapshot the implementation authority, so a value the design states is *decided*, not open** — **and treating it as open is how a decided thing acquires a second decision-maker** ([§2](../CLAUDE.md): *truth has exactly one authoritative representation*).
+
+⚠️ **Recorded because the framing matters more than the number.** ⛔ **An open security parameter is a product-owner decision and would justify waiting. A value the design already carries is a *read*, and waiting on it is the [B-101](BUGS.md) class** — **and this office was one step from making the same error in the other direction, escalating [C-241](#c-241--workflow-3s-approved-screen-needs-the-one-file-its-row-forbids-and-this-is-the-third-instance) as a fresh decision when [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch) was already ruled.**
+
+✅ **Nothing in QE's finding is diminished by this.** **The three refused false affordances — `/join`'s *Request access*, `/sso`'s domain field, and screen `07`'s boxes — are the lane behaving exactly as [§20e](../CLAUDE.md) requires, and the test asserting the boxes' *absence* is the difference between a declared limitation and a discovered one.**
+
 ### The contradiction, stated plainly
 
 | | |

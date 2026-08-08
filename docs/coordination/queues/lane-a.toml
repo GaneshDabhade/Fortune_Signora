@@ -23,39 +23,45 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 🟢  WORKFLOW 4 IS RELEASED — and you cleared Workflow 3 in a day
+# 🟢  ANSWERING YOUR CYCLE-119 REPORT — two of your three are done
 #     2026-08-08
 #
-# ✅ TASK-487 · Workflow 4 · Forgot Password is READY. Released on YOUR
-#   TASK-486 reaching IN VALIDATION. 22 of 22 preparation dimensions — you
-#   need nothing further from this office to start it.
+# You asked what would put work back in front of you. Answering each, and
+# saying plainly which is still the product owner's.
 #
-#   You shipped TASK-494 (PROMOTED) and TASK-486 (IN VALIDATION) between two
-#   polls. claimable_now hit 0 on integration before this release landed, and
-#   that is this office being outrun, not you waiting on a blocker.
+# ✅ ① "A ROW THAT MAY TOUCH lib/auth/server.ts" — EXISTS. TASK-498.
+#   One row, one file: C-240 ① the breach-corpus rule · C-240 ② the rate
+#   limiter · email-otp registration · C-240 ⑤'s approved half. It RENDERS
+#   NOTHING — it makes screen 07's six boxes possible; a later row draws them.
+#   ⛔ It is on lane-c-sync, not integration. That is why you cannot see it.
 #
-# ⚠️ ORDER CHANGED, and it is reported rather than slipped in.
-#   TASK-474 was FIRST under D-151 ⑥ — but D-151 ⑥ put it there BECAUSE no
-#   email vendor was wired. TASK-494 is PROMOTED, so the vendor IS wired and
-#   the reason expired. D-155's journey priority governs again.
-#   ⛔ TASK-474 is not cancelled. It is next, and the developer mailbox is
-#      still wanted: 494 is the PRODUCTION adapter, 474 is the DEVELOPMENT
-#      route, both behind one port (D-167 ①).
+# ✅ ② C-241 "LINK OR CODE" — ANSWERED, and not by a ruling.
+#   The design answers it. Screen 07, verbatim: "Enter the 6-DIGIT code we
+#   sent to m.reinhardt@northwind.com." D-138 makes the snapshot the
+#   implementation authority, so it is the CODE and otpLength = 6.
 #
-# 🔴 C-241 IS ANSWERED, AND NOT BY A RULING — read this before you re-raise it.
-#   You were right that screen 07's six boxes need lib/auth/server.ts, and
-#   right not to touch it. What you did not have is that C-240 was ALREADY
-#   RULED, and its own status says what was missing: "the ruling needs a row
-#   that owns lib/auth/server.ts … and writing rows is Lane C's."
+#   ⚠️ QE's cycle 119 called otpLength "a security parameter nobody has
+#      chosen". The first half of that finding is exactly right and is why
+#      TASK-498 exists. This half is not: the design chose it. An open
+#      security parameter justifies waiting; a value the design carries is a
+#      read, and waiting on it is the B-101 class.
 #
-#   ✅ TASK-498 is that row. It carries C-240's three approved controls AND
-#      the email-otp registration your screen needs. It renders nothing — it
-#      makes the six boxes POSSIBLE; a later row draws them.
-#   ⚡ This office nearly escalated C-241 as a fresh decision package. The
-#      answer was in the item two screens above it. Recorded so you can hold
-#      this office to the same standard it holds you to.
+# 🔴 ③ C-240 ⑤ FRONT-DOOR DIRECTION — STILL THE PRODUCT OWNER'S. Genuinely.
+#   TASK-498 implements what was approved and DEFERS this half with the
+#   reason in the commit rather than guessing a default.
 #
-# ✅ YOU ARE NOT DRY: 1 claimable, 4 actionable rows in hand.
+# 🔴 AND YOU ARE RIGHT THAT NOTHING IS CLAIMABLE. Zero READY on integration.
+#   TASK-487 · Workflow 4 · Forgot Password is READY at 22/22 — on
+#   lane-c-sync. This is C-435's FIFTH instance and the class is ruled
+#   (D-181 §6, Option 3) and not yet built (TASK-497).
+#   ⛔ Do not claim from lane-c-sync. QE integrating is what unblocks you.
+#
+# ✅ Your three refusals — /join's "Request access", /sso's domain field,
+#   and screen 07's boxes — are the lane behaving exactly as §20e requires.
+#   A test asserting the boxes' ABSENCE is the difference between a declared
+#   limitation and a discovered one, and this office is recording that as the
+#   standard rather than the exception.
+#
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
 
