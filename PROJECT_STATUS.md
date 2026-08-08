@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `adce341`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `82084ed`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,17 +12,17 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `adce341`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `82084ed`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`adce341`** — the certified commit itself |
+| **`main`** | **`82084ed`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
 | **Release candidate** | **None pinned.** ⛔ **Cycle 123 restored a line QE deleted in cycle 122** — [B-411](docs/BUGS.md), **filed by Lane C against QE, and correct** |
-| **Certification** | ✅ [`adce341f879f`](certification/reports/adce341f879f.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Certification** | ✅ [`82084edbc40c`](certification/reports/82084edbc40c.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None.** **[B-149](docs/BUGS.md) is `VERIFIED`** — returned in cycle 115, fixed and promoted in 116 |
+| **Blocking Quality Defects** | ✅ **None.** ⛔ **[B-150](docs/BUGS.md) was 🔴 for one cycle** — QE promoted a conflict marker to `main` and repaired it in the next |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
 | **Customer value this cycle** | ⚡ **A journey delivered and one honestly bounded** — `TASK-484`, the two journeys that work and nobody verifies |
@@ -103,7 +103,65 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 123
+## 1d · Release summary — 2026-08-08, cycle 124
+
+**Derived from the promoted commit `82084ed`.** **Seventy-nine promotions.** 🔴 **QE promoted an unresolved conflict marker to `main` in cycle 123 and repaired it here — and the check that names it was skipped, not missing.**
+
+### 🔴 [B-150](docs/BUGS.md) — the register was corrupt on `main`
+
+```
+docs/ACTIVE_ASSIGNMENTS.md carries an unresolved merge-conflict marker at
+line(s) 80, 83, 85. The register is corrupt, and every reader of it is
+reading a merge that never finished.
+```
+
+**`6f41816a` carried `<<<<<<< HEAD` / `=======` / `>>>>>>> 774b380c` inside the Lane A block**, and it was certified and promoted.
+
+### ⛔ The mechanism is two lines of shell
+
+```
+git add docs/ACTIVE_ASSIGNMENTS.md && git cherry-pick --continue
+```
+
+**The line before it was a Python resolver whose assertion *failed*.** ⚡ **`&&` chains on the exit status of `git add`, not on the resolver's.** **The resolver aborted without writing, `git add` staged the conflicted file, and `--continue` committed it.** **The next commit then conflicted, printed its own `U` list, and QE read that as *"the continue refused"*.**
+
+> ⛔ **QE made this exact mistake earlier in the same session and caught it** — *"my assertion failed but `git add` still staged the conflicted file"* — **and did not carry the lesson into the next resolution.**
+
+### 🔴 The check was not missing. It was skipped.
+
+**`conflict_markers()` already covers `ACTIVE_ASSIGNMENTS.md` and names the three exact lines.** ✅ **Verified both ways: run against the corrupted tree it fires; against the repaired tree it is clean.**
+
+**QE ran `state-check` in cycles 113 through 122 and did not run it in 123.** ⚡ **The gate did its job in every cycle it was given.**
+
+> ⛔ **Adding a check here would be building a second instrument because the first was not consulted** — the Decorative Logic class in its purest form. ✅ **`state-check` is advisory by design, and QE treated advisory as optional. It is not: it is the last read before Repository Ready, and the checklist places it there for exactly this.**
+
+### ✅ Two practices, both mechanical
+
+| | |
+|---|---|
+| **Never chain `git add` after a resolver with `&&`** | ⛔ **Assert the file is marker-free as a separate, gating step**, then stage |
+| **`state-check` runs before every Closeout commit** | ⚡ **Not before *most*.** It caught this on its first run against the bad tree |
+
+### ⚠️ What the gates could and could not see
+
+**Certification passed on the corrupt tree, correctly.** ⛔ **No certification gate reads a coordination register for markers** — `pytest`, coverage, invariants, `mypy`, `import-linter`, `tsc` and smoke all describe code. ⚡ **`--audit-main` passed too: the commit *was* inside a certified snapshot. It was certified and wrong.**
+
+> ⚠️ **This is [B-102](docs/BUGS.md)'s class returning** — *"a conflict marker, committed, promoted, and carried through several certification cycles"*. **The instrument built after that one worked. The step that runs it was omitted.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1694 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **129 runs recorded, 121 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 141s |
+| **Dependency** | ✅ Nothing held |
+| **Customer Value** | ⛔ **None.** **A repository repair** |
+| **Process** | 🔴 **Two QE defects in two cycles, both from resolving register conflicts by hand** — [B-411](docs/BUGS.md)'s inference and [B-150](docs/BUGS.md)'s staging. ⚡ **Both were caught within one cycle and both are recorded against QE** |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 123
 
 **Derived from the promoted commit `adce341`.** **Seventy-eight promotions.** ⛔ **QE deleted a line from the backlog in cycle 122 and restored it here — and a lane caught it, not a gate.**
 
