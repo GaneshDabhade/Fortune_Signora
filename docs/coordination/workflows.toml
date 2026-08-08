@@ -159,7 +159,7 @@ state  = "planned"
 design = "Fortune Signora User Profile.dc.html"
 tasks  = ["TASK-470"]
 owner  = "Lane A"
-blocker = "C-307 — the first user-scoped table, and the tenancy model has no classification for one"
+unblocked = "⚡ D-172 §1, 2026-08-08 — ADR/492 answers it: a third tenancy class, PERSON_OWNED_TABLES, narrowing tenant-owned rather than paralleling it. app.user_id is already set on every transaction; only the classification and one policy predicate were missing."
 
 [workflow.10]
 name   = "Team Management"
@@ -220,7 +220,7 @@ state  = "planned"
 design = "Fortune Signora Notification Center.dc.html"
 tasks  = ["TASK-480"]
 owner  = "Lane A"
-blocker = "ADR-0040 unratified; MESSAGE_DELIVERY absent from LIVE_CAPABILITIES"
+unblocked = "⚡ D-172 §2, 2026-08-08 — decomposition proceeds on the Design System. Only genuinely undefined notification CONTENT and prioritisation become a recommendation package; incomplete visual detail no longer blocks."
 
 [workflow.18]
 name   = "AI Copilot"
