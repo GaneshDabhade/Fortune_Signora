@@ -7,6 +7,9 @@
  * known address from an unknown one would be an enumeration oracle open to
  * the internet.
  */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -109,22 +112,37 @@ describe('the screen the design draws', () => {
 });
 
 describe('⚠️ the expiry it prints is the expiry the platform has', () => {
-  it('says an hour, because the token really lives an hour', async () => {
+  it('🔴 prints the number `lib/auth/server.ts` actually configures', async () => {
     /**
-     * **The design says thirty minutes and this says an hour.**
-     * `better-auth`'s `resetPasswordTokenExpiresIn` defaults to `3600` and
-     * `lib/auth/server.ts` does not configure it. ⛔ **Printing the design's
-     * number would state a false thing about a credential's lifetime** — a
-     * customer returning at forty minutes would believe a working link was
-     * dead. Changing the platform to match is `lib/auth/server.ts`, which
-     * this row does not touch — C-243.
+     * ⚡ **This asserts the *pairing*, not the number** — [C-243](../../../docs/LANE_COORDINATION.md),
+     * ruled [D-185](../../../docs/DECISION_REGISTER.md) §1.
+     *
+     * ⛔ **Either half alone is a defect, and they are in different files.**
+     * The configuration without the copy leaves a screen understating a
+     * credential's life; the copy without the configuration restores exactly
+     * the lie this screen refused to print for four workflows. ⚡ **So the
+     * expected sentence is *derived* from the configured seconds rather than
+     * typed beside them** — changing one number alone fails here, which is
+     * the only way a pairing survives the person who did not read the ruling.
+     *
+     * ⚠️ **This screen printed *an hour* until 2026-08-08 and this test
+     * asserted it.** That was correct then: nothing configured the value and
+     * `better-auth` defaults to `3600`. **The ruling moved the platform, so
+     * the test moved with it** — it was never asserting sixty minutes, it was
+     * asserting truthfulness.
      */
+    const server = readFileSync(join(process.cwd(), 'lib/auth/server.ts'), 'utf8');
+    const seconds = Number(/resetPasswordTokenExpiresIn:\s*(\d+)/.exec(server)?.[1]);
+    expect(seconds).toBe(1800);
+
     render(<ForgotPasswordForm />);
     await request(KNOWN);
 
     const confirmation = await screen.findByRole('status');
-    expect(confirmation).toHaveTextContent(/expires in an hour/i);
-    expect(confirmation).not.toHaveTextContent(/30 minutes|thirty minutes/i);
+    expect(confirmation).toHaveTextContent(
+      new RegExp(`expires in ${seconds / 60} minutes`, 'i'),
+    );
+    expect(confirmation).not.toHaveTextContent(/an hour/i);
   });
 
   it('says the link works once', async () => {

@@ -21,15 +21,18 @@ import { requestPasswordReset } from '@/lib/auth/client';
  * cannot distinguish from success.** The only errors surfaced are ones that
  * say nothing about the account: a malformed address, and the network.
  *
- * ### ⚠️ The design says thirty minutes and this says an hour
+ * ### ✅ Thirty minutes, and the number is now true
  *
- * **Because an hour is true.** `better-auth`'s `resetPasswordTokenExpiresIn`
- * defaults to `3600` and `lib/auth/server.ts` does not configure it, **so the
- * link this screen describes really does live for an hour.** Printing the
- * design's number would state a false thing about a credential's lifetime —
- * a customer returning at forty minutes would believe a working link was
- * dead. ⛔ **Changing the platform to match is `lib/auth/server.ts`, which
- * this row states it does not touch** — [C-243](../../../../docs/LANE_COORDINATION.md).
+ * **[C-243](../../../../docs/LANE_COORDINATION.md), ruled [D-185](../../../../docs/DECISION_REGISTER.md)
+ * §1: *"the framework should implement the product, not define it."*** So
+ * `lib/auth/server.ts` sets `resetPasswordTokenExpiresIn: 1800` and this
+ * sentence returns to the design's own wording.
+ *
+ * ⚠️ **This screen printed *an hour* until 2026-08-08, and that was correct
+ * rather than a defect** — `better-auth` defaults to `3600` and nothing had
+ * configured it, so the design's number would have stated a false thing about
+ * a credential's lifetime. 🔴 **The two must move together**: the copy without
+ * the configuration is exactly the lie this screen refused to print.
  */
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
@@ -68,7 +71,7 @@ export function ForgotPasswordForm() {
       <div className="flex flex-col gap-4">
         <p role="status" className="text-sm leading-6 text-content-muted">
           If an account exists for that address, a reset link is on its way. It works once
-          and expires in an hour.
+          and expires in 30 minutes.
         </p>
       </div>
     );

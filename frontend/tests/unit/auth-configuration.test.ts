@@ -85,13 +85,37 @@ describe('what this row was forbidden to do, asserted rather than promised', () 
     expect(rateLimit).not.toMatch(/max:\s*\d+/);
   });
 
-  it('⛔ leaves the reset-token expiry alone, because C-243 is undecided', () => {
+});
+
+describe('⑤ the reset token lives thirty minutes — C-243, ruled', () => {
+  it('✅ sets the expiry the product owner chose, not the vendor default', () => {
     /**
-     * **The design says thirty minutes; `resetPasswordTokenExpiresIn` defaults
-     * to an hour; screen `08` prints the true number.** ⛔ **This row decides
-     * nothing** — and setting the value here would decide it. **The screen
-     * stays truthful until the product owner picks.**
+     * **[D-185](../../../docs/DECISION_REGISTER.md) §1, 2026-08-08: thirty
+     * minutes**, on a sentence that is standing guidance beyond this row —
+     * ***"the framework should implement the product, not define it."***
+     *
+     * ⚠️ **This case previously asserted the exact opposite** — `expect(SERVER)
+     * .not.toContain('resetPasswordTokenExpiresIn')` — **and it was right to.**
+     * ⛔ **The row decided nothing while C-243 was open, and setting the value
+     * would have decided it.** ✅ **The ruling landed, so the assertion
+     * inverted rather than being deleted**: what it protects is unchanged —
+     * *nobody changes a credential's lifetime quietly* — and it now guards a
+     * decision that exists instead of the absence of one.
      */
-    expect(SERVER).not.toContain('resetPasswordTokenExpiresIn');
+    expect(SERVER).toMatch(/resetPasswordTokenExpiresIn:\s*1800\b/);
+  });
+
+  it('🔴 is the half of a pair, and the screen carries the other half', () => {
+    /**
+     * ⛔ **The config alone understates a credential's life to every customer
+     * who reads screen `08`.** The pairing is asserted from the screen's side
+     * in `tests/components/password-reset.test.tsx`, which *derives* its
+     * expected sentence from this number — **so a change to one number alone
+     * fails there.** ⚡ **Named here too**, because this is the file somebody
+     * edits when they want to change the expiry, and the failure they will
+     * get should not be a surprise.
+     */
+    expect(SERVER).toContain('resetPasswordTokenExpiresIn');
+    expect(SERVER).not.toMatch(/resetPasswordTokenExpiresIn:\s*3600\b/);
   });
 });

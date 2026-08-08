@@ -105,6 +105,24 @@ export function createAuth(config: AuthConfig = loadAuthConfig()) {
      * codebase keeps refusing.
      */
     rateLimit: { enabled: true },
+
+    /**
+     * ✅ **[C-243](../../../docs/LANE_COORDINATION.md) — ruled [D-185](../../../docs/DECISION_REGISTER.md)
+     * §1, product owner, 2026-08-08: thirty minutes.**
+     *
+     * ⚡ **The ruling's sentence is standing guidance and is quoted rather than
+     * paraphrased: *"the framework should implement the product, not define
+     * it."*** **`better-auth` defaults to `3600`; the design says thirty; so
+     * the configuration moves and the design does not.**
+     *
+     * 🔴 **This line and screen `08`'s copy ship together, and the pairing is
+     * load-bearing.** ⛔ **The config alone leaves the screen understating a
+     * credential's life; the copy alone restores exactly the lie the forgot-
+     * password screen refused to print.** ⚠️ **Whoever changes one number
+     * changes both** — `forgot-password-form.tsx` and its `page.tsx`
+     * description carry the sentence a customer reads.
+     */
+    resetPasswordTokenExpiresIn: 1800,
     baseURL: config.baseUrl,
     secret: config.betterAuthSecret,
 

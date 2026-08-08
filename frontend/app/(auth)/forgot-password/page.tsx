@@ -24,10 +24,10 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell
       title="Reset your password"
-      // The design's own sentence, with one word changed and the reason
-      // recorded in the form: the link really does live an hour, not thirty
-      // minutes, so printing thirty would misstate a credential's lifetime.
-      description="Enter your work email. If an account exists, you'll get a reset link that works once and expires in an hour."
+      // The design's own sentence, verbatim. It carried one changed word until
+      // C-243 was ruled; `resetPasswordTokenExpiresIn: 1800` is what makes the
+      // thirty true, and the two are edited together or not at all.
+      description="Enter your work email. If an account exists, you'll get a reset link that works once and expires in 30 minutes."
       footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
     >
       <ForgotPasswordForm />

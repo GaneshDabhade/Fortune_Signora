@@ -368,13 +368,14 @@ test.describe('Workflow 4 · asking for a reset link', () => {
   });
 
   test('the expiry it prints is the expiry the platform has', async ({ page }) => {
-    // resetPasswordTokenExpiresIn defaults to 3600 and is not configured, so
-    // the link lives an hour. The design says thirty minutes — C-243.
+    // C-243, ruled D-185 §1: resetPasswordTokenExpiresIn is 1800, so the
+    // design's own sentence is now the true one. This read "an hour" until
+    // 2026-08-08 and was correct then — nothing had configured the value.
     await page.goto('/forgot-password');
     await page.getByLabel('Work email').fill('m.reinhardt@northwind.com');
     await page.getByRole('button', { name: 'Send reset link' }).click();
 
-    await expect(page.getByRole('status')).toContainText('expires in an hour');
+    await expect(page.getByRole('status')).toContainText('expires in 30 minutes');
   });
 });
 

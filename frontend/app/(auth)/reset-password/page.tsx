@@ -37,7 +37,9 @@ export default async function ResetPasswordPage({
     return (
       <AuthShell
         title="That link has expired"
-        description="Reset links last an hour and can be used once. Ask for another and it will work."
+        // The third place the expiry is stated to a customer, and the one
+        // easiest to miss — C-243's ruling moves all three or none.
+        description="Reset links last 30 minutes and can be used once. Ask for another and it will work."
         footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
       >
         <p className="text-sm leading-6 text-content-muted">
