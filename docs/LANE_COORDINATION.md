@@ -8238,3 +8238,29 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 > ⛔ **This lane did not pick.** **It printed what is true today** and named the choice, because [D-138](../CLAUDE.md) makes the snapshot the implementation authority for *design* and [§13](../CLAUDE.md) makes Better Auth the authority for *authentication* — **and this is the seam where those two authorities meet.**
 
 **The decision, in one sentence:** ⚡ **shorten the token to thirty minutes and match the design, or amend the design to an hour and match the platform.** ✅ **Either is one line; the screen follows whichever lands.**
+
+---
+
+## C-244 · Screen `09` promises a password reset signs other devices out, and nothing does
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-08, **building [TASK-488](BACKLOG.md) and reading `node_modules` and `lib/auth/server.ts` rather than the sentence** |
+| **Owner** | **Product owner** — ⛔ **a security *behaviour*, not a copy fix** ([D-151](DECISION_REGISTER.md) ④) |
+| **Status** | **`OPEN`** |
+| **Blocks** | ⛔ **Nothing.** ✅ **Screens `09` and `10` ship without the claim.** ⚠️ **What is open is whether the claim should become true** |
+
+**The design's sentence, verbatim:** *"This signs you out of **4 other devices**, including the iPad last used 3 days ago."*
+
+| | |
+|---|---|
+| 🔴 **The first half is false, not merely unsupported** | **`revokeSessionsOnPasswordReset` is a Better Auth option and `lib/auth/server.ts` does not set it**, so the default applies and **other sessions survive a reset.** ⛔ **Printing it would tell somebody who has just been compromised that they are safe** — **the most expensive place in the product to be wrong** |
+| ⚠️ **The second half has no source** | **Nothing lists sessions and nothing records a device.** ⛔ ***"4"* and *"the iPad last used 3 days ago"* cannot be produced** — a session inventory with user-agent metadata is a capability, not a string |
+| ✅ **What ships instead** | **Neither the count nor the promise.** ⚡ **Screen `10` is equally careful**: it does not say other devices were signed out, because they were not |
+| **What it would take** | **`revokeSessionsOnPasswordReset: true`** in `lib/auth/server.ts` — ⛔ **the file [TASK-488](BACKLOG.md) states it does not touch**, and **[TASK-498](BACKLOG.md) owns it.** ⚠️ **The count needs more than a flag** |
+
+> ⚡ **This is the fifth instance of one shape** — [C-434](#c-434--three-of-logins-remaining-screens-need-a-decision-not-a-build--and-one-of-them-is-already-shipped) Workflow 1, [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch) Workflow 2, [C-241](#c-241--workflows-3s-approved-screen-needs-the-one-file-its-row-forbids-and-this-is-the-third-instance) Workflow 3, [C-243](#c-243--the-reset-link-lives-an-hour-and-the-design-says-thirty-minutes) Workflow 4, **and this one Workflow 5.** ⛔ **Every authentication workflow has needed something in `lib/auth/server.ts` that its own row forbids.**
+>
+> ⚠️ **[TASK-498](BACKLOG.md) was written to be that row and it has already shipped** — so the pattern now has a home, and **this item is a request to schedule a second pass rather than to invent a place to put one.**
+
+**The decision, in one sentence:** ⚡ **should a password reset end every other session?** ✅ **If yes it is one line in the row that owns that file, and the screen can then say so truthfully.** ⛔ **The device count and its "iPad" are a separate, larger capability and are not bundled into that answer.**

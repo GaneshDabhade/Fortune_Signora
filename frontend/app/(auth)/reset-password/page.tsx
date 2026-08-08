@@ -28,10 +28,10 @@ export const dynamic = 'force-dynamic';
 export default async function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string; error?: string }>;
+  searchParams: Promise<{ token?: string; error?: string; email?: string }>;
 }) {
   if (!loadAuthConfig().passwordEnabled) notFound();
-  const { token, error } = await searchParams;
+  const { token, error, email } = await searchParams;
 
   if (!token || error) {
     return (
@@ -52,7 +52,7 @@ export default async function ResetPasswordPage({
       title="Set a new password"
       footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
     >
-      <ResetPasswordForm token={token} />
+      <ResetPasswordForm token={token} email={email ?? null} />
     </AuthShell>
   );
 }
