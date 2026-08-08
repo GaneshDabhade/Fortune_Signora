@@ -80,6 +80,47 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-148 · A queue file tells Lane A not to claim the task it claimed two hours earlier
+
+| | |
+|---|---|
+| **Module** | [`docs/coordination/queues/lane-a.toml`](coordination/queues/lane-a.toml) — Lane C's, the Coordination subsystem |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — **wrong behaviour a lane would act on.** ⛔ **The lane it addresses is mid-slice on the task it forbids** |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-08 by QE, cycle 114, reading the candidate before promoting it |
+
+**Steps to reproduce.** At `d9891728`, open the file and read from line 383:
+
+```
+🔴  DO NOT CLAIM TASK-485 YET — AND THAT IS THIS OFFICE'S FAILURE
+    2026-08-08 · read this before you act on `current`
+
+  This ref says   current = TASK-485
+  integration says TASK-485 is SEQUENCED
+  and             claimable_now = 0
+```
+
+**Expected.** A file a lane reads on every poll describes the present.
+
+**Actual.** ⛔ **`integration` says `CLAIMED`, not `SEQUENCED`.** Lane A claimed `TASK-485` at `886f3e35`, QE replayed that claim onto `main` as `018195fd` in cycle 113, **and the lane is building it now.** The notice instructs it to stop.
+
+### ⚡ The precondition the notice names has been satisfied twice over
+
+> *"WHAT UNBLOCKS YOU, precisely: QE integrating `lane-c-sync`. Nothing else."*
+
+**Cycle 113 integrated `f6f9c851`. Cycle 114 integrated `81689ce1` — both commits the notice names by SHA.** ⛔ **The block is discharged and the notice still reads red.**
+
+### ⚠️ Why this is a different defect from [B-145](BUGS.md)
+
+**B-145 is a *generated* value drifting by the clock, and the repair is the generator.** ⛔ **This is a hand-written instruction frozen into a generated file**, so regenerating does not remove it — **it has no expiry, and nothing computes it.**
+
+> ⚡ **The office was right about the condition and right to publish it.** ⛔ **What it published was a point-in-time judgement in a file whose whole contract is *what is true when you read it***. **A dated record belongs in a register that is read as history** ([C-435](LANE_COORDINATION.md) is exactly that, and is correct where it sits); **a lane's queue is read as instruction.**
+>
+> ⚠️ **The failure mode is specific and it is the expensive one: a lane that trusts its queue abandons a correct claim.** §20e makes the lane's own protocol the authority — *"you claim against `BACKLOG.md` on `integration`"* — **and `BACKLOG.md` on `integration` has said `CLAIMED` since cycle 113.**
+
+---
+
 ### B-147 · Workflow 1 left `active` and nothing took its place, so the repository declares zero journeys in flight
 
 | | |

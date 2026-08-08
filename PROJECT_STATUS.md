@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `f6f9c85`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `d989172`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `f6f9c85`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `d989172`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`f6f9c85`** — the certified commit itself |
+| **`main`** | **`d989172`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** Cycle 113 promoted **Workflow 1's design conformance** — ⚡ **Screen 02 went 3 of 12 elements to 12 of 12, and the gap was closed in the foundation rather than patched on the screen** |
-| **Certification** | ✅ [`f6f9c8510bac`](certification/reports/f6f9c8510bac.md) · migration head **`0042`** · protocol **v2** · profile **`platform`**, recorded for the first time · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 114 promoted **[B-409](docs/BUGS.md)'s starvation fix** — ⚡ **a check that counted a lane's finished work as work in hand, so 136 idle cycles were invisible to it** |
+| **Certification** | ✅ [`d9891728e7eb`](certification/reports/d9891728e7eb.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane B**, on the product owner's rulings — see §1c. **Lane A has `TASK-485` as its current**, released by this cycle |
-| **Validation queue** | **Empty.** One lane pushed after fifty quiet polls |
-| **Customer value this cycle** | ⚠️ **Indirect.** **The first workflow now matches the approved design**, and Workflow 2 is released for implementation |
+| **Validation queue** | **Empty.** Two cycles inside three hours after fifty quiet polls |
+| **Customer value this cycle** | ⛔ **None directly.** Repository instrumentation and two coordination findings |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 184s *(⚠️ two unexplained 2652s runs — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **621s** *(⚠️ **the slow population names `Researched account` a third time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,53 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 113
+## 1d · Release summary — 2026-08-08, cycle 114
+
+**Derived from the promoted commit `d989172`.** **Sixty-nine promotions.** ⚡ **A starvation check that could not see starvation, and two coordination files that told a lane the opposite of what the backlog said.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **[B-409](docs/BUGS.md) — the starvation check counted finished work** *(Lane C)* | `in_flight` collapses **eight** declared states and **only three are work a lane can touch.** **Lane A idled 136 cycles holding 48 in-flight rows, every one `IN VALIDATION` and untouchable**, and the check stayed silent *because the number was large.* **`actionable` is published beside it and `state-check` now reads that** |
+| **[C-435](docs/LANE_COORDINATION.md) — the synchronization deadlock** *(Lane C)* | Two rules, each correct, deadlock: **§20e** *"only executable change opens a cycle"* decides **whether** a cycle happens; **[D-136](docs/DECISION_REGISTER.md)** orders planning corrections **within** one. **Neither can start one** — so the condition that makes a correction urgent is the condition that prevents it landing |
+
+### ⚡ The deadlock C-435 describes resolved itself while C-435 was being written
+
+**Lane C measured it at 04:03 and filed it at 04:14.** **QE promoted `f6f9c851` at 04:10 and Lane A claimed `TASK-485` immediately after.**
+
+> ⛔ **That does not make the finding wrong, and QE is not reporting it as wrong.** **The escape was luck of timing**: `f6f9c851` happened to carry coordination TOML, the planner classifies that as **`platform`** because three gates read it, so a planning-only push *was* certifiable. ⚡ **Change one of those facts and the deadlock is real.**
+>
+> **What the cycle actually demonstrated is narrower and worth stating: the planner's classification is what broke the tie.** A directory prefix would have called it documentation, no cycle would have been warranted, and Lane A would still be idle ([D-115](docs/DECISION_REGISTER.md)).
+
+### ⚠️ [B-148](docs/BUGS.md) filed — the queue tells Lane A not to claim what it is building
+
+**`queues/lane-a.toml` carries a 🔴 block: *"DO NOT CLAIM TASK-485 YET… integration says TASK-485 is SEQUENCED."*** ⛔ **It says `CLAIMED`.** Lane A claimed it in cycle 113 and is mid-slice.
+
+**The notice names its own discharge condition** — *"WHAT UNBLOCKS YOU, precisely: QE integrating `lane-c-sync`. Nothing else."* — **and both commits it names by SHA are now on `main`.**
+
+> ⚠️ **Distinct from [B-145](docs/BUGS.md), and the distinction is the fix.** B-145 is a *generated* value drifting by the clock, so the repair is the generator. ⛔ **This is a hand-written instruction frozen into a generated file: regenerating does not remove it, nothing computes it, and it has no expiry.**
+>
+> ⚡ **The office was right about the condition and right to publish it.** **What it published was a point-in-time judgement in a file whose entire contract is *what is true when you read it*.** **A register is read as history; a lane's queue is read as instruction.**
+
+### ⚠️ Smoke 621s — the slow population names the same stage a third time
+
+**`Researched account 420s` of 621s.** The two 2652s outliers named it too; every fast cycle names `Build`. ⚡ **Two populations, one stage, three observations — [B-141](docs/BUGS.md) now has a suspect rather than a mystery.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1636 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **117 runs recorded, 110 certified** · `promoted == certified` ✓ · `--audit-main` clean · **seventeenth consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · ⚠️ **smoke 621s** |
+| **Dependency** | ✅ Nothing held. **Lane A is building `TASK-485`** |
+| **Customer Value** | ⛔ **None directly.** Instrumentation and coordination |
+| **Process** | ⚠️ **Two of this cycle's three commits are the Product Office reporting on its own supply line**, and **both findings are correct.** ⛔ **A third — [B-148](docs/BUGS.md) — is the same office instructing a lane from a state that had already changed** |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 113
 
 **Derived from the promoted commit `f6f9c85`.** **Sixty-eight promotions.** ⚡ **A screen that was 3 of 12 against its design is 12 of 12, and the one override it still carried was removed by adding the token it wanted.**
 
