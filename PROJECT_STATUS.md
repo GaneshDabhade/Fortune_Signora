@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `67d662e`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `2f858a3`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `67d662e`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `2f858a3`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`67d662e`** — the certified commit itself |
+| **`main`** | **`2f858a3`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 119 promoted Workflow 3's screen 07 — and the six boxes the design draws are deliberately absent**, with a test asserting their absence |
-| **Certification** | ✅ [`67d662ee7e72`](certification/reports/67d662ee7e72.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⛔ **Cycle 120 certified a planning-only candidate on purpose** — **Lane A's queue on `integration` was pointing at a task QE promoted two cycles earlier** |
+| **Certification** | ✅ [`2f858a3c9f79`](certification/reports/2f858a3c9f79.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **[B-149](docs/BUGS.md) is `VERIFIED`** — returned in cycle 115, fixed and promoted in 116 |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ✅ **A person who has just registered sees where to go next** — screen `07 Verify email`, with a resend timer that starts on a successful send rather than on the click |
+| **Customer value this cycle** | ⛔ **None.** ⚡ **The cycle's product is an unblocked lane** — `TASK-487`, Workflow 4 · Forgot Password, is now claimable where finished work stood |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1686 frontend tests** *(+14)* across **71 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **194s** *(`Build 54s` — a frontend cycle, **the reading holds a seventh time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1686 frontend tests** *(+14)* across **71 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **143s** *(`Startup 19s` — a backend-only cycle, **the reading holds an eighth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,65 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 119
+## 1d · Release summary — 2026-08-08, cycle 120
+
+**Derived from the promoted commit `2f858a3`.** **Seventy-five promotions.** ⛔ **The first cycle QE has run on a candidate with no executable change — and the reason is a rule, not a judgement.**
+
+### ⛔ Why a planning-only candidate was certified
+
+**QE declined to certify planning alone on the previous three polls.** ⚡ **This time `origin/integration` contained a measurable defect:**
+
+```
+queues/lane-a.toml   current = "TASK-494"   eligible_count = 1
+```
+
+⛔ **`TASK-494` was promoted in cycle 118 and QE advanced its row to `PROMOTED` itself.** **Lane A's queue was advertising finished work as its only claimable item**, its branch was level with `main` with nothing in flight, and **the release that would unblock it existed only on `lane-c-sync`.**
+
+> ✅ **[§20e](CLAUDE.md) covers this case in a ruled sentence, and it is not [C-435](docs/LANE_COORDINATION.md):**
+>
+> *"Whenever an implementation lane has been idle for more than one reporting cycle because `READY` work exists only outside `integration`, **synchronizing that work becomes the highest repository priority** — above further preparation, above new initiatives, above every planning activity."*
+>
+> ⛔ **QE did not decide the C-435 deadlock and still has not.** **That item asks whether a planning correction may be integrated *without* certification. QE ran the ordinary cycle instead** — certify, then promote — **which needs no new rule and leaves `promoted == certified` untouched.**
+
+**Result, measured on `main`:**
+
+```
+queues/lane-a.toml   current = "TASK-487"   eligible_count = 1
+```
+
+⚡ **Workflow 4 · Forgot Password, 22/22 prepared, claimable where finished work stood.**
+
+### ✅ What was promoted
+
+| | |
+|---|---|
+| ⚡ **Workflow 4 released** *(Lane C)* | And **[C-241](docs/LANE_COORDINATION.md) answered** — *"two screens above where I looked"* |
+| **The release-trigger routine check** *(Lane C)* | *"fired for ten rows and nothing re-asked"* |
+
+### ⚠️ The defect QE promoted was QE's own to see
+
+**`state-check` reported it last cycle, in QE's own Closeout run:**
+
+> *"lane-a: queues `TASK-494` as executable and its row says `PROMOTED` — finished work advertised as available"*
+
+⛔ **QE read that line, declared Repository Ready, and did not connect it to the planning commit it was declining to integrate.** ⚡ **The two findings were one finding**, and the second poll is where they joined up.
+
+> **What changed between the polls was not the repository — it was QE actually checking whether a lane could claim.** ✅ **The check is cheap and it is now part of the poll**: when a planning commit is held, read the queue it repairs.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1686 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **125 runs recorded, 117 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 143s |
+| **Dependency** | ✅ **Lane A unblocked** — `TASK-487` claimable. ⚠️ **[C-241](docs/LANE_COORDINATION.md) answered by Lane C** |
+| **Customer Value** | ⛔ **None.** **The cycle's product is an unblocked lane** |
+| **Process** | ⚡ **The rule that applied was already written and QE had to go looking for it** — which is the argument for §20e being long rather than short |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 119
 
 **Derived from the promoted commit `67d662e`.** **Seventy-four promotions.** ⚡ **A slice whose most valuable output is the thing it refused to build — and a test that asserts the refusal.**
 
