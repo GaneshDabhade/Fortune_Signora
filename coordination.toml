@@ -9,17 +9,18 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "55bfe11"
+generated_from = "034ad46"
 task_count     = 102
 
 [lane.Lane_A]
+notice             = "B-214 NEEDS NO ROW — fix it now. workspace_tenancy is YOUR module (modules.toml) and the map is modules/workspace_tenancy/interface/errors.py, NOT signora_platform. Change Budget green covers 'a bug fix inside it', freely. Announce it in the commit because it changes an error contract. Reasoning: queues/lane-a.toml when QE integrates."
 current            = "TASK-469"
 next               = ""
 next_after_that    = ""
 assigned_total     = 85
 claimable          = 1
-claimable_now      = 1
-awaiting_sync      = 0
+claimable_now      = 0
+awaiting_sync      = 1
 in_flight          = 56
 actionable         = 7
 awaiting_qe_transition = 0
@@ -33,6 +34,7 @@ blocked_duration_days  = 1.2
 critical_path_max      = 3
 
 [lane.Lane_C]
+notice             = ""
 current            = "TASK-497"
 next               = ""
 next_after_that    = ""
@@ -962,7 +964,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-470"
@@ -1234,7 +1236,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-490"
