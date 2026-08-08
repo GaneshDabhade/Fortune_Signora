@@ -1430,8 +1430,8 @@ updated      = 2026-08-08
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-483"          # ① Workflow 1 · the authentication shell
-next    = "TASK-498"          # ② lib/auth/server.ts — C-240 ①②③ + C-243's 30 min
+current = "TASK-474"          # ① the developer mailbox
+next    = "TASK-498"          # ② lib/auth/server.ts — C-240 ①②③ + C-243 30min
 # ④ TASK-498 · lib/auth/server.ts — C-240 ①② + email-otp registration
 # ⑤ TASK-474 · the developer mailbox
 #
@@ -1474,8 +1474,8 @@ next    = "TASK-498"          # ② lib/auth/server.ts — C-240 ①②③ + C-2
 # this office was releasing it here, and the rebase kept this office's line.
 # Lane A's CLAIMED is restored in BACKLOG.md and the row is gone from this
 # queue: a lane must never be offered back work it is already holding.
-future  = ["TASK-474", "TASK-488", "TASK-489", "TASK-469", "TASK-470",
-           "TASK-471", "TASK-473", "TASK-476"]
+future  = ["TASK-488", "TASK-489", "TASK-469", "TASK-470", "TASK-471",
+           "TASK-473", "TASK-476", "TASK-492"]
 # ⛔ TASK-484 removed — you CLAIMED it, and a queue must never offer back work
 #    a lane is already holding. TASK-499 is not here either: it is SEQUENCED
 #    behind TASK-498 and a queue that lists an unstartable row is a queue that

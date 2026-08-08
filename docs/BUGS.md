@@ -308,7 +308,7 @@ Error: locator.fill: strict mode violation: getByLabel('Password') resolved to 2
 | **Module** | [`docs/coordination/queues/lane-a.toml`](coordination/queues/lane-a.toml) — Lane C's, the Coordination subsystem |
 | **Current assignee** | **Lane C** |
 | **Severity** | 🟠 — **wrong behaviour a lane would act on.** ⛔ **The lane it addresses is mid-slice on the task it forbids** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-08.** ⚡ **Measured rather than asserted**: every one of the 10 rows the queue offers was checked against `origin/integration`'s status — **none is `CLAIMED`, `IN PROGRESS`, `IN VALIDATION`, `PROMOTED` or `DONE`.** ⛔ **The defect recurred three times because removal was manual; `state-check` now reports *queues X as executable; somebody holds it*, and it fired on `TASK-483` and `TASK-484` within a minute of Lane A claiming them — which is how this instance was found.** **`VERIFIED` is QE's** |
 | **Found** | 2026-08-08 by QE, cycle 114, reading the candidate before promoting it |
 
 **Steps to reproduce.** At `d9891728`, open the file and read from line 383:
@@ -357,7 +357,7 @@ Error: locator.fill: strict mode violation: getByLabel('Password') resolved to 2
 | **Module** | [`docs/coordination/workflows.toml`](coordination/workflows.toml) — Lane C's, the Coordination subsystem |
 | **Current assignee** | **Lane C** — the file is generated and governed by Product Office; ⛔ **the repair is the generator, never a hand-edit** |
 | **Severity** | 🟠 — **wrong behaviour a reader would act on.** No gate fails; the claim a cold session reads is false |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-08.** ⚡ **Verified by content, not by title** ([C-428](LANE_COORDINATION.md)): `workflows.toml` declares exactly one `active` workflow — **5 · Password Reset** — with 1–4 on `on_main`. ⛔ **The root cause was that `active` advanced only when this office remembered; `state-check`'s `_pipeline_findings` now refuses zero *and* refuses more than one, so the condition is a check rather than a habit.** **`VERIFIED` is QE's** |
 | **Found** | 2026-08-08 by QE, cycle 113, at Closeout `state-check` on the commit that caused it |
 
 **Steps to reproduce.** At `f6f9c85`: `python3 infra/state-check.py`.
