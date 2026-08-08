@@ -7975,7 +7975,7 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 ⚠️ **Adding more planning depth to a repository whose bottleneck is synchronization makes the bottleneck worse**, because every additional prepared row is another thing waiting on the same step. ✅ **This item is what [D-171](DECISION_REGISTER.md) §11 asks for: an improvement to the operating model, brought forward with evidence rather than waited for.**
 
-## C-436 · Two ruled or designed password controls live in the one file Workflow 2 may not touch
+## C-240 · Two ruled or designed password controls live in the one file Workflow 2 may not touch
 
 | | |
 |---|---|
