@@ -80,6 +80,56 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-150 · QE promoted a conflict marker to `main`, and the check that names it was skipped rather than missing
+
+| | |
+|---|---|
+| **Module** | Repository state — [`docs/ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) |
+| **Current assignee** | **QE** — QE wrote it, promoted it, and repaired it |
+| **Severity** | 🔴 **The register was corrupt on `main`.** *"Every reader of it is reading a merge that never finished"* |
+| **Status** | ✅ **`FIXED`** — repaired in the same cycle it was found |
+| **Found** | 2026-08-08 by QE, cycle 123, replaying `integration` onto `main` at Closeout stage 6 |
+
+**Steps to reproduce.** At `32dc4b2c`:
+
+```
+$ python3 infra/state-check.py
+docs/ACTIVE_ASSIGNMENTS.md carries an unresolved merge-conflict marker at
+line(s) 80, 83, 85. The register is corrupt, and every reader of it is
+reading a merge that never finished.
+```
+
+**Expected.** No marker reaches `main`.
+
+**Actual.** `6f41816a` carries `<<<<<<< HEAD` / `=======` / `>>>>>>> 774b380c` inside the Lane A block, and it was certified and promoted.
+
+### ⛔ The mechanism, and it is two lines of shell
+
+```
+git add docs/ACTIVE_ASSIGNMENTS.md && git cherry-pick --continue
+```
+
+**The line before it was a Python resolver whose assertion *failed*.** ⚡ **`&&` chains on the exit status of `git add`, not on the resolver's** — the resolver aborted without writing, `git add` staged the **conflicted** file, and `--continue` committed it. **The next commit in the sequence then conflicted, printed its own `U` list, and QE read that as *"the continue refused"*.**
+
+> ⛔ **QE made this exact mistake earlier in the same session and caught it** — *"my assertion failed but `git add` still staged the conflicted file"* — **and did not carry the lesson into the next resolution.**
+
+### 🔴 The check was not missing. It was skipped.
+
+**`conflict_markers()` in `infra/state-check.py` already covers `ACTIVE_ASSIGNMENTS.md`, and it names the three exact lines.** ⚡ **Verified by running it against the corrupted tree and against the repaired one: it fires, then it is clean.**
+
+**QE ran `state-check` in cycles 113 through 122 and did not run it in 123.** ⛔ **The gate did its job in every cycle it was given.**
+
+> ⚠️ **This is the more useful finding, and the less comfortable one.** **Adding a check here would be building a second instrument because the first was not consulted** — which is the [Decorative Logic](../CLAUDE.md) class in its purest form. ✅ **`state-check` is advisory by design and QE treated advisory as optional. It is not: it is the last read before Repository Ready, and [`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) places it there for exactly this.**
+
+### ✅ Two practices, both mechanical
+
+| | |
+|---|---|
+| **Never chain `git add` after a resolver with `&&`** | ⛔ **Assert the file is marker-free as a separate, gating step**, then stage |
+| **`state-check` runs before every Closeout commit** | ⚡ **Not before *some*.** It caught this on its first run against the bad tree |
+
+---
+
 ### B-149 · `TASK-485`'s journey cannot address its own password field, and three of its scenarios fail on any machine
 
 | | |
