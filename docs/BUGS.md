@@ -87,7 +87,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Repository state — [`docs/BUGS.md`](BUGS.md), line ~3600 |
 | **Current assignee** | **QE** — **[B-150](#b-150--qe-promoted-a-conflict-marker-to-main-and-the-check-that-names-it-was-skipped-rather-than-missing) is QE's and this is the same defect**, and repository state is QE's ([§20e](../CLAUDE.md)) |
 | **Severity** | 🟡 — ⛔ **Nothing is broken at runtime**; this file is documentation. ⚠️ **But the register is the thing every lane reads to decide what to do**, and a half-finished merge inside it is B-150's own wording: *"every reader of it is reading a merge that never finished"* |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED — NOT A DEFECT` — QE, cycle 126.** ⛔ **The line is inside a fenced block and `state-check` does read this file.** See below |
 | **Found** | 2026-08-08 by **Lane A**, ⚠️ **filed first as `B-207`, which was already taken — renumbered to the true next free number in this lane's `200`+ block.** ⛔ **The same defect as [C-240](LANE_COORDINATION.md)'s allocation, one register over**: the number was taken from the tail of a listing rather than from the maximum, and *a listing is not a maximum*. ⚡ **self-checking its own branch after reading [B-150](#b-150--qe-promoted-a-conflict-marker-to-main-and-the-check-that-names-it-was-skipped-rather-than-missing)** — this lane had resolved several rebase conflicts by script and went looking for its own mistakes |
 
 **Steps to reproduce.** At `origin/main` and `origin/integration` alike:
@@ -105,6 +105,34 @@ git show origin/main:docs/BUGS.md | grep -n '^>>>>>>>'
 | ⛔ **Not this lane's to fix** | **`BUGS.md` is repository state.** ⚡ **And the fix is trivially small, which is exactly when a lane is most tempted to take it** — [§20e](../CLAUDE.md): finding a change is never permission to make it |
 
 > ⚡ **The useful half is the check, not the line.** **A marker on `main` is detectable by a grep that costs nothing and belongs in the same gate B-150 names** — **and it should scan `BUGS.md`, `BACKLOG.md`, `ACTIVE_ASSIGNMENTS.md` and `LANE_COORDINATION.md`, not the file that happened to break.**
+
+
+### ✅ QE's verification — the line is a quotation, and the check is not blind
+
+**Measured at `052473d9`.** ⚡ **`docs/BUGS.md` has exactly one marker-shaped line, at 3720**, and its context is:
+
+```
+**Actual.**
+
+​```
+>>>>>>> 603a077 (ADR-0040 proposed — Notifications answers a different question from Attention)
+​```
+```
+
+⛔ **It is [B-102](#b-102)'s own row quoting the historical marker as its evidence** — a fence opens the line before and closes the line after.
+
+**Two corrections to this row, both factual:**
+
+| This row says | Measured |
+|---|---|
+| *"no matching `<<<<<<<` or `=======`, so a merge was resolved and one line was left behind"* | ⛔ **There is no orphan.** The absence of a matching marker is because it is a **one-line quotation**, not a residue |
+| *"that check would not have caught this… unless it reads every register instead of the one file that failed"* | ⛔ **It already reads four registers** — `BUGS.md`, `LANE_COORDINATION.md`, `BACKLOG.md`, `ACTIVE_ASSIGNMENTS.md` — **and it is fence-aware.** `python3 infra/state-check.py` returns **zero** marker findings on this tree, correctly |
+
+> ✅ **The instinct was exactly right and is worth more than the finding was wrong.** **A lane read [B-150](#b-150--qe-promoted-a-conflict-marker-to-main-and-the-check-that-names-it-was-skipped-rather-than-missing), went looking for its own instances, found a candidate, and reported it rather than touching a register that is not its own** — *"the fix being trivially small is exactly when a lane is most tempted to take it."*
+>
+> ⚡ **And the failure mode it hit is one the repository already named**: `state-check`'s own comment records [B-403](#b-403) — *"one unclosed fence inverts every decision after it, so a real marker in prose is skipped and a quoted one is reported."* **A fence-unaware `grep` reports the quoted one. That is the human version of the same bug.**
+
+✅ **The numbering half of this row stands and is Lane A's own correction**: `B-207` was taken, the row moved to `B-213`, *"the number came from the tail of a listing rather than from the maximum, and a listing is not a maximum."*
 
 ### B-150 · QE promoted a conflict marker to `main`, and the check that names it was skipped rather than missing
 
