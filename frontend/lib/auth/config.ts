@@ -16,7 +16,7 @@
  * being built now rather than rediscovered later:** *"no architectural
  * decision should remain only as documentation."*
  */
-export type AuthEmailTransportName = 'console' | 'resend';
+export type AuthEmailTransportName = 'console' | 'resend' | 'mailbox';
 
 export interface AuthConfig {
   databaseUrl: string;
@@ -187,17 +187,33 @@ export function loadAuthConfig(): AuthConfig {
 function resolveEmailTransport(): AuthEmailTransportName {
   const configured = process.env.SIGNORA_AUTH_EMAIL_TRANSPORT ?? 'console';
 
-  if (configured !== 'console' && configured !== 'resend') {
+  if (configured !== 'console' && configured !== 'resend' && configured !== 'mailbox') {
     throw new Error(
       `SIGNORA_AUTH_EMAIL_TRANSPORT='${configured}' is not a transport this build has. ` +
-        "It offers 'console' and 'resend'. Adding a third is a dependency choice " +
-        'and its own ADR, not a configuration value.',
+        "It offers 'console', 'resend' and 'mailbox'. Adding a fourth is a " +
+        'dependency choice and its own ADR, not a configuration value.',
     );
   }
   // **Resend needs no deployment check, and that is the point of the row.**
   // The guard below exists because the console transport writes a credential
   // to stdout; a real transport is what the guard has always been asking for.
   if (configured === 'resend') return 'resend';
+
+  // ⛔ **The mailbox carries the console's refusal, for a stronger reason.**
+  // The console writes one credential to stdout; the mailbox *keeps a
+  // history* of them and offers a surface to read it. **A delivery history is
+  // a record of credentials being issued** — TASK-474 states the bound and
+  // this is where it is enforced, at startup rather than at a request, so a
+  // misconfigured deployment stops instead of serving it.
+  if (configured === 'mailbox' && isDeployed()) {
+    throw new Error(
+      'The development mailbox keeps every verification and password-reset link this ' +
+        `process has sent, which is a record of credentials. SIGNORA_ENVIRONMENT='${environmentName()}' ` +
+        'is a deployed environment. Configure a real transport (ADR-0406 §3).',
+    );
+  }
+  if (configured === 'mailbox') return 'mailbox';
+
   if (isDeployed()) {
     throw new Error(
       'The console email transport writes verification and password-reset links to stdout, ' +

@@ -15,6 +15,7 @@
  */
 
 import { AUTH_EVENTS, emitAuthEvent } from '@/lib/auth/events';
+import { remember } from '@/lib/auth/mailbox';
 import { Resend } from 'resend';
 
 import type { AuthConfig, ResendConfig } from '@/lib/auth/config';
@@ -136,7 +137,16 @@ function createResendTransport(config: ResendConfig): AuthEmailTransport {
  */
 export function createEmailTransport(config: AuthConfig): AuthEmailTransport {
   const deliver =
-    config.emailTransport === 'resend'
+    config.emailTransport === 'mailbox'
+      ? // ⚡ **The mailbox keeps it *and* prints it.** A developer who is
+        // watching the terminal should not have to learn a new place to look
+        // before the surface exists — and the console transport is unchanged,
+        // so nothing about what is written to stdout differs.
+        async (email: AuthEmail) => {
+          remember(email);
+          await consoleTransport(email);
+        }
+      : config.emailTransport === 'resend'
       ? createResendTransport(
           config.resend ??
             (() => {
