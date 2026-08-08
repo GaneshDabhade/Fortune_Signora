@@ -149,7 +149,12 @@ depends_on  = ["workflow.3"]
 
 [workflow.5]
 name        = "Password Reset"
-state       = "active"
+state       = "in_validation"
+# ⚡ 2026-08-08 — TASK-488 is IN VALIDATION, so the workflow left the lane with
+# it (§20e: "the lane's responsibility for this task has ended"). Workflow 8 is
+# `active`. ⚠️ Caught by state-check reporting TWO active — the third time a row
+# moved and its workflow did not, and the reason is always the same: the row is
+# updated where the work happens, the workflow where planning does.
 # ⚡ 2026-08-08 — Workflows 1-4 reached `on_main` at QE cycle 121. This is the
 # workflow implementation may build in now. TASK-488 is claimable.
 # ⚠️ Workflow 4 is FORGOT PASSWORD (asking for the link). Workflow 5 is
@@ -177,7 +182,21 @@ owner       = "Lane A"
 
 [workflow.7]
 name        = "Invitation Acceptance"
-state       = "sequenced"
+state       = "blocked"
+# 🔴 2026-08-08 — Lane A released TASK-489 as BLOCKED after building against it.
+#   BOTH approved screens need capabilities that do not exist:
+#     `13 Accept invitation` — its six facts sit inside a tenant the reader has
+#        not entered, and all four invitation routes are workspace-scoped and
+#        require membership or admin. C-245: an endpoint AND a disclosure ruling.
+#     `14 Invitation expired` — unreachable. The domain derives
+#        InvitationState.EXPIRED; there is no InvitationExpiredError, so an
+#        expired invitation and one that never existed arrive as the same
+#        `invitation_not_found`. B-214: one exception class, one map row — and
+#        it is 🟢 in Lane A's own module, so no row is needed.
+# ✅ The honest accept path already ships at /join/[workspaceId].
+# ⚠️ `blocked` is a state the twelve do not name. Recorded as a FINDING rather
+#   than forced into `sequenced`, which would say the queue is holding it when
+#   a capability is.
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["13 Accept invitation", "14 Invitation expired", "declined", "wrong account"]
 tasks       = ["TASK-489"]
@@ -186,7 +205,7 @@ depends_on  = ["workflow.5"]
 
 [workflow.8]
 name        = "Initial Onboarding"
-state       = "sequenced"
+state       = "active"
 # ✅ FULLY DECOMPOSED 2026-08-08 under D-182 §9, while Lane A implements
 # Workflow 3. It measured 9 of 22 preparation dimensions and was the cliff:
 # Workflows 4, 5 and 7 are 22/22, so the pipeline ran three deep and stopped.
