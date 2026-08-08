@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `c6e9278`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `2a35ac1`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `c6e9278`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `2a35ac1`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`c6e9278`** — the certified commit itself |
+| **`main`** | **`2a35ac1`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 125 promoted `TASK-498`** — **the three ruled controls land in the one file every workflow row correctly forbade** |
-| **Certification** | ✅ [`c6e9278c8cec`](certification/reports/c6e9278c8cec.md) · migration head **`0042`** · protocol **v2** · ⚡ profile **`documentation+frontend`** — **the first non-`platform` profile of the session** |
+| **Release candidate** | **None pinned.** ⛔ **Cycle 126 corrected the dashboard's own blocking-defect line** — [B-151](docs/BUGS.md), **false for eleven cycles** |
+| **Certification** | ✅ [`2a35ac1b74d8`](certification/reports/2a35ac1b74d8.md) · migration head **`0042`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | 🔴 **Two, and this line said `None` for eleven cycles.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ✅ ⚡ **Three controls the screens were built without now work** — breach-corpus checking, rate limiting reachable outside production, and the 6-digit code |
+| **Customer value this cycle** | ⚡ **A developer mailbox — its store, its transport and its refusal** (`TASK-474` milestone 1) |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1709 frontend tests** *(+15)* across **74 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **193s** *(`Build 55s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1717 frontend tests** *(+8)* across **75 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **303s** *(`Build 114s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,67 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 125
+## 1d · Release summary — 2026-08-08, cycle 126
+
+**Derived from the promoted commit `2a35ac1`.** **Eighty-one promotions.** ⛔ **The dashboard's single most consequential line was false for eleven cycles, and no gate could have told anybody.**
+
+### 🔴 [B-151](docs/BUGS.md) — "Blocking Quality Defects: None" was typed, not derived
+
+| Where | What it said |
+|---|---|
+| `PROJECT_STATUS.md` | ✅ **None** |
+| [`BUGS.md`](docs/BUGS.md) | 🔴 **[B-209](docs/BUGS.md)** eleven Playwright journeys failing, since **2026-08-06** · 🟠 **[B-211](docs/BUGS.md)** `ruff` red tree-wide with no gate invoking it, since **2026-08-07** |
+
+⛔ **Both are marked Blocking Quality Defects. QE wrote `None` in every Closeout across that span.**
+
+### ⛔ The mechanism is [B-150](docs/BUGS.md)'s, one file over
+
+**QE re-measures the certification figures every cycle and transcribed everything around them.** ⚡ **Cycle 118 caught four stale figures exactly this way and fixed them** — **and did not ask what else on the page was typed rather than read.**
+
+**Second instance, same period:** QE's poll report closed with a fixed six-row findings list carried from the prompt. ⚡ **The register holds 41 rows not closed, 21 of them QE's.**
+
+> ⛔ **§20d states the rule and QE quotes it in its own Closeouts** — *"repository metrics are measured, never transcribed"*. **QE applied it to the numbers and not to the sentences.**
+
+### ⚠️ Why eleven cycles of gates never caught it
+
+**`state-check` does read the register's blocking rule**, and reported *"No unresolved 🔴 across 122 bug row(s) — promotion is not blocked"* on every run. ⚡ **That is a different question.**
+
+| Instrument | Question it answers |
+|---|---|
+| `state-check` | **Is a 🔴 unresolved by my own parse?** |
+| The dashboard line | **What does the register currently hold?** |
+
+⛔ **Nothing was lying and nothing was broken. Two true instruments answered two questions, and the sentence between them was written by hand.**
+
+> ⚡ **It was found by being asked a direct question and measuring instead of reciting.** **That is not a gate, and QE is not proposing one** — the fix is that the line is derived from the register at Closeout, which is what §20d already required.
+
+### ✅ The correction, measured
+
+**B-211 re-measured before the row was written: `232 errors, exit 1`.** The row said 238 on 2026-08-07 — **smaller, still red.**
+
+⛔ **B-209 is not re-measured and QE does not claim it.** **`make e2e` has no launchable environment for QE** ([B-149](docs/BUGS.md)), so **Lane A's measurement is carried as Lane A's.**
+
+### ✅ Also promoted
+
+| | |
+|---|---|
+| ⚡ **`TASK-474` milestone 1** *(Lane A)* | **The developer mailbox — its store, its transport and its refusal.** `lib/auth/mailbox.ts`, +8 tests |
+| ✅ **[B-213](docs/BUGS.md) answered** *(QE)* | **`VERIFIED — NOT A DEFECT`.** The `BUGS.md` marker is a fenced quotation inside [B-102](docs/BUGS.md)'s own row, and `state-check` already reads that file **and is fence-aware** |
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1717 frontend** *(+8)* · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **131 runs recorded, 123 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 303s |
+| **Dependency** | ✅ Nothing held |
+| **Customer Value** | ⚡ **A developer can be shown the emails the product sends** — the store half |
+| **Process** | 🔴 **Three QE self-defects in four cycles** — [B-411](docs/BUGS.md)'s inference, [B-150](docs/BUGS.md)'s staging, [B-151](docs/BUGS.md)'s transcription. ⚡ **All three are the same root: acting on a belief where a measurement was one command away** |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 125
 
 **Derived from the promoted commit `c6e9278`.** **Eighty promotions.** ⚡ **Three controls that four workflows each shipped without, landing in the one file every one of those rows correctly forbade.**
 
