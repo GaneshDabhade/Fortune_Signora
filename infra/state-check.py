@@ -886,29 +886,56 @@ def _adoption_findings() -> list[str]:
     return out
 
 
+#: **The claimable-depth floor — D-183, product owner, 2026-08-08.**
+#:
+#: ⚠️ **This replaces *exactly one claimable*, and it amends [D-163](../docs/DECISION_REGISTER.md)
+#: rather than reinterpreting it.** D-163's reason was sound and is unchanged:
+#: *"more than one lets the lane choose, and choosing is prioritisation."*
+#:
+#: ⛔ **What it got wrong was the remedy.** A depth of one means the lane idles
+#: the instant its single row is blocked — and rows are blocked by **discovery**,
+#: not by prediction. `C-241` was found while building screen 07, not while
+#: planning it, and no amount of preparation would have surfaced it earlier.
+#:
+#: ✅ **The reconciliation is depth WITHOUT choice**: several claimable rows, in a
+#: **strict published order**, and the lane takes the topmost one it can start.
+#: Product Office still owns the order; the lane still never picks. **Descending
+#: past a row is permitted only when that row is genuinely blocked, and the
+#: reason is recorded** — which is the existing skip rule (§20e, *claim from the
+#: top*), not a new licence.
+_DEPTH_FLOOR = 3
+
+
+def _ordered(lane: str) -> bool:
+    """Does this lane's queue put its claimable rows in a stated order?
+
+    ⛔ **Depth is only safe when the order is explicit.** Without it, several
+    claimable rows is exactly the condition [D-163](../docs/DECISION_REGISTER.md)
+    refused — the lane choosing, and choosing being prioritisation.
+    """
+    path = REPO_ROOT / "docs" / "coordination" / "queues" / f"{lane.lower().replace('_', '-')}.toml"
+    if not path.exists():
+        return False
+    queue = tomllib.loads(path.read_text())
+    return bool(queue.get("current")) and bool(queue.get("next"))
+
+
 def _pipeline_findings() -> list[str]:
-    """**Exactly one claimable row for the implementing lane, and exactly one
-    active workflow** — [D-163](../docs/DECISION_REGISTER.md).
+    """**Several claimable rows for the implementing lane, in a stated order — and
+    exactly one `active` workflow.**
 
-    ⚡ **The product owner's model in one sentence**: *"keep the implementation
-    pipeline continuously populated and correctly sequenced"*, with **many
-    workflows planned and normally one active**, and **Lane A never waiting on
-    an instruction to start the next task once the review gate is satisfied.**
-
-    **Two ways that fails, and they are opposite:**
+    ⚠️ **Amended 2026-08-08 by [D-183](../docs/DECISION_REGISTER.md), the product
+    owner, which overrules the *exactly one claimable* rule this function used to
+    enforce.** ⛔ **The old docstring described a rule the code no longer applies,
+    and leaving it would be the [§2](../CLAUDE.md) defect this file exists to
+    report: the repository asserting something untrue of itself.**
 
     ⛔ **Zero claimable** — the lane idles and only its own report reveals it.
-    **[D-155](../docs/DECISION_REGISTER.md) exists because that happened for
-    six consecutive polls.**
-
-    ⛔ **More than one claimable** — the lane may pick, and picking is
-    prioritisation. **[D-158](../docs/DECISION_REGISTER.md) §2 found exactly
-    this: the generator offered a Workflow 3 enabler while two Workflow 1 rows
-    waited, because it sorts by leverage rather than by journey.**
-
-    ⚠️ **Reported, never repaired.** A second claimable row might be a
-    sequencing error *or* a genuinely parallel slice inside one workflow, and
-    choosing is a governance decision (§20e).
+    ⚠️ **Below `_DEPTH_FLOOR`** — the lane idles the moment one row is blocked,
+    and rows are blocked by *discovery* (`C-241`), never by prediction.
+    ⛔ **Depth with no published order** — the lane may pick, and picking is
+    prioritisation ([§20e](../CLAUDE.md)). **This is [D-163](../docs/DECISION_REGISTER.md)'s
+    concern, preserved: what changed is the remedy, not the reason.**
     """
     out: list[str] = []
     source = REPO_ROOT / "docs" / "coordination" / "coordination.toml"
@@ -961,11 +988,20 @@ def _pipeline_findings() -> list[str]:
                 "**Keeping the pipeline populated is Product Office's responsibility** "
                 "(D-163) — the lane cannot fix this and should not have to report it."
             )
-        elif claimable > 1:
+        elif claimable < _DEPTH_FLOOR:
             out.append(
-                f"{lane} has {claimable} claimable rows and should normally have one. "
-                "**More than one lets the lane choose, and choosing is prioritisation** "
-                "(§20e). Sequence all but the active journey's next row."
+                f"{lane} has {claimable} claimable row(s) and the floor is {_DEPTH_FLOOR}. "
+                "**A lane with one claimable row idles the moment that row is blocked** — "
+                "and a row is blocked by discovery, not by prediction (C-241 was found "
+                "while building, not while planning). **Release more, in a stated order** "
+                "(D-183)."
+            )
+        elif not _ordered(lane):
+            out.append(
+                f"{lane} has {claimable} claimable rows and its queue does not put them in "
+                "a strict order. **Depth without an order is a choice, and choosing is "
+                "prioritisation** (§20e, D-163's actual concern). "
+                "**`current`, `next` and `next_after_that` must name them** (D-183)."
             )
     return out
 

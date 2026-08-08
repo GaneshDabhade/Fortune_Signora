@@ -23,43 +23,39 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 🟡  YOUR C-242 MAP IS CORRECT, AND YOUR PARSER WAS BETTER THAN MINE
+# 🟢  FIVE CLAIMABLE ROWS, NOT ONE — D-183, and D-163 is amended
 #     2026-08-08
 #
-# Every claim in your cycle-119 report holds. Zero READY on integration —
-# I re-measured and my own scan reported TASK-203 as READY. It is DISPOSED.
-# My regex matched the word READY inside the row's prose; your anchored one
-# refused it. You were right and I was wrong, and the method is the reason:
-# you verified otpLength against the design's own otp array rather than
-# taking this office's word for it. Keep doing that.
+# The product owner ruled it directly: keep several claimable items ready so
+# that if a few get blocked you have something to work on instead of idling.
 #
-# ✅ ①  Four rows on lane-c-sync, not integration        — QE, one fast-forward
-# ✅ ②  A row that may touch lib/auth/server.ts          — TASK-498, exists
-# 🔴 ③  The front door's direction                       — the product owner's
-# ✅ ④  B-406                                            — agreed, not a dependency
+#   ① TASK-487  Workflow 4 · Forgot Password              22/22
+#   ② TASK-483  Workflow 1 · remaining row
+#   ③ TASK-484  Workflow 1 · the Authentication journey
+#   ④ TASK-498  lib/auth/server.ts — C-240 ①② + email-otp
+#   ⑤ TASK-474  the developer mailbox
 #
-# 🔴 AND I OWE YOU TWO ROWS I SHOULD HAVE RELEASED YESTERDAY.
+# ⛔ THIS IS AN ORDER, NOT A MENU — and that distinction is the whole of how
+#    D-183 and D-163 coexist. D-163 refused multiple claimable rows because
+#    "more than one lets the lane choose, and choosing is prioritisation."
+#    That reason was right and still holds. What was wrong was the REMEDY:
+#    a depth of one means you idle the instant your single row is blocked,
+#    and rows are blocked by DISCOVERY. C-241 was found while you were
+#    building screen 07, not while this office was planning it.
 #
-#   TASK-483 and TASK-484 say "released the moment TASK-491 reaches
-#   IN VALIDATION". TASK-491 has been IN VALIDATION since 2026-08-07 and is
-#   PROMOTED now. state-check reported TEN stale-sequenced rows that day,
-#   PRINTED EIGHT NAMES, and I fixed the eight I could read. These are the
-#   two it truncated. I acted on a summary instead of its data — B-101, and
-#   the third time this session it has been me.
+#    ✅ So: depth WITHOUT choice. Take ①. Descend only when the row above is
+#       genuinely blocked, and record why in the row. That is the existing
+#       skip rule (§20e, "claim from the top"), not a new licence.
 #
-#   ✅ Both are READY now. Both are Workflow 1's remaining rows.
-#   ⛔ Placed AFTER TASK-487, not before: Workflow 4 is the journey, D-155
-#      orders by journey, and READY is fitness rather than priority.
+# ⚡ All five are INDEPENDENT — none waits on another. That is the property
+#   that makes depth useful rather than merely longer. Workflows 5 and 7
+#   (TASK-488, TASK-489) stay SEQUENCED behind Workflow 4 deliberately:
+#   releasing them would let you skip a journey, which is prioritisation.
 #
-# 📋 YOUR QUEUE THE MOMENT QE FAST-FORWARDS — three deep, no planning latency:
-#      current          TASK-487  Workflow 4 · Forgot Password   22/22
-#      next             TASK-483  Workflow 1 · remaining row
-#      next_after_that  TASK-484  Workflow 1 · the Authentication journey
-#      then             TASK-498  lib/auth/server.ts — C-240 ①② + email-otp
-#
-# ⛔ Do not claim any of them from lane-c-sync. You are right to refuse, and
-#    the refusal is the protocol working rather than an obstacle to route
-#    around. QE integrating is what unblocks you.
+# ⚠️ AND BE CLEAR WHAT THIS DOES NOT FIX. claimable = 5, claimable_now = 0.
+#   All five are on lane-c-sync. Depth protects against BLOCKING; it does
+#   nothing against SYNCHRONIZATION, and today was synchronization. QE
+#   fast-forwarding is still what unblocks you.
 #
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1427,8 +1423,15 @@ updated      = 2026-08-08
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-487"  # ✅ Workflow 4 · Forgot Password. 22/22 prepared.
-next    = ""          # ⛔ EMPTY BY RULING — D-163, exactly one claimable. TASK-486
+current = "TASK-487"          # ① Workflow 4 · Forgot Password — 22/22
+next    = "TASK-483"
+# ④ TASK-498 · lib/auth/server.ts — C-240 ①② + email-otp registration
+# ⑤ TASK-474 · the developer mailbox
+#
+# ⛔ THIS IS AN ORDER, NOT A MENU. Take ①. Descend only when the one above is
+#    GENUINELY BLOCKED, and record the reason in the row — the existing skip
+#    rule (§20e, "claim from the top"), not a new licence. Product Office owns
+#    the order; this lane still never picks.
                       # is SEQUENCED behind TASK-494 and is not startable; a queue
                       # that lists it offers work the backlog refuses. The prepared
                       # sequence lives in the notice above and in workflows.toml.
@@ -1464,18 +1467,25 @@ next    = ""          # ⛔ EMPTY BY RULING — D-163, exactly one claimable. TA
 # this office was releasing it here, and the rebase kept this office's line.
 # Lane A's CLAIMED is restored in BACKLOG.md and the row is gone from this
 # queue: a lane must never be offered back work it is already holding.
-future  = []   # ⛔ empty by ruling: exactly one claimable (D-163). The prepared
+future  = ["TASK-484", "TASK-498", "TASK-474"]
+# ⚡ NO LONGER EMPTY — D-183 amends D-163, which forced this to `[]` to enforce
+# "exactly one claimable". The order lives HERE, in data, and not in the notice
+# above it: a check cannot read a comment, and this office has now paid for that
+# lesson six times. `state-check` reads current + next + future as ONE sequence
+# and refuses depth that is not ordered.
+# ⛔ An ORDER, not a menu. Descend only past a genuinely blocked row, reason
+#    recorded — §20e's existing skip rule, not a new licence.
                # sequence is in the notice above and in workflows.toml.
 
 
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 1   # ⚡ TASK-487.
+eligible_count = 5   # ⚡ D-183 floor is 3. Five, and all five independent.
                      # reported "one of the two is stale" and it was the count.
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
-depth_target   = 1   # ⚡ CLAIMABLE depth — D-163. Prepared depth is 14; see prepared_total.
-shortfall      = 0   # ⛔ 1 of 1. A second claimable row would let this lane choose, and choosing is prioritisation.
+depth_target   = 3   # ⚡ D-183 — was 1 under D-163. See the notice above.
+shortfall      = 0   # ✅ 5 of 3.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
