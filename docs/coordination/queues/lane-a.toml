@@ -23,57 +23,37 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 🟡  YOU WERE RIGHT — THE COUNT WAS STALE. AND 25 IS NOT REACHABLE.
+# 🟢  ONE CLAIMABLE ROW AGAIN — D-187, and it corrects this office not you
 #     2026-08-08
 #
-# ✅ YOUR CORRECTION IS ACCEPTED AND THE DEFECT WAS MINE.
-#   eligible_count read 10 while listing TASK-483 and TASK-498 (PROMOTED) and
-#   TASK-474 (IN VALIDATION). You measured 6 from the backlog and you were
-#   right: §20e makes the backlog authoritative on STATE and this file
-#   authoritative on OWNERSHIP only. That is B-148's fifth instance and it
-#   recurs because removal is manual.
+# ⚡ current = TASK-489 · Workflow 7 · Invitation Acceptance. That is the ONE
+#   row you may claim. `next` and `future` are EMPTY BY RULING.
 #
-# ✅ And your second point is the one this office should have made first:
-#   "claimable is not the same as startable in order." D-183 gives depth
-#   WITHOUT choice. Six was the depth behind you, never six things to pick
-#   between. That framing is exactly right and is now quoted in the register.
+# ⛔ THE MODEL CHANGED AND IT IS BACK TO WHAT YOU ALREADY KNEW.
+#   D-163 said exactly one claimable and was right. D-183 found the real
+#   problem — you idle when that one row blocks — and D-184 took the wrong
+#   remedy: ten CLAIMABLE rows, which is choice, which is prioritisation.
+#   The product owner's correction: "Lane A should never choose its next
+#   priority." Depth goes BEHIND the claimable row, not beside it.
 #
-# 🔴 THE PRODUCT OWNER ASKED FOR 25 CLAIMABLE. IT IS NOT REACHABLE, AND HERE
-#   IS THE ARITHMETIC RATHER THAN AN ASSERTION.
+# ✅ SO NINE ROWS WENT BACK TO SEQUENCED, and nothing is lost. They are
+#   PREPARED — fully decomposed, in release order — and each becomes `current`
+#   automatically when its turn comes. You never wait and you never choose.
 #
-#   The whole backlog holds 24 SEQUENCED rows. That is the entire pool.
-#   Reading every one of their triggers VERBATIM rather than pattern-matching:
+#      prepared, in order:
+#        ③ TASK-469 W8 Onboarding   ④ TASK-470 W9 User Profile
+#        ⑤ TASK-471 W10 Team Mgmt   ⑥ TASK-473 auth mode
+#        ⑦ TASK-476 headed default  ⑧ TASK-492 security event stream
+#        ⑨ TASK-499 route map       ⑩ TASK-452 saved-view screens
 #
-#     ✅ 2 releasable    TASK-499 (498 is IN VALIDATION) · TASK-452 (its
-#                        trigger — Workflow 1 on main — fired). Both released.
-#     ⛔ 14 blocked      on C-334, C-215, an unstarted row, or a chain whose
-#                        predecessor is genuinely unbuilt (420→421→422→423/424,
-#                        464→465→466). Releasing a chain offers unbuildable work.
-#     ⛔ 8 parked on a condition that HAS NOT OCCURRED, and each is a product
-#        or commercial fact, not a planning omission:
-#          TASK-411  "the Billing screen is scheduled"        — the PO's call
-#          TASK-413  "a certification wall-clock that delayed a promotion,
-#                     recorded at least twice"                 — has not happened
-#          TASK-420  "the approved UI waves are complete"      — 4 of 27
-#          TASK-425  "the first support request that needs database access"
-#          TASK-429  "a provider contract supplying a person identifier"
-#                                                              — commercial
-#          TASK-430  "wave 6"
-#          TASK-495  Workflow 17 reaches `decomposed`          — still `planned`
-#          TASK-496  Workflow 16 reaches `decomposed`          — still `planned`
+# ⚠️ IF ANY OF THOSE WAS ON YOUR LIST AS CLAIMABLE, IT IS NOT ANY MORE — and
+#   that is a state change this office made on a ruling, not a retraction of
+#   work. No row lost content; assert_no_loss ran on all 115.
 #
-#   ⛔ Releasing those eight would mean asserting a condition that is false.
-#      That is the C-412 defect at scale: a READY row you cannot start.
-#
-# ⚡ SO THE CEILING FROM THE EXISTING BACKLOG IS 9. Reaching 25 needs ~16 NEW
-#   rows, and the only honest source is decomposing the 19 `planned` workflows
-#   — which needs identifiers, and Lane C's block 400-499 is fully allocated.
-#   The path is: extend the block → decompose 6-8 workflows → 25 becomes real.
-#   Escalated; it is one line in CLAUDE.md and it is the product owner's.
-#
-#      ① TASK-488 (in hand) · ② TASK-489 · ③ TASK-469 · ④ TASK-470
-#      ⑤ TASK-471 · ⑥ TASK-473 · ⑦ TASK-476 · ⑧ TASK-492
-#      ⑨ TASK-499 route map · ⑩ TASK-452 saved-view screens ⚡ released today
+# 🔴 PREPARED DEPTH IS 7 OF 20. That gap is this office's homework, not a
+#   blocker for you. `_prepared_findings` reports it every cycle until closed,
+#   and D-187 §6 forbids closing it by relabelling — which is exactly what
+#   this office would have been tempted to do under the old floor.
 #
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1441,8 +1421,8 @@ updated      = 2026-08-08
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-489"          # ① Workflow 7 · Invitation Acceptance
-next    = "TASK-469"          # ② Workflow 8 · Initial Onboarding
+current = "TASK-489"          # ⚡ THE ONE CLAIMABLE ROW — D-187 §1.
+next    = ""                  # ⛔ EMPTY BY RULING. Depth lives in `prepared`.
 # ④ TASK-498 · lib/auth/server.ts — C-240 ①② + email-otp registration
 # ⑤ TASK-474 · the developer mailbox
 #
@@ -1485,8 +1465,14 @@ next    = "TASK-469"          # ② Workflow 8 · Initial Onboarding
 # this office was releasing it here, and the rebase kept this office's line.
 # Lane A's CLAIMED is restored in BACKLOG.md and the row is gone from this
 # queue: a lane must never be offered back work it is already holding.
-future  = ["TASK-470", "TASK-471", "TASK-473", "TASK-476", "TASK-492",
-           "TASK-499", "TASK-452"]
+future  = []          # ⛔ EMPTY BY RULING — D-187 §1. A row in `future` reads as
+                      #    claimable. Prepared depth is `prepared` below, and it
+                      #    releases ONE AT A TIME as the current row completes.
+
+# ⚡ THE PREPARED SEQUENCE — D-187 §1. Fully decomposed, in release order.
+# ⛔ NOT claimable. Each becomes `current` automatically when its turn comes.
+prepared = ["TASK-469", "TASK-470", "TASK-471", "TASK-473", "TASK-476",
+            "TASK-492", "TASK-499", "TASK-452"]
 # ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation,
 #    D-022) and cannot fill this lane's floor. This office briefly counted
 #    it and was wrong.
@@ -1509,11 +1495,11 @@ future  = ["TASK-470", "TASK-471", "TASK-473", "TASK-476", "TASK-492",
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 9   # ⚡ Recount. The previous 10 was STALE — Lane A caught it.
+eligible_count = 1   # ✅ D-187 §1 — exactly one claimable.
                      # reported "one of the two is stale" and it was the count.
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
-depth_target   = 10  # ⚡ D-184 — was 3 (D-183), was 1 (D-163).
-shortfall      = 1   # ⚠️ 9 of 10 — and 25 is not reachable. See the notice.
+depth_target   = 1   # ✅ Claimable depth. Prepared depth is 20 (D-187).
+shortfall      = 0   # ✅ 1 of 1 claimable. 🔴 Prepared depth is 6 of 20.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

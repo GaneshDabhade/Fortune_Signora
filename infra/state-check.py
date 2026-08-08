@@ -897,9 +897,20 @@ def _adoption_findings() -> list[str]:
 #: not by prediction. `C-241` was found while building screen 07, not while
 #: planning it, and no amount of preparation would have surfaced it earlier.
 #:
-#: ⚡ **RAISED TO 10 on 2026-08-08 by [D-184](../docs/DECISION_REGISTER.md)**, the
-#: product owner: *"there should always be a minimum of 10 claimable items
-#: present for Lane A every time."*
+#: ⚠️ **RETURNED TO 1 on 2026-08-08 by [D-187](../docs/DECISION_REGISTER.md)**,
+#: the product owner, correcting both [D-183](../docs/DECISION_REGISTER.md) and
+#: [D-184](../docs/DECISION_REGISTER.md) — **and correcting this office, which
+#: had proposed depth as *claimable* rows.**
+#:
+#: > ***"If Lane A suddenly has 20 claimable tasks, it can choose among them,
+#: > which weakens Product Office's prioritization."***
+#:
+#: ✅ **[D-163](../docs/DECISION_REGISTER.md)'s original rule was right and is
+#: restored: exactly one claimable.** ⚡ **What D-183 correctly identified was
+#: that a lane must not idle when that row blocks — and the answer is depth
+#: BEHIND it, as `_PREPARED_FLOOR`, not depth BESIDE it as choice.**
+#: ⛔ **This office spent two rulings arriving at a worse version of a rule it
+#: already had.**
 #:
 #: ⛔ **The floor is a floor on PREPARED rows, and that is not a formality.**
 #: **A `READY` row a lane cannot start is the [C-412](../docs/LANE_COORDINATION.md)
@@ -914,7 +925,16 @@ def _adoption_findings() -> list[str]:
 #: past a row is permitted only when that row is genuinely blocked, and the
 #: reason is recorded** — which is the existing skip rule (§20e, *claim from the
 #: top*), not a new licence.
-_DEPTH_FLOOR = 10
+_DEPTH_FLOOR = 1
+
+#: **Prepared rows required BEHIND the one claimable row — D-187.**
+#:
+#: ⚡ **A row is *prepared* when a lane could start it the moment it is released:
+#: 17+ cells carrying a Definition of Done, testing metadata and a Change
+#: Budget.** ⛔ **Prepared is NOT releasable** — a row parked behind a genuine
+#: unmet trigger can be fully prepared, and preparing it asserts nothing false.
+#: **That distinction is what makes 20 reachable without inventing work.**
+_PREPARED_FLOOR = 20
 
 
 def _ordered(lane: str) -> bool:
@@ -928,7 +948,57 @@ def _ordered(lane: str) -> bool:
     if not path.exists():
         return False
     queue = tomllib.loads(path.read_text())
-    return bool(queue.get("current")) and bool(queue.get("next"))
+    # ⚡ D-187: with exactly one claimable row there is nothing to order.
+    # The ordering that matters now lives in `prepared`, which releases one at
+    # a time — so `current` alone is a complete answer.
+    return bool(queue.get("current"))
+
+
+def _prepared_findings() -> list[str]:
+    """Are there twenty PREPARED rows behind the one claimable row? — **D-187.**
+
+    ⚡ **A row is prepared when a lane could start it the moment it is released**:
+    17+ cells carrying a Definition of Done, testing metadata and a Change
+    Budget. ⛔ **Prepared is not the same as releasable** — a row parked behind a
+    genuine unmet trigger can be fully prepared, and preparing it asserts nothing
+    false. **That distinction is what makes twenty reachable without inventing
+    work**, and it is the one this office missed when it reported the ceiling as
+    nine.
+
+    ⛔ **The floor must never be met by relabelling** ([D-187](../docs/DECISION_REGISTER.md) §6).
+    **The cell test is deliberately mechanical for that reason**: a title cannot
+    satisfy it, and neither can a state change.
+    """
+    out: list[str] = []
+    path = REPO_ROOT / "docs" / "BACKLOG.md"
+    if not path.exists():
+        return out
+    lines = path.read_text().split("\n")
+    heads = [(i, l) for i, l in enumerate(lines) if l.startswith("### TASK-")]
+    departed = {"PROMOTED", "DONE", "DISPOSED", "VERIFIED", "CERTIFIED", "IN VALIDATION"}
+    required = ("Definition of Done", "Testing metadata", "Change Budget")
+
+    prepared = 0
+    for n, (i, _) in enumerate(heads):
+        end = heads[n + 1][0] if n + 1 < len(heads) else len(lines)
+        body = lines[i:end]
+        status = next((x for x in body if x.startswith("| **Status**")), "")
+        state = re.search(r"`([A-Z ]+)`", status.split("*(Was:")[0])
+        if not state or state.group(1) in departed:
+            continue
+        text = "\n".join(body)
+        if len([x for x in body if x.startswith("|")]) >= 17 and all(k in text for k in required):
+            prepared += 1
+
+    if prepared < _PREPARED_FLOOR:
+        out.append(
+            f"{prepared} prepared row(s) against a floor of {_PREPARED_FLOOR} "
+            f"(D-187). **A prepared row carries a Definition of Done, testing "
+            f"metadata and a Change Budget — a lane can start it the moment it "
+            f"is released.** ⛔ **Close the gap by decomposing future workflows, "
+            f"never by relabelling** (D-187 §6)."
+        )
+    return out
 
 
 def _item_owner_findings() -> list[str]:
@@ -1110,6 +1180,14 @@ def _pipeline_findings() -> list[str]:
                 "**Keeping the pipeline populated is Product Office's responsibility** "
                 "(D-163) — the lane cannot fix this and should not have to report it."
             )
+        elif claimable > _DEPTH_FLOOR:
+            out.append(
+                f"{lane} has {claimable} claimable rows and should have exactly "
+                f"{_DEPTH_FLOOR}. **More than one lets the lane choose, and choosing "
+                f"is prioritisation** (§20e, D-163 — restored by D-187). "
+                f"**Depth belongs BEHIND the claimable row as prepared work, not "
+                f"beside it as choice.**"
+            )
         elif claimable < _DEPTH_FLOOR:
             out.append(
                 f"{lane} has {claimable} claimable row(s) and the floor is {_DEPTH_FLOOR}. "
@@ -1118,7 +1196,7 @@ def _pipeline_findings() -> list[str]:
                 "while building, not while planning). **Release more, in a stated order** "
                 "(D-183)."
             )
-        elif not _ordered(lane):
+        elif claimable > 1 and not _ordered(lane):
             out.append(
                 f"{lane} has {claimable} claimable rows and its queue does not put them in "
                 "a strict order. **Depth without an order is a choice, and choosing is "
@@ -1873,6 +1951,7 @@ def main() -> int:
     findings.extend(_duplicate_state_findings(backlog))
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
+    findings.extend(_prepared_findings())
     findings.extend(_item_owner_findings())
     findings.extend(_structural_findings())
     findings.extend(_pipeline_findings())

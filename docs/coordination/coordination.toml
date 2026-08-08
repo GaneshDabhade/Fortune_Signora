@@ -13,21 +13,21 @@ generated_from = "d785327"
 task_count     = 102
 
 [lane.Lane_A]
-current            = "TASK-476"
-next               = "TASK-469"
-next_after_that    = "TASK-470"
+current            = "TASK-489"
+next               = ""
+next_after_that    = ""
 assigned_total     = 85
-claimable          = 9
-claimable_now      = 6
-awaiting_sync      = 3
+claimable          = 1
+claimable_now      = 1
+awaiting_sync      = 0
 in_flight          = 55
 actionable         = 6
 awaiting_qe_transition = 0
 blocked_on_integration = 1
 supply_state       = "working"
-blocked            = 21
+blocked            = 29
 lane_utilization   = 11.0
-idle_prediction_days   = 1.3
+idle_prediction_days   = 0.1
 dependency_wait_days   = 1.1
 blocked_duration_days  = 1.1
 critical_path_max      = 3
@@ -711,18 +711,18 @@ on_integration = true
 [[task]]
 id            = "TASK-452"
 title         = "Saved View — the screens that use it"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
+waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-453"
@@ -879,7 +879,7 @@ unblocks       = ["TASK-465"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 1
-estimated_ready = "— behind [TASK-476](#task-476--headed-becomes-the-default-a-lane-revie"
+estimated_ready = "when TASK-476 complete"
 waiting_for    = "— behind [TASK-476](#task-476--headed-becomes-the-default-a-lane-reviews-in-and-the-rule-stops-being-untrue), Lane C 2026-08-08.** ⚠️ **The trigger it"
 blocked_days   = 0.0
 on_integration = true
@@ -951,50 +951,50 @@ on_integration = true
 [[task]]
 id            = "TASK-469"
 title         = "Workflow 8 — Initial Onboarding, to the approved design"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
+waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-470"
 title         = "Workflow 9 — User Profile, to the approved design"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
+waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-471"
 title         = "Workflow 10 — Team Management, to the approved design"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
+waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-472"
@@ -1015,18 +1015,18 @@ on_integration = true
 [[task]]
 id            = "TASK-473"
 title         = "A developer can always tell which authentication mode is running"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
+waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-474"
@@ -1063,18 +1063,18 @@ on_integration = true
 [[task]]
 id            = "TASK-476"
 title         = "Headed becomes the default a lane reviews in, and the rule stops being untrue"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-464"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
+waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-478"
@@ -1271,18 +1271,18 @@ on_integration = true
 [[task]]
 id            = "TASK-492"
 title         = "The security event stream — one append-only record every module writes to"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-493"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
+waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-493"
@@ -1295,7 +1295,7 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "— after [TASK-492](#task-492--the-security-event-stream--one-append-on"
+estimated_ready = "when TASK-492 complete"
 waiting_for    = "— after [TASK-492](#task-492--the-security-event-stream--one-append-only-record-every-module-writes-to), Lane C 2026-08-08**"
 blocked_days   = 0.0
 on_integration = true
@@ -1351,18 +1351,18 @@ on_integration = true
 [[task]]
 id            = "TASK-499"
 title         = "The route map becomes the product's, not the framework's"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
+waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-903"
