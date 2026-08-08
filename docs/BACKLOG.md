@@ -742,18 +742,35 @@
 | **Dependency** | 🔴 [C-421](LANE_COORDINATION.md) · **and it is [TASK-469](#task-469--onboarding-the-guided-first-run)'s predecessor** |
 | ⚡ **Playwright journey** | **A customer creates a workspace and lands inside it** |
 
-### TASK-469 · Onboarding — the guided first run
+### TASK-469 · Workflow 8 — Initial Onboarding, to the approved design
 
 | | |
 |---|---|
-| **Approved design** | **Platform foundation module 2 — Onboarding**: *6 steps, one required · "asks for four and infers the rest"* |
-| **Module** | **`product_surface` — Lane A** |
-| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-468](#task-468--workspace-setup--replaced-not-refined)**. **A first run that cannot create a workspace is not a first run** ⛔ **AND behind [TASK-490](#task-490--the-design-foundation--every-screen-inherits-the-finalized-visual-language-or-none-does), 2026-08-07 — [D-162](DECISION_REGISTER.md): *"No customer-visible workflow should proceed on a legacy visual foundation. TASK-490 becomes the prerequisite for the remainder of the UI migration."*** ⚡ **A customer-visible row built before the palette moves is built twice** |
-| ⚡ **Genuinely not started** | **No onboarding route exists anywhere in `frontend/app/`.** **This is the one auth-adjacent screen that is new work rather than legacy** |
-| ✅ **Reusable today** | **`POST /workspaces`** · ⚡ **`ProviderCapability.COMPANY_ENRICHMENT`** — [418](architecture/418-platform-foundation-assessment.md): *"infers the rest from the email domain, the enrichment record behind it"* |
-| ⛔ **Absent** | **Onboarding state · step progress · inferred-value marking · goals→features** |
-| ⚠️ **The rule it must not break** | **[C-007](LANE_COORDINATION.md) — the guided first run was raised as a two-lane build** · **[C-017](LANE_COORDINATION.md) — the onboarding honesty principle has no permanent home**, and this is the first flow that would breach it |
-| ⚡ **Playwright journey** | ⚡ **The one that matters most: a person signs up and reaches their first insight.** **The whole customer journey, end to end** |
+| ⚡ **Workflow 8 in [`workflows.toml`](coordination/workflows.toml)** | **Decomposed 2026-08-08 under [D-182](DECISION_REGISTER.md) §9, *while* Lane A implements Workflow 3.** ⛔ **It was the cliff: Workflows 4, 5 and 7 are `22/22` and this one measured `9/22`, so the pipeline was three deep and then stopped** |
+| **Approved screens** | **`01 Welcome` · `02 Product introduction` · `04 Company` · `05 You` · `06 Goals` · `07 Connect & AI personalisation` · `08 Skip, resume and the three interruption states`** |
+| 🔴 **Screen `03` is NOT this row's** | ⛔ **`03 Workspace creation` is Workflow 6 and belongs to [TASK-468](#task-468--workspace-setup--replaced-not-refined), which Lane A holds `CLAIMED`.** ⚡ **The design places it inside the onboarding flow as *"the only required step"*, and that is a composition, not a second implementation.** **This row *routes into* it and must not rebuild it** — ⚠️ **named here rather than discovered when two lanes have built one screen** |
+| **Module** | **`product_surface`** — assignee joined from [`modules.toml`](coordination/modules.toml), never stored here ([C-213](LANE_COORDINATION.md)) |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-489](#task-489--workflow-7--invitation-acceptance-to-the-approved-design), Lane C 2026-08-08.** ⚡ **Releases on TASK-489's `IN VALIDATION`, by the one-trigger release rule — no QE wait at the boundary.** ⛔ **AND it cannot complete before [TASK-468](#task-468--workspace-setup--replaced-not-refined), because screen `03` is that row's** |
+| ⚡ **Milestone 1 — the guided run** | **`01` welcome · `02` three skippable panels that never block · `04` four pre-filled company facts, confirm or correct · `05` role and team size, ⚡ *validation on blur, never per keystroke* · `06` up to three goals, and the feature set the design says follows from them** |
+| ⚡ **Milestone 2 — consent and the interruptions** | **`07` connect and AI personalisation — ⛔ *consent is explicit, never inferred* · `08` the skip confirmation that ⛔ *states the consequence and lets them go — no dark pattern, no second ask* · the dismissible in-product resume banner · the workspace-creation loading state** |
+| **Features the design specifies literally** | **Everything saved as you go — *"you can leave at any point"*** · **the URL slug checked 300ms after typing stops, and permanent once created** · **timezone from the browser, stated to set when digests arrive** · ⚡ **every inferred value marked as inferred and correctable** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **`POST /workspaces` exists.** ✅ **`ProviderCapability.COMPANY_ENRICHMENT` exists** — [418](architecture/418-platform-foundation-assessment.md): *"infers the rest from the email domain, the enrichment record behind it"* |
+| ⛔ **Backend genuinely absent** | **Onboarding state · step progress · the inferred-value marking · goals→features.** ⚠️ **These are this row's backend slice and are not reuse** |
+| ✅ **API reuse** | **`POST /workspaces` unchanged.** ⛔ **Onboarding state needs its own persistence — an 🟠 table with its `tenancy_policy.py` registration in the same change** ([§8](../CLAUDE.md)) |
+| **Reusable components required** | ✅ **`components/ui` after [TASK-490](#task-490--the-design-foundation--every-screen-inherits-the-finalized-visual-language-or-none-does)/[491](#task-491--the-design-foundation-the-seven-gaps-that-remain): tokens, card geometry, buttons, fields.** ⚠️ **New: a step indicator (*Step n of 4*) and a multi-select goal chip.** ⛔ **Both belong in `components/ui` with their tokens and tests, never page-local** ([§20c](../CLAUDE.md)) |
+| **Shared layout** | ⚡ **NOT `(auth)/auth-shell.tsx`** — **onboarding runs after authentication and before the App Shell (Workflow 13), so it composes its own container.** ⚠️ **That container is the one genuinely new layout in Workflows 1–8 and is named here rather than improvised** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Onboarding.dc.html` and nothing else** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement, no intermediate guide** ([D-137](DECISION_REGISTER.md)) |
+| **Better Auth reuse** | ✅ **None needed.** ⚡ **The customer is already authenticated and verified when this begins — Workflow 3 is its predecessor** |
+| **Development simulation** | ✅ **Company enrichment is a *provider*, so it enters through the Provider Simulation Framework** ([20-provider-simulation.md](architecture/20-provider-simulation.md)) — ⛔ **never a mock in the component, and never a weakened business rule** ([D-167](DECISION_REGISTER.md) ④) |
+| **Manual review gate** | **Headed journey watched by the lane before handover** ([D-134](DECISION_REGISTER.md)) — ⚡ **and this workflow is the one where that matters most: six screens of transitions, three interruption states, and a skip path a customer takes when they are already impatient** |
+| **Change Budget** | 🟢 **`frontend/app/(onboarding)/**`, `modules/workspace_tenancy/**`** · 🟠 **an onboarding-state table + `tenancy_policy.py`, two new `components/ui` components, one migration** — **announced in the commit** · 🔴 **nothing** |
+| **Playwright coverage** | **`onboarding-journey.spec.ts` — a customer completes the whole run and lands in the product** · ⚡ **a second scenario that *skips* at screen 05, dismisses the resume banner, returns, and finishes** — ⛔ **the interruption path is the one a journey normally omits and the one screen `08` exists for** |
+| **Component coverage** | **Validation fires on blur and not per keystroke** · **the slug check debounces at 300ms** · **an inferred value renders its *Inferred* marking** · **goal selection stops at three** |
+| **Definition of Done** | **Every state · journey headed · certified · `main` · approved** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface`, `workspace_tenancy` · **Routes** `/onboarding/*` · **APIs** `POST /workspaces` + onboarding state · **Playwright** the two scenarios above · **Unit** the four component assertions · **Security Invariant** ⛔ **onboarding state is workspace-owned: RLS enabled *and* forced, registered in `TENANT_OWNED_TABLES` in the same change** |
+| ⚠️ **Verification strategy** | **The journey is the verification, and the conformance audit against the design document runs before any review is requested** ([D-161](DECISION_REGISTER.md) ④) |
+| **Build-vs-Buy** | ✅ **n/a — no capability here is a `09-build-vs-buy.md` row.** ⚡ **Company enrichment is a *provider*, already abstracted, and providers are Signora's own boundary** |
+
 
 ### TASK-470 · User Profile
 

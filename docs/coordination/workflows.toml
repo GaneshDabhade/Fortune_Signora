@@ -136,7 +136,7 @@ depends_on  = ["workflow.2"]
 
 [workflow.4]
 name        = "Forgot Password"
-state       = "decomposed"
+state       = "sequenced"
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["08 Forgot password"]
 tasks       = ["TASK-487"]
@@ -145,7 +145,7 @@ depends_on  = ["workflow.3"]
 
 [workflow.5]
 name        = "Password Reset"
-state       = "decomposed"
+state       = "sequenced"
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["09 Set a new password", "10 Success"]
 tasks       = ["TASK-488"]
@@ -168,7 +168,7 @@ owner       = "Lane A"
 
 [workflow.7]
 name        = "Invitation Acceptance"
-state       = "decomposed"
+state       = "sequenced"
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["13 Accept invitation", "14 Invitation expired", "declined", "wrong account"]
 tasks       = ["TASK-489"]
@@ -178,6 +178,12 @@ depends_on  = ["workflow.5"]
 [workflow.8]
 name        = "Initial Onboarding"
 state       = "sequenced"
+# ✅ FULLY DECOMPOSED 2026-08-08 under D-182 §9, while Lane A implements
+# Workflow 3. It measured 9 of 22 preparation dimensions and was the cliff:
+# Workflows 4, 5 and 7 are 22/22, so the pipeline ran three deep and stopped.
+# ⚠️ Screen `03 Workspace creation` is Workflow 6's, held by TASK-468. The
+# design composes it into this flow; this row routes into it and must not
+# rebuild it — named now rather than found when two lanes built one screen.
 design      = "Fortune Signora Onboarding.dc.html"
 tasks       = ["TASK-469"]
 owner       = "Lane A"
