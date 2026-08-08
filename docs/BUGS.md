@@ -80,6 +80,42 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-147 · Workflow 1 left `active` and nothing took its place, so the repository declares zero journeys in flight
+
+| | |
+|---|---|
+| **Module** | [`docs/coordination/workflows.toml`](coordination/workflows.toml) — Lane C's, the Coordination subsystem |
+| **Current assignee** | **Lane C** — the file is generated and governed by Product Office; ⛔ **the repair is the generator, never a hand-edit** |
+| **Severity** | 🟠 — **wrong behaviour a reader would act on.** No gate fails; the claim a cold session reads is false |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-08 by QE, cycle 113, at Closeout `state-check` on the commit that caused it |
+
+**Steps to reproduce.** At `f6f9c85`: `python3 infra/state-check.py`.
+
+```
+workflows.toml declares 0 active workflow(s) — none.
+**Exactly one is normally active** (D-160 ④)
+```
+
+**Expected.** One journey in flight. **[TASK-485](BACKLOG.md) is `READY` and startable this minute** — `state-check` says so two findings above, in the same run.
+
+**Actual.** `f6f9c85` moved **Workflow 1 `active` → `on_main`** and **Workflow 2 `decomposed` → `ready`**. ⛔ **Neither is `active`**, and the counter matches on that string alone.
+
+### ⚠️ The defect is a vocabulary divergence, and it is worth naming as one
+
+**Two new states entered the file and the check that reads it learned neither.** ⛔ **Which of the two is wrong is not QE's to decide**, and this row deliberately does not say:
+
+| Reading | What would change |
+|---|---|
+| **`ready` *is* the in-flight state** | The check counts `ready` as well, and D-160 ④'s wording follows |
+| **`ready` means *released, not yet started*** | Workflow 2 becomes `active` when Lane A claims `TASK-485`, and the file is momentarily correct as it stands |
+
+> ⚡ **The commit that introduced this is the same one that released Workflow 2**, so the repository simultaneously says *a journey has been released for implementation* and *zero journeys are in flight*. **Both statements are generated, and they are about the same journey.**
+>
+> ⛔ **`state-check` reports rather than fails, which is why this is 🟠 and not blocking** — and it is also why it would have gone unread. **A check whose vocabulary drifts from the file it reads stops being an instrument and becomes noise**, which is the failure mode [B-131](BUGS.md) named in the certification planner one layer up.
+
+---
+
 ### B-146 · Forty-nine backlog rows read `IN VALIDATION`, and advancing them is QE's alone
 
 | | |

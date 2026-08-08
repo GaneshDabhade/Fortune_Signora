@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `1e09e25`, 2026-08-07.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `f6f9c85`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `1e09e25`, 2026-08-07.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `f6f9c85`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`1e09e25`** — the certified commit itself |
-| **`integration`** | one claim commit ahead, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** Cycle 112 promoted **[D-170](docs/DECISION_REGISTER.md) and [D-171](docs/DECISION_REGISTER.md)** — ⚡ **an operating-model critique that names six weaknesses in the model that asked for it** |
-| **Certification** | ✅ [`1e09e25faabc`](certification/reports/1e09e25faabc.md) · migration head **`0042`** · protocol **v2** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **`main`** | **`f6f9c85`** — the certified commit itself |
+| **`integration`** | **Level with `main`** |
+| **Release candidate** | **None pinned.** Cycle 113 promoted **Workflow 1's design conformance** — ⚡ **Screen 02 went 3 of 12 elements to 12 of 12, and the gap was closed in the foundation rather than patched on the screen** |
+| **Certification** | ✅ [`f6f9c8510bac`](certification/reports/f6f9c8510bac.md) · migration head **`0042`** · protocol **v2** · profile **`platform`**, recorded for the first time · ⚠️ **10 planned gates unrecorded, printed every run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
-| **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
-| **Validation queue** | **Empty.** ✅ **Lane C's cycle-70 deferral resolved itself** — the lane rebased, and its work is promoted here |
-| **Customer value this cycle** | ⚠️ **Foundational.** **`signal_engine` and `buying_score_engine` now consume what they declare** — the subscriptions were declared since M5 and nothing was wired to them |
+| **Implementation waiting** | **Lane B**, on the product owner's rulings — see §1c. **Lane A has `TASK-485` as its current**, released by this cycle |
+| **Validation queue** | **Empty.** One lane pushed after fifty quiet polls |
+| **Customer value this cycle** | ⚠️ **Indirect.** **The first workflow now matches the approved design**, and Workflow 2 is released for implementation |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 141s *(⚠️ 2652s last cycle — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in 184s *(⚠️ two unexplained 2652s runs — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -40,13 +40,13 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **TASK-451** — a saved view a colleague can open | ⚡ **M-I** — who has held a role at a company, and who left | **D-151** — five journeys measured | **Cycle 96** |
+| **Last promoted** | **TASK-451** — a saved view a colleague can open | ⚡ **M-I** — who has held a role at a company, and who left | ⚡ **Workflow 1 at 12 of 12 design elements** | **Cycle 113** |
 | **Execution phase** | **Building** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
 | **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
-| **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle** | — |
+| **Validation status** | — | — | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | **No** | **No** | **No** |
 | **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | **Workflow 1 milestone 3** | — | Stewardship | ⚡ **[D-167](docs/DECISION_REGISTER.md) — impact-aware certification** |
+| **Next executable work** | ⚡ **`TASK-485`** — released this cycle | — | Stewardship | ⚡ **[D-167](docs/DECISION_REGISTER.md) — impact-aware certification** |
 
 > **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
 >
@@ -103,7 +103,65 @@
 
 ---
 
-## 1d · Release summary — 2026-08-07, cycle 112
+## 1d · Release summary — 2026-08-08, cycle 113
+
+**Derived from the promoted commit `f6f9c85`.** **Sixty-eight promotions.** ⚡ **A screen that was 3 of 12 against its design is 12 of 12, and the one override it still carried was removed by adding the token it wanted.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **Workflow 1 — design conformance** *(Lane C)* | **Screen 02 is 12 of 12 elements against the finalized design.** It was **3 of 12 on 2026-08-07.** Card geometry 4 of 4, responsive present, seven foundation gaps closed, every state and accessibility affordance present |
+| **Workflow 2 released** *(Lane C)* | Under [D-169](docs/DECISION_REGISTER.md), **reaching `main` is the release condition between workflows** — so no approval was waited for. **`TASK-485` is Lane A's current** |
+
+### ⚡ The override was removed by closing the gap, not by patching the screen
+
+**`max-w-[400px]` is gone; it is `max-w-card`** — the token `TASK-491` added, consumed exactly as [D-162](docs/DECISION_REGISTER.md) ④ required.
+
+> **A gap named, closed in the foundation, and the screen simplified rather than worked around.** That is the shape §20c asks for and the shape a lane under time pressure does not take: the cheap fix was to leave the literal and note it.
+
+### ⚠️ Three greps returned a hit, and the lane published all three
+
+| Hit | Why it is legitimate |
+|---|---|
+| `bg-slate-50` | **Inside a comment explaining the ban** |
+| `!important` | **Inside `prefers-reduced-motion`, where it must win** |
+| `w-[calc(100vw-2.5rem)]` | **Paired with `max-w-card`** for the design's 20px mobile gutters — **a viewport calc is not expressible as a token** |
+
+> ⚡ **The third is the honest edge, and it is recorded so nobody "fixes" it.** A lane reporting *"zero findings"* would have been believed; **a lane reporting three hits and defending each is the more useful claim**, because the next reader can check it.
+
+### ✅ The profile is recorded for the first time
+
+**`profile: platform`** appears in [`f6f9c8510bac`](certification/reports/f6f9c8510bac.md) — **[427](docs/architecture/427-impact-based-validation.md) step 2 landing on real traffic.** ⛔ **Recorded, never applied**: `REQUIRED_GATES` is unchanged, all six ran, and `satisfied` never read the field.
+
+> **The planner classified `docs/coordination/**` as `platform` and it was right to.** Three gates read those files, so a diff of nothing but coordination TOML is a platform change — **which a directory prefix would have called documentation** ([D-115](docs/DECISION_REGISTER.md)).
+
+### ⚠️ `--audit-main` refused between promotion and Closeout, correctly
+
+**The audit reads the *committed* manifest. The record for `f6f9c851` was still in QE's working tree**, so for the minutes between the push and this commit `main` genuinely carried a commit the repository could not prove was certified.
+
+> **It is an ordering artifact and not a defect — and it is worth stating rather than quietly resolving.** The direct guard-check on the SHA passed before promotion (§0e-3), which is the check that gates. ⛔ **But an auditor that reads red for a real window is a fact about the process, not noise to suppress**, and a session polling in that window would have been right to stop.
+
+### ⚠️ [B-147](docs/BUGS.md) filed — the same commit released a journey and declared none in flight
+
+**`f6f9c85` moved Workflow 1 `active` → `on_main` and Workflow 2 `decomposed` → `ready`.** ⛔ **`state-check` counts the string `active` and now finds zero**, two findings above the one reporting `TASK-485` startable in the same run.
+
+> ⛔ **Which of the two is wrong is Lane C's to decide and QE deliberately did not.** **The row states both readings and picks neither** — the file is Lane C's, the check's vocabulary drifted from it, and *"the repair is the generator"*.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1636 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **117 runs recorded, 109 certified** · `promoted == certified` ✓ · `--audit-main` clean · **sixteenth consecutive first-attempt certification** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 184s |
+| **Dependency** | ✅ Nothing held. **Lane A unblocked** — `TASK-485` released by this cycle |
+| **Customer Value** | ⚠️ **Indirect.** The first workflow now looks like the approved design |
+| **Process** | ⚡ **Fifty consecutive quiet polls preceded this cycle.** The repository was idle, not stalled — and the poll that found work found it within ten minutes |
+
+---
+
+## 1e · Release summary — 2026-08-07, cycle 112
 
 **Derived from the promoted commit `1e09e25`.** **Sixty-seven promotions.** ⚡ **A governance edit QE read before certifying, and the fastest smoke of the session.**
 
