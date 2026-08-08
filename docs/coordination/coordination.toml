@@ -9,47 +9,47 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "3f22184"
+generated_from = "052473d"
 task_count     = 102
 
 [lane.Lane_A]
-current            = "TASK-483"
-next               = "TASK-474"
-next_after_that    = "TASK-476"
+current            = "TASK-474"
+next               = "TASK-476"
+next_after_that    = "TASK-469"
 assigned_total     = 85
-claimable          = 10
-claimable_now      = 1
-awaiting_sync      = 9
-in_flight          = 51
-actionable         = 5
+claimable          = 9
+claimable_now      = 8
+awaiting_sync      = 1
+in_flight          = 53
+actionable         = 4
 awaiting_qe_transition = 0
-blocked_on_integration = 0
+blocked_on_integration = 1
 supply_state       = "working"
-blocked            = 24
-lane_utilization   = 10.2
-idle_prediction_days   = 1.4
-dependency_wait_days   = 0.7
-blocked_duration_days  = 0.7
+blocked            = 23
+lane_utilization   = 10.6
+idle_prediction_days   = 1.3
+dependency_wait_days   = 0.8
+blocked_duration_days  = 0.8
 critical_path_max      = 3
 
 [lane.Lane_C]
-current            = ""
+current            = "TASK-497"
 next               = ""
 next_after_that    = ""
 assigned_total     = 14
-claimable          = 0
+claimable          = 1
 claimable_now      = 0
-awaiting_sync      = 0
+awaiting_sync      = 1
 in_flight          = 6
 actionable         = 0
 awaiting_qe_transition = 0
 blocked_on_integration = 0
-supply_state       = "in_flight_only"
-blocked            = 8
+supply_state       = "working"
+blocked            = 7
 lane_utilization   = 1.2
-idle_prediction_days   = 0.0
-dependency_wait_days   = 1.1
-blocked_duration_days  = 1.1
+idle_prediction_days   = 0.1
+dependency_wait_days   = 1.2
+blocked_duration_days  = 1.2
 critical_path_max      = 0
 
 [[task]]
@@ -65,7 +65,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lan"
 waiting_for    = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lane raised.** ⚠️ **An architectural blocker, not an implementation one** (§20e): *"
-blocked_days   = 0.7
+blocked_days   = 0.8
 on_integration = true
 
 [[task]]
@@ -962,7 +962,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-470"
@@ -978,7 +978,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-471"
@@ -994,7 +994,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-472"
@@ -1026,7 +1026,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-474"
@@ -1042,7 +1042,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-475"
@@ -1057,7 +1057,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-ever"
 waiting_for    = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be written until "
-blocked_days   = 0.7
+blocked_days   = 0.8
 on_integration = true
 
 [[task]]
@@ -1074,7 +1074,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-478"
@@ -1143,15 +1143,15 @@ on_integration = true
 [[task]]
 id            = "TASK-483"
 title         = "The authentication shell"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -1160,7 +1160,7 @@ on_integration = true
 id            = "TASK-484"
 title         = "The two journeys that work and nobody verifies"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -1218,7 +1218,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-489"
@@ -1234,7 +1234,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-490"
@@ -1335,18 +1335,18 @@ on_integration = true
 [[task]]
 id            = "TASK-498"
 title         = "The authentication configuration surface, and the three controls already ruled"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-499"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-499"
@@ -1359,26 +1359,10 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "— behind [TASK-498](#task-498--the-authentication-configuration-surfac"
+estimated_ready = "when TASK-498 complete"
 waiting_for    = "— behind [TASK-498](#task-498--the-authentication-configuration-surface-and-the-three-controls-already-ruled), Lane C 2026-08-08.** ⚡ **Both touch the"
 blocked_days   = 0.0
-on_integration = false
-
-[[task]]
-id            = "TASK-499"
-title         = "The route map becomes the product's, not the framework's"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane A"
-depends_on     = ["TASK-498"]
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 1
-estimated_ready = "— behind [TASK-498](#task-498--the-authentication-configuration-surfac"
-waiting_for    = "— behind [TASK-498](#task-498--the-authentication-configuration-surface-and-the-three-controls-already-ruled), Lane C 2026-08-08.** ⚡ **Both touch the"
-blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-903"
@@ -1585,7 +1569,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 1.1
+blocked_days   = 1.2
 on_integration = true
 
 [[task]]
@@ -1623,18 +1607,18 @@ on_integration = true
 [[task]]
 id            = "TASK-497"
 title         = "Planning state reaches a lane without waiting for a certification cycle"
-state         = "WAITING_EXTERNAL"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane C"
-depends_on     = ["TASK-494"]
+depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— behind [TASK-494](#task-494--email-leaves-the-process-through-the-ra"
-waiting_for    = "— behind [TASK-494](#task-494--email-leaves-the-process-through-the-ratified-vendor), Lane C 2026-08-08.** ⛔ **Deliberately NOT ahead of it.** ⚡ **[D-"
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-906"
@@ -1649,7 +1633,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 1.1
+blocked_days   = 1.2
 on_integration = true
 
 [[task]]
@@ -1681,7 +1665,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 0.7
+blocked_days   = 0.8
 on_integration = true
 
 [[task]]

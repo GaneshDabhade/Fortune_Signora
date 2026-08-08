@@ -24,6 +24,7 @@
 | | |
 |---|---|
 | **What is blocked today** | **The 30-minute configuration + screen `08`'s copy + retiring the test that asserts the config stays unset** |
+| 🔴 **And Lane A's tenth row, measured** | ⚠️ **This office first claimed the floor was blocked, then found a row it thought would fill it, and was wrong twice.** ✅ **The measurement, done properly:** **[TASK-452](BACKLOG.md)'s *own row* argues against release — *"building it now would mean building it twice"* — and that reasoning still holds · [TASK-464](BACKLOG.md) is 6 cells and chained · [TASK-493](BACKLOG.md) is behind an unstarted row · [TASK-497](BACKLOG.md) is **Lane C's**, not Lane A's.** ⛔ **So the tenth row must be a NEW row, and that needs an identifier** |
 | **What is blocked next** | ⚠️ **Sixteen workflows still need decomposition** ([D-182](DECISION_REGISTER.md)). **Workflow 13 — the Application Shell — gates fourteen others and is the one delay that compounds** |
 | ⛔ **Why this office cannot self-serve** | 📁 **[§20e](../CLAUDE.md): *"a lane allocates only from its own block."*** **Taking `500+` is Lane D's; taking a gap is a live reference.** ⚡ **The block model is working exactly as designed — it made collision unrepresentable, and exhaustion is its honest failure mode** |
 

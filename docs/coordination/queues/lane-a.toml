@@ -23,47 +23,30 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 🔴  READ THIS BEFORE YOUR NEXT SLICE — BOTH THINGS YOU DEFERRED ARE RULED
-#     2026-08-08, and you could not have known
+# 🟡  NINE, NOT TEN — and here is exactly why, measured rather than asserted
+#     2026-08-08
 #
-# Your TASK-498 report says C-243 and C-240 ⑤ are "yours" — the product
-# owner's — and defers both. That was correct against everything you could
-# see. Both were ruled at D-185, which is on lane-c-sync and has never reached
-# integration. This is the synchronization gap costing something concrete for
-# the first time, and it is this office's, not yours.
+# D-184 sets your floor at 10. You are at 9 and this office cannot lift it
+# without an identifier it does not have. Every remaining candidate was
+# checked, and none of them can honestly be released:
 #
-# ✅ C-243 → THIRTY MINUTES. resetPasswordTokenExpiresIn: 1800.
-#    The ruling's reason: "the framework should implement the product, not
-#    define it." The design's 30 minutes stands; the config moves.
+#   TASK-452  Saved View screens   ⛔ its OWN row argues against release:
+#             "building it now would mean building it twice" — a business
+#             surface at D-155 priority 6, and D-153 says legacy UI does not
+#             accumulate additions while an earlier workflow is migrating.
+#             That reasoning still holds and this office will not override it.
+#   TASK-464  action_batch layer   ⛔ 6 cells, and chained behind TASK-476
+#   TASK-493  Better Auth plugins  ⛔ behind TASK-492, which you have not
+#                                     started yet
+#   TASK-497  planning sync        ⛔ NOT YOURS — it is Lane C's own row
+#                                     (platform_foundation, D-022). This
+#                                     office briefly counted it and was wrong.
 #
-# 🔴 SO ONE OF YOUR TESTS NOW ASSERTS THE OPPOSITE OF A RULING:
-#      frontend/tests/unit/auth-configuration.test.ts:95
-#      expect(SERVER).not.toContain('resetPasswordTokenExpiresIn')
-#    ⛔ Do NOT rush to change it. TASK-498 is IN VALIDATION and that state is
-#       yours; scope added after a claim is this office's defect, not yours.
-#       The delta is recorded on the row where QE will read it at validation,
-#       and what happens next is QE's call.
-#    ⚡ When it is actioned, the config and screen 08's copy move TOGETHER:
-#       config alone understates a credential's life; copy alone restores
-#       exactly the lie you refused to print.
+# ✅ So the honest report is a SHORTFALL, not a widened definition — which is
+#    what _DEPTH_FLOOR's own docstring commits this office to.
 #
-# ✅ C-240 ⑤ → `/` BECOMES THE SIGNORA WELCOME EXPERIENCE. Your default was
-#    right. ⚠️ And it is bigger than it reads — FIVE RENAMES PLUS A MOVE.
-#    TASK-499 owns it and carries the measured map. Do not start it from this
-#    notice; start it from the row when it reaches integration.
-#
-# ✅ WHAT YOU DID WITH C-241 IS THE STANDARD, and it is recorded as such:
-#    you called otpLength "a security parameter nobody has chosen", then read
-#    the design, found "Enter the 6-digit code", and corrected your OWN item.
-#    A read, not a choice. That is the method this office keeps failing at and
-#    you keep getting right.
-#
-# 🔴 YOUR QUEUE IS 9, NOT 10, AND THIS OFFICE CANNOT FIX IT.
-#    D-184 sets the floor at 10. state-check is firing. Topping it up means
-#    writing a row, and Lane C's identifier block 400-499 is FULLY ALLOCATED —
-#    95 rows, zero free, TASK-499 was the last. Escalated to the product owner
-#    as the first thing that has actually blocked this office.
-#    ⚡ Nine prepared rows is not a drought. You are not idle.
+# ⚡ NINE PREPARED ROWS IS NOT A DROUGHT, and eight of them are claimable on
+#   integration right now. You are not idle and nothing here needs your action.
 #
 #      ① TASK-474  the developer mailbox
 #      ② TASK-488  Workflow 5 · Password Reset            22/22
@@ -71,7 +54,10 @@
 #      ④ TASK-469  Workflow 8 · Initial Onboarding        22/22
 #      ⑤ TASK-470  Workflow 9 · User Profile              22/22
 #      ⑥ TASK-471  Workflow 10 · Team Management          22/22
-#      ⑦ TASK-473 · ⑧ TASK-476 · ⑨ TASK-492 (the security event stream)
+#      ⑦ TASK-473  which authentication mode is running
+#      ⑧ TASK-476  headed becomes the default
+#      ⑨ TASK-492  the security event stream — ⚡ four journeys are on main
+#                  producing authentication facts and nothing records them
 #
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1485,6 +1471,9 @@ next    = "TASK-488"          # ② Workflow 5 · Password Reset — 22/22
 # queue: a lane must never be offered back work it is already holding.
 future  = ["TASK-489", "TASK-469", "TASK-470", "TASK-471", "TASK-473",
            "TASK-476", "TASK-492"]
+# ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation,
+#    D-022) and cannot fill this lane's floor. This office briefly counted
+#    it and was wrong.
 # ⛔ TASK-484 removed — you CLAIMED it, and a queue must never offer back work
 #    a lane is already holding. TASK-499 is not here either: it is SEQUENCED
 #    behind TASK-498 and a queue that lists an unstartable row is a queue that
@@ -1504,11 +1493,11 @@ future  = ["TASK-489", "TASK-469", "TASK-470", "TASK-471", "TASK-473",
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 9   # 🔴 BELOW the D-184 floor of 10 — see the notice.
+eligible_count = 9   # 🔴 BELOW the D-184 floor of 10 — measured below.
                      # reported "one of the two is stale" and it was the count.
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
 depth_target   = 10  # ⚡ D-184 — was 3 (D-183), was 1 (D-163).
-shortfall      = 1   # 🔴 9 of 10. Topping it up needs an identifier this office does not have.
+shortfall      = 1   # 🔴 9 of 10.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
