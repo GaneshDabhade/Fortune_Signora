@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `b082413`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `f5d9be5`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `b082413`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `f5d9be5`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`b082413`** — the certified commit itself |
+| **`main`** | **`f5d9be5`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 128 promoted two findings a lane raised and did not fix**, plus a notice channel Lane C built after its own answer was stranded |
-| **Certification** | ✅ [`b082413ff6a7`](certification/reports/b082413ff6a7.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 129 closed the expiry gap Workflow 4 disclosed** — **the link now lives thirty minutes and three screens say so** |
+| **Certification** | ✅ [`f5d9be52e134`](certification/reports/f5d9be52e134.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | 🔴 **Two, and this line said `None` for eleven cycles.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ⛔ **None directly.** ⚡ **Two defects named before a customer could meet them** — a permissions leak on screen 13 and an API that cannot say an invitation expired |
+| **Customer value this cycle** | ✅ ⚡ **The reset link's stated lifetime is now true** — configuration and copy moved in one change, on three screens |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1729 frontend tests** *(+12)* across **76 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **149s** *(`Startup 19s` — a backend-only cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1730 frontend tests** *(+1)* across **76 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **216s** *(`Build 68s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,55 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 128
+## 1d · Release summary — 2026-08-08, cycle 129
+
+**Derived from the promoted commit `f5d9be5`.** **Eighty-four promotions.** ⚡ **The expiry Workflow 4 refused to misstate two cycles ago is now true, and the fix moved the product rather than the copy.**
+
+### ✅ The loop closes: disclose, rule, implement
+
+| Cycle | What happened |
+|---|---|
+| **121** | **Workflow 4 printed the *true* 60 minutes instead of the design's 30**, because `resetPasswordTokenExpiresIn` defaults to `3600` and nothing set it |
+| **—** | **[C-243](docs/LANE_COORDINATION.md) raised.** [D-185](docs/DECISION_REGISTER.md) §1, product owner: **thirty minutes** |
+| **129** | **`resetPasswordTokenExpiresIn: 1800`** — ✅ **the configuration moved and the design did not** |
+
+> ⚡ **The ruling carries a sentence well beyond this row:** ***"the framework should implement the product, not define it."*** ⛔ **A vendor default had been silently setting a security parameter, and the screen was honest about it rather than complicit.**
+
+### ⚡ Why config and copy had to move in one change
+
+**The row states the pairing and it is load-bearing:**
+
+| Alone | What it would produce |
+|---|---|
+| **Config only** | ⛔ **A screen understating a credential's life** |
+| **Copy only** | ⛔ ***"Exactly the lie this lane refused to print for four workflows"*** |
+
+✅ **Three screens state the expiry, not one** — the confirmation the row named, plus the page description and the expired-link screen.
+
+### ✅ Also promoted — Lane C
+
+| | |
+|---|---|
+| **[D-191](docs/DECISION_REGISTER.md)** | ⚡ ***"The premise does not hold, and I recommend against both options."*** **An evaluation that rejected the question it was asked**, recorded with its falsifiers |
+| **[D-192](docs/DECISION_REGISTER.md)** | 🔴 ***"Three shipped journeys end nowhere, and the design said so all along"*** |
+| **Routine cycle** | **[C-244](docs/LANE_COORDINATION.md) queued, the floor restored**, and ⚡ ***"one row I refused to write"*** |
+
+> ⚠️ **[D-192](docs/DECISION_REGISTER.md) is the finding to read.** **Three journeys QE has certified and promoted end nowhere** — and the office's own note is that **the design said so all along**, so this was discoverable before any of them shipped.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1730 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **134 runs recorded, 126 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 216s |
+| **Dependency** | ⚠️ **[C-245](docs/LANE_COORDINATION.md) 🔴 open** · ⚠️ **[D-192](docs/DECISION_REGISTER.md) names three journeys that end nowhere** |
+| **Customer Value** | ✅ ⚡ **A stated credential lifetime that is true** |
+| **Process** | ⚡ **A disclosure became a ruling became an implementation, across eight cycles, without anyone building the wrong thing in between** — **and the screen was never wrong at any point in that span** |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 128
 
 **Derived from the promoted commit `b082413`.** **Eighty-three promotions.** ⚡ **Two defects named by the lane that found them and left for the lane that owns them — and an office that built a channel after its own answer was stranded.**
 
