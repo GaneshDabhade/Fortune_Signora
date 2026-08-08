@@ -10,6 +10,7 @@
 
 import { betterAuth } from 'better-auth';
 import { createAuthMiddleware } from 'better-auth/api';
+import { emailOTP, haveIBeenPwned } from 'better-auth/plugins';
 import { Pool } from 'pg';
 
 import { loadAuthConfig, type AuthConfig } from '@/lib/auth/config';
@@ -41,6 +42,69 @@ export function createAuth(config: AuthConfig = loadAuthConfig()) {
 
   return betterAuth({
     database: getAuthPool(config),
+
+    /**
+     * ⚡ **Three controls, none of them a decision made here** — [TASK-498](../../../docs/BACKLOG.md).
+     *
+     * **Every authentication workflow needed one line in this file, every row
+     * correctly forbade it, and the screens shipped without the controls.**
+     * [C-434](../../../docs/LANE_COORDINATION.md) was Workflow 1's,
+     * [C-240](../../../docs/LANE_COORDINATION.md) Workflow 2's and
+     * [C-241](../../../docs/LANE_COORDINATION.md) Workflow 3's. **This row is
+     * the one that may touch it.**
+     */
+    plugins: [
+      /**
+       * ⚡ **[C-240](../../../docs/LANE_COORDINATION.md) ① — ruled by the
+       * product owner, 2026-08-08.** Restores the design's fourth password
+       * rule on screen `06`.
+       *
+       * **k-anonymity, so the password never leaves the process**: it sends
+       * the first five hex characters of a SHA-1 to `api.pwnedpasswords.com`
+       * and matches the suffix locally.
+       *
+       * ⚠️ **The cost was named when this was raised and is accepted with the
+       * ruling**: the plugin raises on an unreachable range API, **so an
+       * outage there becomes an inability to register.** ⛔ **Not softened
+       * here** — softening it would be this file deciding a semantic the
+       * ruling did not.
+       */
+      haveIBeenPwned(),
+
+      /**
+       * 🔴 **[C-241](../../../docs/LANE_COORDINATION.md) — the control screen
+       * `07` was built without**, because nothing accepted a typed code.
+       *
+       * ⛔ **`otpLength: 6` is a *read*, not a choice.** The design says it in
+       * terms — *"Enter the 6-digit code"* — and [D-138](../../../docs/DECISION_REGISTER.md)
+       * makes the snapshot the implementation authority. ⚠️ **This item first
+       * called it "a security parameter nobody has chosen" and that was
+       * wrong**; the framing mattered more than the number, because an open
+       * parameter justifies waiting and a value the design carries does not.
+       */
+      emailOTP({
+        otpLength: 6,
+        async sendVerificationOTP({ email, otp }) {
+          await deliver({ to: email, purpose: 'verify-email', code: otp });
+        },
+      }),
+    ],
+
+    /**
+     * ⚡ **[C-240](../../../docs/LANE_COORDINATION.md) ② — ruled twice**: by the
+     * product owner 2026-08-08, and before that by [D-170](../../../docs/DECISION_REGISTER.md)
+     * §3 ③ — *"rate limiting is enabled in development wherever practical;
+     * development should behave as close to production as reasonably
+     * possible."*
+     *
+     * ⛔ **Better Auth defaults this to production only**, so the throttled
+     * screen Workflow 1 built against the real `429` and the real
+     * `X-Retry-After` **could not be reached at any review.** ✅ **The window,
+     * the limit and the `/sign-in` special case are the vendor's own and are
+     * not restated here** — restating them would be the second copy this
+     * codebase keeps refusing.
+     */
+    rateLimit: { enabled: true },
     baseURL: config.baseUrl,
     secret: config.betterAuthSecret,
 

@@ -28,7 +28,17 @@ export interface AuthEmail {
   /** The URL Better Auth built, carrying its own token. Passed through
    * untouched — a transport that rewrote a link would be able to invalidate
    * it, and the failure would look like an expired token. */
-  url: string;
+  url?: string;
+  /**
+   * A six-digit code, when the flow is `email-otp` rather than a link.
+   *
+   * ⚡ **A variant on the port rather than a second port** — [TASK-498](../../../docs/BACKLOG.md).
+   * **An OTP is not a URL**, and this file's oldest rule is that what arrives
+   * later must not be *"a second copy of either flow, written around whatever
+   * the vendor turned out to want."* **One of `url` or `code` is present,
+   * never both**, and the transport prints whichever it was given.
+   */
+  code?: string;
 }
 
 export type AuthEmailTransport = (email: AuthEmail) => Promise<void>;
@@ -53,7 +63,7 @@ const consoleTransport: AuthEmailTransport = async (email) => {
     `  │  ${PROMPT[email.purpose]}`,
     `  │  ${email.to}`,
     '  │',
-    `  │  ${email.url}`,
+    `  │  ${email.code ?? email.url}`,
     '  └────────────────────────────────────────────────────────────────',
     '',
   ];
@@ -94,7 +104,9 @@ function createResendTransport(config: ResendConfig): AuthEmailTransport {
       // not the message — and inventing a branded HTML email would be
       // designing a customer-visible surface nobody approved (§21).
       // ⚡ **The link is what the flow needs and it is here in full.**
-      text: `${PROMPT[email.purpose]}:\n\n${email.url}\n`,
+      // The code stands alone; the link needs no prose either. Whichever
+      // arrived is what the recipient needs, and nothing else is invented.
+      text: `${PROMPT[email.purpose]}:\n\n${email.code ?? email.url}\n`,
     });
 
     if (error) {
