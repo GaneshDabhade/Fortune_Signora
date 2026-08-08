@@ -23,39 +23,43 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 🟢  FIVE CLAIMABLE ROWS, NOT ONE — D-183, and D-163 is amended
+# 🟢  TEN CLAIMABLE ROWS — D-184, and every one of them is decomposed
 #     2026-08-08
 #
-# The product owner ruled it directly: keep several claimable items ready so
-# that if a few get blocked you have something to work on instead of idling.
+#   ①  TASK-487  Workflow 4 · Forgot Password              22/22
+#   ②  TASK-483  Workflow 1 · the authentication shell
+#   ③  TASK-484  Workflow 1 · the two journeys nobody verifies
+#   ④  TASK-498  lib/auth/server.ts — C-240 ①② + email-otp
+#   ⑤  TASK-474  the developer mailbox
+#   ⑥  TASK-488  Workflow 5 · Password Reset               22/22
+#   ⑦  TASK-489  Workflow 7 · Invitation Acceptance        22/22
+#   ⑧  TASK-469  Workflow 8 · Initial Onboarding           22/22
+#   ⑨  TASK-470  Workflow 9 · User Profile      ⚡ decomposed today, was 8/22
+#   ⑩  TASK-471  Workflow 10 · Team Management  ⚡ decomposed today, was 11/22
 #
-#   ① TASK-487  Workflow 4 · Forgot Password              22/22
-#   ② TASK-483  Workflow 1 · remaining row
-#   ③ TASK-484  Workflow 1 · the Authentication journey
-#   ④ TASK-498  lib/auth/server.ts — C-240 ①② + email-otp
-#   ⑤ TASK-474  the developer mailbox
+# ⛔ STILL AN ORDER, NOT A MENU. Take ①. Descend only past a GENUINELY BLOCKED
+#    row, reason recorded — §20e's "claim from the top", unchanged.
 #
-# ⛔ THIS IS AN ORDER, NOT A MENU — and that distinction is the whole of how
-#    D-183 and D-163 coexist. D-163 refused multiple claimable rows because
-#    "more than one lets the lane choose, and choosing is prioritisation."
-#    That reason was right and still holds. What was wrong was the REMEDY:
-#    a depth of one means you idle the instant your single row is blocked,
-#    and rows are blocked by DISCOVERY. C-241 was found while you were
-#    building screen 07, not while this office was planning it.
+# ⚡ WHY ⑥⑦⑧ ARE HERE NOW AND WERE NOT BEFORE. They were always 22/22. They
+#   were held back by JOURNEY ORDER — and D-183 established that journey order
+#   is preserved by the PUBLISHED ORDER, not by withholding rows. Holding them
+#   bought nothing and cost you a stall. The sequence is unchanged; what
+#   changed is that a block on ① no longer idles you.
 #
-#    ✅ So: depth WITHOUT choice. Take ①. Descend only when the row above is
-#       genuinely blocked, and record why in the row. That is the existing
-#       skip rule (§20e, "claim from the top"), not a new licence.
+# ⚠️ ⑨ AND ⑩ ARE NEW WORK, NOT RELABELLED ROWS. Workflow 9 stood at 8 of 22
+#   and Workflow 10 at 11 of 22 — no design-authority reference, no Definition
+#   of Done. Both are now decomposed from their design documents. Reaching ten
+#   by relabelling thin rows would have been the C-412 defect this office
+#   wrote the rule against: a READY row you cannot start.
 #
-# ⚡ All five are INDEPENDENT — none waits on another. That is the property
-#   that makes depth useful rather than merely longer. Workflows 5 and 7
-#   (TASK-488, TASK-489) stay SEQUENCED behind Workflow 4 deliberately:
-#   releasing them would let you skip a journey, which is prioritisation.
+# 🔴 READ ⑨ AND ⑩'s SHELL CONSTRAINT BEFORE YOU CLAIM EITHER. Both render
+#   inside the Application Shell, which is Workflow 13 and is NOT built. Both
+#   rows deliver PANELS composed into a standalone route. ⛔ Do not build a
+#   shell — that is Workflow 13's, and building it early is the §20d defect.
 #
-# ⚠️ AND BE CLEAR WHAT THIS DOES NOT FIX. claimable = 5, claimable_now = 0.
-#   All five are on lane-c-sync. Depth protects against BLOCKING; it does
-#   nothing against SYNCHRONIZATION, and today was synchronization. QE
-#   fast-forwarding is still what unblocks you.
+# ⚠️ AND THE LIMIT, AGAIN: claimable = 10, claimable_now = 0. All ten are on
+#   lane-c-sync. Depth protects against BLOCKING. It does nothing against
+#   SYNCHRONIZATION, and synchronization is what has idled you twice.
 #
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1467,7 +1471,8 @@ next    = "TASK-483"
 # this office was releasing it here, and the rebase kept this office's line.
 # Lane A's CLAIMED is restored in BACKLOG.md and the row is gone from this
 # queue: a lane must never be offered back work it is already holding.
-future  = ["TASK-484", "TASK-498", "TASK-474"]
+future  = ["TASK-484", "TASK-498", "TASK-474", "TASK-488", "TASK-489",
+           "TASK-469", "TASK-470", "TASK-471"]
 # ⚡ NO LONGER EMPTY — D-183 amends D-163, which forced this to `[]` to enforce
 # "exactly one claimable". The order lives HERE, in data, and not in the notice
 # above it: a check cannot read a comment, and this office has now paid for that
@@ -1481,11 +1486,11 @@ future  = ["TASK-484", "TASK-498", "TASK-474"]
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 5   # ⚡ D-183 floor is 3. Five, and all five independent.
+eligible_count = 10  # ⚡ D-184 floor is 10. Ten, every one decomposed.
                      # reported "one of the two is stale" and it was the count.
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
-depth_target   = 3   # ⚡ D-183 — was 1 under D-163. See the notice above.
-shortfall      = 0   # ✅ 5 of 3.
+depth_target   = 10  # ⚡ D-184 — was 3 (D-183), was 1 (D-163).
+shortfall      = 0   # ✅ 10 of 10.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
@@ -1512,17 +1517,7 @@ blocker = ["see the backlog row"]
 owner   = "Lane A"
 note    = "Saved View — the screens that use it"
 
-[[blocked]]
-task    = "TASK-469"
-blocker = ["see the backlog row"]
-owner   = "Lane A"
-note    = "Onboarding — the guided first run"
 
-[[blocked]]
-task    = "TASK-470"
-blocker = ["see the backlog row"]
-owner   = "Lane A"
-note    = "User Profile"
 
 [[blocked]]
 task    = "TASK-475"

@@ -897,13 +897,24 @@ def _adoption_findings() -> list[str]:
 #: not by prediction. `C-241` was found while building screen 07, not while
 #: planning it, and no amount of preparation would have surfaced it earlier.
 #:
+#: ⚡ **RAISED TO 10 on 2026-08-08 by [D-184](../docs/DECISION_REGISTER.md)**, the
+#: product owner: *"there should always be a minimum of 10 claimable items
+#: present for Lane A every time."*
+#:
+#: ⛔ **The floor is a floor on PREPARED rows, and that is not a formality.**
+#: **A `READY` row a lane cannot start is the [C-412](../docs/LANE_COORDINATION.md)
+#: defect, and this office wrote that rule.** ⚠️ **Reaching 10 on 2026-08-08 cost
+#: two full decompositions — Workflows 9 and 10, which stood at 8/22 and 11/22 —
+#: rather than five relabelled thin rows.** **If the floor cannot be met with
+#: prepared rows, the honest report is a shortfall, never a widened definition.**
+#:
 #: ✅ **The reconciliation is depth WITHOUT choice**: several claimable rows, in a
 #: **strict published order**, and the lane takes the topmost one it can start.
 #: Product Office still owns the order; the lane still never picks. **Descending
 #: past a row is permitted only when that row is genuinely blocked, and the
 #: reason is recorded** — which is the existing skip rule (§20e, *claim from the
 #: top*), not a new licence.
-_DEPTH_FLOOR = 3
+_DEPTH_FLOOR = 10
 
 
 def _ordered(lane: str) -> bool:
