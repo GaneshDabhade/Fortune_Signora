@@ -377,3 +377,60 @@ test.describe('Workflow 4 · asking for a reset link', () => {
     await expect(page.getByRole('status')).toContainText('expires in an hour');
   });
 });
+
+/**
+ * **Registration → Verification → Login** — [TASK-484](../../../docs/BACKLOG.md)'s
+ * second journey, delivered **as far as this environment can carry it**.
+ *
+ * ### ⛔ Why the last hop is not here, verified rather than assumed
+ *
+ * **The verification link is written to the dev server's stdout** — that is
+ * `lib/auth/email.ts`'s console transport, the only one a lane runs. ⚠️ **And
+ * `playwright.config.ts` deliberately declares no `webServer`**, because a
+ * lane already owns its dev server on its own port — **so the runner does not
+ * hold that process's output and cannot read the link.**
+ *
+ * ⛔ **The three ways to fake it are all refused.** Minting a token in the
+ * test forges a credential; seeding a pre-verified account skips the gate the
+ * journey exists to prove; tailing a log file is not a customer journey.
+ * **[D-151](../../../docs/DECISION_REGISTER.md) ④ is explicit — real tokens,
+ * real URLs, real expiry.**
+ *
+ * ✅ **[TASK-474](../../../docs/BACKLOG.md) is the capability that closes it**
+ * — the developer mailbox, `READY` on `lane-c-sync` and `SEQUENCED` on
+ * `integration`.
+ *
+ * ⚡ **What is asserted instead is the half that needs no mailbox and carries
+ * the security meaning: the gate is real.** `requireEmailVerification: true`,
+ * so a fresh account must not reach a session — **and that is the property a
+ * regression would actually break.**
+ */
+test.describe('Registration → Verification → Login', () => {
+  test('@journey an unverified account cannot sign in, which is the gate working', async ({
+    page,
+  }) => {
+    const address = `marta.${Date.now()}@northwind.example`;
+    const password = 'Correct-Horse-9';
+
+    await page.goto('/sign-up');
+    await page.getByLabel('Full name').fill('Marta Reinhardt');
+    await page.getByLabel('Work email').fill(address);
+    await page.getByLabel('Password', { exact: true }).fill(password);
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.waitForURL(/\/verify-email/, { timeout: 30_000 });
+
+    // The account now exists and is unverified. Signing in must fail, and
+    // must fail without saying which half was wrong.
+    await page.goto('/sign-in');
+    await page.getByLabel('Work email').fill(address);
+    await page.getByLabel('Password', { exact: true }).fill(password);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    // ⛔ **Never the attention list.** A session before verification would
+    // make `requireEmailVerification` decorative.
+    await expect(page).toHaveURL(/\/sign-in/);
+    await expect(
+      page.getByRole('heading', { name: 'Attention', level: 1 }),
+    ).toHaveCount(0);
+  });
+});
