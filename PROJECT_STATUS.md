@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `5e06adc`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3ed76cf`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `5e06adc`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `3ed76cf`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`5e06adc`** — the certified commit itself |
+| **`main`** | **`3ed76cf`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 121 promoted Workflow 4 · Forgot Password** — **claimed one minute after cycle 120 unblocked it, delivered in the next cycle** |
-| **Certification** | ✅ [`5e06adc53cef`](certification/reports/5e06adc53cef.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 122 released the six rows QE was holding** — **`eligible_count` went from 1 to 10 on `main`** |
+| **Certification** | ✅ [`3ed76cf1480a`](certification/reports/3ed76cf1480a.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **[B-149](docs/BUGS.md) is `VERIFIED`** — returned in cycle 115, fixed and promoted in 116 |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ✅ ⚡ **A person who has forgotten their password can reset it** — and the screen **prints the true expiry rather than the design's number** |
+| **Customer value this cycle** | ⛔ **None directly.** ⚡ **Ten claimable rows where there was one** — the constraint on the next several cycles was QE's own exclusion |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1694 frontend tests** *(+8)* across **72 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **195s** *(`Build 55s` — a frontend cycle, **the reading holds a ninth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1694 frontend tests** *(+8)* across **72 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **154s** *(`Startup 19s` — a backend-only cycle, **the reading holds a tenth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,74 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 121
+## 1d · Release summary — 2026-08-08, cycle 122
+
+**Derived from the promoted commit `3ed76cf`.** **Seventy-seven promotions.** ⛔ **QE released a hold it had placed itself — and the evidence that resolved it was one `git log -L` away the whole time.**
+
+### ⛔ What QE was holding, and what it cost
+
+**Cycle 121 excluded [D-183](docs/DECISION_REGISTER.md) and [D-184](docs/DECISION_REGISTER.md) on a `BACKLOG.md` conflict QE judged unadjudicable.** ⚡ **Lane A measured the consequence and reported it before QE noticed:**
+
+> *"TASK-483, 484, 474, 498, 488 and 489 are all `READY` on `lane-c-sync` and `SEQUENCED` on `origin/integration`, so all six are invisible to the Task Claim Protocol, which claims from `integration` and nowhere else."*
+
+⛔ **Six rows, and the proximate cause was QE's exclusion.**
+
+### ✅ The check that resolved it, and why it should have been the first one
+
+**The contested line was `TASK-486`'s `Features` cell. QE's cycle-121 reasoning was: Lane C deletes it, `integration` holds a longer version, neither contains the other, therefore not QE's to judge.** ⚡ **What that reasoning never asked was *who wrote the longer version*.**
+
+```
+git log -L 1053,1053:docs/BACKLOG.md origin/integration
+  → 6e7fc924  D-160 — the pipeline is 27 workflows deep …
+```
+
+✅ **A Lane C decision package.** ⛔ **Both versions are Lane C's own text, and Lane C's tip says delete** — **so there was never a cross-lane judgement to make.**
+
+> ⚡ **The caution was not wrong; it was under-investigated.** **"Neither side contains the other" is a fact about two blobs. "Whose text is this?" is a fact about authorship, and it is the one that decides whether a conflict is QE's at all.** ✅ **That question is now part of the resolution: before excluding a register conflict, blame the contested line.**
+
+### ✅ What that released, measured on `main`
+
+```
+eligible_count = 1     →     eligible_count = 10
+```
+
+| Row | State on `main` |
+|---|---|
+| **`TASK-483` · `474` · `498` · `488` · `489`** | ✅ **`READY`** |
+| **`TASK-484`** | 🔵 **`CLAIMED`** — Lane A took it mid-cycle |
+
+⚡ **[D-184](docs/DECISION_REGISTER.md)'s floor is ten, and ten is what `main` now offers** — *"every one decomposed."*
+
+### ✅ Also promoted
+
+| | |
+|---|---|
+| **[D-183](docs/DECISION_REGISTER.md)** *(Lane C)* | Five claimable rows, in an order, **and [D-163](docs/DECISION_REGISTER.md) amended rather than reinterpreted** |
+| **[D-184](docs/DECISION_REGISTER.md)** *(Lane C)* | The floor is ten, **and two of them cost real decomposition** |
+| **[C-242](docs/LANE_COORDINATION.md) update** *(Lane A)* | The measurement above, taken on both refs |
+
+### ⚡ Lane A's report is the model for this class of finding
+
+**It named the count, named the mechanism, and named the counter-evidence against its own alarm:**
+
+> *"`TASK-487` is not in the table because it reached `integration`: this lane claimed it, built it and it is `IN VALIDATION`. That is the proof the mechanism works the moment the ref moves — one fast-forward took the lane from idle to a delivered workflow inside one poll."*
+
+⛔ **And it declined to re-argue the part that was already owned:** *"Two of the six are rows Lane C says it should have released yesterday… Recorded rather than re-argued; Lane C found it and owns it."*
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1694 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **127 runs recorded, 119 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 154s |
+| **Dependency** | ✅ **Cleared.** ⛔ **The dependency was QE's own hold, and it lasted one cycle** |
+| **Customer Value** | ⛔ **None directly** — **ten claimable rows where there was one** |
+| **Process** | ⚠️ **A lane measured a constraint QE had created and reported it without accusation.** ⚡ **That is the register working, and the correction cost one cycle rather than a governance change** |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 121
 
 **Derived from the promoted commit `5e06adc`.** **Seventy-six promotions.** ⚡ **Workflow 4 shipped one cycle after the unblock that made it claimable — and the screen tells the truth about a credential's lifetime rather than repeating the design.**
 
