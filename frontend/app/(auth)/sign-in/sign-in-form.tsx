@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useId, useRef, useState } from 'react';
 
-import { Button, Input } from '@/components/ui';
+import { Button, Input, PasswordField } from '@/components/ui';
 import { signIn, signInWithPassword } from '@/lib/auth/client';
 
 import { AuthLink } from '../auth-shell';
@@ -60,7 +60,6 @@ export function SignInForm({
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [reveal, setReveal] = useState(false);
   const [remember, setRemember] = useState(false);
   const [fieldError, setFieldError] = useState<'email' | 'password' | null>(null);
   // **The field says what to do; the summary says what happened.** The design
@@ -260,29 +259,18 @@ export function SignInForm({
           />
 
           <div className="flex flex-col gap-1">
-            <div className="relative">
-              <Input
-                ref={passwordRef}
-                label="Password"
-                type={reveal ? 'text' : 'password'}
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                aria-describedby={error ? summaryId : undefined}
-                className="pr-16"
-                {...(fieldError === 'password' && fieldMessage ? { error: fieldMessage } : {})}
-              />
-              {/* 2.1.1 — a real button, reachable and operable by keyboard.
-                  3.3.8 — paste stays permitted; nothing here blocks it. */}
-              <button
-                type="button"
-                onClick={() => setReveal((shown) => !shown)}
-                aria-pressed={reveal}
-                className="absolute right-2 top-8 rounded px-2 py-1 text-xs font-medium text-content-muted transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-              >
-                {reveal ? 'Hide' : 'Show'}
-              </button>
-            </div>
+            {/* ⚡ **The reveal control moved into `components/ui` unchanged**
+                when screen 06 needed the same one — §20c, *add to the library,
+                never beside it*. The markup, the `aria-pressed` state and the
+                permitted paste are identical; only its address changed. */}
+            <PasswordField
+              ref={passwordRef}
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              aria-describedby={error ? summaryId : undefined}
+              {...(fieldError === 'password' && fieldMessage ? { error: fieldMessage } : {})}
+            />
             {/* ⚠️ **The design places this beside the *label*; it is placed
                 beside the *field* instead.** `Input` renders its own label and
                 §20c forbids reshaping a shared component for one page's

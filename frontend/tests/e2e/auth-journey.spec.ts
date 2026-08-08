@@ -90,7 +90,13 @@ test.describe('sign-in surface', () => {
     await page.goto('/sign-in');
 
     await expect(page.getByRole('link', { name: 'Create an account' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Forgot your password?' })).toBeVisible();
+    // ⚠️ **Repaired, not rewritten.** Workflow 1 renamed this link to the
+    // design's wording and left this assertion naming the old one, which no
+    // substring match rescues — `Forgot your password?` is not inside
+    // `Forgot password?`. **Found by extending this file rather than by a
+    // gate**, which is the same class as the dead `/sso` link Workflow 1
+    // shipped: a suite that never runs cannot report its own staleness.
+    await expect(page.getByRole('link', { name: 'Forgot password?' })).toBeVisible();
   });
 
   test('offers a provider button when one is configured, and nothing when not', async ({
@@ -201,5 +207,95 @@ test.describe('the OAuth round trip', () => {
     // identical and the token carries no record of the method (ADR-0033).
     await page.waitForURL((url) => url.pathname === '/', { timeout: 30_000 });
     await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+  });
+});
+
+/**
+ * **Workflow 2 · Registration** — [TASK-485](../../../docs/BACKLOG.md), screen
+ * `06 · Create account`.
+ *
+ * ⚡ **Extends this file rather than replacing it**, which the row states in
+ * terms. The sign-in journeys above are untouched.
+ */
+test.describe('Workflow 2 · creating an account', () => {
+  test('the screen the design draws is the screen that renders', async ({ page }) => {
+    await page.goto('/sign-up');
+
+    await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
+    // *"Step 1 of 2 · takes about a minute"* — the design's own subtitle, and
+    // the reason the button says **Continue** rather than *Create account*.
+    await expect(page.getByText('Step 1 of 2 · takes about a minute')).toBeVisible();
+    await expect(page.getByLabel('Full name')).toBeVisible();
+    await expect(page.getByLabel('Work email')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible();
+  });
+
+  test('the strength meter answers the password as it is typed', async ({ page }) => {
+    await page.goto('/sign-up');
+    const meter = page.getByRole('meter', { name: 'Password strength' });
+
+    await expect(meter).toHaveAttribute('aria-valuenow', '0');
+    await page.getByLabel('Password').fill('Correct-Horse-9');
+    await expect(meter).toHaveAttribute('aria-valuenow', '3');
+  });
+
+  test('⛔ the strength list reports and never gates', async ({ page }) => {
+    // **`lib/auth/password.ts`: *length is the only requirement*.** A long
+    // all-lowercase password satisfies one rule of three and must still be
+    // accepted, because refusing it would be this screen inventing a security
+    // rule the platform deliberately does not have.
+    await page.goto('/sign-up');
+
+    await page.getByLabel('Password').fill('anappleadayxx');
+    await expect(page.getByRole('meter', { name: 'Password strength' })).toHaveAttribute(
+      'aria-valuenow',
+      '1',
+    );
+    await expect(page.getByRole('button', { name: 'Continue' })).toBeEnabled();
+  });
+
+  test('⛔ no rule is drawn that nothing checks', async ({ page }) => {
+    // The design's fourth rule needs Better Auth's `haveIBeenPwned` plugin,
+    // which is a server hook and outside this row's budget. Raised, not drawn.
+    await page.goto('/sign-up');
+    await expect(page.getByText(/breach/i)).toHaveCount(0);
+  });
+
+  test('the agreement is stated, and it leads nowhere it cannot', async ({ page }) => {
+    // **The line is required and the destinations do not exist** — the
+    // design's own markup points both words at `#legal`, and no legal route
+    // or configured URL exists in this repository. **Two dead links is what
+    // Workflow 1 had to repair**, so the sentence renders and the words are
+    // not links.
+    await page.goto('/sign-up');
+
+    await expect(
+      page.getByText('By continuing you agree to the Terms and Privacy Notice.'),
+    ).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Terms' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Privacy Notice' })).toHaveCount(0);
+  });
+
+  test('the product mark is the way back, since the design gives no other', async ({ page }) => {
+    await page.goto('/sign-up');
+    await page.getByRole('link', { name: 'Fortune Signora' }).click();
+    await expect(page).toHaveURL(/\/welcome$/);
+  });
+
+  test('@journey a person creates an account and reaches verification', async ({ page }) => {
+    // **The journey the row names.** A fresh address each run, because the
+    // account it creates is real — Better Auth is untouched and there is no
+    // development-only registration path (D-156, D-158).
+    const address = `marta.${Date.now()}@northwind.example`;
+
+    await page.goto('/sign-up');
+    await page.getByLabel('Full name').fill('Marta Reinhardt');
+    await page.getByLabel('Work email').fill(address);
+    await page.getByLabel('Password').fill('Correct-Horse-9');
+    await page.getByRole('button', { name: 'Continue' }).click();
+
+    await page.waitForURL(/\/verify-email/, { timeout: 30_000 });
+    // The address travels, so screen 07 can say which mailbox to open.
+    await expect(page).toHaveURL(new RegExp(encodeURIComponent(address).replace(/\./g, '\\.')));
   });
 });
