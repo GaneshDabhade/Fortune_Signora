@@ -13,7 +13,7 @@ generated_from = "3249740"
 task_count     = 102
 
 [lane.Lane_A]
-notice             = "B-214 NEEDS NO ROW — fix it now. workspace_tenancy is YOUR module (modules.toml) and the map is modules/workspace_tenancy/interface/errors.py, NOT signora_platform. Change Budget green covers 'a bug fix inside it', freely. Announce it in the commit because it changes an error contract. Reasoning: queues/lane-a.toml when QE integrates."
+notice             = "D-193/D-194: 'Authenticated Entry' is now the authority for ALL post-login behaviour. TASK-468 and TASK-469 (both yours) have NO DEFINED EXIT and the spec says both must exit through resolveEntry with intent=null — do NOT choose a destination in either flow. Also: sign-in-form.tsx:148 router.push('/') is the entry decision hardcoded in a module, which the spec forbids; it is a finding, not yours t"
 current            = "TASK-470"
 next               = ""
 next_after_that    = ""
