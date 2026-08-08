@@ -35,7 +35,23 @@ export interface MailboxEntry extends AuthEmail {
  */
 export const MAILBOX_CAPACITY = 50;
 
-const delivered: MailboxEntry[] = [];
+/**
+ * 🔴 **Held on `globalThis`, and this is a Next.js fact rather than a
+ * preference.**
+ *
+ * **Next compiles a route handler and a page into separate module graphs**,
+ * so a plain module-level array gives the two of them *two stores*: Better
+ * Auth's route records a delivery into one, and `/dev/mailbox` renders the
+ * other, empty. ⚠️ **Found by the journey failing, not by reasoning** — the
+ * page returned `200` with *"Nothing sent yet"* immediately after a
+ * registration whose `POST /api/auth` is in the same log.
+ *
+ * ⛔ **It looks exactly like data loss and is not**, which is why it is
+ * written down here rather than fixed silently.
+ */
+const STORE = Symbol.for('signora.auth.mailbox');
+type Global = typeof globalThis & { [STORE]?: MailboxEntry[] };
+const delivered: MailboxEntry[] = ((globalThis as Global)[STORE] ??= []);
 
 /** Record a delivery. Called by the transport, never by a flow. */
 export function remember(email: AuthEmail): void {

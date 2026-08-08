@@ -82,6 +82,20 @@ ENTERED_FROM_OUTSIDE: Final = {
     #
     # **Declared by Lane A on the same delegation as the row above** (B-123):
     # the lane that knows why a route has no entrance is the lane that built it.
+    # **A developer tool, and the only route here that is not a customer's.**
+    # ⚡ **Nothing in the product links to it and nothing should**: it renders
+    # only when `emailTransport` is `mailbox`, and `loadAuthConfig` refuses to
+    # start with that transport in a deployed environment — so a customer can
+    # never reach it, by construction rather than by omission.
+    #
+    # **Declared by Lane A on the same B-123 delegation as the rows above**:
+    # the lane that knows why a route has no entrance is the lane that built
+    # it. ⚠️ **Its placement was the product owner's choice** — `infra/` is
+    # Lane C's module (TASK-474).
+    "/dev/mailbox": (
+        "the development mailbox — a developer tool, reachable only where "
+        "`emailTransport` is `mailbox`, which cannot be a deployed environment"
+    ),
     "/error": (
         "reached by redirect from the identity provider when a federated "
         "sign-in is refused — design 16, and nobody navigates to an error"

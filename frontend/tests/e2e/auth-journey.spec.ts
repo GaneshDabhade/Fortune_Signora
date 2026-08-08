@@ -434,3 +434,38 @@ test.describe('Registration → Verification → Login', () => {
     ).toHaveCount(0);
   });
 });
+
+/**
+ * **The development mailbox** — [TASK-474](../../../docs/BACKLOG.md).
+ *
+ * ⚠️ **In this file, not its own, and that is the `owner`/`anonymous` lesson
+ * again**: `playwright.config.ts` gives the `anonymous` project a
+ * `testMatch` of `auth-journey|workflow1-login`, so a new spec file is
+ * collected by no project and reports *"No tests found"* rather than failing.
+ *
+ * ⛔ **Skipped unless the mailbox is the transport.** The page 404s otherwise,
+ * by design, and a test that demanded it would be asserting a configuration
+ * rather than a behaviour.
+ */
+test.describe('the development mailbox', () => {
+  test('@journey a registration lands a real, openable link in it', async ({ page }) => {
+    const probe = await page.goto('/dev/mailbox');
+    test.skip(probe?.status() === 404, 'requires SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox');
+
+    const address = `marta.${Date.now()}@northwind.example`;
+    await page.goto('/sign-up');
+    await page.getByLabel('Full name').fill('Marta Reinhardt');
+    await page.getByLabel('Work email').fill(address);
+    await page.getByLabel('Password', { exact: true }).fill('Correct-Horse-9');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await page.waitForURL(/\/verify-email/, { timeout: 30_000 });
+
+    await page.goto('/dev/mailbox');
+    const entry = page.locator('li', { hasText: address });
+    await expect(entry).toBeVisible();
+
+    // ⚡ **The link is real and openable** — that is the row's whole ask, and
+    // the token is Better Auth's own.
+    await expect(entry.getByRole('link')).toHaveAttribute('href', /verify-email\?token=/);
+  });
+});

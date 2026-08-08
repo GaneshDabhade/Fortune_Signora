@@ -121,3 +121,35 @@ describe('🔴 it cannot exist in a deployed environment', () => {
     expect(() => loadAuthConfig()).toThrow(/not a transport this build has/i);
   });
 });
+
+describe('the surface exists only where the store can', () => {
+  it('🔴 404s unless the mailbox is the transport', async () => {
+    /**
+     * ⛔ **One guard, and it is the transport itself.** `loadAuthConfig`
+     * already refuses to start with `mailbox` in a deployed environment, so
+     * tying the page to the transport means **the surface cannot exist where
+     * the store cannot exist** — there is no second condition to keep in step
+     * with the first.
+     *
+     * ⚠️ **A 404 rather than an empty page**: with `console` selected there is
+     * nothing to show, and *"no emails yet"* would be indistinguishable from a
+     * mailbox that had lost them.
+     */
+    vi.stubEnv('SIGNORA_AUTH_EMAIL_TRANSPORT', 'console');
+    vi.stubEnv('SIGNORA_ENVIRONMENT', 'local');
+    vi.stubEnv('SIGNORA_AUTH_DATABASE_URL', 'postgresql://x@localhost:5432/signora');
+    vi.stubEnv('BETTER_AUTH_SECRET', 'a-secret-this-suite-sets');
+    vi.resetModules();
+
+    const notFound = vi.fn(() => {
+      throw new Error('NEXT_NOT_FOUND');
+    });
+    vi.doMock('next/navigation', () => ({ notFound }));
+
+    const { default: MailboxPage } = await import('@/app/dev/mailbox/page');
+
+    expect(() => MailboxPage()).toThrow('NEXT_NOT_FOUND');
+    expect(notFound).toHaveBeenCalled();
+    vi.doUnmock('next/navigation');
+  });
+});
