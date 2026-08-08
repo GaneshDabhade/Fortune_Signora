@@ -8038,3 +8038,19 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 | 🔴 **And the lookup itself is the question** | ⚠️ **It must answer an unauthenticated caller** — a person registering has no session. **So *"does this company use Signora?"* becomes answerable by anyone with the sign-up form**, from any email domain, one guess at a time. ⛔ **That is the account-enumeration trade the sign-in screen's wording exists to refuse**, one level up: **not *does this person exist* but *is this company a customer*** |
 
 > ⚡ **This is not a build estimate; it is a disclosure decision.** **The design draws a genuinely better journey** — being offered a request to join beats creating a second workspace for the same company — **and the mechanism it needs publishes the customer list to unauthenticated callers.** ⛔ **A lane should not settle that quietly**, which is [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability)'s own lesson.
+
+### ⑤ 🔴 Workflow 2's journey begins on a screen no anonymous visitor is sent to
+
+**[TASK-485](BACKLOG.md) names this as the one gap it *"must settle before implementation"***, and records it as solved: *"the design's `01 Welcome` needed a public root outside `(app)`* — ✅ *Lane A built it in Workflow 1 milestone 3."*
+
+⚠️ **Half of it is solved.** ✅ **The route exists at `/welcome`, it is reachable, and the product mark on every authentication screen leads to it.** ⛔ **But nothing *sends* anybody there**: `app/(app)/layout.tsx:35` still reads `if (!session?.user) redirect('/sign-in')`, so **an anonymous visitor to `/` lands on the sign-in card and never sees the front door.**
+
+⚡ **It mattered less in Workflow 1 and it matters now.** **Journey 2 in the design is the one this row builds** — *Welcome → Create account → Verify email → Workspace creation* — **and its first step is reachable only by somebody who already knew to look for it.**
+
+| | |
+|---|---|
+| **Why this lane did not change it** | ⛔ **Out of [TASK-485](BACKLOG.md)'s Change Budget**, which names `frontend/app/(auth)/` and `components/ui`. **`app/(app)/layout.tsx` is neither.** ⚠️ **And [D-159](DECISION_REGISTER.md) reuses routing** — *"only the customer-visible presentation layer is being replaced"* — **so redirecting the product's front door is a product decision, not a presentation change** |
+| **The decision, in one sentence** | **Does an anonymous visitor to `/` land on `01 Welcome` or on `02 Sign in`?** ⚡ **The design says Welcome; the product has said `/sign-in` since M1** |
+| **What it costs either way** | ✅ **One line.** ⚠️ **It changes the first thing every returning customer sees** — a signed-out seller reopening a bookmark meets a marketing card instead of the password field they came for, which is the argument *for* the current behaviour and worth ruling on rather than inheriting |
+
+> ⛔ **Raised in Workflow 1 as a code comment and never as an item, which is the process defect here.** **A decision recorded only where the implementing lane can see it is a decision nobody made** — [§20e](../CLAUDE.md), and the reason [C-421](#c-421--a-lane-must-be-able-to-read-the-design-it-is-implementing-against) exists.
