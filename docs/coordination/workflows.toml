@@ -101,7 +101,7 @@ excluded    = [
 
 [workflow.2]
 name        = "Registration"
-state       = "in_validation"
+state       = "on_main"
 # ⚡ DELIVERED 2026-08-08 — TASK-485 IN VALIDATION with a headed journey pass.
 # ⚠️ Was `in_progress` until 2026-08-08. The row moved to IN VALIDATION and the
 # workflow's state did not follow — the same defect one level up, and the state
@@ -114,7 +114,11 @@ depends_on  = ["workflow.1"]
 
 [workflow.3]
 name        = "Email Verification"
-state       = "active"
+state       = "on_main"
+# ⚠️ On `main` WITHOUT its primary control — screen 07's six-digit boxes.
+# `email-otp` is installed and unregistered; TASK-498 registers it. Lane A
+# shipped everything else and wrote a test asserting the boxes' ABSENCE,
+# which is the difference between a declared limitation and a discovered one.
 # ⚡ RELEASED 2026-08-08 on Workflow 2's IN VALIDATION, not on `main` — see
 # release_rule above. Lane A must not idle a QE cycle at every boundary.
 # ⚠️ Set `active` 2026-08-08, corrected from `ready`. The header says `active`
@@ -136,7 +140,7 @@ depends_on  = ["workflow.2"]
 
 [workflow.4]
 name        = "Forgot Password"
-state       = "sequenced"
+state       = "on_main"
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["08 Forgot password"]
 tasks       = ["TASK-487"]
@@ -145,7 +149,12 @@ depends_on  = ["workflow.3"]
 
 [workflow.5]
 name        = "Password Reset"
-state       = "sequenced"
+state       = "active"
+# ⚡ 2026-08-08 — Workflows 1-4 reached `on_main` at QE cycle 121. This is the
+# workflow implementation may build in now. TASK-488 is claimable.
+# ⚠️ Workflow 4 is FORGOT PASSWORD (asking for the link). Workflow 5 is
+# PASSWORD RESET (setting the new one). They are two screens and two rows,
+# and conflating them overstates what has shipped by one journey.
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["09 Set a new password", "10 Success"]
 tasks       = ["TASK-488"]

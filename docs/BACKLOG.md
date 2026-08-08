@@ -947,7 +947,8 @@
 | ⚡ **① The breach-corpus rule** | **Ruled [C-240](LANE_COORDINATION.md) ①. Better Auth 1.6.25 ships it; it is configuration, not a build** |
 | ⚡ **② The rate limiter** | **Ruled [C-240](LANE_COORDINATION.md) ② and previously [C-434](LANE_COORDINATION.md) ③ / [D-170](DECISION_REGISTER.md) §3: *"rate limiting is enabled in development wherever practical — development should behave as close to production as reasonably possible"*** |
 | 🔴 **③ `email-otp`, and the control Workflow 3 shipped without** | 📁 **`better-auth/plugins/email-otp` is installed and unregistered; `lib/auth/server.ts:73` sends `{ user, url }`, so no endpoint accepts a typed code.** ✅ **`otpLength = 6`, and it is NOT an open parameter** — 📁 **the design says it in terms: *"Enter the 6-digit code we sent to…"***, **and [D-138](DECISION_REGISTER.md) makes the snapshot the authority ([C-241](LANE_COORDINATION.md)).** ✅ **Registering it makes screen `07`'s six boxes buildable** — ⚠️ **and this row does NOT build them: it makes them possible, and [TASK-486](#task-486--workflow-3--email-verification-to-the-approved-design)'s successor renders them** |
-| ⚡ **④ The front door** | **Ruled [C-240](LANE_COORDINATION.md) ⑤ *to schedule*.** ⛔ **Its *direction* is recorded as still open in that item — so this row implements what was approved and stops there.** ⚠️ **If the direction is unresolved at claim time, that half is deferred with the reason in the commit, never guessed** |
+| ⚡ **④ The front door** | ✅ **RULED [D-185](DECISION_REGISTER.md) §2 — [C-240](LANE_COORDINATION.md) ⑤ closed.** **`/` becomes the Signora Welcome experience.** ⛔ **This row does NOT implement it** — ⚡ **the routing change is [TASK-499](#task-499--the-route-map-becomes-the-products-not-the-frameworks), because it is `frontend/app/` and a different Change Budget from this row's `lib/auth/server.ts`.** ✅ **What this row does is stop deferring: the direction is decided, so nothing here is guessed** |
+| ⚡ **⑤ The reset token lives thirty minutes** | ✅ **Ruled [D-185](DECISION_REGISTER.md) §1 — [C-243](LANE_COORDINATION.md) closed.** **`resetPasswordTokenExpiresIn: 1800` in `lib/auth/server.ts`.** ⛔ **`better-auth` defaults to `3600` and the design says thirty; the product owner's ruling is that **the framework implements the product, it does not define it** — so the configuration moves, never the design.** ✅ **And screen `08`'s copy returns to the design's own sentence — *"expires in 30 minutes"* — which is TRUE once this line lands and is false until it does.** 🔴 **The two must ship in the same change**: ⛔ **setting the config without the copy leaves a screen understating a credential's life, and changing the copy without the config restores exactly the lie Lane A refused to print** |
 | ⛔ **What this row must not do** | **Add a private signing key, a login or token-refresh route, an OAuth flow, or password storage to the Python tier** ([§13](../CLAUDE.md), [ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md)) · **widen the RS256 pin** · **add a skip-auth flag** · **decide any semantic the ruling did not name** |
 | **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authentication.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
 | **Reusable components required** | ✅ **None — this row renders nothing.** ⚡ **That is what makes it safe to place early** |
@@ -959,6 +960,44 @@
 | ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `frontend/lib/auth/` · **Routes** none new · **APIs** Better Auth's own · **Security Invariant** ⛔ **the RS256 pin is asserted unchanged — a configuration slice touching the auth surface is exactly where that would slip** |
 | ✅ **Verification strategy** | **The existing journeys passing unchanged IS the verification.** ⚠️ **A configuration change that alters a passing journey has changed a semantic, and that is the failure this row exists to avoid** |
 | ⚠️ **The standing recommendation this row does not take** | ⛔ **[C-241](LANE_COORDINATION.md) recommends `lib/auth/server.ts` join [§20e](../CLAUDE.md)'s *"registries every lane extends — append-only"* table, on [C-224](LANE_COORDINATION.md)'s precedent for `Resource`.** ⚡ **That would end the class rather than answer its third instance.** ⛔ **`CLAUDE.md` is the product owner's and this office does not edit it** |
+
+### TASK-499 · The route map becomes the product's, not the framework's
+
+| | |
+|---|---|
+| ✅ **Ruled, not proposed** | **[D-185](DECISION_REGISTER.md) §2, product owner: *"`/` becomes the Signora Welcome page… Do not optimize around today's implementation convenience. Optimize for the long-term product experience."*** ⛔ **This row implements a decision; it does not reopen one** |
+| **Module** | **`product_surface`** — assignee joined from [`modules.toml`](coordination/modules.toml) |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-498](#task-498--the-authentication-configuration-surface-and-the-three-controls-already-ruled), Lane C 2026-08-08.** ⚡ **Both touch the authentication surface and a route rename lands more safely after the configuration is settled** |
+| 🔴 **The measured delta — five renames, not one move** | ⚠️ **Reported plainly because [D-185](DECISION_REGISTER.md) §2 reads as *"make Welcome the front door"* and the repository's current names differ on five of six routes.** ⛔ **A lane discovering this mid-slice would either widen its own budget or stop** |
+
+| Today, on `main` | [D-185](DECISION_REGISTER.md) §2 | |
+|---|---|---|
+| `(app)/page.tsx` **serves `/`** | ⚡ **`/` serves Welcome** | 🔴 **The authenticated home needs a new path — it is NOT `/` any more** |
+| `(auth)/welcome` | **`/`** | **moves** |
+| `(auth)/sign-in` | **`/signin`** | **renamed** |
+| `(auth)/sign-up` | **`/register`** | ⚡ **renamed, and this is the [ADR-0034](architecture/adr/0034-ubiquitous-language.md) one** — **a customer *registers*; only engineers *sign up*** |
+| `(auth)/verify-email` | **`/verify`** | **renamed** |
+| `(auth)/reset-password` | **`/reset/:token`** | 🔴 **renamed *and reshaped* — the token moves from a query parameter into the path, which changes the link `better-auth` must emit** |
+| `(auth)/forgot-password` | **`/forgot-password`** | ✅ **unchanged — the one that already agrees** |
+
+| | |
+|---|---|
+| ⚡ **What must move with the routes, and is the actual work** | **① every internal link and redirect** · **② `better-auth`'s `resetPassword` callback URL, because `/reset/:token` is a path parameter and today's link is not** · **③ every Playwright spec that navigates by URL** — 📁 **`auth-journey.spec.ts` and the Workflow 2/3/4 journeys all do** · **④ the authenticated home's new path, and every link that assumed `/`** |
+| 🔴 **The signed-out experience `/` must now serve** | 📁 **[D-185](DECISION_REGISTER.md) §2: *"the first customer experience for signed-out users, providing access to all supported authentication paths."*** ⚡ **Screen `01 Welcome` exists and is on `main` from Workflow 2** — ⛔ **so this row *re-points* it and does not rebuild it** |
+| ⚠️ **The middleware question this row must answer** | ⛔ **`/` is currently authenticated. Making it public means a signed-IN customer arriving at `/` must land somewhere sensible rather than at a marketing page.** ✅ **The design's own answer is the rule: Welcome is *"the first customer experience for signed-out users"* — so a signed-in caller is redirected to the app home.** ⛔ **That redirect is the row's, and it must not be inferred by whoever implements it** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authentication.dc.html`, screen `01 Welcome`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **No backend change.** ⚡ **Routing is `frontend/app/` and the only server-side touch is `better-auth`'s reset callback URL** |
+| **Reusable components required** | ✅ **None new** — **screen `01` is built and on `main`** |
+| **Shared layout** | **`(auth)/auth-shell.tsx` for the authentication routes; `/` composes Welcome directly** |
+| **Development simulation** | ✅ **None** |
+| **Manual review gate** | **Headed, watched** ([D-134](DECISION_REGISTER.md)) — ⚡ **and this is the slice where that matters most: a customer's *first* screen** |
+| **Change Budget** | 🟢 **`frontend/app/**` routes, `frontend/tests/e2e/**`** · 🟠 **`lib/auth/server.ts`'s reset callback URL — announced in the commit** · 🔴 **nothing** |
+| **Playwright coverage** | ⛔ **Every existing journey must pass with the NEW paths** — ⚡ **that is the assertion, and a rename that quietly breaks one is exactly what this row exists to prevent** · **new: a signed-out caller reaching `/` sees Welcome and can reach sign-in, register and forgot-password from it** · **new: a signed-IN caller reaching `/` lands on the app home** |
+| **Component coverage** | **No route in the product links to a path that no longer exists** — ⚡ **asserted by a test over the route table, not by review** |
+| **Definition of Done** | **Every state · journey headed · certified · `main` · approved** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Routes** `/`, `/signin`, `/register`, `/verify`, `/forgot-password`, `/reset/:token` · **APIs** none · **Playwright** all four shipped journeys, re-pathed · **Security Invariant** ⛔ **making `/` public must not make any *other* route public — the middleware matcher is asserted, not assumed** |
+| ✅ **Verification strategy** | **Four shipped customer journeys passing unchanged on new paths IS the verification.** ⚠️ **If any needs its assertions changed rather than its URLs, the rename has altered behaviour and the slice stops** |
+| **Build-vs-Buy** | ✅ **n/a** |
 
 ### TASK-497 · Planning state reaches a lane without waiting for a certification cycle
 

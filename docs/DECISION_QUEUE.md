@@ -15,41 +15,6 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
-## 🟢 C-242 · Lane A's dependency map — a record, and three of its four are now closed
-
-> ⚡ **Listed here because it names a decision that is still yours, not because it asks for one.** ⛔ **It stays `OPEN` as [C-242](LANE_COORDINATION.md)'s own words say — *"a record, not as a request"* — and closing another lane's item is that lane's** ([§20e](../CLAUDE.md)).
-
-| | Dependency | Now |
-|---|---|---|
-| **①** | **Executable rows on `lane-c-sync`, not `integration`** | ✅ **Cleared — QE cycle 121.** ⚡ **Two rows are claimable on `integration` right now, the first non-zero in three cycles** |
-| **②** | **A row that may touch `lib/auth/server.ts`** | ✅ **Resolved — [TASK-498](BACKLOG.md)** |
-| **③** | 🔴 **The front door's direction** | 🔴 **STILL YOURS — [C-240](LANE_COORDINATION.md) ⑤.** ⚡ **Lane A's default is `01 Welcome` under [D-162](DECISION_REGISTER.md), and [TASK-498](BACKLOG.md) defers that half rather than guessing** |
-| **④** | **[B-406](BUGS.md)** | ✅ **Agreed — not a dependency** |
-
-> ## ⛔ **One sentence closes ③, and it is the only thing in this row that is a decision.**
-
-## 🟠 C-243 · The reset link lives an hour; the design says thirty minutes
-
-> ## ⚡ **Nothing is blocked and Workflow 4 is on `main`.** ⛔ **What is open is which number should be *true*.**
->
-> 📁 **The design, verbatim:** ***"If an account exists, you'll get a reset link that works once and expires in 30 minutes."***
-> 🔴 **The platform:** **`better-auth`'s `resetPasswordTokenExpiresIn` defaults to `3600`, and `lib/auth/server.ts` does not configure it.** **The link lives an hour.**
-> ✅ **What shipped:** ***"expires in an hour"*** — **the true number, inside the design's own sentence.**
-
-⚡ **Lane A's call was right and is worth stating as the standard**: printing the design's number *"would state a false thing about a credential's lifetime — a customer returning at forty minutes would believe a working link was dead."* ⛔ **A screen that lies about a credential is worse than a screen that disagrees with a document.**
-
-### The decision, and it is one line either way
-
-| | | |
-|---|---|---|
-| ⚡ **"Thirty"** | **Set `resetPasswordTokenExpiresIn: 1800` in `lib/auth/server.ts`** | ✅ **The design becomes true. Shorter-lived credential.** ⛔ **Needs a row — that file is [TASK-498](BACKLOG.md)'s, which already exists** |
-| **"An hour"** | **Change nothing in code; the design snapshot is corrected at its next refresh** | ✅ **Zero work.** ⚠️ **[D-138](DECISION_REGISTER.md) makes the snapshot the authority, so an *uncorrected* snapshot leaves a false number in the implementation authority** |
-
-> ⛔ **Either answer is defensible and this office has no security basis to prefer one** — **30 and 60 minutes are both ordinary reset-token lifetimes.** ⚡ **What is NOT acceptable is leaving the two in disagreement, because the next lane implementing against screen `08` reads the design and would print `30` again.**
-
-✅ **If the answer is *"thirty"*, it costs one line inside a row that already exists.** ⚡ **If it is *"an hour"*, say so and this office carries the correction into the next snapshot refresh.**
-
-
 ## What the ruling released
 
 | | |

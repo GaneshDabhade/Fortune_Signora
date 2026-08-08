@@ -931,6 +931,61 @@ def _ordered(lane: str) -> bool:
     return bool(queue.get("current")) and bool(queue.get("next"))
 
 
+def _structural_findings() -> list[str]:
+    """Did a scripted edit silently delete part of a row? — **B-411, D-185 §5.**
+
+    ⛔ **A register row that *shrank* relative to `origin/integration` is almost
+    always an accident**, because Product Office edits rows by adding cells and
+    amending states, not by removing acceptance criteria a lane has delivered
+    against.
+
+    ⚡ **This exists because the accident already happened and nothing caught it.**
+    A non-greedy `.*?` under `re.S` swallowed the row below the cell it was
+    editing, [TASK-486](../docs/BACKLOG.md) lost its `Features` line — the
+    delivered slice's acceptance criteria — and it surfaced four commits later,
+    at QE, as a merge collision QE correctly declined to adjudicate.
+
+    ⛔ **A deliberate deletion is possible and is not what this refuses.** It
+    refuses an *unannounced* one: name the row in the commit message and the
+    finding stands down. **The check is on the diff, and the licence is a
+    sentence** — which is the same shape as the 🟠 Change Budget rule (§20e).
+    """
+    out: list[str] = []
+    row = re.compile(r"\n### (TASK-\d+)\b(.*?)(?=\n### TASK-|\Z)", re.S)
+
+    def cells(text: str) -> dict[str, int]:
+        return {
+            m.group(1): len([l for l in m.group(2).split("\n") if l.startswith("|")])
+            for m in row.finditer(text)
+        }
+
+    base_raw = _git("show", "origin/integration:docs/BACKLOG.md")
+    if not base_raw:
+        return out
+    here = cells((REPO_ROOT / "docs" / "BACKLOG.md").read_text())
+    base = cells(base_raw)
+    # ⚡ The commit message is the licence — same shape as announcing an 🟠 change.
+    recent = _git("log", "origin/integration..HEAD", "--format=%B")
+
+    for task, before in sorted(base.items()):
+        after = here.get(task)
+        if after is None:
+            if task not in recent:
+                out.append(
+                    f"{task} is on `integration` and absent here, and no commit "
+                    f"message names it. **A row that vanishes unannounced is a "
+                    f"scripted edit that overran** (B-411)."
+                )
+        elif after < before and task not in recent:
+            out.append(
+                f"{task} lost {before - after} line(s) against `integration` and no "
+                f"commit message names it. **This is how TASK-486's acceptance "
+                f"criteria disappeared** (B-411) — name the row in the commit if "
+                f"the deletion is deliberate."
+            )
+    return out
+
+
 def _pipeline_findings() -> list[str]:
     """**Several claimable rows for the implementing lane, in a stated order — and
     exactly one `active` workflow.**
@@ -1762,6 +1817,7 @@ def main() -> int:
     findings.extend(_duplicate_state_findings(backlog))
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
+    findings.extend(_structural_findings())
     findings.extend(_pipeline_findings())
     findings.extend(_adoption_findings())
     findings.extend(_execution_state_findings())

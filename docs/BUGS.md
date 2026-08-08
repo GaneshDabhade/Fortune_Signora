@@ -946,6 +946,36 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-412 · A blind string replace matched its own explanatory comment
+
+| | |
+|---|---|
+| **Module** | **`docs/coordination/` — Product Office's editing practice** |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟡 — ⛔ **it produced invalid TOML, so every instrument failed loudly and nothing shipped broken.** ⚠️ **A quieter version of the same mistake is [B-411](#b-411--a-non-greedy-regex-under-res-swallowed-the-row-below-the-one-it-edited), which shipped silently and reached QE** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-08, in the same change.** **`VERIFIED` is QE's** |
+| **Found** | **2026-08-08, immediately, by `state-check` failing to parse the queue** |
+| **Steps** | **`text.replace('[[blocked]]', new_entry + '[[blocked]]', 1)` on a file whose *comment* mentions `[[blocked]]` above the first real table header** |
+| **Expected** | **A `[[blocked]]` entry inserted at the first table** |
+| **Actual** | ⛔ **The words inserted into the middle of a comment sentence — *"It appears under `[[blocked]]` with its blocker named"* — producing `[[blocked]] with its blocker named.` as a line of TOML** |
+
+> ## ⛔ **The commit doing this was the commit implementing [D-185](DECISION_REGISTER.md) §5**, which reads: ***"continue preferring repository operations that target explicit rows, fields and structured data rather than broad pattern replacement."***
+
+⚡ **So this row is not a confession, it is evidence for the ruling.** **The instruction is correct precisely because the failure is this easy** — ⛔ **a `.replace()` with `count=1` looks maximally careful and still cannot tell data from prose.**
+
+### ✅ What the repair did instead, and it is the general rule
+
+| ⛔ Wrong | ✅ Right |
+|---|---|
+| **`t.replace('[[blocked]]', …, 1)`** | **split on lines, find the line whose `.strip()` *is* `[[blocked]]`, splice there** |
+| **Matches prose, comments, examples** | ⚡ **A structural token matched as a whole line cannot be a mention** |
+
+✅ **And the post-condition that caught it in seconds: `tomllib.loads()` on the file before anything reads it.** **The queue is parsed by four instruments; making the *author* parse it first is one line.**
+
+⚠️ **This is the fifth instance today of one class — a pattern answering a question only the structure can answer** ([B-411](#b-411--a-non-greedy-regex-under-res-swallowed-the-row-below-the-one-it-edited) lists the first four). ⛔ **The pattern across all five is not carelessness; it is that text tools are being used on structured files, and the fix is not more care — it is parsing.**
+
+---
+
 ### B-411 · A non-greedy regex under `re.S` swallowed the row below the one it edited
 
 | | |
