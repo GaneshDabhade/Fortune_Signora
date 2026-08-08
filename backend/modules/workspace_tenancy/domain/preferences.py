@@ -61,6 +61,13 @@ from dataclasses import dataclass, replace
 from enum import StrEnum
 from uuid import UUID
 
+#: The design's segmented control offers `3 · 4 · 5`, and `3` is where it sits.
+#: ⚠️ **A floor, not a threshold anybody else can lower** — the design says
+#: *"yours can be stricter … never looser"*, and the workspace half of that
+#: does not exist yet ([C-249](../../../../docs/LANE_COORDINATION.md)).
+MIN_CONFIDENCE_FLOOR = 3
+MAX_CONFIDENCE_FLOOR = 5
+
 
 class Theme(StrEnum):
     """The design's three, and `SYSTEM` is not a fourth kind of thing.
@@ -82,6 +89,14 @@ class Density(StrEnum):
 
     COMFORTABLE = "comfortable"
     COMPACT = "compact"
+
+
+class AnswerStyle(StrEnum):
+    """*"Direct gives the conclusion first. Detailed shows the reasoning
+    inline before the answer."*"""
+
+    DIRECT = "direct"
+    DETAILED = "detailed"
 
 
 class TimeFormat(StrEnum):
@@ -125,6 +140,30 @@ class PersonPreferences:
     pronouns: str | None = None
     #: *"Used in mentions and comments"*, 2–32 characters per the design.
     display_name: str | None = None
+
+    # ── Screen `04 · AI preferences` ──────────────────────────────────────
+    #
+    # ⚡ **Every default here is the conservative end**, and that is the
+    # design's rule rather than a taste: *"Consent is never inferred."* ⛔ **A
+    # preference nobody has expressed must not read as one they granted.**
+
+    #: *"Unprompted findings, ranked. Off means Signora only answers what you
+    #: ask."* ⚠️ **On by default because the design draws it on** — it is the
+    #: product working, not a permission over the customer's data.
+    ai_insights: bool = True
+    #: *"Drafts open in your composer. **Nothing is ever sent on your
+    #: behalf.**"* ⛔ **The second sentence is the reason the first is safe**,
+    #: and it is a property of the product rather than of this flag.
+    ai_drafts: bool = True
+    #: *"Expands evidence under every claim instead of keeping it one click
+    #: away."* **Off by default, as drawn.**
+    always_show_citations: bool = False
+    answer_style: AnswerStyle = AnswerStyle.DIRECT
+    #: *"Hide anything below this."* ⚠️ **The design adds *"yours can be
+    #: stricter than the workspace floor of 3, never looser"* — and no
+    #: workspace AI floor exists**, so the personal floor is stored and the
+    #: comparison is not asserted ([C-249](../../../../docs/LANE_COORDINATION.md)).
+    confidence_floor: int = MIN_CONFIDENCE_FLOOR
 
     def choose_theme(self, theme: Theme) -> PersonPreferences:
         return replace(self, theme=theme)

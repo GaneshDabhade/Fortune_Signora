@@ -23,6 +23,7 @@ vi.mock('@/lib/state/workspace-provider', () => ({
 
 import { FieldOriginTag } from '@/components/ui';
 
+import { AiPanel } from '@/app/(app)/profile/ai-panel';
 import { AppearancePanel } from '@/app/(app)/profile/appearance-panel';
 import { LocalePanel } from '@/app/(app)/profile/locale-panel';
 import { ProfilePanel } from '@/app/(app)/profile/profile-panel';
@@ -35,6 +36,11 @@ const DEFAULTS = {
   language: null,
   pronouns: null,
   display_name: null,
+  ai_insights: true,
+  ai_drafts: true,
+  always_show_citations: false,
+  answer_style: 'direct',
+  confidence_floor: 3,
 } as const;
 
 beforeEach(() => {
@@ -283,5 +289,74 @@ describe('B-215 · a slow read must not erase what somebody has typed', () => {
     render(<ProfilePanel name="A" email="a@b.com" />);
 
     expect(await screen.findByDisplayValue('Aurélie')).toBeInTheDocument();
+  });
+});
+
+
+describe('screen 04 · consent must read as consent', () => {
+  it('🔴 leaves every unexpressed preference at the conservative end', async () => {
+    /**
+     * *"Consent is never inferred."* ⚠️ **Two default to on and that is not a
+     * contradiction**: neither is a permission over the customer's data.
+     * Insights rank what Signora has already read, and drafting is safe
+     * because *"nothing is ever sent on your behalf"* — a property of the
+     * product rather than of a flag.
+     */
+    render(<AiPanel />);
+
+    expect(await screen.findByRole('checkbox', { name: /always show citations/i })).not.toBeChecked();
+    expect(screen.getByRole('radio', { name: '3' })).toBeChecked();
+  });
+
+  it('⛔ renders the data-use statements as facts, never as controls', async () => {
+    /**
+     * **A disabled toggle would invite somebody to ask who can enable it**,
+     * and for the training row the honest answer is *nobody, ever*.
+     */
+    const { container } = render(<AiPanel />);
+    const heading = await screen.findByText('What happens to your data');
+
+    // Scoped to the block the heading introduces, because the panel above it
+    // is nothing but controls — a container-wide assertion would pass or fail
+    // for the wrong reason.
+    const block = heading.parentElement as HTMLElement;
+    expect(block.querySelectorAll('input')).toHaveLength(0);
+    expect(container.querySelectorAll('input[disabled]')).toHaveLength(0);
+  });
+
+  it('🔴 states the training answer in words, not in a colour', async () => {
+    // A red dot is not a sentence. The strongest claim on this screen has to
+    // survive somebody who cannot see it.
+    render(<AiPanel />);
+
+    expect(await screen.findByText(/Never\. Not for your organization/)).toBeInTheDocument();
+    expect(screen.getByText(': never')).toBeInTheDocument();
+  });
+
+  it('⚠️ does not claim a workspace confidence floor that does not exist', async () => {
+    // The design says "yours can be stricter than the workspace floor of 3,
+    // never looser". No workspace AI floor exists — C-249 — so the comparison
+    // is absent rather than asserted.
+    render(<AiPanel />);
+    await screen.findByRole('radio', { name: '3' });
+
+    expect(screen.queryByText(/workspace floor/i)).toBeNull();
+  });
+
+  it('sends only the preference that changed', async () => {
+    render(<AiPanel />);
+
+    await userEvent.click(await screen.findByRole('checkbox', { name: /always show citations/i }));
+
+    expect(changePreferences).toHaveBeenCalledWith('ws-1', { always_show_citations: true });
+  });
+
+  it('⛔ offers no control for writing to the CRM, because no workspace policy exists', async () => {
+    // The design draws it as "switched off for everyone in this workspace".
+    // That is a workspace setting and none exists — C-249.
+    render(<AiPanel />);
+    await screen.findByText('AI preferences');
+
+    expect(screen.queryByText(/risk flags/i)).toBeNull();
   });
 });

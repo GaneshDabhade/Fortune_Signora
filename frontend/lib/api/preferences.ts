@@ -11,6 +11,7 @@ import { apiRequest } from '@/lib/api/client';
 export type Theme = 'light' | 'dark' | 'system';
 export type Density = 'comfortable' | 'compact';
 export type TimeFormat = '24h' | '12h';
+export type AnswerStyle = 'direct' | 'detailed';
 
 export interface Preferences {
   theme: Theme;
@@ -23,6 +24,12 @@ export interface Preferences {
   language: string | null;
   pronouns: string | null;
   display_name: string | null;
+  ai_insights: boolean;
+  ai_drafts: boolean;
+  always_show_citations: boolean;
+  answer_style: AnswerStyle;
+  /** The design's control offers 3 · 4 · 5. */
+  confidence_floor: number;
 }
 
 export async function getPreferences(workspaceId: string): Promise<Preferences> {

@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -283,3 +283,12 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
     time_format: Mapped[str] = mapped_column(String(8), nullable=False, default="24h")
     pronouns: Mapped[str | None] = mapped_column(String(32), nullable=True)
     display_name: Mapped[str | None] = mapped_column(String(32), nullable=True)
+
+    # Screen `04 · AI preferences`. Defaults live here as well as on the
+    # aggregate: a row inserted by anything that never went through the domain
+    # still behaves the way the screen says it does.
+    ai_insights: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    ai_drafts: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    always_show_citations: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    answer_style: Mapped[str] = mapped_column(String(16), nullable=False, default="direct")
+    confidence_floor: Mapped[int] = mapped_column(Integer, nullable=False, default=3)

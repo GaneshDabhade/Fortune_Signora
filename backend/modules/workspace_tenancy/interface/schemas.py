@@ -37,6 +37,9 @@ from modules.workspace_tenancy.domain.onboarding import (
     Provenance,
 )
 from modules.workspace_tenancy.domain.preferences import (
+    MAX_CONFIDENCE_FLOOR,
+    MIN_CONFIDENCE_FLOOR,
+    AnswerStyle,
     Density,
     PersonPreferences,
     Theme,
@@ -443,6 +446,11 @@ class PreferencesResponse(BaseModel):
     language: str | None
     pronouns: str | None
     display_name: str | None
+    ai_insights: bool
+    ai_drafts: bool
+    always_show_citations: bool
+    answer_style: AnswerStyle
+    confidence_floor: int
 
     @classmethod
     def from_domain(cls, prefs: PersonPreferences) -> PreferencesResponse:
@@ -454,6 +462,11 @@ class PreferencesResponse(BaseModel):
             language=prefs.language,
             pronouns=prefs.pronouns,
             display_name=prefs.display_name,
+            ai_insights=prefs.ai_insights,
+            ai_drafts=prefs.ai_drafts,
+            always_show_citations=prefs.always_show_citations,
+            answer_style=prefs.answer_style,
+            confidence_floor=prefs.confidence_floor,
         )
 
 
@@ -479,3 +492,13 @@ class ChangePreferencesRequest(BaseModel):
     #: bound, and `min_length` is on the value rather than the field so that
     #: clearing it stays possible.
     display_name: str | None = Field(default=None, min_length=2, max_length=32)
+    ai_insights: bool | None = None
+    ai_drafts: bool | None = None
+    always_show_citations: bool | None = None
+    answer_style: AnswerStyle | None = None
+    #: ⛔ **Bounded at the edge as well as in the database.** The design's
+    #: control offers three values; a floor outside them is one nothing can act
+    #: on, and a `422` naming the field beats a row nobody can explain.
+    confidence_floor: int | None = Field(
+        default=None, ge=MIN_CONFIDENCE_FLOOR, le=MAX_CONFIDENCE_FLOOR
+    )

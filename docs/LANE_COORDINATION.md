@@ -8245,6 +8245,27 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 ---
 
+## C-249 · Two rows on the AI screen are policies, and neither policy exists
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-08, building [TASK-470](BACKLOG.md) screen `04` |
+| **Owner** | **Product owner** — ⚡ **both are statements about what a customer's organization allows**, which is not a lane's to assert |
+| **Status** | **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **The five personal preferences ship**; the two policy rows do not |
+| **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 9 review is shown** |
+
+**The design draws seven rows on screen `04`. Five are the person's and ship. Two are not, and neither has anything behind it.**
+
+| | |
+|---|---|
+| ⛔ **"Write risk flags to the CRM — *switched off for everyone in this workspace*"** | **A workspace AI policy, and none exists.** ⚠️ **The design's own justification is the problem**: *"Shown so you know it exists and is not silently running."* **A row asserting something is switched off *for everyone* is a claim about a setting nobody can inspect** — and it would be drawn by a screen that cannot read one |
+| ⚠️ **The confidence floor's second half** | ✅ **The personal floor ships** — the design's `3 · 4 · 5`. ⛔ **What does not is *"yours can be stricter than the workspace floor of 3, never looser"***: the comparison needs a workspace floor, and there is none. **Stating it would describe a rule nothing enforces** ([D-156](DECISION_REGISTER.md) ④) |
+| ✅ **What DID ship, and why it could** | **"Used to train a shared model — never"** is a *product* fact rather than a workspace policy, and **the repository backs it**: [10-security.md](architecture/10-security.md) makes no-training/no-retention vendor terms **a condition of use**, re-verified at each contract renewal ([14-ai-architecture.md](architecture/14-ai-architecture.md)). ⚠️ **It is contractual rather than code-enforced**, and the panel says so in a comment so nobody later mistakes it for a technical guarantee |
+
+> ⚡ **The three data-use statements render as facts with a mark, never as disabled toggles.** **A disabled control invites the question of who may enable it**, and for the training row the honest answer is *nobody, ever*.
+
+**The decision, in one sentence:** ⚡ **does a workspace get an AI policy — a floor and a CRM-write switch an owner sets for everyone — in which case these two rows are a dependency Workflow 9 sits behind, or are they per-person after all**, in which case the design's *"for everyone in this workspace"* wording is what changes?
+
 ## C-248 · Four profile fields are locked as *"Managed by Northwind IT"* and no directory sync exists
 
 | | |

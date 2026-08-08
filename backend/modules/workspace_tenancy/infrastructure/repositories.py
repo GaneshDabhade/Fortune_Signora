@@ -23,6 +23,7 @@ from modules.workspace_tenancy.domain.onboarding import (
     Role,
 )
 from modules.workspace_tenancy.domain.preferences import (
+    AnswerStyle,
     Density,
     PersonPreferences,
     Theme,
@@ -595,6 +596,11 @@ def _preferences_to_domain(model: PersonPreferencesModel) -> PersonPreferences:
         time_format=TimeFormat(model.time_format),
         pronouns=model.pronouns,
         display_name=model.display_name,
+        ai_insights=model.ai_insights,
+        ai_drafts=model.ai_drafts,
+        always_show_citations=model.always_show_citations,
+        answer_style=AnswerStyle(model.answer_style),
+        confidence_floor=model.confidence_floor,
     )
 
 
@@ -633,6 +639,11 @@ class SqlAlchemyPersonPreferencesRepository(SqlAlchemyRepository):
             "time_format": preferences.time_format.value,
             "pronouns": preferences.pronouns,
             "display_name": preferences.display_name,
+            "ai_insights": preferences.ai_insights,
+            "ai_drafts": preferences.ai_drafts,
+            "always_show_citations": preferences.always_show_citations,
+            "answer_style": preferences.answer_style.value,
+            "confidence_floor": preferences.confidence_floor,
         }
         if model is None:
             self._session.add(

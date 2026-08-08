@@ -20,6 +20,7 @@ from uuid import UUID
 
 from modules.workspace_tenancy.application.ports import PersonPreferencesRepository
 from modules.workspace_tenancy.domain.preferences import (
+    AnswerStyle,
     Density,
     PersonPreferences,
     Theme,
@@ -54,6 +55,11 @@ class ChangePreferencesInput:
     language: Maybe[str | None] = UNSET
     pronouns: Maybe[str | None] = UNSET
     display_name: Maybe[str | None] = UNSET
+    ai_insights: Maybe[bool] = UNSET
+    ai_drafts: Maybe[bool] = UNSET
+    always_show_citations: Maybe[bool] = UNSET
+    answer_style: Maybe[AnswerStyle] = UNSET
+    confidence_floor: Maybe[int] = UNSET
 
 
 class GetPreferencesUseCase:
@@ -86,6 +92,13 @@ class ChangePreferencesUseCase:
             language=pick(input_.language, current.language),
             pronouns=pick(input_.pronouns, current.pronouns),
             display_name=pick(input_.display_name, current.display_name),
+            ai_insights=pick(input_.ai_insights, current.ai_insights),
+            ai_drafts=pick(input_.ai_drafts, current.ai_drafts),
+            always_show_citations=pick(
+                input_.always_show_citations, current.always_show_citations
+            ),
+            answer_style=pick(input_.answer_style, current.answer_style),
+            confidence_floor=pick(input_.confidence_floor, current.confidence_floor),
         )
         await self._preferences.save(updated)
         return updated

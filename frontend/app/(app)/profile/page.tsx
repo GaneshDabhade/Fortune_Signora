@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 
 import { auth } from '@/lib/auth/server';
 
+import { AiPanel } from './ai-panel';
 import { AppearancePanel } from './appearance-panel';
 import { LocalePanel } from './locale-panel';
 import { ProfilePanel } from './profile-panel';
@@ -35,6 +36,7 @@ export default async function ProfilePage() {
       <ProfilePanel name={user?.name ?? null} email={user?.email ?? ''} />
       <LocalePanel />
       <AppearancePanel />
+      <AiPanel />
     </div>
   );
 }
