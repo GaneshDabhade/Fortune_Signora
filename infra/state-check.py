@@ -835,6 +835,57 @@ def _ownership_findings(backlog: str) -> list[str]:
     return findings
 
 
+def _adoption_findings() -> list[str]:
+    """**A ratified decision whose consumer has arrived and whose work has not** —
+    D-179.
+
+    ⛔ **`ratified` is not the finish line.** [497](../docs/architecture/497-commodity-and-differentiation.md)
+    measured eight of twelve *buy* decisions unadopted, and in three cases a
+    workflow was blocked or a lane built a workaround while the vendor sat
+    ratified and unbought. ⚡ **A ratified decision that produces no work is
+    indistinguishable from an unmade one** — a lane reaches the capability and
+    builds around it, because nothing in the queue says the answer exists.
+
+    **The condition checked is narrow and deliberate**: a capability still at
+    `ratified` or earlier whose first consuming workflow has reached `ready` or
+    beyond. ⛔ **Not every unadopted decision** — [§6](../CLAUDE.md) forbids
+    adding a dependency before the requirement exists, so `ratified` with no
+    consumer is *correct* and flagging it would teach people to read past this.
+    """
+    out: list[str] = []
+    path = REPO_ROOT / "docs" / "coordination" / "adoption.toml"
+    flows = REPO_ROOT / "docs" / "coordination" / "workflows.toml"
+    if not path.is_file() or not flows.is_file():
+        return out
+    try:
+        adoption = tomllib.loads(path.read_text())
+        pipeline = tomllib.loads(flows.read_text())["workflow"]
+    except (tomllib.TOMLDecodeError, KeyError) as broken:
+        return [f"adoption.toml or workflows.toml does not parse — {broken}"]
+
+    #: Anything at or past this point means implementation has reached it.
+    arrived = {"ready", "active", "in_progress", "in_validation",
+               "awaiting_qe", "on_main", "awaiting_review", "approved", "complete"}
+    pending = {"proposed", "researched", "ratified"}
+
+    for name, body in adoption.get("capability", {}).items():
+        if body.get("state") not in pending:
+            continue
+        for ref in body.get("consumed_by", []):
+            key = str(ref).removeprefix("workflow.")
+            state = pipeline.get(key, {}).get("state")
+            if state in arrived:
+                vendor = body.get("vendor") or body.get("owner") or "?"
+                out.append(
+                    f"`{name}` is {body['state']} and workflow {key} "
+                    f"({pipeline[key].get('name')}) is already {state}. "
+                    f"**The decision exists — {vendor} — and the work does not** (D-179). "
+                    "A lane reaching this capability will build around it."
+                )
+                break
+    return out
+
+
 def _pipeline_findings() -> list[str]:
     """**Exactly one claimable row for the implementing lane, and exactly one
     active workflow** — [D-163](../docs/DECISION_REGISTER.md).
@@ -1665,6 +1716,7 @@ def main() -> int:
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
     findings.extend(_pipeline_findings())
+    findings.extend(_adoption_findings())
     findings.extend(_execution_state_findings())
     findings.extend(_staleness_findings())
 

@@ -1,0 +1,201 @@
+# Build-vs-buy adoption state — D-179.
+#
+# ⛔ **A ratified decision that produces no work is indistinguishable from an
+# unmade one.** [497](../architecture/497-commodity-and-differentiation.md)
+# measured that: eight of twelve ratified *buy* decisions were unadopted, and
+# in three cases a workflow was blocked or a lane built a workaround while the
+# vendor sat ratified and unbought.
+#
+# ⚡ **This file exists because the lesson has now been paid for five times.**
+# `TASK-490` put the token target in a *field* nobody could claim. `D-155` had
+# to move a ruling from prose into rows. `D-158` had to move one from a
+# paragraph into a sort key. `496` had to move reopening conditions from a
+# document into watched triggers. **Every correction was forced by a lane
+# noticing.** ⛔ **A decision recorded as prose is a decision nobody acts on.**
+#
+# ── The lifecycle, as D-179 defines it ──────────────────────────────────────
+#   proposed → researched → ratified → planned → assigned → implemented
+#            → verified → adopted
+#
+# ⚠️ **`ratified` is NOT the finish line.** **`adopted` means a capability is
+# integrated and future workflows simply consume it.** **Everything between the
+# two is implementation work that must exist as rows.**
+#
+# ⛔ **Generated views read this file. `09-build-vs-buy.md` remains the ratified
+# doctrine and is not restated here** — this records *adoption state*, which
+# the doctrine deliberately does not carry.
+
+[meta]
+doctrine   = "docs/architecture/09-build-vs-buy.md"
+assessment = "docs/architecture/497-commodity-and-differentiation.md"
+ruling     = "D-179"
+updated    = 2026-08-08
+rule       = "⚡ A capability at `ratified` whose first consuming workflow is `ready` or nearer is a Product Office defect — the decision exists and the work does not."
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ADOPTED — integrated, and future workflows consume rather than re-evaluate
+# ══════════════════════════════════════════════════════════════════════════════
+
+[capability.authentication]
+verdict = "buy"
+vendor = "Better Auth"
+state = "adopted"
+adr = "adr/0010-identity-and-access.md"
+consumed_by = ["workflow.1", "workflow.2", "workflow.3", "workflow.4", "workflow.5", "workflow.7"]
+
+[capability.authorization_capability]
+verdict = "buy"
+vendor = "Casbin"
+state = "adopted"
+adr = "adr/0010-identity-and-access.md"
+note = "⚡ Split out by 496 — this is the CAPABILITY question only. See the two rows below, which 09's single `Authorization` row hid."
+consumed_by = ["every workflow"]
+
+[capability.authorization_relationship]
+verdict = "buy"
+vendor = "PostgreSQL Row-Level Security"
+state = "adopted"
+note = "⛔ Bought without anyone noticing. 09 has no row for it; 496 found it already in production."
+reopen = "workflows.toml trigger.object_level_sharing"
+
+[capability.monitoring]
+verdict = "buy"
+vendor = "OpenTelemetry · Sentry"
+state = "adopted"
+adr = "adr/0018-monitoring-and-observability.md"
+
+[capability.background_queue]
+verdict = "buy"
+vendor = "Redis · ARQ"
+state = "adopted"
+adr = "adr/0011-background-processing-and-event-bus-transport.md"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 🔴 RATIFIED, NOT ADOPTED — and a workflow is waiting. These are the defects.
+# ══════════════════════════════════════════════════════════════════════════════
+
+[capability.email]
+verdict = "buy"
+vendor = "Resend"
+state = "ratified"
+adr = "adr/0015-communication-email-and-calendar-integration.md"
+task = "TASK-494"
+consumed_by = ["workflow.2", "workflow.3", "workflow.4", "workflow.5", "workflow.7"]
+first_consumer_state = "ready"
+# 🔴 **THE URGENT ONE.** Workflow 3 is `ready` and Lane A reaches it next.
+# `lib/auth/email.ts` is a port with one implementation and its own comment
+# says *"what arrives later is a vendor"*. `TASK-474`'s developer mailbox
+# exists because none is wired. ⚡ The port is correct; the vendor is missing.
+
+[capability.notifications]
+verdict = "buy"
+vendor = "Novu"
+state = "ratified"
+adr = "adr/0017-notifications.md"
+task = "TASK-495"
+consumed_by = ["workflow.17"]
+first_consumer_state = "planned"
+# ⚠️ Workflow 17 was blocked until 2026-08-08 on *notification delivery
+# infrastructure* — the outbox, relay, dispatch, idempotency, dead-lettering.
+# ⛔ That is precisely the part 09 already says not to build.
+
+[capability.search]
+verdict = "buy"
+vendor = "Meilisearch"
+state = "ratified"
+adr = "adr/0008-search.md"
+task = "TASK-496"
+consumed_by = ["workflow.16"]
+first_consumer_state = "planned"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RATIFIED, NOT ADOPTED — and correctly so. No consumer has arrived.
+# ⛔ §6 forbids adding a dependency before the requirement exists.
+# ══════════════════════════════════════════════════════════════════════════════
+
+[capability.billing]
+verdict = "buy"
+vendor = "Stripe"
+state = "ratified"
+adr = "adr/0016-billing.md"
+consumed_by = ["workflow.24"]
+first_consumer_state = "planned"
+
+[capability.analytics]
+verdict = "buy"
+vendor = "PostHog"
+state = "ratified"
+adr = "adr/0019-analytics.md"
+consumed_by = []
+
+[capability.feature_flags]
+verdict = "buy"
+vendor = "Flagsmith"
+state = "ratified"
+adr = "adr/0020-feature-flags.md"
+consumed_by = []
+
+[capability.workflow_orchestration]
+verdict = "buy"
+vendor = "Temporal"
+state = "ratified"
+adr = "adr/0011-background-processing-and-event-bus-transport.md"
+consumed_by = ["workflow.26"]
+first_consumer_state = "planned"
+
+[capability.object_storage]
+verdict = "buy"
+vendor = "MinIO · S3"
+state = "implemented"
+adr = "adr/0009-object-storage.md"
+note = "⚠️ In the development compose file; in neither package manifest. `implemented` rather than `adopted` until a module actually stores through a port."
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BUILD — Signora's, and every one has aged well. 497: none regretted.
+# ══════════════════════════════════════════════════════════════════════════════
+
+[capability.domain_intelligence]
+verdict = "build"
+owner = "Signora"
+state = "adopted"
+note = "Knowledge graph · provider normalization · observation engine · business events · signal engine · buying score · opportunity engine · AI research · AI reasoning. Thirteen decisions, none regretted."
+
+[capability.tenancy]
+verdict = "build"
+owner = "Signora — platform"
+state = "adopted"
+note = "⛔ Never delegated. The workspace is the unit, enforced by RLS. Adopting a vendor's tenancy model would import it into every module (D-175)."
+
+[capability.principal_model]
+verdict = "build"
+owner = "Signora — platform"
+state = "researched"
+design = "architecture/495-principal-and-identity-boundary.md"
+consumed_by = ["workflow.9", "workflow.18", "workflow.23", "workflow.26"]
+# ⚡ Human-only today. Nine kinds designed; none built. Attenuation is the rule.
+
+[capability.security_event_stream]
+verdict = "build"
+owner = "Signora — platform"
+state = "planned"
+task = "TASK-492"
+design = "architecture/493-security-platform-architecture.md"
+consumed_by = ["workflow.1", "workflow.10", "workflow.11", "workflow.23"]
+# 🔴 Its first producer is ALREADY on `main` — Workflow 1 emits authentication
+# facts and nothing records them. §2: the record cannot be added retroactively.
+
+[capability.quota_authorization]
+verdict = "build"
+owner = "Signora — domain"
+state = "researched"
+design = "architecture/496-security-architecture-blueprint.md"
+note = "🔴 No vendor exists. Every authorization product answers boolean questions; *may spend up to here* is not boolean."
+consumed_by = ["workflow.18", "workflow.24"]
+
+[capability.charting]
+verdict = "buy"
+vendor = "visx"
+state = "ratified"
+adr = "adr/0407-the-charting-library.md"
+consumed_by = ["workflow.15", "workflow.19"]
+first_consumer_state = "planned"

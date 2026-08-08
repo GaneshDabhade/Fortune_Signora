@@ -859,6 +859,37 @@
 | **Change Budget** | 🔴 **`frontend/app/(auth)/`** — **carried by [D-153](DECISION_REGISTER.md), which approves presentation-layer replacement for the workflow under migration** |
 | ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) — **what this slice is expected to touch.** ⛔ **Product Office says *what changes*; QE decides *how to certify it*** | **Modules** `frontend/app/(auth)/` · **Routes** `/sign-in` `/sign-up` `/verify-email` `/forgot-password` `/reset-password` — ⚡ **all five share the shell** · **Shared components** **`auth-shell.tsx`** — ⛔ **shared by five routes, so a change here is five screens** · **APIs** ✅ **None** · **Playwright** **`workflow1-login.spec.ts` · `auth-journey.spec.ts`** · **Unit / component** **`design-tokens.test.tsx`** · **Integration** ✅ **None** · **Accessibility** **`accessibility.spec.ts`** — **focus order and the card heading on route change** *(SC 2.4.3)* |
 
+### TASK-494 · Email leaves the process through the ratified vendor
+
+| | |
+|---|---|
+| 🔴 **Why this is urgent, measured** | ⛔ **`adoption.toml` reports exactly one capability at `ratified` whose first consuming workflow is `ready`: email.** ⚡ **Workflow 3 — Email Verification — is `ready` and Lane A reaches it next.** **Workflows 2, 4, 5 and 7 consume it too** |
+| **The decision already exists** | 📁 **[`09-build-vs-buy.md`](architecture/09-build-vs-buy.md) ratified **Resend**: *"Transactional delivery/deliverability reputation is a solved, specialized problem."*** ⛔ **This row does not re-decide it. [D-179](DECISION_REGISTER.md): a ratified decision becomes work rather than waiting to be rediscovered** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-08 on [D-179](DECISION_REGISTER.md).** ⛔ **Ahead of [TASK-486](#task-486--workflow-3--email-verification-to-the-approved-design), because Workflow 3's journey cannot pass without a link a developer can open** |
+| **Module** | **`product_surface`** — `frontend/lib/auth/email.ts` |
+| ✅ **The port already exists and is correct** | 📁 **`lib/auth/email.ts` is a port with one implementation, and its own comment says so: *"What arrives later is a vendor, which is a dependency decision and its own ADR; what must not arrive later is a second copy of either flow, written around whatever the vendor turned out to want."*** ⚡ **The shape was earned. Only the adapter is missing** |
+| **Delivers** | **A Resend adapter behind the existing port** · **configuration through the module's own typed settings** ([§6](../CLAUDE.md)) · ⛔ **no change to either flow, because the port already isolates them** |
+| ⚡ **Relationship to [TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** | ⚠️ **They are not alternatives and neither replaces the other.** **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends) is the *development* mailbox — [D-167](DECISION_REGISTER.md) ① permits substituting an infrastructure boundary.** **This is the *production* adapter.** ✅ **Both exist behind one port, selected by configuration, which is exactly what [D-167](DECISION_REGISTER.md) ⑦ asks: *"if the real backend arrived tomorrow, how much would change?"* — one setting** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `frontend/lib/auth/` · **Routes** none · **APIs** ⛔ **none of Signora's** · **Playwright** `auth-journey.spec.ts` must pass **unchanged** — ⚡ **that is the assertion: swapping the adapter changes no journey** · **Unit** a test that the port selects by configuration and not by branch |
+| **Change Budget** | 🔴 **A new dependency** — ⚡ **and [ADR-0015](architecture/adr/0015-communication-email-and-calendar-integration.md) is the approval, already ratified.** **Announced in the commit** |
+
+### TASK-495 · Notification delivery through the ratified vendor
+
+| | |
+|---|---|
+| **Status** | ⏸️ **`SEQUENCED` — trigger: Workflow 17 reaches `decomposed`, Lane C 2026-08-08** |
+| **The decision already exists** | 📁 **[`09-build-vs-buy.md`](architecture/09-build-vs-buy.md) ratified **Novu**: *"Cross-channel notification delivery infrastructure is commodity."*** |
+| ⚠️ **Why it matters more than it looks** | ⛔ **Workflow 17 was blocked until 2026-08-08 on *notification delivery infrastructure* — the outbox, relay, dispatch, idempotency and dead-lettering** — ⚡ **which is precisely what `09` already says not to build.** **The blocker was a decision that had been made and never carried into a row** |
+| **Module** | **`product_surface`** and the notification port, when Workflow 17 is decomposed |
+
+### TASK-496 · Search infrastructure through the ratified vendor
+
+| | |
+|---|---|
+| **Status** | ⏸️ **`SEQUENCED` — trigger: Workflow 16 reaches `decomposed`, Lane C 2026-08-08** |
+| **The decision already exists** | 📁 **[`09-build-vs-buy.md`](architecture/09-build-vs-buy.md) ratified **Meilisearch**: *"Full-text/faceted search infrastructure is commodity infrastructure, distinct from the domain logic of what's indexed."*** |
+| ⚠️ **The line to hold when it is built** | ⚡ **The *infrastructure* is bought; ⛔ *what is indexed and how it ranks over a customer's own accounts* is domain, and [497 §5](architecture/497-commodity-and-differentiation.md) already flags ranking as the thing that could become IP** |
+
 ### TASK-492 · The security event stream — one append-only record every module writes to
 
 | | |
