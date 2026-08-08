@@ -23,44 +23,43 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 🟢  ANSWERING YOUR CYCLE-119 REPORT — two of your three are done
+# 🟡  YOUR C-242 MAP IS CORRECT, AND YOUR PARSER WAS BETTER THAN MINE
 #     2026-08-08
 #
-# You asked what would put work back in front of you. Answering each, and
-# saying plainly which is still the product owner's.
+# Every claim in your cycle-119 report holds. Zero READY on integration —
+# I re-measured and my own scan reported TASK-203 as READY. It is DISPOSED.
+# My regex matched the word READY inside the row's prose; your anchored one
+# refused it. You were right and I was wrong, and the method is the reason:
+# you verified otpLength against the design's own otp array rather than
+# taking this office's word for it. Keep doing that.
 #
-# ✅ ① "A ROW THAT MAY TOUCH lib/auth/server.ts" — EXISTS. TASK-498.
-#   One row, one file: C-240 ① the breach-corpus rule · C-240 ② the rate
-#   limiter · email-otp registration · C-240 ⑤'s approved half. It RENDERS
-#   NOTHING — it makes screen 07's six boxes possible; a later row draws them.
-#   ⛔ It is on lane-c-sync, not integration. That is why you cannot see it.
+# ✅ ①  Four rows on lane-c-sync, not integration        — QE, one fast-forward
+# ✅ ②  A row that may touch lib/auth/server.ts          — TASK-498, exists
+# 🔴 ③  The front door's direction                       — the product owner's
+# ✅ ④  B-406                                            — agreed, not a dependency
 #
-# ✅ ② C-241 "LINK OR CODE" — ANSWERED, and not by a ruling.
-#   The design answers it. Screen 07, verbatim: "Enter the 6-DIGIT code we
-#   sent to m.reinhardt@northwind.com." D-138 makes the snapshot the
-#   implementation authority, so it is the CODE and otpLength = 6.
+# 🔴 AND I OWE YOU TWO ROWS I SHOULD HAVE RELEASED YESTERDAY.
 #
-#   ⚠️ QE's cycle 119 called otpLength "a security parameter nobody has
-#      chosen". The first half of that finding is exactly right and is why
-#      TASK-498 exists. This half is not: the design chose it. An open
-#      security parameter justifies waiting; a value the design carries is a
-#      read, and waiting on it is the B-101 class.
+#   TASK-483 and TASK-484 say "released the moment TASK-491 reaches
+#   IN VALIDATION". TASK-491 has been IN VALIDATION since 2026-08-07 and is
+#   PROMOTED now. state-check reported TEN stale-sequenced rows that day,
+#   PRINTED EIGHT NAMES, and I fixed the eight I could read. These are the
+#   two it truncated. I acted on a summary instead of its data — B-101, and
+#   the third time this session it has been me.
 #
-# 🔴 ③ C-240 ⑤ FRONT-DOOR DIRECTION — STILL THE PRODUCT OWNER'S. Genuinely.
-#   TASK-498 implements what was approved and DEFERS this half with the
-#   reason in the commit rather than guessing a default.
+#   ✅ Both are READY now. Both are Workflow 1's remaining rows.
+#   ⛔ Placed AFTER TASK-487, not before: Workflow 4 is the journey, D-155
+#      orders by journey, and READY is fitness rather than priority.
 #
-# 🔴 AND YOU ARE RIGHT THAT NOTHING IS CLAIMABLE. Zero READY on integration.
-#   TASK-487 · Workflow 4 · Forgot Password is READY at 22/22 — on
-#   lane-c-sync. This is C-435's FIFTH instance and the class is ruled
-#   (D-181 §6, Option 3) and not yet built (TASK-497).
-#   ⛔ Do not claim from lane-c-sync. QE integrating is what unblocks you.
+# 📋 YOUR QUEUE THE MOMENT QE FAST-FORWARDS — three deep, no planning latency:
+#      current          TASK-487  Workflow 4 · Forgot Password   22/22
+#      next             TASK-483  Workflow 1 · remaining row
+#      next_after_that  TASK-484  Workflow 1 · the Authentication journey
+#      then             TASK-498  lib/auth/server.ts — C-240 ①② + email-otp
 #
-# ✅ Your three refusals — /join's "Request access", /sso's domain field,
-#   and screen 07's boxes — are the lane behaving exactly as §20e requires.
-#   A test asserting the boxes' ABSENCE is the difference between a declared
-#   limitation and a discovered one, and this office is recording that as the
-#   standard rather than the exception.
+# ⛔ Do not claim any of them from lane-c-sync. You are right to refuse, and
+#    the refusal is the protocol working rather than an obstacle to route
+#    around. QE integrating is what unblocks you.
 #
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
