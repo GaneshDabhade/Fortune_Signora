@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `2a35ac1`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `9b43575`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `2a35ac1`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `9b43575`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`2a35ac1`** — the certified commit itself |
+| **`main`** | **`9b43575`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⛔ **Cycle 126 corrected the dashboard's own blocking-defect line** — [B-151](docs/BUGS.md), **false for eleven cycles** |
-| **Certification** | ✅ [`2a35ac1b74d8`](certification/reports/2a35ac1b74d8.md) · migration head **`0042`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 127 promoted Workflow 5 · Password Reset** — **and the sentence the screen refuses to print is the slice's best decision** |
+| **Certification** | ✅ [`9b43575c8a9e`](certification/reports/9b43575c8a9e.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | 🔴 **Two, and this line said `None` for eleven cycles.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ⚡ **A developer mailbox — its store, its transport and its refusal** (`TASK-474` milestone 1) |
+| **Customer value this cycle** | ✅ ⚡ **A person can set a new password and be told it worked** — screens 09 and 10, plus the mailbox as a usable experience |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1717 frontend tests** *(+8)* across **75 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **303s** *(`Build 114s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1729 frontend tests** *(+12)* across **76 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **201s** *(`Build 57s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,51 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 126
+## 1d · Release summary — 2026-08-08, cycle 127
+
+**Derived from the promoted commit `9b43575`.** **Eighty-two promotions.** ⚡ **Workflow 5 ships, and the most valuable thing in it is a sentence the screen refuses to print.**
+
+### 🔴 The sentence Workflow 5 will not print, and why refusing was the security decision
+
+**The design says:** *"This signs you out of 4 other devices, including the iPad last used 3 days ago."*
+
+⛔ **It is not printed, and the first half is *false* rather than merely unsupported.** **`revokeSessionsOnPasswordReset` is a Better Auth option and `lib/auth/server.ts` does not set it** — **other sessions survive a reset.**
+
+> ⚡ **Printing it would tell somebody who has just been compromised that they are safe** — *"the most expensive place in the product to be wrong."* ⛔ **And the count has no source either: nothing lists sessions and nothing records a device.**
+>
+> ✅ **This is the fourth consecutive workflow where Lane A refused a false affordance rather than drawing it** — `/join`'s *Request access*, `/sso`'s domain field, screen 07's six OTP boxes, and now this. **Every one was found by opening the dependency rather than reasoning about it.**
+
+### ✅ What a customer gets
+
+| | |
+|---|---|
+| ⚡ **Workflow 5 · Password Reset** *(Lane A)* | **Screens `09` and `10`.** A person sets a new password and is told it worked |
+| ⚡ **`TASK-474`** *(Lane A)* | **The mailbox is an experience now** — a developer can see, open and resend every email |
+
+### ✅ §20c paid off exactly one workflow later
+
+**Screens 09 and 10 compose `PasswordField` and `PasswordStrength` from `components/ui`** — **the library components Workflow 2 added because screen 06 needed them.** ⚡ **Added *to* the library rather than beside the page, and the next workflow simply used them.**
+
+**And `10` is its own route rather than a state of `09`:** *"the reset token is spent once the password changes, so re-rendering 09 with a success flag would leave a form on screen whose submit could never work again."*
+
+### ✅ Lane C's audit batch
+
+**Eight commits** — [D-186](docs/DECISION_REGISTER.md), [D-187](docs/DECISION_REGISTER.md), [B-411](docs/BUGS.md)'s rebase, a project audit, and two routine checks. ⚡ **[D-187](docs/DECISION_REGISTER.md) is the office correcting its own arithmetic**: *"one claimable, twenty prepared behind it. The correction is mine."*
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1729 frontend** *(+12)* · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **132 runs recorded, 124 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 201s |
+| **Dependency** | ✅ Nothing held |
+| **Customer Value** | ✅ ⚡ **Workflows 1–5 are all on `main`** — sign in, register, verify, forgot, reset |
+| **Process** | ⚡ **A security ruling made by a lane refusing to render, and recorded where the next reader will find it** — the opposite of the three QE defects this session, which were all beliefs acted on without measurement |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 126
 
 **Derived from the promoted commit `2a35ac1`.** **Eighty-one promotions.** ⛔ **The dashboard's single most consequential line was false for eleven cycles, and no gate could have told anybody.**
 
