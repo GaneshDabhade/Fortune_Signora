@@ -14,20 +14,20 @@ task_count     = 102
 
 [lane.Lane_A]
 current            = "TASK-487"
-next               = ""
-next_after_that    = ""
+next               = "TASK-483"
+next_after_that    = "TASK-484"
 assigned_total     = 85
-claimable          = 1
+claimable          = 3
 claimable_now      = 0
-awaiting_sync      = 1
+awaiting_sync      = 3
 in_flight          = 50
 actionable         = 4
-awaiting_qe_transition = 50
+awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 34
-lane_utilization   = 0.0
-idle_prediction_days   = 0.1
+blocked            = 32
+lane_utilization   = 10.0
+idle_prediction_days   = 0.4
 dependency_wait_days   = 0.7
 blocked_duration_days  = 0.7
 critical_path_max      = 6
@@ -1143,34 +1143,34 @@ on_integration = true
 [[task]]
 id            = "TASK-483"
 title         = "The authentication shell"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— released the moment [TASK-491](#task-491--the-design-foundation-the-"
-waiting_for    = "— released the moment [TASK-491](#task-491--the-design-foundation-the-seven-gaps-the-conformance-audit-found) reaches `IN VALIDATION`, Lane C 2026-08-"
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-484"
 title         = "The two journeys that work and nobody verifies"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— released the moment [TASK-491](#task-491--the-design-foundation-the-"
-waiting_for    = "— released the moment [TASK-491](#task-491--the-design-foundation-the-seven-gaps-the-conformance-audit-found) reaches `IN VALIDATION`, Lane C 2026-08-"
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-485"
