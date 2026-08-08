@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `9b43575`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `b082413`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `9b43575`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `b082413`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`9b43575`** — the certified commit itself |
+| **`main`** | **`b082413`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 127 promoted Workflow 5 · Password Reset** — **and the sentence the screen refuses to print is the slice's best decision** |
-| **Certification** | ✅ [`9b43575c8a9e`](certification/reports/9b43575c8a9e.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 128 promoted two findings a lane raised and did not fix**, plus a notice channel Lane C built after its own answer was stranded |
+| **Certification** | ✅ [`b082413ff6a7`](certification/reports/b082413ff6a7.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | 🔴 **Two, and this line said `None` for eleven cycles.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ✅ ⚡ **A person can set a new password and be told it worked** — screens 09 and 10, plus the mailbox as a usable experience |
+| **Customer value this cycle** | ⛔ **None directly.** ⚡ **Two defects named before a customer could meet them** — a permissions leak on screen 13 and an API that cannot say an invitation expired |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1729 frontend tests** *(+12)* across **76 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **201s** *(`Build 57s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1729 frontend tests** *(+12)* across **76 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **149s** *(`Startup 19s` — a backend-only cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,55 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 127
+## 1d · Release summary — 2026-08-08, cycle 128
+
+**Derived from the promoted commit `b082413`.** **Eighty-three promotions.** ⚡ **Two defects named by the lane that found them and left for the lane that owns them — and an office that built a channel after its own answer was stranded.**
+
+### ✅ Two findings raised, neither fixed by its finder
+
+| | |
+|---|---|
+| 🔴 **[C-245](docs/LANE_COORDINATION.md)** *(Lane A)* | ***"Screen 13 shows a reader six facts they are not permitted to see."*** A permissions leak found while building, **raised rather than patched** |
+| **[B-214](docs/BUGS.md)** *(Lane A)* | ***"The domain knows an invitation expired and the API cannot say so."*** The knowledge exists one layer below the boundary that would report it |
+
+> ⚡ **Both were found by a lane building an adjacent screen, and neither is in that lane's Change Budget to repair.** ✅ **[§20e](CLAUDE.md): *"finding a defect outside your assignment is not permission to fix it — it is an obligation to report it."***
+
+### ⚡ Lane C declined to open a row, and that is the register working
+
+> *"[B-214](docs/BUGS.md) needs no row — it is already Lane A's to fix, measured."*
+
+⛔ **The office checked ownership before adding a second record of one defect** (§2, *truth has exactly one authoritative representation*). **A duplicate row would have split the fix across two ids.**
+
+### ⚡ The notice channel, and the irony is in its own commit message
+
+**Lane C built [`docs/coordination/notices.toml`](docs/coordination/notices.toml) after discovering the problem by living it:**
+
+> *"The notice channel — **my B-214 answer was stuck behind the ref it was about.**"*
+
+**And then, one commit later:** *"The notice channel, re-applied — **the rebase dropped it and kept its data**."*
+
+> ⚡ **A lane's answer to a defect could not reach the lane that needed it, because the answer travelled by the same ref the defect was blocking.** ✅ **The mechanism it built is the one thing that would have carried it.**
+
+### ✅ Also promoted
+
+**[D-187](docs/DECISION_REGISTER.md) · [D-188](docs/DECISION_REGISTER.md) · [D-189](docs/DECISION_REGISTER.md)** *(Lane C)* — the queue arithmetic corrected, **the dashboard made generated rather than written** ([`infra/pipeline-dashboard.py`](infra/pipeline-dashboard.py)), and the floor met at 20.
+
+> ⚡ **[D-188](docs/DECISION_REGISTER.md) is the same lesson [B-151](docs/BUGS.md) cost QE two cycles ago, reached independently: a dashboard that is typed will eventually be wrong, so generate it.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1729 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **133 runs recorded, 125 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 149s |
+| **Dependency** | ⚠️ **[C-245](docs/LANE_COORDINATION.md) is 🔴 and open** — a permissions leak with a named owner |
+| **Customer Value** | ⛔ **None directly** — **two defects named before a customer could meet them** |
+| **Process** | ⚡ **Both lanes reported into another lane's territory and neither touched it.** **That is the register's whole purpose, exercised twice in one cycle** |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 127
 
 **Derived from the promoted commit `9b43575`.** **Eighty-two promotions.** ⚡ **Workflow 5 ships, and the most valuable thing in it is a sentence the screen refuses to print.**
 
