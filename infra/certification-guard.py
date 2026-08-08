@@ -601,6 +601,76 @@ def _unexplained_skips(commit: str) -> list[tuple[str, str, str, list[str]]]:
     return [(commit[:7], subject, task.group(0), above)] if above else []
 
 
+#: **The one path a planning-synchronization commit may touch** — C-435.
+#:
+#: ⛔ **Narrower than `CLAIM_PATHS` by one file, deliberately.** A claim commit
+#: may touch `ACTIVE_ASSIGNMENTS.md` because a claim *is* an assignment. A
+#: planning commit may not: that file is the arbitration point where two lanes
+#: contend, and a Product Office write there could overwrite a lane's claim —
+#: which is `D-123`'s prohibition and a mistake this office has already made
+#: once, on `TASK-458`.
+PLANNING_PATHS = ("docs/BACKLOG.md",)
+
+
+def _audit_planning() -> int:
+    """Every planning commit on `integration` touches `BACKLOG.md` and nothing else.
+
+    ⚡ **Built for C-435 and unused until the product owner rules on it.**
+    **The deadlock it would end**: `CLAUDE.md` §20e says *"only executable
+    change opens a cycle"*, and `D-136` says a planning correction is
+    *"high-priority synchronization"* — the second orders corrections *within*
+    a cycle and the first decides whether a cycle happens, so neither can start
+    one. **When a lane is idle there is by definition no executable change
+    coming, therefore no cycle, therefore the correction that would unblock the
+    lane cannot land.**
+
+    ⛔ **This function grants nothing.** It is the *check* that would make the
+    grant safe, written ahead of the decision so that ruling on C-435 costs one
+    word rather than one cycle. **`BACKLOG.md` is already classified
+    non-executable by this file's own `CLOSEOUT_PATHS`, and a test asserts the
+    two classifiers agree on it** — so a planning commit provably changes
+    nothing the certification model protects.
+    """
+    _scope_note()
+    commits = [
+        line.split()[0]
+        for line in _git("log", "--format=%H %s", "main..integration").splitlines()
+        if "Planning-Sync" in _git("log", "-1", "--format=%B", line.split()[0])
+    ] if _git("rev-parse", "--verify", "integration") else []
+    if not commits:
+        print("audit — no planning-synchronization commits to check.")
+        return 0
+
+    violations: list[tuple[str, str, list[str]]] = []
+    for commit in commits:
+        changed = [
+            line
+            for line in _git("show", "--name-only", "--format=", commit).splitlines()
+            if line
+        ]
+        offending = [path for path in changed if path not in PLANNING_PATHS]
+        if offending:
+            violations.append(
+                (commit[:7], _git("log", "-1", "--format=%s", commit), offending)
+            )
+
+    print(f"audit — {len(commits)} planning commit(s)\n")
+    if not violations:
+        print(
+            "  every one touches only BACKLOG.md.\n\n"
+            "⛔ Never ACTIVE_ASSIGNMENTS.md — that is the arbitration point, and a\n"
+            "Product Office write there could overwrite a lane's claim (D-123)."
+        )
+        return 0
+
+    print(f"REFUSED — {len(violations)} planning commit(s) carried more than planning:\n")
+    for short, subject, offending in violations:
+        print(f"  · {short}  {subject}")
+        for path in offending[:5]:
+            print(f"      also changed {path}")
+    return 1
+
+
 def _audit_claims() -> int:
     """Every claim commit on `integration` touches the registers and nothing else."""
     _scope_note()
@@ -828,6 +898,11 @@ def main() -> int:
         help="a lane may push a claim to `integration` and nothing else — check that it did",
     )
     parser.add_argument(
+        "--audit-planning",
+        action="store_true",
+        help="a planning commit touches BACKLOG.md and nothing else (C-435, unused until ruled)",
+    )
+    parser.add_argument(
         "--plan",
         metavar="REV_RANGE",
         help="the complete validation plan for a change — gates and Playwright journeys (D-115)",
@@ -843,6 +918,8 @@ def main() -> int:
         return _audit_main()
     if args.audit_claims:
         return _audit_claims()
+    if args.audit_planning:
+        return _audit_planning()
     if args.plan:
         return _report_plan(args.plan)
     if args.next_cycle:

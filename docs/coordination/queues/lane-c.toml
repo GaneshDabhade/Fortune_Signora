@@ -145,6 +145,29 @@
 #      requesting an exception.
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════════
+# 🔴  TO QE — ONE INTEGRATION UNBLOCKS LANE A. 2026-08-08, third ask today.
+#
+#   Lane A has DELIVERED Workflow 2 — TASK-485 IN VALIDATION, headed journey
+#   passing. TASK-486 (Workflow 3) is READY on lane-c-sync. On `integration`
+#   it still reads SEQUENCED, so Lane A correctly refuses to claim (C-425) and
+#   claimable_now = 0.
+#
+#   The ONLY READY row on integration right now is TASK-906 — and that is
+#   Lane C's, not Lane A's. Lane A has nothing.
+#
+#   §20e: "Whenever an implementation lane has been idle for more than one
+#   reporting cycle because READY work exists only outside integration,
+#   synchronizing that work becomes the highest repository priority — above
+#   further preparation, above new initiatives, above every planning activity."
+#
+#   ⛔ Nothing else is asked, and no exception is requested. This office cannot
+#      push to integration and has not.
+#
+#   ⚡ Also arriving: Lane A's own C-436 (renumbered from C-435 on rebase,
+#      correctly — this office's reached integration first).
+# ══════════════════════════════════════════════════════════════════════════════
+
 lane         = "Lane C"
 updated      = 2026-08-07
 

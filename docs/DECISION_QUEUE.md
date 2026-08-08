@@ -160,6 +160,24 @@
 
 </details>
 
+## 🔴 C-435 · Planning synchronization — THE GUARD IS BUILT; THE DECISION IS ONE WORD
+
+> ## ⚡ **`certification-guard.py --audit-planning` exists and is unused.** **It refuses any commit on `integration` touching a path other than `docs/BACKLOG.md`** — ⛔ **including `ACTIVE_ASSIGNMENTS.md`, because that is the arbitration point and a Product Office write there could overwrite a lane's claim.**
+>
+> ✅ **Verified: multi-path REFUSED · `BACKLOG.md`-only ACCEPTED · `ACTIVE_ASSIGNMENTS.md` REFUSED.**
+>
+> ## **The three answers, and each is one word:**
+>
+> | | |
+> |---|---|
+> | ⚡ **"Option 2"** | **Product Office may fast-forward `integration` with a `BACKLOG.md`-only commit, behind that guard.** ✅ **Lane A unblocks within a minute, every time, permanently** |
+> | **"Option 3"** | **`BACKLOG.md` relocates to `origin/coordination`; `ACTIVE_ASSIGNMENTS.md` stays.** ⚡ **The better long-term architecture ([491](architecture/491-planning-synchronization-architecture.md)) and a migration** |
+> | **"Neither"** | ⛔ **Then the answer is that QE integrates on `Planning-Sync`, and this office stops raising it** |
+>
+> ⚠️ **This office has NOT taken the authority.** **[D-136](DECISION_REGISTER.md) withheld it twice in terms, and *"resolve this on priority"* is an instruction to fix the problem — not an unambiguous grant of a right two rulings refused.** ⛔ **Self-granting write access to `integration` on an ambiguous reading is exactly the failure this office would report in another lane.**
+>
+> 🔴 **Meanwhile the measurement is unchanged: Lane A has delivered Workflow 2, Workflow 3 is released, `claimable_now = 0`, and the only `READY` row on `integration` is [TASK-906](BACKLOG.md) — which is Lane C's.**
+
 ## 🔴 C-435 · Planning synchronization — THIRD OCCURRENCE IN ONE DAY
 
 > 🔴 **2026-08-08, and this is the measurement that should decide it.** **Lane A has *delivered* Workflow 2 — `TASK-485` `IN VALIDATION`, headed journey passing. `TASK-486` is released for Workflow 3. `claimable_now = 0`, because the release is on `lane-c-sync`.**
