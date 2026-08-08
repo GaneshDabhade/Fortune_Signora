@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `50e8113`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `063908a`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `50e8113`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `063908a`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`50e8113`** — the certified commit itself |
-| **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 116 promoted Workflow 2 · Registration** — **a person can create an account against the approved design**, and the slice returned last cycle came back fixed |
-| **Certification** | ✅ [`50e8113942b8`](certification/reports/50e8113942b8.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **`main`** | **`063908a`** — the certified commit itself |
+| **`integration`** | **Two claim commits ahead**, replayed onto the certified commit |
+| **Release candidate** | **None pinned.** **Cycle 117 promoted the register reconciliations** — ⚡ **three lanes converged on the same `C-240` without coordinating**, and [B-149](docs/BUGS.md) closed with both accounts kept |
+| **Certification** | ✅ [`063908a983d4`](certification/reports/063908a983d4.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **[B-149](docs/BUGS.md) is `VERIFIED`** — returned in cycle 115, fixed and promoted in 116 |
-| **Implementation waiting** | ⚠️ **Lane A reports zero claimable after delivering Workflow 2** — [C-435](docs/LANE_COORDINATION.md), third report. **Lane B**, on the product owner's rulings — see §1c |
-| **Validation queue** | **Empty.** Both lanes promoted this cycle |
-| **Customer value this cycle** | ✅ ⚡ **A person can create an account** — screen `06 Create account` to the approved design, with a strength meter that reports and never gates |
+| **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
+| **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
+| **Customer value this cycle** | ⛔ **None directly.** ⚡ **Both lanes claimed the next journeys mid-cycle** — Workflow 3 · Email Verification, and email through the ratified vendor |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **214s** *(⚡ **`Build 57s` — a frontend cycle, and the reading held a fourth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **152s** *(`Startup 19s` — a backend-only cycle, **the reading holds a fifth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,62 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 116
+## 1d · Release summary — 2026-08-08, cycle 117
+
+**Derived from the promoted commit `063908a`.** **Seventy-two promotions.** ⚡ **A quiet cycle whose whole content is three registers agreeing with each other — and one id that three parties reached independently.**
+
+### What was promoted
+
+| | |
+|---|---|
+| ⚡ **[C-240](docs/LANE_COORDINATION.md)** *(Lane A)* | **Renumbered into Lane A's own block, by Lane A** — *"the allocation was this lane's defect"* |
+| ✅ **[B-149](docs/BUGS.md) closed** *(Lane A)* | The lane's own account of the fix, and its own account of the ordering defect behind it |
+| **[D-180](docs/DECISION_REGISTER.md)** *(Lane C)* | Execution mode accepted; ⑩ stopped at a permission refusal |
+
+### ⚡ Three parties reached `C-240` independently, and none of them coordinated
+
+| | |
+|---|---|
+| **QE, cycle 115** | Renumbered Lane A's item to `C-240` at merge — ⛔ **on the candidate it then excluded**, so it never reached `main` |
+| **Lane A, cycle 116** | Renumbered to **`C-436`** on rebase, unaware — **still Lane C's block** |
+| **Lane A, cycle 117** | ✅ **Moved it again to `C-240`**, naming the real fault: *"the allocation was this lane's defect"* |
+
+> ⚡ **The block model produced one answer from three directions**, which is the argument for it: **`200+` is Lane A's and nothing else had to be agreed.** ⛔ **What it did not prevent is the original mistake** — allocating *next-free-after-`C-434`* instead of next-free in one's own block — **and no instrument can, because the duplicate exists only in the union of two branches and nothing reads the union.**
+
+### ✅ [B-149](docs/BUGS.md) closed with both accounts kept, not merged into one
+
+**The row conflicted at merge: QE had set `VERIFIED`, Lane A had set `FIXED`.** ⛔ **`VERIFIED` is QE's and stands** — **and Lane A's account is preserved verbatim beside it rather than overwritten**, because it carries what QE could not know:
+
+> *"This lane ran it **after** pushing the milestone rather than before, so a broken commit sat on `origin` and was certifiable for twenty-seven minutes… The repair is not a code change: the headed journey runs before the push, not after it."*
+
+⚡ **It also corrects QE's framing.** **The locator was fixed at `05:06:04Z`, an hour before the row was filed** — the lane had already hit the identical violation in its own headed run. ⛔ **What reached `origin` was the broken commit, and the row was right to name it.** ✅ **And the scoping was deliberate, not a sweep**: three Workflow 2 locators got `{ exact: true }` and **the four sign-in locators were deliberately left bare**, because `/sign-in` has no meter.
+
+> ⛔ **A register that overwrote the lane's account with QE's would have lost the only part nobody else could write.** **Status is authority; the account is evidence, and they are not the same field.**
+
+### ⚡ Two claims landed on `integration` mid-certification, and nothing had to stop
+
+**`TASK-486` — Workflow 3 · Email Verification** and **`TASK-494` — email through the ratified vendor**, both bounded to the two files a claim may touch, both arriving after the Certification Snapshot.
+
+> ✅ **`integration` kept moving and QE never chased it.** **The certified commit was promoted; the two claims belong to the next cycle by construction** — and **Lane A's zero-claimable window, reported three times yesterday, closed by itself.**
+
+### ✅ Smoke 152s, `slowest 2. Startup 19s` — a fifth confirmation
+
+**Backend-only cycles: 144s, 152s, naming `Startup` or nothing. Frontend cycles: 214s, 225s, naming `Build`. Outliers: 621s, 2652s, naming `Researched account`.** ⚡ **[B-141](docs/BUGS.md) is three populations with five confirmations.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1664 frontend** · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **122 runs recorded, 114 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 152s |
+| **Dependency** | ✅ **Nothing held, and nothing idle** — both lanes claimed this cycle |
+| **Customer Value** | ⛔ **None directly.** **Registers, and the next two journeys claimed** |
+| **Process** | ⚡ **The cheapest possible cycle: six changed paths, sixteen gates, first attempt** — and its content is the repository correcting its own bookkeeping without anybody being told to |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 116
 
 **Derived from the promoted commit `50e8113`.** **Seventy-one promotions. Sixteen commits, both lanes, first attempt.** ⚡ **A customer can create an account — and the slice that shipped it is the one QE returned an hour earlier.**
 
