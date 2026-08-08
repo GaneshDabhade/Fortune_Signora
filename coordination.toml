@@ -10,14 +10,14 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "3249740"
-task_count     = 104
+task_count     = 110
 
 [lane.Lane_A]
 notice             = "D-193/D-194: 'Authenticated Entry' is now the authority for ALL post-login behaviour. TASK-468 and TASK-469 (both yours) have NO DEFINED EXIT and the spec says both must exit through resolveEntry with intent=null — do NOT choose a destination in either flow. Also: sign-in-form.tsx:148 router.push('/') is the entry decision hardcoded in a module, which the spec forbids; it is a finding, not yours t"
 current            = "TASK-470"
 next               = ""
 next_after_that    = ""
-assigned_total     = 87
+assigned_total     = 93
 claimable          = 1
 claimable_now      = 0
 awaiting_sync      = 1
@@ -26,7 +26,7 @@ actionable         = 5
 awaiting_qe_transition = 0
 blocked_on_integration = 1
 supply_state       = "working"
-blocked            = 30
+blocked            = 36
 lane_utilization   = 11.2
 idle_prediction_days   = 0.1
 dependency_wait_days   = 0.0
@@ -77,7 +77,7 @@ state         = "SEQUENCED"
 declared      = "SEQUENCED"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-1401"]
+unblocks       = ["TASK-1401", "TASK-1402", "TASK-1403", "TASK-1404", "TASK-1407"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
@@ -99,6 +99,102 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-1400 complete"
 waiting_for    = "— behind [TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes), Lane C 2026-08-08.** ⛔ **There is nothing to c"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1402"
+title         = "The intent resolver — what the person was trying to reach"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-1400"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 1
+estimated_ready = "when TASK-1400 complete"
+waiting_for    = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ② in [workflow 29](coordination/workflows.toml)'s platform sequence**"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1403"
+title         = "Reason codes become a diagnosable record, not a log line"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-1400"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 1
+estimated_ready = "when TASK-1400 complete"
+waiting_for    = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ③ in [workflow 29](coordination/workflows.toml)'s platform sequence**"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1404"
+title         = "The workspace resolver, and the four states a workspace can be in"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-1400"]
+unblocks       = ["TASK-1405"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 1
+estimated_ready = "when TASK-1400 complete"
+waiting_for    = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ④ in [workflow 29](coordination/workflows.toml)'s platform sequence**"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1405"
+title         = "Home is one route and four compositions"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-1404"]
+unblocks       = ["TASK-1406"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 2
+estimated_ready = "when TASK-1404 complete"
+waiting_for    = "— behind [TASK-1404](#task-1404), Lane C 2026-08-08.** ⚡ **Position ⑤ in [workflow 29](coordination/workflows.toml)'s platform sequence**"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1406"
+title         = "The card registry — modules contribute capabilities, never navigation"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-1405"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 3
+estimated_ready = "when TASK-1405 complete"
+waiting_for    = "— behind [TASK-1405](#task-1405), Lane C 2026-08-08.** ⚡ **Position ⑥ in [workflow 29](coordination/workflows.toml)'s platform sequence**"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1407"
+title         = "The engine admits a non-human principal, before one exists"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-1400"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 1
+estimated_ready = "when TASK-1400 complete"
+waiting_for    = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ⑦ — ⚡ **deliberately early** in [workflow 29](coordination/workflows.toml)'s platf"
 blocked_days   = 0.0
 on_integration = false
 
