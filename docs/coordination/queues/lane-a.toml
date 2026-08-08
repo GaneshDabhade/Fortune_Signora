@@ -23,37 +23,38 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 🟢  ONE CLAIMABLE ROW AGAIN — D-187, and it corrects this office not you
+# 🟢  ONE CLAIMABLE ROW. TEN PREPARED BEHIND IT. — D-187 / D-188
 #     2026-08-08
 #
-# ⚡ current = TASK-489 · Workflow 7 · Invitation Acceptance. That is the ONE
-#   row you may claim. `next` and `future` are EMPTY BY RULING.
+# ⚡ current = TASK-489 · Workflow 7 · Invitation Acceptance.
+#   `next` and `future` are EMPTY BY RULING. That is not a drought — depth
+#   lives in `prepared` below and releases ONE AT A TIME as you finish.
 #
-# ⛔ THE MODEL CHANGED AND IT IS BACK TO WHAT YOU ALREADY KNEW.
-#   D-163 said exactly one claimable and was right. D-183 found the real
-#   problem — you idle when that one row blocks — and D-184 took the wrong
-#   remedy: ten CLAIMABLE rows, which is choice, which is prioritisation.
-#   The product owner's correction: "Lane A should never choose its next
-#   priority." Depth goes BEHIND the claimable row, not beside it.
+# ⛔ You never choose. Product Office owns prioritisation, and D-188 §1 says
+#   so in terms. When you set IN VALIDATION, the next prepared row becomes
+#   current without you asking and without a Product Owner decision.
 #
-# ✅ SO NINE ROWS WENT BACK TO SEQUENCED, and nothing is lost. They are
-#   PREPARED — fully decomposed, in release order — and each becomes `current`
-#   automatically when its turn comes. You never wait and you never choose.
+#   prepared, in release order:
+#     ③ TASK-469 W8 Onboarding      ④ TASK-470 W9 User Profile
+#     ⑤ TASK-471 W10 Team Mgmt      ⑥ TASK-473 auth mode
+#     ⑦ TASK-476 headed default     ⑧ TASK-492 security event stream
+#     ⑨ TASK-499 route map          ⑩ TASK-452 saved-view screens
+#     ⑪ TASK-481 global search      ⑫ TASK-480 notification platform
+#     ⑬ TASK-482 Copilot panel      ⚡ prepared today, App Shell first
 #
-#      prepared, in order:
-#        ③ TASK-469 W8 Onboarding   ④ TASK-470 W9 User Profile
-#        ⑤ TASK-471 W10 Team Mgmt   ⑥ TASK-473 auth mode
-#        ⑦ TASK-476 headed default  ⑧ TASK-492 security event stream
-#        ⑨ TASK-499 route map       ⑩ TASK-452 saved-view screens
+# 🔴 ONE REUSE FINDING YOU SHOULD SEE BEFORE YOU REACH EITHER:
+#   TASK-480's notification panel and TASK-482's Copilot panel need the SAME
+#   overlay primitive. Two rows would have built two. Both rows now say
+#   "one, not two" — whichever you land first OWNS it, and the second
+#   composes it. That is D-188 §5's whole point and it is why this office
+#   prepares ahead rather than at the moment you claim.
 #
-# ⚠️ IF ANY OF THOSE WAS ON YOUR LIST AS CLAIMABLE, IT IS NOT ANY MORE — and
-#   that is a state change this office made on a ruling, not a retraction of
-#   work. No row lost content; assert_no_loss ran on all 115.
+# ⚡ TASK-481's command palette is the same shape: Workflows 14, 15, 20, 21
+#   and 22 all reach for it, so it belongs in components/ui, not in a page.
 #
-# 🔴 PREPARED DEPTH IS 7 OF 20. That gap is this office's homework, not a
-#   blocker for you. `_prepared_findings` reports it every cycle until closed,
-#   and D-187 §6 forbids closing it by relabelling — which is exactly what
-#   this office would have been tempted to do under the old floor.
+# 📊 Prepared depth is 10 of 20. That is this office's homework and D-188 §6
+#   makes your idleness ITS failure, not yours. Run
+#   `python3 infra/pipeline-dashboard.py` any time you want the number.
 #
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════

@@ -990,6 +990,8 @@ def _prepared_findings() -> list[str]:
         if len([x for x in body if x.startswith("|")]) >= 17 and all(k in text for k in required):
             prepared += 1
 
+    # ⚡ D-188 — the dashboard is a sibling instrument; this check and it read the
+    # same definition so they cannot disagree. `pipeline-dashboard.py` renders it.
     if prepared < _PREPARED_FLOOR:
         out.append(
             f"{prepared} prepared row(s) against a floor of {_PREPARED_FLOOR} "
