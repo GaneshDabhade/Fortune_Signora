@@ -15,6 +15,26 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## ⚠️ One blocking decision is not queued yet — it is still on Lane A's branch
+
+> 🔴 **May an invitation link alone reveal a company's name, headcount, employee and role?** ⛔ **It is why [Workflow 7](coordination/workflows.toml) is `blocked`, and it is the product owner's.** *(Lane A filed it; the id is theirs and is deliberately not repeated in a heading here, because a heading is what makes this a queue row.)*
+>
+> ⚠️ **Raised by Lane A and still on `lane-a-product-surface`.** ⛔ **This office will not write a queue row against an item that does not exist on this branch — that is a reference to nothing, and the check refuses it correctly.** ✅ **It enters this queue the cycle QE integrates, with the three options and this office's recommendation prepared.**
+
+## 🟠 C-244 · Should a password reset actually sign other devices out?
+
+> 📁 **Screen `09` says it does. Nothing does it.** ✅ **Lane A shipped screens `09` and `10` WITHOUT the claim rather than printing an untrue one — the fifth false affordance this lane has refused.**
+
+⚡ **Better Auth's `multi-session` plugin is installed and unregistered** ([TASK-493](BACKLOG.md)), **so the capability is bought and one line away.** ⛔ **Whether it SHOULD happen is a security behaviour and yours.**
+
+| | |
+|---|---|
+| ⚡ **"Yes"** | ✅ **The design becomes true; the screen's sentence returns.** **One line in [TASK-493](BACKLOG.md), which is already prepared** |
+| **"No"** | ✅ **Zero work — the copy is already absent.** ⚠️ **The snapshot is corrected at the next refresh so the next lane does not re-raise it** |
+
+⛔ **Blocking nothing either way.** ⚡ **Listed because leaving a design and an implementation disagreeing is how the next lane re-discovers it, which is [C-241](LANE_COORDINATION.md)'s exact shape.**
+
+
 ## 🟠 D-191 · Workflow-level certification — the premise does not hold, and the cost is elsewhere
 
 > ## ⛔ **Recommendation: keep certification as it is. Neither Option A nor Option B addresses what is actually consuming cycles.**
