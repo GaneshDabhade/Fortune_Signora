@@ -8111,7 +8111,7 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 |---|---|
 | **Routes it adds** | **`/email-otp/send-verification-otp`** · **`/email-otp/verify-email`** · **`/email-otp/check-verification-otp`** *(plus password-reset and change-email variants)* |
 | **How it is configured** | **`emailOTP({ sendVerificationOTP, otpLength, expiresIn })`** in the server's plugin list |
-| ⛔ **Where that goes** | **`lib/auth/server.ts`** — **the file this row states it does not touch**, and **`otpLength` is a security parameter nobody has chosen**, exactly as `password.ts` says of a length the product never picked |
+| ⛔ **Where that goes** | **`lib/auth/server.ts`** — **the file this row states it does not touch.** ⚠️ **This item first said *"`otpLength` is a security parameter nobody has chosen"*. ⛔ That was WRONG** — corrected 2026-08-08 by Lane C and **verified here against the design: *"Enter the 6-digit code"*, and its `otp` array has six members.** **So `otpLength: 6` is a *read*, not a decision** ([D-138](../CLAUDE.md) makes the snapshot the implementation authority). ⚡ **The framing mattered more than the number**: an open security parameter is a product-owner decision and justifies waiting; **a value the design already carries is a read, and waiting on it is the [B-101](BUGS.md) class** — this lane nearly blocked on something already answered. ✅ **What is genuinely unstated is `expiresIn`** — screen `08`'s *"expires in 30 minutes"* is the reset **link**, not this code |
 | ⚠️ **And it changes the port** | **`AuthEmail` carries `url`.** **An OTP is not a URL** — the port gains a variant, which is `lib/auth/email.ts`, in budget, **but pointless until the plugin exists** |
 
 ### ⛔ What this lane built instead, and why it is not the six boxes
@@ -8123,3 +8123,60 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 ### The decision, in one sentence
 
 > **Does Signora verify email by a link or by a six-digit code?** ⚡ **The design says a code; the platform ships a link; the plugin that closes the gap is installed and unregistered.** ⛔ **Registering it is one line and a chosen `otpLength`, and it needs a row that may touch `lib/auth/server.ts`** — **which is the same row [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch)'s three ruled items have been waiting for.**
+
+---
+
+## C-242 · Lane A's dependency map — everything this lane is waiting on, and who owns each
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-08, **at the product owner's explicit request** — *"document these dependencies"* |
+| **Owner** | ⚠️ **Split, and that is the point of the item.** **One dependency is QE's, one is the product owner's, and none is this lane's** |
+| **Status** | **`OPEN`** — ⛔ **as a record, not as a request.** ✅ **Nothing here needs a new decision except ④** |
+| **Blocks** | 🔴 **All Lane A execution.** ⛔ **Zero `READY` rows on `origin/integration`**, measured row-by-row on status rather than grepped |
+
+> ⚡ **This is a map, not an escalation.** **Three workflows and a vendor adoption reached `main` today** — [TASK-467](BACKLOG.md), [TASK-485](BACKLOG.md), [TASK-486](BACKLOG.md), [TASK-491](BACKLOG.md), [TASK-494](BACKLOG.md) — **and the lane went to zero claimable between two polls.** ⛔ **Nothing here is a complaint about throughput; the queue emptied because it was consumed.**
+
+### ① 🔴 The synchronization dependency — QE's, and it gates everything else
+
+**Four rows this lane could execute exist on `lane-c-sync` and not on `origin/integration`.** ⛔ **[§20e](../CLAUDE.md): executable work comes from `integration` and nowhere else**, so their existence elsewhere is not availability.
+
+| Row | `origin/integration` | `origin/lane-c-sync` |
+|---|---|---|
+| **[TASK-487](BACKLOG.md)** · Workflow 4 — Forgot Password | ⏸️ `SEQUENCED` | ✅ **`READY`** |
+| **[TASK-498](BACKLOG.md)** · the authentication configuration surface | ⛔ **absent entirely** | ⏸️ `SEQUENCED` |
+| **[TASK-474](BACKLOG.md)** · the developer mailbox | ⏸️ `SEQUENCED` | ⏸️ `SEQUENCED` |
+| **[TASK-488](BACKLOG.md)** · **[TASK-489](BACKLOG.md)** | ⏸️ `SEQUENCED` | ⏸️ `SEQUENCED` |
+
+⚡ **The generator agrees and publishes the gap**: `[lane.Lane_A]` reads **`current = "TASK-487"`, `claimable = 1`, `claimable_now = 0`.** ⛔ **Three commits, and one fast-forward discharges it.**
+
+⚠️ **This is [C-435](#c-435--a-planning-correction-that-unblocks-an-idle-lane-has-no-trigger-of-its-own)'s fifth recorded instance, and Lane C names it as such.** ⛔ **Not re-argued here** — the class is theirs and already filed.
+
+### ② ✅ The `lib/auth/server.ts` dependency — RESOLVED, and it was never a ruling
+
+**Four things were stuck behind *"no row may touch this file"***, and this lane escalated it three times as though a decision were missing. ⛔ **It was not. It was a row, and rows are Lane C's to write.**
+
+| | Was blocked on | Answered by |
+|---|---|---|
+| ① **the breach-corpus rule** | [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch) ① | ✅ **Product owner approved 2026-08-08**; row is **[TASK-498](BACKLOG.md)** |
+| ② **the rate limiter** | [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch) ②, [D-170](DECISION_REGISTER.md) §3 ③ | ✅ **Ruled twice already**; row is **[TASK-498](BACKLOG.md)** |
+| ③ **`email-otp` registration** | [C-241](#c-241--workflow-3s-approved-screen-needs-the-one-file-its-row-forbids-and-this-is-the-third-instance) | ✅ **The design answers it** — *"Enter the 6-digit code"*. ⛔ **Never needed a ruling** |
+| ④ **the front door** | [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch) ⑤ | ⚠️ **Half open — see ③ below** |
+
+> 🔴 **The lesson is this lane's and is recorded rather than softened.** **[C-241](#c-241--workflow-3s-approved-screen-needs-the-one-file-its-row-forbids-and-this-is-the-third-instance) was filed as though the product owner had to choose between a link and a code.** ⛔ **The design had already chosen**, in the sentence the screen prints, and **[D-138](../CLAUDE.md) makes the snapshot the implementation authority.** ⚡ **Reading the design as an authority rather than as a picture would have answered it without an item.**
+>
+> ⚠️ **And the same item asserted `otpLength` was unchosen. It is `6`, in the design.** **The framing was the defect, not the number**: *an open security parameter is a decision and justifies waiting; a value the design carries is a read, and waiting on it is [B-101](BUGS.md)'s class.* ⛔ **Lane C caught it, and was one step from the mirror-image error in the same cycle** — escalating C-241 as fresh when [C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch) was already ruled two screens above it.
+
+### ③ ⚠️ The one dependency that is genuinely the product owner's
+
+> ## **Does an anonymous visitor to `/` land on `01 Welcome` or on `02 Sign in`?**
+
+| | |
+|---|---|
+| **Where it stands** | ✅ **Approved to schedule** ([C-240](#c-240--two-ruled-or-designed-password-controls-live-in-the-one-file-workflow-2-may-not-touch) ⑤, product owner 2026-08-08). ⛔ **The *direction* was not given, and [TASK-498](BACKLOG.md) defers that half** |
+| **Why it cannot be assumed** | **`app/(app)/layout.tsx:35` reads `if (!session?.user) redirect('/sign-in')` and has since M1.** ⚡ **The design says Welcome.** ⚠️ **It is one line either way and it changes the first screen every signed-out customer sees** — **a returning seller meets a marketing card instead of the password field they came for**, which is the real argument for the current behaviour |
+| ⛔ **This lane's stated default** | **`01 Welcome`**, under [D-162](DECISION_REGISTER.md) — *when in doubt, pretend the legacy UI never existed.* **Named rather than assumed, so overruling it costs one sentence** |
+
+### ④ ⛔ Not a dependency, recorded so it is not mistaken for one
+
+**[B-406](BUGS.md)** — `signal.resolved` is published and uncatalogued — **is the only `OPEN` bug row in any of this lane's six modules.** ⛔ **It is not blocking anything and is not fixable by any lane**: the repair is one table row in `06-events.md`, which is 🔴, and it closes when the `CLAUDE.md` amendment [C-101](#c-101) asks for lands. ⚡ **Recorded here only so a reader of this map does not count it as work Lane A is sitting on.**
