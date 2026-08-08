@@ -7929,7 +7929,7 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-08, ⚡ **on Lane A's 136th consecutive idle cycle** — **and as the first unprompted exercise of [D-171](DECISION_REGISTER.md) §7** |
 | **Owner** | ⛔ **Product owner.** **It proposes changing a rule, and the governance freeze reserves that** |
-| **Status** | 🟠 **`OPEN` — raised 2026-08-08.** **Three options prepared, C recommended** |
+| **Status** | 🟠 **`READY FOR PRODUCT DECISION` — re-prepared 2026-08-08 on [D-173](DECISION_REGISTER.md).** ⛔ **Option C is withdrawn; the product owner rejected it and was right — it weakened *"a cycle is warranted by executable change"* to buy one cycle.** ✅ **[491](architecture/491-planning-synchronization-architecture.md) replaces it with four architectures and a staged recommendation: Option 3 as the target — `BACKLOG.md` moves to `origin/coordination` and `ACTIVE_ASSIGNMENTS.md` stays on `integration`, separating *eligibility* from *arbitration* — reached through Option 2, extending the existing `CLAIM_PATHS` mechanism behind a `--audit-planning` guard.** ⚡ **And the root cause is a ruling already made: [D-142](DECISION_REGISTER.md) ⑨ separated planning from release and [D-144](DECISION_REGISTER.md) implemented half of it** |
 | **Blocks** | 🔴 **Lane A, at this moment.** **`claimable = 1` and `claimable_now = 0`** |
 
 ### ⚡ The deadlock, stated as two rules that are each correct

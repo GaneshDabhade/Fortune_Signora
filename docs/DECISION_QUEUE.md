@@ -160,7 +160,19 @@
 
 </details>
 
-## 🔴 C-435 · The synchronization deadlock — DECISION PACKAGE, and it is the one that matters
+## 🔴 C-435 · Planning synchronization — the ARCHITECTURE package, superseding the first one
+
+> ⛔ **Option C is withdrawn.** **You rejected it and you were right: it weakened *"a cycle is warranted by executable change"* to buy one cycle.**
+>
+> ✅ **[491](architecture/491-planning-synchronization-architecture.md) is the replacement — four architectures, the root cause, and a staged recommendation.**
+>
+> ⚡ **The headline: this was already ruled.** **[D-142](DECISION_REGISTER.md) ⑨ says *"Planning and release are separate pipelines"*, and [D-144](DECISION_REGISTER.md) implemented half — information separated, authority did not.**
+>
+> ✅ **Recommended: Option 3 (move `BACKLOG.md` to `origin/coordination`, keep `ACTIVE_ASSIGNMENTS.md` on `integration`) reached through Option 2 (extend `CLAIM_PATHS` behind a new `--audit-planning` guard).** ⛔ **A relocation, not a duplication.** **Certification untouched — `BACKLOG.md` is already a Closeout path and a test enforces it.**
+
+<details><summary>The first package, kept because it is the record of the diagnosis</summary>
+
+**The synchronization deadlock, as first presented**
 
 ⚡ **Unprompted, under [D-171](DECISION_REGISTER.md) §7 and §11.** ⛔ **This is a bigger finding than anything in [490](architecture/490-operating-model-critique.md), and it contradicts the premise of [D-171](DECISION_REGISTER.md) §1.**
 
@@ -194,6 +206,8 @@
 > ## ⚡ **Planning depth has never been the constraint. Lane A idled 136 cycles with prepared, sequenced, owned work waiting — and what stood in the way was an integration step, not an analysis gap.**
 
 ⛔ **Adding planning depth to a repository whose bottleneck is synchronization makes the bottleneck worse**, because every additional prepared row is one more thing queued behind the same step. ✅ **Fix the step first; the depth question then answers itself.**
+
+</details>
 
 ## 🟡 C-433 · §19 names a command flag that does not exist
 
