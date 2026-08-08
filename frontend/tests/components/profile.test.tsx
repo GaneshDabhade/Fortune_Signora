@@ -23,6 +23,7 @@ vi.mock('@/lib/state/workspace-provider', () => ({
 
 import { FieldOriginTag } from '@/components/ui';
 
+import { AppearancePanel } from '@/app/(app)/profile/appearance-panel';
 import { LocalePanel } from '@/app/(app)/profile/locale-panel';
 import { ProfilePanel } from '@/app/(app)/profile/profile-panel';
 
@@ -175,5 +176,67 @@ describe('the field-origin tag', () => {
     render(<FieldOriginTag origin="yours" />);
 
     expect(screen.getByText('Yours')).toBeInTheDocument();
+  });
+});
+
+
+describe('screen 03 · appearance is the account\'s, not the browser\'s', () => {
+  it('🔴 stores the choice on the server and never in localStorage', async () => {
+    /**
+     * **The row's constraint, verbatim**: *"applies to this account on every
+     * device you sign in from, not to this browser."* ⛔ **A theme cached in
+     * the browser is right on the laptop it was chosen on and wrong on every
+     * other one** — which is the precise promise that sentence makes.
+     */
+    const setItem = vi.spyOn(Storage.prototype, 'setItem');
+    render(<AppearancePanel />);
+
+    await userEvent.click(await screen.findByRole('radio', { name: /^Dark/ }));
+
+    expect(changePreferences).toHaveBeenCalledWith('ws-1', { theme: 'dark' });
+    expect(setItem).not.toHaveBeenCalled();
+    setItem.mockRestore();
+  });
+
+  it('⚠️ keeps System as System rather than resolving it', async () => {
+    // "Follows your device, switching at sunset" is a deferral. Answering it
+    // with light or dark replaces the person's choice with one reading of it.
+    // ⚠️ Starts from `dark`: clicking an already-selected radio fires no
+    // change, which is the control being correct rather than the panel.
+    getPreferences.mockResolvedValue({ ...DEFAULTS, theme: 'dark' });
+    render(<AppearancePanel />);
+
+    await userEvent.click(await screen.findByRole('radio', { name: /^system/i }));
+
+    expect(changePreferences).toHaveBeenCalledWith('ws-1', { theme: 'system' });
+  });
+
+  it('is a radio group, so arrow keys work and nothing needs a pointer', async () => {
+    // The design states this as an accessibility criterion by number: a choice
+    // group is a radiogroup, "not clickable divs".
+    render(<AppearancePanel />);
+
+    // ⚠️ `/^Light/` and not `/light/i`: the Dark segment's own description
+    // reads "For low light and long sessions", so the loose pattern matched
+    // two controls — a locator that finds the wrong thing is B-149's lesson.
+    expect(await screen.findByRole('radio', { name: /^Light/ })).toBeInTheDocument();
+    expect(screen.getAllByRole('radio').length).toBe(5);
+  });
+
+  it('⛔ does not paint the page itself', async () => {
+    // It records the choice; the design system renders it. A panel that wrote
+    // a class onto the document would be a second place a theme is decided.
+    render(<AppearancePanel />);
+    await screen.findByRole('radio', { name: /^Light/ });
+
+    expect(document.documentElement.className).not.toMatch(/dark|light/);
+  });
+
+  it('sends only the field that changed', async () => {
+    render(<AppearancePanel />);
+
+    await userEvent.click(await screen.findByRole('radio', { name: /compact/i }));
+
+    expect(changePreferences).toHaveBeenCalledWith('ws-1', { density: 'compact' });
   });
 });

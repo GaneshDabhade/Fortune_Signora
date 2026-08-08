@@ -43,3 +43,8 @@ export {
 } from './choice-cards';
 export { Inferred, type InferredProps } from './inferred';
 export { FieldOriginTag, type FieldOrigin, type FieldOriginTagProps } from './field-origin';
+export {
+  SegmentedControl,
+  type Segment,
+  type SegmentedControlProps,
+} from './segmented-control';
