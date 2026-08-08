@@ -1499,7 +1499,7 @@ eligible_count = 10  # ⚡ D-184 floor is 10. Exactly ten, all startable.
                      # reported "one of the two is stale" and it was the count.
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
 depth_target   = 10  # ⚡ D-184 — was 3 (D-183), was 1 (D-163).
-shortfall      = 0   # ✅ 10 of 10.
+shortfall      = 0   # ✅ 11 of 10.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
