@@ -9,28 +9,28 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "810cdc5"
+generated_from = "45574a8"
 task_count     = 101
 
 [lane.Lane_A]
-current            = "TASK-474"
-next               = "TASK-489"
-next_after_that    = "TASK-469"
+current            = "TASK-483"
+next               = "TASK-484"
+next_after_that    = "TASK-474"
 assigned_total     = 84
-claimable          = 10
-claimable_now      = 0
-awaiting_sync      = 10
-in_flight          = 49
+claimable          = 11
+claimable_now      = 2
+awaiting_sync      = 9
+in_flight          = 50
 actionable         = 4
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 25
-lane_utilization   = 9.8
-idle_prediction_days   = 1.4
+blocked            = 23
+lane_utilization   = 10.0
+idle_prediction_days   = 1.6
 dependency_wait_days   = 0.7
 blocked_duration_days  = 0.7
-critical_path_max      = 5
+critical_path_max      = 3
 
 [lane.Lane_C]
 current            = ""
@@ -878,8 +878,8 @@ depends_on     = ["TASK-476"]
 unblocks       = ["TASK-465"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
-critical_path  = 3
-estimated_ready = "when TASK-476 complete"
+critical_path  = 1
+estimated_ready = "— behind [TASK-476](#task-476--headed-becomes-the-default-a-lane-revie"
 waiting_for    = "— behind [TASK-476](#task-476--headed-becomes-the-default-a-lane-reviews-in-and-the-rule-stops-being-untrue), Lane C 2026-08-08.** ⚠️ **The trigger it"
 blocked_days   = 0.0
 on_integration = true
@@ -894,7 +894,7 @@ depends_on     = ["TASK-464"]
 unblocks       = ["TASK-466"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
-critical_path  = 4
+critical_path  = 2
 estimated_ready = "when TASK-464 complete"
 waiting_for    = "** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)**"
 blocked_days   = 0.0
@@ -910,7 +910,7 @@ depends_on     = ["TASK-465"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 5
+critical_path  = 3
 estimated_ready = "when TASK-465 complete"
 waiting_for    = "** — **predecessor [TASK-465](#task-465--applying-a-batch-asynchronously-and-saying-so-while-it-runs)**"
 blocked_days   = 0.0
@@ -1015,18 +1015,18 @@ on_integration = true
 [[task]]
 id            = "TASK-473"
 title         = "A developer can always tell which authentication mode is running"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
-depends_on     = ["TASK-474"]
-unblocks       = ["TASK-476"]
-next_owner     = ["Lane A"]
-next_lane      = "Lane A"
-critical_path  = 1
-estimated_ready = "— behind [TASK-474](#task-474--a-developer-can-see-open-and-resend-eve"
-waiting_for    = "— behind [TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends), Lane C 2026-08-08.** ⚠️ **The trigger it named HAS "
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-474"
@@ -1035,7 +1035,7 @@ state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-473", "TASK-475"]
+unblocks       = ["TASK-475"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
@@ -1063,18 +1063,18 @@ on_integration = true
 [[task]]
 id            = "TASK-476"
 title         = "Headed becomes the default a lane reviews in, and the rule stops being untrue"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
-depends_on     = ["TASK-473"]
+depends_on     = []
 unblocks       = ["TASK-464"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
-critical_path  = 2
-estimated_ready = "when TASK-473 complete"
-waiting_for    = "— behind [TASK-473](#task-473--a-developer-can-always-tell-which-authentication-mode-is-running), Lane C 2026-08-08.** ⚠️ **The trigger it named HAS F"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-478"
@@ -1154,7 +1154,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-484"
@@ -1170,7 +1170,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-485"
@@ -1191,18 +1191,18 @@ on_integration = true
 [[task]]
 id            = "TASK-487"
 title         = "Workflow 4 — Forgot Password, to the approved design"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-488"

@@ -23,43 +23,45 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 🟢  TEN CLAIMABLE ROWS — D-184, and every one of them is decomposed
-#     2026-08-08
+# 🟢  ELEVEN CLAIMABLE — AND TWO OF THEM ARE CLAIMABLE ON integration NOW
+#     2026-08-08 · after QE cycle 121 · Workflow 4 is on main
 #
-#   ①  TASK-487  Workflow 4 · Forgot Password              22/22
-#   ②  TASK-483  Workflow 1 · the authentication shell
-#   ③  TASK-484  Workflow 1 · the two journeys nobody verifies
-#   ④  TASK-498  lib/auth/server.ts — C-240 ①② + email-otp
-#   ⑤  TASK-474  the developer mailbox
-#   ⑥  TASK-488  Workflow 5 · Password Reset               22/22
-#   ⑦  TASK-489  Workflow 7 · Invitation Acceptance        22/22
-#   ⑧  TASK-469  Workflow 8 · Initial Onboarding           22/22
-#   ⑨  TASK-470  Workflow 9 · User Profile      ⚡ decomposed today, was 8/22
-#   ⑩  TASK-471  Workflow 10 · Team Management  ⚡ decomposed today, was 11/22
+#   ①  TASK-483  Workflow 1 · the authentication shell
+#   ②  TASK-484  Workflow 1 · the two journeys nobody verifies
+#   ③  TASK-498  lib/auth/server.ts — C-240 ①② + email-otp
+#   ④  TASK-474  the developer mailbox
+#   ⑤  TASK-488  Workflow 5 · Password Reset               22/22
+#   ⑥  TASK-489  Workflow 7 · Invitation Acceptance        22/22
+#   ⑦  TASK-469  Workflow 8 · Initial Onboarding           22/22
+#   ⑧  TASK-470  Workflow 9 · User Profile                 22/22
+#   ⑨  TASK-471  Workflow 10 · Team Management             22/22
+#   ⑩  TASK-473  which authentication mode is running  ⚡ prepared today
+#   ⑪  TASK-476  headed becomes the default             ⚡ prepared today
 #
-# ⛔ STILL AN ORDER, NOT A MENU. Take ①. Descend only past a GENUINELY BLOCKED
-#    row, reason recorded — §20e's "claim from the top", unchanged.
+# ⚡ claimable_now = 2. Not zero for the first time in three cycles.
 #
-# ⚡ WHY ⑥⑦⑧ ARE HERE NOW AND WERE NOT BEFORE. They were always 22/22. They
-#   were held back by JOURNEY ORDER — and D-183 established that journey order
-#   is preserved by the PUBLISHED ORDER, not by withholding rows. Holding them
-#   bought nothing and cost you a stall. The sequence is unchanged; what
-#   changed is that a block on ① no longer idles you.
+# ⛔ ORDER, NOT MENU. Take ①. Descend only past a GENUINELY BLOCKED row with
+#    the reason recorded — §20e's "claim from the top", unchanged.
 #
-# ⚠️ ⑨ AND ⑩ ARE NEW WORK, NOT RELABELLED ROWS. Workflow 9 stood at 8 of 22
-#   and Workflow 10 at 11 of 22 — no design-authority reference, no Definition
-#   of Done. Both are now decomposed from their design documents. Reaching ten
-#   by relabelling thin rows would have been the C-412 defect this office
-#   wrote the rule against: a READY row you cannot start.
+# ⚠️ ⑩ AND ⑪ WERE PREPARED, NOT RELABELLED. Both stood at 10-11 cells with no
+#   Definition of Done and no testing metadata. Neither is customer-visible so
+#   there is no design document — but engineering infrastructure is not an
+#   exemption from being FINISHABLE, and both now say what done means.
+#   ⑪ is the row that makes CLAUDE.md §19 true: it currently says "headed is
+#   the default" while playwright.config.ts defaults to headless.
 #
-# 🔴 READ ⑨ AND ⑩'s SHELL CONSTRAINT BEFORE YOU CLAIM EITHER. Both render
-#   inside the Application Shell, which is Workflow 13 and is NOT built. Both
-#   rows deliver PANELS composed into a standalone route. ⛔ Do not build a
-#   shell — that is Workflow 13's, and building it early is the §20d defect.
+# 🔴 ⑧ AND ⑨ RENDER INSIDE THE APPLICATION SHELL — Workflow 13, NOT built.
+#   Both deliver PANELS into a standalone route. ⛔ Do not build a shell.
+#   ⚠️ ⑧ is also the first row whose data is ACCOUNT-scoped, not workspace-
+#      scoped, so its tenancy_policy.py class is a decision the row must state.
 #
-# ⚠️ AND THE LIMIT, AGAIN: claimable = 10, claimable_now = 0. All ten are on
-#   lane-c-sync. Depth protects against BLOCKING. It does nothing against
-#   SYNCHRONIZATION, and synchronization is what has idled you twice.
+# ✅ AND A CORRECTION THAT IS MINE. QE excluded two of my commits at cycle 121
+#   because TASK-486's `Features` line was missing from my tip, and inferred
+#   the deletion was deliberate. It was not — a non-greedy regex under re.S
+#   swallowed the row below the cell I was editing, in the very commit that
+#   was RESTORING a state I had overwritten. B-411. Line restored; all 114
+#   rows verified against integration for further loss; zero found. QE's three
+#   checks and its refusal to adjudicate were exactly right.
 #
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1427,8 +1429,8 @@ updated      = 2026-08-08
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-487"          # ① Workflow 4 · Forgot Password — 22/22
-next    = "TASK-483"
+current = "TASK-483"          # ① Workflow 1 · the authentication shell
+next    = "TASK-484"          # ② Workflow 1 · the two journeys nobody verifies
 # ④ TASK-498 · lib/auth/server.ts — C-240 ①② + email-otp registration
 # ⑤ TASK-474 · the developer mailbox
 #
@@ -1471,8 +1473,8 @@ next    = "TASK-483"
 # this office was releasing it here, and the rebase kept this office's line.
 # Lane A's CLAIMED is restored in BACKLOG.md and the row is gone from this
 # queue: a lane must never be offered back work it is already holding.
-future  = ["TASK-484", "TASK-498", "TASK-474", "TASK-488", "TASK-489",
-           "TASK-469", "TASK-470", "TASK-471"]
+future  = ["TASK-498", "TASK-474", "TASK-488", "TASK-489", "TASK-469",
+           "TASK-470", "TASK-471", "TASK-473", "TASK-476"]
 # ⚡ NO LONGER EMPTY — D-183 amends D-163, which forced this to `[]` to enforce
 # "exactly one claimable". The order lives HERE, in data, and not in the notice
 # above it: a check cannot read a comment, and this office has now paid for that
@@ -1486,11 +1488,11 @@ future  = ["TASK-484", "TASK-498", "TASK-474", "TASK-488", "TASK-489",
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 10  # ⚡ D-184 floor is 10. Ten, every one decomposed.
+eligible_count = 11  # ⚡ D-184 floor is 10. Eleven, every one prepared.
                      # reported "one of the two is stale" and it was the count.
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
 depth_target   = 10  # ⚡ D-184 — was 3 (D-183), was 1 (D-163).
-shortfall      = 0   # ✅ 10 of 10.
+shortfall      = 0   # ✅ 11 of 10.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

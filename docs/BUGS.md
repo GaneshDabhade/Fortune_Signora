@@ -946,6 +946,46 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-411 · A non-greedy regex under `re.S` swallowed the row below the one it edited
+
+| | |
+|---|---|
+| **Module** | **`docs/` — Product Office's own editing practice.** ⛔ **Not a tool defect; a *method* defect, which is why it is filed rather than fixed in code** |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **it deleted a delivered slice's acceptance criteria and nothing caught it for four commits.** ⚡ **It surfaced only because QE hit the collision at integration and declined to adjudicate** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-08.** **Line restored from `origin/integration`; all 114 rows verified against integration for further loss (zero).** **`VERIFIED` is QE's** |
+| **Found** | **2026-08-08, by QE at cycle 121**, ⚡ **reporting that Lane C's tip *"genuinely carries no such line — so the deletion is deliberate."*** ⛔ **The observation was exact and the inference was wrong** |
+| **Steps** | **Edit one table cell with `re.search(r'\| \*\*Status\*\* \| .*? \|\n', text, re.S)` and splice by `.start()`/`.end()`** |
+| **Expected** | **The Status cell replaced** |
+| **Actual** | ⛔ **The Status cell *and the row beneath it* replaced.** 📁 **[TASK-486](BACKLOG.md)'s `Features` line — *"Six single-character boxes · paste fills every box · resend with the doubling timer · a wrong code keeps the digits"* — the delivered slice's acceptance criteria, gone** |
+
+## ⚡ The mechanism, and why it is invisible
+
+**`re.S` makes `.` match newlines. A non-greedy `.*?` then stops at the first ` |\n` it can find — which is the *next* row's terminator whenever the target cell has no internal one.** ⛔ **The match still succeeds. The regex still looks correct. Nothing errors.**
+
+> ## ⛔ **The commit that did it was the commit RESTORING a lane-owned state I had overwritten** — **`c53fbcf6`, fixing one D-123 violation while committing a silent deletion.** ⚡ **A careful correction is exactly where this lands, because the correction is written quickly and reviewed as *"just putting it back."***
+
+## 🔴 The fourth instance today of one class
+
+| | Where | What matched wrongly |
+|---|---|---|
+| **①** | **A scan for `READY` rows** | **The word inside [TASK-203](BACKLOG.md)'s prose. Reported a `DISPOSED` row as claimable** |
+| **②** | **A scan for finished predecessors** | **Ids inside my own *(Was:* history. 16 false positives** |
+| **③** | **`state-check`'s ten stale rows** | **Acted on the eight names it PRINTED. Missed two** |
+| **④** | **This** | **A cell terminator one row too far. Deleted content** |
+
+> ## ⚡ **All four are the [B-101](#b-101) class — a pattern answering a question only the data can answer — and ⛔ every one was caught by *re-measuring*, never by re-reading.**
+
+## ✅ The practice that changes
+
+⛔ **No more multi-line `re.S` surgery on a register.** ⚡ **Edit a table cell by locating its *line*, not by spanning to a terminator**: split on `\n`, find the line whose prefix is the cell label, replace that line. **A row cannot then be swallowed, because a row is never crossed.**
+
+✅ **And a post-condition on any scripted register edit, which is what actually caught the blast radius here**: ⛔ **compare every row's line count against `origin/integration` and refuse a push where any row shrank unintentionally.** **Zero of 114 shrank after the repair.**
+
+⚠️ **What QE did was right and is worth naming.** **It checked three things before deciding — no Lane A commit touched the line, neither earlier Lane C commit touched it, and Lane C's tip genuinely lacked it — then declined to adjudicate a content judgement between two lanes and excluded the commits.** ✅ **That is the correct call on the evidence available. The evidence was just incomplete in a way only the author could resolve.**
+
+---
+
 ### B-410 · The entire repository tree was published onto `origin/coordination`, and every lane's poll broke
 
 | | |
