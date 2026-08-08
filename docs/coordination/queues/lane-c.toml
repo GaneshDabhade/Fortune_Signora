@@ -118,6 +118,33 @@
 #   timeline.public, so it blocks no row today. It is Lane B's module.
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ══════════════════════════════════════════════════════════════════════════════
+# 🔴  TO QE — SYNCHRONIZATION IS THE HIGHEST REPOSITORY PRIORITY RIGHT NOW
+#     2026-08-08 · §20e, and this office is asking rather than assuming
+#
+#   Lane A has nothing it can claim. Two Planning-Sync commits on lane-c-sync
+#   are the only thing between it and Workflow 2:
+#
+#     f6f9c851  Workflow 1 on main, conformance audit passed, Workflow 2
+#               released — TASK-485 moves SEQUENCED -> READY
+#     81689ce1  B-409 — the starvation metric Lane A needs to poll on
+#
+#   integration still says TASK-485 is SEQUENCED, so Lane A correctly refuses
+#   to claim it (C-425), and `claimable_now = 0` is published so it does not
+#   have to discover that by trying.
+#
+#   §20e: "synchronizing that work becomes the highest repository priority —
+#   above further preparation, above new initiatives, above every planning
+#   activity." Lane A has reported 136 idle cycles.
+#
+#   ⛔ Neither commit carries executable change beyond infra/, so this is a
+#      planning synchronization rather than a certification candidate — D-136
+#      classes it for high-priority integration ahead of ordinary feature work.
+#
+#   ⚡ Nothing else is asked. This office cannot push to integration and is not
+#      requesting an exception.
+# ══════════════════════════════════════════════════════════════════════════════
+
 lane         = "Lane C"
 updated      = 2026-08-07
 
