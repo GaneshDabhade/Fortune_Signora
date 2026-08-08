@@ -381,6 +381,49 @@ updated      = 2026-08-07
 # and stays last — "prefer making one more finalized customer journey
 # functional unless architectural correctness would be compromised."
 # ══════════════════════════════════════════════════════════════════════════════
+# ✅  WORKFLOW 1 IS ON `main` AND THE CONFORMANCE AUDIT PASSES — 2026-08-08
+#
+#   Screen 02 · the design's twelve elements ....... 12 of 12
+#                                    (it was 3 of 12 on 2026-08-07)
+#   Card geometry .................................. 4 of 4
+#   Responsive ..................................... sm: ×9, lg: ×2
+#   The seven foundation gaps ...................... all closed
+#   Legacy UI · workarounds · duplicates ........... zero genuine findings
+#   States: loading · error · success · empty ...... all present
+#   aria · focus · keyboard · dialogs .............. all present
+#
+#   ⚡ THE max-w-[400px] OVERRIDE IS GONE. It is `max-w-card` now — the token
+#     TASK-491 added, consumed exactly as D-162 ④ required. That is the rule
+#     working end to end: a gap named, closed in the foundation, and the
+#     screen simplified rather than patched.
+#
+#   ⚠️ Three greps returned a hit and all three are legitimate — recorded so
+#     nobody "fixes" them:
+#       bg-slate-50   inside a globals.css COMMENT explaining the ban
+#       !important    inside prefers-reduced-motion, where it MUST win
+#       w-[calc(100vw-2.5rem)]  in session-lock.tsx, paired with max-w-card —
+#                     the design's 20px mobile gutters. A viewport calc is not
+#                     expressible as a token, and this is the honest edge.
+#
+# 🟢  WORKFLOW 2 IS RELEASED. TASK-485, Registration. It is your `current`.
+#
+#   ⛔ No product owner approval was waited for and none is required. D-169
+#      made the review a CHECKPOINT; reaching `main` is the release condition
+#      between workflows. Do not stop, do not ask.
+#
+#   ✅ And you inherit a solved problem rather than an open one: the design's
+#      `01 Welcome` needed a public root outside (app), this office found it
+#      during forward planning, and you built it in milestone 3.
+#
+#   ⚡ Workflows 2 to 5 need ZERO backend work — signUpWithPassword,
+#      resendVerification, requestPasswordReset and resetPassword all exist,
+#      and sendVerificationEmail and sendResetPassword are configured.
+#      Four complete customer journeys are pure presentation replacement.
+#
+# ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 🟢  THREE RULINGS LANDED — 2026-08-07 · D-170 · all three are yours to use
 #
 # ✅ CHARTING: visx, approved. ADR-0407 is ACCEPTED. Install only what you use
@@ -1256,7 +1299,7 @@ updated      = 2026-08-07
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = ""   # ⛔ nothing claimable and TWO rows in hand — TASK-467 and
+current = "TASK-485"
                # TASK-491. Not a drought: 483/484 release on 491's IN VALIDATION.
 next    = ""
 # ⚠️ The last three are RELEASED and NOT CLAIMABLE TODAY — their READY is on
@@ -1298,7 +1341,7 @@ future  = []   # ⛔ empty by ruling: exactly one claimable (D-163). The prepare
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 0
+eligible_count = 1
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
 depth_target   = 1   # ⚡ CLAIMABLE depth — D-163. Prepared depth is 14; see prepared_total.
 shortfall      = 0   # ⛔ 1 of 1. A second claimable row would let this lane choose, and choosing is prioritisation.

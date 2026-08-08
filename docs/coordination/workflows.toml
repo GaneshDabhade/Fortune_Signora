@@ -53,7 +53,14 @@ release_rule = "⚡ D-169, 2026-08-07. TWO triggers, and confusing them is the C
 
 [workflow.1]
 name        = "Login"
-state       = "active"
+state       = "on_main"
+# ⚡ 2026-08-08 — the code is on `main` and the conformance audit PASSES:
+#   screen 02 is 12 of 12 elements (was 3 of 12 on 2026-08-07) · card geometry
+#   4 of 4 · all seven foundation gaps closed · zero genuine legacy-UI or
+#   workaround findings. ⛔ The backlog rows still read IN VALIDATION, which is
+#   QE's state to move and never this office's (D-123).
+#   ✅ Under D-169 reaching `main` releases Workflow 2 — it does NOT wait for
+#   the product owner's review, which is now a checkpoint.
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["02 Sign in", "03 Sign in — failed", "15 Authenticating", "17 Unauthorized"]
 tasks       = ["TASK-467", "TASK-483", "TASK-484"]
@@ -69,7 +76,9 @@ excluded    = [
 
 [workflow.2]
 name        = "Registration"
-state       = "decomposed"
+state       = "ready"
+# ⚡ RELEASED 2026-08-08 by D-169 — Workflow 1 reached `main`. No approval was
+# waited for, and none is required.
 design      = "Fortune Signora Authentication.dc.html"
 screens     = ["01 Welcome", "06 Create account"]
 tasks       = ["TASK-485"]
