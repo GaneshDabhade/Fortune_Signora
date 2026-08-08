@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `d989172`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `e60e5e3`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `d989172`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `e60e5e3`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`d989172`** — the certified commit itself |
+| **`main`** | **`e60e5e3`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** Cycle 114 promoted **[B-409](docs/BUGS.md)'s starvation fix** — ⚡ **a check that counted a lane's finished work as work in hand, so 136 idle cycles were invisible to it** |
-| **Certification** | ✅ [`d9891728e7eb`](certification/reports/d9891728e7eb.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · ⚠️ **10 planned gates unrecorded, printed every run** |
+| **Release candidate** | **None pinned.** Cycle 115 promoted **Lane C only.** ⛔ **Lane A's `TASK-485` milestone 1 was excluded on a red journey** — [B-149](docs/BUGS.md) |
+| **Certification** | ✅ [`e60e5e3d4202`](certification/reports/e60e5e3d4202.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · ⚠️ **two attempts recorded, one aborted by QE — see §1d** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | **None** |
+| **Blocking Quality Defects** | 🔴 **[B-149](docs/BUGS.md)** — `TASK-485`'s journey cannot address its own password field. **Lane A's, returned as `CHANGES REQUESTED`.** ⛔ **It holds no other lane: Lane C was promoted in the same cycle** |
 | **Implementation waiting** | **Lane B**, on the product owner's rulings — see §1c. **Lane A has `TASK-485` as its current**, released by this cycle |
-| **Validation queue** | **Empty.** Two cycles inside three hours after fifty quiet polls |
-| **Customer value this cycle** | ⛔ **None directly.** Repository instrumentation and two coordination findings |
+| **Validation queue** | ⚠️ **Lane A holds a returned slice.** Lane C's queue is empty |
+| **Customer value this cycle** | ⛔ **None.** ⚡ **The customer-visible slice is exactly the one that did not ship** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **621s** *(⚠️ **the slow population names `Researched account` a third time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **144s** *(⚡ **the two-population reading held again — see §1d** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,70 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 114
+## 1d · Release summary — 2026-08-08, cycle 115
+
+**Derived from the promoted commit `e60e5e3`.** **Seventy promotions.** ⛔ **The first cycle in eighteen to exclude a slice, and the first in this session where QE aborted its own run.**
+
+### What was promoted — Lane C only
+
+| | |
+|---|---|
+| **[D-173](docs/DECISION_REGISTER.md)** *(Lane C)* | **[491](docs/architecture/491-planning-synchronization-architecture.md) — the coupling is a ruling already made and half-implemented** |
+| **[C-435](docs/LANE_COORDINATION.md)'s id collision, reported** *(Lane C)* | ⚡ **The office found the duplicate, named the rule that resolves it, and declined to act** — *"renumbering an existing identifier is QE's, and this office may not edit another lane's row."* **QE renumbered Lane A's to [C-240](docs/LANE_COORDINATION.md) at merge** |
+
+### ⛔ What was excluded — [B-149](docs/BUGS.md), and the journey is how it was found
+
+**`TASK-485` milestone 1 — screen `06 Create account` — was certified and then excluded**, because QE ran the Playwright journey §19 requires the implementing lane to have run.
+
+```
+strict mode violation: getByLabel('Password') resolved to 2 elements:
+  1) <input type="password" autocomplete="new-password" …>
+  2) <div role="meter" aria-label="Password strength" …>
+```
+
+⚡ **`getByLabel` matches on substring, so `'Password'` matches `'Password strength'`** — **the meter the same slice introduced.** ⛔ **The spec and the component were written together and the spec cannot address the component.** **Three scenarios fail, one of them the `@journey` scenario itself.**
+
+> ⚠️ **Every certification gate passed on that candidate** — [`18853e430119`](certification/reports/18853e430119.md) is a true record and stands. **Playwright is in the ten-gate shortfall [B-131](docs/BUGS.md) prints every run**, so certification could not have caught it. ⚡ **This is the first time that shortfall has cost a promotion, and it is the strongest evidence yet for closing it.**
+>
+> ⛔ **Lane A is not held on Lane C's account and Lane C was not held on Lane A's.** The cycle was rebuilt with Lane C's two commits alone and promoted the same hour.
+
+### ⚠️ Three of five failures were Lane A's, and two were QE's — proved, not assumed
+
+**QE has no supported way to run the journey.** `make e2e` derives `SIGNORA_PG_PORT=5632` for `lane-qe`, and **nothing in the repository launches that environment** — `infra/environments.py` says so itself: *"Phase 1: the model only."* **QE pointed Playwright at the production stack instead, unseeded.**
+
+| Failure | Whose |
+|---|---|
+| **3 × strict-mode violation** on `/sign-up` | ⛔ **Lane A's.** Pure DOM — no database, no API, no session, no seed. **Identical on every machine** |
+| **2 × sign-in scenarios** | ✅ **QE's environment.** **That stack has no `user` table at all** — Better Auth's are created by `npm run auth:migrate`, which nothing ran there |
+
+> ⚡ **A sign-in test cannot fail meaningfully against a database with nobody in it**, and reporting those two would have put a false lead in front of the lane. **The check is whether a failure is a statement about the commit or about the run** — and a strict-mode violation is the clearest possible case of the first.
+
+### ⚠️ QE aborted its own certification, and the record says so
+
+**[`e60e5e3d4202`](certification/reports/e60e5e3d4202.md) was run twice.** The first attempt read **`NOT CERTIFIED · the working tree was dirty, so the tree certified was never stored`** — **every gate passed and only `tree_clean` failed**, because QE edited `BUGS.md` while the run was in flight.
+
+> ⛔ **That is an abort, not a failure** — a statement about the run, never about the commit ([REPOSITORY_RELEASE_CHECKLIST.md](docs/REPOSITORY_RELEASE_CHECKLIST.md)). **Both attempts are in the manifest and neither was deleted** (§2): **120 runs now, where a tidier account would show 118.**
+>
+> ⚠️ **The checklist already warned about exactly this** — *"Commit the slice first, certify second, then commit the record it produces."* **QE knew the rule and broke it by filing a bug row at the wrong minute.**
+
+### ✅ Smoke 144s, `slowest 2. Startup 19s` — and the two-population reading held again
+
+**The excluded frontend candidate measured 225s with `slowest 1. Build 58s`; this backend-only one measured 144s.** ⚡ **Frontend cycles name `Build`, slow cycles name `Researched account`, quiet ones name neither** — [B-141](docs/BUGS.md) is now a three-way separation rather than an anomaly.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1664 frontend** *(+28, measured on the excluded candidate)* · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** |
+| **Release** | **120 runs recorded, 112 certified** · `promoted == certified` ✓ · `--audit-main` clean · ⛔ **the eighteen-cycle first-attempt streak ends here, by QE's own hand** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 144s |
+| **Dependency** | ✅ **Nothing held.** ⚡ **Lane C promoted while Lane A's slice was returned — the two clocks working as designed** |
+| **Customer Value** | ⛔ **None.** **The customer-visible slice is the one that did not ship** |
+| **Process** | ⚡ **The suite found nothing and the journey found everything**, which is §20e's own claim about this repository: *every defect that has mattered was found by using the product, not by the suite* |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 114
 
 **Derived from the promoted commit `d989172`.** **Sixty-nine promotions.** ⚡ **A starvation check that could not see starvation, and two coordination files that told a lane the opposite of what the backlog said.**
 

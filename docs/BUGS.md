@@ -80,6 +80,58 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-149 · `TASK-485`'s journey cannot address its own password field, and three of its scenarios fail on any machine
+
+| | |
+|---|---|
+| **Module** | `product_surface` — [`frontend/tests/e2e/auth-journey.spec.ts`](../frontend/tests/e2e/auth-journey.spec.ts) · [`frontend/components/ui/password-strength.tsx`](../frontend/components/ui/password-strength.tsx) |
+| **Current assignee** | **Lane A** — [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🔴 **Blocking Quality Defect — a failing test.** ⛔ **`TASK-485` milestone 1 is excluded from cycle 115 and returned as `CHANGES REQUESTED`** |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-08 by QE, cycle 115, running the journey §19 requires the implementing lane to have run |
+
+**Steps to reproduce.** Against `a91f2518`, with the product served anywhere:
+
+```
+npx playwright test tests/e2e/auth-journey.spec.ts
+```
+
+**Expected.** The scenario fills the password field.
+
+**Actual.**
+
+```
+Error: locator.fill: strict mode violation: getByLabel('Password') resolved to 2 elements:
+  1) <input type="password" autocomplete="new-password" …>
+  2) <div role="meter" aria-label="Password strength" …>
+```
+
+⚡ **`getByLabel` matches on substring, so `'Password'` matches `'Password strength'`** — **the meter the same slice introduced.** ⛔ **The spec and the component were written together and the spec cannot address the component.**
+
+**Three scenarios fail on it**, all under `Workflow 2 · creating an account`: *the strength meter answers the password as it is typed* · *the strength list reports and never gates* · **`@journey` *a person creates an account and reaches verification***.
+
+### ⛔ The `@journey` scenario is the one §19 names
+
+> *"A UI slice is not complete until its scenario is written and passing."* · *"The responsibility does not end with writing the tests. It includes executing them"* ([D-113](DECISION_REGISTER.md), [`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) L-15 gate 8).
+
+**The scenario was written. It was not run** — ⚡ **or it was run and pushed red**, and the two are indistinguishable from outside. **Either way the slice reached QE with `IN VALIDATION` set and a red journey.**
+
+### ⚠️ What QE is NOT reporting, and why it is worth saying
+
+**Five scenarios failed on QE's machine and only three are this defect.** ⛔ **The other two — `@smoke a person … reaches their morning` and *signing out ends the session* — are QE's environment and are not Lane A's.**
+
+**Proved rather than assumed:** QE ran against the local production stack without the playground seed, and **that stack has no `user` table at all** — Better Auth's tables are created by `npm run auth:migrate`, which nothing ran there. ⚡ **A sign-in test cannot pass against a database with nobody in it**, and reporting it would have put a false lead in front of the lane.
+
+> ⚡ **The three that are Lane A's are environment-independent and that is why they are reportable.** **A strict-mode violation is pure DOM** — no database, no API, no session, no seed. **It fails identically on every machine, which is exactly what makes it a statement about the commit rather than about the run.**
+
+### ⚠️ Second finding, recorded and not filed separately: the journey has no supported environment
+
+**`make e2e` derives `SIGNORA_PG_PORT=5632` for `lane-qe` and nothing in the repository launches it** — `infra/environments.py` says so itself: *"Phase 1: the model only. Nothing launches from this yet."* ⛔ **So `make e2e` aborts with `ConnectionRefused` for any lane that has not hand-built its own stack.**
+
+**QE reached the journey by pointing Playwright at the production stack instead.** ⚡ **That is a workaround, not a route**, and it is why two scenarios failed for environmental reasons. **Recorded here rather than as its own row because it belongs to the same conversation as this one; if it survives the fix, it earns a row.**
+
+---
+
 ### B-148 · A queue file tells Lane A not to claim the task it claimed two hours earlier
 
 | | |
