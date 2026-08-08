@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `f5d9be5`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `089a119`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `f5d9be5`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `089a119`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`f5d9be5`** — the certified commit itself |
+| **`main`** | **`089a119`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⚡ **Cycle 129 closed the expiry gap Workflow 4 disclosed** — **the link now lives thirty minutes and three screens say so** |
-| **Certification** | ✅ [`f5d9be52e134`](certification/reports/f5d9be52e134.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 130 promoted Workflow 8's guided onboarding** — **a new customer is set up in ninety seconds and can walk away mid-way without losing anything** |
+| **Certification** | ✅ [`089a1193ef07`](certification/reports/089a1193ef07.md) · migration head **`0043`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | 🔴 **Two, and this line said `None` for eleven cycles.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ✅ ⚡ **The reset link's stated lifetime is now true** — configuration and copy moved in one change, on three screens |
+| **Customer value this cycle** | ✅ ⚡ **A new customer is guided into Signora** — four screens, a resumable run, and a banner that offers to finish |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1730 frontend tests** *(+1)* across **76 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **216s** *(`Build 68s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4251 backend tests** *(+50)* · **95.18% coverage** *(floor 95)* · **1768 frontend tests** *(+38)* across **77 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **847 files** · **44 migrations**, `0000`–`0043`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **207s** *(`Build 59s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,66 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 129
+## 1d · Release summary — 2026-08-08, cycle 130
+
+**Derived from the promoted commit `089a119`.** **Eighty-five promotions.** ⚡ **The largest slice of the session — 41 files, a new module aggregate, migration `0043` — and the lane named what it had *not* run and handed it to QE.**
+
+### ✅ What a customer gets
+
+> **A new customer is walked through setting up Signora in about ninety seconds, and can walk away in the middle without losing a thing.**
+
+**Screens 01/02 Welcome, 04 Company, 05 You, 06 Goals**, the onboarding container, and three new `components/ui` primitives — `StepRail`, `ChoiceCards`, `Inferred`.
+
+### ✅ The design's own sentence set the aggregate's shape
+
+> *"Confirm, don't collect. Eleven of the fifteen values are inferred."*
+
+⚡ **So a value is never a bare value — it is a value *and where it came from*, and `Answer` has no default provenance**, because *"a caller that could omit it could store a guess that renders without the `Inferred` badge."*
+
+| Decision | Why |
+|---|---|
+| **Every answer column nullable** | *"An abandoned onboarding still produces a customer."* A `NOT NULL industry` would make the person who left at step 3 unwritable |
+| **No `features` column** | The goals imply them deterministically, so the aggregate **derives on read** — §2, *a stored copy of a derivable fact is a defect waiting for the two to disagree* |
+| **Composite key `(workspace, person)`** | A single run per workspace *"would let the second member resume the first member's"* |
+
+### ✅ The enforcement proof the lane handed QE — run, and it passed
+
+**The Slice Handoff was explicit:** *"NOT RUN, AND NOT CLAIMED: the DB-backed security-invariant suites, including the RLS enforcement tests for `onboarding_run`… the enforcement proof is QE's to run."*
+
+⚠️ **`security-invariants` reported 398, unchanged — and QE checked that rather than accepting the flat number.** ✅ **The suite *iterates* `TENANT_OWNED_TABLES` inside each test rather than parametrising**, so a new table changes what the existing assertions cover without changing the count. **Verified: `onboarding_run` is in the set (53 tables), and three loops walked it** — non-null `workspace_id`, `relrowsecurity`/`relforcerowsecurity`, and policy coverage. **Migration `0043` reversed to base and re-applied.**
+
+### ✅ The platform touch is the permitted one
+
+**`Resource.ONBOARDING` in `signora_platform/authorization/enforcer.py` is 🔴 territory**, and it is exactly the case [§20a](CLAUDE.md) and [C-224](docs/LANE_COORDINATION.md) carve out: ***a `Resource` member declares that a resource exists; who may act on it is granted only in `policy.csv`.*** **The comment says so itself**, and explains why it is not a `WORKSPACE` reuse: *"a workspace grant would have made every owner able to read a colleague's run."* **Four `policy.csv` rows in the append-only registry.**
+
+### ⚡ Three guards refused this slice, and every refusal was right
+
+| Guard | What it caught |
+|---|---|
+| `no-mock-data.test.tsx` | An array named for a business noun → renamed `SIZE_BANDS`. ⚠️ **Third instance of the check reading *comment text*** — written down at last |
+| `vocabulary.test.tsx` | *"Workspace"* on the rail → **translated to Organization** ([ADR-0034](docs/architecture/adr/0034-ubiquitous-language.md)), and **[C-246](docs/LANE_COORDINATION.md) raised** rather than fixed silently, because `TASK-468` carries the same word |
+| `reachability.py` | **All four routes had no entrance.** ⚡ **The resume banner *is* the entrance**, so it shipped a milestone early — and only for an unfinished run, because *"an entrance that was always visible would be a permanent offer to continue something that does not exist"* |
+
+### ✅ And the headed run caught what no suite would
+
+**Two scenarios failed with `409` — because the product was right.** *"A finished run refuses every later change, because onboarding answers become settings the moment the run ends."* ⛔ **Fixed by ordering, not by a reset endpoint** — *"which would exist only for tests and would be a way to edit a settled record that no customer has."*
+
+> ⚡ **The lane also reported a flake as a flake**: the sign-out scenario failed on two of four full anonymous runs. **Reported rather than called green.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4251 backend** *(+50)* · **1768 frontend** *(+38)* · **95.18%** *(floor 95)* · **398 invariants** · **847 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **135 runs recorded, 127 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | ⚡ **Migration `0043`, reversed to base and re-applied** · **53 tenant-owned tables** · **DR nothing lost** · smoke 207s |
+| **Dependency** | ⚠️ **[C-246](docs/LANE_COORDINATION.md) opened** — one label, two rows, and the lane refused to translate it twice |
+| **Customer Value** | ✅ ⚡ **Workflow 8 — a guided, resumable arrival** |
+| **Process** | ⚡ **The handoff named what it had not run and gave it to QE by name.** **That is the Slice Handoff's `Limitations` field doing exactly what it exists for**, and it is the difference between a limitation and a defect found three slices later |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 129
 
 **Derived from the promoted commit `f5d9be5`.** **Eighty-four promotions.** ⚡ **The expiry Workflow 4 refused to misstate two cycles ago is now true, and the fix moved the product rather than the copy.**
 
