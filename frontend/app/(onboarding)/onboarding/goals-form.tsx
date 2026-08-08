@@ -8,6 +8,7 @@ import { chooseGoals, finishOnboarding, type Goal } from '@/lib/api/onboarding';
 
 import { OnboardingShell } from '../onboarding-shell';
 import { OnboardingSkeleton } from './company-form';
+import { onboardingExit } from './exit';
 import { GOALS, MAX_GOALS, RAIL_STEPS, isGoal } from './steps';
 import { useOnboarding } from './use-onboarding';
 
@@ -53,6 +54,10 @@ export function GoalsForm() {
    * refuses one workflow over — and `vocabulary.test.tsx` catches it, which is
    * how this line came to be written twice.
    *
+   * ⛔ **And it does not choose where the person lands** — that goes through
+   * `onboardingExit`, which exists because the coordination source forbids
+   * this flow from deciding it. See `exit.ts`.
+   *
    * ✅ **Finishing here is honest rather than a stub**: everything the run can
    * currently record has been recorded, and *"an abandoned onboarding still
    * produces a customer"* applies just as well to one the product has not
@@ -62,7 +67,7 @@ export function GoalsForm() {
     const goals = selected.filter(isGoal) as Goal[];
     await save((id) => chooseGoals(id, goals));
     await save((id) => finishOnboarding(id));
-    router.push('/');
+    router.push(onboardingExit());
   };
 
   return (
@@ -84,7 +89,7 @@ export function GoalsForm() {
               // valid answer and is not the same as never being asked — the
               // goals are simply left as they were and the run closes.
               await save((id) => finishOnboarding(id));
-              router.push('/');
+              router.push(onboardingExit());
             }}
             className="text-sm text-content-muted underline underline-offset-4 hover:text-content"
           >
