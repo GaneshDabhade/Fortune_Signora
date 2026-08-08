@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `063908a`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `891e2c4`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `063908a`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `891e2c4`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`063908a`** — the certified commit itself |
-| **`integration`** | **Two claim commits ahead**, replayed onto the certified commit |
-| **Release candidate** | **None pinned.** **Cycle 117 promoted the register reconciliations** — ⚡ **three lanes converged on the same `C-240` without coordinating**, and [B-149](docs/BUGS.md) closed with both accounts kept |
-| **Certification** | ✅ [`063908a983d4`](certification/reports/063908a983d4.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **`main`** | **`891e2c4`** — the certified commit itself |
+| **`integration`** | **Level with `main`** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 118 promoted `TASK-494` — email leaves the process through Resend**, the first *adoption* of a ratified buy decision under [D-179](docs/DECISION_REGISTER.md) |
+| **Certification** | ✅ [`891e2c464d02`](certification/reports/891e2c464d02.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **[B-149](docs/BUGS.md) is `VERIFIED`** — returned in cycle 115, fixed and promoted in 116 |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ⛔ **None directly.** ⚡ **Both lanes claimed the next journeys mid-cycle** — Workflow 3 · Email Verification, and email through the ratified vendor |
+| **Customer value this cycle** | ⚡ **Indirect but load-bearing.** **A verification email can now leave the process** — what Workflows 3, 4 and 5 were each about to build around |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** *(+8)* · **95.38% coverage** *(floor 95)* · **1636 frontend tests** *(+32)* across 68 files *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** *(+6)* · mypy strict over **843 files** · migrations `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **152s** *(`Startup 19s` — a backend-only cycle, **the reading holds a fifth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1672 frontend tests** *(+8)* across **70 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **233s** *(`Build 92s` — a frontend cycle, **the reading holds a sixth time** — [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,65 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 117
+## 1d · Release summary — 2026-08-08, cycle 118
+
+**Derived from the promoted commit `891e2c4`.** **Seventy-three promotions.** ⚡ **A ratified decision became working software for the first time under [D-179](docs/DECISION_REGISTER.md) — and QE found three of its own dashboard figures stale while measuring it.**
+
+### ✅ What was promoted
+
+| | |
+|---|---|
+| ⚡ **`TASK-494` — email leaves the process through Resend** *(Lane A)* | **Behind the port `lib/auth/email.ts` already earned**, whose own comment said *"what arrives later is a vendor."* ✅ **+8 tests, `email-transport.test.ts`.** ⛔ **It does not replace the developer mailbox** — one is the development substitution [D-167](docs/DECISION_REGISTER.md) ① permits at an infrastructure boundary, the other is the production adapter, and both sit behind one port |
+| **[C-240](docs/LANE_COORDINATION.md) is `RULED`** *(Lane A)* | All three approved — **and none has a row that may execute them** |
+| **[D-181](docs/DECISION_REGISTER.md)** *(Lane C)* | The coordination ref is recovered and the hand-rolled push is gone |
+
+### ⚡ The first adoption, and it is the point of [D-179](docs/DECISION_REGISTER.md)
+
+**Resend was ratified in [`09-build-vs-buy.md`](docs/architecture/09-build-vs-buy.md) and unbought.** [D-178](docs/DECISION_REGISTER.md) measured the cost — **eight of twelve ratified *buy* decisions unadopted**, with *"a workflow blocked or a lane building a workaround while the vendor sits ratified and unbought."* **[D-179](docs/DECISION_REGISTER.md) made adoption a tracked state, the check fired in its first minute, and this is the row it produced arriving on `main`.**
+
+> ✅ **QE checked the dependency rather than waving it through.** **`resend@^6.18.1` in `package.json` is 🔴 under [§6](CLAUDE.md)** — *"never introduce a major dependency without explicit approval"* — **and the approval is `09-build-vs-buy.md`, cited by D-178 and D-179.** ⚡ **This is the *adoption* of an existing decision, not a new one**, which is exactly the distinction D-179 exists to make visible.
+
+### ⚠️ A claim raced a planning correction, and the lane won correctly
+
+**`docs/BACKLOG.md` conflicted on [`TASK-486`](docs/BACKLOG.md).**
+
+| | |
+|---|---|
+| **Lane C, 06:43:30Z** | ⏸️ **`SEQUENCED`** — behind `TASK-494`, on a Product Office branch |
+| **Lane A, 06:53:35Z** | 🔵 **`CLAIMED`** — **against `integration`, where the row still read `READY`** |
+
+✅ **The claim stands.** **§20e claims from `integration` and nowhere else**, `CLAIMED` is the lane's to set, and **Lane A followed the protocol exactly.** ⚡ **The sequencing reason is discharged in the same candidate anyway** — Lane C wanted `TASK-486` behind `TASK-494`, and **Lane A delivered `TASK-494` first.**
+
+> ⚡ **Recorded inside the row rather than resolved silently, because it is the second observed instance** — [C-422](docs/LANE_COORDINATION.md) was the first. ⛔ **[D-136](docs/DECISION_REGISTER.md) asks for evidence across cycles rather than a governance change argued from one bad day**, so this is evidence and nothing more.
+
+### ⛔ Three dashboard figures were stale, and QE wrote them
+
+**Found by re-measuring instead of editing the number in front of it:**
+
+| Figure | Said | Is |
+|---|---|---|
+| **Frontend tests** | 1636 across 68 files | ✅ **1672 across 70** — stale since cycle 112 |
+| **Module directories** | 17 | ✅ **18** |
+| **ADRs** | 44 | ✅ **52** |
+| **Architecture documents** | 54 | ✅ **142** |
+| **Migrations** | *(not stated)* | ✅ **43**, `0000`–`0042` |
+
+> ⛔ **§20d is explicit — *"repository metrics are measured, never transcribed"*, and *"a figure carried forward describes a repository that no longer exists."*** ⚡ **QE has been re-measuring the certification figures every cycle and carrying the surrounding ones forward**, which is the same defect the rule names, in the file that states it. ✅ **The anchored-replacement discipline is what caught it: the edit asserting `count == 1` failed against three dated release summaries, and dated records are exactly what must not be rewritten.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1672 frontend** *(+8)* · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **123 runs recorded, 115 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 233s · **18 modules · 52 ADRs · 142 architecture documents** |
+| **Dependency** | ✅ **Nothing held.** ⚡ **A ratified vendor is adopted rather than worked around** |
+| **Customer Value** | ⚡ **A verification email can leave the process** — the thing Workflows 3, 4 and 5 each needed |
+| **Process** | ⛔ **QE corrected four of its own figures this cycle.** ⚡ **The mechanism that found them is the one that refuses a broad replacement** — an assertion that the text appears exactly once |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 117
 
 **Derived from the promoted commit `063908a`.** **Seventy-two promotions.** ⚡ **A quiet cycle whose whole content is three registers agreeing with each other — and one id that three parties reached independently.**
 
