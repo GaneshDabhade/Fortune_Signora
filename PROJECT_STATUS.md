@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `82084ed`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `c6e9278`, 2026-08-08.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `82084ed`, 2026-08-08.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `c6e9278`, 2026-08-08.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`82084ed`** — the certified commit itself |
+| **`main`** | **`c6e9278`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⛔ **Cycle 123 restored a line QE deleted in cycle 122** — [B-411](docs/BUGS.md), **filed by Lane C against QE, and correct** |
-| **Certification** | ✅ [`82084edbc40c`](certification/reports/82084edbc40c.md) · migration head **`0042`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | **None pinned.** ⚡ **Cycle 125 promoted `TASK-498`** — **the three ruled controls land in the one file every workflow row correctly forbade** |
+| **Certification** | ✅ [`c6e9278c8cec`](certification/reports/c6e9278c8cec.md) · migration head **`0042`** · protocol **v2** · ⚡ profile **`documentation+frontend`** — **the first non-`platform` profile of the session** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** ⛔ **[B-150](docs/BUGS.md) was 🔴 for one cycle** — QE promoted a conflict marker to `main` and repaired it in the next |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ⚡ **A journey delivered and one honestly bounded** — `TASK-484`, the two journeys that work and nobody verifies |
+| **Customer value this cycle** | ✅ ⚡ **Three controls the screens were built without now work** — breach-corpus checking, rate limiting reachable outside production, and the 6-digit code |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1694 frontend tests** *(+8)* across **72 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **172s** *(⚠️ **`Researched account 22s` — the slow-population stage naming itself on a *fast* run**, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4201 backend tests** · **95.38% coverage** *(floor 95)* · **1709 frontend tests** *(+15)* across **74 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **843 files** · **43 migrations**, `0000`–`0042`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **193s** *(`Build 55s` — a frontend cycle, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -103,7 +103,58 @@
 
 ---
 
-## 1d · Release summary — 2026-08-08, cycle 124
+## 1d · Release summary — 2026-08-08, cycle 125
+
+**Derived from the promoted commit `c6e9278`.** **Eighty promotions.** ⚡ **Three controls that four workflows each shipped without, landing in the one file every one of those rows correctly forbade.**
+
+### ✅ [`TASK-498`](docs/BACKLOG.md) — the row that may touch `lib/auth/server.ts`, and decides nothing
+
+> *"[C-434](docs/LANE_COORDINATION.md) was Workflow 1's, [C-240](docs/LANE_COORDINATION.md) Workflow 2's, [C-241](docs/LANE_COORDINATION.md) Workflow 3's. Every authentication workflow needed one line in `lib/auth/server.ts`, every row correctly forbade it, and every screen shipped without its control and said so. This is the row that may touch it, and it decides nothing."*
+
+| Control | What it restores |
+|---|---|
+| **`haveIBeenPwned()`** | ⚡ **The design's fourth password rule on screen `06`** — *"k-anonymity, so the password never leaves the process"*. ⛔ **The cost is accepted with the ruling**: an unreachable range API becomes an inability to register, and *"softening that here would be this file deciding a semantic the ruling did not"* |
+| **`rateLimit: { enabled: true }`** | **Better Auth defaults it to production only**, so the throttled screen Workflow 1 built **against the real `429` and the real `X-Retry-After` could not be reached at any review** |
+| **`emailOTP({ otpLength: 6 })`** | ⚡ **The control screen `07` was built without.** *"`otpLength` is a READ, not a choice: the design says 'Enter the 6-digit code' and [D-138](docs/DECISION_REGISTER.md) makes the snapshot the authority"* |
+
+> ⚡ **This is the discipline paying out.** **Four screens each refused to draw a control they could not honour, each raised an item, each said so in a test** — and **one row, holding the ruling, turned all of them on at once.** ⛔ **No screen was built twice and no false affordance ever shipped.**
+
+### ✅ Also promoted
+
+**[`TASK-483`](docs/BACKLOG.md)** — *"the shell was already correct, so the deliverable is the guard"*. ⚡ **A slice whose product is a test**, plus `auth-shell.test.tsx`.
+
+### ⚡ The first non-`platform` profile of the session
+
+```
+profile: documentation+frontend        Gates (8)
+```
+
+**Every prior candidate this session touched `docs/coordination/**` and classified as `platform` — 16 or 17 gates.** ⚡ **This one did not, and the planner narrowed to eight.** ⛔ **Recorded, never applied** — all six required gates still ran ([427](docs/architecture/427-impact-based-validation.md) step 2). **It is the first evidence in the impact-based-validation record that the classifier discriminates rather than always widening.**
+
+### ✅ QE's own two practices held
+
+**[B-150](docs/BUGS.md) produced two rules yesterday and both were exercised today.** ⚡ **The `TASK-483` row conflicted `CLAIMED` against `IN VALIDATION`** — a state advance, the lane's to set — **and the resolution ran as a *gated* sequence rather than a chained one:**
+
+```
+resolve → GATE: refuse to stage if any marker remains → git add → continue
+```
+
+✅ **`state-check` ran before this Closeout commit, not after.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4201 backend** · **1709 frontend** *(+15)* · **95.38%** · **398 invariants** · **843 files typed** · **37 contracts** · `tsc` and `eslint` clean |
+| **Release** | **130 runs recorded, 122 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0042` **reversible, verified** · **DR nothing lost** · smoke 193s |
+| **Dependency** | ✅ **Three coordination items discharged at once** — C-434, C-240, C-241 |
+| **Customer Value** | ✅ ⚡ **Breach checking, reachable rate limiting, and a 6-digit code** |
+| **Process** | ⚡ **The best argument yet for refusing to build what you cannot honour**: four screens deferred one line each, said so, and got all three back in a single reviewed row |
+
+---
+
+## 1e · Release summary — 2026-08-08, cycle 124
 
 **Derived from the promoted commit `82084ed`.** **Seventy-nine promotions.** 🔴 **QE promoted an unresolved conflict marker to `main` in cycle 123 and repaired it here — and the check that names it was skipped, not missing.**
 
