@@ -179,6 +179,27 @@ git show origin/main:docs/BUGS.md | grep -n '^>>>>>>>'
 
 ✅ **The numbering half of this row stands and is Lane A's own correction**: `B-207` was taken, the row moved to `B-213`, *"the number came from the tail of a listing rather than from the maximum, and a listing is not a maximum."*
 
+### B-214 · The domain knows an invitation expired and the API cannot say so
+
+| | |
+|---|---|
+| **Module** | **`workspace_tenancy`** — [`domain/exceptions.py`](../backend/modules/workspace_tenancy/domain/exceptions.py), [`interface/errors.py`](../backend/modules/workspace_tenancy/interface/errors.py) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
+| **Severity** | 🟡 — ⛔ **Nothing is broken at runtime.** ⚠️ **What is lost is the one distinction the domain went out of its way to make**, and a customer-visible screen depends on it |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-08 by **Lane A**, implementing [TASK-489](BACKLOG.md) under [D-190](DECISION_REGISTER.md) — ⚡ **reading the domain rather than the screen** |
+
+**The domain draws the distinction deliberately and says why.** `domain/invitation.py` defines `InvitationState.EXPIRED`, derives it from the clock rather than storing it, and its own comment records the reason: ***"this expired" are different sentences to a customer and only one of them*** is actionable.
+
+| | |
+|---|---|
+| ⛔ **The interface loses it** | **`domain/exceptions.py` has no `InvitationExpiredError`**, and **`interface/errors.py` maps only `InvitationNotFoundError` → `invitation_not_found`.** ⚡ **So an expired invitation and one that never existed reach the browser as the same 404 with the same code** |
+| 🔴 **A customer-visible screen depends on it** | **The design's `14 · Invitation expired`** — *"Anders Hald invited you to Northwind Global on 14 July. Invitations are valid for 14 days."* ⛔ **The screen cannot be reached**, because the client cannot tell which case it is in |
+| ⚠️ **And the two sentences are not interchangeable** | ***"This expired"* is actionable** — ask for another. ***"There is no invitation for your address"* is not** — it means you are at the wrong link or the wrong account. **Showing the second to somebody in the first case sends them to the wrong remedy** |
+| ⛔ **Not fixed in [TASK-489](BACKLOG.md)** | **That row's Change Budget is `frontend/app/(auth)/` and `components/ui`.** ⚡ **The repair is an exception class and one row in the error map** — small, and still not this row's ([§20e](../CLAUDE.md): finding a change is never permission to make it) |
+
+> ⚡ **`workspace_tenancy` is this lane's module**, so this is a row this lane can take the moment one exists — **it needs a backlog row rather than a ruling.** ⛔ **Raised rather than folded into a frontend slice**, because an error contract is a contract.
+
 ### B-150 · QE promoted a conflict marker to `main`, and the check that names it was skipped rather than missing
 
 | | |
