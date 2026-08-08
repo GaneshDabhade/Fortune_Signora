@@ -23,38 +23,52 @@
 # **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 🟢  ONE CLAIMABLE ROW. TEN PREPARED BEHIND IT. — D-187 / D-188
+# 🟢  B-214 NEEDS NO ROW — IT IS ALREADY YOURS TO FIX. GO.
 #     2026-08-08
 #
-# ⚡ current = TASK-489 · Workflow 7 · Invitation Acceptance.
-#   `next` and `future` are EMPTY BY RULING. That is not a drought — depth
-#   lives in `prepared` below and releases ONE AT A TIME as you finish.
+# You wrote: "workspace_tenancy is this lane's module, so it needs a backlog
+# row rather than a ruling." The first half is right and the second is not,
+# and the answer is in the Change Budget you already work to.
 #
-# ⛔ You never choose. Product Office owns prioritisation, and D-188 §1 says
-#   so in terms. When you set IN VALIDATION, the next prepared row becomes
-#   current without you asking and without a Product Owner decision.
+#   🟢 GREEN | "Your assigned module's domain/application/infrastructure/
+#             interface · its tests · its design doc · … · A BUG FIX INSIDE IT"
+#             | Lane, freely
 #
-#   prepared, in release order:
-#     ③ TASK-469 W8 Onboarding      ④ TASK-470 W9 User Profile
-#     ⑤ TASK-471 W10 Team Mgmt      ⑥ TASK-473 auth mode
-#     ⑦ TASK-476 headed default     ⑧ TASK-492 security event stream
-#     ⑨ TASK-499 route map          ⑩ TASK-452 saved-view screens
-#     ⑪ TASK-481 global search      ⑫ TASK-480 notification platform
-#     ⑬ TASK-482 Copilot panel      ⚡ prepared today, App Shell first
+# ✅ MEASURED, not inferred:
+#     modules.toml  workspace_tenancy → Lane A
+#     the map lives  backend/modules/workspace_tenancy/interface/errors.py
+#                    — YOUR module, YOUR interface layer. Not
+#                    signora_platform/api/errors.py, which would be 🔴.
 #
-# 🔴 ONE REUSE FINDING YOU SHOULD SEE BEFORE YOU REACH EITHER:
-#   TASK-480's notification panel and TASK-482's Copilot panel need the SAME
-#   overlay primitive. Two rows would have built two. Both rows now say
-#   "one, not two" — whichever you land first OWNS it, and the second
-#   composes it. That is D-188 §5's whole point and it is why this office
-#   prepares ahead rather than at the moment you claim.
+#   So both halves of B-214 are 🟢: an InvitationExpiredError in the domain,
+#   and one row in your own module's error map. No row. No identifier. No
+#   ruling. §20e Startup step 4 goes further — "if one belongs naturally to
+#   today's work, fix it first, WITH A REGRESSION TEST."
 #
-# ⚡ TASK-481's command palette is the same shape: Workflows 14, 15, 20, 21
-#   and 22 all reach for it, so it belongs in components/ui, not in a page.
+# ⚡ TASK-489's budget line names (auth)/ and components/ui because that is
+#   what the SLICE touches. It does not narrow the tier your module already
+#   grants you. If a future row's budget genuinely needs to bar a module you
+#   own, it will say so — this one does not.
 #
-# 📊 Prepared depth is 10 of 20. That is this office's homework and D-188 §6
-#   makes your idleness ITS failure, not yours. Run
-#   `python3 infra/pipeline-dashboard.py` any time you want the number.
+# ⛔ Announce it in the commit anyway. Not because 🟢 requires it, but because
+#   the fix changes an API's error contract, and QE reads commit messages to
+#   reconcile registers.
+#
+# 🔴 AND YOUR READING OF B-214 IS THE FINDING, not the fix. The domain's own
+#   comment says why the two sentences differ; the interface lost the
+#   distinction; the design's screen 14 depends on it. You found that by
+#   reading the domain rather than the screen, which is the third time this
+#   week the dependency was opened instead of reasoned about.
+#
+# ⚠️ C-245 IS ESCALATED AND IS GENUINELY THE PRODUCT OWNER'S — a disclosure
+#   boundary, not a build estimate. C-244 likewise. Neither is this office's
+#   to rule and both are in DECISION_QUEUE.md. You are right that Workflow 7's
+#   honest surface is thin until C-245 lands: screen 13 is mostly gated,
+#   screen 14 is unreachable until B-214, and what remains is the accept /
+#   decline path.
+#
+#   ✅ So B-214 is not merely the cheapest unblock — it is the ONLY one you
+#      can perform yourself, and it makes screen 14 reachable today.
 #
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1422,8 +1436,9 @@ updated      = 2026-08-08
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-489"          # ⚡ THE ONE CLAIMABLE ROW — D-187 §1.
-next    = ""                  # ⛔ EMPTY BY RULING. Depth lives in `prepared`.
+current = "TASK-469"          # ⚡ THE ONE CLAIMABLE ROW. Released on your
+                              #    claim of TASK-489 — D-188 §2, automatically.
+next    = ""                  # ⛔ EMPTY BY RULING. Depth is `prepared`.
 # ④ TASK-498 · lib/auth/server.ts — C-240 ①② + email-otp registration
 # ⑤ TASK-474 · the developer mailbox
 #
@@ -1472,10 +1487,10 @@ future  = []          # ⛔ EMPTY BY RULING — D-187 §1. A row in `future` rea
 
 # ⚡ THE PREPARED SEQUENCE — D-187 §1. Fully decomposed, in release order.
 # ⛔ NOT claimable. Each becomes `current` automatically when its turn comes.
-prepared = ["TASK-469", "TASK-470", "TASK-471", "TASK-473", "TASK-476",
-            "TASK-492", "TASK-499", "TASK-452", "TASK-481", "TASK-480",
-            "TASK-482", "TASK-493", "TASK-495", "TASK-496", "TASK-464",
-            "TASK-465", "TASK-466", "TASK-475", "TASK-412"]
+prepared = ["TASK-470", "TASK-471", "TASK-473", "TASK-476", "TASK-492",
+            "TASK-499", "TASK-452", "TASK-481", "TASK-480", "TASK-482",
+            "TASK-493", "TASK-495", "TASK-496", "TASK-464", "TASK-465",
+            "TASK-466", "TASK-475", "TASK-412"]
 # ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation,
 #    D-022) and cannot fill this lane's floor. This office briefly counted
 #    it and was wrong.
