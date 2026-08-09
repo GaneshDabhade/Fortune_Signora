@@ -94,7 +94,11 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 **Does Not Own:** Authentication (Better Auth, see [ADR-0010](adr/0010-identity-and-access.md)), fine-grained permission evaluation (Casbin), billing/subscription state (Stripe, see [ADR-0016](adr/0016-billing.md)).
 
-**Core Concepts:** Workspace, Membership, Role Binding.
+**Core Concepts:** Workspace, Membership, Role Binding, Security Event.
+
+**Also Owns — the account activity stream.** `security_event` (migration `0046`) is **one append-only record every module writes to**: authentication, authorization and administrative facts, read by login history, audit, compliance and the customer's own timeline. It is deliberately *not* a security-only log — a security-only log means building the second one later, because those four readers want the same facts.
+
+Other modules reach it through **`SecurityEventWriter` in `public/`** and never touch the table (§8). Every event carries **`subject_id` and `acting_for`, both required**: who it is about, and on whose authority it happened. The write side is published and **no reader is** — an event exists when a consumer appears, and the Security Center screens that read this stream are Workflow 23. Tenancy, immutability and the open `DELETE` question are in [11-tenancy.md](11-tenancy.md).
 
 **Key Published Events:** `workspace.created`, `workspace.member_added`.
 

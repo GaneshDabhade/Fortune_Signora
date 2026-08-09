@@ -74,6 +74,29 @@ Two consequences worth knowing:
 - **`processed_event` keeps `SELECT` for `signora_app`.** The idempotency claim is `INSERT ... ON CONFLICT DO NOTHING`, and PostgreSQL requires `SELECT` on the table to evaluate the conflict target — verified empirically, not assumed. The ledger holds only `(consumer_name, event_id)`, no payload, so it is not a cross-tenant read path.
 - **ORM models on these tables must not rely on server-side defaults.** SQLAlchemy fetches them back with `INSERT ... RETURNING`, which requires `SELECT`. `OutboxEventModel.relay_attempts` therefore carries a Python-side `default` alongside its `server_default`.
 
+### Append-Only Tenant Tables, and the Security Event Stream
+
+Some tenant-owned tables record **facts about a moment**, and a fact about a moment is never corrected in place. They carry `SELECT`, `INSERT` and `DELETE` and **never `UPDATE`** — and the policies match the grants exactly, because **a policy without a grant is decorative and a grant without a policy is a tenancy hole.** Both are withheld rather than one.
+
+`opportunity_state` (`0014`) established the shape, `action_batch` and `action_batch_transition` (`0042`) repeated it deliberately rather than inventing a second one, and **`security_event` (`0046`) is the third.**
+
+**`security_event` is one append-only record every module writes to** — an *account activity* stream rather than a security log, because compliance, support and the customer's own timeline all read the same facts, and a security-only log means building the second one later.
+
+| | |
+|---|---|
+| **Owner** | `workspace_tenancy`, which already owned `membership_role_change` — an audit row that did not know it |
+| **Tenancy** | `workspace_id` non-nullable, RLS `ENABLE` **and** `FORCE`, separate `SELECT`/`INSERT`/`DELETE` policies, **no `UPDATE` grant and no `UPDATE` policy** |
+| **Classification** | `TENANT_OWNED_TABLES` **and** `IMMUTABLE_TENANT_TABLES`, both in migration `0046`'s own change |
+| **Written through** | `SecurityEventWriter` in `workspace_tenancy/public/`. **No other module writes the table directly** (§8) |
+
+**Two columns carry identity and both are non-nullable from the first migration.** `subject_id` is who the event is *about*; `acting_for` is on whose authority it happened. **A line naming only the agent cannot answer *who authorised this*, and one naming only the human is a lie whenever an agent acted.** When a person acts directly the two are equal and the row says so — a `NULL` would have meant *unattributed* and *self-directed* at once. **Retrofitting an attribution column is how audit history becomes "everything before March has no actor", and that gap is permanent**, which is why both are in the creating migration rather than added when a consumer needs them.
+
+**`occurred_at` and `created_at` are different questions.** The first is when the fact happened and belongs to the caller, which is the only thing that knows; the second is when the row was written and belongs to the database, which cannot be mistaken. Under a retry or a replay they differ.
+
+**`subject_id` carries no foreign key**, deliberately: an event about somebody whose membership was later deleted must survive that deletion, or the stream loses precisely the rows an investigation wants.
+
+> **`DELETE` is granted, and it is an open question rather than a settled one.** It matches every immutable tenant table since `0008` on erasability grounds — being able to remove a workspace's data is a tenancy property, and withholding it would make a deletion request unservable. **A security stream a workspace can delete from is nonetheless a different compliance story from one it cannot**, and QE recorded that as a product-owner question at cycle 157.
+
 ### Every Tier Connects Under Its Own Role
 
 The rule above applies to *every* process holding a connection string, not only the API. A single tier connecting as the owner reopens the gap for the whole database.
