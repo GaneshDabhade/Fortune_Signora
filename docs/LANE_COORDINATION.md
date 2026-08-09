@@ -362,6 +362,7 @@ databaseUrl: required(
 | [C-1406](#c-1406--the-review-says-the-engine-has-no-routing-defect-and-a-lane-that-implemented-it-found-three) | 🟠 **The review says the engine has no routing defect; the lane that built it found three** | **Lane C**, 2026-08-09, against [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | ⛔ **Product Owner** — same question as [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) ③ | 🟠 **`OPEN`** | ✅ **Nothing.** ⚠️ **It changes whether the Entry document is treated as settled** |
 | [C-252](#c-252--two-primitives-own-the-region-scope-failed-read-and-task-445-built-the-other-one) | **Two primitives own the region-scope failed read, and TASK-445 built the other one** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) — 🔴 **found by TASK-445's own guard failing** | **Lane C** — ⛔ **it spans two rows this office released** | 🔴 **`OPEN`** | 🔴 **TASK-1409's region boundary.** ✅ **The ladder and its 23 tests ship** |
 | [C-253](#c-253--the-designs-403-names-the-missing-role-and-nothing-publishes-it) | **The design's 403 names the missing role, and nothing publishes it** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Lane C** — sequencing | 🟡 **`OPEN`** — ⚠️ **narrowed by this lane on the same day** | ⛔ **The `403` only, and SEQUENCED behind [TASK-471](BACKLOG.md) rather than waiting on a ruling** |
+| [C-257](#c-257--task-1408-cannot-reach-its-definition-of-done-and-two-of-the-four-missing-regions-are-not-this-rows-to-build) | **TASK-1408 cannot reach its Definition of Done, and two of the four missing regions are not this row's to build** | **Lane A**, 2026-08-09, holding [TASK-1408](BACKLOG.md) | **Lane C** — scope | 🟡 **`OPEN`** | ⛔ **TASK-1408 reaching `IN VALIDATION`** |
 | [C-256](#c-256--the-shells-banner-region-has-no-caller-and-only-one-of-its-three-states-is-a-real-gap) | **The shell's banner region has no caller, and only one of its three states is a real gap** | **Lane A**, 2026-08-09, holding [TASK-1408](BACKLOG.md) | **Lane C** sequencing · **Design Authority** for impersonation | 🟡 **`OPEN`** | ⛔ **Nothing** — the region is built and waits for callers |
 | [C-255](#c-255--task-1409s-delivers-names-04-and-04-needs-three-capabilities-no-row-owns) | **TASK-1409's `Delivers` names §04, and §04 needs three capabilities no row owns** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) — ⚡ **D-212 §7's gate applied BEFORE filing** | **Lane C** — scope and sequencing | 🟡 **`OPEN`** | ⛔ **§04 only.** ✅ **The ladder ships** |
 | [C-254](#c-254--converging-the-four-improvised-system-states-needs-the-shell-and-this-rows-budget-says-nothing-red) | **Converging the four improvised system states needs the shell, and this row's budget says nothing red** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Product owner** — a Change Budget question | 🟡 **`OPEN`** | ⚠️ **Half of TASK-1409's verification strategy** |
@@ -8345,6 +8346,47 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 **②** **Confidence** — the design shows it in two places at once, *"6 sources · confidence 4 of 5"*. **`components/ui/confidence.tsx` already takes exactly `level` and `sources`**, so the shape is settled and only the source is not.
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
+
+## C-257 · TASK-1408 cannot reach its Definition of Done, and two of the four missing regions are not this row's to build
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-1408](BACKLOG.md)** — ⚡ **raised on measuring the assembled frame against the row's own `Delivers`, not on hitting an obstacle** |
+| **Owner** | **Lane C** — ⛔ **the row's scope is wider than any row can build alone, and only the office that writes rows can narrow it** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION** — ⛔ **the design is complete and unambiguous; nothing is being asked of Design** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **[TASK-1408](BACKLOG.md) reaching `IN VALIDATION`.** ✅ **Everything buildable in it is built, green and pushed** |
+
+### 📁 The row promises six regions in a fixed order
+
+📁 ***"Environment banner · trial banner · top bar · breadcrumb and filter strip · the rail · the utility panel"*** — **and *"vertical order is fixed and non-negotiable."*** 📁 **Definition of Done: *"The frame renders, every module mounts in it, and it owns no navigation decision."***
+
+**Measured in `components/shell/app-shell.tsx` on this lane's branch:**
+
+| Region | In the frame | Why |
+|---|---|---|
+| **Top bar** | ✅ | Existed; unchanged |
+| **Rail** | ✅ | **Collapse delivered this cycle** — per user, per device class, wired |
+| **Banners** | ⛔ | **Built and tested; no caller.** [C-256](#c-256) — sandbox and trial are sequencing, impersonation is a design gap |
+| **Breadcrumb** | ⛔ | **Built and tested; no caller supplies a trail** |
+| **Filter strip** | ⛔ | 🔴 **Not buildable here — see below** |
+| **Utility panel** | ⛔ | 🔴 **Not buildable here — see below** |
+
+### 🔴 Why the last two are different from the first two
+
+⚡ **The banners and the breadcrumb are complete components waiting for content.** **Placing them in the frame costs nothing and they render nothing** — that is 📁 *"delivers the frame, not its contents"* working as intended.
+
+⛔ **The filter strip and the utility panel are not like that.**
+
+**The filter strip** would render four chips that serialise scope into the URL — 📁 *"period, region, segment, owner… serialised in the URL"* — ⛔ **and no module reads scope.** **A visible control that changes a URL nothing consults is a control that does nothing** ([§2](../CLAUDE.md)), and it is worse than absent: **a seller who sets the period to Q3 and sees every figure unchanged learns the filter is broken**, which is a harder belief to undo than a missing feature. ⚡ **[`lib/shell/scope.ts`](../frontend/lib/shell/scope.ts) ships the narrowing law so the first consuming module inherits it** — **the law is the deliverable here; the strip is not.**
+
+**The utility panel** is 📁 *"300px at 1280, 360px at 1600+… docks right of content and pushes it"* with tabs **Insights · Activity · Notes**. ⛔ **All three are module content and none exists.** **An empty 300px panel does not reserve space for a later row — it takes a third of the content region away from every screen that ships today.**
+
+### ✅ What this lane recommends
+
+**Narrow [TASK-1408](BACKLOG.md) to what a frame row can own**: ✅ **the constitution · the region laws · the rail · the banner and breadcrumb slots**, and ⛔ **move the filter strip and utility panel to rows sequenced behind their first consumer** — **which is the same shape [D-209](DECISION_REGISTER.md) counted six times: *"wait on another TASK, which a lane clears without anybody ruling on anything."***
+
+⚠️ **This is the third row whose `Delivers` exceeds what any row builds** — [C-255](#c-255) on §04, [C-256](#c-256) on the banners, and now this. ⚡ **The pattern is worth a look by the office that writes them**: **each design document is complete and correct, and the rows are scoped to the DOCUMENT rather than to what is reachable from the current repository.** ⛔ **Not a criticism of any single row** — [TASK-1408](BACKLOG.md) is the best-specified row this lane has held — **but three in one workflow is a method signal rather than three coincidences.**
 
 ## C-256 · The shell's banner region has no caller, and only one of its three states is a real gap
 
