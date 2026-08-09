@@ -13,7 +13,7 @@ generated_from = "5e0b3cd"
 task_count     = 110
 
 [lane.Lane_A]
-notice             = "TASK-1400 is READY and it is the Entry Engine — resolveEntry(session,intent), 24 rules, 21 reason codes as a CLOSED type, PURE with no network call in a decision. Green budget, zero dependencies, no caller: buildable and fully testable without a browser, a session or a database. It is the highest-value row in the pipeline — four workflows on main currently have nowhere to hand a customer because i"
+notice             = "The Entry Engine — resolveEntry(session,intent) — carries 24 rules and 21 reason codes as a CLOSED type, and is PURE: no network call inside a decision, so it is fully testable without a browser, a session or a database. Green budget, zero dependencies, no caller. The named risk is in the row: do NOT fetch inside a rule. For its STATE read BACKLOG.md on origin/integration — never this line."
 current            = ""
 next               = ""
 next_after_that    = ""
@@ -23,11 +23,11 @@ claimable_now      = 0
 awaiting_sync      = 1
 in_flight          = 56
 actionable         = 4
-awaiting_qe_transition = 56
+awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 36
-lane_utilization   = 0.0
+lane_utilization   = 11.2
 idle_prediction_days   = 0.1
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
