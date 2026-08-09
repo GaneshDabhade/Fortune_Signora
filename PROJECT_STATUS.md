@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `f94c06a`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `5bc7ef5`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,17 +12,17 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `f94c06a`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `5bc7ef5`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`f94c06a`** — the certified commit itself |
+| **`main`** | **`5bc7ef5`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | ⛔ **Cycle 137 repaired a conflict marker QE promoted into the decision register** — [B-154](docs/BUGS.md), **found by Lane A**, and the check now reads six registers |
-| **Certification** | ✅ [`f94c06a4ef67`](certification/reports/f94c06a4ef67.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | 🔴 **Cycle 138 is the first promotion in six days made under a working promotion gate** — [B-413](docs/BUGS.md) — **and [B-209](docs/BUGS.md) is fixed** |
+| **Certification** | ✅ [`5bc7ef52845c`](certification/reports/5bc7ef52845c.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | 🔴 **Two.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
+| **Blocking Quality Defects** | ⚠️ **One — [B-211](docs/BUGS.md).** ✅ **[B-209](docs/BUGS.md) fixed this cycle.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
 | **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
 | **Customer value this cycle** | ⛔ **None.** ⚡ **The cycle's product is an unblocked lane** — `TASK-1400`, the Authenticated Entry Engine, is `READY` on `integration` |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4272 backend tests** · **95.08% coverage** ✅ *(floor 95 — recovering)* *(floor 95)* · **1827 frontend tests** *(+13)* across **78 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **184s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4278 backend tests** *(+6)* · **95.08% coverage** ✅ *(floor 95)* · **1862 frontend tests** *(+35)* across **79 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **184s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -141,7 +141,59 @@ B- identifiers are allocated twice: B-152.
 
 ---
 
-## 1d · Release summary — 2026-08-09, cycle 137
+## 1d · Release summary — 2026-08-09, cycle 138
+
+**Derived from the promoted commit `5bc7ef5`.** **Ninety-three promotions.** 🔴 **The first promotion in six days made under a promotion gate that actually works.**
+
+### 🔴 [B-413](docs/BUGS.md) — the gate said *"not blocked"* seventy times, and could not have said anything else
+
+**Lane C found it.** ⛔ **`unresolved` required the state token at character zero; the register writes `` **`OPEN`** `` in bold.** **29 of 39 open rows read as resolved, and `blocks_promotion` returned `False` for every row in the file.**
+
+> ⚡ **`registers.py` exists because two tools answered *"is this bug blocking?"* differently — and it then contained the divergence itself:** `state` located the token with `find`, `unresolved` demanded position zero. ✅ **`unresolved` is now derived from `state`. One reading, one question asked of it.**
+>
+> ⚠️ **And the test that should have caught it passed on an asymmetry:** *"`FIXED` constructed bolded, `OPEN` bare — so the only form the register uses for an open row was never built."*
+
+### 🔴 The six days are QE's to account for
+
+**§20e: *"`integration` never fast-forwards to `main` with an open 🔴 bug."*** ⛔ **[B-209](docs/BUGS.md) was 🔴 and `OPEN` from 2026-08-06. There have been 70 Closeout commits since.**
+
+> ⛔ **QE is not claiming those promotions were harmless — that is not knowable in retrospect.** ✅ **What is knowable: the rule was not enforced, QE did not notice, and the reason is that QE read the gate's answer instead of the register.**
+>
+> ⚠️ **[B-151](docs/BUGS.md) said exactly that about a different line three cycles ago, and QE fixed the sentence rather than the habit.**
+
+### ✅ So QE fixed [B-209](docs/BUGS.md) rather than carrying it
+
+**It was assigned to QE all along** — the repository-wide journey suite is QE's under §20e — **and the fix was the one word the row itself prescribed.**
+
+| | |
+|---|---|
+| `pages/business.ts:37` | `getByLabel('Name')` → **`{ exact: true }`**. The App Shell header search is on every screen, named *"Find an account by name"* |
+| `commercial-profile.spec.ts:174` | **The same defect on a second browser context**, same shell, same dialog |
+| `auth-journey.spec.ts` | ⛔ **Deliberately untouched** — `/sign-in` and `/sign-up` carry no shell header. **Changing a passing test on a pattern match is [B-411](docs/BUGS.md)'s failure in the other direction** |
+
+✅ **And QE proved the repaired gate can fail before trusting it**: reopened B-209 in the tree → *"BUGS.md carries 1 unresolved 🔴 (B-209)"*; restored → silence.
+
+### ✅ What a customer gets — and D-200 already moving
+
+| | |
+|---|---|
+| ⚡ **`TASK-1400` — the Authenticated Entry Engine** *(Lane A)* | One resolver, twenty-one reason codes, **+35 frontend tests**. `resolveEntry` exists, five cycles after [D-193](docs/DECISION_REGISTER.md) ruled it |
+| ✅ **[C-105](docs/LANE_COORDINATION.md) §2 adopted** *(Lane A)* | **Lane A submissions now carry an `Impact` field**, `TASK-1400` the first — **[D-200](docs/DECISION_REGISTER.md) §2, one cycle after it was ruled, without QE asking twice** |
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4278 backend** *(+6)* · **1862 frontend** *(+35)* · **95.08%** · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **143 runs recorded, 135 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost** · smoke 211s |
+| **Dependency** | ✅ **Four Lane C commits excluded** on generated-file conflicts — **the repair is the generator** |
+| **Customer Value** | ⚡ **The entry decision has one owner instead of five hardcoded redirects** |
+| **Process** | 🔴 **Four QE self-defects of one family this session** — [B-150](docs/BUGS.md) skipped a check, [B-151](docs/BUGS.md) transcribed, [B-153](docs/BUGS.md) filtered, [B-154](docs/BUGS.md) read a check that did not cover the file. ⛔ **[B-413](docs/BUGS.md) is the fifth and the most expensive: QE trusted a gate's silence for six days.** ⚡ **Every one was found by measuring, and three of five by another lane** |
+
+---
+
+## 1e · Release summary — 2026-08-09, cycle 137
 
 **Derived from the promoted commit `f94c06a`.** **Ninety-two promotions.** ⛔ **A conflict marker sat in the decision register on `main` for two cycles, and the check that should have caught it did not read that file.**
 
