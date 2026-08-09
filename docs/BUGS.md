@@ -307,6 +307,39 @@ await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
 
 ⚡ **Same repair this lane made in `app-shell-rail.test.tsx`** when the shell's second wordmark broke an unscoped query: ⛔ **the duplicate render is correct and the query was wrong.** ✅ **And it asserts something stronger than before** — not merely that the address appears somewhere, but that it is the link to their own profile.
 
+### B-168 · a clean rebase silently reverted QE's own `VERIFIED` cells, and QE promoted the reversion
+
+| | |
+|---|---|
+| **Module** | Repository process — QE's candidate construction |
+| **Current assignee** | **QE** — QE's own defect, found when a lane's report disagreed with QE's belief |
+| **Severity** | 🟠 — ⛔ **the repository's record of what QE has verified is silently wrong**, and QE is the only author of that record |
+| **Status** | **`OPEN`** — cells restored below; the process gap is not closed |
+| **Commit found** | `0a60ae83` on `main`, found during cycle 172's poll |
+
+**Steps.** A lane's branch carries its own copy of a row it set to `IN VALIDATION`. QE verifies the row and writes `VERIFIED` in a Closeout. The lane later rebases; **its original commit still contains the older cell.** QE rebases the branch, the rebase applies **cleanly**, and QE promotes.
+
+```
+4ea8269f  QE's cycle-158 Closeout           ADDED   `VERIFIED` — QE ... at `1874df08`
+0a60ae83  Lane A's own TASK-1435 commit     REMOVED it  -> back to `IN VALIDATION`
+```
+
+**Expected.** A promotion does not undo QE's judgement.
+
+**Actual.** ⛔ **`TASK-1435` and `TASK-1436` read `IN VALIDATION` on `main` today**, and the work behind them was certified and promoted at `1874df08`. **Measured**: the `VERIFIED` cells QE wrote survive **zero** times.
+
+> 🔴 **QE had already caught this twice and excluded commits for it** — cycle 156 (*"e9160a05 would revert my CHANGES REQUESTED"*) and cycle 160 (*"both residue commits revert my VERIFIED cells"*). ⛔ **In cycle 163 the rebase applied cleanly, so there was no conflict to read, and QE did not re-check.** ⚡ **The two earlier catches were both prompted by a conflict; this one had none.**
+>
+> ⚠️ **It surfaced only because a lane's own status report said rows were *"with QE"* that QE believed it had verified.** **Neither instrument caught it**: `state-check` compares documents against git, not QE's past writes against its present ones.
+
+**Repair — a check, not more care**, since care demonstrably failed on the third occurrence. ⚡ **Before promoting, diff the candidate's `docs/BACKLOG.md` against `main` for `VERIFIED` cells that disappear:**
+
+```
+git diff origin/main..HEAD -- docs/BACKLOG.md | grep '^-.*`VERIFIED`'
+```
+
+⛔ **Any output is a candidate that undoes QE's own judgement, and the correct response is to exclude those commits** — exactly as QE did in cycles 156 and 160 when a conflict happened to make it visible.
+
 ### B-167 · `tsc --noEmit` type-checks a generated Next.js artifact, so a stale `.next/` fails the gate for a build six days old
 
 | | |
