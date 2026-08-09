@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `901935d`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `f94c06a`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `901935d`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `f94c06a`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`901935d`** — the certified commit itself |
+| **`main`** | **`f94c06a`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | ⚡ **[D-200](docs/DECISION_REGISTER.md) — Smart Certification Strategy, ruled this cycle.** **Cycle 136 repaired a duplicate identifier QE promoted an hour earlier** — [B-153](docs/BUGS.md) |
-| **Certification** | ✅ [`901935dadfeb`](certification/reports/901935dadfeb.md) · migration head **`0045`** · protocol **v2** · profile **`documentation`** · **first attempt** |
+| **Release candidate** | ⛔ **Cycle 137 repaired a conflict marker QE promoted into the decision register** — [B-154](docs/BUGS.md), **found by Lane A**, and the check now reads six registers |
+| **Certification** | ✅ [`f94c06a4ef67`](certification/reports/f94c06a4ef67.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | 🔴 **Two.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
@@ -138,6 +138,51 @@ B- identifiers are allocated twice: B-152.
 | **Dependency** | ✅ **Lane A unblocked last cycle**; `TASK-1400` is `READY` on `integration` |
 | **Customer Value** | ⛔ **None.** **A register repair** |
 | **Process** | 🔴 **Third QE self-defect of this class** — [B-150](docs/BUGS.md) skipped a check, [B-151](docs/BUGS.md) transcribed instead of measuring, [B-153](docs/BUGS.md) filtered a check's output. ⚡ **All three are one habit: trusting the shape of an answer instead of reading it** |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 137
+
+**Derived from the promoted commit `f94c06a`.** **Ninety-two promotions.** ⛔ **A conflict marker sat in the decision register on `main` for two cycles, and the check that should have caught it did not read that file.**
+
+### ⛔ [B-154](docs/BUGS.md) — found by Lane A, in a register QE had promoted
+
+```
+209:<<<<<<< HEAD
+213:>>>>>>> 809a3e43 (D-194 — the reconciliation found the entry decision already shipped)
+
+$ python3 infra/state-check.py
+(no marker finding)
+```
+
+**It arrived in `809a3e43` — a commit QE cherry-picked and promoted.** ⛔ **It wrapped the `D-195` and `D-196` rows against an empty incoming side: a pure deletion that deleted nothing anybody wrote.** ✅ **Both rows kept.**
+
+### ⛔ Three of this class, and each failed differently
+
+| | |
+|---|---|
+| **[B-150](docs/BUGS.md)** | The check **was skipped** |
+| **[B-153](docs/BUGS.md)** | The check **was run and filtered** — output said `0` and looked like a pass |
+| **[B-154](docs/BUGS.md)** | ⛔ **The check was run, read in full, and did not cover the file** |
+
+> ⚡ **[B-150](docs/BUGS.md)'s row argued against building a second instrument, because *"the first was not consulted"*. That was right then and is not an argument here** — **this time nothing existed to consult.** ⛔ **The list was the defect, not the check.**
+
+✅ **The loop now reads six registers**, adding `DECISION_REGISTER.md` and `DECISION_QUEUE.md`, and **was proved able to fail before shipping**: 1 finding against the corrupt tree, 0 against the repaired one.
+
+> ⚠️ **The rule QE is applying rather than proposing: a register QE reconciles at merge is a register the corruption check must read.** **`DECISION_REGISTER.md` was reconciled by QE in every cycle it appeared in, and read by nothing.**
+
+✅ **Found by a lane, not by QE — the third time this session**, and §20e's own claim about this repository.
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4272 backend** · **1827 frontend** · **95.07%** · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **142 runs recorded, 134 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost** · smoke 153s |
+| **Dependency** | ✅ **Lane A is building `TASK-1400`**, the Authenticated Entry Engine |
+| **Customer Value** | ⛔ **None.** **A register repair and a widened guard** |
+| **Process** | ⚡ **Three QE self-defects of one class in three cycles, each with a different cause and a different fix.** ⛔ **The pattern is not carelessness at one step — it is trusting an instrument's silence without checking what it looks at** |
 
 ---
 
