@@ -407,7 +407,30 @@ future_owner = "Lane C"
 transition = "settled"
 implementation = 60
 basis = "Environment Framework phases 1-2 built; the demo profile and make doctor are IN VALIDATION"
-paths = ["infra/", "Makefile", "backend/signora_platform/"]
+paths = ["infra/", "Makefile", "backend/signora_platform/", "backend/tests/playground/"]
+# **`backend/tests/playground/` added 2026-08-09, and it closes a gap rather than
+# moving anything.** ⛔ **The path matched NO module's `paths` — so the Product
+# Playground had no owner at all**, and [B-228](../BUGS.md) could not be routed:
+# its row says *"Current assignee — joined from `modules.toml`"*, correctly
+# refusing to write one inline after [C-213](../LANE_COORDINATION.md), and the
+# join returned nothing.
+#
+# ⚠️ **This is C-213's failure inverted.** C-213 was a STALE assignee that looked
+# answered; this was a MISSING one that looked like nobody had asked. **Both end
+# the same way — the lane that can act does not know it should** — and the
+# missing one is harder to see, because a register cannot report the absence of
+# a row it never had.
+#
+# ✅ **Assigned here, not reassigned:** the Playground is the demo lifecycle's
+# seeding step, it is the runner for the simulation framework this module
+# already owns (`seed.py` loads `signora_platform.simulation.dataset`), and
+# [D-022](../DECISION_REGISTER.md) gave this lane exactly the tooling that
+# belongs to no product bounded context. ⛔ **It is not `signal_engine` and not
+# `product_surface`**, which is what Lane A correctly said it was not.
+#
+# ⚠️ **QE's *Playground quality* (§20e) is untouched.** **Quality of it is QE's;
+# the implementation is this module's** — the same split [D-022](../DECISION_REGISTER.md)
+# already draws between a gate QE repairs and tooling this lane builds.
 # **`backend/signora_platform/` entire, from 2026-08-05** ([D-073](../DECISION_REGISTER.md),
 # [C-416](../LANE_COORDINATION.md)). This read `signora_platform/simulation/` — one
 # subdirectory — so the event bus and the authorization engine belonged to nobody,
