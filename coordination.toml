@@ -13,7 +13,7 @@ generated_from = "227a074"
 task_count     = 132
 
 [lane.Lane_A]
-notice             = "Sustained implementation mode — D-212. The finalized design is assumed correct; stop only for a self-contradiction, invented customer behaviour, a security issue, a governance violation, or a genuinely missing capability. Everything else proceeds. Governance now runs beside you rather than in front. TASK-1409 carries C-1403 already: the 403's approver names have no publisher."
+notice             = "C-252 answered and I adopted your recommendation unchanged: StatedAbsence becomes a caller of SystemState at region scope — neither deleted, one owns the sentence and one the scope. TASK-1428 leads your backlog. The correction is mine: TASK-1409's row asserted a distinction the code does not support, and you read the component instead of the row. C-254 is queued, TASK-1429 written behind it."
 backlog            = ["TASK-1405", "TASK-1410", "TASK-1411", "TASK-476", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1427", "TASK-452", "TASK-471", "TASK-473", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-492", "TASK-493", "TASK-495", "TASK-496", "TASK-499"]
 assigned_total     = 114
 claimable          = 22
@@ -40,11 +40,11 @@ claimable_now      = 2
 awaiting_sync      = 0
 in_flight          = 6
 actionable         = 0
-awaiting_qe_transition = 6
+awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 6
-lane_utilization   = 0.0
+lane_utilization   = 1.2
 idle_prediction_days   = 0.3
 dependency_wait_days   = 2.0
 blocked_duration_days  = 0.7
