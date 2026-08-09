@@ -8358,6 +8358,56 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-268 · Home's route has no permitted entrance, and three of its four compositions have no data
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **while implementing [TASK-1405](BACKLOG.md)** — ⚡ **both halves found by building, not by planning** |
+| **Owner** | **Lane C** — ⛔ **the row's scope is Product Office's to settle**, and the second half is a contract question for whichever module owns a person's role |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **① is a SEQUENCING collision between two rules that are each correct.** **② is MISSING IMPLEMENTATION** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **The ROUTE half of [TASK-1405](BACKLOG.md).** ✅ **The composition resolver is DELIVERED and green** — it encodes no assumption about either question |
+
+### 🔴 ① The route cannot land, because the row ships a surface the gate forbids
+
+📁 **TASK-1405 delivers *"the single route `/w/:workspace/home`"* and states, in its own Manual review gate cell: ✅ *"n/a — no customer surface. ⛔ Stated rather than skipped."***
+
+⛔ **The repository forbids exactly that.** 📁 `frontend/tests/components/reachability.test.tsx` asserts **`No entrance at all — 0`**, and it is a test rather than an advisory: **creating the route turns that 0 into a 1 and the suite goes red.** ⚡ **Measured**: `python3 infra/reachability.py` → `✗ /w/[workspace]/home`.
+
+**Both rules are right.** ⚡ **A slot with no cards genuinely has no customer surface yet**, and ⛔ **a route nobody can reach genuinely is a defect** — *"every one is a defect"*, in the check's own words.
+
+### ⛔ Three exits were tried and each is barred by a rule this lane must not break
+
+| | |
+|---|---|
+| **Add `Home` to the navigation rail** | ⚡ **Tried, and reverted.** 🔴 **It does not even work**: the scanner reads literal route strings, and Home's href is `workspaceHome(workspaceId)` — **computed, therefore invisible**, so the gate stayed red. ⛔ **And it broke nine passing tests** by making `MobileNavigation` require a `WorkspaceProvider` it never needed. ⚠️ **It is also [TASK-1439](BACKLOG.md)'s**, which rebuilds that list wholesale to the design's eleven entries |
+| **Declare it in `ENTERED_FROM_OUTSIDE`** | ⛔ **The list is QE's** — 📁 the file says so: *"a judgement, maintained by QE… a list that grows without argument is how a check stops meaning anything."* ⚡ **And the claim would be false**: Home is reached by an in-product redirect, not from outside the product like a reset link |
+| **Wire the entry engine's redirect** | ⛔ **[D-205](DECISION_REGISTER.md): the Entry Engine has zero production callers and twelve destinations 404**, and wiring it was explicitly excluded from [TASK-1408](BACKLOG.md) |
+
+✅ **So the route is HELD rather than shipped red.** ⚡ **What the resolver delivers is real and lands today**; the route lands the moment one of the three above is ruled — **and it is one line of `git` when it is.**
+
+⚡ **Whichever way it is ruled, [C-263](#c-263) closes with it**: [TASK-499](BACKLOG.md)'s front door has been blocked because `/w/:ws/home` does not exist, and this is that route.
+
+### 🔴 ② Three of the four compositions have no data, and the near-miss is worth recording
+
+📁 **The design resolves a composition from *"the person's primary role"*** — **CRO, CEO, VP · AE, AM, CSM · RevOps, admin.**
+
+⛔ **The platform publishes no such thing.** **Measured**: `Membership.role` is `'owner' | 'member'` and nothing else; **no persona, job-title or primary-role field exists on any published contract.**
+
+⚠️ **`CommitteeRole` looks like the answer and is not.** It carries titles like *"VP of Revenue Operations"* — ⛔ **but it is a seat at the *customer's* buying committee, a fact about an account Signora tracks, not about the person signed in.** 🔴 **Resolving somebody's Home from it would be reading the wrong company's org chart**, and it is close enough to the right shape that the next lane will consider it.
+
+✅ **`Activation` resolves and the other three do not**, and that asymmetry is the design's own: 📁 its qualifier is ***"Any role, empty workspace"*** — **emptiness is a fact the platform has; role is not.**
+
+### ✅ What Lane A recommends
+
+**①** ⚡ **Rule where Home's entrance comes from** — the rail ([TASK-1439](BACKLOG.md)), the front door ([TASK-499](BACKLOG.md)/[C-263](#c-263)), or the engine. ⛔ **Lane A's view is that TASK-1405 and TASK-1439 are not separable in the order the queue has them**, because the design makes Home the rail's first entry and that is the only honest entrance.
+
+**②** **Decide whether a primary role exists at all**, and if so which module publishes it. ⛔ **Until then the resolver returns `Activation` for an unknown person** — *"How do I begin?"* — **which is the only composition that is honest about knowing nothing**, and never a guess from a population statistic.
+
+⛔ **A lane's recommendation is architectural input and never implementation authority** ([§20e](../CLAUDE.md)).
+
+---
+
 ## C-267 · TASK-1427's confidence figure has no honest source, and the domain refuses it by name
 
 | | |
