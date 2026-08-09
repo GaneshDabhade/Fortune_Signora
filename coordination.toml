@@ -9,35 +9,35 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "68fc188"
-task_count     = 129
+generated_from = "6ccea5f"
+task_count     = 130
 
 [lane.Lane_A]
-notice             = "I over-froze and D-208 corrects it. TASK-1402 and TASK-1407 are yours again — precedence changes which rule wins, not what the intent producer answers or what type the subject is. TASK-1401 is held on missing destinations, not on the clarification. Only TASK-1426 genuinely waits on design, and its row now says which clarification, why, and what it would otherwise have to invent. 23 rows claimable."
-backlog            = []
-assigned_total     = 111
-claimable          = 22
-claimable_now      = 0
-awaiting_sync      = 22
-in_flight          = 56
+notice             = "Build. 24 rows and none needs invented behaviour. Your C-251 is answered and the answer is smaller than the question: signal.py:81 already carries rationale — its comment is the design's own sentence — and :64 carries relevance. QueueEntryResponse publishes neither. TASK-1427 widens the schema by two fields. And confidence.tsx already exists and is imported by nothing; use it, do not fork it."
+backlog            = ["TASK-1408", "TASK-1405", "TASK-1410", "TASK-1411", "TASK-476", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1409", "TASK-1422", "TASK-452", "TASK-471", "TASK-473", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-492", "TASK-493", "TASK-495", "TASK-496", "TASK-499"]
+assigned_total     = 112
+claimable          = 23
+claimable_now      = 22
+awaiting_sync      = 1
+in_flight          = 57
 actionable         = 1
-awaiting_qe_transition = 0
+awaiting_qe_transition = 57
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 33
-lane_utilization   = 11.2
-idle_prediction_days   = 3.1
+blocked            = 32
+lane_utilization   = 0.0
+idle_prediction_days   = 3.3
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
 
 [lane.Lane_C]
 notice             = ""
-backlog            = ["TASK-497"]
+backlog            = ["TASK-412", "TASK-497"]
 assigned_total     = 14
 claimable          = 2
-claimable_now      = 1
-awaiting_sync      = 1
+claimable_now      = 2
+awaiting_sync      = 0
 in_flight          = 6
 actionable         = 0
 awaiting_qe_transition = 0
@@ -46,8 +46,8 @@ supply_state       = "working"
 blocked            = 6
 lane_utilization   = 1.2
 idle_prediction_days   = 0.3
-dependency_wait_days   = 1.9
-blocked_duration_days  = 1.9
+dependency_wait_days   = 2.0
+blocked_duration_days  = 2.0
 critical_path_max      = 0
 
 [[task]]
@@ -70,7 +70,7 @@ on_integration = true
 id            = "TASK-1400"
 title         = "The Authenticated Entry Engine — one resolver, twenty-four reason codes"
 state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
+declared      = "VERIFIED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -96,7 +96,7 @@ critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md): twelve of the"
 waiting_for    = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md): twelve of the engine's destinations do not exist.** ⚠️ **RE-POINTED on [D-208](DECISION_REGIS"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1402"
@@ -112,7 +112,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1403"
@@ -128,7 +128,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1404"
@@ -160,7 +160,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1406"
@@ -192,7 +192,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1408"
@@ -208,7 +208,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1409"
@@ -224,7 +224,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1410"
@@ -240,7 +240,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1411"
@@ -256,7 +256,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1412"
@@ -272,7 +272,7 @@ critical_path  = 1
 estimated_ready = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-"
 waiting_for    = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for), Lane C 2026-08-09.** ⛔ **It is a full page inside"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1414"
@@ -288,7 +288,7 @@ critical_path  = 1
 estimated_ready = "— behind [TASK-1410](#task-1410--step-up-authentication--the-capabilit"
 waiting_for    = "— behind [TASK-1410](#task-1410--step-up-authentication--the-capability-behind-stepup_required) and [TASK-493](#task-493--better-auth-plugins--four-ca"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1415"
@@ -304,7 +304,7 @@ critical_path  = 1
 estimated_ready = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-"
 waiting_for    = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for) and [TASK-1411](#task-1411--the-ai-attribution-pri"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1416"
@@ -320,7 +320,7 @@ critical_path  = 2
 estimated_ready = "when TASK-1417 complete"
 waiting_for    = "— behind [TASK-1417](#task-1417--workflow-22--reports--built-once-read-three-ways)'s shared query**, whose output it composes"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1417"
@@ -336,7 +336,7 @@ critical_path  = 1
 estimated_ready = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-"
 waiting_for    = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for) and [TASK-1411](#task-1411--the-ai-attribution-pri"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1418"
@@ -352,7 +352,7 @@ critical_path  = 1
 estimated_ready = "— behind [TASK-1411](#task-1411--the-ai-attribution-primitive--one-con"
 waiting_for    = "— behind [TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)**"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1419"
@@ -368,7 +368,7 @@ critical_path  = 4
 estimated_ready = "when TASK-466 complete"
 waiting_for    = "— behind [TASK-466](#task-466--companies-bulk--the-first-consumer-end-to-end)**, the Action Batch's first consumer"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1420"
@@ -384,7 +384,7 @@ critical_path  = 1
 estimated_ready = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-"
 waiting_for    = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for)**"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1421"
@@ -400,7 +400,7 @@ critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md): the Workspace"
 waiting_for    = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md): the Workspace Chooser specification does not exist.** 🔴 **THIS ROW WAS RELEASED `READY` EARLI"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1422"
@@ -416,7 +416,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1423"
@@ -432,7 +432,7 @@ critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md).** 🔴 **Also re"
 waiting_for    = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md).** 🔴 **Also released `READY` earlier today in error**: ⛔ **eleven gate screens were treated as"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1424"
@@ -448,7 +448,7 @@ critical_path  = 1
 estimated_ready = "— behind [TASK-1405](#task-1405--home-is-one-route-and-four-compositio"
 waiting_for    = "— behind [TASK-1405](#task-1405--home-is-one-route-and-four-compositions) and [TASK-1406](#task-1406--the-card-registry--modules-contribute-capabiliti"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1425"
@@ -464,7 +464,7 @@ critical_path  = 1
 estimated_ready = "— behind [TASK-1405](#task-1405--home-is-one-route-and-four-compositio"
 waiting_for    = "— behind [TASK-1405](#task-1405--home-is-one-route-and-four-compositions)** — ⛔ **there is no slot to become a composition of yet**"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1426"
@@ -479,6 +479,22 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-1410](LANE_COORDINATION.md).** ✅ **THE ONE"
 waiting_for    = "— Lane C, 2026-08-09, on [C-1410](LANE_COORDINATION.md).** ✅ **THE ONE ROW OF THE FOUR THAT IS GENUINELY DEPENDENT**, and [D-208](DECISION_REGISTER.md"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-1427"
+title         = "The signal queue publishes the two facts its screen already draws"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
 on_integration = false
 
@@ -1136,7 +1152,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-453"
@@ -1408,7 +1424,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-472"
@@ -1440,7 +1456,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-474"
@@ -1472,7 +1488,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-476"
@@ -1488,7 +1504,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-478"
@@ -1520,7 +1536,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-481"
@@ -1536,7 +1552,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-482"
@@ -1552,7 +1568,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-483"
@@ -1637,16 +1653,16 @@ on_integration = true
 [[task]]
 id            = "TASK-489"
 title         = "Workflow 7 — Invitation Acceptance, to the approved design"
-state         = "BLOCKED"
-declared      = "BLOCKED"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— Lane A, 2026-08-08. Claim released.** ⛔ **Both approved screens are "
-waiting_for    = "— Lane A, 2026-08-08. Claim released.** ⛔ **Both approved screens are blocked on capabilities that do not exist**, found by building rather than by pl"
+estimated_ready = "—"
+waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
 
@@ -1696,7 +1712,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-493"
@@ -1712,7 +1728,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-495"
@@ -1728,7 +1744,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-496"
@@ -1744,7 +1760,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-498"
@@ -1776,7 +1792,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-903"
@@ -1888,7 +1904,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-413"
@@ -1983,7 +1999,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 1.9
+blocked_days   = 2.0
 on_integration = true
 
 [[task]]
@@ -2047,7 +2063,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 1.9
+blocked_days   = 2.0
 on_integration = true
 
 [[task]]
@@ -2064,7 +2080,7 @@ critical_path  = 0
 estimated_ready = "— behind [C-1404](LANE_COORDINATION.md)**, which is Product Office's o"
 waiting_for    = "— behind [C-1404](LANE_COORDINATION.md)**, which is Product Office's own and answerable this week"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-300"
