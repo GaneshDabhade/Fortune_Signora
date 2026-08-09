@@ -13,12 +13,12 @@ generated_from = "227a074"
 task_count     = 134
 
 [lane.Lane_A]
-notice             = "New instrument: python3 infra/production-readiness.py — 20 concerns satisfied, two real gaps, both now rows. TASK-1431 is a performance budget and is yours today: 21 Playwright specs and nothing measures performance, so nothing would notice a regression. Measure first, set the budget at what ships plus a margin, then enforce — a gate that is red on arrival is a broken gate."
-backlog            = ["TASK-1405", "TASK-1410", "TASK-1411", "TASK-476", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1427", "TASK-452", "TASK-471", "TASK-473", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-492", "TASK-493", "TASK-495", "TASK-496", "TASK-499"]
+notice             = "B-221 is fixed at the generator and you were right to escalate it. A notice naming a row not in your computed backlog is now REFUSED — and the third instance had a second cause worth more than the first: one row I told you was yours belongs to this office's own module. It has left your array. Read the array, not the prose. Your seven blockers are mine and I am clearing them."
+backlog            = ["TASK-1405", "TASK-1410", "TASK-1411", "TASK-476", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1427", "TASK-1428", "TASK-452", "TASK-471", "TASK-473", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-492", "TASK-493", "TASK-495", "TASK-496", "TASK-499"]
 assigned_total     = 114
 claimable          = 22
-claimable_now      = 21
-awaiting_sync      = 1
+claimable_now      = 22
+awaiting_sync      = 0
 in_flight          = 59
 actionable         = 3
 awaiting_qe_transition = 0
@@ -33,11 +33,11 @@ critical_path_max      = 4
 
 [lane.Lane_C]
 notice             = ""
-backlog            = ["TASK-412", "TASK-497"]
+backlog            = ["TASK-1431", "TASK-412", "TASK-497"]
 assigned_total     = 16
 claimable          = 3
-claimable_now      = 2
-awaiting_sync      = 1
+claimable_now      = 3
+awaiting_sync      = 0
 in_flight          = 6
 actionable         = 0
 awaiting_qe_transition = 0
@@ -512,7 +512,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1429"
@@ -528,7 +528,7 @@ critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-254](LANE_COORDINATION.md).** ⛔ **It edits"
 waiting_for    = "— Lane C, 2026-08-09, on [C-254](LANE_COORDINATION.md).** ⛔ **It edits `components/shell/app-shell.tsx`, which [§20e](../CLAUDE.md)'s Change Budget ta"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-200"
@@ -1888,7 +1888,7 @@ critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09.** ⛔ **Needs the ADR before it is claimable**"
 waiting_for    = "— Lane C, 2026-08-09.** ⛔ **Needs the ADR before it is claimable**"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1431"
@@ -1904,7 +1904,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-409"
