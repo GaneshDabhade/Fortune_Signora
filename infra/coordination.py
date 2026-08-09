@@ -292,6 +292,16 @@ def _classify(declared: str, blocker_text: str, lane: str | None) -> str:
     return FUTURE_MILESTONE
 
 
+#: Lifecycle order, for reconciling two refs that disagree about one row.
+#: **Later wins** — a row claimed on `main` is not `READY` merely because a
+#: stale `integration` still says so.
+_LIFECYCLE = {
+    "READY": 1, "SEQUENCED": 1, "BLOCKED": 1, "WAITING": 1,
+    "CLAIMED": 2, "IN PROGRESS": 3, "CHANGES REQUESTED": 3,
+    "IN VALIDATION": 4, "VERIFIED": 5, "CERTIFIED": 6, "PROMOTED": 7, "DONE": 8,
+}
+
+
 def _integration_states() -> dict[str, str]:
     """Each row's declared state on `origin/integration`, or empty if unreadable.
 
@@ -299,17 +309,35 @@ def _integration_states() -> dict[str, str]:
     claims against, and the only thing that makes `on_integration` a fact
     rather than an assumption about how recently QE integrated.
     """
-    text = _git("show", "origin/integration:docs/BACKLOG.md")
-    if not text:
-        return {}
-    states: dict[str, str] = {}
-    for block in re.split(r"(?=^### TASK-\d+)", text, flags=re.M):
-        head = re.match(r"^### (TASK-\d+)", block)
-        status = _cell(block.split("\n### ", 1)[0], "Status")
-        token = re.search(r"`([A-Z][A-Z ]+)`", status) if status else None
-        if head and token:
-            states[head.group(1)] = token.group(1).strip()
-    return states
+    # ⛔ **`main` is read too, and it is not belt-and-braces — B-221, 2026-08-09.**
+    #
+    # 🔴 **`integration` can fall BEHIND `main`.** The normal topology is
+    # `integration` ahead, then `main` fast-forwards onto it — but when a
+    # promotion lands by SHA and `integration` cannot fast-forward, the two
+    # diverge (**34 commits on 2026-08-09**) and a row promoted to `main` is
+    # then *absent from `integration`*.
+    #
+    # ⚡ **A lane can reach either ref**, so reporting such a row as unreachable
+    # understates the backlog — and this office then looks like it prepared
+    # nothing while three promoted rows sat outside the array.
+    #
+    # ✅ **Reachable if EITHER ref carries it, and the later lifecycle state
+    # wins**, so a claim on one ref is never hidden by a `READY` on the other.
+    merged: dict[str, str] = {}
+    for ref in ("origin/integration", "origin/main"):
+        text = _git("show", f"{ref}:docs/BACKLOG.md")
+        if not text:
+            continue
+        for block in re.split(r"(?=^### TASK-\d+)", text, flags=re.M):
+            head = re.match(r"^### (TASK-\d+)", block)
+            status = _cell(block.split("\n### ", 1)[0], "Status")
+            token = re.search(r"`([A-Z][A-Z ]+)`", status) if status else None
+            if not (head and token):
+                continue
+            state, seen = token.group(1).strip(), merged.get(head.group(1))
+            if seen is None or _LIFECYCLE.get(state, 0) > _LIFECYCLE.get(seen, 0):
+                merged[head.group(1)] = state
+    return merged
 
 
 def tasks() -> list[Task]:
@@ -814,7 +842,7 @@ NOTICES = ROOT / "docs" / "coordination" / "notices.toml"
 _NOTICE_MAX = 400
 
 
-def _notice(lane: str) -> str:
+def _notice(lane: str, reachable: frozenset[str] | set[str] = frozenset()) -> str:
     """The one thing this lane must know that `BACKLOG.md` cannot tell it.
 
     ⚡ **`origin/coordination` is the ONLY channel that reaches a lane without
@@ -868,6 +896,28 @@ def _notice(lane: str) -> str:
     # missing**, which is worse than no notice: a partial instruction reads as a
     # complete one. ✅ **The cap stays** — a projection is not a document — **but
     # it now says so, and names where the rest lives.**
+    # ⛔ **A notice may not name a row this lane cannot reach — B-221.**
+    #
+    # 🔴 **Three instances on three consecutive publishes**, and QE's diagnosis
+    # is the exact one: *"the array is right every time and the prose is wrong
+    # every time — `backlog` is computed from what is SYNCHRONIZED, the notice
+    # from what was AUTHORED."*
+    #
+    # ⚡ **And the third instance had a second cause worth more than the first**:
+    # `TASK-1431` is `platform_foundation`, which is **Lane C's own module**, and
+    # the notice told Lane A it was *"yours today"*. ⛔ **Not a lag — this office
+    # handing its own work to another lane on the one channel that bypasses QE.**
+    # ✅ **The reachable set is per-lane, so the guard catches both causes.**
+    named = set(re.findall(r"TASK-\d+", text))
+    unreachable = sorted(named - set(reachable))
+    if unreachable:
+        return (
+            f"NOTICE WITHHELD — it names {', '.join(unreachable)} as work for this lane, "
+            f"and none of them is in this lane's computed backlog (D-144, B-221). Either "
+            f"the row is not yet integrated, or it belongs to another lane. Read the "
+            f"backlog array in this file for what is actually claimable."
+        )
+
     text = text.replace('"', "'")
     if len(text) <= _NOTICE_MAX:
         return text
@@ -966,7 +1016,7 @@ def render(rows: list[Task]) -> str:
         m = stats[lane]
         out += [
             f"[lane.{lane.replace(' ', '_')}]",
-            f'notice             = "{_notice(lane)}"',
+            f'notice             = "{_notice(lane, {r.id for r in backlog})}"',
             "backlog            = [" + ", ".join(f'"{r.id}"' for r in backlog) + "]",
             f"assigned_total     = {len(mine)}",
             f"claimable          = {m['claimable']}",

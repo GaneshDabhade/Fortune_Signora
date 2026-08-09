@@ -213,7 +213,12 @@ updated      = 2026-08-09
 # a staging area for another lane's rows.
 # ══════════════════════════════════════════════════════════════════════════════
 
-backlog = ["TASK-497"]
+# ⚠️ TASK-1431 added 2026-08-09 correcting [B-221](../../BUGS.md): this office
+#    wrote it into LANE A's backlog and told that lane on the notice channel
+#    it was "yours today". `platform_foundation` is THIS lane's in
+#    modules.toml. ⛔ Not a synchronization lag — a misassignment of this
+#    office's own work, on the one channel that reaches a lane without QE.
+backlog = ["TASK-497", "TASK-1431"]
 
 
 

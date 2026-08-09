@@ -1,7 +1,7 @@
 # ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "New instrument: python3 infra/production-readiness.py — 20 concerns satisfied, two real gaps, both now rows. TASK-1431 is a performance budget and is yours today: 21 Playwright specs and nothing measures performance, so nothing would notice a regression. Measure first, set the budget at what ships plus a margin, then enforce — a gate that is red on arrival is a broken gate."
+notice = "B-221 is fixed at the generator and you were right to escalate it. A notice naming a row not in your computed backlog is now REFUSED — and the third instance had a second cause worth more than the first: one row I told you was yours belongs to this office's own module. It has left your array. Read the array, not the prose. Your seven blockers are mine and I am clearing them."
 
 ["Lane C"]
 notice = ""
