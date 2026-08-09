@@ -1428,6 +1428,7 @@ def _pipeline_findings() -> list[str]:
     return out
 
 
+
 def _queue_findings(backlog: str) -> list[str]:
     states = _backlog_states(backlog)
     out: list[str] = []

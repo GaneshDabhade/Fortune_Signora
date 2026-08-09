@@ -1479,12 +1479,25 @@ updated      = 2026-08-09
 #    now have rows. TASK-1409 leads the new ones deliberately: System States
 #    is a PLATFORM row every other workflow renders, and thirteen workflows
 #    will each improvise a 404 if it lands after them.
-backlog = ["TASK-1428", "TASK-1408", "TASK-476", "TASK-473", "TASK-492", "TASK-499",
+backlog = ["TASK-1435", "TASK-1436", "TASK-1437",
+            "TASK-473", "TASK-492", "TASK-499",
             "TASK-1410", "TASK-1411",
             "TASK-1427", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407", "TASK-1405",
             "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412",
             "TASK-1429"]
+# ⚡ THREE ROWS ADDED 2026-08-09 AT THE TOP — D-215, ruling C-255.
+#    TASK-1435 offline mutation queue · TASK-1436 last-connected and a
+#    re-checking retry · TASK-1437 the static maintenance pages.
+#    These are §04 of the system-states design. They were inside TASK-1409's
+#    "Delivers" and nothing built them, which is what you raised. They are
+#    at the top because they are that row's own unfinished half, not because
+#    this office is reordering your queue.
+# ⛔ TASK-1428, TASK-1408 and TASK-476 REMOVED — you have CLAIMED all three.
+#    This file's own note already said a queue must never offer back work a
+#    lane is already holding, and it was doing exactly that on three rows.
+#    state-check reported one of them; reading the file against BACKLOG.md
+#    found the other two.
 # ⚡ TASK-1429 RELEASED 2026-08-09 — it was blocked on C-254, a RED Change
 #    Budget grant this office queued to the product owner. It should never
 #    have been queued: CLAUDE.md line 429 already grants it, because the UI
@@ -1577,3 +1590,21 @@ task    = "TASK-466"
 blocker = ["TASK-465"]
 owner   = "Lane A"
 note    = "consumes TASK-465's output — its input does not exist yet, not a Product Office hold"
+
+[[blocked]]
+task    = "TASK-1432"
+blocker = ["the first module that reads scope"]
+owner   = "Lane A"
+note    = "the filter strip, carved out of TASK-1408 by D-215 ruling C-257. Your argument is adopted verbatim: four chips serialise scope into the URL and no module reads scope, and a seller who sets the period to Q3 and sees every figure unchanged learns the filter is broken. lib/shell/scope.ts already ships the narrowing law, which was the half that belonged in TASK-1408. Not BLOCKED — nobody owes an answer; it frees itself when any module consults scope.ts"
+
+[[blocked]]
+task    = "TASK-1433"
+blocker = ["the first of Insights, Activity or Notes"]
+owner   = "Lane A"
+note    = "the utility panel, carved out of TASK-1408 by D-215 ruling C-257. All three tabs are module content and none exists. An empty 300px panel does not reserve space for a future feature, it takes 300px from the one the customer is using today"
+
+[[blocked]]
+task    = "TASK-1434"
+blocker = ["the state each banner reports"]
+owner   = "Lane A"
+note    = "the shell's banner callers — the sandbox and trial two-thirds of C-256, which you classified as MISSING IMPLEMENTATION and this office adopted unchanged. The impersonation third stays with the Design Authority and blocks nothing. ShellBanners is built, tested and mounted at app-shell.tsx:79; it renders nothing because nothing has state to give it, which is the frame working as designed"

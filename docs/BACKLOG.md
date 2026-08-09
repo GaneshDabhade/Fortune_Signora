@@ -1456,6 +1456,120 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **A flaky budget teaches people to retry the build.** ✅ **Pick a metric that is deterministic — bundle bytes before first-paint milliseconds** |
 | **Build-vs-Buy** | ⚠️ **Commodity — the bundler already reports size; start there** |
 
+### TASK-1432 · The filter strip, behind the first module that reads scope
+
+| | |
+|---|---|
+| 🔴 **Why this exists** | ⛔ **Carved out of [TASK-1408](BACKLOG.md) by [D-215](DECISION_REGISTER.md), ruling [C-257](LANE_COORDINATION.md).** ⚡ **Lane A measured the assembled frame against the row's own `Delivers` and found this region unbuildable — correctly** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⛔ **MISSING IMPLEMENTATION — and it is the CONSUMER that is missing, not the strip** |
+| **Epic** | **App Shell** — **[workflow 29](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — Lane C, 2026-08-09, behind the first module that reads scope.** ⛔ **Not `BLOCKED`: nobody owes an answer.** ⚡ **It frees itself the moment any module consults `lib/shell/scope.ts`** |
+| 🔴 **Why it must not ship first** | 📁 **Four chips serialise period, region, segment and owner into the URL** — ⛔ **and no module reads scope.** ⚡ **A seller who sets the period to Q3 and sees every figure unchanged learns the filter is broken, and that belief is harder to undo than a missing feature** ([§2](../CLAUDE.md): a control that does nothing) |
+| ✅ **What already shipped instead, and it is the right half** | 📁 **[`lib/shell/scope.ts`](../frontend/lib/shell/scope.ts) carries the narrowing law**, so **the first consuming module inherits it rather than inventing one.** ⚡ **The law was the deliverable; the strip is the surface** |
+| ⚡ **Delivers** | **The four chips, reading and writing `scope.ts`'s serialisation** — ⛔ **no new law, and no second serialisation** |
+| **Change Budget** | 🟢 **`components/shell/**`** · ⛔ **`lib/shell/scope.ts` is not re-decided here** |
+| **Definition of Done** | **Setting a chip changes what at least one module renders** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** narrowing a scope changes a figure |
+| ⚠️ **Risk, named before it is met** | ⛔ **Shipping it "ready for later".** ✅ **This row's whole reason is that a strip without a reader is worse than no strip** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1433 · The utility panel, behind the content its three tabs name
+
+| | |
+|---|---|
+| 🔴 **Why this exists** | ⛔ **Carved out of [TASK-1408](BACKLOG.md) by [D-215](DECISION_REGISTER.md), ruling [C-257](LANE_COORDINATION.md)** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⛔ **MISSING IMPLEMENTATION — three modules' worth, none of which is the shell's** |
+| **Epic** | **App Shell** — **[workflow 29](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — Lane C, 2026-08-09, behind the first of Insights · Activity · Notes.** ⛔ **Not `BLOCKED`: nobody owes an answer** |
+| 🔴 **Why it must not ship first** | 📁 **The design fixes it at *"300px at 1280, 360px at 1600+, docks right of content and pushes it"* with tabs Insights · Activity · Notes.** ⛔ **All three are module content and none exists.** ⚡ **An empty 300px panel does not reserve space for a future feature — it takes 300px away from the one the customer is using today** |
+| ⚡ **Delivers** | **The dock, its two widths, and the first tab that has content.** ⛔ **Never three empty tabs** |
+| **Change Budget** | 🟢 **`components/shell/**`** |
+| **Definition of Done** | **The panel docks, pushes content, and at least one tab renders real module content** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** the panel docks and content reflows |
+| 📱 **Responsive behaviour** | 📁 **Two widths are the design's, from tokens** — ⛔ **not a media-query guess** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Building the chrome because it is the easy half.** ✅ **The chrome is not the deliverable** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1434 · The shell's banner region gets its callers
+
+| | |
+|---|---|
+| 🔴 **Why this exists** | ⛔ **[C-256](LANE_COORDINATION.md), split by [D-215](DECISION_REGISTER.md): two of its three states are sequencing and one is a design gap.** ✅ **This row is the two** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION** — ⛔ **impersonation is NOT in this row; it is [C-256](LANE_COORDINATION.md)'s Design Authority half** |
+| **Epic** | **App Shell** — **[workflow 29](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — Lane C, 2026-08-09, behind the state each banner reports** |
+| ✅ **The component is done, and that is the finding** | 📁 **`ShellBanners` is built, tested and MOUNTED** — `app-shell.tsx:79`, `inSandbox` and `banners` both wired. ⚡ **It renders nothing because nothing has state to give it, which is the frame working as designed** |
+| ⚡ **Delivers** | **A caller for the sandbox banner and a caller for the trial banner** — ⛔ **each supplied by the module that owns that state, never invented by the shell** |
+| 🔴 **What it must NOT do** | ⛔ **Let the shell derive a banner.** 📁 **Shell rule: the frame owns no product decision** — a shell that infers *trial* has taken a commercial decision |
+| **Change Budget** | 🟢 **the calling module's own surface** · ⛔ **`components/ui/shell-banners.tsx` is not reopened** |
+| **Definition of Done** | **A workspace in sandbox shows the sandbox banner from real state** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** a sandbox workspace renders the banner |
+| ♿ **Accessibility** | 📁 **Inherited from `ShellBanners`** — ⛔ **not re-decided per caller** |
+| ⚠️ **Risk, named before it is met** | ⛔ **`MAX_BANNERS` quietly exceeded once three callers exist.** ✅ **The constitution already enforces it; this row must not route around it** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1435 · The offline mutation queue, visible and ordered
+
+| | |
+|---|---|
+| 🔴 **Why this exists** | ⛔ **Carved out of [TASK-1409](BACKLOG.md) by [D-215](DECISION_REGISTER.md), ruling [C-255](LANE_COORDINATION.md).** ⚡ **Lane A applied [D-212](DECISION_REGISTER.md) §7's gate BEFORE filing and it changed the addressee rather than the answer: the design says this completely, and nothing builds it** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING CAPABILITY** — ⛔ **nothing is asked of Design** |
+| **Epic** | **System States** — **[workflow 28](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09.** ⚡ **Independent of every open item** |
+| 📁 **What the design requires, verbatim** | ***"two edits are queued… They are sent in order when the connection returns — the queue is visible, not implied."*** |
+| 🔴 **Measured on `origin/integration`, not assumed** | ⛔ **No `onlineManager`, no `resumePausedMutations`, no `networkMode`, no query persistence anywhere in `frontend/lib/`.** ⚡ **Re-measured 2026-08-09: still nothing** |
+| ⚡ **Delivers** | **Mutations queue while offline, replay in order on reconnect, and the queue is VISIBLE** — 📁 *visible, not implied* is the design's own emphasis and it is the acceptance criterion |
+| ✅ **Reuse — measured, not assumed** | 📁 **TanStack Query already ships `onlineManager`, `networkMode` and `resumePausedMutations`.** ⛔ **Do not write a queue** — ⚡ **this is configuration and a surface, not an implementation** |
+| **Change Budget** | 🔴 **`lib/query`** — **the frontend foundation.** ✅ **Covered by the UI Migration Program** ([CLAUDE.md](../CLAUDE.md) line 429) **only if the change is toward the finalized design, which it is** — ⚠️ **announce it, and stop if the shape drifts** |
+| **Definition of Done** | **Two edits made offline arrive in order, and the customer could see them waiting** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** offline → two edits → reconnect → order preserved |
+| ⚠️ **Risk, named before it is met** | ⛔ **Persisting a mutation queue across sessions without deciding what a stale queue means.** ✅ **In-session is the scope; a stale replay is a separate decision and not this row's to take** |
+| **Build-vs-Buy** | ✅ **Buy — the ratified query library already does this** |
+
+### TASK-1436 · Last connected, and a retry that re-checks
+
+| | |
+|---|---|
+| 🔴 **Why this exists** | ⛔ **Carved out of [TASK-1409](BACKLOG.md) by [D-215](DECISION_REGISTER.md), ruling [C-255](LANE_COORDINATION.md)** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING CAPABILITY** |
+| **Epic** | **System States** — **[workflow 28](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
+| 📁 **What the design requires** | ***"last connected 3 minutes ago"***, **and a retry that RE-CHECKS rather than reloading** |
+| 🔴 **Measured** | ⛔ **Nothing persists a last-connected time, and there is no offline detection in the codebase at all** |
+| ⚡ **Delivers** | **A persisted last-successful-connection time, rendered relative**, and **a retry that probes rather than calling `location.reload()`** |
+| 🔴 **Why the retry distinction is not pedantry** | ⛔ **A reload on a cold start with no network returns the browser's own error page** — ⚡ **the customer loses the product's designed state and gets the browser's undesigned one, which is the one screen Signora cannot style** |
+| **Change Budget** | 🟢 **`components/feedback/**`** · 🟠 **a small `lib/` helper — announced** |
+| **Definition of Done** | **Cold start with no network shows a designed screen naming when it last worked** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** offline cold start renders the designed state |
+| ⚠️ **Risk, named before it is met** | ⛔ **A relative time that says *last connected 0 minutes ago* forever because nothing writes it.** ✅ **The write is the row, not the render** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1437 · The maintenance and platform-outage pages, served from nothing
+
+| | |
+|---|---|
+| 🔴 **Why this exists** | ⛔ **Carved out of [TASK-1409](BACKLOG.md) by [D-215](DECISION_REGISTER.md), ruling [C-255](LANE_COORDINATION.md)** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING CAPABILITY** |
+| **Epic** | **System States** — **[workflow 28](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
+| 📁 **What the design requires, verbatim** | ***"maintenance and platform outage pages are served from static hosting with no dependency on the application, its API or its session."*** |
+| 🔴 **Measured** | ⛔ **There is no `frontend/public/` directory.** ⚡ **No static surface exists to serve either page from** |
+| ⚡ **Delivers** | **Two static HTML pages that render with the application down**, ⛔ **no framework, no API call, no session read, no font fetch** |
+| 🔴 **Why the constraint is the whole row** | ⚡ **A maintenance page that imports the app is a maintenance page that is down during maintenance.** ⛔ **If it needs a build step to render, it has failed its own requirement** |
+| ✅ **Design System conformance without importing it** | ⚠️ **Tokens cannot be imported here.** ✅ **Inline the handful of values and say so in a comment** — ⛔ **this is the one place a literal colour is correct, and the exception is named rather than discovered** |
+| **Change Budget** | 🟠 **a new `frontend/public/` — announced** |
+| **Definition of Done** | **Both pages render with the dev server stopped** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** the file loads from disk with no server |
+| ♿ **Accessibility** | **A heading that names what happened, and nothing that needs JavaScript** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Building them as Next.js routes because it is easier.** ✅ **That fails the one requirement the design states** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
 ### TASK-1429 · The four improvised error surfaces converge on the ladder
 
 | | |
@@ -1537,7 +1651,8 @@
 | **Status** | ✅ **`CLAIMED` — Lane A**, 2026-08-09, by the Task Claim Protocol. ⚡ **The topmost entry in [`queues/lane-a.toml`](coordination/queues/lane-a.toml)'s `backlog`**, taken in order rather than chosen ([D-183](DECISION_REGISTER.md)). ⛔ **No product-owner gate was waited for**: [D-169](DECISION_REGISTER.md) made the review a **checkpoint** and reaching `main` the release condition between workflows, superseding [D-158](DECISION_REGISTER.md)'s stop-and-wait — and [`workflows.toml`](coordination/workflows.toml) records Workflows 1–4 `on_main` ([D-185](DECISION_REGISTER.md)). *(Previously* ✅ **`READY` — Lane C, 2026-08-09.** ⚡ **Independent: it needs nothing that does not exist**.*)* |
 | **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora System States.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
 | ⚡ **The idea the whole row turns on** | 📁 **§01 *Scope ladder* — *"A failure claims the smallest surface it can."*** ⛔ **A failing score card must not take the page; a failing page must not take the shell.** ✅ **Four scopes — field · region · app · platform — each with the states legal at that level, and the ladder is the thing being built rather than the four screens** |
-| ✅ **What it delivers** | **§02 `404` and `403` full-page** — 📁 ***"403 names the missing role, never the data"***, and the 404 carries the merge/redirect case (*"Merged 22 Jul · redirect held until Jul 2027"*) · **§03 `500` plus the global error boundary at REGION scope** — 📁 ***"Your unsaved note on Corrigan Health was kept"*** · **§04 maintenance, offline and no-internet**, announced ahead with a countdown |
+| ✅ **What it delivers** | **§02 `404` and `403` full-page** — 📁 ***"403 names the missing role, never the data"***, and the 404 carries the merge/redirect case (*"Merged 22 Jul · redirect held until Jul 2027"*) · **§03 `500` plus the global error boundary at REGION scope** — 📁 ***"Your unsaved note on Corrigan Health was kept"*** |
+| ⚡ **§04 IS NOT IN THIS ROW — narrowed 2026-08-09 by [D-215](DECISION_REGISTER.md), ruling [C-255](LANE_COORDINATION.md)** | ⛔ **This cell used to end *"§04 maintenance, offline and no-internet, announced ahead with a countdown"*, and §04 needs three capabilities that do not exist and that no row owned.** ✅ **They are now three rows: [TASK-1435](#task-1435--the-offline-mutation-queue-visible-and-ordered) the offline mutation queue · [TASK-1436](#task-1436--last-connected-and-a-retry-that-re-checks) last-connected and a re-checking retry · [TASK-1437](#task-1437--the-maintenance-and-platform-outage-pages-served-from-nothing) the static pages.** ⚡ **All three are `READY` and independent of every open item — the work is not deferred, it is addressed** |
 | 🔴 **What it must NOT do** | ⛔ **Never a joke, never a mascot** — the design says so in those words. ⛔ **A `403` must not disclose the resource it is protecting**, which is the same rule [C-245](LANE_COORDINATION.md) is asking about invitations |
 | ✅ **Backend reuse — measured, not assumed** | ⚠️ **`403` needs the approver names the design shows (*"Approvers: J. Okafor and M. Reinhardt"*) and NOTHING publishes them.** ⛔ **Raised as [C-1403](LANE_COORDINATION.md) rather than invented.** ✅ **The request-access action is a write `workspace_tenancy` does not have** — **the row ships the state without the request button and says so**, rather than faking an affordance ([D-167](DECISION_REGISTER.md) §4) |
 | **Reusable components required** | ⚡ **This row IS the reusable component.** ✅ **`<ErrorBoundary scope=…>` is what every later workflow consumes; [TASK-445](#task-445--stated-absence-becomes-one-implementation-instead-of-nine-local-ones) already built *stated absence* and the two must not fork** — ⛔ **absence is "there is nothing", a system state is "something failed", and conflating them is how a broken widget renders as an empty one |
@@ -1807,7 +1922,8 @@
 | **Module** | **`product_surface`** |
 | **Status** | ✅ **`CLAIMED` — Lane A**, 2026-08-09, by the Task Claim Protocol. ⚡ **Taken in order**: the entry above it in [`queues/lane-a.toml`](coordination/queues/lane-a.toml) is [TASK-1409](#task-1409--workflow-28--system-states--the-scope-ladder-and-a-failure-that-claims-the-smallest-surface-it-can), which this lane already holds and whose remainder is blocked or sequenced — ⛔ **not a skip.** *(Previously* ✅ **`READY` — Lane C, 2026-08-09.** ⛔ **Assigned, not held** ([D-199](DECISION_REGISTER.md) §3). ⚡ **Independent: it needs nothing that does not exist**.*)* |
 | **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora App Shell.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
-| ⚡ **Delivers the frame, not its contents** | 📁 **The design's own words: *"Every module mounts inside this frame. No component is redesigned here."*** ✅ **Environment banner · trial banner · top bar · breadcrumb and filter strip · the rail · the utility panel** — ⛔ **and the design fixes their order: *"vertical order is fixed and non-negotiable"*** |
+| ⚡ **Delivers the frame, not its contents** | 📁 **The design's own words: *"Every module mounts inside this frame. No component is redesigned here."*** ✅ **Banners · top bar · breadcrumb · the rail** — ⛔ **and the design fixes their order: *"vertical order is fixed and non-negotiable"***, which this row honours for the regions it places |
+| ⚡ **The filter strip and the utility panel are NOT in this row — narrowed 2026-08-09 by [D-215](DECISION_REGISTER.md), ruling [C-257](LANE_COORDINATION.md)** | ⛔ **This cell named all six regions, and two of them are unbuildable today for the same reason in two shapes: a control with no consumer.** 📁 **The strip serialises scope into the URL and no module reads scope; the panel's three tabs are module content and none exists.** ✅ **They are now [TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope) and [TASK-1433](#task-1433--the-utility-panel-behind-the-content-its-three-tabs-name), each `SEQUENCED` behind its own consumer.** ⚡ **[`lib/shell/scope.ts`](../frontend/lib/shell/scope.ts) already ships the narrowing law, which was the half that genuinely belonged here** |
 | 🔴 **What it must NOT do** | ⛔ **Own navigation decisions.** 📁 **[D-193](DECISION_REGISTER.md)'s spec: *"modules register capabilities rather than issuing redirects"* — the shell CONSUMES [TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes)'s engine and does not contain one.** ⚡ **One rail item, `Home`, selected whenever the route is `/home` regardless of composition** — 📁 **the third of the four contradictions the spec resolved** |
 | ✅ **Backend reuse — measured, not assumed** | ✅ **Nothing new.** ⚡ **The switcher reads membership `workspace_tenancy` already owns; search, notifications and Copilot are the four rows above and mount INTO this frame rather than being built by it** |
 | **Reusable components required** | ⚠️ **The shell IS the reusable component** — ⛔ **every screen from workflow 9 onward mounts in it, which is why building it once beats fourteen screens improvising a frame** |
@@ -1815,7 +1931,7 @@
 | **Change Budget** | 🟢 **`frontend/app/(app)/**`** · 🟠 **the shell container in `components/ui`** — **announced in the commit** · 🔴 **⛔ nothing: the frontend foundation freeze's UI-migration exemption covers this** ([§20c](../CLAUDE.md), [D-153](DECISION_REGISTER.md)) |
 | **Playwright coverage** | ⚡ **A customer signs in and the frame renders with every banner in the design's fixed order** · **the switcher opens with `⌘⇧W` and finds a workspace** · 🔴 **and the assertion that matters: switching preserves the current route when the destination has it, and lands on Home when it does not** — 📁 **the design's own sentence, and *"it never drops the user on an error"*** |
 | **Component coverage** | **Banner order is fixed** · **commercial banners are dismissible for the session and suppressed in sandbox; risky-state banners are undismissable** — 📁 **the design distinguishes them and the distinction is the test** · **system status is a PILL in the top bar, never a banner** |
-| **Definition of Done** | **The frame renders, every module mounts in it, and it owns no navigation decision** · **certified · `main`** |
+| **Definition of Done** | **The frame renders with its four placed regions, every module mounts in it, and it owns no navigation decision** · **certified · `main`.** ✅ **Measured 2026-08-09, after the narrowing: `ShellBanners` at `app-shell.tsx:79`, `Breadcrumb` in the top bar, rail collapse per user and device class** — ⚡ **this row is reachable today, and it was not this morning** |
 | ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Routes** the `(app)` layout · **APIs** membership read · **Playwright** the three scenarios above · **Security Invariant** ⛔ **the switcher must list only workspaces the caller is a member of — RLS asserted, not assumed** |
 | ✅ **Verification strategy** | ⚡ **Six backlog rows becoming buildable is the verification.** ⛔ **If any of them still needs a shell of its own after this lands, the frame is wrong** |
 | ⚠️ **Risk, named before it is met** | 🔴 **The temptation is to put routing in the shell** — it is where navigation visibly happens. ⛔ **The spec forbids it and [D-194](DECISION_REGISTER.md) found five modules already doing it; a sixth in the shell would be the hardest to remove, because it would look like the right place** |
