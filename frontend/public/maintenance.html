@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scheduled maintenance · Fortune Signora</title>
+    <!--
+      TASK-1437 — docs/BACKLOG.md. Design: System States §04, "Maintenance ·
+      platform scope", served under the design's "Static fallback" rule:
+
+        "Maintenance and platform outage pages are served from static hosting
+         with no dependency on the application, its API or its session."
+
+      WHY THIS FILE IS PLAIN HTML AND MUST STAY THAT WAY
+
+      A maintenance page that imports the app is a maintenance page that is
+      down during maintenance. The row states the constraint as the whole
+      point, and names the temptation: "building them as Next.js routes
+      because it is easier — that fails the one requirement the design
+      states." So this file has, deliberately:
+
+        no <script>          nothing to execute, nothing to fail
+        no fetch or XHR      the API is the thing that is unavailable
+        no session read      there is no session to read
+        no font fetch        a webfont request to a down origin blocks paint
+        no build step        it renders from disk, opened as a file
+
+      IT IS NOT IN THE NEXT APP, AND public/ IS SERVED BY WHATEVER IS UP
+
+      Next copies public/ verbatim, so this is reachable at /maintenance.html
+      while the app runs — but the point is the other direction: it is a flat
+      file a CDN, an S3 bucket or a load balancer can serve with the
+      application entirely stopped.
+
+      THE COLOURS ARE LITERALS AND THAT IS CORRECT EXACTLY HERE
+
+      §20c forbids literal colours in components because a theme change must
+      be one token edit. That rule assumes the stylesheet is reachable. Here
+      it is not — importing globals.css would reintroduce the dependency this
+      file exists to avoid. The row names the exception rather than leaving it
+      to be discovered: "tokens cannot be imported here. Inline the handful of
+      values and say so in a comment — this is the one place a literal colour
+      is correct."
+
+      Values below are copied from app/globals.css :root, 2026-08-09. If the
+      palette moves, these move by hand — that is the cost of the exception
+      and it is smaller than the page being unavailable.
+    -->
+    <style>
+      :root {
+        /* --color-canvas / --color-surface / --color-border */
+        --canvas: #f7f7f8;
+        --surface: #ffffff;
+        --border: #e4e4e7;
+        /* --color-content / -muted / -subtle */
+        --ink: #18181b;
+        --ink-2: #52525b;
+        --ink-3: #71717a;
+        /* --color-accent — "brand for planned events" (the grammar's severity) */
+        --brand: #4f46e5;
+        --brand-subtle: #eef2ff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --canvas: #09090b;
+          --surface: #18181b;
+          --border: #27272a;
+          --ink: #fafafa;
+          --ink-2: #a1a1aa;
+          --ink-3: #71717a;
+          --brand: #818cf8;
+          --brand-subtle: #1e1b4b;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        /* A system stack, never a webfont: a font request to a down origin
+           blocks first paint on the one page that must always paint. */
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        /* 📁 "Full-page states centre their content in a 560px column at 40%
+           viewport height — high enough to read without scrolling, low enough
+           not to float." */
+        padding: 40vh 24px 24px;
+      }
+      main {
+        width: 100%;
+        max-width: 560px;
+        text-align: center;
+      }
+      .tile {
+        /* 📁 "A 44px rounded tile with a single line-weight glyph, tinted to
+           the severity." Brand, because a planned event is not a failure. */
+        width: 44px;
+        height: 44px;
+        margin: 0 auto 16px;
+        border-radius: 10px;
+        border: 1px solid var(--brand);
+        background: var(--brand-subtle);
+        color: var(--brand);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        line-height: 1;
+      }
+      h1 {
+        /* 📁 1.3.1 — "an h1 that names what happened, not 'Error'." */
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin: 0 0 8px;
+      }
+      p {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--ink-2);
+        margin: 0 auto;
+        max-width: 480px;
+      }
+      .actions {
+        margin-top: 24px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      a.button {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+      }
+      a.button:focus-visible {
+        outline: 2px solid var(--brand);
+        outline-offset: 2px;
+      }
+      .note {
+        margin-top: 20px;
+        font-size: 12px;
+        color: var(--ink-3);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <!-- One glyph, no oversized numerals: "a 404 with a giant 404 tells you
+           what a machine knows, not what you need." -->
+      <div class="tile" aria-hidden="true">⚙</div>
+
+      <h1>Scheduled maintenance</h1>
+      <p>
+        Signora is being upgraded. Reads resume first. Nothing is being migrated
+        that changes your data, and nothing you saved before the window started
+        is affected.
+      </p>
+
+      <div class="actions">
+        <a class="button" href="https://status.signora.app">Status page</a>
+      </div>
+
+      <!--
+        📁 "Elapsed time is shown rather than a countdown. A countdown that
+        overruns turns a planned window into an incident."
+
+        Neither is rendered here, and the reason is this file's own constraint:
+        elapsed time needs a start, and a start would have to come from the
+        application or a script. Both are forbidden. Stating the shape of the
+        window in words costs nothing and cannot be wrong; a clock served from
+        a static file would be wrong the moment the window moved.
+      -->
+      <p class="note">This page is served independently of Signora, so it stays available.</p>
+    </main>
+  </body>
+</html>
