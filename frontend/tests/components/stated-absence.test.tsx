@@ -112,7 +112,57 @@ describe('a tenth local implementation cannot be written quietly', () => {
    * explanation of this very rule would fail it again. **The rule is about
    * rendered copy, so the guard now reads code.**
    */
-  const code = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  /**
+   * ⚠️ **String-aware, and the naive version was [B-162](../../../docs/BUGS.md).**
+   *
+   * ⛔ **`replace(/\/\/.*$/gm, '')` deletes from the first `//` to the end of
+   * the line, and `//` occurs inside every absolute URL.** **A line carrying a
+   * link and rendered copy lost the copy**, so the guard stopped catching a
+   * class it used to catch — ⚡ **and the class it lost is the one it exists
+   * for: rendered text, not prose.**
+   *
+   * ✅ **Narrowing a guard is only safe if you measure what stops firing.**
+   * **This walks the source instead**, tracking quotes and template literals,
+   * so a `//` inside a string is text and a `//` outside one is a comment.
+   */
+  const code = (src: string): string => {
+    let out = '';
+    let quote: string | null = null;
+    for (let i = 0; i < src.length; i += 1) {
+      const c = src[i] as string;
+      const next = src[i + 1];
+
+      if (quote !== null) {
+        out += c;
+        if (c === '\\') {
+          out += src[i + 1] ?? '';
+          i += 1;
+        } else if (c === quote) {
+          quote = null;
+        }
+        continue;
+      }
+
+      if (c === "'" || c === '"' || c === '`') {
+        quote = c;
+        out += c;
+        continue;
+      }
+      if (c === '/' && next === '*') {
+        const end = src.indexOf('*/', i + 2);
+        i = end === -1 ? src.length : end + 1;
+        continue;
+      }
+      if (c === '/' && next === '/') {
+        const nl = src.indexOf('\n', i);
+        if (nl === -1) break;
+        i = nl - 1;
+        continue;
+      }
+      out += c;
+    }
+    return out;
+  };
 
   const SENTENCE = /could not load/i;
 
@@ -135,5 +185,16 @@ describe('a tenth local implementation cannot be written quietly', () => {
     expect(SENTENCE.test(code('const t = "Pipeline could not load";'))).toBe(true);
     expect(SENTENCE.test(code('// this file no longer says could not load'))).toBe(false);
     expect(SENTENCE.test(code('/** explains could not load */'))).toBe(false);
+
+    // 🔴 **[B-162](../../../docs/BUGS.md), and each of these evaded the naive
+    // strip.** ⛔ **`//` occurs inside every absolute URL**, so a line
+    // carrying a link and rendered copy lost the copy.
+    expect(
+      SENTENCE.test(code('<a href="https://x.test">{"Pipeline could not load"}</a>')),
+    ).toBe(true);
+    expect(SENTENCE.test(code('const t = `Pipeline could not load`; // https://x'))).toBe(true);
+    expect(SENTENCE.test(code("const t = 'a // b could not load';"))).toBe(true);
+    // ⛔ And an escaped quote must not end the string early.
+    expect(SENTENCE.test(code('const t = "it\\"s: could not load";'))).toBe(true);
   });
 });

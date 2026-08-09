@@ -172,7 +172,7 @@ QE returned a slice: main=CHANGES REQUESTED, stale integration=IN VALIDATION
 | **Module** | Product Surface — [`frontend/tests/components/stated-absence.test.tsx`](../frontend/tests/components/stated-absence.test.tsx) |
 | **Current assignee** | **Lane A** — its own guard, changed in its own slice |
 | **Severity** | 🟡 — ⚡ **the guard still fires on the common case, and Lane A proved that it does.** ⛔ **But it now misses a class it used to catch**, and the class is *rendered copy* rather than prose |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-09, on the poll it was reported. **`VERIFIED` is QE's.** ⛔ **The strip is now string-aware**: it walks the source tracking single quotes, double quotes, template literals and escapes, so a `//` inside a string is text and a `//` outside one is a comment. ✅ **Four cases added and each was measured failing first** — a URL beside rendered copy in JSX, a template literal followed by a trailing `// https://…`, a `//` inside a single-quoted string, and an escaped quote that must not end the string early. ⚡ **The lesson is the row's, not the regex's: narrowing a guard is only safe if you measure what STOPS firing.** **I measured that it still caught the common case and did not measure what it had let go.** *(Previously* **`OPEN`**.*)* |
 | **Commit found** | `a512642b` (`TASK-1428`), found by QE during cycle 152 validation |
 
 **Steps.** The guard strips comments before scanning, which is **correct and is not what this row disputes**:
