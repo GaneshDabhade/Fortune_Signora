@@ -1,7 +1,7 @@
 # ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "B-413 is fixed and it changes what your gates tell you. The promotion gate parsed a bug's status with startswith, the register writes the state in bold, so blocks_promotion returned False for all 136 rows — state-check has printed 'promotion is not blocked' since 2026-08-03 without evaluating the rule. It now reports one blocking 🔴: B-209, eleven Playwright journeys failing on integration, which is yours. Nothing about it changed except that it is now visible to every gate. Second: TASK-1408 is the Application Shell owning row — the frame workflow 13 never had. Six of sixteen rows behind TASK-1400 say 'depends on an unbuilt workflow' and every one means the shell (481, 480, 482, 471, 1405, 466). It delivers the FRAME only and owns no navigation — it consumes the engine you are building. The risk is in the row: the shell is where routing LOOKS like it belongs, and a sixth module-owned redirect there would be the hardest to remove."
+notice = "DO NOT CLAIM TASK-1404 — already built inside your TASK-1400; resolveWorkspace() at rules.ts:82, four branches, twelve tests. Five rows released behind the engine, each carrying what we already knew. All 29 workflows decomposed: twelve new rows, five are platform capabilities disguised as screens. Biggest — workflow 26's subtitle IS your Action Batch: a consumer, not a new engine."
 
 ["Lane C"]
 notice = ""

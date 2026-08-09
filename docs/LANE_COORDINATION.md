@@ -354,6 +354,10 @@ databaseUrl: required(
 | [C-247](#c-247-a-person-in-two-organizations-gets-two-themes-and-task-470s-row-says-otherwise) | 🟠 **A person in two organizations gets two themes, and TASK-470's row says otherwi** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is a customer's experience of belonging to two organizations |
 | [C-248](#c-248-four-profile-fields-are-locked-as-managed-by-northwind-it-and-no-directory-sync-exists) | 🟠 **Four profile fields are locked as *"Managed by Northwind IT"* and no directory** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is how complete screen `01` looks at review** — named here s |
 | [C-249](#c-249-two-rows-on-the-ai-screen-are-policies-and-neither-policy-exists) | 🟠 **Two rows on the AI screen are policies, and neither policy exists** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 9 review is shown** |
+| [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | 🟠 **The Entry Engine's rule table counts 24, the row said 21, and one rule cannot fire** | **Lane A**, 2026-08-09, **implementing [TASK-1400](BACKLOG.md)** — ⚡ **all three found by building** | **Lane C** for ① *(corrected 2026-08-09)* · ⛔ **Product Owner** for ③ | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **③ decides what support reads in a diagnostics bundle** |
+| [C-1404](#c-1404--machine-credentials-have-no-module-and-the-entry-engine-already-admits-a-non-human-principal) | 🟠 **Machine credentials have no module, and the entry engine already admits a non-human principal** | **Lane C**, 2026-08-09, decomposing [workflow 11](coordination/workflows.toml) | ⛔ **Product Owner** if a new module is required — **inventing a module boundary is architecture** | 🟠 **`OPEN`** | ⏸️ **[TASK-1413](BACKLOG.md)**, and nothing being built today |
+| [C-1403](#c-1403--a-403-names-its-approvers-and-nothing-publishes-who-they-are) | 🟡 **A `403` names its approvers, and nothing publishes who they are** | **Lane C**, 2026-08-09, decomposing [workflow 28](coordination/workflows.toml) | **Lane A** — `workspace_tenancy` is this lane's | 🟡 **`OPEN`** | ✅ **Nothing** — **[TASK-1409](BACKLOG.md) ships the `403` without the affordance and says so** |
+| [C-1402](#c-1402--the-execution-board-shows-a-closed-lane-busy-on-work-that-is-already-on-main) | 🟡 **The execution board shows a closed lane busy on work already on `main`** | **Lane C**, 2026-08-09, on [D-203](DECISION_REGISTER.md) §2 | **QE** — QE removes a row once its work reaches `main` | 🟡 **`OPEN`** | ✅ **Nothing** |
 | [C-105](#c-105--d-200-gives-lane-a-and-lane-c-each-a-half-and-qe-cannot-write-either) | **[D-200](DECISION_REGISTER.md) gives Lane A and Lane C each a half, and QE cannot write either** | **QE**, 2026-08-09, on the product owner's ruling | **Lane A** for §2 · **Lane C** for §5 | 🟡 **`OPEN`** | ⛔ **Nothing today.** ⚡ **QE certifies exactly as before until [427](architecture/427-impact-based-validation.md) steps 3–5 land** |
 | [C-1401](#c-1401--the-constitution-instructs-every-lane-to-read-four-queue-fields-that-no-longer-exist) | 🔴 **The constitution instructs every lane to read four queue fields that no longer exist** | **Lane C**, 2026-08-09, on [D-203](DECISION_REGISTER.md) §2's governance reconciliation | ⛔ **Product Owner** — `CLAUDE.md` is the constitution and this office does not edit it undirected | 🔴 **`OPEN`** | ⚠️ **Nothing today, and that is luck rather than design** — **a lane following §20e literally reads `current` and finds nothing.** ✅ **The replacement text is written; it needs one word of approval** |
 | [C-1400](#c-1400--product_qualitymd-is-referenced-by-nothing-and-is-qes-to-rule-on) | ⚠️ **`PRODUCT_QUALITY.md` is referenced by nothing — not `CLAUDE.md`, not any register** | **Lane C**, 2026-08-09, ⚡ **on [D-202](DECISION_REGISTER.md) §6's governance review** | **QE** — 📁 **the document's own header says *"Owned by QE"*** | 🟡 **`OPEN`** | ✅ **Nothing.** ⚡ **158 lines that may be live, superseded or absorbed** — ⛔ **and this office will not archive another lane's document on a reference count alone** |
@@ -8561,6 +8565,36 @@ rules parsed: 24   ·   distinct reason codes: 24
 **Screen `14` offers *"Request a new invitation"*** — *"one click notifies the original inviter and the workspace admins."* ⛔ **Nothing can grant it**: `tests/components/join.test.tsx` already asserts the control is never offered ***"because nothing can grant it"*** — no endpoint, no table, no row — **and that assertion was written by this lane against the same absence.**
 
 **The decision, in one sentence:** ⚡ **may an invitation link, on its own, reveal a company's name, headcount, an employee's name and a role?** ✅ **If yes, that is an endpoint and an ADR.** ⛔ **If no, screen `13` is a different screen and the design needs amending** — **and until either lands, `/join` shows what a non-member may truthfully be shown.**
+
+## C-1404 · Machine credentials have no module, and the entry engine already admits a non-human principal
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-09, decomposing [workflow 11](coordination/workflows.toml) under [D-204](DECISION_REGISTER.md) §3–§4 |
+| **Owner** | 🔴 **Product Office → then the product owner if a new module is required** — ⛔ **inventing a module boundary is architecture** ([§21](../CLAUDE.md)) |
+| **Status** | 🟠 **`OPEN`** |
+| **Blocks** | ⏸️ **[TASK-1413](BACKLOG.md)** — and nothing being built today |
+
+📁 **The Settings design specifies API keys and webhooks: *"Scoped, rotatable, and logged per call"*, *"A key is shown once at creation and never again"*, *"Failed webhook deliveries retry with backoff for 24 hours, then park with the payload retained."*** ⛔ **None of it exists, and no module in [`modules.toml`](coordination/modules.toml) owns machine credentials.**
+
+> ## ⚡ **It is not a settings section. It is a credential system and an outbound delivery system**, and it arrived disguised as one — which is [D-204](DECISION_REGISTER.md) §4's case exactly.
+
+🔴 **And it is already load-bearing**: **[TASK-1407](BACKLOG.md) widens `resolveEntry` to admit a NON-HUMAN principal**, and **this is where non-human principals would come from.** ✅ **[495](architecture/495-principal-and-identity-boundary.md) ratified the principal model, so the two must agree rather than each inventing one.**
+
+**Three candidates, and the choice is architectural:** ⓐ **a new `machine_identity` module** · ⓑ **inside `workspace_tenancy`**, which already owns membership and roles · ⓒ **inside `platform_foundation`**, which owns `infra/` and no runtime surface. ⚠️ **ⓑ is the smallest change and the least honest** — a service principal is not a member.
+
+## C-1403 · A `403` names its approvers, and nothing publishes who they are
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-09, decomposing [workflow 28](coordination/workflows.toml) |
+| **Owner** | **Lane A** — **`workspace_tenancy` is this lane's in [`modules.toml`](coordination/modules.toml)** |
+| **Status** | 🟡 **`OPEN`** |
+| **Blocks** | ⚠️ **Nothing** — ✅ **[TASK-1409](BACKLOG.md) ships the `403` WITHOUT the request-access affordance and says so, rather than faking it** ([D-167](DECISION_REGISTER.md) §4) |
+
+📁 **The System States design: *"Approvers: J. Okafor and M. Reinhardt. A request tells them what you were trying to open, so they are not guessing."*** ⛔ **Nothing publishes the approvers for a resource, and *request access* is a write `workspace_tenancy` does not have.**
+
+⚡ **Recorded now so the row is claimed with the gap known**, rather than discovered mid-slice — which is what [D-204](DECISION_REGISTER.md) §6 asks for and what [C-241](#) cost when it was not.
 
 ## C-1402 · The execution board shows a closed lane busy on work that is already on `main`
 

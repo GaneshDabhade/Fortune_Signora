@@ -1475,7 +1475,12 @@ updated      = 2026-08-09
 #    `resolveWorkspace()` at rules.ts:82 implements all four of its branches.
 #    Its backlog row says so. Do not claim it. (TASK-483 was claimed and found
 #    already built; recording this is what that cost buys.)
-backlog = ["TASK-1408", "TASK-476", "TASK-473", "TASK-492", "TASK-499",
+# ⚡ WORKFLOW DECOMPOSITION COMPLETE 2026-08-09 (D-204 §3) — all 29 workflows
+#    now have rows. TASK-1409 leads the new ones deliberately: System States
+#    is a PLATFORM row every other workflow renders, and thirteen workflows
+#    will each improvise a 404 if it lands after them.
+backlog = ["TASK-1409", "TASK-1408", "TASK-476", "TASK-473", "TASK-492", "TASK-499",
+            "TASK-1410", "TASK-1411",
             "TASK-1403", "TASK-1402", "TASK-1407", "TASK-1405", "TASK-1401",
             "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]

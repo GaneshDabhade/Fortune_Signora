@@ -15,6 +15,34 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## 🟠 C-250 · When entry is unremarkable, what does the diagnostic code say? *(point ③ of three)*
+
+> ⚡ **Found by Lane A BUILDING the entry engine, not by reading the design** — the third of three disagreements it reported, and **the only one that is a product question.**
+
+📁 **The design tints rule 24 `HOME` and calls it *"the default and the most common outcome"*.** ⛔ **It cannot fire**: its condition is *"no other rule matched"*, and gate 3 always produces a reason.
+
+> ## **When a person lands on Home with nothing remarkable about their entry, should the code read `HOME` — or the resolution code that chose the workspace, `SOLE_WORKSPACE` · `LAST_USED` · `FELL_THROUGH`?**
+
+⚡ **It matters because the code is customer-facing infrastructure, not a log line.** 📁 **The design puts it *"in the support diagnostics bundle"* — whichever answer is right, support reads it, and changing it later invalidates every bundle already collected.**
+
+✅ **Shipped meanwhile: the resolution code wins, and rule 24 is KEPT as the totality guard rather than deleted** — it is what makes `resolveEntry` total, and a router handed `undefined` fails far from the cause. ⛔ **Nothing is blocked.**
+
+## 🟠 C-1404 · Where do machine credentials live?
+
+> ⚡ **Found decomposing Settings under [D-204](DECISION_REGISTER.md) §4 — hidden work behind a visible screen.**
+
+📁 **The design specifies API keys and webhooks: *"Scoped, rotatable, and logged per call"*, *"shown once at creation and never again"*, *"failed deliveries retry with backoff for 24 hours, then park with the payload retained."*** ⛔ **None of it exists, and no module owns machine credentials.**
+
+🔴 **It is already load-bearing**: **[TASK-1407](BACKLOG.md) widens the entry engine to admit a non-human principal**, and this is where non-human principals would come from.
+
+| Option | |
+|---|---|
+| ⓐ **A new `machine_identity` module** | ✅ **Honest** — a service principal is not a member. ⛔ **Needs an ADR** |
+| ⓑ **Inside `workspace_tenancy`** | ✅ **Smallest change.** ⛔ **Least honest** — it already owns membership, and a key is not a person |
+| ⓒ **Inside `platform_foundation`** | ⚠️ **It owns `infra/` and no runtime surface today** |
+
+⛔ **Nothing is blocked** — **[TASK-1413](BACKLOG.md) is sequenced behind this and Lane A has 24 other startable rows.**
+
 ## 🔴 C-1401 · `CLAUDE.md` tells every lane to read four queue fields that were deleted
 
 > ## ⛔ **One word of approval. The replacement text is written and nothing else is needed.**

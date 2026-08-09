@@ -809,6 +809,11 @@ def metrics_for(rows: list[Task]) -> dict[str, dict[str, float | int | str]]:
 NOTICES = ROOT / "docs" / "coordination" / "notices.toml"
 
 
+#: **The projection is a pointer, not a document** — D-144. A notice longer
+#: than this belongs in the backlog row, which is where a lane reads detail.
+_NOTICE_MAX = 400
+
+
 def _notice(lane: str) -> str:
     """The one thing this lane must know that `BACKLOG.md` cannot tell it.
 
@@ -857,7 +862,19 @@ def _notice(lane: str) -> str:
         return (f"NOTICE WITHHELD — it asserted a task state ('{banned.group(0)}'), "
                 f"which only BACKLOG.md may do (D-144, B-216). Read the backlog on "
                 f"origin/integration for state; read queues/lane-*.toml for reasoning.")
-    return text[:400].replace('"', "'")
+    # ⛔ **A truncated notice used to end mid-word with nothing to show it had
+    # been cut — D-204 §8.** A 1,400-character notice arrived as 400 characters
+    # ending in *"so"*, and **the reader has no way to know a sentence is
+    # missing**, which is worse than no notice: a partial instruction reads as a
+    # complete one. ✅ **The cap stays** — a projection is not a document — **but
+    # it now says so, and names where the rest lives.**
+    text = text.replace('"', "'")
+    if len(text) <= _NOTICE_MAX:
+        return text
+    cut = text[:_NOTICE_MAX].rsplit(" ", 1)[0]
+    return (f"{cut} […TRUNCATED at {_NOTICE_MAX} chars. The full reasoning is in "
+            f"docs/coordination/notices.toml, and the DETAIL belongs in the backlog "
+            f"rows themselves (D-204 §6) — read those.]")
 
 
 def render(rows: list[Task]) -> str:

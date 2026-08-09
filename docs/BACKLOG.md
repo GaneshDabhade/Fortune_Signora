@@ -1092,7 +1092,7 @@
 | ✅ **Verification strategy** | **Four shipped customer journeys passing unchanged on new paths IS the verification.** ⚠️ **If any needs its assertions changed rather than its URLs, the rename has altered behaviour and the slice stops** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
-### TASK-1400 · The Authenticated Entry Engine — one resolver, twenty-one reason codes
+### TASK-1400 · The Authenticated Entry Engine — one resolver, twenty-four reason codes
 
 | | |
 |---|---|
@@ -1101,9 +1101,9 @@
 | **Module** | **`product_surface`** — ⚡ **the resolver is presentational routing, not authorization** ([§20c](../CLAUDE.md): a client check is a courtesy, never enforcement) |
 | **Status** | ✅ **`VERIFIED` — QE, 2026-08-09, at `14b3985`.** ⚡ **Verified by opening what the row claims, not by reading its status line** ([B-146](BUGS.md)): **24 rules** ✓ · **six gates** ✓ (`1`–`6`, distinct) · **pure** ✓ — *zero* `fetch`, `await` or `async` anywhere in `frontend/lib/entry/**` · **closed type** ✓ — `as const` + indexed access, so a twenty-fifth code is unconstructable · **35 unit tests pass**. ⚠️ **One discrepancy, recorded rather than resolved: the row's *Delivers* says *21 reason codes* and the shipped `REASON_CODES` has 24.** ⛔ **The design snapshot states *twenty-four rules* and is silent on a code count**, so `21` is a preparation figure the implementation refined — **not a deviation from the design authority, and not QE's to rewrite.** ✅ **Zero production callers is the row's own Definition of Done** — *"no caller yet — this row ships the engine and wires nothing"*. *(was: `IN VALIDATION` — Lane A, 2026-08-09)* |
 | **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html` and nothing else** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
-| ⚡ **Delivers** | **`resolveEntry(session, intent) → { route, reason }`** · **the 24 rules in the document's order, first match wins** · **the 21 reason codes as a closed type** · **the six gates** |
+| ⚡ **Delivers** | **`resolveEntry(session, intent) → { route, reason }`** · **the 24 rules in the document's order, first match wins** · **the 24 reason codes as a closed type** ⚠️ *(this row said 21 three times; the design's table carries 24 distinct codes — corrected 2026-08-09 on [C-250](LANE_COORDINATION.md) ①, found by Lane A extracting them from the document rather than reading this row)* · **the six gates** |
 | 🔴 **The properties that are the point** | ⛔ **PURE: same inputs, same destination, and NO NETWORK CALL inside the decision** — 📁 **the spec says so in terms.** ⚡ **That makes the whole engine unit-testable without a browser, a session or a database, which is why the test suite is cheap and total** |
-| ⛔ **Closed, not open** | **The 21 reason codes are a closed type — a twenty-second cannot be added from outside the module.** ⚡ **Same shape as `ReasoningVerb`, which [TASK-453](#task-453) already proved in this repository** |
+| ⛔ **Closed, not open** | **The 24 reason codes are a closed type — a twenty-fifth cannot be added from outside the module.** ⚡ **Same shape as `ReasoningVerb`, which [TASK-453](#task-453) already proved in this repository** |
 | ✅ **Backend reuse — measured, not assumed** | ✅ **Everything the engine reads already exists**: session (Better Auth), membership and workspace state (`workspace_tenancy`), onboarding completion. ⛔ **Absent: nothing.** ⚡ **The engine computes, it does not fetch — that is what *pure* buys** |
 | **Reusable components required** | ✅ **None — no surface** |
 | **Shared layout** | ✅ **n/a** |
@@ -1144,7 +1144,7 @@
 | | |
 |---|---|
 | **Epic** | **E1 · Entry Engine** — **[workflow 29](coordination/workflows.toml)**, `kind = platform` |
-| ⚡ **Why it exists** | 📁 **The spec: *"Authentication hands over an identity AND AN INTENT — the route the person was trying to reach."*** ⛔ **Four of the 21 reason codes are intent codes — `INTENT_HONOURED`, `INTENT_MISSING`, `INTENT_FORBIDDEN`, `INTENT_NOT_MEMBER` — so intent is a first-class input, not a query parameter** |
+| ⚡ **Why it exists** | 📁 **The spec: *"Authentication hands over an identity AND AN INTENT — the route the person was trying to reach."*** ⛔ **Four of the 24 reason codes are intent codes — `INTENT_HONOURED`, `INTENT_MISSING`, `INTENT_FORBIDDEN`, `INTENT_NOT_MEMBER` — so intent is a first-class input, not a query parameter** |
 | **Module** | **`product_surface`** — ⛔ **presentational routing, never authorization** ([§20c](../CLAUDE.md)) |
 | **Status** | ✅ **`READY` — released by Lane C, 2026-08-09**, and **the engine has already fixed this row's contract**, which is the reuse finding worth having before claiming. 📁 **`Intent` is defined at `frontend/lib/entry/session.ts:89` — `{ path, workspaceId, access }` with `IntentAccess = 'granted' \| 'forbidden' \| 'missing' \| 'not_member'`.** 🔴 **And the type's own comment names this row's boundary exactly: *"⛔ Never computed here… the engine has no way to produce them — which is the point."*** ⚡ **So this row builds the SERVER-SIDE producer of those four values and nothing else** — ⛔ **the shape is settled, and re-deciding it would fork the contract the engine already consumes.** ⚠️ **`access` is an authorization answer**: [§20c](../CLAUDE.md) — a client check is a courtesy, never enforcement, so `granted` must come from the same Casbin decision that would allow the request |
 | **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
@@ -1276,6 +1276,275 @@
 | ✅ **Verification strategy** | **The type admitting every kind is the verification; no behaviour is added** |
 | ⚠️ **Risk, named before it is met** | ⚠️ **This is speculative generality and [§6](../CLAUDE.md) forbids it — so the justification is stated rather than assumed.** ✅ **It is not a new abstraction: [495](architecture/495-principal-and-identity-boundary.md) RATIFIED this model, and the row only widens a signature while one caller exists.** ⛔ **After the shell, the compositions and the cards consume it, the same change is a refactor across every consumer** |
 | **Build-vs-Buy** | ✅ **n/a — Signora's own domain** |
+
+### TASK-1409 · Workflow 28 · System States — the scope ladder, and a failure that claims the smallest surface it can
+
+| | |
+|---|---|
+| 🔴 **Why this leads the eight** | ⚡ **Every other workflow renders these states and none of them owns them.** 📁 **The design is titled *"Platform foundation · Module 10 · official system states"* — ⛔ **it is a PLATFORM row, not a screen row**, and thirteen workflows will each improvise a 404 if it lands after them. ⚠️ **[D-192](DECISION_REGISTER.md) found this document had NO workflow at all** — it was missed because `workflows.toml` was built from the journey list and never checked back against the snapshot |
+| **Epic** | **System States** — **[workflow 28](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09.** ⚡ **Independent: it needs nothing that does not exist** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora System States.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
+| ⚡ **The idea the whole row turns on** | 📁 **§01 *Scope ladder* — *"A failure claims the smallest surface it can."*** ⛔ **A failing score card must not take the page; a failing page must not take the shell.** ✅ **Four scopes — field · region · app · platform — each with the states legal at that level, and the ladder is the thing being built rather than the four screens** |
+| ✅ **What it delivers** | **§02 `404` and `403` full-page** — 📁 ***"403 names the missing role, never the data"***, and the 404 carries the merge/redirect case (*"Merged 22 Jul · redirect held until Jul 2027"*) · **§03 `500` plus the global error boundary at REGION scope** — 📁 ***"Your unsaved note on Corrigan Health was kept"*** · **§04 maintenance, offline and no-internet**, announced ahead with a countdown |
+| 🔴 **What it must NOT do** | ⛔ **Never a joke, never a mascot** — the design says so in those words. ⛔ **A `403` must not disclose the resource it is protecting**, which is the same rule [C-245](LANE_COORDINATION.md) is asking about invitations |
+| ✅ **Backend reuse — measured, not assumed** | ⚠️ **`403` needs the approver names the design shows (*"Approvers: J. Okafor and M. Reinhardt"*) and NOTHING publishes them.** ⛔ **Raised as [C-1403](LANE_COORDINATION.md) rather than invented.** ✅ **The request-access action is a write `workspace_tenancy` does not have** — **the row ships the state without the request button and says so**, rather than faking an affordance ([D-167](DECISION_REGISTER.md) §4) |
+| **Reusable components required** | ⚡ **This row IS the reusable component.** ✅ **`<ErrorBoundary scope=…>` is what every later workflow consumes; [TASK-445](#task-445--stated-absence-becomes-one-implementation-instead-of-nine-local-ones) already built *stated absence* and the two must not fork** — ⛔ **absence is "there is nothing", a system state is "something failed", and conflating them is how a broken widget renders as an empty one |
+| **Shared layout** | ✅ **App scope renders INSIDE [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for)'s frame; platform scope replaces it.** ⛔ **That distinction is the design's and must not be re-decided** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/**` · a new `components/ui/system-state`** · 🟠 **the `(app)` error boundary — announced in the commit** · 🔴 **⛔ nothing** |
+| **Playwright coverage** | **A route that does not exist renders `404` with the shell retained** · **a forbidden route names the missing ROLE and no resource detail** · 🔴 **and the one that matters: a component throwing inside a region leaves the rest of the page interactive** — asserted by mounting a deliberately throwing child |
+| **Component coverage** | **Each of the four scopes renders its own legal states and refuses the others** · **the retry control retries and reports attempt N of 3** · **`req_…` identifiers are copyable** |
+| ♿ **Accessibility** | **Every state has `role="alert"` or `role="status"` by severity** · **focus moves to the state's heading when it replaces content** · ⛔ **colour is never the only signal** — the design pairs every one with an icon and a sentence |
+| 📱 **Responsive behaviour** | **The full-page states are single-column below `sm` with the action stack becoming vertical** · **the region boundary inherits its container and never introduces a horizontal scroll** |
+| **Definition of Done** | **The ladder exists, four scopes render their legal states, and one failing region does not take the page** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Routes** the `(app)` and root error boundaries, `not-found` · **APIs** none new · **Playwright** the three above · **Security Invariant** ⛔ **no system state may disclose the existence or contents of the resource it refused** |
+| ✅ **Verification strategy** | ⚡ **Thirteen workflows stop needing their own error handling.** ⛔ **If a later workflow still writes a local 404, this row was built as four screens rather than as a ladder** |
+| ⚠️ **Risk, named before it is met** | 🔴 **The temptation is to build four pages.** ⛔ **Four pages satisfy a screenshot review and leave every region-scope failure unhandled — which is the case that actually reaches customers, because a whole-page 500 is rare and a widget that cannot load is daily** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's own surface** |
+
+### TASK-1410 · Step-up authentication — the capability behind `STEPUP_REQUIRED`
+
+| | |
+|---|---|
+| 🔴 **Found by decomposition, not by a screen** | ⚡ **[TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes) SHIPPED a `STEPUP_REQUIRED` reason code and a `SessionStanding = 'step_up_required'` — and nothing in the platform can produce that state.** 📁 **The Security Center design shows the screen: *"Confirm it is you · You are about to Revoke 3 sessions and 2 connected apps · 6-digit code from Okta Verify · expires in 4:52"*** ⛔ **The engine routes to a gate that does not exist** |
+| **Epic** | **Authenticated Entry** — **[workflow 29](coordination/workflows.toml)**, gate 2 |
+| **Module** | **`product_surface`** — `frontend/lib/auth/server.ts` |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
+| **Design authority** | ⛔ **`Fortune Signora Security Center.dc.html` §02** — the *"Confirm it is you"* dialog |
+| ✅ **What it delivers** | **A re-authentication challenge before a named destructive action**, stating **what is about to happen in the customer's words** — 📁 the design shows the action spelled out, not *"confirm to continue"* · **a code with a visible expiry** · **a backup-code path** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **Better Auth ships this.** 📁 **[TASK-493](#task-493--better-auth-plugins--four-capabilities-one-file) already names the unregistered plugins and which workflow each unblocks** — ⛔ **this row REGISTERS rather than builds, and if it writes its own OTP loop it has re-implemented a bought capability** ([D-179](DECISION_REGISTER.md)) |
+| **Reusable components required** | ✅ **The OTP input from [TASK-486](#task-486--workflow-3--email-verification-to-the-approved-design)** — ⛔ **six single-character boxes already went INTO `components/ui`** ([§20c](../CLAUDE.md)); a second one here is the duplication that rule exists to prevent |
+| **Change Budget** | 🟠 **`frontend/lib/auth/server.ts`** — announced · 🟢 **the dialog** |
+| **Playwright coverage** | **A destructive action prompts, and the prompt NAMES the action** · **a wrong code fails without consuming the challenge** · 🔴 **and: the action does not execute when the dialog is dismissed** |
+| **Component coverage** | **The expiry counts down and the challenge expires** · **backup codes are accepted once** |
+| ♿ **Accessibility** | **The dialog traps focus and returns it to the invoking control** — ⚠️ **[B-312](BUGS.md) is an open defect for exactly this class and must not be repeated** · **the countdown is announced politely, not assertively** |
+| 📱 **Responsive behaviour** | **Full-screen sheet below `sm`; centred dialog above** |
+| **Definition of Done** | **`resolveEntry` returning `STEPUP_REQUIRED` reaches a working challenge, and a destructive action cannot complete without one** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Routes** the challenge · **APIs** Better Auth · **Security Invariant** 🔴 **the challenge is enforced SERVER-SIDE — [§20c](../CLAUDE.md), a client check is a courtesy, and a step-up that only guards the dialog guards nothing** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Building this as a UI dialog.** ✅ **It is an authorization boundary that happens to have a dialog** |
+| **Build-vs-Buy** | ✅ **BUY — Better Auth, already ratified** ([09-build-vs-buy.md](architecture/09-build-vs-buy.md)) |
+
+### TASK-1411 · The AI attribution primitive — one confidence, one source list, one *Show reasoning*
+
+| | |
+|---|---|
+| 🔴 **Found across three designs, and it is the same component** | ⚡ **Account 360: *"Show reasoning · 6 sources · Confidence 4 of 5 · Generated 09:14 · updates on new evidence"*.** **Reports: *"Confidence 4 of 5 · 3 sources · Regenerate"*.** **AI Research: *"v3 · 14 sources · 3 excluded · Confidence 4 of 5"*.** ⛔ **Three workflows reached separately build three, and they will disagree about what *4 of 5* means** |
+| **Epic** | **AI Platform surface** — serves **[workflows 15, 22, 25](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** reading **`ai_platform`**'s `public/` |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09.** ⚡ **Ahead of all three consumers deliberately — [D-188](DECISION_REGISTER.md) §5, build the reusable foundation first** |
+| **Design authority** | ⛔ **`Account 360`, `Reports` and `AI Research` `.dc.html` — all three, because the component must satisfy all three** |
+| ✅ **What it delivers** | **A confidence expressed as *N of 5* and never as a percentage** — 📁 all three designs agree · **a source count that OPENS the sources** (*"Open all evidence"*, *"3 excluded"*) · **a generated-at time** · **and *Show reasoning*, which is the disclosure the product's honesty principle rests on** |
+| 🔴 **What it must NOT do** | ⛔ **Render a confidence the model did not produce.** ⚠️ **[TASK-416](#task-416--an-evaluation-run-states-which-provider-served-it) already established that a run states which provider served it** — **if `ai_platform` publishes no confidence, this component renders its ABSENCE** ([TASK-445](#task-445--stated-absence-becomes-one-implementation-instead-of-nine-local-ones)), it does not compute one |
+| ✅ **Backend reuse — measured, not assumed** | ⚠️ **Whether `ai_platform.public` exposes confidence and source provenance is UNVERIFIED and the row says so** — ✅ **the first slice is the read, and if the contract is missing it is raised, not invented** ([D-167](DECISION_REGISTER.md) §4) |
+| **Reusable components required** | ⛔ **`3 excluded` in AI Research means the source list has an EXCLUDED state** — **the component carries it from the start rather than being widened later by the third consumer** |
+| **Change Budget** | 🟢 **`components/ui`** |
+| **Playwright coverage** | **The same component renders on Account 360 and on a report with the same markup** |
+| **Component coverage** | **`N of 5` with no confidence renders *absence*, never `0 of 5`** — 🔴 **`0 of 5` reads as *certainly wrong* where the truth is *not known*** · **the source list opens and an excluded source is visibly excluded with its reason** |
+| ♿ **Accessibility** | ***Confidence 4 of 5* is the accessible name** — ⛔ **not a bare graphic** · ***Show reasoning* is a disclosure button with `aria-expanded`** |
+| 📱 **Responsive behaviour** | **The attribution strip wraps rather than truncating** — ⛔ **a truncated source count is a false claim about evidence** |
+| **Definition of Done** | **One component, three consumers, and no local copy** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface`, `ai_platform` · **Security Invariant** ⛔ **a source the reader may not open is not listed** — **the same disclosure rule as [C-245](LANE_COORDINATION.md)** |
+| ⚠️ **Risk, named before it is met** | 🔴 **Building it for Account 360 and generalising later.** ⛔ **That is how the three copies happen; the row exists because the generalisation is knowable NOW** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's own surface** |
+
+### TASK-1412 · Workflow 11 · Settings — workspace identity, users and roles
+
+| | |
+|---|---|
+| **Epic** | **Settings** — **[workflow 11](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** reading **`workspace_tenancy`**'s `public/` |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for), Lane C 2026-08-09.** ⛔ **It is a full page inside the shell and the shell does not exist yet** — **a technical dependency, not a Product Office hold** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Settings.dc.html`** |
+| ✅ **What it delivers** | **Workspace identity, region and fiscal calendar** (📁 *"Changing region requires support"* — **a stated limitation, not a disabled control**) · **the user list with `Provisioned by` and the SCIM read-only rule** · **roles and permissions as an additive matrix** |
+| 🔴 **The design carries three findings and they are the row's substance** | 📁 ***"Three settings need attention"*** — **SCIM deprovisioning off while SSO is enforced · two API keys unrotated for a year · a role granting export on data its holders cannot see.** ⚡ **These are not decoration: the third is an authorization defect the product SHOWS, which means the platform must be able to DETECT it** |
+| ⛔ **Scope, bounded** | **This row is identity, users and roles.** ⛔ **API keys and webhooks are [TASK-1413](#task-1413--api-keys-and-webhooks--scoped-rotatable-and-logged-per-call); SSO and SCIM configuration is [TASK-493](#task-493--better-auth-plugins--four-capabilities-one-file)'s plugins; billing is [workflow 24](coordination/workflows.toml)** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **[TASK-471](#task-471--workflow-10--team-management-to-the-approved-design) builds the member directory** — 🔴 **and [D-189](DECISION_REGISTER.md) §3 already recorded that TASK-471's directory and TASK-466's bulk table are the SAME data table.** ⛔ **This user list is the third caller; whichever lands first owns it** |
+| **Reusable components required** | **The shared data table** · **[TASK-1409](#task-1409--workflow-28--system-states--the-scope-ladder-and-a-failure-that-claims-the-smallest-surface-it-can)'s region boundary for each section** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/settings/**`** |
+| **Playwright coverage** | **An admin changes workspace identity and the audit log records it** · 🔴 **a SCIM-provisioned user cannot be edited locally** — **the design's stated reason is drift, and the assertion is that the control is absent rather than disabled-with-a-tooltip** |
+| **Component coverage** | **The permission matrix renders additively and an inconsistent grant is flagged with its consequence in a sentence** |
+| ♿ **Accessibility** | **The matrix is a real `<table>` with row and column headers** — ⛔ **a grid of icons is unreadable to a screen reader** · **each warning is associated with its row via `aria-describedby`** |
+| 📱 **Responsive behaviour** | **The matrix scrolls horizontally inside its own container** — ⛔ **never the page** · **section cards stack below `md`** |
+| **Definition of Done** | **Identity, users and roles render and every change is attributed in the audit log** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface`, `workspace_tenancy` · **APIs** membership and role reads · **Security Invariant** 🔴 **a role change is written through the same Casbin enforcer that evaluates it** — ⛔ **never a second path** |
+| ⚠️ **Risk, named before it is met** | ⛔ **The design shows a workspace with SSO, SCIM, 312 seats and five roles. None of that exists.** ✅ **The row renders what the platform can answer and states the rest as absent** — **the class this lane has now refused six times** |
+| **Build-vs-Buy** | ✅ **n/a for the surface; SSO/SCIM are Better Auth, ratified** |
+
+### TASK-1413 · API keys and webhooks — scoped, rotatable, and logged per call
+
+| | |
+|---|---|
+| 🔴 **A platform capability, found inside a settings screen** | 📁 **The Settings design: *"Scoped, rotatable, and logged per call"* · *"A key is shown once at creation and never again"* · *"Failed webhook deliveries retry with backoff for 24 hours, then park with the payload retained."*** ⛔ **None of that exists.** ⚡ **It is a credential system and an outbound delivery system wearing a settings section's clothes** |
+| **Epic** | **Platform Foundation** |
+| **Module** | 🔴 **UNASSIGNED — [C-1404](LANE_COORDINATION.md).** ⛔ **No module owns machine credentials.** ⚠️ **Raised rather than assigned, because inventing a module boundary is architecture** ([§21](../CLAUDE.md)) |
+| **Status** | ⏸️ **`SEQUENCED` — behind [C-1404](LANE_COORDINATION.md)**, which is Product Office's own and answerable this week |
+| **Design authority** | ⛔ **`Fortune Signora Settings.dc.html` §*API keys & webhooks*** |
+| ✅ **What it delivers** | **A key issued once, stored hashed, never re-displayed** · **a scope narrower than its creator's** · **rotation with an overlap window** · **a per-call log** · **webhook delivery with backoff and a parked-payload state** |
+| 🔴 **Why it matters more than its screen** | ⚡ **[TASK-1407](#task-1407--the-engine-admits-a-non-human-principal-before-one-exists) widens the entry engine to admit a NON-HUMAN principal.** ⛔ **This row is where non-human principals come from.** ✅ **The two must agree on what a service principal is, and [495](architecture/495-principal-and-identity-boundary.md) already ratified the model** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **[TASK-492](#task-492--the-security-event-stream--one-append-only-record-every-module-writes)'s security event stream is where *"logged per call"* belongs** — ⛔ **not a second log** · ✅ **the Action Batch's append-only pattern ([TASK-463](#task-463--the-action-batchs-persistence--append-only-and-no-update-grant)) is the model for the delivery record** |
+| **Change Budget** | 🔴 **a new module or a new bounded area — requires an ADR** ([§21](../CLAUDE.md)) |
+| **Playwright coverage** | **A key is created, shown once, and is not retrievable afterwards** · **rotation leaves the old key valid for the overlap and then not** |
+| **Component coverage** | **A failed delivery parks with its payload and can be replayed** |
+| ♿ **Accessibility** | **The one-time key is selectable text with an explicit copy control and a spoken confirmation** — ⛔ **not a toast alone** |
+| 📱 **Responsive behaviour** | **The key table scrolls inside its container** |
+| **Definition of Done** | **A key can be issued, scoped, used, logged and rotated; a webhook can fail and be replayed** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **a key is stored as a hash and never in plaintext** · 🔴 **a key's scope is enforced by the same enforcer as a human's, never by a parallel check** |
+| ⚠️ **Risk, named before it is met** | 🔴 **This is the single largest security surface in the eight workflows** — ⛔ **and it arrived disguised as a settings section.** ✅ **Naming it as a platform row is the point of decomposing before implementation reaches it** |
+| **Build-vs-Buy** | ⚠️ **UNDECIDED — [C-1404](LANE_COORDINATION.md) asks it.** ⛔ **Signing, rotation and delivery retry are commodity** ([497](architecture/497-commodity-and-differentiation.md)) |
+
+### TASK-1414 · Workflow 23 · Security Center — a person's own security
+
+| | |
+|---|---|
+| **Epic** | **Security Center** — **[workflow 23](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1410](#task-1410--step-up-authentication--the-capability-behind-stepup_required) and [TASK-493](#task-493--better-auth-plugins--four-capabilities-one-file)** — ⛔ **its controls ARE those plugins; without them the screen is decoration** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Security Center.dc.html`** — 📁 *"Platform foundation · Module 6 · personal security"* |
+| ✅ **What it delivers** | **§01 posture and open alerts** — 📁 ***"A device you have not used before signed in as you · This was not me"*** · **§02 password, including the SSO-managed case that sends the person to their provider** · **§03 second factors — TOTP enrolment as a four-step flow, and backup codes shown once** · **§04 recovery** — 📁 ***"There is no self-service reset for SSO accounts"*** |
+| 🔴 **The sentence the row is really about** | 📁 ***"What Signora never does"*** — **the design has an explicit section stating the product's own limits.** ⚡ **That is the honesty principle ([C-017](LANE_COORDINATION.md)) rendered as a screen, and it must be built as content the product commits to, not as filler** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **`two-factor`, `passkey` and `multi-session` are Better Auth plugins [TASK-493](#task-493--better-auth-plugins--four-capabilities-one-file) registers** · ⚠️ **the sign-in history needs [TASK-492](#task-492--the-security-event-stream--one-append-only-record-every-module-writes)'s event stream** — ⛔ **it is a read of security events, not a new table** |
+| **Reusable components required** | **[TASK-486](#task-486--workflow-3--email-verification-to-the-approved-design)'s OTP input** · **[TASK-485](#task-485--workflow-2--registration-to-the-approved-design)'s `PasswordField` and `PasswordStrength`** — ⛔ **both are already in `components/ui`** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/**`** · 🟠 **`lib/auth/server.ts` if a plugin is still unregistered — announced** |
+| **Playwright coverage** | **A person enrols a second factor end to end and the backup codes are shown exactly once** · 🔴 **revoking a session actually ends it** — asserted from the revoked session, not from the list |
+| **Component coverage** | ***This was not me* opens the full sign-in record** · **the strength meter REPORTS and never gates** — 📁 **[TASK-485](#task-485--workflow-2--registration-to-the-approved-design) established this and it must not be re-decided here** |
+| ♿ **Accessibility** | **Backup codes are readable, selectable and downloadable** — ⛔ **never an image** · **the enrolment stepper announces *step N of 4*** |
+| 📱 **Responsive behaviour** | **The QR code and its manual key are both offered at every width** — 📁 the design's *"Cannot scan?"* is not a mobile fallback, it is always present |
+| **Definition of Done** | **A person can see their posture, change their password, enrol and remove a second factor, and revoke a session** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **every destructive control on this page passes through [TASK-1410](#task-1410--step-up-authentication--the-capability-behind-stepup_required)'s challenge** — ⛔ **and the challenge is enforced server-side** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Rendering the SSO-managed password state as a disabled field.** ✅ **The design sends the person to their provider with a working link; a disabled field is the false affordance class again** |
+| **Build-vs-Buy** | ✅ **BUY — Better Auth, ratified** |
+
+### TASK-1415 · Workflow 15 · Account 360 — the record page a rep works instead of the CRM
+
+| | |
+|---|---|
+| **Epic** | **Account 360** — **[workflow 15](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for) and [TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Account 360.dc.html`** — 📁 *"Flagship record page · everything a rep needs without opening the CRM"* |
+| ✅ **What it delivers** | **Account score with its delta · customer health · buying intent · the signals timeline · a research summary · open opportunities** — ⚡ **each a composition of intelligence the platform ALREADY produces** |
+| 🔴 **The reuse finding, and it is large** | ⚡ **Almost nothing here is new backend.** ✅ **[TASK-417](#task-417--account-360-renders-what-the-platform-already-knows) is titled *renders what the platform already knows* and is `IN VALIDATION`** — ⛔ **this row must begin by measuring what that delivered rather than rebuilding it**, which is [C-428](LANE_COORDINATION.md)'s rule and what [TASK-483](#task-483--the-authentication-shell) cost when it was skipped |
+| ✅ **Backend reuse — measured, not assumed** | **`buying_score_engine` · `signal_engine` · `opportunity_engine` · `timeline` · `ai_research_engine`** — ⚠️ **`timeline` publishes an EMPTY `public/` on `integration`** ([C-428](LANE_COORDINATION.md), reported by `state-check` every run) — 🔴 **so the signals timeline has no legal contract to cross by and that is this row's first blocker** |
+| **Reusable components required** | **[TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)'s attribution strip** · **[TASK-1409](#task-1409--workflow-28--system-states--the-scope-ladder-and-a-failure-that-claims-the-smallest-surface-it-can)'s region boundary — 🔴 **eight independent sections on one page is the exact case the scope ladder exists for** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/accounts/[accountId]/**`** — ⚠️ **the route already exists and ships** |
+| **Playwright coverage** | **The page renders with one section's data source failing and the other seven interactive** |
+| **Component coverage** | **A score with no value renders absence, never zero** · **`On this page` navigation tracks the scrolled section** |
+| ♿ **Accessibility** | **Each section is a labelled `<section>` reachable by heading navigation** · **the score delta is spoken as *down 24*, not as a colour** |
+| 📱 **Responsive behaviour** | **The `On this page` rail collapses to a select below `lg`** · **the opportunities table scrolls in its container** |
+| **Definition of Done** | **A rep can answer *what is happening with this account* without opening the CRM** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` + five engines through their `public/` · **Security Invariant** 🔴 **every section's read is workspace-scoped; a section that hides itself AFTER fetching has already leaked** — ⚡ **[D-196](DECISION_REGISTER.md) recorded this exact invariant: the check is on the READ, not the render** |
+| ⚠️ **Risk, named before it is met** | 🔴 **This page reads from five modules.** ⛔ **The temptation is a single aggregate endpoint, which couples five bounded contexts through one response shape** ([§5](../CLAUDE.md)) |
+| **Build-vs-Buy** | ✅ **n/a — Signora's differentiator** ([497](architecture/497-commodity-and-differentiation.md)) |
+
+### TASK-1416 · Drill-down — any figure opens its own rows, and no number is dead
+
+| | |
+|---|---|
+| 🔴 **A platform capability stated as a design principle** | 📁 **Reports: *"Any figure opens its own rows — no dead numbers"* · *"3 levels · scope preserved at each"*.** ⛔ **Preserving scope across three levels of drill-down is a query-composition problem, not a table** |
+| **Epic** | **Reporting foundation** — serves **[workflows 19, 20, 21, 22](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1417](#task-1417--workflow-22--reports--built-once-read-three-ways)'s shared query**, whose output it composes |
+| **Design authority** | ⛔ **`Fortune Signora Reports.dc.html` §*Drill down*** |
+| ✅ **What it delivers** | **A figure carries the query that produced it**, so opening it yields **the rows behind that figure and no others** — 📁 the design's *"From: commit shortfall −$2.4M"* keeps the origin visible at every level |
+| **Reusable components required** | ✅ **[TASK-449](#task-449--saved-view--the-public-contract-and-nothing-else)'s Saved View is the same idea one level up** — ⚠️ **a drill path is a transient saved view; the two must share a filter representation or they will disagree about what a scope IS** |
+| **Change Budget** | 🟢 **`components/ui`** |
+| **Playwright coverage** | 🔴 **Three levels deep, the rows shown are a strict subset of the level above** — **the assertion that makes *scope preserved* true rather than claimed** |
+| **Component coverage** | **Breadcrumb back to any level restores that level's exact scope** |
+| ♿ **Accessibility** | **A drillable figure is a `button`, not a styled span** · **the drill breadcrumb is a `nav`** |
+| 📱 **Responsive behaviour** | **Drill-down opens as a sheet below `md`, a panel above** |
+| **Definition of Done** | **No figure in a report is inert, and three levels preserve scope** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **a drill-down re-evaluates permission at each level** — ⛔ **inheriting the parent's authorization is how an aggregate leaks its components** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Implementing drill-down per chart.** ✅ **It is one contract — *a figure knows its query* — and per-chart implementations cannot preserve scope across levels** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1417 · Workflow 22 · Reports — built once, read three ways
+
+| | |
+|---|---|
+| **Epic** | **Reports** — **[workflow 22](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for) and [TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Reports.dc.html`** |
+| ✅ **What it delivers** | **A block builder over ONE shared query** — 📁 *"Every block inherits this"* · **an AI narrative that regenerates when the data moves and keeps the author's edits** · **screen, presentation and executive modes of the SAME blocks** — 📁 ***"never a separate deck to maintain"*** |
+| 🔴 **The architectural claim inside the design** | ⚡ **Three modes, one source.** ⛔ **A separate presentation renderer is the thing the design explicitly refuses**, and building one would satisfy a screenshot review while creating the maintenance burden the sentence exists to prevent |
+| ✅ **Backend reuse — measured, not assumed** | ⚠️ **Scheduling, exports and sharing each need a capability that does not exist** — ⛔ **scheduled delivery is a job runner, export is a rendering pipeline, sharing is a link with its own authorization.** ✅ **Named here so they become rows rather than surprises; the first slice is the builder and the narrative** |
+| **Reusable components required** | **[TASK-1416](#task-1416--drill-down--any-figure-opens-its-own-rows-and-no-number-is-dead)** · **[TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)** · **the chart library — 📁 *"8 types"*, and it serves workflows 19, 20 and 21 too** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/reports/**`** |
+| **Playwright coverage** | **A report is built, presented and exported from one definition** · **an edited narrative survives a regeneration** |
+| **Component coverage** | **Blocks reorder by keyboard as well as by drag** |
+| ♿ **Accessibility** | 🔴 **Drag-to-reorder MUST have a keyboard equivalent** — ⛔ **a drag-only builder is unusable without a mouse** · **every chart has a table equivalent** |
+| 📱 **Responsive behaviour** | **Presentation mode is fixed-aspect and scales; the builder is single-column below `lg`** |
+| **Definition of Done** | **One definition renders in three modes and the narrative survives regeneration** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **a shared link's authorization is evaluated at read time, never baked at share time** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Three renderers.** ✅ **The design's own sentence is the acceptance criterion** |
+| **Build-vs-Buy** | ⚠️ **The chart library is commodity — evaluate against [09-build-vs-buy.md](architecture/09-build-vs-buy.md) before writing one** |
+
+### TASK-1418 · Workflow 25 · AI Research — answers become documents, and documents keep their sources
+
+| | |
+|---|---|
+| **Epic** | **AI Research** — **[workflow 25](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** reading **`ai_research_engine`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora AI Research.dc.html`** — 📁 *"A workspace, not a chat log"* |
+| ✅ **What it delivers** | **A research document with an outline, versions and comments** · **live progress while it runs** — 📁 *"Writing 'Recommendation' · 4 of 5 sections · 8.4s elapsed"* · **a conversation scoped to the research** · **and the knowledge graph of what it connected** |
+| 🔴 **The product decision inside it** | 📁 ***"Editable · your edits are preserved through regeneration."*** ⛔ **That is a merge problem, and it is the hardest thing in the row.** ✅ **Named here so it is not discovered in the middle of a slice** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **`ai_research_engine` exists and [TASK-416](#task-416--an-evaluation-run-states-which-provider-served-it) established that a run states its provider** · ⚠️ **streaming progress needs a transport the platform does not have** — ⛔ **raised, not assumed** |
+| **Reusable components required** | **[TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)** · **[TASK-482](#task-482--the-ai-copilot-entry-and-side-panel)'s overlay primitive** — ⚡ **[D-189](DECISION_REGISTER.md) §3 already ruled that TASK-480 and TASK-482 share ONE overlay; this is the third caller** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/research/**`** |
+| **Playwright coverage** | **A research runs to completion and its sources are openable** · 🔴 **an edited section survives a regeneration** |
+| **Component coverage** | **A stopped research keeps what it produced** · **an excluded source states why it was excluded** |
+| ♿ **Accessibility** | **Progress is announced politely at section boundaries, not per token** — ⛔ **a token-level live region is unusable** |
+| 📱 **Responsive behaviour** | **Outline collapses; the conversation becomes a sheet below `lg`** |
+| **Definition of Done** | **A question becomes a sourced document that survives regeneration** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **a source the reader may not open is never cited** |
+| ⚠️ **Risk, named before it is met** | 🔴 **Edit-preservation.** ⛔ **Regenerating over a person's edits destroys trust once and permanently** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's differentiator** |
+
+### TASK-1419 · Workflow 26 · Workflow Automation — simulated before it runs, approved before it writes, reversible after
+
+| | |
+|---|---|
+| **Epic** | **Workflow Automation** — **[workflow 26](coordination/workflows.toml)** |
+| **Module** | **`action_batch`** + **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-466](#task-466--companies-bulk--the-first-consumer-end-to-end)**, the Action Batch's first consumer |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Workflow Automation.dc.html`** |
+| 🔴 **The reuse finding, and it is the largest in the eight** | ⚡ **The design's subtitle — *"Simulated before it runs, approved before it writes, reversible after it does"* — IS the Action Batch.** ✅ **[TASK-461](#task-461--the-action-batchs-public-contract-and-nothing-else)–[TASK-466](#task-466--companies-bulk--the-first-consumer-end-to-end) already built proposal, approval, an append-only log with no `UPDATE` grant, and asynchronous application.** ⛔ **This workflow is a SECOND CONSUMER of that machinery, not a new engine** — **and reaching it without this finding would have built one** |
+| ✅ **What it delivers** | **A linear builder with branches only where a condition needs one** · **simulation as a dry run on live data with no writes** · **execution history and a step-through debugger** · **staged publishing** — 📁 *"Publish to 20% of scope"* |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **`action_batch` is on `integration` with migration `0042` and both tables `FORCE`-RLS'd** · ⚠️ **simulation-on-live-data with no writes needs a read-only execution mode the module does not have** — ⛔ **that is this row's real backend work and it is one capability, not a subsystem** |
+| **Reusable components required** | **[TASK-1416](#task-1416--drill-down--any-figure-opens-its-own-rows-and-no-number-is-dead)** for the simulation results · **the shared data table** |
+| **Change Budget** | 🟠 **`backend/modules/action_batch/**`** — announced · 🟢 **the surface** |
+| **Playwright coverage** | 🔴 **A simulation writes nothing** — asserted against the database, not against the UI · **a published workflow at 20% scope touches only that 20%** |
+| **Component coverage** | **The debugger steps forward and back over a recorded run** |
+| ♿ **Accessibility** | **The builder is operable by keyboard end to end** — ⛔ **same rule as [TASK-1417](#task-1417--workflow-22--reports--built-once-read-three-ways)'s blocks |
+| 📱 **Responsive behaviour** | **The builder is view-only below `md`** — ⚡ **a stated limitation is honest; a broken drag target is not** |
+| **Definition of Done** | **A workflow can be simulated without writing, published to a fraction, and replayed** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **a simulation runs under the INVOKER's permissions** — ⛔ **a dry run that reads more than its author could is a disclosure channel |
+| ⚠️ **Risk, named before it is met** | ⛔ **Building a second execution engine beside the Action Batch.** ✅ **The design's three verbs map onto three capabilities that already exist** |
+| **Build-vs-Buy** | ✅ **n/a — the machinery is already Signora's** |
+
+### TASK-1420 · Workflow 27 · Help Center — an answer for THIS workspace
+
+| | |
+|---|---|
+| **Epic** | **Help Center** — **[workflow 27](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for)** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Help Center.dc.html`** — 📁 *"Platform foundation · Module 9"* |
+| 🔴 **What makes it not a documentation site** | 📁 ***"Answer for your workspace"***, and the design's worked example reads the customer's ACTUAL integration state: *"A profile change on 3 August made `Renewal_Risk__c` read-only for the integration user, so Signora held 41 queued writes."* ⛔ **A generic help article cannot say that.** ⚡ **This is the research engine pointed at the workspace's own telemetry** |
+| ✅ **What it delivers** | **§01 help home with a workspace-aware answer and its sources** · **§02 system status scoped to the customer's REGION and integrations** — 📁 ***"not as a global average"*** · **§03 documentation with applicability** (*"Applies to Enterprise · Requires admin"*) |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **[TASK-407](#task-407--b-i--a-connection-says-whether-it-actually-works) already makes a connection say whether it works** — ⚡ **that is the telemetry the worked example needs** · ⚠️ **an incident/status feed is an external dependency with no vendor ratified** — ⛔ **raised, not invented** |
+| **Reusable components required** | **[TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)** — 📁 *"3 sources · answered in 1.4s"* is the same strip · **[TASK-481](#task-481--a-global-search-surface-composing-the-one-that-already-works)'s command palette — 📁 the design's `⌘/`** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/help/**`** |
+| **Playwright coverage** | **A question about a broken integration returns an answer naming that workspace's own connection state** |
+| **Component coverage** | **Status renders per region and per integration, never as one global figure** |
+| ♿ **Accessibility** | **The answer is a live region announced once when complete** — ⛔ **not while streaming** |
+| 📱 **Responsive behaviour** | **The article `On this page` rail collapses below `lg`** |
+| **Definition of Done** | **A customer asks a question and gets an answer about their own workspace, with sources** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **a workspace-aware answer must not surface configuration the asker may not see** — ⛔ **the same rule as [C-245](LANE_COORDINATION.md), and help is where it is easiest to forget |
+| ⚠️ **Risk, named before it is met** | ⛔ **Shipping a generic documentation site and calling the workflow done.** ✅ **The workspace-aware answer is the whole differentiator; documentation alone is the commodity half** |
+| **Build-vs-Buy** | ⚠️ **Documentation hosting and status pages are commodity** — **evaluate before building** |
 
 ### TASK-1408 · The Application Shell — the frame six backlog rows are waiting for
 

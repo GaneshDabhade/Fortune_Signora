@@ -246,9 +246,9 @@ note   = "418 calls it the highest reuse in all 26 screens — 8 of 13 endpoints
 
 [workflow.11]
 name   = "Settings"
-state  = "planned"
+state  = "decomposed"
 design = "Fortune Signora Settings.dc.html"
-tasks  = []
+tasks  = ["TASK-1412"]
 owner  = "Lane A"
 
 [workflow.12]
@@ -281,9 +281,9 @@ owner  = "Lane A"
 
 [workflow.15]
 name   = "Account 360"
-state  = "planned"
+state  = "decomposed"
 design = "Fortune Signora Account 360.dc.html"
-tasks  = []
+tasks  = ["TASK-1415", "TASK-1411"]
 owner  = "Lane A"
 
 [workflow.16]
@@ -332,17 +332,17 @@ owner  = "Lane A"
 
 [workflow.22]
 name   = "Reports"
-state  = "planned"
+state  = "decomposed"
 design = "Fortune Signora Reports.dc.html"
-tasks  = []
+tasks  = ["TASK-1417", "TASK-1416"]
 owner  = "Lane A"
 unblocked = "⚡ D-167 §3 — Reports has ZERO data visualizations. Its blocker was inherited from an assumption and never measured."
 
 [workflow.23]
 name   = "Security Center"
-state  = "planned"
+state  = "decomposed"
 design = "Fortune Signora Security Center.dc.html"
-tasks  = []
+tasks  = ["TASK-1414", "TASK-1410"]
 owner  = "Lane A"
 unblocked = "⚡ D-174 §, 2026-08-08 — 493 answers it. Most of the list is Better Auth plugins (passkey, two-factor, multi-session, SSO with SAML 2.0 and domain→IdP routing), not builds. Signora builds three things: the security event stream, the workspace policy object, and risk signals. TASK-492 and TASK-493 are the platform slices."
 
@@ -355,23 +355,23 @@ owner  = "Lane A"
 
 [workflow.25]
 name   = "AI Research"
-state  = "planned"
+state  = "decomposed"
 design = "Fortune Signora AI Research.dc.html"
-tasks  = []
+tasks  = ["TASK-1418"]
 owner  = "Lane A"
 
 [workflow.26]
 name   = "Workflow Automation"
-state  = "planned"
+state  = "decomposed"
 design = "Fortune Signora Workflow Automation.dc.html"
-tasks  = []
+tasks  = ["TASK-1419"]
 owner  = "Lane A"
 
 [workflow.27]
 name   = "Help Center"
-state  = "planned"
+state  = "decomposed"
 design = "Fortune Signora Help Center.dc.html"
-tasks  = []
+tasks  = ["TASK-1420"]
 owner  = "Lane A"
 
 # ── Not customer journeys, and deliberately not numbered as workflows ────────
@@ -385,10 +385,11 @@ owner  = "Lane A"
 
 [workflow.28]
 name        = "System States"
-state       = "planned"
+state  = "decomposed"
 design      = "Fortune Signora System States.dc.html"
 owner       = "Lane A"
 screens     = ["01 Scope ladder", "02 Not found & forbidden", "03 Server error & the global error boundary"]
+tasks       = ["TASK-1409"]
 # 🔴 FOUND 2026-08-08 by the D-192 journey audit — a design document with NO
 #   workflow. "Platform foundation · Module 10", and it is customer-visible:
 #   404, 403, 500, the error-boundary scope ladder.
