@@ -1557,7 +1557,7 @@
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING CAPABILITY** |
 | **Epic** | **System States** — **[workflow 28](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
+| **Status** | ✅ **`CLAIMED` — Lane A**, 2026-08-09, by the Task Claim Protocol. ⚠️ **One correction to the row's measurement, recorded rather than filed**: 📁 the row says *"there is no `frontend/public/` directory"* — ⛔ **it exists and has since 2026-08-03**, holding only `.gitkeep`. ✅ **The substance is right and unchanged** — *"no static surface exists to serve either page from"* — and the budget is 🟠 either way, since [`CLAUDE.md`](../CLAUDE.md) lists `public/` at that tier. ⚡ **Too small for a coordination item; the row is otherwise exact** *(Was:* ✅ **`READY` — Lane C, 2026-08-09***)* |
 | 📁 **What the design requires, verbatim** | ***"maintenance and platform outage pages are served from static hosting with no dependency on the application, its API or its session."*** |
 | 🔴 **Measured** | ⛔ **There is no `frontend/public/` directory.** ⚡ **No static surface exists to serve either page from** |
 | ⚡ **Delivers** | **Two static HTML pages that render with the application down**, ⛔ **no framework, no API call, no session read, no font fetch** |
