@@ -604,6 +604,50 @@ git show origin/main:docs/BUGS.md | grep -n '^>>>>>>>'
 
 ✅ **The numbering half of this row stands and is Lane A's own correction**: `B-207` was taken, the row moved to `B-213`, *"the number came from the tail of a listing rather than from the maximum, and a listing is not a maximum."*
 
+### B-220 · A lane pushed three non-claim commits to `integration`, and `main` and `integration` have diverged
+
+| | |
+|---|---|
+| **Module** | **Repository process** — [`CLAUDE.md`](../CLAUDE.md) §20e *The Task Claim Protocol* step 7, and [`infra/certification-guard.py`](../infra/certification-guard.py) `--audit-claims` |
+| **Current assignee** | ⛔ **The divergence is QE's to resolve** — `integration` and `main` are QE's refs and no feature lane may repair them. ✅ **The cause is Lane A's and is stated below without softening** |
+| **Severity** | 🔴 — **the next promotion cannot fast-forward.** 📁 [§20e](../CLAUDE.md): *"`main` advances only to a certified commit on `integration`'s history, so `main` is always an ancestor of it and the fast-forward always succeeds."* ⛔ **Neither is now an ancestor of the other** |
+| **Status** | **`OPEN`** — **reported by Lane A, 2026-08-09, against itself**, on the poll that found it |
+| **Commit found** | `origin/main` `f954477e` · `origin/integration` `227a074f` · merge base `0e0684c3` |
+
+**Steps to reproduce.** On a clone with both refs fetched:
+
+```
+git merge-base --is-ancestor origin/integration origin/main   # NO
+git merge-base --is-ancestor origin/main origin/integration   # NO
+git rev-list --left-right --count origin/main...origin/integration   # 2  4
+```
+
+**Expected.** ⛔ **One of the two is an ancestor of the other, always.**
+
+**Actual.** **They diverged from `0e0684c3`.** **`integration` carries four commits `main` does not** — [TASK-1409](BACKLOG.md)'s ladder, two coordination commits and the [TASK-1408](BACKLOG.md) claim — **and `main` carries the first two of those as DIFFERENT SHAs**, cherry-picked rather than fast-forwarded, plus none of the other two.
+
+### 🔴 What this lane did, stated plainly
+
+**The [TASK-1408](BACKLOG.md) claim was pushed with `git push origin lane-a-product-surface:integration`.** ⚠️ **That command pushes the BRANCH, not the commit** — and the branch was **four** commits ahead, not one. ⛔ **So an incomplete slice and two coordination commits reached `integration` alongside the claim.**
+
+📁 **[§20e](../CLAUDE.md) is explicit and this lane knew it**: *"This is the one thing a feature lane may push to `integration`… a claim commit touches [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) and [`BACKLOG.md`](BACKLOG.md) and nothing else. Everything else still arrives on `integration` the same way it always has: QE fast-forwards a validated lane branch."*
+
+⚠️ **The same command was correct one poll earlier** — the [TASK-1409](BACKLOG.md) claim at `2afe285d`, when the branch happened to be exactly the claim. ⛔ **A command that is right only while a precondition holds, used again after the precondition changed.** ✅ **The correct form names the commit and never the branch:**
+
+```
+git push origin 227a074f:integration
+```
+
+### ⚡ And the guard cannot see it, which is the half worth fixing
+
+✅ **`--audit-claims` PASSES this claim**, correctly: `227a074f` touches exactly the two permitted files.
+
+🔴 **The check inspects what a claim commit CONTAINS. It does not inspect what else arrived in the same push.** ⛔ **So the bounded thing was bounded and three unbounded things travelled beside it**, and every gate stayed green. **A guard that measures the wrong noun is [§2](../CLAUDE.md)'s *documentation pretending to be code* in its most convincing form** — it names the right rule and checks a different one.
+
+**Suggested repair, and it is QE's to accept or reject**: **the audit walks `main..integration` and refuses any commit there that is neither a claim nor QE's own**, which is the property §20e actually states. ⛔ **Lane A does not implement it** — `infra/` is a gate and gates are QE's.
+
+⚠️ **Recorded rather than quietly rebased away.** ⛔ **This lane cannot repair `integration` and must not try**; the promoted trees are also not identical to the branch's, so the resolution is a judgement about which history survives, and that is QE's ([§20e](../CLAUDE.md), *Integration Authority*).
+
 ### B-219 · `next build` overwrites the running dev server's `.next`, and the failure it causes looks like broken authentication
 
 | | |
