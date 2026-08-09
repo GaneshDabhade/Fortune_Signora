@@ -1467,36 +1467,30 @@ updated      = 2026-08-09
 # than discover them on claiming.
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ⚡ FOUR ROWS RELEASED 2026-08-09 — TASK-1400 is delivered and on integration,
+#    so everything parked behind it is startable. Verified by CONTENT, not by a
+#    status string: `frontend/lib/entry/` holds resolveEntry, the 24-rule table,
+#    the six gates and twelve passing unit tests.
+# 🔴 TASK-1404 IS NOT AMONG THEM — IT IS ALREADY BUILT, inside TASK-1400.
+#    `resolveWorkspace()` at rules.ts:82 implements all four of its branches.
+#    Its backlog row says so. Do not claim it. (TASK-483 was claimed and found
+#    already built; recording this is what that cost buys.)
 backlog = ["TASK-1408", "TASK-476", "TASK-473", "TASK-492", "TASK-499",
+            "TASK-1403", "TASK-1402", "TASK-1407", "TASK-1405", "TASK-1401",
             "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
-# ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation,
-#    D-022) and cannot fill this lane's floor. This office briefly counted
-#    it and was wrong.
-# ⛔ TASK-484 removed — you CLAIMED it, and a queue must never offer back work
-#    a lane is already holding. TASK-499 is not here either: it is SEQUENCED
-#    behind TASK-498 and a queue that lists an unstartable row is a queue that
-#    lies. It appears under [[blocked]]
-
-#    lies. It appears under [[blocked]] with its blocker named.
-# ⚡ NO LONGER EMPTY — D-183 amends D-163, which forced this to `[]` to enforce
-# "exactly one claimable". The order lives HERE, in data, and not in the notice
-# above it: a check cannot read a comment, and this office has now paid for that
-# lesson six times. `state-check` reads current + next + future as ONE sequence
-# and refuses depth that is not ordered.
-# ⛔ An ORDER, not a menu. Descend only past a genuinely blocked row, reason
-#    recorded — §20e's existing skip rule, not a new licence.
-               # sequence is in the notice above and in workflows.toml.
-
-
-# ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
-# waiting on QE, and counting them here would overstate what this lane can
-# start — the overstatement §20e names.
-                     # reported "one of the two is stale" and it was the count.
-
-# ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
-# that no lane go dry. `eligible_count` is what is CLAIMABLE today;
-# `assigned_total` is every row this lane owns, parked ones included, each
+# ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation, D-022)
+#    and cannot fill this lane's backlog. This office briefly counted it and
+#    was wrong.
+# ⛔ TASK-484 is not here either — you CLAIMED it, and a queue must never offer
+#    back work a lane is already holding.
+#
+# ⚡ WHY THE FOUR SIT WHERE THEY DO — a recommendation, never a gate (D-198):
+#    TASK-1403 first (diagnostics; the reason codes already exist, so it is the
+#    smallest), then TASK-1402 (the intent producer, whose SHAPE the engine has
+#    already fixed), then TASK-1407 (widen the signature while ONE caller-to-be
+#    exists rather than six), and TASK-1401 last because it touches four
+#    workflows already on `main`. Take them in any order you judge better.
 # with its blocker named below. ⛔ Nothing here is invented scope: every row
 # already existed and its owner was joined from modules.toml (D-135).
 
@@ -1514,46 +1508,10 @@ owner   = "Lane A"
 note    = "M-U · The People experiences a customer opens"
 
 [[blocked]]
-task    = "TASK-1402"
-blocker = ["TASK-1400"]
-owner   = "Lane A"
-note    = "consumes TASK-1400's output — its input does not exist yet, not a Product Office hold"
-
-[[blocked]]
-task    = "TASK-1403"
-blocker = ["TASK-1400"]
-owner   = "Lane A"
-note    = "consumes TASK-1400's output — its input does not exist yet, not a Product Office hold"
-
-[[blocked]]
-task    = "TASK-1404"
-blocker = ["TASK-1400"]
-owner   = "Lane A"
-note    = "consumes TASK-1400's output — its input does not exist yet, not a Product Office hold"
-
-[[blocked]]
-task    = "TASK-1405"
-blocker = ["TASK-1404"]
-owner   = "Lane A"
-note    = "consumes TASK-1404's output — its input does not exist yet, not a Product Office hold"
-
-[[blocked]]
 task    = "TASK-1406"
 blocker = ["TASK-1405"]
 owner   = "Lane A"
 note    = "consumes TASK-1405's output — its input does not exist yet, not a Product Office hold"
-
-[[blocked]]
-task    = "TASK-1407"
-blocker = ["TASK-1400"]
-owner   = "Lane A"
-note    = "consumes TASK-1400's output — its input does not exist yet, not a Product Office hold"
-
-[[blocked]]
-task    = "TASK-1401"
-blocker = ["TASK-1400"]
-owner   = "Lane A"
-note    = "consumes TASK-1400's output — its input does not exist yet, not a Product Office hold"
 
 [[blocked]]
 task    = "TASK-464"

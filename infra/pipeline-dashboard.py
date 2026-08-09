@@ -1,18 +1,32 @@
 #!/usr/bin/env python3
-"""The Prepared Pipeline Dashboard — [D-188](../docs/DECISION_REGISTER.md), §recommendation.
+"""**The Execution Health Dashboard** — [D-204](../docs/DECISION_REGISTER.md) §2.
 
-**Generated, never hand-written.** ⛔ The product owner asked for this in *every*
-status update, and a table a human retypes each cycle is a table that goes stale
-between two of them — which is the defect this repository has now paid for in
-`eligible_count` five times.
+**Generated, never hand-written.** ⛔ A table a human retypes goes stale between
+two cycles — the defect this repository paid for in `eligible_count` five times.
 
     python3 infra/pipeline-dashboard.py            # the table
     python3 infra/pipeline-dashboard.py --toml     # the same counts, for embedding
 
-⚡ **"Prepared" is mechanical and matches `state-check.py` exactly**: 17+ cells
-carrying a Definition of Done, testing metadata and a Change Budget. ⛔ **A title
-cannot satisfy it and neither can a state change** — [D-187](../docs/DECISION_REGISTER.md) §6
-and [D-188](../docs/DECISION_REGISTER.md) §7, made unrepresentable rather than promised.
+## ⚡ One metric leads, and everything else supports it
+
+> 📁 [D-204](../docs/DECISION_REGISTER.md) §2: *"How many implementation tasks
+> can Lane A begin immediately without waiting for Product Office?"*
+
+⛔ **This dashboard used to lead with *prepared* rows, which is a Product Office
+HOLDING.** ⚡ **A prepared row a lane cannot see is worth nothing** — leading with
+it measured this office's output where the question is the repository's
+throughput.
+
+**`IMMEDIATELY EXECUTABLE` is the top line, on the strictest available reading:**
+a row counts only when it is **in the lane's own backlog file AND reads `READY`
+on `origin/integration`** — the ref a lane actually builds from ([§20e](../CLAUDE.md):
+*executable work comes from `integration` and nowhere else*). ⛔ **A row ready
+only on `lane-c-sync` is not executable**; it is synchronization debt, it is
+reported on its own line, and **its owner is QE rather than this office** — which
+is why the two shortfalls never print the same sentence.
+
+**`prepared`, `partial` and the workflow counts survive as supporting metrics**
+and are still emitted by `--toml`. ⛔ **They no longer lead.**
 """
 
 from __future__ import annotations
@@ -91,13 +105,69 @@ def counts() -> dict[str, int]:
         if re.match(r"[^A-Z]*\**`?READY", v):
             on_int.add(h.group(1))
 
+    # ── The six things D-204 §2 asks to be reported ──────────────────────────
+    blocked_rows = queue_a.get("blocked") or []
+    #: **An implementation blocker is another ROW.** Its input does not exist
+    #: yet, and the lane that owns the predecessor can clear it without anybody
+    #: ruling on anything.
+    impl_blocked = [b for b in blocked_rows
+                    if any(str(x).startswith("TASK-") for x in (b.get("blocker") or []))]
+    #: **Everything else in `blocked` waits on a decision, a capability or a
+    #: credential** — the class no amount of preparation clears.
+    arch_blocked = [b for b in blocked_rows if b not in impl_blocked]
+
+    # ⛔ **THE OPERATIVE STATE IS THE FIRST TOKEN IN THE CELL — never a substring.**
+    #
+    # A first version of this asked `"OPEN" in cell` and reported **70 open items
+    # where there are 40**, because the register's convention is to record a
+    # ruling and recount what it replaced: *"`CLOSED` — was `OPEN` until
+    # 2026-08-07"* contains both words. ⚡ **That is [B-101](../docs/BUGS.md)
+    # exactly**, and it was written into this file forty minutes after
+    # [B-413](../docs/BUGS.md) fixed the same class in `registers.py` — the rule
+    # that file already states: **`min(find(...))`, not `in`.**
+    states = ("OPEN", "RULED", "CLOSED", "ANSWERED", "WITHDRAWN", "SUPERSEDED")
+    coord = (ROOT / "docs" / "LANE_COORDINATION.md").read_text()
+    owner_open = qe_open = 0
+    for blk in re.split(r"\n(?=#{2,4} C-\d+)", coord):
+        if not re.match(r"#{2,4} C-\d+", blk):
+            continue
+        cell = re.search(r"^\|\s*\*\*(?:Status|State)\*\*\s*\|([^|]*)\|", blk, re.M)
+        if not cell:
+            continue
+        text = cell.group(1).upper()
+        found = [(text.find(s), s) for s in states if s in text]
+        if not found or min(found)[1] != "OPEN":
+            continue
+        own = re.search(r"^\|\s*\*\*Owner\*\*\s*\|([^|]*)\|", blk, re.M)
+        who = (own.group(1) if own else "").lower()
+        if "product owner" in who:
+            owner_open += 1
+        elif "qe" in who:
+            qe_open += 1
+
+    #: **QE's queue, and it is the largest single distortion in the repository.**
+    #: A row at `IN VALIDATION` is finished work the lane cannot touch and the
+    #: board still counts.
+    in_validation = len([r for r in rows if r[1] == "IN VALIDATION"])
+    unsynced = _sp.run(["git", "rev-list", "--count", "origin/integration..HEAD"],
+                       cwd=ROOT, capture_output=True, text=True).stdout.strip() or "0"
+
+    executable = [t for t in backlog if t in on_int]
     return {
-        # ⚡ **D-199 §6 — the metric changed.** ⛔ Not *"how many prepared tasks
-        # Product Office owns"* but *"how much uninterrupted implementation work
-        # already exists inside Lane A's backlog"*. **Those are different
-        # numbers, and only the second one is the product owner's question.**
+        # 🔴 **THE metric — D-204 §2.** ⛔ Not *"how many prepared tasks Product
+        # Office owns"*, which measures this office, but **what Lane A can start
+        # right now without waiting for anybody.** ⚡ **Strictest available
+        # reading: in the lane's own backlog AND `READY` on `origin/integration`**,
+        # the only ref §20e permits executable work to come from.
+        "immediately_executable": len(executable),
         "lane_backlog": len(backlog),
-        "lane_backlog_live": len([t for t in backlog if t in on_int]),
+        "synchronization_debt": len(backlog) - len(executable),
+        "implementation_blockers": len(impl_blocked),
+        "architectural_blockers": len(arch_blocked),
+        "product_owner_decisions": owner_open,
+        "qe_decisions": qe_open,
+        "awaiting_qe": in_validation,
+        "planning_unsynced": int(unsynced),
         "prepared": len(prepared),
         "partial": len(partial),
         "undecomposed_workflows": len(undecomposed),
@@ -123,22 +193,47 @@ def main() -> int:
         return "✅" if ok else "🔴"
 
     rows = [
-        ("Lane A's backlog — claimable", c["lane_backlog"], f"≥{PREPARED_FLOOR}", mark(c["lane_backlog"], PREPARED_FLOOR)),
-        ("  …of those, on integration", c["lane_backlog_live"], "all of them", mark(c["lane_backlog_live"], c["lane_backlog"])),
-        ("Partially prepared tasks", c["partial"], "informational", "  "),
-        ("Workflows not yet decomposed", c["undecomposed_workflows"], "0 eventually", mark(0, c["undecomposed_workflows"])),
-        ("Workflows fully decomposed", c["decomposed_workflows"], f"{c['total_workflows']}", mark(c["decomposed_workflows"], c["total_workflows"])),
+        ("IMMEDIATELY EXECUTABLE", c["immediately_executable"], f"≥{PREPARED_FLOOR}",
+         mark(c["immediately_executable"], PREPARED_FLOOR)),
+        ("  in the lane's backlog", c["lane_backlog"], f"≥{PREPARED_FLOOR}",
+         mark(c["lane_backlog"], PREPARED_FLOOR)),
+        ("  not yet on integration", c["synchronization_debt"], "0",
+         mark(0, c["synchronization_debt"])),
+        (None, None, None, None),
+        ("Implementation blockers", c["implementation_blockers"], "a lane clears these", "  "),
+        ("Architectural blockers", c["architectural_blockers"], "Product Office's", "  "),
+        ("Product Owner decisions", c["product_owner_decisions"], "open", "  "),
+        ("QE decisions", c["qe_decisions"], "open", "  "),
+        (None, None, None, None),
+        ("Awaiting QE — IN VALIDATION", c["awaiting_qe"], "QE's queue", "  "),
+        ("Planning not on integration", c["planning_unsynced"], "0",
+         mark(0, c["planning_unsynced"])),
+        (None, None, None, None),
+        ("Workflows decomposed", c["decomposed_workflows"], f"{c['total_workflows']}",
+         mark(c["decomposed_workflows"], c["total_workflows"])),
     ]
-    width = max(len(r[0]) for r in rows)
-    print("  LANE A'S IMPLEMENTATION BACKLOG — D-199")
-    print(f"  {'Status'.ljust(width)}  {'Count':>5}  {'Target':<14} ")
-    print(f"  {'-' * width}  {'-' * 5}  {'-' * 14}")
+    width = max(len(r[0]) for r in rows if r[0])
+    print("  EXECUTION HEALTH — D-204 §2")
+    print(f"  {'Measure'.ljust(width)}  {'Count':>5}  {'Target':<20}")
+    print(f"  {'-' * width}  {'-' * 5}  {'-' * 20}")
     for label, count, target, flag in rows:
-        print(f"  {label.ljust(width)}  {count:>5}  {target:<14} {flag}")
+        if label is None:
+            print()
+            continue
+        print(f"  {label.ljust(width)}  {count:>5}  {target:<20} {flag}")
 
-    if c["prepared"] < PREPARED_FLOOR:
-        print(f"\n  🔴 {PREPARED_FLOOR - c['prepared']} short. **Close it by decomposing "
-              f"future workflows, never by relabelling** (D-188 §7).")
+    # ⛔ **The two shortfalls have DIFFERENT owners and must never print the same
+    # sentence.** A backlog too shallow is this office's to fix by decomposing.
+    # A backlog the lane cannot see is a synchronization lag — ⚡ **and telling
+    # Product Office to prepare more would be exactly the wrong instruction.**
+    if c["lane_backlog"] < PREPARED_FLOOR:
+        print(f"\n  🔴 Backlog is {PREPARED_FLOOR - c['lane_backlog']} short — "
+              f"**PRODUCT OFFICE's.** Close it by decomposing future workflows, "
+              f"never by relabelling (D-188 §7).")
+    if c["synchronization_debt"]:
+        print(f"\n  🔴 {c['synchronization_debt']} prepared row(s) are NOT on "
+              f"`origin/integration` — **QE's.** Preparing more would not move "
+              f"this number; the lane cannot see what it already has.")
     return 0
 
 
