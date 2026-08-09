@@ -1,3 +1,17 @@
+> # ⚠️ OWNER CHANGED — the lane that owned this no longer exists
+>
+> **Governance review, [D-202](DECISION_REGISTER.md) §6, 2026-08-09.**
+>
+> 📁 **This register's own header assigns it to *Lane B, mission set by the product owner 2026-08-03*.** ⛔ **[D-165](DECISION_REGISTER.md) closed Lane B.**
+>
+> ## ⚡ **Reassigned to Lane C as a governance register**, on the same reading that makes [`DOMAIN_DISCOVERY_REGISTER.md`](DOMAIN_DISCOVERY_REGISTER.md) Lane C's: **it is a discovery register, not a module.**
+>
+> ⚠️ **[C-213](LANE_COORDINATION.md)'s class, applied to a whole file rather than a row: a register naming an owner that has moved on *looks answered*.** **Every lane reads it, finds no route, and moves on** — ⛔ **which is worse than one visibly unowned.**
+>
+> ✅ **The content stands.** **The question it asks every cycle — *what would stop somebody buying Signora* — is not Lane B's, and closing a lane never closed the question.**
+
+---
+
 # Product Experience — what would stop somebody buying Signora
 
 > **The register for Product Experience Engineering** (Lane B, mission set by the product owner 2026-08-03).

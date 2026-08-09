@@ -1,3 +1,17 @@
+> # ⛔ SUPERSEDED — archived guidance, not current process
+>
+> **Governance review, [D-202](DECISION_REGISTER.md) §6, 2026-08-09.**
+>
+> ## ⚡ **The live queue is [`DECISION_QUEUE.md`](DECISION_QUEUE.md). Read that.**
+>
+> **Measured rather than assumed:** this file holds **37** coordination ids and was last dated **2026-08-04**; `DECISION_QUEUE.md` holds **70** and was last dated **2026-08-08**. **24 ids appear in both.**
+>
+> ⛔ **Two files presenting decisions to the product owner is [§2](../CLAUDE.md)'s *truth has exactly one authoritative representation*, and the stale one is the one somebody reads.** ✅ **Nothing is deleted — the reasoning here is a historical record of how decisions were grouped and presented, and several packs' analysis is still the best account of items that remain open.**
+>
+> ⚠️ **A decision recorded here and NOT in [`DECISION_QUEUE.md`](DECISION_QUEUE.md) is not thereby closed.** ✅ **`infra/decision-queue.py --check` reconciles the live queue against [`LANE_COORDINATION.md`](LANE_COORDINATION.md); this file is outside that check by design, because an archive that must stay current is not an archive.**
+
+---
+
 # Decision Packs — architectural decisions, grouped
 
 > **For the product owner. Prepared and maintained by Lane C** — transferred from QE on 2026-08-03, when decision preparation became the Product Office's (`CLAUDE.md` §20e *Lane C*). **QE's authorship of everything below this line is preserved and is not rewritten**; what changes is who maintains it next.

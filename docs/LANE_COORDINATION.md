@@ -349,6 +349,12 @@ databaseUrl: required(
 
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
+| [C-245](#c-245-screen-13-shows-a-reader-six-facts-they-are-not-permitted-to-see) | 🔴 **Screen `13` shows a reader six facts they are not permitted to see** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⚠️ **Most of screen `13`.** ✅ **Screen `14`'s shape and the accept/decline journey are buildable |
+| [C-246](#c-246-the-onboarding-design-labels-a-step-workspace-and-adr-0034-says-a-customer-reads-organization) | 🟠 **The onboarding design labels a step *Workspace* and ADR-0034 says a customer r** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 8 review is shown** — a reviewer holdin |
+| [C-247](#c-247-a-person-in-two-organizations-gets-two-themes-and-task-470s-row-says-otherwise) | 🟠 **A person in two organizations gets two themes, and TASK-470's row says otherwi** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is a customer's experience of belonging to two organizations |
+| [C-248](#c-248-four-profile-fields-are-locked-as-managed-by-northwind-it-and-no-directory-sync-exists) | 🟠 **Four profile fields are locked as *"Managed by Northwind IT"* and no directory** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is how complete screen `01` looks at review** — named here s |
+| [C-249](#c-249-two-rows-on-the-ai-screen-are-policies-and-neither-policy-exists) | 🟠 **Two rows on the AI screen are policies, and neither policy exists** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 9 review is shown** | |
+| [C-1400](#c-1400--product_qualitymd-is-referenced-by-nothing-and-is-qes-to-rule-on) | ⚠️ **`PRODUCT_QUALITY.md` is referenced by nothing — not `CLAUDE.md`, not any register** | **Lane C**, 2026-08-09, ⚡ **on [D-202](DECISION_REGISTER.md) §6's governance review** | **QE** — 📁 **the document's own header says *"Owned by QE"*** | 🟡 **`OPEN`** | ✅ **Nothing.** ⚡ **158 lines that may be live, superseded or absorbed** — ⛔ **and this office will not archive another lane's document on a reference count alone** |
 | [C-239](#c-239--the-approved-designs-say-workspace-and-a-customer-may-not-be-shown-that-word) | The approved designs say *workspace*, and a customer may not be shown that word | Lane A | ✅ **ANSWERED by Lane C, 2026-08-07** — **no ruling needed** | ✅ **`CLOSED`.** **The design governs what the screen *is*; [ADR-0034](architecture/adr/0034-ubiquitous-language.md) governs what it *says*** — ⚡ **and it is the only reading under which Workflow 1 passes its own suite, because `vocabulary.test.tsx` fails on *"You don't have access to this workspace"* as a text node.** **Two strings in Workflow 1 are affected, on screens 15 and 17** | ⛔ **Nothing** — TASK-468 proceeds on the stated reading |
 | [C-238](#c-238--affiliationreader-has-a-protocol-and-no-implementation-so-the-composition-root-has-nothing-to-inject) | `AffiliationReader` has a Protocol and no implementation, so the composition root has nothing to inject | Lane A | **Lane B** — `people` is its module in [`modules.toml`](coordination/modules.toml) | ✅ **`CLOSED`** — Lane A, 2026-08-07. **Lane B published `SqlAffiliationReader` *and* its composition builder; verified by opening the file** | ⛔ **Nothing.** **[TASK-458](BACKLOG.md)'s blocker has cleared** |
 | [C-235](#c-235--task-458-was-released-against-an-empty-public-and-the-structural-check-is-the-reason-it-looked-safe) | TASK-458 was released against an empty `public/`, and the structural check is the reason it looked safe | Lane A | **Lane C** — this office released the row | ✅ **`ANSWERED`** — Lane C, 2026-08-07. **Both asks done; ask 2 found a second wrong release ([TASK-428](BACKLOG.md))** | ⛔ **Nothing today** — reported before it reached `integration` |
@@ -8553,3 +8559,18 @@ rules parsed: 24   ·   distinct reason codes: 24
 **Screen `14` offers *"Request a new invitation"*** — *"one click notifies the original inviter and the workspace admins."* ⛔ **Nothing can grant it**: `tests/components/join.test.tsx` already asserts the control is never offered ***"because nothing can grant it"*** — no endpoint, no table, no row — **and that assertion was written by this lane against the same absence.**
 
 **The decision, in one sentence:** ⚡ **may an invitation link, on its own, reveal a company's name, headcount, an employee's name and a role?** ✅ **If yes, that is an endpoint and an ADR.** ⛔ **If no, screen `13` is a different screen and the design needs amending** — **and until either lands, `/join` shows what a non-member may truthfully be shown.**
+
+## C-1400 · `PRODUCT_QUALITY.md` is referenced by nothing, and is QE's to rule on
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-09, ⚡ **on [D-202](DECISION_REGISTER.md) §6's governance review** |
+| **Owner** | **QE** — 📁 **the document's own header: *"Owned by QE."*** ⛔ **This office archived three documents in this review and stopped at this one: a reference count is evidence of DISUSE, never of supersession** |
+| **Status** | 🟡 **`OPEN`** |
+| **Blocks** | ✅ **Nothing** |
+
+**Measured:** ⛔ **zero references from [`CLAUDE.md`](../CLAUDE.md), zero from any other register.** ⚡ **158 lines describing a reuse-audit framework and the question *"if we shipped tomorrow, would customers actually love using it?"***
+
+> ## ⚠️ **Three outcomes are possible and only QE can choose: LIVE and governance forgot to reference it · SUPERSEDED by [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) · or ABSORBED elsewhere, leaving a remnant.**
+
+✅ **What this office did with the three it could rule on** — [`DECISION_PACKS.md`](DECISION_PACKS.md) superseded · [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) never adopted · [`PRODUCT_EXPERIENCE.md`](PRODUCT_EXPERIENCE.md) reassigned from the closed Lane B — **is a banner saying which of the three it is.** ⛔ **Nothing deleted.** ⚡ **The same treatment fits here once QE says which.**

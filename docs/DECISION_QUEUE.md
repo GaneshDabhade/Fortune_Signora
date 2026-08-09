@@ -15,6 +15,43 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## 🔴 C-245 · May an invitation link alone reveal a company's name, headcount, employee and role?
+
+> ## ⛔ **The one blocking decision. It is why [Workflow 7](coordination/workflows.toml) is `blocked`, and it reached this queue the cycle QE integrated it — as promised.**
+>
+> 📁 **Screen `13 Accept invitation` shows six facts to a reader who has not entered the tenant.** ⛔ **No endpoint could serve them: `workspace_tenancy`'s four invitation routes are all workspace-scoped and require membership or admin.**
+
+⚡ **Lane A found it by reading the routes rather than the screen, and stopped rather than inventing an endpoint.** ✅ **The accept path already ships at `/join/[workspaceId]`, so nothing customer-facing regressed.**
+
+### The question, at its smallest
+
+> ## **An invitation link is a bearer token.** ⛔ **Whatever screen `13` shows, a forwarded link shows to a stranger.**
+
+| | | |
+|---|---|---|
+| ⚡ **"Show all six"** | **The design as drawn** | ✅ **Warmest experience.** ⛔ **Accepts that a forwarded invitation discloses headcount and an employee's name and role to anyone** |
+| **"Show a reduced set"** | **Workspace name and inviter only** | ✅ **Enough to answer *am I in the right place*.** ⚠️ **Departs from the approved design, so the SNAPSHOT is corrected rather than the row deviating** |
+| **"Show nothing until accepted"** | ⛔ **Safest** | **Makes screen `13` largely pointless** |
+
+⛔ **Either of the last two needs a new unauthenticated, invitation-token-scoped endpoint** — ⚡ **a real capability with a real security boundary, belonging to `workspace_tenancy` rather than to the screen.**
+
+✅ **Whichever you rule, this office writes the endpoint's contract before Lane A returns to Workflow 7.**
+
+## 🟠 C-247 · A person in two organizations gets two themes, and C-248 · four profile fields locked as "Managed by"
+
+> ⚡ **Both are Workflow 9 · User Profile, both found by Lane A building against the design, and both are disclosure-or-policy questions rather than builds.** ⛔ **Neither blocks: the screens ship without the contested behaviour rather than guessing it.**
+
+**C-247** — **is a theme preference per PERSON or per ORGANIZATION?** ⚡ **[TASK-470](BACKLOG.md) already flagged this shape: it is the first row whose data is ACCOUNT-scoped rather than workspace-scoped, and the answer decides its `tenancy_policy.py` class.**
+
+**C-248** — **four profile fields render locked as *"Managed by"*, which asserts a directory-sync capability that does not exist.** 📁 **Better Auth's `sso` plugin has it and is unregistered ([TASK-493](BACKLOG.md)).** ⛔ **Until it is, the lock is a false affordance — the class this lane has now refused six times.**
+
+## 🟠 C-249 · Two rows on the AI screen are policies, not preferences
+
+> 📁 **The AI-preferences screen offers two controls that read as personal settings and are actually workspace POLICY.** ⛔ **A person toggling their own copy of a policy either does nothing or silently changes it for everybody, and both are worse than the control not existing.**
+
+⚡ **Related to [496](architecture/496-security-architecture-blueprint.md)'s quota primitive: *"may spend up to here"* is authorization, not preference** — ✅ **which is the architectural reason this cannot be a per-person toggle.**
+
+
 ## ✅ The Authenticated Entry reconciliation — what it found, and the work it became
 
 > ## ⚡ **The audit ran, the findings were concrete, and every one is now a row.** ✅ **Kept here as the record of what was found and where it went — not as something waiting on you.**

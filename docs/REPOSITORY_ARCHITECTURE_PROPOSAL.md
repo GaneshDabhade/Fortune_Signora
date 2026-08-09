@@ -1,3 +1,17 @@
+> # ⛔ NEVER ADOPTED — historical record, not guidance
+>
+> **Governance review, [D-202](DECISION_REGISTER.md) §6, 2026-08-09.**
+>
+> ⚡ **The document's own first line says it: *"Status: PROPOSED — awaiting approval. Nothing implemented."* Dated 2026-07-30.** ⛔ **No ruling adopted either proposal, and the repository's architecture evolved by other decisions entirely.**
+>
+> ## 🔴 **This is precisely the case [D-202](DECISION_REGISTER.md) §6 names: *"no future lane can accidentally follow an obsolete process simply because it still exists in the active repository."***
+>
+> ⚡ **A lane finding a document titled *Repository Architecture* has no way to know from inside it that nothing here was ever agreed** — **the status line is one line at the top of 262, and it reads like a draft awaiting a decision rather than one that never came.**
+>
+> ✅ **Kept in full. The alternatives it weighed are a genuine record of thinking at the time**, and [§2](../CLAUDE.md) forbids rewriting a dated record to match now.
+
+---
+
 # Repository Architecture — Two Proposals
 
 > Status: **PROPOSED — awaiting approval.** Nothing implemented.
