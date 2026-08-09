@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "a540f5e"
+generated_from = "68fc188"
 task_count     = 129
 
 [lane.Lane_A]
-notice             = "Four routing rows are frozen under D-207 until the Design Authority settles rule precedence: 1401, 1402, 1407, 1426. Your C-250 findings are now Design Clarifications C-1407 and C-1408 — the design's to answer, not ours to resolve, and I had been resolving them. Twenty-one rows stay claimable and none of them depends on routing precedence. Destinations, screens and platform capabilities continue."
+notice             = "I over-froze and D-208 corrects it. TASK-1402 and TASK-1407 are yours again — precedence changes which rule wins, not what the intent producer answers or what type the subject is. TASK-1401 is held on missing destinations, not on the clarification. Only TASK-1426 genuinely waits on design, and its row now says which clarification, why, and what it would otherwise have to invent. 23 rows claimable."
 backlog            = []
 assigned_total     = 111
-claimable          = 20
+claimable          = 22
 claimable_now      = 0
-awaiting_sync      = 20
+awaiting_sync      = 22
 in_flight          = 56
 actionable         = 1
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 35
+blocked            = 33
 lane_utilization   = 11.2
-idle_prediction_days   = 2.9
+idle_prediction_days   = 3.1
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -93,24 +93,24 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECI"
-waiting_for    = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECISION_REGISTER.md): *'stop creating implementation tasks for routing logic until "
+estimated_ready = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md): twelve of the"
+waiting_for    = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md): twelve of the engine's destinations do not exist.** ⚠️ **RE-POINTED on [D-208](DECISION_REGIS"
 blocked_days   = 0.0
 on_integration = false
 
 [[task]]
 id            = "TASK-1402"
 title         = "The intent resolver — what the person was trying to reach"
-state         = "BLOCKED"
-declared      = "BLOCKED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECI"
-waiting_for    = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECISION_REGISTER.md): *'stop creating implementation tasks for routing logic until "
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
 on_integration = false
 
@@ -181,16 +181,16 @@ on_integration = true
 [[task]]
 id            = "TASK-1407"
 title         = "The engine admits a non-human principal, before one exists"
-state         = "BLOCKED"
-declared      = "BLOCKED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECI"
-waiting_for    = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECISION_REGISTER.md): *'stop creating implementation tasks for routing logic until "
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
 on_integration = false
 
@@ -477,8 +477,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECI"
-waiting_for    = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECISION_REGISTER.md): *'stop creating implementation tasks for routing logic until "
+estimated_ready = "— Lane C, 2026-08-09, on [C-1410](LANE_COORDINATION.md).** ✅ **THE ONE"
+waiting_for    = "— Lane C, 2026-08-09, on [C-1410](LANE_COORDINATION.md).** ✅ **THE ONE ROW OF THE FOUR THAT IS GENUINELY DEPENDENT**, and [D-208](DECISION_REGISTER.md"
 blocked_days   = 0.0
 on_integration = false
 

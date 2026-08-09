@@ -156,8 +156,13 @@ def counts() -> dict[str, int]:
     for blk in re.split(r"\n(?=#{2,4} C-\d+)", coord):
         if not re.match(r"#{2,4} C-\d+", blk):
             continue
+        # ⛔ **The LEADING value, never a substring** — `C-1406` is classified
+        # DESIGN COMPLETENESS and its cell says the routing half "moved to
+        # C-1407 as a Design Clarification", which a substring match counted.
         kl = re.search(r"^\|\s*\*\*Class\*\*\s*\|([^|]*)\|", blk, re.M)
-        if not kl or "DESIGN CLARIFICATION" not in kl.group(1).upper():
+        klass = re.sub(r"\s+", " ", re.sub(r"[*`⚡⛔✅⚠️🔴🟠🟡🟢]", " ",
+                                          kl.group(1) if kl else "")).strip().upper()
+        if not klass.startswith("DESIGN CLARIFICATION"):
             continue
         st = re.search(r"^\|\s*\*\*Status\*\*\s*\|([^|]*)\|", blk, re.M)
         c = (st.group(1) if st else "").upper()

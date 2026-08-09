@@ -356,6 +356,7 @@ databaseUrl: required(
 | [C-249](#c-249-two-rows-on-the-ai-screen-are-policies-and-neither-policy-exists) | 🟠 **Two rows on the AI screen are policies, and neither policy exists** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 9 review is shown** |
 | [C-1407](#c-1407--rule-24-home-cannot-fire-and-the-document-calls-it-the-most-common-outcome) | ⚡ **DESIGN CLARIFICATION** · 🔴 **Rule 24 `HOME` cannot fire, and the document calls it the most common outcome** | **Lane A**, 2026-08-09, implementing [TASK-1400](BACKLOG.md) · escalated by Lane C | ⛔ **Design Authority** | 🔴 **`OPEN`** | ⚡ **Nothing today** — **and it decides what support reads in every diagnostics bundle** |
 | [C-1408](#c-1408--rule-precedence-and-interaction--the-table-and-the-gate-ladder-are-two-different-readings) | ⚡ **DESIGN CLARIFICATION** · **Rule precedence and interaction — the table and the gate ladder are two different readings** | **Lane A**, 2026-08-09 · escalated by Lane C | ⛔ **Design Authority** | 🟠 **`OPEN`** | ⏸️ **[TASK-1401](BACKLOG.md) · [1402](BACKLOG.md) · [1407](BACKLOG.md) · [1426](BACKLOG.md)** — frozen under [D-207](DECISION_REGISTER.md) |
+| [C-1410](#c-1410--rule-04s-landing-with-no-intent-is-undefined) | ⚡ **DESIGN CLARIFICATION** · **Rule 04's landing with no intent is undefined** | **Lane A**, 2026-08-09, implementing [TASK-1400](BACKLOG.md) — ⚡ **and it refused to invent the answer** | ⛔ **Design Authority** | 🟠 **`OPEN`** | ⏸️ **[TASK-1426](BACKLOG.md)** — **the only implementation row genuinely held by a clarification** |
 | [C-1409](#c-1409--rule-23--a-start-page-preference-that-outlives-the-access-it-points-at) | ⚡ **DESIGN CLARIFICATION** · **Rule 23 — a start-page preference that outlives the access it points at** | **Lane C**, 2026-08-09, reviewing the Coverage Review | ⛔ **Design Authority** | 🟠 **`OPEN`** | ✅ **Nothing** — no row implements rule 23 |
 | [C-1405](#c-1405--the-entry-coverage-review-recommends-four-documents-and-three-of-them-block-work-already-released) | 🔴 **The Entry Coverage Review recommends four documents, and three block work already released** | **Lane C**, 2026-08-09, reviewing under [D-206](DECISION_REGISTER.md) | ⛔ **Product Owner** — commissioning a design document is not this office's | 🔴 **`OPEN`** | ⏸️ **[TASK-1421](BACKLOG.md)** and ⏸️ **[TASK-1423](BACKLOG.md)** — both released `READY` in error and now correctly blocked |
 | [C-1406](#c-1406--the-review-says-the-engine-has-no-routing-defect-and-a-lane-that-implemented-it-found-three) | 🟠 **The review says the engine has no routing defect; the lane that built it found three** | **Lane C**, 2026-08-09, against [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | ⛔ **Product Owner** — same question as [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) ③ | 🟠 **`OPEN`** | ✅ **Nothing.** ⚠️ **It changes whether the Entry document is treated as settled** |
@@ -8580,7 +8581,47 @@ rules parsed: 24   ·   distinct reason codes: 24
 >
 > ⚠️ **Kept as a `Class` field in THIS register rather than a new file, deliberately.** ⛔ **A second register is a second place to look and a second thing to keep current** — the defect [D-203](DECISION_REGISTER.md) §2 spent a cycle removing. ✅ **The class is queryable, `state-check` reads it, and it appears on its own line in the dashboard.**
 >
-> **Every one carries [D-207](DECISION_REGISTER.md) §6's classification**: `MISSING IMPLEMENTATION` · `MISSING DESIGN` · `INCOMPLETE DESIGN` · `CONTRADICTORY DESIGN` · `IMPLEMENTATION BUG`. ⚡ **Naming it first is what stops implementation work compensating for design uncertainty.**
+> **Every finding is CLASSIFIED BEFORE any work is created** — [D-207](DECISION_REGISTER.md) §6, extended by [D-208](DECISION_REGISTER.md) §4:
+>
+> | Classification | What it means | What it produces |
+> |---|---|---|
+> | `MISSING IMPLEMENTATION` | **The design is complete and the platform cannot do it** | **An implementation row** |
+> | `MISSING DESIGN` | **The document does not answer it at all** | **A clarification, or a commissioned document** |
+> | `INCOMPLETE DESIGN` | **It is answered, and not far enough to build from** | **A clarification** |
+> | `CONTRADICTORY DESIGN` | **Two things are asserted that cannot both hold** | **A clarification** |
+> | `IMPLEMENTATION DEFECT` | **The design is clear and the code disagrees with it** | **A `B-` row** |
+> | `GOVERNANCE ISSUE` | **The process, a register or an instrument is wrong** | **This office's own work** |
+> | `DEPENDENCY` | **It is correct and waits on something named** | ⛔ **Nothing new** — the dependency is recorded on the existing row |
+> | `PRODUCT OWNER DECISION` | **A product question, not a design or engineering one** | **A queue row** |
+>
+> ⚡ **Naming it first is what stops implementation work compensating for design uncertainty**, and it has already changed answers: **rule 03 `/auth/locked` classified as `MISSING IMPLEMENTATION` rather than missing design — the screen is drawn and [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability) records no lockout capability exists.**
+
+## C-1410 · Rule 04's landing with no intent is undefined
+
+| | |
+|---|---|
+| **Class** | ⚡ **DESIGN CLARIFICATION** |
+| **Classification** ([D-207](DECISION_REGISTER.md) §6) | ⛔ **MISSING DESIGN** — **the document does not answer it at all**, which is different from answering it ambiguously |
+| **Raised by** | **Lane A**, 2026-08-09, implementing [TASK-1400](BACKLOG.md) — ⚡ **and it refused to invent the answer** |
+| **Owner** | ⛔ **Design Authority** |
+| **Status** | 🟠 **`OPEN`** |
+| **Blocks** | ⏸️ **[TASK-1426](BACKLOG.md)** — **the only implementation row genuinely held by a clarification** ([D-208](DECISION_REGISTER.md) §2) |
+
+📁 **Rule 04 `SESSION_EXPIRED`'s route column reads `(intent preserved)`.** ⛔ **With no intent there is nothing to preserve, and the document does not say where that person lands.**
+
+⚠️ **It currently falls through to `/workspaces`** — ⛔ **which is behaviour nobody specified, and `/workspaces` does not exist** ([C-1405](#c-1405--the-entry-coverage-review-recommends-four-documents-and-three-of-them-block-work-already-released)).
+
+**What is asked:** ⛔ **where does an expired session land when it was reaching for nothing?** ⚠️ **This office offers no answer** ([D-208](DECISION_REGISTER.md) §6).
+
+### ⚡ Impact assessment ([D-208](DECISION_REGISTER.md) §7)
+
+| | |
+|---|---|
+| **Affected design documents** | **`Fortune Signora Authenticated Entry`** §03 rule 04 · **the recommended *Session Continuity* specification**, which the Coverage Review calls *"the largest true gap in the audit"* |
+| **Affected workflows** | **29**, and ⚠️ **1 · Login indirectly** — an expired session returning through sign-in is the common path |
+| **Affected implementation tasks** | ⏸️ **[TASK-1426](BACKLOG.md)**, which **declares this dependency explicitly** ([D-208](DECISION_REGISTER.md) §3) |
+| **Can work continue in parallel?** | ✅ **YES — 23 of 24 entry-related rows.** ⛔ **Exactly one row waits, which is the property [D-208](DECISION_REGISTER.md) §2 asks for** |
+| **Architectural impact if it changes** | 🟢 **LOW as code — one rule's route.** 🟠 **MODERATE as experience**: **it is the destination for every person whose session dies while they were not going anywhere in particular**, and getting it wrong is a dead end at the most ordinary moment |
 
 ## C-1409 · Rule 23 — a start-page preference that outlives the access it points at
 
@@ -8599,7 +8640,17 @@ rules parsed: 24   ·   distinct reason codes: 24
 
 **The question:** ⛔ **when a start page becomes unreachable — role changed, workspace archived, module disabled — does the preference clear, fall back to the role default silently, or fall back and say so?**
 
-⚠️ **Also unstated: rule 23's route column is `(preference)`, which is not a destination.** **If the preference names `/w/:ws/reports` and rule 23 fires, does the engine still evaluate rules 15–17 for that workspace's standing?** ⚡ **Precedence between a preference and a gate is exactly the class [C-1408](#c-1408--rule-precedence-and-interaction--the-table-and-the-gate-ladder-are-two-different-readings) asks about.**
+⚠️ **Also unstated: rule 23's route column is `(preference)`, which is not a destination.** **If the preference names `/w/:ws/reports` and rule 23 fires, does the engine still evaluate rules 15–17 for that workspace's standing?**
+
+### ⚡ Impact assessment ([D-208](DECISION_REGISTER.md) §7)
+
+| | |
+|---|---|
+| **Affected design documents** | **`Fortune Signora Authenticated Entry`** §03 rule 23 · **`Fortune Signora User Profile`**, where the Coverage Review places the preference row |
+| **Affected workflows** | **29** and **9 · User Profile** |
+| **Affected implementation tasks** | ✅ **None.** ⛔ **No row implements rule 23**, and [TASK-1422](BACKLOG.md) already carries the clearing rule for the *last-used* preference, which is the same shape |
+| **Can work continue in parallel?** | ✅ **YES, all of it** |
+| **Architectural impact if it changes** | 🟢 **LOW.** ⚡ **It is one stored preference and one clearing rule** — **and [TASK-1422](BACKLOG.md) is already building that exact mechanism for last-used, so the answer costs a second call site rather than a design** |
 
 ## C-1408 · Rule precedence and interaction — the table and the gate ladder are two different readings
 
@@ -8618,7 +8669,17 @@ rules parsed: 24   ·   distinct reason codes: 24
 
 > ## ⚠️ **Both readings are in the same document and they disagree.** ⛔ **The engine implements §02's, because it is the only one under which the table is not two-thirds dead** — ✅ **and that choice was made by a lane rather than confirmed by Design, which is what this item exists to fix.**
 
-**What is asked:** ✅ **confirm that gate resolution and gate failure are distinct outcomes, and that *first match wins* applies WITHIN a gate rather than across the whole table** — ⚡ **or amend the table.**
+**What is asked:** ⛔ **which reading is authoritative.** ⚠️ **This office offers no answer** ([D-208](DECISION_REGISTER.md) §6): **both readings are the document's own, they produce different products, and choosing between them is the Design Authority's.**
+
+### ⚡ Impact assessment ([D-208](DECISION_REGISTER.md) §7)
+
+| | |
+|---|---|
+| **Affected design documents** | **`Fortune Signora Authenticated Entry`** §02 and §03 — ⚠️ **and the *Specified in* column the Coverage Review recommends adding, which assumes the table is read as a table** |
+| **Affected workflows** | **29** only. ⛔ **Workflows 1–8 end AT the entry decision and do not evaluate rules** |
+| **Affected implementation tasks** | ⏸️ **[TASK-1426](BACKLOG.md)** *(via [C-1410](#c-1410--rule-04s-landing-with-no-intent-is-undefined))*. ✅ **[TASK-1400](BACKLOG.md) SHIPPED under §02's reading, with the rule order asserted against the document** |
+| **Can work continue in parallel?** | ✅ **YES — 23 rows, including [TASK-1401](BACKLOG.md)'s destinations, [TASK-1402](BACKLOG.md), [TASK-1407](BACKLOG.md) and every workflow row.** ⚡ **Re-derived under [D-208](DECISION_REGISTER.md) §2: this office had frozen four rows and only one was genuinely dependent** |
+| **Architectural impact if it changes** | 🟠 **MODERATE and contained.** ⛔ **`RULES` is a data table walked top to bottom — a precedence change is a reordering plus test fixtures, not a rewrite.** 🔴 **What it would invalidate is every reason code already emitted**, and the code is customer-facing infrastructure that goes in the support bundle |
 
 ## C-1407 · Rule 24 `HOME` cannot fire, and the document calls it the most common outcome
 
@@ -8637,7 +8698,17 @@ rules parsed: 24   ·   distinct reason codes: 24
 
 ⚠️ **The Entry Coverage Review classifies rule 24 as *B · expand Home* and does not notice it cannot fire** — ⛔ **and states four times that there is no routing defect.** ✅ **A completeness audit that reads the table without executing it structurally cannot find this class; the finding is not a criticism of the review's method, it is the reason this item is a CLARIFICATION rather than a correction.**
 
-✅ **Shipped meanwhile and deliberately reversible: the resolution code wins, and rule 24 is KEPT as the totality guard** — it is what makes `resolveEntry` total, and a router handed `undefined` fails far from the cause. ⚡ **A test asserts it cannot currently fire, so if Design amends the rule the test fails and the assumption surfaces.**
+**What shipped, stated as fact rather than as a proposal** ([D-208](DECISION_REGISTER.md) §6): **the resolution code is emitted and rule 24 is retained as the totality guard.** ⚡ **A test asserts rule 24 cannot currently fire** — ✅ **so whichever way Design answers, the assumption is visible and the test fails if the answer differs.** ⛔ **This office expresses no view on which is correct.**
+
+### ⚡ Impact assessment ([D-208](DECISION_REGISTER.md) §7)
+
+| | |
+|---|---|
+| **Affected design documents** | **`Fortune Signora Authenticated Entry`** §03 rule 24 · ⚠️ **and `Fortune Signora Entry Coverage Review`, which classifies rule 24 *B · expand Home* and scores *"0 changes needed to Entry's routing logic"*** |
+| **Affected workflows** | **29**, and **every workflow downstream of it** — ⛔ **rule 24 is the terminal case for the ordinary sign-in, so the answer is emitted on the majority of sessions** |
+| **Affected implementation tasks** | ✅ **None blocked.** ⚠️ **[TASK-1403](BACKLOG.md)** carries the codes into the diagnostics record and would carry a different one |
+| **Can work continue in parallel?** | ✅ **YES, all of it.** ⛔ **No row is held on this** |
+| **Architectural impact if it changes** | 🟢 **LOW in code — one rule's reason string.** 🔴 **HIGH in support**: 📁 the design puts the code *"in the support diagnostics bundle"*, so **changing it after launch invalidates every bundle already collected and every support runbook written against it.** ⚡ **That is why it is worth answering before wiring rather than after** |
 
 ⚠️ **Supersedes the routing half of [C-1406](#c-1406--the-review-says-the-engine-has-no-routing-defect-and-a-lane-that-implemented-it-found-three), which raised this as a disagreement with the review.** ⛔ **[D-207](DECISION_REGISTER.md) §2 is right that it is a question for Design rather than a scoring dispute.**
 

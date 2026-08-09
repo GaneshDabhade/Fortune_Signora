@@ -45,17 +45,18 @@
 
 ## ⚡ Design Clarifications — for the Design Authority, not for a product ruling
 
-> **[D-207](DECISION_REGISTER.md) §2 and §5.** ⛔ **These are not product decisions and this office must not resolve them.** ✅ **Each states the evidence and asks Design to confirm the reading or amend the specification.** ⚠️ **Listed here because the queue is where a human looks — the OWNER is the Design Authority, and answering one as a product preference would be the conflation the ruling corrects.**
+> **[D-207](DECISION_REGISTER.md) §2 · [D-208](DECISION_REGISTER.md) §6.** ⛔ **These are questions, not recommendations.** ⚡ **Each states the observed behaviour, the evidence and the impact — and deliberately does NOT propose which interpretation should win.** ⚠️ **Listed here because the queue is where a human looks; the OWNER is the Design Authority, and answering one as a product preference would be the conflation [D-207](DECISION_REGISTER.md) §2 corrects.**
 
-| | Clarification | [§6](DECISION_REGISTER.md) classification | What it holds |
-|---|---|---|---|
-| 🔴 | **[C-1407](LANE_COORDINATION.md) — rule 24 `HOME` cannot fire** while the same document tints it and calls it *"the default and the most common outcome"* | **CONTRADICTORY DESIGN** | ⚡ **Nothing today** — ⛔ **and it decides what support reads in every diagnostics bundle, so changing it later invalidates every bundle already collected** |
-| 🟠 | **[C-1408](LANE_COORDINATION.md) — rule precedence.** Read flat, rules 18–24 are unreachable; §02's gate ladder is the only reading under which the table is not two-thirds dead | **INCOMPLETE DESIGN** | ⏸️ **Four routing rows, frozen** — [TASK-1401](BACKLOG.md) · [1402](BACKLOG.md) · [1407](BACKLOG.md) · [1426](BACKLOG.md) |
-| 🟠 | **[C-1409](LANE_COORDINATION.md) — rule 23's start-page preference** *"wins"* with no rule for when the page becomes unreachable | **INCOMPLETE DESIGN** | ✅ **Nothing** — no row implements rule 23 |
+| | Clarification | Classification | Impact if it changes | Blocks |
+|---|---|---|---|---|
+| 🔴 | **[C-1407](LANE_COORDINATION.md) — rule 24 `HOME` cannot fire**, while the same document tints it *"the default and the most common outcome"* | **CONTRADICTORY DESIGN** | 🟢 **LOW in code** — one rule's reason string. 🔴 **HIGH in support**: the code goes in the diagnostics bundle, so **changing it after launch invalidates every bundle already collected** | ✅ **Nothing** |
+| 🟠 | **[C-1408](LANE_COORDINATION.md) — rule precedence.** Read flat, rules 18–24 are unreachable; §02's gate ladder is a second reading in the same document | **INCOMPLETE DESIGN** | 🟠 **MODERATE, contained** — `RULES` is a data table walked in order, so a precedence change is a reordering plus fixtures. **What it invalidates is every code already emitted** | ✅ **Nothing directly** |
+| 🟠 | **[C-1410](LANE_COORDINATION.md) — rule 04's landing with no intent** is not stated anywhere | **MISSING DESIGN** | 🟢 **LOW as code** — one route. 🟠 **MODERATE as experience**: it is where a person lands when their session dies and they were not going anywhere in particular | ⏸️ **[TASK-1426](BACKLOG.md)** — **the only row held by a clarification** |
+| 🟠 | **[C-1409](LANE_COORDINATION.md) — rule 23's start-page preference** *"wins"*, with no rule for when the page becomes unreachable | **INCOMPLETE DESIGN** | 🟢 **LOW** — [TASK-1422](BACKLOG.md) is already building the same clearing mechanism for *last-used*, so the answer costs a call site rather than a design | ✅ **Nothing** |
 
-⚡ **The engine ships with all three handled and every choice reversible**: the resolution code wins, rule 24 is kept as the totality guard **with a test asserting it cannot fire — so if Design amends the rule the test fails and the assumption surfaces**, and the gate ladder is implemented as §02 describes.
+> ## ✅ **23 of 24 entry rows continue.** ⛔ **Exactly one waits, and its backlog row declares WHY — which clarification, why it matters, and what assumption it would otherwise have to invent** ([D-208](DECISION_REGISTER.md) §3).
 
-⛔ **`state-check` now refuses a `READY` row that names an open clarification** — ✅ **proved able to fail against a synthetic row before it shipped.**
+⚡ **What shipped meanwhile is stated as fact rather than as a proposal**: the resolution code is emitted, rule 24 is retained as the totality guard, and **a test asserts it cannot currently fire** — ✅ **so whichever way Design answers, the assumption is visible and the test fails if the answer differs.**
 
 ## 🔴 C-1405 · Commission four design documents — the Entry Coverage Review's own priority order
 

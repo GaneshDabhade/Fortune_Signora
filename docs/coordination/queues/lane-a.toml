@@ -1481,7 +1481,7 @@ updated      = 2026-08-09
 #    will each improvise a 404 if it lands after them.
 backlog = ["TASK-1409", "TASK-1408", "TASK-476", "TASK-473", "TASK-492", "TASK-499",
             "TASK-1410", "TASK-1411",
-            "TASK-1403", "TASK-1422", "TASK-1405",
+            "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407", "TASK-1405",
             "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
 # ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation, D-022)
@@ -1502,27 +1502,15 @@ backlog = ["TASK-1409", "TASK-1408", "TASK-476", "TASK-473", "TASK-492", "TASK-4
 
 [[blocked]]
 task    = "TASK-1401"
-blocker = ["C-1408"]
+blocker = ["C-1405"]
 owner   = "Design Authority"
-note    = "routing logic, frozen under D-207. The test is not 'does it touch the engine' but 'would a change to rule precedence, reachability or the reason-code set change what this row must build' — for the row that decides which mechanism owns every entry decision, yes. Also still unwireable: twelve destinations do not exist"
-
-[[blocked]]
-task    = "TASK-1402"
-blocker = ["C-1408"]
-owner   = "Design Authority"
-note    = "routing logic, frozen under D-207. IntentAccess's four values ARE routing semantics — rules 06-09 each read one, and rule 04's (intent preserved) has no defined landing"
-
-[[blocked]]
-task    = "TASK-1407"
-blocker = ["C-1408"]
-owner   = "Design Authority"
-note    = "routing logic, frozen under D-207. Widening resolveEntry's signature changes the engine's own surface. The urgency argument now argues for settling the design sooner, not for building early"
+note    = "RE-POINTED on D-208 §2 — it was blocked on C-1408 and that was the wrong blocker. This row calls resolveEntry and follows the route it returns; precedence changes the engine internals, not this call site. What genuinely stops it is that /workspaces and eleven terminal reason codes render nothing (D-205). It frees when the destinations exist, whatever Design rules about precedence"
 
 [[blocked]]
 task    = "TASK-1426"
-blocker = ["C-1408", "C-1405"]
+blocker = ["C-1410", "C-1405"]
 owner   = "Design Authority"
-note    = "routing logic, frozen under D-207, and separately awaiting the Session Continuity specification"
+note    = "the one genuinely design-dependent row of the four. Rule 04 routes to (intent preserved) and the document does not say where that lands with NO intent — the assumption it would otherwise invent is a customer-visible destination. Its backlog row declares the dependency per D-208 §3. Separately awaiting Session Continuity"
 
 [[blocked]]
 task    = "TASK-1421"

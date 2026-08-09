@@ -1,7 +1,7 @@
 # ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "Four routing rows are frozen under D-207 until the Design Authority settles rule precedence: 1401, 1402, 1407, 1426. Your C-250 findings are now Design Clarifications C-1407 and C-1408 — the design's to answer, not ours to resolve, and I had been resolving them. Twenty-one rows stay claimable and none of them depends on routing precedence. Destinations, screens and platform capabilities continue."
+notice = "I over-froze and D-208 corrects it. TASK-1402 and TASK-1407 are yours again — precedence changes which rule wins, not what the intent producer answers or what type the subject is. TASK-1401 is held on missing destinations, not on the clarification. Only TASK-1426 genuinely waits on design, and its row now says which clarification, why, and what it would otherwise have to invent. 23 rows claimable."
 
 ["Lane C"]
 notice = ""

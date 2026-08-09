@@ -1093,66 +1093,125 @@ def _prepared_findings() -> list[str]:
     return out
 
 
+
+def _declared_class(block: str) -> str:
+    """The **leading** value of a `Class` cell, never a substring of its prose.
+
+    ⛔ **`C-1406` is classified `DESIGN COMPLETENESS` and its cell explains that
+    the routing half *"moved to C-1407 as a Design Clarification"*.** A substring
+    match counted it as a clarification and the dashboard reported five where
+    there are four. ⚡ **The same defect as [B-101](../docs/BUGS.md) and
+    [B-413](../docs/BUGS.md): a field read by `in` rather than by its operative
+    value, in a register whose convention is to name what it is NOT.**
+    """
+    cell = re.search(r"^\|\s*\*\*Class\*\*\s*\|([^|]*)\|", block, re.M)
+    if not cell:
+        return ""
+    # Strip emphasis and decoration, then take what the cell OPENS with.
+    text = re.sub(r"[*`⚡⛔✅⚠️🔴🟠🟡🟢]", " ", cell.group(1))
+    return re.sub(r"\s+", " ", text).strip().upper()
+
+
 def _design_clarification_findings(backlog: str) -> list[str]:
-    """**A Design Clarification must never be answered by building — D-207.**
+    """**A clarification blocks the rows that DECLARE it, and nothing else — D-208.**
 
-    ⛔ **[D-207](../docs/DECISION_REGISTER.md) §2 separates two things this office
-    had been answering as one.** *Design completeness* asks whether the product
-    can be built without inventing behaviour; *design correctness* asks whether
-    the behaviour is logically consistent. **The second is the Design
-    Authority's**, and Product Office identifying a routing inconsistency and
-    then writing a row against its own reading is the overreach the ruling names.
+    ⛔ **The first version of this matched any `READY` row whose text MENTIONED an
+    open clarification.** ⚡ **That is the repository-wide blocker
+    [D-208](../docs/DECISION_REGISTER.md) §2 forbids**: a row citing a
+    clarification in its reasoning — *"unaffected by C-1408, and here is why"* —
+    would have been refused for saying so, which punishes exactly the rows that
+    did the analysis properly.
 
-    ⚡ **So this check enforces one property and nothing else: a backlog row that
-    names an OPEN Design Clarification as its blocker may not read `READY`.**
-    ⛔ **Not because the row is wrong, but because building it would bake an
-    unconfirmed reading of the specification into the repository** — which is
-    §6's *"prevents implementation work from compensating for design
-    uncertainty"*, made checkable rather than promised.
+    ✅ **It now reads one declared cell: `Depends on clarification`.**
+    [D-208](../docs/DECISION_REGISTER.md) §3 requires the dependency be explicit —
+    *which* clarification, *why* it matters, and *what assumption* would otherwise
+    be required — so the check reads the declaration rather than inferring one.
+
+    **Two properties, and the second is the one that keeps it honest:**
+
+    ⛔ **A row declaring an OPEN clarification may not be `READY`** — building it
+    would bake an unconfirmed reading into the repository.
+
+    ⛔ **A row BLOCKED on a clarification must DECLARE it** — otherwise the
+    relationship is implicit, which is [C-213](../docs/LANE_COORDINATION.md)'s
+    class: derivable is not visible, and a reader cannot review a dependency
+    nobody wrote down.
     """
     coordination = _read("docs/LANE_COORDINATION.md")
     out: list[str] = []
 
-    #: An item is a clarification when it SAYS so, never when a heuristic infers
-    #: it. **A guess here would silently freeze rows nobody meant to freeze.**
-    open_clarifications: dict[str, str] = {}
+    #: An item is a clarification when it SAYS so. **A heuristic here would
+    #: silently freeze rows nobody meant to freeze**, which is the failure mode
+    #: this whole function was rewritten to remove.
+    open_clarifications: set[str] = set()
     for block in re.split(r"\n(?=#{2,4} C-\d+)", coordination):
         head = re.match(r"#{2,4} (C-\d+)", block)
         if not head:
             continue
-        klass = re.search(r"^\|\s*\*\*Class\*\*\s*\|([^|]*)\|", block, re.M)
-        if not klass or "DESIGN CLARIFICATION" not in klass.group(1).upper():
+        if not _declared_class(block).startswith("DESIGN CLARIFICATION"):
             continue
         status = re.search(r"^\|\s*\*\*Status\*\*\s*\|([^|]*)\|", block, re.M)
         cell = (status.group(1) if status else "").upper()
-        # **The operative state is the first token, never a substring** — B-101,
-        # and B-413 one register over. A cell reading "CLOSED — was OPEN until…"
-        # is closed.
+        # **Operative state is the first token, never a substring** — B-101, and
+        # B-413 one register over. "CLOSED — was OPEN until…" is closed.
         seen = [(cell.find(s), s) for s in ("OPEN", "RULED", "CLOSED", "ANSWERED") if s in cell]
         if seen and min(seen)[1] == "OPEN":
-            classification = re.search(
-                r"^\|\s*\*\*Classification\*\*[^|]*\|([^|]*)\|", block, re.M)
-            open_clarifications[head.group(1)] = re.sub(
-                r"\*|`", "", (classification.group(1) if classification else "")).strip()[:44]
+            open_clarifications.add(head.group(1))
 
     if not open_clarifications:
         return out
 
     states = _backlog_states(backlog)
+    reviewable: set[str] = set()
     for block in re.split(r"(?=^### TASK-\d+)", backlog, flags=re.M):
         head = re.match(r"^### (TASK-\d+)", block)
-        if not head or states.get(head.group(1)) != "READY":
+        if not head:
             continue
         identifier = head.group(1)
-        named = sorted({c for c in open_clarifications if c in block})
-        if named:
+        state = states.get(identifier, "")
+        declared_cell = re.search(
+            r"^\|[^|]*Depends on clarification[^|]*\|([^\n]*)$", block, re.M)
+        declared = (
+            {c for c in open_clarifications if c in declared_cell.group(1)}
+            if declared_cell else set()
+        )
+
+        if declared and state == "READY":
             out.append(
-                f"{identifier} is READY and names an open Design Clarification "
-                f"({', '.join(named)}). **A clarification is the Design Authority's to "
-                f"answer and this office's to wait on** (D-207 §2) — building against an "
+                f"{identifier} is READY and declares a dependency on an open Design "
+                f"Clarification ({', '.join(sorted(declared))}). **A clarification is the "
+                f"Design Authority's to answer** (D-207 §2) — building against an "
                 f"unconfirmed reading is how implementation compensates for design "
-                f"uncertainty (§6)."
+                f"uncertainty."
             )
+
+        if declared and state != "READY":
+            reviewable.add(identifier)
+
+    # **The inverse, read from STRUCTURED data and never from prose.**
+    #
+    # ⛔ A first version scanned the Status cell for a clarification id and fired
+    # on `TASK-1401`, whose status names `C-1408` **to say it is not the
+    # blocker** — the same prose-matching defect the forward direction was just
+    # rewritten to remove, reintroduced one branch down. ✅ **The queue's
+    # `[[blocked]]` entries carry `blocker` as data**, so the dependency is read
+    # rather than inferred.
+    for path in sorted(QUEUES.glob("lane-*.toml")) if QUEUES.is_dir() else []:
+        try:
+            queue = tomllib.loads(path.read_text())
+        except tomllib.TOMLDecodeError:
+            continue
+        for entry in queue.get("blocked") or []:
+            task = str(entry.get("task", ""))
+            cited = {str(b) for b in (entry.get("blocker") or [])} & open_clarifications
+            if cited and task not in reviewable:
+                out.append(
+                    f"{task} is blocked on {', '.join(sorted(cited))} in {path.name} and "
+                    f"its backlog row has no `Depends on clarification` cell. **D-208 §3 "
+                    f"requires the dependency be explicit** — which clarification, why it "
+                    f"matters, and what assumption would otherwise be required. A "
+                    f"dependency nobody wrote down is one nobody can review or release."
+                )
     return out
 
 
