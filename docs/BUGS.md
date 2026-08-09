@@ -80,6 +80,54 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-163 · the B-221 guard and the two-ref merge ship with no test, and the merge misresolves the one backward transition
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) |
+| **Current assignee** | **Lane C** — its own module, and its own fix |
+| **Severity** | 🟡 — ⚡ **the fix is right and QE is not asking for it back.** ⛔ **But it is a guard against a defect that recurred three times, and nothing proves it still works tomorrow** |
+| **Status** | **`OPEN`** |
+| **Commit found** | `de88facd`, found by QE during cycle 153 validation |
+
+**① The guard has no test.** ⚡ **Measured, not asserted**: `de88facd` changes **63 lines of `infra/coordination.py` and zero lines of any test file.**
+
+```
+$ git diff --stat origin/main..de88facd -- backend/tests/ infra/
+ infra/coordination.py | 76 ++++++++++++++++++++++++++++-----
+```
+
+[`test_repository_generators.py`](../backend/tests/certification/test_repository_generators.py) holds **10 tests**, and **none references `_notice` or `_integration_states`.** ⛔ **§11 is a hard rule** — *"no change ships without tests"* — and §2 is more specific: ***a guard that cannot fail is documentation pretending to be code.***
+
+⚡ **Lane C's evidence that it fires is real and is not the same thing**: *"it fires on the live notice… it then refused my own correction notice."* ✅ **That proves it worked once, on one input, on one day.** ⛔ **A regression test is what proves it works after the next refactor** — **and B-221 recurred three times, which is the argument for the test rather than against it.**
+
+> ⚠️ **QE could not prove it either.** `_notice('a', reachable=frozenset())` returns **empty** — there is no live Lane A notice to withhold — so the probe says nothing in either direction. **That is the finding, not an aside.**
+
+**② `_LIFECYCLE` cannot represent the one transition that goes backward.** The merge resolves two refs by *"later wins"*:
+
+```python
+_LIFECYCLE = {..., "CHANGES REQUESTED": 3, "IN VALIDATION": 4, ...}
+```
+
+⛔ **`CHANGES REQUESTED` ranks BELOW `IN VALIDATION`, and [`CLAUDE.md`](../CLAUDE.md) §20e makes it the one state that FOLLOWS it** — *"QE, during validation. Something did not hold. Returned to the implementing lane."* **Every other transition is monotonic; this one is a return.**
+
+**Measured on the shipped table:**
+
+```
+IN VALIDATION = 4 | CHANGES REQUESTED = 3
+
+QE returned a slice: main=CHANGES REQUESTED, stale integration=IN VALIDATION
+  merged  -> IN VALIDATION
+  correct -> CHANGES REQUESTED
+  ==> MISREPORTED
+```
+
+⛔ **A slice QE has returned would be reported as still waiting on QE**, and **the lane that must act would not see that it must act.** ⚠️ **It is reachable precisely in the divergence this function was written for** — `integration` is **38 behind `main`**, so the two refs disagreeing is the normal condition today, not an edge case.
+
+> ✅ **The default is fail-safe and that is worth recording**: `reachable` defaults to `frozenset()`, so a caller that forgets to pass it **withholds every notice** rather than publishing an unchecked one. **That is the right direction** — the repository prefers operations that refuse over operations that silently recover.
+
+**Suggested repair.** ⚡ **Both halves are small.** Give `CHANGES REQUESTED` a rank **above** `IN VALIDATION` — it is a later event in the lifecycle even though it is a return in the workflow — **and add the two cases to [`test_repository_generators.py`](../backend/tests/certification/test_repository_generators.py)**: a notice naming an unreachable row is withheld, and a notice naming a reachable one is published. ⛔ **The second case is the one that stops the guard from being tightened into something that withholds everything.**
+
 ### B-162 · the failed-read guard strips `//` inside string literals, so rendered copy on a line with a URL evades it
 
 | | |
