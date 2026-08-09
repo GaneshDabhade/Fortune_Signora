@@ -1538,7 +1538,7 @@
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING CAPABILITY** |
 | **Epic** | **System States** — **[workflow 28](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
+| **Status** | ✅ **`CLAIMED` — Lane A**, 2026-08-09, by the Task Claim Protocol. ⚡ **Taken in order behind [TASK-1435](#task-1435), which is `IN VALIDATION`.** 📁 **The design makes it a DISTINCT screen rather than a variant of the pill**: *"No internet · cold start — different problem, different screen. There is no cached session to fall back on, so the state is honest about having nothing."* ✅ **It is the ladder's `platform` scope finding its first caller** — `no-internet` has been legal since [TASK-1409](#task-1409) and nothing has rendered it *(Was:* ✅ **`READY` — Lane C, 2026-08-09***)* |
 | 📁 **What the design requires** | ***"last connected 3 minutes ago"***, **and a retry that RE-CHECKS rather than reloading** |
 | 🔴 **Measured** | ⛔ **Nothing persists a last-connected time, and there is no offline detection in the codebase at all** |
 | ⚡ **Delivers** | **A persisted last-successful-connection time, rendered relative**, and **a retry that probes rather than calling `location.reload()`** |
