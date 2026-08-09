@@ -8353,6 +8353,45 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-266 · The AI attribution primitive has three designs and no data — the read TASK-1411 asks for, taken
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, ⚡ **BEFORE claiming [TASK-1411](BACKLOG.md)** — 📁 the same order [D-216](DECISION_REGISTER.md) upheld for [C-263](#c-263), and the row's own instruction |
+| **Owner** | **Lane C**, and then whichever module owns the fact — ⛔ **a confidence and a source list are `ai_platform`'s and `ai_reasoning_engine`'s to publish, not `product_surface`'s to invent** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION** — **the design is complete; the contract behind it is not** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⚠️ **The DATA half of [TASK-1411](BACKLOG.md).** ✅ **The component's shape is knowable from the three designs and is not blocked** |
+
+### ✅ This is the row's own first slice, performed rather than assumed
+
+📁 **[TASK-1411](BACKLOG.md) says so in terms**: ⚠️ ***"whether `ai_platform.public` exposes confidence and source provenance is UNVERIFIED and the row says so — the first slice is the read, and if the contract is missing it is raised, not invented"*** ([D-167](DECISION_REGISTER.md) §4). **Measured on `origin/integration`:**
+
+| | |
+|---|---|
+| **`ai_platform/public/`** | ⚡ **Exports the inference port and its vocabulary** — `Infer`, `InferenceInput/Output/Policy`, `ExplanationSource`, `EvidenceFact`, `EvidenceRef`, `EvidenceSet`. ⛔ **No confidence value** |
+| **`ai_reasoning_engine/public/`** | ⚠️ **Names confidence in PROSE only** — *"its confidence must carry its basis"* — ⛔ **not an export** |
+| **Any interface schema** | ⛔ **The only `confidence` on an endpoint is `workspace_tenancy`'s `confidence_floor`** — ⚡ **a THRESHOLD the customer sets, the opposite of a model's confidence** |
+| **`frontend/lib/api/types.ts`** | 🔴 **Zero occurrences.** **Nothing crosses to the frontend** |
+
+### ⚡ Sources are further along than confidence, and the difference matters
+
+✅ **`EvidenceRef`, `EvidenceSet` and `ExplanationSource` exist in `ai_platform`'s contract**, so *"6 sources"* and *"open all evidence"* have a vocabulary to be built on. ⛔ **`3 excluded` does not** — 📁 the row requires the excluded state *"from the start rather than being widened later by the third consumer"*, and nothing publishes an exclusion or its reason.
+
+### 🔴 The one thing the component must never do is the thing an absent contract invites
+
+📁 **The row: *"render a confidence the model did not produce… if `ai_platform` publishes no confidence, this component renders its ABSENCE."*** ⚡ **And its component coverage is sharper still**: ⛔ ***"`N of 5` with no confidence renders absence, never `0 of 5` — `0 of 5` reads as certainly wrong where the truth is not known."***
+
+> ⚠️ **So the safe half is buildable today and the unsafe half is not**: **a component that renders absence correctly can ship before the data exists; one that renders a number cannot.**
+
+### ⚠️ And part of it already exists, which the row does not say
+
+📁 **`components/ui/confidence.tsx` ships `N of 5` with an optional source count**, clamped, with *"never invented"* already in its comments. ⛔ **[TASK-1411](BACKLOG.md) reads as though nothing exists** — ⚡ **the same shape as [C-264](#c-264) and the palette**: **a row describing a destination without checking what the repository already holds.** ✅ **This one is benign** — the existing component is a subset and extending it is the row's intent — **but it is the third instance and the pattern is the finding, not the file.**
+
+### ✅ What this lane recommends
+
+**Split [TASK-1411](BACKLOG.md).** ⚡ **The strip, its absence states, the source disclosure and *Show reasoning* are buildable now against the three designs** — **and are strictly better built once than three times, which is the row's whole argument.** ⛔ **The confidence VALUE and the excluded-source reason wait on whichever module publishes them**, and that is a contract question for `ai_platform` and `ai_reasoning_engine` rather than a surface one.
+
 ## C-265 · Step-up is built and the only module whose controls require it is not
 
 | | |
