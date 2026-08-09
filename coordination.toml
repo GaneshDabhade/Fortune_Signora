@@ -9,16 +9,16 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "abf1b4e"
+generated_from = "734855b"
 task_count     = 153
 
 [lane.Lane_A]
 notice             = "Conformance audit, D-214 §8: components/ui/command-palette.tsx is complete, tested and mounted by nothing — and shell rule 7 says anything clickable is reachable in the palette, which is the row you are holding. Do not build a second one; its own comments carry the contract, including that it never sorts because the caller's order is the ranking. Recorded on your row. Same for connect-panel.tsx."
-backlog            = ["TASK-1405", "TASK-1411", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
+backlog            = ["TASK-1405", "TASK-1439", "TASK-1411", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1440", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
 assigned_total     = 133
 claimable          = 27
-claimable_now      = 16
-awaiting_sync      = 11
+claimable_now      = 18
+awaiting_sync      = 9
 in_flight          = 70
 actionable         = 3
 awaiting_qe_transition = 0
@@ -46,8 +46,8 @@ supply_state       = "working"
 blocked            = 7
 lane_utilization   = 1.2
 idle_prediction_days   = 0.4
-dependency_wait_days   = 2.3
-blocked_duration_days  = 2.3
+dependency_wait_days   = 2.5
+blocked_duration_days  = 2.5
 critical_path_max      = 0
 
 [[task]]
@@ -566,7 +566,7 @@ on_integration = true
 id            = "TASK-1435"
 title         = "The offline mutation queue, visible and ordered"
 state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
+declared      = "VERIFIED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -582,7 +582,7 @@ on_integration = true
 id            = "TASK-1436"
 title         = "Last connected, and a retry that re-checks"
 state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
+declared      = "VERIFIED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -640,7 +640,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1440"
@@ -656,7 +656,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1441"
@@ -2367,7 +2367,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 2.3
+blocked_days   = 2.5
 on_integration = true
 
 [[task]]
@@ -2431,7 +2431,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 2.3
+blocked_days   = 2.5
 on_integration = true
 
 [[task]]
@@ -2479,7 +2479,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 1.9
+blocked_days   = 2.1
 on_integration = true
 
 [[task]]
