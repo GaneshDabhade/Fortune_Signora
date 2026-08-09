@@ -198,12 +198,27 @@ describe('§13 States — all three states the section titles exist', () => {
   });
 
   it('an error boundary is not the error state, and both exist', () => {
+    /**
+     * ⚠️ **Re-pointed by [TASK-1429](../../../docs/BACKLOG.md), and the
+     * PROPERTY is unchanged.** This read `components/feedback/error-boundary.tsx`,
+     * which that row retired: its five call sites now render through
+     * `RegionBoundary` and the ladder. ⛔ **The distinction it guards is what
+     * matters and it still holds** — **a boundary is the MECHANISM that
+     * catches a throw; an error state is the PRESENTATION** — so the check
+     * follows the mechanism to its new file rather than being deleted with the
+     * old one.
+     */
     const boundary = readFileSync(
-      join(process.cwd(), 'components', 'feedback', 'error-boundary.tsx'),
+      join(process.cwd(), 'components', 'ui', 'region-boundary.tsx'),
       'utf8',
     );
-    expect(boundary).toMatch(/class ErrorBoundary/);
+    expect(boundary).toMatch(/class RegionBoundary/);
     expect(canonical.ErrorState).toBeTypeOf('function');
+
+    // 🔴 **And the mechanism must still not write its own copy.** The retired
+    // boundary did, which is why four surfaces said four different things.
+    // `StatedAbsence` owns the sentence; this file may not grow a second one.
+    expect(boundary).toMatch(/StatedAbsence/);
   });
 });
 

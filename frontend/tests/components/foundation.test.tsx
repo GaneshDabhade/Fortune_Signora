@@ -11,7 +11,6 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ToastProvider, useToast } from '@/components/feedback/toast';
-import { ErrorBoundary } from '@/components/feedback/error-boundary';
 import { ApiError } from '@/lib/api/client';
 import { isTheme, resolveTheme } from '@/lib/design/theme';
 import { queryClientConfig } from '@/lib/query/client';
@@ -184,41 +183,12 @@ describe('toasts', () => {
   });
 });
 
-describe('error boundary', () => {
-  function Boom(): never {
-    throw new ApiError(500, {
-      code: 'internal',
-      message: 'boom',
-      correlation_id: 'corr-123',
-    });
-  }
-
-  it('contains a render failure and offers a retry', () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    render(
-      <ErrorBoundary region="Companies">
-        <Boom />
-      </ErrorBoundary>,
-    );
-
-    expect(screen.getByRole('alert')).toHaveTextContent('Companies failed to load');
-    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
-    vi.restoreAllMocks();
-  });
-
-  it('surfaces the correlation id so support can find the request', () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    render(
-      <ErrorBoundary>
-        <Boom />
-      </ErrorBoundary>,
-    );
-
-    // The single piece of information that turns "it broke" into a
-    // specific request an engineer can locate.
-    expect(screen.getByText(/corr-123/)).toBeInTheDocument();
-    vi.restoreAllMocks();
-  });
-});
+/**
+ * ⚠️ **The `error boundary` block that lived here has MOVED, not gone** —
+ * [TASK-1429](../../../docs/BACKLOG.md). `components/feedback/error-boundary.tsx`
+ * was retired and its five call sites now render through `RegionBoundary` and
+ * the ladder. ✅ **Both properties it asserted are re-asserted in
+ * `tests/components/region-boundary.test.tsx`** — a contained failure with a
+ * retry, and a surfaced correlation id — **because a test deleted with its
+ * subject is a guarantee nobody notices leaving.**
+ */

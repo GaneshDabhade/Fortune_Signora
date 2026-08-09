@@ -1,7 +1,9 @@
 'use client';
 
+import { TriangleAlert } from 'lucide-react';
 import { useEffect } from 'react';
 
+import { SystemState } from '@/components/ui/system-state';
 import { ApiError } from '@/lib/api/client';
 
 /**
@@ -29,6 +31,19 @@ import { ApiError } from '@/lib/api/client';
  * information that turns *"it broke"* into a request an engineer can find in
  * seconds (`16-logging`, `19-api-conventions`), and the same choice the
  * in-shell boundary and the toast both already make.
+ *
+ * ### It renders through the ladder — [TASK-1429](../docs/BACKLOG.md)
+ *
+ * ⛔ **This file wrote its own 500 and `app-shell`'s boundary wrote another,
+ * with different colours, a different shape and a different retry.** 📁 The
+ * ladder puts this one at **app scope**, which is what makes it announce
+ * assertively — `4.1.3`: *"only a state that ends the session announces
+ * assertively, once"* — ⚡ **and that politeness is now DERIVED from the
+ * scope rather than chosen here.**
+ *
+ * 🔴 **The reference became copyable, and that is a behaviour change rather
+ * than a refactor.** ⛔ **It was plain text: an identifier a customer had to
+ * read down a phone.**
  *
  * ### Retry before reload
  *
@@ -59,29 +74,36 @@ export default function AppError({
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-canvas px-6">
-      <div className="flex max-w-md flex-col items-start gap-3">
-        <p className="text-sm font-medium text-content-subtle">Signora</p>
-        <h1 className="text-xl font-semibold text-content">Something went wrong</h1>
-        <p className="text-md leading-6 text-content-muted">
-          This screen could not be shown. Nothing about your accounts, your
-          evidence or your decisions has changed — the failure is in displaying
-          them.
-        </p>
-        <div className="mt-2 flex items-center gap-4">
-          <button
-            type="button"
-            onClick={reset}
-            className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            Try again
-          </button>
-          <span className="text-sm text-content-subtle">
-            or reload the page if it keeps happening
-          </span>
-        </div>
-        {reference ? (
-          <p className="mt-1 text-xs text-content-subtle">Reference: {reference}</p>
-        ) : null}
+      <div className="w-full max-w-md">
+        <SystemState
+          scope="app"
+          state="global-error-boundary"
+          glyph={TriangleAlert}
+          // 📁 `1.3.1` — *"an h1 that names what happened, not 'Error'."*
+          // ⚡ The copy is unchanged; the ladder is now what renders it.
+          title="Something went wrong"
+          description="This screen could not be shown. Nothing about your accounts, your evidence or your decisions has changed — the failure is in displaying them."
+          primaryAction={
+            <button
+              type="button"
+              onClick={reset}
+              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              Try again
+            </button>
+          }
+          secondaryAction={
+            <span className="text-sm text-content-subtle">
+              or reload the page if it keeps happening
+            </span>
+          }
+          // 🔴 **This is the substantive change and not a refactor.** It was
+          // `Reference: {reference}` as plain text — ⛔ **an identifier a
+          // customer had to read aloud down a phone.** 📁 The grammar's rule
+          // ③: *"identifiers are copyable — the single thing that makes a
+          // support conversation short."*
+          {...(reference === undefined ? {} : { correlationId: reference })}
+        />
       </div>
     </main>
   );

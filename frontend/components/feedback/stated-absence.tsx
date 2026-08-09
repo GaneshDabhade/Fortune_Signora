@@ -46,6 +46,7 @@ export function StatedAbsence({
   icon,
   title,
   announce = 'polite',
+  correlationId,
 }: {
   /** What could not be loaded, in the customer's words and lower case:
    * *"what changed at this account"*, *"your accounts"*. Completes the
@@ -75,6 +76,23 @@ export function StatedAbsence({
    * one would have quietly dropped that, and §20c calls an accessibility loss
    * a defect rather than a trade-off. */
   announce?: 'polite' | 'assertive';
+  /**
+   * 📁 **The grammar's rule ③** — *"identifiers are copyable: the single thing
+   * that makes a support conversation short"* — ⚡ **and it reaches
+   * `SystemState`, which owns how one is rendered.**
+   *
+   * ⚠️ **Added by [TASK-1429](../../../docs/BACKLOG.md) to PRESERVE a
+   * behaviour rather than to add one.** ⛔ **`components/feedback/error-boundary.tsx`
+   * printed `Reference: {correlationId}` and a test asserted it**; converging
+   * that surface onto the ladder without this prop would have silently dropped
+   * the identifier — **the class of regression `announce` above was added for,
+   * one row later.** ✅ **It arrives copyable, which the retired one was not.**
+   *
+   * ⛔ **`region` and `card` only.** A `page`-shape absence renders through
+   * `EmptyState`, which states an absence rather than a failure and has no
+   * identifier to show.
+   */
+  correlationId?: string;
 }) {
   const sentence = `Signora could not load ${subject}. ${reassurance} — reload to try again.`;
 
@@ -101,7 +119,12 @@ export function StatedAbsence({
    * error or a component threw.
    */
   const region = (
-    <SystemState scope="region" state="region-error" description={sentence} />
+    <SystemState
+      scope="region"
+      state="region-error"
+      description={sentence}
+      {...(correlationId === undefined ? {} : { correlationId })}
+    />
   );
 
   /**

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-import { ErrorBoundary } from '@/components/feedback/error-boundary';
+import { RegionBoundary } from '@/components/ui/region-boundary';
 import { AccountSearch } from '@/components/intelligence/account-search';
 import { MobileNavigation, Navigation } from '@/components/shell/navigation';
 import { ThemeToggle } from '@/components/shell/theme-toggle';
@@ -104,9 +104,9 @@ export function AppShell({
             {rail.collapsed ? '»' : '«'}
           </button>
         </div>
-        <ErrorBoundary region="Navigation">
+        <RegionBoundary subject="the navigation">
           <Navigation role={role} />
-        </ErrorBoundary>
+        </RegionBoundary>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -119,16 +119,16 @@ export function AppShell({
               Truncates from the middle. Never wraps."* It renders nothing at
               the first level, which is rule 6. */}
           <Breadcrumb trail={breadcrumb} />
-          <ErrorBoundary region="Workspace selector">
+          <RegionBoundary subject="your organizations">
             <WorkspaceSelector />
-          </ErrorBoundary>
+          </RegionBoundary>
           {/* **Search is a verb, not a place** (A1), so it sits here rather
               than becoming a navigation entry. Its own boundary on the same
               reasoning as every other region: a failing search must not take
               the workspace selector or sign-out down with it. */}
-          <ErrorBoundary region="Account search">
+          <RegionBoundary subject="account search">
             <AccountSearch />
-          </ErrorBoundary>
+          </RegionBoundary>
           <div className="flex items-center gap-3">
             <ThemeToggle />
             {signOut}
@@ -144,7 +144,16 @@ export function AppShell({
             the row a seller scrolls to; covering it is the defect this slice
             exists to avoid rather than one to introduce. */}
         <main className="min-w-0 flex-1 p-4 pb-20 sm:p-6 md:pb-6">
-          <ErrorBoundary>{children}</ErrorBoundary>
+          {/* ⛔ **The one boundary whose default reassurance would be false.**
+              *"Everything else on this page is unaffected"* is exactly wrong
+              when the content region IS the page — what survives is the frame,
+              so the frame is what it names. */}
+          <RegionBoundary
+            subject="this page"
+            reassurance="The navigation and your organizations are unaffected"
+          >
+            {children}
+          </RegionBoundary>
         </main>
       </div>
       </div>
@@ -153,9 +162,9 @@ export function AppShell({
           boundary for the same reason the sidebar has one: a failure here must
           not take the page with it, and on a phone this is the only navigation
           there is. */}
-      <ErrorBoundary region="Navigation">
+      <RegionBoundary subject="the navigation">
         <MobileNavigation role={role} />
-      </ErrorBoundary>
+      </RegionBoundary>
     </div>
   );
 }

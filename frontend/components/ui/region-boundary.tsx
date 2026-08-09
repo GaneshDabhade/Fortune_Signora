@@ -3,6 +3,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 import { StatedAbsence } from '@/components/feedback/stated-absence';
+import { ApiError } from '@/lib/api/client';
 
 /**
  * **The boundary every later workflow consumes** —
@@ -52,6 +53,23 @@ interface Props {
    * could not load __*. **"the pipeline trend"**, not **"Pipeline trend"**.
    */
   subject: string;
+  /**
+   * ⚠️ **What is still true, when the default would be FALSE** —
+   * [TASK-1429](../../../docs/BACKLOG.md).
+   *
+   * ⛔ **Added because the default made the shell's content region lie.** The
+   * boundary around `children` in
+   * [`app-shell.tsx`](../shell/app-shell.tsx) would have read *"Signora could
+   * not load this page. **Everything else on this page is unaffected**"* —
+   * ⚡ **a sentence that contradicts itself inside one line**, and the thing
+   * that actually survived is the frame around it.
+   *
+   * ✅ **Optional, and the default is unchanged**, so the nine callers that
+   * sit inside a page keep the sentence they already had. **A prop rather
+   * than a second boundary**: the shape, the retry budget and the escalation
+   * refusal are identical, and only the true statement differs.
+   */
+  reassurance?: string;
 }
 
 interface State {
@@ -87,9 +105,20 @@ export class RegionBoundary extends Component<Props, State> {
     return (
       <div>
         {/* ⛔ **The sentence is `StatedAbsence`'s, not this file's.** */}
+        {/* ⛔ **The identifier is carried, not dropped** —
+            [TASK-1429](../../../docs/BACKLOG.md). The retired
+            `components/feedback/error-boundary.tsx` printed
+            `Reference: {correlationId}` and a test asserted it. ⚡ **It arrives
+            COPYABLE here, which that one was not**, and only an `ApiError`
+            has one: a component that threw a `TypeError` never reached the
+            API, and inventing an identifier for it would send somebody
+            looking for a request that was never made. */}
         <StatedAbsence
           subject={this.props.subject}
-          reassurance="Everything else on this page is unaffected"
+          reassurance={
+            this.props.reassurance ?? 'Everything else on this page is unaffected'
+          }
+          {...(error instanceof ApiError ? { correlationId: error.correlationId } : {})}
         />
         {/* 📁 *"then stops and hands the decision to the person"* — ⛔ **the
             control disappears when it is spent.** **A button that cannot help
