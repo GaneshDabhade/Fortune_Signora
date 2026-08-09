@@ -128,3 +128,94 @@ export function browserEnvironment(): NodeJS.ProcessEnv | undefined {
     LD_LIBRARY_PATH: [lib, process.env.LD_LIBRARY_PATH].filter(Boolean).join(':'),
   };
 }
+
+/**
+ * **Which mode a run is watched in** — [TASK-476](../../../../docs/BACKLOG.md).
+ *
+ * ## The defect this closes is a sentence, not a bug
+ *
+ * `CLAUDE.md` §19 says ***"Headed is the default mode for local development and
+ * review"*** and the config read `headless: process.env.HEADED !== '1'` —
+ * **headless by default, headed on opt-in.** The file said one thing and the
+ * repository did the other, which is §2's damaging direction: **a rule a lane
+ * reads and believes.** §19 flags it against itself and names this row.
+ *
+ * ## Why the default is inverted rather than the sentence deleted
+ *
+ * [D-134](../../../../docs/DECISION_REGISTER.md) makes a headed run a **handover
+ * gate**, and its purpose is not verification — *"the assertions already did
+ * that"* — it is **continuous product review**. Transitions, empty states,
+ * error states and loading states are what a lane is meant to *see*.
+ * **A gate whose default is the opposite of the rule is a gate every lane has
+ * to remember to opt into**, and a gate kept by memory is not a gate.
+ *
+ * ## The two flags, and why `HEADED` wins when both are set
+ *
+ * | | |
+ * |---|---|
+ * | `HEADED=1` | **Watch it, at a human pace.** Adds `slowMo` |
+ * | `HEADLESS=1` · `HEADED=0` | **Do not open a window.** The opt-out for an unattended run |
+ * | *neither* | **Headed, at full speed** — the new default |
+ *
+ * ⚠️ **`HEADED=1` beats `HEADLESS=1`, deliberately.** `HEADLESS` describes an
+ * *environment* and is the kind of thing a shell exports and forgets;
+ * **`HEADED=1` is an intent, and it is on the command that carries it** —
+ * `make product-demo`. **A demonstration that silently ran headless would lose
+ * the only thing it exists for**, and nobody would notice until the day it was
+ * put in front of somebody.
+ *
+ * ## `slowMo` follows the intent, not the default
+ *
+ * ⛔ **The row says `slowMo` *"already rides on the same flag and should follow
+ * it"*, and following it literally would put 250ms on every action of every
+ * local run** — turning a six-minute suite into a gate nobody can afford,
+ * which is the failure `make endurance` is deliberately kept out of `make e2e`
+ * to avoid. **So it follows the *explicit* `HEADED=1`**: *visible while it runs*
+ * and *watchable at a human pace* are two different products, and only the
+ * second is worth four times the wall clock.
+ *
+ * ## What it deliberately does not do
+ *
+ * ⛔ **It does not look at `DISPLAY`, `CI`, or `SIGNORA_ENVIRONMENT`.** The row
+ * is explicit: **certification runs on the same machine as development**
+ * (§20c-2 — *the correct quantity of CI is zero*), so a deployment or
+ * environment variable cannot separate them, and **the distinction is which
+ * command was run, not where.** ⚠️ **A `DISPLAY` probe would also be a hidden
+ * input** — the same command producing different behaviour from something
+ * outside the declared contract, which is the defect `browserEnvironment()`
+ * above exists to remove rather than one to add beside it.
+ *
+ * ⚠️ **Measured before it was written, because the row feared the opposite:**
+ * `make certify` runs `backend/tests/certification`, which shells out to `tsc`
+ * and **never invokes Playwright.** **No certification path reads this
+ * function today**, so inverting the default cannot slow a gate. The opt-out
+ * exists for the unattended run that will want it, not for one that exists.
+ */
+export interface RunMode {
+  headed: boolean;
+  /** `undefined` rather than `0` — Playwright treats the key's absence as off. */
+  slowMo: number | undefined;
+  /** Which rule decided, so a test can pin the precedence rather than the result. */
+  reason: string;
+}
+
+/** The demonstration's pace, unchanged from when it rode directly on `HEADED`. */
+export const DEMONSTRATION_SLOW_MO = 250;
+
+/**
+ * ⚠️ **Not `NodeJS.ProcessEnv`, and `tsc` is what said so.** This repository
+ * augments that type to REQUIRE `NODE_ENV`, so every test case would have had
+ * to carry a variable this function never reads. ⚡ **The narrower type is also
+ * the truer one**: the whole contract is *two names, looked up in a string map*.
+ */
+export type RunModeEnvironment = Readonly<Record<string, string | undefined>>;
+
+export function resolveRunMode(env: RunModeEnvironment = process.env): RunMode {
+  if (env.HEADED === '1') {
+    return { headed: true, slowMo: DEMONSTRATION_SLOW_MO, reason: 'HEADED=1 — watch it' };
+  }
+  if (env.HEADLESS === '1' || env.HEADED === '0') {
+    return { headed: false, slowMo: undefined, reason: 'opted out of a window' };
+  }
+  return { headed: true, slowMo: undefined, reason: 'the default: headed, full speed' };
+}

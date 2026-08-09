@@ -8348,6 +8348,39 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-260 · `make product-demo-record` needs one `HEADLESS=1`, and the `Makefile` is not this lane's
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **implementing [TASK-476](BACKLOG.md)** — ⚡ **the row predicted this item by name and told this lane to raise it rather than take a second claim** |
+| **Owner** | **Lane C** — 📁 **`platform_foundation`, [`modules.toml`](coordination/modules.toml).** ⛔ **The `Makefile` e2e targets are not Lane A's**, and [TASK-476](BACKLOG.md)'s Module row says so: ⚠️ ***"the `Makefile` e2e targets are `platform_foundation`'s and stay Lane C's — one line naming the mode explicitly… Lane C supplies it on request rather than as a second claim."*** ✅ **This is that request** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION** — **one line, no design, no ruling** |
+| **Status** | 🟢 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **Nothing.** ⚡ **[TASK-476](BACKLOG.md) is complete and green without it** — this is a consequence to close, not a dependency to wait on |
+
+### ⚡ The one line
+
+```make
+product-demo-record:
+	… cd ../frontend && HEADLESS=1 SIGNORA_APP_URL=$(E2E_URL) npx playwright test --project=demo …
+```
+
+### ⚠️ What changed under it, measured
+
+📁 **[TASK-476](BACKLOG.md) inverts the Playwright default: headed unless somebody opts out.** ⛔ **`product-demo-record` sets neither flag, so it was headless by accident of the old default and is now headed.**
+
+| Target | Before | After | Correct? |
+|---|---|---|---|
+| `make product-demo` | **headed** (`HEADED=1`) | **headed** | ✅ **unchanged, and it sets the flag** |
+| `make product-demo-record` | **headless** | ⚠️ **headed** | ⛔ **wants the line above** |
+| `make e2e` · `e2e-quick` · `e2e-smoke` | headless | ✅ **headed** | ✅ **the point of the row** |
+
+⚡ **It still records.** **`video: 'on'` and `trace: 'on'` are the `demo` project's, not the mode's**, so the artifact this target exists for is produced either way. ⛔ **What it loses is running unattended** — a recording on a machine with no display cannot launch a window.
+
+### ⛔ Why the config cannot fix it here
+
+**Both targets run `--project=demo`.** ⚡ **A project-level `headless` override would apply to both, so it cannot separate *watch it* from *record it*** — 📁 **and the row already named the distinction: *"which command was run, not where."*** ✅ **Which command was run is knowable only in the `Makefile`.**
+
 ## C-259 · The palette is unmounted because its opener is occupied, and neither candidate row can mount it alone
 
 | | |

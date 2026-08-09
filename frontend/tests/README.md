@@ -50,12 +50,30 @@ make e2e                    # re-seeds, then the whole suite
 make e2e-quick              # no re-seed, for iterating on one spec
 make e2e-smoke              # ~40s, the shortest proof the product is alive
 make product-demo           # watch Signora being used, headed, at human pace
-make product-demo-record    # the same, headless, keeping the video and trace
+make product-demo-record    # the same, keeping the video and trace
 make e2e ARGS="--grep @a11y"
 
 make endurance                       # 20 minutes in one tab
 make endurance MINUTES=480           # a working day
 ```
+
+### Headed is the default, and that is the rule rather than a preference
+
+**Every one of the commands above opens a browser you can watch** ([TASK-476](../../docs/BACKLOG.md)). `CLAUDE.md` §19 has said *"headed is the default mode for local development and review"* since [D-134](../../docs/DECISION_REGISTER.md), and the config said the opposite until this row — **headless, with `HEADED=1` opting in.** The sentence is what changed the code.
+
+**The purpose is not debugging.** [D-134](../../docs/DECISION_REGISTER.md) makes a headed run a **handover gate**, and *"the purpose is not verification — the assertions already did that. It is continuous product review."* Transitions, empty states, error states and loading states are what a lane is meant to see, and **a gate you have to remember to opt into is not a gate.**
+
+| | |
+|---|---|
+| *nothing set* | **Headed, at full speed** — the default |
+| `HEADED=1` | Headed **and slowed to a human pace.** `make product-demo` sets it |
+| `HEADLESS=1` · `HEADED=0` | **No window.** For a run nobody is watching |
+
+⛔ **`HEADED=1` wins if both are set.** `HEADLESS` describes an environment and is the kind of thing a shell exports and forgets; `HEADED=1` is an intent, on the command that carries it — and a demonstration that silently ran headless would lose the only thing it exists for. The precedence is pinned in `tests/unit/run-mode.test.ts`.
+
+⚠️ **`make product-demo-record` was headless and is now headed**, because it does not set either flag. **It still records** — video and trace are the demo project's, not the mode's — **but it needs `HEADLESS=1` to run unattended**, and the `Makefile` is `platform_foundation`'s. **Requested from Lane C as [C-260](../../docs/LANE_COORDINATION.md); one line, and this row may not write it.**
+
+⛔ **Nothing keys off `CI`, `DISPLAY` or `SIGNORA_ENVIRONMENT`.** Certification runs on the same machine as development (§20c-2 — *the correct quantity of CI is zero*), so an environment variable cannot separate them, and **a `DISPLAY` probe would be exactly the hidden input `browserEnvironment()` exists to remove.**
 
 **`make endurance` is deliberately not part of `make e2e`.** It answers the one question a seven-minute suite cannot — what a tab looks like after an afternoon — and a check nobody can afford to run is a check that gets skipped. It **observes and never asserts**; the judgement is `tests/endurance/trend.ts`, which is pure arithmetic with twenty unit tests behind it and no browser. Samples are appended as they are taken, so a session killed at hour six still has hours one to five.
 

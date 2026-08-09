@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-import { browserEnvironment, resolveAppUrl } from './tests/e2e/fixtures/environment';
+import { browserEnvironment, resolveAppUrl, resolveRunMode } from './tests/e2e/fixtures/environment';
 import { OWNER, MEMBER, storageStatePath } from './tests/e2e/fixtures/personas';
 
 /**
@@ -52,9 +52,12 @@ import { OWNER, MEMBER, storageStatePath } from './tests/e2e/fixtures/personas';
  * journey triples a six-minute suite to buy a compatibility signal nobody has
  * asked a question about yet. `--project=firefox` when the question arises.
  *
- * **Headed is a first-class mode, not a debugging flag.** `PWDEBUG`-style
- * headed runs are what make the demonstration suite watchable, and the whole
- * point of a demonstration is that somebody sees it: `HEADED=1`.
+ * **Headed is the DEFAULT, not a debugging flag** ([TASK-476](../docs/BACKLOG.md)).
+ * `CLAUDE.md` §19 has said *"headed is the default mode for local development
+ * and review"* since [D-134](../docs/DECISION_REGISTER.md), and this file said
+ * the opposite until now. **The rule is what changed the code, not the other
+ * way round.** `HEADLESS=1` for an unattended run; `HEADED=1` when you want the
+ * demonstration's human pace. See `resolveRunMode()`.
  */
 
 /**
@@ -63,6 +66,14 @@ import { OWNER, MEMBER, storageStatePath } from './tests/e2e/fixtures/personas';
  * `tests/e2e/fixtures/environment.ts` for the whole reasoning.
  */
 const APP_URL = resolveAppUrl();
+
+/**
+ * **Headed unless somebody said not to** — [TASK-476](../docs/BACKLOG.md).
+ * The precedence, the reason `HEADED=1` beats `HEADLESS=1`, and why `slowMo`
+ * rides on the explicit flag rather than the default all live beside the
+ * function in `tests/e2e/fixtures/environment.ts`.
+ */
+const RUN_MODE = resolveRunMode();
 
 /**
  * Firefox and WebKit, **absent unless asked for**.
@@ -109,10 +120,10 @@ export default defineConfig({
 
   use: {
     baseURL: APP_URL,
-    // **A watchable run is a different product from a fast one.** The
-    // demonstration suite exists to be seen, and `HEADED=1` is what lets a
-    // person watch Signora being used rather than read that it was.
-    headless: process.env.HEADED !== '1',
+    // **A watchable run is a different product from a fast one** — and after
+    // [TASK-476](../docs/BACKLOG.md) the watchable one is the default, because
+    // `CLAUDE.md` §19 already said it was. `HEADLESS=1` opts out.
+    headless: !RUN_MODE.headed,
     // **`env` is not decoration and its absence was a hidden input.** The suite
     // passed 119/119 in a terminal that happened to export `LD_LIBRARY_PATH`,
     // and could not launch a browser at all in one that did not — a variable
@@ -121,7 +132,10 @@ export default defineConfig({
     // needs it and returns `undefined` when it does not.
     launchOptions: {
       env: browserEnvironment(),
-      ...(process.env.HEADED === '1' ? { slowMo: 250 } : {}),
+      // ⛔ **`slowMo` follows the explicit `HEADED=1`, never the new default.**
+      // 250ms on every action of every local run would turn a six-minute suite
+      // into a gate nobody can afford — the reasoning is with `resolveRunMode`.
+      ...(RUN_MODE.slowMo === undefined ? {} : { slowMo: RUN_MODE.slowMo }),
     },
     // Everything a failure needs, and nothing a pass pays for.
     trace: 'retain-on-failure',

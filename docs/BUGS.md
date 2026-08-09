@@ -165,6 +165,43 @@ QE returned a slice: main=CHANGES REQUESTED, stale integration=IN VALIDATION
 
 **Suggested repair.** ⚡ **Both halves are small.** Give `CHANGES REQUESTED` a rank **above** `IN VALIDATION` — it is a later event in the lifecycle even though it is a return in the workflow — **and add the two cases to [`test_repository_generators.py`](../backend/tests/certification/test_repository_generators.py)**: a notice naming an unreachable row is withheld, and a notice naming a reachable one is published. ⛔ **The second case is the one that stops the guard from being tightened into something that withholds everything.**
 
+### B-222 · `CLAUDE.md` §19 describes the Playwright default it was written to change, and the change has landed
+
+| | |
+|---|---|
+| **Module** | **repository governance** — [`CLAUDE.md`](../CLAUDE.md) §19, *The headed-execution policy* |
+| **Current assignee** | ⛔ **The product owner, and nobody else.** 📁 **§20e's shared-files table: `CLAUDE.md` is written by the product owner** — ⚡ **and the two edits Lane C has ever made to it were *directed rather than drafted*** ([D-170](DECISION_REGISTER.md) §2, [D-195](DECISION_REGISTER.md) §8) |
+| **Severity** | 🟢 **cosmetic — one clause of one note.** ⛔ **The POLICY the section states is now TRUE and was the point**; what is stale is the paragraph explaining why it was not yet |
+| **Status** | **`OPEN`** — **reported by Lane A, 2026-08-09, in the same change that made it stale.** ⛔ **Deliberately not fixed: `CLAUDE.md` is 🔴 and not this lane's** (§20e) |
+| **Found** | 2026-08-09 by Lane A, delivering [TASK-476](BACKLOG.md) — ⚡ **by re-reading the sentence the row exists to make true, rather than by a check** |
+
+**Steps to reproduce.** On this lane's branch:
+
+```bash
+grep -n "HEADED !== '1'" CLAUDE.md
+→ 342: **`playwright.config.ts` reads `headless: process.env.HEADED !== '1'` —
+       headless is today's default and `HEADED=1` opts in**
+
+grep -n "headless:" frontend/playwright.config.ts
+→ headless: !RUN_MODE.headed          # headed unless HEADLESS=1 or HEADED=0
+```
+
+**Expected.** ⚡ **The file describes the repository.**
+
+**Actual.** ⛔ **Line 342 describes the repository as it was before [TASK-476](BACKLOG.md).** **`HEADED=1` no longer *opts in*; it selects the demonstration's pace, and headless is now the opt-*out*.**
+
+### ⚡ Why this is worth a row rather than a shrug
+
+📁 **§2: *"a document must not misdescribe reality"*** — ⛔ **and this is the one file every cold session reads first.** ⚠️ **The clause is also the repository's own worked example of the defect**, which is what makes leaving it wrong expensive: **§19 uses it to teach that a rule stated before its mechanism exists is a defect**, and a teaching example that is itself now false teaches the lesson backwards.
+
+### ✅ The correction, written out so it costs one paste
+
+**Line 342 currently ends:** *"The text is corrected here and the behaviour is [TASK-476](docs/BACKLOG.md); a rule stated before the mechanism exists is the defect this file warns about, so the row exists rather than the claim."*
+
+**What is now true:** **`playwright.config.ts` reads `headless: !RUN_MODE.headed` — headed is the default, `HEADLESS=1` (or `HEADED=0`) opts out, and `HEADED=1` additionally slows the run to the demonstration's pace.** ✅ **[TASK-476](BACKLOG.md) closed the gap this note was recording; the rule and the repository agree.**
+
+> ⚠️ **The lane that made the sentence stale is the lane reporting it, in the same change.** ⛔ **The alternative — landing the config and letting somebody discover the stale note later — is exactly [B-217](#b-217)'s and [B-154](#b-154)'s shape**, and it is cheaper to say so now than to be found.
+
 ### B-162 · the failed-read guard strips `//` inside string literals, so rendered copy on a line with a URL evades it
 
 | | |
