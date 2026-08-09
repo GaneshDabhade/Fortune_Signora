@@ -1521,7 +1521,7 @@ note    = "inbound rate limiting. Nothing guards Signora's own API; 38 files rat
 [[blocked]]
 task    = "TASK-1401"
 blocker = ["C-1405"]
-owner   = "Design Authority"
+owner   = "Product Owner"
 note    = "RE-POINTED on D-208 §2 — it was blocked on C-1408 and that was the wrong blocker. This row calls resolveEntry and follows the route it returns; precedence changes the engine internals, not this call site. What genuinely stops it is that /workspaces and eleven terminal reason codes render nothing (D-205). It frees when the destinations exist, whatever Design rules about precedence"
 
 [[blocked]]
