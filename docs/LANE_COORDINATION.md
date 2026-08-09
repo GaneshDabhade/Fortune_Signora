@@ -468,7 +468,7 @@ databaseUrl: required(
 |---|---|
 | **Raised by** | **QE**, 2026-08-09, on the product owner's ruling |
 | **Owner** | **Lane A** for §2 · **Lane C** for §5 |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **§2 ADOPTED — Lane A, 2026-08-09, on the poll that found this item.** ⛔ **§5 is still Lane C's and this lane does not speak for it**, so the item stays `OPEN` until both halves land |
 | **Blocks** | ⛔ **Nothing today.** ⚡ **QE certifies exactly as before until [427](architecture/427-impact-based-validation.md) steps 3–5 land** |
 
 **[D-200](DECISION_REGISTER.md) §2 asks every Lane A submission to carry an impact summary** — changed areas, potential impact, unaffected areas — **as the starting point QE validates and extends.**
@@ -478,6 +478,23 @@ databaseUrl: required(
 **[D-200](DECISION_REGISTER.md) §5 asks Product Office to state expected impact areas when it creates a task**, giving QE a scope before implementation starts.
 
 > ⛔ **Neither is QE's to write.** **[`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) is Lane C's; the Slice Handoff's fields are §20e's; and a lane's obligations reaching it through a QE poll narrative is exactly what [B-153](BUGS.md) cost an hour ago** — **a row held where the other lane could not see it, and a duplicate identifier as the result.**
+
+### ✅ Lane A's half, done — the first submission carrying it is [TASK-1400](BACKLOG.md)
+
+**QE named the vehicle correctly and this lane took it as named**: an `Impact:` field **inside the `Slice-Handoff` block**, beside `Reuse`, `Preserved`, `Reachable`, `Rollback` and `Budget` — ⛔ **not a new file and not a new convention.** ⚡ **[§20e](../CLAUDE.md) already argues the whole case**: *"a shared queue file would conflict between lanes, and a commit message travels with the change forever and is greppable."*
+
+**Four parts, because [D-200](DECISION_REGISTER.md) §2 asks for three and the fourth is what QE actually acts on:**
+
+| | |
+|---|---|
+| `changed` | The paths this slice touched |
+| `potential` | ⚡ **What could break, and WHY it cannot** — never a bare *"none"* |
+| `unaffected` | **Stated positively**, so QE reads a claim it can falsify rather than an absence it must interpret |
+| `gates` | 🔴 **Which gate results should MOVE** — the one QE compares against |
+
+⚠️ **`potential` is measured before it is written, and on [TASK-1400](BACKLOG.md) that mattered.** The claim *"no module imports `lib/entry`"* was **run, not asserted**: a grep across `app/`, `lib/`, `components/` and `tests/` returns the engine's own suite and nothing else. ⛔ **An impact summary written from intention rather than measurement is [B-151](BUGS.md)'s defect — transcribing instead of measuring — arriving in a new place**, and it would be worse here, because QE is being invited to *narrow* certification on the strength of it.
+
+> 🔴 **The obligation this lane is taking on, stated plainly so it can be held to it:** **QE narrows what it runs on the strength of what this lane writes.** ⛔ **An impact summary that is wrong is not a documentation defect — it is a gap in certification coverage that nobody sees**, and it fails in the direction of shipping a regression rather than of running a slow suite. ✅ **[D-167](DECISION_REGISTER.md) stays the tiebreak: where impact cannot be determined confidently, this lane widens rather than narrows, and says so in the field.**
 
 **What QE is doing meanwhile, and it needs nothing from either lane:** ⚡ **recording per-gate duration in the certification record.** ⛔ **The record captures gates, coverage, invariants, tools, conditions and profile — and not *time*, so the bottleneck D-200 targets has never been measured.** ✅ **One cycle of data then says whether the win is `pytest`, `smoke`, database provisioning or the frontend build.**
 
