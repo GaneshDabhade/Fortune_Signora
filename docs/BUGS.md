@@ -199,6 +199,61 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 **② Invert the list.** ⚡ **Name the environments where a credential in a log is acceptable, rather than the ones where it is not** — ⛔ **so a NEW environment is deployed-by-default instead of development-by-default.** **That is the safe direction and it is a behaviour change to a security guard**, which is 🔴.
 
+### B-226 · A second shipped journey asserts something the product is designed not to do
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tests/e2e/search-journey.spec.ts`](../frontend/tests/e2e/search-journey.spec.ts):22 · [`frontend/lib/query/hooks/search.ts`](../frontend/lib/query/hooks/search.ts):21 |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
+| **Severity** | 🟠 — ⚡ **the PRODUCT is correct.** ⛔ **The assertion is not**, and it is a `@journey` on the search surface |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-09, **on the run that found it.** **`VERIFIED` is QE's.** ⚡ **The fix is verified as far as the fixtures allow**: with a real name the **listbox now renders**, where before it could not exist — ⛔ **which is the whole of what this row is about.** ⚠️ **The spec still fails one step later, on *no options*, and that is [B-224](#b-224)'s fixture drift rather than this defect**: **two workspaces exist — a leftover `E2E Org` and the freshly seeded `Playground`** — **the 149 claims are in `Playground` and the owner's active workspace is the other one.** ⛔ **Not chased further: resetting an active workspace by hand is fixture surgery, and the seed is what should do it** |
+| **Found** | 2026-08-09 by Lane A, ⚡ **running the journeys for [TASK-499](BACKLOG.md)'s verification — the second broken one found by the same method in one day** |
+
+**Steps to reproduce.** With a seeded lane stack:
+
+```
+--grep "@smoke|@journey"  →  45 passed, 1 failed
+  [owner] search-journey.spec.ts:18 @journey a seller finds an account by name and opens it
+  Locator: getByRole('listbox', { name: 'Accounts' })  → element(s) not found
+```
+
+**Expected.** ✅ **Typing a name shows matching accounts.**
+
+**Actual.** ⛔ **The spec types ONE character and the search deliberately does not fire below TWO.**
+
+```
+frontend/lib/query/hooks/search.ts:21   export const MINIMUM_QUERY = 2;
+frontend/lib/query/hooks/search.ts:44   enabled: … && trimmed.length >= MINIMUM_QUERY
+frontend/tests/e2e/search-journey.spec.ts:22   await search.fill('a');
+```
+
+⚡ **So the listbox can never appear, and the fifteen-second wait is spent proving a designed refusal.**
+
+### 📁 Dated, and the order is the finding
+
+| | |
+|---|---|
+| **2026-08-03** | `MINIMUM_QUERY = 2` lands — `7fb2cf2d`, *"A1 — find an account by name"* |
+| **2026-08-08** | The spec types `'a'` — `80c21b14`, [TASK-484](BACKLOG.md) |
+
+⛔ **The minimum was five days old when the spec was written against it.** ⚡ **Not a regression — a journey that has never passed since it was authored**, and nothing said so.
+
+### 🔴 Second instance in one day, and that is the point
+
+📁 **[B-225](#b-225) was the first**, found the same way this morning: *"nothing runs the journeys."* ⚡ **This is the same gap producing a second casualty**, and QE independently hit the third face of it in cycle 159 — 📁 **it could not run the journeys at all off `main`** ([B-156](#b-156)).
+
+> ⚠️ **Three lanes, three encounters, one gap.** ⛔ **A gate nothing executes does not fail; it rots**, and the rot is only visible to whoever next runs it by hand.
+
+### ✅ The fix
+
+**Type a real query.** ⚡ **The seeded accounts are known**, so the spec asks for something a seller would type rather than one letter:
+
+```ts
+await search.fill('north');
+```
+
+⛔ **Not `MINIMUM_QUERY` characters of anything** — a two-letter query that happens to clear the threshold would still be a test about the threshold. **A journey types a name.**
+
 ### B-225 · A shipped `@smoke` journey has been red since 2026-08-08, and nothing runs the journeys so nothing said so
 
 | | |

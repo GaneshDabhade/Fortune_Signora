@@ -20,7 +20,13 @@ test.describe('Search → Open Result', () => {
     const search = page.getByRole('combobox', { name: 'Find an account by name' });
     await expect(search).toBeVisible();
 
-    await search.fill('a');
+    // ⚠️ **B-226 — this typed a single character and could never pass.**
+    // `MINIMUM_QUERY = 2` has been the search's threshold since 2026-08-03
+    // and the spec was written against it on 2026-08-08, so the listbox was
+    // being waited for through a designed refusal. **A journey types a name**,
+    // and this is the one `account-search.tsx`'s own comment uses as its
+    // worked example: *"Show me Databricks."*
+    await search.fill('Databricks');
     // The listbox is the affordance the component's own comment defends:
     // *"a listbox rather than a menu — the results are a set of things to
     // choose"*. Waiting on it rather than on a timeout.
