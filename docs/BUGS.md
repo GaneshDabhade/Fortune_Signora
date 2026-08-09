@@ -80,6 +80,42 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-153 · QE ran the check that caught a duplicate identifier and grepped past the finding
+
+| | |
+|---|---|
+| **Module** | Repository state — [`docs/BUGS.md`](BUGS.md) |
+| **Current assignee** | **QE** — QE merged both rows and QE folded them |
+| **Severity** | 🟡 — **the register carried one defect under one id twice.** ⛔ **What it breaks is the ability to refer to either separately** |
+| **Status** | ✅ **`FIXED`** — folded in the cycle it was found |
+| **Found** | 2026-08-09 by QE, cycle 135, **after promoting the duplicate to `main`** |
+
+**Steps to reproduce.** At `e6be77e7`:
+
+```
+$ python3 infra/state-check.py
+B- identifiers are allocated twice: B-152. Two rows under one id is two
+defects nobody can refer to separately (CLAUDE.md §20e).
+```
+
+**Expected.** One id, one row.
+
+**Actual.** ⛔ **Two `B-152` sections.** **QE filed the row at `444b9c28` and held it on `lane-qe` for five polls; Lane C could not see it, and after QE reported the condition in a poll narrative, Lane C wrote its own row under the same id.** **QE then cherry-picked both into one candidate.**
+
+### ⛔ The check fired and QE did not read it
+
+**`state-check` was run before the Closeout commit, exactly as [B-150](#b-150--qe-promoted-a-conflict-marker-to-main-and-the-check-that-names-it-was-skipped-rather-than-missing) requires.** ⚡ **It caught this.** ⛔ **QE piped it through `grep -icE "conflict marker"` and never saw the line.**
+
+> ⚠️ **B-150 was *the check was skipped*. This is *the check was run and filtered*.** ⛔ **The second is worse, because the output said `0` and looked like a pass.** ✅ **The fix is one word: read the finding list, not a count of the finding you expected.**
+
+### ⚠️ And the deeper cause is a habit QE adopted for a good reason
+
+**QE holds documentation-only work on `lane-qe` rather than certifying it alone (§20e).** ⚡ **That is correct and QE will keep doing it.** ⛔ **But a held row is invisible to every other lane**, and B-152 sat there five polls while the office it named was working the same defect. **Nothing was lost — both accounts survive in one row — but the duplicate was the predictable cost.**
+
+✅ **Folded rather than renumbered: they are one defect, and two ids for one defect is what the identifier rule exists to prevent.**
+
+---
+
 ### B-152 · Lane A's queue names a `BLOCKED` row as its one claimable item, so the lane has nothing to take
 
 | | |
@@ -152,6 +188,36 @@ key=lambda r: (not r.on_integration, …)
 
 ---
 
+
+
+### ✅ Lane C's account, folded in — it was filed and fixed under one id
+
+⛔ **Two `B-152` sections reached `main`: QE filed the row while holding it on `lane-qe`, and Lane C — which could not see it — wrote its own under the same id after QE reported the condition in a poll.** ⚡ **QE merged both without reading `state-check`'s duplicate finding, which had caught it.**
+
+✅ **Folded rather than renumbered.** **They are one defect**, and two ids for one defect is the thing the identifier rule exists to prevent (§2 — *truth has exactly one authoritative representation*).
+
+| | |
+|---|---|
+| **Module** | **`infra/`** — Platform Foundation, [D-022](DECISION_REGISTER.md) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **a lane polling the ref would claim a row `origin/integration` carries as `BLOCKED`**, ⚡ **and the one guard against that was Lane A reading the backlog rather than trusting the projection** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-09.** **`on_integration` becomes a FILTER rather than a preference.** **`VERIFIED` is QE's** |
+| **Found** | **Filed by QE. Re-reported by Lane A on 2026-08-09** — ⚡ **which had said the previous poll that it would report it *if it survived a republication*. It did.** ⛔ **This office republished twice in between and did not check** |
+| **Steps** | **Release a row on `lane-c-sync`, let the owning lane set it `BLOCKED` on `integration`, regenerate** |
+| **Expected** | **`current` names a row the lane can claim** |
+| **Actual** | ⛔ **`current = "TASK-470"` with `claimable = 1`, while `origin/integration` carried TASK-470 as `BLOCKED` — Lane A had released the claim and this office's branch still read `READY`** |
+
+## ⚡ A preference is not a constraint
+
+📁 **The sort already knew**: `key=lambda r: (not r.on_integration, …)` — ⛔ **it merely PREFERRED an on-integration row, and with none available it named an off-integration one anyway.**
+
+> ## 🔴 **That is [C-425](LANE_COORDINATION.md) exactly, and this office wrote the ruling: *"the ref does not get to be ahead; it gets to be fast."*** ⛔ **The `on_integration` field was added to prevent this and was wired as a tiebreak.**
+
+✅ **Now a filter.** **`current` is empty when nothing is claimable on `integration`.** ⚡ **And the pairing is deliberately kept: an empty `current` beside `claimable = 1` says the true thing — *work exists and QE has not integrated it* — where a stale `current` said the false one.**
+
+⚠️ **Lane A's own note is the finding worth keeping**: ***"the projection is half-right: `claimable_now = 0` does report the truth alongside the stale `current`."*** ⛔ **A source that contradicts itself is worse than one that is simply wrong, because a reader can believe either half.**
+
+---
 
 ### B-151 · QE published "Blocking Quality Defects: None" for eleven cycles while two were open
 
@@ -1233,31 +1299,6 @@ def _load_state_check() -> ModuleType:
 ✅ **And the post-condition that caught it in seconds: `tomllib.loads()` on the file before anything reads it.** **The queue is parsed by four instruments; making the *author* parse it first is one line.**
 
 ⚠️ **This is the fifth instance today of one class — a pattern answering a question only the structure can answer** ([B-411](#b-411--a-non-greedy-regex-under-res-swallowed-the-row-below-the-one-it-edited) lists the first four). ⛔ **The pattern across all five is not carelessness; it is that text tools are being used on structured files, and the fix is not more care — it is parsing.**
-
----
-
-### B-152 · The coordination source advertised a row the backlog had blocked
-
-| | |
-|---|---|
-| **Module** | **`infra/`** — Platform Foundation, [D-022](DECISION_REGISTER.md) |
-| **Current assignee** | **Lane C** |
-| **Severity** | 🟠 — ⛔ **a lane polling the ref would claim a row `origin/integration` carries as `BLOCKED`**, ⚡ **and the one guard against that was Lane A reading the backlog rather than trusting the projection** |
-| **Status** | ✅ **`FIXED` — Lane C, 2026-08-09.** **`on_integration` becomes a FILTER rather than a preference.** **`VERIFIED` is QE's** |
-| **Found** | **Filed by QE. Re-reported by Lane A on 2026-08-09** — ⚡ **which had said the previous poll that it would report it *if it survived a republication*. It did.** ⛔ **This office republished twice in between and did not check** |
-| **Steps** | **Release a row on `lane-c-sync`, let the owning lane set it `BLOCKED` on `integration`, regenerate** |
-| **Expected** | **`current` names a row the lane can claim** |
-| **Actual** | ⛔ **`current = "TASK-470"` with `claimable = 1`, while `origin/integration` carried TASK-470 as `BLOCKED` — Lane A had released the claim and this office's branch still read `READY`** |
-
-## ⚡ A preference is not a constraint
-
-📁 **The sort already knew**: `key=lambda r: (not r.on_integration, …)` — ⛔ **it merely PREFERRED an on-integration row, and with none available it named an off-integration one anyway.**
-
-> ## 🔴 **That is [C-425](LANE_COORDINATION.md) exactly, and this office wrote the ruling: *"the ref does not get to be ahead; it gets to be fast."*** ⛔ **The `on_integration` field was added to prevent this and was wired as a tiebreak.**
-
-✅ **Now a filter.** **`current` is empty when nothing is claimable on `integration`.** ⚡ **And the pairing is deliberately kept: an empty `current` beside `claimable = 1` says the true thing — *work exists and QE has not integrated it* — where a stale `current` said the false one.**
-
-⚠️ **Lane A's own note is the finding worth keeping**: ***"the projection is half-right: `claimable_now = 0` does report the truth alongside the stale `current`."*** ⛔ **A source that contradicts itself is worse than one that is simply wrong, because a reader can believe either half.**
 
 ---
 
