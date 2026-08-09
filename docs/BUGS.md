@@ -142,6 +142,20 @@ integration 03a81b5d → b9cbb641…     main f954477e → b9cbb641…
 
 **Why it cannot be fixed by republishing.** `awaiting_qe_transition` counts rows stranded at `IN VALIDATION`, and `lane_utilization` derives from what lanes are working. ⛔ **Both change when *another* lane pushes, and Product Office is not involved** — so **the file goes stale through nobody's inaction**, and the only interval in which `--check` passes is between a regeneration and the next lane's push.
 
+> ⚡ **Strengthened 2026-08-09 at `a68134d6`, and QE's original measurement understated it.** **A second occurrence was 66 changed lines, and every single one is an ELAPSED-TIME counter:**
+>
+> ```
+>   60  blocked_days
+>    4  blocked_duration_days
+>    2  dependency_wait_days
+> ```
+>
+> ⛔ **Zero task-level lines. Zero backlog entries. Zero claimable counts.** ⚠️ **These do not need another lane to push — they change with the WALL CLOCK, so the file goes stale while the repository is idle and nobody has done anything at all.**
+>
+> ⚡ **The generator's own docstring already names this exact failure and believes it fixed:** *"[it] read the wall clock and baked the result into the file, so the file drifted stale against its own `--check` roughly every 2.4 hours."* ⛔ **That repair covered `[meta]`'s timestamp** ([B-134](#b-134)) **and left three day-counters inside `_content` with the identical property.**
+>
+> ✅ **This makes the fix narrower and more obvious than the row first suggested**: the volatile set is **`blocked_days` · `blocked_duration_days` · `dependency_wait_days` · `awaiting_qe_transition` · `lane_utilization`**, and excluding them from `_content` — as `[meta]` already is — leaves a comparison that only changes when the *projection* changes.
+
 > ⚠️ **[B-134](#b-134) is the same defect one field over, and its fix was half of one.** **That row removed `[meta]` from the comparison** — *"a check that reports stale about an accurate file teaches a reader to ignore it"* — ⛔ **and left inside `_content` two numbers with exactly the same property as the timestamp it excluded.**
 
 **Why QE cares rather than filing it as tidiness.** ⛔ **QE spent four cycles reporting *"the coordination source is stale"* from this check**, and for three of those it was true and material ([B-159](#b-159)). ⚠️ **On the fourth it was metric drift, and nothing in the output distinguishes the two** — **so a real `claimable_now = 0` and a harmless `lane_utilization` delta print the same sentence.** ⚡ **That is the cost: the signal that found B-159 can no longer be trusted to mean it.**
