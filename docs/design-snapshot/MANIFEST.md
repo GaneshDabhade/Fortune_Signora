@@ -80,6 +80,22 @@
 
 ---
 
+## ⚡ Refresh record — 2026-08-09, the Entry Coverage Review
+
+**Instructed by the product owner** ([D-206](../DECISION_REGISTER.md)) **to review `Fortune Signora Entry Coverage Review` as a mandatory architectural review before further Entry decomposition.**
+
+| | |
+|---|---|
+| **Retrieved** | **`Fortune Signora Entry Coverage Review.dc.html`** — **59,958 bytes** |
+| **sha256** | `eeb8c31713bef5aeec4873920423aac9…` |
+| **Method** | `DesignSync` · `list_files` then `get_file`, against project `1d043179-1ee9-4c9f-b59e-592e04297cad` |
+| **Kind** | ⚠️ **NOT a screen specification.** ⛔ **It draws nothing and specifies no destination.** ⚡ **It is a COMPLETENESS AUDIT of `Fortune Signora Authenticated Entry`, and it is imported as evidence rather than as an implementation authority** |
+
+> ## ⛔ **It does not join [D-138](../DECISION_REGISTER.md)'s implementation authority, and the distinction is load-bearing.** **A lane implementing from this document would build nothing — it names owners for gaps and deliberately does not fill them** (📁 its own §07: *"It did not design the missing screens"*). ✅ **The four documents it RECOMMENDS would be implementation authorities; this one is the argument for writing them.**
+
+⚠️ **The upstream project now returns 34 paths.** ⛔ **`ICP Builder` and `People Intelligence` remain unimported** — the debt recorded in the 2026-08-08 refresh below still stands and is now one cycle older.
+
+
 ## ⚡ Refresh record — 2026-08-08, partial and deliberately so
 
 **Instructed by the product owner** ([D-193](../DECISION_REGISTER.md)) **to adopt `Fortune Signora Authenticated Entry` as the authority for all post-authentication behaviour.**

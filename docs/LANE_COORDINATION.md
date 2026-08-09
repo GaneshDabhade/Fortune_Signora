@@ -354,6 +354,8 @@ databaseUrl: required(
 | [C-247](#c-247-a-person-in-two-organizations-gets-two-themes-and-task-470s-row-says-otherwise) | 🟠 **A person in two organizations gets two themes, and TASK-470's row says otherwi** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is a customer's experience of belonging to two organizations |
 | [C-248](#c-248-four-profile-fields-are-locked-as-managed-by-northwind-it-and-no-directory-sync-exists) | 🟠 **Four profile fields are locked as *"Managed by Northwind IT"* and no directory** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is how complete screen `01` looks at review** — named here s |
 | [C-249](#c-249-two-rows-on-the-ai-screen-are-policies-and-neither-policy-exists) | 🟠 **Two rows on the AI screen are policies, and neither policy exists** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 9 review is shown** |
+| [C-1405](#c-1405--the-entry-coverage-review-recommends-four-documents-and-three-of-them-block-work-already-released) | 🔴 **The Entry Coverage Review recommends four documents, and three block work already released** | **Lane C**, 2026-08-09, reviewing under [D-206](DECISION_REGISTER.md) | ⛔ **Product Owner** — commissioning a design document is not this office's | 🔴 **`OPEN`** | ⏸️ **[TASK-1421](BACKLOG.md)** and ⏸️ **[TASK-1423](BACKLOG.md)** — both released `READY` in error and now correctly blocked |
+| [C-1406](#c-1406--the-review-says-the-engine-has-no-routing-defect-and-a-lane-that-implemented-it-found-three) | 🟠 **The review says the engine has no routing defect; the lane that built it found three** | **Lane C**, 2026-08-09, against [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | ⛔ **Product Owner** — same question as [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) ③ | 🟠 **`OPEN`** | ✅ **Nothing.** ⚠️ **It changes whether the Entry document is treated as settled** |
 | [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | 🟠 **The Entry Engine's rule table counts 24, the row said 21, and one rule cannot fire** | **Lane A**, 2026-08-09, **implementing [TASK-1400](BACKLOG.md)** — ⚡ **all three found by building** | **Lane C** for ① *(corrected 2026-08-09)* · ⛔ **Product Owner** for ③ | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **③ decides what support reads in a diagnostics bundle** |
 | [C-1404](#c-1404--machine-credentials-have-no-module-and-the-entry-engine-already-admits-a-non-human-principal) | 🟠 **Machine credentials have no module, and the entry engine already admits a non-human principal** | **Lane C**, 2026-08-09, decomposing [workflow 11](coordination/workflows.toml) | ⛔ **Product Owner** if a new module is required — **inventing a module boundary is architecture** | 🟠 **`OPEN`** | ⏸️ **[TASK-1413](BACKLOG.md)**, and nothing being built today |
 | [C-1403](#c-1403--a-403-names-its-approvers-and-nothing-publishes-who-they-are) | 🟡 **A `403` names its approvers, and nothing publishes who they are** | **Lane C**, 2026-08-09, decomposing [workflow 28](coordination/workflows.toml) | **Lane A** — `workspace_tenancy` is this lane's | 🟡 **`OPEN`** | ✅ **Nothing** — **[TASK-1409](BACKLOG.md) ships the `403` without the affordance and says so** |
@@ -8565,6 +8567,54 @@ rules parsed: 24   ·   distinct reason codes: 24
 **Screen `14` offers *"Request a new invitation"*** — *"one click notifies the original inviter and the workspace admins."* ⛔ **Nothing can grant it**: `tests/components/join.test.tsx` already asserts the control is never offered ***"because nothing can grant it"*** — no endpoint, no table, no row — **and that assertion was written by this lane against the same absence.**
 
 **The decision, in one sentence:** ⚡ **may an invitation link, on its own, reveal a company's name, headcount, an employee's name and a role?** ✅ **If yes, that is an endpoint and an ADR.** ⛔ **If no, screen `13` is a different screen and the design needs amending** — **and until either lands, `/join` shows what a non-member may truthfully be shown.**
+
+## C-1405 · 🔴 The Entry Coverage Review recommends four documents, and three of them block work already released
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-09, reviewing `Fortune Signora Entry Coverage Review` under [D-206](DECISION_REGISTER.md) |
+| **Owner** | ⛔ **Product Owner** — **commissioning a design document is not this office's** ([§21](../CLAUDE.md): implement the design, never invent it) |
+| **Status** | 🔴 **`OPEN`** |
+| **Blocks** | ⏸️ **[TASK-1421](BACKLOG.md)** and ⏸️ **[TASK-1423](BACKLOG.md)** — **both released `READY` by this office earlier today and now correctly `BLOCKED`** |
+
+✅ **This office reviewed the document adversarially and ADOPTS it.** ⚡ **Its architecture is sound, its four-document recommendation is better than the eleven the brief implied, and two of its governance rules — *"cards declare, Home arranges"* and *"compositions are configuration"* — are exactly what [TASK-1405](BACKLOG.md) and [TASK-1406](BACKLOG.md) already assume.**
+
+**What is being asked is a commissioning decision, in the review's own priority order:**
+
+| | Document | Why it is first | Blocks here |
+|---|---|---|---|
+| **3** | **Session Continuity** | 📁 ***"the only genuinely cross-cutting gap"*** — **five shipped documents already promise behaviour only this specifies** | [TASK-1426](BACKLOG.md) · rule 04's half of [TASK-1423](BACKLOG.md) |
+| **4** | **Home** *(expand Executive Dashboard)* | **Rule 24 is the most travelled path and three of its four outcomes are undrawn** | [TASK-1424](BACKLOG.md) · [TASK-1425](BACKLOG.md) |
+| **5** | **Workspace Chooser** | 📁 ***"the single largest hole… no document draws it"*** | 🔴 **[TASK-1421](BACKLOG.md) entirely** |
+| **6** | **Security Gates** | **The challenge raised against somebody mid-sentence has no owner** | [TASK-1410](BACKLOG.md)'s screen · rule 05's half of [TASK-1423](BACKLOG.md) |
+| **7** | **Workspace Lifecycle States** | **Suspended, archived and deleted share one mechanic and are split across three documents** | rules 15–17 of [TASK-1423](BACKLOG.md) |
+
+> ⚡ **Priorities 1 and 2 need no commissioning and this office recommends them today**: **the four textual contradictions**, and **the *Specified in* column on the Entry rules table.** 📁 **The review's own argument: *"Every day they wait, more code is written against the wrong model."*** ⛔ **Both are edits to documents that already exist, and [D-138](DECISION_REGISTER.md) makes the snapshot the authority — so they are the product owner's to make upstream, not this office's to patch locally.**
+
+⚠️ **This office's own error, recorded rather than absorbed:** ⛔ **[TASK-1421](BACKLOG.md) and [TASK-1423](BACKLOG.md) were released to Lane A as *cheap safety rows* two hours before this review was read.** **TASK-1421 cited *"§03 rule 13"* as its design authority — one sentence in a rules table, for a screen the review says has never been drawn.** ✅ **Corrected the same cycle, and the finding that produced them is unaffected: `/workspaces` still does not exist, so [TASK-1401](BACKLOG.md) still must not be wired.**
+
+## C-1406 · The review says the engine has no routing defect, and a lane that implemented it found three
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-09, reviewing the Entry Coverage Review against [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) |
+| **Owner** | ⛔ **Product Owner** — ⚡ **it is the same question already queued as [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) ③, and this item exists because a REVIEW has now asserted the opposite** |
+| **Status** | 🟠 **`OPEN`** |
+| **Blocks** | ✅ **Nothing.** ⚠️ **What it changes is whether the Entry document is treated as settled** |
+
+📁 **The review states it four times: *"Do not change: any rule"* · *"The audit found no routing defect"* · *"the engine survives this review unaltered"* · and its own scorecard reads *"0 · Changes needed to Entry's routing logic"*.**
+
+⛔ **Lane A found three, by BUILDING the table** ([C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire)):
+
+| | |
+|---|---|
+| ⛔ **Rule 24 `HOME` cannot fire** | Its condition is *"no other rule matched"*, and gate 3 always produces a reason. ⚡ **The same document tints that row and calls it *"the default and the most common outcome"*** |
+| ⛔ **Seven rules are dead read flat** | Rules 10–14 partition every membership shape, so 18–24 are unreachable unless *resolve* and *fail* are read as two outcomes — **which §02 does say, and the rules table does not** |
+| ⚠️ **Rule 04's route is `(intent preserved)`** | **With no intent there is nothing to preserve and the document does not say where that lands** |
+
+> ## 🔴 **The review classifies rule 24 as *B · expand Home* and never notices the rule cannot fire.** ⛔ **A completeness audit that reads the table without executing it cannot find this class**, and that is the honest limit of the method rather than sloppiness — ✅ **but the conclusion *"no routing defect"* is stated without that qualification, and a reader will take it as verified.**
+
+✅ **Recommendation: adopt the review's coverage findings in full, and treat its *no routing defect* conclusion as UNTESTED rather than false.** ⚡ **The engine ships with all three handled** — the resolution code wins, rule 24 is kept as the totality guard with a test asserting it cannot fire, and the gate ladder is implemented as §02 describes.
 
 ## C-1404 · Machine credentials have no module, and the entry engine already admits a non-human principal
 

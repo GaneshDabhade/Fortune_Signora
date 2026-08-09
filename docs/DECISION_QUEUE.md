@@ -43,6 +43,32 @@
 
 ⛔ **Nothing is blocked** — **[TASK-1413](BACKLOG.md) is sequenced behind this and Lane A has 24 other startable rows.**
 
+## 🔴 C-1405 · Commission four design documents — the Entry Coverage Review's own priority order
+
+> ## ✅ **Governance reviewed the document adversarially and ADOPTS it.** ⚡ **The architecture is sound and the four-document recommendation is better than the eleven the brief implied.** ⛔ **What is asked here is a commissioning decision, which is not this office's** ([§21](../CLAUDE.md)).
+
+| | Document | The review's argument | What it unblocks here |
+|---|---|---|---|
+| **①** | **Session Continuity** | 📁 *"the only genuinely cross-cutting gap"* — **five shipped documents already promise behaviour only this specifies** | [TASK-1426](BACKLOG.md), and rule 04's half of [TASK-1423](BACKLOG.md) |
+| **②** | **Home** *(expand Executive Dashboard)* | **Rule 24 is the most travelled path and three of four outcomes are undrawn** | [TASK-1424](BACKLOG.md), [TASK-1425](BACKLOG.md) |
+| **③** | **Workspace Chooser** | 📁 *"the single largest hole… no document draws it"* | 🔴 **[TASK-1421](BACKLOG.md) entirely** |
+| **④** | **Security Gates** | **A challenge raised against somebody mid-sentence has no owner** | [TASK-1410](BACKLOG.md)'s screen, rule 05 |
+| **⑤** | **Workspace Lifecycle States** | **One mechanic split across three documents, which is why none is complete** | rules 15–17 |
+
+⚡ **Two things need no commissioning and this office recommends them TODAY:** ✅ **the four textual contradictions** (Executive Dashboard breadcrumb and route · App Shell rail · App Shell's *lands on Home* sentence · Design Review's screen count) and ✅ **the *Specified in* column on the Entry rules table.** 📁 **The review's own argument for putting them first: *"Every day they wait, more code is written against the wrong model."*** ⛔ **Both are edits to the upstream snapshot, which [D-138](DECISION_REGISTER.md) makes the authority — the product owner's to make, not this office's to patch locally.**
+
+⚠️ **This office's error, recorded rather than absorbed**: **[TASK-1421](BACKLOG.md) and [TASK-1423](BACKLOG.md) were released to Lane A as *cheap* two hours before this review was read.** ✅ **Both are now `BLOCKED` on this item.** ⛔ **The finding that produced them is unaffected — `/workspaces` still does not exist, so [TASK-1401](BACKLOG.md) still must not be wired.**
+
+## 🟠 C-1406 · The review says the engine has no routing defect; the lane that built it found three
+
+> 📁 **The review, four times: *"Do not change: any rule"* · *"The audit found no routing defect"* · *"the engine survives this review unaltered"* · scorecard *"0 changes needed to Entry's routing logic"*.**
+
+⛔ **Lane A found three by building the table** ([C-250](LANE_COORDINATION.md)) — **rule 24 cannot fire while the same document calls it *"the most common outcome"*; seven rules are dead read flat; rule 04's route is `(intent preserved)` with nowhere to land when there is no intent.**
+
+🔴 **The review classifies rule 24 as *B · expand Home* and never notices it cannot fire.** ⚡ **A completeness audit that reads the table without executing it cannot find this class** — ✅ **that is the honest limit of the method, not sloppiness.** ⛔ **But *"no routing defect"* is stated without that qualification, and a reader will take it as verified.**
+
+✅ **Recommendation: adopt the coverage findings in full; treat *no routing defect* as UNTESTED rather than false.** **Nothing is blocked** — the engine ships with all three handled, and [C-250](LANE_COORDINATION.md) ③ is the product decision that remains.
+
 ## 🔴 C-1401 · `CLAUDE.md` tells every lane to read four queue fields that were deleted
 
 > ## ⛔ **One word of approval. The replacement text is written and nothing else is needed.**
