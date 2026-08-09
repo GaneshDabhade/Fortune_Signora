@@ -1487,35 +1487,40 @@ backlog = ["TASK-1456", "TASK-1439", "TASK-1440", "TASK-1453", "TASK-1446", "TAS
             "TASK-1438", "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
             "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
-# 🔴 D-222 §6 — THE ENTRY ENGINE IS IMPORTED BY NOTHING. TASK-1456, at the head.
+# 🔴 D-222 §6 / D-224 — THE ENTRY ENGINE HAS ZERO PRODUCTION CALLERS.
+#    TASK-1456. AND IT IS AN AUDIT ROW, NOT AN INSTRUCTION TO WIRE ANYTHING.
 #
-#    lib/entry exports resolveEntry, resolveWorkspace, workspaceHome, RULES,
-#    GATES. All five have ZERO references outside lib/entry and its tests.
-#    No dynamic import, no barrel re-export — checked before writing this.
+#    WHAT LANE C PROVED, AND IT IS ONE THING:
+#      lib/entry exports resolveEntry, resolveWorkspace, workspaceHome,
+#      RULES, GATES. All five have ZERO references outside lib/entry and
+#      its tests. No dynamic import, no barrel re-export — checked.
 #
-#    What the product actually does, in full, app/(app)/layout.tsx:34-37:
-#      const session = await auth().api.getSession(...)
-#      if (!session?.user) redirect('/signin')
-#      return <AuthenticatedShell ...>
+#      app/(app)/layout.tsx:34-37 is the whole entry behaviour:
+#        const session = await auth().api.getSession(...)
+#        if (!session?.user) redirect('/signin')
+#        return <AuthenticatedShell ...>
 #
-#    So workspace selection, last-used workspace, no-workspace, onboarding
-#    continuation, role-based composition, deep-link restoration, session
-#    expiry, step-up, invitation acceptance and the 21 reason codes are all
-#    unreachable. Not partial — the module that computes them is never called.
+#    WHAT LANE C DID NOT PROVE, and you must not read as proven:
+#      whether the engine matches the finalized design · whether its
+#      destinations exist · what the runtime does · whether wiring needs
+#      shell changes · whether competing redirect mechanisms exist.
 #
-# WARNING: IT DOES NOT MEAN THE ENGINE IS WRONG. Compare RULES against the
-#    design before changing a line of it (D-220 section 10). It may be
-#    entirely correct and simply unplugged.
+#    D-224 CORRECTED ME ON THIS ROW. An earlier version told you to "wire
+#    the resolver, honour the codes whose destinations are built" and put a
+#    sequencing decision here. That was implementation detail that belongs
+#    to you. It is withdrawn. The audit is yours, and the implementation
+#    sequence is yours to decide from it.
 #
-#    AND IT HAS A REAL DEPENDENCY: workspaceHome() returns /w/:workspace/home,
-#    which TASK-1438 creates. Wiring the engine first turns a working redirect
-#    into a 404. Take them together, or 1438 first — your call; D-221 s12 says
-#    follow the technical dependency and not the queue.
+#    Also corrected: I said 21 reason codes twice. reasons.ts:49-81 defines
+#    24. I counted only after you would have had to.
 #
-#    THIRD INSTANCE OF THE SAME CLASS: command-palette (C-259), confidence
-#    (C-266), drawer and copyable-id (498 s5.1), now a whole subsystem. Note
-#    TASK-1451's guard as written walks components/ui and would NOT have
-#    caught this one — it is lib/. Worth widening when you build it.
+#    The row carries D-224's twelve questions, the five evidence classes
+#    (including UNVERIFIED, which may never be reported as compliant), the
+#    full entry-path trace, and the output table s14 requires.
+#
+#    DO NOT treat TASK-1400 as evidence of compliance. It was implemented,
+#    tested, covered, reviewed and accepted. Every gate passed. None asked
+#    whether anything called it.
 #
 # ✅ D-221 — AUDIT ACCEPTED. PROCEED. 2026-08-09. No new ruling, no new process.
 #
