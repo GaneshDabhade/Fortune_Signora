@@ -32,7 +32,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
   const session = await auth().api.getSession({ headers: await headers() });
-  if (!session?.user) redirect('/sign-in');
+  if (!session?.user) redirect('/signin');
 
   // `QueryProvider` is already mounted in the root layout, so only the
   // workspace context is added here — wrapping a second query client would

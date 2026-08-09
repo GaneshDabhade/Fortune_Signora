@@ -103,14 +103,14 @@ test.describe('signing out', () => {
     await expect(second.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
 
     await page.getByRole('button', { name: 'Sign out' }).click();
-    await page.waitForURL(/\/sign-in/, { timeout: 20_000 });
+    await page.waitForURL(/\/signin/, { timeout: 20_000 });
 
     // The second tab holds a rendered page; the session behind it is gone.
     // What must not happen is that it keeps working — a signed-out session
     // still serving data is the defect a shared machine turns into an
     // incident.
     await second.reload();
-    await expect(second).toHaveURL(/\/sign-in/, { timeout: 20_000 });
+    await expect(second).toHaveURL(/\/signin/, { timeout: 20_000 });
     await second.close();
   });
 });

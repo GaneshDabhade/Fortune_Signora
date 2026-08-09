@@ -50,7 +50,7 @@ test.describe('the session ends while somebody is working', () => {
     // **Either outcome is defensible; disappearing is not.** The product may
     // refuse and say so, or it may bounce to sign-in. What it must never do is
     // close the dialog as though the work was saved.
-    const signedOut = page.waitForURL(/\/sign-in/, { timeout: 20_000 }).then(() => 'sign-in');
+    const signedOut = page.waitForURL(/\/signin/, { timeout: 20_000 }).then(() => 'sign-in');
     const stillHere = expect(business.dialog)
       .toBeVisible({ timeout: 20_000 })
       .then(() => 'dialog');

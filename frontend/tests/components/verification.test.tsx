@@ -16,7 +16,7 @@ vi.mock('@/lib/auth/client', () => ({
   resendVerification: (...args: unknown[]) => resendVerification(...args),
 }));
 
-import { ResendVerification } from '@/app/(auth)/verify-email/resend';
+import { ResendVerification } from '@/app/(auth)/verify/resend';
 
 const ADDRESS = 'm.reinhardt@northwind.com';
 

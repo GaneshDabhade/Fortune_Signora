@@ -28,7 +28,7 @@ import { AttentionPage } from '../pages/attention';
 import { BriefPage } from '../pages/brief';
 import { BusinessPage } from '../pages/business';
 import { SettingsPage } from '../pages/settings';
-import { SignInPage } from '../pages/sign-in';
+import { SignInPage } from '../pages/signin';
 
 export interface ConsoleEvidence {
   /** `console.error` lines, and failed resource loads the browser reports. */
@@ -86,7 +86,7 @@ export const test = base.extend<SignoraFixtures>({
     }
   },
 
-  // The flow itself lives in `pages/sign-in.ts`, because the endurance
+  // The flow itself lives in `pages/signin.ts`, because the endurance
   // recorder signs in too and a second copy of it is a second thing to forget
   // the next time the redirect changes (B-304).
   signIn: async ({ page }, use) => {

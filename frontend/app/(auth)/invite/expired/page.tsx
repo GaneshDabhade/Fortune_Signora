@@ -63,7 +63,7 @@ export default function InvitationExpiredPage() {
               sign-in first would imply they got something wrong. */}
           Already have a Signora account?{' '}
           <Link
-            href="/sign-in"
+            href="/signin"
             className="rounded font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             Sign in

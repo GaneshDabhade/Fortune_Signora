@@ -89,7 +89,7 @@ async function main(): Promise<void> {
     await browser.newContext({ baseURL, viewport: { width: 1360, height: 880 } })
   ).newPage();
 
-  await page.goto('/sign-in');
+  await page.goto('/signin');
   await page.getByLabel('Email').fill(OWNER.email);
   await page.getByLabel('Password').fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign in' }).click();

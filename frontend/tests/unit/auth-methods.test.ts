@@ -171,7 +171,7 @@ describe('the delivered link is never logged as an event', () => {
     await createEmailTransport(config())({
       to: 'rep@customer.test',
       purpose: 'reset-password',
-      url: 'http://localhost:3000/reset-password?token=SECRET_TOKEN_VALUE',
+      url: 'http://localhost:3000/reset?token=SECRET_TOKEN_VALUE',
     });
 
     log.mockRestore();
@@ -192,12 +192,12 @@ describe('the delivered link is never logged as an event', () => {
     await createEmailTransport(config())({
       to: 'rep@customer.test',
       purpose: 'verify-email',
-      url: 'http://localhost:3000/api/auth/verify-email?token=abc',
+      url: 'http://localhost:3000/api/auth/verify?token=abc',
     });
 
     log.mockRestore();
     expect(emitted.join('\n')).toContain(
-      'http://localhost:3000/api/auth/verify-email?token=abc',
+      'http://localhost:3000/api/auth/verify?token=abc',
     );
   });
 
@@ -206,7 +206,7 @@ describe('the delivered link is never logged as an event', () => {
     // would look like an expired token.
     const { createEmailTransport } = await import('@/lib/auth/email');
     const url =
-      'http://localhost:3000/api/auth/verify-email?token=a%2Bb%2Fc&callbackURL=%2F';
+      'http://localhost:3000/api/auth/verify?token=a%2Bb%2Fc&callbackURL=%2F';
     const emitted: string[] = [];
     const log = vi.spyOn(console, 'log').mockImplementation((line: string) => {
       emitted.push(String(line));

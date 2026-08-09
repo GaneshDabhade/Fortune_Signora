@@ -16,7 +16,7 @@ const hasOAuth = Boolean(process.env.GOOGLE_CLIENT_ID ?? process.env.MICROSOFT_C
 test.describe('unauthenticated access', () => {
   test('the root path redirects to sign-in', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveURL(/\/sign-in/);
+    await expect(page).toHaveURL(/\/signin/);
   });
 
   /**
@@ -32,7 +32,7 @@ test.describe('unauthenticated access', () => {
   for (const path of ['/', '/settings', '/settings/products', '/settings/connections']) {
     test(`${path} is not reachable without a session`, async ({ page }) => {
       await page.goto(path);
-      await expect(page).toHaveURL(/\/sign-in/);
+      await expect(page).toHaveURL(/\/signin/);
     });
   }
 
@@ -40,7 +40,7 @@ test.describe('unauthenticated access', () => {
     // Guarded by the same server-side layout check, and worth its own case:
     // it is the one authenticated route a customer would paste to a colleague.
     await page.goto('/accounts/00000000-0000-4000-8000-000000000000');
-    await expect(page).toHaveURL(/\/sign-in/);
+    await expect(page).toHaveURL(/\/signin/);
   });
 
   test('the token endpoint refuses to mint without a session', async ({ request }) => {
@@ -66,7 +66,7 @@ test.describe('unauthenticated access', () => {
   });
 
   test('no response ever carries the private signing key', async ({ request }) => {
-    for (const path of ['/sign-in', '/api/health']) {
+    for (const path of ['/signin', '/api/health']) {
       const body = await (await request.get(path)).text();
       expect(body).not.toContain('BEGIN PRIVATE KEY');
       expect(body).not.toContain('BEGIN RSA PRIVATE KEY');
@@ -79,7 +79,7 @@ test.describe('sign-in surface', () => {
     // **The reason this milestone exists.** Before ADR-0033 the page offered
     // only OAuth, so an install with no provider credentials had no sign-in
     // at all — and the product owner could not review the product.
-    await page.goto('/sign-in');
+    await page.goto('/signin');
 
     await expect(page.getByLabel('Email')).toBeVisible();
     await expect(page.getByLabel('Password')).toBeVisible();
@@ -87,7 +87,7 @@ test.describe('sign-in surface', () => {
   });
 
   test('leads to registration and to password recovery', async ({ page }) => {
-    await page.goto('/sign-in');
+    await page.goto('/signin');
 
     await expect(page.getByRole('link', { name: 'Create an account' })).toBeVisible();
     // ⚠️ **Repaired, not rewritten.** Workflow 1 renamed this link to the
@@ -102,7 +102,7 @@ test.describe('sign-in surface', () => {
   test('offers a provider button when one is configured, and nothing when not', async ({
     page,
   }) => {
-    await page.goto('/sign-in');
+    await page.goto('/signin');
     const provider = page.getByRole('button', { name: /Continue with/ });
 
     if (hasOAuth) {
@@ -136,7 +136,7 @@ test.describe('signing in', () => {
   test('@smoke a person with an address and a password reaches their morning', async ({
     page,
   }) => {
-    await page.goto('/sign-in');
+    await page.goto('/signin');
     await page.getByLabel('Email').fill(OWNER.email);
     await page.getByLabel('Password').fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
@@ -152,7 +152,7 @@ test.describe('signing in', () => {
   test('@regression the wrong password is refused without saying which half was wrong', async ({
     page,
   }) => {
-    await page.goto('/sign-in');
+    await page.goto('/signin');
     await page.getByLabel('Email').fill(OWNER.email);
     await page.getByLabel('Password').fill('not-the-password');
     await page.getByRole('button', { name: 'Sign in' }).click();
@@ -161,13 +161,13 @@ test.describe('signing in', () => {
     await expect(message).toBeVisible();
     // An address-enumeration oracle is the failure this wording exists to
     // prevent: the same sentence must answer *no such account* too.
-    await expect(page).toHaveURL(/\/sign-in/);
+    await expect(page).toHaveURL(/\/signin/);
   });
 
   test('@regression an address nobody has registered gets the same answer', async ({
     page,
   }) => {
-    await page.goto('/sign-in');
+    await page.goto('/signin');
     await page.getByLabel('Email').fill('nobody.at.all@northwind.example');
     await page.getByLabel('Password').fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
@@ -178,14 +178,14 @@ test.describe('signing in', () => {
   });
 
   test('signing out ends the session and the product is closed again', async ({ page }) => {
-    await page.goto('/sign-in');
+    await page.goto('/signin');
     await page.getByLabel('Email').fill(OWNER.email);
     await page.getByLabel('Password').fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.waitForURL((url) => url.pathname === '/');
 
     await page.getByRole('button', { name: 'Sign out' }).click();
-    await page.waitForURL(/\/sign-in/, { timeout: 20_000 });
+    await page.waitForURL(/\/signin/, { timeout: 20_000 });
 
     // Not merely redirected — the session is gone, so the seam between the
     // tiers refuses to mint a token for it.
@@ -198,7 +198,7 @@ test.describe('the OAuth round trip', () => {
   test.skip(!hasOAuth, 'requires real OAuth provider credentials');
 
   test('@journey a provider sign-in reaches the same morning', async ({ page }) => {
-    await page.goto('/sign-in');
+    await page.goto('/signin');
     await page
       .getByRole('button', { name: /Continue with/ })
       .first()
@@ -219,7 +219,7 @@ test.describe('the OAuth round trip', () => {
  */
 test.describe('Workflow 2 · creating an account', () => {
   test('the screen the design draws is the screen that renders', async ({ page }) => {
-    await page.goto('/sign-up');
+    await page.goto('/register');
 
     await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
     // *"Step 1 of 2 · takes about a minute"* — the design's own subtitle, and
@@ -231,7 +231,7 @@ test.describe('Workflow 2 · creating an account', () => {
   });
 
   test('the strength meter answers the password as it is typed', async ({ page }) => {
-    await page.goto('/sign-up');
+    await page.goto('/register');
     const meter = page.getByRole('meter', { name: 'Password strength' });
 
     await expect(meter).toHaveAttribute('aria-valuenow', '0');
@@ -244,7 +244,7 @@ test.describe('Workflow 2 · creating an account', () => {
     // all-lowercase password satisfies one rule of three and must still be
     // accepted, because refusing it would be this screen inventing a security
     // rule the platform deliberately does not have.
-    await page.goto('/sign-up');
+    await page.goto('/register');
 
     await page.getByLabel('Password', { exact: true }).fill('anappleadayxx');
     await expect(page.getByRole('meter', { name: 'Password strength' })).toHaveAttribute(
@@ -257,7 +257,7 @@ test.describe('Workflow 2 · creating an account', () => {
   test('⛔ no rule is drawn that nothing checks', async ({ page }) => {
     // The design's fourth rule needs Better Auth's `haveIBeenPwned` plugin,
     // which is a server hook and outside this row's budget. Raised, not drawn.
-    await page.goto('/sign-up');
+    await page.goto('/register');
     await expect(page.getByText(/breach/i)).toHaveCount(0);
   });
 
@@ -267,7 +267,7 @@ test.describe('Workflow 2 · creating an account', () => {
     // or configured URL exists in this repository. **Two dead links is what
     // Workflow 1 had to repair**, so the sentence renders and the words are
     // not links.
-    await page.goto('/sign-up');
+    await page.goto('/register');
 
     await expect(
       page.getByText('By continuing you agree to the Terms and Privacy Notice.'),
@@ -277,7 +277,7 @@ test.describe('Workflow 2 · creating an account', () => {
   });
 
   test('the product mark is the way back, since the design gives no other', async ({ page }) => {
-    await page.goto('/sign-up');
+    await page.goto('/register');
     await page.getByRole('link', { name: 'Fortune Signora' }).click();
     await expect(page).toHaveURL(/\/welcome$/);
   });
@@ -288,13 +288,13 @@ test.describe('Workflow 2 · creating an account', () => {
     // development-only registration path (D-156, D-158).
     const address = `marta.${Date.now()}@northwind.example`;
 
-    await page.goto('/sign-up');
+    await page.goto('/register');
     await page.getByLabel('Full name').fill('Marta Reinhardt');
     await page.getByLabel('Work email').fill(address);
     await page.getByLabel('Password', { exact: true }).fill('Correct-Horse-9');
     await page.getByRole('button', { name: 'Continue' }).click();
 
-    await page.waitForURL(/\/verify-email/, { timeout: 30_000 });
+    await page.waitForURL(/\/verify/, { timeout: 30_000 });
     // The address travels, so screen 07 can say which mailbox to open.
     await expect(page).toHaveURL(new RegExp(encodeURIComponent(address).replace(/\./g, '\\.')));
   });
@@ -311,7 +311,7 @@ test.describe('Workflow 2 · creating an account', () => {
  */
 test.describe('Workflow 3 · verifying an email', () => {
   const ADDRESS = 'm.reinhardt@northwind.com';
-  const verify = `/verify-email?email=${encodeURIComponent(ADDRESS)}`;
+  const verify = `/verify?email=${encodeURIComponent(ADDRESS)}`;
 
   test('the screen names the address it sent to', async ({ page }) => {
     await page.goto(verify);
@@ -333,7 +333,7 @@ test.describe('Workflow 3 · verifying an email', () => {
     // The design's own line under the control.
     await page.goto(verify);
     await page.getByRole('link', { name: 'Use a different email' }).click();
-    await expect(page).toHaveURL(/\/sign-up$/);
+    await expect(page).toHaveURL(/\/register$/);
   });
 });
 
@@ -413,23 +413,23 @@ test.describe('Registration → Verification → Login', () => {
     const address = `marta.${Date.now()}@northwind.example`;
     const password = 'Correct-Horse-9';
 
-    await page.goto('/sign-up');
+    await page.goto('/register');
     await page.getByLabel('Full name').fill('Marta Reinhardt');
     await page.getByLabel('Work email').fill(address);
     await page.getByLabel('Password', { exact: true }).fill(password);
     await page.getByRole('button', { name: 'Continue' }).click();
-    await page.waitForURL(/\/verify-email/, { timeout: 30_000 });
+    await page.waitForURL(/\/verify/, { timeout: 30_000 });
 
     // The account now exists and is unverified. Signing in must fail, and
     // must fail without saying which half was wrong.
-    await page.goto('/sign-in');
+    await page.goto('/signin');
     await page.getByLabel('Work email').fill(address);
     await page.getByLabel('Password', { exact: true }).fill(password);
     await page.getByRole('button', { name: 'Sign in' }).click();
 
     // ⛔ **Never the attention list.** A session before verification would
     // make `requireEmailVerification` decorative.
-    await expect(page).toHaveURL(/\/sign-in/);
+    await expect(page).toHaveURL(/\/signin/);
     await expect(
       page.getByRole('heading', { name: 'Attention', level: 1 }),
     ).toHaveCount(0);
@@ -454,12 +454,12 @@ test.describe('the development mailbox', () => {
     test.skip(probe?.status() === 404, 'requires SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox');
 
     const address = `marta.${Date.now()}@northwind.example`;
-    await page.goto('/sign-up');
+    await page.goto('/register');
     await page.getByLabel('Full name').fill('Marta Reinhardt');
     await page.getByLabel('Work email').fill(address);
     await page.getByLabel('Password', { exact: true }).fill('Correct-Horse-9');
     await page.getByRole('button', { name: 'Continue' }).click();
-    await page.waitForURL(/\/verify-email/, { timeout: 30_000 });
+    await page.waitForURL(/\/verify/, { timeout: 30_000 });
 
     await page.goto('/dev/mailbox');
     const entry = page.locator('li', { hasText: address });
@@ -467,6 +467,6 @@ test.describe('the development mailbox', () => {
 
     // ⚡ **The link is real and openable** — that is the row's whole ask, and
     // the token is Better Auth's own.
-    await expect(entry.getByRole('link')).toHaveAttribute('href', /verify-email\?token=/);
+    await expect(entry.getByRole('link')).toHaveAttribute('href', /verify\?token=/);
   });
 });

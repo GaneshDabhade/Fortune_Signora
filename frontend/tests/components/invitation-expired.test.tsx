@@ -59,8 +59,8 @@ describe('🔴 what it refuses to disclose', () => {
     // sign-in would imply they got something wrong.
     render(<InvitationExpiredPage />);
     const links = screen.getAllByRole('link');
-    expect(links[0]).not.toHaveAttribute('href', '/sign-in');
+    expect(links[0]).not.toHaveAttribute('href', '/signin');
     // It is still offered, second, for somebody who already has an account.
-    expect(screen.getByRole('link', { name: /^Sign in$/ })).toHaveAttribute('href', '/sign-in');
+    expect(screen.getByRole('link', { name: /^Sign in$/ })).toHaveAttribute('href', '/signin');
   });
 });

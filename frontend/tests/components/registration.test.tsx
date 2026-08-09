@@ -25,7 +25,7 @@ vi.mock('@/lib/auth/client', () => ({
   signUpWithPassword: (...args: unknown[]) => signUpWithPassword(...args),
 }));
 
-import { SignUpForm } from '@/app/(auth)/sign-up/sign-up-form';
+import { SignUpForm } from '@/app/(auth)/register/register-form';
 
 /** Satisfies every rule the meter can evaluate **and** the enforced minimum. */
 const STRONG = 'Correct-Horse-9';
@@ -219,7 +219,7 @@ describe('the form the design draws', () => {
       'm.reinhardt@northwind.com',
       STRONG,
     );
-    expect(push).toHaveBeenCalledWith('/verify-email?email=m.reinhardt%40northwind.com');
+    expect(push).toHaveBeenCalledWith('/verify?email=m.reinhardt%40northwind.com');
   });
 
   it('repeats the server\'s refusal rather than rewriting it', async () => {

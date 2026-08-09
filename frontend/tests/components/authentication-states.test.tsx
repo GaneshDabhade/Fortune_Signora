@@ -20,10 +20,10 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Authenticating } from '@/app/(auth)/sign-in/authenticating';
+import { Authenticating } from '@/app/(auth)/signin/authenticating';
 import { ErrorDetail } from '@/app/(auth)/error/error-detail';
-import { Throttled } from '@/app/(auth)/sign-in/throttled';
-import { SignInForm } from '@/app/(auth)/sign-in/sign-in-form';
+import { Throttled } from '@/app/(auth)/signin/throttled';
+import { SignInForm } from '@/app/(auth)/signin/signin-form';
 import { SsoMethods } from '@/app/(auth)/sso/sso-methods';
 import { ServiceStatus } from '@/components/auth/service-status';
 import { SessionLock } from '@/components/auth/session-lock';
@@ -205,7 +205,7 @@ describe('too many attempts — design 12', () => {
 
     expect(screen.getByRole('heading', { name: 'Too many attempts' })).toBeVisible();
     expect(
-      screen.getByText(/sign-in is paused for this device/i),
+      screen.getByText(/Sign-in is paused for this device/i),
     ).toBeVisible();
     expect(screen.getByText(/per device and IP, not per account/i)).toBeVisible();
   });

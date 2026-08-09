@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { loadAuthConfig } from '@/lib/auth/config';
 
 import { AuthShell } from '../auth-shell';
-import { SignUpForm } from './sign-up-form';
+import { SignUpForm } from './register-form';
 
 /**
  * **Read at boot, never baked in.** This page's content depends on which

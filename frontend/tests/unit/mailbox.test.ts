@@ -16,7 +16,7 @@ import { MAILBOX_CAPACITY, delivery, forget, remember } from '@/lib/auth/mailbox
 const LINK = {
   to: 'm.reinhardt@northwind.com',
   purpose: 'verify-email',
-  url: 'http://localhost:3000/verify-email?token=a-real-token',
+  url: 'http://localhost:3000/verify?token=a-real-token',
 } as const;
 
 beforeEach(() => forget());

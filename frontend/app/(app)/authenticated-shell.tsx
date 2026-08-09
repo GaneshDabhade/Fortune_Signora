@@ -149,7 +149,7 @@ function ShellForViewer({ email, children }: { email: string; children: ReactNod
  *
  * `signOut()` in `lib/auth/client.ts` has always done this correctly — it
  * calls the vendor's own client, which sends JSON, and then goes to
- * `/sign-in`. The control simply never used it. Nothing new is written here;
+ * `/signin`. The control simply never used it. Nothing new is written here;
  * one duplicate of a behaviour is removed in favour of the one that works.
  */
 function SignOutButton({ email }: { email: string }) {

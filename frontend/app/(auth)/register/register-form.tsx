@@ -93,7 +93,7 @@ export function SignUpForm() {
 
     const result = await signUpWithPassword(name, email, password);
     if (result.ok) {
-      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+      router.push(`/verify?email=${encodeURIComponent(email)}`);
       return;
     }
     setError(result.error ?? null);

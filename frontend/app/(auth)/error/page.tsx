@@ -55,7 +55,7 @@ export default function AuthenticationErrorPage() {
       title="Sign-in was rejected"
       footer={
         <>
-          <AuthLink href="/sign-in">Try another way to sign in</AuthLink>
+          <AuthLink href="/signin">Try another way to sign in</AuthLink>
         </>
       }
       region={<ServiceStatus />}

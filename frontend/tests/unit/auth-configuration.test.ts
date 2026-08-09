@@ -69,7 +69,7 @@ describe('what this row was forbidden to do, asserted rather than promised', () 
 
   it('⛔ does not restate the vendor’s own limits', () => {
     /**
-     * **The window, the maximum and the `/sign-in` special case are Better
+     * **The window, the maximum and the `/signin` special case are Better
      * Auth's.** Copying them here would create two sources for one fact —
      * the defect this codebase has refused since `lib/auth/email.ts` was a
      * port with one implementation.

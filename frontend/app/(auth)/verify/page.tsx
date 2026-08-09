@@ -36,7 +36,7 @@ export default async function VerifyEmailPage({
       // The design's own words under the control: *"Didn't get it?"*
       footer={
         <>
-          Wrong address? <AuthLink href="/sign-up">Use a different email</AuthLink>
+          Wrong address? <AuthLink href="/register">Use a different email</AuthLink>
         </>
       }
     >

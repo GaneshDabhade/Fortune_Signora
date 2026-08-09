@@ -18,7 +18,7 @@ vi.mock('@/lib/auth/client', () => ({
   resetPassword: (...a: unknown[]) => resetPassword(...a),
 }));
 
-import { ResetPasswordForm } from '@/app/(auth)/reset-password/reset-password-form';
+import { ResetPasswordForm } from '@/app/(auth)/reset/[token]/reset-password-form';
 
 const STRONG = 'Correct-Horse-9';
 
@@ -79,7 +79,7 @@ describe('the screen the design draws', () => {
     await user.click(screen.getByRole('button', { name: 'Update password' }));
 
     expect(resetPassword).toHaveBeenCalledWith('a-real-token', STRONG);
-    expect(push).toHaveBeenCalledWith('/reset-password/done');
+    expect(push).toHaveBeenCalledWith('/reset/done');
   });
 
   it('reports the strength of what is typed, and still does not gate on it', async () => {

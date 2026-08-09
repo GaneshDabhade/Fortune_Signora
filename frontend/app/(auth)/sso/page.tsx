@@ -67,7 +67,7 @@ export default function SsoPage() {
       }
       title="Single sign-on"
       description="Continue with the identity provider your company federates through."
-      footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
+      footer={<AuthLink href="/signin">Back to sign in</AuthLink>}
       region={<ServiceStatus />}
     >
       <SsoMethods methods={oauthMethods(config)} />

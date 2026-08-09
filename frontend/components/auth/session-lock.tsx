@@ -21,7 +21,7 @@ import { signInWithPassword, signOut, useSession } from '@/lib/auth/client';
  *
  * ⛔ **So a redirect on expiry is not a styling choice — losing a half-written
  * filter set to a login bounce is data loss**, and the product does it today:
- * every route under `(app)` redirects to `/sign-in` the moment the server
+ * every route under `(app)` redirects to `/signin` the moment the server
  * cannot see a session.
  *
  * ### Expired and revoked are told apart, because the design says they behave differently

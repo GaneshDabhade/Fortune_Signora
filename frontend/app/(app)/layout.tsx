@@ -32,7 +32,7 @@ export const dynamic = 'force-dynamic';
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth().api.getSession({ headers: await headers() });
-  if (!session?.user) redirect('/sign-in');
+  if (!session?.user) redirect('/signin');
 
   return <AuthenticatedShell email={session.user.email}>{children}</AuthenticatedShell>;
 }

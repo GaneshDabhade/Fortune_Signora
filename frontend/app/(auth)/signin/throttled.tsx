@@ -12,7 +12,7 @@ import { Button } from '@/components/ui';
  *
  * ### ⚡ Every number on this screen is the vendor's, not this screen's
  *
- * Better Auth rate-limits `/sign-in` at **three attempts per ten seconds**,
+ * Better Auth rate-limits `/signin` at **three attempts per ten seconds**,
  * keyed on **`ip + path`** (`api/rate-limiter`), and answers `429` with
  * `X-Retry-After`. **So the design's own footnote is literally true of this
  * implementation** — *"throttling is per device and IP, not per account, so an

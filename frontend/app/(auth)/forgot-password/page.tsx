@@ -13,7 +13,7 @@ import { ForgotPasswordForm } from './forgot-password-form';
  * build time.
  *
  * That is the Infrastructure Contract's environment-based-configuration rule
- * (CLAUDE.md §20b), and the violation predates this change: `/sign-in` has
+ * (CLAUDE.md §20b), and the violation predates this change: `/signin` has
  * been static since M1.5.
  */
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
       // C-243 was ruled; `resetPasswordTokenExpiresIn: 1800` is what makes the
       // thirty true, and the two are edited together or not at all.
       description="Enter your work email. If an account exists, you'll get a reset link that works once and expires in 30 minutes."
-      footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
+      footer={<AuthLink href="/signin">Back to sign in</AuthLink>}
     >
       <ForgotPasswordForm />
     </AuthShell>

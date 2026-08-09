@@ -18,7 +18,7 @@ export default function PasswordUpdatedPage() {
     <AuthShell
       title="Password updated"
       description="You can sign in with your new password now."
-      footer={<AuthLink href="/sign-in">Back to sign in</AuthLink>}
+      footer={<AuthLink href="/signin">Back to sign in</AuthLink>}
     >
       <p className="text-sm leading-6 text-content-muted">
         If you did not make this change, ask for another reset link straight away and contact

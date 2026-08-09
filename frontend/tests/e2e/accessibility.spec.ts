@@ -128,7 +128,7 @@ test.describe('dialogs', () => {
 
 test.describe('forms say what they are for', () => {
   test('@a11y every input on the sign-in form has a real label', async ({ page }) => {
-    await page.goto('/sign-in');
+    await page.goto('/signin');
 
     for (const input of await page.locator('input:visible').all()) {
       const name = await input.evaluate((element) => {

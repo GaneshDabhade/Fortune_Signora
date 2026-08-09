@@ -100,7 +100,7 @@ export function createAuth(config: AuthConfig = loadAuthConfig()) {
      * ⛔ **Better Auth defaults this to production only**, so the throttled
      * screen Workflow 1 built against the real `429` and the real
      * `X-Retry-After` **could not be reached at any review.** ✅ **The window,
-     * the limit and the `/sign-in` special case are the vendor's own and are
+     * the limit and the `/signin` special case are the vendor's own and are
      * not restated here** — restating them would be the second copy this
      * codebase keeps refusing.
      */
@@ -138,7 +138,24 @@ export function createAuth(config: AuthConfig = loadAuthConfig()) {
       // anything, because an identity provider always asserts it. Requiring
       // verification is what turns it into a fact.
       requireEmailVerification: true,
-      sendResetPassword: async ({ user, url }) => {
+      /**
+       * 🔴 **The link is built here rather than passed through** —
+       * [TASK-499](../../../docs/BACKLOG.md),
+       * [D-185](../../../docs/DECISION_REGISTER.md) §2's `/reset/:token`.
+       *
+       * ⛔ **`better-auth` hands us a `url` it composed from its own default
+       * path and a `?token=` query string.** ⚡ **The product's route is
+       * `/reset/:token` — a path segment — so passing that `url` through
+       * would email every customer a link to a route that no longer exists.**
+       *
+       * 📁 **This is [C-243](../../../docs/LANE_COORDINATION.md)'s rule in a
+       * second place**: *"configure the framework to match the product… the
+       * framework should implement the product, not define it."* ✅ **The
+       * token is supplied to this callback, so the URL is ours to compose and
+       * there is nothing to infer.**
+       */
+      sendResetPassword: async ({ user, token }) => {
+        const url = `${config.baseUrl}/reset/${token}`;
         await deliver({ to: user.email, purpose: 'reset-password', url });
       },
       onPasswordReset: async () => {
@@ -222,9 +239,9 @@ export function createAuth(config: AuthConfig = loadAuthConfig()) {
           emitAuthEvent(AUTH_EVENTS.OAUTH_CALLBACK);
         } else if (path.includes('/sign-out')) {
           emitAuthEvent(AUTH_EVENTS.LOGOUT);
-        } else if (path.includes('/sign-up')) {
+        } else if (path.includes('/register')) {
           emitAuthEvent(AUTH_EVENTS.SIGN_UP);
-        } else if (path.includes('/sign-in')) {
+        } else if (path.includes('/signin')) {
           emitAuthEvent(AUTH_EVENTS.LOGIN_SUCCESS);
         }
       }),

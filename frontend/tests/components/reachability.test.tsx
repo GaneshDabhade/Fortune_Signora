@@ -127,11 +127,11 @@ describe('what counts as navigation', () => {
 
   it('a query string does not hide the route', () => {
     const result = analyse({
-      '(auth)/sign-in': "export default () => { router.push('/verify-email?email=x'); };",
-      '(auth)/verify-email': 'export default () => <p>verify</p>;',
+      '(auth)/signin': "export default () => { router.push('/verify?email=x'); };",
+      '(auth)/verify': 'export default () => <p>verify</p>;',
     });
 
-    expect(result.reachable).toContain('/verify-email');
+    expect(result.reachable).toContain('/verify');
   });
 
   it('route groups never appear in a URL', () => {
@@ -213,11 +213,18 @@ describe('the sidebar, which this check could not see until CX-05', () => {
 
 describe('routes entered from outside the product', () => {
   it('are declared with a reason rather than silently exempt', () => {
-    const result = analyse({ '(auth)/reset-password': 'export default () => <p>reset</p>;' });
+    // ⚠️ **Re-pointed by TASK-499.** The fixture named `(auth)/reset-password`,
+    // which D-185 §2 renamed and reshaped to `/reset/:token`. The declaration
+    // in `infra/reachability.py` is keyed by route, so the fixture has to name
+    // the route that is actually declared — otherwise this asserts the
+    // analyser against a key nobody holds.
+    const result = analyse({
+      '(auth)/reset/[token]': 'export default () => <p>reset</p>;',
+    });
 
     // Reached from an email, by design — a decision, not an omission.
-    expect(result.declared).toContain('/reset-password');
-    expect(result.unreachable).not.toContain('/reset-password');
+    expect(result.declared).toContain('/reset/[token]');
+    expect(result.unreachable).not.toContain('/reset/[token]');
   });
 
   it('an undeclared route with no entrance is still a defect', () => {

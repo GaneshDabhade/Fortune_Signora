@@ -14,7 +14,7 @@
 import { expect, test as setup } from '@playwright/test';
 
 import { MEMBER, OWNER, storageStatePath, type Persona } from './fixtures/personas';
-import { SignInPage } from './pages/sign-in';
+import { SignInPage } from './pages/signin';
 
 async function signIn(page: import('@playwright/test').Page, persona: Persona) {
   // **The destination is the assertion**, and it lives in the page object.

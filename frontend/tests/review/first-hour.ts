@@ -80,7 +80,7 @@ async function main(): Promise<void> {
 
   say('The first hour', `${NEWCOMER.name} has never heard of Signora. ${NEWCOMER.email}`);
 
-  await page.goto('/sign-up');
+  await page.goto('/register');
   await moment(page, '1 · The sign-up form');
 
   // Fill whatever this form actually asks for, rather than assuming.
@@ -116,7 +116,7 @@ async function main(): Promise<void> {
       '    Better Auth\'s own route — see PX-319. The rest of the hour follows. ]\n',
   );
 
-  await page.goto('/sign-in');
+  await page.goto('/signin');
   await page.getByLabel('Email').fill(NEWCOMER.email);
   await page.getByLabel('Password').fill(NEWCOMER.password);
   await page.getByRole('button', { name: 'Sign in' }).click();

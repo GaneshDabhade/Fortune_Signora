@@ -21,7 +21,7 @@ export class SignInPage {
   constructor(private readonly page: Page) {}
 
   async open(): Promise<void> {
-    await this.page.goto('/sign-in');
+    await this.page.goto('/signin');
   }
 
   get email(): Locator {

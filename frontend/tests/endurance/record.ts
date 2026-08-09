@@ -46,7 +46,7 @@ import { browserEnvironment, resolveAppUrl } from '../e2e/fixtures/environment';
 import { OWNER } from '../e2e/fixtures/personas';
 import { AttentionPage } from '../e2e/pages/attention';
 import { BriefPage } from '../e2e/pages/brief';
-import { SignInPage } from '../e2e/pages/sign-in';
+import { SignInPage } from '../e2e/pages/signin';
 import { judge, summarise, type Sample } from './trend';
 
 /** Where the session's record lands. One file per run, and the newest is what

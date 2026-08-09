@@ -87,7 +87,7 @@ export interface AuthResult {
   /**
    * **Sign-in was refused for the device, not for the credential.**
    *
-   * Better Auth rate-limits `/sign-in` at **three attempts per ten seconds**
+   * Better Auth rate-limits `/signin` at **three attempts per ten seconds**
    * and answers `429` with an `X-Retry-After` header
    * (`api/rate-limiter` — a default special rule, not something configured
    * here). ⚡ **The seconds are read off that header**, so the countdown a
@@ -185,7 +185,7 @@ export async function signUpWithPassword(
 export async function requestPasswordReset(email: string): Promise<AuthResult> {
   const { error } = await authClient.requestPasswordReset({
     email,
-    redirectTo: '/reset-password',
+    redirectTo: '/reset',
   });
 
   // **The same answer either way, on purpose.** A response that differed for
@@ -215,7 +215,7 @@ export async function resendVerification(email: string): Promise<AuthResult> {
 
 export async function signOut(): Promise<void> {
   await authClient.signOut();
-  window.location.href = '/sign-in';
+  window.location.href = '/signin';
 }
 
 export const useSession = authClient.useSession;

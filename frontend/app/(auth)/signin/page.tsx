@@ -2,7 +2,7 @@ import { ServiceStatus } from '@/components/auth/service-status';
 import { loadAuthConfig, oauthMethods } from '@/lib/auth/config';
 
 import { AuthLink, AuthShell } from '../auth-shell';
-import { SignInForm } from './sign-in-form';
+import { SignInForm } from './signin-form';
 
 /**
  * **Read at boot, never baked in.** This page's content depends on which
@@ -12,7 +12,7 @@ import { SignInForm } from './sign-in-form';
  * build time.
  *
  * That is the Infrastructure Contract's environment-based-configuration rule
- * (CLAUDE.md §20b), and the violation predates this change: `/sign-in` has
+ * (CLAUDE.md §20b), and the violation predates this change: `/signin` has
  * been static since M1.5.
  */
 export const dynamic = 'force-dynamic';
@@ -37,7 +37,7 @@ export default function SignInPage() {
       title="Sign in"
       footer={
         <>
-          New here? <AuthLink href="/sign-up">Create an account</AuthLink>
+          New here? <AuthLink href="/register">Create an account</AuthLink>
         </>
       }
       region={<ServiceStatus />}

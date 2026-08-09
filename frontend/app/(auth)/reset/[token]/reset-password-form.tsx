@@ -74,7 +74,7 @@ export function ResetPasswordForm({ token, email }: { token: string; email: stri
 
     const result = await resetPassword(token, password);
     if (result.ok) {
-      router.push('/reset-password/done');
+      router.push('/reset/done');
       return;
     }
     setError(result.error ?? null);

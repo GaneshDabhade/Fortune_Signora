@@ -49,10 +49,22 @@ SEARCHED: Final = ("frontend/app", "frontend/components", "frontend/lib")
 #: claim that something outside the product sends a customer here, and a list
 #: that grows without argument is how a check stops meaning anything.
 ENTERED_FROM_OUTSIDE: Final = {
-    "/sign-in": "the front door — typed, bookmarked, or redirected to by the shell",
-    "/sign-up": "linked from marketing and from /sign-in",
-    "/verify-email": "reached from the verification email, by design",
-    "/reset-password": "reached from the password-reset email, by design",
+    # ⚠️ **Re-keyed by TASK-499, 2026-08-09** — D-185 §2 renamed these four
+    # routes and this dict is keyed BY ROUTE, so the rename left every entry
+    # naming a page that no longer exists and the check reported the new ones
+    # as unreachable. **Carrying an existing declaration across a rename, not
+    # a new exemption**: every reason below is unchanged in substance.
+    #
+    # **Lane A edits this dict on the precedent recorded further down** —
+    # `/join/{workspace_id}` was declared here by Lane A on QE's explicit
+    # delegation (B-123). Outside TASK-499's named budget and announced in the
+    # commit rather than assumed.
+    "/signin": "the front door — typed, bookmarked, or redirected to by the shell",
+    "/register": "linked from marketing and from /signin",
+    "/verify": "reached from the verification email, by design",
+    # **The token is a path segment now, not a query string** (D-185 §2), so the
+    # route is dynamic and the key is the route as `_routes()` names it.
+    "/reset/[token]": "reached from the password-reset email, by design",
     # **The same class as the two above, and the reason is stronger here.** An
     # invitation link is the *only* way in: this is the one screen in Signora
     # shown to somebody who is not a member of the workspace it is about, so an

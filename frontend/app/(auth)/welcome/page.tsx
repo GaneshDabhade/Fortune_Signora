@@ -21,7 +21,7 @@ import { AuthShell } from '../auth-shell';
  * that has held it since M1.
  *
  * ⛔ **What is *not* decided here: where an anonymous visitor lands.** Today
- * `app/(app)/layout.tsx` sends them to `/sign-in`, and the design's journey 1
+ * `app/(app)/layout.tsx` sends them to `/signin`, and the design's journey 1
  * begins on this screen instead. **That is a product decision about the front
  * door, not a presentation change**, so it is raised for the product owner
  * rather than made by this lane in passing.
@@ -65,7 +65,7 @@ export default function WelcomePage() {
     >
       <div className="flex flex-col gap-2.5">
         <Link
-          href="/sign-in"
+          href="/signin"
           className="flex h-control-md items-center justify-center rounded-md bg-accent text-sm font-semibold text-accent-contrast shadow-sm transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         >
           Sign in
@@ -76,7 +76,7 @@ export default function WelcomePage() {
             refuses for authorization, applied one screen earlier. */}
         {canCreateAccount ? (
           <Link
-            href="/sign-up"
+            href="/register"
             className="flex h-control-md items-center justify-center rounded-md border border-border-strong bg-surface text-sm font-semibold text-content transition-colors hover:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             Create an organization
