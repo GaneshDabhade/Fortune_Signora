@@ -8348,6 +8348,42 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-262 · The cold-start screen exists and nothing decides that a cold start has no network
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **delivering [TASK-1436](BACKLOG.md)** |
+| **Owner** | **Lane C** — ⛔ **where a boot with no service lands is a ROUTING decision**, and this row's budget is `components/feedback/**` and a small `lib/` helper |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION** — ⛔ **the design is complete and nothing is asked of Design** |
+| **Status** | 🟢 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **One sentence of [TASK-1436](BACKLOG.md)'s Definition of Done.** ✅ **The capability is built, tested and green** |
+
+### ✅ What is delivered
+
+**`NoConnection` renders the design's screen** — 📁 *"No connection · Your device reports no network. Signora's own service is reachable from other regions, so this is almost certainly local."* — with **Check again**, **Status page**, and *"Last connected 3 minutes ago · retrying in 8s"*. ⚡ **It is the ladder's `platform` scope finding its first caller.**
+
+### ⛔ What decides to show it
+
+**Nothing.** 📁 **The Definition of Done says *"cold start with no network shows a designed screen naming when it last worked"*, and *cold start* is the half that has no owner.**
+
+⚠️ **The three places it could live are three different decisions:**
+
+| | ⛔ Why it is not this row's |
+|---|---|
+| **`app/(app)/layout.tsx`** or a route boundary | ⚡ **A route-level decision about what a failed boot renders**, and the budget names `components/feedback/**` |
+| **`app/error.tsx`** | ⛔ **Wrong by measurement**: that is `app` scope, `global-error-boundary`, and it fires on a RENDER failure. **A cold start with no network is not a render failure** — the render succeeds and the data never arrives |
+| **A `QueryProvider`-level check** | ⚠️ **`lib/query` is 🔴**, and it would mean the query layer deciding what the whole application shows |
+
+### 🔴 And there is a real question underneath, which is why this is not just a wiring note
+
+⛔ **What distinguishes *"a cold start with no network"* from *"one request failed"*?** ⚡ **[TASK-1435](BACKLOG.md)'s pill already covers the second case** — a working session that lost its connection, with edits queued — **and the design is explicit that these are *"different problem, different screen."***
+
+> 📁 **The design's own line is the test**: ***"There is no cached session to fall back on."*** ⚡ **So the condition is *nothing loaded AND nothing cached*, not *a request failed*.** ⛔ **Getting that wrong in either direction is worse than not mounting it**: too eager and a single failed request replaces a working page with a full-screen outage; too shy and the screen never appears.
+
+### ✅ What this lane recommends
+
+**One row, sequenced now, naming the condition rather than the file** — ⚡ **and it is small**: the condition is expressible from what already exists (`onlineManager`, an empty query cache, a failed initial fetch). ⛔ **This lane did not build it because choosing the condition IS the row**, and a lane picking one inside a component slice is [§20e](../CLAUDE.md)'s *"'I could just add it' is how an architectural blocker becomes a silent design decision."*
+
 ## C-261 · TASK-492's producer instruction rests on a premise that measurement contradicts, and either reading ships a defect
 
 | | |

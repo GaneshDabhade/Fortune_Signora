@@ -1,3 +1,4 @@
+import { recordConnection } from '@/lib/system-states/last-connected';
 /**
  * Typed client for the Signora API.
  *
@@ -81,6 +82,14 @@ export async function apiRequest<T>(
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
+
+  // 🔴 **The write [TASK-1436](../../../docs/BACKLOG.md) exists for**, and it
+  // is here rather than on a timer: **any response at all proves the service
+  // was reachable**, so a heartbeat would be traffic whose only purpose is
+  // making a label true. ⛔ **Before the status checks, deliberately** — a
+  // `401` or a `500` still crossed the network, and *"last connected"* is
+  // about the CONNECTION, not about the answer.
+  if (typeof window !== 'undefined') recordConnection();
 
   if (response.status === 401 && !options._retried) {
     // A single retry with a fresh token. Retrying more would mask a real
