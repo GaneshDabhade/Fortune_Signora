@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "68fc188"
-task_count     = 129
+generated_from = "14abd98"
+task_count     = 130
 
 [lane.Lane_A]
-notice             = "I over-froze and D-208 corrects it. TASK-1402 and TASK-1407 are yours again — precedence changes which rule wins, not what the intent producer answers or what type the subject is. TASK-1401 is held on missing destinations, not on the clarification. Only TASK-1426 genuinely waits on design, and its row now says which clarification, why, and what it would otherwise have to invent. 23 rows claimable."
+notice             = "Build. 24 rows and none needs invented behaviour. Your C-251 is answered and the answer is smaller than the question: signal.py:81 already carries rationale — its comment is the design's own sentence — and :64 carries relevance. QueueEntryResponse publishes neither. TASK-1427 widens the schema by two fields. And confidence.tsx already exists and is imported by nothing; use it, do not fork it."
 backlog            = []
-assigned_total     = 111
-claimable          = 22
+assigned_total     = 112
+claimable          = 23
 claimable_now      = 0
-awaiting_sync      = 22
-in_flight          = 56
+awaiting_sync      = 23
+in_flight          = 57
 actionable         = 1
-awaiting_qe_transition = 0
+awaiting_qe_transition = 57
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 33
-lane_utilization   = 11.2
-idle_prediction_days   = 3.1
+blocked            = 32
+lane_utilization   = 0.0
+idle_prediction_days   = 3.3
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -70,7 +70,7 @@ on_integration = true
 id            = "TASK-1400"
 title         = "The Authenticated Entry Engine — one resolver, twenty-four reason codes"
 state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
+declared      = "VERIFIED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -479,6 +479,22 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-1410](LANE_COORDINATION.md).** ✅ **THE ONE"
 waiting_for    = "— Lane C, 2026-08-09, on [C-1410](LANE_COORDINATION.md).** ✅ **THE ONE ROW OF THE FOUR THAT IS GENUINELY DEPENDENT**, and [D-208](DECISION_REGISTER.md"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1427"
+title         = "The signal queue publishes the two facts its screen already draws"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
 on_integration = false
 
@@ -1637,16 +1653,16 @@ on_integration = true
 [[task]]
 id            = "TASK-489"
 title         = "Workflow 7 — Invitation Acceptance, to the approved design"
-state         = "BLOCKED"
-declared      = "BLOCKED"
+state         = "IN FLIGHT"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— Lane A, 2026-08-08. Claim released.** ⛔ **Both approved screens are "
-waiting_for    = "— Lane A, 2026-08-08. Claim released.** ⛔ **Both approved screens are blocked on capabilities that do not exist**, found by building rather than by pl"
+estimated_ready = "—"
+waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
 

@@ -1,7 +1,7 @@
 # ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "I over-froze and D-208 corrects it. TASK-1402 and TASK-1407 are yours again — precedence changes which rule wins, not what the intent producer answers or what type the subject is. TASK-1401 is held on missing destinations, not on the clarification. Only TASK-1426 genuinely waits on design, and its row now says which clarification, why, and what it would otherwise have to invent. 23 rows claimable."
+notice = "Build. 24 rows and none needs invented behaviour. Your C-251 is answered and the answer is smaller than the question: signal.py:81 already carries rationale — its comment is the design's own sentence — and :64 carries relevance. QueueEntryResponse publishes neither. TASK-1427 widens the schema by two fields. And confidence.tsx already exists and is imported by nothing; use it, do not fork it."
 
 ["Lane C"]
 notice = ""

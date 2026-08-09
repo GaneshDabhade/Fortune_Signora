@@ -1418,6 +1418,30 @@
 | ⚠️ **Risk, named before it is met** | 🔴 **Open redirect.** ⛔ **A preserved destination that is not validated against the person's memberships on RETURN is the classic form of it** |
 | **Build-vs-Buy** | ✅ **BUY the transport — Better Auth's `callbackURL`. Build the validation** |
 
+### TASK-1427 · The signal queue publishes the two facts its screen already draws
+
+| | |
+|---|---|
+| 🔴 **Why this exists — and it is this office's defect** | ⛔ **[TASK-439](#task-439--the-signal-center--the-triage-queue-a-seller-actually-works)'s `Delivers` names five fields the design draws, and [C-251](LANE_COORDINATION.md) measured that the published contract carries three.** ⚡ **Lane A found it after the L-1 reuse audit and BEFORE writing a line, and refused to render `why_it_matters` as the summary — 📁 *"it would look right and be wrong on every row"*, the same sentence under fifty different signals** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION — and much smaller than it looked.** ⛔ **Not a missing capability and not a design question: BOTH FACTS ALREADY EXIST ON THE DOMAIN OBJECT and the response schema does not publish them** |
+| **Epic** | **Signal Center** — **[workflow 21](coordination/workflows.toml)** |
+| **Module** | **`signal_engine`** — **Lane A's in [`modules.toml`](coordination/modules.toml)** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, closing [C-251](LANE_COORDINATION.md).** ⚡ **Independent of every open Design Clarification** |
+| 📁 **Measured on `origin/integration`, not assumed** | **`domain/signal.py:81` — `rationale: str`**, and its own comment is the design's sentence: 📁 ***"Two halves: why this matters HERE, and what it rests on. Rendered together so the interpretation a customer reads and the evidence an auditor checks cannot diverge."*** ⚡ **That IS the design's per-row `summary`.** **`domain/signal.py:64` — `relevance: Relevance`**, the per-instance strength. ⛔ **`interface/triage_schemas.py:86 QueueEntryResponse` publishes neither** |
+| ⚡ **Delivers** | **Two fields on `QueueEntryResponse`** — **`rationale`, and the confidence figure derived from `relevance`** — **plus the same two on the frontend type.** ⛔ **No new domain concept, no new table, no new query** |
+| 🔴 **The reuse finding, and it is the point of writing this row rather than a component** | 📁 **`frontend/components/ui/confidence.tsx` EXISTS, renders *"confidence 4 of 5"*, and is imported by NOTHING.** ⚡ **It is [TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)'s primitive, already half-built and orphaned.** ⛔ **This row uses it and does not write a second one** — **and if its shape does not fit, that is a finding against [TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning), not a licence to fork** |
+| ⚠️ **What it must NOT do** | ⛔ **Render `why_it_matters` as the summary.** 📁 **The catalog's own comment: it is a fact about the TYPE, true before any account exhibits it.** ✅ **Lane A's refusal is upheld and recorded here so nobody re-decides it** |
+| **Reusable components required** | **`components/ui/confidence.tsx`** — ⛔ **use it; do not fork it** |
+| **Change Budget** | 🟠 **`backend/modules/signal_engine/interface/**`** — **a response schema change, announced in the commit** · 🟢 **`frontend/lib/api/types.ts` and the queue row** |
+| **Playwright coverage** | **A queue row renders its own rationale, and two rows of the same `signal_type` render DIFFERENT summaries** — 🔴 **that assertion is the whole defect, stated as a test** |
+| **Component coverage** | **A signal with no confidence renders absence, never `0 of 5`** — ⛔ **[TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)'s rule, and `0 of 5` reads as *certainly wrong* where the truth is *not known*** |
+| ♿ **Accessibility** | **The confidence figure has a text equivalent** — 📁 *"confidence 4 of 5"*, never a bare graphic |
+| 📱 **Responsive behaviour** | **The summary clamps to two lines with the full text available** — ⛔ **a truncated rationale must not read as the whole reason** |
+| **Definition of Done** | **The queue draws all five of the design's fields from published data** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `signal_engine` · **Routes** the triage queue · **APIs** `QueueEntryResponse` · **Security Invariant** ⛔ **`rationale` is workspace-scoped tenant data and crosses only through `public/`** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Deriving a summary in the frontend from the fields already present.** ✅ **`rationale` is authored where the reasoning happens; recomposing it in a component would put the interpretation a customer reads out of step with the evidence an auditor checks — which is exactly what the domain comment forbids** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's own reasoning** |
+
 ### TASK-1409 · Workflow 28 · System States — the scope ladder, and a failure that claims the smallest surface it can
 
 | | |
