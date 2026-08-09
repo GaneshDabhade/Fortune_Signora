@@ -80,6 +80,53 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-154 · QE promoted a conflict marker into the one register its check does not read
+
+| | |
+|---|---|
+| **Module** | Repository state — [`docs/DECISION_REGISTER.md`](DECISION_REGISTER.md) · [`infra/state-check.py`](../infra/state-check.py) |
+| **Current assignee** | **QE** — QE promoted it; `state-check` is QE's instrument |
+| **Severity** | 🟠 — **the decision register was corrupt on `main` for two cycles**, wrapping the `D-195` and `D-196` rows |
+| **Status** | ✅ **`FIXED`** — repaired, and the check widened in the same change |
+| **Found** | 2026-08-09 by **Lane A** ([B-217](BUGS.md)), reading a register QE had promoted |
+
+**Steps to reproduce.** At `89de0858`:
+
+```
+$ git show main:docs/DECISION_REGISTER.md | grep -n '^<<<<<<< \|^>>>>>>> '
+209:<<<<<<< HEAD
+213:>>>>>>> 809a3e43 (D-194 — the reconciliation found the entry decision already shipped)
+
+$ python3 infra/state-check.py
+(no marker finding)
+```
+
+**Expected.** A corrupt register is reported.
+
+**Actual.** ⛔ **`state-check` read four registers — `BUGS.md`, `LANE_COORDINATION.md`, `BACKLOG.md`, `ACTIVE_ASSIGNMENTS.md` — and the corrupt one was not among them.**
+
+### ⛔ Three of this class now, and each failed differently
+
+| | |
+|---|---|
+| **[B-150](#b-150--qe-promoted-a-conflict-marker-to-main-and-the-check-that-names-it-was-skipped-rather-than-missing)** | The check **was skipped** |
+| **[B-153](#b-153--qe-ran-the-check-that-caught-a-duplicate-identifier-and-grepped-past-the-finding)** | The check **was run and filtered** |
+| **B-154** | ⛔ **The check was run, read in full — and did not cover the file** |
+
+> ⚡ **B-150's own row argued against adding a second instrument because *"the first was not consulted"*. That was right then and is not an argument here** — **this time nothing existed to consult.** ⛔ **The list was the defect, not the check.**
+
+### ✅ The repair, both halves
+
+**The markers wrapped `HEAD`'s `D-195`/`D-196` rows against an empty incoming side** — a pure deletion that deleted nothing anybody wrote. ✅ **Both rows kept.**
+
+**And the loop now reads six registers, adding `DECISION_REGISTER.md` and `DECISION_QUEUE.md`.** ⚡ **Proved able to fail before shipping**: 1 finding against the corrupt tree, 0 against the repaired one — §2, *a guard that cannot fail is documentation pretending to be code*.
+
+> ⚠️ **The rule this suggests, and QE is applying it rather than proposing governance: a register QE reconciles at merge is a register the corruption check must read.** ⛔ **`DECISION_REGISTER.md` was reconciled by QE in every cycle it appeared in and read by nothing.**
+
+✅ **Found by a lane, not by QE** — which is §20e's own claim about this repository, and the third time this session it has held.
+
+---
+
 ### B-153 · QE ran the check that caught a duplicate identifier and grepped past the finding
 
 | | |

@@ -1664,11 +1664,23 @@ def main() -> int:
     # A malformed table survived four certifications on `main`: a reconciliation
     # script stranded a header, leaving `---|---|` with no `| | |` above it and a
     # second Status row inside one bug. Nothing failed, because gates read code.
+    # ⚡ **`DECISION_REGISTER.md` and `DECISION_QUEUE.md` added 2026-08-09**
+    # ([B-217](../docs/BUGS.md), found by Lane A). A conflict marker sat in the
+    # decision register on `main` for two cycles wrapping the `D-195` and
+    # `D-196` rows, and **this check reported nothing** — it read four
+    # registers and the register that was corrupt was not one of them.
+    #
+    # ⛔ **The list was the defect, not the check.** [B-150](../docs/BUGS.md)
+    # was a check skipped and [B-153](../docs/BUGS.md) a check filtered; this
+    # one was genuinely absent, and the fix is that a register QE reconciles
+    # at merge is a register this loop reads.
     for name, text in (
         ("docs/BUGS.md", bugs),
         ("docs/LANE_COORDINATION.md", coordination),
         ("docs/BACKLOG.md", backlog),
         ("docs/ACTIVE_ASSIGNMENTS.md", assignments),
+        ("docs/DECISION_REGISTER.md", _read("docs/DECISION_REGISTER.md")),
+        ("docs/DECISION_QUEUE.md", _read("docs/DECISION_QUEUE.md")),
     ):
         orphans = malformed_tables(text)
         if orphans:
