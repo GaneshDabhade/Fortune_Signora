@@ -80,6 +80,24 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-229 · One journey creates a workspace and never restores the previous one, so every account-backed journey after it fails
+
+| | |
+|---|---|
+| **Module** | **The repository-wide journey suite** — [`frontend/tests/e2e/organization-setup.spec.ts`](../frontend/tests/e2e/organization-setup.spec.ts). 📁 **QE's**: *"QE creates, maintains, extends and retires repository-wide automated tests; lanes own the tests specific to the slices they implement"* ([§20e](../CLAUDE.md)) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
+| **Severity** | 🟠 — ⛔ **no product defect and nothing a customer would hit.** ⚡ **But it makes the customer-journey gate unusable**: 12 journeys fail for a reason unrelated to what they assert, and each one passes standalone. ⚠️ **Whether this is a Blocking Quality Defect is QE's call, not this lane's** — *"a failing test"* is one of the six, and these tests fail; **classifying that is for the lane that runs certification** ([B-224](#b-224) is why this lane no longer decides that unasked) |
+| **Status** | **`OPEN`** — **found by Lane A, 2026-08-09**, running the full suite for [TASK-1427](BACKLOG.md)'s journey gate |
+| **Steps** | `SIGNORA_APP_URL=http://localhost:3300 npx playwright test` against a freshly seeded Playground |
+| **Expected** | A journey that creates an organization leaves the suite's active workspace as it found it |
+| **Actual** | ⛔ **191 passed, 23 failed.** **A second workspace appears mid-run** — measured in the database afterwards: `Playground` at 18:10:45 and **`E2E Org 1786299822837` at 18:23:44**. ⚡ **All the data is in the first**: 16 entities · 17 signals · 12 opportunities, **and zero of each in the new one** |
+| ✅ **Measured, not inferred** | 📁 **`organization-setup.spec.ts:21` — `` const unique = () => `E2E Org ${Date.now()}` ``**, which is exactly the row that appeared. ⛔ **The file contains no `afterAll`, no `afterEach` and nothing that restores the previous workspace** — grepped, zero matches. ⚡ **And the execution order matches exactly**: `organization-setup` runs at **[140/218]**, and **every account-backed failure is after it** — `perception` [146] · `resilience` [153] · `search-journey` [161] · `signal-center` [163] · `visual` [165] |
+| ⚡ **Each one passes on its own** | 📁 **`signal-center` is 4/4 green standalone** against the same seeded environment, and **0/2 inside the suite** — ⛔ **the assertion that fails is the vacuity guard**, `sawASummary`, because **the queue renders no rows at all**: the screen is reading an empty workspace |
+| ⚠️ **Two failures are NOT explained by this and are reported as unexplained** | **`auth-journey` *signing out ends the session*** and **`confidence` *two tabs never disagree about who is signed in*** both run **before** [140] — `confidence` at [92]. ⛔ **They have a different cause and this row does not claim them.** ✅ **`auth-journey`'s also failed in a run taken before the environment was reseeded**, so it is at least not new |
+| 🔴 **Why it is worth a row rather than a note** | ⛔ **It makes the journey gate report failures that are not defects**, and [§19](../CLAUDE.md) requires a lane to run its journeys before pushing. ⚡ **A lane that trusts the suite concludes its slice is broken; a lane that learns to discount it stops reading the results** — and **the second is how a gate quietly stops being one** |
+
+---
+
 ### B-228 · WITHDRAWN — the seeder was never broken; the lane's invocation split one database into two
 
 | | |
