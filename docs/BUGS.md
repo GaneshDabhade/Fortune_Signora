@@ -365,6 +365,83 @@ git show origin/main:docs/BUGS.md | grep -n '^>>>>>>>'
 
 ✅ **The numbering half of this row stands and is Lane A's own correction**: `B-207` was taken, the row moved to `B-213`, *"the number came from the tail of a listing rather than from the maximum, and a listing is not a maximum."*
 
+### B-217 · A live merge conflict sits in the decision register on `lane-c-sync`, and its incoming side is empty — the HEAD side is D-195, D-196 and D-198
+
+| | |
+|---|---|
+| **Module** | **Repository governance** — [`docs/DECISION_REGISTER.md`](DECISION_REGISTER.md) on `origin/lane-c-sync`, lines **209–214**. The guard that should name it is [`infra/state-check.py`](../infra/state-check.py) check 5d |
+| **Severity** | 🟠 **today — it is on `lane-c-sync` alone, and `integration` and `main` are both clean** (measured below) · 🔴 **the moment that branch merges, or the moment anybody resolves it.** ⛔ **Not because a marker is ugly:** **the `=======`/`>>>>>>>` side is EMPTY**, so *"take theirs"* — the ordinary reflex on a docs conflict, and the one this lane has itself been burned by — **deletes three approved rulings in one keystroke.** ⚡ **Deliberately not opened at 🔴**: an unresolved 🔴 stops `integration` fast-forwarding to `main` (§20e), and **blocking every promotion over a defect that is on neither branch would be this register firing on the wrong fact** |
+| **Status** | `OPEN` — reported by Lane A, 2026-08-09, on the poll that fetched `49ab040e`. ⛔ **Not fixed: the decision register is 🔴 in the Change Budget and it is not this lane's file.** ⚡ **Both halves are measured rather than argued.** ⛔ **`VERIFIED` is QE's** |
+
+**Reproduce, on any checkout:**
+
+```
+git fetch origin
+git show origin/lane-c-sync:docs/DECISION_REGISTER.md | sed -n '209,214p'
+```
+
+**Measured** — lines 209–214 of the file, abbreviated only in the middle of each row:
+
+```
+<<<<<<< HEAD
+| **D-195** | ⚡ **The final design authority takes precedence over previously …
+| **D-196** | ⚡ **Priority implementation — the Authenticated Entry reconciliat…
+| **D-198** | ⚡ **Continuous implementation pipeline — no more single-task disp…
+=======
+>>>>>>> 809a3e43 (D-194 — the reconciliation found the entry decision already shipped)
+```
+
+⛔ **`origin/integration` and `origin/main` are clean** — verified, not assumed:
+
+```
+for b in integration lane-c-sync main; do
+  git show origin/$b:docs/DECISION_REGISTER.md | grep -cE '^(<{7}|={7}|>{7})'
+done      # → 0, 3, 0
+```
+
+#### 🔴 What the empty side means
+
+**A conflict whose incoming side is empty is the most dangerous shape this class has**, and it is the opposite of the usual one. **There is no rival text to compare against and no visible loss** — resolving toward the incoming side produces a register that *reads perfectly*, with three rulings simply absent. **Nothing downstream fails.** ⛔ **The three are not incidental:**
+
+| Ruling | What disappears with it |
+|---|---|
+| **[D-195](DECISION_REGISTER.md)** | ⚡ **§8 — the `1400`+ identifier extension.** **`TASK-1400`–`1407` are allocated out of a block whose authorising ruling would no longer exist**, so eight prepared rows become ids from nowhere |
+| **[D-196](DECISION_REGISTER.md)** | **The six epics and eight rows of the Authenticated Entry reconciliation** — the decomposition those eight rows *are* |
+| **[D-198](DECISION_REGISTER.md)** | ⚡ **The ruling published the same day**, which removed the one-claimable ceiling and released **14 rows** into this lane's backlog. **The queue on that same branch is already reshaped to match it** |
+
+⚠️ **[D-198](DECISION_REGISTER.md) is the sharpest case: the register entry and the file it governs are on ONE branch, and only the register entry is inside the conflict.** ⛔ **A resolution that drops the HEAD side leaves `queues/lane-a.toml` restructured into a `backlog` by a ruling the repository no longer records** — the queue would be shaped by an authority that cannot be cited.
+
+#### ⚡ Why nothing caught it, measured
+
+**The guard is correct and is simply not pointed at the file.** [`infra/state-check.py`](../infra/state-check.py) runs `conflict_markers` over a four-name list:
+
+```python
+for name, text in (
+    ("docs/BUGS.md", bugs),
+    ("docs/LANE_COORDINATION.md", coordination),
+    ("docs/BACKLOG.md", backlog),
+    ("docs/ACTIVE_ASSIGNMENTS.md", assignments),
+):
+```
+
+⛔ **`docs/DECISION_REGISTER.md` is not in it, and appears nowhere else in the file as a scanned path.** **The detector itself works** — pointed at the register by hand it finds the marker immediately, and fence parity is clean, so this is **not** [B-403](#b-403)'s inverted-fence blind spot:
+
+```python
+>>> conflict_markers(open('DECISION_REGISTER.md').read())
+[209, 213, 214]
+>>> unclosed_fence(...)   # None — the file is fence-clean
+```
+
+> ⚡ **[B-213](#b-213--a-second-conflict-marker-is-on-main-in-the-file-b-150s-check-does-not-read)'s row states the four-register scope as the reassurance** — *"it already reads four registers… and it is fence-aware."* ✅ **That was true and remains true.** ⛔ **This row is the gap that sentence leaves**: **the document those four defer to is the one nobody scans.** **`BACKLOG.md` states what to build; the decision register states who may decide it** — and a corrupt authority is worse than a corrupt record of one.
+
+#### ⛔ What this lane did not do
+
+**It did not resolve the conflict**, though the resolution is obvious and three lines long. 🔴 **The decision register is `docs/` governance — 🔴 in the Change Budget, and the rulings inside the conflict are Lane C's and the product owner's.** ⚡ **[B-213](#b-213--a-second-conflict-marker-is-on-main-in-the-file-b-150s-check-does-not-read) recorded the reason in this lane's own words** — ***"the fix being trivially small is exactly when a lane is most tempted to take it."***
+
+**It also did not widen the four-name list**, which is the other one-line fix. ⛔ **`infra/` is Platform Foundation's.** ✅ **Both are named here so the owning lane can take either or both.**
+
+⚠️ **And the honest scope limit: this lane checked the decision register on three branches and the four scanned registers on `lane-c-sync`. It did not audit every unscanned document in `docs/` for the same class** — that is the general form of this row, and it is the owning lane's to size.
+
 ### B-216 · The notice channel says TASK-1400 is `READY`; the backlog says `SEQUENCED`, and the same file's own counter agrees with the backlog
 
 | | |
