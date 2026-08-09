@@ -829,10 +829,35 @@ def _notice(lane: str) -> str:
     if not NOTICES.exists():
         return ""
     try:
-        text = tomllib.loads(NOTICES.read_text()).get(lane, {}).get("notice", "")
+        text = str(tomllib.loads(NOTICES.read_text()).get(lane, {}).get("notice", ""))
     except tomllib.TOMLDecodeError:
         return ""
-    return str(text)[:400].replace('"', "'")
+
+    # ⛔ **A notice may carry REASONING. It may never carry STATE — B-216.**
+    #
+    # 🔴 **Lane A found this on the poll it was published.** The notice read
+    # *"TASK-1400 is READY"* while `BACKLOG.md` on `integration` read
+    # `SEQUENCED`, **and the tell was three lines below it in the same block:
+    # `current = ""` and `claimable_now = 0`.** The counters agreed with the
+    # backlog and the prose did not.
+    #
+    # ⚠️ **Third instance of one class** — [B-148](../docs/BUGS.md),
+    # [B-152](../docs/BUGS.md), this — **and every time a projection asserted a
+    # state the backlog did not carry.** ⛔ **Twice this office fixed the
+    # instance; the class only closes if a projection CANNOT say it.**
+    #
+    # ✅ **So the state words are refused rather than discouraged.** A notice
+    # that names one is dropped and replaced by a pointer to the authority,
+    # because [D-144](../docs/DECISION_REGISTER.md) is explicit: *"if the
+    # coordination source disagrees with `BACKLOG.md`, the backlog wins."*
+    banned = re.search(
+        r"\b(is|are|now)\s+`?(READY|CLAIMED|SEQUENCED|BLOCKED|IN PROGRESS|"
+        r"IN VALIDATION|PROMOTED|DONE)`?\b", text, re.I)
+    if banned:
+        return (f"NOTICE WITHHELD — it asserted a task state ('{banned.group(0)}'), "
+                f"which only BACKLOG.md may do (D-144, B-216). Read the backlog on "
+                f"origin/integration for state; read queues/lane-*.toml for reasoning.")
+    return text[:400].replace('"', "'")
 
 
 def render(rows: list[Task]) -> str:
