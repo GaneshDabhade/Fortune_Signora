@@ -1774,6 +1774,30 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **Widening the `DELETE` until the count comes out right.** ✅ **The orphaned rows have a reason and the reason is the deliverable** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
+### TASK-1456 · 🔴 The Authenticated Entry engine is imported by nothing, and the application routes on one line
+
+| | |
+|---|---|
+| 🔴 **Classification** ([D-220](DECISION_REGISTER.md) §3) | ⛔ **D — MISSING. The code exists and the BEHAVIOUR does not, which is the distinction [D-222](DECISION_REGISTER.md) §6 was written to catch** |
+| **Design authority** | 📁 **[`Fortune Signora Authenticated Entry.dc.html`](design-snapshot/screens/)** · 📁 **[`Fortune Signora Entry Coverage Review.dc.html`](design-snapshot/screens/)** — ⚡ **the second is planning authority only** ([D-207](DECISION_REGISTER.md) §1) |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-222](DECISION_REGISTER.md) §6** |
+| 🔴 **The measurement, and it is five greps** | 📁 **[`lib/entry/`](../frontend/lib/entry/) exports `resolveEntry` · `resolveWorkspace` · `workspaceHome` · `RULES` · `GATES`.** ⛔ **Every one of those five symbols has ZERO references anywhere in `app/`, `components/` or `lib/` outside `lib/entry/` itself and its tests.** ✅ **Indirection ruled out before the claim was made**: no dynamic `import()` of the module, no barrel re-export — 📁 **the only `import(` hits are type-only, inside `lib/entry/session.ts` at :166 and :168** |
+| 🔴 **What the application does instead, in full** | 📁 **[`app/(app)/layout.tsx`](../frontend/app/(app)/layout.tsx):34–37** — ```const session = await auth().api.getSession(…); if (!session?.user) redirect('/signin'); return <AuthenticatedShell …>``` ⛔ **Signed in, render the shell. Not signed in, go to `/signin`.** ⚡ **That is the entire post-authentication entry behaviour of the product** |
+| 🔴 **So none of the design's entry behaviour can be happening** | ⛔ **Workspace selection · last-used workspace · the no-workspace state · onboarding continuation · activation composition · first-run composition · role-based composition (Executive · Seller · RevOps) · deep-link restoration · session expiry · step-up · invitation acceptance · account states · workspace states · the twenty-one diagnostic reason codes.** ⚡ **Not "partially implemented" — unreachable, because the module that computes them is called by nothing** |
+| ⚠️ **This is the same class as the command palette, and it is the third instance** | 📁 **`command-palette.tsx` complete, tested, mounted nowhere ([C-259](LANE_COORDINATION.md)) · `confidence.tsx` the same ([C-266](LANE_COORDINATION.md)) · `drawer.tsx` and `copyable-id.tsx` the same ([498 §5.1](architecture/498-common-platform-audit.md)).** 🔴 **This one is a whole subsystem rather than a component, and [TASK-1451](BACKLOG.md)'s guard as specified would NOT have caught it — that guard walks `components/ui`, and this is `lib/`** |
+| ⚠️ **What this row does NOT assert** | ⛔ **That the engine is wrong.** ✅ **It may be entirely correct** — 📁 **[D-220](DECISION_REGISTER.md) §10 binds: the first step is to compare `RULES` against the design, not to rebuild.** ⛔ **And it does not assert what a customer currently SEES** — ⚡ **that needs a runtime and this office has none** ([D-222](DECISION_REGISTER.md), *no visual compliance claim without runtime evidence*) |
+| ⚡ **Delivers** | **The entry engine in the post-authentication path, deciding the destination** — ⛔ **and `layout.tsx`'s one-line redirect stops being the whole of entry.** ⚡ **Scope is WIRING plus whichever destinations already exist; a destination that does not exist is [TASK-1438](BACKLOG.md)'s or its own row, not invented here** |
+| ⛔ **Dependency, and it is real** | 📁 **[TASK-1438](BACKLOG.md) creates `/w/:workspace/home`, which is what `workspaceHome()` returns.** ⚠️ **Wiring the engine to a route that does not exist produces a 404 where a redirect used to work** — ⛔ **so this row either follows TASK-1438 or lands with it, and the implementing lane decides which** ([D-221](DECISION_REGISTER.md) §12, *follow the actual technical dependency*) |
+| **Change Budget** | 🟢 **`app/(app)/layout.tsx`** · 🟢 **`components/shell/**`** |
+| **Playwright coverage** | 🔴 **The one that matters: a member with no workspace does NOT land on the shell.** **A member with a last-used workspace lands there** · **a deep link survives sign-in** |
+| **Component coverage** | **The layout calls `resolveEntry` and honours its result** — ⛔ **an assertion that the engine is merely imported is not enough; it must be shown to change the destination** |
+| **Definition of Done** | **The post-authentication destination is decided by `lib/entry`, and a test fails if `layout.tsx` decides it instead** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Routes** the `(app)` group · **Playwright** one entry journey per composition that exists |
+| ⚠️ **Risk, named before it is met** | ⛔ **Wiring all twenty-one reason codes at once to destinations that do not exist.** ✅ **Wire the resolver, honour the codes whose destinations are built, and let the rest surface as rows** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
 ### TASK-1455 · 🔴 Two finalized designs are missing from the snapshot, and both already have implementations
 
 | | |

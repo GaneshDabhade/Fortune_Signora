@@ -1481,12 +1481,42 @@ updated      = 2026-08-09
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-1439", "TASK-1440", "TASK-1453", "TASK-1446", "TASK-1452",
+backlog = ["TASK-1456", "TASK-1439", "TASK-1440", "TASK-1453", "TASK-1446", "TASK-1452",
             "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451",
             "TASK-1442", "TASK-1444", "TASK-1443",
             "TASK-1438", "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
             "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+# 🔴 D-222 §6 — THE ENTRY ENGINE IS IMPORTED BY NOTHING. TASK-1456, at the head.
+#
+#    lib/entry exports resolveEntry, resolveWorkspace, workspaceHome, RULES,
+#    GATES. All five have ZERO references outside lib/entry and its tests.
+#    No dynamic import, no barrel re-export — checked before writing this.
+#
+#    What the product actually does, in full, app/(app)/layout.tsx:34-37:
+#      const session = await auth().api.getSession(...)
+#      if (!session?.user) redirect('/signin')
+#      return <AuthenticatedShell ...>
+#
+#    So workspace selection, last-used workspace, no-workspace, onboarding
+#    continuation, role-based composition, deep-link restoration, session
+#    expiry, step-up, invitation acceptance and the 21 reason codes are all
+#    unreachable. Not partial — the module that computes them is never called.
+#
+# WARNING: IT DOES NOT MEAN THE ENGINE IS WRONG. Compare RULES against the
+#    design before changing a line of it (D-220 section 10). It may be
+#    entirely correct and simply unplugged.
+#
+#    AND IT HAS A REAL DEPENDENCY: workspaceHome() returns /w/:workspace/home,
+#    which TASK-1438 creates. Wiring the engine first turns a working redirect
+#    into a 404. Take them together, or 1438 first — your call; D-221 s12 says
+#    follow the technical dependency and not the queue.
+#
+#    THIRD INSTANCE OF THE SAME CLASS: command-palette (C-259), confidence
+#    (C-266), drawer and copyable-id (498 s5.1), now a whole subsystem. Note
+#    TASK-1451's guard as written walks components/ui and would NOT have
+#    caught this one — it is lib/. Worth widening when you build it.
+#
 # ✅ D-221 — AUDIT ACCEPTED. PROCEED. 2026-08-09. No new ruling, no new process.
 #
 # 📌 THE ORDER BELOW IS D-221 §12's, applied literally to the eight rows it

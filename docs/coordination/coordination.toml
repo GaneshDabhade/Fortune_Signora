@@ -10,15 +10,15 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "734855b"
-task_count     = 156
+task_count     = 157
 
 [lane.Lane_A]
 notice             = "NOTICE WITHHELD — it names TASK-1454 as work for this lane, and none of them is in this lane's computed backlog (D-144, B-221). Either the row is not yet integrated, or it belongs to another lane. Read the backlog array in this file for what is actually claimable."
 backlog            = ["TASK-1405", "TASK-1439", "TASK-1411", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1440", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
-assigned_total     = 135
-claimable          = 29
+assigned_total     = 136
+claimable          = 30
 claimable_now      = 18
-awaiting_sync      = 11
+awaiting_sync      = 12
 in_flight          = 70
 actionable         = 3
 awaiting_qe_transition = 0
@@ -26,7 +26,7 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 36
 lane_utilization   = 14.0
-idle_prediction_days   = 4.1
+idle_prediction_days   = 4.3
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -853,6 +853,22 @@ on_integration = false
 [[task]]
 id            = "TASK-1453"
 title         = "The type scale is not the design's, and three surfaces apply the radius scale wrongly"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1456"
+title         = "🔴 The Authenticated Entry engine is imported by nothing, and the application routes on one"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
