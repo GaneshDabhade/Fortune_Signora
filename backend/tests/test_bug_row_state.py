@@ -30,6 +30,8 @@ from typing import Any
 
 import pytest
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -227,17 +229,43 @@ class TestUnclosedFenceIsCaught:
 
 
 class TestBlockingIsUnaffected:
-    """`unresolved` reads the cell's prefix and was always correct.
+    """The promotion gate, and **the emphasis the register actually writes**.
 
-    Recorded because the promotion gate depends on it: had this been wrong, a 🔴
-    could have been silently cleared, and no 🔴 ever was.
+    ⛔ **This class previously asserted that `unresolved` "was always correct",
+    and its own cases are why nobody checked**: `FIXED` was written bolded and
+    `OPEN` bare, so the only form the register uses for an open row — `**`OPEN`**`
+    — was never constructed. **`startswith` then failed on 29 of 39 open rows and
+    `blocks_promotion` returned `False` for every row in the file**, 🔴 included
+    ([B-413](../../docs/BUGS.md)).
+
+    ✅ **Every case below now runs in both emphases**, because a register written
+    by hand varies emphasis and a gate must not.
     """
 
-    def test_a_fixed_red_does_not_block(self) -> None:
-        assert _row("🔴", "**`FIXED`** — Lane A").blocks_promotion is False
+    @pytest.mark.parametrize("fmt", ["`{}`", "**`{}`**", "**`{}` — and commentary**"])
+    def test_a_fixed_red_does_not_block(self, fmt: str) -> None:
+        assert _row("🔴", fmt.format("FIXED")).blocks_promotion is False
 
-    def test_an_open_red_blocks(self) -> None:
-        assert _row("🔴", "`OPEN` |").blocks_promotion is True
+    @pytest.mark.parametrize("fmt", ["`{}` |", "**`{}`** |", "**`{}`** — reported, not fixed"])
+    def test_an_open_red_blocks(self, fmt: str) -> None:
+        assert _row("🔴", fmt.format("OPEN")).blocks_promotion is True
 
-    def test_a_fixing_red_still_blocks(self) -> None:
-        assert _row("🔴", "`FIXING` — Lane B has it").blocks_promotion is True
+    @pytest.mark.parametrize("fmt", ["`{}` — Lane B has it", "**`{}`** — Lane B has it"])
+    def test_a_fixing_red_still_blocks(self, fmt: str) -> None:
+        assert _row("🔴", fmt.format("FIXING")).blocks_promotion is True
+
+    def test_the_register_on_disk_agrees_with_its_own_state_column(self) -> None:
+        """⚡ **The parity check the unit cases cannot replace.**
+
+        `state` and `unresolved` are two readings of one cell, and they disagreed
+        for six days. Constructed rows only ever exercise the forms somebody
+        thought to write; **the register is where the unthought-of form lives.**
+        """
+        register = Path(__file__).resolve().parents[2] / "docs" / "BUGS.md"
+        rows = registers.bug_rows(register.read_text(encoding="utf-8"))
+        assert rows, "the register parsed to nothing — the section format changed"
+        for row in rows:
+            assert row.unresolved == (row.state in ("OPEN", "FIXING")), (
+                f"{row.identifier}: state={row.state!r} but unresolved={row.unresolved} — "
+                f"two readings of one cell disagree"
+            )

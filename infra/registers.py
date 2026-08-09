@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass
 
 SEVERITY_MARKERS = "🔴🟠🟡🟢"
-UNRESOLVED_PREFIXES = ("`OPEN`", "`FIXING`")
+UNRESOLVED_STATES = ("OPEN", "FIXING")
 
 # **The lifecycle, in order, and the order is what makes it readable.** A status
 # cell is prose, and the operative state is the one it *opens* with — exactly the
@@ -28,13 +28,30 @@ class BugRow:
     identifier: str
     severity: str
     status: str
-    unresolved: bool
     malformed: bool
 
     @property
     def blocks_promotion(self) -> bool:
         """🔴 **and** unresolved. A fixed 🔴 is a record, not a blocker."""
         return self.severity == "🔴" and self.unresolved
+
+    @property
+    def unresolved(self) -> bool:
+        """**Derived from `state`, never parsed a second way.**
+
+        This was `status.startswith(("`OPEN`", "`FIXING`"))`, and **29 of the 39
+        open rows write the state in bold** — `**`OPEN`**` — so the prefix never
+        matched and the register reported *ten* unresolved rows out of thirty-nine
+        ([B-413](../docs/BUGS.md)). **`blocks_promotion` returned `False` for every
+        row in the file**, including a 🔴.
+
+        ⛔ **The two properties on this one dataclass disagreed about what the
+        status cell said**: `state` located the token with `find`, and this one
+        required it at character zero. **Truth has exactly one authoritative
+        representation** (§2) — so there is now one reading, and `unresolved` is a
+        question asked of it.
+        """
+        return self.state in UNRESOLVED_STATES
 
     @property
     def state(self) -> str:
@@ -69,16 +86,14 @@ def bug_rows(text: str) -> list[BugRow]:
         severity_cell = re.search(r"\| \*\*Severity\*\* \| (.+)", body)
         status_cell = re.search(r"\| \*\*Status\*\* \| (.+)", body)
         if not (severity_cell and status_cell):
-            rows.append(BugRow(identifier, "", "", False, malformed=True))
+            rows.append(BugRow(identifier, "", "", malformed=True))
             continue
         markers = re.findall(f"[{SEVERITY_MARKERS}]", severity_cell.group(1))
-        status = status_cell.group(1).strip()
         rows.append(
             BugRow(
                 identifier=identifier,
                 severity=markers[0] if markers else "",
-                status=status,
-                unresolved=status.startswith(UNRESOLVED_PREFIXES),
+                status=status_cell.group(1).strip(),
                 malformed=False,
             )
         )
