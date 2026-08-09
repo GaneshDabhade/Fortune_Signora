@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `bc4f0c1`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `323ecd0`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `bc4f0c1`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `323ecd0`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`bc4f0c1`** — the certified commit itself |
+| **`main`** | **`323ecd0`** — the certified commit itself |
 | **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
 | **Release candidate** | ⚡ **Cycle 177 took Lane A ahead of ordinary order, on Lane C's request** — **a lane was stuck behind a bug report that had not synchronized.** ✅ **[B-169](docs/BUGS.md) `VERIFIED`: 167 rows, 0 unparsed** |
-| **Certification** | ✅ [`bc4f0c1d2e41`](certification/reports/bc4f0c1d2e41.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Certification** | ✅ [`323ecd0c8334`](certification/reports/323ecd0c8334.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **166 rows, 59 unresolved, 0 blocking**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
@@ -874,6 +874,42 @@ nothing is listening on 127.0.0.1:5432
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md)'s check ran ✓ · `--audit-main`: **0 outside a certified snapshot** |
 
 ⛔ **Still live and now unblocked for their owners: [B-228](docs/BUGS.md)** — the Playground seeder fails on a pristine database — **and [B-224](docs/BUGS.md)**, which Lane A has retracted its own self-blame on, because the failure reproduces on a database rebuilt from migrations. **Two separate defects.**
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 178
+
+**Derived from the promoted commit `323ecd0`.** ⚡ **Two lanes disagreed about a defect, measured each other, and the register records the retraction rather than a quiet edit.**
+
+### ✅ A published lead was disproved, and the retraction is a commit
+
+**Lane C offered Lane A a diagnosis for [B-228](docs/BUGS.md); Lane A measured it and it was false.** ⚡ **Lane C's own words**: *"'no facts therefore no binding' was an inference I offered and Lane A carried, and neither of us had measured the middle step."*
+
+⛔ **It reached the published notice**, which is why it is a commit rather than an edit: *"a disproved lead sitting in the channel every lane polls is the §2 defect — trusted because it is published."* ✅ **What stands is separated from what was inferred**, the stack trace kept, the inference withdrawn.
+
+### ⚠️ QE committed conflict markers into a candidate, and caught them before promotion
+
+**Resolving [B-224](docs/BUGS.md)'s row — where both lanes had added analysis to one table — QE's resolver asserted and failed, and the next command ran anyway.**
+
+```
+git add docs/BUGS.md && git rebase --continue    # ran despite the assertion failing
+```
+
+⛔ **That is [B-142](docs/BUGS.md)'s class — an exit code not gated — and it produced exactly [B-150](docs/BUGS.md): a conflict marker in a candidate.** ✅ **Caught by checking the committed tree rather than assuming**, the candidate rebuilt, and the final resolution verified against `main`'s own marker count rather than against zero — **because two `>>>>>>>` strings are legitimate fenced quotations inside bug rows, and a naive count calls them conflicts.**
+
+⚡ **The resolution kept both lanes' rows** — 1 from Lane A, 6 from Lane C — **which encodes no judgement about whose analysis is right.**
+
+### Measured
+
+| | |
+|---|---|
+| **Certified** | [`323ecd0c8334`](certification/reports/323ecd0c8334.md) · profile **`platform`** · **16 gates planned** · **first attempt** |
+| **Quality** | **4310 backend** · **95.09%** · **401 invariants** · mypy strict **854 files** · **37 contracts**, 0 broken · eslint clean · `tsc` clean |
+| **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **153s** · **+1 document** (499, the implementation/design reconciliation) |
+| **Register** | **166 rows, 59 unresolved, 0 blocking** |
+| **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md)'s check ran ✓ |
+
+⛔ **`main` still carried a false `OPEN` on [B-228](docs/BUGS.md) after this promotion** — the withdrawal was on Lane A's branch, and it is the next cycle's subject.
 
 ---
 
