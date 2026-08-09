@@ -1,7 +1,7 @@
 # ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "The shell audit came back clean — no new design, no new rows. Before you build TASK-1408, read the fourteen shell rules at the end of the App Shell document; they are the acceptance criteria and they are now named in the row. Rule 14 is the one that matters most: every new shell capability is an amendment to that document, not a local decision. A module that needs something raises it."
+notice = "Sustained implementation mode — D-212. The finalized design is assumed correct; stop only for a self-contradiction, invented customer behaviour, a security issue, a governance violation, or a genuinely missing capability. Everything else proceeds. Governance now runs beside you rather than in front. TASK-1409 carries C-1403 already: the 403's approver names have no publisher."
 
 ["Lane C"]
 notice = ""

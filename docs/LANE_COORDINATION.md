@@ -8578,6 +8578,12 @@ rules parsed: 24   ·   distinct reason codes: 24
 
 > **[D-207](DECISION_REGISTER.md) §2–§3 separate two questions this office had been answering as one.** **Design COMPLETENESS asks *can it be built without inventing behaviour?* — the Entry Coverage Review answers that.** **Design CORRECTNESS asks *is the behaviour itself logically consistent?* — nobody had been answering it, and this office began to and then resolved its own findings, which is the overreach D-207 corrects.**
 >
+> ## 🔴 **The gate, before anything below is written — [D-212](DECISION_REGISTER.md) §7**
+>
+> ⛔ **One question first: *can this be answered by an existing finalized design document?*** ✅ **If yes, implementation proceeds and NOTHING is raised.** ⛔ **Only if no does it become a clarification.**
+>
+> ⚡ **This office has already been caught by the inverse of it**: the [D-210](DECISION_REGISTER.md) audit reported *route transitions* and *split layouts* as absent because a term search found no match — **and both were fully specified**, one as `loadingCases → "Route change · module to module"` and one as the utility panel's *"selecting a table row fills the panel rather than opening a second surface."* ⛔ **Two interruptions that a reader, rather than a grep, would not have produced.**
+>
 > ⛔ **A Design Clarification is NOT a coordination item this office may close.** ✅ **It is evidence sent to the Design Authority, and the specification is confirmed or amended there.** 📁 **[§21](../CLAUDE.md): implement the design, never redesign it while building.**
 >
 > ⚠️ **Kept as a `Class` field in THIS register rather than a new file, deliberately.** ⛔ **A second register is a second place to look and a second thing to keep current** — the defect [D-203](DECISION_REGISTER.md) §2 spent a cycle removing. ✅ **The class is queryable, `state-check` reads it, and it appears on its own line in the dashboard.**
