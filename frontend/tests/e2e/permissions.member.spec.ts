@@ -27,7 +27,17 @@ test.describe('a member of the organization', () => {
     expect(names.length).toBeGreaterThan(0);
     // The intelligence surface is not an administrative capability. A member
     // who could not see the list would have no product at all.
-    await expect(page.getByText(MEMBER.email)).toBeVisible();
+    //
+    // ⚠️ **Scoped to the profile link — B-225.** This read
+    // `getByText(MEMBER.email)` and had been failing since 2026-08-08:
+    // the shell renders the address TWICE by design, a desktop link and a
+    // mobile span, and Playwright's strict mode counts matches in the DOM
+    // rather than visible ones. The duplicate render is correct; the query
+    // was wrong. Same repair as the shell's second wordmark in
+    // `app-shell-rail.test.tsx`, and it asserts something stronger than
+    // before: not that the address appears somewhere, but that it is the
+    // link to their own profile.
+    await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
   });
 
   test('@journey is not offered Settings in the navigation', async ({ page }) => {

@@ -175,6 +175,59 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 **② Invert the list.** ⚡ **Name the environments where a credential in a log is acceptable, rather than the ones where it is not** — ⛔ **so a NEW environment is deployed-by-default instead of development-by-default.** **That is the safe direction and it is a behaviour change to a security guard**, which is 🔴.
 
+### B-225 · A shipped `@smoke` journey has been red since 2026-08-08, and nothing runs the journeys so nothing said so
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tests/e2e/permissions.member.spec.ts`](../frontend/tests/e2e/permissions.member.spec.ts):23 · [`frontend/app/(app)/authenticated-shell.tsx`](../frontend/app/(app)/authenticated-shell.tsx):172 |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
+| **Severity** | 🟠 — ⚡ **the PRODUCT is fine; the journey that proves it is not.** ⛔ **A member genuinely sees their morning** — the page snapshot at failure shows the attention list rendering correctly. **What is broken is the assertion, and a broken assertion on a `@smoke` journey is a gate that cannot pass** |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-09, **on the poll that found it.** **`VERIFIED` is QE's** |
+| **Found** | 2026-08-09 by Lane A, ⚡ **running the journeys as a BASELINE before starting [TASK-499](BACKLOG.md)** — 📁 **that row's verification is *"four shipped customer journeys passing unchanged on new paths"*, and a baseline is the only way to tell a rename's breakage from breakage that was already there** |
+
+**Steps to reproduce.** With a lane stack on 3300:
+
+```bash
+HEADLESS=1 make e2e-quick ARGS="--grep @smoke"
+→ 1 failed, 7 passed
+  [member] permissions.member.spec.ts:23 @smoke sees their morning like everybody else
+```
+
+**Expected.** ✅ **The member's own identity is visible in the shell.**
+
+**Actual.** ⛔ **`strict mode violation: getByText('marcus.hale@northwind.example') resolved to 3 elements.`**
+
+### ⚡ Why it resolves to three, and two of them are enough
+
+**The shell renders the email TWICE, by design** — 📁 a desktop link to `/profile` (`sm:inline`) and a mobile span (`sm:hidden`):
+
+```
+app/(app)/authenticated-shell.tsx:168  <Link href="/profile" …>{email}</Link>
+app/(app)/authenticated-shell.tsx:172  <span className="…sm:hidden">{email}</span>
+```
+
+⛔ **Playwright's strict mode counts matches in the DOM, not visible ones**, so `sm:hidden` does not save it. **Two matches already fail; the third — a `Password for …` label from [`session-lock.tsx`](../frontend/components/auth/session-lock.tsx):193 — only makes it louder.**
+
+**Dated, not guessed:** `git log -S` puts the mobile span at `2fe98430`, **2026-08-08, TASK-470 milestone 1**. ⚡ **The slice that added the second render did not update the spec that asserted there was one.**
+
+### 🔴 The finding that is worth more than the fix
+
+⛔ **This has been red for a day and nothing reported it, because nothing runs the journeys.** ⚡ **QE's cycle measurements name `make smoke` — 24 stages — and never a Playwright count**; 📁 [§19](../CLAUDE.md) puts the browser journeys on the *implementing lane* before handover ([D-113](DECISION_REGISTER.md), [D-114](DECISION_REGISTER.md)), and a lane that does not run them ships a red gate nobody sees.
+
+> ⚠️ **This is the exact class [TASK-476](BACKLOG.md) was written for, one level up.** **That row made the journeys *watchable* by default; it did not make them *run*.** ⛔ **A gate whose default is never to execute is not a gate**, and the repository has now paid a day for it.
+
+⚡ **Not proposed as a new mechanism here** — 📁 [D-212](DECISION_REGISTER.md) §8 forbids adding governance that has not been shown to help, and [§20c-2](../CLAUDE.md) forbids the obvious reflex of putting it in CI. **Recorded so the next person deciding where journeys run has the evidence.**
+
+### ✅ The fix
+
+**Scope the assertion to the one element that carries meaning** — the profile link — rather than to any text on the page:
+
+```ts
+await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
+```
+
+⚡ **Same repair this lane made in `app-shell-rail.test.tsx`** when the shell's second wordmark broke an unscoped query: ⛔ **the duplicate render is correct and the query was wrong.** ✅ **And it asserts something stronger than before** — not merely that the address appears somewhere, but that it is the link to their own profile.
+
 ### B-165 · a new table, a new domain type and a new published contract reached `IN VALIDATION` with no architecture documentation and no Slice Handoff
 
 | | |
