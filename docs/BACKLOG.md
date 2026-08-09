@@ -1596,6 +1596,7 @@
 | **Component coverage** | **Rule 03 is asserted: two primary actions fail** · **the eyebrow is optional and the title is not** |
 | ♿ **Accessibility** | 📁 **The title is the route's `h1`, and a route change announces it politely (4.1.3)** — ⚡ **coordinate with [TASK-1444](BACKLOG.md), which owns the announcement** |
 | **Definition of Done** | **Two screens compose the shared header, and rule 03 has a test that fails without it** · **certified · `main`** |
+| ⚡ **And then the adoption sweep** ([D-219](DECISION_REGISTER.md) §4) | 📁 ***"When implemented, audit existing screens that currently implement their own headers and determine whether they should migrate."*** ⚡ **The sweep belongs to THIS row — a list of every screen with its own heading, with a migrate/keep verdict each — and any migration it warrants becomes rows.** ⛔ **Not a new process** ([D-219](DECISION_REGISTER.md) §10): **it is one more cell in this row's report** |
 | ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** one record journey |
 | ⚠️ **Risk, named before it is met** | ⛔ **Migrating all twenty-six screens in this row.** ✅ **Build the component and land two callers; the rest migrate on their own rows** |
 | **Build-vs-Buy** | ✅ **n/a** |
@@ -1618,6 +1619,7 @@
 | **Component coverage** | **A failing query and an empty query render different components** — ⛔ **the assertion fails if they render the same** |
 | ♿ **Accessibility** | 📁 **A loading region is `aria-busy` and announces politely; an error is `role="alert"`** |
 | **Definition of Done** | **Every route that reads has a loading state and a distinct error state, and a test proves the two differ** · **certified · `main`** |
+| ⚡ **Adoption is this row's, not each workflow's** ([D-219](DECISION_REGISTER.md) §5) | 📁 ***"Then identify existing screens that need to adopt it. Do not wait for each workflow to rediscover the problem."*** ⚡ **The 26-route measurement in [498 §4.2](architecture/498-common-platform-audit.md) IS that list** — ⛔ **so the sweep is already done and the row inherits it; what remains is doing the work rather than finding it again** |
 | ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** one forced-failure journey |
 | ⚠️ **Risk, named before it is met** | ⛔ **Adding `loading.tsx` files that render nothing, to make the count 26.** ✅ **A skeleton that does not match the shape it replaces is worse than a spinner** |
 | **Build-vs-Buy** | ✅ **n/a** |
@@ -1735,7 +1737,8 @@
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⛔ **MISSING IMPLEMENTATION — and it is the CONSUMER that is missing, not the strip** |
 | **Epic** | **App Shell** — **[workflow 29](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** |
-| **Status** | ⏸️ **`SEQUENCED` — Lane C, 2026-08-09, behind the first module that reads scope.** ⛔ **Not `BLOCKED`: nobody owes an answer.** ⚡ **It frees itself the moment any module consults `lib/shell/scope.ts`** |
+| **Status** | ⏸️ **`SEQUENCED` after [TASK-1433](BACKLOG.md)** — ⚡ **Lane C, 2026-08-09, under [D-219](DECISION_REGISTER.md) §6: *"Utility Panel first. Filter Strip second."*** ⛔ **The order is ruled and the prerequisite is NOT yet met, and [D-219](DECISION_REGISTER.md) §7 requires saying which**: **no module reads `lib/shell/scope.ts` today.** ⚡ **It frees itself the moment one does, and no further product decision is needed** ([D-219](DECISION_REGISTER.md) §6) |
+| ⚡ **The prerequisite, stated as a checkable condition rather than a hope** | ✅ **One module renders a figure that `period`, `region`, `segment` or `owner` would narrow, and reads it from `scope.ts`.** 📁 **[TASK-1405](#task-1405--home-is-one-route-and-four-compositions) is the natural first candidate** — ⛔ **named as a candidate to ASSESS when it lands, not asserted: whether its compositions render a narrowable figure is a question for that row's implementation, and this office will not invent the answer** |
 | 🔴 **Why it must not ship first** | 📁 **Four chips serialise period, region, segment and owner into the URL** — ⛔ **and no module reads scope.** ⚡ **A seller who sets the period to Q3 and sees every figure unchanged learns the filter is broken, and that belief is harder to undo than a missing feature** ([§2](../CLAUDE.md): a control that does nothing) |
 | ✅ **What already shipped instead, and it is the right half** | 📁 **[`lib/shell/scope.ts`](../frontend/lib/shell/scope.ts) carries the narrowing law**, so **the first consuming module inherits it rather than inventing one.** ⚡ **The law was the deliverable; the strip is the surface** |
 | ⚡ **Delivers** | **The four chips, reading and writing `scope.ts`'s serialisation** — ⛔ **no new law, and no second serialisation** |
@@ -1753,11 +1756,12 @@
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⛔ **MISSING IMPLEMENTATION — three modules' worth, none of which is the shell's** |
 | **Epic** | **App Shell** — **[workflow 29](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** |
-| **Status** | ⏸️ **`SEQUENCED` — Lane C, 2026-08-09, behind the first of Insights · Activity · Notes.** ⛔ **Not `BLOCKED`: nobody owes an answer** |
-| 🔴 **Why it must not ship first** | 📁 **The design fixes it at *"300px at 1280, 360px at 1600+, docks right of content and pushes it"* with tabs Insights · Activity · Notes.** ⛔ **All three are module content and none exists.** ⚡ **An empty 300px panel does not reserve space for a future feature — it takes 300px away from the one the customer is using today** |
-| ⚡ **Delivers** | **The dock, its two widths, and the first tab that has content.** ⛔ **Never three empty tabs** |
+| **Status** | ⏸️ **`SEQUENCED` after [TASK-1448](BACKLOG.md)** — ⚡ **Lane C, 2026-08-09, re-pointed under [D-219](DECISION_REGISTER.md) §6.** ✅ **The product owner ruled the order: *"Utility Panel first. Filter Strip second."*** ⚡ **Its blocker is now a scheduled row rather than an absent consumer** — 📁 **the panel is tabbed and there is no shared `Tabs`; [TASK-1448](BACKLOG.md) builds it, and §11 of the ruling already places it ahead of this row** |
+| ✅ **The consumer objection is ANSWERED, and by measurement rather than by the ruling** | ⛔ **This row was parked because *"all three tabs are module content and none exists"*. 🔴 That was wrong when written.** 📁 **`AccountHistory` — [`components/timeline/feed.tsx`](../frontend/components/timeline/feed.tsx) — renders on the Account 360 record today at `app/(app)/accounts/[accountId]/page.tsx`:492.** ⚡ **That IS the Activity tab's content, shipped, and the Definition of Done below is satisfiable without weakening it** ([D-219](DECISION_REGISTER.md) §7) |
+| 🔴 **What has NOT changed** | ⛔ **An empty 300px panel still takes 300px from the screen the customer is using.** ✅ **The rule survives the re-pointing: the panel ships with the Activity tab RENDERING, never as three empty tabs** |
+| ⚡ **Delivers** | **The dock, its two widths, `⌘.`, and the Activity tab rendering `AccountHistory` on the account record.** ⛔ **Insights and Notes are tab stubs only if the design's own empty state is used; never invented copy** |
 | **Change Budget** | 🟢 **`components/shell/**`** |
-| **Definition of Done** | **The panel docks, pushes content, and at least one tab renders real module content** · **certified · `main`** |
+| **Definition of Done** | **The panel docks at both widths, pushes content rather than covering it, `⌘.` toggles it, and the Activity tab renders `AccountHistory` on the account record** · **certified · `main`** |
 | ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** the panel docks and content reflows |
 | 📱 **Responsive behaviour** | 📁 **Two widths are the design's, from tokens** — ⛔ **not a media-query guess** |
 | ⚠️ **Risk, named before it is met** | ⛔ **Building the chrome because it is the easy half.** ✅ **The chrome is not the deliverable** |

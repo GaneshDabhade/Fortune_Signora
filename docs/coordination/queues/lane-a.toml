@@ -1479,11 +1479,55 @@ updated      = 2026-08-09
 #    now have rows. TASK-1409 leads the new ones deliberately: System States
 #    is a PLATFORM row every other workflow renders, and thirteen workflows
 #    will each improvise a 404 if it lands after them.
-backlog = ["TASK-1446", "TASK-1447", "TASK-1439", "TASK-1440", "TASK-1442", "TASK-1443",
-            "TASK-1444", "TASK-1448", "TASK-1449", "TASK-1451", "TASK-1450", "TASK-1438",
-            "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
+# D-219 §11's six, in the product owner's stated order, then the D-217 shell
+# rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
+backlog = ["TASK-1446", "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451",
+            "TASK-1439", "TASK-1440", "TASK-1442", "TASK-1443", "TASK-1444",
+            "TASK-1438", "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
             "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+# ✅ D-219 — THE PRODUCT OWNER HAS RULED. 2026-08-09. THIS IS IMPLEMENTATION
+#    WORK, NOT ANOTHER ARCHITECTURE EXERCISE. Take it straight from here.
+#
+#    "Lane A should be able to consume them directly from its backlog.
+#     Do not hold them in Product Office waiting for another planning cycle."
+#
+# 📌 THE ORDER IS THE PRODUCT OWNER'S (D-219 §11), and the head of `backlog`
+#    below is exactly it. ⚡ WHERE ROWS ARE INDEPENDENT YOU CHOOSE — §11:
+#    "Do not artificially serialize them." The order is priority, not a chain.
+#
+#      1  TASK-1446  Page Header                  ← highest, §4
+#      2  TASK-1447  Loading / Error states       ← §5
+#      3  TASK-1448  Tabs / Avatar / Tooltip
+#      4  TASK-1449  Toast into the library
+#      5  TASK-1450  Charts + the ramp
+#      6  TASK-1451  Shared-component guard
+#      7  TASK-1433  Utility Panel   (after 1448 — it is tabbed)
+#      8  TASK-1432  Filter Strip    (after 1433)
+#
+# ✅ C-1412 IS RULED AND CLOSED: "Utility Panel first. Filter Strip second."
+#    You are not waiting on Product Office for either.
+#
+# 🔴 AND ONE CORRECTION TO SOMETHING THIS OFFICE TOLD YOU EARLIER:
+#    TASK-1433 said "all three tabs are module content and none exists."
+#    That was wrong. AccountHistory (components/timeline/feed.tsx) renders on
+#    the Account 360 record today — app/(app)/accounts/[accountId]/page.tsx:492
+#    — and that IS the Activity tab. The row's DoD now names it. Its real
+#    blocker is that the panel is tabbed and Tabs does not exist yet, which
+#    is TASK-1448, three rows above it.
+#
+# ⛔ D-219 §3 — REUSE IS MANDATORY AND IS THE FIRST STEP OF EVERY ROW BELOW:
+#    search the library · can an existing component satisfy it · can an
+#    existing component be COMPLETED rather than duplicated · only then build.
+#    "One authoritative shared implementation per common capability."
+#
+# ✅ D-219 §2 — DO NOT REBUILD WHAT THE AUDIT PROVED CORRECT. Named by the
+#    product owner: the token translation, Button, Card, EmptyState, Skeleton,
+#    Dialog, Table, rail collapse/persistence, region error boundaries.
+#    "Do not correct these simply because their internal naming differs from
+#     the design terminology when the behaviour and token mapping are already
+#     correct."
+#
 # 🔴 D-218 — COMMON PLATFORM AUDIT, THE REMAINING FOUR AREAS. 2026-08-09.
 #    Report: docs/architecture/498-common-platform-audit.md
 #
@@ -1616,6 +1660,18 @@ backlog = ["TASK-1446", "TASK-1447", "TASK-1439", "TASK-1440", "TASK-1442", "TAS
 # with its blocker named below. ⛔ Nothing here is invented scope: every row
 # already existed and its owner was joined from modules.toml (D-135).
 
+
+[[blocked]]
+task    = "TASK-1433"
+blocker = ["TASK-1448"]
+owner   = "Lane A"
+note    = "the utility panel — D-219 §6, ruled FIRST of the two shell regions. The panel is tabbed and there is no shared Tabs; TASK-1448 builds it and sits three rows above this one in your backlog. The old blocker (no tab content exists) was wrong: AccountHistory renders on the Account 360 record today and is the Activity tab's content. Both blockers are this lane's own rows, so nothing outside Lane A gates it"
+
+[[blocked]]
+task    = "TASK-1432"
+blocker = ["TASK-1433"]
+owner   = "Lane A"
+note    = "the filter strip — D-219 §6, ruled SECOND. Its prerequisite is genuinely unmet and is named rather than glossed: no module reads lib/shell/scope.ts, so the four chips would narrow nothing. It frees itself the moment one module does, with no further product decision. TASK-1405 is a candidate to assess when it lands, not an assertion"
 
 [[blocked]]
 task    = "TASK-1441"

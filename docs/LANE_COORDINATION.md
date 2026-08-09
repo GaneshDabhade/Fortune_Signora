@@ -364,7 +364,7 @@ databaseUrl: required(
 | [C-253](#c-253--the-designs-403-names-the-missing-role-and-nothing-publishes-it) | **The design's 403 names the missing role, and nothing publishes it** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Lane C** — sequencing | 🟡 **`OPEN`** — ⚠️ **narrowed by this lane on the same day** | ⛔ **The `403` only, and SEQUENCED behind [TASK-471](BACKLOG.md) rather than waiting on a ruling** |
 | [C-258](#c-258--two-of-statedabsences-thirteen-callers-cannot-render-at-region-scope-and-the-ladder-is-what-is-short) | 🔴 **Two of `StatedAbsence`'s thirteen callers cannot render at region scope, and the ladder is what is short** | **Lane A**, 2026-08-09, holding [TASK-1428](BACKLOG.md) | **Design Authority** | 🔴 **`OPEN`** | ⚠️ **Five of thirteen call sites.** ✅ **Eight compose and are being built** |
 | [C-1411](#c-1411--an-audit-stream-whose-reliable-shape-needs-the-frozen-platform-and-whose-cheap-shape-is-lossy) | **An audit stream whose reliable shape needs the frozen platform, and whose cheap shape is lossy** | **Lane C**, 2026-08-09, splitting [C-261](#c-261--task-492s-producer-instruction-rests-on-a-premise-that-measurement-contradicts-and-either-reading-ships-a-defect) | 🔴 **Product owner** — [§20a](../CLAUDE.md) | 🔴 **`OPEN`** | ⚠️ **Three of [TASK-492](BACKLOG.md)'s four producers.** ✅ **The table, type, repository and `public/` are green** |
-| [C-1412](#c-1412--two-shell-regions-are-parked-behind-consumers-that-no-row-schedules) | **Two shell regions are parked behind consumers that no row schedules** | **Lane C**, 2026-08-09, from [498](architecture/498-common-platform-audit.md) | 🔴 **Product owner** — priority | 🔴 **`OPEN`** | ⚠️ **[TASK-1432](BACKLOG.md) · [TASK-1433](BACKLOG.md)** — **two of the shell's five declared regions** |
+| [C-1412](#c-1412--two-shell-regions-are-parked-behind-consumers-that-no-row-schedules) | **Two shell regions are parked behind consumers that no row schedules** | **Lane C**, 2026-08-09, from [498](architecture/498-common-platform-audit.md) | **Product owner** — priority | ✅ **`CLOSED`** — **[D-219](DECISION_REGISTER.md) §6: utility panel first** | ✅ **Nothing** |
 | [C-264](#c-264--c-241-was-resolved-and-the-screen-that-motivated-it-was-never-revisited) | **C-241 was resolved and the screen that motivated it was never revisited** | **Lane A**, 2026-08-09 | **Lane C** — row scope | 🔴 **`OPEN`** | ✅ **Nothing** |
 | [C-265](#c-265--step-up-is-built-and-the-only-module-whose-controls-require-it-is-not) | **Step-up is built and the only module whose controls require it is not** | **Lane A**, 2026-08-09 | **Lane C** — row scope | 🔴 **`OPEN`** | ⚠️ **One sentence of [TASK-1410](BACKLOG.md)'s DoD** |
 | [C-266](#c-266--the-ai-attribution-primitive-has-three-designs-and-no-data--the-read-task-1411-asks-for) | **The AI attribution primitive has three designs and no data** | **Lane A**, 2026-08-09 | **Lane C**, then the module owning the fact | 🔴 **`OPEN`** | ⚠️ **The DATA half of [TASK-1411](BACKLOG.md)** |
@@ -9585,8 +9585,26 @@ rules parsed: 24   ·   distinct reason codes: 24
 | **Raised by** | **Lane C**, 2026-08-09, from the Common Platform Audit — **[498 §2.1](architecture/498-common-platform-audit.md)**, ruled as **[D-218](DECISION_REGISTER.md)** |
 | **Owner** | 🔴 **Product owner** — ⛔ **it is a priority question, and [§20e](../CLAUDE.md) is explicit that a lane never reorders the queue** |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **SEQUENCING GAP** — ⛔ **not an architectural blocker and not a defect: both regions are designed, specified and understood. Nothing is waiting on a decision about *how*; the queue contains no *when*** |
-| **Status** | 🔴 **`OPEN`** |
-| **Blocks** | ⚠️ **[TASK-1432](BACKLOG.md) the filter strip · [TASK-1433](BACKLOG.md) the utility panel** — **two of the shell's five declared regions** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-09, the requesting lane, on the product owner's ruling.** ⚡ **Raised and answered inside one cycle** |
+| **Blocks** | ✅ **Nothing.** ⚡ **Both rows are re-pointed at scheduled predecessors** — [TASK-1433](BACKLOG.md) after [TASK-1448](BACKLOG.md), [TASK-1432](BACKLOG.md) after [TASK-1433](BACKLOG.md) |
+
+## ✅ RULED — [D-219](DECISION_REGISTER.md) §6, product owner, 2026-08-09
+
+> ## **Utility Panel first. Filter Strip second.**
+
+📁 **The reasoning is the one this office recommended, and it is recorded here in the product owner's own terms:** *"The Utility Panel is a foundational shell capability explicitly referenced by the shell rules and intended to provide contextual information consistently across modules. Therefore the platform should establish it before individual workflows start independently deciding how contextual information should appear."*
+
+⛔ **And the ruling closes the question rather than parking it:** 📁 *"Do not create another Product Owner decision around this unless implementation uncovers a genuine contradiction in the finalized design."*
+
+### ⚡ What discharging it uncovered, which is better than the ruling assumed
+
+🔴 **[TASK-1433](BACKLOG.md) was parked on a claim that measurement contradicts.** ⛔ **Its Status read *"all three tabs are module content and none exists"* — and `AccountHistory` ([`components/timeline/feed.tsx`](../frontend/components/timeline/feed.tsx)) has been rendering on the Account 360 record all along, at `app/(app)/accounts/[accountId]/page.tsx`:492.** ✅ **That IS the Activity tab's content.**
+
+⚡ **So the row did not need its Definition of Done weakened to satisfy the ruling** ([D-219](DECISION_REGISTER.md) §7) — **it needed the claim in its own Status cell checked.** ⚠️ **This office wrote that claim and did not check it, which is the same failure as [C-421](#c-421--the-design-authority-cannot-be-reached-by-any-implementation-lane): an absence asserted rather than tested.**
+
+✅ **The real remaining dependency is ordinary and scheduled:** **the panel is tabbed, no shared `Tabs` exists, and [TASK-1448](BACKLOG.md) builds it** — ⚡ **which §11 of the ruling already places ahead of the panel, so the sequencing and the dependency agree without anybody adjusting either.**
+
+⛔ **[TASK-1432](BACKLOG.md)'s prerequisite is genuinely NOT met and is named rather than glossed** ([D-219](DECISION_REGISTER.md) §7): **no module reads `lib/shell/scope.ts`.** ✅ **It frees itself the moment one does, and no further ruling is required.**
 
 🔴 **The measurement.** 📁 **[`lib/shell/constitution.ts`](../frontend/lib/shell/constitution.ts) declares five `SHELL_REGIONS`; `app-shell.tsx` renders three.** ⛔ **The two absent ones were carved out of [TASK-1408](BACKLOG.md) by [D-215](DECISION_REGISTER.md) — correctly, and recorded honestly — and each was then `SEQUENCED` behind a consumer**: *"behind the first module that reads scope"* and *"behind the content its three tabs name"*.
 
