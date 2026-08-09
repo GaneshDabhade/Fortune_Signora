@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `e72b6af`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `1874df0`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `e72b6af`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `1874df0`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`e72b6af`** — the certified commit itself |
+| **`main`** | **`1874df0`** — the certified commit itself |
 | **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
-| **Release candidate** | ⛔ **Cycle 157: the security event stream is certified and promoted, and QE returned it `CHANGES REQUESTED` for its documentation** — ⚡ **the code is exemplary; the two paragraphs the next lane needs do not exist** |
-| **Certification** | ✅ [`e72b6af0b254`](certification/reports/e72b6af0b254.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | ⚡ **Cycle 158: a customer with no network now gets Signora's screen rather than the browser's — and the lane fire-tested its own tests, which failed** |
+| **Certification** | ✅ [`1874df0884f9`](certification/reports/1874df0884f9.md) · migration head **`0046`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **157 rows, 54 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ⚡ **Lane A found a seventh path and took it — `TASK-1428` needed only [C-252](docs/LANE_COORDINATION.md), which was already ruled.** ⛔ **The other six still hold `TASK-1408`/`TASK-1409`, and none is Lane A's to clear** — — [C-252](docs/LANE_COORDINATION.md) · [C-253](docs/LANE_COORDINATION.md) · [C-254](docs/LANE_COORDINATION.md) · [C-255](docs/LANE_COORDINATION.md) · [C-256](docs/LANE_COORDINATION.md) · [C-257](docs/LANE_COORDINATION.md) · C-1403. ⚡ **Visible for the first time this cycle** |
-| **Validation queue** | ⛔ **One returned: [`TASK-492`](docs/BACKLOG.md) is `CHANGES REQUESTED`** ([B-165](docs/BUGS.md)). ✅ **Lane A rebased itself and the duplicates dropped out exactly as predicted.** ⚡ **Lane C is a stale pointer this cycle; Lane B remains one** — 3 ahead by ref, **level by content**, all three patch-ids already on `main`. ⚡ **Lane B likewise** — its one remaining commit is a claim `main` already carries, patch-id verified against a 400-commit window. ⛔ **Lane C's `dfe4a746` still conflicts on generated files and is the lane's to rebase** |
-| **Customer value this cycle** | ⚡ **A workspace's security history has somewhere to live, and it cannot be edited** — **no `UPDATE` grant and no `UPDATE` policy.** ⚠️ **Nothing writes to it yet; its producers are blocked** |
+| **Validation queue** | ⛔ **[`TASK-492`](docs/BACKLOG.md) remains `CHANGES REQUESTED`** — [B-165](docs/BUGS.md) is unaddressed, **which is expected: Lane A has not polled since the return.** ⚡ **Both new slices carry a `Slice-Handoff` and `doc-drift` is clean, so the gap is one row rather than a habit.** **Lane C is a stale pointer this cycle; Lane B remains one** — 3 ahead by ref, **level by content**, all three patch-ids already on `main`. ⚡ **Lane B likewise** — its one remaining commit is a claim `main` already carries, patch-id verified against a 400-commit window. ⛔ **Lane C's `dfe4a746` still conflicts on generated files and is the lane's to rebase** |
+| **Customer value this cycle** | ⚡ **A customer whose device drops off the network keeps working.** **Edits queue and replay in order, the screen says whether it is them or us, it says when the product last worked, and the retry button actually re-checks** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4310 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2057 frontend tests** across **97 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **854 files** · **47 migrations**, `0000`–`0046`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **174s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
+**Repository health:** **4310 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2103 frontend tests** across **100 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **854 files** · **47 migrations**, `0000`–`0046`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **203s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
 
 ---
 
@@ -452,6 +452,52 @@ $ git log --format=%B origin/integration..e72b6af0 | grep -c Slice-Handoff
 | **Quality** | **4310 backend** *(+32)* · **95.09%** · **401 invariants** *(+3)* · **2057 frontend / 97 files** · mypy strict **854 files** · **37 contracts**, 0 broken |
 | **Architecture** | ⚡ **Migration `0046` — the first new table in several cycles — reversible** · **DR nothing lost** · smoke 24 stages in **174s** · **47 migrations** |
 | **Register** | **157 rows, 54 unresolved, 0 unresolved 🔴** · **+1 filed** ([B-165](docs/BUGS.md)) |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **0 outside a certified snapshot** |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 158
+
+**Derived from the promoted commit `1874df0`.** ⚡ **A lane fire-tested its own tests, and they failed — on the one line nothing protected.**
+
+### ✅ A customer who drops off the network keeps working
+
+**`TASK-1435` and `TASK-1436`.** **Edits made offline queue and replay in order**, the queue is **visible rather than implied**, and a customer with no network gets **Signora's screen rather than the browser's** — told whether it is them or us, told when the product last worked, and given a button that **actually re-checks**.
+
+⚡ **`probeConnection()` asks `/api/health` with `cache: 'no-store'` and returns an answer.** ⛔ **It never reloads**: *"a reload on a cold start with no network returns the browser's own error page"* — **which is the screen the slice exists to replace.**
+
+### 🔴 The finding of the cycle, and the lane found it against itself
+
+**The row warned of *"a relative time that says last connected 0 minutes ago forever because nothing writes it."*** **So the lane removed its own write and ran everything:**
+
+> ⛔ ***"I removed the `recordConnection` call from the API client and the whole suite passed — 2101 green — while the label would have frozen at whatever it last said and never moved again."***
+
+⚡ **That is the row's named risk arriving by exactly the route the row predicted**, and the lane's own diagnosis is the reusable half: ***"my tests covered the render and not the write."***
+
+> ✅ **This is [B-162](docs/BUGS.md)'s lesson one step earlier.** **There a guard was narrowed without measuring what stopped firing; here the tests proved the new code works and never asked what would still pass if the change were undone.** **Two tests now assert the write itself, and removing the line fails them.**
+>
+> ⚡ **Fourth time this lane has applied *measure what stops firing*, and the first time it applied it to its own test suite rather than to a guard.**
+
+**The write is placed deliberately**: `recordConnection()` runs in `apiRequest` on **every** response, **before the status checks** — *"a 401 or a 500 still crossed the network, and last connected is about the connection, not the answer."* ⛔ **And it is not a heartbeat**: *"a timer proving it again would be traffic whose only purpose is making a label true."*
+
+### ✅ Both slices arrived with a `Slice-Handoff`, and `doc-drift` is clean
+
+⚡ **Directly relevant to [B-165](docs/BUGS.md), filed last cycle for the absence of exactly these.** **`doc-drift` reports `0 module(s) touched, documentation moved with them`.** ⛔ **`TASK-492` remains `CHANGES REQUESTED` and `security_event` still appears `0` times in both architecture documents** — ✅ **expected, since Lane A has not polled since the return.** ⚡ **The gap is one row rather than a habit, and this cycle is the evidence.**
+
+### ⚠️ QE excluded a commit that would have reverted its own return
+
+**Lane A's branch still carries `e9160a05`, a documentation-only `TASK-492` commit that predates the return** — **and cherry-picking it would have flipped the row from `CHANGES REQUESTED` back to `IN VALIDATION`, erasing [B-165](docs/BUGS.md)'s finding without anybody deciding to.** ⛔ **It was excluded deliberately and the exclusion is checked**: the return is still on `main`, verified after the candidate was built.
+
+✅ **The two implementation commits were taken and nothing was held.** ⚠️ **Lane A should rebase; its branch predates QE's return.**
+
+### Measured
+
+| | |
+|---|---|
+| **Certified** | [`1874df0884f9`](certification/reports/1874df0884f9.md) · profile **`documentation+frontend`** · **8 gates** · **first attempt** |
+| **Quality** | **4310 backend** · **95.09%** · **401 invariants** · ⚡ **2103 frontend / 100 files** *(+46, +3 files)* · mypy strict **854 files** · **37 contracts**, 0 broken |
+| **Architecture** | Migration head `0046` **reversible** · **DR nothing lost**, 5 restart stages · smoke 24 stages in **203s** · **53 ADRs** |
+| **Register** | **157 rows, 54 unresolved, 0 unresolved 🔴** |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **0 outside a certified snapshot** |
 
 ---
