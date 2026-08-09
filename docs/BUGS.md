@@ -326,6 +326,39 @@ await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
 
 ⚡ **Same repair this lane made in `app-shell-rail.test.tsx`** when the shell's second wordmark broke an unscoped query: ⛔ **the duplicate render is correct and the query was wrong.** ✅ **And it asserts something stronger than before** — not merely that the address appears somewhere, but that it is the link to their own profile.
 
+### B-169 · four new rows carry their state inside the Module cell, so no instrument can read it — the defect [TASK-1404](BACKLOG.md) fixed, reintroduced in the same commit
+
+| | |
+|---|---|
+| **Module** | Repository process — [`docs/BACKLOG.md`](BACKLOG.md) authoring |
+| **Current assignee** | **Lane C** — its own rows, and its own backlog authoring |
+| **Severity** | 🟠 — ⛔ **silent by construction.** **The rows exist, a human reads their state fine, and every instrument sees nothing** |
+| **Status** | **`OPEN`** |
+| **Commit found** | `700015f6` (`D-217`), found by QE during cycle 176 validation |
+
+**Steps.** From the promoted commit, count rows whose state no reader can parse:
+
+```
+before D-217 landed:  1 unparsed   (TASK-1404, fixed by this same push)
+after:                4 unparsed   (TASK-1441, 1442, 1443, 1444)
+```
+
+**Expected.** A `| **Status** |` row, as every other row in the file has.
+
+**Actual.** ⛔ **The state is embedded in the Module cell:**
+
+```
+| **Module** | **`product_surface`** · **Status** ⏸️ **`SEQUENCED` behind TASK-1439** ...
+```
+
+⚡ **Every state reader in this repository looks for a `Status` row and takes its leading backticked token.** **There is no `Status` row, so `state-check.py`, both dashboards and the coordination projection are blind to all four simultaneously** — **the same triple blindness [`TASK-1404`](BACKLOG.md) was corrected for, in the commit that corrected it.**
+
+> 🔴 **The pattern is worth more than the four rows.** **Lane C wrote, in this same push**: *"every state reader takes the leading backticked token; a token containing a markdown link matches nothing… the defect is silent by construction — [B-101](#b-101)'s class."* ⛔ **Then authored four rows with no `Status` row at all.** ⚡ **Knowing the class did not prevent the next instance, because nothing checks.**
+>
+> ✅ **These four are `SEQUENCED`, so nothing is claimable that should not be** — **the cost is undercounting, not misdirection.** ⚠️ **But that is luck: the same shape on a `READY` row hides claimable work from every lane.**
+
+**Repair — the check, not the four rows.** ⚡ **`state-check.py` already parses every row; it should report rows whose state it cannot find rather than skipping them silently.** ⛔ **It currently counts what it can read and says nothing about what it cannot** — **which is why one unparsed row survived from 2026-08-08 until a lane rendered a table that happened to show it.** ✅ **Fix the four rows too, but the check is what stops the fifth.**
+
 ### B-168 · a clean rebase silently reverted QE's own `VERIFIED` cells, and QE promoted the reversion
 
 | | |

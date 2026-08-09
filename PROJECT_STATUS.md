@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `e910197`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `700015f`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,17 +12,17 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `e910197`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `700015f`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`e910197`** — the certified commit itself |
+| **`main`** | **`700015f`** — the certified commit itself |
 | **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
-| **Release candidate** | ✅ **Cycle 163 cleared the two-cycle hold: twelve commits, both lanes, first attempt.** ⚡ **The lane that raised the 🔴 corrected it — naming its own conflict of interest before arguing the case** |
-| **Certification** | ✅ [`e910197c85e9`](certification/reports/e910197c85e9.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | ⚡ **Cycle 176 released the seven-poll documentation hold** — a `docs/coordination/**` change reclassified it as `platform`. ⛔ **The fix for the unreadable row arrived beside four new rows carrying the same defect** ([B-169](docs/BUGS.md)) |
+| **Certification** | ✅ [`700015f6b65c`](certification/reports/700015f6b65c.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt, after one aborted run** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **161 rows, 55 unresolved, 0 blocking**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
+| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **164 rows, 58 unresolved, 0 blocking**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ⚡ **Lane A found a seventh path and took it — `TASK-1428` needed only [C-252](docs/LANE_COORDINATION.md), which was already ruled.** ⛔ **The other six still hold `TASK-1408`/`TASK-1409`, and none is Lane A's to clear** — — [C-252](docs/LANE_COORDINATION.md) · [C-253](docs/LANE_COORDINATION.md) · [C-254](docs/LANE_COORDINATION.md) · [C-255](docs/LANE_COORDINATION.md) · [C-256](docs/LANE_COORDINATION.md) · [C-257](docs/LANE_COORDINATION.md) · C-1403. ⚡ **Visible for the first time this cycle** |
 | **Validation queue** | ✅ **Empty. The hold is cleared** — `TASK-499` and `TASK-1410` both `VERIFIED`, [B-226](docs/BUGS.md)'s fix promoted. ⚡ **Lane B remains a stale pointer** — 3 ahead by ref, **level by content**, all three patch-ids already on `main`. ⚡ **Lane B likewise** — its one remaining commit is a claim `main` already carries, patch-id verified against a 400-commit window. ⛔ **Lane C's `dfe4a746` still conflicts on generated files and is the lane's to rebase** |
 | **Customer value this cycle** | ⚡ **Signora can now ask a customer to prove it is still them before something destructive** — **and the proof lasts ten minutes, not a day** |
@@ -775,6 +775,63 @@ TASK-499                          CLAIMED
 | **Journeys** | ✅ **45 passed** — **by the lane**, working around [B-224](docs/BUGS.md). ⛔ **Still not runnable by QE** ([B-156](docs/BUGS.md), [B-166](docs/BUGS.md)) |
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages |
 | **Register** | **161 rows, 55 unresolved, 0 blocking** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **0 outside a certified snapshot** |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 176
+
+**Derived from the promoted commit `700015f`.** ⚡ **A seven-poll documentation hold released itself — and the fix for an unreadable row arrived beside four new rows with the same defect.**
+
+### ✅ The hold released, by reclassification rather than by a decision
+
+**Two register commits sat held for seven polls**, correctly: planner `documentation`, 2 gates, and §20e says *"certifying them alone spends a full gate run proving a markdown table is still true."* ⚡ **Lane C's `D-217` then touched `docs/coordination/**`, which [D-115](docs/DECISION_REGISTER.md) classifies as `platform` because three gates read it** — **so the profile became `platform`, 16 gates, and the held work certified alongside it.**
+
+✅ **The rule resolved this, not a judgement call.** ⛔ **QE did not shorten the hold because it was getting long.**
+
+### ⛔ [B-169](docs/BUGS.md) — the defect fixed and reintroduced in one push
+
+**`TASK-1404`'s state was unreadable and Lane C fixed it, writing the diagnosis precisely:** *"every state reader takes the leading backticked token… the defect is silent by construction — [B-101](docs/BUGS.md)'s class."*
+
+**Measured across the same promotion:**
+
+```
+before:  1 unparsed row   (TASK-1404 — fixed by this push)
+after:   4 unparsed rows  (TASK-1441, 1442, 1443, 1444 — added by this push)
+```
+
+⚡ **The new rows carry their state inside the Module cell** — `| **Module** | `product_surface` · **Status** ⏸️ `SEQUENCED`…` — **with no `| **Status** |` row at all**, so `state-check`, both dashboards and the coordination projection are blind to all four at once.
+
+> 🔴 **Knowing the class did not prevent the next instance, because nothing checks.** ✅ **All four are `SEQUENCED`, so nothing claimable is hidden — but that is luck.** ⛔ **The repair is `state-check` reporting rows whose state it cannot find, rather than skipping them silently**: one such row survived from 2026-08-08 until a lane happened to render a table that showed it.
+
+### ✅ [B-168](docs/BUGS.md)'s check ran, for the first time as a check rather than a finding
+
+```
+$ git diff origin/main..HEAD -- docs/BACKLOG.md | grep '^-.*`VERIFIED`'
+✅ no VERIFIED cell removed
+```
+
+⚡ **Filed last cycle after a clean rebase silently reverted QE's own verifications three times.** **This is the first promotion it gated.**
+
+### ⚠️ One aborted run, read rather than reported as a failure
+
+**`make certify` exited `Error 3` before any gate ran:**
+
+```
+nothing is listening on 127.0.0.1:5432
+```
+
+⛔ **A statement about the run, not the commit.** ✅ **QE brought up its own stack — the preflight prints the exact command — and re-ran.** ⚡ **The preflight's own note is why it refuses rather than proceeding**: *"`pytest` blocks with no timeout and no diagnostic, which reads as a hung suite rather than an absent database. That cost 22 minutes once."*
+
+### Measured
+
+| | |
+|---|---|
+| **Certified** | [`700015f6b65c`](certification/reports/700015f6b65c.md) · profile **`platform`** · **16 gates planned** |
+| **Quality** | **4310 backend** · **95.09%** · **401 invariants** · mypy strict **854 files** · **37 contracts**, 0 broken · eslint clean · `tsc` clean |
+| **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **149s** |
+| **Register** | **164 rows, 58 unresolved, 0 blocking** · **+1 filed** ([B-169](docs/BUGS.md)) |
+| **Backlog readability** | ⛔ **4 rows unparsed** *(was 1)* · **62 at `IN VALIDATION`** *(was 64)* |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **0 outside a certified snapshot** |
 
 ---
