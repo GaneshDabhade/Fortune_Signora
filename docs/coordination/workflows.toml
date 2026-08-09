@@ -229,7 +229,8 @@ depends_on  = ["workflow.6"]
 
 [workflow.9]
 name   = "User Profile"
-state  = "planned"
+state  = "blocked"
+note   = "⚠️ Read `planned` until 2026-08-09, and it has been partly BUILT since 2026-08-08 — milestones 1–2 of 3 delivered, migrations 0044 and 0045 and table person_preferences are on `main`. Corrected in the audit the product owner asked for, by measuring the migration head rather than reading this field. Milestone 3 (screen 05) is blocked on TASK-493 — Better Auth's multi-session plugin — which is SEQUENCED and unclaimed."
 design = "Fortune Signora User Profile.dc.html"
 tasks  = ["TASK-470"]
 owner  = "Lane A"
