@@ -15,9 +15,9 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
-## 🔴 The Authenticated Entry reconciliation — what it found, and what it cannot fix
+## ✅ The Authenticated Entry reconciliation — what it found, and the work it became
 
-> ## ⚡ **The audit ran. The findings are concrete and one of them is in shipped code.** ⛔ **Turning them into work needs identifiers, and Lane C's block is fully allocated.**
+> ## ⚡ **The audit ran, the findings were concrete, and every one is now a row.** ✅ **Kept here as the record of what was found and where it went — not as something waiting on you.**
 
 ### ① 🔴 The entry decision already exists — hardcoded, in a module, racing another mechanism
 
@@ -41,37 +41,9 @@
 
 **Workflows 1, 2, 3 and 4 are on `main` and none is contradicted** — ⚡ **they end *at* the entry decision rather than making one, except for the single `router.push('/')` above.** ✅ **Workflow 7 is `blocked` for unrelated reasons and its invitation routing is rule 12's, which the spec now defines.**
 
-### ⛔ What this office cannot deliver, and why
+### ✅ RESOLVED 2026-08-08 — the block was extended and the work exists
 
-📁 **[D-194](DECISION_REGISTER.md) §4: *"Do not silently record it… create an implementation task, create an epic, create implementation slices."*** ⛔ **Every finding above needs a row. `TASK-400`–`499` is fully allocated — 95 of 100, zero free, and the seven apparent gaps are live references.**
-
-> ## 🔴 **This is the third ruling in a row whose central instruction this office cannot execute, and the blocker is the same line in `CLAUDE.md` each time.** ⚡ **Extending Lane C to `1400`+ unblocks D-192's Workflow 28, D-193's twenty platform rows, and this reconciliation's five.**
-
-
-## 🔴 Authenticated Entry is adopted, and decomposing it needs identifiers I do not have
-
-> ## ✅ **Imported, recorded as workflow 29, and treated as a platform specification rather than a feature.** ⛔ **Decomposition is blocked at step one.**
-
-📁 **[D-193](DECISION_REGISTER.md) §4 lists roughly twenty-five implementation areas** — entry engine, reason-code framework, session diagnostics, decision engine, workspace resolution, deep-link handling, intent preservation, session restoration, multi-workspace behaviour, four compositions, the composition framework, the card catalogue, card contracts, registration mechanisms, diagnostics bundle, redirect logging, the routing test suite, accessibility, responsive, motion.
-
-⛔ **That is ~20 rows. `TASK-400`–`499` is fully allocated — 95 rows, zero free.** ⚡ **The block table is [`CLAUDE.md`](../CLAUDE.md)'s and is yours; this office has not edited it.**
-
-### ⚡ Three findings the specification produced, before any decomposition
-
-| | |
-|---|---|
-| ✅ **It corrects [D-192](DECISION_REGISTER.md), which was this office's** | **That package concluded *App Shell → Home → Executive Dashboard (workflow 19)*.** ⛔ **Wrong.** 📁 **The spec: Home is a SLOT, not a screen, and *"the Executive Dashboard already built is the executive composition of Home."*** ⚡ **One route, four compositions — not a route leading to another screen.** ✅ **A better answer, and it means workflow 19 does not need to move: it needs to become a composition** |
-| 🔴 **It audits our shipped specifications, and says so in its own title** | 📁 **§01 — *"Three challenged assumptions · Contradictions found in the shipped specifications"*, whose text reads *"It contains four. Each is resolved here, and the resolution is binding on both documents."*** ⛔ **Four contradictions in workflows 1–8, four of which are on `main`.** ⚠️ **They must be reconciled before more authenticated work is built** |
-| ⚠️ **The snapshot was stale by THREE documents, not one** | ⛔ **Upstream holds 30 paths; the snapshot held 26.** **`ICP Builder` and `People Intelligence` have never been imported** — 🔴 **and [TASK-406](BACKLOG.md), *an ICP criterion scored against outcomes*, is `IN PROGRESS` right now.** ✅ **Deliberately NOT imported in the same cycle: [D-138](DECISION_REGISTER.md) makes a refresh a new baseline whose impact is assessed *before* it propagates** |
-
-### ✅ What this office recommends, in order
-
-| | |
-|---|---|
-| **① Extend the identifier block** | ⚡ **`1400`+ for Lane C. One line, and nothing below starts without it** |
-| **② Reconcile the four contradictions first** | ⛔ **Before decomposing.** **Four shipped workflows are affected and the spec says its resolutions bind them** |
-| **③ Then decompose workflow 29 as platform work** | ✅ **The engine, the reason codes and the composition framework precede every consumer** — **which is [D-188](DECISION_REGISTER.md) §5 applied at the largest scale it has yet had** |
-| ⚠️ **④ Reconsider [D-192](DECISION_REGISTER.md)'s recommendation** | **This office recommended moving workflow 13 forward.** ⚡ **That still holds — but 29 now precedes it, because the shell consumes the engine rather than containing it** |
+✅ **[D-195](DECISION_REGISTER.md) §8 extended Lane C to `1400`+ and every finding above is now a row.** ⚡ **[TASK-1401](BACKLOG.md) repairs the five module-owned redirects; [TASK-1400](BACKLOG.md)–[1407](BACKLOG.md) are the engine that replaces them.** ⛔ **The two snapshot contradictions remain a *refresh* action rather than a row, and [TASK-468](BACKLOG.md)/[469](BACKLOG.md) carry their exit constraint.** **Nothing here is waiting on the product owner.**
 
 
 ## ⚠️ One blocking decision is not queued yet — it is still on Lane A's branch
@@ -161,67 +133,6 @@
 
 ⛔ **Or if slice cycles rise above ~60% of the total, batching starts to matter.** **They are 37%.**
 
-
-## 🔴 Twenty-five claimable rows is not reachable, and the arithmetic says why
-
-> ⚡ **Asked for on 2026-08-08. This office cannot deliver it and is reporting the ceiling rather than manufacturing the number.**
-
-**The entire pool is 24 `SEQUENCED` rows. Every trigger was read *verbatim* rather than pattern-matched — a scan that matched ids reported ten as free and was wrong on eight of them.**
-
-| | | |
-|---|---|---|
-| ✅ **2** | **Genuinely releasable** | **[TASK-499](BACKLOG.md)** *(its predecessor is `IN VALIDATION`)* · **[TASK-452](BACKLOG.md)** *(its trigger — Workflow 1 on `main` — fired)*. **Both released today** |
-| ⛔ **14** | **Genuinely blocked** | **On [C-334](LANE_COORDINATION.md), [C-215](LANE_COORDINATION.md), an unstarted row, or a *chain* whose predecessor is unbuilt** — `420→421→422→423/424`, `464→465→466`. ⚡ **Releasing a chain offers work that cannot be done** |
-| ⛔ **8** | **Parked on a condition that has not occurred** | **And every one is a product or commercial fact, not a planning omission** |
-
-### ⛔ The eight, with the condition each is waiting for — verbatim
-
-| Row | Its trigger | Occurred? |
-|---|---|---|
-| **[TASK-411](BACKLOG.md)** | ***"the Billing screen is scheduled for implementation"*** | ⛔ **Your scheduling decision** |
-| **[TASK-413](BACKLOG.md)** | ***"a certification wall-clock that demonstrably delayed a promotion, recorded at least twice"*** | ⛔ **Has not happened** |
-| **[TASK-420](BACKLOG.md)** | ***"the approved UI waves are complete"*** | ⛔ **4 of 27** |
-| **[TASK-425](BACKLOG.md)** | ***"the first support request that cannot be answered without database access"*** | ⛔ |
-| **[TASK-429](BACKLOG.md)** | ***"a provider contract that supplies a person identifier"*** | ⛔ **Commercial, stated as such in the row** |
-| **[TASK-430](BACKLOG.md)** | ***"wave 6"*** | ⛔ |
-| **[TASK-495](BACKLOG.md)** | **Workflow 17 reaches `decomposed`** | ⛔ **Still `planned`** |
-| **[TASK-496](BACKLOG.md)** | **Workflow 16 reaches `decomposed`** | ⛔ **Still `planned`** |
-
-> ## ⛔ **Releasing those eight means asserting a condition that is false.** ⚡ **That is [C-412](LANE_COORDINATION.md) at scale — a `READY` row the lane cannot start — and this office wrote that rule.**
-
-### ✅ The path to 25, and step one is one line of yours
-
-| | |
-|---|---|
-| **① Extend Lane C's identifier block** | 🔴 **`400`–`499` is fully allocated. Nothing below can start without it** |
-| **② Decompose 6–8 of the 19 `planned` workflows** | ⚡ **The only honest source of ~16 new rows. Workflow 13 first — it gates fourteen others** |
-| **③ 25 becomes real** | ✅ **And it stays real, because each new row is a *prepared* row rather than a relabelled one** |
-
-⚠️ **Worth weighing before you decide it is the right target.** ⚡ **[Lane A's own framing](LANE_COORDINATION.md), which this office endorses: *"claimable is not the same as startable in order."*** **[D-183](DECISION_REGISTER.md) gives depth WITHOUT choice — the lane takes the topmost row it can start, descending only past a genuinely blocked one.** ⛔ **So 25 buys *resilience against blocking*, not parallelism.** **At Lane A's current rate that is roughly ten days of runway against the ~1 blocked row per day observed this week** — ✅ **a real benefit, and worth naming so the target is chosen on what it buys.**
-
-## 🔴 Lane C's identifier block is exhausted, and it is now blocking
-
-> ## ⛔ **`TASK-400`–`499` is Lane C's block under [§20e](../CLAUDE.md). **95 allocated, zero free.** `TASK-499` was the last.**
->
-> ⚡ **This is no longer a forecast — it stopped work in this cycle.** [D-185](DECISION_REGISTER.md) §1 ruled the reset token at thirty minutes; Lane A had already delivered [TASK-498](BACKLOG.md) *without* it, against a row that did not yet carry the cell. **The remedy is a small follow-up row and this office cannot allocate one.**
-
-| | |
-|---|---|
-| **What is blocked today** | **The 30-minute configuration + screen `08`'s copy + retiring the test that asserts the config stays unset** |
-| 🔴 **And Lane A's tenth row, measured** | ⚠️ **This office first claimed the floor was blocked, then found a row it thought would fill it, and was wrong twice.** ✅ **The measurement, done properly:** **[TASK-452](BACKLOG.md)'s *own row* argues against release — *"building it now would mean building it twice"* — and that reasoning still holds · [TASK-464](BACKLOG.md) is 6 cells and chained · [TASK-493](BACKLOG.md) is behind an unstarted row · [TASK-497](BACKLOG.md) is **Lane C's**, not Lane A's.** ⛔ **So the tenth row must be a NEW row, and that needs an identifier** |
-| **What is blocked next** | ⚠️ **Sixteen workflows still need decomposition** ([D-182](DECISION_REGISTER.md)). **Workflow 13 — the Application Shell — gates fourteen others and is the one delay that compounds** |
-| ⛔ **Why this office cannot self-serve** | 📁 **[§20e](../CLAUDE.md): *"a lane allocates only from its own block."*** **Taking `500+` is Lane D's; taking a gap is a live reference.** ⚡ **The block model is working exactly as designed — it made collision unrepresentable, and exhaustion is its honest failure mode** |
-
-### ✅ The fix is one line in `CLAUDE.md`'s allocation table, and it is yours
-
-| | |
-|---|---|
-| ⚡ **Recommended** | **Extend Lane C to a second range — `1400`+ — leaving `500`–`900` untouched for future lanes.** ✅ **No renumbering, no migration, and the *"allocate from your own block"* rule is unchanged** |
-| **Alternative** | **Widen every block to four digits.** ⛔ **Larger change, same effect, and it rewrites a table that is working** |
-
-⚠️ **This office is not editing `CLAUDE.md`.** 📁 **[§20e](../CLAUDE.md)'s shared-files table makes it the product owner's, and the one prior edit was made on explicit instruction and recorded as directed rather than drafted** ([D-170](DECISION_REGISTER.md) §2).
-
-⛔ **Until it is resolved, Lane A sits at nine claimable against [D-184](DECISION_REGISTER.md)'s floor of ten, and `state-check` reports the shortfall every cycle.** ✅ **Nine prepared rows is not a drought and the lane is not idle** — **what is blocked is this office's ability to keep the promise you set.**
 
 ## What the ruling released
 
