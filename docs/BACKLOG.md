@@ -1418,6 +1418,53 @@
 | ⚠️ **Risk, named before it is met** | 🔴 **Open redirect.** ⛔ **A preserved destination that is not validated against the person's memberships on RETURN is the classic form of it** |
 | **Build-vs-Buy** | ✅ **BUY the transport — Better Auth's `callbackURL`. Build the validation** |
 
+### TASK-1429 · The four improvised error surfaces converge on the ladder
+
+| | |
+|---|---|
+| 🔴 **Status** | ⏸️ **`BLOCKED` — Lane C, 2026-08-09, on [C-254](LANE_COORDINATION.md).** ⛔ **It edits `components/shell/app-shell.tsx`, which [§20e](../CLAUDE.md)'s Change Budget table lists as 🔴 — *the frontend foundation… shell* — requiring **product owner + ADR**. ✅ **This row exists so the decision is *approve this row* rather than *amend a budget*** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **GOVERNANCE** — ⛔ **the work is understood, the design is settled, and only the authority is missing** |
+| **Epic** | **System States** — **[workflow 28](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** — 🔴 **the frozen frontend foundation** |
+| ⚡ **Why it is not [TASK-1409](BACKLOG.md)** | 📁 **That row's budget reads 🟠 *the `(app)` error boundary*, and Lane A read it correctly as the ROUTE boundary rather than the shell component** — ⛔ **reading it the other way would let one row's budget reach the frozen foundation by implication.** ✅ **The lane made the edit, reverted it, and raised it: four import lines and a rename** |
+| 📁 **The four, found by the L-1 audit rather than predicted** | **`app/not-found.tsx`** — its own 404 copy, no identifier · **`app/error.tsx`** — its own 500 copy, `Reference: …` · **`components/feedback/error-boundary.tsx`** — its own colours, an identifier **that cannot be copied**, ⛔ **no retry limit at all** · **`components/ui/error-state.tsx`** — a copyable id, a different shape, its own retry |
+| ⚡ **Delivers** | **All five call sites render through `SystemState`.** ⛔ **No new component, no visual redesign** — 📁 the ladder and its 23 tests already ship |
+| 🔴 **One of the five is anonymous today** | 📁 **Design System v2 `1.3.1`: *"an h1 that names what happened — not 'Error'."*** ⛔ **That is a live Design System violation in the shell, and it is the strongest argument for doing this now rather than at leisure** |
+| **Change Budget** | 🔴 **`components/shell/app-shell.tsx`** — **product owner + ADR** ([C-254](LANE_COORDINATION.md)) · 🟢 the four surfaces |
+| **Playwright coverage** | **A failure at each of the four surfaces renders the ladder's shape, with a copyable identifier and a bounded retry** |
+| **Component coverage** | 🔴 **No surface renders an anonymous `Error` heading** · **every failure carries a retry budget** |
+| ♿ **Accessibility** | **Politeness by scope, inherited from `SystemState`** — ⛔ **not re-decided per surface** |
+| 📱 **Responsive behaviour** | ✅ **Unchanged** |
+| **Definition of Done** | 📁 **[TASK-1409](BACKLOG.md)'s own failure test is satisfied: no surface writes a local 404** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Routes** `not-found`, `error`, the shell boundary |
+| ⚠️ **Risk, named before it is met** | ⛔ **Treating a 🔴 budget as a formality because the change is small.** ✅ **Four import lines into the frozen shell is exactly the change that looks too small to ask about** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1428 · One failed-read primitive — `StatedAbsence` becomes the ladder's region scope
+
+| | |
+|---|---|
+| 🔴 **Why this exists** | ⛔ **[C-252](LANE_COORDINATION.md): two published primitives own one concern and both are correct in isolation.** ⚡ **Found by [TASK-445](BACKLOG.md)'s own guard failing on [TASK-1409](BACKLOG.md)'s new boundary — the guard working exactly as written** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **CONTRADICTORY DESIGN, resolved by composition rather than by choosing a winner** |
+| **Epic** | **System States** — **[workflow 28](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, ruling [C-252](LANE_COORDINATION.md).** ⛔ **Both rows are this office's to reconcile and neither lane could settle it alone** |
+| 🔴 **The ruling, and it adopts Lane A's recommendation** | ✅ **`StatedAbsence` becomes a CALLER of `SystemState` at region scope.** ⛔ **Neither is deleted and neither wins.** ⚡ **It keeps the sentence — the thing nine local copies proved valuable — and gains the scope, the three-attempt budget and the copyable correlation id from the ladder** |
+| ⚠️ **And the correction is this office's, recorded rather than absorbed** | 📁 **[TASK-1409](BACKLOG.md)'s row said *"absence is 'there is nothing', a system state is 'something failed', and conflating them is how a broken widget renders as an empty one."*** 🔴 **That distinction does not hold against the code.** 📁 **`stated-absence.tsx:79` composes *"Signora could not load {subject}"* and its test asserts it *"never blames the account for a failure of ours"* — ⛔ **it is a FAILED READ and always was.** ✅ **Lane A read the component instead of the row, which is [C-428](LANE_COORDINATION.md)'s rule doing its job on a row this office wrote** |
+| ✅ **Measured, not assumed** | 📁 **`components/feedback/stated-absence.tsx:42` — `StatedAbsence({ subject })`, `subject` has no default *"a caller cannot say nothing"*.** 📁 **`components/ui/system-state.tsx:71` — `SystemStateProps { scope, state, correlationId }`, politeness derived from scope, and it **throws** if a state is not one the scope owns |
+| ⚡ **Delivers** | **One failed-read path.** **`StatedAbsence` keeps its signature and its sentence** — ⛔ **no caller changes** — **and renders through `SystemState` with `scope="region"`.** ✅ **Retry, attempt count and the correlation id arrive at all nine existing call sites for free** |
+| 🔴 **What it must NOT do** | ⛔ **Reword either sentence to satisfy the guard.** 📁 **Lane A's own note: *"rewording to dodge a regex is precisely the fork the guard exists to prevent."*** ✅ **The guard stays as written and this row makes it pass by composition** |
+| **Reusable components required** | **`SystemState`** — ⛔ **and if its region scope will not carry `StatedAbsence`'s sentence, that is a finding against the ladder, not a licence to keep two** |
+| **Change Budget** | 🟠 **`components/feedback/stated-absence.tsx`** — **a delivered, guarded primitive with nine callers; announced in the commit** · 🟢 **`components/ui/system-state.tsx`** |
+| **Playwright coverage** | ✅ **The nine existing `StatedAbsence` call sites render unchanged text** — 🔴 **that assertion is the whole safety of this row** |
+| **Component coverage** | **A region failure renders the same way whether a read returned an error or a component threw** — ⛔ **that divergence is the defect** · **the guard still fails on a tenth local *"could not load"*** |
+| ♿ **Accessibility** | **Politeness comes from the scope and never from the caller** — ⚡ **already true of `SystemState` and this row inherits it rather than re-deciding it** |
+| 📱 **Responsive behaviour** | ✅ **Unchanged — the region boundary inherits its container** |
+| **Definition of Done** | **One failed-read primitive, nine callers unchanged, and `TASK-1409`'s region boundary restored** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Security Invariant** ⛔ **a correlation id is an opaque identifier and never carries tenant data** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Treating this as a merge of two components.** ✅ **It is one composing the other: `StatedAbsence` owns the SENTENCE, the ladder owns the SCOPE, and each keeps what it was good at** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
 ### TASK-1427 · The signal queue publishes the two facts its screen already draws
 
 | | |

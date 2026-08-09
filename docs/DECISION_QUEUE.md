@@ -43,6 +43,16 @@
 
 ⛔ **Nothing is blocked** — **[TASK-1413](BACKLOG.md) is sequenced behind this and Lane A has 24 other startable rows.**
 
+## 🟡 C-254 · One 🔴 Change Budget grant — four import lines into the shell
+
+> ⚡ **Lane A made the edit, reverted it, and raised it** — ✅ **which is [§20e](../CLAUDE.md) working: touching a file outside your budget is a finding to raise, not a change to make.**
+
+📁 **[TASK-1409](BACKLOG.md) shipped the system-state ladder and its 23 tests.** ⛔ **Four surfaces still improvise their own error handling** — `not-found.tsx`, `error.tsx`, `error-boundary.tsx`, `error-state.tsx` — **and four of the five call sites live in `components/shell/app-shell.tsx`, which the Change Budget table lists 🔴: *the frontend foundation… shell*, product owner + ADR.**
+
+🔴 **One of the five renders an anonymous `Error` heading today**, which Design System v2 `1.3.1` forbids in terms: *"an h1 that names what happened — not 'Error'."* ⚠️ **A live Design System violation in the shell is the strongest argument for doing this now.**
+
+✅ **[TASK-1429](BACKLOG.md) is written and blocked on this** — **so the decision is *approve that row*, not *amend a budget*.** ⛔ **Nothing else waits**: the ladder, the primitive and their tests ship regardless.
+
 ## ⚡ Design Clarifications — for the Design Authority, not for a product ruling
 
 > **[D-207](DECISION_REGISTER.md) §2 · [D-208](DECISION_REGISTER.md) §6.** ⛔ **These are questions, not recommendations.** ⚡ **Each states the observed behaviour, the evidence and the impact — and deliberately does NOT propose which interpretation should win.** ⚠️ **Listed here because the queue is where a human looks; the OWNER is the Design Authority, and answering one as a product preference would be the conflation [D-207](DECISION_REGISTER.md) §2 corrects.**
