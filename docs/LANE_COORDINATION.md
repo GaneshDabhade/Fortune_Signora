@@ -362,6 +362,7 @@ databaseUrl: required(
 | [C-1406](#c-1406--the-review-says-the-engine-has-no-routing-defect-and-a-lane-that-implemented-it-found-three) | 🟠 **The review says the engine has no routing defect; the lane that built it found three** | **Lane C**, 2026-08-09, against [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | ⛔ **Product Owner** — same question as [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) ③ | 🟠 **`OPEN`** | ✅ **Nothing.** ⚠️ **It changes whether the Entry document is treated as settled** |
 | [C-252](#c-252--two-primitives-own-the-region-scope-failed-read-and-task-445-built-the-other-one) | **Two primitives own the region-scope failed read, and TASK-445 built the other one** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) — 🔴 **found by TASK-445's own guard failing** | **Lane C** — ⛔ **it spans two rows this office released** | 🔴 **`OPEN`** | 🔴 **TASK-1409's region boundary.** ✅ **The ladder and its 23 tests ship** |
 | [C-253](#c-253--the-designs-403-names-the-missing-role-and-nothing-publishes-it) | **The design's 403 names the missing role, and nothing publishes it** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Lane C** — sequencing | 🟡 **`OPEN`** — ⚠️ **narrowed by this lane on the same day** | ⛔ **The `403` only, and SEQUENCED behind [TASK-471](BACKLOG.md) rather than waiting on a ruling** |
+| [C-256](#c-256--the-shells-banner-region-has-no-caller-and-only-one-of-its-three-states-is-a-real-gap) | **The shell's banner region has no caller, and only one of its three states is a real gap** | **Lane A**, 2026-08-09, holding [TASK-1408](BACKLOG.md) | **Lane C** sequencing · **Design Authority** for impersonation | 🟡 **`OPEN`** | ⛔ **Nothing** — the region is built and waits for callers |
 | [C-255](#c-255--task-1409s-delivers-names-04-and-04-needs-three-capabilities-no-row-owns) | **TASK-1409's `Delivers` names §04, and §04 needs three capabilities no row owns** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) — ⚡ **D-212 §7's gate applied BEFORE filing** | **Lane C** — scope and sequencing | 🟡 **`OPEN`** | ⛔ **§04 only.** ✅ **The ladder ships** |
 | [C-254](#c-254--converging-the-four-improvised-system-states-needs-the-shell-and-this-rows-budget-says-nothing-red) | **Converging the four improvised system states needs the shell, and this row's budget says nothing red** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Product owner** — a Change Budget question | 🟡 **`OPEN`** | ⚠️ **Half of TASK-1409's verification strategy** |
 | [C-251](#c-251--the-signal-centers-queue-rows-need-five-facts-and-the-published-contract-carries-two) | **The Signal Center's queue rows need five facts and the published contract carries two** | **Lane A**, 2026-08-09, holding [TASK-439](BACKLOG.md) — ⚡ **after the L-1 reuse audit and before writing a line** | **Lane C** — ⛔ **a planning gap, not an implementation one; this office released a row naming fields the contract does not have** | ✅ **`ANSWERED`** — [TASK-1427](BACKLOG.md) is the row | ⛔ **Nothing.** ✅ **Both facts already exist on the domain object; the response schema does not publish them** |
@@ -8344,6 +8345,42 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 **②** **Confidence** — the design shows it in two places at once, *"6 sources · confidence 4 of 5"*. **`components/ui/confidence.tsx` already takes exactly `level` and `sources`**, so the shape is settled and only the source is not.
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
+
+## C-256 · The shell's banner region has no caller, and only one of its three states is a real gap
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-1408](BACKLOG.md)** — ⚡ **measured before wiring the region into the frame, not after** |
+| **Owner** | **Lane C** for the sequencing · **Design Authority** for impersonation alone |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **TWO CLASSES IN ONE ROW, and separating them is the point** — ✅ **MISSING IMPLEMENTATION** for sandbox and trial · 🔴 **INCOMPLETE DESIGN** for impersonation |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **Nothing.** ✅ **`ShellBanners` is built, tested and correct; it renders nothing until a caller has state to give it** |
+
+### ✅ [D-212](DECISION_REGISTER.md) §7's gate applied first, and it changed the answer twice over
+
+📁 **[TASK-1408](BACKLOG.md)'s `Delivers` names *"environment banner · trial banner"*.** **Measured on `origin/integration`, the frontend has no source for either**: `Workspace` publishes `id · name · created_at · updated_at` and nothing else — ⛔ **no plan, no tier, no environment** — and `sandbox`, `impersonat` and `trial` match no `lib/`, `app/` or `components/` source.
+
+⚠️ **A cycle ago this lane would have filed that as three missing capabilities.** ✅ **The gate says look at the finalized designs first, and they answer two of the three:**
+
+| Banner | Where the design models it | What that makes it |
+|---|---|---|
+| **Trial / billing** | 📁 **`Fortune Signora Billing.dc.html` — seven mentions** | ✅ **Sequencing.** [TASK-412](BACKLOG.md) *Usage & Billing Observability* is in this lane's own queue |
+| **Sandbox** | 📁 **`Fortune Signora Settings.dc.html` — two mentions** | ✅ **Sequencing.** The environment is a Settings concept the shell reads |
+| 🔴 **Impersonation** | ⛔ **Nowhere.** **Zero mentions across Security Center, Settings and Billing** | 🔴 **A genuine design gap** |
+
+### 🔴 Impersonation is the one that needs a ruling
+
+📁 **The design draws it as an environment banner**: *"**Viewing as J. Okafor.** Support session · expires in 42 minutes · every action is logged."* ⚡ **It is drawn at RISK severity and is the one banner the design makes undismissable** — **this lane built that rule and tested it**, because it is the sentence that stops somebody believing they are themselves.
+
+⛔ **But nothing anywhere describes the capability.** **No design document mentions impersonation. No row builds it. No API publishes it, and `Membership` carries no notion of acting-as.** ⚠️ **A support session that expires, is logged and can be ended is a security capability with an audit trail** — **not a banner** — **and the banner is the only place the product currently admits it exists.**
+
+⛔ **This lane will not infer it.** ⚡ **Guessing the shape of an impersonation capability from the sentence on its banner is inventing a security feature backwards from its warning label**, and [§13](../CLAUDE.md) puts authentication and authorization out of a lane's reach entirely.
+
+### ✅ What this lane is doing meanwhile
+
+⛔ **Not wiring `ShellBanners` into the frame yet.** **A region whose every input is absent renders nothing on every path** — 📁 **[D-205](DECISION_REGISTER.md)'s concern exactly** (*"zero production callers"*), and **the alternative is worse**: a hardcoded trial or a sample sandbox flag would be mock business data, which [§20c](../CLAUDE.md) forbids and `no-mock-data.test.tsx` would catch.
+
+✅ **The region is complete and waits for its callers** — **which is the correct state for a frame component whose content belongs to other workflows**, and 📁 exactly what [TASK-1408](BACKLOG.md) means by *"delivers the frame, not its contents."*
 
 ## C-255 · TASK-1409's `Delivers` names §04, and §04 needs three capabilities no row owns
 
