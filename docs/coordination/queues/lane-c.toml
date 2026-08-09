@@ -188,15 +188,8 @@ updated      = 2026-08-09
 # ⛔ Do not pad this file to make the number look better.
 #
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-497"   # ⚡ C-435 Option 3 — planning state reaches lanes
-next    = ""           #    through origin/coordination. D-181 §6, ruled.
-future  = []
 
-eligible_count = 1
-depth_target   = 1   # ⚡ Lane C is not an implementation lane — D-184's floor of 10 is
                      # Lane A's. This office holds one Platform Foundation row at a time.
-shortfall      = 0   # ✅ 1 of 1.
-assigned_total = 10
 
 # ✅ **TASK-419 DELIVERED 2026-08-07 and is IN VALIDATION.** It was READY and
 # unstarted while Lane A sat blocked on it (C-234) and this office held seven
@@ -208,6 +201,21 @@ assigned_total = 10
 # `assigned_total` is every row this lane owns, parked ones included, each
 # with its blocker named below. ⛔ Nothing here is invented scope: every row
 # already existed and its owner was joined from modules.toml (D-135).
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LANE C'S OWN BACKLOG — D-199 / D-201
+#
+# ⛔ The dispatcher fields are removed HERE TOO. Lane A's queue lost them last
+# cycle and this file kept them, which is the same partial adoption D-199
+# corrected — one file over, and found by grepping rather than by remembering.
+#
+# ⚡ Lane C holds Platform Foundation work (D-022) and nothing else. It is not
+# a staging area for another lane's rows.
+# ══════════════════════════════════════════════════════════════════════════════
+
+backlog = ["TASK-497"]
+
+
 
 [[blocked]]
 task    = "TASK-411"

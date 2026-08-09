@@ -260,6 +260,10 @@ owner  = "Lane A"
 
 [workflow.13]
 name   = "Application Shell"
+# ✅ 2026-08-09 — TASK-1408 is the owning row this workflow never had. Found by
+#   D-201 §5's question — "what could stop Lane A three weeks from now?" —
+#   answered by scanning its own backlog: SIX of fifteen rows say "depends on an
+#   unbuilt workflow", and every one of them means this one.
 state  = "planned"
 design = "Fortune Signora App Shell.dc.html"
 tasks  = ["TASK-447", "TASK-480", "TASK-481", "TASK-482"]

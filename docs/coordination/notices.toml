@@ -1,7 +1,7 @@
 # ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "D-199 removed Product Office's dispatch concepts entirely — current, next, future, waiting-for-release are gone from your queue file, not renamed. It now records what is ALREADY YOURS: fifteen rows, all claimable, the order a recommendation with no authority over your sequencing. Blocked on one? Raise it and take the next, with no Product Office involvement. [[blocked]] lists rows whose INPUT does not exist yet, each naming what it waits on. For every state read BACKLOG.md on origin/integration."
+notice = "TASK-1408 is the Application Shell owning row — the frame workflow 13 never had. Found by asking D-201 §5's question against your own backlog: SIX of sixteen rows say 'depends on an unbuilt workflow' and every one means the shell (481, 480, 482, 471, 1405, 466). It delivers the FRAME only and owns no navigation — it consumes TASK-1400's engine. The named risk is in the row: the shell is where routing LOOKS like it belongs, and a sixth module-owned redirect there would be the hardest to remove."
 
 ["Lane C"]
 notice = ""

@@ -1277,6 +1277,29 @@
 | ⚠️ **Risk, named before it is met** | ⚠️ **This is speculative generality and [§6](../CLAUDE.md) forbids it — so the justification is stated rather than assumed.** ✅ **It is not a new abstraction: [495](architecture/495-principal-and-identity-boundary.md) RATIFIED this model, and the row only widens a signature while one caller exists.** ⛔ **After the shell, the compositions and the cards consume it, the same change is a refactor across every consumer** |
 | **Build-vs-Buy** | ✅ **n/a — Signora's own domain** |
 
+### TASK-1408 · The Application Shell — the frame six backlog rows are waiting for
+
+| | |
+|---|---|
+| 🔴 **Why this exists, measured** | ⚡ **[D-201](DECISION_REGISTER.md) §5 asks *"what could stop Lane A three weeks from now?"*** ⛔ **Answered by scanning its own backlog: SIX of fifteen rows say *depends on an unbuilt workflow*, and every one of them means workflow 13.** 📁 **[TASK-481](#task-481--a-global-search-surface-composing-the-one-that-already-works) · [480](#task-480--the-notification-platform) · [482](#task-482--the-ai-copilot-entry-and-side-panel) · [471](#task-471--workflow-10--team-management-to-the-approved-design) · [1405](#task-1405--home-is-one-route-and-four-compositions) · [466](#task-466--companies-bulk--the-first-consumer-end-to-end)** |
+| **Epic** | **Application Shell** — **[workflow 13](coordination/workflows.toml)**, and it had FOUR rows and no owning row |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09.** ⛔ **Assigned, not held** ([D-199](DECISION_REGISTER.md) §3). ⚡ **Independent: it needs nothing that does not exist** |
+| **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora App Shell.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
+| ⚡ **Delivers the frame, not its contents** | 📁 **The design's own words: *"Every module mounts inside this frame. No component is redesigned here."*** ✅ **Environment banner · trial banner · top bar · breadcrumb and filter strip · the rail · the utility panel** — ⛔ **and the design fixes their order: *"vertical order is fixed and non-negotiable"*** |
+| 🔴 **What it must NOT do** | ⛔ **Own navigation decisions.** 📁 **[D-193](DECISION_REGISTER.md)'s spec: *"modules register capabilities rather than issuing redirects"* — the shell CONSUMES [TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes)'s engine and does not contain one.** ⚡ **One rail item, `Home`, selected whenever the route is `/home` regardless of composition** — 📁 **the third of the four contradictions the spec resolved** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **Nothing new.** ⚡ **The switcher reads membership `workspace_tenancy` already owns; search, notifications and Copilot are the four rows above and mount INTO this frame rather than being built by it** |
+| **Reusable components required** | ⚠️ **The shell IS the reusable component** — ⛔ **every screen from workflow 9 onward mounts in it, which is why building it once beats fourteen screens improvising a frame** |
+| **Shared layout** | ⚡ **This row is the shared layout.** ✅ **[TASK-470](#task-470--workflow-9--user-profile-to-the-approved-design) and [471](#task-471--workflow-10--team-management-to-the-approved-design) were written to deliver PANELS because it did not exist; they compose into it unchanged when it lands** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/**`** · 🟠 **the shell container in `components/ui`** — **announced in the commit** · 🔴 **⛔ nothing: the frontend foundation freeze's UI-migration exemption covers this** ([§20c](../CLAUDE.md), [D-153](DECISION_REGISTER.md)) |
+| **Playwright coverage** | ⚡ **A customer signs in and the frame renders with every banner in the design's fixed order** · **the switcher opens with `⌘⇧W` and finds a workspace** · 🔴 **and the assertion that matters: switching preserves the current route when the destination has it, and lands on Home when it does not** — 📁 **the design's own sentence, and *"it never drops the user on an error"*** |
+| **Component coverage** | **Banner order is fixed** · **commercial banners are dismissible for the session and suppressed in sandbox; risky-state banners are undismissable** — 📁 **the design distinguishes them and the distinction is the test** · **system status is a PILL in the top bar, never a banner** |
+| **Definition of Done** | **The frame renders, every module mounts in it, and it owns no navigation decision** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Routes** the `(app)` layout · **APIs** membership read · **Playwright** the three scenarios above · **Security Invariant** ⛔ **the switcher must list only workspaces the caller is a member of — RLS asserted, not assumed** |
+| ✅ **Verification strategy** | ⚡ **Six backlog rows becoming buildable is the verification.** ⛔ **If any of them still needs a shell of its own after this lands, the frame is wrong** |
+| ⚠️ **Risk, named before it is met** | 🔴 **The temptation is to put routing in the shell** — it is where navigation visibly happens. ⛔ **The spec forbids it and [D-194](DECISION_REGISTER.md) found five modules already doing it; a sixth in the shell would be the hardest to remove, because it would look like the right place** |
+| **Build-vs-Buy** | ✅ **n/a — Signora's own surface** |
+
 ### TASK-497 · Planning state reaches a lane without waiting for a certification cycle
 
 | | |
