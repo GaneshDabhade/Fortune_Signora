@@ -428,8 +428,8 @@ git show origin/main:docs/BUGS.md | grep -n '^>>>>>>>'
 | | |
 |---|---|
 | **Module** | **Repository governance** — [`docs/DECISION_REGISTER.md`](DECISION_REGISTER.md) on `origin/lane-c-sync`, lines **209–214**. The guard that should name it is [`infra/state-check.py`](../infra/state-check.py) check 5d |
-| **Severity** | 🟠 **today — it is on `lane-c-sync` alone, and `integration` and `main` are both clean** (measured below) · 🔴 **the moment that branch merges, or the moment anybody resolves it.** ⛔ **Not because a marker is ugly:** **the `=======`/`>>>>>>>` side is EMPTY**, so *"take theirs"* — the ordinary reflex on a docs conflict, and the one this lane has itself been burned by — **deletes three approved rulings in one keystroke.** ⚡ **Deliberately not opened at 🔴**: an unresolved 🔴 stops `integration` fast-forwarding to `main` (§20e), and **blocking every promotion over a defect that is on neither branch would be this register firing on the wrong fact** |
-| **Status** | `OPEN` — reported by Lane A, 2026-08-09, on the poll that fetched `49ab040e`. ⛔ **Not fixed: the decision register is 🔴 in the Change Budget and it is not this lane's file.** ⚡ **Both halves are measured rather than argued.** ⛔ **`VERIFIED` is QE's** |
+| **Severity** | 🔴 **as it turned out** — ⚠️ **opened 🟠 on the measurement below, and the measurement expired one cycle later.** ⛔ **`integration` and `main` were clean when this row was written and carried the markers from `e6be77e7` onward** — **this row's own escalation condition, and this lane did not re-check it.** See *What this row got wrong* at the end. *(As written:* 🟠 **today — it is on `lane-c-sync` alone, and `integration` and `main` are both clean** (measured below) · 🔴 **the moment that branch merges, or the moment anybody resolves it.** ⛔ **Not because a marker is ugly:** **the `=======`/`>>>>>>>` side is EMPTY**, so *"take theirs"* — the ordinary reflex on a docs conflict, and the one this lane has itself been burned by — **deletes three approved rulings in one keystroke.** ⚡ **Deliberately not opened at 🔴**: an unresolved 🔴 stops `integration` fast-forwarding to `main` (§20e), and **blocking every promotion over a defect that is on neither branch would be this register firing on the wrong fact** |
+| **Status** | ✅ **`FIXED` — by QE as [B-154](#b-154), 2026-08-09, and the fix is the one this row asked for**: **the markers repaired AND the check widened from four registers to six**, `DECISION_REGISTER.md` and `DECISION_QUEUE.md` added, **proved able to fail before shipping** — one finding against the corrupt tree, zero against the repaired one. ⚡ **[B-154](#b-154) credits this row by name** — *"Found by Lane A as B-217"* — and **[B-154](#b-154) is the surviving id**, because it is the one already on `main`. ⛔ **This row is kept rather than retired**: [B-153](#b-153) settled that two accounts of one defect both survive, and the diagnosis here is the one the fix used. 🔴 **The severity was wrong and the reason is recorded below rather than quietly corrected.** ⛔ **`VERIFIED` is QE's.** *(Previously:* `OPEN` — reported by Lane A, 2026-08-09, on the poll that fetched `49ab040e`. ⛔ **Not fixed: the decision register is 🔴 in the Change Budget and it is not this lane's file.** ⚡ **Both halves are measured rather than argued.**)* |
 
 **Reproduce, on any checkout:**
 
@@ -492,6 +492,21 @@ for name, text in (
 #### ⛔ What this lane did not do
 
 **It did not resolve the conflict**, though the resolution is obvious and three lines long. 🔴 **The decision register is `docs/` governance — 🔴 in the Change Budget, and the rulings inside the conflict are Lane C's and the product owner's.** ⚡ **[B-213](#b-213--a-second-conflict-marker-is-on-main-in-the-file-b-150s-check-does-not-read) recorded the reason in this lane's own words** — ***"the fix being trivially small is exactly when a lane is most tempted to take it."***
+
+#### 🔴 What this row got wrong, and it is the more useful half
+
+**The finding was right and the severity was wrong**, and the two failed in different ways.
+
+| | |
+|---|---|
+| ✅ **True when written** | `integration` `5e0b3cdd` and `main` `d62bd338` carried **zero** markers. **The measurement was correct at the moment it was taken** |
+| 🔴 **False one cycle later** | **`e6be77e7` — a Repository Closeout QE promoted — carried the markers onto `integration` AND `main`.** Re-measured across history: `5e0b3cdd` 0 · `d62bd338` 0 · **`e6be77e7` 3** · `c9f6d3d2` 3 · `89de0858` 3 |
+
+⛔ **This row named its own escalation condition — *"🔴 the moment that branch merges"* — the condition fired, and this lane never re-checked it.** ⚠️ **Three polls reported *nothing changed* while a 🔴 this row had itself specified was live on `main`.**
+
+> 🔴 **The lesson, and it is about polling rather than about markers.** ⛔ **A measurement in a defect row is a claim with a shelf life, and a conditional severity is a promise to re-measure.** **This lane wrote the trigger down and then polled by comparing SHAs** — the same defect [TASK-474](BACKLOG.md)'s row already cost this lane once: ***"a poll that compares SHAs is not a poll."*** ✅ **A conditional severity is now something to re-evaluate on every poll that moves the ref it names**, not a sentence written once.
+
+⚡ **The downgrade to 🟠 was itself reasoned from the expired measurement** — *"blocking every promotion over a defect that is on neither branch would be this register firing on the wrong fact."* **That reasoning was sound and its premise stopped being true**, ⛔ **which is worse than being wrong outright: it looks correct on re-reading.**
 
 **It also did not widen the four-name list**, which is the other one-line fix. ⛔ **`infra/` is Platform Foundation's.** ✅ **Both are named here so the owning lane can take either or both.**
 
