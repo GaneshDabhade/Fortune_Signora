@@ -80,6 +80,51 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-224 · The environment model publishes a PostgreSQL port no process uses, and it cost a lane a wrong decision within the hour
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`infra/environments.py`](../infra/environments.py) `--exports`, measured against [`backend/.env`](../backend/.env) |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
+| **Severity** | 🟡 — ⛔ **nothing is broken at runtime.** ⚡ **What breaks is a reader**: the published number is the one a lane looks up, and it is not the one anything connects to |
+| **Status** | **`OPEN`** — **reported by Lane A, 2026-08-09.** ⚠️ **Reported WITH the mistake it caused, which is the only reason it is worth a row rather than a shrug** |
+| **Found** | 2026-08-09 by Lane A, ⛔ **by making the error and then checking the other source** |
+
+**Steps to reproduce.**
+
+```bash
+python3 infra/environments.py --exports | grep POSTGRES_PORT
+→ SIGNORA_POSTGRES_PORT=5732
+
+grep ^SIGNORA_DATABASE_URL backend/.env
+→ postgresql+asyncpg://signora:…@localhost:5432/signora_lane_a
+
+docker exec signora-v2-postgres-1 psql -U signora -d signora_lane_a \
+  -tAc "select current_database(), count(*) from information_schema.tables where table_schema='public';"
+→ signora_lane_a|58        # and alembic_version = 0045
+```
+
+**Expected.** ⚡ **The published allocation is where the lane's database actually is.**
+
+**Actual.** ⛔ **`--exports` says `5732`. Nothing listens there.** **The lane's database is `signora_lane_a` on `5432`**, fully migrated, and the API on `:8300` is healthy against it.
+
+### 🔴 The cost, measured rather than imagined
+
+⛔ **This lane skipped [TASK-492](BACKLOG.md) — position 5 in its own queue — recording the reason as *"measured rather than asserted: this lane's PostgreSQL (`:5732`) is not running."*** ⚠️ **The database was running the whole time.** **The skip was written into the board, the row and a claim commit pushed to `integration`**, and it was wrong in all three.
+
+> ⚡ **The lane's error is the lane's, and it is recorded as such** — [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) carries the correction. **Reaching for the model when the process has a configuration file is the mistake.** ⛔ **But a published number that nothing uses is what made it a plausible one**, and the next lane will reach for `--exports` too: it is the *documented* way to ask.
+
+### ⚠️ Which of the two is authoritative is the actual question
+
+📁 **[`RUNNING.md`](RUNNING.md) § Running a lane lists a database NAME per lane and no port.** ⚡ **So neither source is contradicted by the runbook, and both are internally consistent** — 🔴 **which is why this survived**: there is no check that could have failed.
+
+**Two candidate repairs, and this lane is not choosing between them:**
+
+**①** ⚡ **The model is right and the environments are not provisioned to it** — then `backend/.env` is the drift and per-lane PostgreSQL instances are missing.
+**②** ⛔ **The environments share one PostgreSQL and are separated by DATABASE rather than by port** — which is what is actually running, and which the `signora_lane_a` / `signora_lane_b` / `signora_demo` naming already implies. **Then `--exports` should publish `5432` and the slot should stop implying a port.**
+
+⚡ **② matches the evidence**, but **choosing is `platform_foundation`'s** — the slot model also drives Redis indices and compose projects, and changing what a slot means is not a one-line edit a consuming lane may make.
+
 ### B-223 · The auth tier's "is this deployed?" denylist and the environment registry share no vocabulary, so a lane that names itself cannot start
 
 | | |
