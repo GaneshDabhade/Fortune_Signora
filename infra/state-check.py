@@ -897,7 +897,23 @@ def _adoption_findings() -> list[str]:
 #: not by prediction. `C-241` was found while building screen 07, not while
 #: planning it, and no amount of preparation would have surfaced it earlier.
 #:
-#: ⚠️ **RETURNED TO 1 on 2026-08-08 by [D-187](../docs/DECISION_REGISTER.md)**,
+#: ⚡ **RAISED TO 10 on 2026-08-09 by [D-198](../docs/DECISION_REGISTER.md)**, and
+#: **the ceiling is REMOVED entirely.** ⛔ **The product owner's diagnosis, and it
+#: is correct: *"Product Office is still acting as a dispatcher, releasing work
+#: one implementation task at a time. That is not the operating model I want."*
+#:
+#: ⚠️ **What the one-claimable rule missed is that it COMPOUNDS with the
+#: synchronization lag.** **One claimable row is survivable when releases reach
+#: `integration` in minutes; with a lag it guarantees an idle lane the moment
+#: that row blocks** — **and that is precisely what happened when Lane A
+#: released `TASK-470` as `BLOCKED` and had nothing behind it.**
+#:
+#: ✅ **Priority survives as the PUBLISHED ORDER rather than as a gate.**
+#: [D-198](../docs/DECISION_REGISTER.md): *"unless a task is explicitly marked as
+#: mutually exclusive or technically dependent, assume Lane A is free to
+#: continue with the next prepared implementation task."*
+#:
+#: ⛔ **Superseded — was 1 under [D-187](../docs/DECISION_REGISTER.md)**,
 #: the product owner, correcting both [D-183](../docs/DECISION_REGISTER.md) and
 #: [D-184](../docs/DECISION_REGISTER.md) — **and correcting this office, which
 #: had proposed depth as *claimable* rows.**
@@ -925,7 +941,7 @@ def _adoption_findings() -> list[str]:
 #: past a row is permitted only when that row is genuinely blocked, and the
 #: reason is recorded** — which is the existing skip rule (§20e, *claim from the
 #: top*), not a new licence.
-_DEPTH_FLOOR = 1
+_DEPTH_FLOOR = 10
 
 #: **Prepared rows required BEHIND the one claimable row — D-187.**
 #:
@@ -1256,14 +1272,6 @@ def _pipeline_findings() -> list[str]:
                 "**Keeping the pipeline populated is Product Office's responsibility** "
                 "(D-163) — the lane cannot fix this and should not have to report it."
             )
-        elif claimable > _DEPTH_FLOOR:
-            out.append(
-                f"{lane} has {claimable} claimable rows and should have exactly "
-                f"{_DEPTH_FLOOR}. **More than one lets the lane choose, and choosing "
-                f"is prioritisation** (§20e, D-163 — restored by D-187). "
-                f"**Depth belongs BEHIND the claimable row as prepared work, not "
-                f"beside it as choice.**"
-            )
         elif claimable < _DEPTH_FLOOR:
             out.append(
                 f"{lane} has {claimable} claimable row(s) and the floor is {_DEPTH_FLOOR}. "
@@ -1298,8 +1306,13 @@ def _queue_findings(backlog: str) -> list[str]:
             out.append(f"{lane}: does not parse — {broken}")
             continue
 
+        # ⚡ **D-198 reshaped the queue: one `backlog`, not a dispatch sequence.**
+        # ⛔ `current`/`next`/`future` are kept only so an older reader is not
+        # broken mid-migration; `backlog` is authoritative and every row in it is
+        # claimable. **The order inside it is a recommendation, not a gate.**
         sequence = [str(t) for t in (queue.get("current"), queue.get("next")) if t]
         sequence += [str(t) for t in (queue.get("future") or [])]
+        sequence += [str(t) for t in (queue.get("backlog") or []) if str(t) not in sequence]
         queued.update(sequence)
         target = int(queue.get("depth_target", 5) or 5)
 

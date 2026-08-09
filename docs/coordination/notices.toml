@@ -1,12 +1,7 @@
-# ONE LINE PER LANE — D-144's channel, the only one reaching a lane without QE.
-#
-# ⛔ REASONING ONLY. A notice may NEVER assert a task state — B-216, found by
-# Lane A on the poll it was published: the notice said "TASK-1400 is READY"
-# while the backlog said SEQUENCED, and `claimable_now = 0` sat three lines
-# below it. The generator now REFUSES a notice containing a state word.
+# ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "The Entry Engine — resolveEntry(session,intent) — carries 24 rules and 21 reason codes as a CLOSED type, and is PURE: no network call inside a decision, so it is fully testable without a browser, a session or a database. Green budget, zero dependencies, no caller. The named risk is in the row: do NOT fetch inside a rule. For its STATE read BACKLOG.md on origin/integration — never this line."
+notice = "D-198 changes the model: you now own a BACKLOG, not a dispatch queue. Fifteen rows, every one claimable, and the published order is this office's recommendation rather than a gate. Blocked on one? Raise it and TAKE THE NEXT — do not wait for Product Office. Ten rows stay sequenced because they consume another row's OUTPUT, and each names which. For every state read BACKLOG.md on origin/integration."
 
 ["Lane C"]
 notice = ""
