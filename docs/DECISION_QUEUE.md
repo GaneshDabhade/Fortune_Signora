@@ -48,6 +48,23 @@
 ⛔ **Nothing is blocked** — **[TASK-1413](BACKLOG.md) is sequenced behind this and Lane A has 24 other startable rows.**
 
 
+## 🔴 C-1411 · An audit stream: the reliable shape needs the frozen platform, the cheap shape is lossy
+
+> ⚡ **Found by Lane A BUILDING the security stream, and it built everything that did not need you first** — 📁 **the table, the domain type, the repository and the `public/` contract are on `main`, green, with 401 Security Invariants passing.** ⛔ **Only the producers wait.**
+
+🔴 **Four authentication journeys are on `main` today and NOTHING RECORDS THEM.** 📁 **[493](architecture/493-security-platform-architecture.md) names Workflow 1 as the producer and says nothing about how a fact born in the Better Auth tier reaches a table Python owns.**
+
+| | How | The cost |
+|---|---|---|
+| ⓐ **The client reports it** | Next.js calls a new endpoint after Better Auth mints the token | ⛔ **Lossy by construction** — **it drops events exactly when something went wrong**, which is the population an audit stream exists for |
+| ⓑ **The server records it** | The API records on first verification of a new session | ✅ **Reliable.** ⛔ **Needs `signora_platform/auth/`, which [§20a](../CLAUDE.md) freezes** — **product owner + ADR** |
+
+⚪ **Recommended: ⓑ, under §20a's FIRST exemption rather than its third.** 📁 **The list opens with *"a tenancy, authentication, authorization, or secrets defect. Fix it, and add a Security Invariant proving it stays fixed"*** — ⚡ **and an authentication tier that produces no audit record is an authentication gap, not the platform being inconvenient.**
+
+⚠️ **This office states that as a recommendation and declines to act on it.** 🔴 **Reading a gap as a security defect in order to reach an exemption is exactly the reasoning §20a exists to constrain, and the office that wants the answer should not be the one giving it.**
+
+⛔ **Nothing else waits.** ✅ **Lane A has 18 other startable rows and the stream's foundation is already shipped.**
+
 ## ⚡ Design Clarifications — for the Design Authority, not for a product ruling
 
 > **[D-207](DECISION_REGISTER.md) §2 · [D-208](DECISION_REGISTER.md) §6.** ⛔ **These are questions, not recommendations.** ⚡ **Each states the observed behaviour, the evidence and the impact — and deliberately does NOT propose which interpretation should win.** ⚠️ **Listed here because the queue is where a human looks; the OWNER is the Design Authority, and answering one as a product preference would be the conflation [D-207](DECISION_REGISTER.md) §2 corrects.**

@@ -1479,9 +1479,20 @@ updated      = 2026-08-09
 #    now have rows. TASK-1409 leads the new ones deliberately: System States
 #    is a PLATFORM row every other workflow renders, and thirteen workflows
 #    will each improvise a 404 if it lands after them.
-backlog = ["TASK-1410", "TASK-1411", "TASK-1427", "TASK-1403", "TASK-1402", "TASK-1422",
+backlog = ["TASK-1438", "TASK-1411", "TASK-1427", "TASK-1403", "TASK-1402", "TASK-1422",
             "TASK-1407", "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493",
             "TASK-495", "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+# ⚡ TASK-1438 ADDED AT THE TOP 2026-08-09 — D-216, ruling C-263.
+#    /w/:workspace/home, the route tree the entry engine already returns.
+#    Your refusal to create it inside TASK-499 is upheld in full and for the
+#    reason you gave: the path is inside your green budget and pointing the
+#    product's links at the engine's scheme IS adopting the engine, which
+#    D-205 forbids until its destinations exist. It is a separate row, and
+#    it frees two of TASK-499's six changes.
+#    ⚡ It is the first row this office sized against origin/integration
+#    rather than against the design document — D-215's commitment — and the
+#    sizing is written INTO the row so you can check it rather than trust it.
+# ⛔ TASK-1410 removed — you claimed it at 69d49ba2.
 # ⚡ SEVEN ENTRIES REMOVED 2026-08-09 — none of them was work, all of them
 #    were work you had already finished. TASK-1435, TASK-1436, TASK-1437,
 #    TASK-473, TASK-492 and TASK-1429 are VERIFIED; TASK-499 is CLAIMED.
