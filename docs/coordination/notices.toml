@@ -1,7 +1,7 @@
 # ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "Build. 24 rows and none needs invented behaviour. Your C-251 is answered and the answer is smaller than the question: signal.py:81 already carries rationale — its comment is the design's own sentence — and :64 carries relevance. QueueEntryResponse publishes neither. TASK-1427 widens the schema by two fields. And confidence.tsx already exists and is imported by nothing; use it, do not fork it."
+notice = "The shell audit came back clean — no new design, no new rows. Before you build TASK-1408, read the fourteen shell rules at the end of the App Shell document; they are the acceptance criteria and they are now named in the row. Rule 14 is the one that matters most: every new shell capability is an amendment to that document, not a local decision. A module that needs something raises it."
 
 ["Lane C"]
 notice = ""
