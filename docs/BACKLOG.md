@@ -1505,7 +1505,8 @@
 | 🔴 **Classification** | ⛔ **INCORRECT IMPLEMENTATION — wrong region** |
 | **Design authority** | 📁 **App Shell `landmarks`: *"nav[navigation] — the rail, labelled 'Primary'. **Workspace switcher is its first child.**"*** |
 | **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
-| **Module** | **`product_surface`** · **Status** ⏸️ **`SEQUENCED` behind [TASK-1439](BACKLOG.md)** — ⛔ **it becomes the rail's first child, so the rail is rebuilt first** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` behind [TASK-1439](BACKLOG.md)** — ⛔ **it becomes the rail's first child, so the rail is rebuilt first** |
 | 🔴 **The measurement** | ⛔ **Shipped in the TOP BAR as a native `<select>` rendering `E2E Org 1786291847211`.** 📁 **The design draws a grouped panel — `Northwind Holdings` / `Shared with you`, each row an initial badge, name, `Enterprise · Admin`, and a tag: `Current` · `Prod` · `Sandbox` · `Guest`** |
 | 🔴 **Why the `<select>` is a product defect and not a styling one** | ⛔ **A `<select>` cannot render a group heading with a role, a sandbox marker or a guest tag** — ⚡ **so a person cannot tell a production workspace from a sandbox copy before switching into it**, which is the one thing this control exists to prevent |
 | ⚡ **Delivers** | **The grouped switcher as drawn, as the rail's first child**, with **`⌘⇧W`** |
@@ -1521,7 +1522,8 @@
 | 🔴 **Classification** | ⛔ **INCORRECT IMPLEMENTATION — resolves [C-259](LANE_COORDINATION.md)** |
 | **Design authority** | 📁 **App Shell `topBarSlots`: *"Search — opens the palette on click or ⌘K"*** · 📁 **shell rule 07: *"anything clickable is reachable in the palette"*** |
 | **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
-| **Module** | **`product_surface`** · **Status** ✅ **`READY` — Lane C, 2026-08-09** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
 | 🔴 **The measurement** | ⛔ **`components/intelligence/account-search.tsx`:72 binds `⌘K` to account search.** ✅ **`components/ui/command-palette.tsx` is complete and tested and NO PRODUCTION FILE MOUNTS IT** — ⚡ **flagged by the [D-214](DECISION_REGISTER.md) §8 conformance audit before this ruling and raised independently by Lane A as [C-259](LANE_COORDINATION.md)** |
 | 📁 **What the palette is meant to hold** | **`Ask Signora` · `Recents` · `Actions` (`⌘⇧T`, `⌘⇧E`) · `Navigate`** — ⛔ **account search is ONE group inside it, not the thing that owns the shortcut** |
 | ⚡ **Delivers** | **`⌘K` and the Search slot both open the palette; account results become a group inside it** |
@@ -1536,7 +1538,8 @@
 | 🔴 **Classification** | ⛔ **INCORRECT IMPLEMENTATION** |
 | **Design authority** | 📁 **App Shell `breakpoints`** |
 | **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
-| **Module** | **`product_surface`** · **Status** ✅ **`READY` — Lane C, 2026-08-09** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
 | 🔴 **The measurement** | 📁 **The design specifies four: `≥1600` · `1280–1599` (the reference layout) · `1024–1279` · `<1024`.** ⛔ **`app-shell.tsx` uses `md:` and `sm:` only — Tailwind's 768px and 640px.** ⚡ **So every responsive decision in the frame fires at a width the design never named**, and the 1024–1279 band — 📁 *"rail collapses to 56px icons with tooltips, utility panel closes to a 28px tab rail, filter strip stays"* — **does not exist at all** |
 | ⚡ **Delivers** | **Four named breakpoints as tokens, and the frame's behaviour at each** — ⛔ **not a media-query sweep of every component** |
 | **Definition of Done** | **The frame behaves as the design's four bands describe, at the design's widths** · **certified · `main`** |
@@ -1551,7 +1554,8 @@
 | 🔴 **Classification** | ⛔ **MISSING — and accessibility is a defect class, never an enhancement** ([§20c](../CLAUDE.md)) |
 | **Design authority** | 📁 **App Shell `Rules` (2.4.1 · 2.4.3 · 2.4.7 · 2.1.2 · 4.1.3 · 1.4.13 · 2.5.8 · 1.4.10 · 2.2.6) and `landmarks`** |
 | **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
-| **Module** | **`product_surface`** · **Status** ✅ **`READY` — Lane C, 2026-08-09** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
 | 🔴 **The measurement** | ⛔ **Skip links: the design requires THREE — to content, to navigation, to the utility panel, visible on focus. `grep` finds NONE.** ⛔ **`nav` is labelled `"Main"`; the design says `"Primary"`.** ⛔ **No `search` landmark.** ⛔ **Nothing announces a route change politely (4.1.3)** |
 | ⚡ **Delivers** | **The three skip links · the design's landmark names · the 2px brand focus ring at 2px offset, never suppressed · a polite route-change announcement · reflow to 320px at 400% zoom** |
 | ✅ **What already holds** | 📁 **`ErrorBoundary region=` per shell region is in place, and rule 13 — *errors render inside the shell unless the shell itself failed* — is satisfied** |
@@ -1566,7 +1570,8 @@
 | 🔴 **Classification** | ⛔ **MISSING** |
 | **Design authority** | 📁 **App Shell `shortcutGroups` · `navSpecs.Keyboard`** |
 | **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
-| **Module** | **`product_surface`** · **Status** ⏸️ **`SEQUENCED` behind [TASK-1439](BACKLOG.md) and [TASK-1442](BACKLOG.md)** — ⛔ **`G H`/`G F`/`G P`/`G A` name rail destinations, so the rail is rebuilt first** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` behind [TASK-1439](BACKLOG.md) and after [TASK-1442](BACKLOG.md)** — ⛔ **`G H`/`G F`/`G P`/`G A` name rail destinations, so the rail is rebuilt first** |
 | 📁 **The map** | **Surfaces** `⌘K` palette · `⌘⇧A` Ask Signora · `⌘⇧N` notifications · `⌘⇧W` switch workspace · `⌘.` utility panel · `?` shortcut reference. **Navigate** `G H` `G F` `G P` `G A` · `⌘[` `⌘]` back/forward · `[` collapse rail |
 | ✅ **Implemented today** | **`[` only** — 📁 `lib/shell/use-rail-collapse.ts`:80, and it is correct |
 | ⚡ **Delivers** | **The map, and the `?` reference screen that lists it** — ⛔ **a shortcut with no discoverable reference is a shortcut nobody uses** |

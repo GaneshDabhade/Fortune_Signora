@@ -1480,7 +1480,7 @@ updated      = 2026-08-09
 #    is a PLATFORM row every other workflow renders, and thirteen workflows
 #    will each improvise a 404 if it lands after them.
 backlog = ["TASK-1439", "TASK-1440", "TASK-1442", "TASK-1443", "TASK-1444", "TASK-1438",
-            "TASK-1411", "TASK-1427", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
+            "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
             "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
 # 🔴 D-217 — COMMON PLATFORM AUDIT. The product owner reviewed the running
@@ -1570,6 +1570,18 @@ backlog = ["TASK-1439", "TASK-1440", "TASK-1442", "TASK-1443", "TASK-1444", "TAS
 # with its blocker named below. ⛔ Nothing here is invented scope: every row
 # already existed and its owner was joined from modules.toml (D-135).
 
+
+[[blocked]]
+task    = "TASK-1441"
+blocker = ["TASK-1439"]
+owner   = "Lane A"
+note    = "the workspace switcher moves out of the top bar and becomes the rail's FIRST CHILD, which is what the design's landmarks say. So the rail has to be the design's rail before anything is placed inside it. Sequenced behind your own row, not somebody else's — it frees the moment TASK-1439 is handed over"
+
+[[blocked]]
+task    = "TASK-1445"
+blocker = ["TASK-1439", "TASK-1442"]
+owner   = "Lane A"
+note    = "the published keyboard map. G H / G F / G P / G A name rail destinations that do not exist until TASK-1439 rebuilds the rail, and Cmd-K is TASK-1442's to bind. Both blockers are this lane's own rows, so nothing outside Lane A gates it"
 
 [[blocked]]
 task    = "TASK-1430"
