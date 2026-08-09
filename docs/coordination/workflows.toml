@@ -232,7 +232,7 @@ name   = "User Profile"
 state  = "blocked"
 note   = "⚠️ Read `planned` until 2026-08-09, and it has been partly BUILT since 2026-08-08 — milestones 1–2 of 3 delivered, migrations 0044 and 0045 and table person_preferences are on `main`. Corrected in the audit the product owner asked for, by measuring the migration head rather than reading this field. Milestone 3 (screen 05) is blocked on TASK-493 — Better Auth's multi-session plugin — which is SEQUENCED and unclaimed."
 design = "Fortune Signora User Profile.dc.html"
-tasks  = ["TASK-470"]
+tasks  = ["TASK-470", "TASK-1408"]
 owner  = "Lane A"
 unblocked = "⚡ D-172 §1, 2026-08-08 — ADR/492 answers it: a third tenancy class, PERSON_OWNED_TABLES, narrowing tenant-owned rather than paralleling it. app.user_id is already set on every transaction; only the classification and one policy predicate were missing."
 
@@ -266,7 +266,7 @@ name   = "Application Shell"
 #   unbuilt workflow", and every one of them means this one.
 state  = "planned"
 design = "Fortune Signora App Shell.dc.html"
-tasks  = ["TASK-447", "TASK-480", "TASK-481", "TASK-482"]
+tasks  = ["TASK-447", "TASK-480", "TASK-481", "TASK-482", "TASK-1408"]
 owner  = "Lane A"
 # ⛔ 487 scores this shell at 0 of 29 distinctive phrases and EVERY screen
 # renders inside it. It is priority 5 under D-155 and that is the product
@@ -312,7 +312,7 @@ owner  = "Lane A"
 name   = "Executive Dashboard"
 state  = "planned"
 design = "Fortune Signora Executive Dashboard.dc.html"
-tasks  = ["TASK-438"]
+tasks  = ["TASK-438", "TASK-1405", "TASK-1425"]
 owner  = "Lane A"
 unblocked = "⚡ D-167 §3, 2026-08-07 — charting ruled: visx (ADR-0407). ONE data visualization here: a 760x220 column figure of 13 marks."
 
@@ -327,7 +327,7 @@ owner  = "Lane A"
 name   = "Signal Center"
 state  = "planned"
 design = "Fortune Signora Signal Center.dc.html"
-tasks  = ["TASK-439"]
+tasks  = ["TASK-439", "TASK-1427"]
 owner  = "Lane A"
 
 [workflow.22]
@@ -350,7 +350,7 @@ unblocked = "⚡ D-174 §, 2026-08-08 — 493 answers it. Most of the list is Be
 name   = "Billing"
 state  = "planned"
 design = "Fortune Signora Billing.dc.html"
-tasks  = ["TASK-411", "TASK-412"]
+tasks  = ["TASK-411", "TASK-412", "TASK-1412"]
 owner  = "Lane A"
 
 [workflow.25]
@@ -389,7 +389,7 @@ state  = "decomposed"
 design      = "Fortune Signora System States.dc.html"
 owner       = "Lane A"
 screens     = ["01 Scope ladder", "02 Not found & forbidden", "03 Server error & the global error boundary"]
-tasks       = ["TASK-1409"]
+tasks       = ["TASK-1409", "TASK-1428", "TASK-1429", "TASK-1435", "TASK-1436", "TASK-1437"]
 # 🔴 FOUND 2026-08-08 by the D-192 journey audit — a design document with NO
 #   workflow. "Platform foundation · Module 10", and it is customer-visible:
 #   404, 403, 500, the error-boundary scope ladder.
@@ -423,7 +423,7 @@ depends_on  = []
 [workflow.29]
 name        = "Authenticated Entry"
 state       = "decomposed"
-tasks  = ["TASK-1400", "TASK-1402", "TASK-1403", "TASK-1404", "TASK-1405", "TASK-1406", "TASK-1407", "TASK-1401", "TASK-1421", "TASK-1422", "TASK-1423", "TASK-1424", "TASK-1425", "TASK-1426"]
+tasks  = ["TASK-468", "TASK-469", "TASK-1400", "TASK-1401", "TASK-1402", "TASK-1403", "TASK-1404", "TASK-1405", "TASK-1406", "TASK-1407", "TASK-1410", "TASK-1421", "TASK-1422", "TASK-1423", "TASK-1424", "TASK-1425", "TASK-1426", "TASK-1432", "TASK-1433", "TASK-1434", "TASK-1438"]
 # ── THE EPIC DECOMPOSITION — D-196, 2026-08-08 ──────────────────────────────
 #   E1 · Entry Engine        TASK-1400 resolver · TASK-1402 intent
 #   E2 · Reason & diagnostics TASK-1403
