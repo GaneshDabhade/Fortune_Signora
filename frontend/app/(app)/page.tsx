@@ -186,6 +186,33 @@ export default function AttentionPage() {
         </p>
       </header>
 
+      {/*
+        ⚡ **The Signal Center's door** — [TASK-439](../../../docs/BACKLOG.md).
+        📁 **[D38](../../../docs/architecture/39-product-review-findings.md)
+        removed these screens from the rail by name** — *"adding one back is a
+        claim that needs defending"* — so the entrance is a link from the
+        surface that answers the neighbouring question. **This is the
+        recommendation this lane offered on
+        [C-229](../../../docs/LANE_COORDINATION.md) and did not implement until
+        that item closed.** ⛔ **Not a navigation entry**, and the rail belongs
+        to [TASK-1408](../../../docs/BACKLOG.md), not to a feature row.
+
+        🔴 **At PAGE level, and the first draft was not.** It sat inside the
+        populated branch, so a workspace with an empty attention list had NO
+        DOOR AT ALL — **and that is exactly the reader most likely to want
+        one.** ⚠️ **`reachability.py` passed it**, because a static scan sees a
+        link in the source and cannot see which branch renders it; **the headed
+        walk is what found it** ([B-149](../../../docs/BUGS.md)).
+      */}
+      <p className="text-sm text-content-muted">
+        <Link
+          href="/signals"
+          className="rounded font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          Review every signal Signora has raised
+        </Link>
+      </p>
+
       {/* **A signed-in reader with no workspace rendered nothing at all**
           until M12.3: the query is disabled, so `isLoading`, `isError` and
           `data` were all falsy and every branch below was skipped (D36). It
@@ -411,6 +438,7 @@ function ByStage({
           </ol>
         </section>
       ))}
+
     </div>
   );
 }
