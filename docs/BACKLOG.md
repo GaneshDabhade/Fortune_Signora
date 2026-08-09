@@ -1460,7 +1460,7 @@
 
 | | |
 |---|---|
-| 🔴 **Status** | ⏸️ **`BLOCKED` — Lane C, 2026-08-09, on [C-254](LANE_COORDINATION.md).** ⛔ **It edits `components/shell/app-shell.tsx`, which [§20e](../CLAUDE.md)'s Change Budget table lists as 🔴 — *the frontend foundation… shell* — requiring **product owner + ADR**. ✅ **This row exists so the decision is *approve this row* rather than *amend a budget*** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09.** ⚡ **RELEASED: [C-254](LANE_COORDINATION.md) was withdrawn, because [CLAUDE.md](../CLAUDE.md) line 429 already grants this** — **the UI Migration Program is a standing approved architectural change ([D-153](DECISION_REGISTER.md), [D-154](DECISION_REGISTER.md), [D-161](DECISION_REGISTER.md)), and its test is *the direction of the change: toward the finalized design is the migration.*** ✅ **This row converges four surfaces ONTO the Design System's ladder — it is the migration by that test.** 📁 **The shell has been edited under the same exemption twice already: `f4fb9594` and `a165ed1a`.** *(Previously `BLOCKED` on a grant this office queued to the product owner without first reading the file that governs it — [D-212](DECISION_REGISTER.md) §7's gate, not fired.)* |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **GOVERNANCE** — ⛔ **the work is understood, the design is settled, and only the authority is missing** |
 | **Epic** | **System States** — **[workflow 28](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** — 🔴 **the frozen frontend foundation** |
@@ -1468,7 +1468,7 @@
 | 📁 **The four, found by the L-1 audit rather than predicted** | **`app/not-found.tsx`** — its own 404 copy, no identifier · **`app/error.tsx`** — its own 500 copy, `Reference: …` · **`components/feedback/error-boundary.tsx`** — its own colours, an identifier **that cannot be copied**, ⛔ **no retry limit at all** · **`components/ui/error-state.tsx`** — a copyable id, a different shape, its own retry |
 | ⚡ **Delivers** | **All five call sites render through `SystemState`.** ⛔ **No new component, no visual redesign** — 📁 the ladder and its 23 tests already ship |
 | 🔴 **One of the five is anonymous today** | 📁 **Design System v2 `1.3.1`: *"an h1 that names what happened — not 'Error'."*** ⛔ **That is a live Design System violation in the shell, and it is the strongest argument for doing this now rather than at leisure** |
-| **Change Budget** | 🔴 **`components/shell/app-shell.tsx`** — **product owner + ADR** ([C-254](LANE_COORDINATION.md)) · 🟢 the four surfaces |
+| **Change Budget** | ✅ **`components/shell/app-shell.tsx` is covered by the UI Migration Program** — [CLAUDE.md](../CLAUDE.md) line 429, **a standing approved architectural change; no fresh grant and no ADR** · 🟢 the four surfaces. ⚠️ **The exemption is directional, not blanket** — ⛔ **it covers changes *toward* the finalized Design System and nothing else; a convenience edit to `app-shell.tsx` inside this row is still 🔴** |
 | **Playwright coverage** | **A failure at each of the four surfaces renders the ladder's shape, with a copyable identifier and a bounded retry** |
 | **Component coverage** | 🔴 **No surface renders an anonymous `Error` heading** · **every failure carries a retry budget** |
 | ♿ **Accessibility** | **Politeness by scope, inherited from `SystemState`** — ⛔ **not re-decided per surface** |

@@ -1483,7 +1483,19 @@ backlog = ["TASK-1428", "TASK-1408", "TASK-476", "TASK-473", "TASK-492", "TASK-4
             "TASK-1410", "TASK-1411",
             "TASK-1427", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407", "TASK-1405",
             "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
-            "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+            "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412",
+            "TASK-1429"]
+# ⚡ TASK-1429 RELEASED 2026-08-09 — it was blocked on C-254, a RED Change
+#    Budget grant this office queued to the product owner. It should never
+#    have been queued: CLAUDE.md line 429 already grants it, because the UI
+#    Migration Program is a standing approved architectural change (D-153,
+#    D-154, D-161) and its test is the DIRECTION of the change — toward the
+#    finalized Design System is the migration, away from it is the defect.
+#    This row converges four improvised surfaces ONTO the ladder.
+#    You were right to raise it rather than make the edit. This office was
+#    wrong to route it upward instead of reading the file that governs it.
+#    ⚠️ The exemption stays directional: a convenience edit to app-shell.tsx
+#    inside this row is still RED and still a finding to raise.
 # ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation, D-022)
 #    and cannot fill this lane's backlog. This office briefly counted it and
 #    was wrong.
@@ -1505,12 +1517,6 @@ task    = "TASK-1430"
 blocker = ["an ADR — signora_platform/ is frozen"]
 owner   = "Lane C"
 note    = "inbound rate limiting. Nothing guards Signora's own API; 38 files rate-limit OUTBOUND calls to vendors, which is the opposite concern. Four authentication journeys are on main and /sign-in accepts unlimited attempts. C-431 already records that no lockout capability exists, which is why screens 11 and 12 are excluded from Workflow 1 — this is the capability that makes them reachable"
-
-[[blocked]]
-task    = "TASK-1429"
-blocker = ["C-254"]
-owner   = "Product Owner"
-note    = "edits components/shell/app-shell.tsx, which the Change Budget table lists as RED — frontend foundation, shell — requiring product owner + ADR. Four import lines and a rename. The row exists so the decision is 'approve this row' rather than 'amend a budget'"
 
 [[blocked]]
 task    = "TASK-1401"

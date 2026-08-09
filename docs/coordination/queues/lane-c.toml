@@ -228,11 +228,12 @@ blocker = ["see the backlog row"]
 owner   = "Lane C"
 note    = "Usage Accounting — meter what a workspace consumed"
 
-[[blocked]]
-task    = "TASK-412"
-blocker = ["see the backlog row"]
-owner   = "Lane C"
-note    = "Usage & Billing Observability"
+# ⛔ TASK-412 IS NOT LISTED HERE — it is READY in lane-a.toml's backlog under
+#    D-198 ("Product Office is not a task dispatcher"). It sat in BOTH files
+#    for a cycle: blocked here, offered there. A row cannot be both, and the
+#    contradiction is the same class as B-221 — a queue asserting work for a
+#    lane that the other queue has already given away. Found 2026-08-09 by
+#    reading both files against each other rather than either one alone.
 
 [[blocked]]
 task    = "TASK-413"

@@ -43,15 +43,6 @@
 
 ⛔ **Nothing is blocked** — **[TASK-1413](BACKLOG.md) is sequenced behind this and Lane A has 24 other startable rows.**
 
-## 🟡 C-254 · One 🔴 Change Budget grant — four import lines into the shell
-
-> ⚡ **Lane A made the edit, reverted it, and raised it** — ✅ **which is [§20e](../CLAUDE.md) working: touching a file outside your budget is a finding to raise, not a change to make.**
-
-📁 **[TASK-1409](BACKLOG.md) shipped the system-state ladder and its 23 tests.** ⛔ **Four surfaces still improvise their own error handling** — `not-found.tsx`, `error.tsx`, `error-boundary.tsx`, `error-state.tsx` — **and four of the five call sites live in `components/shell/app-shell.tsx`, which the Change Budget table lists 🔴: *the frontend foundation… shell*, product owner + ADR.**
-
-🔴 **One of the five renders an anonymous `Error` heading today**, which Design System v2 `1.3.1` forbids in terms: *"an h1 that names what happened — not 'Error'."* ⚠️ **A live Design System violation in the shell is the strongest argument for doing this now.**
-
-✅ **[TASK-1429](BACKLOG.md) is written and blocked on this** — **so the decision is *approve that row*, not *amend a budget*.** ⛔ **Nothing else waits**: the ladder, the primitive and their tests ship regardless.
 
 ## ⚡ Design Clarifications — for the Design Authority, not for a product ruling
 
@@ -558,6 +549,22 @@
 | **What is *not* in tension** | ✅ **D-128's authority is not in doubt.** **The question is narrower: whether fourteen product-review findings should be carried *into* the conformance work as inputs, or whether the design already accounts for them** |
 | **Priority** | **P2 — nothing is blocked today.** ⚠️ **It becomes P1 the moment a refinement slice reaches this screen**, and [TASK-467](BACKLOG.md)–[471](BACKLOG.md) are that work |
 | **Recommended** | ✅ **Rule that the design is authoritative *and* that the fourteen findings are inputs to the gap analysis** — ⛔ **not a veto over it.** ⚡ **[D-129](DECISION_REGISTER.md) already permits exactly this artifact: a measurable gap analysis is one of the three, and *"the design already handles this"* is a legitimate finding for each of the fourteen** |
+
+## Closed on 2026-08-09
+
+### ✅ C-254 · WITHDRAWN FROM THIS QUEUE — [CLAUDE.md](../CLAUDE.md) already answered it
+
+> ⚡ **This office queued a 🔴 Change Budget grant that the product owner had already granted, in writing, eight days earlier.** ✅ **Withdrawn 2026-08-09 under [D-212](DECISION_REGISTER.md) §7's gate — *"can this be answered by an existing finalized design document?"* — which this office applied to itself and should have applied before queueing.**
+>
+> 📁 **[CLAUDE.md](../CLAUDE.md) line 429, ruled by the product owner in [D-153](DECISION_REGISTER.md), [D-154](DECISION_REGISTER.md) and [D-161](DECISION_REGISTER.md):** ***"The UI Migration Program is a standing approved architectural change… Replacing the design tokens, the shells and the shared components to match the finalized Signora Design System is the programme, not a breach of the freeze."***
+>
+> ⚡ **And the distinguishing test is drawn in the next line: *"the direction of the change: toward the finalized design is the migration; away from it, to suit one caller, is the defect."*** ✅ **[TASK-1429](BACKLOG.md) converges four improvised surfaces ONTO the Design System's ladder and removes a live `1.3.1` violation — it is the migration by that test, not an exception to it.**
+>
+> ✅ **Measured, not argued: the shell has been edited twice under this exemption already** — `f4fb9594` and `a165ed1a`, both [TASK-1408](BACKLOG.md), both on `main`. **A grant the repository has been exercising is not a grant to ask for.**
+>
+> ✅ **[TASK-1429](BACKLOG.md) released `READY` the same day.** ⛔ **Nothing is asked of you.**
+
+⚠️ **What this cost, recorded because it is the second instance.** **Lane A did the right thing** — §20e says touching a file outside your budget is a finding to raise — **and this office converted a correct finding into a product-owner decision instead of answering it from the file that governs it.** ⚡ **[D-210](DECISION_REGISTER.md) produced the same defect (two capabilities reported absent that were fully specified), and D-212 §7 exists because of it. This is the gate failing to fire, not a missing gate.**
 
 ## Closed on 2026-08-06
 
