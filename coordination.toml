@@ -10,7 +10,7 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "734855b"
-task_count     = 155
+task_count     = 156
 
 [lane.Lane_A]
 notice             = "NOTICE WITHHELD — it names TASK-1454 as work for this lane, and none of them is in this lane's computed backlog (D-144, B-221). Either the row is not yet integrated, or it belongs to another lane. Read the backlog array in this file for what is actually claimable."
@@ -34,10 +34,10 @@ critical_path_max      = 4
 [lane.Lane_C]
 notice             = ""
 backlog            = ["TASK-1431", "TASK-412", "TASK-497"]
-assigned_total     = 16
-claimable          = 3
+assigned_total     = 17
+claimable          = 4
 claimable_now      = 3
-awaiting_sync      = 0
+awaiting_sync      = 1
 in_flight          = 6
 actionable         = 0
 awaiting_qe_transition = 0
@@ -45,7 +45,7 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 7
 lane_utilization   = 1.2
-idle_prediction_days   = 0.4
+idle_prediction_days   = 0.6
 dependency_wait_days   = 2.5
 blocked_duration_days  = 2.5
 critical_path_max      = 0
@@ -2241,6 +2241,22 @@ estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-1455"
+title         = "🔴 Two finalized designs are missing from the snapshot, and both already have implementatio"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane C"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-409"
