@@ -228,6 +228,72 @@ await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
 
 ⚡ **Same repair this lane made in `app-shell-rail.test.tsx`** when the shell's second wordmark broke an unscoped query: ⛔ **the duplicate render is correct and the query was wrong.** ✅ **And it asserts something stronger than before** — not merely that the address appears somewhere, but that it is the link to their own profile.
 
+### B-167 · `tsc --noEmit` type-checks a generated Next.js artifact, so a stale `.next/` fails the gate for a build six days old
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `frontend` type gate, run by `make certify` and by every lane |
+| **Current assignee** | **QE** — a gate QE runs, so the gate is QE's (§20e), same basis as [B-156](#b-156) |
+| **Severity** | 🟠 — ⛔ **it produces a confident wrong answer**, and the answer names files the change never touched |
+| **Status** | **`OPEN`** |
+| **Commit found** | `b565c19e` (`TASK-499`), found by QE during cycle 160 validation |
+
+**Steps.** Rename a route, then type-check without clearing the build directory:
+
+```
+$ npx tsc --noEmit
+.next/types/validator.ts(116,39): error TS2307: Cannot find module '../../app/(auth)/sign-in/page.js'
+.next/types/validator.ts(125,39): error TS2307: Cannot find module '../../app/(auth)/sign-up/page.js'
+.next/types/validator.ts(134,39): error TS2307: Cannot find module '../../app/(auth)/verify-email/page.js'
+TSC=2
+```
+
+**Expected.** The gate reports on the source under test.
+
+**Actual.** ⛔ **It reported on `.next/types/validator.ts`, a generated file dated `2026-08-03` — six days before the commit being checked.** ✅ **`rm -rf .next && npx tsc --noEmit` → clean, and `make certify`'s own `tsc` gate then agreed.**
+
+> 🔴 **The failure names three routes the commit deliberately removed**, so it reads exactly like *"the rename broke the type check"* — **the most plausible wrong conclusion available.** ⚠️ **[B-156](#b-156)'s class precisely: a gate that answers confidently from something other than what it was asked about.**
+>
+> ⛔ **And it would have failed certification.** **QE happened to run `tsc` by hand first and cleared the artifact before starting the run**, which is luck rather than process — **the next route rename certified without that step fails on a six-day-old build and the failure is attributed to the slice.**
+
+**Repair.** ⚡ **Exclude `.next/` from the type gate, or clear it as a precondition of running one.** ⛔ **Excluding is the better half**: `.next/types/` is generated *from* the routes, so type-checking it asks whether a build artifact agrees with the source that has since replaced it — **a question with no useful answer.**
+
+### B-166 · the journey gate has no window in which its owner can run it, because certification holds the same single lease
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `infra/environment-lease.py`, and the `Makefile` targets that take it |
+| **Current assignee** | **QE** — QE's own cadence is one half of the contention |
+| **Severity** | 🟠 — ⛔ **it is why a shipped journey stayed red for a day** ([B-225](#b-225)) |
+| **Status** | **`OPEN`** |
+| **Commit found** | Observed live during cycle 160, in both directions |
+
+**Steps.** ⚡ **Measured, not reasoned about.** **One lease serves every heavy operation:**
+
+```
+Makefile:410  certify   -> environment-lease.py run certify
+Makefile:62   dr        -> environment-lease.py run dr
+Makefile:49   smoke     -> ... run smoke
+Makefile:90   up        -> ... run up
+Makefile:458  e2e       -> ... run e2e
+```
+
+**Expected.** §19 and [D-114](../docs/DECISION_REGISTER.md) put the customer journey **on the implementing lane before handover**, so the lane must be able to run it.
+
+**Actual, from one cycle:**
+
+| | |
+|---|---|
+| **Lane A, in its own commit** | *"the four journeys **NOT RUN**. QE took the environment lease for a second certify at 11:44:51… I re-pathed the specs; I have not executed them."* |
+| ⛔ **Consequence** | ***"The row therefore stays `CLAIMED`."*** **Lane A refused to declare around a gate it could not run** — **which is correct, and is the right behaviour costing throughput** |
+| **Then the reverse** | **QE's `make up`/`make dr` were refused by `e2e pid 1815192` in Lane A's worktree** — **Lane A running those journeys the moment the lease cleared** |
+
+> 🔴 **Both halves are correct behaviour and the outcome is still a gate nobody can run reliably.** ⛔ **The lane cannot run journeys while QE certifies, and QE cannot run them at all** ([B-156](#b-156)). **[B-225](#b-225) — a shipped `@smoke` journey red for a day — is what that produces.**
+>
+> ✅ **QE did not `release --force` in either direction, twice, and waited 510s and 15s respectively.** ⛔ **Forcing is never the repair**: the lease's own text records that cycle 25 wrote `pytest 134 passed` against a suite of 2589 because two runs shared a database.
+
+**Repair — and it is a product-owner-shaped question rather than a lane's.** ⚡ **The journeys need a database and ports; certification needs a database and ports; today they are the same ones.** **Options: a second allocated environment for journeys · a journey profile that reuses a lane's own stack rather than the shared one · or accepting the serialization and scheduling around it explicitly.** ⛔ **What must not happen is the current implicit answer, where the gate is skipped by whoever loses the race.**
+
 ### B-165 · a new table, a new domain type and a new published contract reached `IN VALIDATION` with no architecture documentation and no Slice Handoff
 
 | | |
