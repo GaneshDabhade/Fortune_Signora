@@ -80,6 +80,49 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-155 · QE has cherry-picked where §20e says fast-forward, and Lane C's work has been excluded five cycles running
+
+| | |
+|---|---|
+| **Module** | Repository process — QE's integration procedure |
+| **Current assignee** | **QE** — the merge is QE's; the rebase is Lane C's |
+| **Severity** | 🟡 — **no code is wrong and nobody is blocked.** ⛔ **Planning throughput is the cost**, and it has been paid five times |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-09 by QE, cycle 141, **after saying at cycle 140 that a sixth instance would earn a row** |
+
+**Measured.** `origin/lane-c-sync` is **12 ahead / 2 behind** `integration` — **diverged, so it cannot fast-forward.** Cherry-picking any commit from the middle of its series conflicts across **eight files**:
+
+```
+docs/BACKLOG.md              docs/coordination/coordination.toml
+docs/DECISION_QUEUE.md       docs/coordination/notices.toml
+docs/DECISION_REGISTER.md    docs/coordination/queues/lane-a.toml
+docs/LANE_COORDINATION.md    infra/coordination.py
+```
+
+⛔ **QE's earlier reading — *"generated files, and the repair is the generator"* — was too narrow.** ⚡ **Four of the eight are narrative registers.** **The branch has diverged as a whole; the generated files are a symptom, not the cause.**
+
+### ⛔ What §20e actually prescribes, and QE has not been doing it
+
+> **"QE performs the fast-forward… A lane that hands QE a branch which will not fast-forward has not finished step 4."** · **"A branch that will not fast-forward is returned to its lane."**
+
+⚡ **QE has cherry-picked selectively all session, because branches routinely diverge and cherry-picking salvaged the parts that applied.** ✅ **That worked for Lane A, whose slices are self-contained.** ⛔ **It does not work for a coherent multi-commit series against a moving base, and five consecutive exclusions is what that failure looks like.**
+
+### ⚠️ The window is the mechanism, and it is nobody's carelessness
+
+**Lane C rebases every cycle — its branch is force-updated on almost every poll.** ⛔ **`integration` then moves under it when QE promotes**, so the next cherry-pick meets a base that has changed again. ⚡ **Neither side is idle; the two clocks simply never line up.**
+
+### ✅ What is held, and who is affected
+
+| | |
+|---|---|
+| **Held** | [D-203](DECISION_REGISTER.md) §2 · [D-204](DECISION_REGISTER.md) — ***all 29 workflows decomposed, five platform rows*** · [D-205](DECISION_REGISTER.md) · two coordination republishes |
+| **Blocked** | ⛔ **Nobody.** **Lane A has `TASK-1400` claimable and is delivering every cycle** |
+| **Cost** | ⚠️ **Planning depth that never reaches the lanes that would consume it** |
+
+> ⛔ **QE is not resolving eight files by hand to clear it** — **that is exactly how [B-411](#b-411) and [B-154](#b-154--qe-promoted-a-conflict-marker-into-the-one-register-its-check-does-not-read) happened.** ✅ **The rule's own answer is that the branch is returned to its lane, and the lane rebases onto current `integration` and hands QE something that fast-forwards.**
+
+---
+
 ### B-154 · QE promoted a conflict marker into the one register its check does not read
 
 | | |
