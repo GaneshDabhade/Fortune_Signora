@@ -1086,6 +1086,11 @@ export interface QueueEntry {
   /** Which account. Load-bearing on the workspace queue — an entry that cannot
    * say which company it concerns is one nobody can act on. */
   entity_id: string;
+  /** Why this matters *here*, and what it rests on — authored per signal where
+   * the reasoning happens. ⛔ **Never recomposed in a component**: the catalog's
+   * `why_it_matters` is a fact about the TYPE, so rendering that instead would
+   * put one sentence under fifty different signals and read as right. */
+  rationale: string;
   state: QueueState;
   resolution: Resolution | null;
 }

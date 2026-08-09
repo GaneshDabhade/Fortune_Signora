@@ -8357,6 +8357,65 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-267 · TASK-1427's confidence figure has no honest source, and the domain refuses it by name
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, ⚡ **while implementing [TASK-1427](BACKLOG.md)** — 📁 **the row's own instruction**: *"if its shape does not fit, that is a finding against [TASK-1411](BACKLOG.md), not a licence to fork"* |
+| **Owner** | **Lane C** — ⛔ **the row's `Delivers` is Product Office's to correct**, and the mapping it implies is `buying_score_engine`'s to own |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **PLANNING DEFECT, not a missing capability** — **the field the row asks for cannot be derived correctly by anyone** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **The confidence half of [TASK-1427](BACKLOG.md) only.** ✅ **The `rationale` half is DELIVERED** — three component tests, one journey, and the two facts the design draws are now four of five |
+
+### 🔴 The row asks for a number the type exists to refuse
+
+📁 **[TASK-1427](BACKLOG.md)'s `Delivers`**: *"Two fields on `QueueEntryResponse` — `rationale`, **and the confidence figure derived from `relevance`**"*.
+
+⛔ **`Relevance` is a four-value `StrEnum` whose own docstring forbids exactly that**, and it names the reason and the owner:
+
+> 📁 ***"A category, declared per workspace and **never computed** — the same discipline as `MatchStrength`, and for the same reason: **a number invites weighting**, weighting invites thresholds, and a threshold here would be a propensity judgement in the wrong module.***
+>
+> ***The Buying Score Engine maps these to weights in *its* configuration, which is where 'how much does this matter' belongs."***
+
+⚡ **This is [§2](../CLAUDE.md) stated in a type** — *"types should make incorrect architecture impossible"* — **and the constitution cites its sibling by name**: *"`MatchStrength` refuses numeric conversion"*.
+
+### ⛔ And there is no single mapping to derive from, because it is workspace-configurable
+
+**Measured, not argued.** `Relevance → int` exists **exactly once** in the repository:
+
+| | |
+|---|---|
+| 📁 `buying_score_engine/domain/scoring_model.py:126` | **`relevance_multipliers: dict[Relevance, int]`** — the shipped taxonomy |
+| 📁 `buying_score_engine/domain/workspace_model.py:52` | **`ScoringOverrides.relevance_multipliers`** — ⚡ ***"What a workspace has chosen to change"*** |
+
+🔴 **So the same `relevance` legitimately means different weights in two workspaces.** ⛔ **A figure derived in `signal_engine` would be a second, contradicting representation of one fact** — 📁 [§2](../CLAUDE.md), *"truth has exactly one authoritative representation… a stored copy of a derivable fact is a defect waiting for the two to disagree"* — **and it would put a propensity judgement in the module whose docstring says it does not belong there.**
+
+⚠️ **`IGNORED` has no multiplier at all**, by a validator that says why: 📁 *"it means the hypothesis is not held here at all, so no signal of that type exists to weigh."* **Any total function `Relevance → 1..5` has to invent a value for it.**
+
+### ⛔ A shipped test already asserts the absence, and it was written for this reason
+
+📁 **`frontend/tests/components/signal-queue.test.tsx`**, under [C-251](#c-251):
+
+> **`it('⛔ prints no confidence, because nothing computes one')`** — *"the design prints `6 sources · confidence 4 of 5` — **both halves are MEASUREMENTS**, and `confidence` appears nowhere in the API contract."*
+
+⚡ **Adding the row's figure would have broken a test this lane wrote to prevent precisely that.** ⛔ **The correct response to that test is not to update it.**
+
+### ⚠️ Third finding: the primitive cannot render absence, which is TASK-1411's own rule
+
+📁 **[TASK-1427](BACKLOG.md) requires**: *"A signal with no confidence renders absence, never `0 of 5` — `0 of 5` reads as **certainly wrong** where the truth is **not known**."*
+
+⛔ **`components/ui/confidence.tsx` cannot express that.** **`level: number` is REQUIRED, and the clamp is `Math.max(0, …)`** — so the absent case renders the literal string **`Confidence 0 of 5`**, which is the one output the row forbids. ✅ **Reported against [TASK-1411](BACKLOG.md) rather than forked**, exactly as the row directs.
+
+### ✅ What Lane A recommends
+
+⚡ **Strike the confidence figure from [TASK-1427](BACKLOG.md)** and let the row close on `rationale`, which is delivered and demonstrably per-signal. **Then decide the question where it actually lives**, and it is not a surface question:
+
+**①** **does a customer-facing confidence exist at all**, given `Relevance` is deliberately categorical and the weighting is `buying_score_engine`'s and per-workspace; **②** **if it does, which module publishes it** — ⛔ **not `signal_engine`, whose domain refuses it**; **③** **and [TASK-1411](BACKLOG.md) gains `level?: number` with a designed absence state before any caller renders one.**
+
+⛔ **A lane's recommendation is architectural input and never implementation authority** ([§20e](../CLAUDE.md)), **so nothing above is built until it is ruled.**
+
+---
+
 ## C-266 · The AI attribution primitive has three designs and no data — the read TASK-1411 asks for, taken
 
 | | |

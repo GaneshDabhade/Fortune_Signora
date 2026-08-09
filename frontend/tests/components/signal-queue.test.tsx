@@ -42,6 +42,7 @@ function entry(over: Partial<QueueEntry> = {}): QueueEntry {
     signal_id: 'sig-1',
     signal_type: 'pricing_objection',
     entity_id: ACME,
+    rationale: 'Two buyers raised list price on the renewal thread this week.',
     state: 'open',
     resolution: null,
     ...over,
@@ -224,5 +225,77 @@ describe('the states the queue can be in', () => {
     render(<SignalQueue />);
     expect(screen.getByText(/could not be loaded/i)).toBeInTheDocument();
     expect(screen.queryByText(/Nothing needs review/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('🔴 the summary is the signal’s own, never the type’s', () => {
+  /**
+   * **This is the whole of [TASK-1427](../../../docs/BACKLOG.md), stated as a
+   * test.** 📁 The row's own Playwright line: *"two rows of the same
+   * `signal_type` render DIFFERENT summaries"* — ⛔ **that assertion is the
+   * defect**, because the failure mode it catches is silent: rendering the
+   * catalog's `why_it_matters` puts one sentence under fifty rows and **every
+   * one of them looks right.**
+   */
+  it('⛔ two rows of the SAME type render different summaries', () => {
+    const first = 'Two buyers raised list price on the renewal thread this week.';
+    const second = 'Procurement asked for a discount schedule before signing.';
+    triage.mockReturnValue({
+      data: {
+        items: [
+          entry({ signal_id: 'a', rationale: first }),
+          entry({ signal_id: 'b', rationale: second }),
+        ],
+      },
+      isPending: false,
+      isError: false,
+    });
+    render(<SignalQueue />);
+
+    // Same type — one group, so a per-type sentence would satisfy the grouping
+    // and still be wrong. The two summaries are what distinguishes them.
+    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(1);
+    expect(screen.getByText(first)).toBeInTheDocument();
+    expect(screen.getByText(second)).toBeInTheDocument();
+  });
+
+  it('⚡ and the guard can fail — identical rationales collapse to one node', () => {
+    // 📁 B-162's lesson: a scan proved only by passing is a scan nobody has
+    // seen work. If the component rendered a per-TYPE sentence, both rows
+    // would carry the same text — this asserts that case is distinguishable.
+    const same = 'The same sentence under every row.';
+    triage.mockReturnValue({
+      data: {
+        items: [
+          entry({ signal_id: 'a', rationale: same }),
+          entry({ signal_id: 'b', rationale: same }),
+        ],
+      },
+      isPending: false,
+      isError: false,
+    });
+    render(<SignalQueue />);
+    expect(screen.getAllByText(same)).toHaveLength(2);
+  });
+
+  it('📱 clamped to two lines, and complete in the DOM', () => {
+    /**
+     * ⛔ 📁 *"a truncated rationale must not read as the whole reason"*. The
+     * clamp is visual only — **the full sentence stays in the document**, so a
+     * screen reader hears all of it and `title` carries it on hover.
+     */
+    const long =
+      'Procurement asked for a discount schedule before signing, and two buyers ' +
+      'raised list price on the renewal thread in the same week, which together ' +
+      'read as a budget conversation rather than an objection to the product.';
+    triage.mockReturnValue({
+      data: { items: [entry({ rationale: long })] },
+      isPending: false,
+      isError: false,
+    });
+    render(<SignalQueue />);
+    const node = screen.getByText(long);
+    expect(node).toHaveClass('line-clamp-2');
+    expect(node).toHaveAttribute('title', long);
   });
 });

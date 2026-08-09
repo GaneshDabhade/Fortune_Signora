@@ -108,6 +108,16 @@ class QueueEntryResponse(BaseModel):
             "the identity batch, as everywhere else."
         )
     )
+    rationale: str = Field(
+        description=(
+            "Why this matters *here*, and what it rests on — the two halves the domain "
+            "keeps together so the interpretation a customer reads and the evidence an "
+            "auditor checks cannot diverge. **Per signal, not per type**: the catalog's "
+            "`why_it_matters` is a fact about the TYPE, true before any account exhibits "
+            "it, so rendering that as the summary would put the same sentence under every "
+            "row and be wrong on all of them."
+        )
+    )
     state: QueueState = Field(
         description=(
             "open, snoozed, or closed. **Derived from the decision and the current time, "
@@ -131,6 +141,7 @@ class QueueEntryResponse(BaseModel):
             signal_id=entry.signal.id,
             signal_type=entry.signal.signal_type.value,
             entity_id=entry.signal.entity_id,
+            rationale=entry.signal.rationale,
             state=entry.state,
             resolution=(
                 ResolutionResponse.from_domain(entry.resolution)

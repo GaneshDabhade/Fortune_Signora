@@ -201,6 +201,24 @@ export function SignalQueue() {
                           <span className="text-sm text-content-muted">
                             {identity?.name ?? 'Unnamed account'}
                           </span>
+                          {/* 🔴 **Per signal, never per type.** The catalog's
+                              `why_it_matters` describes the TYPE and would read
+                              as right under all fifty rows; `rationale` is
+                              authored where the reasoning happened.
+                              ⛔ **Not recomposed here** — the interpretation a
+                              customer reads and the evidence an auditor checks
+                              must not diverge, so this renders the sentence and
+                              composes nothing.
+                              📱 **Clamped to two lines and complete in the DOM**:
+                              the full text stays readable to assistive tech and
+                              on hover, because a truncated reason that reads as
+                              the whole reason is worse than none. */}
+                          <p
+                            className="line-clamp-2 text-sm leading-6 text-content-muted"
+                            title={entry.rationale}
+                          >
+                            {entry.rationale}
+                          </p>
                         </div>
 
                         {entry.state === 'open' ? (

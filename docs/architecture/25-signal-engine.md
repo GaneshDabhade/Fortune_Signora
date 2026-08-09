@@ -816,6 +816,34 @@ The outcome discriminators — `actioned`, `assigned`, `snoozed`, `dismissed` �
 
 **`QueueEntryResponse` gained `entity_id`.** Redundant on the per-account read and **load-bearing here** — an entry that cannot say which company it concerns is one nobody can act on. The name is resolved through the identity batch, as everywhere else.
 
+### `QueueEntryResponse` gained `rationale` — TASK-1427, and the field it did *not* gain
+
+**The queue drew five fields and the contract published three.** [C-251](../LANE_COORDINATION.md) measured the gap; **both missing facts already existed on `Signal` and neither reached the schema.** `rationale` now does.
+
+**It is per signal and never per type, and that distinction is the whole row.** The catalog's `why_it_matters` sits perfectly where a summary belongs and is **a fact about the *type*, true before any account exhibits it** — so rendering it would print one sentence under fifty rows and **every one would read as though Signora had examined that account.** `rationale` is authored where the reasoning happens, carrying the domain's two halves together *"so the interpretation a customer reads and the evidence an auditor checks cannot diverge"*.
+
+⛔ **It is not recomposed on the frontend.** Deriving a summary from fields already on the row would put the customer's sentence out of step with the auditor's evidence — the thing the domain comment forbids — so the surface renders it and composes nothing.
+
+**The queue now draws four of the design's five fields from published data.**
+
+#### ⚠️ The fifth is `confidence`, and it is deliberately still absent — [C-267](../LANE_COORDINATION.md)
+
+**TASK-1427 asked for *"the confidence figure derived from `relevance`"*. That derivation is refused, and `Relevance`'s own docstring is the refusal:**
+
+> *"A category, declared per workspace and **never computed**… **a number invites weighting**, weighting invites thresholds, and a threshold here would be a propensity judgement in the wrong module. **The Buying Score Engine maps these to weights in *its* configuration.**"*
+
+**Three reasons, and any one is sufficient:**
+
+| | |
+|---|---|
+| **The type exists to refuse it** | §2's *"types should make incorrect architecture impossible"*, the same discipline the constitution cites in `MatchStrength` |
+| **There is no single mapping to derive from** | `relevance_multipliers` is `buying_score_engine`'s **and workspace-overridable** (`ScoringOverrides`) — the same `relevance` legitimately weighs differently in two workspaces, so a figure computed here would be a second, contradicting representation of one fact |
+| **`IGNORED` has no multiplier at all** | By a validator that says why: *"no signal of that type exists to weigh."* Any total `Relevance → 1..5` has to invent a value for it |
+
+**A shipped component test already asserted the absence** — *"prints no confidence, because nothing computes one"* — and **the correct response to that test was not to update it.**
+
+**Whether a customer-facing confidence exists at all, and which module publishes it, is [C-267](../LANE_COORDINATION.md).** A lane arriving here should read that before adding the field.
+
 ### `POST /workspaces/{id}/signals/{id}/resolution` — the route TASK-405 withheld
 
 **That slice built the use case, the error mapping and the persistence, and stopped.** A write surface needs an authorization `Resource` and there was none; [C-224](../LANE_COORDINATION.md) then ruled that **a `Resource` member is a declaration and never a grant**, and C-228 widened this budget to cover it.
