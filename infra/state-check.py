@@ -954,6 +954,80 @@ def _ordered(lane: str) -> bool:
     return bool(queue.get("current"))
 
 
+def _projection_findings() -> list[str]:
+    """Do the two files a lane is told to read agree? — **B-152, QE, 2026-08-09.**
+
+    ⛔ **Governance points a lane at BOTH.** [D-144](../docs/DECISION_REGISTER.md)
+    sends it to `origin/coordination`'s `coordination.toml`; [§20e](../CLAUDE.md)
+    Startup step 3 sends it to `queues/lane-<x>.toml`. **Two files, one fact.**
+
+    ⚡ **QE found this mid-repair and declined to file a second row for it**, which
+    was the right call — but the underlying shape is [§2](../CLAUDE.md)'s *truth
+    has exactly one authoritative representation*, **one layer above the bug it
+    was fixing.** ⛔ **`coordination.toml` is generated and the queue is written by
+    hand, so they drift BY CONSTRUCTION** — the only question was when.
+
+    ✅ **This check is the interim.** ⚠️ **The real repair is [TASK-497](../docs/BACKLOG.md)**:
+    when planning state reaches a lane through one ref, one of these two files
+    stops carrying `current` at all — **and a check that can be satisfied by
+    editing two files is weaker than a design where only one exists.**
+    """
+    out: list[str] = []
+    source = REPO_ROOT / "docs" / "coordination" / "coordination.toml"
+    queues = REPO_ROOT / "docs" / "coordination" / "queues"
+    if not source.exists() or not queues.exists():
+        return out
+    try:
+        published = tomllib.loads(source.read_text()).get("lane", {})
+    except tomllib.TOMLDecodeError:
+        return out
+
+    raw = _git("show", "origin/integration:docs/BACKLOG.md")
+    states: dict[str, str] = {}
+    for block in re.split(r"\n(?=### TASK-\d+)", raw):
+        head = re.match(r"### (TASK-\d+)", block)
+        if not head:
+            continue
+        cell = re.search(r"\| \*\*Status\*\* \| (.*?) \|\n", block, re.S)
+        found = re.search(r"`([A-Z ]+)`", (cell.group(1) if cell else "").split("*(Was:")[0])
+        states[head.group(1)] = found.group(1) if found else "?"
+
+    for path in sorted(queues.glob("lane-*.toml")):
+        lane = path.stem.replace("lane-", "Lane_").replace("-", "_")
+        lane = lane[:5] + lane[5:].upper() if len(lane) > 5 else lane
+        try:
+            queue = tomllib.loads(path.read_text())
+        except tomllib.TOMLDecodeError:
+            continue
+        row = published.get(lane)
+        if row is None:
+            continue
+        mine = str(queue.get("current") or "")
+        if not mine:
+            continue
+        # ⚠️ **Corrected within the cycle that added this check.** The first
+        # version demanded the two files be IDENTICAL and immediately fired on a
+        # correct state: `coordination.toml`'s `current` is *claimable on
+        # `integration` today*, and the queue's is *the next row this office has
+        # prepared*. **Those legitimately differ while QE has not integrated** —
+        # and a check that calls a correct state a defect is worse than none.
+        #
+        # ✅ **What QE's finding actually meant** is narrower and is what B-152
+        # fixed in the generator: **neither file may name a row whose state on
+        # `integration` contradicts it.** That is the [C-425](../docs/LANE_COORDINATION.md)
+        # rule — *the backlog wins on state* — applied to the second projection.
+        declared = states.get(mine)
+        if declared in {"BLOCKED", "CLAIMED", "IN PROGRESS", "IN VALIDATION",
+                        "PROMOTED", "DONE", "DISPOSED"}:
+            out.append(
+                f"{path.name} offers {mine} as `current`; `origin/integration` "
+                f"carries it as {declared}. **A queue may run ahead of "
+                f"integration — it may not offer a row the backlog has already "
+                f"moved on** (C-425, and B-152 one projection over)."
+            )
+    return out
+
+
 def _prepared_findings() -> list[str]:
     """Are there twenty PREPARED rows behind the one claimable row? — **D-187.**
 
@@ -1953,6 +2027,7 @@ def main() -> int:
     findings.extend(_duplicate_state_findings(backlog))
     findings.extend(_ownership_findings(backlog))
     findings.extend(_queue_findings(backlog))
+    findings.extend(_projection_findings())
     findings.extend(_prepared_findings())
     findings.extend(_item_owner_findings())
     findings.extend(_structural_findings())

@@ -282,7 +282,7 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 lane         = "Lane A"
-updated      = 2026-08-08
+updated      = 2026-08-09
 
 # ⚠️  4 claimable, but only 0 claimable TODAY.
 #    4 row(s) are READY here and still read otherwise in
@@ -1436,8 +1436,10 @@ updated      = 2026-08-08
 # the generator disagreed and was right. So D-153 was applied to the DATA —
 # four rows set SEQUENCED in BACKLOG.md — and coordination.toml computed
 # current = TASK-467 by itself. A ruling belongs in the rows, not in the sort.
-current = "TASK-470"          # ⚡ THE ONE CLAIMABLE ROW — released on your
-                              #    claim of TASK-489 — D-188 §2, automatically.
+current = "TASK-1400"         # ⚡ THE ONE CLAIMABLE ROW — the Entry Engine.
+                              #    Was "TASK-470", which YOU released as BLOCKED. B-152,
+                              #    and QE caught that fixing coordination.toml alone left
+                              #    THIS file contradicting it — §2, one layer up.
 next    = ""                  # ⛔ EMPTY BY RULING. Depth is `prepared`.
 # ④ TASK-498 · lib/auth/server.ts — C-240 ①② + email-otp registration
 # ⑤ TASK-474 · the developer mailbox
@@ -1487,11 +1489,11 @@ future  = []          # ⛔ EMPTY BY RULING — D-187 §1. A row in `future` rea
 
 # ⚡ THE PREPARED SEQUENCE — D-187 §1. Fully decomposed, in release order.
 # ⛔ NOT claimable. Each becomes `current` automatically when its turn comes.
-prepared = ["TASK-1400", "TASK-1402", "TASK-1403", "TASK-1404", "TASK-1405",
-            "TASK-1406", "TASK-1407", "TASK-1401", "TASK-471", "TASK-473",
-            "TASK-476", "TASK-492", "TASK-499", "TASK-452", "TASK-481",
-            "TASK-480", "TASK-482", "TASK-493", "TASK-495", "TASK-496",
-            "TASK-464", "TASK-465", "TASK-466", "TASK-475", "TASK-412"]
+prepared = ["TASK-1402", "TASK-1403", "TASK-1404", "TASK-1405", "TASK-1406",
+            "TASK-1407", "TASK-1401", "TASK-471", "TASK-473", "TASK-476",
+            "TASK-492", "TASK-499", "TASK-452", "TASK-481", "TASK-480",
+            "TASK-482", "TASK-493", "TASK-495", "TASK-496", "TASK-464",
+            "TASK-465", "TASK-466", "TASK-475", "TASK-412"]
 # ⛔ TASK-497 is NOT here — it is Lane C's own row (platform_foundation,
 #    D-022) and cannot fill this lane's floor. This office briefly counted
 #    it and was wrong.
@@ -1518,7 +1520,7 @@ eligible_count = 1   # ✅ D-187 §1 — exactly one claimable.
                      # reported "one of the two is stale" and it was the count.
 prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
 depth_target   = 1   # ✅ Claimable depth. Prepared depth is 20 (D-187).
-shortfall      = 0   # ✅ 1 of 1 claimable. 🔴 Prepared depth is 6 of 20.
+shortfall      = 0   # ✅ 1 of 1.
 assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked

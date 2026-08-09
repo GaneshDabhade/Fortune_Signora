@@ -13,7 +13,7 @@ generated_from = "5e0b3cd"
 task_count     = 110
 
 [lane.Lane_A]
-notice             = "B-152 FIXED — you were right and it was mine. `current` is now EMPTY rather than naming TASK-470, because on_integration was a PREFERENCE where it needed to be a FILTER (C-425, which this office wrote). Empty current beside claimable=1 is the true reading: work exists, QE has not integrated it. Integration holds ONE READY row and it is TASK-497, Lane C's own — the planning-sync migration that ends"
+notice             = "TASK-1400 is READY and it is the Entry Engine — resolveEntry(session,intent), 24 rules, 21 reason codes as a CLOSED type, PURE with no network call in a decision. Green budget, zero dependencies, no caller: buildable and fully testable without a browser, a session or a database. It is the highest-value row in the pipeline — four workflows on main currently have nowhere to hand a customer because i"
 current            = ""
 next               = ""
 next_after_that    = ""
@@ -22,15 +22,15 @@ claimable          = 1
 claimable_now      = 0
 awaiting_sync      = 1
 in_flight          = 56
-actionable         = 5
+actionable         = 4
 awaiting_qe_transition = 56
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 36
 lane_utilization   = 0.0
 idle_prediction_days   = 0.1
-dependency_wait_days   = 0.1
-blocked_duration_days  = 0.1
+dependency_wait_days   = 0.0
+blocked_duration_days  = 0.0
 critical_path_max      = 3
 
 [lane.Lane_C]
@@ -51,7 +51,7 @@ blocked            = 7
 lane_utilization   = 1.2
 idle_prediction_days   = 0.1
 dependency_wait_days   = 1.7
-blocked_duration_days  = 0.6
+blocked_duration_days  = 1.7
 critical_path_max      = 0
 
 [[task]]
@@ -67,24 +67,24 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lan"
 waiting_for    = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lane raised.** ⚠️ **An architectural blocker, not an implementation one** (§20e): *"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
 id            = "TASK-1400"
 title         = "The Authenticated Entry Engine — one resolver, twenty-one reason codes"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-1401", "TASK-1402", "TASK-1403", "TASK-1404", "TASK-1407"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "— ahead of every other workflow-29 row and behind nothing, Lane C 2026"
-waiting_for    = "— ahead of every other workflow-29 row and behind nothing, Lane C 2026-08-08.** ⛔ **It is the row the other three depend on**"
-blocked_days   = 0.1
-on_integration = true
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-1401"
@@ -97,9 +97,9 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "when TASK-1400 complete"
+estimated_ready = "— behind [TASK-1400](#task-1400--the-authenticated-entry-engine--one-r"
 waiting_for    = "— behind [TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes), Lane C 2026-08-08.** ⛔ **There is nothing to c"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -113,9 +113,9 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "when TASK-1400 complete"
+estimated_ready = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ② "
 waiting_for    = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ② in [workflow 29](coordination/workflows.toml)'s platform sequence**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -129,9 +129,9 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "when TASK-1400 complete"
+estimated_ready = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ③ "
 waiting_for    = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ③ in [workflow 29](coordination/workflows.toml)'s platform sequence**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -145,9 +145,9 @@ unblocks       = ["TASK-1405"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 1
-estimated_ready = "when TASK-1400 complete"
+estimated_ready = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ④ "
 waiting_for    = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ④ in [workflow 29](coordination/workflows.toml)'s platform sequence**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -163,7 +163,7 @@ next_lane      = "Lane A"
 critical_path  = 2
 estimated_ready = "when TASK-1404 complete"
 waiting_for    = "— behind [TASK-1404](#task-1404), Lane C 2026-08-08.** ⚡ **Position ⑤ in [workflow 29](coordination/workflows.toml)'s platform sequence**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -179,7 +179,7 @@ next_lane      = "—"
 critical_path  = 3
 estimated_ready = "when TASK-1405 complete"
 waiting_for    = "— behind [TASK-1405](#task-1405), Lane C 2026-08-08.** ⚡ **Position ⑥ in [workflow 29](coordination/workflows.toml)'s platform sequence**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -193,9 +193,9 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 1
-estimated_ready = "when TASK-1400 complete"
+estimated_ready = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ⑦ "
 waiting_for    = "— behind [TASK-1400](#task-1400), Lane C 2026-08-08.** ⚡ **Position ⑦ — ⚡ **deliberately early** in [workflow 29](coordination/workflows.toml)'s platf"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -243,7 +243,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— trigger: [C-334](LANE_COORDINATION.md), the hosted evaluation creden"
 waiting_for    = "— trigger: [C-334](LANE_COORDINATION.md), the hosted evaluation credential, Lane C 2026-08-08.** ⚠️ **The trigger it named HAS FIRED and nobody re-ask"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -435,7 +435,7 @@ next_lane      = "Lane A"
 critical_path  = 0
 estimated_ready = "** — **trigger: the approved UI waves are complete and `product_surfac"
 waiting_for    = "** — **trigger: the approved UI waves are complete and `product_surface` is no longer the lowest-implementation module** *(45% today; every other modu"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -451,7 +451,7 @@ next_lane      = "Lane A"
 critical_path  = 1
 estimated_ready = "when TASK-420 complete"
 waiting_for    = "** — after [TASK-420](#task-420)"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -467,7 +467,7 @@ next_lane      = "Lane A"
 critical_path  = 2
 estimated_ready = "when TASK-421 complete"
 waiting_for    = "** — after [TASK-421](#task-421), **and blocked on the ADR [437 §3](architecture/437-ai-platform-future-epic.md) calls *ADR-B*: *'where does AI policy"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -483,7 +483,7 @@ next_lane      = "—"
 critical_path  = 2
 estimated_ready = "when TASK-421 complete"
 waiting_for    = "** — after [TASK-421](#task-421)"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -499,7 +499,7 @@ next_lane      = "—"
 critical_path  = 3
 estimated_ready = "when TASK-422 complete"
 waiting_for    = "** — after [TASK-422](#task-422)"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -547,7 +547,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: a provider contract that supplies a person identifier."
 waiting_for    = "** — **trigger: a provider contract that supplies a person identifier.** ⛔ **A commercial decision, not an engineering one**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -563,7 +563,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend"
 waiting_for    = "** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend-capability-matrix.md)"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -595,7 +595,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is schedu"
 waiting_for    = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and blocks nothing"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -851,7 +851,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
 waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -931,7 +931,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDIN"
 waiting_for    = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1011,7 +1011,7 @@ next_lane      = "Lane A"
 critical_path  = 1
 estimated_ready = "when TASK-476 complete"
 waiting_for    = "— behind [TASK-476](#task-476--headed-becomes-the-default-a-lane-reviews-in-and-the-rule-stops-being-untrue), Lane C 2026-08-08.** ⚠️ **The trigger it"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1027,7 +1027,7 @@ next_lane      = "Lane A"
 critical_path  = 2
 estimated_ready = "when TASK-464 complete"
 waiting_for    = "** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1043,7 +1043,7 @@ next_lane      = "—"
 critical_path  = 3
 estimated_ready = "when TASK-465 complete"
 waiting_for    = "** — **predecessor [TASK-465](#task-465--applying-a-batch-asynchronously-and-saying-so-while-it-runs)**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1082,7 +1082,7 @@ on_integration = true
 id            = "TASK-469"
 title         = "Workflow 8 — Initial Onboarding, to the approved design"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -1092,23 +1092,23 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-470"
 title         = "Workflow 9 — User Profile, to the approved design"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "BLOCKED"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane A, 2026-08-08, claim released.** ✅ **Milestones 1 and 2 are del"
+waiting_for    = "— Lane A, 2026-08-08, claim released.** ✅ **Milestones 1 and 2 are delivered and PROMOTED** — screens `01`, `02`, `03`, `04`, migrations `0044` and `0"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-471"
@@ -1123,7 +1123,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
 waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1155,7 +1155,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
 waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1187,7 +1187,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-474 complete"
 waiting_for    = "** on **[TASK-474](#task-474--a-developer-can-see-open-and-resend-every-email-the-product-sends)** — ⛔ **ten of the seventeen cannot be written until "
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1203,7 +1203,7 @@ next_lane      = "Lane A"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
 waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1235,7 +1235,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— trigger: `workflow.17` (Notification Center) reaches `active` in [`w"
 waiting_for    = "— trigger: `workflow.17` (Notification Center) reaches `active` in [`workflows.toml`](coordination/workflows.toml), Lane C 2026-08-08.** ⚠️ **The trig"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1251,7 +1251,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— trigger: `workflow.16` (Global Search) reaches `active` in [`workflo"
 waiting_for    = "— trigger: `workflow.16` (Global Search) reaches `active` in [`workflows.toml`](coordination/workflows.toml), Lane C 2026-08-08.** ⚠️ **The trigger it"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1267,7 +1267,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— trigger: `workflow.18` (AI Copilot) reaches `active` in [`workflows."
 waiting_for    = "— trigger: `workflow.18` (AI Copilot) reaches `active` in [`workflows.toml`](coordination/workflows.toml), Lane C 2026-08-08.** ⚠️ **Re-parked 2026-08"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1363,7 +1363,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane A, 2026-08-08. Claim released.** ⛔ **Both approved screens are "
 waiting_for    = "— Lane A, 2026-08-08. Claim released.** ⛔ **Both approved screens are blocked on capabilities that do not exist**, found by building rather than by pl"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1411,7 +1411,7 @@ next_lane      = "Lane A"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
 waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1427,7 +1427,7 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-492 complete"
 waiting_for    = "— after [TASK-492](#task-492--the-security-event-stream--one-append-only-record-every-module-writes-to), Lane C 2026-08-08**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1443,7 +1443,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— trigger: Workflow 17 reaches `decomposed`, Lane C 2026-08-08**"
 waiting_for    = "— trigger: Workflow 17 reaches `decomposed`, Lane C 2026-08-08**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1459,7 +1459,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— trigger: Workflow 16 reaches `decomposed`, Lane C 2026-08-08**"
 waiting_for    = "— trigger: Workflow 16 reaches `decomposed`, Lane C 2026-08-08**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1491,7 +1491,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPA"
 waiting_for    = "— Lane C, 2026-08-08, under [D-187](DECISION_REGISTER.md).** ⚡ **PREPARED, not released.** ⛔ **[D-187](DECISION_REGISTER.md) §1 restores exactly ONE c"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1587,7 +1587,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: the Billing screen is scheduled for implementation**"
 waiting_for    = "** — **trigger: the Billing screen is scheduled for implementation**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1603,7 +1603,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: TASK-411 slices 4–5 complete**"
 waiting_for    = "** — **trigger: TASK-411 slices 4–5 complete**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1619,7 +1619,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: a measured certification wall-clock that demonstrably "
 waiting_for    = "** — **trigger: a measured certification wall-clock that demonstrably delayed a promotion, recorded at least twice**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1667,7 +1667,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: the first support request that cannot be answered with"
 waiting_for    = "** — **trigger: the first support request that cannot be answered without database access**"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -1683,7 +1683,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: whichever comes first —** *(a)* the first customer con"
 waiting_for    = "** — **trigger: whichever comes first —** *(a)* the first customer contract naming a retention or erasure obligation, *(b)* the first workspace deleti"
-blocked_days   = 0.1
+blocked_days   = 0.0
 on_integration = true
 
 [[task]]
