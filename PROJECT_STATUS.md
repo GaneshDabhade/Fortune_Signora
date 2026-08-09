@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `0ea5ef5`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `a512642`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `0ea5ef5`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `a512642`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`0ea5ef5`** — the certified commit itself |
-| **`integration`** | ⛔ **STILL DIVERGED at `227a074f`, now 33 commits behind `main`** — ✅ **`main` carries all four of its commits, patch-id verified.** ⛔ **Force-push refused six times.** ⚠️ **It now also makes `--next-cycle` report a cycle available permanently** — see §1d |
-| **Release candidate** | ⚡ **Cycle 151 promoted a board that had been saying *"Blocked by: Nothing"* for two rows blocked by seven dependencies** |
-| **Certification** | ✅ [`0ea5ef52c311`](certification/reports/0ea5ef52c311.md) · migration head **`0045`** · protocol **v2** · profile **`documentation`** · **first attempt** |
+| **`main`** | **`a512642`** — the certified commit itself |
+| **`integration`** | ⛔ **STILL DIVERGED at `227a074f`, now 36 commits behind `main`** — ✅ **`main` carries all four of its commits, patch-id verified.** ⛔ **Force-push refused six times.** ⚠️ **It now also makes `--next-cycle` report a cycle available permanently** — see §1d |
+| **Release candidate** | ⚡ **Cycle 152 promoted `TASK-1428` — the failed-read sentence now has exactly one author, and a region failure looks the same whether a read errored or a component threw** |
+| **Certification** | ✅ [`a512642bcbe7`](certification/reports/a512642bcbe7.md) · migration head **`0045`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **149 rows, 47 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
-| **Implementation waiting** | ⛔ **Lane A, on SEVEN dependencies across its two rows, and none is Lane A's to clear** — [C-252](docs/LANE_COORDINATION.md) · [C-253](docs/LANE_COORDINATION.md) · [C-254](docs/LANE_COORDINATION.md) · [C-255](docs/LANE_COORDINATION.md) · [C-256](docs/LANE_COORDINATION.md) · [C-257](docs/LANE_COORDINATION.md) · C-1403. ⚡ **Visible for the first time this cycle** |
-| **Validation queue** | **Empty.** ✅ **Lane A rebased its own branch and it fast-forwarded** — the §20e path, one poll after QE returned it |
-| **Customer value this cycle** | ⚪ **None directly.** ⚡ **What it buys is that the one place the product owner sees whether a lane is stuck now says so** |
+| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **151 rows, 49 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
+| **Implementation waiting** | ⚡ **Lane A found a seventh path and took it — `TASK-1428` needed only [C-252](docs/LANE_COORDINATION.md), which was already ruled.** ⛔ **The other six still hold `TASK-1408`/`TASK-1409`, and none is Lane A's to clear** — — [C-252](docs/LANE_COORDINATION.md) · [C-253](docs/LANE_COORDINATION.md) · [C-254](docs/LANE_COORDINATION.md) · [C-255](docs/LANE_COORDINATION.md) · [C-256](docs/LANE_COORDINATION.md) · [C-257](docs/LANE_COORDINATION.md) · C-1403. ⚡ **Visible for the first time this cycle** |
+| **Validation queue** | **Empty.** ⚡ **Lane B is a stale pointer** — its one remaining commit is a claim `main` already carries, patch-id verified against a 400-commit window. ⛔ **Lane C's `dfe4a746` still conflicts on generated files and is the lane's to rebase** |
+| **Customer value this cycle** | ⚡ **A failed region now says the same sentence everywhere, and says it once.** **Nine call sites render identical text, and a card that fails to load reads the same whether the read errored or the component threw** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **2013 frontend tests** across **93 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **152s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4278 backend tests** · **95.08% coverage** ✅ *(floor 95)* · **2022 frontend tests** across **93 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **205s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
 
 ---
 
@@ -100,6 +100,76 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 152
+
+**Derived from the promoted commit `a512642`.** ⚡ **A lane found a seventh path through a seven-item blockade, and QE found a one-line hole in the guard that made the path safe.**
+
+### ✅ What shipped — `TASK-1428`, and it is the composition C-252 ruled
+
+**Two primitives were about to collide.** `StatedAbsence` owns the sentence a failed read renders; `SystemState` owns the scope a failure occupies. **Neither was deleted and neither won** — `StatedAbsence` becomes a caller of `SystemState` at region scope.
+
+⚡ **The safety of the row is one assertion**: its signature and its sentence are unchanged, and **2022 frontend tests pass**, including all nine existing call sites rendering identical text.
+
+⚡ **`region-boundary.tsx` came back**, and why it could is the interesting half: **it had been deleted for writing its own *"could not load"*** — the guard caught it. **It now renders `StatedAbsence` and says nothing of its own**, so a region failure looks identical whether a read returned an error or a component threw. **That divergence was the defect, and the slice asserts its absence.**
+
+### ⛔ [B-162](docs/BUGS.md) — the guard was narrowed correctly and one line too far
+
+**The same slice changed the guard to strip comments before scanning.** ✅ **That direction is right and QE is not asking for it back**: `region-boundary.tsx`'s JSDoc quotes the sentence *in order to explain the file no longer writes it*, which is [B-318](docs/BUGS.md)'s named class — *"a Security Invariant matches text, so a comment fails it."* ⚡ **Lane A also did the thing that made the remaining hole findable: it added a case proving the guard can still fire.**
+
+⚠️ **But `//` is not only a comment introducer — it is in every absolute URL**, and the strip is not string-aware. **Measured on the guard's own expression:**
+
+```
+true   const t = "Pipeline could not load";              ← still caught
+false  // no longer says could not load                  ← correctly ignored
+false  <a href="https://x">could not load</a>            ⛔ RENDERED COPY, MISSED
+true   const t="could not load"; const u="https://a";    ← caught, order matters
+```
+
+⛔ **Rows three is rendered copy and the guard is silent.** **This guard is the only thing standing between nine callers and a tenth local implementation.** ⚡ **The repair is smaller than the regex it replaces — strip lines that *are* comments rather than hunting comments inside lines** — and it belongs beside the existing proof case.
+
+### ⚠️ QE edited the register during a live certification, and the instrument would have refused it
+
+**Second occurrence, after cycle 144.** ⚡ **This time QE went and read when `tree_clean` is actually sampled** rather than relying on having caught it:
+
+```
+backend/tests/certification/__main__.py:457   tree_clean=repository_conditions.tree_is_clean()
+```
+
+✅ **It is sampled *after every gate*, not at the preflight** — so an uncommitted edit surviving to the end **fails the run rather than passing it silently.** ⚡ **The instrument refuses the unsafe state instead of recovering from it**, which is why cycle 144 and this cycle both cost nothing. **Recorded because *"it did not matter"* is a measurement, not an assumption.**
+
+### ⚠️ The reversibility gate refused, and the refusal was correct
+
+`test_disposable_database.py` **errored on all ten tests** — ⛔ **not a connection failure and not a regression**:
+
+```
+RuntimeError: This suite TRUNCATES every table after each test.
+Set SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 to confirm the target database is disposable.
+```
+
+✅ **A gate refusing to destroy data it was not told is disposable is the behaviour this repository asks for.** **Re-run inside `environment-lease.py run certification`** — whose whole purpose is a disposable database — **10 passed.** **Migration head `0045`, reversible.**
+
+### ⚠️ Promoted at `CLAIMED`, and QE did not set `VERIFIED`
+
+**The row's execution state is [`TASK-1428`](docs/BACKLOG.md) `CLAIMED`, not `IN VALIDATION`, and the final commit carries no `Slice-Handoff` block.** ⚡ **Neither is a defect and no row is filed** — **a push is backup, never a trigger** (§20c-2), so a lane may hold a slice open across several pushes.
+
+⛔ **What it does mean is that QE must not advance the row.** **`IN VALIDATION` is the lane's to set and it is the signal that the slice is complete** — implementation, tests, module documentation and handoff. ✅ **QE validated, certified and promoted what reached it, which is QE's whole remit**; **declaring the slice finished is Lane A's.**
+
+⚡ **Measured before characterising it**: **276 of 1292 commits on `main` carry a `Slice-Handoff`, most recently seven hours before this cycle.** **The practice is alive, so this is one slice mid-flight and not a collapsed convention.**
+
+### Measured
+
+| | |
+|---|---|
+| **Certified** | [`a512642bcbe7`](certification/reports/a512642bcbe7.md) · profile **`documentation+frontend`** · **first attempt** |
+| **Quality** | **4278 backend** · **95.08%** · **398 invariants** · **2022 frontend / 93 files** · mypy strict **851 files** · **37 contracts**, 0 broken · eslint clean · `tsc` clean |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost**, 5 restart stages · smoke 24 stages in **205s** · **53 ADRs** · **144 documents** |
+| **Register** | **151 rows, 49 unresolved, 0 unresolved 🔴** · **+1 filed** ([B-162](docs/BUGS.md)) |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **145 certified, 981 ancestors, 0 outside a snapshot** |
+
+⛔ **Still outstanding, and now the longest-running condition in the repository:** `origin/integration` is **36 commits behind** `main`, which carries all four of its commits. **Lifecycle stage 6 has not completed since cycle 145.**
 
 ---
 

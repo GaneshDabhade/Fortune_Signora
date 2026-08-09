@@ -80,6 +80,51 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-162 · the failed-read guard strips `//` inside string literals, so rendered copy on a line with a URL evades it
+
+| | |
+|---|---|
+| **Module** | Product Surface — [`frontend/tests/components/stated-absence.test.tsx`](../frontend/tests/components/stated-absence.test.tsx) |
+| **Current assignee** | **Lane A** — its own guard, changed in its own slice |
+| **Severity** | 🟡 — ⚡ **the guard still fires on the common case, and Lane A proved that it does.** ⛔ **But it now misses a class it used to catch**, and the class is *rendered copy* rather than prose |
+| **Status** | **`OPEN`** |
+| **Commit found** | `a512642b` (`TASK-1428`), found by QE during cycle 152 validation |
+
+**Steps.** The guard strips comments before scanning, which is **correct and is not what this row disputes**:
+
+```js
+const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+```
+
+⚠️ **`//` is not only a comment introducer. It occurs inside every absolute URL**, and the second replacement is not string-aware — it deletes from the first `//` to the end of the line, whatever that `//` was part of.
+
+**Expected.** A surface that renders the sentence fails the guard, wherever else on the line it sits.
+
+**Actual.** Measured, on the guard's own expression:
+
+```
+true   real code (must be TRUE)                  const t = "Pipeline could not load";
+false  line comment (must be FALSE)              // no longer says could not load
+false  block comment (must be FALSE)             /** explains could not load */
+false  URL then sentence, SAME line              const u="https://a.com"; const t="could not load";
+false  JSX href then sentence same line          <a href="https://x">could not load</a>
+true   sentence BEFORE url same line             const t="could not load"; const u="https://a";
+```
+
+⛔ **Rows four and five are rendered copy and the guard says nothing.** **Row six passing is what makes it an ordering artefact rather than a general failure** — the sentence is invisible only when a `//` precedes it on the same line.
+
+> ⚡ **The direction of the change is right and QE is not asking for it to be reverted.** [B-318](#b-318)'s class is real, a comment does not render, and **rewording the comment would indeed have left the guard reading prose.** ✅ **Lane A also did the thing §2 demands and the thing that made this row findable: it added a test proving the guard can still fire.** **That test is why the remaining hole is one line wide rather than unknown.**
+>
+> ⛔ **What it costs is narrow but real: this guard is the only thing standing between nine callers and a tenth local implementation**, and a JSX line carrying both an `href` and the sentence is not an exotic shape.
+
+**Suggested repair, and it is smaller than the regex it replaces.** ⚡ **Strip only lines that are comments**, rather than trying to find comments inside lines:
+
+```js
+.replace(/^\s*(\/\/|\*|\/\*).*$/gm, '')
+```
+
+**A JSDoc block's continuation lines begin with `*`, and a trailing `// comment` after real code cannot hide a sentence that is already on that line.** ⚠️ **Whatever the repair, it belongs beside the existing proof case** — **the two negative halves must keep passing, and a third case should assert the URL line.**
+
 ### B-161 · the Task Claim Protocol's own step 7 pushes a lane's unpromoted implementation to `integration`
 
 | | |
