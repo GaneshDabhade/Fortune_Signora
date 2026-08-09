@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 
-import { Card, CardBody, EmptyState } from '@/components/ui';
+import { Card, CardBody, EmptyState, SystemState } from '@/components/ui';
 
 /**
  * **A read failed, and the surface says so — one implementation, not nine.**
@@ -88,14 +88,45 @@ export function StatedAbsence({
     );
   }
 
-  const paragraph = (
-    <p
-      role={announce === 'assertive' ? 'alert' : 'status'}
-      className="text-sm leading-6 text-content-muted"
-    >
-      {sentence}
-    </p>
+  /**
+   * ⚡ **[TASK-1428](../../../docs/BACKLOG.md) — this is now the ladder's
+   * region scope rather than a second failed-read implementation.**
+   * 📁 **[C-252](../../../docs/LANE_COORDINATION.md)'s ruling**: *"`StatedAbsence`
+   * becomes a CALLER of `SystemState` at region scope — neither deleted, one
+   * owns the sentence and one owns the scope."*
+   *
+   * ⛔ **The sentence is unchanged and no caller changed.** ✅ **What arrives
+   * is the ladder's**: `role`/`aria-live` derived from the scope rather than
+   * chosen here, and one failed-read presentation whether a read returned an
+   * error or a component threw.
+   */
+  const region = (
+    <SystemState scope="region" state="region-error" description={sentence} />
   );
+
+  /**
+   * 🔴 **The one caller the ladder cannot yet carry** —
+   * [C-258](../../../docs/LANE_COORDINATION.md) ②.
+   *
+   * 📁 **The ladder's `4.1.3`**: *"only a state that ends the session
+   * announces assertively."* ⚠️ **`segments.tsx` interrupts because the
+   * failure interrupted something the customer had just done**, which is not
+   * a session-ending state and is still worth interrupting for — **and the
+   * prop exists because removing it was a regression.**
+   *
+   * ⛔ **Left as it was rather than downgraded to polite.** **Composing it
+   * would fail `segments.test.tsx`, and making that test pass by editing its
+   * assertion is the defect, not the fix.** ✅ **It rejoins the ladder the
+   * moment [C-258](../../../docs/LANE_COORDINATION.md) ② is ruled.**
+   */
+  const paragraph =
+    announce === 'assertive' ? (
+      <p role="alert" className="text-sm leading-6 text-content-muted">
+        {sentence}
+      </p>
+    ) : (
+      region
+    );
 
   return as === 'card' ? (
     <Card>

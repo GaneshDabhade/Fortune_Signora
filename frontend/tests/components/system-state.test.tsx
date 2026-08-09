@@ -125,3 +125,65 @@ describe('♿ focus and announcement are decided by scope, never by the caller',
     expect(app.firstElementChild).toHaveAttribute('aria-live', 'assertive');
   });
 });
+
+describe('🔴 TASK-1428 — one failed-read path, two ways of failing', () => {
+  function Boom(): never {
+    throw new Error('the scoring service did not respond');
+  }
+
+  it('⚡ a thrown component and a failed read render the SAME sentence', async () => {
+    /**
+     * 🔴 **This divergence was the defect.** Two failures of the same thing,
+     * in the same place, looking like different events — one from
+     * `StatedAbsence`, one from a boundary that wrote its own copy.
+     * 📁 **[C-252](../../../docs/LANE_COORDINATION.md)'s ruling composed
+     * them**: one owns the sentence, one owns the scope.
+     */
+    const { StatedAbsence } = await import('@/components/feedback/stated-absence');
+    const { RegionBoundary } = await import('@/components/ui');
+
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { container: read } = render(<StatedAbsence subject="the pipeline trend" />);
+    const { container: threw } = render(
+      <RegionBoundary subject="the pipeline trend">
+        <Boom />
+      </RegionBoundary>,
+    );
+
+    expect(read.textContent).toMatch(/Signora could not load the pipeline trend/);
+    expect(threw.textContent).toMatch(/Signora could not load the pipeline trend/);
+    spy.mockRestore();
+  });
+
+  it('⛔ the boundary never escalates past region scope', async () => {
+    const { RegionBoundary } = await import('@/components/ui');
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { container } = render(
+      <RegionBoundary subject="the score">
+        <Boom />
+      </RegionBoundary>,
+    );
+    // 📁 §01 — escalating costs the person their filters and scroll position.
+    expect(container.querySelector('[data-scope]')).toHaveAttribute('data-scope', 'region');
+    spy.mockRestore();
+  });
+
+  it('📁 stops after three and says so, rather than retrying silently', async () => {
+    const { RegionBoundary } = await import('@/components/ui');
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <RegionBoundary subject="the pipeline trend">
+        <Boom />
+      </RegionBoundary>,
+    );
+    for (const n of [1, 2, 3]) {
+      const btn = screen.getByRole('button', { name: new RegExp(`attempt ${n} of 3`) });
+      await userEvent.click(btn);
+    }
+    // 📁 *"Silent infinite retry is how a broken widget becomes an unnoticed
+    // wrong number."* ⛔ The control is gone, and the page says why.
+    expect(screen.getByText(/tried 3 times and stopped/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /attempt/ })).not.toBeInTheDocument();
+    spy.mockRestore();
+  });
+});

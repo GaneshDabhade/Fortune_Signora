@@ -35,6 +35,7 @@ export { SystemState, type SystemStateProps } from './system-state';
 export { Breadcrumb } from './breadcrumb';
 export { ShellBanners, type ShellBanner } from './shell-banners';
 export { CopyableId } from './copyable-id';
+export { RegionBoundary, MAX_ATTEMPTS } from './region-boundary';
 export { Skeleton, SkeletonText, type SkeletonTextProps } from './skeleton';
 export { Table, TBody, TD, TH, THead, TR } from './table';
 export { StepRail, type RailStep, type StepRailProps } from './step-rail';

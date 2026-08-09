@@ -78,8 +78,17 @@ export interface SystemStateProps {
    * status code."* ⚡ **So this is prose, and the caller cannot pass `"404"`
    * meaningfully** — the design's own example is *"This account no longer
    * exists"*.
+   *
+   * ⚠️ **Optional at REGION scope only, and required everywhere else** —
+   * [TASK-1428](../../../docs/BACKLOG.md). 📁 **`1.3.1` governs *"every
+   * full-page state"***, and a region is not one. **A region failure inside a
+   * card is one sentence**, which is what
+   * [`stated-absence.tsx`](../feedback/stated-absence.tsx) has rendered across
+   * nine call sites since [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md) —
+   * ⛔ **splitting it into a heading and a body to satisfy this prop would
+   * change text the row requires unchanged.**
    */
-  title: string;
+  title?: string;
   /**
    * 📁 **`3.3.1`**: *"Failures name the cause, the scope, what survived, and
    * the identifier — in that order, in text, not in a tooltip."*
@@ -132,6 +141,12 @@ export function SystemState({
   const pageLevel = scope !== 'region';
   const Heading = pageLevel ? 'h1' : 'p';
 
+  // ⛔ **A page-level state without a heading is `1.3.1`'s exact defect.**
+  // Loud in development rather than rendered headless.
+  if (pageLevel && title === undefined && process.env.NODE_ENV !== 'production') {
+    throw new Error(`A ${scope}-scope state needs a title that names what happened (1.3.1).`);
+  }
+
   return (
     <div
       role={role}
@@ -158,6 +173,7 @@ export function SystemState({
       </span>
 
       <div className={cn('flex flex-col gap-1', pageLevel && 'items-center')}>
+        {title === undefined ? null : (
         <Heading
           // ♿ Focus target for a page-level state, inert for a region one.
           {...(pageLevel ? { tabIndex: -1 } : {})}
@@ -168,6 +184,7 @@ export function SystemState({
         >
           {title}
         </Heading>
+        )}
         <p className={cn('text-sm leading-6 text-content-muted', pageLevel && 'max-w-md')}>
           {description}
         </p>

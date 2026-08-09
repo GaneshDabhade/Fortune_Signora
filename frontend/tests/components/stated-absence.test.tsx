@@ -97,15 +97,43 @@ describe('a tenth local implementation cannot be written quietly', () => {
     return out;
   }
 
+  /**
+   * ⚠️ **Comments are stripped before scanning, added by
+   * [TASK-1428](../../../docs/BACKLOG.md), and it is not a loosening.**
+   *
+   * ⛔ **The guard fired on [`region-boundary.tsx`](../../components/ui/region-boundary.tsx)'s
+   * JSDoc** — a comment that quotes the sentence **in order to explain that
+   * the file no longer writes it.** ⚡ **That is
+   * [B-318](../../../docs/BUGS.md)'s named class**: *"a Security Invariant
+   * matches text, so a comment fails it."*
+   *
+   * ✅ **The alternative was rewording the comment**, and that is the wrong
+   * repair: **it would have left the guard reading prose**, so the next
+   * explanation of this very rule would fail it again. **The rule is about
+   * rendered copy, so the guard now reads code.**
+   */
+  const code = (src: string) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+
+  const SENTENCE = /could not load/i;
+
   it('no surface writes the failed-read sentence for itself', () => {
     const offenders = ROOTS.flatMap((root) => sources(join(process.cwd(), root)))
       .filter(({ name }) => !name.includes('stated-absence'))
-      .filter(({ source }) => /could not load/i.test(source))
+      .filter(({ source }) => SENTENCE.test(code(source)))
       .map(({ name }) => name.split('frontend/').pop());
 
     expect(
       offenders,
       'a surface is writing its own failed-read copy — use StatedAbsence',
     ).toEqual([]);
+  });
+
+  it('✅ and the guard is proved able to fire, on code and not on prose', () => {
+    // ⚡ **§2 — *a guard that cannot fail is documentation pretending to be
+    // code*.** Both halves asserted: it catches a real local sentence, and it
+    // does NOT catch a comment saying the same words.
+    expect(SENTENCE.test(code('const t = "Pipeline could not load";'))).toBe(true);
+    expect(SENTENCE.test(code('// this file no longer says could not load'))).toBe(false);
+    expect(SENTENCE.test(code('/** explains could not load */'))).toBe(false);
   });
 });
