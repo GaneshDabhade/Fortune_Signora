@@ -11,7 +11,22 @@
 | **Upstream reference** | `https://claude.ai/design/p/1d043179-1ee9-4c9f-b59e-592e04297cad` |
 | **Design system** | **Modernist** — `c798a756-9b5d-4587-a7bc-6f61a447ebab`, the version every screen links |
 | **Design version** | ⚠️ **The project exposes none.** **This snapshot's identity is the content hashes below** — stated rather than invented |
-| **Contents** | **28 files · 2,124,212 bytes · 27 screen designs** — ⚠️ **and the upstream project now holds 30; see below** |
+| **Contents** | **28 files · 2,124,212 bytes · 27 screen designs** — 🔴 **and the upstream project holds 29 `Fortune Signora` screens. THE TWO THAT ARE MISSING ARE NAMED BELOW** |
+
+> ## 🔴 The two designs no lane has ever been able to read
+>
+> **Measured 2026-08-09 by `DesignSync · list_files` against project `1d043179-1ee9-4c9f-b59e-592e04297cad`, on the product owner's [D-222](../DECISION_REGISTER.md) instruction.**
+>
+> | Absent from this snapshot | Upstream | Named as authority in [D-222](../DECISION_REGISTER.md) §1? |
+> |---|---|---|
+> | **`Fortune Signora People Intelligence.dc.html`** | ✅ present | ✅ **yes** |
+> | **`Fortune Signora ICP Builder.dc.html`** | ✅ present | ⛔ **no — and it exists anyway** |
+>
+> ⚠️ **This row previously read *"the upstream project now holds 30; see below"* and named neither.** ⛔ **A count is not actionable. Nobody can retrieve a number.** 🔴 **The discrepancy has been recorded here since 2026-08-06 and three design audits have run against the incomplete set without anybody resolving which files were missing** — [478](../architecture/478-design-conformance-audit.md), [498](../architecture/498-common-platform-audit.md), [499](../architecture/499-implementation-design-reconciliation.md), **all this office's.**
+>
+> 🔴 **And both have implementations already.** ⛔ **`frontend/components/commercial/icp.tsx` — 437 lines, shipped 2026-08-04 — was built while its design sat unread upstream.** ⛔ **`backend/modules/people/` has a full domain, application, infrastructure and `public/`.** ⚡ **Six backlog rows name ICP or People.**
+>
+> ✅ **So [D-222](../DECISION_REGISTER.md) §15 already has a partial answer, and it is *no* for at least these two capabilities** — **not because a lane built against an old design, but because the finalized design was never made reachable.** ⛔ **Retrieving them is [TASK-1455](../BACKLOG.md) and it is the first action of the D-222 audit, not a step within it: an audit against an incomplete authority cannot be authoritative** ([D-138](../DECISION_REGISTER.md)).
 | **Retrieved with** | `DesignSync` · `get_file`, one call per path |
 
 ---

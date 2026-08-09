@@ -1774,6 +1774,25 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **Widening the `DELETE` until the count comes out right.** ✅ **The orphaned rows have a reason and the reason is the deliverable** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
+### TASK-1455 · 🔴 Two finalized designs are missing from the snapshot, and both already have implementations
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **BLOCKING PRECONDITION for [D-222](DECISION_REGISTER.md)** — ⚡ **an audit against an incomplete authority cannot be authoritative** ([D-138](DECISION_REGISTER.md)) |
+| **Design authority** | 📁 **Upstream project `1d043179-1ee9-4c9f-b59e-592e04297cad`, measured by `DesignSync · list_files` 2026-08-09** |
+| **Epic** | **Design Authority** |
+| **Module** | **`platform_foundation`** — ⚡ **the snapshot is Product Office's under [D-138](DECISION_REGISTER.md)** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-222](DECISION_REGISTER.md)** |
+| 🔴 **The measurement** | ⛔ **Upstream holds 29 `Fortune Signora *.dc.html` screens. [`docs/design-snapshot/screens/`](design-snapshot/screens/) holds 27.** **The two absent: `Fortune Signora People Intelligence.dc.html` — 📁 NAMED AS AUTHORITY IN [D-222](DECISION_REGISTER.md) §1 — and `Fortune Signora ICP Builder.dc.html`, which is not named and exists anyway** |
+| 🔴 **Why this is worse than a stale snapshot** | ⛔ **Both capabilities are already built.** 📁 **`frontend/components/commercial/icp.tsx`, 437 lines, shipped 2026-08-04.** 📁 **`backend/modules/people/` with domain, application, infrastructure and `public/`.** ⚡ **Six backlog rows name ICP or People.** 🔴 **So they were not built against an OLD design — they were built against NO design, because the finalized one was never reachable** |
+| 🔴 **The governance failure is this office's, and it is the *shape* of the record** | ⚠️ **[`MANIFEST.md`](design-snapshot/MANIFEST.md) has said *"the upstream project now holds 30"* since 2026-08-06 and named none of them.** ⛔ **A count is not actionable — nobody can retrieve a number.** 🔴 **Three design audits ran against the incomplete set without resolving which files were missing** — [478](architecture/478-design-conformance-audit.md), [498](architecture/498-common-platform-audit.md), [499](architecture/499-implementation-design-reconciliation.md), **all mine.** ⚡ **Two `list_files` calls would have named them on any of those days** |
+| ⚡ **Delivers** | **Both documents retrieved into the snapshot with their byte counts and SHA-256** · **[`MANIFEST.md`](design-snapshot/MANIFEST.md) refreshed as a new baseline** · ⛔ **and [D-138](DECISION_REGISTER.md)'s required assessment: which already-planned rows and which shipped implementations are affected, BEFORE the new snapshot propagates** |
+| ⛔ **What it must NOT do** | ⛔ **Retrieve them and declare the audit unblocked.** 📁 **[D-138](DECISION_REGISTER.md): *"A refresh is a new baseline — Product Office assesses whether already-planned work is affected before the new snapshot propagates."*** ⚡ **The assessment is the deliverable; the files are the input** |
+| **Change Budget** | 🟢 **`docs/design-snapshot/**`** |
+| **Definition of Done** | **Both files in the snapshot with hashes, `MANIFEST.md` a new baseline, and a written assessment of `icp.tsx` and `people` against the designs they were built without** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Assuming the two implementations are wrong because they had no design.** ✅ **They may be right by luck or by good judgement** — 📁 **[D-220](DECISION_REGISTER.md) §10 binds here too: compare, do not assume** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
 ### TASK-1438 · `/w/:workspace` — the route tree the engine already returns
 
 | | |
