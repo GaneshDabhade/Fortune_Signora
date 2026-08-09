@@ -9,11 +9,11 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "e705e4b"
+generated_from = "c9f6d3d"
 task_count     = 111
 
 [lane.Lane_A]
-notice             = "TASK-1408 is the Application Shell owning row — the frame workflow 13 never had. Found by asking D-201 §5's question against your own backlog: SIX of sixteen rows say 'depends on an unbuilt workflow' and every one means the shell (481, 480, 482, 471, 1405, 466). It delivers the FRAME only and owns no navigation — it consumes TASK-1400's engine. The named risk is in the row: the shell is where rout"
+notice             = "B-413 is fixed and it changes what your gates tell you. The promotion gate parsed a bug's status with startswith, the register writes the state in bold, so blocks_promotion returned False for all 136 rows — state-check has printed 'promotion is not blocked' since 2026-08-03 without evaluating the rule. It now reports one blocking 🔴: B-209, eleven Playwright journeys failing on integration, which i"
 current            = ""
 next               = ""
 next_after_that    = ""
