@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `9f35ad2`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3e80075`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `9f35ad2`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `3e80075`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`9f35ad2`** — the certified commit itself |
+| **`main`** | **`3e80075`** — the certified commit itself |
 | **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
-| **Release candidate** | ⚡ **Cycle 154 promoted two lanes together — and [B-162](docs/BUGS.md) went from QE's finding to `VERIFIED` in one poll, fixed by the lane that wrote it** |
-| **Certification** | ✅ [`9f35ad2fe738`](certification/reports/9f35ad2fe738.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | ⚡ **Cycle 155: a reviewer can now read off the running app which product they are looking at — and headed became what a lane actually sees, closing a rule that described a repository which did not exist** |
+| **Certification** | ✅ [`3e800752f0ac`](certification/reports/3e800752f0ac.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **153 rows, 50 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
+| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **155 rows, 52 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ⚡ **Lane A found a seventh path and took it — `TASK-1428` needed only [C-252](docs/LANE_COORDINATION.md), which was already ruled.** ⛔ **The other six still hold `TASK-1408`/`TASK-1409`, and none is Lane A's to clear** — — [C-252](docs/LANE_COORDINATION.md) · [C-253](docs/LANE_COORDINATION.md) · [C-254](docs/LANE_COORDINATION.md) · [C-255](docs/LANE_COORDINATION.md) · [C-256](docs/LANE_COORDINATION.md) · [C-257](docs/LANE_COORDINATION.md) · C-1403. ⚡ **Visible for the first time this cycle** |
 | **Validation queue** | **Empty.** ⚡ **Both lanes rebased themselves and both stacked clean** — Lane A onto `integration`, Lane C onto Lane A, **certified as one candidate.** ⚠️ **Lane B remains a stale pointer** — 3 ahead by ref, **level by content**, all three patch-ids already on `main`. ⚡ **Lane B likewise** — its one remaining commit is a claim `main` already carries, patch-id verified against a 400-commit window. ⛔ **Lane C's `dfe4a746` still conflicts on generated files and is the lane's to rebase** |
-| **Customer value this cycle** | ⚡ **A failed region now says the same sentence everywhere, and says it once.** **Nine call sites render identical text, and a card that fails to load reads the same whether the read errored or the component threw** |
+| **Customer value this cycle** | ⚡ **A reviewer can tell which product they are looking at.** **The running app now says Development, Demo or Production** — ⛔ **and a review of the wrong one is worse than no review, because it is reported as a review** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **2022 frontend tests** across **93 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **173s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
+**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **2056 frontend tests** across **96 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **209s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
 
 ---
 
@@ -289,6 +289,50 @@ SENTENCE.test(code('const t = `Pipeline could not load`; // https://x'))        
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **0 outside a certified snapshot** |
 
 ⚡ **The frontend total is unchanged at 2022 because the four new cases are assertions inside existing blocks, not new tests** — **checked, not assumed.**
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 155
+
+**Derived from the promoted commit `3e80075`.** ⚡ **A lane changed a mechanism to match a rule, and then reported the rule's own explanation as stale rather than editing it.**
+
+### ✅ A reviewer can now tell which product they are looking at
+
+**`TASK-473`.** The running app says **Development · Demo · Production**, and nothing reported it before. ⛔ **The failure it prevents is a review of the wrong product** — **worse than no review, because it is reported as a review.** [C-320](docs/LANE_COORDINATION.md) measured that going unnoticed for three days.
+
+⚡ **It derives; it does not decide.** `authMode()` reads `environmentName()` and `isDeployed()` — **the two the email-transport guard already uses** — so §2's *behaviour exists exactly once* holds and no second resolution was introduced. **`demo` is recognised because it is already a row in `infra/environments.py`, not because a marker was invented for it.**
+
+✅ **QE verified the security property rather than accepting the note.** The component is **deliberately not re-exported from `components/ui/index.ts`**, because that barrel is imported by client components and a re-export would pull the auth configuration module into every client bundle — where `SIGNORA_ENVIRONMENT` is absent and the badge would read `development` **everywhere**. **Measured**: the barrel change is a comment only, the sole import is `auth-shell.tsx`, and **neither file declares `'use client'`** — so both are server components and the boundary holds.
+
+⚡ **The ordering is load-bearing and has a test whose only job is that ordering**: `demo` is checked **before** deployment, because `demo` is not in `isDeployed()`'s allowlist and a deployment-first ordering would report a seeded demonstration as **PRODUCTION** — hiding the one fact a reviewer needs.
+
+### ✅ Headed became what a lane actually sees — the rule stopped describing a repository that does not exist
+
+**`TASK-476`.** [`CLAUDE.md`](CLAUDE.md) §19 has said *"headed is the default mode for local development and review"* since [D-134](docs/DECISION_REGISTER.md), and `playwright.config.ts` read `headless: process.env.HEADED !== '1'` — **the opposite**. ⚡ **`CLAUDE.md` itself flagged the gap and refused to assert the rule as fact**, filing the row instead: *"a rule stated before the mechanism exists is the defect this file warns about, so the row exists rather than the claim."* **The row is now closed by the mechanism.**
+
+✅ **`slowMo` deliberately did NOT follow the new default** — 250ms on every action of every local run would turn a six-minute suite into a gate nobody can afford, so it stays on the explicit `HEADED=1`. ⚡ **QE checked the one risk this creates**: a headed default is unrunnable without a display. **`DISPLAY=:0` under WSLg — measured, not assumed** — so `make e2e` still launches.
+
+### ⚡ [B-222](docs/BUGS.md) 🟢 — the lane made a document stale and said so instead of fixing it
+
+**Reported by Lane A in the same change that made it stale.** ⛔ **`CLAUDE.md` §19's note explaining *why* headed was not yet the default now describes a repository that no longer exists** — **and the policy it states is TRUE, which was the point.**
+
+> ✅ **Deliberately not fixed, and that is the correct call.** **`CLAUDE.md` is 🔴 and the product owner's alone** (§20e's shared-files table), and **the two edits Lane C has ever made to it were *directed rather than drafted*.** ⚡ **A lane that repairs a governance document because it happens to be wrong has changed governance by edit** — which is the exact failure §2's *governance describes reality; it never quietly changes it* exists to prevent.
+
+**[B-223](docs/BUGS.md) 🟠 also filed** — the auth tier's *"is this deployed?"* denylist and the environment registry **share no vocabulary**, so a lane that names a new environment updates one and not the other.
+
+### ⚠️ One blank line widened the profile to 17 gates
+
+**Lane C's `D-215` commit touches `infra/state-check.py` — a single added blank line, no behavioural change** — and that alone classified the whole candidate as **`platform`**. ✅ **The planner erring wide is correct** (*unknown paths widen it, never narrow it*), and **the cost is worth naming rather than tuning away.**
+
+### Measured
+
+| | |
+|---|---|
+| **Certified** | [`3e800752f0ac`](certification/reports/3e800752f0ac.md) · profile **`platform`** · **17 gates planned** · **first attempt** |
+| **Quality** | **4278 backend** · **95.07%** · **398 invariants** · **2056 frontend / 96 files** *(+34, +3 files)* · mypy strict **851 files** · **37 contracts**, 0 broken · eslint clean · `tsc` clean |
+| **Architecture** | Migration `0045` **reversible** · **DR nothing lost**, 5 restart stages · smoke 24 stages in **209s** · **53 ADRs** |
+| **Register** | **155 rows, 52 unresolved, 0 unresolved 🔴** · **+2 filed by the lanes themselves** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **0 outside a certified snapshot** |
 
 ---
 
