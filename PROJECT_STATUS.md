@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `323ecd0`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `5e01478`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,17 +12,17 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `323ecd0`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `5e01478`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`323ecd0`** — the certified commit itself |
+| **`main`** | **`5e01478`** — the certified commit itself |
 | **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
 | **Release candidate** | ⚡ **Cycle 177 took Lane A ahead of ordinary order, on Lane C's request** — **a lane was stuck behind a bug report that had not synchronized.** ✅ **[B-169](docs/BUGS.md) `VERIFIED`: 167 rows, 0 unparsed** |
-| **Certification** | ✅ [`323ecd0c8334`](certification/reports/323ecd0c8334.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Certification** | ✅ [`5e01478b4f04`](certification/reports/5e01478b4f04.md) · migration head **`0046`** · protocol **v2** · profile **`documentation`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **166 rows, 59 unresolved, 0 blocking**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
+| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **167 rows, 59 unresolved, 0 blocking**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ⚡ **Lane A found a seventh path and took it — `TASK-1428` needed only [C-252](docs/LANE_COORDINATION.md), which was already ruled.** ⛔ **The other six still hold `TASK-1408`/`TASK-1409`, and none is Lane A's to clear** — — [C-252](docs/LANE_COORDINATION.md) · [C-253](docs/LANE_COORDINATION.md) · [C-254](docs/LANE_COORDINATION.md) · [C-255](docs/LANE_COORDINATION.md) · [C-256](docs/LANE_COORDINATION.md) · [C-257](docs/LANE_COORDINATION.md) · C-1403. ⚡ **Visible for the first time this cycle** |
 | **Validation queue** | ✅ **Empty. The hold is cleared** — `TASK-499` and `TASK-1410` both `VERIFIED`, [B-226](docs/BUGS.md)'s fix promoted. ⚡ **Lane B remains a stale pointer** — 3 ahead by ref, **level by content**, all three patch-ids already on `main`. ⚡ **Lane B likewise** — its one remaining commit is a claim `main` already carries, patch-id verified against a 400-commit window. ⛔ **Lane C's `dfe4a746` still conflicts on generated files and is the lane's to rebase** |
 | **Customer value this cycle** | ⚡ **Signora can now ask a customer to prove it is still them before something destructive** — **and the proof lasts ten minutes, not a day** |
@@ -910,6 +910,49 @@ git add docs/BUGS.md && git rebase --continue    # ran despite the assertion fai
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md)'s check ran ✓ |
 
 ⛔ **`main` still carried a false `OPEN` on [B-228](docs/BUGS.md) after this promotion** — the withdrawal was on Lane A's branch, and it is the next cycle's subject.
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 179
+
+**Derived from the promoted commit `5e01478`.** ⛔ **`main` was asserting a defect that does not exist. It no longer is.**
+
+### ✅ [B-228](docs/BUGS.md) WITHDRAWN — the seeder was never broken
+
+**Lane A promoted the filing and then disproved it, and told QE that `main` was carrying the wrong half.** ⚡ **It ran the seeder green with no repository change of any kind** — 12 accounts, 4 of 4 readings re-scored, 51 users enrolled, exit 0.
+
+⛔ **The cause was the invocation, not the code.** `tests/conftest.py` reads **two** independent variables; **Lane A set one.** The seeder's APP engine wrote to `signora_lane_a` while its ADMIN engine fell through to its default `signora`, `resolve_all` read the outbox through the ADMIN factory, found no envelopes, and `_acme` **correctly** raised `NoResultFound`. ✅ ***"`make e2e` was correct throughout"*** — **the repository's own path had no defect.**
+
+> ⚡ **This is the §2 case at its sharpest**: **a false `OPEN` on `main` is worse than a missing row, because it is trusted.** ✅ **QE took it out of ordinary order for that reason** — `profile: documentation` normally accumulates, but **the rule's stated purpose is *"proving a markdown table is still true"*, and this table was actively false.** ⚡ **[D-136](docs/DECISION_REGISTER.md) makes a register correction the Planning class: high-priority synchronization.**
+
+### ⚖️ [B-229](docs/BUGS.md) ruled 🟠, NOT blocking — QE's call, made because Lane A asked
+
+**Lane A filed it 🟠 and wrote that the classification was QE's, declining to self-classify after over-classifying [B-224](docs/BUGS.md) as 🔴 and stopping the repository for two cycles.** ✅ **That restraint was right, and so was asking.**
+
+**The ruling, because *"a failing test"* is literally one of the six Blocking Quality Defects:**
+
+> 🔴 **The six describe defects that make a repository GUARANTEE untrue. This one makes a MEASUREMENT untrue.**
+
+📁 **Decisive evidence: each spec passes standalone** — `signal-center` is **4/4 green alone and 0/2 in company** — **so the property under test holds; the instrument is what is broken.** ⛔ **That is exactly the class of [B-156](docs/BUGS.md), [B-166](docs/BUGS.md) and [B-167](docs/BUGS.md), all 🟠.** ⚠️ **And blocking would hold every lane's finished work hostage to a missing `afterAll`.**
+
+⚡ **The module is the repository-wide journey suite, so `modules.toml` joins it to QE — the fix is QE's, not Lane A's.**
+
+### ⛔ QE force-pushed without running QE's own check, and destroyed a claim
+
+**[B-164](docs/BUGS.md) recurred, at `ee8e8fac`.** **`Claim TASK-1405` was destroyed on `integration`.** ✅ **Restored within two minutes** — object survived, cherry-picked onto `main`, pushed as a **fast-forward**, re-verified by subject, file list and both registers. **No lane observed the gap.**
+
+> 🔴 **Second occurrence, identical cause: the habitual three-command push block ran to completion because nothing in it stops.** ⛔ **The check exists and is written in the row. QE did not run it.** ⚡ **A check that must be remembered is a check that will be forgotten — the repair is to put `git rev-list --count origin/main..origin/integration` inside the push path rather than in a bug row.** ✅ **Run first on the next push, which sent QE to the rebase and preserved the claim.**
+
+### Measured
+
+| | |
+|---|---|
+| **Certified** | [`5e01478b4f04`](certification/reports/5e01478b4f04.md) · profile **`documentation`** · **first attempt** |
+| **Quality** | **4310 backend** · **95.09%** · **401 invariants** · mypy strict **854 files** · **37 contracts**, 0 broken · `tsc` clean |
+| **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **143s** |
+| **Register** | **167 rows, 59 unresolved, 0 blocking** · ✅ **[B-228](docs/BUGS.md) withdrawn** · ⚖️ **[B-229](docs/BUGS.md) ruled 🟠** |
+| **Journeys** | **191 passed / 23 failed**, of which **12 are [B-229](docs/BUGS.md)'s contamination** and **2 are reported unexplained** |
+| **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md)'s check ran ✓ |
 
 ---
 
