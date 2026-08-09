@@ -1418,6 +1418,43 @@
 | ⚠️ **Risk, named before it is met** | 🔴 **Open redirect.** ⛔ **A preserved destination that is not validated against the person's memberships on RETURN is the classic form of it** |
 | **Build-vs-Buy** | ✅ **BUY the transport — Better Auth's `callbackURL`. Build the validation** |
 
+### TASK-1430 · Inbound rate limiting — nothing guards Signora's own API
+
+| | |
+|---|---|
+| 🔴 **Why this exists** | ⛔ **Found by the [D-213](DECISION_REGISTER.md) production-readiness probe: `backend/apps/` has NO inbound rate limiting.** ⚠️ **38 files rate-limit OUTBOUND calls to vendors — HubSpot, AI providers, provider pools — and that is the opposite concern.** ⚡ **The first version of the probe matched those 38 and reported ✅**, which is the false assurance the checklist exists to prevent, produced by the checklist on its own first run |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⛔ **MISSING IMPLEMENTATION** — a platform capability, not a design question |
+| **Epic** | **Platform Foundation** |
+| **Module** | **`platform_foundation`** — 🔴 **`signora_platform/` is frozen; this needs an ADR** ([§20a](../CLAUDE.md)) |
+| **Status** | ⏸️ **`SEQUENCED` — Lane C, 2026-08-09.** ⛔ **Needs the ADR before it is claimable** |
+| 🔴 **Why it matters now rather than later** | **Four authentication journeys are on `main`**: sign-in, registration, verification and password reset. ⛔ **`/sign-in` accepts unlimited attempts from one address**, and [C-431](LANE_COORDINATION.md) already records that **no lockout capability exists** — 📁 which is why `workflows.toml` EXCLUDES screens *11 Account locked* and *12 Too many attempts* from Workflow 1. ⚡ **Those two screens are designed, and this is the capability that makes them reachable** |
+| ✅ **Delivers** | **A limiter at the edge**, applied per route rather than globally · **the authentication routes first** · ⛔ **and a response that does not disclose whether the address exists** — **the same account-enumeration rule the sign-in card's copy already follows** |
+| ✅ **Backend reuse — measured, not assumed** | 📁 **`signora_platform/observability/` already carries correlation context and metrics**, so a refusal is countable and traceable without new plumbing · ⚠️ **the store is the open question**: in-process is useless behind more than one worker |
+| **Change Budget** | 🔴 **`signora_platform/`** — **ADR required** |
+| **Definition of Done** | **A route can declare a limit, a refusal is recorded, and screens `11` and `12` become reachable** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **a refusal must not reveal whether the account exists** · **the limit is enforced server-side and per identity as well as per address** |
+| ⚠️ **Risk, named before it is met** | ⛔ **An in-process counter.** ✅ **It passes every test on one worker and protects nothing in production** |
+| **Build-vs-Buy** | ⚠️ **Commodity — evaluate `slowapi` or a gateway rule against [09-build-vs-buy.md](architecture/09-build-vs-buy.md) before writing one** |
+
+### TASK-1431 · A performance budget, and something that notices when it moves
+
+| | |
+|---|---|
+| 🔴 **Why this exists** | ⛔ **Found by the [D-213](DECISION_REGISTER.md) probe: 21 Playwright specs, one accessibility spec, and NO performance measurement of any kind.** ⚡ **Nothing in the repository would notice a regression** — not a slower query, not a heavier bundle, not a slower first paint |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⛔ **MISSING IMPLEMENTATION** |
+| **Epic** | **Platform Foundation** |
+| **Module** | **`platform_foundation`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09.** ⚡ **Independent of every open item** |
+| ⚡ **Delivers** | **A budget, and one measurement against it.** ⛔ **Not a performance programme** — **a number that fails a build when it moves the wrong way** |
+| 🔴 **What it must NOT do** | ⛔ **Ship red.** 📁 **[D-162](DECISION_REGISTER.md)'s lesson, in this office's own words: *a gate that is red on arrival is a broken gate*.** ✅ **Measure first, set the budget at what ships today plus a stated margin, then enforce** |
+| ✅ **Scope, deliberately small** | **Bundle size for the authenticated entry path**, and **the `(app)` shell's first paint.** ⛔ **Not every route, not a lighthouse score, not a synthetic-monitoring stack** — ⚡ **the shell is what every workflow inherits, so a regression there is a regression everywhere** |
+| ✅ **Backend reuse — measured, not assumed** | 📁 **`observability/metrics.py` exists** — server-side timing needs no new plumbing · **the Playwright harness already runs in CI** |
+| **Change Budget** | 🟢 **`frontend/tests/`** · 🟠 **the CI workflow — announced** |
+| **Definition of Done** | **A budget exists, a run measures it, and exceeding it fails** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `platform_foundation` · **Playwright** one budget spec |
+| ⚠️ **Risk, named before it is met** | ⛔ **A flaky budget teaches people to retry the build.** ✅ **Pick a metric that is deterministic — bundle bytes before first-paint milliseconds** |
+| **Build-vs-Buy** | ⚠️ **Commodity — the bundler already reports size; start there** |
+
 ### TASK-1429 · The four improvised error surfaces converge on the ladder
 
 | | |

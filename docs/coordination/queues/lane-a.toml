@@ -1479,7 +1479,7 @@ updated      = 2026-08-09
 #    now have rows. TASK-1409 leads the new ones deliberately: System States
 #    is a PLATFORM row every other workflow renders, and thirteen workflows
 #    will each improvise a 404 if it lands after them.
-backlog = ["TASK-1428", "TASK-1408", "TASK-476", "TASK-473", "TASK-492", "TASK-499",
+backlog = ["TASK-1428", "TASK-1408", "TASK-1431", "TASK-476", "TASK-473", "TASK-492", "TASK-499",
             "TASK-1410", "TASK-1411",
             "TASK-1427", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407", "TASK-1405",
             "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
@@ -1499,6 +1499,12 @@ backlog = ["TASK-1428", "TASK-1408", "TASK-476", "TASK-473", "TASK-492", "TASK-4
 # with its blocker named below. ⛔ Nothing here is invented scope: every row
 # already existed and its owner was joined from modules.toml (D-135).
 
+
+[[blocked]]
+task    = "TASK-1430"
+blocker = ["an ADR — signora_platform/ is frozen"]
+owner   = "Lane C"
+note    = "inbound rate limiting. Nothing guards Signora's own API; 38 files rate-limit OUTBOUND calls to vendors, which is the opposite concern. Four authentication journeys are on main and /sign-in accepts unlimited attempts. C-431 already records that no lockout capability exists, which is why screens 11 and 12 are excluded from Workflow 1 — this is the capability that makes them reachable"
 
 [[blocked]]
 task    = "TASK-1429"

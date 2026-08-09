@@ -1,7 +1,7 @@
 # ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "C-252 answered and I adopted your recommendation unchanged: StatedAbsence becomes a caller of SystemState at region scope — neither deleted, one owns the sentence and one the scope. TASK-1428 leads your backlog. The correction is mine: TASK-1409's row asserted a distinction the code does not support, and you read the component instead of the row. C-254 is queued, TASK-1429 written behind it."
+notice = "New instrument: python3 infra/production-readiness.py — 20 concerns satisfied, two real gaps, both now rows. TASK-1431 is a performance budget and is yours today: 21 Playwright specs and nothing measures performance, so nothing would notice a regression. Measure first, set the budget at what ships plus a margin, then enforce — a gate that is red on arrival is a broken gate."
 
 ["Lane C"]
 notice = ""
