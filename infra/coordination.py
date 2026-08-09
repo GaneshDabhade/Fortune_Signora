@@ -885,9 +885,28 @@ def render(rows: list[Task]) -> str:
         # ⚡ **Ordering by `on_integration` first keeps every benefit of the
         # ref — a lane still sees the row coming — while `current` stays
         # something it can act on today.**
+        # ⛔ **`current` may only name a row a lane can ACTUALLY claim — B-152.**
+        #
+        # 🔴 **Reported by Lane A on 2026-08-09, and it had survived a
+        # republication after Lane A said it would file it if it did.** The
+        # source advertised `current = TASK-470` while `origin/integration`
+        # carried that row as `BLOCKED` — **Lane A had released the claim and
+        # this office's branch still said `READY`.**
+        #
+        # ⚡ **The old sort merely PREFERRED on-integration rows.** With none
+        # available it named an off-integration one anyway, which is the
+        # [C-425](../docs/LANE_COORDINATION.md) defect the `on_integration`
+        # field was added to prevent: *"the ref does not get to be ahead; it
+        # gets to be fast."* ⛔ **A preference is not a constraint.**
+        #
+        # ✅ **Now a filter.** A lane's `current` is empty when nothing is
+        # claimable on `integration`, and `claimable` reports what this branch
+        # holds so the gap is visible rather than hidden. **An empty `current`
+        # beside a non-zero `claimable` says exactly the true thing: work
+        # exists and QE has not integrated it.**
         pipeline = sorted(
-            (r for r in mine if r.state == ASSIGNED),
-            key=lambda r: (not r.on_integration, -len(r.unblocks), r.critical_path, r.id),
+            (r for r in mine if r.state == ASSIGNED and r.on_integration),
+            key=lambda r: (-len(r.unblocks), r.critical_path, r.id),
         )
         m = stats[lane]
         out += [

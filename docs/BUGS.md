@@ -1163,6 +1163,31 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-152 · The coordination source advertised a row the backlog had blocked
+
+| | |
+|---|---|
+| **Module** | **`infra/`** — Platform Foundation, [D-022](DECISION_REGISTER.md) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **a lane polling the ref would claim a row `origin/integration` carries as `BLOCKED`**, ⚡ **and the one guard against that was Lane A reading the backlog rather than trusting the projection** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-09.** **`on_integration` becomes a FILTER rather than a preference.** **`VERIFIED` is QE's** |
+| **Found** | **Filed by QE. Re-reported by Lane A on 2026-08-09** — ⚡ **which had said the previous poll that it would report it *if it survived a republication*. It did.** ⛔ **This office republished twice in between and did not check** |
+| **Steps** | **Release a row on `lane-c-sync`, let the owning lane set it `BLOCKED` on `integration`, regenerate** |
+| **Expected** | **`current` names a row the lane can claim** |
+| **Actual** | ⛔ **`current = "TASK-470"` with `claimable = 1`, while `origin/integration` carried TASK-470 as `BLOCKED` — Lane A had released the claim and this office's branch still read `READY`** |
+
+## ⚡ A preference is not a constraint
+
+📁 **The sort already knew**: `key=lambda r: (not r.on_integration, …)` — ⛔ **it merely PREFERRED an on-integration row, and with none available it named an off-integration one anyway.**
+
+> ## 🔴 **That is [C-425](LANE_COORDINATION.md) exactly, and this office wrote the ruling: *"the ref does not get to be ahead; it gets to be fast."*** ⛔ **The `on_integration` field was added to prevent this and was wired as a tiebreak.**
+
+✅ **Now a filter.** **`current` is empty when nothing is claimable on `integration`.** ⚡ **And the pairing is deliberately kept: an empty `current` beside `claimable = 1` says the true thing — *work exists and QE has not integrated it* — where a stale `current` said the false one.**
+
+⚠️ **Lane A's own note is the finding worth keeping**: ***"the projection is half-right: `claimable_now = 0` does report the truth alongside the stale `current`."*** ⛔ **A source that contradicts itself is worse than one that is simply wrong, because a reader can believe either half.**
+
+---
+
 ### B-411 · A non-greedy regex under `re.S` swallowed the row below the one it edited
 
 | | |
