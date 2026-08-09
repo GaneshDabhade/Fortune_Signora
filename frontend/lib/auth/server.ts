@@ -184,6 +184,35 @@ export function createAuth(config: AuthConfig = loadAuthConfig()) {
       // token is refreshed from it rather than forcing re-authentication.
       expiresIn: 60 * 60 * 24 * 7,
       updateAge: 60 * 60 * 24,
+      /**
+       * 🔴 **Step-up authentication, and it is BOUGHT rather than built** —
+       * [TASK-1410](../../../docs/BACKLOG.md).
+       *
+       * 📁 **Security Center §02**: ***"Step-up lasts 10 minutes, then expires
+       * — long enough to finish a task, short enough that an unlocked laptop
+       * is not a standing authorisation."*** ⚡ **600 is the design's number,
+       * read rather than chosen**, exactly as `otpLength: 6` was
+       * ([C-241](../../../docs/LANE_COORDINATION.md)).
+       *
+       * ⛔ **`better-auth`'s default is `3600 * 24`** — a day — **which would
+       * make an unlocked laptop precisely the standing authorisation the
+       * design refuses.**
+       *
+       * ## ⚡ This is the SERVER-SIDE half, and it is the half that matters
+       *
+       * 📁 **The row's Security Invariant: *"the challenge is enforced
+       * SERVER-SIDE — a client check is a courtesy, and a step-up that only
+       * guards the dialog guards nothing."*** ⛔ **`freshAge` is enforced by
+       * Better Auth inside the session route, which raises `SESSION_NOT_FRESH`
+       * — so a caller that skips the dialog entirely is refused by the server
+       * rather than by the screen it did not open.**
+       *
+       * ⚠️ **[§13](../../../CLAUDE.md) forbids a bespoke authentication
+       * mechanism by name, and this row is where somebody would write one.**
+       * ✅ **Nothing here implements a challenge; it configures how long the
+       * framework's own freshness lasts.**
+       */
+      freshAge: 600,
     },
 
     advanced: {
