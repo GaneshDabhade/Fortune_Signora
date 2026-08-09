@@ -8283,6 +8283,44 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 ---
 
+## C-251 · The Signal Center's queue rows need five facts and the published contract carries two
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-439](BACKLOG.md)** — ⚡ **after the L-1 reuse audit and before writing a line**, which is the same point [C-229](#c-229) was raised from |
+| **Owner** | **Lane C** — ⛔ **the gap is a planning one, not an implementation one.** The row's `Delivers` names fields the contract this office released does not carry, **and the contract is correct for what it was asked to do** |
+| **Status** | **`OPEN`** — ⛔ **and it does not block the screen.** ✅ **The queue ships with the facts that are real** |
+| **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is what the finished screen shows** — two of the design's five row fields will be absent, and a reviewer holding the design should see that as reported rather than as an omission |
+
+### The five the design draws, and where each comes from
+
+**§ *the queue* draws every row as** `{{ s.title }}` · `{{ s.type }}` · `{{ s.summary }}` · `{{ s.account }}` · `{{ s.pips }}`.
+
+| Field | Source | |
+|---|---|---|
+| **title** | ✅ `useSignalCatalog` — `SignalTypeName.title` | **Exactly as the architecture intends**: *"`signal_type` is a catalog key and never a title… the key travels and `useSignalCatalog` supplies the words"* |
+| **type** | ✅ `QueueEntry.signal_type` | |
+| **account** | ✅ `AccountIdentity.name` from `entity_id` | ⚠️ **Nullable by design** — *"`name` is null when nobody has named the account"* |
+| **summary** | ⛔ **Nothing** | The catalog carries `why_it_matters`, and its own comment says that is **a fact about the *type*, true before any account exhibits it.** ⛔ **Rendering it per row would state a general truth as this signal's finding** |
+| **confidence** | ⛔ **Nothing** | **The string `confidence` does not appear in `lib/api/types.ts` at all.** ⚡ **`components/ui/confidence.tsx` exists and is imported by nothing** — a primitive built for a fact the platform does not yet publish |
+
+### ⛔ What this lane will not do about it
+
+**It will not render `why_it_matters` as the summary.** ⚠️ **It would look right and be wrong on every row**: the same sentence under fifty different signals of one type, presented where the design puts *"the objection came from the economic buyer…"* — **a per-instance finding.** ⛔ **[§2](../CLAUDE.md)'s class**: a screen that reads as informative while saying nothing specific.
+
+**It will not invent a confidence number.** 📁 The design prints *"6 sources · confidence 4 of 5"*, and **both halves are measurements.** ⛔ **[D-151](DECISION_REGISTER.md) ④ — *real tokens, real URLs, real expiry* — is the same rule one layer up: a pip count nobody computed is a fabricated measurement**, and it would be read as one the pipeline made.
+
+✅ **So both are absent rather than drawn empty or drawn locked**, which is [C-248](#c-248)'s precedent on screen `01`: *"ships with the fields that are real, and the ones with no source are absent rather than drawn locked."*
+
+### ⚡ What is actually being asked for
+
+**Not an endpoint** — this lane is not specifying one. **The question is which module owns each fact:**
+
+**①** **A per-signal summary** — is that `ai_reasoning_engine`'s (the *Why this matters* prose the design shows below it), or a field the signal itself carries? ⚠️ **The design puts a summary in the ROW and a fuller explanation in the DETAIL, so they may be two different things.**
+**②** **Confidence** — the design shows it in two places at once, *"6 sources · confidence 4 of 5"*. **`components/ui/confidence.tsx` already takes exactly `level` and `sources`**, so the shape is settled and only the source is not.
+
+> ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
+
 ## C-250 · The Entry Engine's rule table counts twenty-four, the row says twenty-one, and one rule cannot fire
 
 | | |
