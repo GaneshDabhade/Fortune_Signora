@@ -55,6 +55,37 @@ test.describe('Workflow 8 · a person is guided in', () => {
     await expect(page.getByRole('checkbox', { name: /forecast accurately/i })).toBeEnabled();
   });
 
+  test('🔴 screen 08 · skipping the rest states the consequence and lets them go', async ({
+    page,
+  }) => {
+    /**
+     * **Milestone 2, and the header above promised it would land here.**
+     *
+     * 📁 *"States the consequence in product terms and lets them go. No dark
+     * pattern, no second ask."* ⛔ **The second half is the one a browser can
+     * check and a unit test cannot**: that pressing `Skip` actually leaves the
+     * flow, rather than opening something else.
+     */
+    await page.goto('/onboarding/you');
+    await page.getByRole('button', { name: 'Skip setup' }).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    // ⚡ The consequence, in product terms — never "2 steps remaining".
+    await expect(dialog).toContainText(/general benchmarks/i);
+    await expect(dialog).toContainText(/home page will show everything/i);
+
+    // ✅ Continuing is the ABSENCE of a navigation — they stay where they were.
+    await dialog.getByRole('button', { name: /Finish setup/ }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page).toHaveURL(/\/onboarding\/you$/);
+
+    // ⛔ And skipping leaves, with no second ask.
+    await page.getByRole('button', { name: 'Skip setup' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Skip' }).click();
+    await expect(page).toHaveURL((url) => !url.pathname.startsWith('/onboarding'));
+  });
+
   test('@journey leaving part-way through, and coming back to what was answered', async ({
     page,
   }) => {

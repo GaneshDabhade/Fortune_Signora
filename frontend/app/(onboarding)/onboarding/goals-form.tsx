@@ -10,6 +10,7 @@ import { OnboardingShell } from '../onboarding-shell';
 import { OnboardingSkeleton } from './company-form';
 import { onboardingExit } from './exit';
 import { GOALS, MAX_GOALS, RAIL_STEPS, isGoal } from './steps';
+import { SkipSetup } from './skip-setup';
 import { useOnboarding } from './use-onboarding';
 
 /**
@@ -75,6 +76,12 @@ export function GoalsForm() {
       steps={RAIL_STEPS}
       currentId="goals"
       completedIds={run?.completed_steps ?? []}
+      railFooter={
+        <SkipSetup
+          completedIds={run?.completed_steps ?? []}
+          industry={run?.industry?.value ?? null}
+        />
+      }
       title="What are you trying to fix?"
       description="Pick up to three. They order your home page and choose the first things Signora looks at — you are not choosing features."
       actions={

@@ -9,6 +9,7 @@ import { describePerson } from '@/lib/api/onboarding';
 import { OnboardingShell } from '../onboarding-shell';
 import { OnboardingSkeleton } from './company-form';
 import { RAIL_STEPS, ROLES } from './steps';
+import { SkipSetup } from './skip-setup';
 import { useOnboarding } from './use-onboarding';
 
 /** *"Integer ≥ 1, ≤ 10,000. Validated on blur, not per keystroke. Zero
@@ -80,6 +81,12 @@ export function YouForm() {
       steps={RAIL_STEPS}
       currentId="you"
       completedIds={run?.completed_steps ?? []}
+      railFooter={
+        <SkipSetup
+          completedIds={run?.completed_steps ?? []}
+          industry={run?.industry?.value ?? null}
+        />
+      }
       title="What do you do here?"
       description="Your role decides what your home page opens on and where alerts go. You can change it later in Settings."
       actions={

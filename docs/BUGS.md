@@ -422,6 +422,87 @@ git show origin/main:docs/BUGS.md | grep -n '^>>>>>>>'
 
 ✅ **The numbering half of this row stands and is Lane A's own correction**: `B-207` was taken, the row moved to `B-213`, *"the number came from the tail of a listing rather than from the maximum, and a listing is not a maximum."*
 
+### B-219 · `next build` overwrites the running dev server's `.next`, and the failure it causes looks like broken authentication
+
+| | |
+|---|---|
+| **Module** | **Development environment** — `frontend/next.config.*` (no `distDir`), the four-gate runbook, and [`docs/RUNNING.md`](RUNNING.md) |
+| **Severity** | 🟠 — **no customer impact and no shipped defect.** ⚡ **It costs diagnosis time, and it spends it in the wrong place**: the symptom is a `500` at sign-in |
+| **Status** | `OPEN` — **found by Lane A, 2026-08-09, while running the Completion gates and the headed journey in the same session.** ⛔ **Not fixed: `next.config` and the runbook are frontend foundation, 🔴 in the Change Budget** |
+
+**Reproduce, and it is deterministic:**
+
+```
+npx next dev -p 3300 &      # the lane's own dev server, as RUNNING.md prescribes
+npx next build              # Completion step 4, gate 4
+curl -s -X POST http://localhost:3300/api/auth/sign-in/email -d '{...}'
+```
+
+**Actual** — every route on the dev server returns `500`, and the body says:
+
+```
+ENOENT: no such file or directory,
+open '.../frontend/.next/server/pages/_document.js'
+```
+
+⛔ **`next dev` and `next build` share one `.next/` directory.** The production build replaces the development one, and **the running server keeps serving from a tree that is no longer there.**
+
+#### 🔴 Why this is worth a row rather than a shrug
+
+⚠️ **The symptom names the wrong subsystem.** The Playwright run fails at `auth.setup.ts` — *"sign in as the owner"* — with a twenty-second `waitForURL` timeout. **Every signal points at authentication**, and this lane spent the diagnosis accordingly: it checked whether the rate limit [TASK-498](BACKLOG.md) enabled outside production was throttling repeated sign-ins, then whether the Better Auth tables existed, then which schema they were in. ⛔ **All three were dead ends, and the last was a self-inflicted one** — the tables are in `auth`, and a query against `public` said *"relation does not exist"*, which reads exactly like a wiped database.
+
+> ⚡ **The order of the gates is what makes this reachable at all**, and nothing writes that order down. **Gate 4 breaks the environment gate 5 needs** — [§19](../CLAUDE.md) requires the journey executed, [B-149](#b-149) requires it executed *headed*, and the build that precedes it silently removes the server it runs against.
+
+#### ✅ Three fixes, and the cheapest is one line
+
+| | |
+|---|---|
+| ⚡ **`distDir`** | Give the production build its own output directory. **The two stop sharing state and the ordering stops mattering** |
+| **Runbook order** | State that the build gate stops the dev server. ⛔ **Weaker — it relies on remembering** |
+| **`make validate`** | Have the gate runner restart the dev server after building. **Most convenient, most machinery** |
+
+⚠️ **This lane restarted the dev server to recover and did not choose between them** — `next.config` is 🔴 and the ordering is the repository's, not one lane's.
+
+---
+
+### B-218 · The onboarding journey cannot pass twice on one environment, and nothing resets the run
+
+| | |
+|---|---|
+| **Module** | **The Workflow 8 journey** — [`frontend/tests/e2e/onboarding-journey.spec.ts`](../frontend/tests/e2e/onboarding-journey.spec.ts) and the seed it runs against |
+| **Severity** | 🟠 — ⛔ **not a product defect, and that is the important half.** ✅ **The product is behaving correctly**; the suite's precondition is what has expired |
+| **Status** | `OPEN` — **found by Lane A, 2026-08-09**, running the journey headed before pushing [TASK-469](BACKLOG.md) milestone 2 ([B-149](#b-149)). ⛔ **Not fixed: the seed is QE's** (§20e — *"QE creates, maintains, extends and retires repository-wide automated tests"*), **and the alternative this lane could build is one it already refused** |
+
+**`@journey leaving part-way through, and coming back to what was answered` fails on the resume banner:**
+
+```
+expect(getByRole('status').filter({ hasText: /setup is unfinished/i })).toBeVisible()
+  → element(s) not found
+```
+
+⚡ **The banner is correctly absent.** `ResumeOnboarding` hides on `run.finished_at !== null`, and the owner's run finished **before this session began**:
+
+```
+onboarding_run: ws=f9964c12 person=da70edfc step=connect
+                finished_at=2026-08-08 20:31:55+00
+```
+
+> 🔴 **Measured before it was attributed, because this lane's first instinct was that it had broken it.** ⛔ **It had not**: the run finished on **2026-08-08**, and the code under test was written on **2026-08-09**. **A timestamp settled in one query what an afternoon of staring at a diff would not have.**
+
+#### ⚠️ The suite already knows this and only half-solved it
+
+**The spec's own header records the earlier instance**, and the fix it chose:
+
+> 📁 *"The first draft put the completion journey first and both banner scenarios failed on a run that was already finished — **the product was right and the suite was wrong.** ⛔ **The fix is the order, never a reset endpoint.**"*
+
+✅ **Ordering fixed it WITHIN one run. It cannot fix it ACROSS runs** — **the suite finishes the run by design, so the second execution on the same environment starts from the state the first one ended in.** ⛔ **A journey that passes once and never again is not a regression test**, and [D-113](DECISION_REGISTER.md) makes running it the lane's responsibility before every handover.
+
+#### ⛔ What this lane will not build, and it is the same refusal as before
+
+**A reset endpoint.** 📁 The spec argues it already: *"a route that un-finished a run would exist only for tests, and it would be a way to edit a settled record that no customer has."* ✅ **That reasoning is still correct and this row does not reopen it.**
+
+**The fix belongs in the seed, not the product:** ⚡ **a person per run, or a workspace the suite creates and owns.** **Both are QE's**, and both make the journey idempotent without giving the product a door it should not have.
+
 ### B-217 · A live merge conflict sits in the decision register on `lane-c-sync`, and its incoming side is empty — the HEAD side is D-195, D-196 and D-198
 
 | | |

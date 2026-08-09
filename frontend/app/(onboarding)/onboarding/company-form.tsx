@@ -8,6 +8,7 @@ import { confirmCompany, type Answer } from '@/lib/api/onboarding';
 
 import { OnboardingShell } from '../onboarding-shell';
 import { SIZE_BANDS, INDUSTRIES, RAIL_STEPS } from './steps';
+import { SkipSetup } from './skip-setup';
 import { useOnboarding } from './use-onboarding';
 
 /**
@@ -90,6 +91,12 @@ export function CompanyForm() {
       steps={RAIL_STEPS}
       currentId="company"
       completedIds={run?.completed_steps ?? []}
+      railFooter={
+        <SkipSetup
+          completedIds={run?.completed_steps ?? []}
+          industry={run?.industry?.value ?? null}
+        />
+      }
       title="About your company"
       description="We filled these in from your email domain. Correct anything that is wrong — nothing here is required."
       actions={
