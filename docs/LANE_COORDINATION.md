@@ -8348,6 +8348,79 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-259 · The palette is unmounted because its opener is occupied, and neither candidate row can mount it alone
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-1408](BACKLOG.md)**, on [D-214](DECISION_REGISTER.md) §8's conformance audit and the notice it wrote to this lane |
+| **Owner** | **Lane C** — ⛔ **the question is row scope, and only the office that writes rows changes one.** ⚡ **Explicitly NOT the Design Authority** — see the gate below |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION, split across two rows** — **the design is complete and answers every question this item asks** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **Shell rule 7 — *"anything clickable is reachable in the palette"* — reaching `IN VALIDATION` on any row** |
+
+### ✅ The audit's measurement is correct, and this lane reproduced it before answering
+
+```
+grep -rl CommandPalette frontend/app frontend/components --include=*.tsx | grep -v tests
+→ components/ui/command-palette.tsx        (its own definition, and nothing else)
+```
+
+📁 **[D-214](DECISION_REGISTER.md) §8 is right on the fact and right to record it on both candidate callers.** ⛔ **Nothing below disputes the finding.**
+
+### 🔴 The second measurement is what changes the answer
+
+⛔ **`⌘K` is already bound, and by a surface that works.**
+
+```
+frontend/components/intelligence/account-search.tsx:72
+  if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return;
+```
+
+⚡ **`AccountSearch` is mounted in the shell's own top bar** ([`app-shell.tsx:130`](../frontend/components/shell/app-shell.tsx)), **binds `⌘K` on `document`, and searches accounts through `useAccountSearch`** — 📁 **the read path [450](architecture/450-global-search-traceability-audit.md) measured as working.**
+
+⛔ **So the palette is not unmounted through oversight. Its opener and its job are both occupied.**
+
+### ⛔ Why [TASK-1408](BACKLOG.md) must not simply mount it
+
+**The shell can enumerate the destinations it owns and nothing else** — 📁 **three, from [`navigation.tsx`](../frontend/components/shell/navigation.tsx)'s `ITEMS`.** ⚠️ **Mounting the palette on `⌘K` today would take a seller who types *Databricks* and hand them a list of three navigation destinations instead of the account they were looking for.**
+
+⛔ **That is a behaviour regression** ([`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) L-8), **and it is strictly worse than the orphan the audit found.** ✅ **An orphaned primitive costs nothing at runtime; a `⌘K` that stopped finding accounts costs a customer their fastest path.**
+
+### 🔴 And why [TASK-481](BACKLOG.md) cannot mount it either
+
+📁 **Its Change Budget reads 🟢 `frontend/app/(app)/**` · 🟠 a `components/ui` search affordance · 🔴 **nothing***, and its **Shared layout** row says ⛔ ***"It must not build a shell"*** — **with the reason: *"The Application Shell — Workflow 13, which is NOT built."***
+
+⚡ **Workflow 13 IS built.** ✅ **[TASK-1408](BACKLOG.md)'s frame is on `main` at `c5a40c65`**, and **the row's own next sentence anticipated this exact moment**: 📁 ***"the shell adopts it when it lands."***
+
+> ⛔ **The clause is not wrong; it is stale.** **[TASK-481](BACKLOG.md) was scoped to a repository that had no shell, and that repository no longer exists.**
+
+| Row | Has | Lacks |
+|---|---|---|
+| **[TASK-1408](BACKLOG.md)** | ✅ **Shell budget** (🔴, under the UI Migration Program exemption, §20c) · ✅ **rule 7 as acceptance criteria** ([D-210](DECISION_REGISTER.md)) | ⛔ **Account results — that is [TASK-481](BACKLOG.md)'s Definition of Done** |
+| **[TASK-481](BACKLOG.md)** | ✅ **The search composition** · ✅ **`READY`, independent, unclaimed** | ⛔ **Any permission to touch `components/shell/**`** |
+
+### ✅ [D-212](DECISION_REGISTER.md) §7's gate was applied BEFORE this was written, and it removed half of it
+
+📁 ***"Can this be answered by an existing finalized design document? If yes, implementation proceeds and NOTHING is raised."***
+
+⚡ **The design answers what `⌘K` opens** — 📁 **the palette, to *"Search or ask…"* (§07)** — **and shell rule 7 says the palette is where everything clickable is reachable.** ⛔ **So *which surface owns `⌘K`* is settled and is NOT raised here.** ✅ **`AccountSearch`'s binding is the legacy implementation, and the finalized design supersedes it.**
+
+⚠️ **What survives the gate is not a design question at all**: **two rows each hold half of one indivisible change**, ⛔ **and a lane may not merge, widen or re-scope a row** (§20e).
+
+### ✅ What this lane recommends
+
+**Widen [TASK-481](BACKLOG.md) to include the shell mount, and retire its stale *"must not build a shell"* clause.** ⚡ **Its Definition of Done is already the `⌘K` journey** — 📁 ***"A seller reaches search from anywhere in the shell and lands on the thing they typed"*** — **and *from anywhere in the shell* is a shell edit by construction.** ✅ **One row, one surface, and no window in which `⌘K` is worse than it is today.**
+
+⛔ **The alternative — [TASK-1408](BACKLOG.md) mounts destinations now, [TASK-481](BACKLOG.md) adds accounts later — is the one shape to avoid**: it ships the regression above and asks a customer to live in it until the second row lands.
+
+> 🔴 **Whichever way it is ruled, one sequencing constraint is not negotiable: `AccountSearch`'s `⌘K` binding is retired in the SAME change that mounts the palette, never in an earlier one.** ⚡ **The two are one edit because they are one shortcut.**
+
+### ⚠️ And the notice's other half is already correct
+
+📁 ***"Do not build a second one… its own comments carry the contract, including that it never sorts because the caller's order is the ranking."*** ✅ **Recorded and accepted. No second palette will be written**, and the caller-owns-the-query contract is the reason the composition above is a *caller* problem rather than a *component* one.
+
+⚠️ **`components/integrations/connect-panel.tsx`, the audit's second orphan, is [TASK-481](BACKLOG.md)'s co-recorded row and is untouched by this item.**
+
 ## C-258 · Two of `StatedAbsence`'s thirteen callers cannot render at region scope, and the ladder is what is short
 
 | | |
@@ -8411,6 +8484,12 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 | **Breadcrumb** | ⛔ | **Built and tested; no caller supplies a trail** |
 | **Filter strip** | ⛔ | 🔴 **Not buildable here — see below** |
 | **Utility panel** | ⛔ | 🔴 **Not buildable here — see below** |
+
+> 🔴 **AMENDED 2026-08-09 by the lane that raised it, and the amendment is against this item's own method.** ⛔ **The table above measured the row's SIX REGIONS and stopped there. Shell rule 7 — *"anything clickable is reachable in the palette"* — is also this row's acceptance criteria** ([D-210](DECISION_REGISTER.md)) **and it was not measured, because a palette is an overlay rather than a region.**
+>
+> ⚡ **[D-214](DECISION_REGISTER.md) §8's conformance audit found it by counting MOUNTS instead of regions, which is why it saw what this item missed.** ✅ **Recorded as [C-259](#c-259), with the second measurement that changes the answer: the palette's opener is already occupied.**
+>
+> ⚠️ **The lesson is the one this lane keeps paying for and it is [B-162](BUGS.md)'s in another coat**: **an enumeration is only as complete as the axis it was drawn on**, and *"everything buildable in it is built"* below was a claim about six regions stated as a claim about a row.
 
 ### 🔴 Why the last two are different from the first two
 
