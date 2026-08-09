@@ -80,6 +80,65 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-159 · the coordination source tells Lane A to build and reports zero claimable rows in the same block
+
+| | |
+|---|---|
+| **Module** | `docs/coordination/coordination.toml` — the generated projection ([479](architecture/479-coordination-architecture.md), [D-144](DECISION_REGISTER.md)) |
+| **Current assignee** | **Lane C** — the generator and the republish are Product Office's |
+| **Severity** | 🟠 — ⛔ **a lane following the published source would read *nothing claimable* while 22 rows are claimable** |
+| **Status** | **`OPEN`** |
+| **Commit found** | `7bc4b531` — measured on the promoted commit, not on a candidate |
+
+**Steps.** On `main`, read `[lane.Lane_A]` in `docs/coordination/coordination.toml`.
+
+**Expected.** The counters agree with `BACKLOG.md`, which is authoritative ([D-144](DECISION_REGISTER.md): *"if the coordination source disagrees with `BACKLOG.md`, the backlog wins"*).
+
+**Actual, measured:**
+
+```
+[meta] generated_from = "14abd98"        ← two promotions behind
+[lane.Lane_A]
+  notice        = "Build. 24 rows and none needs invented behaviour. …"
+  backlog       = []
+  claimable_now = 0
+  awaiting_sync = 23
+```
+
+**Regenerating against the promoted commit yields `claimable_now = 22` and a 22-entry `backlog`.** ⚡ **QE verified this by rendering in-process and diffing `_content` — zero difference once regenerated, so the generator is correct and only the *published* file is behind.**
+
+> ⛔ **This is [B-216](#b-216)'s class with the halves swapped, and it is the more dangerous orientation.** **There, prose asserted `READY` and the counters were right, so the counters caught it.** **Here the prose says *Build* and the counters say zero** — ⚠️ **and `_notice()` now *refuses* state words in prose, so the half a reader is told to trust is the half that is wrong.**
+
+**Why it is 🟠 rather than 🟡.** ⚡ **[§20e](../CLAUDE.md) makes synchronization the highest repository priority when a lane idles on work that exists but has not reached it** — *"the cost is paid twice, once in the idle lane and once in the preparation that ages while it waits."* ✅ **Lane A has not idled on it**, because it reads `BACKLOG.md` too. ⛔ **But the source exists precisely so a lane need not.**
+
+**Not repaired by QE, deliberately.** ⚡ **The repair is `python3 infra/coordination.py` followed by `--publish`, and both are Product Office's** — a projection republished by the lane that does not own it is a second author for a file whose whole guarantee is that it has one.
+
+---
+
+### B-158 · `coordination.py --dry-run` writes the file it is named for not writing
+
+| | |
+|---|---|
+| **Module** | `infra/coordination.py` |
+| **Current assignee** | **Lane C** — Platform Foundation ([D-022](DECISION_REGISTER.md)) |
+| **Severity** | 🟠 — **it mutates the repository under a flag that promises it will not** |
+| **Status** | **`OPEN`** |
+| **Commit found** | `7bc4b531` |
+
+**Steps.** `python3 infra/coordination.py --dry-run`, then `git status`.
+
+**Expected.** Nothing written. That is what the word means, and it is the one flag a reader reaches for when they want to look without touching.
+
+**Actual.** `docs/coordination/coordination.toml` is rewritten. `main()` handles `--self-test`, then `--check` *(which returns)*, then falls through to an **unconditional** `OUT.write_text(fresh)` — and only *afterwards* consults `--publish`. ⛔ **`--dry-run` is documented as *"with `--publish`: validate only"* and is simply ignored on its own**, so the default write happens.
+
+> ⚠️ **QE ran it, on a clean tree, while `make certify` was in flight** — ⛔ **and that half is QE's defect, not the tool's.** **An unfamiliar flag is read before it is run, especially during a certification**, which is the lesson [cycle 115](../PROJECT_STATUS.md) already recorded when QE edited `BUGS.md` mid-run. ✅ **Caught by `git status` and restored before the run sampled `tree_clean`** — **the record reads `tree_clean: true` and is true.** ⚡ **That was timing, not discipline, and it is recorded as timing.**
+
+**Why it is worth a row rather than a habit.** ⚡ **The repository's own standard is *prefer operations that refuse unsafe states over operations that silently recover from them*.** ⛔ **A flag whose name is a promise of safety and whose behaviour is a write is the opposite**, and the next person to reach for it will be doing exactly what QE was doing — **trying to inspect without disturbing.**
+
+**The fix is one branch**: `--dry-run` without `--publish` either prints the rendered source to stdout or exits with a message saying it does nothing on its own. ⛔ **Not written by QE** — `infra/coordination.py` is Lane C's, and this is not a gate that blocks certification.
+
+---
+
 ### B-157 · `state-check` reads seven-hex commits and `git rev-parse --short` now returns eight, so a correct dashboard reports as stale
 
 | | |
