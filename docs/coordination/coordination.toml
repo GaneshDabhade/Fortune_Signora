@@ -13,7 +13,7 @@ generated_from = "734855b"
 task_count     = 157
 
 [lane.Lane_A]
-notice             = "NOTICE WITHHELD — it names TASK-1454 as work for this lane, and none of them is in this lane's computed backlog (D-144, B-221). Either the row is not yet integrated, or it belongs to another lane. Read the backlog array in this file for what is actually claimable."
+notice             = "NOTICE WITHHELD — it names TASK-1400, TASK-1456 as work for this lane, and none of them is in this lane's computed backlog (D-144, B-221). Either the row is not yet integrated, or it belongs to another lane. Read the backlog array in this file for what is actually claimable."
 backlog            = ["TASK-1405", "TASK-1439", "TASK-1411", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1440", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
 assigned_total     = 136
 claimable          = 30
