@@ -2,17 +2,21 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ⛔ Two decisions block work today. Everything else is deferred, blocked on nothing, or waiting on you at your convenience.
+> ## ⛔ Six of the 31 items on this page hold a named row. The other 25 hold nothing, and that is the number worth reading.
 >
-> **① [C-421](#-c-421--a-lane-cannot-read-the-design-it-is-implementing-against--external) — design access.** ⚡ **Nothing to decide; something to provide.** **Three prepared slices — [TASK-467](BACKLOG.md), [468](BACKLOG.md), [471](BACKLOG.md) — cannot begin**, and the workaround was proposed and refused by [D-129](DECISION_REGISTER.md).
+> **Re-measured 2026-08-09 against `BACKLOG.md`, not asserted.** ⚡ **An item is listed as blocking only when a task row's own `Status` names it** — ⛔ **not when it sounds important, and not because it was blocking last week.**
 >
-> **② [C-229](#-c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) — the navigation entry.** **Blocks [TASK-441](BACKLOG.md)'s entrance and nothing else.** ⚪ **No recommendation is offered, deliberately** — defending an entry against [D38](architecture/39-product-review-findings.md) is information architecture, which §20e reserves to you.
+> | | Blocks | What it is |
+> |---|---|---|
+> | 🔴 **[C-1405](#-c-1405--the-entry-coverage-review-recommends-four-documents-and-three-of-them-block-work-already-released)** | **[TASK-1401](BACKLOG.md) · [1421](BACKLOG.md) · [1423](BACKLOG.md) · [1426](BACKLOG.md)** | **Commission three design documents.** ⚡ **The single highest-value decision on this page — it is four of the six** |
+> | 🟠 **[C-338](#c-338)** | **[TASK-003](BACKLOG.md)** | Customer labels in the file that builds the prompt |
+> | 🟠 **[C-1404](#-c-1404--where-do-machine-credentials-live)** | **[TASK-1413](BACKLOG.md)** | Where machine credentials live — three options, written |
+> | ⏱️ **[C-334](#-c-334--the-hosted-evaluation-credential--ruled-not-yet-provided)** | **[TASK-202](BACKLOG.md) · [459](BACKLOG.md)** | ⚡ **Ruled and unprovided — one credential, and release is automatic on configuration.** Nothing to decide |
+> | 🟡 **[C-003](#c-003)** · **[C-009](#c-009)** | **[TASK-454](BACKLOG.md)** | Both land on one row |
 >
-> ⏱️ **[C-334](#-c-334--the-hosted-evaluation-credential--ruled-not-yet-provided) is ruled and unprovided** — **one credential converts four rows**, and release is automatic on configuration.
+> ⚠️ **[C-306](#-c-306--the-one-that-argues-against-work-and-it-collides-with-d-128) is still the interesting one, and still blocks nothing.** **It argues *against* rebuilding a screen** — *"would discard fourteen findings from real product review"* — **and it predates [D-128](DECISION_REGISTER.md), which made the design the authority.** **It becomes P1 the moment a refinement slice reaches that screen.**
 >
-> ⚠️ **[C-306](#-c-306--the-one-that-argues-against-work-and-it-collides-with-d-128) is the interesting one.** **It argues *against* rebuilding a screen** — *"would discard fourteen findings from real product review"* — **and it predates [D-128](DECISION_REGISTER.md), which made the design the authority.** **Nothing is blocked today; it becomes P1 the moment a refinement slice reaches that screen.**
->
-> ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
+> ✅ **[C-421](#-c-421--a-lane-cannot-read-the-design-it-is-implementing-against--external) and [C-229](#-c-229--opportunity-intelligence-needs-a-door-and-d38-closed-that-one-deliberately) were the two items this banner named as blocking, and both closed on 2026-08-06/07** — **C-421 by [D-137](DECISION_REGISTER.md) §2 (the design was readable the whole time), C-229 by [D-141](DECISION_REGISTER.md) ① (the finalized design already contained the answer).** ⛔ **The banner went on naming them for two days, which is the defect this page exists to prevent, sitting at the top of the page.** ⚡ **It is now derived from the register and the backlog on each cycle rather than carried forward.**
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
 ## 🟠 C-250 · When entry is unremarkable, what does the diagnostic code say? *(point ③ of three)*
