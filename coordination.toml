@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "7c55af8"
-task_count     = 123
+generated_from = "935802a"
+task_count     = 129
 
 [lane.Lane_A]
-notice             = "DO NOT CLAIM TASK-1404 — already built inside your TASK-1400; resolveWorkspace() at rules.ts:82, four branches, twelve tests. Five rows released behind the engine, each carrying what we already knew. All 29 workflows decomposed: twelve new rows, five are platform capabilities disguised as screens. Biggest — workflow 26's subtitle IS your Action Batch: a consumer, not a new engine."
+notice             = "DO NOT WIRE THE ENGINE YET. The D-205 audit found twelve of resolveEntry's destinations do not exist: rules.ts returns /workspaces for the chooser and NO_WORKSPACE, and there is no such route; eleven terminal reason codes render nothing. TASK-1401 today replaces working navigation with a 404 for everyone off the happy path. TASK-1421 (chooser) and TASK-1423 (gate screens) are now ahead of it."
 backlog            = []
-assigned_total     = 105
-claimable          = 22
+assigned_total     = 111
+claimable          = 25
 claimable_now      = 0
-awaiting_sync      = 22
+awaiting_sync      = 25
 in_flight          = 56
 actionable         = 3
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 27
+blocked            = 30
 lane_utilization   = 11.2
-idle_prediction_days   = 3.1
+idle_prediction_days   = 3.6
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -105,9 +105,9 @@ state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
+unblocks       = ["TASK-1426"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
 critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
@@ -153,7 +153,7 @@ state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-1406"]
+unblocks       = ["TASK-1406", "TASK-1424", "TASK-1425"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
@@ -383,6 +383,102 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-"
 waiting_for    = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for)**"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1421"
+title         = "The workspace chooser at `/workspaces` — a route the engine already sends people to"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1422"
+title         = "Last-used workspace — stored, read, and cleared when membership ends"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1423"
+title         = "The six gate screens — a failure that is designed, not a redirect loop"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1424"
+title         = "First run and Activation — the two compositions that are not a dashboard"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-1405"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 1
+estimated_ready = "— behind [TASK-1405](#task-1405--home-is-one-route-and-four-compositio"
+waiting_for    = "— behind [TASK-1405](#task-1405--home-is-one-route-and-four-compositions) and [TASK-1406](#task-1406--the-card-registry--modules-contribute-capabiliti"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1425"
+title         = "The Executive Dashboard becomes Home's executive composition"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-1405"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 1
+estimated_ready = "— behind [TASK-1405](#task-1405--home-is-one-route-and-four-compositio"
+waiting_for    = "— behind [TASK-1405](#task-1405--home-is-one-route-and-four-compositions)** — ⛔ **there is no slot to become a composition of yet**"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1426"
+title         = "Session expiry and deep-link restoration — the intent survives the round trip"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = ["TASK-1402"]
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 1
+estimated_ready = "— behind [TASK-1402](#task-1402--the-intent-resolver--what-the-person-"
+waiting_for    = "— behind [TASK-1402](#task-1402--the-intent-resolver--what-the-person-was-trying-to-reach)** — ⛔ **preserving an intent requires something that produc"
 blocked_days   = 0.0
 on_integration = false
 
