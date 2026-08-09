@@ -8348,6 +8348,63 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-263 · TASK-499's front door cannot move, because the place the authenticated home would move TO does not exist
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, ⚡ **BEFORE claiming [TASK-499](BACKLOG.md)** — 📁 [D-215](DECISION_REGISTER.md)'s whole finding is that this class is discovered mid-slice, so this one was looked for first |
+| **Owner** | **Lane C** — ⛔ **the question is which row creates the workspace-scoped route tree**, and only the office that writes rows answers that |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION** — ⛔ **nothing is asked of Design; the design already answered the destination** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **Two of [TASK-499](BACKLOG.md)'s six route changes.** ✅ **The other four are reachable today and this item does not hold them** |
+
+### ✅ [D-212](DECISION_REGISTER.md) §7's gate answered the destination, so it is not asked here
+
+⚠️ **The row says *"the authenticated home needs a new path"* and does not name it, and [D-185](DECISION_REGISTER.md) §2 names five paths without naming this one.** ⛔ **That looked like a design question and it is not.**
+
+📁 **[`lib/entry/rules.ts`](../frontend/lib/entry/rules.ts):52, from [TASK-1400](BACKLOG.md):**
+
+```ts
+/** `/w/:ws/home`, the one authenticated landing route — §04 *Home is a slot*. */
+return `/w/${workspaceId}/home`;
+```
+
+✅ **The finalized design decided it and the entry engine already implements it.** ⛔ **So a lane inventing `/home` would be creating a SECOND answer to *where is home* on a customer-visible URL** — [§2](../CLAUDE.md)'s two-representations defect, in the one place a customer would notice.
+
+### 🔴 And the route does not exist
+
+```
+find frontend/app -type d -name w   → nothing
+frontend/app/(app)/  →  /  /accounts/[accountId]  /business  /join/[workspaceId]
+                        /profile  /settings…  /signals
+```
+
+⛔ **There is no `/w/` tree at all**, which is 📁 [C-1405](#c-1405)'s *"twelve of the engine's destinations do not exist"* — **the same finding that has [TASK-1401](BACKLOG.md) BLOCKED.**
+
+### ⚠️ So two of the six changes are blocked and four are not
+
+| Change | |
+|---|---|
+| `sign-in` → **`/signin`** | ✅ **reachable** |
+| `sign-up` → **`/register`** | ✅ **reachable** — 📁 and the [ADR-0034](architecture/adr/0034-ubiquitous-language.md) one: a customer *registers* |
+| `verify-email` → **`/verify`** | ✅ **reachable** |
+| `reset-password` → **`/reset/:token`** | ✅ **reachable**, and it carries the `better-auth` callback change |
+| `forgot-password` | ✅ **already agrees** |
+| **`(app)/page.tsx` off `/`** | ⛔ **BLOCKED — nowhere to go** |
+| **`welcome` → `/`** | ⛔ **BLOCKED — `/` is still the authenticated home** |
+
+### ⛔ Why this lane will not simply create `/w/:ws/home`
+
+⚡ **It is inside the budget** — 🟢 `frontend/app/**` routes — **and it is still not this row's to do**, for two reasons that both point the same way:
+
+**①** 📁 **[D-205](DECISION_REGISTER.md): the Entry Engine has zero production callers and must not be wired.** ⛔ **Creating `/w/:ws/home` and pointing the product's links at it IS adopting the engine's destination scheme**, which is [TASK-1401](BACKLOG.md)'s subject and is blocked on [C-1405](#c-1405).
+
+**②** ⚠️ **Every link that says `/` would need a workspace id.** 📁 **`components/shell/navigation.tsx` has `{ href: '/', label: 'Attention' }`** — **workspace-scoping it is a data requirement at every call site**, not a path edit, and doing that inside a rename slice is how a route change becomes an architecture change nobody reviewed.
+
+### ✅ What this lane recommends
+
+**Narrow [TASK-499](BACKLOG.md) to the four auth renames, which are independently valuable and independently verifiable** — 📁 **the four shipped journeys are its verification and they exercise exactly those paths** — ⛔ **and sequence the front-door swap behind whichever row creates the workspace-scoped home.** ⚡ **That is [D-215](DECISION_REGISTER.md)'s own remedy applied by the lane before the row was claimed rather than after it was half-built.**
+
 ## C-262 · The cold-start screen exists and nothing decides that a cold start has no network
 
 | | |
