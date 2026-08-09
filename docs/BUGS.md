@@ -184,6 +184,63 @@ $ python3 infra/state-check.py
 ✅ **Found by a lane, not by QE** — which is §20e's own claim about this repository, and the third time this session it has held.
 
 ---
+### B-413 · The promotion gate reported zero blocking 🔴 because the register writes `OPEN` in bold
+
+| | |
+|---|---|
+| **Module** | **`infra/`** — Platform Foundation, [D-022](DECISION_REGISTER.md) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🔴 · **Blocking Quality Defect — the one rule that stops a promotion did not evaluate.** ⛔ **`integration` fast-forwarded to `main` across at least six days with [B-209](#b-209--eleven-playwright-journeys-fail-on-integration-and-the-header-search-is-why) open**, and every gate said promotion was not blocked |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-09.** **`VERIFIED` is QE's** |
+| **Found** | 2026-08-09 by Lane C, in the audit the product owner asked for — **by reading `kpi.py`'s own output against itself** |
+
+**Steps to reproduce.** At `a9bdca72`:
+
+```
+$ python3 infra/kpi.py | grep -E 'severity|blocks promotion'
+    Bugs by severity                 🔴 10 · 🟠 84 · 🟡 41
+    Open 🔴 (blocks promotion)        0
+```
+
+**Expected.** A register carrying an open 🔴 blocks promotion (`CLAUDE.md` §20e).
+
+**Actual.** ⛔ **`B-209` is 🔴 and `OPEN`, and `blocks_promotion` returned `False` for all 136 rows in the file.** **`state-check` printed *"No unresolved 🔴 across 136 bug row(s) — promotion is not blocked"* on every run since 2026-08-03.**
+
+## ⚡ Two readings of one cell, in one dataclass
+
+📁 **`infra/registers.py` answered *"is this row open?"* twice, and differently:**
+
+| | |
+|---|---|
+| `state` | **`status.find("`OPEN`")`** — locates the token anywhere in the cell |
+| `unresolved` | **`status.startswith(("`OPEN`", "`FIXING`"))`** — requires it at character zero |
+
+⛔ **The register writes `**`OPEN`**`.** **29 of the 39 open rows are bolded**, so the prefix matched only the ten that were not — and **`state` and `unresolved` disagreed about the same cell for six days**.
+
+> ## 🔴 **`registers.py` exists BECAUSE two tools answered this question differently.** 📁 **Its own docstring: *"Truth has exactly one authoritative representation (§2), so the parsing lives here and both import it."*** ⛔ **It then contained the divergence it was extracted to end** — one file down instead of one file across.
+
+## ⛔ The test asserted the claim instead of testing it
+
+📁 **`TestBlockingIsUnaffected` was titled *"`unresolved` reads the cell's prefix and was always correct"*, and said so again in its docstring: *"had this been wrong, a 🔴 could have been silently cleared, and no 🔴 ever was."*** ⚡ **Both sentences were false when written.**
+
+**What made it pass is one asymmetry nobody would notice reading it:**
+
+```python
+def test_a_fixed_red_does_not_block(self) -> None:
+    assert _row("🔴", "**`FIXED`** — Lane A").blocks_promotion is False   # bolded
+def test_an_open_red_blocks(self) -> None:
+    assert _row("🔴", "`OPEN` |").blocks_promotion is True                # bare
+```
+
+⛔ **The bolded form is the one the register uses for an open row, and it is the only case the class never constructs.** ⚠️ **This is [B-101](#b-101--nine-rows-were-counted-in-two-buckets-at-once)'s class in a test rather than a query: the artefact confirms what its author expected instead of measuring what is there.**
+
+## ✅ The fix, and the check that makes it hold
+
+**`unresolved` is derived from `state`** — one reading, and `unresolved` becomes a question asked of it rather than a second parse. **`UNRESOLVED_PREFIXES` is deleted**; a prefix constant is what invited the second reading.
+
+⚡ **Every unit case now runs in both emphases**, and — because constructed rows only exercise forms somebody thought to write — **a parity assertion runs against `docs/BUGS.md` itself**: for every row on disk, `unresolved` must equal `state in (OPEN, FIXING)`. **That is the assertion that could have caught this on day one**, and it fails on the previous parser at 29 rows.
+
+⛔ **Consequence, stated rather than tidied away: `state-check` now reports a blocking 🔴, and it is correct to.** **B-209 is real, open, and Lane A's** — eleven Playwright journeys failing on `integration`. ⚠️ **This row does not fix B-209 and must not be read as clearing the promotion path**; it restores the gate that should have been reporting it since 2026-08-06.
 
 ### B-153 · QE ran the check that caught a duplicate identifier and grepped past the finding
 
