@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `f954477`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3b3e891`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `f954477`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `3b3e891`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`f954477`** — the certified commit itself |
-| **`integration`** | ⛔ **DIVERGED — `origin/integration` at `227a074f` carries `main`'s patches under different SHAs, plus two.** ⚡ **Its two unique commits are one documentation commit and one claim — nothing executable.** **The repair is the rebase Closeout step 10 prescribes; the force-push was refused by this environment, so it is outstanding** — see [B-161](docs/BUGS.md) and §1d |
-| **Release candidate** | ⚡ **Cycle 146 promoted the scope ladder** — **and found that the Task Claim Protocol's own step 7 pushes a lane's unpromoted code to `integration`** ([B-161](docs/BUGS.md)) |
-| **Certification** | ✅ [`f954477e9e42`](certification/reports/f954477e9e42.md) · migration head **`0045`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
+| **`main`** | **`3b3e891`** — the certified commit itself |
+| **`integration`** | ⛔ **STILL DIVERGED at `227a074f`** — ✅ **but `main` now carries **all four** of its commits, verified by `git patch-id --stable` over a 70-commit window.** ⚡ **Nothing would be lost by the synchronizing force-push; it has been refused by this environment four times** — see [B-161](docs/BUGS.md) and §1d |
+| **Release candidate** | ⚡ **Cycle 147 promoted the Application Shell's constitution** — **four rules as code rather than as a comment, and a guard that fired on its own documentation first** |
+| **Certification** | ✅ [`3b3e891345eb`](certification/reports/3b3e891345eb.md) · migration head **`0045`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt.** ⚡ **[`5853f3916053`](certification/reports/5853f3916053.md) is also a true record** — certified last cycle and **deliberately not promoted**, superseded here |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None — and this is *derived*, not typed** ([B-151](docs/BUGS.md)): `registers.bug_rows()` reads **148 rows, 46 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
-| **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A delivered `TASK-1409` and claimed `TASK-1408` — the Application Shell, which six backlog rows are waiting for** |
-| **Validation queue** | **Empty.** ⚠️ **Two documentation commits sit on `origin/integration` uncertified** — permitted by §20e, and next cycle's input |
-| **Customer value this cycle** | ✅ ⚡ **A failure now claims the smallest surface it can** — four screens had each decided severity, wording and identifier presentation for themselves, and **three printed a correlation id in three shapes, one of which could not be copied** |
+| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **149 rows, 47 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
+| **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A shipped four `TASK-1408` slices in one cycle** — constitution, banner region, breadcrumb, top bar |
+| **Validation queue** | **Empty.** ✅ **The blocking 🔴 cleared by re-measurement, not by convenience** — see §1d |
+| **Customer value this cycle** | ✅ ⚡ **The frame is the same on every screen, and no module can bolt anything onto it** — the top bar has no `children`, no `slots` prop and no registration function, **so the rule is unrepresentable rather than discouraged.** ⚡ **And a green status pill may hide its label on a narrow screen; amber and red never may** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **1930 frontend tests** *(+30)* across **84 files** *(+2)* *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **212s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **1963 frontend tests** *(+33)* across **88 files** *(+4)* *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **204s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -138,6 +138,71 @@ B- identifiers are allocated twice: B-152.
 | **Dependency** | ✅ **Lane A unblocked last cycle**; `TASK-1400` is `READY` on `integration` |
 | **Customer Value** | ⛔ **None.** **A register repair** |
 | **Process** | 🔴 **Third QE self-defect of this class** — [B-150](docs/BUGS.md) skipped a check, [B-151](docs/BUGS.md) transcribed instead of measuring, [B-153](docs/BUGS.md) filtered a check's output. ⚡ **All three are one habit: trusting the shape of an answer instead of reading it** |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 147
+
+**Derived from the promoted commit `3b3e891`.** **102 promotions.** ⚡ **A blocking 🔴 that fired, held a promotion for a full cycle, and then cleared by re-measurement rather than by anybody deciding it was inconvenient.**
+
+### ⛔ The gate fired, and QE withheld a promotion that would have worked
+
+**Cycle 146 certified `5853f391` with every gate green — and did not promote it.** [B-220](docs/BUGS.md) was 🔴 `OPEN` and `blocks_promotion` returned true.
+
+> ⚡ **The mechanical objection did not apply to that candidate.** It had been rebased onto `main`, so the fast-forward would have succeeded. ⛔ **That is not the test.** **The register state is** — and **after [B-413](docs/BUGS.md), where this exact gate was blind for six days and 70 Closeouts were made under it, a gate honoured only when convenient is B-413 with better manners.**
+
+✅ **[`5853f3916053`](certification/reports/5853f3916053.md) remains a true record** of a commit that satisfied every gate and was deliberately not shipped.
+
+### ✅ And it cleared the right way — Lane A re-measured its own severity
+
+> *"A conditional severity is a promise to re-measure, and this is the re-measurement."*
+
+**B-220 predicted *"the next promotion cannot fast-forward."*** ⛔ **That prediction was falsified**: QE promoted twice afterwards by rebasing candidates onto `main`, and `patch-id --stable` showed the disputed commits byte-equivalent. 🔴 → 🟠, **withdrawn by the lane that raised it, on evidence.**
+
+⚡ **The row was kept rather than deleted** — *"the `--audit-claims` blind spot is this row's own finding and [B-161](docs/BUGS.md) does not analyse it."* ✅ **And Lane A conceded the better diagnosis was QE's**: *"I blamed the lane… QE measured what step 7 literally instructs, and it carries the whole branch exactly as my shortcut did. Nobody did anything wrong, and that is the finding."*
+
+### ✅ What a customer gets — the frame, and a rule nothing can break
+
+**Four `TASK-1408` slices in one cycle**: the shell's constitution, the banner region, the breadcrumb, the top bar.
+
+> **Rule 2: no module may add anything to the top bar.** ⚡ **Enforced by there being no way to — no `children`, no `slots` prop, no registration function.**
+
+**That is §2's *prefer a violation that is unrepresentable over one that is merely discouraged*, aimed at the shell rule most likely to be broken by somebody reasonable** — *"every module has one control it believes is global."*
+
+**Two design rules that are asymmetries rather than styles:**
+
+| | |
+|---|---|
+| **Status pills** | ⚡ **A green pill may hide its label below 1280px; amber and red never may.** ⛔ *"Hiding *degraded* to reclaim 60px is the platform choosing its own convenience over the customer knowing why their data looks wrong"* |
+| **Breadcrumb collapse** | **Arithmetic, not CSS** — so it is testable without a browser |
+
+### ⚡ The guard fired on its own documentation first
+
+**A guard scans `lib/shell` and `components` for any top-bar registration API appearing.** ⛔ **The module's JSDoc names `addTopBarItem` precisely to say it does not exist — and the guard reported that sentence as the violation.**
+
+> ⚡ ***"That is [B-318](docs/BUGS.md)'s class exactly — a Security Invariant matches text, so a comment fails it — reproduced in a guard written two days after reading that row."*** ✅ **Comments are stripped before scanning, and the fire-test asserts *both* halves: it matches real code and does NOT match a comment saying the same words.**
+
+### ⛔ `integration` is still diverged, and the case for the push is now proved
+
+**`main` carries all four of `origin/integration`'s commits**, verified by `git patch-id --stable` over a 70-commit window:
+
+```
+227a074f  CARRIED     fd8da782  CARRIED
+03a81b5d  CARRIED     554dd74c  CARRIED
+```
+
+⚡ **Nothing would be lost.** ⛔ **The synchronizing force-push has now been refused by this environment four times.** ✅ **The repository continues to function** — QE builds every candidate by rebasing onto `main` — **but lifecycle stage 6 has not completed since cycle 145.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4278 backend** · **1963 frontend** *(+33, +4 files)* · **95.07%** · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **153 runs recorded, 145 certified** · `promoted == certified` ✓ · **first attempt** · ⚡ **one certified-and-withheld run, deliberately** |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost** · smoke 24 stages in **204s** · **53 ADRs** |
+| **Dependency** | ⛔ **`integration` diverged — survival proved, push refused four times** |
+| **Customer Value** | ✅ ⚡ **One frame, and no module can bolt anything onto it** |
+| **Process** | ✅ **No QE self-defect.** ⚡ **The blocking gate was honoured against QE's own interest, which is the only time honouring it means anything** |
 
 ---
 
