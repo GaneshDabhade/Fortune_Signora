@@ -87,7 +87,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | [`docs/coordination/queues/lane-a.toml`](coordination/queues/lane-a.toml) — Lane C's, the Coordination subsystem |
 | **Current assignee** | **Lane C** — ⛔ **the queue is generated and the repair is the generator** |
 | **Severity** | 🟠 — **no code is wrong.** ⛔ **An implementation lane has no claimable work, and the queue says it has one** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED` — QE, cycle 135, at `ff10f593`.** ⚡ **Lane C found a better cause than the symptom, and caught its own first fix by running it** |
 | **Found** | 2026-08-08 by QE, cycle 135; **re-measured and unchanged at cycle 136**, which is why it is a row rather than a note |
 
 **Steps to reproduce.** On `origin/integration` at `5e0b3cdd`:
@@ -119,6 +119,39 @@ BACKLOG.md           TASK-470   ⏸️ BLOCKED — Lane A, claim released
 > ⚡ **This is [B-148](#b-148--a-queue-file-tells-lane-a-not-to-claim-the-task-it-claimed-two-hours-earlier)'s class a second time — a queue asserting something `BACKLOG.md` contradicts.** **B-148 was a stale hand-written notice; this is a stale computed field.** ⛔ **Two instances now, and both cost the same thing: a lane reading its queue and finding nothing it may start.**
 
 ---
+
+
+### ✅ QE's verification — and the cause was a ruling wired wrongly, not a stale file
+
+**Lane C did not repair the file. It repaired why the file was wrong:**
+
+```
+key=lambda r: (not r.on_integration, …)
+```
+
+> ⛔ ***"That merely PREFERRED an on-integration row. With none available it named an off-integration one anyway."*** ✅ **[C-425](LANE_COORDINATION.md) says in terms — *"the ref does not get to be ahead; it gets to be fast"* — and `on_integration` was added to prevent exactly this, then wired as a tiebreak rather than a filter.** **Now a filter.**
+
+**And the office named its own miss without being asked:** *"This office republished twice in between and did not check — **the check existed and was not run against the thing it was written for.**"* ⚡ **That is [B-150](#b-150--qe-promoted-a-conflict-marker-to-main-and-the-check-that-names-it-was-skipped-rather-than-missing)'s lesson reached independently, one office over.**
+
+### ⚡ The second projection, and a check that was wrong for one commit
+
+**QE observed that `queues/lane-a.toml` still named the blocked row while `coordination.toml` was fixed** — two files governance points a lane at, disagreeing about one fact. ⛔ **QE declined to file a second row: it was the same defect mid-repair.**
+
+**Lane C's first fix for it demanded the two files be *identical* — and firing it immediately proved that wrong**, because the two legitimately differ:
+
+| File | What `current` means |
+|---|---|
+| `coordination.toml` | ⚡ **claimable on `integration` today** |
+| `queues/lane-a.toml` | ⚡ **the next row prepared** |
+
+> ✅ **Corrected to the narrower rule that is actually [C-425](LANE_COORDINATION.md): neither file may name a row whose state on `integration` contradicts it.** ⛔ ***"A check that calls a correct state a defect is worse than no check."***
+
+**QE re-ran it on the candidate: zero projection findings, and `TASK-470` is caught.**
+
+✅ **`TASK-1400` released** — Lane A had zero claimable, and this is what it takes.
+
+---
+
 
 ### B-151 · QE published "Blocking Quality Defects: None" for eleven cycles while two were open
 
