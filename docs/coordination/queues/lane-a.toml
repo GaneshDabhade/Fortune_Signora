@@ -1441,14 +1441,32 @@ updated      = 2026-08-09
 #   "unless a task is explicitly marked as mutually exclusive or technically
 #   dependent, assume Lane A is free to continue with the next prepared task."
 #   ⛔ Blocked on one? Report it and TAKE THE NEXT. Do not wait for this office.
-current = "TASK-1400"         # ⚡ recommended first — the Entry Engine
-next    = ""                  # ⛔ obsolete under D-198; the backlog is below
-future  = []                  # ⛔ obsolete under D-198
                       #    claimable. Prepared depth is `prepared` below, and it
                       #    releases ONE AT A TIME as the current row completes.
 
 # ⚡ THE PREPARED SEQUENCE — D-187 §1. Fully decomposed, in release order.
 # ⛔ NOT claimable. Each becomes `current` automatically when its turn comes.
+# ══════════════════════════════════════════════════════════════════════════════
+# LANE A'S IMPLEMENTATION BACKLOG — D-199
+#
+# ⛔ THIS FILE HOLDS NO WORK. It records what is ALREADY YOURS.
+#
+# D-199 §3 removed the concepts this file used to carry — `current`, `next`,
+# `future`, `waiting for release`, `waiting until Lane A becomes free`. They
+# are gone, not renamed. Product Office does not dispatch; if work is ready it
+# is already assigned, and BACKLOG.md is where its state lives.
+#
+# ⚡ Everything in `backlog` below is YOURS AND CLAIMABLE. The order is this
+#   office's recommendation and has no authority over your sequencing.
+#
+# ⛔ If one blocks: raise the dependency and TAKE THE NEXT. No Product Office
+#   intervention, no synchronization cycle, no dispatch. D-199 §4.
+#
+# `[[blocked]]` below is not a queue — it is the rows whose INPUT does not
+# exist yet, each naming what it waits on, so you can see them coming rather
+# than discover them on claiming.
+# ══════════════════════════════════════════════════════════════════════════════
+
 backlog = ["TASK-1400", "TASK-476", "TASK-473", "TASK-492", "TASK-499",
             "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
@@ -1474,12 +1492,7 @@ backlog = ["TASK-1400", "TASK-476", "TASK-473", "TASK-492", "TASK-499",
 # ⚡ 6 is CLAIMABLE TODAY. The 3 in `awaiting_sync` above are released and
 # waiting on QE, and counting them here would overstate what this lane can
 # start — the overstatement §20e names.
-eligible_count = 15  # ⚡ D-198 — the whole backlog is claimable.
                      # reported "one of the two is stale" and it was the count.
-prepared_total = 14  # ⚡ D-165 §3 — the 10-20 rolling pipeline, sequenced and ready.
-depth_target   = 10  # ⚡ D-198 floor. No ceiling — the ceiling was the defect.
-shortfall      = 0   # ✅ 15 of 10.
-assigned_total = 14
 
 # ⚡ **ASSIGNED, not merely eligible — 2026-08-07.** The product owner asked
 # that no lane go dry. `eligible_count` is what is CLAIMABLE today;
@@ -1500,6 +1513,62 @@ blocker = ["see the backlog row"]
 owner   = "Lane A"
 note    = "M-U · The People experiences a customer opens"
 
+[[blocked]]
+task    = "TASK-1402"
+blocker = ["TASK-1400"]
+owner   = "Lane A"
+note    = "consumes TASK-1400's output — its input does not exist yet, not a Product Office hold"
 
+[[blocked]]
+task    = "TASK-1403"
+blocker = ["TASK-1400"]
+owner   = "Lane A"
+note    = "consumes TASK-1400's output — its input does not exist yet, not a Product Office hold"
 
+[[blocked]]
+task    = "TASK-1404"
+blocker = ["TASK-1400"]
+owner   = "Lane A"
+note    = "consumes TASK-1400's output — its input does not exist yet, not a Product Office hold"
 
+[[blocked]]
+task    = "TASK-1405"
+blocker = ["TASK-1404"]
+owner   = "Lane A"
+note    = "consumes TASK-1404's output — its input does not exist yet, not a Product Office hold"
+
+[[blocked]]
+task    = "TASK-1406"
+blocker = ["TASK-1405"]
+owner   = "Lane A"
+note    = "consumes TASK-1405's output — its input does not exist yet, not a Product Office hold"
+
+[[blocked]]
+task    = "TASK-1407"
+blocker = ["TASK-1400"]
+owner   = "Lane A"
+note    = "consumes TASK-1400's output — its input does not exist yet, not a Product Office hold"
+
+[[blocked]]
+task    = "TASK-1401"
+blocker = ["TASK-1400"]
+owner   = "Lane A"
+note    = "consumes TASK-1400's output — its input does not exist yet, not a Product Office hold"
+
+[[blocked]]
+task    = "TASK-464"
+blocker = ["TASK-476"]
+owner   = "Lane A"
+note    = "consumes TASK-476's output — its input does not exist yet, not a Product Office hold"
+
+[[blocked]]
+task    = "TASK-465"
+blocker = ["TASK-464"]
+owner   = "Lane A"
+note    = "consumes TASK-464's output — its input does not exist yet, not a Product Office hold"
+
+[[blocked]]
+task    = "TASK-466"
+blocker = ["TASK-465"]
+owner   = "Lane A"
+note    = "consumes TASK-465's output — its input does not exist yet, not a Product Office hold"

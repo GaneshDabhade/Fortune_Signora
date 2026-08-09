@@ -9,18 +9,18 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "5e0b3cd"
+generated_from = "e6be77e"
 task_count     = 110
 
 [lane.Lane_A]
-notice             = "D-198 changes the model: you now own a BACKLOG, not a dispatch queue. Fifteen rows, every one claimable, and the published order is this office's recommendation rather than a gate. Blocked on one? Raise it and TAKE THE NEXT — do not wait for Product Office. Ten rows stay sequenced because they consume another row's OUTPUT, and each names which. For every state read BACKLOG.md on origin/integration"
-current            = ""
+notice             = "D-199 removed Product Office's dispatch concepts entirely — current, next, future, waiting-for-release are gone from your queue file, not renamed. It now records what is ALREADY YOURS: fifteen rows, all claimable, the order a recommendation with no authority over your sequencing. Blocked on one? Raise it and take the next, with no Product Office involvement. [[blocked]] lists rows whose INPUT does"
+current            = "TASK-1400"
 next               = ""
 next_after_that    = ""
 assigned_total     = 93
 claimable          = 14
-claimable_now      = 0
-awaiting_sync      = 14
+claimable_now      = 1
+awaiting_sync      = 13
 in_flight          = 56
 actionable         = 4
 awaiting_qe_transition = 0
@@ -50,8 +50,8 @@ supply_state       = "working"
 blocked            = 6
 lane_utilization   = 1.2
 idle_prediction_days   = 0.3
-dependency_wait_days   = 1.7
-blocked_duration_days  = 1.7
+dependency_wait_days   = 1.8
+blocked_duration_days  = 1.8
 critical_path_max      = 0
 
 [[task]]
@@ -84,7 +84,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1401"
@@ -1699,7 +1699,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 1.7
+blocked_days   = 1.8
 on_integration = true
 
 [[task]]
@@ -1763,7 +1763,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 1.7
+blocked_days   = 1.8
 on_integration = true
 
 [[task]]
@@ -1795,7 +1795,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 1.3
+blocked_days   = 1.4
 on_integration = true
 
 [[task]]

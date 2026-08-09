@@ -78,7 +78,29 @@ def counts() -> dict[str, int]:
     undecomposed = [k for k, v in flows.items() if not v.get("tasks")]
     decomposed = len(flows) - len(undecomposed)
 
+    queue_a = tomllib.loads((ROOT / "docs" / "coordination" / "queues" / "lane-a.toml").read_text())
+    backlog = [str(x) for x in (queue_a.get("backlog") or [])]
+    live = {r[0] for r in rows if r[1] == "READY"}
+    import subprocess as _sp
+    integ = _sp.run(["git", "show", "origin/integration:docs/BACKLOG.md"],
+                    cwd=ROOT, capture_output=True, text=True).stdout
+    on_int = set()
+    for blk in re.split(r"\n(?=### TASK-\d+)", integ):
+        h = re.match(r"### (TASK-\d+)", blk)
+        if not h:
+            continue
+        cell = re.search(r"\|\s*\**\s*Status\s*\**\s*\|([^|]*)\|", blk)
+        v = re.sub(r"\s+", " ", (cell.group(1) if cell else "")).upper().strip()
+        if re.match(r"[^A-Z]*\**`?READY", v):
+            on_int.add(h.group(1))
+
     return {
+        # ⚡ **D-199 §6 — the metric changed.** ⛔ Not *"how many prepared tasks
+        # Product Office owns"* but *"how much uninterrupted implementation work
+        # already exists inside Lane A's backlog"*. **Those are different
+        # numbers, and only the second one is the product owner's question.**
+        "lane_backlog": len(backlog),
+        "lane_backlog_live": len([t for t in backlog if t in on_int]),
         "claimable": len(claimable),
         "prepared": len(prepared),
         "partial": len(partial),
@@ -105,14 +127,14 @@ def main() -> int:
         return "✅" if ok else "🔴"
 
     rows = [
-        ("Current claimable task", c["claimable"], "1", mark(c["claimable"], 1, exact=True)),
-        ("Fully prepared tasks", c["prepared"], f"≥{PREPARED_FLOOR}", mark(c["prepared"], PREPARED_FLOOR)),
+        ("Lane A's backlog — claimable", c["lane_backlog"], f"≥{PREPARED_FLOOR}", mark(c["lane_backlog"], PREPARED_FLOOR)),
+        ("  …of those, on integration", c["lane_backlog_live"], "all of them", mark(c["lane_backlog_live"], c["lane_backlog"])),
         ("Partially prepared tasks", c["partial"], "informational", "  "),
         ("Workflows not yet decomposed", c["undecomposed_workflows"], "0 eventually", mark(0, c["undecomposed_workflows"])),
         ("Workflows fully decomposed", c["decomposed_workflows"], f"{c['total_workflows']}", mark(c["decomposed_workflows"], c["total_workflows"])),
     ]
     width = max(len(r[0]) for r in rows)
-    print("  PREPARED PIPELINE — D-188")
+    print("  LANE A'S IMPLEMENTATION BACKLOG — D-199")
     print(f"  {'Status'.ljust(width)}  {'Count':>5}  {'Target':<14} ")
     print(f"  {'-' * width}  {'-' * 5}  {'-' * 14}")
     for label, count, target, flag in rows:

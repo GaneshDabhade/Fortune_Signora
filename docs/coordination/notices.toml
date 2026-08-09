@@ -1,7 +1,7 @@
 # ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "D-198 changes the model: you now own a BACKLOG, not a dispatch queue. Fifteen rows, every one claimable, and the published order is this office's recommendation rather than a gate. Blocked on one? Raise it and TAKE THE NEXT — do not wait for Product Office. Ten rows stay sequenced because they consume another row's OUTPUT, and each names which. For every state read BACKLOG.md on origin/integration."
+notice = "D-199 removed Product Office's dispatch concepts entirely — current, next, future, waiting-for-release are gone from your queue file, not renamed. It now records what is ALREADY YOURS: fifteen rows, all claimable, the order a recommendation with no authority over your sequencing. Blocked on one? Raise it and take the next, with no Product Office involvement. [[blocked]] lists rows whose INPUT does not exist yet, each naming what it waits on. For every state read BACKLOG.md on origin/integration."
 
 ["Lane C"]
 notice = ""

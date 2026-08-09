@@ -1273,14 +1273,21 @@ def _pipeline_findings() -> list[str]:
                 "(D-163) — the lane cannot fix this and should not have to report it."
             )
         elif claimable < _DEPTH_FLOOR:
+            # ⚡ **D-199 §6 — this reports the LANE's backlog, never Product
+            # Office's holdings.** ⛔ *"Do not measure success by how many
+            # prepared tasks Product Office owns."* **A row counted here is a
+            # row already assigned to the lane; nothing is held to be released.**
             out.append(
-                f"{lane} has {claimable} claimable row(s) and the floor is {_DEPTH_FLOOR}. "
+                f"{lane}'s own backlog holds {claimable} claimable row(s) against "
+                f"a floor of {_DEPTH_FLOOR}. "
                 "**A lane with one claimable row idles the moment that row is blocked** — "
                 "and a row is blocked by discovery, not by prediction (C-241 was found "
                 "while building, not while planning). **Release more, in a stated order** "
                 "(D-183)."
             )
-        elif claimable > 1 and not _ordered(lane):
+        elif False:  # ⛔ D-199 — RETIRED. The published order is a recommendation
+            # with no authority over the lane's sequencing, so a check enforcing
+            # it was a dispatch gate wearing a check's clothes.
             out.append(
                 f"{lane} has {claimable} claimable rows and its queue does not put them in "
                 "a strict order. **Depth without an order is a choice, and choosing is "
