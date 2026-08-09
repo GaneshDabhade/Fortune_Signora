@@ -362,6 +362,7 @@ databaseUrl: required(
 | [C-1406](#c-1406--the-review-says-the-engine-has-no-routing-defect-and-a-lane-that-implemented-it-found-three) | 🟠 **The review says the engine has no routing defect; the lane that built it found three** | **Lane C**, 2026-08-09, against [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | ⛔ **Product Owner** — same question as [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) ③ | 🟠 **`OPEN`** | ✅ **Nothing.** ⚠️ **It changes whether the Entry document is treated as settled** |
 | [C-252](#c-252--two-primitives-own-the-region-scope-failed-read-and-task-445-built-the-other-one) | **Two primitives own the region-scope failed read, and TASK-445 built the other one** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) — 🔴 **found by TASK-445's own guard failing** | **Lane C** — ⛔ **it spans two rows this office released** | ✅ **`ANSWERED`** — [TASK-1428](BACKLOG.md) | 🔴 **TASK-1409's region boundary.** ✅ **The ladder and its 23 tests ship** |
 | [C-253](#c-253--the-designs-403-names-the-missing-role-and-nothing-publishes-it) | **The design's 403 names the missing role, and nothing publishes it** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Lane C** — sequencing | 🟡 **`OPEN`** — ⚠️ **narrowed by this lane on the same day** | ⛔ **The `403` only, and SEQUENCED behind [TASK-471](BACKLOG.md) rather than waiting on a ruling** |
+| [C-258](#c-258--two-of-statedabsences-thirteen-callers-cannot-render-at-region-scope-and-the-ladder-is-what-is-short) | 🔴 **Two of `StatedAbsence`'s thirteen callers cannot render at region scope, and the ladder is what is short** | **Lane A**, 2026-08-09, holding [TASK-1428](BACKLOG.md) | **Design Authority** | 🔴 **`OPEN`** | ⚠️ **Five of thirteen call sites.** ✅ **Eight compose and are being built** |
 | [C-257](#c-257--task-1408-cannot-reach-its-definition-of-done-and-two-of-the-four-missing-regions-are-not-this-rows-to-build) | **TASK-1408 cannot reach its Definition of Done, and two of the four missing regions are not this row's to build** | **Lane A**, 2026-08-09, holding [TASK-1408](BACKLOG.md) | **Lane C** — scope | 🟡 **`OPEN`** | ⛔ **TASK-1408 reaching `IN VALIDATION`** |
 | [C-256](#c-256--the-shells-banner-region-has-no-caller-and-only-one-of-its-three-states-is-a-real-gap) | **The shell's banner region has no caller, and only one of its three states is a real gap** | **Lane A**, 2026-08-09, holding [TASK-1408](BACKLOG.md) | **Lane C** sequencing · **Design Authority** for impersonation | 🟡 **`OPEN`** | ⛔ **Nothing** — the region is built and waits for callers |
 | [C-255](#c-255--task-1409s-delivers-names-04-and-04-needs-three-capabilities-no-row-owns) | **TASK-1409's `Delivers` names §04, and §04 needs three capabilities no row owns** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) — ⚡ **D-212 §7's gate applied BEFORE filing** | **Lane C** — scope and sequencing | 🟡 **`OPEN`** | ⛔ **§04 only.** ✅ **The ladder ships** |
@@ -8346,6 +8347,45 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 **②** **Confidence** — the design shows it in two places at once, *"6 sources · confidence 4 of 5"*. **`components/ui/confidence.tsx` already takes exactly `level` and `sources`**, so the shape is settled and only the source is not.
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
+
+## C-258 · Two of `StatedAbsence`'s thirteen callers cannot render at region scope, and the ladder is what is short
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-1428](BACKLOG.md)** — ⚡ **found by measuring the thirteen call sites before composing, which is what the row asked for** |
+| **Owner** | **Design Authority** — ⛔ **the gap is in the ladder, and [TASK-1409](BACKLOG.md)'s row says so in advance**: *"if its region scope will not carry `StatedAbsence`'s sentence, that is a finding against the ladder, not a licence to keep two."* ✅ **This is that finding, taken at its word** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **INCOMPLETE DESIGN** — **the scope ladder has no page-scope failure state, and no way to say a region failure interrupted something** |
+| **Status** | 🔴 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⚠️ **Five of thirteen call sites.** ✅ **The other eight compose cleanly and this lane will build them** |
+
+### ✅ Eleven of thirteen are exactly what the ruling describes
+
+**`as='card'` and `as='inline'` with the default polite announcement render a sentence in a region.** ✅ **`SystemState` at `scope="region"` carries all of it** — `role="status"`, `aria-live="polite"`, the sentence as the description. ⛔ **No reword, no signature change, no caller touched.**
+
+### 🔴 ① Four callers use `as="page"`, and page scope has no failure state
+
+**Callers**: [`app/(app)/page.tsx:649`](../frontend/app/(app)/page.tsx) · [`accounts/[accountId]/page.tsx:591`](../frontend/app/(app)/accounts/[accountId]/page.tsx) · [`settings/organization/page.tsx:100`](../frontend/app/(app)/settings/organization/page.tsx) · [`business/page.tsx:119`](../frontend/app/(app)/business/page.tsx).
+
+📁 **The ladder's page scope owns `404 · 403 · feature-not-enabled · permission-required`.** ⛔ **All four are REFUSALS. None of them is *"the query behind this screen failed."*** ⚡ **The design's own page-scope test is *"the primary record or query failed, **or** the person may not see it at all"* — the sentence names both, and only the second half has states.**
+
+⚠️ **Today those four render `EmptyState`** — ⛔ **which is the absence primitive drawing a failure**, and precisely the conflation [TASK-1409](BACKLOG.md) was written to end. **The row is right that it must stop; the ladder has nowhere for it to go.**
+
+⛔ **This lane will not invent a page-scope state.** **Adding one to `LEGAL_STATES` is amending the design in code**, and 📁 **shell rule 14's principle applies**: *"every new capability is an amendment to this document, not a local decision."*
+
+### 🔴 ② One caller announces assertively, and scope-derived politeness cannot express it
+
+📁 **[TASK-1428](BACKLOG.md) says *"politeness comes from the scope and never from the caller"*** — ✅ **and `SystemState` already works that way, correctly.** ⛔ **But [`components/commercial/segments.tsx:104`](../frontend/components/commercial/segments.tsx) passes `announce="assertive"`, and [`tests/components/segments.test.tsx:136`](../frontend/tests/components/segments.test.tsx) asserts `getByRole('alert')`.**
+
+🔴 **Composing as instructed makes that test fail, and making it pass by editing the assertion would be the defect.** 📁 **`stated-absence.tsx`'s own comment records why the prop exists**: *"Added because removing it was a regression. `segments.tsx` used `role='alert'` and a test asserted it; folding nine implementations into one would have quietly dropped that, and §20c calls an accessibility loss a defect rather than a trade-off."*
+
+⚡ **Both rules are right and they disagree.** 📁 **The ladder's `4.1.3`**: *"only a state that ends the session announces assertively."* 📁 **`StatedAbsence`'s case**: *"a failure that interrupted something the customer had just done"* — **which is not a session-ending state and is still worth interrupting for.**
+
+### ✅ What this lane proposes, and it is input rather than authority
+
+**①** **A page-scope failure state** — the ladder's page scope gains one member for *"the query behind this screen failed"*, distinct from the four refusals. ⚡ **The design already implies it in its own `when` sentence.**
+**②** **Either** the ladder admits *"interrupted the customer's own action"* as a second assertive trigger, **or** [`segments.tsx`](../frontend/components/commercial/segments.tsx) is ruled to have been wrong and its test changes with a stated reason. ⛔ **Not silently, and not by this lane.**
+
+✅ **Meanwhile the eight clean callers get composed and the row moves.**
 
 ## C-257 · TASK-1408 cannot reach its Definition of Done, and two of the four missing regions are not this row's to build
 
