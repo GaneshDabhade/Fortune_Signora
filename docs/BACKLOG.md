@@ -1456,6 +1456,123 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **A flaky budget teaches people to retry the build.** ✅ **Pick a metric that is deterministic — bundle bytes before first-paint milliseconds** |
 | **Build-vs-Buy** | ⚠️ **Commodity — the bundler already reports size; start there** |
 
+### TASK-1439 · 🔴 REBUILD · The navigation rail becomes the one the design draws
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **INCORRECT IMPLEMENTATION — rebuild, do not enhance** ([D-217](DECISION_REGISTER.md) §5) |
+| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/), `navItems` · `railUtility` · `navSpecs`** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-217](DECISION_REGISTER.md)** |
+| 🔴 **The measurement** | 📁 **The design draws EIGHT primary entries and two sub-entries**: **`Home · Forecast · Pipeline · Accounts (Enterprise, Mid-market) · Deals · Conversations · Signals · Reports`**, ⚡ **plus three utilities pinned to the bottom: `Settings · Shortcuts · Docs & support`.** ⛔ **`navigation.tsx:68–70` ships THREE: `Attention · Your business · Settings`.** 🔴 **Not one of the three appears in the design, and not one of the design's eleven appears in the product** |
+| 🔴 **Why this survived, and it is a governance failure rather than a coding one** | 📁 **The file's own comment says where it came from**: *"Two entries, reviewed from first principles at M12.3 (D38)"*, then *"Three entries from CX-05, and the third had to earn it."* ⚡ **Every word of that reasoning is sound and it is reasoning from PRODUCT REVIEW, dated before [D-128](DECISION_REGISTER.md) made the 26 finalized designs canonical** — 📁 ***"existing code is not the authority. Historical UI is not the authority."*** ⛔ **D-128 did not reach this file because nothing re-derived it, and [C-306](LANE_COORDINATION.md) — which is exactly this conflict — has sat `OPEN` marked *becomes P1 the moment a refinement slice reaches that screen*.** 🔴 **It reached it. Nobody noticed** |
+| ⚡ **Delivers** | **The eleven entries, in the design's order, with the design's states** — 📁 *"Hover: sunken tint. Active: brand tint, 600 label, brand icon. Focus: 1px brand border plus a 3px tint halo — never the browser ring."* · **second level indents to 30px and never nests further** · **restricted destinations stay visible at 45% with a lock and explain on click** · **counts are neutral; a dot means unread and only Signals uses it** |
+| ✅ **What is already correct and must NOT be rebuilt** | 📁 **`RAIL_WIDTH = { expanded: 232, collapsed: 56 }` at [`lib/shell/rail.ts`](../frontend/lib/shell/rail.ts):35 matches the design exactly** · **the collapse, its persistence per user and device class, and `[` to toggle all stand** |
+| 🔴 **An entry that leads nowhere** | ⚠️ **The comment's strongest argument against the six was *"three of six said coming soon"*.** ✅ **That argument is answered by [TASK-1438](BACKLOG.md) and the design's own rule, not by deleting entries**: 📁 *restricted destinations stay visible at 45% with a lock and EXPLAIN ON CLICK.* ⛔ **The design's answer to an unbuilt destination is a designed locked state, never an absent door** |
+| **Change Budget** | 🟢 **`components/shell/navigation.tsx`** — ⚠️ **it is the frozen foundation and this is the UI Migration Program** ([CLAUDE.md](../CLAUDE.md) line 429), **toward the finalized design, which is the direction that makes it the migration** |
+| **Playwright coverage** | **Every design entry is present** · **an unbuilt destination renders locked and explains on click rather than 404ing** |
+| **Component coverage** | **The eleven entries and their order are asserted against the design's list** · ⛔ **a twelfth cannot be added without the assertion failing** |
+| ♿ **Accessibility** | 📁 **The rail is `nav` labelled *"Primary"*** — ⛔ **it is labelled `"Main"` today** · **collapsed-rail tooltips hoverable, dismissible, persistent (1.4.13)** |
+| **Definition of Done** | **The rail renders the design's eleven entries with the design's states, and a restricted one explains rather than disappears** · **certified · `main`** |
+| ⚠️ **Risk, named before it is met** | 🔴 **This row DELETES a navigation three product reviews shaped.** ✅ **That is [D-217](DECISION_REGISTER.md) §6 in force: *existing code is not an argument for keeping it*.** ⛔ **If the design is wrong the DESIGN changes, and that is [C-306](LANE_COORDINATION.md), not this row** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1440 · 🔴 REBUILD · The top bar's five slots, and only those five
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **INCORRECT IMPLEMENTATION — rebuild** |
+| **Design authority** | 📁 **App Shell `topBarSlots`** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
+| 🔴 **The measurement** | 📁 **Design: `Breadcrumb (flex, min 0)` · `Search 224×32 — opens the palette on click or ⌘K` · `System status — green pill, hides its label below 1280` · `Notifications 32×32 — count caps at 99+, opens a 400px panel not a page` · `Help & account 32+32 — help before account, always last; the avatar is the only circle in the shell`.** ⛔ **Shipped: a raw workspace `<select>`, an account search, a THREE-BUTTON theme toggle, a plain-text email address, and a `Sign out` button.** ✅ **Exactly one of the five design slots exists — the breadcrumb** |
+| 🔴 **Two of the shipped controls are in the top bar against a rule the shell already enforces** | 📁 **Shell rule 02: *"No module may add anything to the top bar."*** ⛔ **The theme toggle and the sign-out button are in it, and `lib/shell/constitution.ts` exports that rule as executable code while the frame beside it breaks it** |
+| ⚡ **Delivers** | **The five slots in the design's order and sizes.** ⛔ **The workspace switcher LEAVES the top bar — see [TASK-1441](BACKLOG.md)** · **theme moves out of the shell frame; the design has no top-bar theme control** |
+| ✅ **Reuse — measured** | 📁 **`components/ui/breadcrumb.tsx` ✅ keep · `components/ui/command-palette.tsx` ✅ EXISTS AND IS UNMOUNTED — it is the Search slot's target ([TASK-1442](BACKLOG.md))** · ⛔ **nothing exists for system status, notifications or the account menu** |
+| **Change Budget** | 🟢 **`components/shell/**`** — the UI Migration Program |
+| **Playwright coverage** | **All five slots render in the design's order** · **no control outside the five is present** |
+| ♿ **Accessibility** | 📁 **Every top-bar control is a 32px target with 8px separation; 44px on touch (2.5.8)** |
+| **Definition of Done** | **The top bar is the design's five slots and nothing else** · **certified · `main`** |
+| ⚠️ **Risk** | ⛔ **Keeping `Sign out` visible because removing it feels like a regression.** ✅ **The design puts it inside the account menu, which is slot five** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1441 · The workspace switcher moves into the rail, where the design puts it
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **INCORRECT IMPLEMENTATION — wrong region** |
+| **Design authority** | 📁 **App Shell `landmarks`: *"nav[navigation] — the rail, labelled 'Primary'. **Workspace switcher is its first child.**"*** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** · **Status** ⏸️ **`SEQUENCED` behind [TASK-1439](BACKLOG.md)** — ⛔ **it becomes the rail's first child, so the rail is rebuilt first** |
+| 🔴 **The measurement** | ⛔ **Shipped in the TOP BAR as a native `<select>` rendering `E2E Org 1786291847211`.** 📁 **The design draws a grouped panel — `Northwind Holdings` / `Shared with you`, each row an initial badge, name, `Enterprise · Admin`, and a tag: `Current` · `Prod` · `Sandbox` · `Guest`** |
+| 🔴 **Why the `<select>` is a product defect and not a styling one** | ⛔ **A `<select>` cannot render a group heading with a role, a sandbox marker or a guest tag** — ⚡ **so a person cannot tell a production workspace from a sandbox copy before switching into it**, which is the one thing this control exists to prevent |
+| ⚡ **Delivers** | **The grouped switcher as drawn, as the rail's first child**, with **`⌘⇧W`** |
+| **Change Budget** | 🟢 **`components/shell/**`** |
+| **Definition of Done** | **The switcher is the rail's first child and distinguishes production, sandbox and guest before the switch** · **certified · `main`** |
+| ⚠️ **Risk** | ⛔ **Restyling the `<select>`.** ✅ **The shape is the deliverable, not the skin** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1442 · ⌘K opens the palette, which is what the design binds it to
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **INCORRECT IMPLEMENTATION — resolves [C-259](LANE_COORDINATION.md)** |
+| **Design authority** | 📁 **App Shell `topBarSlots`: *"Search — opens the palette on click or ⌘K"*** · 📁 **shell rule 07: *"anything clickable is reachable in the palette"*** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** · **Status** ✅ **`READY` — Lane C, 2026-08-09** |
+| 🔴 **The measurement** | ⛔ **`components/intelligence/account-search.tsx`:72 binds `⌘K` to account search.** ✅ **`components/ui/command-palette.tsx` is complete and tested and NO PRODUCTION FILE MOUNTS IT** — ⚡ **flagged by the [D-214](DECISION_REGISTER.md) §8 conformance audit before this ruling and raised independently by Lane A as [C-259](LANE_COORDINATION.md)** |
+| 📁 **What the palette is meant to hold** | **`Ask Signora` · `Recents` · `Actions` (`⌘⇧T`, `⌘⇧E`) · `Navigate`** — ⛔ **account search is ONE group inside it, not the thing that owns the shortcut** |
+| ⚡ **Delivers** | **`⌘K` and the Search slot both open the palette; account results become a group inside it** |
+| ✅ **Reuse** | 📁 **The palette already encodes its own contract**: *"the palette never sorts, because the caller's order is the caller's ranking."* ⛔ **Do not build a second one** |
+| **Definition of Done** | **`⌘K` opens the palette from anywhere in the shell, and account search is reachable inside it** · **certified · `main`** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1443 · The shell's four breakpoints are the design's, not Tailwind's defaults
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **INCORRECT IMPLEMENTATION** |
+| **Design authority** | 📁 **App Shell `breakpoints`** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** · **Status** ✅ **`READY` — Lane C, 2026-08-09** |
+| 🔴 **The measurement** | 📁 **The design specifies four: `≥1600` · `1280–1599` (the reference layout) · `1024–1279` · `<1024`.** ⛔ **`app-shell.tsx` uses `md:` and `sm:` only — Tailwind's 768px and 640px.** ⚡ **So every responsive decision in the frame fires at a width the design never named**, and the 1024–1279 band — 📁 *"rail collapses to 56px icons with tooltips, utility panel closes to a 28px tab rail, filter strip stays"* — **does not exist at all** |
+| ⚡ **Delivers** | **Four named breakpoints as tokens, and the frame's behaviour at each** — ⛔ **not a media-query sweep of every component** |
+| **Definition of Done** | **The frame behaves as the design's four bands describe, at the design's widths** · **certified · `main`** |
+| 📱 **Responsive behaviour** | 📁 **`<1024`: rail becomes a sheet from a top-bar button; filter strip collapses to one `Scope` button with a count; tables become row cards. `<640`: review, approve, comment and ask only** |
+| ⚠️ **Risk** | ⛔ **Redefining Tailwind's global breakpoints and moving every screen at once.** ✅ **Name the four, apply them in the SHELL; screens migrate on their own rows** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1444 · The shell's accessibility contract, which is nine numbered rules
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **MISSING — and accessibility is a defect class, never an enhancement** ([§20c](../CLAUDE.md)) |
+| **Design authority** | 📁 **App Shell `Rules` (2.4.1 · 2.4.3 · 2.4.7 · 2.1.2 · 4.1.3 · 1.4.13 · 2.5.8 · 1.4.10 · 2.2.6) and `landmarks`** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** · **Status** ✅ **`READY` — Lane C, 2026-08-09** |
+| 🔴 **The measurement** | ⛔ **Skip links: the design requires THREE — to content, to navigation, to the utility panel, visible on focus. `grep` finds NONE.** ⛔ **`nav` is labelled `"Main"`; the design says `"Primary"`.** ⛔ **No `search` landmark.** ⛔ **Nothing announces a route change politely (4.1.3)** |
+| ⚡ **Delivers** | **The three skip links · the design's landmark names · the 2px brand focus ring at 2px offset, never suppressed · a polite route-change announcement · reflow to 320px at 400% zoom** |
+| ✅ **What already holds** | 📁 **`ErrorBoundary region=` per shell region is in place, and rule 13 — *errors render inside the shell unless the shell itself failed* — is satisfied** |
+| **Definition of Done** | **Each of the nine rules has a test that fails without it** · **certified · `main`** |
+| ⚠️ **Risk** | ⛔ **Adding an accessibility spec that asserts configuration rather than behaviour.** ✅ **A skip link is proven by focusing it and landing** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1445 · The keyboard map the design publishes
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **MISSING** |
+| **Design authority** | 📁 **App Shell `shortcutGroups` · `navSpecs.Keyboard`** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** · **Status** ⏸️ **`SEQUENCED` behind [TASK-1439](BACKLOG.md) and [TASK-1442](BACKLOG.md)** — ⛔ **`G H`/`G F`/`G P`/`G A` name rail destinations, so the rail is rebuilt first** |
+| 📁 **The map** | **Surfaces** `⌘K` palette · `⌘⇧A` Ask Signora · `⌘⇧N` notifications · `⌘⇧W` switch workspace · `⌘.` utility panel · `?` shortcut reference. **Navigate** `G H` `G F` `G P` `G A` · `⌘[` `⌘]` back/forward · `[` collapse rail |
+| ✅ **Implemented today** | **`[` only** — 📁 `lib/shell/use-rail-collapse.ts`:80, and it is correct |
+| ⚡ **Delivers** | **The map, and the `?` reference screen that lists it** — ⛔ **a shortcut with no discoverable reference is a shortcut nobody uses** |
+| **Definition of Done** | **Every shortcut in the design's three groups works, and `?` lists them** · **certified · `main`** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
 ### TASK-1438 · `/w/:workspace` — the route tree the engine already returns
 
 | | |

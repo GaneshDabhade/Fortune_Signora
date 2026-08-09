@@ -1479,9 +1479,38 @@ updated      = 2026-08-09
 #    now have rows. TASK-1409 leads the new ones deliberately: System States
 #    is a PLATFORM row every other workflow renders, and thirteen workflows
 #    will each improvise a 404 if it lands after them.
-backlog = ["TASK-1438", "TASK-1411", "TASK-1427", "TASK-1403", "TASK-1402", "TASK-1422",
-            "TASK-1407", "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493",
-            "TASK-495", "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+backlog = ["TASK-1439", "TASK-1440", "TASK-1442", "TASK-1443", "TASK-1444", "TASK-1438",
+            "TASK-1411", "TASK-1427", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
+            "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
+            "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+# 🔴 D-217 — COMMON PLATFORM AUDIT. The product owner reviewed the running
+#    product against the App Shell design and the shell does not match it.
+#    This office audited it and the finding is upheld, precisely:
+#
+#      navigation.tsx ships 3 entries   the design draws 8 + 2 sub + 3 utils
+#      the top bar ships 5 controls     one of them is a design slot
+#      Cmd-K opens account search       the design binds it to the palette
+#      the frame breaks at 768/640      the design names 1600/1280/1024
+#      zero skip links                  the design requires three
+#
+#    ⛔ These are REBUILDS, not enhancements. D-217 §5: if a shared component
+#    is fundamentally different from the finalized design, do not keep
+#    patching it. §6: existing code is not an argument for keeping it.
+#
+# ✅ WHAT IS CORRECT AND MUST NOT BE TOUCHED — measured, not assumed:
+#    design tokens are EXACT — the design's #134e76 is --color-accent
+#    19 78 118, and #1f7a5c is --color-success 31 122 92
+#    RAIL_WIDTH 232/56 matches the design exactly
+#    the 14 shell rules, which you made executable in constitution.ts
+#    the system-state ladder, StatedAbsence, CopyableId, drawer, dialog
+#    ⚡ The token layer is faithful. It is the shell's COMPOSITION that was
+#    invented, and that distinction is why this is six rows and not a rewrite.
+#
+# 🔴 TASK-1439 is not your defect. navigation.tsx documents its own reasoning
+#    from D38 product review, and every word of it is sound — it predates
+#    D-128 making the designs canonical, and nothing re-derived it. That is
+#    a Product Office failure to propagate a ruling, and it is recorded as
+#    one in D-217.
 # ⚡ TASK-1438 ADDED AT THE TOP 2026-08-09 — D-216, ruling C-263.
 #    /w/:workspace/home, the route tree the entry engine already returns.
 #    Your refusal to create it inside TASK-499 is upheld in full and for the
