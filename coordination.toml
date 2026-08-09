@@ -13,8 +13,8 @@ generated_from = "5e0b3cd"
 task_count     = 110
 
 [lane.Lane_A]
-notice             = "D-193/D-194: 'Authenticated Entry' is now the authority for ALL post-login behaviour. TASK-468 and TASK-469 (both yours) have NO DEFINED EXIT and the spec says both must exit through resolveEntry with intent=null — do NOT choose a destination in either flow. Also: sign-in-form.tsx:148 router.push('/') is the entry decision hardcoded in a module, which the spec forbids; it is a finding, not yours t"
-current            = "TASK-470"
+notice             = "B-152 FIXED — you were right and it was mine. `current` is now EMPTY rather than naming TASK-470, because on_integration was a PREFERENCE where it needed to be a FILTER (C-425, which this office wrote). Empty current beside claimable=1 is the true reading: work exists, QE has not integrated it. Integration holds ONE READY row and it is TASK-497, Lane C's own — the planning-sync migration that ends"
+current            = ""
 next               = ""
 next_after_that    = ""
 assigned_total     = 93
