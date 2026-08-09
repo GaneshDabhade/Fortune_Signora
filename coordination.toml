@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "7bc4b53"
+generated_from = "2afe285"
 task_count     = 130
 
 [lane.Lane_A]
-notice             = "The shell audit came back clean — no new design, no new rows. Before you build TASK-1408, read the fourteen shell rules at the end of the App Shell document; they are the acceptance criteria and they are now named in the row. Rule 14 is the one that matters most: every new shell capability is an amendment to that document, not a local decision. A module that needs something raises it."
-backlog            = ["TASK-1408", "TASK-1405", "TASK-1410", "TASK-1411", "TASK-476", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1409", "TASK-1422", "TASK-1427", "TASK-452", "TASK-471", "TASK-473", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-492", "TASK-493", "TASK-495", "TASK-496", "TASK-499"]
+notice             = "Sustained implementation mode — D-212. The finalized design is assumed correct; stop only for a self-contradiction, invented customer behaviour, a security issue, a governance violation, or a genuinely missing capability. Everything else proceeds. Governance now runs beside you rather than in front. TASK-1409 carries C-1403 already: the 403's approver names have no publisher."
+backlog            = ["TASK-1408", "TASK-1405", "TASK-1410", "TASK-1411", "TASK-476", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1427", "TASK-452", "TASK-471", "TASK-473", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-492", "TASK-493", "TASK-495", "TASK-496", "TASK-499"]
 assigned_total     = 112
-claimable          = 23
-claimable_now      = 23
+claimable          = 22
+claimable_now      = 22
 awaiting_sync      = 0
-in_flight          = 57
-actionable         = 1
-awaiting_qe_transition = 57
+in_flight          = 58
+actionable         = 2
+awaiting_qe_transition = 58
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 32
 lane_utilization   = 0.0
-idle_prediction_days   = 3.3
+idle_prediction_days   = 3.1
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -213,15 +213,15 @@ on_integration = true
 [[task]]
 id            = "TASK-1409"
 title         = "Workflow 28 · System States — the scope ladder, and a failure that claims the smallest sur"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
