@@ -86,7 +86,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 |---|---|
 | **Module** | **`platform_foundation`** — [`infra/environments.py`](../infra/environments.py) `--exports`, measured against [`backend/.env`](../backend/.env) |
 | **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
-| **Severity** | 🟡 — ⛔ **nothing is broken at runtime.** ⚡ **What breaks is a reader**: the published number is the one a lane looks up, and it is not the one anything connects to |
+| **Severity** | 🔴 **RAISED from 🟡 on 2026-08-09 by the lane that filed it, with a measurement that contradicts its own first assessment.** ⛔ **I wrote *"latent, not live — nothing sets `SIGNORA_ENVIRONMENT` for the frontend today, so every clone works."* That was wrong about the half that matters.** ⚡ **The `Makefile` does not read `SIGNORA_ENVIRONMENT`; it reads the MODEL directly**: `SIGNORA_PG_PORT := $(shell python3 infra/environments.py --exports …)` at line 134, and `E2E_ENV` at 452–453 builds both database URLs from it. **So `make e2e` cannot re-seed and cannot run**: `ConnectionRefusedError: [Errno 111] Connect call failed ('127.0.0.1', 5732)`. 🔴 **The customer-journey gate — [§19](../CLAUDE.md)'s handover requirement, [D-113](DECISION_REGISTER.md)/[D-114](DECISION_REGISTER.md) — cannot be run by any lane through its documented command.** ✅ **`make e2e-quick` works only because it skips the seed** |
 | **Status** | **`OPEN`** — **reported by Lane A, 2026-08-09.** ⚠️ **Reported WITH the mistake it caused, which is the only reason it is worth a row rather than a shrug** |
 | **Found** | 2026-08-09 by Lane A, ⛔ **by making the error and then checking the other source** |
 
@@ -105,6 +105,20 @@ docker exec signora-v2-postgres-1 psql -U signora -d signora_lane_a \
 ```
 
 **Expected.** ⚡ **The published allocation is where the lane's database actually is.**
+
+> 🔴 **Second reproduction, 2026-08-09, and it is the one that changes the severity:**
+>
+> ```
+> HEADLESS=1 make e2e
+> → ConnectionRefusedError: [Errno 111] Connect call failed ('127.0.0.1', 5732)
+>   Makefile:459
+> ```
+>
+> ⛔ **This is not a reader being misled — it is the documented command for the
+> customer-journey gate failing outright.** ⚡ **`make e2e` re-seeds first, and
+> the seed connects through `E2E_ENV`, which is built from `SIGNORA_PG_PORT`,
+> which is `infra/environments.py --exports`.** ✅ **`make e2e-quick` runs
+> because it skips the seed and Playwright reaches the app over HTTP.**
 
 **Actual.** ⛔ **`--exports` says `5732`. Nothing listens there.** **The lane's database is `signora_lane_a` on `5432`**, fully migrated, and the API on `:8300` is healthy against it.
 
