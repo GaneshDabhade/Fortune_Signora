@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "227a074"
-task_count     = 134
+generated_from = "e93cd0d"
+task_count     = 140
 
 [lane.Lane_A]
 notice             = "Conformance audit, D-214 §8: components/ui/command-palette.tsx is complete, tested and mounted by nothing — and shell rule 7 says anything clickable is reachable in the palette, which is the row you are holding. Do not build a second one; its own comments carry the contract, including that it never sorts because the caller's order is the ranking. Recorded on your row. Same for connect-panel.tsx."
-backlog            = ["TASK-1405", "TASK-1410", "TASK-1411", "TASK-476", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1427", "TASK-452", "TASK-471", "TASK-473", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-492", "TASK-493", "TASK-495", "TASK-496", "TASK-499"]
-assigned_total     = 114
-claimable          = 23
-claimable_now      = 21
-awaiting_sync      = 2
-in_flight          = 59
-actionable         = 3
+backlog            = ["TASK-1405", "TASK-1410", "TASK-1411", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1427", "TASK-452", "TASK-471", "TASK-473", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-492", "TASK-493", "TASK-495", "TASK-496", "TASK-499"]
+assigned_total     = 120
+claimable          = 24
+claimable_now      = 20
+awaiting_sync      = 4
+in_flight          = 61
+actionable         = 5
 awaiting_qe_transition = 0
-blocked_on_integration = 4
+blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 32
-lane_utilization   = 11.8
-idle_prediction_days   = 3.3
+blocked            = 35
+lane_utilization   = 12.2
+idle_prediction_days   = 3.4
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -46,8 +46,8 @@ supply_state       = "working"
 blocked            = 7
 lane_utilization   = 1.2
 idle_prediction_days   = 0.4
-dependency_wait_days   = 2.0
-blocked_duration_days  = 2.0
+dependency_wait_days   = 2.1
+blocked_duration_days  = 2.1
 critical_path_max      = 0
 
 [[task]]
@@ -501,6 +501,22 @@ on_integration = true
 [[task]]
 id            = "TASK-1428"
 title         = "One failed-read primitive — `StatedAbsence` becomes the ladder's region scope"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-1429"
+title         = "The four improvised error surfaces converge on the ladder"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
@@ -515,8 +531,88 @@ blocked_days   = 0.0
 on_integration = false
 
 [[task]]
-id            = "TASK-1429"
-title         = "The four improvised error surfaces converge on the ladder"
+id            = "TASK-1432"
+title         = "The filter strip, behind the first module that reads scope"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "— Lane C, 2026-08-09, behind the first module that reads scope.** ⛔ **"
+waiting_for    = "— Lane C, 2026-08-09, behind the first module that reads scope.** ⛔ **Not `BLOCKED`: nobody owes an answer.** ⚡ **It frees itself the moment any modul"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1433"
+title         = "The utility panel, behind the content its three tabs name"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "— Lane C, 2026-08-09, behind the first of Insights · Activity · Notes."
+waiting_for    = "— Lane C, 2026-08-09, behind the first of Insights · Activity · Notes.** ⛔ **Not `BLOCKED`: nobody owes an answer**"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1434"
+title         = "The shell's banner region gets its callers"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "— Lane C, 2026-08-09, behind the state each banner reports**"
+waiting_for    = "— Lane C, 2026-08-09, behind the state each banner reports**"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1435"
+title         = "The offline mutation queue, visible and ordered"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1436"
+title         = "Last connected, and a retry that re-checks"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1437"
+title         = "The maintenance and platform-outage pages, served from nothing"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
@@ -1341,7 +1437,7 @@ unblocks       = ["TASK-465"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 1
-estimated_ready = "— behind [TASK-476](#task-476--headed-becomes-the-default-a-lane-revie"
+estimated_ready = "when TASK-476 complete"
 waiting_for    = "— behind [TASK-476](#task-476--headed-becomes-the-default-a-lane-reviews-in-and-the-rule-stops-being-untrue), Lane C 2026-08-08.** ⚠️ **The trigger it"
 blocked_days   = 0.0
 on_integration = true
@@ -1525,15 +1621,15 @@ on_integration = true
 [[task]]
 id            = "TASK-476"
 title         = "Headed becomes the default a lane reviews in, and the rule stops being untrue"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-464"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -2063,7 +2159,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 2.0
+blocked_days   = 2.1
 on_integration = true
 
 [[task]]
@@ -2127,7 +2223,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 2.0
+blocked_days   = 2.1
 on_integration = true
 
 [[task]]
@@ -2175,7 +2271,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 1.6
+blocked_days   = 1.7
 on_integration = true
 
 [[task]]
