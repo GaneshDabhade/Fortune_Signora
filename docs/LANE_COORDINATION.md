@@ -8266,6 +8266,51 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 ---
 
+## C-250 · The Entry Engine's rule table counts twenty-four, the row says twenty-one, and one rule cannot fire
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **implementing [TASK-1400](BACKLOG.md)** — ⚡ **all three found by building the table, not by reading it** |
+| **Owner** | **Lane C (Product Office)** for ① · ⛔ **the product owner** for ③, because it is a behaviour a customer sees |
+| **Status** | **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **The engine ships against the design** ([D-138](DECISION_REGISTER.md)), **with every number asserted from the design document rather than transcribed**, so a ruling either way changes one file and fails loudly |
+| **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is what a reviewer is shown** — three points where the row and the design disagree, and a reader holding both should see them as raised rather than as slips |
+
+### ① The count is 24, and [TASK-1400](BACKLOG.md) says 21 — three times
+
+**The row says *"the 21 reason codes as a closed type"*, repeats it in *Closed, not open*, and again in the Definition of Done.** ⚡ **The design's rule table carries 24 rules and 24 DISTINCT codes** — extracted from the document's own script data and checked for duplicates, of which there are none.
+
+```
+rules parsed: 24   ·   distinct reason codes: 24
+```
+
+✅ **24 shipped.** [D-138](DECISION_REGISTER.md) makes the snapshot the implementation authority and [§21](../CLAUDE.md) says implement the design rather than redesign it while building. ⛔ **Shipping 21 would leave three rules with no code**, and a rule with no code cannot answer *"why did I land here"* — **which the design states as the entire purpose of the codes.**
+
+### ② A resolution is not a destination — read flat, seven rules are dead
+
+**The design says *"evaluated top to bottom"* and *"first match wins"*.** ⚠️ **Taken literally as one flat list, rules 18–24 can never fire**, because **rules 10–14 partition every membership shape there is**: none · exactly one · several with a healthy last-used · several without · several with an unhealthy one. **Every person matches one of them.**
+
+⛔ **The design forbids that outcome in terms** — 📁 ***"Every rule has a fixture; the twenty-four cases are a test suite, not a diagram."***
+
+✅ **§02 gives the reading that works, and it is the document's own**: 📁 *"each gate depends on the one before it **resolving**, and **a gate that fails** produces a designed screen."* **Two outcomes, not one.** So rules **11, 12 and 14 resolve** the workspace and the walk continues; everything else terminates. ⚡ **This is implemented and every rule but one is now reachable, each with its own case.** **Recorded because it is an interpretation**, and a later reader should find it argued rather than assumed.
+
+### ③ 🔴 Rule 24 `HOME` cannot fire, and the design calls it the most common outcome
+
+**Rule 24's condition is *"Everything healthy, no other rule matched"*.** ⛔ **Gate 3 always produces a reason**, so *no other rule matched* is never true — **and the same document tints rule 24's row and describes it as *"the default and the most common outcome"*.** ⚠️ **Both cannot hold.**
+
+**The question, and it is a product question rather than an engineering one:**
+
+> **When a person lands on Home with nothing remarkable about their entry, should the reason code read `HOME`, or the resolution code that chose the workspace — `SOLE_WORKSPACE`, `LAST_USED` or `FELL_THROUGH`?**
+
+⚡ **It matters because the code is customer-facing infrastructure**, not a log line: the design puts it *"in the support diagnostics bundle"*, and **whichever answer is right, support reads it.**
+
+✅ **Shipped meanwhile: the resolution code wins and rule 24 is kept as the totality guard.** ⛔ **It is not deleted** — it is what makes `resolveEntry` total, and **a router handed `undefined` fails far from the cause.** ⚡ **A test asserts it cannot currently be reached**, so if the answer is `HOME` the change is one rule and the test says so.
+
+### ④ One gap the design does not cover, named rather than invented
+
+**Rule 04 `SESSION_EXPIRED`'s route column reads `(intent preserved)`.** ⚠️ **With no intent there is nothing to preserve, and the document does not say where that lands.** ⛔ **Not invented into a product decision** — it currently falls to `/workspaces`, and **the choice is flagged here rather than buried in a route table.**
+
+---
+
 ## C-249 · Two rows on the AI screen are policies, and neither policy exists
 
 | | |
