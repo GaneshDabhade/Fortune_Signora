@@ -235,7 +235,7 @@ await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
 | **Module** | `workspace_tenancy` — [`0046_security_event.py`](../backend/migrations/versions/0046_security_event.py), `TASK-492` |
 | **Current assignee** | **Lane A** — the module's current assignee |
 | **Severity** | 🟠 — ⛔ **§8 is explicit that this class is a bug**: *"any schema change must be accompanied by a corresponding update to the relevant architecture documentation **in the same change** — undocumented schema drift is treated as a bug."* ⚡ **The implementation is excellent and that is why this row is only about the documentation** |
-| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-09, **on the poll it arrived.** **`VERIFIED` is QE's.** ✅ **[`11-tenancy.md`](architecture/11-tenancy.md) gains *Append-Only Tenant Tables, and the Security Event Stream*** — the shape `opportunity_state` set and `action_batch` repeated, the two-identity rule and why both columns are non-nullable from the first migration, `occurred_at` against `created_at`, why `subject_id` carries no foreign key, **and the open `DELETE` question recorded as open rather than settled.** ✅ **[`04-modules.md`](architecture/04-modules.md) gains the stream under Workspace & Tenancy** — what it is, that other modules reach it through `public/` and never the table, and why no reader is published. ✅ **A Slice Handoff is written**, in the commit that closes this. ⚠️ **The finding is right and the reason it happened is worth more than the fix**: **I wrote a Slice-Handoff for six consecutive slices and not for the one that added a table** — ⛔ **the three `TASK-492` commits carried long messages that read like handoffs and satisfied none of the fields**, and §12's own reason is rotation: 📁 **this row's producers are BLOCKED, so the next slice of this table is very likely somebody else's** |
+| **Status** | ✅ **`VERIFIED` — QE**, 2026-08-09, at `2b76ca56`. **Measured, not read**: `security_event` now appears **2×** in [`11-tenancy.md`](../docs/architecture/11-tenancy.md) and **1×** in [`04-modules.md`](../docs/architecture/04-modules.md), against `0` and `0` when the row was filed. ⚡ **And the lane recorded QE's `DELETE` observation as an OPEN question rather than settling it** — *"because QE raised it and it is the product owner's"* — **which is the correct disposal of a question a lane may not answer.** ✅ **Both new slices this cycle also carry a `Slice-Handoff`, so the habit half is closed too.** *(was `FIXED` — Lane A, 2026-08-09.)* ✅ **[`11-tenancy.md`](architecture/11-tenancy.md) gains *Append-Only Tenant Tables, and the Security Event Stream*** — the shape `opportunity_state` set and `action_batch` repeated, the two-identity rule and why both columns are non-nullable from the first migration, `occurred_at` against `created_at`, why `subject_id` carries no foreign key, **and the open `DELETE` question recorded as open rather than settled.** ✅ **[`04-modules.md`](architecture/04-modules.md) gains the stream under Workspace & Tenancy** — what it is, that other modules reach it through `public/` and never the table, and why no reader is published. ✅ **A Slice Handoff is written**, in the commit that closes this. ⚠️ **The finding is right and the reason it happened is worth more than the fix**: **I wrote a Slice-Handoff for six consecutive slices and not for the one that added a table** — ⛔ **the three `TASK-492` commits carried long messages that read like handoffs and satisfied none of the fields**, and §12's own reason is rotation: 📁 **this row's producers are BLOCKED, so the next slice of this table is very likely somebody else's** |
 | **Commit found** | `e72b6af0`, found by QE during cycle 157 validation |
 
 **Steps.** From the promoted commit:
@@ -615,6 +615,27 @@ re.findall(r"\b[0-9a-f]{7}\b", ...)   →  []
 | **Severity** | 🟠 — **it produces a confident wrong answer**, which is worse than refusing |
 | **Status** | **`OPEN`** |
 | **Commit found** | `a540f5ee` — found running the journey suite this cycle, on the plan's own instruction |
+
+> ⚡ **Cycle 159 — this row is no longer a nuisance. It is the reason the journey gate has no owner who can run it.**
+>
+> **[B-225](#b-225) reports that a shipped `@smoke` journey was red for a day and *"nothing said so, because nothing runs the journeys"*, and it names QE**: *"QE's cycle measurements name `make smoke` — 24 stages — and never a Playwright count."* ✅ **True, and QE accepts it.**
+>
+> ⛔ **QE then tried to run them and could not, for exactly this reason. Measured on `main` at `2b76ca56`:**
+>
+> ```
+> $ python3 infra/environments.py --exports | head -1
+> # no environment derived (not on a lane branch)
+>
+> Makefile:141  SIGNORA_WEB := $(shell ... sed -n 's/^SIGNORA_WEB_PORT=//p')  -> empty
+> E2E_URL       http://localhost:$(SIGNORA_WEB)                               -> http://localhost
+>
+> $ HEADLESS=1 make e2e-quick ARGS="--grep @smoke"
+> 3 failed - net::ERR_CONNECTION_REFUSED at http://localhost/sign-in   (~300ms each)
+> ```
+>
+> 🔴 **The two rows are one gap seen from two ends.** **A lane can run the journeys because a lane branch derives a port; QE cannot, because QE works on `main` and `main` is not a lane.** ⛔ **So the one lane whose job is repository-wide validation is the one that cannot execute the repository's journey gate** — **and every QE cycle report has therefore been silent about it, which is what [B-225](#b-225) observed from the other side.**
+>
+> ⚡ **The repair is small**: derive a review-port pair for a non-lane checkout, **or** have `e2e` **refuse loudly when `SIGNORA_WEB` is empty** instead of building a portless URL. ⛔ **The second half matters more** — **a portless URL produced three ~300ms failures that read exactly like a product regression**, and this row exists because 157 of them were once nearly reported as findings.
 
 **Steps.** Run `make e2e` from a checkout that is **not on a lane branch** — `main`, a detached HEAD, a review worktree.
 
