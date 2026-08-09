@@ -22,15 +22,25 @@ vi.mock('@/components/shell/theme-toggle', () => ({ ThemeToggle: () => null }));
 
 import { AppShell } from '@/components/shell/app-shell';
 import { RAIL_WIDTH, collapseKey } from '@/lib/shell/rail';
+import type { ShellBanner } from '@/components/ui';
+import type { Crumb } from '@/lib/shell/breadcrumb';
 
 beforeEach(() => {
   window.localStorage.clear();
   Object.defineProperty(window, 'innerWidth', { value: 1440, configurable: true });
 });
 
-function shell(userId: string | null = 'u1') {
+function shell(
+  userId: string | null = 'u1',
+  extra: { banners?: ShellBanner[]; breadcrumb?: Crumb[] } = {},
+) {
   return render(
-    <AppShell role="owner" userId={userId} signOut={<button type="button">Sign out</button>}>
+    <AppShell
+      role="owner"
+      userId={userId}
+      signOut={<button type="button">Sign out</button>}
+      {...extra}
+    >
       <p>Content</p>
     </AppShell>,
   );
@@ -95,5 +105,59 @@ describe('⛔ navigation survives the collapse', () => {
     shell(null);
     await userEvent.click(screen.getByRole('button', { name: 'Collapse navigation' }));
     expect(window.localStorage.length).toBe(0);
+  });
+});
+
+
+describe('📁 the vertical order is fixed and non-negotiable', () => {
+  it('⚡ the banner region precedes the top bar in the document', () => {
+    /**
+     * ⛔ **A banner below the top bar is not a layout preference.** **The
+     * environment banner is the sentence that tells somebody they are
+     * impersonating another person**, and anything above it pushes that off
+     * a short viewport.
+     */
+    const { container } = shell('u1', {
+      banners: [{ kind: 'environment', risky: true, title: 'Viewing as J. Okafor.', body: 'Logged.' }],
+    });
+    const banners = container.querySelector('[data-testid="shell-banners"]');
+    const topbar = container.querySelector('header');
+    expect(banners).not.toBeNull();
+    expect(topbar).not.toBeNull();
+    // `DOCUMENT_POSITION_FOLLOWING` — the top bar comes after the banners.
+    expect(banners?.compareDocumentPosition(topbar as Node)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  it('⚡ the banner region spans the columns rather than sitting inside one', () => {
+    // ⛔ A banner inside the content column leaves the rail beside a warning
+    // that does not apply to it.
+    const { container } = shell('u1', {
+      banners: [{ kind: 'environment', title: 'Sandbox.', body: 'A copy.' }],
+    });
+    const banners = container.querySelector('[data-testid="shell-banners"]');
+    expect(banners?.closest('aside')).toBeNull();
+    expect(container.querySelector('aside')).not.toBeNull();
+  });
+});
+
+describe('⛔ the shell reserves the slots and invents nothing', () => {
+  it('renders no banner and no breadcrumb when given none', () => {
+    shell();
+    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).not.toBeInTheDocument();
+    // 📁 Rule 6 — nothing at the first level, and today no page supplies a
+    // trail at all (C-257).
+  });
+
+  it('renders the trail a page supplies, and never derives one', () => {
+    shell('u1', {
+      breadcrumb: [
+        { label: 'Accounts', kind: 'link', href: '/accounts' },
+        { label: 'Vantage Logistics', kind: 'current' },
+      ],
+    });
+    expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/accounts');
   });
 });

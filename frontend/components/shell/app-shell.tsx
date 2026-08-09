@@ -7,6 +7,8 @@ import { AccountSearch } from '@/components/intelligence/account-search';
 import { MobileNavigation, Navigation } from '@/components/shell/navigation';
 import { ThemeToggle } from '@/components/shell/theme-toggle';
 import { WorkspaceSelector } from '@/components/shell/workspace-selector';
+import { Breadcrumb, ShellBanners, type ShellBanner } from '@/components/ui';
+import type { Crumb } from '@/lib/shell/breadcrumb';
 import { RAIL_WIDTH } from '@/lib/shell/rail';
 import { useRailCollapse } from '@/lib/shell/use-rail-collapse';
 import type { WorkspaceRole } from '@/lib/state/permissions';
@@ -23,6 +25,23 @@ export interface AppShellProps {
    * account on the machine.
    */
   userId?: string | null;
+  /**
+   * 📁 **The banner region, in the design's fixed order** — environment
+   * before commercial, at most two, commercial suppressed in sandbox.
+   * ⛔ **The shell reserves the slot; it never invents a banner.**
+   * ⚠️ **Empty today** — [C-256](../../../docs/LANE_COORDINATION.md): sandbox
+   * and trial are sequenced behind Settings and Billing, and impersonation
+   * has no design home at all.
+   */
+  banners?: readonly ShellBanner[];
+  inSandbox?: boolean;
+  /**
+   * 📁 **The breadcrumb's trail** — ⛔ **supplied by the page, never derived
+   * here.** **A `/accounts/[id]` segment is an account's NAME**, and only the
+   * module holding that record knows it; deriving it would put routing in the
+   * shell ([D-193](../../../docs/DECISION_REGISTER.md)).
+   */
+  breadcrumb?: readonly Crumb[];
 }
 
 /**
@@ -37,14 +56,29 @@ export interface AppShellProps {
  * Widths come from `--sidebar-width` and `--topbar-height` rather than
  * literals, so the layout is one edit and not three.
  */
-export function AppShell({ children, role, signOut, userId = null }: AppShellProps) {
+export function AppShell({
+  children,
+  role,
+  signOut,
+  userId = null,
+  banners = [],
+  inSandbox = false,
+  breadcrumb = [],
+}: AppShellProps) {
   // 📁 **Rule: the rail collapses to 56px and the state is remembered.**
   // ⛔ The shell owns the frame's own state; it still owns no navigation
   // decision ([D-193](../../../docs/DECISION_REGISTER.md)).
   const rail = useRailCollapse(userId);
 
   return (
-    <div className="flex min-h-screen">
+    /* 📁 **The vertical order is fixed and non-negotiable**: banners, then the
+       top bar, then everything else. ⚡ **The banner region sits ABOVE the
+       frame's columns** because it spans them — a banner inside the content
+       column would leave the rail beside a warning that does not apply to it. */
+    <div className="flex min-h-screen flex-col">
+      <ShellBanners banners={banners} inSandbox={inSandbox} />
+
+      <div className="flex min-h-0 flex-1">
       <aside
         // ⛔ **The width is the design's, from `RAIL_WIDTH`, not a literal** —
         // 232px expanded and 56px collapsed.
@@ -81,6 +115,10 @@ export function AppShell({ children, role, signOut, userId = null }: AppShellPro
               phone.** Shown here below `md` so the product is still named on
               the one viewport where the frame is otherwise anonymous. */}
           <span className="shrink-0 text-sm font-semibold tracking-tight md:hidden">Signora</span>
+          {/* 📁 The breadcrumb is the top bar's first slot — *"flex, min 0.
+              Truncates from the middle. Never wraps."* It renders nothing at
+              the first level, which is rule 6. */}
+          <Breadcrumb trail={breadcrumb} />
           <ErrorBoundary region="Workspace selector">
             <WorkspaceSelector />
           </ErrorBoundary>
@@ -108,6 +146,7 @@ export function AppShell({ children, role, signOut, userId = null }: AppShellPro
         <main className="min-w-0 flex-1 p-4 pb-20 sm:p-6 md:pb-6">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
+      </div>
       </div>
 
       {/* **Outside the column, because it is fixed to the viewport.** Its own
