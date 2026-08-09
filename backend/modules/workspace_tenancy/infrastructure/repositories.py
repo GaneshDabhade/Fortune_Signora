@@ -13,6 +13,7 @@ from sqlalchemy import Select, func, literal, select, tuple_, update
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
+from modules.workspace_tenancy.domain.security_event import SecurityEvent
 from modules.workspace_tenancy.domain.onboarding import (
     Answer,
     CompanySizeBand,
@@ -34,6 +35,7 @@ from modules.workspace_tenancy.infrastructure.models import (
     InvitationModel,
     MembershipModel,
     MembershipRoleChangeModel,
+    SecurityEventModel,
     OnboardingRunModel,
     PersonPreferencesModel,
     SavedViewModel,
@@ -374,8 +376,38 @@ class SqlAlchemyRoleChangeLog(SqlAlchemyRepository):
         )
 
 
+class SqlAlchemySecurityEventLog(SqlAlchemyRepository):
+    """The activity stream's only write path — TASK-492.
+
+    ⛔ **`record` and nothing else.** There is no update method, no correct
+    method and no delete method, and the grant has no `UPDATE`: the two agree
+    by construction rather than because a reviewer checked. **A repository
+    that offered an edit would be offering something the database refuses**,
+    and the caller would find out at runtime.
+
+    ⚡ **It takes a {@link SecurityEvent}, never loose arguments.** The domain
+    type is what enforces the two-identity rule and refuses a credential in
+    `detail`; accepting `subject_id`/`acting_for` as parameters here would let
+    a caller bypass both by calling the repository directly.
+    """
+
+    async def record(self, event: SecurityEvent) -> None:
+        await self._add(
+            SecurityEventModel(
+                id=uuid4(),
+                workspace_id=event.workspace_id,
+                kind=event.kind,
+                subject_id=event.subject_id,
+                acting_for=event.acting_for,
+                occurred_at=event.occurred_at,
+                detail=event.detail,
+            )
+        )
+
+
 __all__ = [
     "SqlAlchemyInvitationRepository",
+    "SqlAlchemySecurityEventLog",
     "SqlAlchemyRoleChangeLog",
     "SqlAlchemyMembershipRepository",
     "SqlAlchemyWorkspaceRepository",

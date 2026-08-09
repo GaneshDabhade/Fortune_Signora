@@ -8348,6 +8348,52 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-261 · TASK-492's producer instruction rests on a premise that measurement contradicts, and either reading ships a defect
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-492](BACKLOG.md)**, ⚡ **on trying to wire the first producer the row names** |
+| **Owner** | **Lane C** — ⛔ **the row's instruction, and the architecture record it rests on** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **STALE PREMISE** — **the design is not wrong; the fact it was written against has changed** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **The role-change producer only.** ✅ **The table, the domain type, the repository and the `public/` contract are built, tested and green** — this item does not hold them |
+
+### 📁 What the row says
+
+> ⚡ ***"`membership_role_change` already records every role transition and NOTHING READS IT ([495 §6](architecture/495-principal-and-identity-boundary.md)). It becomes this stream's first PRODUCER rather than a second table — ⛔ duplicating it would be [§2](../CLAUDE.md)'s two-representations defect inside the security layer."***
+
+### 🔴 Something reads it
+
+```
+backend/modules/workspace_tenancy/infrastructure/query_service.py:221
+  select(MembershipRoleChangeModel, MembershipModel.member_email, actors.member_email)
+  …
+  kind=HistoryKind.ROLE_CHANGED
+```
+
+⚡ **`organization_history` reads `membership_role_change` and renders it as `ROLE_CHANGED`.** ⛔ **495 §6's *nothing reads it* was true when it was measured and is not true now**, and the row's instruction is built on it.
+
+### ⚠️ Both readings of *"becomes its first producer"* ship a defect
+
+| Reading | What it means | The defect |
+|---|---|---|
+| **① Write BOTH** | `ChangeRole` records a role change *and* a `security_event` | ⛔ **The same fact in two tables with two readers** — 📁 **precisely the two-representations defect the row's own sentence forbids** |
+| **② The stream REPLACES it** | `security_event` becomes the record; `membership_role_change` retires | ⛔ **Breaks `organization_history`'s read path**, which is a live contract with a rendered surface behind it |
+
+> 🔴 **Neither is a lane's to choose.** ⚡ **① knowingly introduces the defect the row names in the same sentence that names the work.** ⛔ **② changes what a shipped screen reads, which is a contract change** (§20e) — **and it is not a small one: the two carry different shapes.** 📁 **`membership_role_change` is TYPED — `previous_role` and `new_role` as `workspace_role` enum columns — and a `security_event` carries them as opaque `detail`, so ② moves a typed fact into a JSON blob and asks the history screen to trust it.**
+
+### ✅ What this lane built anyway, and why the item blocks none of it
+
+⛔ **The stream is not held on this question.** ✅ **Delivered and green**: the table (`0046`, append-only, forced RLS, classified in both lists), the `SecurityEvent` domain type, `SqlAlchemySecurityEventLog`, and `SecurityEventWriter` through `public/`. **401 Security Invariants, 29 domain tests, `mypy --strict` clean, 37 import contracts kept.**
+
+⚡ **And the three OTHER producers the row names have no such problem** — 📁 **sign-in, sign-out and password reset are authentication facts that NO existing table records**, which is the gap the row opens with: *"Workflow 1 is producing authentication facts on `main` today and nothing records them."* ⛔ **They are not wired here for a different reason and it is stated rather than hidden**: they happen in the Better Auth tier, so reaching this stream needs an endpoint and a `Resource`, which is more than this row's 🟠 budget of *"a new table with its `tenancy_policy.py` registration"*.
+
+### ✅ What this lane recommends
+
+**Rule ② — the stream replaces it — but as its own row, sequenced, with the typing question answered rather than assumed.** ⚡ **`organization_history` is the only reader and it needs `previous_role` and `new_role`**; ⛔ **if those become `detail` keys, the screen is reading untyped JSON and the enum stops being enforced anywhere.** ✅ **That is worth deciding on purpose, and it is the same shape as [D-215](DECISION_REGISTER.md)'s finding: a row scoped to the destination rather than to the step.**
+
+⚠️ **Until then [TASK-492](BACKLOG.md) delivers the stream and NOT the role-change producer**, and the row's `Delivers` should say so rather than being quietly under-met.
+
 ## C-260 · `make product-demo-record` needs one `HEADLESS=1`, and the `Makefile` is not this lane's
 
 | | |

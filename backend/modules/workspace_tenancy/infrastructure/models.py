@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -108,6 +108,34 @@ class InvitationModel(Base, TimestampMixin, AuditMixin):
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class SecurityEventModel(Base):
+    """One thing that happened to an account — migration `0046`, TASK-492.
+
+    ⛔ **No `TimestampMixin` and no `AuditMixin`, deliberately.** Both carry
+    `updated_at`/`updated_by`, and this table has **no `UPDATE` grant**: a
+    column that can never change value is Decorative Logic
+    ([§2](../../../../CLAUDE.md)) and would imply an edit path that does not
+    exist. **`created_at` is declared here directly**, and the event's own
+    `occurred_at` is a separate question the caller answers.
+
+    ⚡ **`subject_id` and `acting_for` are both non-nullable**, which is 496
+    §3's two-identity rule expressed where it cannot be forgotten.
+    """
+
+    __tablename__ = "security_event"
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    kind: Mapped[str] = mapped_column(String(80), nullable=False)
+    subject_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    acting_for: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    detail: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class MembershipRoleChangeModel(Base, TimestampMixin, AuditMixin):
