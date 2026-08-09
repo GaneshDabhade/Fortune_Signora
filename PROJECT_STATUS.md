@@ -22,7 +22,7 @@
 | **Certification** | ✅ [`de88facdaa91`](certification/reports/de88facdaa91.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **152 rows, 50 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
+| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **153 rows, 51 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ⚡ **Lane A found a seventh path and took it — `TASK-1428` needed only [C-252](docs/LANE_COORDINATION.md), which was already ruled.** ⛔ **The other six still hold `TASK-1408`/`TASK-1409`, and none is Lane A's to clear** — — [C-252](docs/LANE_COORDINATION.md) · [C-253](docs/LANE_COORDINATION.md) · [C-254](docs/LANE_COORDINATION.md) · [C-255](docs/LANE_COORDINATION.md) · [C-256](docs/LANE_COORDINATION.md) · [C-257](docs/LANE_COORDINATION.md) · C-1403. ⚡ **Visible for the first time this cycle** |
 | **Validation queue** | **Empty.** ⚡ **Lane A is now a stale pointer too** — 3 ahead by ref, **level by content**, all three patch-ids already on `main`. ⚡ **Lane B likewise** — its one remaining commit is a claim `main` already carries, patch-id verified against a 400-commit window. ⛔ **Lane C's `dfe4a746` still conflicts on generated files and is the lane's to rebase** |
 | **Customer value this cycle** | ⚡ **A failed region now says the same sentence everywhere, and says it once.** **Nine call sites render identical text, and a card that fails to load reads the same whether the read errored or the component threw** |
@@ -219,7 +219,7 @@ main=CHANGES REQUESTED, stale integration=IN VALIDATION  ->  merged: IN VALIDATI
 | **Certified** | [`de88facdaa91`](certification/reports/de88facdaa91.md) · profile **`platform`** · **16 gates planned** · **first attempt** |
 | **Quality** | **4278 backend** · **95.07%** · **398 invariants** · **2022 frontend / 93 files** · mypy strict **851 files** · **37 contracts**, 0 broken · eslint clean · `tsc` clean |
 | **Architecture** | Migration `0045` **reversible** · **DR nothing lost**, 5 restart stages · smoke 24 stages in **147s** · **53 ADRs** |
-| **Register** | **152 rows, 50 unresolved, 0 unresolved 🔴** · **+1 filed** ([B-163](docs/BUGS.md)) |
+| **Register** | **153 rows, 51 unresolved, 0 unresolved 🔴** · **+2 filed** ([B-163](docs/BUGS.md), [B-164](docs/BUGS.md)) |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **982 ancestors, 0 outside a snapshot** |
 
 ### ✅ And then stage 6 completed, at the end of this cycle
@@ -236,6 +236,14 @@ main is an ancestor of integration — the next promotion can fast-forward
 > ⚠️ **The guard refused twice on the way, and was right both times** — QE's local `integration` still held cycle 146's un-pushable rebase, and `--next-cycle` declined to answer from a stale ref rather than confidently reporting `Repository Ready`. **The four commits on it were patch-id-verified as duplicates before the pointer moved.**
 
 ⛔ **[B-161](docs/BUGS.md) is not closed by this** — §20e step 7 still carries whatever else is on a lane branch, and **the three instruments bent around the divergence stay bent.** ✅ **But lifecycle stage 6 has completed for the first time since cycle 145.**
+
+### ⛔ [B-164](docs/BUGS.md) — and QE then destroyed the claim it had just protected
+
+**Two minutes after writing that the force-push *"would have destroyed the claim"*, QE ran its habitual three-command push block, whose third line forces `main` onto `integration`.** ⛔ **The claim was dropped.** ✅ **The commit object survived, was cherry-picked onto the new `main`, and went back as a fast-forward; the restored claim was re-verified by subject, file list and `TASK-476` in both registers.** **No lane observed the gap.**
+
+> 🔴 **The finding is worth more than the incident. `--force-with-lease` protects against a *concurrent* modification by somebody else — it does not protect against destroying a commit you already knew about.** ⚡ **The lease answers *"has anyone else moved this ref?"*, never *"will this push lose work?"***, **and it was satisfied here precisely because QE had put `integration` there itself.**
+>
+> ⛔ **QE reasoned about this exact hazard, in writing, and ran the command anyway** — **which is why the repair is a check and not a resolution to be careful:** `git rev-list --count origin/main..origin/integration` **must be 0 before any `main:integration` push, or the operation is the rebase instead.**
 
 ---
 

@@ -80,6 +80,43 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-164 · `--force-with-lease` did not protect a claim commit QE had already reasoned about, because the lease was satisfied
+
+| | |
+|---|---|
+| **Module** | Repository process — QE's synchronization step, [§20e](../CLAUDE.md) Closeout activity 10 |
+| **Current assignee** | **QE** — QE's own error, self-caught and self-repaired |
+| **Severity** | 🟠 — ⛔ **a claim commit was destroyed on `origin/integration` and restored about two minutes later.** ⚡ **Nothing was permanently lost and no lane observed the gap**, but the mechanism will recur |
+| **Status** | **`OPEN`** — the repair is procedural, and the row exists so the procedure changes rather than the intention |
+| **Commit found** | `8fa6a12c`, cycle 153, found by QE immediately after its own push |
+
+**Steps.** During the same Closeout, in this order:
+
+1. **QE rebased `integration` onto `main`, deliberately preserving `TASK-476`'s claim** — and wrote, in the commit message, that *"the claim would have been destroyed by the force-push QE had been proposing for seven cycles."*
+2. **QE then committed a documentation correction to `main`** and ran its habitual three-command push block, whose third line is:
+
+```
+git push --force-with-lease=integration:785d3c67 origin main:integration
+```
+
+**Expected.** The claim survives.
+
+**Actual.** ⛔ **`integration` was forced to `main`, which does not contain the claim.** **The lease was SATISFIED** — `integration` really was still at `785d3c67`, because **QE itself had just put it there.**
+
+> 🔴 **This is the finding, and it is worth more than the incident.** **`--force-with-lease` protects against a *concurrent* modification by somebody else. It does not protect against destroying a commit you already knew about.** ⚡ **The lease answers *"has anyone else moved this ref?"* — it never answers *"will this push lose work?"***, and QE had been treating a satisfied lease as though it answered the second.
+>
+> ⚠️ **The habitual command was correct for seven cycles and became wrong the moment `integration` carried something `main` did not.** ⛔ **QE reasoned about exactly this hazard, in writing, and then ran the command anyway two minutes later** — **which is why the repair cannot be *"be careful"*.**
+
+**What made it recoverable.** ✅ **The commit object survived** (`git cat-file -t 785d3c67`), so it was cherry-picked onto the new `main` and pushed as a **fast-forward**, and the restored claim was re-verified by **subject, file list and `TASK-476` appearing in both registers.**
+
+**Repair.** ⚡ **Make the synchronization push refuse rather than depend on care**, which is this repository's standing preference — *operations that refuse unsafe states over operations that silently recover.* **Before any `main:integration` push, assert that `origin/integration` contains nothing `main` lacks:**
+
+```
+git rev-list --count origin/main..origin/integration     # must be 0, or rebase instead of push
+```
+
+⛔ **If it is not zero, the correct operation is §20e Closeout step 10's rebase, never a force-push** — **which is precisely what QE had done correctly ten minutes earlier.** ✅ **The check is one command and it distinguishes the two cases the lease cannot.**
+
 ### B-163 · the B-221 guard and the two-ref merge ship with no test, and the merge misresolves the one backward transition
 
 | | |
