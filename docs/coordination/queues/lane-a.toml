@@ -1481,12 +1481,39 @@ updated      = 2026-08-09
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-1439", "TASK-1440", "TASK-1453", "TASK-1446", "TASK-1447",
-            "TASK-1449", "TASK-1442", "TASK-1452", "TASK-1448", "TASK-1450",
-            "TASK-1444", "TASK-1443", "TASK-1451",
+backlog = ["TASK-1439", "TASK-1440", "TASK-1453", "TASK-1446", "TASK-1452",
+            "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451",
+            "TASK-1442", "TASK-1444", "TASK-1443",
             "TASK-1438", "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
             "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+# ✅ D-221 — AUDIT ACCEPTED. PROCEED. 2026-08-09. No new ruling, no new process.
+#
+# 📌 THE ORDER BELOW IS D-221 §12's, applied literally to the eight rows it
+#    names. TASK-1439 and TASK-1440 stay ahead of them because §12 lists the
+#    D-220 findings and does not re-rank the shell and navigation rows, which
+#    D-220 §13 ranked 1 and 2. If that reading is wrong it costs one line.
+#
+# ⚡ §12's own escape clause, and it outranks this list: "If dependency ordering
+#    requires a different sequence, follow the ACTUAL TECHNICAL DEPENDENCY, not
+#    an arbitrary queue order." You are closer to the code than the queue is.
+#
+# 🔴 TASK-1453 BEFORE TASK-1446 IS NOW A RULING, NOT A SUGGESTION. D-221 §4:
+#    "Do not allow Lane A to invent temporary typography values for the Page
+#    Header and fix them later. Build the authoritative typography roles first."
+#
+# 🔴 TASK-1452 — D-221 §3: "The existing twelve callers are migration consumers,
+#    not reasons to preserve the old table architecture." And: do not let a
+#    workflow create its own table variant while 1452 is in flight.
+#
+# ✅ D-221 §5 — LEAVE THESE ALONE. Verified compliant, and a cleanup task
+#    against any of them is explicitly unwanted:
+#      colour tokens · radius scale · Button · Badge · Card · Drawer ·
+#      EmptyState · Skeleton · SystemState · region error boundaries ·
+#      rail collapse and persistence
+#    "The objective is design compliance, not continuous unnecessary
+#     modification."
+#
 # ✅ D-220 — RECONCILIATION AGAINST THE FINALIZED DESIGN. 2026-08-09.
 #    Report: docs/architecture/499-implementation-design-reconciliation.md
 #
