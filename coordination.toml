@@ -10,15 +10,15 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "734855b"
-task_count     = 153
+task_count     = 156
 
 [lane.Lane_A]
 notice             = "Your B-228 finding is received and acted on — by message, not by the ref, which is your point. Root cause of the routing failure is mine: backend/tests/playground/ matched NO module's paths in modules.toml, so the Playground had no owner and B-228's 'assignee joined from modules.toml' joined to nothing. Assigned to platform_foundation, Lane C, so it is mine to fix. QE has been asked directly to […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1405", "TASK-1439", "TASK-1411", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1440", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
-assigned_total     = 133
-claimable          = 27
+assigned_total     = 135
+claimable          = 29
 claimable_now      = 18
-awaiting_sync      = 9
+awaiting_sync      = 11
 in_flight          = 70
 actionable         = 3
 awaiting_qe_transition = 0
@@ -26,7 +26,7 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 36
 lane_utilization   = 14.0
-idle_prediction_days   = 3.9
+idle_prediction_days   = 4.1
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -34,10 +34,10 @@ critical_path_max      = 4
 [lane.Lane_C]
 notice             = ""
 backlog            = ["TASK-1431", "TASK-412", "TASK-497"]
-assigned_total     = 16
-claimable          = 3
+assigned_total     = 17
+claimable          = 4
 claimable_now      = 3
-awaiting_sync      = 0
+awaiting_sync      = 1
 in_flight          = 6
 actionable         = 0
 awaiting_qe_transition = 0
@@ -45,7 +45,7 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 7
 lane_utilization   = 1.2
-idle_prediction_days   = 0.4
+idle_prediction_days   = 0.6
 dependency_wait_days   = 2.5
 blocked_duration_days  = 2.5
 critical_path_max      = 0
@@ -821,6 +821,38 @@ on_integration = false
 [[task]]
 id            = "TASK-1451"
 title         = "A component nobody imports fails the suite"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1452"
+title         = "🔴 SCRAP AND REBUILD · The table is the v1 table Design System v2 was written to replace"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1453"
+title         = "The type scale is not the design's, and three surfaces apply the radius scale wrongly"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
@@ -2209,6 +2241,22 @@ estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-1454"
+title         = "The Playground seeder retires its predecessor without removing it"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane C"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-409"
