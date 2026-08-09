@@ -17,7 +17,7 @@
 | | |
 |---|---|
 | **`main`** | **`f954477`** — the certified commit itself |
-| **`integration`** | ⛔ **DIVERGED — `origin/integration` at `227a074f` carries `main`'s patches under different SHAs, plus two.** ⚡ **The rebase that repairs it is computed and verified locally on `qe-integration-rebased`; the push is outstanding** — see [B-161](docs/BUGS.md) and §1d |
+| **`integration`** | ⛔ **DIVERGED — `origin/integration` at `227a074f` carries `main`'s patches under different SHAs, plus two.** ⚡ **Its two unique commits are one documentation commit and one claim — nothing executable.** **The repair is the rebase Closeout step 10 prescribes; the force-push was refused by this environment, so it is outstanding** — see [B-161](docs/BUGS.md) and §1d |
 | **Release candidate** | ⚡ **Cycle 146 promoted the scope ladder** — **and found that the Task Claim Protocol's own step 7 pushes a lane's unpromoted code to `integration`** ([B-161](docs/BUGS.md)) |
 | **Certification** | ✅ [`f954477e9e42`](certification/reports/f954477e9e42.md) · migration head **`0045`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
@@ -192,7 +192,7 @@ integration 03a81b5d → b9cbb641…     main f954477e → b9cbb641…
 
 **The rebase Closeout step 10 prescribes was run and verified locally** — duplicates dropped, both genuinely-new commits replayed, `main` confirmed an ancestor. ⛔ **The force-push to the shared branch was refused by this environment**, twice.
 
-**The rebased result is preserved on `qe-integration-rebased`.** ⚡ **The repository still functions**: next cycle builds its candidate by rebasing onto `main`, exactly as this cycle did, and the duplicates drop out again. ⚠️ **But the divergence grows until the push happens, and it is the one outstanding step of lifecycle stage 6.**
+**The rebased result is preserved on the local branch `qe-integration-rebased`** — ⚠️ **computed against `f954477`, so `main`'s Closeout commit has since moved past it and it needs one more replay before it can be pushed.** ⚡ **The repository still functions**: `origin/integration`'s two unique commits are **one documentation commit and one claim, nothing executable**, and next cycle builds by rebasing onto `main` exactly as this cycle did. ⚠️ **The divergence grows until the push happens, and it is the one outstanding step of lifecycle stage 6.**
 
 ### Repository Health — six dimensions
 
