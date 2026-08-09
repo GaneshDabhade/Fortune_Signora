@@ -1123,7 +1123,7 @@
 | 🔴 **The defect this repairs** | 📁 **Found by [D-194](DECISION_REGISTER.md)'s reconciliation.** **`sign-in-form.tsx:148` is `router.push('/')` — the entry decision, made by a module, which the spec forbids: *"no module performs its own entry redirect."*** ⚠️ **And its own comment records a race: *"Auth navigates to its own `callbackURL` and beats this push"*** |
 | **Epic** | **Authenticated Entry** — [workflow 29](coordination/workflows.toml) |
 | **Module** | **`product_surface`** |
-| **Status** | ✅ **`READY` — released by Lane C, 2026-08-09.** ⚡ **The engine exists and is on `origin/integration`**, so *"there is nothing to call"* no longer holds. **`import { resolveEntry } from '@/lib/entry'`** — `frontend/lib/entry/index.ts`, pure, no network call inside a decision. ⚠️ **This row is still LAST of workflow 29's seven in the published order and that is a recommendation, not a gate** ([D-198](DECISION_REGISTER.md)): it touches four workflows already on `main`, so it lands best against a finished engine. ⛔ **Taking it earlier is the lane's call; the reason is recorded so the choice is informed rather than blind** |
+| **Status** | ✅ **`READY` — released by Lane C, 2026-08-09.** ⚡ **The engine exists and is on `origin/integration`**, so *"there is nothing to call"* no longer holds. **`import { resolveEntry } from '@/lib/entry'`** — `frontend/lib/entry/index.ts`, pure, no network call inside a decision. ⚠️ **This row is still LAST of workflow 29's seven in the published order and that is a recommendation, not a gate** ([D-198](DECISION_REGISTER.md)): it touches four workflows already on `main`, so it lands best against a finished engine. ⛔ **Taking it earlier is the lane's call; the reason is recorded so the choice is informed rather than blind.** 🔴 **AND THE [D-205](DECISION_REGISTER.md) AUDIT ADDED A HARD ONE: twelve of the engine's destinations DO NOT EXIST.** ⛔ **`/workspaces` is returned by `rules.ts` for the chooser and the no-workspace case and has no route ([TASK-1421](#task-1421--the-workspace-chooser-at-workspaces--a-route-the-engine-already-sends-people-to)); eleven terminal reason codes render nothing ([TASK-1423](#task-1423--the-six-gate-screens--a-failure-that-is-designed-not-a-redirect-loop)).** ⚡ **Wiring the engine today would replace working navigation with a 404 for every person who is not the happy path.** ✅ **Take [TASK-1421](#task-1421--the-workspace-chooser-at-workspaces--a-route-the-engine-already-sends-people-to) and [TASK-1423](#task-1423--the-six-gate-screens--a-failure-that-is-designed-not-a-redirect-loop) first — they are cheap and they are this row's blast radius** |
 | **Design authority** | ⛔ **`Fortune Signora Authenticated Entry.dc.html`** ([D-138](DECISION_REGISTER.md)) |
 | ⚡ **The five** | **`sign-in-form` · `sign-up-form` · `reset-password-form` · `join/[workspaceId]` · `(app)/layout`** — **each replaced by one call to the engine.** ✅ **`accounts/[accountId]` is NOT one: it is in-app navigation, not an entry decision, and is left alone** |
 | 🔴 **The race is the real finding** | ⛔ **Better Auth's `callbackURL` and the manual push both navigate, and which wins is timing.** ✅ **One of them must go, and it is the manual push** — ⚡ **`callbackURL` is set from the engine's answer, so there is one mechanism and it is the specified one** |
@@ -1276,6 +1276,146 @@
 | ✅ **Verification strategy** | **The type admitting every kind is the verification; no behaviour is added** |
 | ⚠️ **Risk, named before it is met** | ⚠️ **This is speculative generality and [§6](../CLAUDE.md) forbids it — so the justification is stated rather than assumed.** ✅ **It is not a new abstraction: [495](architecture/495-principal-and-identity-boundary.md) RATIFIED this model, and the row only widens a signature while one caller exists.** ⛔ **After the shell, the compositions and the cards consume it, the same change is a refactor across every consumer** |
 | **Build-vs-Buy** | ✅ **n/a — Signora's own domain** |
+
+### TASK-1421 · The workspace chooser at `/workspaces` — a route the engine already sends people to
+
+| | |
+|---|---|
+| 🔴 **Found by the [D-205](DECISION_REGISTER.md) audit, and it is a defect waiting to happen** | 📁 **`frontend/lib/entry/rules.ts` ships `const WORKSPACES = '/workspaces'` and returns it for the chooser and for the no-workspace case.** ⛔ **THAT ROUTE DOES NOT EXIST.** ⚡ **It is harmless today only because nothing calls the engine — the moment [TASK-1401](#task-1401--the-five-hardcoded-redirects-become-one-call-site) wires it, every person with several memberships and no healthy last-used lands on a 404** |
+| **Epic** | **E3 · Workspace resolution** — **[workflow 29](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** reading **`workspace_tenancy`**'s `public/` |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09.** ⚡ **Independent, and it must land BEFORE [TASK-1401](#task-1401--the-five-hardcoded-redirects-become-one-call-site) rather than after** |
+| **Design authority** | ⛔ **`Fortune Signora Authenticated Entry.dc.html` §03 rule 13** — 📁 ***"The chooser — last resort only. Rule 13. First login with several memberships, or an explicit switch. Unavailable workspaces are listed with their reason."*** |
+| ⚡ **Delivers** | **The `/workspaces` route** · **every membership listed, INCLUDING the unavailable ones with their reason** — 📁 the design is explicit that a suspended or archived workspace is *shown with its reason*, not hidden · **and an explicit-switch entry point, because the design says the chooser serves both first login and a deliberate switch** |
+| 🔴 **What it must NOT do** | ⛔ **Become the default destination.** 📁 ***"last resort only"*** — **it is rule 13 of 24, and a chooser shown to somebody with one workspace is the design's own failure case** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **`workspace_tenancy` already publishes membership** — ⚡ **[TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for)'s switcher reads the same list, so this row and the shell must consume ONE contract.** ⛔ **Two reads of membership that disagree about *available* is the defect this row exists inside** |
+| **Reusable components required** | **The membership list is shared with the App Shell's switcher** — **whichever lands first owns it** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/workspaces/`** |
+| **Playwright coverage** | **A person with two healthy memberships reaches the chooser and can enter either** · 🔴 **a suspended workspace is LISTED with its reason and is not enterable** — **the assertion that separates *shown with a reason* from *hidden*** |
+| **Component coverage** | **A person with exactly one membership never sees this route** |
+| ♿ **Accessibility** | **The list is a `<ul>` of links, not clickable divs** · **an unavailable entry is `aria-disabled` with its reason as the accessible description** — ⛔ **never colour alone** |
+| 📱 **Responsive behaviour** | **Single column below `sm`; the reason text wraps rather than truncating** — ⛔ **a truncated reason is worse than none** |
+| **Definition of Done** | **`resolveEntry` can return `/workspaces` and a person arrives somewhere real** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface`, `workspace_tenancy` · **Routes** `/workspaces` · **Security Invariant** 🔴 **only the caller's own memberships are listed** — ⛔ **an unavailable workspace's NAME is still tenant data, and the reason must not disclose more than the standing** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Shipping [TASK-1401](#task-1401--the-five-hardcoded-redirects-become-one-call-site) first.** ✅ **This row is cheap and it removes a guaranteed 404 from the wiring row's blast radius** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1422 · Last-used workspace — stored, read, and cleared when membership ends
+
+| | |
+|---|---|
+| 🔴 **The authorization hazard [D-196](DECISION_REGISTER.md) named and nobody owned** | 📁 **Recorded at D-196: *"last-used workspace is a stored preference that OUTLIVES membership — if it is not cleared on removal, a departed member's next login routes at a workspace they can no longer see, which is an authorization failure wearing a convenience feature's clothes."*** ⛔ **No row carried it until now** |
+| **Epic** | **E3 · Workspace resolution** — **[workflow 29](coordination/workflows.toml)** |
+| **Module** | **`workspace_tenancy`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
+| **Design authority** | ⛔ **`Fortune Signora Authenticated Entry.dc.html` §03 rule 12 and §07** |
+| ⚡ **The measured gap** | 📁 **`resolveEntry` READS `session.lastUsedWorkspaceId` — `frontend/lib/entry/session.ts`.** ⛔ **Nothing in the platform WRITES it, and nothing clears it.** ⚡ **The engine's half is correct and complete; this is the other half** |
+| ✅ **Delivers** | **A per-person stored preference** · **written on entering a workspace** · 🔴 **and CLEARED when the membership ends — by removal, by workspace deletion, and by role change that revokes access** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **[TASK-470](#task-470--workflow-9--user-profile-to-the-approved-design) shipped `person_preferences` and the `PERSON_OWNED_TABLES` tenancy class** (migrations `0044`/`0045`) — ⚡ **this is a preference of exactly that shape and must not create a second store** |
+| **Reusable components required** | ✅ **None — this is backend** |
+| **Change Budget** | 🟠 **`backend/modules/workspace_tenancy/**` and a migration** — announced |
+| **Playwright coverage** | 🔴 **A person removed from their last-used workspace signs in and does NOT land there** — **the whole row in one assertion** |
+| **Component coverage** | **Entering a workspace records it** · **deleting a workspace clears it for every member** |
+| ♿ **Accessibility** | ✅ **n/a — no surface** |
+| 📱 **Responsive behaviour** | ✅ **n/a** |
+| **Definition of Done** | **The preference is written, read by the engine, and provably cleared on every path that ends membership** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `workspace_tenancy` · **Security Invariant** 🔴 **the resolver only ever routes to a workspace present in `memberships`** — ✅ **[TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-four-reason-codes) already asserts this over 2,880 session/intent pairs, so a stale preference cannot route anybody; ⛔ but it CAN cost a person their real destination and land them at the chooser, which is a correctness defect rather than a security one.** ⚡ **The distinction is the row's own reasoning and must survive into the tests** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Clearing on removal only.** ✅ **Three paths end access — removal, deletion, role change — and the design's rule 20 `ROLE_CHANGED` exists because the third is real** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1423 · The six gate screens — a failure that is designed, not a redirect loop
+
+| | |
+|---|---|
+| 🔴 **The spec's central promise, and nothing implements it** | 📁 **§02: *"each gate depends on the one before it resolving, and a gate that FAILS produces a designed screen."*** ⛔ **Today a failed gate has nowhere to go.** ⚡ **`resolveEntry` returns a `route` and a `reason` for every terminal rule and **not one of those routes exists*** |
+| **Epic** | **E2 · Entry states** — **[workflow 29](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09.** ⚡ **Pairs with [TASK-1409](#task-1409--workflow-28--system-states--the-scope-ladder-and-a-failure-that-claims-the-smallest-surface-it-can), which builds the scope ladder these screens sit on** |
+| **Design authority** | ⛔ **`Fortune Signora Authenticated Entry.dc.html` §08 *Entry loading, empty & error*** |
+| ⚡ **Delivers a screen per terminal reason** | **`ACCOUNT_LOCKED` · `ACCOUNT_SUSPENDED` · `ACCOUNT_DELETED` · `SESSION_EXPIRED` · `STEPUP_REQUIRED` · `WS_SUSPENDED` · `WS_ARCHIVED` · `WS_DELETED` · `NO_WORKSPACE` · `INTENT_FORBIDDEN` · `INTENT_NOT_MEMBER`** — ⚡ **each states what happened and what the person can do, in the design's own words** |
+| 🔴 **Why it is not [TASK-1409](#task-1409--workflow-28--system-states--the-scope-ladder-and-a-failure-that-claims-the-smallest-surface-it-can)** | ⛔ **System States are failures of the SYSTEM — 404, 403, 500.** ⚡ **These are refusals of an ENTRY DECISION, and the person is authenticated.** ✅ **They share the ladder's primitives and say different things; conflating them produces a 403 where the truth is *your workspace is archived*** |
+| ✅ **Backend reuse — measured, not assumed** | ⚠️ **`STEPUP_REQUIRED`'s screen is [TASK-1410](#task-1410--step-up-authentication--the-capability-behind-stepup_required)'s challenge** — ⛔ **this row renders the gate, that row makes it enforceable** · ⚠️ **`ACCOUNT_LOCKED` has no lockout capability ([C-431](LANE_COORDINATION.md))** — ✅ **the screen ships and the state is unreachable until it exists, declared rather than faked** |
+| **Reusable components required** | **[TASK-1409](#task-1409--workflow-28--system-states--the-scope-ladder-and-a-failure-that-claims-the-smallest-surface-it-can)'s primitives** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/**`** |
+| **Playwright coverage** | 🔴 **Every terminal reason code reaches a rendered screen and none reaches a redirect loop** — **enumerated from `REASON_CODES`, so a twenty-fifth code cannot ship without a screen** |
+| **Component coverage** | **Each screen names its reason code in a copyable support identifier** — 📁 the design puts it *"in the support diagnostics bundle"* |
+| ♿ **Accessibility** | **Focus moves to the screen's heading** · **`role="alert"` for refusals, `role="status"` for waiting** |
+| 📱 **Responsive behaviour** | **Single column below `sm`, actions stacked** |
+| **Definition of Done** | **No terminal rule can produce a route that does not render** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **a refusal names the STANDING, never the resource** — **the same rule as [C-245](LANE_COORDINATION.md) and as [TASK-1409](#task-1409--workflow-28--system-states--the-scope-ladder-and-a-failure-that-claims-the-smallest-surface-it-can)'s `403`** |
+| ⚠️ **Risk, named before it is met** | 🔴 **This is the row that makes [TASK-1401](#task-1401--the-five-hardcoded-redirects-become-one-call-site) safe.** ⛔ **Wiring the engine while eleven of its destinations 404 would be worse than the behaviour it replaces** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1424 · First run and Activation — the two compositions that are not a dashboard
+
+| | |
+|---|---|
+| 🔴 **Missing entirely** | ⚡ **The design names four compositions — executive · seller · revops · activation — and `FIRST_RUN` is its own reason code.** ⛔ **The audit found NO occurrence of *activation*, *first run* or *revops* anywhere in `frontend/`.** ⚠️ **[TASK-1405](#task-1405--home-is-one-route-and-four-compositions) delivers the SLOT and the resolver; the content of these two is nobody's** |
+| **Epic** | **E4 · Home composition** — **[workflow 29](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1405](#task-1405--home-is-one-route-and-four-compositions) and [TASK-1406](#task-1406--the-card-registry--modules-contribute-capabilities-never-navigation)** — ⛔ **a composition without the slot and the card registry has nowhere to render.** ⚡ **A technical dependency, not a Product Office hold** |
+| **Design authority** | ⛔ **`Fortune Signora Authenticated Entry.dc.html` §04–§05** |
+| ⚡ **Why these two and not all four** | ✅ **The executive composition already largely EXISTS — [TASK-438](#task-438--the-executive-dashboards-five-sections-that-need-nothing-new) shipped its five sections** — and the seller composition is §05, which the design specifies screen by screen. ⛔ **First run and activation are the two with no implementation and no row** |
+| ✅ **Delivers** | **A first-run composition for somebody whose workspace is minutes old** · **an activation composition for a workspace with no connected source** — 📁 rule 19 `ACTIVATION`: *"Workspace has no connected source"* |
+| 🔴 **The invariant that matters** | 📁 **[D-196](DECISION_REGISTER.md): *"a Home card that hides itself AFTER fetching leaks exactly what the permission protected, and it is invisible in the UI."*** ⛔ **The check is on the READ, not the render** — **and an activation composition is mostly *absent* cards, which is precisely where this is easiest to get wrong** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **`hasConnectedSource` is already on `Membership` in `frontend/lib/entry/session.ts`** — ⚡ **the engine's own comment says it is *"a property of the workspace, not of the person"*, so the signal exists and only the composition is missing** · ✅ **[TASK-407](#task-407--b-i--a-connection-says-whether-it-actually-works) makes a connection say whether it works |
+| **Reusable components required** | **[TASK-1406](#task-1406--the-card-registry--modules-contribute-capabilities-never-navigation)'s card contract** · **[TASK-445](#task-445--stated-absence-becomes-one-implementation-instead-of-nine-local-ones)'s stated absence** — ⛔ **an activation Home is a page of honest absences and must not invent placeholder data** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/**`** |
+| **Playwright coverage** | **A workspace with no connected source renders the activation composition, not an empty executive one** · **a minutes-old workspace renders first run** |
+| **Component coverage** | **Every composition resolves — 📁 *"a composition always resolves, so Home ALWAYS renders"*** |
+| ♿ **Accessibility** | **The first-run overlay is a modal with a focus trap and an escape that does not lose progress** |
+| 📱 **Responsive behaviour** | **Cards reflow to one column below `md`; the overlay is a sheet** |
+| **Definition of Done** | **Four compositions exist and each renders for the state that selects it** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **a card the person may not see is never FETCHED** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Building activation as an empty dashboard.** ✅ **The design makes it a composition with its own cards — the difference between *nothing to show you* and *here is how to start*** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1425 · The Executive Dashboard becomes Home's executive composition
+
+| | |
+|---|---|
+| 🔴 **Rework of shipped work, and [D-195](DECISION_REGISTER.md) authorises it** | 📁 **The spec answers the question in terms: *"The brief asked whether Home exists as a destination separate from the Executive Dashboard. IT DOES NOT, and the belief that it does is a contradiction already visible in two shipped specifications."*** ⛔ **The repository still treats them as two destinations** |
+| **Epic** | **E4 · Home composition** — **[workflow 29](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1405](#task-1405--home-is-one-route-and-four-compositions)** — ⛔ **there is no slot to become a composition of yet** |
+| **Design authority** | ⛔ **`Fortune Signora Authenticated Entry.dc.html` §01 and §04** |
+| ⚡ **The measured contradiction** | ⛔ **[TASK-438](#task-438--the-executive-dashboards-five-sections-that-need-nothing-new) delivered the Executive Dashboard as its own surface, and [workflow 19](coordination/workflows.toml) still exists as a separate journey.** ✅ **[D-193](DECISION_REGISTER.md) already recorded the correction — *"workflow 19 does not move, it becomes a composition"* — ⛔ **and no row performed it** |
+| ✅ **Delivers** | **The five shipped sections re-registered as cards in [TASK-1406](#task-1406--the-card-registry--modules-contribute-capabilities-never-navigation)'s catalogue** · **workflow 19 recorded as a composition rather than a destination** · ⛔ **and any standalone route for it removed, so there is exactly one Home** |
+| 🔴 **What it must NOT do** | ⛔ **Rebuild the five sections.** 📁 **[TASK-438](#task-438--the-executive-dashboards-five-sections-that-need-nothing-new)'s own title is *the five sections that need nothing new*** — ✅ **this row RE-HOMES working code and changes no intelligence** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **All five sections are on `main` and read existing engines** — ⚡ **zero backend work, and the row states that so a lane does not go looking** |
+| **Reusable components required** | **[TASK-1406](#task-1406--the-card-registry--modules-contribute-capabilities-never-navigation)'s card contract** |
+| **Change Budget** | 🟢 **`frontend/app/(app)/**`** |
+| **Playwright coverage** | 🔴 **There is exactly one Home route, and an executive lands on it with the five sections rendered** · **no route reaches the dashboard independently** |
+| **Component coverage** | **Each section registers as a card and the composition needs no edit to accept it** |
+| ♿ **Accessibility** | ✅ **Unchanged — the sections keep their shipped semantics** |
+| 📱 **Responsive behaviour** | ✅ **Unchanged** |
+| **Definition of Done** | **Home and the Executive Dashboard are one destination** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Routes** ⛔ **one fewer than before** |
+| ⚠️ **Risk, named before it is met** | ⚠️ **This is rework of promoted work and it is deliberate** ([D-195](DECISION_REGISTER.md) §1: *the finalized design wins over implementation history*). ⛔ **The risk is treating it as optional because the dashboard *works*** — ✅ **it works as the wrong thing** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1426 · Session expiry and deep-link restoration — the intent survives the round trip
+
+| | |
+|---|---|
+| 🔴 **A gap the design does not cover, reported by Lane A and now owned** | 📁 **[C-250](LANE_COORDINATION.md) ④: *"Rule 04 `SESSION_EXPIRED`'s route column reads `(intent preserved)`. With no intent there is nothing to preserve, and the document does not say where that lands."*** ✅ **Lane A refused to invent it.** ⚡ **This row builds the mechanism and leaves the undefined case as the queued question** |
+| **Epic** | **E1 · Entry Engine** — **[workflow 29](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1402](#task-1402--the-intent-resolver--what-the-person-was-trying-to-reach)** — ⛔ **preserving an intent requires something that produces one** |
+| **Design authority** | ⛔ **`Fortune Signora Authenticated Entry.dc.html` §03 rules 04–09** |
+| ⚡ **Delivers** | **A deep link followed while signed out survives the sign-in round trip and is honoured on return** — 📁 rule 06 `INTENT_HONOURED` · **an expired session preserves what the person was reaching for** · ⛔ **and the intent is DISCARDED when it is forbidden or names a workspace they do not belong to**, rather than retried |
+| 🔴 **The security property** | ⛔ **A preserved intent is attacker-controllable input carried across an authentication boundary.** ✅ **It must be validated on return, never replayed** — **and `IntentAccess` is *"the server's answer, never this module's"*, which is the engine's own comment and the constraint this row honours** |
+| ✅ **Backend reuse — measured, not assumed** | ✅ **Better Auth's `callbackURL` already carries a destination across sign-in** — ⚡ **and [D-194](DECISION_REGISTER.md) found it RACING a manual `router.push`.** ⛔ **This row must not add a third mechanism: [TASK-1401](#task-1401--the-five-hardcoded-redirects-become-one-call-site) removes the manual push, and the intent rides the one that survives |
+| **Reusable components required** | ✅ **None** |
+| **Change Budget** | 🟠 **`frontend/lib/auth/**`** — announced |
+| **Playwright coverage** | 🔴 **A signed-out person opens a deep link, signs in, and arrives at that link** · 🔴 **a deep link to a workspace they do not belong to does NOT arrive there and does not leak that it exists** |
+| **Component coverage** | **An expired session preserves the intent; a forbidden intent is discarded with `INTENT_FORBIDDEN`** |
+| ♿ **Accessibility** | ✅ **n/a — no new surface beyond [TASK-1423](#task-1423--the-six-gate-screens--a-failure-that-is-designed-not-a-redirect-loop)'s** |
+| 📱 **Responsive behaviour** | ✅ **n/a** |
+| **Definition of Done** | **An intent survives sign-in, is validated on return, and is discarded rather than replayed when refused** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Security Invariant** 🔴 **an intent is never trusted across the boundary** — **the server re-answers `access` on return, and an open-redirect through a preserved intent is the failure this asserts against** |
+| ⚠️ **Risk, named before it is met** | 🔴 **Open redirect.** ⛔ **A preserved destination that is not validated against the person's memberships on RETURN is the classic form of it** |
+| **Build-vs-Buy** | ✅ **BUY the transport — Better Auth's `callbackURL`. Build the validation** |
 
 ### TASK-1409 · Workflow 28 · System States — the scope ladder, and a failure that claims the smallest surface it can
 

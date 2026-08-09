@@ -423,8 +423,7 @@ depends_on  = []
 [workflow.29]
 name        = "Authenticated Entry"
 state       = "decomposed"
-tasks       = ["TASK-1400", "TASK-1402", "TASK-1403", "TASK-1404",
-               "TASK-1405", "TASK-1406", "TASK-1407", "TASK-1401"]
+tasks  = ["TASK-1400", "TASK-1402", "TASK-1403", "TASK-1404", "TASK-1405", "TASK-1406", "TASK-1407", "TASK-1401", "TASK-1421", "TASK-1422", "TASK-1423", "TASK-1424", "TASK-1425", "TASK-1426"]
 # ── THE EPIC DECOMPOSITION — D-196, 2026-08-08 ──────────────────────────────
 #   E1 · Entry Engine        TASK-1400 resolver · TASK-1402 intent
 #   E2 · Reason & diagnostics TASK-1403
