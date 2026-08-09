@@ -18,13 +18,13 @@
 |---|---|
 | **`main`** | **`b565c19`** — the certified commit itself |
 | **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
-| **Release candidate** | 🔴 **Cycle 160: four auth routes became the customer's words — and the cycle proved that neither the lane nor QE can reliably run the journey gate, because certification and the journeys share one lease** |
+| **Release candidate** | ⛔ **Cycle 161 CERTIFIED `6c653d86` AND DID NOT PROMOTE.** ⚡ **[B-224](docs/BUGS.md) was raised to 🔴 by the lane that owns it, and §20e's one blocking rule is *`integration` never fast-forwards to `main` with an open 🔴 bug.*** **See §1d — including the tension this creates** |
 | **Certification** | ✅ [`b565c19e9768`](certification/reports/b565c19e9768.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **160 rows, 55 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
 | **Implementation waiting** | ⚡ **Lane A found a seventh path and took it — `TASK-1428` needed only [C-252](docs/LANE_COORDINATION.md), which was already ruled.** ⛔ **The other six still hold `TASK-1408`/`TASK-1409`, and none is Lane A's to clear** — — [C-252](docs/LANE_COORDINATION.md) · [C-253](docs/LANE_COORDINATION.md) · [C-254](docs/LANE_COORDINATION.md) · [C-255](docs/LANE_COORDINATION.md) · [C-256](docs/LANE_COORDINATION.md) · [C-257](docs/LANE_COORDINATION.md) · C-1403. ⚡ **Visible for the first time this cycle** |
-| **Validation queue** | ⚠️ **[`TASK-499`](docs/BACKLOG.md) is promoted and deliberately still `CLAIMED`** — **Lane A would not declare around a journey gate it could not run** ([B-166](docs/BUGS.md)). ⚡ **Lane C is a stale pointer this cycle; Lane B remains one** — 3 ahead by ref, **level by content**, all three patch-ids already on `main`. ⚡ **Lane B likewise** — its one remaining commit is a claim `main` already carries, patch-id verified against a 400-commit window. ⛔ **Lane C's `dfe4a746` still conflicts on generated files and is the lane's to rebase** |
+| **Validation queue** | ⛔ **HELD at a certified commit.** **`6c653d86` passed every gate and is promotable the moment [B-224](docs/BUGS.md) closes** — **it carries `TASK-499` at `IN VALIDATION`, the `TASK-1435`/`1436` register updates, and [B-226](docs/BUGS.md)'s fix.** ⚡ **Lane C is a stale pointer this cycle; Lane B remains one** — 3 ahead by ref, **level by content**, all three patch-ids already on `main`. ⚡ **Lane B likewise** — its one remaining commit is a claim `main` already carries, patch-id verified against a 400-commit window. ⛔ **Lane C's `dfe4a746` still conflicts on generated files and is the lane's to rebase** |
 | **Customer value this cycle** | ⚡ **The address bar speaks the customer's language** — **`/signin`, `/register`, `/verify`, `/reset/:token`.** **A customer *registers*; only engineers *sign up* ([ADR-0034](docs/architecture/adr/0034-ubiquitous-language.md))** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
@@ -613,6 +613,65 @@ $ npx tsc --noEmit
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost**, after two lease waits · smoke 24 stages in **203s** |
 | **Register** | **160 rows, 55 unresolved, 0 unresolved 🔴** · **+2 filed** ([B-166](docs/BUGS.md), [B-167](docs/BUGS.md)) |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **0 outside a certified snapshot** |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 161 — CERTIFIED, NOT PROMOTED
+
+**`main` is unchanged at `2ff0ba05`.** ⛔ **`6c653d86` passed every gate and was deliberately not promoted.**
+
+### ⛔ Why the promotion was withheld
+
+**Lane A raised [B-224](docs/BUGS.md) to 🔴 — its own row, correcting its own severity for the second time.** ⚡ **§20e's one blocking rule:** ***"`integration` never fast-forwards to `main` with an open 🔴 bug."*** **The register agrees, mechanically:**
+
+```
+BLOCKING: [('B-224', '🔴', 'OPEN')]
+DECISION: WITHHOLD
+```
+
+✅ **QE verified the 🔴 before letting one row hold the repository**, because a wrong 🔴 is expensive. **The mechanism is real:**
+
+```
+Makefile:134  SIGNORA_PG_PORT := $(shell python3 infra/environments.py --exports ...)
+Makefile:452  E2E_ENV builds both database URLs from it
+
+on a lane branch  -> 5732, and nothing listens there
+HEADLESS=1 make e2e -> ConnectionRefusedError ('127.0.0.1', 5732)
+```
+
+⛔ **The documented customer-journey command cannot be run by a lane — the exact party §19, [D-113](docs/DECISION_REGISTER.md) and [D-114](docs/DECISION_REGISTER.md) require to run it.**
+
+### ⚠️ And the tension this creates, stated rather than hidden
+
+| | |
+|---|---|
+| **`main` today** | Says [B-224](docs/BUGS.md) is **🟡** |
+| **Measured truth** | **🔴 — `make e2e` cannot run at all** |
+| ⛔ **So** | **The commit that would make `main` honest is the commit being withheld** |
+
+🔴 **Withholding does not un-break anything.** **The broken state is already on `main`; the candidate documents it rather than introducing it** — **and it also carries [B-226](docs/BUGS.md)'s fix, `TASK-499` at `IN VALIDATION`, and two register corrections.**
+
+> ⚡ **QE honoured the rule anyway, and the reason is the same one recorded at cycle 147**: **a gate honoured only when convenient is not a gate.** ⛔ **The constitution anticipates exactly this case and answers it**: *"a blocking defect holds every lane's finished work hostage… **restoring flow is worth more than one more slice**"*, and a blocking defect is **the owning lane's highest priority.** ✅ **[B-224](docs/BUGS.md) is Lane A's own row, escalated by Lane A, so the signal lands where it can act.**
+>
+> ⚠️ **This is the one call in the cycle a product owner might reasonably take differently**, which is why it is written out rather than summarised.
+
+### ✅ The journeys ran — 45 passed, and a second broken one surfaced
+
+**Lane A ran `TASK-499`'s own stated verification the moment the lease cleared**: ***"four shipped customer journeys passing unchanged on new paths."*** **45 passed across `@smoke` and `@journey`, including sign-in through `/signin` and Workflow 1 · Login end to end.** ⚡ ***"No journey needed its ASSERTIONS changed, only its URLs"*** — **which is the row's own test for whether a rename altered behaviour rather than a path.**
+
+⛔ **It had to work around [B-224](docs/BUGS.md) to do it, and said so rather than quietly**: it ran the seed against 5432, *"the port `backend/.env` actually uses"*, under the lease. ✅ ***"The seed then worked first time, which is itself the cleanest proof that the port is the only thing B-224 breaks."***
+
+**[B-226](docs/BUGS.md) — the second broken journey found in one day, by the same method.** **`search-journey` types ONE character and `MINIMUM_QUERY` is TWO**, so the listbox it waited fifteen seconds for **could never appear.** ⚡ **Dated, and the order is the finding**: the minimum landed 2026-08-03, the spec was written against it on 2026-08-08. ⛔ ***"Not a regression — a journey that has never passed since it was authored."***
+
+### Measured at `6c653d86` — certified, unpromoted
+
+| | |
+|---|---|
+| **Certified** | [`6c653d868018`](certification/reports/6c653d868018.md) · **first attempt** · ⛔ **NOT promoted** |
+| **Quality** | **4310 backend** · **95.09%** · **401 invariants** · mypy strict **854 files** · **37 contracts**, 0 broken · eslint clean · `tsc` clean *(after clearing `.next` — [B-167](docs/BUGS.md))* |
+| **Journeys** | ✅ **45 passed** — **by the lane, working around [B-224](docs/BUGS.md)**, not by QE |
+| **Register on the candidate** | **161 rows, 55 unresolved, 1 blocking 🔴** |
+| **`main`** | **unchanged at `2ff0ba05`** |
 
 ---
 
