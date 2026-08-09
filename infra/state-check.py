@@ -1093,6 +1093,69 @@ def _prepared_findings() -> list[str]:
     return out
 
 
+def _design_clarification_findings(backlog: str) -> list[str]:
+    """**A Design Clarification must never be answered by building — D-207.**
+
+    ⛔ **[D-207](../docs/DECISION_REGISTER.md) §2 separates two things this office
+    had been answering as one.** *Design completeness* asks whether the product
+    can be built without inventing behaviour; *design correctness* asks whether
+    the behaviour is logically consistent. **The second is the Design
+    Authority's**, and Product Office identifying a routing inconsistency and
+    then writing a row against its own reading is the overreach the ruling names.
+
+    ⚡ **So this check enforces one property and nothing else: a backlog row that
+    names an OPEN Design Clarification as its blocker may not read `READY`.**
+    ⛔ **Not because the row is wrong, but because building it would bake an
+    unconfirmed reading of the specification into the repository** — which is
+    §6's *"prevents implementation work from compensating for design
+    uncertainty"*, made checkable rather than promised.
+    """
+    coordination = _read("docs/LANE_COORDINATION.md")
+    out: list[str] = []
+
+    #: An item is a clarification when it SAYS so, never when a heuristic infers
+    #: it. **A guess here would silently freeze rows nobody meant to freeze.**
+    open_clarifications: dict[str, str] = {}
+    for block in re.split(r"\n(?=#{2,4} C-\d+)", coordination):
+        head = re.match(r"#{2,4} (C-\d+)", block)
+        if not head:
+            continue
+        klass = re.search(r"^\|\s*\*\*Class\*\*\s*\|([^|]*)\|", block, re.M)
+        if not klass or "DESIGN CLARIFICATION" not in klass.group(1).upper():
+            continue
+        status = re.search(r"^\|\s*\*\*Status\*\*\s*\|([^|]*)\|", block, re.M)
+        cell = (status.group(1) if status else "").upper()
+        # **The operative state is the first token, never a substring** — B-101,
+        # and B-413 one register over. A cell reading "CLOSED — was OPEN until…"
+        # is closed.
+        seen = [(cell.find(s), s) for s in ("OPEN", "RULED", "CLOSED", "ANSWERED") if s in cell]
+        if seen and min(seen)[1] == "OPEN":
+            classification = re.search(
+                r"^\|\s*\*\*Classification\*\*[^|]*\|([^|]*)\|", block, re.M)
+            open_clarifications[head.group(1)] = re.sub(
+                r"\*|`", "", (classification.group(1) if classification else "")).strip()[:44]
+
+    if not open_clarifications:
+        return out
+
+    states = _backlog_states(backlog)
+    for block in re.split(r"(?=^### TASK-\d+)", backlog, flags=re.M):
+        head = re.match(r"^### (TASK-\d+)", block)
+        if not head or states.get(head.group(1)) != "READY":
+            continue
+        identifier = head.group(1)
+        named = sorted({c for c in open_clarifications if c in block})
+        if named:
+            out.append(
+                f"{identifier} is READY and names an open Design Clarification "
+                f"({', '.join(named)}). **A clarification is the Design Authority's to "
+                f"answer and this office's to wait on** (D-207 §2) — building against an "
+                f"unconfirmed reading is how implementation compensates for design "
+                f"uncertainty (§6)."
+            )
+    return out
+
+
 def _item_owner_findings() -> list[str]:
     """Does every coordination item awaiting somebody name who? — **D-186.**
 
@@ -1120,7 +1183,20 @@ def _item_owner_findings() -> list[str]:
     heads = [(i, l) for i, l in enumerate(lines) if re.match(r"^## C-\d+ ", l)]
     awaiting = re.compile(r"`(OPEN|IN ANALYSIS|READY FOR LANE C|READY FOR PRODUCT DECISION)`")
     finished = re.compile(r"`(CLOSED|ANSWERED|READY FOR IMPLEMENTATION|RULED|OPERATIONAL)`")
-    actor = re.compile(r"Lane [ACD]|QE|[Pp]roduct owner")
+    #: ⚡ **`Design Authority` added 2026-08-09, [D-207](../docs/DECISION_REGISTER.md).**
+    #: The ruling introduces a real actor this repository did not have: the owner
+    #: of the design specification itself, distinct from the product owner who
+    #: rules on product questions. ⛔ **A Design Clarification routed to "the
+    #: product owner" would be answered as a product decision**, which is exactly
+    #: the conflation §2 corrects.
+    #: ⛔ **Case-insensitive on the owner words, and that is a bug fix — 2026-08-09.**
+    #: This read `[Pp]roduct owner`, so **`Product Owner` with a capital O did not
+    #: match** and twelve items in the register spell it that way. ⚡ **The same
+    #: class as [B-413](../docs/BUGS.md) one register over: a check defeated by
+    #: emphasis or capitalisation the register legitimately varies.** ✅ **Matched
+    #: case-insensitively; the register is prose written by hand and a gate must
+    #: not depend on its shift key.**
+    actor = re.compile(r"Lane [ACD]|QE|product owner|design authority", re.I)
 
     for n, (i, head) in enumerate(heads):
         end = heads[n + 1][0] if n + 1 < len(heads) else len(lines)
@@ -2059,6 +2135,7 @@ def main() -> int:
     findings.extend(_projection_findings())
     findings.extend(_prepared_findings())
     findings.extend(_item_owner_findings())
+    findings.extend(_design_clarification_findings(backlog))
     findings.extend(_structural_findings())
     findings.extend(_pipeline_findings())
     findings.extend(_adoption_findings())

@@ -145,6 +145,26 @@ def counts() -> dict[str, int]:
         elif "qe" in who:
             qe_open += 1
 
+    # ── D-207 §3 — completeness and correctness are different questions ──────
+    #
+    # ⛔ **Design COMPLETENESS asks *can it be built without inventing behaviour?*
+    # Design CORRECTNESS asks *is the behaviour itself logically consistent?***
+    # ⚡ **They were reported as one number and they have different owners and
+    # different remedies**: a completeness gap is closed by writing a document, a
+    # correctness gap only by the Design Authority confirming or amending one.
+    clarifications = 0
+    for blk in re.split(r"\n(?=#{2,4} C-\d+)", coord):
+        if not re.match(r"#{2,4} C-\d+", blk):
+            continue
+        kl = re.search(r"^\|\s*\*\*Class\*\*\s*\|([^|]*)\|", blk, re.M)
+        if not kl or "DESIGN CLARIFICATION" not in kl.group(1).upper():
+            continue
+        st = re.search(r"^\|\s*\*\*Status\*\*\s*\|([^|]*)\|", blk, re.M)
+        c = (st.group(1) if st else "").upper()
+        f = [(c.find(s), s) for s in states if s in c]
+        if f and min(f)[1] == "OPEN":
+            clarifications += 1
+
     #: **QE's queue, and it is the largest single distortion in the repository.**
     #: A row at `IN VALIDATION` is finished work the lane cannot touch and the
     #: board still counts.
@@ -165,6 +185,7 @@ def counts() -> dict[str, int]:
         "implementation_blockers": len(impl_blocked),
         "architectural_blockers": len(arch_blocked),
         "product_owner_decisions": owner_open,
+        "design_clarifications": clarifications,
         "qe_decisions": qe_open,
         "awaiting_qe": in_validation,
         "planning_unsynced": int(unsynced),
@@ -203,6 +224,7 @@ def main() -> int:
         ("Implementation blockers", c["implementation_blockers"], "a lane clears these", "  "),
         ("Architectural blockers", c["architectural_blockers"], "Product Office's", "  "),
         ("Product Owner decisions", c["product_owner_decisions"], "open", "  "),
+        ("Design Clarifications", c["design_clarifications"], "Design Authority's", "  "),
         ("QE decisions", c["qe_decisions"], "open", "  "),
         (None, None, None, None),
         ("Awaiting QE — IN VALIDATION", c["awaiting_qe"], "QE's queue", "  "),

@@ -89,7 +89,9 @@
 | **Retrieved** | **`Fortune Signora Entry Coverage Review.dc.html`** — **59,958 bytes** |
 | **sha256** | `eeb8c31713bef5aeec4873920423aac9…` |
 | **Method** | `DesignSync` · `list_files` then `get_file`, against project `1d043179-1ee9-4c9f-b59e-592e04297cad` |
-| **Kind** | ⚠️ **NOT a screen specification.** ⛔ **It draws nothing and specifies no destination.** ⚡ **It is a COMPLETENESS AUDIT of `Fortune Signora Authenticated Entry`, and it is imported as evidence rather than as an implementation authority** |
+| **Kind** | ⚠️ **NOT a screen specification** — it draws nothing and specifies no destination. ⚡ **A COMPLETENESS AUDIT of `Fortune Signora Authenticated Entry`** |
+| **Authority** | ✅ **THE PLANNING AUTHORITY FOR REMAINING DESIGN WORK** — [D-207](../DECISION_REGISTER.md) §1. ⛔ **NOT an implementation authority**: 📁 its own §07, *"It did not design the missing screens."* ⚡ **A lane implementing from it would build nothing; Product Office plans the design backlog from it** |
+| **Answers** | ✅ **Design COMPLETENESS — *can it be built without inventing behaviour?*** ⛔ **NOT design CORRECTNESS — *is the behaviour logically consistent?*** ([D-207](../DECISION_REGISTER.md) §3). **The second is tracked as Design Clarifications in [`LANE_COORDINATION.md`](../LANE_COORDINATION.md)** |
 
 > ## ⛔ **It does not join [D-138](../DECISION_REGISTER.md)'s implementation authority, and the distinction is load-bearing.** **A lane implementing from this document would build nothing — it names owners for gaps and deliberately does not fill them** (📁 its own §07: *"It did not design the missing screens"*). ✅ **The four documents it RECOMMENDS would be implementation authorities; this one is the argument for writing them.**
 

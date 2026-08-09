@@ -43,6 +43,20 @@
 
 ⛔ **Nothing is blocked** — **[TASK-1413](BACKLOG.md) is sequenced behind this and Lane A has 24 other startable rows.**
 
+## ⚡ Design Clarifications — for the Design Authority, not for a product ruling
+
+> **[D-207](DECISION_REGISTER.md) §2 and §5.** ⛔ **These are not product decisions and this office must not resolve them.** ✅ **Each states the evidence and asks Design to confirm the reading or amend the specification.** ⚠️ **Listed here because the queue is where a human looks — the OWNER is the Design Authority, and answering one as a product preference would be the conflation the ruling corrects.**
+
+| | Clarification | [§6](DECISION_REGISTER.md) classification | What it holds |
+|---|---|---|---|
+| 🔴 | **[C-1407](LANE_COORDINATION.md) — rule 24 `HOME` cannot fire** while the same document tints it and calls it *"the default and the most common outcome"* | **CONTRADICTORY DESIGN** | ⚡ **Nothing today** — ⛔ **and it decides what support reads in every diagnostics bundle, so changing it later invalidates every bundle already collected** |
+| 🟠 | **[C-1408](LANE_COORDINATION.md) — rule precedence.** Read flat, rules 18–24 are unreachable; §02's gate ladder is the only reading under which the table is not two-thirds dead | **INCOMPLETE DESIGN** | ⏸️ **Four routing rows, frozen** — [TASK-1401](BACKLOG.md) · [1402](BACKLOG.md) · [1407](BACKLOG.md) · [1426](BACKLOG.md) |
+| 🟠 | **[C-1409](LANE_COORDINATION.md) — rule 23's start-page preference** *"wins"* with no rule for when the page becomes unreachable | **INCOMPLETE DESIGN** | ✅ **Nothing** — no row implements rule 23 |
+
+⚡ **The engine ships with all three handled and every choice reversible**: the resolution code wins, rule 24 is kept as the totality guard **with a test asserting it cannot fire — so if Design amends the rule the test fails and the assumption surfaces**, and the gate ladder is implemented as §02 describes.
+
+⛔ **`state-check` now refuses a `READY` row that names an open clarification** — ✅ **proved able to fail against a synthetic row before it shipped.**
+
 ## 🔴 C-1405 · Commission four design documents — the Entry Coverage Review's own priority order
 
 > ## ✅ **Governance reviewed the document adversarially and ADOPTS it.** ⚡ **The architecture is sound and the four-document recommendation is better than the eleven the brief implied.** ⛔ **What is asked here is a commissioning decision, which is not this office's** ([§21](../CLAUDE.md)).

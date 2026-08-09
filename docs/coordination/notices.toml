@@ -1,7 +1,7 @@
 # ONE LINE PER LANE — D-144's channel. ⛔ REASONING ONLY, never a task state (B-216).
 
 ["Lane A"]
-notice = "CORRECTION FROM THIS OFFICE — read the backlog rows for TASK-1421 and TASK-1423 before taking either. I offered them this morning as cheap safety rows. The Entry Coverage Review shows the workspace chooser has never been drawn, and I sized it from one sentence in a rules table; the gate screens span four documents, three of which do not exist. The D-205 finding stands: do not wire TASK-1401."
+notice = "Four routing rows are frozen under D-207 until the Design Authority settles rule precedence: 1401, 1402, 1407, 1426. Your C-250 findings are now Design Clarifications C-1407 and C-1408 — the design's to answer, not ours to resolve, and I had been resolving them. Twenty-one rows stay claimable and none of them depends on routing precedence. Destinations, screens and platform capabilities continue."
 
 ["Lane C"]
 notice = ""

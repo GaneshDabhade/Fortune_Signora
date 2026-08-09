@@ -354,8 +354,12 @@ databaseUrl: required(
 | [C-247](#c-247-a-person-in-two-organizations-gets-two-themes-and-task-470s-row-says-otherwise) | 🟠 **A person in two organizations gets two themes, and TASK-470's row says otherwi** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is a customer's experience of belonging to two organizations |
 | [C-248](#c-248-four-profile-fields-are-locked-as-managed-by-northwind-it-and-no-directory-sync-exists) | 🟠 **Four profile fields are locked as *"Managed by Northwind IT"* and no directory** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is how complete screen `01` looks at review** — named here s |
 | [C-249](#c-249-two-rows-on-the-ai-screen-are-policies-and-neither-policy-exists) | 🟠 **Two rows on the AI screen are policies, and neither policy exists** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 9 review is shown** |
+| [C-1407](#c-1407--rule-24-home-cannot-fire-and-the-document-calls-it-the-most-common-outcome) | ⚡ **DESIGN CLARIFICATION** · 🔴 **Rule 24 `HOME` cannot fire, and the document calls it the most common outcome** | **Lane A**, 2026-08-09, implementing [TASK-1400](BACKLOG.md) · escalated by Lane C | ⛔ **Design Authority** | 🔴 **`OPEN`** | ⚡ **Nothing today** — **and it decides what support reads in every diagnostics bundle** |
+| [C-1408](#c-1408--rule-precedence-and-interaction--the-table-and-the-gate-ladder-are-two-different-readings) | ⚡ **DESIGN CLARIFICATION** · **Rule precedence and interaction — the table and the gate ladder are two different readings** | **Lane A**, 2026-08-09 · escalated by Lane C | ⛔ **Design Authority** | 🟠 **`OPEN`** | ⏸️ **[TASK-1401](BACKLOG.md) · [1402](BACKLOG.md) · [1407](BACKLOG.md) · [1426](BACKLOG.md)** — frozen under [D-207](DECISION_REGISTER.md) |
+| [C-1409](#c-1409--rule-23--a-start-page-preference-that-outlives-the-access-it-points-at) | ⚡ **DESIGN CLARIFICATION** · **Rule 23 — a start-page preference that outlives the access it points at** | **Lane C**, 2026-08-09, reviewing the Coverage Review | ⛔ **Design Authority** | 🟠 **`OPEN`** | ✅ **Nothing** — no row implements rule 23 |
 | [C-1405](#c-1405--the-entry-coverage-review-recommends-four-documents-and-three-of-them-block-work-already-released) | 🔴 **The Entry Coverage Review recommends four documents, and three block work already released** | **Lane C**, 2026-08-09, reviewing under [D-206](DECISION_REGISTER.md) | ⛔ **Product Owner** — commissioning a design document is not this office's | 🔴 **`OPEN`** | ⏸️ **[TASK-1421](BACKLOG.md)** and ⏸️ **[TASK-1423](BACKLOG.md)** — both released `READY` in error and now correctly blocked |
 | [C-1406](#c-1406--the-review-says-the-engine-has-no-routing-defect-and-a-lane-that-implemented-it-found-three) | 🟠 **The review says the engine has no routing defect; the lane that built it found three** | **Lane C**, 2026-08-09, against [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | ⛔ **Product Owner** — same question as [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) ③ | 🟠 **`OPEN`** | ✅ **Nothing.** ⚠️ **It changes whether the Entry document is treated as settled** |
+| [C-251](#c-251--the-signal-centers-queue-rows-need-five-facts-and-the-published-contract-carries-two) | **The Signal Center's queue rows need five facts and the published contract carries two** | **Lane A**, 2026-08-09, holding [TASK-439](BACKLOG.md) — ⚡ **after the L-1 reuse audit and before writing a line** | **Lane C** — ⛔ **a planning gap, not an implementation one; this office released a row naming fields the contract does not have** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **Two of the design's five row fields will be absent and a reviewer would read that as a defect** |
 | [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | 🟠 **The Entry Engine's rule table counts 24, the row said 21, and one rule cannot fire** | **Lane A**, 2026-08-09, **implementing [TASK-1400](BACKLOG.md)** — ⚡ **all three found by building** | **Lane C** for ① *(corrected 2026-08-09)* · ⛔ **Product Owner** for ③ | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **③ decides what support reads in a diagnostics bundle** |
 | [C-1404](#c-1404--machine-credentials-have-no-module-and-the-entry-engine-already-admits-a-non-human-principal) | 🟠 **Machine credentials have no module, and the entry engine already admits a non-human principal** | **Lane C**, 2026-08-09, decomposing [workflow 11](coordination/workflows.toml) | ⛔ **Product Owner** if a new module is required — **inventing a module boundary is architecture** | 🟠 **`OPEN`** | ⏸️ **[TASK-1413](BACKLOG.md)**, and nothing being built today |
 | [C-1403](#c-1403--a-403-names-its-approvers-and-nothing-publishes-who-they-are) | 🟡 **A `403` names its approvers, and nothing publishes who they are** | **Lane C**, 2026-08-09, decomposing [workflow 28](coordination/workflows.toml) | **Lane A** — `workspace_tenancy` is this lane's | 🟡 **`OPEN`** | ✅ **Nothing** — **[TASK-1409](BACKLOG.md) ships the `403` without the affordance and says so** |
@@ -8568,6 +8572,75 @@ rules parsed: 24   ·   distinct reason codes: 24
 
 **The decision, in one sentence:** ⚡ **may an invitation link, on its own, reveal a company's name, headcount, an employee's name and a role?** ✅ **If yes, that is an endpoint and an ADR.** ⛔ **If no, screen `13` is a different screen and the design needs amending** — **and until either lands, `/join` shows what a non-member may truthfully be shown.**
 
+## ⚡ Design Clarifications — a class, not a second register ([D-207](DECISION_REGISTER.md))
+
+> **[D-207](DECISION_REGISTER.md) §2–§3 separate two questions this office had been answering as one.** **Design COMPLETENESS asks *can it be built without inventing behaviour?* — the Entry Coverage Review answers that.** **Design CORRECTNESS asks *is the behaviour itself logically consistent?* — nobody had been answering it, and this office began to and then resolved its own findings, which is the overreach D-207 corrects.**
+>
+> ⛔ **A Design Clarification is NOT a coordination item this office may close.** ✅ **It is evidence sent to the Design Authority, and the specification is confirmed or amended there.** 📁 **[§21](../CLAUDE.md): implement the design, never redesign it while building.**
+>
+> ⚠️ **Kept as a `Class` field in THIS register rather than a new file, deliberately.** ⛔ **A second register is a second place to look and a second thing to keep current** — the defect [D-203](DECISION_REGISTER.md) §2 spent a cycle removing. ✅ **The class is queryable, `state-check` reads it, and it appears on its own line in the dashboard.**
+>
+> **Every one carries [D-207](DECISION_REGISTER.md) §6's classification**: `MISSING IMPLEMENTATION` · `MISSING DESIGN` · `INCOMPLETE DESIGN` · `CONTRADICTORY DESIGN` · `IMPLEMENTATION BUG`. ⚡ **Naming it first is what stops implementation work compensating for design uncertainty.**
+
+## C-1409 · Rule 23 — a start-page preference that outlives the access it points at
+
+| | |
+|---|---|
+| **Class** | ⚡ **DESIGN CLARIFICATION** |
+| **Classification** ([D-207](DECISION_REGISTER.md) §6) | ⚠️ **INCOMPLETE DESIGN** — **the behaviour is specified and its lifecycle is not** |
+| **Raised by** | **Lane C**, 2026-08-09, reviewing the Entry Coverage Review |
+| **Owner** | ⛔ **Design Authority** |
+| **Status** | 🟠 **`OPEN`** |
+| **Blocks** | ✅ **Nothing.** ⛔ **No row implements rule 23** |
+
+📁 **The Coverage Review adds a start-page preference to `User Profile` and states the precedence: *"the preference wins, and resetting returns the role default."*** ⛔ **It does not say what happens when the preference names a page the person may no longer open.**
+
+> ## 🔴 **This is [D-196](DECISION_REGISTER.md)'s stale-preference hazard, second instance.** 📁 **The first: *"last-used workspace is a stored preference that OUTLIVES membership… an authorization failure wearing a convenience feature's clothes."*** ⚡ **[TASK-1422](BACKLOG.md) exists because of it and already carries the clearing rule.**
+
+**The question:** ⛔ **when a start page becomes unreachable — role changed, workspace archived, module disabled — does the preference clear, fall back to the role default silently, or fall back and say so?**
+
+⚠️ **Also unstated: rule 23's route column is `(preference)`, which is not a destination.** **If the preference names `/w/:ws/reports` and rule 23 fires, does the engine still evaluate rules 15–17 for that workspace's standing?** ⚡ **Precedence between a preference and a gate is exactly the class [C-1408](#c-1408--rule-precedence-and-interaction--the-table-and-the-gate-ladder-are-two-different-readings) asks about.**
+
+## C-1408 · Rule precedence and interaction — the table and the gate ladder are two different readings
+
+| | |
+|---|---|
+| **Class** | ⚡ **DESIGN CLARIFICATION** |
+| **Classification** ([D-207](DECISION_REGISTER.md) §6) | ⚠️ **INCOMPLETE DESIGN** — **the correct reading exists in §02 and the rules table does not carry it** |
+| **Raised by** | **Lane A**, 2026-08-09, implementing [TASK-1400](BACKLOG.md) · **escalated as a clarification by Lane C** |
+| **Owner** | ⛔ **Design Authority** |
+| **Status** | 🟠 **`OPEN`** |
+| **Blocks** | ⏸️ **[TASK-1401](BACKLOG.md)**, ⏸️ **[TASK-1402](BACKLOG.md)**, ⏸️ **[TASK-1407](BACKLOG.md)**, ⏸️ **[TASK-1426](BACKLOG.md)** — ⚡ **frozen under [D-207](DECISION_REGISTER.md)'s *stop creating implementation tasks for routing logic until the design is settled*** |
+
+📁 **The rules table says *"evaluated top to bottom"* and *"first match wins."*** ⛔ **Read as one flat list, rules 18–24 can never fire** — **rules 10–14 partition every membership shape there is** (none · exactly one · several with a healthy last-used · several without · several with an unhealthy one), **so a person always matches one of them.**
+
+✅ **§02 gives a reading that works, and it is the document's own**: 📁 *"each gate depends on the one before it **resolving**, and **a gate that fails** produces a designed screen."* ⚡ **Two outcomes per gate, not one** — so rules 11, 12 and 14 RESOLVE the workspace and evaluation continues.
+
+> ## ⚠️ **Both readings are in the same document and they disagree.** ⛔ **The engine implements §02's, because it is the only one under which the table is not two-thirds dead** — ✅ **and that choice was made by a lane rather than confirmed by Design, which is what this item exists to fix.**
+
+**What is asked:** ✅ **confirm that gate resolution and gate failure are distinct outcomes, and that *first match wins* applies WITHIN a gate rather than across the whole table** — ⚡ **or amend the table.**
+
+## C-1407 · Rule 24 `HOME` cannot fire, and the document calls it the most common outcome
+
+| | |
+|---|---|
+| **Class** | ⚡ **DESIGN CLARIFICATION** |
+| **Classification** ([D-207](DECISION_REGISTER.md) §6) | 🔴 **CONTRADICTORY DESIGN** — ⛔ **the document asserts two things that cannot both hold** |
+| **Raised by** | **Lane A**, 2026-08-09, implementing [TASK-1400](BACKLOG.md) · **escalated as a clarification by Lane C** |
+| **Owner** | ⛔ **Design Authority** |
+| **Status** | 🔴 **`OPEN`** |
+| **Blocks** | ⚡ **Nothing today** — ⛔ **and it decides what support reads in every diagnostics bundle, so changing it later invalidates every bundle already collected** |
+
+⛔ **Rule 24's condition is *"Everything healthy, no other rule matched."*** ⚡ **Gate 3 always produces a reason, so *no other rule matched* is never true.** 📁 **The same document tints rule 24's row and describes it as *"the default and the most common outcome."***
+
+> ## **When a person lands on Home with nothing remarkable about their entry, does the reason code read `HOME`, or the resolution code that chose the workspace — `SOLE_WORKSPACE` · `LAST_USED` · `FELL_THROUGH`?**
+
+⚠️ **The Entry Coverage Review classifies rule 24 as *B · expand Home* and does not notice it cannot fire** — ⛔ **and states four times that there is no routing defect.** ✅ **A completeness audit that reads the table without executing it structurally cannot find this class; the finding is not a criticism of the review's method, it is the reason this item is a CLARIFICATION rather than a correction.**
+
+✅ **Shipped meanwhile and deliberately reversible: the resolution code wins, and rule 24 is KEPT as the totality guard** — it is what makes `resolveEntry` total, and a router handed `undefined` fails far from the cause. ⚡ **A test asserts it cannot currently fire, so if Design amends the rule the test fails and the assumption surfaces.**
+
+⚠️ **Supersedes the routing half of [C-1406](#c-1406--the-review-says-the-engine-has-no-routing-defect-and-a-lane-that-implemented-it-found-three), which raised this as a disagreement with the review.** ⛔ **[D-207](DECISION_REGISTER.md) §2 is right that it is a question for Design rather than a scoring dispute.**
+
 ## C-1405 · 🔴 The Entry Coverage Review recommends four documents, and three of them block work already released
 
 | | |
@@ -8593,12 +8666,13 @@ rules parsed: 24   ·   distinct reason codes: 24
 
 ⚠️ **This office's own error, recorded rather than absorbed:** ⛔ **[TASK-1421](BACKLOG.md) and [TASK-1423](BACKLOG.md) were released to Lane A as *cheap safety rows* two hours before this review was read.** **TASK-1421 cited *"§03 rule 13"* as its design authority — one sentence in a rules table, for a screen the review says has never been drawn.** ✅ **Corrected the same cycle, and the finding that produced them is unaffected: `/workspaces` still does not exist, so [TASK-1401](BACKLOG.md) still must not be wired.**
 
-## C-1406 · The review says the engine has no routing defect, and a lane that implemented it found three
+## C-1406 · The review reports design coverage in the vocabulary of buildability
 
 | | |
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-09, reviewing the Entry Coverage Review against [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) |
-| **Owner** | ⛔ **Product Owner** — ⚡ **it is the same question already queued as [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) ③, and this item exists because a REVIEW has now asserted the opposite** |
+| **Class** | ⚡ **DESIGN COMPLETENESS** — ⛔ **narrowed 2026-08-09: the ROUTING half moved to [C-1407](#c-1407--rule-24-home-cannot-fire-and-the-document-calls-it-the-most-common-outcome) as a Design Clarification, because [D-207](DECISION_REGISTER.md) §2 is right that rule reachability is a question for Design rather than a scoring dispute with a review** |
+| **Owner** | ⛔ **Product Owner** — **it is a question about how coverage is REPORTED, not about the design itself** |
 | **Status** | 🟠 **`OPEN`** |
 | **Blocks** | ✅ **Nothing.** ⚠️ **What it changes is whether the Entry document is treated as settled** |
 
