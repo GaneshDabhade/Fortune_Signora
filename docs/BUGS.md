@@ -80,6 +80,43 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-161 · the Task Claim Protocol's own step 7 pushes a lane's unpromoted implementation to `integration`
+
+| | |
+|---|---|
+| **Module** | Repository process — [`CLAUDE.md`](../CLAUDE.md) §20e, *The Task Claim Protocol*, step 7 |
+| **Current assignee** | **Product owner** — §20e is theirs, and this is a governance defect rather than a code one |
+| **Severity** | 🟠 — ⛔ **six code files reached `integration` without passing through QE**, and no gate refused them |
+| **Status** | **`OPEN`** |
+| **Commit found** | `554dd74c` on `origin/integration`, found during cycle 146's promotion |
+
+**Steps.** Hold an unpromoted slice on your lane branch. Claim the next task exactly as step 7 instructs:
+
+```
+git checkout integration && git merge --ff-only <lane-branch> && git push origin integration
+```
+
+**Expected.** ⚡ **The claim reaches `integration` and nothing else does.** §20e is explicit: *"a claim commit touches [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) and [`BACKLOG.md`](BACKLOG.md) and nothing else"*, and *"code reaches `integration` by QE fast-forwarding a validated lane branch."*
+
+**Actual.** **The fast-forward carries the whole branch.** `554dd74c` — `TASK-1409`, **six code files** including two new `components/ui` components — arrived on `integration` underneath the claim, along with two documentation commits. **The claim commit `227a074f` is itself perfectly bounded, and sits on top of them.**
+
+> ⚡ **Nobody did anything wrong, and that is the finding.** **Lane A followed step 7 literally.** ⛔ **The two instructions are only compatible when the lane branch holds nothing else unpromoted** — and §20e's *Continuous execution* rule **guarantees it usually does**: *"the moment a lane sets `IN VALIDATION`, it returns to the backlog and claims the next `READY` task."* **The protocol that requires the claim and the rule that keeps work on the branch are in direct conflict.**
+
+**What it cost this cycle — measured, not assumed.** ✅ **Nothing.** **QE had already rebased and certified the same two patches independently**, and `git patch-id --stable` confirms they are byte-equivalent:
+
+```
+integration 554dd74c → cbbab267…     main 6636e6ce → cbbab267…
+integration 03a81b5d → b9cbb641…     main f954477e → b9cbb641…
+```
+
+⚡ **`promoted == certified` held, `--audit-main` is clean, and no uncertified code reached `main`.** ⚠️ **The cost was a non-fast-forward on `integration`**, resolved by the rebase Closeout step 10 already prescribes.
+
+**Why no gate caught it.** `--audit-claims` reads commits *whose subject begins* `Claim TASK-`, and `554dd74c`'s does not. ⛔ **The check inspects the claim and never the commits the claim's own push brings with it.**
+
+**Two shapes of fix, and the choice is the product owner's.** **Push only the claim commit** — `git push origin <claim-sha>:integration` — which is what *"a standalone commit, pushed to `integration`"* already means and never carries a parent that is not already there. **Or widen `--audit-claims` to check every commit a claim push introduces**, so the breach is refused rather than described. ⚡ **The first makes it unrepresentable; the second makes it detectable** (§2).
+
+---
+
 ### B-160 · the coordination check cannot pass, because two of the numbers it compares change whenever any lane moves
 
 | | |

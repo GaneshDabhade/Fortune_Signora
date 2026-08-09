@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `97a13ce`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `f954477`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `97a13ce`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `f954477`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`97a13ce`** — the certified commit itself |
-| **`integration`** | **Level with `main`** |
-| **Release candidate** | ⚡ **Cycle 145 promoted `D-210` and `D-212`** — **and [B-159](docs/BUGS.md) closed: the coordination source now tells Lane A the same thing its notice does** |
-| **Certification** | ✅ [`97a13cee0508`](certification/reports/97a13cee0508.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **`main`** | **`f954477`** — the certified commit itself |
+| **`integration`** | ⛔ **DIVERGED — `origin/integration` at `227a074f` carries `main`'s patches under different SHAs, plus two.** ⚡ **The rebase that repairs it is computed and verified locally on `qe-integration-rebased`; the push is outstanding** — see [B-161](docs/BUGS.md) and §1d |
+| **Release candidate** | ⚡ **Cycle 146 promoted the scope ladder** — **and found that the Task Claim Protocol's own step 7 pushes a lane's unpromoted code to `integration`** ([B-161](docs/BUGS.md)) |
+| **Certification** | ✅ [`f954477e9e42`](certification/reports/f954477e9e42.md) · migration head **`0045`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None — and this is *derived*, not typed** ([B-151](docs/BUGS.md)): `registers.bug_rows()` reads **147 rows, 45 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
-| **Implementation waiting** | ✅ **Nobody, and the projection now says so too** — `claimable_now = 22`, `backlog` 22 entries, `awaiting_sync = 0`. ⚡ **Lane A claimed `TASK-1409` from its own backlog with no Product Office involvement** |
-| **Validation queue** | **Empty.** ⚡ **Lane C fast-forwarded — 0 behind, no rebase needed** |
-| **Customer value this cycle** | ⚪ **None directly — two rulings.** ⚡ **[D-210](docs/DECISION_REGISTER.md)'s shell audit came back clean, and *both apparent gaps were the auditor's own vocabulary*** — a term search missed two fully-specified behaviours a reader would have found |
+| **Blocking Quality Defects** | ✅ **None — and this is *derived*, not typed** ([B-151](docs/BUGS.md)): `registers.bug_rows()` reads **148 rows, 46 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
+| **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A delivered `TASK-1409` and claimed `TASK-1408` — the Application Shell, which six backlog rows are waiting for** |
+| **Validation queue** | **Empty.** ⚠️ **Two documentation commits sit on `origin/integration` uncertified** — permitted by §20e, and next cycle's input |
+| **Customer value this cycle** | ✅ ⚡ **A failure now claims the smallest surface it can** — four screens had each decided severity, wording and identifier presentation for themselves, and **three printed a correlation id in three shapes, one of which could not be copied** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **1900 frontend tests** across **82 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **149s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **1930 frontend tests** *(+30)* across **84 files** *(+2)* *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **212s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -138,6 +138,72 @@ B- identifiers are allocated twice: B-152.
 | **Dependency** | ✅ **Lane A unblocked last cycle**; `TASK-1400` is `READY` on `integration` |
 | **Customer Value** | ⛔ **None.** **A register repair** |
 | **Process** | 🔴 **Third QE self-defect of this class** — [B-150](docs/BUGS.md) skipped a check, [B-151](docs/BUGS.md) transcribed instead of measuring, [B-153](docs/BUGS.md) filtered a check's output. ⚡ **All three are one habit: trusting the shape of an answer instead of reading it** |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 146
+
+**Derived from the promoted commit `f954477`.** **101 promotions.** ⚡ **A slice that consolidated four improvised failure surfaces, and a governance defect found by a push that would not fast-forward.**
+
+### ✅ What a customer gets
+
+> **A failure claims the smallest surface it can.**
+
+⛔ **Four surfaces already rendered system states and each decided severity, wording, identifier presentation and actions for itself** — `app/not-found.tsx`, `app/error.tsx`, `components/feedback/error-boundary.tsx`, `components/ui/error-state.tsx`. ⚠️ **Three rendered a correlation id in three different shapes and one of those could not be copied.**
+
+⚡ ***"None was wrong alone; the set was."*** ✅ **The ladder is read out of the design document rather than transcribed** — and **the parse failed twice before it passed**, the vacuity guard catching an anchor that matched a template reference instead of the declaration.
+
+### ✅ The budget was correct, and the 🔴 edge was found by hitting it
+
+**+738 insertions, 0 deletions.** 🟠 **Two new `components/ui` components announced in the commit message**, exactly as §20e requires — **no shared component bent for one caller.**
+
+> ⛔ **`app-shell.tsx` was deliberately not converged.** *"Four of the five improvised boundaries live in `app-shell.tsx`, which is the shell, red, and this row's budget grants nothing red."* ⚡ ***"The edit was made and reverted rather than argued about"*** — **[C-254](docs/LANE_COORDINATION.md).**
+
+### ✅ A guard failed, and the lane did not reword its way past it
+
+**[C-252](docs/LANE_COORDINATION.md).** The region boundary **is not in this commit, and that is the finding.** It was written, and **TASK-445's guard failed it**: `StatedAbsence` already owns the region-scope failed-read sentence.
+
+| | |
+|---|---|
+| **The row assumed** | absence and failure are separable |
+| **The code says** | `StatedAbsence`'s actual sentence is *"Signora could not load X"* — ⚡ **a failure, not an absence** |
+| **So** | **`StatedAbsence` has the sentence and no retry, attempt count or identifier; the ladder has all three and no sentence.** ⛔ **Two primitives claim one concern** |
+
+⚡ ***"The boundary was removed rather than reworded, because rewording to dodge a regex is the fork the guard exists to prevent."*** **That is a surviving-mutation response done correctly** (§2).
+
+### ⛔ [B-161](docs/BUGS.md) — the Task Claim Protocol's own step 7 pushed a lane's unpromoted code to `integration`
+
+**QE's `git push origin integration` was refused as a non-fast-forward, which is how this was found.** `origin/integration` had gained **six code files** — `TASK-1409` — **underneath a perfectly bounded claim commit.**
+
+> ⚡ **Nobody did anything wrong, and that is the finding.** **Step 7 says `git checkout integration && git merge --ff-only <lane-branch> && git push`.** ⛔ **A fast-forward carries the whole branch**, and §20e's *Continuous execution* rule **guarantees the branch usually holds an unpromoted slice** — *"the moment a lane sets `IN VALIDATION`, it claims the next `READY` task."* **The protocol that requires the claim and the rule that keeps work on the branch are in direct conflict.**
+
+**What it cost, measured rather than assumed: nothing.** ✅ **QE had independently rebased and certified the same two patches, and `git patch-id --stable` confirms byte-equivalence:**
+
+```
+integration 554dd74c → cbbab267…     main 6636e6ce → cbbab267…
+integration 03a81b5d → b9cbb641…     main f954477e → b9cbb641…
+```
+
+✅ **`promoted == certified` held · `--audit-main` clean · no uncertified code on `main`.**
+
+⛔ **`--audit-claims` could not have caught it**: it reads commits whose subject begins `Claim TASK-`, and **it never inspects the commits a claim's own push brings with it.**
+
+### ⚠️ `integration` is left diverged, and the repair is computed but unpushed
+
+**The rebase Closeout step 10 prescribes was run and verified locally** — duplicates dropped, both genuinely-new commits replayed, `main` confirmed an ancestor. ⛔ **The force-push to the shared branch was refused by this environment**, twice.
+
+**The rebased result is preserved on `qe-integration-rebased`.** ⚡ **The repository still functions**: next cycle builds its candidate by rebasing onto `main`, exactly as this cycle did, and the duplicates drop out again. ⚠️ **But the divergence grows until the push happens, and it is the one outstanding step of lifecycle stage 6.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4278 backend** · **1930 frontend** *(+30, +2 files)* · **95.07%** · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **151 runs recorded, 143 certified** · `promoted == certified` ✓ · **first attempt** |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost** · smoke 24 stages in **212s** · **53 ADRs** |
+| **Dependency** | ⛔ **`integration` diverged — [B-161](docs/BUGS.md), repair computed, push outstanding** |
+| **Customer Value** | ✅ ⚡ **One failure vocabulary instead of four** |
+| **Process** | ✅ **No QE self-defect.** ⚡ **The defect QE did find is in `CLAUDE.md` itself, and is the product owner's** |
 
 ---
 
