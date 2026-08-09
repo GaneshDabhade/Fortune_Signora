@@ -1479,10 +1479,56 @@ updated      = 2026-08-09
 #    now have rows. TASK-1409 leads the new ones deliberately: System States
 #    is a PLATFORM row every other workflow renders, and thirteen workflows
 #    will each improvise a 404 if it lands after them.
-backlog = ["TASK-1439", "TASK-1440", "TASK-1442", "TASK-1443", "TASK-1444", "TASK-1438",
+backlog = ["TASK-1446", "TASK-1447", "TASK-1439", "TASK-1440", "TASK-1442", "TASK-1443",
+            "TASK-1444", "TASK-1448", "TASK-1449", "TASK-1451", "TASK-1450", "TASK-1438",
             "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
             "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+# 🔴 D-218 — COMMON PLATFORM AUDIT, THE REMAINING FOUR AREAS. 2026-08-09.
+#    Report: docs/architecture/498-common-platform-audit.md
+#
+# ✅ READ THIS FIRST, BECAUSE IT IS ABOUT YOUR WORK AND IT IS GOOD NEWS:
+#
+#    Measured across app/ and components/, excluding the library itself —
+#      raw <table> outside components/ui .............. 0
+#      raw role="dialog" .............................. 0
+#      inline animate-pulse skeletons ................. 0
+#      local Button / Card / Badge / EmptyState ....... 0
+#
+#    WHERE A SHARED COMPONENT EXISTS, YOU ARE USING IT. The directive
+#    expected duplicates and asked for every location; there are none.
+#    That is a result, and it is this lane's.
+#
+# ⛔ THE PROBLEM IS THE OPPOSITE SHAPE: the library is INCOMPLETE, and four
+#    finished components are mounted by nothing.
+#
+#      CommandPalette  0 importers   shell rule 07 needs it   TASK-1442
+#      Confidence      0             AI pattern 03            TASK-1427
+#      Drawer          0             AI pattern 08, rules 8-9  —
+#      CopyableId      0                                       —
+#
+#    TASK-1451 makes that class fail the suite instead of waiting for the
+#    next accident to find it. ⛔ It must NOT pass by deleting the four.
+#
+# 🔴 TASK-1446 AND TASK-1447 ARE AT THE HEAD, AHEAD OF THE D-217 REBUILDS.
+#
+#    TASK-1446 — there is no PageHeader. grep returns zero files. And
+#    constitution.ts exports rule 03 as CODE: "One primary action per view,
+#    and it lives in the page header." A rule constrains a region that is
+#    not a component, so every screen invents its own and nothing can check
+#    the rule. 26 route directories inherit that.
+#
+#    TASK-1447 — loading.tsx: 0 of 26. Error state rendered: 2 of 26.
+#    Empty state: 7 of 26. That ratio is P-A across the product — a failed
+#    read renders as "there is nothing", which is C-226 six-times-on-one-
+#    screen, at platform scale. The components you need already exist;
+#    this row is about REACH, not new components.
+#
+# ⚠️ ONE THING THE AUDIT DID NOT DO, so you are not waiting on it:
+#    TASK-1432 (filter strip) and TASK-1433 (utility panel) STAY SEQUENCED.
+#    Their own DoD requires a consumer and nothing schedules one — that is
+#    C-1412, for the product owner. Do not read their absence as yours.
+#
 # 🔴 D-217 — COMMON PLATFORM AUDIT. The product owner reviewed the running
 #    product against the App Shell design and the shell does not match it.
 #    This office audited it and the finding is upheld, precisely:

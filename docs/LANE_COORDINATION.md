@@ -364,6 +364,7 @@ databaseUrl: required(
 | [C-253](#c-253--the-designs-403-names-the-missing-role-and-nothing-publishes-it) | **The design's 403 names the missing role, and nothing publishes it** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Lane C** — sequencing | 🟡 **`OPEN`** — ⚠️ **narrowed by this lane on the same day** | ⛔ **The `403` only, and SEQUENCED behind [TASK-471](BACKLOG.md) rather than waiting on a ruling** |
 | [C-258](#c-258--two-of-statedabsences-thirteen-callers-cannot-render-at-region-scope-and-the-ladder-is-what-is-short) | 🔴 **Two of `StatedAbsence`'s thirteen callers cannot render at region scope, and the ladder is what is short** | **Lane A**, 2026-08-09, holding [TASK-1428](BACKLOG.md) | **Design Authority** | 🔴 **`OPEN`** | ⚠️ **Five of thirteen call sites.** ✅ **Eight compose and are being built** |
 | [C-1411](#c-1411--an-audit-stream-whose-reliable-shape-needs-the-frozen-platform-and-whose-cheap-shape-is-lossy) | **An audit stream whose reliable shape needs the frozen platform, and whose cheap shape is lossy** | **Lane C**, 2026-08-09, splitting [C-261](#c-261--task-492s-producer-instruction-rests-on-a-premise-that-measurement-contradicts-and-either-reading-ships-a-defect) | 🔴 **Product owner** — [§20a](../CLAUDE.md) | 🔴 **`OPEN`** | ⚠️ **Three of [TASK-492](BACKLOG.md)'s four producers.** ✅ **The table, type, repository and `public/` are green** |
+| [C-1412](#c-1412--two-shell-regions-are-parked-behind-consumers-that-no-row-schedules) | **Two shell regions are parked behind consumers that no row schedules** | **Lane C**, 2026-08-09, from [498](architecture/498-common-platform-audit.md) | 🔴 **Product owner** — priority | 🔴 **`OPEN`** | ⚠️ **[TASK-1432](BACKLOG.md) · [TASK-1433](BACKLOG.md)** — **two of the shell's five declared regions** |
 | [C-264](#c-264--c-241-was-resolved-and-the-screen-that-motivated-it-was-never-revisited) | **C-241 was resolved and the screen that motivated it was never revisited** | **Lane A**, 2026-08-09 | **Lane C** — row scope | 🔴 **`OPEN`** | ✅ **Nothing** |
 | [C-265](#c-265--step-up-is-built-and-the-only-module-whose-controls-require-it-is-not) | **Step-up is built and the only module whose controls require it is not** | **Lane A**, 2026-08-09 | **Lane C** — row scope | 🔴 **`OPEN`** | ⚠️ **One sentence of [TASK-1410](BACKLOG.md)'s DoD** |
 | [C-266](#c-266--the-ai-attribution-primitive-has-three-designs-and-no-data--the-read-task-1411-asks-for) | **The AI attribution primitive has three designs and no data** | **Lane A**, 2026-08-09 | **Lane C**, then the module owning the fact | 🔴 **`OPEN`** | ⚠️ **The DATA half of [TASK-1411](BACKLOG.md)** |
@@ -9576,3 +9577,29 @@ rules parsed: 24   ·   distinct reason codes: 24
 > ## ⚠️ **Three outcomes are possible and only QE can choose: LIVE and governance forgot to reference it · SUPERSEDED by [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) · or ABSORBED elsewhere, leaving a remnant.**
 
 ✅ **What this office did with the three it could rule on** — [`DECISION_PACKS.md`](DECISION_PACKS.md) superseded · [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) never adopted · [`PRODUCT_EXPERIENCE.md`](PRODUCT_EXPERIENCE.md) reassigned from the closed Lane B — **is a banner saying which of the three it is.** ⛔ **Nothing deleted.** ⚡ **The same treatment fits here once QE says which.**
+
+## C-1412 · Two shell regions are parked behind consumers that no row schedules
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-09, from the Common Platform Audit — **[498 §2.1](architecture/498-common-platform-audit.md)**, ruled as **[D-218](DECISION_REGISTER.md)** |
+| **Owner** | 🔴 **Product owner** — ⛔ **it is a priority question, and [§20e](../CLAUDE.md) is explicit that a lane never reorders the queue** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **SEQUENCING GAP** — ⛔ **not an architectural blocker and not a defect: both regions are designed, specified and understood. Nothing is waiting on a decision about *how*; the queue contains no *when*** |
+| **Status** | 🔴 **`OPEN`** |
+| **Blocks** | ⚠️ **[TASK-1432](BACKLOG.md) the filter strip · [TASK-1433](BACKLOG.md) the utility panel** — **two of the shell's five declared regions** |
+
+🔴 **The measurement.** 📁 **[`lib/shell/constitution.ts`](../frontend/lib/shell/constitution.ts) declares five `SHELL_REGIONS`; `app-shell.tsx` renders three.** ⛔ **The two absent ones were carved out of [TASK-1408](BACKLOG.md) by [D-215](DECISION_REGISTER.md) — correctly, and recorded honestly — and each was then `SEQUENCED` behind a consumer**: *"behind the first module that reads scope"* and *"behind the content its three tabs name"*.
+
+> ⛔ **`grep` finds no other row in [`BACKLOG.md`](BACKLOG.md) that mentions a scope consumer, or Insights, or Activity, or Notes.** ⚡ **So both regions are parked behind work that does not exist in the queue at all — which no instrument can distinguish from parked indefinitely.**
+
+✅ **Both rows are right to be parked, and this item is not asking to release them.** **Their own Definitions of Done already require a consumer** — 📁 *"Setting a chip changes what at least one module renders"* · 📁 *"at least one tab renders real module content"* — **so releasing them to `READY` would make them claimable while unfinishable.**
+
+⚠️ **What makes it worth a ruling now rather than later:** 📁 **[D-218](DECISION_REGISTER.md) §9 — *every future workflow inherits these shared platform components***. **Each further workflow built without the utility panel is one more screen that puts its context somewhere else**, and shell rule 08 — 📁 *"Context that describes content goes in the utility panel"* — **is unenforceable until the region exists.**
+
+| The question | |
+|---|---|
+| ⓐ **Schedule a scope consumer** | **Which module reads `lib/shell/scope.ts` first, and when?** ⚡ **That single row releases [TASK-1432](BACKLOG.md)** |
+| ⓑ **Schedule the first utility-panel tab** | **Insights, Activity or Notes — which module owns the first, and when?** ⚡ **That releases [TASK-1433](BACKLOG.md)** |
+| ⓒ **Accept the wait** | ✅ **A legitimate answer.** ⛔ **But it should be a decision rather than a side effect, and [TASK-1451](BACKLOG.md) then carries the interim cost: `TAB_ORDER` and `scope.ts` name a region the frame does not render** |
+
+> ⚡ **This office's read, and it is a recommendation rather than a ruling.** **ⓑ before ⓐ.** 📁 **The utility panel is named by a shell rule that every subsequent screen is supposed to obey; the filter strip is named by none.** ⛔ **A rule nothing can satisfy is the more expensive of the two to leave open**, because each screen shipped meanwhile makes its own decision about where context goes, and those decisions are what a migration later has to undo.

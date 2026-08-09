@@ -10,15 +10,15 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "abf1b4e"
-task_count     = 147
+task_count     = 153
 
 [lane.Lane_A]
 notice             = "Conformance audit, D-214 §8: components/ui/command-palette.tsx is complete, tested and mounted by nothing — and shell rule 7 says anything clickable is reachable in the palette, which is the row you are holding. Do not build a second one; its own comments carry the contract, including that it never sorts because the caller's order is the ranking. Recorded on your row. Same for connect-panel.tsx."
 backlog            = ["TASK-1405", "TASK-1411", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
-assigned_total     = 127
-claimable          = 21
+assigned_total     = 133
+claimable          = 27
 claimable_now      = 16
-awaiting_sync      = 5
+awaiting_sync      = 11
 in_flight          = 70
 actionable         = 3
 awaiting_qe_transition = 0
@@ -26,7 +26,7 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 36
 lane_utilization   = 14.0
-idle_prediction_days   = 3.0
+idle_prediction_days   = 3.9
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -735,6 +735,102 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "behind [TASK-1439](BACKLOG.md) and after [TASK-1442](BACKLOG.md)** — ⛔"
 waiting_for    = "behind [TASK-1439](BACKLOG.md) and after [TASK-1442](BACKLOG.md)** — ⛔ **`G H`/`G F`/`G P`/`G A` name rail destinations, so the rail is rebuilt first*"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1446"
+title         = "The page header — the component shell rule 03 already governs"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1447"
+title         = "The loading and error states every route owes"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1448"
+title         = "Tabs, Avatar and Tooltip — the three controls the design uses and the library lacks"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1449"
+title         = "Toast joins the shared library, with the design's three kinds"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1450"
+title         = "Charts, and the eight-series ramp that does not exist"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1451"
+title         = "A component nobody imports fails the suite"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
 on_integration = false
 

@@ -1578,6 +1578,131 @@
 | **Definition of Done** | **Every shortcut in the design's three groups works, and `?` lists them** · **certified · `main`** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
+### TASK-1446 · The page header — the component shell rule 03 already governs
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **MISSING — and it is the highest-leverage absence in [498](architecture/498-common-platform-audit.md)** |
+| **Design authority** | 📁 **[Design System v2](design-snapshot/screens/) §08 — *"Page & record headers"*, an entire section** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-218](DECISION_REGISTER.md)** |
+| 🔴 **The measurement** | ⛔ **`grep -rl "PageHeader\|RecordHeader" app components` returns ZERO files.** 📁 **And [`lib/shell/constitution.ts`](../frontend/lib/shell/constitution.ts) exports shell rule 03 as executable code**: *"One primary action per view, and it lives in the page header."* ⚡ **A rule constrains where the primary action goes, and the region it names is not a component** — **so every screen places its own heading and its own primary action, and nothing can check rule 03** |
+| ⚡ **Why this one first** | **Twenty-six route directories inherit it.** ⛔ **This is the component whose absence produces twenty inconsistent page headers**, which is precisely the cost [D-218](DECISION_REGISTER.md) §9 names |
+| ⚡ **Delivers** | **`PageHeader` and `RecordHeader` in `components/ui`, to §08** — **title, optional eyebrow, breadcrumb slot, one primary action, secondary actions** · ⛔ **and rule 03 becomes assertable: a second primary action fails the test** |
+| ✅ **Reuse — measured** | 📁 **`components/ui/breadcrumb.tsx` ✅ composes in, one importer today** · **`button.tsx` ✅ 36 importers** · ⛔ **nothing exists for the header itself** |
+| **Change Budget** | 🟠 **A new component in `components/ui`** — announce it; **it is the UI Migration Program, toward the finalized design** |
+| **Playwright coverage** | **A record screen renders its header with exactly one primary action** |
+| **Component coverage** | **Rule 03 is asserted: two primary actions fail** · **the eyebrow is optional and the title is not** |
+| ♿ **Accessibility** | 📁 **The title is the route's `h1`, and a route change announces it politely (4.1.3)** — ⚡ **coordinate with [TASK-1444](BACKLOG.md), which owns the announcement** |
+| **Definition of Done** | **Two screens compose the shared header, and rule 03 has a test that fails without it** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** one record journey |
+| ⚠️ **Risk, named before it is met** | ⛔ **Migrating all twenty-six screens in this row.** ✅ **Build the component and land two callers; the rest migrate on their own rows** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1447 · The loading and error states every route owes
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **MISSING — [P-A](DOMAIN_DISCOVERY_REGISTER.md) at platform scale** |
+| **Design authority** | 📁 **[Design System v2](design-snapshot/screens/) §13 *States*** · 📁 **[System States](design-snapshot/screens/)** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-218](DECISION_REGISTER.md)** |
+| 🔴 **The measurement, per route directory** | ⛔ **`loading.tsx`: 0 of 26.** ⛔ **`ErrorState` or `SystemState` rendered: 2 of 26.** ⚠️ **`EmptyState` rendered: 7 of 26.** ⚡ **Three and a half times more screens have a designed EMPTY state than a designed ERROR state** |
+| 🔴 **Why the ratio is the defect and not the counts** | 📁 **[P-A](DOMAIN_DISCOVERY_REGISTER.md): *a failed read must never render as an empty result*.** ⚡ **[C-226](LANE_COORDINATION.md) found this six times on ONE screen and it was fixed there.** ⛔ **The measurement above is the same defect across the product** — **on most screens a failed read is indistinguishable from no data**, and the customer is told there is nothing rather than that we could not find out |
+| ✅ **What already exists and must be reused** | 📁 **`components/ui/system-state.tsx` ✅ 4 importers · `error-state.tsx` ✅ 1 · `empty-state.tsx` ✅ 19 · `skeleton.tsx` ✅ 16 · `region-boundary.tsx`** — ⛔ **do not build a second vocabulary; this row is about REACH, not new components** |
+| ⚡ **Delivers** | **A `loading.tsx` for every route that reads**, composing `Skeleton` · **an error path on every read**, composing `ErrorState`/`SystemState` · ⛔ **and the two are never the same rendering** |
+| **Change Budget** | 🟢 **`app/**/loading.tsx`** · 🟢 **the read sites in each route** |
+| **Playwright coverage** | 🔴 **The one that matters: a read that FAILS renders an error with a retry, never an empty state** |
+| **Component coverage** | **A failing query and an empty query render different components** — ⛔ **the assertion fails if they render the same** |
+| ♿ **Accessibility** | 📁 **A loading region is `aria-busy` and announces politely; an error is `role="alert"`** |
+| **Definition of Done** | **Every route that reads has a loading state and a distinct error state, and a test proves the two differ** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** one forced-failure journey |
+| ⚠️ **Risk, named before it is met** | ⛔ **Adding `loading.tsx` files that render nothing, to make the count 26.** ✅ **A skeleton that does not match the shape it replaces is worse than a spinner** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1448 · Tabs, Avatar and Tooltip — the three controls the design uses and the library lacks
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **MISSING — and Tabs has already been reimplemented locally once** |
+| **Design authority** | 📁 **[Design System v2](design-snapshot/screens/) §10 *Controls*, `tabs`** · 📁 **App Shell `topBarSlots` — *"the avatar is the only circle in the shell"*** · 📁 **App Shell rule 1.4.13 — collapsed-rail tooltips** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-218](DECISION_REGISTER.md)** |
+| 🔴 **The measurement** | ⛔ **No `tabs`, `avatar` or `tooltip` in [`components/ui`](../frontend/components/ui).** 🔴 **`app/(app)/signals/signal-queue.tsx` implements `role="tab"` locally** — ⚡ **the ONLY workflow-local reimplementation the [498](architecture/498-common-platform-audit.md) reuse sweep found, and it is how the duplication problem starts** |
+| ⚡ **Why the three travel together** | **Each is a dependency of a row already `READY`**: 📁 **Tabs → Account 360 and the utility panel · Avatar → [TASK-1440](BACKLOG.md)'s fifth top-bar slot · Tooltip → [TASK-1444](BACKLOG.md)'s collapsed-rail requirement (1.4.13: hoverable, dismissible, persistent)** |
+| ⚡ **Delivers** | **The three components, to the design's specs, with `signal-queue.tsx` migrated onto the shared `Tabs` as the first caller** — ⛔ **a component with no caller is what [TASK-1451](BACKLOG.md) exists to prevent** |
+| **Change Budget** | 🟠 **Three new components in `components/ui`** — announce them |
+| **Component coverage** | **Tabs: roving tabindex, `role="tablist"`, arrow keys** · **Tooltip: hoverable, dismissible, persistent** · **Avatar: initials fallback when no image** |
+| ♿ **Accessibility** | 📁 **1.4.13 in full for Tooltip** — ⛔ **a tooltip that vanishes on pointer-out fails it** |
+| **Definition of Done** | **The three exist, `signal-queue.tsx` uses the shared Tabs, and no local tab markup remains** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** the signal queue's tabs still work after migration |
+| ⚠️ **Risk, named before it is met** | ⛔ **Building three components and migrating nothing.** ✅ **The migration of the one existing caller is the evidence the shape is right** |
+| **Build-vs-Buy** | ⚠️ **Commodity — but the library is already hand-rolled and consistent.** ✅ **Match the existing pattern; a headless dependency is 🔴 and needs an ADR** |
+
+### TASK-1449 · Toast joins the shared library, with the design's three kinds
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⚠️ **MISPLACED — it exists, outside the library, and does not carry the design's kinds** |
+| **Design authority** | 📁 **[Design System v2](design-snapshot/screens/) `toasts` — three worked examples** · 📁 **shell rule 11: *"Toasts confirm background outcomes only, never required reading"*** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-218](DECISION_REGISTER.md)** |
+| 🔴 **The measurement** | ⛔ **`components/feedback/toast.tsx` — a shared platform primitive living outside `components/ui`.** 📁 **[§20c](../CLAUDE.md): *"a genuinely new component belongs in `components/ui` with its tokens and its test"*** |
+| 📁 **The three kinds the design draws** | **Success with an action** — *"Export ready — 8,412 rows"* / `Download` · **Optimistic commit with undo** — *"Close date updated · committed optimistically"* / `Undo`, ⚡ **which §11 of the table spec says persists 10 seconds** · **Partial failure that STAYS UNTIL DISMISSED** — *"Sync failed for 12 accounts. 8,400 synced."* |
+| ⚡ **Delivers** | **The move into `components/ui`, the three kinds, and the dismissal rule** — ⛔ **the third kind is the one that is usually missed, and it is the one that must not auto-dismiss** |
+| ✅ **Reuse** | ⛔ **Do not write a second toast.** ✅ **Move the existing one and extend it; every current caller keeps working** |
+| **Change Budget** | 🟠 **A component moves into `components/ui`** — announce it; **update every importer in the same change** |
+| **Component coverage** | **A failure toast does not auto-dismiss** · **an undo toast survives 10 seconds** · **rule 11 is asserted: a toast carrying required reading fails** |
+| ♿ **Accessibility** | 📁 **`role="status"` for confirmations, `role="alert"` for the failure kind** |
+| **Definition of Done** | **`Toast` is in `components/ui`, the three kinds exist, and the failure kind persists** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` |
+| ⚠️ **Risk, named before it is met** | ⛔ **Moving the file and calling it done.** ✅ **The three kinds are the deliverable; the location is the tidy-up that comes with them** |
+| **Build-vs-Buy** | ✅ **n/a — it already exists** |
+
+### TASK-1450 · Charts, and the eight-series ramp that does not exist
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **MISSING — component and tokens both** |
+| **Design authority** | 📁 **[Design System v2](design-snapshot/screens/) `chartRamp` — eight series, `--c1`…`--c8`, with a separate dark ramp** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-218](DECISION_REGISTER.md)** |
+| 🔴 **The measurement** | ⛔ **`--c1` through `--c8` are absent from `app/globals.css`** — ⚡ **the ONE part of the token layer that does not match, against a design system [D-217](DECISION_REGISTER.md) otherwise measured as exact.** ⛔ **And no chart component exists anywhere in `components/`** |
+| ⚡ **Why the tokens come first** | 📁 **The design gives a light ramp AND a dark ramp.** ⛔ **A chart built before the tokens will hardcode eight colours**, which is the [§20c](../CLAUDE.md) violation the token test already forbids for every other colour — ⚡ **and `design-tokens.test.tsx` cannot catch it, because there is no token to compare against** |
+| ⚡ **Delivers** | **The eight-series ramp as tokens in both themes**, then **the chart primitives the Executive Dashboard and Reports need** — ⛔ **not every chart type; the ones those two screens draw** |
+| **Change Budget** | 🟠 **New tokens · a new component family in `components/ui`** — announce both |
+| **Component coverage** | **Series colour comes from a token in both themes** — ⛔ **a hex literal in a chart fails the design-token test** |
+| ♿ **Accessibility** | 📁 **Series are distinguishable without colour** — **a legend and a non-colour encoding, per §17** |
+| **Definition of Done** | **The ramp exists in both themes and one real screen renders a chart from it** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` |
+| ⚠️ **Risk, named before it is met** | ⛔ **Adopting a charting library inside this row.** 🔴 **That is a new dependency — [§6](../CLAUDE.md), product owner and an ADR.** ✅ **If one is wanted, this row stops and raises it** |
+| **Build-vs-Buy** | 🔴 **Genuinely open, and NOT decided here** — **charting is a commodity and the repository hand-rolls its UI.** ⚡ **The tokens are needed either way and are this row's independent half** |
+
+### TASK-1451 · A component nobody imports fails the suite
+
+| | |
+|---|---|
+| 🔴 **Classification** | ⛔ **MISSING GUARD — the recurrence control for the class [498](architecture/498-common-platform-audit.md) found four times** |
+| **Design authority** | ⚡ **None — this is a repository invariant, not a design element** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-218](DECISION_REGISTER.md)** |
+| 🔴 **The measurement — four complete components no customer can reach** | ⛔ **`CommandPalette` 0 importers** — 📁 shell rule 07 depends on it ([C-259](LANE_COORDINATION.md)) · ⛔ **`Confidence` 0** — 📁 AI pattern 03 ([C-266](LANE_COORDINATION.md)) · ⛔ **`Drawer` 0** — 📁 AI pattern 08 and shell rules 08–09 · ⛔ **`CopyableId` 0** |
+| 🔴 **Why a test rather than four fixes** | ⚡ **Each was found by a separate accident** — **a conformance sweep, a lane's pre-claim read, and this audit.** ⛔ **The class is silent by construction: the component is written, tested, reviewed and green, and the only missing thing is the one no suite looks for.** 📁 **[§2](../CLAUDE.md): prefer a violation that is *unrepresentable* over one that is merely discouraged** |
+| ⚡ **Delivers** | **A component test that walks `components/ui`'s exports and fails on any with no importer outside the library** · ⚡ **plus the same check for a declared-but-unrendered shell region** — 📁 **`SHELL_REGIONS` names `filter-strip` and `utility-panel`, `TAB_ORDER` orders them, `scope.ts` returns `'utility-panel'` as a default branch, and `app-shell.tsx` renders neither** |
+| ⛔ **What it must NOT do** | ⛔ **It must not pass by having the four components deleted.** ✅ **Three are named by a shell rule or an AI pattern and are wanted** — **`CommandPalette` is [TASK-1442](BACKLOG.md)'s, `Confidence` is [TASK-1427](BACKLOG.md)'s.** ⚡ **An allowlist with an owning `TASK-nnn` per entry is acceptable; an empty allowlist at the end is the goal** |
+| **Change Budget** | 🟢 **`frontend/tests/components/`** |
+| **Component coverage** | **Adding an unimported export to `components/ui` fails the suite** · **removing `utility-panel` from the rendered frame while `TAB_ORDER` still names it fails the suite** |
+| **Definition of Done** | **The guard exists, the four are allowlisted against their owning rows, and a new orphan fails** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · ⛔ **no Playwright — this is a repository invariant, not a journey** |
+| ⚠️ **Risk, named before it is met** | ⛔ **A guard that cannot fail.** 📁 **[§2](../CLAUDE.md): *a guard that cannot fail is documentation pretending to be code*.** ✅ **Prove it by adding a throwaway orphan and watching it go red** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
 ### TASK-1438 · `/w/:workspace` — the route tree the engine already returns
 
 | | |
