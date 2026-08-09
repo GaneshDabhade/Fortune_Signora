@@ -87,7 +87,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Repository process — [`CLAUDE.md`](../CLAUDE.md) §20e, *The Task Claim Protocol*, step 7 |
 | **Current assignee** | **Product owner** — §20e is theirs, and this is a governance defect rather than a code one |
 | **Severity** | 🟠 — ⛔ **six code files reached `integration` without passing through QE**, and no gate refused them |
-| **Status** | **`OPEN`** |
+| **Status** | ⚠️ **`OPEN` — and it is the same defect as [B-220](#b-220), which Lane A filed against itself on the poll that found it.** ⛔ **Two ids for one defect is what the identifier rule exists to prevent, so they are cross-linked rather than renumbered** *(the precedent is [B-152](#b-152) and [B-413](#b-413))*. ⚡ **Read [B-220](#b-220) for the mechanism — it is more precise than this row was.** **This row's *Steps* said `git merge --ff-only <lane-branch> && git push`, which is §20e step 7's literal form and has the same property.** **The command actually used was `git push origin lane-a-product-surface:integration`** — ⚡ *"the same command was correct one poll earlier, when the branch happened to be exactly the claim."* ✅ **Both routes push a branch where the protocol means a commit**, so the governance half of this row stands: **§20e step 7 as written carries whatever else is on the branch.** *(was: `OPEN`, unqualified)* |
 | **Commit found** | `554dd74c` on `origin/integration`, found during cycle 146's promotion |
 
 **Steps.** Hold an unpromoted slice on your lane branch. Claim the next task exactly as step 7 instructs:
