@@ -1481,11 +1481,64 @@ updated      = 2026-08-09
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-1446", "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451",
-            "TASK-1439", "TASK-1440", "TASK-1442", "TASK-1443", "TASK-1444",
+backlog = ["TASK-1439", "TASK-1440", "TASK-1453", "TASK-1446", "TASK-1447",
+            "TASK-1449", "TASK-1442", "TASK-1452", "TASK-1448", "TASK-1450",
+            "TASK-1444", "TASK-1443", "TASK-1451",
             "TASK-1438", "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
             "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
             "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+# ✅ D-220 — RECONCILIATION AGAINST THE FINALIZED DESIGN. 2026-08-09.
+#    Report: docs/architecture/499-implementation-design-reconciliation.md
+#
+# 📌 THE ORDER BELOW IS D-220 §13's, WHICH SUPERSEDES D-219 §11 FOR THE SHELL
+#    AND NAVIGATION ROWS. §13 ranks by CATEGORY and puts Application Shell (1)
+#    and Navigation (2) above Page Header (3); D-219 §11 ranked tasks before
+#    those categories were given. Both are the product owner's; the later one
+#    governs. Still priority and NOT a chain — choose among independents.
+#
+# 🔴 THREE THINGS I GOT WRONG IN D-218 AND HAVE CORRECTED. Read these, because
+#    two of them would have wasted your time:
+#
+#    1. I called Button/Card/Table/Dialog/Badge/EmptyState/Skeleton "fully
+#       compliant" on IMPORT COUNTS. That is not evidence. Re-tested against
+#       Design System v2 §05/§11/§12 by opening both:
+#
+#         Button   8px  rounded = --radius = 0.5rem   ✅ CORRECT, do not touch
+#         Card     12px rounded-lg                    ✅ radius correct
+#         Badge    6px  rounded-sm                    ✅ CORRECT
+#         Drawer   16px rounded-xl                    ✅ CORRECT
+#         Dialog   16px design / rounded-lg = 12px    ❌ TASK-1453
+#         Table    16px plane, 4 rules / none of it   ❌ TASK-1452 REBUILD
+#
+#    2. I said "the token layer is exact". D-217 measured the COLOUR tokens and
+#       they ARE exact. I generalised without testing the TYPE scale:
+#
+#         Display  design 40px  /  --text-display 2.25rem = 36px   ❌
+#         Title    design 26px  /  no token at any name            ❌
+#         Metric   design 30px tabular / no token, no tabular role ❌
+#         Section  design 18px  /  --text-lg  = 18px               ✅
+#         Body     design 14px  /  --text-sm  = 14px               ✅
+#
+#       ⛔ DO NOT rename --text-lg or --text-sm. Different name, faithful
+#       value, and D-220 §10 forbids the churn. TASK-1453 adds what is absent.
+#
+#    3. TASK-1453 sits AHEAD of TASK-1446 deliberately. The page header's title
+#       is the design's Title role at 26px, and that token does not exist yet.
+#       Build the header first and you build it against a scale missing the one
+#       role it needs. They are both READY; take them in that order or together.
+#
+# ⚠️ AND ONE I ALMOST GOT WRONG THE OTHER WAY: I began believing Button used
+#    rounded-full against a design specifying 8px. grep returned rounded-full
+#    from the LOADING SPINNER. Opening the file showed the control is correct.
+#    A manufactured finding costs you the same as a missed one.
+#
+# 🔴 TASK-1452 IS A SCRAP-AND-REBUILD AND HAS TWELVE CALLERS. D-220 §4 is
+#    explicit that twelve callers is not an argument for patching. The shipped
+#    table is border-collapse with per-row border-b, which IS the 2px-cage
+#    pattern v2's own critique describes. Migrate all twelve in the same change;
+#    a second table alongside the first is the duplicate class, created on
+#    purpose.
+#
 # ✅ D-219 — THE PRODUCT OWNER HAS RULED. 2026-08-09. THIS IS IMPLEMENTATION
 #    WORK, NOT ANOTHER ARCHITECTURE EXERCISE. Take it straight from here.
 #

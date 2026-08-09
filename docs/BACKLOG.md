@@ -1705,6 +1705,73 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **A guard that cannot fail.** 📁 **[§2](../CLAUDE.md): *a guard that cannot fail is documentation pretending to be code*.** ✅ **Prove it by adding a throwaway orphan and watching it go red** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
+### TASK-1452 · 🔴 SCRAP AND REBUILD · The table is the v1 table Design System v2 was written to replace
+
+| | |
+|---|---|
+| 🔴 **Classification** ([D-220](DECISION_REGISTER.md) §3) | ⛔ **C — INCORRECT / OBSOLETE. Scrap and rebuild.** ⚠️ **Twelve callers, and [D-220](DECISION_REGISTER.md) §4 is explicit that twelve callers is not an argument for patching it** |
+| **Design authority** | 📁 **[Design System v2](design-snapshot/screens/) §11 *Tables*, `tableRules` — four rules** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-220](DECISION_REGISTER.md)** |
+| 🔴 **The measurement — the whole component** | ⛔ **`components/ui/table.tsx` is six exports over `<table className="w-full border-collapse text-sm">`, a `<thead>` with `border-b`, and a `<tr>` with `border-b`.** ⚡ **Nothing else** |
+| 🔴 **The four rules, none of which exists** | ⛔ **Pinned identity** — 📁 *"the first column pins with a 24px gradient fade instead of a border, so horizontal scroll never produces a hard seam"* · ⛔ **Hover and selection** — 📁 *"hover is the sunken tint. Selection adds a 2px brand edge and a brand-tint fill — distinguishable without colour vision"* · ⛔ **Inline editing** — 📁 *"editable cells reveal a 6px ring on focus, commit on ⏎ optimistically, and surface undo in the toast for 10 seconds"* · ⛔ **AI summary row** — 📁 *"pinned above the data it describes, tinted with the intelligence hue, dismissible, and never counted as a data row"* |
+| ⛔ **And the plane** | 📁 **§05 assigns the table plane `--r-xl`, 16px.** ⛔ **`table.tsx` has no radius and no plane at all** — 📁 §11's critique names exactly this: *"Toolbars, footers and headers all carried 2px rules and full-width fills, so the data competed with its own container"* |
+| ⚡ **Why this is a rebuild and not an enhancement** | 📁 **The design's own critique of v1 is a description of the shipped component.** ⚠️ **`border-collapse` with per-row `border-b` IS the 2px-cage pattern v2 replaced** — 🔴 **the structure encodes the old design, so adding features to it produces the hybrid [D-220](DECISION_REGISTER.md) §4 forbids** |
+| 🔴 **The one that is a product capability, not styling** | 📁 ***"In practice reps edit close dates and amounts dozens of times a day"*** — ⛔ **inline editing is absent, so every correction opens a drawer, which is the workflow §11 exists to remove** |
+| ⚡ **Delivers** | **One rounded 16px plane · sticky header on a tinted surface · pinned first column with the gradient fade · hover and selection per the rule, colour-independent · inline editing with optimistic commit and undo · the AI summary row** |
+| ⛔ **Migration is part of this row, not a follow-up** | **All twelve callers move to the rebuilt component in the same change** — ⚠️ **a second table living alongside the first is [D-220](DECISION_REGISTER.md) §3's E, created deliberately** |
+| **Change Budget** | 🟠 **`components/ui/table.tsx` rebuilt · its twelve callers updated** — announce it; **UI Migration Program** |
+| **Playwright coverage** | **A cell is edited in place, commits, and the toast offers undo** · **horizontal scroll leaves the identity column pinned** |
+| **Component coverage** | **Selection is distinguishable without colour** — ⛔ **an assertion that reads only the fill fails** · **the AI summary row is not counted in the row count** |
+| ♿ **Accessibility** | 📁 **1.4.10 reflow and 2.5.8 target size** · ⛔ **an editable cell is reachable and committable by keyboard alone** |
+| **Definition of Done** | **Each of §11's four rules has a test that fails without it, the plane is 16px, and no caller renders the old table** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · **Playwright** one inline-edit journey |
+| ⚠️ **Risk, named before it is met** | ⛔ **Keeping the old exports as a compatibility shim.** ✅ **Twelve callers is a morning; two tables is permanent** |
+| **Build-vs-Buy** | ⚠️ **A headless table library would be 🔴** — [§6](../CLAUDE.md), product owner and an ADR. ⛔ **Not decided here and not needed for the four rules** |
+
+### TASK-1453 · The type scale is not the design's, and three surfaces apply the radius scale wrongly
+
+| | |
+|---|---|
+| 🔴 **Classification** ([D-220](DECISION_REGISTER.md) §3) | ⛔ **C for the type scale — two roles absent, one wrong.** ⚠️ **B for the three applications** |
+| **Design authority** | 📁 **[Design System v2](design-snapshot/screens/) §04 `typeRows` · §05 `radii` and `spacing`** |
+| **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-220](DECISION_REGISTER.md)** |
+| 🔴 **This row corrects [D-218](DECISION_REGISTER.md), which said the token layer was exact** | ⚠️ **[D-217](DECISION_REGISTER.md) measured the COLOUR tokens and they ARE exact.** ⛔ **That was generalised to *"the token layer"* without testing the type scale, and the type scale does not match.** ⚡ **Recorded here rather than quietly fixed** ([§2](../CLAUDE.md)) |
+| 🔴 **The measurement — `app/globals.css`:135–147 against `typeRows`** | ⛔ **`Display` — design **40**/1.05/700/−0.032em · `--text-display: 2.25rem` = **36px*** · ⛔ **`Title` — design **26**/1.15/700/−0.026em · NO TOKEN AT ANY NAME; nearest is `--text-xl` at 20px** · ⛔ **`Metric` — design **30**/1.05/700/**tabular** · NO TOKEN, and no tabular-numeral role anywhere** |
+| ✅ **What matches and must NOT be renamed** | 📁 **`Section` 18px is `--text-lg: 1.125rem` ✅ · `Body` 14px is `--text-sm: 0.875rem` ✅.** ⛔ **Different internal names, faithful values** — 📁 **[D-220](DECISION_REGISTER.md) §10: *"if the implementation uses a different internal name but faithfully implements the design, do not create a task"* |
+| ⚡ **Why `Title` and `Metric` are urgent rather than tidy** | 🔴 **`Title` at 26px IS the page header's title, and [TASK-1446](BACKLOG.md) is about to build that component** — ⛔ **it would be built against a scale missing the exact role it needs.** 🔴 **`Metric` at 30px with TABULAR numerals is every figure on the Executive Dashboard** — ⚡ **tabular numerals are what stop a column of currency jittering as it updates, which is a correctness property of a live figure, not a typographic preference** |
+| ⚠️ **Three radius and spacing applications** | ⛔ **`dialog.tsx` is `rounded-lg` = 12px; §05 assigns the dialog `--r-xl` = 16px** · ⛔ **no `--radius-full` token exists; §05 needs 999px for avatar, status dot, count badge and progress track** · ⛔ **`card.tsx` is `px-5 py-4` — 20px horizontal and **16px vertical**, and §05 says card padding is *"20–24px — was 16px in v1"*.** ⚡ **The horizontal value migrated to v2 and the vertical one did not** |
+| ✅ **The radius SCALE itself is exact and is not touched** | 📁 **4 · 6 · 8 · 12 · 16 in both.** ⛔ **This row fixes three call sites and adds one missing step; it does not re-derive the scale** |
+| ⚡ **Delivers** | **`Title` and `Metric` as tokens with the design's size, leading, weight and tracking · `Metric` carrying tabular numerals · `Display` corrected to 40px · `--radius-full` · the dialog at 16px · card padding at the v2 value** |
+| **Change Budget** | 🟠 **`app/globals.css` · `tailwind.config.ts` · `dialog.tsx` · `card.tsx`** — announce it |
+| **Component coverage** | **`design-tokens.test.tsx` asserts each of the design's six type roles exists with the design's value** — ⛔ **a role absent at every name fails** · **the dialog's radius is asserted against the token, not a literal** |
+| **Definition of Done** | **Every role in §04's `typeRows` exists as a token at the design's value, and the three applications match §05** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `product_surface` · ⛔ **no Playwright — nothing here is a journey** |
+| ⚠️ **Risk, named before it is met** | ⛔ **Renaming `--text-lg` and `--text-sm` to the design's words.** 🔴 **They are correct; renaming them is churn across the whole product and [D-220](DECISION_REGISTER.md) §10 explicitly forbids it** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
+### TASK-1454 · The Playground seeder retires its predecessor without removing it
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **INCOMPLETE IMPLEMENTATION — a documented cleanup that does not clean up** |
+| **Design authority** | ⚡ **None — repository tooling** |
+| **Epic** | **Platform Foundation** |
+| **Module** | **`platform_foundation`** — ⚡ **assigned 2026-08-09; `backend/tests/playground/` matched no module's paths until then** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
+| 🔴 **The measurement, and it is Lane A's** | ⛔ **Reported from a live database while diagnosing [B-228](BUGS.md): each run leaves its predecessor behind — **two Playground workspaces, 149 claims and 36 `claim.recorded` envelopes each**.** ⚡ **`_retire_previous` retires; it does not remove** |
+| ⚠️ **Why the row exists when the function has a long comment about exactly this** | 📁 **`seed.py`'s own docstring describes the defect it was written to fix**: *"a database seeded twelve times held twelve organizations all named `Playground`… a reviewer opened the product and found an empty list, in a database with twelve full ones."* ⛔ **The `DELETE FROM workspace` is there and the rows survive it** — 🔴 **so the comment describes a guarantee the code does not deliver, which is the [§2](../CLAUDE.md) class this repository treats as worse than the absent version** |
+| ⚡ **Delivers** | **A seeder whose second run leaves exactly one Playground** — ⛔ **and the reason the cascade did not reach these rows, named in the commit rather than worked around with a wider `DELETE`** |
+| ⛔ **What it must NOT do** | 📁 **The function is deliberately scoped to its own `WORKSPACE_NAME` and deliberately relies on the schema's foreign keys** — *"nothing here knows the table list, which would be a second copy of the schema that drifts."* ⛔ **Do not enumerate tables to fix this** |
+| **Change Budget** | 🟢 **`backend/tests/playground/`** |
+| **Definition of Done** | **Seeding twice leaves one workspace, and a test proves it** · **certified · `main`** |
+| ⚡ **Testing metadata** ([D-166](DECISION_REGISTER.md)) | **Modules** `platform_foundation` |
+| ⚠️ **Risk, named before it is met** | ⛔ **Widening the `DELETE` until the count comes out right.** ✅ **The orphaned rows have a reason and the reason is the deliverable** |
+| **Build-vs-Buy** | ✅ **n/a** |
+
 ### TASK-1438 · `/w/:workspace` — the route tree the engine already returns
 
 | | |
