@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `a9f7890`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `6c9275a`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `a9f7890`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `6c9275a`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`a9f7890`** — the certified commit itself |
-| **`integration`** | ⛔ **STILL DIVERGED at `227a074f`, now 19 commits behind `main`** — ✅ **`main` carries all four of its commits, patch-id verified.** ⛔ **The synchronizing force-push has been refused five times** — see [B-161](docs/BUGS.md) and §1d |
-| **Release candidate** | ⚡ **Cycle 148 promoted five more Application Shell slices** — **the rail, global scope, the breadcrumb, the banner region's caller and rail collapse** |
-| **Certification** | ✅ [`a9f789049418`](certification/reports/a9f789049418.md) · migration head **`0045`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
+| **`main`** | **`6c9275a`** — the certified commit itself |
+| **`integration`** | ⛔ **STILL DIVERGED at `227a074f`, now 27 commits behind `main`** — ✅ **`main` carries all four of its commits, patch-id verified.** ⛔ **The synchronizing force-push has been refused six times** — see [B-161](docs/BUGS.md) and §1d |
+| **Release candidate** | ⚡ **Cycle 149 promoted the shell's first 🔴 edit under the UI Migration exemption**, **plus both lanes at once** — Lane A's four and Lane C's two |
+| **Certification** | ✅ [`6c9275a2a770`](certification/reports/6c9275a2a770.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **149 rows, 47 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
-| **Implementation waiting** | ✅ **Nobody.** ⚡ **Nine `TASK-1408` slices in two cycles** — the Application Shell six backlog rows were parked behind |
-| **Validation queue** | **Empty.** ✅ **Eleven of Lane A's sixteen ahead-commits resolved as already-promoted duplicates** — the ref count would have re-certified every one |
-| **Customer value this cycle** | ✅ ⚡ **A destination a person is not permitted to reach stays on screen, locked, and explains itself** — ⛔ *"a hidden destination teaches a person the feature does not exist, so they ask for the wrong thing or ask nobody."* ⚡ **And when the filter strip says Q3, every number under it is Q3** |
+| **Implementation waiting** | ✅ **Nobody.** ⚡ **Twelve `TASK-1408` slices in three cycles**, and [C-257](docs/LANE_COORDINATION.md) says the row still cannot reach its Definition of Done |
+| **Validation queue** | **Empty.** ✅ **Both lanes integrated in one candidate** — Lane A rebased, Lane C cherry-picked on top, no conflicts |
+| **Customer value this cycle** | ✅ ⚡ **The rail collapses, and it is remembered per person *and* per device class** — ⛔ **the control is named *Collapse navigation*, not a chevron, because a screen-reader user cannot see which way an arrow points** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **2002 frontend tests** *(+39)* across **92 files** *(+4)* *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **246s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4278 backend tests** · **95.08% coverage** ✅ *(floor 95)* · **2013 frontend tests** *(+11)* across **93 files** *(+1)* *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **259s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -138,6 +138,58 @@ B- identifiers are allocated twice: B-152.
 | **Dependency** | ✅ **Lane A unblocked last cycle**; `TASK-1400` is `READY` on `integration` |
 | **Customer Value** | ⛔ **None.** **A register repair** |
 | **Process** | 🔴 **Third QE self-defect of this class** — [B-150](docs/BUGS.md) skipped a check, [B-151](docs/BUGS.md) transcribed instead of measuring, [B-153](docs/BUGS.md) filtered a check's output. ⚡ **All three are one habit: trusting the shape of an answer instead of reading it** |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 149
+
+**Derived from the promoted commit `6c9275a`.** **104 promotions.** ⚡ **Both lanes in one candidate, the shell's first 🔴 edit, and a third projection defect found by the lane the projection is written for.**
+
+### ✅ The 🔴 edit, checked rather than waved through
+
+**`f4fb9594` touches `app-shell.tsx` — the frontend foundation, ⛔ which §20c freezes.**
+
+✅ **It is legitimate, and QE verified the chain rather than accepting the label.** The lane declared it — *"Budget: red, `app-shell.tsx`, under this row's stated exemption. Announced."* — **§20c's UI Migration Program is a standing approved architectural change** ([D-153](docs/DECISION_REGISTER.md), [D-161](docs/DECISION_REGISTER.md), [D-170](docs/DECISION_REGISTER.md)), **`TASK-1408` *is* the shell rebuild**, and the test §20c gives is direction: ⚡ ***toward* the finalized design is the migration; *away* from it, to suit one caller, is the defect.**
+
+### ✅ What a customer gets
+
+**The rail collapses, and the preference is remembered per user *and* per device class.**
+
+| | |
+|---|---|
+| **The control** | ⛔ **Named *"Collapse navigation"*, not a chevron** — *"a screen reader user cannot see which way an arrow points"*, and **the name flips with the state** |
+| **The wordmark** | **Goes when the rail does** — *"56px cannot hold it, and a clipped wordmark reads as a rendering fault rather than a design"* |
+| **Collapsed** | ⚡ ***Narrower, never emptier*** — the destinations remain, asserted |
+| **An unresolved viewer** | ✅ **Remembers nothing, rather than sharing one key across every account on a machine** |
+
+⚡ **And the test caught its own weakness first**: the wordmark assertion matched **two** elements, because the shell renders a second wordmark in the header below `md`. **Scoped to the rail, with the reason recorded** — *"an unscoped query would have passed for the wrong reason once the rail's copy was removed."* ⛔ **That is [B-209](docs/BUGS.md)'s class, caught by the lane before QE saw it.**
+
+### ⛔ [B-221](docs/BUGS.md) — the third projection defect, and Lane A found this one too
+
+**The notice says *"TASK-1428 leads your backlog."* The backlog array in the same file is 21 entries, begins `TASK-1405`, and does not contain `TASK-1428`.**
+
+> ⚡ ***"Both are defensible alone, which is what makes it worth a row."*** **`TASK-1428` exists on `lane-c-sync` and not on `integration`, so the array is right to omit it and the notice is right that the office has written it.** ⛔ **Published together with no distinction they read as a contradiction, and a lane that believes the prose goes hunting for a row it cannot claim.**
+
+✅ **§20e already has the distinction** — *never write "ratified" alone where "ruled, not yet on `integration`" is the truth.* ⚡ **Distinct from [B-159](docs/BUGS.md), and the lane said so: that was a metric disagreeing with prose; this is prose disagreeing with the queue itself.**
+
+⚠️ **Three of these now** — [B-159](docs/BUGS.md), [B-216](docs/BUGS.md), [B-221](docs/BUGS.md) — **and every one was found by a lane reading the file written for it, never by a gate.**
+
+### ⛔ `integration` — six refusals, and the gap is now 27 commits
+
+**`main` carries all four of `origin/integration`'s commits, patch-id verified.** ✅ **Nothing would be lost.** ⛔ **The synchronizing force-push has been refused six times by this environment**, and lifecycle stage 6 has not completed since cycle 145.
+
+> ⚠️ **The cost is no longer cosmetic.** **[`CLAUDE.md`](CLAUDE.md) §20e tells every lane to begin from `integration`** — Startup step 1, and Task Claim Protocol steps 1 and 7. ⛔ **A lane following the protocol literally today starts from a base 27 commits stale.** ✅ **Nothing has broken because Lane A rebases onto its own branch and QE rebases onto `main`** — ⚠️ **that is luck, not design, and it is the same shape as [B-161](docs/BUGS.md): a command that is only right while a precondition holds.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4278 backend** · **2013 frontend** *(+11)* · **95.08%** · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **155 runs recorded, 147 certified** · `promoted == certified` ✓ · **first attempt** · profile **`platform`** |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost** · smoke 24 stages in **259s** · **53 ADRs** |
+| **Dependency** | ⛔ **`integration` diverged 27 commits — survival proved, push refused six times** |
+| **Customer Value** | ✅ ⚡ **A navigation rail that collapses and remembers, and never goes empty** |
+| **Process** | ✅ **No QE self-defect.** ✅ **[B-160](docs/BUGS.md)'s metric drift was quiet this cycle** — `coordination --check` read `current` both before and after |
 
 ---
 
