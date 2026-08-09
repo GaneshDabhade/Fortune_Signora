@@ -1479,13 +1479,19 @@ updated      = 2026-08-09
 #    now have rows. TASK-1409 leads the new ones deliberately: System States
 #    is a PLATFORM row every other workflow renders, and thirteen workflows
 #    will each improvise a 404 if it lands after them.
-backlog = ["TASK-1435", "TASK-1436", "TASK-1437",
-            "TASK-473", "TASK-492", "TASK-499",
-            "TASK-1410", "TASK-1411",
-            "TASK-1427", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407", "TASK-1405",
-            "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
-            "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412",
-            "TASK-1429"]
+backlog = ["TASK-1410", "TASK-1411", "TASK-1427", "TASK-1403", "TASK-1402", "TASK-1422",
+            "TASK-1407", "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493",
+            "TASK-495", "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+# ⚡ SEVEN ENTRIES REMOVED 2026-08-09 — none of them was work, all of them
+#    were work you had already finished. TASK-1435, TASK-1436, TASK-1437,
+#    TASK-473, TASK-492 and TASK-1429 are VERIFIED; TASK-499 is CLAIMED.
+#    The three §04 rows were written this morning and you shipped all three
+#    the same day.
+# ⛔ A queue that offers back finished work reports a supply this office does
+#    not have. The dashboard read 18 executable against a 25-entry backlog
+#    and called the gap "not yet on integration", which was false — they were
+#    on integration, they were just past READY. Same class as the three
+#    CLAIMED rows removed earlier today.
 # ⚡ THREE ROWS ADDED 2026-08-09 AT THE TOP — D-215, ruling C-255.
 #    TASK-1435 offline mutation queue · TASK-1436 last-connected and a
 #    re-checking retry · TASK-1437 the static maintenance pages.
