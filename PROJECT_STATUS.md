@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3373af7`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `901935d`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `3373af7`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `901935d`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`3373af7`** — the certified commit itself |
+| **`main`** | **`901935d`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | **None pinned.** ⛔ **Cycle 135 was opened by §20e's synchronization rule** — **Lane A had zero claimable and [`TASK-1400`](docs/BACKLOG.md) was `READY` only on a Product Office branch** |
-| **Certification** | ✅ [`3373af7a0855`](certification/reports/3373af7a0855.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | ⚡ **[D-200](docs/DECISION_REGISTER.md) — Smart Certification Strategy, ruled this cycle.** **Cycle 136 repaired a duplicate identifier QE promoted an hour earlier** — [B-153](docs/BUGS.md) |
+| **Certification** | ✅ [`901935dadfeb`](certification/reports/901935dadfeb.md) · migration head **`0045`** · protocol **v2** · profile **`documentation`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | 🔴 **Two.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
@@ -103,7 +103,102 @@
 
 ---
 
-## 1d · Release summary — 2026-08-09, cycle 135
+## 1d · Release summary — 2026-08-09, cycle 136
+
+**Derived from the promoted commit `901935d`.** **Ninety-one promotions.** ⛔ **QE promoted a duplicate identifier, its own check caught it, and QE had grepped past the finding.**
+
+### ⛔ [B-153](docs/BUGS.md) — the check was run and *filtered*
+
+```
+$ python3 infra/state-check.py
+B- identifiers are allocated twice: B-152.
+```
+
+**`state-check` ran before the Closeout commit, exactly as [B-150](docs/BUGS.md) requires.** ⚡ **It caught this.** ⛔ **QE piped it through `grep -icE "conflict marker"`, read `0`, and promoted.**
+
+> ⚠️ **B-150 was *the check was skipped*. This is *the check was run and filtered* — and the second is worse, because the output said `0` and looked like a pass.** ✅ **The fix is one word: read the finding list, not a count of the finding you expected.**
+
+### ⚠️ How the duplicate arose — a correct habit with a predictable cost
+
+**QE filed [B-152](docs/BUGS.md) and held it on `lane-qe` for five polls**, because §20e holds documentation-only work until executable change accompanies it. ✅ **That is correct and QE will keep doing it.** ⛔ **But a held row is invisible to every other lane** — Lane C could not see it, and after QE described the condition in a poll, Lane C wrote its own row under the same id.
+
+✅ **Folded, not renumbered.** **They are one defect, and two ids for one defect is exactly what the identifier rule exists to prevent.** **Both accounts survive in one row.**
+
+### ⚡ [D-200](docs/DECISION_REGISTER.md) — Smart Certification Strategy, ruled
+
+**The product owner ruled impact-based certification this cycle.** ⚡ **QE's assessment, measured rather than estimated, is [below in §1f](#1f--d-200-smart-certification-strategy--what-exists-and-what-does-not).**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4272 backend** · **1827 frontend** · **95.07%** · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **141 runs recorded, 133 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost** · smoke 189s |
+| **Dependency** | ✅ **Lane A unblocked last cycle**; `TASK-1400` is `READY` on `integration` |
+| **Customer Value** | ⛔ **None.** **A register repair** |
+| **Process** | 🔴 **Third QE self-defect of this class** — [B-150](docs/BUGS.md) skipped a check, [B-151](docs/BUGS.md) transcribed instead of measuring, [B-153](docs/BUGS.md) filtered a check's output. ⚡ **All three are one habit: trusting the shape of an answer instead of reading it** |
+
+---
+
+## 1f · [D-200](docs/DECISION_REGISTER.md) Smart Certification Strategy — what exists, and what does not
+
+**Ruled 2026-08-09 by the product owner.** ⚡ **QE's assessment, and the honest headline is that most of §1 already exists and has never been *applied*.**
+
+### ✅ What already exists — the Validation Planner, since [D-115](docs/DECISION_REGISTER.md)
+
+**`certification-guard.py --plan <range>` already answers §1's eight questions**, and QE has printed its verdict in every cycle of this session:
+
+```
+VALIDATION PLAN — 22 changed path(s)
+profile: platform
+  documentation  docs/BUGS.md, docs/LANE_COORDINATION.md
+  frontend       app/(app)/profile/locale-panel.tsx (+7)
+  module         workspace_tenancy/application/use_cases/preferences.py (+7)
+  persistence    migrations/versions/0044_person_preferences.py
+  platform       signora_platform/authorization/enforcer.py
+  security       authorization/policies/policy.csv
+```
+
+⚡ **It discriminates**: this session produced `platform`, `documentation`, `documentation+frontend`, and `documentation+frontend+module+persistence`. ⛔ **`docs/coordination/**` classifies as `platform` because three gates read it — a directory prefix would have called it documentation.**
+
+### ⛔ The gap is one line, and it is [B-131](docs/BUGS.md)
+
+**`REQUIRED_GATES` is a constant.** ⚡ **Every run executes all six regardless of the computed profile**, and the record says so out loud every time:
+
+```
+validation plan   platform: 10 planned gate(s) NOT recorded
+                  reported only — nothing skipped, nothing refused (B-131)
+```
+
+✅ **[427](docs/architecture/427-impact-based-validation.md) is exactly D-200, written as a five-step migration.** **Step 2 — *record the computed profile, still run everything* — has been live for ~20 runs.** ⛔ **Steps 3–5 apply it, and were gated on step 1's evidence.** ⚡ **That evidence now exists.**
+
+### ⚠️ What QE cannot yet tell you, and it is the thing D-200 optimises
+
+> **The certification record captures gates, coverage, invariants, tools, conditions and profile. ⛔ It does not capture *duration*.**
+
+**So the bottleneck has never been measured.** ⚡ **Total is ~17–18 minutes; `smoke` is the only timed stage at 141–303s.** ⛔ **Everything else is unattributed**, and QE will not propose narrowing a suite it cannot show is the cost.
+
+✅ **First step, and it is [427](docs/architecture/427-impact-based-validation.md) step 2's own shape — record before acting: per-gate duration in the certification record.** **One cycle of data then says whether the win is in `pytest`, `smoke`, database provisioning, or the frontend build.**
+
+### 🔴 The constraint that does not move
+
+**[D-167](docs/DECISION_REGISTER.md), the product owner's own earlier ruling:** ***"If impact cannot be determined confidently: default to broader certification. Correctness always takes priority over execution speed."***
+
+⛔ **And the planner already enforces it structurally — *unknown paths widen, never narrow*.** ⚡ **The vacuity risk [427](docs/architecture/427-impact-based-validation.md) §1 names is the one to design against: under a *computed* required set, a gate may be legitimately absent — and a mis-classification then reads as a pass.** ✅ **`missing_gates` measures against the full set today, and must keep doing so.**
+
+### ⚠️ Two parts of D-200 are not QE's to implement
+
+| § | Whose |
+|---|---|
+| **§2 — Lane A submits an impact summary** | **Lane A's**, and it belongs in the **Slice Handoff**, which already carries `Reuse`, `Preserved`, `Reachable`, `Rollback`, `Budget` |
+| **§5 — Product Office states expected impact on task creation** | **Lane C's** |
+
+⛔ **QE cannot write either lane's obligations into their files.** ✅ **Raised as a coordination item so both learn their half from `integration` rather than from a poll narrative** — **which is the lesson [B-153](docs/BUGS.md) cost one hour ago.**
+
+---
+
+## 1e · Release summary — 2026-08-09, cycle 135
 
 **Derived from the promoted commit `3373af7`.** **Ninety promotions.** ⛔ **Opened by §20e's synchronization rule, not by executable change — and the distinction from six polls earlier is the whole point.**
 

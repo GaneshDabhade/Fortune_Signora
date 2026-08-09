@@ -462,6 +462,27 @@ databaseUrl: required(
 
 ---
 
+## C-105 · [D-200](DECISION_REGISTER.md) gives Lane A and Lane C each a half, and QE cannot write either
+
+| | |
+|---|---|
+| **Raised by** | **QE**, 2026-08-09, on the product owner's ruling |
+| **Owner** | **Lane A** for §2 · **Lane C** for §5 |
+| **Status** | **`OPEN`** |
+| **Blocks** | ⛔ **Nothing today.** ⚡ **QE certifies exactly as before until [427](architecture/427-impact-based-validation.md) steps 3–5 land** |
+
+**[D-200](DECISION_REGISTER.md) §2 asks every Lane A submission to carry an impact summary** — changed areas, potential impact, unaffected areas — **as the starting point QE validates and extends.**
+
+✅ **The vehicle already exists: the Slice Handoff**, which carries `Reuse`, `Preserved`, `Reachable`, `Rollback` and `Budget`. ⚡ **An `Impact:` field is the same shape and travels the same way** — in the commit message, greppable, immutable, attached to the change forever.
+
+**[D-200](DECISION_REGISTER.md) §5 asks Product Office to state expected impact areas when it creates a task**, giving QE a scope before implementation starts.
+
+> ⛔ **Neither is QE's to write.** **[`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) is Lane C's; the Slice Handoff's fields are §20e's; and a lane's obligations reaching it through a QE poll narrative is exactly what [B-153](BUGS.md) cost an hour ago** — **a row held where the other lane could not see it, and a duplicate identifier as the result.**
+
+**What QE is doing meanwhile, and it needs nothing from either lane:** ⚡ **recording per-gate duration in the certification record.** ⛔ **The record captures gates, coverage, invariants, tools, conditions and profile — and not *time*, so the bottleneck D-200 targets has never been measured.** ✅ **One cycle of data then says whether the win is `pytest`, `smoke`, database provisioning or the frontend build.**
+
+---
+
 ## C-001 · The target-account contract
 
 | | |
