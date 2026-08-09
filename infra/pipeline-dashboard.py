@@ -66,21 +66,18 @@ def counts() -> dict[str, int]:
     live = [r for r in rows if r[1] not in DEPARTED]
     prepared = [r for r in live if r[2] >= PREPARED_CELLS and all(k in r[3] for k in REQUIRED)]
     partial = [r for r in live if r not in prepared and r[2] >= 10]
-    # ⚡ The one-claimable invariant is per IMPLEMENTATION lane. Lane C's own
-    # Platform Foundation rows (D-022) are not implementation tasks for Lane A,
-    # and counting them reported two where the invariant was satisfied.
-    queue = tomllib.loads((ROOT / "docs" / "coordination" / "queues" / "lane-a.toml").read_text())
-    offered = {str(t) for t in [queue.get("current"), queue.get("next")] if t}
-    offered |= {str(t) for t in (queue.get("future") or [])}
-    claimable = [r for r in rows if r[1] == "READY" and r[0] in offered]
-
     flows = tomllib.loads(WORKFLOWS.read_text())["workflow"]
     undecomposed = [k for k, v in flows.items() if not v.get("tasks")]
     decomposed = len(flows) - len(undecomposed)
 
+    # ⛔ **A second `claimable`, computed from `current`/`next`/`future`, stood
+    # here until D-203 §2.** D-199 deleted those fields from the queue, so it
+    # evaluated to zero on every run — and it was **emitted in the counts and
+    # displayed nowhere**, which is why nothing caught it. ⚡ **Dead arithmetic in
+    # a dashboard is worse than a wrong number: it is a number waiting to be
+    # displayed by somebody who assumes it was maintained.**
     queue_a = tomllib.loads((ROOT / "docs" / "coordination" / "queues" / "lane-a.toml").read_text())
     backlog = [str(x) for x in (queue_a.get("backlog") or [])]
-    live = {r[0] for r in rows if r[1] == "READY"}
     import subprocess as _sp
     integ = _sp.run(["git", "show", "origin/integration:docs/BACKLOG.md"],
                     cwd=ROOT, capture_output=True, text=True).stdout
@@ -101,7 +98,6 @@ def counts() -> dict[str, int]:
         # numbers, and only the second one is the product owner's question.**
         "lane_backlog": len(backlog),
         "lane_backlog_live": len([t for t in backlog if t in on_int]),
-        "claimable": len(claimable),
         "prepared": len(prepared),
         "partial": len(partial),
         "undecomposed_workflows": len(undecomposed),

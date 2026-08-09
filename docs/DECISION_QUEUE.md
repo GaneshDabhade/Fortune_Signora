@@ -15,6 +15,31 @@
 > ✅ **Seven rows left this page on 2026-08-06 because they were decided** — C-332, C-417, C-418, C-419, C-104, C-225, C-329. ⛔ **Three of them were nearly escalated for a second ruling**, because each carried its ruling in prose above a `Status` field that still read open.
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
+## 🔴 C-1401 · `CLAUDE.md` tells every lane to read four queue fields that were deleted
+
+> ## ⛔ **One word of approval. The replacement text is written and nothing else is needed.**
+>
+> 📁 **[`CLAUDE.md`](../CLAUDE.md) §20e still instructs: *"Read your queue first — `current`, then `next`, then `future`, in that order"* and *"takes `current`, and starts."*** ⛔ **[D-199](DECISION_REGISTER.md) deleted all four fields.**
+
+⚡ **This is the dispatcher model [D-198](DECISION_REGISTER.md) removed, surviving in the one document that outranks the ruling that removed it.**
+
+| | |
+|---|---|
+| **Lines** | **946, 1031, 1035** — and **946 · 1187** still say `lane-<a\|b>.toml`, and **Lane B was closed by [D-165](DECISION_REGISTER.md)** |
+| **Blocks today** | ⚠️ **Nothing — by luck.** **Lane A read [`BACKLOG.md`](BACKLOG.md) instead and claimed [TASK-1400](BACKLOG.md) correctly.** ⛔ **A lane obeying the constitution literally reads `current` and finds nothing** |
+| **Whose fault** | ⛔ **This office's.** **D-198 was implemented in the data, the projection, the queues and four instruments — and the document lanes read first was never checked** |
+| **What is asked** | ✅ **Approval to apply the four replacements in [C-1401](LANE_COORDINATION.md).** ⛔ **Both previous Lane C edits to `CLAUDE.md` were instructed ([D-170](DECISION_REGISTER.md) §2, [D-195](DECISION_REGISTER.md) §8); this office will not make a third undirected** |
+
+✅ **Everything generated is already correct** — `coordination.py` emits `backlog`, `state-check.py` **refuses** a queue carrying a retired field, and both dashboards read the new shape.
+
+## 🟠 C-246 · Does the customer read *Workspace* or *Organization*?
+
+> 📁 **The onboarding design labels a step *Workspace*; [ADR-0034](architecture/adr/) says a customer reads *Organization*.** ⛔ **Two approved sources name one thing differently, and Workflow 8 renders whichever a lane reads first.**
+
+⚠️ **Blocks nothing.** **What it changes is what the Workflow 8 review is shown** — ⛔ **and a reviewer holding the design will read a word the ADR forbids, then file it as a defect against a lane that followed the design.**
+
+✅ **Whichever you rule, one of the two documents is corrected** rather than the screen deviating from both. ⚡ **[`vocabulary.toml`](coordination/vocabulary.toml) is where the answer lands, so the next screen cannot rediscover it.**
+
 ## 🔴 C-245 · May an invitation link alone reveal a company's name, headcount, employee and role?
 
 > ## ⛔ **The one blocking decision. It is why [Workflow 7](coordination/workflows.toml) is `blocked`, and it reached this queue the cycle QE integrated it — as promised.**
@@ -37,13 +62,17 @@
 
 ✅ **Whichever you rule, this office writes the endpoint's contract before Lane A returns to Workflow 7.**
 
-## 🟠 C-247 · A person in two organizations gets two themes, and C-248 · four profile fields locked as "Managed by"
+## 🟠 C-247 · Is a theme preference per person, or per organization?
 
-> ⚡ **Both are Workflow 9 · User Profile, both found by Lane A building against the design, and both are disclosure-or-policy questions rather than builds.** ⛔ **Neither blocks: the screens ship without the contested behaviour rather than guessing it.**
+> ⚡ **Workflow 9 · User Profile, found by Lane A building against the design.** ⛔ **Does not block: the screen ships without the contested behaviour rather than guessing it.**
 
-**C-247** — **is a theme preference per PERSON or per ORGANIZATION?** ⚡ **[TASK-470](BACKLOG.md) already flagged this shape: it is the first row whose data is ACCOUNT-scoped rather than workspace-scoped, and the answer decides its `tenancy_policy.py` class.**
+⚡ **[TASK-470](BACKLOG.md) already flagged this shape: it is the first row whose data is ACCOUNT-scoped rather than workspace-scoped, and the answer decides its `tenancy_policy.py` class.**
 
-**C-248** — **four profile fields render locked as *"Managed by"*, which asserts a directory-sync capability that does not exist.** 📁 **Better Auth's `sso` plugin has it and is unregistered ([TASK-493](BACKLOG.md)).** ⛔ **Until it is, the lock is a false affordance — the class this lane has now refused six times.**
+## 🟠 C-248 · Four profile fields are locked as *"Managed by"*, and no directory sync exists
+
+> ⛔ **Four profile fields render locked, which asserts a directory-sync capability the platform does not have.** ⚠️ **Split out of C-247's row on 2026-08-09** — ⛔ **two items under one heading is one item nobody can route to, which is exactly what `decision-queue --check` had been reporting.**
+
+📁 **Better Auth's `sso` plugin has the capability and is unregistered ([TASK-493](BACKLOG.md)).** ⛔ **Until it is, the lock is a false affordance — the class this lane has now refused six times.**
 
 ## 🟠 C-249 · Two rows on the AI screen are policies, not preferences
 

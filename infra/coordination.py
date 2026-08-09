@@ -929,7 +929,20 @@ def render(rows: list[Task]) -> str:
         # holds so the gap is visible rather than hidden. **An empty `current`
         # beside a non-zero `claimable` says exactly the true thing: work
         # exists and QE has not integrated it.**
-        pipeline = sorted(
+        # ⛔ **`current` / `next` / `next_after_that` were REMOVED here, D-203 §2.**
+        #
+        # [D-198](../docs/DECISION_REGISTER.md) ended dispatching and D-199
+        # required it implemented exactly. **The queue FILES lost those fields;
+        # this projection went on publishing them to every lane** — so the
+        # dispatcher model stayed on the wire for four days after the model that
+        # produced it was retired. ⚡ **A field a lane reads is the model, whatever
+        # a document says**, and the governance cleanup is where that was caught.
+        #
+        # ✅ **`backlog` replaces them: EVERY claimable row, in the recommended
+        # order, with no row singled out as *the* one.** ⛔ The order is a
+        # recommendation and carries no authority over the lane's sequencing —
+        # which is precisely why naming a first element as `current` was wrong.
+        backlog = sorted(
             (r for r in mine if r.state == ASSIGNED and r.on_integration),
             key=lambda r: (-len(r.unblocks), r.critical_path, r.id),
         )
@@ -937,9 +950,7 @@ def render(rows: list[Task]) -> str:
         out += [
             f"[lane.{lane.replace(' ', '_')}]",
             f'notice             = "{_notice(lane)}"',
-            f'current            = "{pipeline[0].id if pipeline else ""}"',
-            f'next               = "{pipeline[1].id if len(pipeline) > 1 else ""}"',
-            f'next_after_that    = "{pipeline[2].id if len(pipeline) > 2 else ""}"',
+            "backlog            = [" + ", ".join(f'"{r.id}"' for r in backlog) + "]",
             f"assigned_total     = {len(mine)}",
             f"claimable          = {m['claimable']}",
             f"claimable_now      = {m['claimable_now']}",

@@ -8,6 +8,24 @@
 >
 > **Its mission is to reduce decision latency by preparing decisions before they reach the product owner.** Not writing governance. Not creating process. **Preparing decisions.**
 
+> # ⛔ §5 AND §12 DESCRIBE A MODEL THAT NO LONGER EXISTS
+>
+> **Governance reconciliation, [D-203](DECISION_REGISTER.md) §2, 2026-08-09.**
+>
+> **This document's newest ruling reference is [D-140](DECISION_REGISTER.md). Sixty rulings have landed since**, and three of them replaced the mechanism §5 and §12 describe in detail.
+>
+> | What this document describes | What is true today |
+> |---|---|
+> | **§5 — preparing a *next-task recommendation*: `current`, `next`, `future`, `eligible_count`, `depth_target`, a *shortfall*** | ⛔ **All six fields deleted.** [D-198](DECISION_REGISTER.md): **the lane owns a `backlog` and chooses within it.** *"Product Office is still acting as a dispatcher"* |
+> | **§12 — the implementation flow, built around one *current* task** | ⛔ **[D-199](DECISION_REGISTER.md): implemented exactly, no dispatching.** A blocked row must never stop implementation |
+> | **§11 — how Lane C reports** | ⚠️ **Superseded in part**: the Prepared Pipeline Dashboard is **generated** by `infra/pipeline-dashboard.py` ([D-188](DECISION_REGISTER.md)), never retyped |
+>
+> ⚡ **Kept, not rewritten, and the reason is [D-203](DECISION_REGISTER.md) §4: *"stop spending significant effort redesigning planning itself."*** ⛔ **Rewriting 1,647 lines of operating procedure is exactly the effort that ruling redirects to delivery.** **§0–§4 and §6–§10 are unaffected and remain current.**
+>
+> ## ⚡ **For the model as it stands, read [`REPOSITORY_SOURCE_OF_TRUTH.md`](../REPOSITORY_SOURCE_OF_TRUTH.md) § *The coordination subsystem*.** **It is one table, it names the owner of every file, and it is checked by `infra/state-check.py`.**
+>
+> ⚠️ **This banner is the correction.** ⛔ **A superseded section left unmarked inside a current document is worse than an archived document, because nothing signals which half to trust** — the [`REPOSITORY_ARCHITECTURE_PROPOSAL`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) defect at paragraph scale.
+
 ---
 
 ## 0 · ⚙️ The operating priority — [D-100](DECISION_REGISTER.md)

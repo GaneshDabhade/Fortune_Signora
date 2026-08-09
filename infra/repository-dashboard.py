@@ -485,37 +485,38 @@ def build(ref: str, since: str | None = None) -> str:
         a(f"    {s:<20} {n}")
 
     a("")
-    a("  Per lane — buffer against the five-slice target:")
-    a(f"    {'Lane':<8} {'assigned':>8} {'eligible':>8} {'blocked':>8} {'with QE':>8}  buffer")
+    # ⛔ **Rewritten for D-198's model, D-203 §2.** This read `current`, `next`,
+    # `future`, `eligible_count` and `depth_target` — **every one deleted from the
+    # queue files by D-199** — so it printed a sequence of zero against a target of
+    # five and called every lane SHORT. ⚡ **A dashboard that reads fields nobody
+    # writes reports a crisis that does not exist**, and reporting a false crisis
+    # costs exactly what missing a real one does: the next reading is discounted.
+    a(f"  Per lane — the backlog the lane owns, READ AT {ref} (D-198: no dispatch sequence):")
+    a(f"    {'Lane':<8} {'backlog':>8} {'blocked':>8} {'with QE':>8}")
     for lane in sorted(qs) or []:
         q = qs[lane]
-        seq = [q.get("current")] + [q.get("next")] + list(q.get("future") or [])
-        seq = [t for t in seq if t]
+        seq = [str(t) for t in (q.get("backlog") or [])]
         blocked = q.get("blocked") or []
         val = q.get("in_validation") or []
-        # **The declared count is checked, never trusted.** `lane-a.toml`
-        # declared 3 beside a sequence of 4 for one commit — a judgement about
-        # one entry recorded as a number, next to the list it disagreed with.
-        # **That is C-412's defect in this office's own file**, so the
-        # disagreement is reported rather than resolved silently in either
-        # direction: the field may be right and the list stale, or the reverse.
-        declared = q.get("eligible_count")
-        elig = int(declared) if declared is not None else len(seq)
-        target = int(q.get("depth_target", 5))
-        mark = "OK" if elig >= target else f"SHORT by {target - elig}"
-        a(f"    {lane:<8} {len(seq):>8} {elig:>8} {len(blocked):>8} {len(val):>8}  {elig}/{target}  {mark}")
-        if declared is not None and int(declared) != len(seq):
-            a(f"      DRIFT — declares {declared} eligible, sequences {len(seq)}: "
-              f"{', '.join(seq)}")
-    for lane in ("Lane A", "Lane B"):
-        if lane not in qs:
-            a(f"    {lane:<8} NO QUEUE FILE — absence is a Product Office finding, not an empty queue")
+        note = ""
+        # **A zero here has two causes and they are opposite.** Either nothing is
+        # prepared, or the ref predates D-198 and carries the dispatch fields
+        # instead — and reading the second as the first blames Product Office for
+        # a synchronization lag. The distinguishing evidence is in the file.
+        if not seq and any(q.get(k) is not None for k in ("current", "next", "future")):
+            note = "  ← pre-D-198 file at this ref; the backlog exists and QE has not integrated it"
+        a(f"    {lane:<8} {len(seq):>8} {len(blocked):>8} {len(val):>8}{note}")
+    # ⛔ **Lane B is not listed.** [D-165](../docs/DECISION_REGISTER.md) closed it
+    # and `modules.toml` reassigned all 19 of its modules; a dashboard demanding
+    # its queue file reports a closed lane as an unmet obligation, every run.
+    if "Lane A" not in qs:
+        a("    Lane A   NO QUEUE FILE — absence is a Product Office finding, not an empty queue")
 
     # **Prepared-but-unassigned should be zero and is worth computing anyway.**
     # A READY task in nobody's queue is exactly the C-412 defect: a row that
     # advertises work while no lane can see that it is theirs.
     queued = {t for q in qs.values()
-              for t in ([q.get("current"), q.get("next")] + list(q.get("future") or [])
+              for t in (list(q.get("backlog") or [])
                         + [b.get("task") for b in (q.get("blocked") or [])]) if t}
     orphan = [i for i, _, s in tk if s == "READY" and i not in queued]
     a("")

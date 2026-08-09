@@ -1285,15 +1285,11 @@ def _pipeline_findings() -> list[str]:
                 "while building, not while planning). **Release more, in a stated order** "
                 "(D-183)."
             )
-        elif False:  # ⛔ D-199 — RETIRED. The published order is a recommendation
-            # with no authority over the lane's sequencing, so a check enforcing
-            # it was a dispatch gate wearing a check's clothes.
-            out.append(
-                f"{lane} has {claimable} claimable rows and its queue does not put them in "
-                "a strict order. **Depth without an order is a choice, and choosing is "
-                "prioritisation** (§20e, D-163's actual concern). "
-                "**`current`, `next` and `next_after_that` must name them** (D-183)."
-            )
+        # ⛔ **An ordering gate stood here until D-199 retired it, and it was left
+        # as `elif False:` rather than deleted — DELETED under D-203 §2.** It
+        # demanded `current`, `next` and `next_after_that` name the lane's rows,
+        # which is a dispatch gate wearing a check's clothes; and dead code that
+        # still cites removed fields is how a retired rule reads as merely paused.
     return out
 
 
@@ -1314,28 +1310,29 @@ def _queue_findings(backlog: str) -> list[str]:
             continue
 
         # ⚡ **D-198 reshaped the queue: one `backlog`, not a dispatch sequence.**
-        # ⛔ `current`/`next`/`future` are kept only so an older reader is not
-        # broken mid-migration; `backlog` is authoritative and every row in it is
-        # claimable. **The order inside it is a recommendation, not a gate.**
-        sequence = [str(t) for t in (queue.get("current"), queue.get("next")) if t]
-        sequence += [str(t) for t in (queue.get("future") or [])]
-        sequence += [str(t) for t in (queue.get("backlog") or []) if str(t) not in sequence]
+        #
+        # ⛔ **The migration shims are GONE — D-203 §2.** This read
+        # `current`/`next`/`future` first and `backlog` only for what they
+        # missed, *"so an older reader is not broken mid-migration"*. **The
+        # migration finished on 2026-08-09 and the shim did not**, which is how a
+        # retired model keeps a foothold: not in a document, in a `.get()`.
+        #
+        # ✅ **`backlog` is the only field. The order inside it is a
+        # recommendation, never a gate**, and no element of it is privileged.
+        sequence = [str(t) for t in (queue.get("backlog") or [])]
         queued.update(sequence)
-        target = int(queue.get("depth_target", 5) or 5)
 
-        declared = queue.get("eligible_count")
-        if declared is not None and int(declared) != len(sequence):
-            out.append(
-                f"{lane}: declares eligible_count {declared} beside a sequence of "
-                f"{len(sequence)} — one of the two is stale"
-            )
-        stated = queue.get("shortfall")
-        expected = max(0, target - len(sequence))
-        if stated is not None and int(stated) != expected:
-            out.append(
-                f"{lane}: declares shortfall {stated}; {len(sequence)} of {target} "
-                f"is a shortfall of {expected}"
-            )
+        # ⛔ **`eligible_count`, `depth_target` and `shortfall` are gone with
+        # them.** They were a lane's supply restated inside the lane's own file —
+        # a second copy of a number the projection already computes, and the one
+        # this repository has watched go stale five times.
+        for stale in ("current", "next", "future", "eligible_count", "depth_target", "shortfall"):
+            if queue.get(stale) is not None:
+                out.append(
+                    f"{lane}: carries `{stale}`, a dispatcher field retired by D-198. "
+                    "**The lane owns a backlog and chooses within it** — a field naming "
+                    "its next row is the dispatch model returning through the data."
+                )
         for task in sequence:
             state = states.get(task)
             if state is None:

@@ -353,7 +353,9 @@ databaseUrl: required(
 | [C-246](#c-246-the-onboarding-design-labels-a-step-workspace-and-adr-0034-says-a-customer-reads-organization) | 🟠 **The onboarding design labels a step *Workspace* and ADR-0034 says a customer r** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 8 review is shown** — a reviewer holdin |
 | [C-247](#c-247-a-person-in-two-organizations-gets-two-themes-and-task-470s-row-says-otherwise) | 🟠 **A person in two organizations gets two themes, and TASK-470's row says otherwi** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is a customer's experience of belonging to two organizations |
 | [C-248](#c-248-four-profile-fields-are-locked-as-managed-by-northwind-it-and-no-directory-sync-exists) | 🟠 **Four profile fields are locked as *"Managed by Northwind IT"* and no directory** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is how complete screen `01` looks at review** — named here s |
-| [C-249](#c-249-two-rows-on-the-ai-screen-are-policies-and-neither-policy-exists) | 🟠 **Two rows on the AI screen are policies, and neither policy exists** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 9 review is shown** | |
+| [C-249](#c-249-two-rows-on-the-ai-screen-are-policies-and-neither-policy-exists) | 🟠 **Two rows on the AI screen are policies, and neither policy exists** | **Lane A**, 2026-08-08 | ⛔ **Product Owner** | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 9 review is shown** |
+| [C-105](#c-105--d-200-gives-lane-a-and-lane-c-each-a-half-and-qe-cannot-write-either) | **[D-200](DECISION_REGISTER.md) gives Lane A and Lane C each a half, and QE cannot write either** | **QE**, 2026-08-09, on the product owner's ruling | **Lane A** for §2 · **Lane C** for §5 | 🟡 **`OPEN`** | ⛔ **Nothing today.** ⚡ **QE certifies exactly as before until [427](architecture/427-impact-based-validation.md) steps 3–5 land** |
+| [C-1401](#c-1401--the-constitution-instructs-every-lane-to-read-four-queue-fields-that-no-longer-exist) | 🔴 **The constitution instructs every lane to read four queue fields that no longer exist** | **Lane C**, 2026-08-09, on [D-203](DECISION_REGISTER.md) §2's governance reconciliation | ⛔ **Product Owner** — `CLAUDE.md` is the constitution and this office does not edit it undirected | 🔴 **`OPEN`** | ⚠️ **Nothing today, and that is luck rather than design** — **a lane following §20e literally reads `current` and finds nothing.** ✅ **The replacement text is written; it needs one word of approval** |
 | [C-1400](#c-1400--product_qualitymd-is-referenced-by-nothing-and-is-qes-to-rule-on) | ⚠️ **`PRODUCT_QUALITY.md` is referenced by nothing — not `CLAUDE.md`, not any register** | **Lane C**, 2026-08-09, ⚡ **on [D-202](DECISION_REGISTER.md) §6's governance review** | **QE** — 📁 **the document's own header says *"Owned by QE"*** | 🟡 **`OPEN`** | ✅ **Nothing.** ⚡ **158 lines that may be live, superseded or absorbed** — ⛔ **and this office will not archive another lane's document on a reference count alone** |
 | [C-239](#c-239--the-approved-designs-say-workspace-and-a-customer-may-not-be-shown-that-word) | The approved designs say *workspace*, and a customer may not be shown that word | Lane A | ✅ **ANSWERED by Lane C, 2026-08-07** — **no ruling needed** | ✅ **`CLOSED`.** **The design governs what the screen *is*; [ADR-0034](architecture/adr/0034-ubiquitous-language.md) governs what it *says*** — ⚡ **and it is the only reading under which Workflow 1 passes its own suite, because `vocabulary.test.tsx` fails on *"You don't have access to this workspace"* as a text node.** **Two strings in Workflow 1 are affected, on screens 15 and 17** | ⛔ **Nothing** — TASK-468 proceeds on the stated reading |
 | [C-238](#c-238--affiliationreader-has-a-protocol-and-no-implementation-so-the-composition-root-has-nothing-to-inject) | `AffiliationReader` has a Protocol and no implementation, so the composition root has nothing to inject | Lane A | **Lane B** — `people` is its module in [`modules.toml`](coordination/modules.toml) | ✅ **`CLOSED`** — Lane A, 2026-08-07. **Lane B published `SqlAffiliationReader` *and* its composition builder; verified by opening the file** | ⛔ **Nothing.** **[TASK-458](BACKLOG.md)'s blocker has cleared** |
@@ -8559,6 +8561,54 @@ rules parsed: 24   ·   distinct reason codes: 24
 **Screen `14` offers *"Request a new invitation"*** — *"one click notifies the original inviter and the workspace admins."* ⛔ **Nothing can grant it**: `tests/components/join.test.tsx` already asserts the control is never offered ***"because nothing can grant it"*** — no endpoint, no table, no row — **and that assertion was written by this lane against the same absence.**
 
 **The decision, in one sentence:** ⚡ **may an invitation link, on its own, reveal a company's name, headcount, an employee's name and a role?** ✅ **If yes, that is an endpoint and an ADR.** ⛔ **If no, screen `13` is a different screen and the design needs amending** — **and until either lands, `/join` shows what a non-member may truthfully be shown.**
+
+## C-1402 · The execution board shows a closed lane busy on work that is already on `main`
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-09, on [D-203](DECISION_REGISTER.md) §2's governance reconciliation |
+| **Owner** | **QE** — 📁 **[`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md): *"QE removes the row once the work reaches `main`."*** ⛔ **And [D-123](DECISION_REGISTER.md) reserves these states to the lane, which no longer exists to clear them** |
+| **Status** | 🟡 **`OPEN`** |
+| **Blocks** | ✅ **Nothing** |
+
+⛔ **Two rows under `## Current` are Lane B's** — [TASK-453](BACKLOG.md) and [TASK-463](BACKLOG.md), both **`IN VALIDATION`** against `lane-b-commercial-profile`, a branch **215 commits behind `integration` that `repository-dashboard` reports as holding nothing.** ⚡ **[D-165](DECISION_REGISTER.md) closed the lane; [`modules.toml`](coordination/modules.toml) reassigned all 19 of its modules.**
+
+✅ **Both shipped, verified by content rather than by status** ([C-428](#)): **`action_batch` is nine files on `integration` with migration `0042`**, and **`ReasoningVerb` is in `ai_reasoning_engine/public/__init__.py`.**
+
+> ⚠️ **The rows are not wrong about the work; they are wrong about who is doing it.** ⛔ **A board naming a closed lane as busy is [C-213](#)'s class — an assignee copied into a row, outranking a registry that has moved on.**
+
+## C-1401 · 🔴 The constitution instructs every lane to read four queue fields that no longer exist
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-09, on [D-203](DECISION_REGISTER.md) §2's governance reconciliation |
+| **Owner** | 🔴 **THE PRODUCT OWNER.** ⛔ **[`CLAUDE.md`](../CLAUDE.md) is the constitution and this office does not edit it undirected.** ⚡ **Both previous Lane C edits were instructed — [D-170](DECISION_REGISTER.md) §2 and [D-195](DECISION_REGISTER.md) §8 — and this item exists so the third is too** |
+| **Status** | 🔴 **`OPEN` — and it is the highest-ranked conflict in the repository**, because §2 makes `CLAUDE.md` outrank every document that contradicts it |
+| **Blocks** | ⚠️ **Nothing today, and that is luck rather than design** — Lane A read `BACKLOG.md` instead and claimed correctly. **A lane following §20e literally reads `current` and finds nothing** |
+
+**Measured, line by line, at `1c9c97dc`:**
+
+| Line | What it instructs | Why it is now wrong |
+|---|---|---|
+| **946** | *"Read your queue first — `current`, then `next`, then `future`, **in that order**"* | ⛔ **All three deleted from the queue files** by [D-199](DECISION_REGISTER.md) |
+| **1031** | *"It reads the row where `lane` is its own, **takes `current`**, and starts"* | ⛔ **`current` is no longer emitted.** This is the dispatch instruction [D-198](DECISION_REGISTER.md) removed |
+| **1035** | *"**`current` · `next` · `next_after_that`** — a pipeline three deep"* | ⛔ **Replaced by one `backlog`**, every row claimable |
+| **946 · 1187** | **`lane-<a\|b>.toml`** | ⛔ **Lane B was closed by [D-165](DECISION_REGISTER.md)**; its 19 modules are Lane A's in [`modules.toml`](coordination/modules.toml) |
+
+> ## 🔴 **Three of the product owner's own rulings — [D-198](DECISION_REGISTER.md), [D-199](DECISION_REGISTER.md), [D-203](DECISION_REGISTER.md) — are contradicted by the document that outranks them.** ⛔ **[§2](../CLAUDE.md) says truth has exactly one authoritative representation; here the authoritative one is the stale one.**
+
+⚠️ **This office carries the fault.** ⛔ **D-198 was implemented in the data, the projection, the queues and four instruments, and *the constitution that tells lanes how to read them was never checked*.** ⚡ **That is [C-213](#)'s class at the top of the hierarchy: the model changed everywhere a generator could reach and nowhere a human reads first.**
+
+✅ **The replacement text is written and needs one word of approval — nothing else is required:**
+
+| Line | Replace with |
+|---|---|
+| **946** | *"**Read your `backlog` first** — [`docs/coordination/queues/lane-a.toml`](coordination/queues/lane-a.toml). **Every row in it is claimable and the order is a recommendation, not a gate.** Blocked on one? Raise it and take another. Its `blocked` array names the rest with each blocker's owner. **Ids only; execution state is still the backlog's**"* |
+| **1031** | *"**It reads the row where `lane` is its own and takes any row from `backlog`.**"* |
+| **1035** | *"**`backlog`** — **every claimable row, so a blocked one never stops implementation** ([D-198](DECISION_REGISTER.md))"* |
+| **946 · 1187** | **`lane-a.toml`**, and the 1187 example rewritten against a lane that exists |
+
+⚡ **The generated side is already correct** — `coordination.py` emits `backlog`, `state-check.py` refuses a queue carrying a dispatcher field, and both dashboards read the new shape. ⛔ **Only the constitution is behind, and only the product owner may move it.**
 
 ## C-1400 · `PRODUCT_QUALITY.md` is referenced by nothing, and is QE's to rule on
 
