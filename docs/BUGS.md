@@ -346,6 +346,34 @@ await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
 
 ⚡ **Same repair this lane made in `app-shell-rail.test.tsx`** when the shell's second wordmark broke an unscoped query: ⛔ **the duplicate render is correct and the query was wrong.** ✅ **And it asserts something stronger than before** — not merely that the address appears somewhere, but that it is the link to their own profile.
 
+### B-170 · `state-check` skips backlog rows whose state it cannot parse, so the same defect can recur silently a fourth time
+
+| | |
+|---|---|
+| **Module** | Repository tooling — [`infra/state-check.py`](../infra/state-check.py) |
+| **Current assignee** | **QE** — §20e names `state-check.py` in QE's own carve-out ([D-022](../docs/DECISION_REGISTER.md)) |
+| **Severity** | 🟡 — ⚡ **the instances are fixed; the mechanism that let them hide is not** |
+| **Status** | **`OPEN`** |
+| **Commit found** | `bc4f0c1d`, split out of [B-169](#b-169) once its instances were verified fixed |
+
+**Steps.** Author a backlog row whose state is not in a `| **Status** |` row — inside the Module cell, or as a token containing a markdown link. Run `python3 infra/state-check.py`.
+
+**Expected.** ⚡ **A row whose state cannot be read is reported**, the way the duplicate-identifier check reports a duplicate.
+
+**Actual.** ⛔ **It is counted out of every total and never mentioned.** **The row exists, a human reads its state fine, and every instrument is blind to it.**
+
+> 🔴 **Three occurrences, none caught by an instrument:**
+>
+> | | |
+> |---|---|
+> | **`TASK-1404`** | Unreadable from **2026-08-08** until a lane rendered a table that happened to show it |
+> | **`TASK-1441`–`1444`** | Introduced by the very push that fixed `TASK-1404`; **QE found them by counting, not by a check** |
+> | **A fifth row** | Found by Lane C when it repaired the four — ⚡ **QE's count of four was already stale when it was written** |
+>
+> ⛔ **Each was found by a person looking, and the second was authored by the lane that had just written the diagnosis for the first.** **Knowing the class does not prevent the next instance.**
+
+**Repair.** ⚡ **Report, do not fail.** **`state-check` is advisory by design and this belongs at that level** — a finding line naming every row whose state it could not determine, so the count and the gap are visible together. ⛔ **A total that silently excludes what it could not read is the [B-101](#b-101) class**: *a figure that is confidently wrong is worse than a figure that is missing.*
+
 ### B-169 · four new rows carry their state inside the Module cell, so no instrument can read it — the defect [TASK-1404](BACKLOG.md) fixed, reintroduced in the same commit
 
 | | |
@@ -353,7 +381,7 @@ await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
 | **Module** | Repository process — [`docs/BACKLOG.md`](BACKLOG.md) authoring |
 | **Current assignee** | **Lane C** — its own rows, and its own backlog authoring |
 | **Severity** | 🟠 — ⛔ **silent by construction.** **The rows exist, a human reads their state fine, and every instrument sees nothing** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED` — QE**, 2026-08-09, at `bc4f0c1d`. **Measured on the promoted commit: 167 rows, `0` unparsed**, against 4 when the row was filed. ⚡ **Lane C fixed it on the poll it arrived and titled the commit *"D-217's five rows carried a state no instrument could read — again"*** — **five, not the four QE counted**, because one more was added after QE measured. ⚠️ **The check QE asked for is NOT built**: `state-check` still skips rows it cannot parse rather than reporting them, so **nothing stops the sixth.** ⛔ **That half stays open as [B-170](#b-170).** |
 | **Commit found** | `700015f6` (`D-217`), found by QE during cycle 176 validation |
 
 **Steps.** From the promoted commit, count rows whose state no reader can parse:
