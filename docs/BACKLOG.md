@@ -1519,7 +1519,7 @@
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING CAPABILITY** — ⛔ **nothing is asked of Design** |
 | **Epic** | **System States** — **[workflow 28](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-09.** ⚡ **Independent of every open item** |
+| **Status** | ✅ **`CLAIMED` — Lane A**, 2026-08-09, by the Task Claim Protocol. ⚡ **Top of the queue, taken in order.** ✅ **[D-212](DECISION_REGISTER.md) §7's gate was applied BEFORE anything was raised, and it removed the item this lane was about to file**: ⛔ **I read *"Banner, not takeover"* in System States §04 and began writing that the shell constitution defines only `environment` and `commercial`, and offline is neither.** 📁 **The App Shell design answers it — §07: *"System status is a persistent pill in the top bar rather than a banner."*** ✅ **`system-status` is already a declared slot from [TASK-1408](BACKLOG.md), so nothing is asked of Design and no shell capability is added** *(Was:* ✅ **`READY` — Lane C, 2026-08-09.** ⚡ **Independent of every open item***)* |
 | 📁 **What the design requires, verbatim** | ***"two edits are queued… They are sent in order when the connection returns — the queue is visible, not implied."*** |
 | 🔴 **Measured on `origin/integration`, not assumed** | ⛔ **No `onlineManager`, no `resumePausedMutations`, no `networkMode`, no query persistence anywhere in `frontend/lib/`.** ⚡ **Re-measured 2026-08-09: still nothing** |
 | ⚡ **Delivers** | **Mutations queue while offline, replay in order on reconnect, and the queue is VISIBLE** — 📁 *visible, not implied* is the design's own emphasis and it is the acceptance criterion |
