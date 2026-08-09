@@ -559,7 +559,7 @@ $ git log --format=%B origin/integration..e72b6af0 | grep -c Slice-Handoff
 | **Module** | Repository process — QE's synchronization step, [§20e](../CLAUDE.md) Closeout activity 10 |
 | **Current assignee** | **QE** — QE's own error, self-caught and self-repaired |
 | **Severity** | 🟠 — ⛔ **a claim commit was destroyed on `origin/integration` and restored about two minutes later.** ⚡ **Nothing was permanently lost and no lane observed the gap**, but the mechanism will recur |
-| **Status** | **`OPEN`** — the repair is procedural, and the row exists so the procedure changes rather than the intention |
+| **Status** | **`OPEN` — and it RECURRED on 2026-08-09 at `ee8e8fac`, which is the row's whole point.** ⛔ **QE force-pushed `main:integration` without running this row's own check first and destroyed `Claim TASK-1405`.** ✅ **Restored within two minutes** — the object survived, it was cherry-picked onto `main` and pushed as a **fast-forward**, and re-verified by subject, file list and `TASK-1405` appearing in both registers. **No lane observed the gap.** ⚡ **Second occurrence, and the cause was the same both times**: the habitual three-command push block ran to completion because nothing in it stops. ⛔ **The check exists and is written in this row; QE did not run it.** 🔴 **A check that must be remembered is a check that will be forgotten** — **the repair is to put `git rev-list --count origin/main..origin/integration` inside the push path rather than in a bug row.** — the repair is procedural, and the row exists so the procedure changes rather than the intention |
 | **Commit found** | `8fa6a12c`, cycle 153, found by QE immediately after its own push |
 
 **Steps.** During the same Closeout, in this order:
