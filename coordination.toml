@@ -9,16 +9,16 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "6ccea5f"
+generated_from = "7bc4b53"
 task_count     = 130
 
 [lane.Lane_A]
-notice             = "Build. 24 rows and none needs invented behaviour. Your C-251 is answered and the answer is smaller than the question: signal.py:81 already carries rationale — its comment is the design's own sentence — and :64 carries relevance. QueueEntryResponse publishes neither. TASK-1427 widens the schema by two fields. And confidence.tsx already exists and is imported by nothing; use it, do not fork it."
-backlog            = ["TASK-1408", "TASK-1405", "TASK-1410", "TASK-1411", "TASK-476", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1409", "TASK-1422", "TASK-452", "TASK-471", "TASK-473", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-492", "TASK-493", "TASK-495", "TASK-496", "TASK-499"]
+notice             = "The shell audit came back clean — no new design, no new rows. Before you build TASK-1408, read the fourteen shell rules at the end of the App Shell document; they are the acceptance criteria and they are now named in the row. Rule 14 is the one that matters most: every new shell capability is an amendment to that document, not a local decision. A module that needs something raises it."
+backlog            = ["TASK-1408", "TASK-1405", "TASK-1410", "TASK-1411", "TASK-476", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1409", "TASK-1422", "TASK-1427", "TASK-452", "TASK-471", "TASK-473", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-492", "TASK-493", "TASK-495", "TASK-496", "TASK-499"]
 assigned_total     = 112
 claimable          = 23
-claimable_now      = 22
-awaiting_sync      = 1
+claimable_now      = 23
+awaiting_sync      = 0
 in_flight          = 57
 actionable         = 1
 awaiting_qe_transition = 57
@@ -496,7 +496,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-200"
@@ -2111,7 +2111,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 1.5
+blocked_days   = 1.6
 on_integration = true
 
 [[task]]
