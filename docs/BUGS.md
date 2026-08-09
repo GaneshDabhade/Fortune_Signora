@@ -640,6 +640,22 @@ git show origin/main:docs/BUGS.md | grep -n '^>>>>>>>'
 
 ⚠️ **Related and not the same**: [B-159](#b-159) was the source reporting zero claimable rows while telling Lane A to build. ⛔ **That was a metric disagreeing with prose; this is prose disagreeing with the queue itself.**
 
+### 🔴 Three instances now, on three consecutive publishes — it is systematic
+
+⚠️ **Re-measured 2026-08-09 at `origin/coordination` `2deacac2`.** ⛔ **The notice named a THIRD row the same way**: *"TASK-1431 is a performance budget and is yours today."*
+
+| Named in the notice as claimable | On `integration` | On `main` | In the same file's `backlog` array |
+|---|---|---|---|
+| **[TASK-1428](BACKLOG.md)** | ⛔ absent | ⛔ absent | ⛔ absent |
+| **[TASK-1429](BACKLOG.md)** | ⛔ absent | ⛔ absent | ⛔ absent |
+| **[TASK-1431](BACKLOG.md)** | ⛔ absent | ⛔ absent | ⛔ absent |
+
+**All three exist on `lane-c-sync` and nowhere a lane may claim from.** ⚡ **The array is right every time and the prose is wrong every time**, which is what makes this a generator defect rather than three authoring slips: **`backlog` is computed from what is synchronized; `notice` is written from what the office has authored.**
+
+🔴 **The cost is not confusion — it is a lane being told it has work when it does not.** 📁 **[§20e](../CLAUDE.md) calls that condition the most expensive state the repository can be in** — *"the cost is paid twice, once in the idle lane and once in the preparation that ages while it waits"* — ⛔ **and a notice asserting the opposite is what stops it being visible.**
+
+✅ **Suggested repair, and it is Lane C's**: **`render()` already knows which rows are synchronized** — it built `backlog` from exactly that. **A notice naming a `TASK-` outside that array should either be refused or rendered with the qualifier [§20e](../CLAUDE.md) already supplies**: ***"ruled, not yet on `integration`."***
+
 ### B-220 · A lane pushed three non-claim commits to `integration`, and `main` and `integration` have diverged
 
 | | |
