@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
 import { Button, Card, CardBody } from '@/components/ui';
@@ -57,6 +58,28 @@ export default function JoinPage() {
       : accept.error instanceof ApiError
         ? accept.error.message
         : 'Signora could not be reached. Check your connection and try again.';
+
+  /**
+   * ⚡ **An expired invitation gets the design's own screen** —
+   * `14 Invitation expired` at `/invite/expired`, [TASK-489](../../../../../docs/BACKLOG.md).
+   *
+   * ⛔ **This could not be written until [B-214](../../../../../docs/BUGS.md)**:
+   * an expired invitation and one that never existed both arrived as
+   * `invitation_not_found`, so there was nothing here to branch on. **The
+   * domain always knew; only the transport had flattened it.**
+   *
+   * ⚠️ **Only `invitation_expired` is routed away.** The other refusals —
+   * revoked, already accepted, wrong address, unverified email — **keep the
+   * inline message they already had**, because the server writes those
+   * sentences and *"re-writing them here would put the same sentence in two
+   * places."* ⛔ **Expiry is different because the design gives it a screen**,
+   * not because it deserves better prose.
+   */
+  useEffect(() => {
+    if (accept.error instanceof ApiError && accept.error.code === 'invitation_expired') {
+      router.replace('/invite/expired');
+    }
+  }, [accept.error, router]);
 
   if (accept.isSuccess) {
     return (
