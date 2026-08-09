@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `5bc7ef5`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `070bef1`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `5bc7ef5`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `070bef1`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`5bc7ef5`** — the certified commit itself |
+| **`main`** | **`070bef1`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | 🔴 **Cycle 138 is the first promotion in six days made under a working promotion gate** — [B-413](docs/BUGS.md) — **and [B-209](docs/BUGS.md) is fixed** |
-| **Certification** | ✅ [`5bc7ef52845c`](certification/reports/5bc7ef52845c.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | ✅ **Cycle 139 closed three rows and folded a duplicate the check caught** — ⚡ **[B-153](docs/BUGS.md)'s lesson paying for itself one cycle later** |
+| **Certification** | ✅ [`070bef1f3b00`](certification/reports/070bef1f3b00.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ⚠️ **One — [B-211](docs/BUGS.md).** ✅ **[B-209](docs/BUGS.md) fixed this cycle.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4278 backend tests** *(+6)* · **95.08% coverage** ✅ *(floor 95)* · **1862 frontend tests** *(+35)* across **79 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **184s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **1862 frontend tests** *(+35)* across **79 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **175s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -141,7 +141,48 @@ B- identifiers are allocated twice: B-152.
 
 ---
 
-## 1d · Release summary — 2026-08-09, cycle 138
+## 1d · Release summary — 2026-08-09, cycle 139
+
+**Derived from the promoted commit `070bef1`.** **Ninety-four promotions.** ⚡ **[B-153](docs/BUGS.md)'s lesson paid for itself one cycle after it was written.**
+
+### ✅ The check caught a duplicate, and this time QE read the list
+
+**Cherry-picking Lane C's rebased branch produced a second `B-413` row** — its fix was promoted in cycle 138, and the rebased variant carried the row again, **byte-identical at 4179 characters.**
+
+```
+B- identifiers are allocated twice: B-413.
+```
+
+⚡ **QE read the finding list rather than grepping for the finding it expected**, which is exactly what [B-153](docs/BUGS.md) cost one cycle earlier. ✅ **Folded before certifying; nothing lost, the sections were identical.**
+
+> ⛔ **The habit that produced [B-150](docs/BUGS.md), [B-151](docs/BUGS.md), [B-153](docs/BUGS.md) and [B-154](docs/BUGS.md) is the same one: trusting the shape of an answer instead of reading it.** ✅ **This is the first cycle where it was caught by the practice rather than by a lane.**
+
+### ✅ Both lanes closed their own rows
+
+| | |
+|---|---|
+| **[B-217](docs/BUGS.md)** *(Lane A)* | Closed as fixed by [B-154](docs/BUGS.md) — ⚡ **and the lane noted its own miss: *"the severity was wrong for three polls"*** |
+| **[B-216](docs/BUGS.md)** *(Lane A)* | ⚡ ***"Found by re-checking, which is the rule B-217 just cost"*** |
+| **Workflow 9's state** *(Lane C)* | Read `planned` while two of its three milestones were on `main` |
+
+### ⛔ Two Lane C commits excluded, same reason as always
+
+**[D-202](docs/DECISION_REGISTER.md) and [D-203](docs/DECISION_REGISTER.md) §2 conflicted on `coordination.toml` and `queues/lane-a.toml`.** ⚡ **Generated files — the repair is the generator, and QE does not hand-resolve one.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4278 backend** · **1862 frontend** · **95.07%** · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **144 runs recorded, 136 certified** · `promoted == certified` ✓ · `--audit-main` clean · **first attempt** |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost** · smoke 175s |
+| **Dependency** | ✅ Nothing held |
+| **Customer Value** | ⛔ **None.** **Three rows closed and a register kept honest** |
+| **Process** | ✅ **A quiet cycle, and the first in five where the defect QE would have promoted was caught by QE's own practice** |
+
+---
+
+## 1e · Release summary — 2026-08-09, cycle 138
 
 **Derived from the promoted commit `5bc7ef5`.** **Ninety-three promotions.** 🔴 **The first promotion in six days made under a promotion gate that actually works.**
 
