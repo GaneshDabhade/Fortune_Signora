@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `2bf7450`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `a540f5e`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `2bf7450`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `a540f5e`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`2bf7450`** — the certified commit itself |
+| **`main`** | **`a540f5e`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | ⚡ **Cycle 140 promoted Workflow 8's skip confirmation** — **and a lane that found its own next task by re-reading its held rows rather than idling** |
-| **Certification** | ✅ [`2bf74509b8ea`](certification/reports/2bf74509b8ea.md) · migration head **`0045`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
+| **Release candidate** | ⚡ **Cycle 141 promoted the Signal Center queue** — **and the headed walk that found a door which only existed when the list was full** |
+| **Certification** | ✅ [`a540f5ee727d`](certification/reports/a540f5ee727d.md) · migration head **`0045`** · protocol **v2** · profile **`documentation+frontend`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ⚠️ **One — [B-211](docs/BUGS.md).** ✅ **[B-209](docs/BUGS.md) fixed this cycle.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
-| **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A's zero-claimable window closed by itself** — it claimed `TASK-486` this cycle, and `TASK-494` was claimed alongside |
-| **Validation queue** | **Empty.** ⚡ **Two claims arrived on `integration` while QE was certifying** — the model working as designed |
-| **Customer value this cycle** | ✅ ⚡ **A person can leave setup and be told what that costs, once** — **no second ask, no dark pattern** |
+| **Blocking Quality Defects** | ✅ **None — and this is *derived*, not typed** ([B-151](docs/BUGS.md)): `registers.bug_rows()` reads **143 rows, 41 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
+| **Implementation waiting** | ✅ **Nobody.** ⚡ **Lane A delivered `TASK-439` and has `TASK-1400` claimable.** ⚠️ **Lane C is 12 ahead / 2 behind — diverged, sixth cycle excluded** ([B-155](docs/BUGS.md)); **nobody is blocked by it, planning depth is the cost** |
+| **Validation queue** | **Empty.** ⚡ **Lane A's branch fast-forwarded cleanly** — the §20e path, not a cherry-pick, for the first time in six cycles |
+| **Customer value this cycle** | ✅ ⚡ **A seller opens the Signal Center, sees what is waiting and on which account, and every item leaves the queue by a decision** — **and a dismissal cannot be recorded without a reason, because the reason is what sharpens the next signal** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **1871 frontend tests** *(+9)* across **80 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **203s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **1891 frontend tests** *(+20)* across **81 files** *(+1)* *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **210s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **52 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -138,6 +138,73 @@ B- identifiers are allocated twice: B-152.
 | **Dependency** | ✅ **Lane A unblocked last cycle**; `TASK-1400` is `READY` on `integration` |
 | **Customer Value** | ⛔ **None.** **A register repair** |
 | **Process** | 🔴 **Third QE self-defect of this class** — [B-150](docs/BUGS.md) skipped a check, [B-151](docs/BUGS.md) transcribed instead of measuring, [B-153](docs/BUGS.md) filtered a check's output. ⚡ **All three are one habit: trusting the shape of an answer instead of reading it** |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 141
+
+**Derived from the promoted commit `a540f5e`.** **Ninety-six promotions.** ⚡ **A screen, a defect the browser found that no static gate structurally could, and a lane branch that fast-forwarded for the first time in six cycles.**
+
+### ✅ What a customer gets
+
+> **A seller opens the Signal Center, sees what is waiting and on which account, and every item leaves the queue by a decision.**
+
+Three states as tabs with a count, grouped and counted by signal type. ⚡ **A dismissal cannot be recorded without a reason** — and the lane recorded *why* that is not politeness: *"dismissal reasons feed rule precision"*, so an empty one is a lost measurement.
+
+### ⚡ The headed walk earned its place, and this is the finding of the cycle
+
+> *"The first draft put the entrance inside the attention list's **POPULATED** branch. A workspace with an empty attention list had **no way into the Signal Center at all** — and that is the reader most likely to want one."*
+
+⛔ **`reachability.py` passed it.** **A static scan sees a `Link` in the source and cannot see which branch renders it.** ✅ **The browser found in seconds what the gate structurally cannot**, and the entrance moved to page level with a journey asserting it so it cannot regress.
+
+> ⚡ **This is [D-134](docs/DECISION_REGISTER.md)'s whole argument arriving as evidence rather than as policy** — *"the purpose is not verification; the assertions already did that."* **Here the assertions passed and the product was broken for exactly the customer it was built for.**
+
+### ✅ Two design fields reported absent rather than invented
+
+**[C-251](docs/LANE_COORDINATION.md).** The design draws five row fields; the contract carries three.
+
+| | |
+|---|---|
+| **`summary`** | The catalog's `why_it_matters` is **a fact about the *type***. Rendering it per row prints one sentence under every signal of that type — ⛔ *"it would look right and be wrong on every row"* |
+| **`confidence`** | **The string appears nowhere in `lib/api/types.ts`**, and `components/ui/confidence.tsx` is imported by nothing — **a primitive built for a fact the platform does not publish** |
+
+✅ **Reported, not invented.** ⚡ **That is [D-151](docs/DECISION_REGISTER.md) ④ applied one layer up, by the lane, unprompted.**
+
+### ⛔ [B-156](docs/BUGS.md) — QE's own journey run reported 157 failures and had measured nothing
+
+**QE ran the full journey suite because the plan named it, and got eleven red suites across authentication, workflows and commercial profile.** ⚠️ **It looked exactly like [B-209](docs/BUGS.md).**
+
+**It was an abort.** `E2E_URL` is built as `http://localhost:$(SIGNORA_WEB)`, and `environments.py` derives no web port off a lane branch — **so the URL was `http://localhost`, with no port**, and every test failed in ~300ms against port 80.
+
+⛔ **Both of the suite's URL guards passed it, and both are correct.** The URL *is* set; the port is not 3000 or 8000 — **because there is no port at all.** Proved rather than reasoned: `new URL("http://localhost").port === ""`.
+
+> ⚡ **The instruction that caught it is the standing one**: *"if a result changes on an unchanged tree, read the error before reporting a verdict."* ⛔ **Reporting those 157 as a regression would have pointed a false lead at whichever lane last touched the frontend.**
+
+**So this cycle's claim is bounded, and stated as such: the journey suite was *not* run at `a540f5e`.** Two attempts, both aborted on environment. **Playwright sits inside the gate shortfall [B-131](docs/BUGS.md) prints every run**, so certification neither ran it nor claimed to. **Lane A reports it walked headed and passing — recorded as the lane's claim.**
+
+### ✅ Lane A fast-forwarded — the §20e path, not a cherry-pick
+
+**Six cycles of selective cherry-picking ended here**: `lane-a-product-surface` was **3 ahead / 0 behind**, so `git merge --ff-only` was the whole integration. ⚡ **Two of its three commits were already on `lane-qe` by patch-id and the ff made that irrelevant** — which is the argument in [B-155](docs/BUGS.md) demonstrating itself one branch over.
+
+### ⛔ Lane C excluded a sixth time — now a row, not an observation
+
+| | |
+|---|---|
+| **Held** | [D-203](docs/DECISION_REGISTER.md) §2 · [D-204](docs/DECISION_REGISTER.md) — *all 29 workflows decomposed* · [D-205](docs/DECISION_REGISTER.md) · two coordination republishes |
+| **Diagnosis** | ⚡ **Not "generated files".** `origin/lane-c-sync` is **12 ahead / 2 behind — diverged**, and a mid-series pick conflicts across **eight files, four of them narrative registers** |
+| **Is anyone blocked?** | ⛔ **No.** Lane A delivered this cycle and holds `TASK-1400` |
+| **The correction** | ✅ **§20e already says it** — *"a branch that will not fast-forward is returned to its lane."* **[B-155](docs/BUGS.md) is filed against QE's own procedure** |
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4278 backend** · **1891 frontend** *(+20, +1 file)* · **95.07%** · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **146 runs recorded, 138 certified** · `promoted == certified` ✓ · **first attempt** |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost, 5 restart stages** · smoke 24 stages in 210s |
+| **Dependency** | ⚠️ **Lane C diverged, sixth exclusion — [B-155](docs/BUGS.md)** · nobody blocked |
+| **Customer Value** | ✅ ⚡ **The Signal Center is reachable, including from an empty attention list** |
+| **Process** | ⛔ **One QE self-defect — [B-156](docs/BUGS.md)**, after two clean cycles. ✅ **Caught by QE's own standing rule before it reached a report** |
 
 ---
 

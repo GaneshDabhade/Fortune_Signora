@@ -80,6 +80,74 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-157 · `state-check` reads seven-hex commits and `git rev-parse --short` now returns eight, so a correct dashboard reports as stale
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `infra/state-check.py`, `_newest_named_commit()` |
+| **Current assignee** | **QE** — `state-check` is QE's Closeout instrument |
+| **Severity** | 🟡 — **advisory only, and it fails toward noise rather than toward silence.** ⚠️ **But a noisy advisory is one somebody learns to skip**, which is how [B-153](#b-153) happened |
+| **Status** | **`OPEN`** |
+| **Commit found** | `a540f5ee` — found at this cycle's Closeout |
+
+**Steps.** Write the dashboard's commit exactly as `git rev-parse --short main` prints it, then run `python3 infra/state-check.py`.
+
+**Expected.** *"PROJECT_STATUS.md names `a540f5e`, reachable from `main`."*
+
+**Actual.** *"PROJECT_STATUS.md names `2bf7450`, which predates the latest certification (a540f5e). The dashboard describes a repository that has since been certified at a later commit."* ⛔ **The dashboard was correct and current** — it named `a540f5ee` in five places.
+
+**The mechanism, proven:**
+
+```
+git rev-parse --short main            →  a540f5ee     (eight)
+re.findall(r"\b[0-9a-f]{7}\b", ...)   →  []
+```
+
+⚡ **`\b[0-9a-f]{7}\b` matches *exactly* seven: the trailing `\b` fails against an eighth hex character.** So the check skipped the current commit entirely and found the newest thing it *could* see — **the previous cycle's release summary, which is a dated record and is correctly not rewritten** (`CLAUDE.md` §2).
+
+> ⚠️ **This will recur on every cycle from here, not occasionally.** **Git lengthens the abbreviation as the object count grows**, and this repository has crossed the threshold — so the *natural* way to write the commit is now the one the check cannot read.
+
+**Why it is worth a row rather than a habit.** ⛔ **The workaround QE applied this cycle is to hand-write seven characters**, which makes the dashboard's correctness depend on a lane remembering to truncate. ⚡ **That is the [B-131](#b-131) shape** — a rule kept by discipline where a machine could keep it.
+
+**The fix is the bound**, `\b[0-9a-f]{7,40}\b`, and `_is_ancestor` already validates every token it yields — **so a longer match is checked, not trusted.** ⛔ **Not written this cycle**: `state-check` gates Closeout, and changing a gate is a slice rather than a Closeout ([B-014](#b-014)).
+
+---
+
+### B-156 · a journey run with no port passes both of the suite's URL guards, and 157 failures read as a mass regression
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `frontend/tests/e2e/fixtures/environment.ts`, `Makefile` `e2e` |
+| **Current assignee** | **QE** — `make e2e` is a gate QE runs, so the gate is QE's (§20e, *QE removes its own blockers*) |
+| **Severity** | 🟠 — **it produces a confident wrong answer**, which is worse than refusing |
+| **Status** | **`OPEN`** |
+| **Commit found** | `a540f5ee` — found running the journey suite this cycle, on the plan's own instruction |
+
+**Steps.** Run `make e2e` from a checkout that is **not on a lane branch** — `main`, a detached HEAD, a review worktree.
+
+**Expected.** The suite refuses, the way it already refuses an unset URL and a Human Review port.
+
+**Actual.** **157 journeys fail in ~300ms each with `net::ERR_CONNECTION_REFUSED at http://localhost/sign-in`** — and a session reading that list sees eleven suites red across authentication, workflows and commercial profile. ⛔ **It looks exactly like [B-209](#b-209) did.**
+
+**The mechanism, proven rather than reasoned.** `Makefile:450` builds `E2E_URL ?= http://localhost:$(SIGNORA_WEB)`, and `infra/environments.py` prints `# no environment derived (not on a lane branch)` — **`SIGNORA_WEB` is empty, so the URL is `http://localhost`, with no port.** `resolveAppUrl()` then passes it through **both** of its guards:
+
+```
+new URL("http://localhost").port  ===  ""
+REVIEW_PORTS.has("")              ===  false
+```
+
+⚡ **The URL *is* set, so the first guard is satisfied. The port is not 3000 or 8000, so the second is — because there is no port at all.** The run proceeds against port 80, which belongs to nobody.
+
+> ⚠️ **The two guards that exist were both written from real incidents** ([B-408](#b-408)) and both are correct. **This is the third case neither was asked about**, and it is the one that produces a *verdict* rather than a refusal.
+
+**Why it is 🟠 and not 🟡.** ⛔ **An abort that reports itself as 157 failures is a false lead pointed at whichever lane last touched the frontend.** QE caught it here only because every test failed in 300ms and the URL in the error had no colon in it — **a slower machine or a partial failure would not have been so obvious.**
+
+**The fix is one condition, and it belongs beside the two that are already there:** an empty port is refused with the same message that names `docs/RUNNING.md`. ⛔ **QE has not written it in this cycle** — the promotion was already complete and a gate change is a slice, not a Closeout ([B-014](#b-014)).
+
+**What this cycle can and cannot claim.** ⛔ **The journey suite was not run at `a540f5ee`.** Two attempts, both **aborted on environment**: this one, then `ConnectionRefused` on `5632` because QE holds no lane dev stack. **Neither is a statement about the commit.** ⚡ **Playwright is inside the gate shortfall [B-131](#b-131) prints on every run**, so certification neither ran it nor claimed to. **Lane A reports the journey walked headed and passing — recorded as the lane's claim, which is what it is.**
+
+---
+
 ### B-155 · QE has cherry-picked where §20e says fast-forward, and Lane C's work has been excluded five cycles running
 
 | | |
