@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "935802a"
+generated_from = "a540f5e"
 task_count     = 129
 
 [lane.Lane_A]
-notice             = "CORRECTION FROM THIS OFFICE — read the backlog rows for TASK-1421 and TASK-1423 before taking either. I offered them this morning as cheap safety rows. The Entry Coverage Review shows the workspace chooser has never been drawn, and I sized it from one sentence in a rules table; the gate screens span four documents, three of which do not exist. The D-205 finding stands: do not wire TASK-1401."
+notice             = "Four routing rows are frozen under D-207 until the Design Authority settles rule precedence: 1401, 1402, 1407, 1426. Your C-250 findings are now Design Clarifications C-1407 and C-1408 — the design's to answer, not ours to resolve, and I had been resolving them. Twenty-one rows stay claimable and none of them depends on routing precedence. Destinations, screens and platform capabilities continue."
 backlog            = []
 assigned_total     = 111
-claimable          = 23
+claimable          = 20
 claimable_now      = 0
-awaiting_sync      = 23
+awaiting_sync      = 20
 in_flight          = 56
-actionable         = 3
+actionable         = 1
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 32
+blocked            = 35
 lane_utilization   = 11.2
-idle_prediction_days   = 3.3
+idle_prediction_days   = 2.9
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -85,32 +85,32 @@ on_integration = true
 [[task]]
 id            = "TASK-1401"
 title         = "The five hardcoded redirects become one call site"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "BLOCKED"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECI"
+waiting_for    = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECISION_REGISTER.md): *'stop creating implementation tasks for routing logic until "
 blocked_days   = 0.0
 on_integration = false
 
 [[task]]
 id            = "TASK-1402"
 title         = "The intent resolver — what the person was trying to reach"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "BLOCKED"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-1426"]
-next_owner     = ["Lane A"]
-next_lane      = "Lane A"
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECI"
+waiting_for    = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECISION_REGISTER.md): *'stop creating implementation tasks for routing logic until "
 blocked_days   = 0.0
 on_integration = false
 
@@ -181,16 +181,16 @@ on_integration = true
 [[task]]
 id            = "TASK-1407"
 title         = "The engine admits a non-human principal, before one exists"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "BLOCKED"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECI"
+waiting_for    = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECISION_REGISTER.md): *'stop creating implementation tasks for routing logic until "
 blocked_days   = 0.0
 on_integration = false
 
@@ -469,16 +469,16 @@ on_integration = false
 [[task]]
 id            = "TASK-1426"
 title         = "Session expiry and deep-link restoration — the intent survives the round trip"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "BLOCKED"
+declared      = "BLOCKED"
 lane          = "Lane A"
-depends_on     = ["TASK-1402"]
+depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 1
-estimated_ready = "— behind [TASK-1402](#task-1402--the-intent-resolver--what-the-person-"
-waiting_for    = "— behind [TASK-1402](#task-1402--the-intent-resolver--what-the-person-was-trying-to-reach)** — ⛔ **preserving an intent requires something that produc"
+critical_path  = 0
+estimated_ready = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECI"
+waiting_for    = "— Lane C, 2026-08-09, on [C-1408](LANE_COORDINATION.md) — [D-207](DECISION_REGISTER.md): *'stop creating implementation tasks for routing logic until "
 blocked_days   = 0.0
 on_integration = false
 
@@ -918,7 +918,7 @@ on_integration = true
 id            = "TASK-439"
 title         = "The Signal Center — the triage queue a seller actually works"
 state         = "IN FLIGHT"
-declared      = "IN PROGRESS"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -1350,7 +1350,7 @@ on_integration = true
 id            = "TASK-468"
 title         = "Workspace Setup — replaced, not refined"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
