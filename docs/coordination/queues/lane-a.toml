@@ -1503,8 +1503,3 @@ note    = "M-U · The People experiences a customer opens"
 
 
 
-[[blocked]]
-task    = "TASK-475"
-blocker = ["TASK-474"]
-owner   = "Lane A"
-note    = "The seventeen authentication journeys run as one suite, in any mode"
