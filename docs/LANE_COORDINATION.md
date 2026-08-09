@@ -8512,7 +8512,30 @@ rules parsed: 24   ·   distinct reason codes: 24
 | **Raised by** | **Lane A**, 2026-08-08, **implementing [TASK-489](BACKLOG.md) under [D-190](DECISION_REGISTER.md)** — ⚡ **reported and implementation continued on the half that is real**, as [D-190](DECISION_REGISTER.md) §3 directs |
 | **Owner** | **Product owner** — ⛔ **a disclosure boundary, not a build estimate** |
 | **Status** | **`OPEN`** |
-| **Blocks** | ⚠️ **Most of screen `13`.** ✅ **Screen `14`'s shape and the accept/decline journey are buildable and are being built** |
+| **Blocks** | ⚠️ **Most of screen `13`, and — measured 2026-08-09 — the *Wrong account* and *Declined* screens too.** ✅ **Screen `14 Invitation expired` SHIPPED 2026-08-09** at `/invite/expired`, unblocked by [B-214](BUGS.md); see *the other two screens* below |
+
+### ⚡ UPDATE 2026-08-09 — the other two screens, and one of them must NOT be built
+
+**[TASK-489](BACKLOG.md) scopes four routes** — the design's map gives `/invite/:token`, `/invite/declined`, `/invite/expired`, `/invite/mismatch`. ✅ **`14 Invitation expired` shipped**, because an expired invitation discloses nothing about the organization. **The other two were measured this poll:**
+
+| Route | | |
+|---|---|---|
+| **`/invite/declined`** | ⛔ **The capability does not exist** | **Measured across `backend/modules/workspace_tenancy` on `origin/integration`: no decline route, no domain method, no frontend hook — the word appears nowhere.** ⚡ **So the screen has no entrance and no cause**, and `reachability.py` would refuse it. **A row is needed before a screen is** |
+| **`/invite/mismatch`** | 🔴 **Buildable only by weakening a deliberate security property** | **See below — and this lane is not asking for permission to do it** |
+
+#### 🔴 *Wrong account* conflicts with a ratified disclosure boundary, and the boundary is right
+
+**`InvitationNotFoundError`'s own docstring states the property in terms:**
+
+> ⛔ ***"One sentence covering every reason, and that is the design rather than laziness: never invited, already accepted, withdrawn. Telling them apart would answer 'has this workspace invited this person?' to anybody who can sign in — a fact about a customer's hiring."***
+
+**The accept path looks up `find_live(workspace_id, normalize_email(signed_in_address))`.** ⚡ **Signed in as the wrong person, there genuinely is no invitation *for you*** — and a *Wrong account* screen must say the opposite: **that one exists here, for somebody else.**
+
+⛔ **That is precisely the sentence the docstring forbids**, and [§20c](../CLAUDE.md)/[D-190](DECISION_REGISTER.md) §7 put it out of a lane's reach regardless: ***never weaken authorization or business rules.*** ✅ **So this lane has not built it, has not proposed an error code for it, and is not asking to.**
+
+⚠️ **This is the same flattening [B-214](BUGS.md) fixed, and the difference is what makes it interesting.** **Expiry was safe to separate** — the docstring calls it *"the deliberate exception"* — **because knowing an invitation aged out reveals nothing about who was invited.** ⛔ **Wrong-account is not**, and treating the two as one class would have undone a security property while looking like consistency.
+
+> **The question, and it is the product owner's rather than an engineering one:** **does the design's *Wrong account* screen survive the boundary?** ⚡ **A screen that says *"you are signed in as anna@acme.com — if you were invited on another address, sign in with that one"* discloses nothing and would satisfy the journey.** ⛔ **That is a copy decision, not a lane's to take**, and it is offered as input rather than as authority.
 
 **The design's screen `13`, verbatim:** *"**Northwind Global** · Enterprise workspace · **142 members** · **Anders Hald invited you** · You'll join as an **Analyst**, with access to EMEA accounts"*, above **four named permissions**.
 
