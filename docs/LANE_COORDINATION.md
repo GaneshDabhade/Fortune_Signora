@@ -8353,6 +8353,38 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-264 · C-241 was resolved and the screen that motivated it was never revisited
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, ⚡ **measuring [TASK-1410](BACKLOG.md)'s claim that an OTP input already exists** |
+| **Owner** | **Lane C** — ⛔ **whether Workflow 3's screen now accepts a code is a row's scope, not a lane's to decide mid-slice** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION** — **the design is unchanged and was always right** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **Nothing.** ✅ **[TASK-1410](BACKLOG.md) builds the component it needs; this is about the OTHER screen that now could use one** |
+
+### 📁 What TASK-486 decided, and it was right at the time
+
+**Screen `07 Verify email` ships with a single address field and NO code boxes**, and [`verification.test.tsx`](../frontend/tests/components/verification.test.tsx):122 asserts the absence rather than leaving it to chance:
+
+> ⛔ ***"never draws six code boxes, because nothing would verify them… `better-auth/plugins/email-otp` is installed and unregistered; the server sends `{ user, url }`. A control whose outcome cannot depend on its input is a false affordance… six digits typed into a screen that cannot check them is the strongest version of it: it looks like it worked until it does not."***
+
+✅ **Exactly the right call on the evidence available.**
+
+### ⚡ The evidence changed and nothing went back
+
+📁 **[`lib/auth/server.ts`](../frontend/lib/auth/server.ts):85 — `emailOTP({ otpLength: 6, … })`, registered**, closing [C-241](#c-241). ⛔ **So the sentence the refusal rested on — *nothing would verify them* — stopped being true, and the screen still has no code field.**
+
+⚠️ **The test now guards a decision whose premise has expired.** ⛔ **It is not wrong to have written it** — it is the correct shape, and without it nobody would know the absence was deliberate — ⚡ **but it will keep the screen as it is until somebody asks, and asking is what this item is.**
+
+### ⛔ Why this lane did not simply add the field
+
+**Screen `07` is [TASK-486](BACKLOG.md)'s, which is `PROMOTED`.** ⛔ **Changing a shipped screen and deleting the test that documents its reasoning is re-opening a closed row**, and 📁 [§20e](../CLAUDE.md) reserves that to the office that writes rows. ⚡ **[TASK-1410](BACKLOG.md) needs the same input and builds it into `components/ui`, where a second caller can take it** — **so the component will be waiting whichever way this is ruled.**
+
+### ✅ What this lane recommends
+
+**One small row: screen `07` accepts the six-digit code, reusing the `components/ui` input [TASK-1410](BACKLOG.md) delivers**, and `verification.test.tsx`'s assertion is **inverted rather than deleted** — ⚡ **the reasoning stays and the expectation flips**, so the record of why it was ever absent survives.
+
 ## C-263 · TASK-499's front door cannot move, because the place the authenticated home would move TO does not exist
 
 | | |
