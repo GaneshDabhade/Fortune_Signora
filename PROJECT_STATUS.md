@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `6c9275a`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `bb898e5`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `6c9275a`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `bb898e5`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`6c9275a`** — the certified commit itself |
-| **`integration`** | ⛔ **STILL DIVERGED at `227a074f`, now 27 commits behind `main`** — ✅ **`main` carries all four of its commits, patch-id verified.** ⛔ **The synchronizing force-push has been refused six times** — see [B-161](docs/BUGS.md) and §1d |
-| **Release candidate** | ⚡ **Cycle 149 promoted the shell's first 🔴 edit under the UI Migration exemption**, **plus both lanes at once** — Lane A's four and Lane C's two |
-| **Certification** | ✅ [`6c9275a2a770`](certification/reports/6c9275a2a770.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **`main`** | **`bb898e5`** — the certified commit itself |
+| **`integration`** | ⛔ **STILL DIVERGED at `227a074f`, now 30 commits behind `main`** — ✅ **`main` carries all four of its commits, patch-id verified.** ⛔ **The synchronizing force-push has been refused six times** — see [B-161](docs/BUGS.md) and §1d |
+| **Release candidate** | ⚡ **Cycle 150 promoted the production readiness checklist — as a program, not a document** — **and it caught a false ✅ of its own on the first run** |
+| **Certification** | ✅ [`bb898e5421e9`](certification/reports/bb898e5421e9.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **149 rows, 47 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
-| **Implementation waiting** | ✅ **Nobody.** ⚡ **Twelve `TASK-1408` slices in three cycles**, and [C-257](docs/LANE_COORDINATION.md) says the row still cannot reach its Definition of Done |
-| **Validation queue** | **Empty.** ✅ **Both lanes integrated in one candidate** — Lane A rebased, Lane C cherry-picked on top, no conflicts |
-| **Customer value this cycle** | ✅ ⚡ **The rail collapses, and it is remembered per person *and* per device class** — ⛔ **the control is named *Collapse navigation*, not a chevron, because a screen-reader user cannot see which way an arrow points** |
+| **Implementation waiting** | ✅ **Nobody.** ⛔ **Lane A's branch is returned rather than integrated this cycle** — a semantic conflict on [C-252](docs/LANE_COORDINATION.md)'s state, and §20e says QE never resolves another lane's conflict |
+| **Validation queue** | ⚠️ **Lane A holds 2 commits that will not replay** — see §1d. ✅ **Lane C integrated alone, so it was not held for another lane's conflict** |
+| **Customer value this cycle** | ⚪ **None directly.** ⚡ **What it buys is that *production ready* stops being a claim and becomes a probe** — every row measured against `origin/integration`, and the two genuine gaps filed as work rather than noted |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4278 backend tests** · **95.08% coverage** ✅ *(floor 95)* · **2013 frontend tests** *(+11)* across **93 files** *(+1)* *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **259s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **142 numbered architecture documents**.
+**Repository health:** **4278 backend tests** · **95.07% coverage** ✅ *(floor 95)* · **2013 frontend tests** across **93 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **398 Security Invariants** · mypy strict over **851 files** · **46 migrations**, `0000`–`0045`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **143s** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **142 numbered architecture documents**.
 
 ---
 
@@ -138,6 +138,64 @@ B- identifiers are allocated twice: B-152.
 | **Dependency** | ✅ **Lane A unblocked last cycle**; `TASK-1400` is `READY` on `integration` |
 | **Customer Value** | ⛔ **None.** **A register repair** |
 | **Process** | 🔴 **Third QE self-defect of this class** — [B-150](docs/BUGS.md) skipped a check, [B-151](docs/BUGS.md) transcribed instead of measuring, [B-153](docs/BUGS.md) filtered a check's output. ⚡ **All three are one habit: trusting the shape of an answer instead of reading it** |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 150
+
+**Derived from the promoted commit `bb898e5`.** **105 promotions.** ⚡ **A readiness checklist that is a program rather than a document, a lane's branch returned rather than resolved, and [B-160](docs/BUGS.md) proved worse than QE had filed it.**
+
+### ✅ [D-213](docs/DECISION_REGISTER.md) — the checklist that caught a false pass of its own
+
+> ⚡ **The reasoning is the ask itself**: a checklist *"maintained in parallel so that by the time feature development completes we already have a production-grade checklist"* is **exactly what a hand-maintained one cannot be.** ⛔ *"Written once, true for a day, and nothing detects the day it stops being true."*
+
+**Every row is a probe against `origin/integration`.** ✅ **Rows that cannot be probed say so as «judgement» rather than being quietly scored.** ⛔ **No overall percentage** — *"observability at 80% tells nobody which 20% is missing at three in the morning."*
+
+⚡ **And it caught a false ✅ on its own first run, which is the best evidence it is the right shape.** **The rate-limiting probe matched `rate.?limit|throttl` and reported ✅ on 38 files — every one of them Signora pacing itself against a vendor. The opposite concern.** ✅ **Corrected to inbound-only, and the truth is a gap** — filed as `TASK-1430` rather than noted.
+
+### ⛔ Lane A's branch is returned, not resolved
+
+**`25033a61` will not replay onto `main`.** The conflict is **semantic, not textual**: one coordination row's state.
+
+| | |
+|---|---|
+| **`main`** *(via Lane C's promoted answer)* | ✅ **`ANSWERED`** |
+| **Lane A's commit** | ⚡ **`APPROVED, NOT SYNCHRONIZED`** |
+
+**Both were true when written** — Lane A wrote its view before Lane C's answer reached `main`. ⛔ **§20e is explicit and QE followed it: *conflicts are resolved by the lane that is rebasing, never by QE*.** ✅ **Lane C was integrated alone so it was not held for another lane's conflict** (*a failing slice is excluded; other lanes are never held*).
+
+### ⛔ [B-160](docs/BUGS.md) is worse than QE filed it, and QE's own row understated it
+
+**A second occurrence measured 66 changed lines. Every single one is an elapsed-time counter:**
+
+```
+  60  blocked_days
+   4  blocked_duration_days
+   2  dependency_wait_days
+```
+
+⛔ **Zero task-level lines. Zero backlog entries. Zero claimable counts.**
+
+> ⚠️ **QE's original row said these fields *"change when another lane pushes."* That was too generous.** ⚡ **They change with the WALL CLOCK — so the published file goes stale while the repository is idle and nobody has done anything at all**, which is why `--check` has failed on four of the last six polls **with no content difference whatsoever.**
+>
+> ⚡ **The generator's own docstring names this exact failure and believes it fixed:** *"it read the wall clock and baked the result into the file, so the file drifted stale against its own `--check` roughly every 2.4 hours."* ⛔ **That repair covered `[meta]`'s timestamp ([B-134](docs/BUGS.md)) and left three day-counters inside `_content` with the identical property.**
+
+✅ **The fix is now narrow and named**: exclude the five volatile metrics from `_content`, as `[meta]` already is.
+
+### ⛔ `integration` — 30 commits behind, six refusals
+
+**`main` carries all four of `origin/integration`'s commits, patch-id verified.** ⚡ **Nothing would be lost.** **Lifecycle stage 6 has not completed since cycle 145.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4278 backend** · **2013 frontend** · **95.07%** · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **156 runs recorded, 148 certified** · `promoted == certified` ✓ · **first attempt** · profile **`platform`** |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost** · smoke 24 stages in **143s** · **53 ADRs** |
+| **Dependency** | ⛔ **`integration` diverged 30 commits** · ⚠️ **Lane A's branch returned for its own rebase** |
+| **Customer Value** | ⚪ **None directly** — ⚡ **but *production ready* is now a probe rather than a claim** |
+| **Process** | ✅ **No QE self-defect.** ✅ **QE corrected its own row upward on measurement**, which is the second time this session a finding got stronger rather than quietly dropped |
 
 ---
 
