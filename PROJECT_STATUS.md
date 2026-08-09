@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `7bc4b53`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `97a13ce`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,20 +12,20 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `7bc4b53`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `97a13ce`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`7bc4b53`** — the certified commit itself |
+| **`main`** | **`97a13ce`** — the certified commit itself |
 | **`integration`** | **Level with `main`** |
-| **Release candidate** | ⚡ **Cycle 144 promoted `D-209` — Lane A is told to build, and `C-251`'s answer was smaller than the question.** ⛔ **Fifteen of Lane C's sixteen were already promoted: a stale pointer, resolved by patch-id before it was believed** |
-| **Certification** | ✅ [`7bc4b5311eba`](certification/reports/7bc4b5311eba.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Release candidate** | ⚡ **Cycle 145 promoted `D-210` and `D-212`** — **and [B-159](docs/BUGS.md) closed: the coordination source now tells Lane A the same thing its notice does** |
+| **Certification** | ✅ [`97a13cee0508`](certification/reports/97a13cee0508.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None — and this is *derived*, not typed** ([B-151](docs/BUGS.md)): `registers.bug_rows()` reads **146 rows, 45 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
-| **Implementation waiting** | ✅ **Nobody** — Lane A has 22 claimable rows in `BACKLOG.md`. ⛔ **But the coordination source published on `main` says `claimable_now = 0` and `backlog = []`** ([B-159](docs/BUGS.md)), **while its own notice in the same block says *Build*** |
-| **Validation queue** | **Empty.** ⚠️ **`state-check` holds at 2 findings** — the coordination source is stale for the fourth consecutive cycle, now measured and filed as [B-159](docs/BUGS.md) rather than repeated |
-| **Customer value this cycle** | ⚪ **None directly — one ruling.** ⚡ **[D-209](docs/DECISION_REGISTER.md) answers [C-251](docs/LANE_COORDINATION.md) by *finding* what the Signal Center rows needed rather than building it**: `rationale` and `relevance` already exist on `signal.py`, and `confidence.tsx` was already written and imported by nothing |
+| **Blocking Quality Defects** | ✅ **None — and this is *derived*, not typed** ([B-151](docs/BUGS.md)): `registers.bug_rows()` reads **147 rows, 45 unresolved, 0 unresolved 🔴**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
+| **Implementation waiting** | ✅ **Nobody, and the projection now says so too** — `claimable_now = 22`, `backlog` 22 entries, `awaiting_sync = 0`. ⚡ **Lane A claimed `TASK-1409` from its own backlog with no Product Office involvement** |
+| **Validation queue** | **Empty.** ⚡ **Lane C fast-forwarded — 0 behind, no rebase needed** |
+| **Customer value this cycle** | ⚪ **None directly — two rulings.** ⚡ **[D-210](docs/DECISION_REGISTER.md)'s shell audit came back clean, and *both apparent gaps were the auditor's own vocabulary*** — a term search missed two fully-specified behaviours a reader would have found |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
@@ -138,6 +138,65 @@ B- identifiers are allocated twice: B-152.
 | **Dependency** | ✅ **Lane A unblocked last cycle**; `TASK-1400` is `READY` on `integration` |
 | **Customer Value** | ⛔ **None.** **A register repair** |
 | **Process** | 🔴 **Third QE self-defect of this class** — [B-150](docs/BUGS.md) skipped a check, [B-151](docs/BUGS.md) transcribed instead of measuring, [B-153](docs/BUGS.md) filtered a check's output. ⚡ **All three are one habit: trusting the shape of an answer instead of reading it** |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 145
+
+**Derived from the promoted commit `97a13ce`.** **One hundred promotions.** ⚡ **[B-159](docs/BUGS.md) closed on measurement, and the check that found it stopped being able to mean it.**
+
+### ✅ [B-159](docs/BUGS.md) — `VERIFIED`, and verified by measuring rather than by reading the fix
+
+| Cycle 144, on `main` | Cycle 145, on `main` |
+|---|---|
+| `claimable_now = 0` | ✅ **`claimable_now = 22`** |
+| `backlog = []` | ✅ **22 entries** |
+| `awaiting_sync = 23` | ✅ **`awaiting_sync = 0`** |
+| ⛔ notice said *"Build"* | ✅ **notice and counters agree** |
+
+⚡ **`BACKLOG.md` carries 22 claimable rows, so the projection now matches its authority** ([D-144](docs/DECISION_REGISTER.md)).
+
+### ⛔ [B-160](docs/BUGS.md) — and this one is the cost of having reported the last four cycles honestly
+
+**`coordination.py --check` still exits 1 on the promoted commit.** ⚡ **QE diffed `_content` in-process rather than believing either answer, and the entire difference is two numbers:**
+
+```
+-awaiting_qe_transition = 0     +awaiting_qe_transition = 6
+-lane_utilization   = 1.2       +lane_utilization   = 0.0
+```
+
+✅ **Every task, every backlog entry, every claimable count is identical.**
+
+> ⛔ **Neither number can be fixed by republishing.** `awaiting_qe_transition` counts rows stranded at `IN VALIDATION`; `lane_utilization` derives from what lanes are working. **Both move when *another* lane pushes** — **so the file goes stale through nobody's inaction**, and `--check` passes only between a regeneration and the next lane's push.
+
+⚠️ **[B-134](docs/BUGS.md) is the same defect one field over, and its fix was half of one.** **It removed `[meta]` from the comparison** — *"a check that reports stale about an accurate file teaches a reader to ignore it"* — ⛔ **and left two numbers inside `_content` with exactly the property it had just excluded.**
+
+**Why QE files it rather than tolerating it.** ⛔ **QE reported *"the coordination source is stale"* for four cycles from this check.** **Three times it was true and material.** ⚠️ **The fourth was metric drift — and the output is identical either way**, so a real `claimable_now = 0` and a harmless utilization delta print the same sentence. ⚡ **The signal that found B-159 can no longer be trusted to mean it.**
+
+### ✅ The rulings, and the gate Lane C wrote against itself
+
+**[D-210](docs/DECISION_REGISTER.md) — the shell audit is clean, and both apparent gaps were the auditor's own vocabulary.** ⛔ *"Route transitions"* and *"split layouts"* were reported absent **because a term search found no match**, and both were fully specified — one as `loadingCases → "Route change · module to module · shell, filters and utility panel persist"`, the other as the utility panel's *"selecting a table row fills the panel rather than opening a second surface."*
+
+**[D-212](docs/DECISION_REGISTER.md) puts a gate in front of the next one:** ⚡ ***one question before anything is raised — can this be answered by an existing finalized design document?*** **Two product-owner interruptions avoided, caught before they were raised.**
+
+> ⚡ **And it declines to build a mechanism for its own rule**: *"a validator cannot answer 'is this already in a design', so a check would only add ceremony."* **That is §2's *a guard that cannot fail is documentation pretending to be code*, applied by choosing not to write the guard.**
+>
+> ✅ **§4 recorded as owed rather than claimed**: six workflows are on `main` and none has been audited against its finalized design since shipping.
+
+### ✅ Lane C fast-forwarded, and the claim commit was checked rather than assumed
+
+**`integration` moved without QE** — the one permitted exception. ✅ **`2afe285d` touches `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md` and nothing else**, and `--audit-claims` names it in no finding. **Lane C was 0 behind, so `--ff-only` was the whole integration.**
+
+### Repository Health — six dimensions
+
+| | |
+|---|---|
+| **Technical** | **4278 backend** · **1900 frontend** · **95.07%** · **398 invariants** · **851 files typed** · **37 contracts** · ⛔ **`ruff` red, ungated — [B-211](docs/BUGS.md)** |
+| **Release** | **150 runs recorded, 142 certified** · `promoted == certified` ✓ · **first attempt** · **one hundred promotions** |
+| **Architecture** | Migration `0045` **reversible, verified** · **DR nothing lost** · smoke 24 stages in **149s** · **53 ADRs** |
+| **Dependency** | ✅ **Nothing excluded, nothing held.** ✅ **[B-159](docs/BUGS.md) closed — the projection both lanes read is current** |
+| **Customer Value** | ⚪ **None directly.** ⚡ **An audit that found nothing, and said so** |
+| **Process** | ✅ **No QE self-defect.** ⚠️ **Four QE-owned rows now open on instruments** — [B-156](docs/BUGS.md), [B-157](docs/BUGS.md), [B-158](docs/BUGS.md), [B-160](docs/BUGS.md) — **and every one of them is a gate, so every one is a slice rather than a Closeout** |
 
 ---
 

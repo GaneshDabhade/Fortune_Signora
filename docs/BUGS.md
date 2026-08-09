@@ -80,6 +80,39 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-160 · the coordination check cannot pass, because two of the numbers it compares change whenever any lane moves
+
+| | |
+|---|---|
+| **Module** | `infra/coordination.py` — `--check`, and the metrics `render()` bakes into the file |
+| **Current assignee** | **Lane C** — Platform Foundation ([D-022](DECISION_REGISTER.md)) |
+| **Severity** | 🟡 — ⛔ **it reports *stale* about an accurate file**, which is the failure mode the tool's own docstring names |
+| **Status** | **`OPEN`** |
+| **Commit found** | `97a13cee` — measured on the promoted commit |
+
+**Steps.** Regenerate and publish `coordination.toml`. Let any lane push a slice. Run `python3 infra/coordination.py --check`.
+
+**Expected.** `current` — the file's *content* has not changed.
+
+**Actual.** Exit 1, *"the published source does not match what the generator emits today."* **The whole difference, measured by rendering in-process and diffing `_content`:**
+
+```
+-awaiting_qe_transition = 0        +awaiting_qe_transition = 6
+-lane_utilization   = 1.2          +lane_utilization   = 0.0
+```
+
+⚡ **Twelve diff lines, and every one of them is a metric.** ✅ **Every task, every backlog entry, every claimable count is identical.**
+
+**Why it cannot be fixed by republishing.** `awaiting_qe_transition` counts rows stranded at `IN VALIDATION`, and `lane_utilization` derives from what lanes are working. ⛔ **Both change when *another* lane pushes, and Product Office is not involved** — so **the file goes stale through nobody's inaction**, and the only interval in which `--check` passes is between a regeneration and the next lane's push.
+
+> ⚠️ **[B-134](#b-134) is the same defect one field over, and its fix was half of one.** **That row removed `[meta]` from the comparison** — *"a check that reports stale about an accurate file teaches a reader to ignore it"* — ⛔ **and left inside `_content` two numbers with exactly the same property as the timestamp it excluded.**
+
+**Why QE cares rather than filing it as tidiness.** ⛔ **QE spent four cycles reporting *"the coordination source is stale"* from this check**, and for three of those it was true and material ([B-159](#b-159)). ⚠️ **On the fourth it was metric drift, and nothing in the output distinguishes the two** — **so a real `claimable_now = 0` and a harmless `lane_utilization` delta print the same sentence.** ⚡ **That is the cost: the signal that found B-159 can no longer be trusted to mean it.**
+
+**Two shapes of fix, and the choice is Lane C's.** **Exclude the volatile metrics from `_content`, as `[meta]` already is** — they are observations about the repository, not the projection's content — **or report *what* differs** so a reader can tell a task-level divergence from a metric recompute. ⛔ **Not written by QE**: `infra/coordination.py` is Lane C's, and this blocks no gate.
+
+---
+
 ### B-159 · the coordination source tells Lane A to build and reports zero claimable rows in the same block
 
 | | |
@@ -87,7 +120,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | `docs/coordination/coordination.toml` — the generated projection ([479](architecture/479-coordination-architecture.md), [D-144](DECISION_REGISTER.md)) |
 | **Current assignee** | **Lane C** — the generator and the republish are Product Office's |
 | **Severity** | 🟠 — ⛔ **a lane following the published source would read *nothing claimable* while 22 rows are claimable** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`VERIFIED` — QE, 2026-08-09, at `97a13cee`.** ⚡ **Fixed by Lane C republishing, and verified by measuring the promoted file rather than by reading the commit**: `claimable_now = 22` · `backlog` carries 22 entries · `awaiting_sync = 0`, and `BACKLOG.md` carries 22 claimable rows. **The notice and the counters now agree.** ⚠️ **`coordination.py --check` still exits 1 on the promoted commit, and that is a *different* defect** — **metric drift, filed as [B-160](#b-160)** — **not the contradiction this row is about.** *(was: `OPEN`)* |
 | **Commit found** | `7bc4b531` — measured on the promoted commit, not on a candidate |
 
 **Steps.** On `main`, read `[lane.Lane_A]` in `docs/coordination/coordination.toml`.
