@@ -80,6 +80,25 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-227 · The Task Claim Protocol's step 7 pushes the lane's whole branch, and under continuous execution that is never only the claim
+
+| | |
+|---|---|
+| **Module** | **Repository governance** — [`CLAUDE.md`](../CLAUDE.md) §20e, *The Task Claim Protocol*, step 7 |
+| **Severity** | 🟠 — ⛔ **wrong behaviour a lane would hit, and it defeats the one boundary §20e machine-checks.** ⚡ **Not 🔴: nothing is broken at rest, no gate fails, and QE's `--audit-claims` still detects the result** |
+| **Status** | **`OPEN`** — **found by Lane A, 2026-08-09, by doing it.** ⚠️ **Reported WITH the breach it caused, because the breach is the evidence** |
+| **Found on** | `78c83be5`, claiming [TASK-1427](BACKLOG.md) |
+| **Steps** | **Follow §20e step 7 literally while holding earlier slices at `IN VALIDATION`** — which *Continuous execution* explicitly permits: *"a branch may carry more than one slice — but only when every earlier one is `IN VALIDATION`"*. **Commit the claim alone (step 6), then run step 7 as written:** `git checkout integration && git merge --ff-only <lane-branch> && git push origin integration` |
+| **Expected** | ⚡ **`integration` advances by ONE commit touching exactly [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) and [`BACKLOG.md`](BACKLOG.md)** — §20e's own bound: 📁 *"a claim commit touches `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md` and nothing else"*, enforced by `infra/certification-guard.py --audit-claims` |
+| **Actual** | ⛔ **`integration` advanced by ELEVEN commits.** **`--ff-only` fast-forwards to the BRANCH HEAD, not to the claim** — so it carried `step-up-dialog.tsx`, `code-input.tsx`, `lib/auth/server.ts`, `search-journey.spec.ts` and four register edits onto the ref QE alone may write. ⚡ **Measured**: `git diff --name-only 78c83be5..fde09dc2` → **12 files**, of which **10 are production code and tests** |
+| 🔴 **Why it is the protocol and not only the lane** | ⚠️ **Step 7's command is correct exactly once — when the claim is the branch's only unpushed commit.** ⛔ **That was true under the original model, where a lane held one slice and reset after promotion.** ⚡ **Continuous execution changed the premise and step 7 did not follow**: a lane is now *required* to keep working while QE holds earlier slices, so **the steady state is a branch whose head is not the claim.** **Two rules of the same section, and the later one makes the earlier one's command wrong** |
+| ⛔ **What makes it worse than a typo** | 📁 **§20e calls this *"the one thing a feature lane may push to `integration`"* and says it is *"bounded so tightly that a machine checks it"*. ⚡ **The bound is real and the audit works — but it runs at certification, AFTER the push.** **The protocol has no step that would have stopped it**, and the lane following the instruction literally is the one who breaks it |
+| ✅ **The fix, and it is one line** | **Step 7 pushes the CLAIM COMMIT, never the branch**: `git push origin <claim-sha>:integration`, or `git checkout integration && git cherry-pick <claim-sha> && git push origin integration`. ⚡ **Both make the pushed object the thing that was bounded.** ⛔ **Neither changes the protocol's meaning** — step 7's purpose is *"the moment the claim exists, where every other lane will look"*, and a cherry-pick satisfies that exactly |
+| ⚠️ **Recorded because it is the honest half** | ⛔ **Lane A pushed the eleven commits and the repair needed a force-push to a shared ref, which is the product owner's call and was approved.** ⚡ **It became moot before it ran: QE pushed first, validated the same work on its merits and promoted it** ([cycle 163](../PROJECT_STATUS.md)), leaving `integration` at `main` + the claim — **the state the repair would have produced.** ⛔ **That is luck, not a mitigation, and the row exists so the next lane does not need the same luck.** ⚠️ **It cannot be ruled out that the erroneous push is what delivered those commits to QE's snapshot** — the SHAs were rewritten, so the two cannot be distinguished from here, and **stating that is worth more than a clean-sounding account** |
+| **Not this lane's to fix** | 📁 **`CLAUDE.md` is the product owner's** (§20e, *Shared files have one owner*) — ⛔ **Lane A does not edit it**, and [B-222](#b-222) is already open in the same file for the same reason |
+
+---
+
 ### B-224 · The environment model publishes a PostgreSQL port no process uses, and it cost a lane a wrong decision within the hour
 
 | | |
