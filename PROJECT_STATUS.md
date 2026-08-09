@@ -17,7 +17,7 @@
 | | |
 |---|---|
 | **`main`** | **`de88fac`** — the certified commit itself |
-| **`integration`** | ⛔ **STILL DIVERGED at `227a074f`, now 39 commits behind `main`** — ✅ **`main` carries all four of its commits, patch-id verified.** ⛔ **Force-push refused six times.** ⚠️ **It now also makes `--next-cycle` report a cycle available permanently** — see §1d |
+| **`integration`** | ✅ **SYNCHRONIZED at `785d3c67` — the divergence is closed.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
 | **Release candidate** | ⚡ **Cycle 153 promoted [B-221](docs/BUGS.md)'s fix at the generator — and Lane C found a second cause QE had not diagnosed: it had handed its own module's row to another lane** |
 | **Certification** | ✅ [`de88facdaa91`](certification/reports/de88facdaa91.md) · migration head **`0045`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
@@ -222,7 +222,20 @@ main=CHANGES REQUESTED, stale integration=IN VALIDATION  ->  merged: IN VALIDATI
 | **Register** | **152 rows, 50 unresolved, 0 unresolved 🔴** · **+1 filed** ([B-163](docs/BUGS.md)) |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **982 ancestors, 0 outside a snapshot** |
 
-⛔ **`origin/integration` is now 39 commits behind `main`. Lifecycle stage 6 has not completed since cycle 145.**
+### ✅ And then stage 6 completed, at the end of this cycle
+
+⚡ **The synchronization that had been refused seven times went through** — **because it stopped being the operation that was refused.** **A lane pushed a claim commit to `integration` mid-cycle**, so the lease failed with `stale info` **rather than being blocked**, and the correct repair became §20e Closeout step 10's own words: ***rebase `integration` onto `main`, always.***
+
+⛔ **That is not the same operation as overwriting it.** **The claim (`TASK-476`) would have been destroyed by the force-push QE had been proposing**, and the board conflict it raised was **purely additive** — `main` carried `TASK-1428`'s row, the claim carried `TASK-476`'s, **and both belong.** ✅ **Verified before pushing**: the claim survives by subject and file list, still touches only [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) and [`BACKLOG.md`](docs/BACKLOG.md), and **`main` is an ancestor.** **The four commits dropped by the rebase were patch-id duplicates already on `main`.**
+
+```
+main_ahead=0  integration_ahead=1
+main is an ancestor of integration — the next promotion can fast-forward
+```
+
+> ⚠️ **The guard refused twice on the way, and was right both times** — QE's local `integration` still held cycle 146's un-pushable rebase, and `--next-cycle` declined to answer from a stale ref rather than confidently reporting `Repository Ready`. **The four commits on it were patch-id-verified as duplicates before the pointer moved.**
+
+⛔ **[B-161](docs/BUGS.md) is not closed by this** — §20e step 7 still carries whatever else is on a lane branch, and **the three instruments bent around the divergence stay bent.** ✅ **But lifecycle stage 6 has completed for the first time since cycle 145.**
 
 ---
 
