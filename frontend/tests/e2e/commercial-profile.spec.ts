@@ -171,7 +171,10 @@ test.describe('two people editing at once', () => {
 
     const theirs = unique('Theirs');
     await colleague.getByRole('button', { name: 'Add product' }).first().click();
-    await colleague.getByLabel('Name').fill(theirs);
+    // `exact` for the same reason as `business.productName` — this is the
+    // second browser context on the same shell, so a bare `Name` matches
+    // the header search too (B-209).
+    await colleague.getByLabel('Name', { exact: true }).fill(theirs);
     await colleague.getByRole('button', { name: 'Save' }).click();
 
     // **The whole point of `expected_version`.** The second save carries the

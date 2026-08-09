@@ -34,7 +34,12 @@ export class BusinessPage {
   }
 
   get productName(): Locator {
-    return this.page.getByLabel('Name');
+    // `exact` because `getByLabel` matches a substring and the App Shell's
+    // header search is on every screen: its accessible name is "Find an
+    // account by name", so a bare `Name` resolved to two elements and eleven
+    // journeys failed on this one line (B-209). Same defect as B-149 one
+    // suite over, and the same one word fixes it.
+    return this.page.getByLabel('Name', { exact: true });
   }
 
   get save(): Locator {

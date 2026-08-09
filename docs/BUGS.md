@@ -1901,7 +1901,7 @@ sed -n '2042,2044p' docs/BUGS.md
 | **Module** | **The repository-wide journey suite** — `frontend/tests/e2e/pages/business.ts` and the specs that use it |
 | **Current assignee** | **QE** — §20e: QE *"creates, maintains, extends and retires repository-wide automated tests; lanes own the tests specific to the slices they implement"* |
 | **Severity** | 🔴 · **Blocking Quality Defect — failing tests.** Eleven journeys, including four `@journey` and five `@regression` |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-09.** ⛔ **Open for six days, and the gate that should have stopped every promotion in that window was blind** ([B-413](BUGS.md)) |
 | **Found** | 2026-08-06 by Lane A, running the full journey suite for [TASK-440](BACKLOG.md) before handing over |
 
 **Steps.** Seed a lane environment, `npx playwright test`, on `integration` with nothing else changed.
@@ -1925,6 +1925,27 @@ locator.fill: strict mode violation: getByLabel('Name') resolved to 2 elements:
 ⚠️ **What this says about the gate is worth more than the fix.** [D-113](DECISION_REGISTER.md) made running the journeys the *lane's* responsibility before handover, and **this is the first slice to run the whole suite from a lane** — the eleven have presumably been failing for as long as the header search has existed on the business page. **A journey suite nobody runs end to end is a plan, not a gate.**
 
 ---
+
+
+### ✅ Fixed — two instances, one word, and the second was evidence rather than a guess
+
+| | |
+|---|---|
+| `pages/business.ts:37` | `getByLabel('Name')` → **`getByLabel('Name', { exact: true })`** — the getter B-209 names |
+| `commercial-profile.spec.ts:174` | **The same defect on the second browser context.** ⚡ **`colleague` opens the same dialog on the same shell**, so a bare `Name` matched the header search there too |
+
+⛔ **QE checked the second before changing it rather than fixing every bare `getByLabel` on sight.** **The `auth-journey` ones are on `/sign-in` and `/sign-up`, which carry no App Shell header** — changing a passing test on a pattern match is the [B-411](#b-411) failure in the other direction.
+
+### 🔴 The six days, and they are QE's to account for
+
+**§20e: *"`integration` never fast-forwards to `main` with an open 🔴 bug."*** ⛔ **This row was 🔴 and `OPEN` from 2026-08-06, and there have been 70 Closeout commits since.**
+
+**The gate that enforces the rule reported `No unresolved 🔴 — promotion is not blocked` on every one of them, and it was wrong** — [B-413](BUGS.md), found by Lane C: **`unresolved` required the state token at character zero while the register writes `**`OPEN`**`, so 29 of 39 open rows read as resolved and `blocks_promotion` returned `False` for every row in the file.**
+
+> ⚠️ **QE is not claiming the promotions were harmless — that is not knowable in retrospect.** ⛔ **What is knowable: the rule was not enforced, QE did not notice, and the reason QE did not notice is that QE read the gate's answer instead of the register.** ⚡ **[B-151](#b-151--qe-published-blocking-quality-defects-none-for-eleven-cycles-while-two-were-open) said exactly this about a different line three cycles ago, and QE fixed the sentence rather than the habit.**
+
+---
+
 
 ### B-208 · Global Search crashes the moment it finds anything
 
