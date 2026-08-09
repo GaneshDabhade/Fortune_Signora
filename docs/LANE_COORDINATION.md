@@ -8353,6 +8353,47 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-265 · Step-up is built and the only module whose controls require it is not
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-1410](BACKLOG.md)** — ⚡ **on reaching the row's Definition of Done and measuring what could satisfy it** |
+| **Owner** | **Lane C** — ⛔ **which control requires a fresh factor is a row's scope, and marking one that the design does not mark is inventing a security requirement** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION** — ⛔ **the design is complete and unambiguous about where step-up applies** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **One sentence of [TASK-1410](BACKLOG.md)'s Definition of Done.** ✅ **The capability is built, tested and green** |
+
+### ✅ What is delivered
+
+**`session.freshAge = 600`** — 📁 the design's *"step-up lasts 10 minutes"*, against Better Auth's 24-hour default — **`CodeInput` in `components/ui`**, and **`StepUpDialog`**, which names what it is about to authorise. 🔴 **The server-side half the row's Security Invariant demands is configured and guarded**: removing `freshAge` fails three tests, widening it to a day fails two.
+
+### ⛔ What cannot be satisfied
+
+📁 **The row: *"a destructive action cannot complete without one."*** ⚡ **Measured across all twenty-eight screens in the snapshot, exactly one module requires a fresh factor:**
+
+> 📁 **Security Center §02** — ***"Every control in THIS MODULE requires a fresh factor before it will act, even inside a valid session."***
+
+⛔ **The Security Center is workflow 23 and is not built.** ⚠️ **No built screen's design marks a control as requiring step-up.**
+
+**The two other mentions in the snapshot are different capabilities and were checked rather than assumed:**
+
+| | |
+|---|---|
+| **Team Management** | *"he accepts within 48 hours, **re-authenticating through SSO**"* — ⛔ **invitation acceptance through an identity provider, not a fresh factor on a destructive control** |
+| **Workspace Setup** | *"switching sends you to a different region, so you **re-authenticate**"* — ⛔ **a region boundary, not step-up** |
+
+### ⛔ Why this lane did not wire it to Team Management's *Remove*
+
+⚡ **`useRemoveMember` exists and is destructive, and it would have been one import.** 📁 **The design does not mark it.** ⛔ **Applying the Security Center's rule to a control the design leaves unmarked is inventing a security requirement** — ⚠️ **and a lane inventing one is the same act as a lane relaxing one, which [§13](../CLAUDE.md) forbids.** **The direction does not make it a lane's to decide.**
+
+### ⚠️ And the snapshot already records this as a known gap
+
+📁 **`Entry Coverage Review`, row `05`**: ***"`/auth/step-up` — authentication covers first sign-in. **Step-up mid-session is unspecified.** … the largest true gap in the audit."*** ⚡ **So the absence of a caller is not an oversight in [TASK-1410](BACKLOG.md); it is a design gap the audit already named**, and this item connects the two rather than re-reporting it.
+
+### ✅ What this lane recommends
+
+**Narrow [TASK-1410](BACKLOG.md) to the capability — which is complete — and sequence the first caller behind whichever row builds a control the design marks.** ⚡ **That is [D-215](DECISION_REGISTER.md)'s remedy, and the capability is deliberately in `components/ui` and `lib/auth/` so the caller takes it rather than building a second.**
+
 ## C-264 · C-241 was resolved and the screen that motivated it was never revisited
 
 | | |
