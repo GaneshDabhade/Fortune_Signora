@@ -107,7 +107,11 @@ function ShellForViewer({ email, children }: { email: string; children: ReactNod
   const role = viewer.role;
 
   return (
-    <AppShell role={resolved ? role : null} signOut={<SignOutButton email={email} />}>
+    <AppShell
+      role={resolved ? role : null}
+      userId={session?.user.id ?? null}
+      signOut={<SignOutButton email={email} />}
+    >
       {/* ⚡ **Onboarding's only entrance** — TASK-469. It renders nothing
           unless this person has a run that is unfinished, and a dismissal
           sticks: *"no second ask, no guilt copy."* */}

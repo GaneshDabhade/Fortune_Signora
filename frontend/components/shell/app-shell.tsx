@@ -7,12 +7,22 @@ import { AccountSearch } from '@/components/intelligence/account-search';
 import { MobileNavigation, Navigation } from '@/components/shell/navigation';
 import { ThemeToggle } from '@/components/shell/theme-toggle';
 import { WorkspaceSelector } from '@/components/shell/workspace-selector';
+import { RAIL_WIDTH } from '@/lib/shell/rail';
+import { useRailCollapse } from '@/lib/shell/use-rail-collapse';
 import type { WorkspaceRole } from '@/lib/state/permissions';
 
 export interface AppShellProps {
   children: ReactNode;
   role: WorkspaceRole | null;
   signOut: ReactNode;
+  /**
+   * ⚡ **Required for the rail's collapse to be remembered** —
+   * [TASK-1408](../../../docs/BACKLOG.md), 📁 *"the state persists per user,
+   * per device class."* ⛔ **`null` when the viewer is not resolved yet**, and
+   * the rail then remembers nothing rather than sharing one key across every
+   * account on the machine.
+   */
+  userId?: string | null;
 }
 
 /**
@@ -27,12 +37,38 @@ export interface AppShellProps {
  * Widths come from `--sidebar-width` and `--topbar-height` rather than
  * literals, so the layout is one edit and not three.
  */
-export function AppShell({ children, role, signOut }: AppShellProps) {
+export function AppShell({ children, role, signOut, userId = null }: AppShellProps) {
+  // 📁 **Rule: the rail collapses to 56px and the state is remembered.**
+  // ⛔ The shell owns the frame's own state; it still owns no navigation
+  // decision ([D-193](../../../docs/DECISION_REGISTER.md)).
+  const rail = useRailCollapse(userId);
+
   return (
     <div className="flex min-h-screen">
-      <aside className="hidden w-sidebar shrink-0 border-r border-border bg-surface md:block">
-        <div className="flex h-topbar items-center px-5 text-sm font-semibold tracking-tight">
-          Signora
+      <aside
+        // ⛔ **The width is the design's, from `RAIL_WIDTH`, not a literal** —
+        // 232px expanded and 56px collapsed.
+        style={{ width: rail.collapsed ? RAIL_WIDTH.collapsed : RAIL_WIDTH.expanded }}
+        data-collapsed={rail.collapsed}
+        className="hidden shrink-0 border-r border-border bg-surface transition-[width] duration-150 md:block"
+      >
+        <div className="flex h-topbar items-center justify-between gap-2 px-5">
+          {/* ⚡ The wordmark goes when the rail does — 56px cannot hold it,
+              and a clipped wordmark reads as a rendering fault. */}
+          {rail.collapsed ? null : (
+            <span className="text-sm font-semibold tracking-tight">Signora</span>
+          )}
+          <button
+            type="button"
+            onClick={rail.toggle}
+            // ♿ The control names the outcome, not the glyph — a screen
+            // reader user cannot see which way the chevron points.
+            aria-label={rail.collapsed ? 'Expand navigation' : 'Collapse navigation'}
+            aria-expanded={!rail.collapsed}
+            className="rounded p-1 text-content-subtle transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            {rail.collapsed ? '»' : '«'}
+          </button>
         </div>
         <ErrorBoundary region="Navigation">
           <Navigation role={role} />
