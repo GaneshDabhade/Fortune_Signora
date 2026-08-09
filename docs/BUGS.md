@@ -175,6 +175,41 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 **② Invert the list.** ⚡ **Name the environments where a credential in a log is acceptable, rather than the ones where it is not** — ⛔ **so a NEW environment is deployed-by-default instead of development-by-default.** **That is the safe direction and it is a behaviour change to a security guard**, which is 🔴.
 
+### B-165 · a new table, a new domain type and a new published contract reached `IN VALIDATION` with no architecture documentation and no Slice Handoff
+
+| | |
+|---|---|
+| **Module** | `workspace_tenancy` — [`0046_security_event.py`](../backend/migrations/versions/0046_security_event.py), `TASK-492` |
+| **Current assignee** | **Lane A** — the module's current assignee |
+| **Severity** | 🟠 — ⛔ **§8 is explicit that this class is a bug**: *"any schema change must be accompanied by a corresponding update to the relevant architecture documentation **in the same change** — undocumented schema drift is treated as a bug."* ⚡ **The implementation is excellent and that is why this row is only about the documentation** |
+| **Status** | **`OPEN`** — and `TASK-492` is returned as **`CHANGES REQUESTED`** |
+| **Commit found** | `e72b6af0`, found by QE during cycle 157 validation |
+
+**Steps.** From the promoted commit:
+
+```
+$ grep -c security_event docs/architecture/11-tenancy.md docs/architecture/04-modules.md
+docs/architecture/11-tenancy.md:0
+docs/architecture/04-modules.md:0
+
+$ git log --format=%B origin/integration..e72b6af0 | grep -c Slice-Handoff
+0
+```
+
+**Expected.** ⚡ **Two things, and both are Definition-of-Done rows rather than preferences.** **§19**: *"Documentation updated — the module's design doc, consistent with the code"*, and **§12**: *"a slice with two of the three is unfinished, not a finished one with paperwork outstanding."* **Plus the `Slice-Handoff` block §20e requires on the last commit of every slice**, where *"every field is required; `none` is a valid value and silence is not."*
+
+**Actual.** ⛔ **A new tenant-owned table, a new domain type, a new repository port and a new `public/` contract, with zero architecture documentation and no handoff.**
+
+> ⚠️ **The rule's stated reason is rotation, and it is the whole argument here.** §12: *"the lane that implements the next slice of a module is usually not the one that implemented the last. It inherits the module's design doc, its ADRs and the Slice Handoff — and nothing else."* ⛔ **`TASK-492`'s own row says its producers are `BLOCKED`, so the next slice of this table will very likely be written by somebody else** — **and `11-tenancy.md` is exactly where they would look for a table's tenancy shape.**
+
+**What is NOT wrong, recorded so the repair stays small.** ✅ **QE audited the tenancy properties directly and they are exemplary**: `workspace_id` non-nullable · `ENABLE` **and** `FORCE ROW LEVEL SECURITY` · separate `SELECT`/`INSERT`/`DELETE` policies · **no `UPDATE` grant *and* no `UPDATE` policy** — *"both withheld rather than one: a policy without a grant is decorative, and a grant without a policy is a tenancy hole"* — · classified in **both** `TENANT_OWNED_TABLES` and `IMMUTABLE_TENANT_TABLES` **in the same change** · migration `0046` reversible · **+32 tests, +3 Security Invariants.**
+
+⛔ **The code is not what is being returned.** **The repair is the two paragraphs that let the next lane use it.**
+
+> ⚡ **QE promoted the certified commit anyway, deliberately, and that is not an inconsistency.** **§20e forbids an intermediate manual decision between successful certification and promotion** — *"the gates are the decision"* — **and `doc-drift` states of itself that it *"reports and does not gate"*.** ✅ **So the deterministic half ran deterministically, and the judgement half — `VERIFIED` versus `CHANGES REQUESTED` — is where this finding belongs.**
+
+**An observation, not a defect, recorded rather than filed.** ⚡ **`DELETE` is granted on an append-only security stream**, matching `action_batch`'s shape in `0042` **for the stated reason that two append-only tables with two tenancy shapes is how one ends up wrong.** ⚠️ **`CLAUDE.md`'s immutability rule names `UPDATE` specifically and does not forbid `DELETE`, and erasure obligations need it** — **so QE is not calling it a defect.** ⛔ **But a security stream a workspace can delete from is a different compliance story from one it cannot**, and **that is a product-owner question rather than a lane's.**
+
 ### B-164 · `--force-with-lease` did not protect a claim commit QE had already reasoned about, because the lease was satisfied
 
 | | |
