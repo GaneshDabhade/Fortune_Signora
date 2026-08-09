@@ -8,6 +8,7 @@
  * does, and whether the width is the design's rather than a literal somebody
  * typed.
  */
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -30,19 +31,33 @@ beforeEach(() => {
   Object.defineProperty(window, 'innerWidth', { value: 1440, configurable: true });
 });
 
+/**
+ * ⚠️ **The shell now requires a `QueryClientProvider`, and the fixture was
+ * modelling a shell that does not exist** — [TASK-1435](../../../docs/BACKLOG.md).
+ *
+ * ⚡ **`OfflineStatus` fills the top bar's `system-status` slot and reads the
+ * library's paused-mutation queue**, so the frame depends on the query layer.
+ * ⛔ **That is not new coupling introduced casually**: `QueryProvider` wraps
+ * the entire tree in `app/layout.tsx`, and `AppShell` is mounted in exactly
+ * one place — `app/(app)/authenticated-shell.tsx` — which sits inside it.
+ * **A test rendering the shell with no client was asserting against an
+ * arrangement the application never produces.**
+ */
 function shell(
   userId: string | null = 'u1',
   extra: { banners?: ShellBanner[]; breadcrumb?: Crumb[] } = {},
 ) {
   return render(
-    <AppShell
-      role="owner"
-      userId={userId}
-      signOut={<button type="button">Sign out</button>}
-      {...extra}
-    >
-      <p>Content</p>
-    </AppShell>,
+    <QueryClientProvider client={new QueryClient()}>
+      <AppShell
+        role="owner"
+        userId={userId}
+        signOut={<button type="button">Sign out</button>}
+        {...extra}
+      >
+        <p>Content</p>
+      </AppShell>
+    </QueryClientProvider>,
   );
 }
 

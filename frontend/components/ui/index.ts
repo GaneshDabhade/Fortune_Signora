@@ -35,6 +35,7 @@ export { SystemState, type SystemStateProps } from './system-state';
 export { Breadcrumb } from './breadcrumb';
 export { ShellBanners, type ShellBanner } from './shell-banners';
 export { CopyableId } from './copyable-id';
+export { OfflineStatus } from './offline-status';
 // ⛔ **`AuthModeIndicator` is deliberately NOT re-exported here.** It is a
 // SERVER component — it calls `authMode()`, which reads `SIGNORA_ENVIRONMENT`,
 // a variable that is not `NEXT_PUBLIC_` and must not become one

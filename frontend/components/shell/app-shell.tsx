@@ -7,7 +7,7 @@ import { AccountSearch } from '@/components/intelligence/account-search';
 import { MobileNavigation, Navigation } from '@/components/shell/navigation';
 import { ThemeToggle } from '@/components/shell/theme-toggle';
 import { WorkspaceSelector } from '@/components/shell/workspace-selector';
-import { Breadcrumb, ShellBanners, type ShellBanner } from '@/components/ui';
+import { Breadcrumb, OfflineStatus, ShellBanners, type ShellBanner } from '@/components/ui';
 import type { Crumb } from '@/lib/shell/breadcrumb';
 import { RAIL_WIDTH } from '@/lib/shell/rail';
 import { useRailCollapse } from '@/lib/shell/use-rail-collapse';
@@ -130,6 +130,15 @@ export function AppShell({
             <AccountSearch />
           </RegionBoundary>
           <div className="flex items-center gap-3">
+            {/* 📁 **App Shell §07 — *"system status is a persistent pill in
+                the top bar rather than a banner"*** —
+                [TASK-1435](../../../docs/BACKLOG.md). ⛔ **`system-status` is
+                a declared slot in `lib/shell/top-bar.ts`, placed by
+                [TASK-1408](../../../docs/BACKLOG.md) before anything filled
+                it**, so this fills a region rather than adding one and shell
+                rule 14 is untouched. ⚡ **It renders nothing when the
+                connection is fine and the queue is empty.** */}
+            <OfflineStatus />
             <ThemeToggle />
             {signOut}
           </div>

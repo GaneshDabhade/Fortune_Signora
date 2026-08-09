@@ -44,6 +44,24 @@ export const queryClientConfig: QueryClientConfig = {
       // Mutations are not idempotent by default. Retrying one that may
       // have succeeded is how duplicate workspaces get created.
       retry: false,
+      /**
+       * 🔴 **Declared rather than defaulted** —
+       * [TASK-1435](../../../docs/BACKLOG.md).
+       *
+       * 📁 **The design: *"two edits are queued. They are sent in order when
+       * the connection returns."*** ⚡ **`'online'` is what makes a mutation
+       * fired with no connection PAUSE instead of failing**, and the library
+       * replays paused mutations in order when `onlineManager` reports the
+       * connection back.
+       *
+       * ⛔ **It is written out even though it is the library's default**,
+       * because it stopped being a default the moment a customer-visible
+       * promise rested on it: **a future upgrade that changed it would turn
+       * *"your edits are queued"* into a lie**, and nothing here would fail.
+       * ✅ **`tests/unit/offline-queue.test.ts` asserts the value for that
+       * reason.**
+       */
+      networkMode: 'online',
     },
   },
 };
