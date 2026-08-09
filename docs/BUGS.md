@@ -114,6 +114,16 @@ docker exec signora-v2-postgres-1 psql -U signora -d signora_lane_a \
 >   Makefile:459
 > ```
 >
+> 🔴 **And the consequence compounds, measured 2026-08-09.** ⚡ **The only way
+> to run the journeys today is `make e2e-quick`, which skips the seed — so the
+> fixture state DRIFTS between runs.** ⛔ **`auth.setup.ts` now fails for the
+> member persona because their active organization has become `E2E Org
+> 1786277216134` rather than `Playground`**, an organization the suite itself
+> created and that a re-seed would have cleared. ⚠️ **Stated as the leading
+> explanation and not as proof** — the chain is measured at both ends and not
+> in the middle — **but a gate that can only be run in the mode that degrades
+> its own fixtures is a gate whose verdict nobody should trust.**
+>
 > ⛔ **This is not a reader being misled — it is the documented command for the
 > customer-journey gate failing outright.** ⚡ **`make e2e` re-seeds first, and
 > the seed connects through `E2E_ENV`, which is built from `SIGNORA_PG_PORT`,
