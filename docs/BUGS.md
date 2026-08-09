@@ -80,6 +80,56 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-223 · The auth tier's "is this deployed?" denylist and the environment registry share no vocabulary, so a lane that names itself cannot start
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/lib/auth/config.ts`](../frontend/lib/auth/config.ts), `isDeployed()` · measured against [`infra/environments.py`](../infra/environments.py), which is `platform_foundation`'s |
+| **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
+| **Severity** | 🟡 — ⚡ **latent, not live.** ⛔ **Nothing sets `SIGNORA_ENVIRONMENT` for the frontend today**, so `environmentName()` returns `local` and every clone works. ⚠️ **It fires the first time anybody configures the variable to the name their own registry gives them** |
+| **Status** | **`OPEN`** — **found by Lane A, 2026-08-09, implementing [TASK-473](BACKLOG.md).** ⛔ **Deliberately not fixed — see below; the repair is a security decision, not a typo** |
+| **Found** | 2026-08-09 by Lane A, ⚡ **by having to compute the authentication mode and discovering the two sources disagree about what an environment is called** |
+
+**Steps to reproduce.** On `origin/integration`:
+
+```bash
+python3 -c "import sys; sys.path.insert(0,'infra'); import environments as e; print([x.name for x in e.ENVIRONMENTS])"
+→ ['review', 'lane-qe', 'lane-a', 'lane-b', 'lane-c', 'lane-d', 'lane-e', 'demo']
+
+grep -n "isDeployed" -A2 frontend/lib/auth/config.ts
+→ return !['local', 'test', 'development'].includes(environmentName());
+```
+
+**Expected.** ⚡ **The two agree on what an environment is called.**
+
+**Actual.** ⛔ **The intersection is EMPTY.** **Not one of the registry's eight names appears in the auth tier's three**, and **not one of the auth tier's three is a registry row.**
+
+**The consequence, stated concretely.** ⚠️ **A lane that exports `SIGNORA_ENVIRONMENT=lane-a` — which is the name [`infra/environments.py`](../infra/environments.py) gives it, and what `--exports` emits — is classified `isDeployed() === true`.** ⛔ **`resolveEmailTransport()` then refuses the console and mailbox transports and the auth tier will not start**, with a diagnostic saying *"is a deployed environment"* about a developer's laptop.
+
+### ⛔ Why this is reported rather than repaired, and the reason is §13
+
+⚡ **The obvious fix is to widen the allowlist to include the registry's development names.** ⛔ **That is a weakened guard, however it is dressed.**
+
+📁 **The guard exists because the console transport writes verification and password-reset links to stdout** — *"a credential sitting in a log file"* — **and the mailbox keeps a HISTORY of them.** ⚠️ **Every name added to that list is an environment in which a credential may be written to a log**, and `review` and `demo` are both registry rows that serve people who are not the person who started the process.
+
+> 🔴 **So the question is not *which names are missing*. It is *which environments may write a credential to stdout*, and that is a security decision with a named owner** — ⛔ **not a list a lane extends while passing through.** **[TASK-473](BACKLOG.md)'s own Change Budget says *"no weakened guard"* by name.**
+
+### ✅ What [TASK-473](BACKLOG.md) did instead
+
+**`authMode()` reports the classification rather than correcting it**, and 🔴 **the disagreement is pinned as a passing assertion** in `tests/unit/auth-mode.test.ts`:
+
+```ts
+expect(withEnvironment('lane-a', authMode)).toBe('production');
+```
+
+⚡ **That test is written to FAIL on the day somebody repairs this**, which is the point of recording a known-wrong behaviour as an assertion rather than as a comment: **a comment is read once, and a comment describing a defect is indistinguishable from a comment describing a design.**
+
+### ⚠️ Two candidate repairs, neither this lane's to choose
+
+**① Make the registry authoritative for both.** ⚡ **`infra/environments.py` already knows which environments are development slots**; the auth tier could ask it rather than keep a parallel list — 📁 [§2](../CLAUDE.md), *truth has exactly one authoritative representation*. ⛔ **Crosses a tier boundary: a Node process cannot import a Python registry**, so it needs a published form, and that is a design decision.
+
+**② Invert the list.** ⚡ **Name the environments where a credential in a log is acceptable, rather than the ones where it is not** — ⛔ **so a NEW environment is deployed-by-default instead of development-by-default.** **That is the safe direction and it is a behaviour change to a security guard**, which is 🔴.
+
 ### B-164 · `--force-with-lease` did not protect a claim commit QE had already reasoned about, because the lease was satisfied
 
 | | |

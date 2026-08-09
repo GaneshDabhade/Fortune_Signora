@@ -238,6 +238,72 @@ function isDeployed(): boolean {
 }
 
 /**
+ * **The three authentication execution modes** —
+ * [TASK-473](../../../docs/BACKLOG.md), on
+ * [ADR-0406](../../../docs/architecture/adr/0406-authentication-execution-modes.md) §2.
+ *
+ * > 📁 **[D-131](../../../docs/DECISION_REGISTER.md): *"These modes must be
+ * > explicit and never silently imitate production behavior. A user or
+ * > developer should always know which mode is active."***
+ *
+ * ⛔ **Today nothing reports it**, and the failure that costs is a review of
+ * the wrong product: **a reviewer walking the first hour cannot tell whether
+ * they signed in as a seeded demo account or created one.** ⚠️ **Those are two
+ * different products, and a review of the wrong one is worse than no review,
+ * because it is reported as a review** — 📁 [C-320](../../../docs/LANE_COORDINATION.md)
+ * measured exactly that going unnoticed for three days.
+ */
+export type AuthMode = 'production' | 'development' | 'demo';
+
+/**
+ * ⛔ **This DERIVES; it does not decide.** 📁 **The row is explicit:
+ * *"`lib/auth/config.ts` already resolves the mode; nothing new is computed.
+ * This row SURFACES a value that exists — it must not introduce a second
+ * resolution"*** ([§2](../../../CLAUDE.md), *behaviour exists exactly once*).
+ * **Both inputs are the ones the transport guard above already uses.**
+ *
+ * ## 🔴 Nothing in an authentication path may branch on this
+ *
+ * 📁 **ADR-0406 §5: *"No code path changes. Only configuration changes… an
+ * `if (mode === …)` in an authentication path is the defect this ADR exists to
+ * prevent."*** ⚡ **So this is an OBSERVABLE, and the distinction is exact: it
+ * is read by things that DISPLAY, never by things that DECIDE.** ⛔ **The
+ * Python tier still has no concept of a mode at all** (§1), **which is what
+ * makes the guarantee structural rather than disciplinary.**
+ *
+ * ## ⚡ Why `demo` is recognised by name and nothing is invented
+ *
+ * 📁 **`demo` is already a row in [`infra/environments.py`](../../../infra/environments.py)'s
+ * registry** — *"Seeded demonstration of shipped capability"*, slot 7, its own
+ * database and compose project. ✅ **Reading it is reading existing
+ * configuration**; ⛔ **a new variable to mean the same thing would be the
+ * second representation §2 forbids.**
+ *
+ * ## ⚠️ A gap this function makes visible and deliberately does not close
+ *
+ * ⛔ **`isDeployed()` above is a DENYLIST of three names — `local`, `test`,
+ * `development` — and the environment registry contains none of them.** **It
+ * holds `review`, `lane-qe`, `lane-a`…`lane-e` and `demo`.** ⚡ **So a lane
+ * that exported `SIGNORA_ENVIRONMENT=lane-a`, which is what the registry calls
+ * it, would be classified as DEPLOYED and its auth tier would refuse to
+ * start.** ✅ **Latent rather than live** — nothing sets the variable for the
+ * frontend today, so `environmentName()` returns `local`.
+ *
+ * ⛔ **Not fixed here, and the reason is [§13](../../../CLAUDE.md).** **Widening
+ * that list would make the console transport — which writes a credential to
+ * stdout — permissible in more environments.** ⚠️ **That is a weakened guard
+ * however it is dressed, and this row's budget says *"no weakened guard"* by
+ * name.** ✅ **Reported as [B-223](../../../docs/BUGS.md).**
+ */
+export function authMode(): AuthMode {
+  // Order matters and it is the safe one: `demo` is a deployed name under
+  // `isDeployed()`, and a demonstration reported as production would hide the
+  // one fact a reviewer needs.
+  if (environmentName() === 'demo') return 'demo';
+  return isDeployed() ? 'production' : 'development';
+}
+
+/**
  * The ways a person can actually sign in.
  *
  * **The unit is a sign-in *method*, not an OAuth provider** (ADR-0033). The

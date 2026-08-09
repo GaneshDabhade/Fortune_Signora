@@ -35,6 +35,15 @@ export { SystemState, type SystemStateProps } from './system-state';
 export { Breadcrumb } from './breadcrumb';
 export { ShellBanners, type ShellBanner } from './shell-banners';
 export { CopyableId } from './copyable-id';
+// ⛔ **`AuthModeIndicator` is deliberately NOT re-exported here.** It is a
+// SERVER component — it calls `authMode()`, which reads `SIGNORA_ENVIRONMENT`,
+// a variable that is not `NEXT_PUBLIC_` and must not become one
+// ([TASK-473](../../../docs/BACKLOG.md)). ⚠️ **This barrel is imported by client
+// components** — `app-shell.tsx` among them — **so a re-export would pull the
+// authentication configuration module into every client bundle**, where the
+// variable is absent and the badge would silently read `development` in every
+// environment. ✅ **It still lives in `components/ui` because it is a library
+// component and not a page-local variant** (§20c); callers import the file.
 export { RegionBoundary, MAX_ATTEMPTS } from './region-boundary';
 export { Skeleton, SkeletonText, type SkeletonTextProps } from './skeleton';
 export { Table, TBody, TD, TH, THead, TR } from './table';

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { AuthModeIndicator } from '@/components/ui/auth-mode-indicator';
+
 /**
  * The one card every authentication screen sits in.
  *
@@ -150,6 +152,34 @@ export function AuthShell({
         {region ? (
           <p className="mt-6 text-center text-xs text-content-subtle">{region}</p>
         ) : null}
+
+        {/* **The authentication mode, where the question is actually asked** —
+            [TASK-473](../../../docs/BACKLOG.md).
+
+            ⚡ **Mounted HERE and not in the application shell**, for two
+            reasons that both point the same way. 📁 **The failure the row
+            names happens at sign-in**: *"a reviewer walking the first hour
+            cannot tell whether they signed in as a seeded demo account or
+            created one."* ⛔ **And `components/shell/app-shell.tsx` is 🔴,
+            which this row's budget does not grant** — it grants *"a new
+            observable on the auth configuration"*, and this is the auth
+            surface.
+
+            ⚠️ **`AuthShell` is a server component and so is the indicator**,
+            which is what keeps `SIGNORA_ENVIRONMENT` on the server. A client
+            component would have needed it published as `NEXT_PUBLIC_`.
+
+            ⛔ **The PLACEMENT is deliberately the least opinionated one
+            available** — below the region line, in a slot that already exists
+            for ambient text. 📁 **[D-129](../../../docs/DECISION_REGISTER.md)
+            and the row: *"how the mode is displayed… the treatment is the
+            approved design's, and [410](../../../docs/architecture/410-approved-ui-specification.md)
+            is the authority. This row delivers the fact and refuses to invent
+            the presentation."* ✅ **410 may move it; nothing about
+            `authMode()` moves with it.** */}
+        <div className="mt-4 flex justify-center">
+          <AuthModeIndicator />
+        </div>
       </div>
     </main>
   );
