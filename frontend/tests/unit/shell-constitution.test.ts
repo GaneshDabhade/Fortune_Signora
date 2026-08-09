@@ -80,7 +80,7 @@ describe('the fourteen rules are the design’s, verbatim and in order', () => {
 describe('📁 rule 10 — at most two banners, environment before commercial', () => {
   it('orders environment ahead of commercial whatever order they arrive in', () => {
     const admitted = admitBanners([{ kind: 'commercial' }, { kind: 'environment' }], false);
-    expect(admitted.map((b) => b.kind)).toEqual(['environment', 'commercial']);
+    expect(admitted.map(({ rule }) => rule.kind)).toEqual(['environment', 'commercial']);
   });
 
   it('⛔ never admits a third', () => {
@@ -98,7 +98,7 @@ describe('📁 rule 10 — at most two banners, environment before commercial', 
      * upsell against data that is not real.
      */
     const admitted = admitBanners([{ kind: 'environment' }, { kind: 'commercial' }], true);
-    expect(admitted.map((b) => b.kind)).toEqual(['environment']);
+    expect(admitted.map(({ rule }) => rule.kind)).toEqual(['environment']);
   });
 });
 

@@ -115,14 +115,20 @@ export const MAX_BANNERS = 2;
  * real, and 📁 §04's *"no dark patterns"* rule names *"no upsell to someone
  * without the authority to buy"* as the same family.
  */
-export function admitBanners(
-  requested: readonly { kind: BannerKind; risky?: boolean }[],
+export function admitBanners<T extends { kind: BannerKind; risky?: boolean }>(
+  requested: readonly T[],
   inSandbox: boolean,
-): BannerRule[] {
+): { banner: T; rule: BannerRule }[] {
+  // ⚠️ **The banner travels WITH its rule, deliberately.** An earlier version
+  // returned rules alone and left the caller to line them back up by index —
+  // ⛔ **which is wrong the moment a caller passes commercial first**, because
+  // sorting moves it and the indices stop corresponding. **A pairing that
+  // cannot come apart beats a comment telling the caller not to separate it**
+  // (§2, *types should make incorrect architecture impossible*).
   return requested
-    .map((b) => bannerRule(b.kind, b.risky ?? false))
-    .filter((b) => !(inSandbox && b.suppressedInSandbox))
-    .sort((a, b) => a.order - b.order)
+    .map((banner) => ({ banner, rule: bannerRule(banner.kind, banner.risky ?? false) }))
+    .filter(({ rule }) => !(inSandbox && rule.suppressedInSandbox))
+    .sort((a, b) => a.rule.order - b.rule.order)
     .slice(0, MAX_BANNERS);
 }
 
