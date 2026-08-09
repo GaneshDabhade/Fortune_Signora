@@ -362,6 +362,7 @@ databaseUrl: required(
 | [C-1406](#c-1406--the-review-says-the-engine-has-no-routing-defect-and-a-lane-that-implemented-it-found-three) | 🟠 **The review says the engine has no routing defect; the lane that built it found three** | **Lane C**, 2026-08-09, against [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | ⛔ **Product Owner** — same question as [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) ③ | 🟠 **`OPEN`** | ✅ **Nothing.** ⚠️ **It changes whether the Entry document is treated as settled** |
 | [C-252](#c-252--two-primitives-own-the-region-scope-failed-read-and-task-445-built-the-other-one) | **Two primitives own the region-scope failed read, and TASK-445 built the other one** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) — 🔴 **found by TASK-445's own guard failing** | **Lane C** — ⛔ **it spans two rows this office released** | 🔴 **`OPEN`** | 🔴 **TASK-1409's region boundary.** ✅ **The ladder and its 23 tests ship** |
 | [C-253](#c-253--the-designs-403-names-the-missing-role-and-nothing-publishes-it) | **The design's 403 names the missing role, and nothing publishes it** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Lane C** — sequencing | 🟡 **`OPEN`** — ⚠️ **narrowed by this lane on the same day** | ⛔ **The `403` only, and SEQUENCED behind [TASK-471](BACKLOG.md) rather than waiting on a ruling** |
+| [C-255](#c-255--task-1409s-delivers-names-04-and-04-needs-three-capabilities-no-row-owns) | **TASK-1409's `Delivers` names §04, and §04 needs three capabilities no row owns** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) — ⚡ **D-212 §7's gate applied BEFORE filing** | **Lane C** — scope and sequencing | 🟡 **`OPEN`** | ⛔ **§04 only.** ✅ **The ladder ships** |
 | [C-254](#c-254--converging-the-four-improvised-system-states-needs-the-shell-and-this-rows-budget-says-nothing-red) | **Converging the four improvised system states needs the shell, and this row's budget says nothing red** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Product owner** — a Change Budget question | 🟡 **`OPEN`** | ⚠️ **Half of TASK-1409's verification strategy** |
 | [C-251](#c-251--the-signal-centers-queue-rows-need-five-facts-and-the-published-contract-carries-two) | **The Signal Center's queue rows need five facts and the published contract carries two** | **Lane A**, 2026-08-09, holding [TASK-439](BACKLOG.md) — ⚡ **after the L-1 reuse audit and before writing a line** | **Lane C** — ⛔ **a planning gap, not an implementation one; this office released a row naming fields the contract does not have** | ✅ **`ANSWERED`** — [TASK-1427](BACKLOG.md) is the row | ⛔ **Nothing.** ✅ **Both facts already exist on the domain object; the response schema does not publish them** |
 | [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | 🟠 **The Entry Engine's rule table counts 24, the row said 21, and one rule cannot fire** | **Lane A**, 2026-08-09, **implementing [TASK-1400](BACKLOG.md)** — ⚡ **all three found by building** | **Lane C** for ① *(corrected 2026-08-09)* · ⛔ **Product Owner** for ③ | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **③ decides what support reads in a diagnostics bundle** |
@@ -8343,6 +8344,48 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 **②** **Confidence** — the design shows it in two places at once, *"6 sources · confidence 4 of 5"*. **`components/ui/confidence.tsx` already takes exactly `level` and `sources`**, so the shape is settled and only the source is not.
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
+
+## C-255 · TASK-1409's `Delivers` names §04, and §04 needs three capabilities no row owns
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-1409](BACKLOG.md)** — ⚡ **measured against the code before building, and against the backlog before raising** |
+| **Owner** | **Lane C** — ⛔ **a scope and sequencing question.** **A row's `Delivers` names more than any row builds, and only the office that writes rows can resolve that** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING CAPABILITY** — ⛔ **and explicitly NOT a design question** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **§04 only** — three states of [TASK-1409](BACKLOG.md). ✅ **§01's ladder, `SystemState` and `CopyableId` are delivered and green** |
+
+### ✅ [D-212](DECISION_REGISTER.md) §7's gate was applied BEFORE filing, and it is why this is not a clarification
+
+⛔ **The gate**: *"can this be answered by an existing finalized design document? If yes, implementation proceeds and NOTHING is raised."*
+
+✅ **The design answers it completely, and that is precisely the point.** 📁 **§04 specifies the behaviour**: *"two edits are queued… They are sent in order when the connection returns — **the queue is visible, not implied**"*, *"last connected 3 minutes ago"*, and *"maintenance and platform outage pages are **served from static hosting with no dependency on the application, its API or its session**."*
+
+⚡ **So nothing is being asked of Design.** **What is being reported is that the three capabilities those sentences require are not built and no row builds them.**
+
+⚠️ **This lane raised [C-253](#c-253) the other way round last cycle** — filed first, gated after, and the gate changed the answer. **Applied first this time**, and it changed the *addressee* rather than the answer: **Lane C, not the Design Authority.**
+
+### 🔴 Measured, not assumed
+
+| §04 state | What the design requires | Present on `origin/integration` |
+|---|---|---|
+| **Offline banner** | **An offline mutation queue** — visible, ordered, replayed on reconnect | ⛔ **Nothing.** No `onlineManager`, no `resumePausedMutations`, no `networkMode`, no query persistence anywhere in `lib/` |
+| **No internet · cold start** | **Last successful connection time**, and a retry that **re-checks** rather than reloading | ⛔ **Nothing persists a last-connected time**, and there is no offline detection in the codebase at all |
+| **Maintenance · platform** | **Static hosting, no dependency on the app, its API or its session** | ⛔ **There is no `frontend/public/` directory** — no static surface exists to serve it from |
+
+**And the backlog was searched before this was written**: ⛔ **`offline`, `mutation queue`, `static hosting`, `maintenance page` and `no internet` match no row's scope**, and 📁 [`workflows.toml`](coordination/workflows.toml) has no workflow for any of them. **The only hit is [TASK-1409](BACKLOG.md)'s own `Delivers` line, which is the row promising them.**
+
+### ⛔ What this lane will not do
+
+**Render a queue that does not exist.** 📁 **§04's own rules forbid it** — *"**No fabrication.** Never show stale figures as current, never generate sample data to fill an empty screen, never claim a save that has not completed."* ⚡ **A banner reading *"two edits are queued"* over no queue is the third of those**, and it is the one that would cost a customer real work.
+
+**Ship the banner without the queue and call §04 done.** ⚠️ **A banner that says only *"you are offline"* is a materially weaker screen than the approved one**, and 📁 the design is explicit that the offline state is *"a banner, not takeover"* **because Signora keeps working** — **without the queue there is nothing for it to keep working on.** ⛔ **Changing what an approved screen does is not a lane's call** ([D-158](DECISION_REGISTER.md) §7).
+
+**Put the maintenance page inside the Next application.** ⛔ **That violates the one rule that defines the state** — it must survive the application being down.
+
+### ✅ What would resolve it
+
+**Any of these, and the choice is Lane C's:** **①** rows for the offline queue and the static surface, sequenced ahead of §04 · **②** §04 narrowed out of [TASK-1409](BACKLOG.md) into its own row behind them · **③** a ruling that the reduced offline banner is acceptable, which is a design change and therefore not Lane C's alone. ⚡ **② is the smallest and this lane recommends it** — **the ladder is what thirteen workflows are waiting for, and it should not wait on an offline queue.**
 
 ## C-254 · Converging the four improvised system states needs the shell, and this row's budget says nothing red
 
