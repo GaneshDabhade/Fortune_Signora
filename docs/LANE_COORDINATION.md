@@ -8386,7 +8386,22 @@ backend/modules/workspace_tenancy/infrastructure/query_service.py:221
 
 ⛔ **The stream is not held on this question.** ✅ **Delivered and green**: the table (`0046`, append-only, forced RLS, classified in both lists), the `SecurityEvent` domain type, `SqlAlchemySecurityEventLog`, and `SecurityEventWriter` through `public/`. **401 Security Invariants, 29 domain tests, `mypy --strict` clean, 37 import contracts kept.**
 
-⚡ **And the three OTHER producers the row names have no such problem** — 📁 **sign-in, sign-out and password reset are authentication facts that NO existing table records**, which is the gap the row opens with: *"Workflow 1 is producing authentication facts on `main` today and nothing records them."* ⛔ **They are not wired here for a different reason and it is stated rather than hidden**: they happen in the Better Auth tier, so reaching this stream needs an endpoint and a `Resource`, which is more than this row's 🟠 budget of *"a new table with its `tenancy_policy.py` registration"*.
+⚡ **And the three OTHER producers the row names have a DIFFERENT problem** — 📁 **sign-in, sign-out and password reset are authentication facts that NO existing table records**, which is the gap the row opens with: *"Workflow 1 is producing authentication facts on `main` today and nothing records them."*
+
+> 🔴 **CORRECTION, 2026-08-09, by the lane that wrote the sentence this replaces.** ⛔ **I first recorded these as blocked by BUDGET — *"reaching this stream needs an endpoint and a `Resource`, which is more than this row's 🟠 grant."* That is wrong.** 📁 **The Change Budget grants *a new endpoint* at 🟠 and this module's `interface/` at 🟢**, and the [`queues/lane-a.toml`](coordination/queues/lane-a.toml) banner on [B-214](BUGS.md) already settled the general point: ⚡ ***"a budget line names what the SLICE touches. It does not narrow the tier your module already grants you."*** ✅ **Adding a `Resource` member is a declarative registration and explicitly permitted** ([§20a](../CLAUDE.md), [C-224](#c-224)). **Budget does not block them.**
+
+### 🔴 What actually blocks them, and it is worth more than the budget answer was
+
+📁 **[493](architecture/493-security-platform-architecture.md) names the producer** — *"Workflow 1 (Login) — already producing them"* — ⛔ **and specifies nothing about how a fact born in the Better Auth tier reaches a table Python owns.**
+
+⚠️ **The two available shapes are not equivalent, and the row's own argument rules out the easy one:**
+
+| | How | Why it fails |
+|---|---|---|
+| **① The client reports it** | Next.js calls a new endpoint after Better Auth mints the token | ⛔ **A best-effort client call is a LOSSY audit path**, and it drops events exactly when something went wrong — ⚡ **which is the population an audit stream exists for.** 📁 **The row's whole argument is *"the record cannot be added retroactively"***; a stream with holes is the same failure arriving quietly |
+| **② The server records it** | The API records on first verification of a new session | ✅ **Reliable, and no client can forget.** ⛔ **But telling a NEW session from a continuing one lives in `signora_platform/auth/`, which is 🔴 and frozen** ([§20a](../CLAUDE.md)) |
+
+> ⚡ **So the honest position is not *"nearly done"*.** ⛔ **The reliable shape needs a frozen-platform change and the cheap shape is lossy by construction** — **and a lane choosing between those has made an architectural decision inside a feature slice**, which [§20e](../CLAUDE.md) names by hand: *"'I could just add it' is how an architectural blocker becomes a silent design decision."*
 
 ### ✅ What this lane recommends
 
