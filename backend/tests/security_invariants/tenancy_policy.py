@@ -131,6 +131,14 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # workspace's decisions about one workspace's work, and an approval
         # visible across tenants is the defect the platform exists to refuse.
         "action_batch_transition",
+        # The security event stream (TASK-492), migration 0046. **One
+        # append-only record every module writes to** — 493 §5. Tenant-owned
+        # and not platform infrastructure, and the distinction is the whole
+        # reason it is here: `outbox_event` spans every workspace and carries
+        # no RLS because the GRANT separates tenants there, whereas this
+        # records ONE workspace's activity and a row visible across tenants
+        # would be a customer reading another customer's sign-ins.
+        "security_event",
         # Buying Score Engine (M5B), migration 0013. `workspace_scoring_model`
         # is the **second** customer-authored table — a workspace's own
         # weighting, which cannot be regenerated from anything.
@@ -375,6 +383,12 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # (migration 0042; TASK-463).
         "action_batch",
         "action_batch_transition",
+        # The security event stream (TASK-492), migration 0046. **An account's
+        # history is the one thing that must not be editable** — the rows most
+        # worth changing are always the inconvenient ones, and a stream a
+        # workspace owner could revise is a stream compliance cannot cite. No
+        # UPDATE grant and no UPDATE policy, both withheld rather than one.
+        "security_event",
         "buying_score",
         "workspace_scoring_model",
         "opportunity",
