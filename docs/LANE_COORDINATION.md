@@ -360,6 +360,9 @@ databaseUrl: required(
 | [C-1409](#c-1409--rule-23--a-start-page-preference-that-outlives-the-access-it-points-at) | ⚡ **DESIGN CLARIFICATION** · **Rule 23 — a start-page preference that outlives the access it points at** | **Lane C**, 2026-08-09, reviewing the Coverage Review | ⛔ **Design Authority** | 🟠 **`OPEN`** | ✅ **Nothing** — no row implements rule 23 |
 | [C-1405](#c-1405--the-entry-coverage-review-recommends-four-documents-and-three-of-them-block-work-already-released) | 🔴 **The Entry Coverage Review recommends four documents, and three block work already released** | **Lane C**, 2026-08-09, reviewing under [D-206](DECISION_REGISTER.md) | ⛔ **Product Owner** — commissioning a design document is not this office's | 🔴 **`OPEN`** | ⏸️ **[TASK-1421](BACKLOG.md)** and ⏸️ **[TASK-1423](BACKLOG.md)** — both released `READY` in error and now correctly blocked |
 | [C-1406](#c-1406--the-review-says-the-engine-has-no-routing-defect-and-a-lane-that-implemented-it-found-three) | 🟠 **The review says the engine has no routing defect; the lane that built it found three** | **Lane C**, 2026-08-09, against [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | ⛔ **Product Owner** — same question as [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) ③ | 🟠 **`OPEN`** | ✅ **Nothing.** ⚠️ **It changes whether the Entry document is treated as settled** |
+| [C-252](#c-252--two-primitives-own-the-region-scope-failed-read-and-task-445-built-the-other-one) | **Two primitives own the region-scope failed read, and TASK-445 built the other one** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) — 🔴 **found by TASK-445's own guard failing** | **Lane C** — ⛔ **it spans two rows this office released** | 🔴 **`OPEN`** | 🔴 **TASK-1409's region boundary.** ✅ **The ladder and its 23 tests ship** |
+| [C-253](#c-253--the-designs-403-names-the-missing-role-and-nothing-publishes-it) | **The design's 403 names the missing role, and nothing publishes it** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Design Authority** · **Lane C** | 🟡 **`OPEN`** | ⛔ **The `403` state only** |
+| [C-254](#c-254--converging-the-four-improvised-system-states-needs-the-shell-and-this-rows-budget-says-nothing-red) | **Converging the four improvised system states needs the shell, and this row's budget says nothing red** | **Lane A**, 2026-08-09, holding [TASK-1409](BACKLOG.md) | **Product owner** — a Change Budget question | 🟡 **`OPEN`** | ⚠️ **Half of TASK-1409's verification strategy** |
 | [C-251](#c-251--the-signal-centers-queue-rows-need-five-facts-and-the-published-contract-carries-two) | **The Signal Center's queue rows need five facts and the published contract carries two** | **Lane A**, 2026-08-09, holding [TASK-439](BACKLOG.md) — ⚡ **after the L-1 reuse audit and before writing a line** | **Lane C** — ⛔ **a planning gap, not an implementation one; this office released a row naming fields the contract does not have** | ✅ **`ANSWERED`** — [TASK-1427](BACKLOG.md) is the row | ⛔ **Nothing.** ✅ **Both facts already exist on the domain object; the response schema does not publish them** |
 | [C-250](#c-250--the-entry-engines-rule-table-counts-twenty-four-the-row-says-twenty-one-and-one-rule-cannot-fire) | 🟠 **The Entry Engine's rule table counts 24, the row said 21, and one rule cannot fire** | **Lane A**, 2026-08-09, **implementing [TASK-1400](BACKLOG.md)** — ⚡ **all three found by building** | **Lane C** for ① *(corrected 2026-08-09)* · ⛔ **Product Owner** for ③ | 🟠 **`OPEN`** | ⛔ **Nothing.** ⚠️ **③ decides what support reads in a diagnostics bundle** |
 | [C-1404](#c-1404--machine-credentials-have-no-module-and-the-entry-engine-already-admits-a-non-human-principal) | 🟠 **Machine credentials have no module, and the entry engine already admits a non-human principal** | **Lane C**, 2026-08-09, decomposing [workflow 11](coordination/workflows.toml) | ⛔ **Product Owner** if a new module is required — **inventing a module boundary is architecture** | 🟠 **`OPEN`** | ⏸️ **[TASK-1413](BACKLOG.md)**, and nothing being built today |
@@ -8340,6 +8343,77 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 **②** **Confidence** — the design shows it in two places at once, *"6 sources · confidence 4 of 5"*. **`components/ui/confidence.tsx` already takes exactly `level` and `sources`**, so the shape is settled and only the source is not.
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
+
+## C-254 · Converging the four improvised system states needs the shell, and this row's budget says nothing red
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-1409](BACKLOG.md)** — ⚡ **found by doing the L-1 reuse audit the row asks for, and stopped before the edit rather than after it** |
+| **Owner** | **Product owner** — ⛔ **a Change Budget question, and [§20e](../CLAUDE.md) says touching a file outside your budget is a finding to raise, not a change to make** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **GOVERNANCE** — ⛔ **not a design question and not a missing capability.** The work is understood and the authority is not this lane's |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⚠️ **Half of [TASK-1409](BACKLOG.md)'s verification strategy.** ✅ **The ladder, the primitive and their tests ship without it** |
+
+**The row's own success test is *"thirteen workflows stop needing their own error handling"*, and its failure test is *"if a later workflow still writes a local 404, this row was built as four screens rather than as a ladder."*** ⚡ **Four already exist**, and the audit found them rather than predicting them:
+
+| Surface | What it decided for itself |
+|---|---|
+| `app/not-found.tsx` | Its own 404 copy, its own layout, no identifier |
+| `app/error.tsx` | Its own 500 copy, `Reference: …`, retry-before-reload |
+| `components/feedback/error-boundary.tsx` | Its own colours and copy, `Reference: …` **that cannot be copied**, ⛔ **no retry limit at all** |
+| `components/ui/error-state.tsx` | A copyable id, a different shape, its own retry |
+
+🔴 **Four of the five call sites are in [`components/shell/app-shell.tsx`](../frontend/components/shell/app-shell.tsx), which is the shell — 🔴 frontend foundation.** ⛔ **[TASK-1409](BACKLOG.md)'s budget reads 🟢 `frontend/app/(app)/**` · a new `components/ui/system-state` · 🟠 the `(app)` error boundary · 🔴 ⛔ nothing.** ⚠️ **The 🟠 grant most naturally means the route boundary in the `(app)` group, not the shell component**, and reading it the other way would let one row's budget reach the frozen foundation by implication.
+
+⚡ **The edit was made and reverted rather than argued about** — it is four import lines and a rename, and one of the five boundaries is currently anonymous, which 📁 `1.3.1` forbids: *"an h1 that names what happened — not 'Error'."*
+
+**What is being asked:** ⛔ **not permission to redesign the shell.** ✅ **Either an amendment to this row's budget naming `app-shell.tsx`, or a separate row that carries it** — whichever the office prefers, and the second is cleaner if the convergence should be reviewed on its own.
+
+## C-253 · The design's 403 names the missing role, and nothing publishes it
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-1409](BACKLOG.md)** — ⚡ **measured against the transport before building, not discovered while writing copy** |
+| **Owner** | **Design Authority** for whether the screen ships without it · **Lane C** for whether a contract row is warranted |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING CAPABILITY** — ⛔ **the same class as [C-1403](#c-1403), one field over** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **The `403` state only.** ✅ **Every other state in the row is unaffected and proceeding** |
+
+📁 **The design's `403` body**: *"This report needs the **Revenue Ops** role. Your **Analyst** role covers pipeline and activity, not revenue figures."* 📁 **And its rule**: ***"403 names the missing role, never the data."***
+
+🔴 **Both role names are the sentence's entire content, and the transport carries neither.** **Measured on `origin/integration`**: `ApiError` exposes `status`, `code`, `correlationId` and `details`, and **`details` is `{ field: string; message: string }[]`** — ⛔ **a field-validation shape, not an authorization one.** **Casbin decides the refusal server-side and the envelope reports only that it was refused.**
+
+⛔ **So the screen cannot name the missing role without this lane inventing one**, and a fabricated role name is worse than none: **somebody asks an administrator for a role that does not exist.** ⚠️ **[C-1403](#c-1403) already records that the approver names have no publisher and [TASK-1409](BACKLOG.md) already rules the request-access button out** ([D-167](DECISION_REGISTER.md) §4) — **this is the third fact on the same screen with the same problem, and the row's remaining copy is what is left after removing all three.**
+
+**Three ways forward, and the choice is not this lane's:** **①** the envelope gains an authorization detail shape and the screen is built as drawn · **②** the screen ships naming the *capability* rather than the role — *"this needs a role you do not have"* — which is honest, weaker than the design, and discloses less · **③** the `403` is deferred out of this row. ⚡ **② is what this lane would build if told to proceed**, and ⛔ **it is a change to an approved design, so it is asked rather than assumed.**
+
+## C-252 · Two primitives own the region-scope failed read, and TASK-445 built the other one
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **holding [TASK-1409](BACKLOG.md)** — 🔴 **found by [TASK-445](BACKLOG.md)'s own guard failing, which is the guard working exactly as written** |
+| **Owner** | **Lane C** — ⛔ **it spans two rows this office released and neither can settle it alone** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **CONTRADICTORY DESIGN** — **two published primitives claim one concern, and both are correct in isolation** |
+| **Status** | 🔴 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | 🔴 **[TASK-1409](BACKLOG.md)'s region boundary — the half the row calls *"what every later workflow consumes."*** ✅ **The ladder, `SystemState` and their 23 tests are delivered and green** |
+
+⚡ **[TASK-1409](BACKLOG.md) anticipated this and got the reason slightly wrong**, which is why it is worth recording rather than quietly resolving. **The row says**: *"[TASK-445](BACKLOG.md) already built stated absence and the two must not fork — absence is 'there is nothing', a system state is 'something failed', and conflating them is how a broken widget renders as an empty one."*
+
+🔴 **But `StatedAbsence`'s actual sentence is *"Signora could not load {subject}"*** — **which is a failure, not an absence.** ⛔ **The row's distinction does not hold against the code**: `stated-absence.test.tsx` asserts *"never blames the account for a failure of ours"*, so the component is [P-A](DOMAIN_DISCOVERY_REGISTER.md)'s **failed-read** primitive and always was.
+
+**So both rows built the same thing from opposite ends:**
+
+| | `StatedAbsence` — [TASK-445](BACKLOG.md) | the ladder's `region-error` — [TASK-1409](BACKLOG.md) |
+|---|---|---|
+| **Owns** | ✅ **the sentence**, in one place, across nine former local copies | ✅ **the scope**, the severity, the retry budget and the identifier |
+| **Lacks** | ⛔ retry · attempt count · correlation id | ⛔ the sentence |
+| **Guard** | ✅ **fails any `.tsx` under `components/` or `app/(app)/` containing *"could not load"*** | — |
+
+✅ **The guard fired on `region-boundary.tsx` and it was right to.** ⛔ **The boundary was removed rather than reworded** — **rewording to dodge a regex is precisely the fork the guard exists to prevent**, and it would have left two failed-read vocabularies with nothing detecting the second.
+
+**The recommendation, and it is input rather than authority** ([§20e](../CLAUDE.md)): ✅ **fold `StatedAbsence` into the ladder as the region-scope failed read.** **It keeps the sentence — that is the thing nine local copies proved valuable — and gains the scope, the three-attempt budget and the copyable id from the ladder.** ⛔ **The alternative, leaving both, means a region failure looks like one thing when a read returns an error and another when a component throws** — **the same inconsistency across four surfaces that [C-254](#c-254) is about, reintroduced inside the primitive meant to end it.**
+
+⚠️ **It touches [TASK-445](BACKLOG.md)'s delivered work, so it is not this lane's to decide** even though this lane holds the row that collides with it.
 
 ## C-250 · The Entry Engine's rule table counts twenty-four, the row says twenty-one, and one rule cannot fire
 
