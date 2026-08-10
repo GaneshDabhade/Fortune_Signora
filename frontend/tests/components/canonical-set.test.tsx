@@ -262,7 +262,19 @@ describe('§14 AI system — the reserved hue is actually reserved', () => {
     // hue"* — and what it summarises is machine-written, which is the exact
     // distinction the sentence above says the pairing keeps. ⛔ **Only the
     // summary row uses it**; no data cell, header or selection state does.
-    const allowed = new Set(['badge.tsx', 'confidence.tsx', 'table.tsx']);
+    // ⚡ **`attribution.tsx` joined with [TASK-1411](../../../docs/BACKLOG.md),
+    // and it is §14's grammar rather than an exception to it.** 📁 All three
+    // designs give *Show reasoning* `var(--ai-ink)`, and **the strip exists
+    // for precisely the distinction this test protects** — it is the line that
+    // says a machine wrote what you are reading and what it stood on. ⛔ **Only
+    // the two disclosures use the hue**; the sources, the exclusion reasons and
+    // the generated-at line are ordinary content colours.
+    const allowed = new Set([
+      'attribution.tsx',
+      'badge.tsx',
+      'confidence.tsx',
+      'table.tsx',
+    ]);
     const dir = join(process.cwd(), 'components', 'ui');
     const offenders = readdirSync(dir)
       .filter((file) => file.endsWith('.tsx') && !allowed.has(file))

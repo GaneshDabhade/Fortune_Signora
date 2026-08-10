@@ -19,6 +19,11 @@ export {
 export { Select, type SelectOption, type SelectProps } from './select';
 export { Badge, type BadgeProps, type BadgeTone } from './badge';
 export { Confidence, type ConfidenceProps } from './confidence';
+export {
+  AttributionStrip,
+  type AttributionSource,
+  type AttributionStripProps,
+} from './attribution';
 export { Card, CardBody, CardHeader, CardTitle } from './card';
 export { LockedField, type LockedFieldProps } from './locked';
 export { Dialog, type DialogProps } from './dialog';

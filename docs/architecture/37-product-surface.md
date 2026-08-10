@@ -951,3 +951,38 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 |---|---|
 | **Not `EntityName`, and deliberately not a link** | That component renders a truncated id as an *openable* heading, which is right on the working list — an unnamed account is the one a seller most wants to open, and withholding the link would hide the page that explains why. **Here the row is already the statement.** Dressing an id as a name would put the id back in the position the name would occupy |
 | **A source count, never a judgement** | Four sources reporting on one unnamed record is a different thing from one, and it is the only signal a reader has about whether this is worth anybody's time. **The product does not say which, because it has no basis to** |
+
+---
+
+## TASK-1411 · The AI attribution primitive — one confidence, one source list, one *Show reasoning* *(2026-08-10)*
+
+**`components/ui/attribution.tsx` · `AttributionStrip`.** 📁 **Three finalized designs draw the same line under a generated answer** — **Account 360**: *"Show reasoning · 6 sources · Confidence 4 of 5 · Generated 09:14"* · **Reports**: *"Confidence 4 of 5 · 3 sources"* · **AI Research**: *"14 sources · 3 excluded · Confidence 4 of 5"*. ⛔ **Three workflows reaching this separately build three of them, and they will disagree about what *4 of 5* means.**
+
+### The confidence value does not exist, so the component states its absence
+
+⚠️ **The row's own first slice was a read, and this lane performed it before claiming.** 📁 **`ai_platform/public/` exports `Infer`, the inference types, `ExplanationSource`, `EvidenceFact`, `EvidenceRef` and `EvidenceSet` — and no confidence value.** 📁 **`ai_reasoning_engine/public/` names confidence in prose only.** 📁 **The only `confidence` reaching an endpoint is `workspace_tenancy`'s `confidence_floor`, a threshold the customer sets.**
+
+✅ **So `confidence` is optional and renders *Confidence not stated*.** 🔴 **Specifically never `0 of 5`** — ⛔ ***0 of 5* reads as *certainly wrong* where the truth is *not known***, and those are opposite claims. **[C-267](../LANE_COORDINATION.md) is open on exactly this figure and this component is what refuses it.**
+
+⚠️ **It is deliberately not [`StatedAbsence`](../../frontend/components/feedback/stated-absence.tsx).** **That sentence ends *"reload to try again"*, which would be a false instruction here**: nothing failed to load, and reloading produces the same absence forever. 📁 **[P-A](../DOMAIN_DISCOVERY_REGISTER.md) is *a failed read must never render as an empty result*; this is the mirror case, and borrowing the failed-read wording would misreport a working system.**
+
+### Two facts about a source that are never collapsed into one
+
+| | |
+|---|---|
+| 🔴 **`readable: false` — not listed and NOT COUNTED** | **The row's Security Invariant, the same disclosure rule as [C-245](../LANE_COORDINATION.md).** ⚠️ **The count half is the one that is easy to get wrong**: hiding the row while still counting it tells the reader a source exists that they may not see, which is the leak itself |
+| 📁 **`excluded: string` — shown, with its reason** | **AI Research**: *"excluded citations are shown as withheld rather than removed, so the argument stays auditable."* ⛔ **The type carries a reason rather than a boolean**: *"3 excluded"* with no reason is an unfalsifiable claim |
+
+### What it reuses, and what it refuses to invent
+
+✅ **`Confidence` gains its first production caller** — the `N of 5` component existed with zero importers ([C-266](../LANE_COORDINATION.md)). ✅ **`formatDay` is imported rather than re-implemented**, so the strip cannot drift into a second date format.
+
+⛔ **The source list opens in place rather than in a docked panel.** 📁 **The design docks it beside the answer — that surface is the utility panel, [TASK-1433](../BACKLOG.md)'s, and it does not exist.** ✅ **A primitive does not invent it**; the individual source still opens at the cited moment through `onOpen`, which is where a citation actually ends.
+
+⛔ **`reasoning` undefined renders no button at all** — **a *Show reasoning* control that opens an empty panel is the affordance-with-nothing-behind-it this surface has refused since the narration's fact count.**
+
+### First consumer, and the limits recorded rather than papered over
+
+✅ **`NarrativeBlock` mounts it**, which is Account 360's summary block. **`generated_at` moved out of the provenance sentence** so one fact has one rendering. ⛔ **Account 360's *"updates on new evidence"* is omitted deliberately**: that panel's own rule is *"a narration is never rewritten to catch up"*, so the phrase would be a false promise.
+
+⚠️ **The row's Playwright requirement — *"the same component renders on Account 360 and on a report with the same markup"* — is NOT met, and is recorded rather than claimed.** ⛔ **There is no Reports screen**, and 📁 **`ai_narration` holds 0 rows in `signora_lane_a`**, so the strip has no runtime instance to visit on Account 360 either. ✅ **Twelve component tests cover every state**, and both invariants above were fire-tested by reverting them.

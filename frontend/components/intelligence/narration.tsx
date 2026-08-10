@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { formatDay } from '@/components/intelligence/dates';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
-import { Badge, Dialog } from '@/components/ui';
+import { AttributionStrip, Badge, Dialog } from '@/components/ui';
 import type { AccountNarration, EvidenceFact } from '@/lib/api/types';
 
 /**
@@ -110,6 +110,45 @@ export function NarrativeBlock({
             narration is never rewritten to catch up.
           </p>
         ) : null}
+
+        {/**
+         * ⚡ **[TASK-1411](../../../docs/BACKLOG.md) — the attribution strip,
+         * and this is its first consumer.**
+         *
+         * 📁 **Account 360 draws exactly this line beneath its summary**:
+         * *"Show reasoning · 6 sources · Confidence 4 of 5 · Generated
+         * 09:14"*. ⛔ **The fact count on each sentence is NOT that line** —
+         * it says what one claim rests on; the strip says what the whole
+         * answer rests on, and 📁 the design carries both.
+         *
+         * ⛔ **`confidence` is absent because nothing publishes one.**
+         * 📁 `AccountNarration` carries `statements`, `facts`,
+         * `evidence_unchanged`, `prompt`, `model`, `vendor` and
+         * `generated_at` — **and no confidence.** ✅ **So the strip states the
+         * absence**, which is the row's instruction and the reason
+         * [C-267](../../../docs/LANE_COORDINATION.md) stays open.
+         *
+         * ⛔ **And `note` is omitted deliberately.** 📁 Account 360's phrase is
+         * *"updates on new evidence"* — ⚠️ **which would be a false promise
+         * here**: this panel's own rule is that *"a narration is never
+         * rewritten to catch up"*, so it does not update, it dates.
+         */}
+        <AttributionStrip
+          sources={narration.facts.map((fact) => ({
+            id: fact.token,
+            title: fact.summary,
+            ...(KIND_WORDING[fact.kind] === undefined
+              ? {}
+              : { meta: KIND_WORDING[fact.kind] }),
+            // ⚡ **Every fact here arrived inside THIS reader's response**, so
+            // the workspace scope and Casbin already decided they may see it.
+            // ⛔ The flag is not a second authorization — it is the strip
+            // refusing to list one that a caller knows is out of reach.
+            readable: true,
+            onOpen: () => setOpen([fact.token]),
+          }))}
+          generatedAt={narration.generated_at}
+        />
 
         <Provenance narration={narration} />
       </div>
@@ -296,8 +335,8 @@ function Provenance({ narration }: { narration: AccountNarration }) {
   return (
     <p className="border-t border-border pt-3 text-xs leading-5 text-content-subtle">
       Written by <span className="text-content-muted">{narration.model}</span> using{' '}
-      <span className="text-content-muted">{narration.prompt}</span> on{' '}
-      {formatDay(narration.generated_at)}. Every sentence is restricted to facts the
+      <span className="text-content-muted">{narration.prompt}</span>. Every sentence is
+      restricted to facts the
       pipeline computed —{' '}
       <span className="text-content-muted">the model chose the words, not the facts</span>
       .
