@@ -202,14 +202,14 @@ export default function SettingsPage() {
             <Table>
               <THead>
                 <TR>
-                  <TH>Name</TH>
+                  <TH pin>Name</TH>
                   <TH>Created</TH>
                 </TR>
               </THead>
               <TBody>
                 {workspaces.map((workspace) => (
                   <TR key={workspace.id}>
-                    <TD>
+                    <TD pin>
                       {workspace.name}
                       {workspace.id === activeWorkspace?.id ? (
                         <span className="ml-2 text-xs text-content-subtle">Active</span>

@@ -55,7 +55,19 @@ export { OfflineStatus } from './offline-status';
 // component and not a page-local variant** (§20c); callers import the file.
 export { RegionBoundary, MAX_ATTEMPTS } from './region-boundary';
 export { Skeleton, SkeletonText, type SkeletonTextProps } from './skeleton';
-export { Table, TBody, TD, TH, THead, TR } from './table';
+export {
+  Table,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+  EditableCell,
+  type TableProps,
+  type TRProps,
+  type CellProps,
+  type EditableCellProps,
+} from './table';
 export { StepRail, type RailStep, type StepRailProps } from './step-rail';
 export {
   ChoiceCards,

@@ -253,7 +253,13 @@ describe('§14 AI system — the reserved hue is actually reserved', () => {
     // for `bg-ai-subtle`/`text-ai` to mean "notice" would quietly retire the
     // one distinction the section exists to keep — whether a machine wrote
     // what you are reading.
-    const allowed = new Set(['badge.tsx', 'confidence.tsx']);
+    // ⚡ **`table.tsx` joined the AI grammar with [TASK-1452](../../../docs/BACKLOG.md),
+    // and it meets this test's own criterion rather than being excused from
+    // it.** 📁 §11 rule ④: the summary row is *"tinted with the intelligence
+    // hue"* — and what it summarises is machine-written, which is the exact
+    // distinction the sentence above says the pairing keeps. ⛔ **Only the
+    // summary row uses it**; no data cell, header or selection state does.
+    const allowed = new Set(['badge.tsx', 'confidence.tsx', 'table.tsx']);
     const dir = join(process.cwd(), 'components', 'ui');
     const offenders = readdirSync(dir)
       .filter((file) => file.endsWith('.tsx') && !allowed.has(file))

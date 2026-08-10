@@ -201,7 +201,7 @@ export default function TeamPage() {
             <Table>
               <THead>
                 <TR>
-                  <TH>Person</TH>
+                  <TH pin>Person</TH>
                   <TH>Role</TH>
                   <TH>{''}</TH>
                 </TR>
@@ -209,7 +209,7 @@ export default function TeamPage() {
               <TBody>
                 {people.map((one) => (
                   <TR key={one.id}>
-                    <TD>
+                    <TD pin>
                       {nameOf(one, viewerId)}
                       {one.user_id === viewerId ? (
                         <span className="ml-2 text-xs text-content-subtle">You</span>
@@ -360,7 +360,7 @@ export default function TeamPage() {
             <Table>
               <THead>
                 <TR>
-                  <TH>Email</TH>
+                  <TH pin>Email</TH>
                   <TH>Role</TH>
                   <TH>Status</TH>
                   <TH>{''}</TH>
@@ -369,7 +369,7 @@ export default function TeamPage() {
               <TBody>
                 {[...waiting, ...settled].map((one) => (
                   <TR key={one.id}>
-                    <TD>{one.invited_email}</TD>
+                    <TD pin>{one.invited_email}</TD>
                     <TD className="text-content-muted">{ROLE_CAPABILITIES[one.role].summary}</TD>
                     <TD>
                       <Badge tone={STATE_TONE[one.state]}>{STATE_WORDS[one.state]}</Badge>
