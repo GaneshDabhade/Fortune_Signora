@@ -282,7 +282,7 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 lane         = "Lane A"
-updated      = 2026-08-09
+updated      = 2026-08-10
 
 # ⚠️  4 claimable, but only 0 claimable TODAY.
 #    4 row(s) are READY here and still read otherwise in
@@ -1481,12 +1481,34 @@ updated      = 2026-08-09
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-1456", "TASK-1439", "TASK-1440", "TASK-1453", "TASK-1446", "TASK-1452",
+backlog = ["TASK-1456", "TASK-1440", "TASK-1453", "TASK-1446", "TASK-1452",
             "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451",
             "TASK-1442", "TASK-1444", "TASK-1443",
             "TASK-1438", "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
-            "TASK-1405", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
-            "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+            "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495",
+            "TASK-496", "TASK-475", "TASK-471", "TASK-452"]
+# ⚠️ THREE REMOVALS, 2026-08-10.
+#
+# TASK-1439 — CLAIMED by this lane on the poll that reported it (f3d93fe6),
+#    and it is being built now. Same rule as TASK-1405 below: `backlog` is
+#    what is claimable, and a row its own lane is holding is not.
+#
+# TASK-1405 — the array advertised it as claimable through two different
+#    states. It was CLAIMED when `state-check` reported it ("queues TASK-1405
+#    as executable; somebody holds it"), and by the time this edit landed this
+#    lane had delivered the resolver and moved the ROUTE half to BLOCKED on
+#    [C-268](../../LANE_COORDINATION.md), releasing the claim. ⛔ Neither state
+#    is claimable, so it leaves `backlog` either way — it is in [[blocked]]
+#    below, which is where a row with a named blocker belongs.
+#
+# TASK-412 — moved to [[blocked]] below, NOT dropped. Its Change Budget is
+#    🟢 modules/ai_platform/** (yours, settled in modules.toml) while its
+#    Module cell is deliberately unnamed (D-042). Both cells are in the
+#    backlog row today and they disagree — [C-1413](../../LANE_COORDINATION.md),
+#    with the product owner. ⛔ This office will not settle a module boundary
+#    by leaving a row in a queue. See [B-414](../../BUGS.md) for how the
+#    disagreement stayed invisible: the projection derived Lane C from the
+#    trigger steward while this file derived Lane A from the Change Budget.
 # 🔴 D-222 §6 / D-224 — THE ENTRY ENGINE HAS ZERO PRODUCTION CALLERS.
 #    TASK-1456. AND IT IS AN AUDIT ROW, NOT AN INSTRUCTION TO WIRE ANYTHING.
 #
@@ -1775,6 +1797,18 @@ backlog = ["TASK-1456", "TASK-1439", "TASK-1440", "TASK-1453", "TASK-1446", "TAS
 # with its blocker named below. ⛔ Nothing here is invented scope: every row
 # already existed and its owner was joined from modules.toml (D-135).
 
+
+[[blocked]]
+task    = "TASK-1405"
+blocker = ["C-268"]
+owner   = "Product owner"
+note    = "Home — the ROUTE half only; the composition resolver is DELIVERED and on your branch (four compositions, +8 tests). An architectural blocker under §20e, raised by this lane and correctly stated: creating /w/:workspace/home turns reachability.test red because Home has no permitted entrance, and three exits were tried and barred. ⚡ TASK-1439 is the entrance — this lane claimed it on the same poll and said so on the row, which is why the two are not separable in the order the queue already had them. Nothing for Product Office to prepare here: the blocker is a decision about where the entrance comes from, and TASK-1439 landing may discharge it without a ruling. Left named rather than assumed either way"
+
+[[blocked]]
+task    = "TASK-412"
+blocker = ["C-1413"]
+owner   = "Product owner"
+note    = "Usage & Billing Observability. NOT a technical dependency and nothing is mid-flight — the row contradicts itself and one cell has to give. Its Change Budget names 🟢 modules/ai_platform/** (yours, settled) while its Module cell is deliberately unnamed under D-042, 'do not force a module boundary until implementation naturally reaches it'. D-187 §2 added the Change Budget on 2026-08-08 to give the row the cells a lane needs to know it is done, and naming a path quietly answered the question D-042 left open. A module boundary is architecture, so C-1413 asks the product owner which cell stands. If ai_platform: this row gains a Module cell, resolves to you, and returns to the backlog above. If the boundary is still open: the Change Budget is withdrawn and the row waits for implementation to reach it. B-414 is why nobody saw the disagreement — the projection read Lane C from the trigger steward, this file read Lane A from the Change Budget, and the two never met"
 
 [[blocked]]
 task    = "TASK-1433"

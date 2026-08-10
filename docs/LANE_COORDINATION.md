@@ -365,6 +365,7 @@ databaseUrl: required(
 | [C-258](#c-258--two-of-statedabsences-thirteen-callers-cannot-render-at-region-scope-and-the-ladder-is-what-is-short) | 🔴 **Two of `StatedAbsence`'s thirteen callers cannot render at region scope, and the ladder is what is short** | **Lane A**, 2026-08-09, holding [TASK-1428](BACKLOG.md) | **Design Authority** | 🔴 **`OPEN`** | ⚠️ **Five of thirteen call sites.** ✅ **Eight compose and are being built** |
 | [C-1411](#c-1411--an-audit-stream-whose-reliable-shape-needs-the-frozen-platform-and-whose-cheap-shape-is-lossy) | **An audit stream whose reliable shape needs the frozen platform, and whose cheap shape is lossy** | **Lane C**, 2026-08-09, splitting [C-261](#c-261--task-492s-producer-instruction-rests-on-a-premise-that-measurement-contradicts-and-either-reading-ships-a-defect) | 🔴 **Product owner** — [§20a](../CLAUDE.md) | 🔴 **`OPEN`** | ⚠️ **Three of [TASK-492](BACKLOG.md)'s four producers.** ✅ **The table, type, repository and `public/` are green** |
 | [C-1412](#c-1412--two-shell-regions-are-parked-behind-consumers-that-no-row-schedules) | **Two shell regions are parked behind consumers that no row schedules** | **Lane C**, 2026-08-09, from [498](architecture/498-common-platform-audit.md) | **Product owner** — priority | ✅ **`CLOSED`** — **[D-219](DECISION_REGISTER.md) §6: utility panel first** | ✅ **Nothing** |
+| [C-1413](#c-1413--task-412s-module-is-deliberately-unnamed-and-its-change-budget-names-one) | **TASK-412's Module is deliberately unnamed and its Change Budget names one** | **Lane C**, 2026-08-10, from [B-414](BUGS.md) | **Product owner** — a module boundary | 🔴 **`OPEN`** | ⚠️ **`TASK-412` reads `WAITING ARCHITECTURE`; nothing is mid-flight** |
 | [C-264](#c-264--c-241-was-resolved-and-the-screen-that-motivated-it-was-never-revisited) | **C-241 was resolved and the screen that motivated it was never revisited** | **Lane A**, 2026-08-09 | **Lane C** — row scope | 🔴 **`OPEN`** | ✅ **Nothing** |
 | [C-265](#c-265--step-up-is-built-and-the-only-module-whose-controls-require-it-is-not) | **Step-up is built and the only module whose controls require it is not** | **Lane A**, 2026-08-09 | **Lane C** — row scope | 🔴 **`OPEN`** | ⚠️ **One sentence of [TASK-1410](BACKLOG.md)'s DoD** |
 | [C-266](#c-266--the-ai-attribution-primitive-has-three-designs-and-no-data--the-read-task-1411-asks-for) | **The AI attribution primitive has three designs and no data** | **Lane A**, 2026-08-09 | **Lane C**, then the module owning the fact | 🔴 **`OPEN`** | ⚠️ **The DATA half of [TASK-1411](BACKLOG.md)** |
@@ -9681,6 +9682,43 @@ rules parsed: 24   ·   distinct reason codes: 24
 > ## ⚠️ **Three outcomes are possible and only QE can choose: LIVE and governance forgot to reference it · SUPERSEDED by [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) · or ABSORBED elsewhere, leaving a remnant.**
 
 ✅ **What this office did with the three it could rule on** — [`DECISION_PACKS.md`](DECISION_PACKS.md) superseded · [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) never adopted · [`PRODUCT_EXPERIENCE.md`](PRODUCT_EXPERIENCE.md) reassigned from the closed Lane B — **is a banner saying which of the three it is.** ⛔ **Nothing deleted.** ⚡ **The same treatment fits here once QE says which.**
+
+## C-1413 · TASK-412's Module is deliberately unnamed and its Change Budget names one
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-10, discharging **[B-414](BUGS.md)** |
+| **Owner** | 🔴 **Product owner** — ⛔ **a module boundary is architecture** ([§20e](../CLAUDE.md)), and this office prepares rather than decides |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **PLANNING CONTRADICTION** — ⛔ **not a defect and not a sequencing gap: two cells of one row make incompatible claims, and each was correct on the day it was written** |
+| **Status** | 🔴 **`OPEN`** |
+| **Blocks** | ⚠️ **Nothing mid-flight.** ⚡ **`TASK-412` now reads `WAITING ARCHITECTURE` in the projection rather than being offered to a lane that may not build it** — **which is the honest state, and it is also why this is not urgent** |
+
+### 🔴 The contradiction, in the row's own words
+
+| The cell | What it says | Written |
+|---|---|---|
+| **Module** | ⛔ **Absent.** Its sibling [TASK-411](BACKLOG.md) states the same intent explicitly — *"⚠️ **Deliberately unnamed.** [D-042]: do not force a module boundary until implementation naturally reaches it"* | **[D-042](DECISION_REGISTER.md)** |
+| ⚡ **Trigger steward** | **Lane C**, and the cell argues the point directly: ⛔ ***"This is not a module assignment and does not become one."*** **The module stays undecided; somebody still watches the trigger** | **[D-135](DECISION_REGISTER.md), 2026-08-06** |
+| **Change Budget** | 🟢 **`modules/ai_platform/**`** — ⛔ **which names a module, and [`modules.toml`](coordination/modules.toml) settles `ai_platform` on Lane A with `transition = "settled"`** | **[D-187](DECISION_REGISTER.md) §2, 2026-08-08** |
+
+⚡ **Each edit was right on its own day.** **D-187 §2 added the cells *"a lane needs to know it is done"* to a row that carried real scope** — and a Change Budget cannot be written without naming files, so naming files quietly answered the question D-042 had deliberately left open. ⛔ **Nobody decided the boundary; a cell that needed a path supplied one.**
+
+> ## ⚠️ **This is [§2](../CLAUDE.md) — *governance describes reality; it never quietly changes it* — in its documented shape: *if applying the edit would change what somebody does tomorrow, it needed a decision yesterday.***
+
+**And it did change what somebody does tomorrow**, through the instrument rather than the prose: **[`queues/lane-a.toml`](coordination/queues/lane-a.toml) queues `TASK-412` to Lane A**, which is defensible *only* on the Change Budget, while the projection derived `Lane C` from the steward. ⛔ **[B-414](BUGS.md) fixed the tool. It cannot fix the row.**
+
+### ✅ What is actually being asked
+
+**One question, and it is small:** ⚡ **does metering's read path live in `ai_platform`, or is the boundary still genuinely open?**
+
+| If | Then |
+|---|---|
+| **The boundary is settled on `ai_platform`** | ✅ **`TASK-412` gains a `Module` cell naming it**, resolves to Lane A, and `queues/lane-a.toml` becomes correct rather than merely defensible |
+| **The boundary is still open** ([D-042](DECISION_REGISTER.md) stands) | ⛔ **The Change Budget's 🟢 `modules/ai_platform/**` is withdrawn to match**, and the row stays `WAITING ARCHITECTURE` until implementation reaches it |
+
+⛔ **This office recommends neither.** ⚡ **The evidence for the second is that D-042 and D-135 both chose it deliberately and twice; the evidence for the first is that [424 §9b](architecture/424-usage-metering-assessment.md) is the preparation and D-187 read it before naming the path.** **Which of those is authoritative is the product owner's, not a derivation.**
+
+---
 
 ## C-1412 · Two shell regions are parked behind consumers that no row schedules
 

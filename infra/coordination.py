@@ -179,7 +179,9 @@ def _owners() -> dict[str, str]:
     }
 
 
-def _lane_for(module_cell: str, body: str, owners: dict[str, str]) -> str | None:
+def _lane_for(
+    module_cell: str, body: str, owners: dict[str, str], declared: str = ""
+) -> str | None:
     """Which lane owns this row.
 
     **Precedence matters and was learned the hard way.** An explicit
@@ -187,6 +189,30 @@ def _lane_for(module_cell: str, body: str, owners: dict[str, str]) -> str | None
     wins; only then a module key; only then the trigger steward. Reading the
     first module key found instead resolved a row to the lane whose module it
     *reads* rather than the lane whose module it *is*.
+
+    ⛔ **A trigger steward supplies an owner, never an executor — 2026-08-10.**
+    [D-135](../docs/DECISION_REGISTER.md) introduced the steward in exactly
+    those words: *"every task should have an owner even if it cannot yet have
+    an executor."* **This function read it as both**, and on a **claimable**
+    row that difference is the whole of it — the projection publishes the
+    steward in a lane's `backlog`, which is the array §20e step 4 tells a lane
+    to select from.
+
+    🔴 **Measured on `TASK-412`, not foreseen.** Its Module cell is absent and
+    its steward is Lane C, so the published ref offered **Product Office** a
+    row whose own Change Budget is 🟢 ``modules/ai_platform/**`` — a module
+    [`modules.toml`](../docs/coordination/modules.toml) settles on Lane A and
+    §20e forbids Lane C to implement. **Meanwhile `queues/lane-a.toml` queued
+    the same row to Lane A**: one row, two documents, opposite owners, which is
+    the [C-213](../docs/LANE_COORDINATION.md) class this ref exists to end.
+
+    ✅ **Withholding it is not a loss of information.** `_classify` already
+    renders a startable row with no lane as ``WAITING ARCHITECTURE``, which is
+    what `TASK-412` truthfully is: [D-042](../docs/DECISION_REGISTER.md)
+    deliberately deferred its module boundary and *"do not force a module
+    boundary until implementation naturally reaches it"* is still the ruling.
+    **A parked row keeps its steward**, so D-135's purpose is untouched — the
+    row still has somebody watching its trigger.
     """
     explicit = re.search(r"—\s*\*?\*?(Lane [ABC])", module_cell) or re.search(
         r"\*\*(Lane [ABC])\*\*", module_cell
@@ -199,6 +225,8 @@ def _lane_for(module_cell: str, body: str, owners: dict[str, str]) -> str | None
     for phrase, key in _ALIASES.items():
         if phrase in module_cell.lower() and key in owners:
             return owners[key]
+    if declared in _STARTABLE:
+        return None
     steward = re.search(r"Trigger steward\*\*\s*\|\s*\*\*(Lane [ABC])", body)
     return steward.group(1) if steward else None
 
@@ -356,7 +384,7 @@ def tasks() -> list[Task]:
         if declared in _CLOSED:
             continue
         module_cell = _cell(body, "Module")
-        lane = _lane_for(module_cell, body, owners)
+        lane = _lane_for(module_cell, body, owners, declared)
         depends = _dependencies(declared, status)
         # ⛔ **The blocker clause, not the whole cell — 2026-08-07.**
         # `_classify` substring-matches this for *"product owner"*, *"credential"*,

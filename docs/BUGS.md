@@ -2558,6 +2558,33 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-414 · A trigger steward became an executor, and the ref offered Lane C a module it may not build
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation` — [`infra/coordination.py`](../infra/coordination.py)** |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **the published ref advertised a row in a lane's `backlog`, which is the array [§20e](../CLAUDE.md) step 4 tells a lane to select from.** ⚠️ **Not 🔴: nobody claimed it, and Lane C would have hit its own Change Budget on the first file it opened** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-10, in the same change, with four regression tests.** **`VERIFIED` is QE's** |
+| **Found** | **2026-08-10, on the startup poll, by noticing [`queues/lane-a.toml`](coordination/queues/lane-a.toml) and `coordination.toml` naming different owners for `TASK-412`** |
+| **Steps** | **Publish the projection with a `READY` row that has no `Module` cell and a `Trigger steward` cell** |
+| **Expected** | **The steward names who watches the trigger. It does not name who implements** |
+| **Actual** | ⛔ **`_lane_for` fell through to the steward and returned `Lane C`, so `TASK-412` appeared in Product Office's `backlog`** — **a row whose own Change Budget is 🟢 `modules/ai_platform/**`, a module [`modules.toml`](coordination/modules.toml) settles on Lane A and [§20e](../CLAUDE.md) forbids Lane C to implement** |
+
+> ## ⛔ **[D-135](DECISION_REGISTER.md) introduced the steward in the words that describe the defect exactly: *"every task should have an owner even if it cannot yet have an executor."***
+
+**The function read it as both.** On a parked row the difference is invisible and D-135's purpose is served — **`TASK-411` is `SEQUENCED`, no lane can claim it, and naming its steward assigns nobody any work.** ⚡ **On a *claimable* row the same line manufactures an executor**, and the projection is the one channel that reaches a lane without QE.
+
+**Two documents, one row, opposite owners** — `queues/lane-a.toml` queued `TASK-412` to Lane A while the ref offered it to Lane C. ⛔ **That is the [C-213](LANE_COORDINATION.md) class this ref was built to end**, reappearing inside the instrument rather than in a hand-maintained table.
+
+### ✅ The fix withholds the steward from a startable row, and loses nothing
+
+**`_classify` already renders a startable row with no lane as `WAITING ARCHITECTURE`** — which is what `TASK-412` truthfully is: [D-042](DECISION_REGISTER.md) deliberately deferred its module boundary and *"do not force a module boundary until implementation naturally reaches it"* is still the ruling. ⚡ **The row does not vanish; it stops being advertised as claimable by a lane that may not build it**, and it now appears in the generator's *resolves to no lane* report where a deferred boundary belongs.
+
+⚠️ **The remaining contradiction is the row's, not the tool's, and it is [C-1413](LANE_COORDINATION.md)**: `TASK-412`'s Module cell is deliberately unnamed while its Change Budget names `modules/ai_platform/**`. ⛔ **Not settled here** — a module boundary is architecture, and this office prepares rather than decides.
+
+---
+
 ### B-412 · A blind string replace matched its own explanatory comment
 
 | | |

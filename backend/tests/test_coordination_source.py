@@ -373,3 +373,64 @@ def test_the_published_source_never_reads_the_clock() -> None:
         coordination.render(rows)
     finally:
         setattr(coordination, "datetime", original)
+
+
+# ── a trigger steward is an owner, never an executor ────────────────────────
+
+
+_STEWARD_BODY = (
+    "| ⚡ **Trigger steward** | **Lane C — Product Office**, inherited with "
+    "[TASK-411](#task-411), whose slices 4–5 are its trigger. ⛔ **This is not "
+    "a module assignment and does not become one.** |"
+)
+
+
+def test_a_startable_row_takes_no_lane_from_a_trigger_steward() -> None:
+    """⛔ D-135 gave the steward an *owner*'s job, and this read it as an executor's.
+
+    **`TASK-412`, measured on 2026-08-10, not foreseen.** Its Module cell is
+    absent — the boundary is deferred by [D-042] — so resolution fell to the
+    steward and the published ref offered **Product Office** a row whose own
+    Change Budget is 🟢 `modules/ai_platform/**`. ⛔ `modules.toml` settles
+    `ai_platform` on Lane A and §20e forbids Lane C to implement it, **while
+    `queues/lane-a.toml` queued the same row to Lane A**: one row, two
+    documents, opposite owners — the C-213 class this ref exists to end.
+
+    ⚡ **`backlog` is the array §20e step 4 tells a lane to select from**, so a
+    steward reaching it is not a label a lane can ignore.
+    """
+    assert coordination._lane_for("", _STEWARD_BODY, {}, "READY") is None
+
+
+def test_a_parked_row_still_takes_its_steward() -> None:
+    """✅ The half D-135 actually asked for, which the fix must not remove.
+
+    *"Every task should have an owner even if it cannot yet have an executor."*
+    **`TASK-411` is `SEQUENCED`** — no lane can claim it, so naming its steward
+    assigns nobody work and somebody still watches the trigger. **A fix that
+    silenced this one would trade one defect for the one D-135 closed.**
+    """
+    assert coordination._lane_for("", _STEWARD_BODY, {}, "SEQUENCED") == "Lane C"
+
+
+def test_a_named_module_still_beats_a_steward_on_a_startable_row() -> None:
+    """⚡ The withholding is scoped to rows with *no other evidence*.
+
+    A row that names its module resolves through `modules.toml` exactly as
+    before — **this must not make every startable row ownerless**, which is the
+    obvious way to over-apply the fix and would empty both lanes' backlogs.
+    """
+    owners = {"ai_platform": "Lane A"}
+    assert coordination._lane_for("`ai_platform`", _STEWARD_BODY, owners, "READY") == "Lane A"
+
+
+def test_a_startable_row_with_no_lane_reads_as_waiting_architecture() -> None:
+    """✅ Withholding the steward loses no information — it tells the truth.
+
+    `_classify` already renders a startable row with no lane as
+    `WAITING ARCHITECTURE`, which is what a deliberately-deferred module
+    boundary **is**. ⛔ The row does not vanish from the projection; it stops
+    being advertised as claimable by a lane that may not build it.
+    """
+    assert coordination._classify("READY", "", None) == coordination.WAITING_ARCHITECTURE
+    assert coordination._classify("READY", "", "Lane A") == coordination.ASSIGNED
