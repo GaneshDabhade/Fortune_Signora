@@ -1110,3 +1110,28 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ### ✅ Additive, and the states only speak when there is nothing to show
 
 ⚠️ **`status` defaults to `ready`**, so every existing caller keeps its behaviour — [§20c](../../CLAUDE.md), this is *adding to the library* rather than bending a frozen component. ⛔ **And results are never replaced by a state screen**: a stale-while-revalidating search still has rows worth reading, and replacing them on every keystroke is the flicker that makes a palette feel slower than it is.
+
+---
+
+## TASK-482 · Ask Signora — the entry, the panel, and an honest refusal *(2026-08-10)*
+
+📁 **App Shell §12**: ***"Four doors, one room. Wherever it opens from, the assistant inherits the current scope, states that scope above the input, and opens as a non-modal 420px drawer that pushes content. There is no floating bubble: a persistent circle in the corner is a consumer pattern and it covers data."***
+
+✅ **`Drawer` already existed, tested, with ZERO callers**, so this **mounts it rather than building a second overlay** — 📁 the row's own *one, not two* and [D-189](../DECISION_REGISTER.md) §3's whichever-lands-first. ⚡ **It is already non-modal and already pushes content**, because §14 stated the mechanism rather than the look — **which is why it is the right primitive rather than a dialog with different padding.** ✅ **It left the reachability allowlist in the same commit, and the stale-entry test is what required that.**
+
+### 🔴 The slice is the refusal, and the row says so
+
+⛔ **There is no route and no request shape** — both Epic G's — and 📁 **[C-334](../LANE_COORDINATION.md) means there is no host credential.** 📁 **The Definition of Done**: *"it must state honestly when it cannot answer — a panel that renders a hopeful empty state instead of saying so is the false-affordance class this lane has refused three times."*
+
+| ⛔ Refused | Why |
+|---|---|
+| **An input box** | 🔴 **A field that accepts a question nothing will answer is worse than no field.** ⚡ **Somebody types their real question, loses it, and learns the product is unreliable rather than unfinished** |
+| ***"Try again"* / *"reload"*** | ⚠️ **The refusal is not an error state.** **Nothing failed — the capability is not built** — so borrowing [`StatedAbsence`](../../frontend/components/feedback/stated-absence.tsx)'s wording would be a false instruction, **exactly as it would be for [TASK-1411](../BACKLOG.md)'s absent confidence** |
+| **A floating bubble** | 📁 **The design refuses one by name.** ✅ **The entry is a control in the flow of the shell's utilities** |
+| ***"Everything"* as a scope** | ⛔ **A claim about what the assistant can see.** ✅ **No scope renders no scope line** |
+
+✅ **And the refusal points at what DOES exist** — the narration, its evidence and the drawer are all shipped. ⚡ **A refusal that leaves somebody with nothing teaches them the product is empty**, which is a different and wronger lesson than *this part is not built yet*.
+
+### ⚠️ Two of the four doors are elsewhere, deliberately
+
+✅ **This owns the keyboard door — 📁 §15's own binding, `⌘⇧A`, read rather than chosen — and the shell's entry control.** ⛔ **The table-selection door and the explain-this-metric door belong to the surfaces that own those controls** — `table.tsx`'s AI summary row and [TASK-1411](../BACKLOG.md)'s attribution strip — **and building them here would put shell code inside a data table.**

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { RegionBoundary } from '@/components/ui/region-boundary';
 import { MobileNavigation, Navigation } from '@/components/shell/navigation';
+import { Copilot } from '@/components/shell/copilot';
 import { ShellPalette } from '@/components/shell/shell-palette';
 import { RouteAnnouncer } from '@/components/shell/route-announcer';
 import { SKIP_TARGETS, SkipLinks } from '@/components/shell/skip-links';
@@ -197,6 +198,11 @@ export function AppShell({
           destinations no single module knows** — which is exactly why C-259
           found that neither candidate row could mount it alone. */}
       <ShellPalette role={role} />
+      {/* ⚡ **[TASK-482](../../../docs/BACKLOG.md) — §12's assistant entry.**
+          ⛔ **Mounted beside the palette rather than floating over the content**:
+          📁 the design refuses a corner bubble by name, *"a persistent circle
+          in the corner is a consumer pattern and it covers data."* */}
+      <Copilot />
 
       {/* **Outside the column, because it is fixed to the viewport.** Its own
           boundary for the same reason the sidebar has one: a failure here must

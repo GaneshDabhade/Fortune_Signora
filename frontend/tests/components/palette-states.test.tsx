@@ -104,7 +104,7 @@ describe('⚠️ the states only speak when there is nothing to show', () => {
      * replacing them with *"Searching…"* on every keystroke is the flicker that
      * makes a palette feel slower than it is.
      */
-    const items: CommandItem[] = [{ id: 'nav:/settings', label: 'Settings' }];
+    const items: CommandItem[] = [{ id: 'nav:/settings', label: 'Settings', group: 'Go to' }];
     palette({ status: 'loading', items });
 
     expect(screen.getByText('Settings')).toBeInTheDocument();

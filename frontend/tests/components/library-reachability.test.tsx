@@ -55,7 +55,11 @@ const AWAITING_A_CALLER: Readonly<Record<string, string>> = {
   // shrinking on its own is the property that keeps it from becoming a
   // silencer, and it just did.**
   // 📁 498 §5.1. Wanted by the utility panel.
-  Drawer: 'TASK-1433',
+  // ✅ **`Drawer` LEFT this list when [TASK-482](../../../docs/BACKLOG.md)
+  // mounted it as the Copilot's side panel** — ⚡ **the stale-entry test
+  // below is what required its removal**, exactly as it did for
+  // `CommandPalette`. ⛔ **An allowlist that keeps an exemption after the
+  // component is reachable is an allowlist that only ever grows.**
   CopyableId: 'TASK-1409',
   // ⚠️ **The four below are this lane's own, built this turn**, and they are
   // listed rather than quietly excused. Each names the row that renders it.
