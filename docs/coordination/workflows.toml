@@ -14,21 +14,43 @@
 # and stores no design content of its own.** The decomposition lives in
 # `BACKLOG.md` rows, which is the artifact §20e permits Product Office to write.
 #
-# ⚡ **The pipeline is planned many workflows deep and active exactly one deep.**
-# **`active` is the only state an implementation lane may build in**, and it
-# advances only when the product owner has reviewed the previous workflow on
-# `main` ([D-153](../DECISION_REGISTER.md) ⑥).
+# ⛔ **THESE STATES REPORT. THEY DO NOT GATE — [D-226](../DECISION_REGISTER.md),
+# product owner, 2026-08-10.**
 #
-# ── The twelve states, as D-160 names them ──────────────────────────────────
+# **This block previously read:** *"The pipeline is planned many workflows deep
+# and active exactly one deep. `active` is the only state an implementation lane
+# may build in, and it advances only when the product owner has reviewed the
+# previous workflow on `main` (D-153 ⑥)."*
+#
+# ⛔ **Superseded.** [D-169](../DECISION_REGISTER.md) ruled that *"completion of
+# one workflow should automatically release the next prepared workflow… Lane A
+# should never stop and wait for explicit Product Owner approval before beginning
+# the next workflow"*, and D-226 made that the single execution model:
+#
+#   ⛔ Workflow N → PO review → activate N+1 → Lane A may begin      RETIRED
+#   ✅ Workflow N completes → independently executable backlog work
+#      remains available → Lane A continues                          CURRENT
+#
+# ⚡ **So a workflow's state describes WHERE THE WORKFLOW IS. It never decides
+# what a lane may build.** **Lane A's pipeline is [`BACKLOG.md`](../BACKLOG.md)
+# and its queue, not this file** — and a row being ready here or not ready here
+# changes nothing about whether Lane A may claim it.
+#
+# ⛔ **No state was added to replace the gate** — D-226 §3 names `released`,
+# `claimable`, `active_next`, `approved_for_execution`, `execution_ready`,
+# `current`, `next` and `future`, and forbids every one. **The twelve below are
+# the twelve D-160 named; only their AUTHORITY changed.**
+#
+# ── The twelve states ───────────────────────────────────────────────────────
 #   planned      the journey is identified and its design document is named
 #   decomposed   epic, tasks, slices, dependencies and reuse are written
-#   sequenced    placed in the queue behind its predecessor's review gate
-#   ready        claimable — dependencies resolved, owner assigned
-#   active       being implemented. ⛔ NORMALLY EXACTLY ONE
+#   sequenced    placed in the queue behind its predecessor
+#   ready        dependencies resolved, owner assigned
+#   active       being implemented. ⚡ MORE THAN ONE IS ORDINARY (D-226)
 #   in_progress  a lane holds a row inside it
 #   in_validation the lane has pushed and set the state
 #   awaiting_qe  with QE for certification
-#   on_main      promoted — ⚡ THIS is what releases the next workflow (D-169)
+#   on_main      promoted
 #   awaiting_review  the product owner has been notified
 #   approved     reviewed and approved — ⚠️ a CHECKPOINT since D-169, not a gate
 #   complete     approved and closed out
@@ -264,9 +286,15 @@ name   = "Application Shell"
 #   D-201 §5's question — "what could stop Lane A three weeks from now?" —
 #   answered by scanning its own backlog: SIX of fifteen rows say "depends on an
 #   unbuilt workflow", and every one of them means this one.
-state  = "planned"
+# ⚡ D-226 §5 — was "planned" while Lane A was correctly implementing this
+#   workflow under D-169. The state was wrong, not the work. Corrected to
+#   describe reality; it gates nothing either way.
+state  = "in_progress"
 design = "Fortune Signora App Shell.dc.html"
-tasks  = ["TASK-447", "TASK-480", "TASK-481", "TASK-482", "TASK-1408"]
+# ⚡ D-226 §5 — was five rows; SEVENTEEN name this workflow in BACKLOG.md.
+#   Measured by parsing the rows, not by recall. TASK-1457 is excluded: it
+#   is WITHDRAWN as a duplicate of TASK-440.
+tasks  = ["TASK-447", "TASK-480", "TASK-481", "TASK-482", "TASK-1408", "TASK-1439", "TASK-1440", "TASK-1441", "TASK-1442", "TASK-1443", "TASK-1444", "TASK-1445", "TASK-1446", "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-1453", "TASK-1456"]
 owner  = "Lane A"
 # ⛔ 487 scores this shell at 0 of 29 distinctive phrases and EVERY screen
 # renders inside it. It is priority 5 under D-155 and that is the product

@@ -1340,8 +1340,13 @@ def _structural_findings() -> list[str]:
 
 
 def _pipeline_findings() -> list[str]:
-    """**Several claimable rows for the implementing lane, in a stated order — and
-    exactly one `active` workflow.**
+    """**Several claimable rows for the implementing lane, in a stated order.**
+
+    ⛔ **No longer *"and exactly one `active` workflow"* — [D-226](../docs/DECISION_REGISTER.md),
+    2026-08-10.** That clause enforced the D-153 ⑥ / D-160 ④ review gate which
+    [D-169](../docs/DECISION_REGISTER.md) superseded, and the docstring is
+    corrected in the same change as the code for the reason the paragraph below
+    already gives.
 
     ⚠️ **Amended 2026-08-08 by [D-183](../docs/DECISION_REGISTER.md), the product
     owner, which overrules the *exactly one claimable* rule this function used to
@@ -1367,19 +1372,27 @@ def _pipeline_findings() -> list[str]:
     except tomllib.TOMLDecodeError as broken:
         return [f"the coordination or workflow source does not parse — {broken}"]
 
-    active = [
-        f"{key} ({body.get('name', '?')})"
-        for key, body in pipeline.get("workflow", {}).items()
-        if body.get("state") == "active"
-    ]
-    if len(active) != 1:
-        out.append(
-            f"workflows.toml declares {len(active)} active workflow(s) — {active or 'none'}. "
-            "**Exactly one is normally active** (D-160 ④); many may be planned. "
-            "Zero means implementation has nothing to build; more than one means the "
-            "review gate between journeys has stopped meaning anything."
-        )
-
+    # ⛔ **The `exactly one active workflow` check was REMOVED — D-226, product
+    # owner, 2026-08-10.** It read `len(active) != 1` and reported *"the review
+    # gate between journeys has stopped meaning anything"*, which is the
+    # D-153 ⑥ / D-160 ④ scheduling gate **[D-169](../docs/DECISION_REGISTER.md)
+    # superseded**: *"completion of one workflow should automatically release the
+    # next prepared workflow… Lane A should never stop and wait for explicit
+    # Product Owner approval."*
+    #
+    # 🔴 **Found by the contradiction it was still enforcing.** Workflow 8 held
+    # `active` while Lane A correctly built workflow 13 under D-169 — so this
+    # check would have called valid work a finding, and the only way to silence
+    # it was to edit workflow state to match a model the product owner had
+    # retired. **A check that can only be satisfied by falsifying the data it
+    # reads is worse than no check** ([§2](../CLAUDE.md)).
+    #
+    # ✅ **Nothing replaces it, deliberately** — D-226 §3 names `released`,
+    # `claimable`, `active_next`, `approved_for_execution`, `execution_ready`,
+    # `current`, `next` and `future` and forbids all of them. **Lane A's supply
+    # is measured below, from its backlog**, which is where D-226 §9 puts it:
+    # *"a blocked task must not block the lane."* **Workflow state stays useful
+    # for reporting and stops being an execution gate** (§4).
     for lane, body in published.get("lane", {}).items():
         # ⛔ Only lanes that still receive work. Lane B is closed by D-157 and
         # Lane C implements nothing, so zero is correct for both and flagging

@@ -768,6 +768,11 @@ updated      = 2026-08-10
 #   TASK-484  the Workflow 1 journeys .......... releases automatically
 #   ── Product Office conformance audit, then the product owner reviews W1 ──
 #   TASK-485  W2 Registration .................. releases on `approved`
+#   ⛔ SUPERSEDED BY D-226, 2026-08-10 — 'releases on `approved`' and the
+#      review step above it are the D-153/D-160 gate D-169 retired. Nothing
+#      releases on product-owner approval any more; independently executable
+#      backlog work is available whether or not a review has happened.
+#      Kept, not deleted: it is a true record of what was ruled that day.
 #   TASK-486  W3 Email Verification
 #   TASK-487  W4 Forgot Password
 #   TASK-488  W5 Password Reset
@@ -824,8 +829,14 @@ updated      = 2026-08-10
 #     against this office, not a drought you work around.
 #
 # ⚠️ depth_target was 15 and is now 1. A deep bench is the model this ruling
-#   replaces — the pipeline is deep in PLANNING (27 workflows in
+#   replaces — the pipeline is deep in PLANNING (29 workflows in
 #   workflows.toml) and exactly one deep in EXECUTION.
+# ⛔ SUPERSEDED BY D-226, 2026-08-10. "Exactly one deep in EXECUTION" was the
+#   D-153/D-160 gate and D-169 retired it. Your backlog below is the
+#   implementation pipeline; more than one workflow may be in flight, and
+#   workflow state in workflows.toml reports where a workflow is — it does not
+#   decide what you may build. Preserved rather than deleted, because the rest
+#   of this block is a true record of what was ruled on the day it was written.
 #
 # ✅ THE SEQUENCE AFTER TASK-490, so you can see the whole run:
 #     TASK-490  the design foundation ......... current, yours
@@ -834,6 +845,11 @@ updated      = 2026-08-10
 #     ── then this office runs the pixel-level conformance audit ──
 #     ── then, and only then, the product owner reviews Workflow 1 ──
 #     TASK-485  Workflow 2, Registration ...... releases on `approved`
+#   ⛔ SUPERSEDED BY D-226, 2026-08-10 — 'releases on `approved`' and the
+#      review step above it are the D-153/D-160 gate D-169 retired. Nothing
+#      releases on product-owner approval any more; independently executable
+#      backlog work is available whether or not a review has happened.
+#      Kept, not deleted: it is a true record of what was ruled that day.
 #
 # ⛔ ADVISORY ONLY (D-136). No execution state is changed by this notice.
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1481,7 +1497,7 @@ updated      = 2026-08-10
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-1439", "TASK-1453", "TASK-1446", "TASK-1452",
+backlog = ["TASK-1439", "TASK-1406", "TASK-1453", "TASK-1446", "TASK-1452",
             "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451",
             "TASK-1442", "TASK-1444", "TASK-1443",
             "TASK-1438", "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
@@ -1876,11 +1892,6 @@ blocker = ["see the backlog row"]
 owner   = "Lane A"
 note    = "M-U · The People experiences a customer opens"
 
-[[blocked]]
-task    = "TASK-1406"
-blocker = ["TASK-1405"]
-owner   = "Lane A"
-note    = "consumes TASK-1405's output — its input does not exist yet, not a Product Office hold"
 
 [[blocked]]
 task    = "TASK-464"
