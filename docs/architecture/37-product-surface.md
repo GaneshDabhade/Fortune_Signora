@@ -1282,3 +1282,13 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 🔴 **`MobileNavigation` mapped `RAIL_DESTINATIONS` raw** while `Navigation` resolved `[workspace]` and dropped an entry it could not fill. ⛔ **A dynamic href throws in the App Router**, and the phone bar is hidden with `smalllaptop:hidden` — **CSS, not conditional rendering** — **so it is mounted and throwing on a 1280px desktop.**
 
 ⚠️ **The file claimed *"one source, two renderings"* and meant the LIST.** ✅ **`resolved()` is shared now**, which is what that sentence had to mean to be true. 📁 **And the reason no test caught it is the useful half**: `mobile-navigation.test.tsx` **did not stub the workspace provider at all**, so **the renderer that was broken was the one nobody asked the question of.** ✅ **The third regression test is the general form** — ⚡ ***no rendered href contains `[`*** — because the defect was never about Home.
+
+### ⚠️ Twelve red journeys that were this lane's database, not this repository
+
+⛔ **Recorded because I nearly filed it as a defect.** **Six accessibility and six consistency journeys failed while [TASK-1417](../BACKLOG.md) was being verified**, and **none of them touched anything the slice changed.**
+
+✅ **Established as pre-existing by measurement rather than by argument**: **the change was stashed and the same specs re-run.** ⚡ **The count went from 12 red to 13 red** — **[B-233](../BUGS.md)'s fix had turned one of them green** — **which is also the strongest evidence that B-233 was real.**
+
+🔴 **Then established as NOT a repository defect at all.** 📁 **The twelve accounts every one of those journeys reads come from `tests.playground.seed`** — *"twelve accounts through the real pipeline"* — **and this lane's `signora_lane_a` had never been seeded, or had been truncated by `make test`.** ✅ **Seeded through that same approved door and re-run: 21 of 21 green.**
+
+⚡ **The correction is to how this lane runs the suite, and the tooling already had it right.** 📁 **`make e2e` re-seeds and then runs Playwright**, in one target, *"so a run is reproducible"*. ⛔ **Running `npx playwright test` directly skips the seed**, which is what produced twelve failures that looked like product defects. 🔴 **[§20e](../../CLAUDE.md) is explicit about the trap on the other side**: ***a workstation gap must never be recorded as a repository defect*** — **so the row that was not written is the correct outcome here.**
