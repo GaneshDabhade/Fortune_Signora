@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `5e01478`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `8b85192`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `5e01478`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `8b85192`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`5e01478`** — the certified commit itself |
+| **`main`** | **`8b85192`** — the certified commit itself |
 | **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
 | **Release candidate** | ⚡ **Cycle 177 took Lane A ahead of ordinary order, on Lane C's request** — **a lane was stuck behind a bug report that had not synchronized.** ✅ **[B-169](docs/BUGS.md) `VERIFIED`: 167 rows, 0 unparsed** |
-| **Certification** | ✅ [`5e01478b4f04`](certification/reports/5e01478b4f04.md) · migration head **`0046`** · protocol **v2** · profile **`documentation`** · **first attempt** |
+| **Certification** | ✅ [`8b85192a67a4`](certification/reports/8b85192a67a4.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **167 rows, 59 unresolved, 0 blocking**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4310 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2163 frontend tests** across **105 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **854 files** · **47 migrations**, `0000`–`0046`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **203s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md); and [B-166](docs/BUGS.md) is why the lane could not run them either** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
+**Repository health:** **4310 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2174 frontend tests** across **106 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **854 files** · **47 migrations**, `0000`–`0046`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **203s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md); and [B-166](docs/BUGS.md) is why the lane could not run them either** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
 
 ---
 
@@ -953,6 +953,36 @@ git add docs/BUGS.md && git rebase --continue    # ran despite the assertion fai
 | **Register** | **167 rows, 59 unresolved, 0 blocking** · ✅ **[B-228](docs/BUGS.md) withdrawn** · ⚖️ **[B-229](docs/BUGS.md) ruled 🟠** |
 | **Journeys** | **191 passed / 23 failed**, of which **12 are [B-229](docs/BUGS.md)'s contamination** and **2 are reported unexplained** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md)'s check ran ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 180
+
+**Derived from the promoted commit `8b85192`.** ⚡ **Six commits, both lanes, first attempt — and two of the six are a lane disproving its own published claims.**
+
+### ✅ Home's composition resolver, closed rather than discouraged
+
+**`TASK-1405`.** Four compositions named exactly as the design names them — **Executive, Seller, Revenue operations, Activation** — **as a closed union, so a fifth is unrepresentable rather than discouraged** (§2). ⚡ **`resolveComposition` is total**, which is the guarantee the App Shell depends on: **a composition always resolves.**
+
+✅ **+8 tests, exhaustive over the input space rather than sampled** — *"two booleans times four role values is eight cases, so there was no reason to guess."* ⛔ **The route is held on [C-268](docs/LANE_COORDINATION.md)** and was not built.
+
+### ✅ A lane disproved its own published claim, twice in one push
+
+> ⛔ ***"The manifest named both designs. My claim that it named neither is false."***
+
+**Found while rebasing onto an `integration` that had moved.** `MANIFEST.md` line 113 named the two unimported designs, **dated, and explicitly flagged as ageing, on two separate days** — while Lane C had written that the manifest recorded only a count.
+
+⚡ **This is the third self-retraction from this office in two cycles** — the B-228 lead, the B-224 cause, and now this. ✅ **Each arrived as a commit rather than a quiet edit**, on the reasoning Lane C set out itself: *"a disproved lead sitting in the channel every lane polls is the §2 defect — trusted because it is published."*
+
+### Measured
+
+| | |
+|---|---|
+| **Certified** | [`8b85192a67a4`](certification/reports/8b85192a67a4.md) · profile **`platform`** · **17 gates planned** · **first attempt** |
+| **Quality** | **4310 backend** · **95.09%** · **401 invariants** · ⚡ **2174 frontend / 106 files** *(+11)* · mypy strict **854 files** · **37 contracts**, 0 broken · eslint clean · `tsc` clean |
+| **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **260s** |
+| **Register** | **167 rows, 59 unresolved, 0 blocking** |
+| **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md)'s check ran ✓ · [B-164](docs/BUGS.md)'s check ran **before** the push ✓ |
 
 ---
 
