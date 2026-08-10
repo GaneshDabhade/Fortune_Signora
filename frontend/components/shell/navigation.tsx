@@ -1,6 +1,6 @@
 'use client';
 
-import { Briefcase, LineChart, Lock, Radio, Settings as SettingsIcon } from 'lucide-react';
+import { BookOpen, Briefcase, LineChart, Lock, Radio, Settings as SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -110,13 +110,20 @@ const DESTINATIONS: readonly RailItem[] = [
  * bottom above the fold"*, and *"utilities at the bottom keep the funnel order
  * uninterrupted at the top."*
  *
- * ⛔ **The design names three: Settings, Shortcuts, Docs & support.**
- * **Shortcuts and Docs & support have no route** — ✅ measured against the
- * route tree — **so they are absent rather than rendered as a dead end**
- * ([C-269](../../../docs/LANE_COORDINATION.md)).
+ * 📁 **The design names three: Settings, Shortcuts, Docs & support.**
+ * ✅ **Two have a route now** — [TASK-1420](../../../docs/BACKLOG.md) built
+ * `/help`, which is the destination [C-269](../../../docs/LANE_COORDINATION.md)
+ * recorded as missing. ⛔ **`Shortcuts` still has none and stays absent rather
+ * than rendered as a dead end.**
  */
 const UTILITIES: readonly RailItem[] = [
   { id: 'settings', label: 'Settings', href: '/settings', icon: SettingsIcon, depth: 1 },
+  // ✅ **`Docs & support` gains its route** — [TASK-1420](../../../docs/BACKLOG.md).
+  // ⛔ **It was absent for the reason [C-269](../../../docs/LANE_COORDINATION.md)
+  // gave: no help, docs or support route existed.** ⚡ **The route exists now, so
+  // the entry does** — and `reachability` refuses a route with no entrance, which
+  // is how this arrived rather than being remembered.
+  { id: 'help', label: 'Docs & support', href: '/help', icon: BookOpen, depth: 1 },
 ];
 
 /** ⚡ Which role can grant a capability, so the lock explains rather than refuses. */

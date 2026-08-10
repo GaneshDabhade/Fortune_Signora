@@ -59,21 +59,32 @@ describe('📁 the slots the design draws', () => {
     // ⛔ **The expected order is DERIVED from the law**, filtered to the slots
     // this row could build. A slot appearing out of order fails here; a slot
     // renamed in `top-bar.ts` and not here fails to compile.
+    // ⚡ **`help` joined the buildable set** when [TASK-1420](../../../docs/BACKLOG.md)
+    // built `/help` — 📁 [C-275](../../../docs/LANE_COORDINATION.md) had it
+    // absent *because no help route existed*, which is now false.
     const buildable = TOP_BAR_SLOTS.filter((s) =>
-      (['breadcrumb', 'search', 'system-status', 'account'] as const).includes(
-        s as 'breadcrumb' | 'search' | 'system-status' | 'account',
+      (['breadcrumb', 'search', 'system-status', 'help', 'account'] as const).includes(
+        s as 'breadcrumb' | 'search' | 'system-status' | 'help' | 'account',
       ),
     );
     expect(rendered).toEqual([...buildable]);
   });
 
-  it('⛔ the two slots with no data source are ABSENT, not placeholders', () => {
+  it('⛔ notifications is still ABSENT, because nothing publishes one', () => {
+    /**
+     * 🔴 **This asserted TWO absences and now asserts one.** ⚡ **`help` was
+     * absent for a reason that stopped being true**: [C-275](../../../docs/LANE_COORDINATION.md)
+     * recorded it as having no destination, and
+     * [TASK-1420](../../../docs/BACKLOG.md) built `/help`. ✅ **The test was
+     * written to be loud on that day and it was.**
+     *
+     * ⛔ **Notifications has not changed**: nothing in the platform publishes a
+     * notification, and a bell opening an empty 400px panel is the defect
+     * [TASK-1433](../../../docs/BACKLOG.md) is parked for.
+     */
     const { container } = bar();
-    // 🔴 Notifications has no source and `help` has no destination — 500 §3 and
-    // C-275. **A placeholder here would be the defect, so their absence is
-    // asserted rather than left to be noticed.**
     expect(container.querySelector('[data-slot="notifications"]')).toBeNull();
-    expect(container.querySelector('[data-slot="help"]')).toBeNull();
+    expect(container.querySelector('[data-slot="help"]')).not.toBeNull();
   });
 
   it('📁 the search slot carries the design\'s resting geometry, from SLOT_SPEC', () => {

@@ -1,11 +1,14 @@
 'use client';
 
+import { HelpCircle } from 'lucide-react';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { AccountSearch } from '@/components/intelligence/account-search';
 import { AccountMenu } from '@/components/shell/account-menu';
 import { Breadcrumb, OfflineStatus } from '@/components/ui';
 import { RegionBoundary } from '@/components/ui/region-boundary';
+import { cn } from '@/lib/design/cn';
 import type { Crumb } from '@/lib/shell/breadcrumb';
 import { SEARCH_WIDTH, SLOT_SPEC } from '@/lib/shell/top-bar';
 import type { WorkspaceRole } from '@/lib/state/permissions';
@@ -158,14 +161,27 @@ export function TopBar({ breadcrumb, role, email, signOut }: TopBarProps) {
       {/* ── Slot 5 · Help & account ────────────────────────────────────────
           📁 *"32 + 32. Help before account, always last."*
 
-          ⛔ **Help is ABSENT because it has no destination.** ✅ Measured
-          against the route tree: there is no help, docs or support route, and
-          📁 `Fortune Signora Help Center.dc.html` is a design with nothing
-          built behind it. ⚡ **A help control that goes nowhere is
-          [C-269](../../../docs/LANE_COORDINATION.md)'s finding in miniature**,
-          and it gets the same answer.
+          ✅ **BOTH HALVES NOW.** ⛔ **Help was absent because it had no
+          destination** — 📁 [C-275](../../../docs/LANE_COORDINATION.md), *"a
+          design with nothing built behind it"*. ⚡ **[TASK-1420](../../../docs/BACKLOG.md)
+          built `/help`**, so the control has somewhere to go and the slot is
+          complete in the design's order: **help before account, always last.** */}
+      <Link
+        href="/help"
+        data-slot="help"
+        aria-label="Help and support"
+        title="Help & support"
+        style={{ width: SLOT_SPEC.help.width, height: SLOT_SPEC.help.height }}
+        className={cn(
+          'flex shrink-0 items-center justify-center rounded-md text-content-subtle',
+          'transition-colors hover:bg-surface-sunken hover:text-content',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+          'focus-visible:outline-accent',
+        )}
+      >
+        <HelpCircle className="h-4 w-4" aria-hidden />
+      </Link>
 
-          ✅ **Account is built.** */}
       <div data-slot="account" className="shrink-0">
         <AccountMenu email={email} role={role} signOut={signOut} />
       </div>

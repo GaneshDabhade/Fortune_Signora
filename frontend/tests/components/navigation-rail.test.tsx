@@ -142,7 +142,15 @@ describe('📁 the design\'s structure', () => {
       .getAllByRole('link')
       .map((el) => el.textContent);
 
-    expect(labels[labels.length - 1]).toContain('Settings');
+    // ⚡ **`Docs & support` joined the utility group** when
+    // [TASK-1420](../../../docs/BACKLOG.md) built `/help` — 📁
+    // [C-269](../../../docs/LANE_COORDINATION.md) had it absent *for want of a
+    // route*. ⛔ **The assertion is that the group is LAST, not that one entry
+    // is** — naming a single label would have to change every time the group
+    // grows, which is not the property the design states.
+    const utilities = labels.slice(-2);
+    expect(utilities[0]).toContain('Settings');
+    expect(utilities[1]).toContain('Docs & support');
   });
 
   it('✅ collapsed hides the label and keeps the accessible name', () => {
