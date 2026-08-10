@@ -9,16 +9,16 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "a713465"
+generated_from = "551f595"
 task_count     = 158
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-1411", "TASK-1442", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-1451", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
-assigned_total     = 137
-claimable          = 21
-claimable_now      = 19
-awaiting_sync      = 2
+backlog            = ["TASK-1411", "TASK-1442", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
+assigned_total     = 138
+claimable          = 22
+claimable_now      = 18
+awaiting_sync      = 4
 in_flight          = 83
 actionable         = 10
 awaiting_qe_transition = 0
@@ -26,7 +26,7 @@ blocked_on_integration = 1
 supply_state       = "working"
 blocked            = 33
 lane_utilization   = 16.6
-idle_prediction_days   = 3.0
+idle_prediction_days   = 3.1
 dependency_wait_days   = 0.1
 blocked_duration_days  = 0.1
 critical_path_max      = 3
@@ -34,7 +34,7 @@ critical_path_max      = 3
 [lane.Lane_C]
 notice             = ""
 backlog            = ["TASK-1431", "TASK-1455"]
-assigned_total     = 17
+assigned_total     = 16
 claimable          = 2
 claimable_now      = 2
 awaiting_sync      = 0
@@ -43,11 +43,11 @@ actionable         = 0
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 8
+blocked            = 7
 lane_utilization   = 1.4
 idle_prediction_days   = 0.3
 dependency_wait_days   = 3.1
-blocked_duration_days  = 2.1
+blocked_duration_days  = 3.1
 critical_path_max      = 0
 
 [[task]]
@@ -832,7 +832,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1452"
@@ -1073,6 +1073,22 @@ estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-412"
+title         = "Usage & Billing Observability"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-415"
@@ -2336,22 +2352,6 @@ critical_path  = 0
 estimated_ready = "** — **trigger: the Billing screen is scheduled for implementation**"
 waiting_for    = "** — **trigger: the Billing screen is scheduled for implementation**"
 blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-412"
-title         = "Usage & Billing Observability"
-state         = "BLOCKED"
-declared      = "BLOCKED"
-lane          = "Lane C"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "on [C-1413](LANE_COORDINATION.md) — Lane C, 2026-08-10, withdrawing it"
-waiting_for    = "on [C-1413](LANE_COORDINATION.md) — Lane C, 2026-08-10, withdrawing its own `READY`.** ⛔ **The row contradicts itself: its Change Budget names 🟢 `modu"
-blocked_days   = 0.1
 on_integration = true
 
 [[task]]
