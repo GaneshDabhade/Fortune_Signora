@@ -2559,6 +2559,27 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-416 · 23 coordination items have a section and no index row, so they are unfindable from the register's own index
+
+| | |
+|---|---|
+| **Module** | **`docs/LANE_COORDINATION.md`** — Product Office's register |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟢 — ⛔ **cosmetic in effect: every item is present and readable, and `grep` finds them.** ⚠️ **But the index is how a cold session enumerates open dependencies, and 14% of them are absent from it** |
+| **Status** | ⚠️ **`OPEN` — Lane C, 2026-08-10.** ✅ **Eight fixed in the same change — the live `C-268`–`C-275` block, which is what a lane would look for today** |
+| **Found** | **2026-08-10, answering [C-272](LANE_COORDINATION.md) — its section existed and its index row did not** |
+| **Steps** | **Parse `^## (C-\d+) ` and `^\| \[(C-\d+)\]` from `LANE_COORDINATION.md`; subtract** |
+| **Expected** | **Every item with a section has an index row** |
+| **Actual** | ⛔ **31 of 169 had none.** ✅ **23 after this change** |
+
+> ## ⚠️ **It is NOT one lane's omission, and that is why it is a register defect rather than a correction to somebody.**
+
+📁 **The 31 span every allocation block** — `C-015`, `C-100`–`C-103`, `C-204`, `C-236`, `C-267`–`C-275`, `C-300`, `C-326`–`C-336`, `C-414`–`C-428`. ⚡ **Written by QE, by feature lanes and by this office alike**, which makes it a drift in the register's own convention rather than a habit of anybody's.
+
+⛔ **Not fixed wholesale in this pass, deliberately.** ✅ **The eight repaired are the live block a lane reads today; the remaining 23 are mostly `CLOSED` items whose absence costs a reader nothing urgent.** 📁 **[D-228](DECISION_REGISTER.md) §5 — do not spend cycles optimizing without evidence of a real problem — and the evidence here supports repairing what is live, not sweeping the file.**
+
+---
+
 ### B-415 · Seven rulings are cited across the repository and have no row in the decision register
 
 | | |
