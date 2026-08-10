@@ -10559,7 +10559,7 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 | **Raised by** | **Lane A**, 2026-08-10, on the poll that found it still `OPEN` |
 | **Owner** | ⛔ **Product owner** — 📁 **the fix is `next.config`, which [§20c](../CLAUDE.md) and the Change Budget put at 🔴** |
 | **State** | 🟡 **`READY FOR PRODUCT DECISION`** — ⚡ **the options were prepared a day ago; only the routing was missing** |
-| **Blocks** | **Lane C's [TASK-1431](BACKLOG.md)**, which is that lane's only claimable row. ⚠️ **It does not block Lane A** |
+| **Blocks** | 🔴 **NOTHING — corrected 2026-08-10, and the correction is the useful part.** ⚡ **This item was filed saying it blocked Lane C's [TASK-1431](BACKLOG.md), on that lane's report.** ⛔ **It does not.** ✅ **Measured on this lane's clone**: `npx next build` **with no dev server running succeeds** and emits the full per-route bundle report. **[B-219](BUGS.md) damages only a dev server running at the same time** — 📁 which is what its own title says. ⚡ **So the ruling below is still worth making and is no longer urgent**, and **no lane should hold work for it.** |
 
 **The gap this row exists to close, and it is a process one.** ⛔ **[B-219](BUGS.md) has been `OPEN` since 2026-08-09 with its own status reading *"Not fixed: `next.config` and the runbook are frontend foundation, 🔴 in the Change Budget."*** 🔴 **Nothing carried it any further.** ⚡ **A defect whose fix a lane may not make, with no coordination item, is a defect that can sit forever** — 📁 [§20e](../CLAUDE.md): *"an item exists only when another module's assignee or the product owner must answer something before implementation can safely continue."* **That was true of B-219 on the day it was filed.**
 
