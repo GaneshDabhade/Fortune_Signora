@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "695cafd"
+generated_from = "f62ec7b"
 task_count     = 158
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1411", "TASK-1442", "TASK-1448", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-1447", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
 assigned_total     = 137
-claimable          = 26
+claimable          = 25
 claimable_now      = 24
-awaiting_sync      = 2
-in_flight          = 78
-actionable         = 5
+awaiting_sync      = 1
+in_flight          = 79
+actionable         = 6
 awaiting_qe_transition = 0
-blocked_on_integration = 0
+blocked_on_integration = 1
 supply_state       = "working"
 blocked            = 33
-lane_utilization   = 15.6
-idle_prediction_days   = 3.7
+lane_utilization   = 15.8
+idle_prediction_days   = 3.6
 dependency_wait_days   = 0.1
 blocked_duration_days  = 0.1
 critical_path_max      = 3
@@ -1701,18 +1701,18 @@ on_integration = true
 [[task]]
 id            = "TASK-464"
 title         = "The Action Batch's application layer, and the two events"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-465"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-465"
@@ -1725,7 +1725,7 @@ unblocks       = ["TASK-466"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 1
-estimated_ready = "** — **predecessor [TASK-464](#task-464--the-action-batchs-application"
+estimated_ready = "when TASK-464 complete"
 waiting_for    = "** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)**"
 blocked_days   = 0.0
 on_integration = true
