@@ -60,8 +60,16 @@ def _history(batch: ActionBatch) -> tuple[tuple[Transition, UUID | None, datetim
             Transition.APPROVED if batch.applied_at is not None else Transition(batch.state.value)
         )
         events.append((decision, batch.decided.actor_id, batch.decided.at))
+    # ⚡ **Dispatch precedes the outcome, always** —
+    # [TASK-465](../../../../docs/BACKLOG.md). ⛔ **The domain refuses an
+    # application or a failure without one**, so the order here is the order
+    # they can occur in rather than an ordering this function chooses.
+    if batch.dispatched_at is not None:
+        events.append((Transition.DISPATCHED, None, batch.dispatched_at))
     if batch.applied_at is not None:
         events.append((Transition.APPLIED, None, batch.applied_at))
+    if batch.failure is not None:
+        events.append((Transition.APPLICATION_FAILED, None, batch.failure.at))
     if batch.reversal is not None:
         events.append((Transition.REVERSED, batch.reversal.actor_id, batch.reversal.at))
     return tuple(events)
@@ -79,16 +87,31 @@ def _replay(row: ActionBatchModel, transitions: list[ActionBatchTransitionModel]
     )
     for entry in transitions:
         transition = Transition(entry.transition)
+        # ⚡ **The three unattributed transitions, replayed first** —
+        # [TASK-465](../../../../docs/BACKLOG.md). ⛔ **Each is performed on the
+        # authority of the approval already recorded**, so none of them has an
+        # actor to demand.
         if transition is Transition.APPLIED:
             batch = batch.applied_on(entry.occurred_at)
             continue
+        if transition is Transition.DISPATCHED:
+            batch = batch.dispatched_on(entry.occurred_at)
+            continue
+        if transition is Transition.APPLICATION_FAILED:
+            # ⚠️ **The stored reason is the log's**, so replay uses it rather
+            # than a placeholder: `failed_to_apply` refuses an empty one, and a
+            # placeholder would make every replayed failure say the same thing.
+            batch = batch.failed_to_apply(entry.reason or "the reason was not recorded",
+                                          at=entry.occurred_at)
+            continue
         actor_id = entry.actor_id
         if actor_id is None:
-            # The table's CHECK permits `NULL` only for `applied`, so reaching
-            # here means the stored row no longer satisfies the constraint it
-            # was written under. **Loud and specific** (§15) — an aggregate
-            # rebuilt around a missing actor would be an approval attributed to
-            # nobody, which is exactly what this context exists to prevent.
+            # The table's CHECK permits `NULL` only for the unattributed
+            # transitions, so reaching here means the stored row no longer
+            # satisfies the constraint it was written under. **Loud and
+            # specific** (§15) — an aggregate rebuilt around a missing actor
+            # would be an approval attributed to nobody, which is exactly what
+            # this context exists to prevent.
             raise ActionBatchError(
                 f"transition {entry.sequence} of batch {row.id} is {transition.value} "
                 "and names no actor. Only an application is unattributed, so this row "
@@ -140,6 +163,11 @@ class SqlActionBatchRepository:
                 "to it, and `add` is what writes it."
             )
         transition, transition_actor, occurred_at = history[-1]
+        # ⚡ **Narrowed rather than asserted.** `_history` yields
+        # `APPLICATION_FAILED` only when `batch.failure` is set, so the two
+        # cannot disagree — but the type-checker cannot see that, and an
+        # `assert` would be a runtime guard standing in for a derivation.
+        failure = batch.failure
         self._session.add(
             ActionBatchTransitionModel(
                 id=uuid4(),
@@ -149,6 +177,10 @@ class SqlActionBatchRepository:
                 transition=transition.value,
                 actor_id=transition_actor,
                 occurred_at=occurred_at,
+                # ⛔ **Set only by a failure, and the domain is what guarantees
+                # that**: `failure` is present exactly when the last transition
+                # is `application_failed`.
+                reason=failure.reason if failure is not None else None,
                 created_by=actor_id,
                 updated_by=actor_id,
             )

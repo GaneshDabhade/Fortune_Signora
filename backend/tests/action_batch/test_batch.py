@@ -320,7 +320,8 @@ class TestApplicationProgress:
         assert dispatched.progress is ApplicationProgress.ACCEPTED
         assert failed.progress is ApplicationProgress.FAILED
         assert failed.dispatched_at is not None
-        assert failed.failure == "the provider refused the write"
+        assert failed.failure is not None
+        assert failed.failure.reason == "the provider refused the write"
 
     def test_applying_after_dispatch_reports_applied(self) -> None:
         applied = _approved().dispatched_on(_LATER).applied_on(_LATER)

@@ -121,6 +121,20 @@ _UNATTRIBUTED_TRANSITIONS: Final = frozenset(
 )
 
 
+@dataclass(frozen=True, slots=True)
+class ApplicationFailure:
+    """Why an application did not run, and when.
+
+    ⛔ **A value rather than a bare string**, because 📁 the transition log is
+    rebuilt by replaying the aggregate and **every entry needs the moment it
+    happened.** ⚡ **And no `actor_id`**: a worker is not an actor, which is the
+    same reason `applied_on` takes none.
+    """
+
+    reason: str
+    at: datetime
+
+
 class ApplicationProgress(StrEnum):
     """How far the *work* has got, which is a different question from approval.
 
@@ -242,10 +256,10 @@ class ActionBatch:
     #: state**, not an inconsistency: approval and application are two
     #: moments, and the gap between them is what slice 5 makes visible.
     applied_at: datetime | None = None
-    #: ⛔ **Why the work did not run, verbatim.** **Set exactly when the
+    #: ⛔ **Why the work did not run, and when.** **Set exactly when the
     #: progress is `FAILED` and never otherwise** — a failure with no reason is
     #: a state a customer can see and nobody can act on.
-    failure: str | None = None
+    failure: ApplicationFailure | None = None
     #: How long a reversal remains possible after it applied. `None` means
     #: **reversal was never offered**, which is not the same as expired.
     reversible_for: timedelta | None = None
@@ -388,7 +402,7 @@ class ActionBatch:
                 f"a batch cannot fail at {at}, before it was dispatched at "
                 f"{self.dispatched_at}."
             )
-        return replace(self, failure=reason.strip())
+        return replace(self, failure=ApplicationFailure(reason=reason.strip(), at=at))
 
     @property
     def progress(self) -> ApplicationProgress:

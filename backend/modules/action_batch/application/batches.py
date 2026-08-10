@@ -27,7 +27,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.action_batch.application.ports import ActionBatchRepository
 from modules.action_batch.domain.batch import ActionBatch, ActionBatchError, Decision
-from modules.action_batch.domain.events import ActionBatchApplied, ActionBatchReversed
+from modules.action_batch.domain.events import (
+    ActionBatchApplicationRequested,
+    ActionBatchApplied,
+    ActionBatchReversed,
+)
 from signora_platform.event_bus import EventPublisher
 from signora_platform.observability import get_logger
 
@@ -109,6 +113,88 @@ class ActionBatches:
     ) -> ActionBatch:
         """The proposer took it back **before anybody decided**."""
         return await self._decide(workspace_id, batch_id, actor_id, "withdrawn_by", now)
+
+    async def request_application(
+        self,
+        workspace_id: UUID,
+        batch_id: UUID,
+        *,
+        actor_id: UUID,
+        now: datetime | None = None,
+    ) -> ActionBatch:
+        """**Accept an application, durably, and answer.** ⛔ **Nothing runs here.**
+
+        🔴 **This is the row's whole subject** — [TASK-465](../../../../docs/BACKLOG.md).
+        📁 [§14](../../../../CLAUDE.md): *"a handler responds once the request
+        has been durably accepted, never after the work."* ⚠️ **And the risk it
+        names**: *"a customer told **applied** before the work finishes."*
+
+        ✅ **So the batch is recorded as `dispatched` and the acceptance is
+        published in the SAME transaction** — 📁 the transactional outbox
+        ([§9](../../../../CLAUDE.md)), **which is the only durable way to hand
+        work to a worker.** ⛔ **Nothing here reaches Redis, and nothing here
+        performs the change.**
+
+        ⚡ **The caller may answer as soon as this returns**, and what it may
+        say is *accepted*, never *applied*.
+        """
+        batch = await self._load(workspace_id, batch_id)
+        moment = now or datetime.now(UTC)
+        dispatched = batch.dispatched_on(moment)
+        # ⚡ **`actor_id` is the AUDIT author — who wrote the row — and it is a
+        # different question from who performed the transition.** ⛔ **The
+        # transition itself stays unattributed**: `Transition.DISPATCHED.
+        # is_attributed` is false and `_history` passes `None`. **A person did
+        # press Apply, so the audit columns have a real answer**, and inventing
+        # one for the transition would claim they performed work they only
+        # asked for.
+        await self._repository.record(dispatched, actor_id=actor_id)
+
+        await self._publish(
+            ActionBatchApplicationRequested(
+                event_id=uuid4(),
+                workspace_id=dispatched.workspace_id,
+                occurred_at=moment,
+                batch_id=dispatched.id,
+                name=dispatched.name,
+            )
+        )
+        logger.info(
+            "action batch application accepted",
+            extra={"batch_id": str(dispatched.id), "workspace_id": str(workspace_id)},
+        )
+        return dispatched
+
+    async def fail_application(
+        self, workspace_id: UUID, batch_id: UUID, reason: str, *, now: datetime | None = None
+    ) -> ActionBatch:
+        """**The work did not run, and the customer is told why.**
+
+        ⛔ **Publishes nothing.** ⚡ **Nothing outside this module reacted to the
+        acceptance, so nothing outside it needs to hear that the acceptance came
+        to nothing** — 📁 the same reasoning `propose` carries: *a proposal is a
+        question, and no domain outside this one acts on a question.*
+
+        ✅ **The failure is recorded**, which is what the progress surface reads
+        — 📁 [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): **a batch
+        still running and one that failed to start must never render alike.**
+        """
+        batch = await self._load(workspace_id, batch_id)
+        moment = now or datetime.now(UTC)
+        failed = batch.failed_to_apply(reason, at=moment)
+        # ⛔ **No person is present**, so the audit author is the proposer — the
+        # same convention `apply` already uses, and for the same reason: the
+        # authority is the approval already recorded.
+        await self._repository.record(failed, actor_id=failed.proposed.actor_id)
+
+        # ⚠️ **`warning`, not `error`.** A batch that could not apply is a
+        # handled outcome with a customer-visible state — §16: errors are
+        # actionable problems, warnings are unexpected-but-handled.
+        logger.warning(
+            "action batch application failed",
+            extra={"batch_id": str(failed.id), "reason": reason},
+        )
+        return failed
 
     async def apply(
         self, workspace_id: UUID, batch_id: UUID, *, now: datetime | None = None
@@ -223,7 +309,10 @@ class ActionBatches:
             )
         return batch
 
-    async def _publish(self, event: ActionBatchApplied | ActionBatchReversed) -> None:
+    async def _publish(
+        self,
+        event: ActionBatchApplied | ActionBatchReversed | ActionBatchApplicationRequested,
+    ) -> None:
         # The platform's `PublishableEvent` Protocol declares settable members,
         # which frozen domain events cannot satisfy — the same finding
         # `signal_engine` and `provider_normalization` both carry, raised

@@ -20,6 +20,7 @@ from sqlalchemy import (
     Integer,
     Interval,
     String,
+    Text,
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -97,3 +98,9 @@ class ActionBatchTransitionModel(Base, WorkspaceScopedMixin, TimestampMixin, Aud
     #: `NULL` only for `applied`, enforced above.
     actor_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    #: ⛔ **Why an application failed, and NULL for every other transition** —
+    #: [TASK-465](../../../../docs/BACKLOG.md). ⚡ **Stored rather than derived**:
+    #: it is the one thing about a failure the aggregate cannot recompute, and
+    #: 📁 [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md) needs it to say
+    #: more than *something went wrong*.
+    reason: Mapped[str | None] = mapped_column(Text(), nullable=True)

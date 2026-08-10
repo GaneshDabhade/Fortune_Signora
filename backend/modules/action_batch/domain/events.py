@@ -21,6 +21,54 @@ from uuid import UUID
 
 EVENT_VERSION: Final = 1
 
+#: ⚡ **The wire name, as a constant rather than only a dataclass default.**
+#: 📁 `ai_research_engine` records why: `slots=True` makes the class attribute a
+#: descriptor, so a subscription registered from `Event.event_type` would point
+#: at a repr nothing publishes. **Found exactly that way, there.**
+APPLICATION_REQUESTED: Final = "action_batch.application_requested"
+
+
+@dataclass(frozen=True, slots=True)
+class ActionBatchApplicationRequested:
+    """Somebody asked for an approved batch to be applied, and it was accepted.
+
+    ## ⚠️ This is a THIRD event in a file that says two, and the difference is
+    the point rather than an exception to it
+
+    ⛔ **The two above are INTEGRATION events**: *"only two of them change
+    anything outside this module."* ✅ **That sentence is still true.**
+    **Nothing outside `action_batch` subscribes to this one** — ⚡ **its only
+    consumer is this module's own worker**, and it exists because
+    [§9](../../../../CLAUDE.md) forbids the alternative: *"never publish
+    directly to Redis, bypassing the outbox."*
+
+    ⚡ **So the honest description is a WORK TRIGGER carried on the event bus**,
+    because the outbox is the only durable path a handler may hand work to.
+    📁 **`ai_research_engine` established the shape** — it publishes
+    `ai_research.requested` and subscribes to it itself — **and this follows it
+    rather than inventing a second mechanism.**
+
+    ## ⛔ Why it is still not `action_batch.approved`
+
+    📁 **The file's refusal above stands**: *"a subscriber acting on it would
+    act before the work happened."* ⚠️ **That is exactly what this event
+    announces — work that has NOT happened** — ✅ **which is why nothing outside
+    this module may subscribe to it.** **The moment anything outside acts on
+    *accepted*, the distinction between accepted and applied is gone and the
+    row's own risk has arrived**: *a customer told applied before the work
+    finishes.*
+    """
+
+    event_id: UUID
+    workspace_id: UUID
+    occurred_at: datetime
+    batch_id: UUID
+    #: ⚡ **Identity, never payload.** 📁 The handler loads the batch rather than
+    #: trusting this — *"events carry identity; ports carry payload"*, which is
+    #: what stops a replayed event applying a batch that has since been
+    #: reversed.
+    name: str
+
 
 @dataclass(frozen=True, slots=True)
 class ActionBatchApplied:

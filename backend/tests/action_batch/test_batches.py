@@ -359,6 +359,18 @@ class TestTheEventsThemselves:
         between the two moments is real. **Asserted on the module rather than
         left to the docstring**, because a docstring cannot refuse the third
         event somebody adds.
+
+        ⚠️ **A third event DID arrive** — [TASK-465](../../../docs/BACKLOG.md)'s
+        `ActionBatchApplicationRequested` — **and this test failing is what made
+        that a decision rather than a drift.** ✅ **The set is still closed and
+        the refusal is unchanged**: ⛔ **there is still no `approved` event**,
+        and **the two INTEGRATION events are still two.**
+
+        🔴 **The third is a work trigger, not an integration event.** **Nothing
+        outside this module may subscribe to it** — 📁 its only consumer is this
+        module's own worker, and it exists because
+        [§9](../../../CLAUDE.md) forbids the alternative: *never publish
+        directly to Redis, bypassing the outbox.*
         """
         import modules.action_batch.domain.events as events
 
@@ -367,7 +379,15 @@ class TestTheEventsThemselves:
             for name in dir(events)
             if name.startswith("ActionBatch") and not name.startswith("_")
         }
-        assert published == {"ActionBatchApplied", "ActionBatchReversed"}
+        assert published == {
+            "ActionBatchApplied",
+            "ActionBatchReversed",
+            "ActionBatchApplicationRequested",
+        }
+
+        # ⛔ **The refusal this test was written for, stated separately so the
+        # set above cannot quietly absorb it.**
+        assert "ActionBatchApproved" not in published
 
     def test_both_events_are_frozen_because_they_record_something_that_was_true(
         self,

@@ -23,6 +23,11 @@ already recorded; dispatch and failure are performed by the same authority. **A
 worker is not an actor**, and naming the approver as the author of a background
 failure would put a false name in a history somebody may have to defend.
 
+**A nullable ``reason`` column joins the log**, holding the sentence a failed
+application records. It is the one thing about a failure the aggregate cannot
+recompute — every other transition derives entirely from the batch — and P-A
+needs it so the screen can say more than *something went wrong*.
+
 **No data migration.** Every existing row carries one of the five original
 transitions and stays valid under the widened constraint — the change only
 admits more, never re-interprets what is there.
@@ -71,6 +76,10 @@ def _unattributed(values: Sequence[str]) -> str:
 
 
 def upgrade() -> None:
+    # **Nullable, so every existing row is already valid.** Only an
+    # `application_failed` transition ever carries one.
+    op.add_column(TRANSITION, sa.Column("reason", sa.Text(), nullable=True))
+
     # **Widen before the constraint admits the longer value.** The reverse
     # order would create a moment where a permitted value could not be stored.
     op.alter_column(
@@ -110,3 +119,5 @@ def downgrade() -> None:
         type_=sa.String(length=16),
         existing_nullable=False,
     )
+
+    op.drop_column(TRANSITION, "reason")
