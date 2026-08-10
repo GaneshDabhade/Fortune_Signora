@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3f498b7`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `964131d`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,11 +12,11 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `9b4082e2`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `9b4082e`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`9b4082e2`** — the certified commit itself |
+| **`main`** | **`9b4082e`** — the certified commit itself, with Closeout at `964131d` |
 | **`integration`** | ✅ **Rebased onto `main` this cycle.** ⚡ **Five Lane A claim commits arrived *during* certification and were left for the next cycle by design** — the Certification Snapshot rule, working exactly as written. **All five verified claim-only** |
 | **Release candidate** | **17 commits, two lanes.** ⛔ **One slice excluded: `TASK-464`, returned `CHANGES REQUESTED`** ([B-172](docs/BUGS.md)). ✅ **Neither lane was held for it** |
 | **Certification** | ✅ [`9b4082e2102f`](certification/reports/9b4082e2102f.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · ⚠️ **second attempt — the first was NOT CERTIFIED on coverage, and the record is parked** |
