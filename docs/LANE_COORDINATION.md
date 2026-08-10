@@ -9910,3 +9910,69 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 **It is not a request to reprioritise.** 📁 [§20e](../CLAUDE.md): *"a lane never reorders, reprioritizes, removes, or inserts `READY` work without the product owner."* ⚡ **Every row above already exists and every owner is joined from [`modules.toml`](coordination/modules.toml).** ✅ **The one concrete ask is the first section: [TASK-1406](BACKLOG.md)'s stated blocker is met, and the queue still lists it as unmet.**
 
 **And it is not a report of an idle lane.** ⛔ **[TASK-1440](BACKLOG.md) is claimed and in progress**, [TASK-1456](BACKLOG.md) went to `IN VALIDATION` today, and 📁 [500](architecture/500-authenticated-entry-reconciliation.md) shipped with it.
+
+## C-274 · The switcher's exit and its destination are in different rows, and the destination is blocked
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.md)** |
+| **Owner** | **Lane C** — ⛔ **sequencing between three rows is row scope** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **SEQUENCING** — ⛔ **not a design defect; the design is unambiguous about where the switcher goes** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **One clause of [TASK-1440](BACKLOG.md)'s `Delivers`, and its `Definition of Done` as written.** ✅ **The other four slots shipped** |
+
+### The conflict, in three lines
+
+📁 **[TASK-1440](BACKLOG.md) `Delivers`**: *"⛔ **The workspace switcher LEAVES the top bar** — see [TASK-1441](BACKLOG.md)."*
+📁 **[TASK-1441](BACKLOG.md)** puts it in the rail as its first child — ⛔ **and is `BLOCKED` behind [TASK-1439](BACKLOG.md)**, which is blocked on [C-269](#c-269).
+📁 **[TASK-1440](BACKLOG.md) `Definition of Done`**: *"The top bar is the design's five slots **and nothing else**."*
+
+> 🔴 **So the row that removes the control and the row that rehomes it are separated by two blocked rows.** ⛔ **Removing it today does not move it — it deletes it.** ⚡ **`WorkspaceSelector` is the only control a customer has for changing workspace**, and there is no second entrance.
+
+### ✅ What this lane did, and why it is not the DoD being ignored
+
+⛔ **The switcher stays, marked `data-not-a-slot="workspace-switcher"` in the markup and asserted as *not a slot* in `tests/components/top-bar.test.tsx`.** ⚡ **A test states today's truth so the day it changes is loud** — the same device `route-map.test.ts` uses for the absent `/w/` tree.
+
+📁 **[§2](../CLAUDE.md) ranks the two harms and it is not close**: *a control that does nothing* is the defect the repository keeps finding, **and this control does something.** ⚠️ **Trading a rule violation for a capability loss is the trade this office rejected in [C-269](#c-269)**, on this lane's own evidence — 📁 *"an entry that leads nowhere advertises absence."* ⛔ **A missing switcher is worse than a misplaced one.**
+
+### ⚡ The cheapest resolutions, and none is this lane's to pick
+
+ⓐ **Let [TASK-1441](BACKLOG.md) move it into today's rail** rather than the design's — ⛔ **it is blocked on [TASK-1439](BACKLOG.md) only because the design's landmarks describe the design's rail**, and the control would work in either.
+ⓑ **Amend [TASK-1440](BACKLOG.md)'s DoD** to *the design's five slots plus the switcher until [TASK-1441](BACKLOG.md)*, which is what shipped.
+ⓒ **Accept the gap** — ⛔ **only if somebody decides a customer may not change workspace for the duration**, which nobody has.
+
+## C-275 · Two top-bar slots have no data source, and `lib/shell/top-bar.ts` had zero callers until today
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.md)** |
+| **Owner** | **Lane C** — ⚡ **both halves need a module to publish something, and which module is row scope** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION** — ⛔ **the design is complete; the sources are not built** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **Slot 4 (notifications) and the help half of slot 5.** ✅ **Four slots shipped without them** |
+
+### 🔴 The finding that generalises, and it is the sixth instance
+
+⚠️ **Measured before this row's files existed**: 📁 **all six exports of [`lib/shell/top-bar.ts`](../frontend/lib/shell/top-bar.ts) had ZERO production callers** — `TOP_BAR_SLOTS` · `SLOT_SPEC` · `SEARCH_WIDTH` · `statusLabelVisible` · `BADGE_CAP` · `badgeLabel`. ⛔ **The slot law was shipped by [TASK-1408](BACKLOG.md), covered by seven tests, and never consulted by the bar it governs.**
+
+✅ **[TASK-1440](BACKLOG.md) gives `SLOT_SPEC` and `SEARCH_WIDTH` their first callers.** ⛔ **Three still have none, and that is reported rather than fixed by inventing a caller** — 📁 [§2](../CLAUDE.md): **a caller written to satisfy a count is the defect the count exists to find.**
+
+> ⚡ **Sixth instance of one pattern**: 📁 the entry engine ([500](architecture/500-authenticated-entry-reconciliation.md)) · `lib/shell/scope.ts` · `command-palette.tsx` ([C-259](#c-259)) · `confidence.tsx` ([C-266](#c-266)) · `drawer.tsx` and `copyable-id.tsx` ([498](architecture/498-common-platform-audit.md) §5.1) · **and this.** ⛔ **[TASK-1451](BACKLOG.md)'s guard walks `components/ui` and would catch none of them.**
+
+### Slot 4 · Notifications — nothing publishes one
+
+📁 **The design wants a 400px popover, grouped by day, three tabs, and a badge that caps at 99+.** ✅ **`badgeLabel` already implements the cap.** ⛔ **Measured: no notification endpoint, no event feed, no unread count anywhere in `lib/api`.**
+
+⚡ **A bell opening an empty 400px panel is precisely what [TASK-1433](BACKLOG.md) is parked for** — 📁 *"an empty panel does not reserve space for a future feature, it takes space from the one the customer is using today."* ✅ **So the slot is absent, and its absence is asserted in the test rather than left to be noticed.**
+
+### Slot 3 · The healthy pill, and a correction to this lane's own first reading
+
+⚠️ **This row's first draft claimed `OfflineStatus` consults `statusLabelVisible`. It does not** — 🔴 **caught by reading the file rather than by inferring the binding from the slot name, which is the third time this lane has made exactly that error.**
+
+✅ **And `OfflineStatus` is right not to call it.** 📁 The helper's entire content is what the GREEN tone does at `<1280px`, and `OfflineStatus` never renders a green tone — 📁 its own note: *"online with an empty queue renders `null`… a pill whose only content is everything is fine is chrome that costs a slot every screen inherits."*
+
+⛔ **So the design's healthy status pill is genuinely absent, and the five subsystems it names — Application, CRM sync, Scoring service, Conversation ingest, Exports — are published by nothing.** ⚡ **`statusLabelVisible` stays uncalled until a source exists.**
+
+### Slot 5 · Help has no destination
+
+📁 **`Fortune Signora Help Center.dc.html` is in the snapshot.** ⛔ **There is no help, docs or support route.** ⚡ **A help control that goes nowhere is [C-269](#c-269) in miniature and gets the same answer: absent, not *coming soon*.**

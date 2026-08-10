@@ -19,7 +19,11 @@ vi.mock('@/components/shell/navigation', () => ({
 }));
 vi.mock('@/components/shell/workspace-selector', () => ({ WorkspaceSelector: () => null }));
 vi.mock('@/components/intelligence/account-search', () => ({ AccountSearch: () => null }));
-vi.mock('@/components/shell/theme-toggle', () => ({ ThemeToggle: () => null }));
+// ⚡ **Was `theme-toggle`** — TASK-1440 moved the theme control off the frame
+// and into the account menu, so the leaf this suite stubs moved with it. ⛔ The
+// menu needs `ThemeProvider` and `WorkspaceProvider`; **this suite is about the
+// rail**, and `tests/components/top-bar.test.tsx` renders it for real.
+vi.mock('@/components/shell/account-menu', () => ({ AccountMenu: () => null }));
 
 import { AppShell } from '@/components/shell/app-shell';
 import { RAIL_WIDTH, collapseKey } from '@/lib/shell/rail';
@@ -52,6 +56,7 @@ function shell(
       <AppShell
         role="owner"
         userId={userId}
+        email="viewer@example.com"
         signOut={<button type="button">Sign out</button>}
         {...extra}
       >

@@ -105,7 +105,11 @@ describe('there is one search', () => {
     // **A guard that cannot fail is documentation pretending to be code** (§2).
     // If the shell ever stops mounting search, the three checks above go on
     // passing over a product that has no search at all.
-    const shell = SOURCES.find(({ name }) => name === 'components/shell/app-shell.tsx');
+    // ⚡ **Was `app-shell.tsx`** — TASK-1440 moved the mount into the top bar,
+    // where the design's Search slot is. ⛔ **The guard follows the mount rather
+    // than being relaxed**: it still names one file and still fails if search
+    // stops being mounted anywhere in the shell.
+    const shell = SOURCES.find(({ name }) => name === 'components/shell/top-bar.tsx');
 
     expect(shell?.source).toContain('<AccountSearch />');
   });

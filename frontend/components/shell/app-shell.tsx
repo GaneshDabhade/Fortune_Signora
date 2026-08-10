@@ -3,11 +3,9 @@
 import type { ReactNode } from 'react';
 
 import { RegionBoundary } from '@/components/ui/region-boundary';
-import { AccountSearch } from '@/components/intelligence/account-search';
 import { MobileNavigation, Navigation } from '@/components/shell/navigation';
-import { ThemeToggle } from '@/components/shell/theme-toggle';
-import { WorkspaceSelector } from '@/components/shell/workspace-selector';
-import { Breadcrumb, OfflineStatus, ShellBanners, type ShellBanner } from '@/components/ui';
+import { TopBar } from '@/components/shell/top-bar';
+import { ShellBanners, type ShellBanner } from '@/components/ui';
 import type { Crumb } from '@/lib/shell/breadcrumb';
 import { RAIL_WIDTH } from '@/lib/shell/rail';
 import { useRailCollapse } from '@/lib/shell/use-rail-collapse';
@@ -17,6 +15,17 @@ export interface AppShellProps {
   children: ReactNode;
   role: WorkspaceRole | null;
   signOut: ReactNode;
+  /**
+   * ⚡ **The signed-in address, for the account menu's identity block** —
+   * [TASK-1440](../../../docs/BACKLOG.md). 📁 The design: *"always states name,
+   * email, role and workspace."*
+   *
+   * ⛔ **It was already crossing this boundary, buried inside the `signOut`
+   * node.** ⚡ **Naming it is what lets slot five state an identity instead of
+   * rendering an opaque control**, and it is the whole of this row's change
+   * outside `components/shell/**`.
+   */
+  email: string;
   /**
    * ⚡ **Required for the rail's collapse to be remembered** —
    * [TASK-1408](../../../docs/BACKLOG.md), 📁 *"the state persists per user,
@@ -60,6 +69,7 @@ export function AppShell({
   children,
   role,
   signOut,
+  email,
   userId = null,
   banners = [],
   inSandbox = false,
@@ -110,39 +120,12 @@ export function AppShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-topbar shrink-0 items-center justify-between gap-3 border-b border-border bg-surface px-4">
-          {/* **The wordmark lives in the sidebar, which does not exist on a
-              phone.** Shown here below `md` so the product is still named on
-              the one viewport where the frame is otherwise anonymous. */}
-          <span className="shrink-0 text-sm font-semibold tracking-tight md:hidden">Signora</span>
-          {/* 📁 The breadcrumb is the top bar's first slot — *"flex, min 0.
-              Truncates from the middle. Never wraps."* It renders nothing at
-              the first level, which is rule 6. */}
-          <Breadcrumb trail={breadcrumb} />
-          <RegionBoundary subject="your organizations">
-            <WorkspaceSelector />
-          </RegionBoundary>
-          {/* **Search is a verb, not a place** (A1), so it sits here rather
-              than becoming a navigation entry. Its own boundary on the same
-              reasoning as every other region: a failing search must not take
-              the workspace selector or sign-out down with it. */}
-          <RegionBoundary subject="account search">
-            <AccountSearch />
-          </RegionBoundary>
-          <div className="flex items-center gap-3">
-            {/* 📁 **App Shell §07 — *"system status is a persistent pill in
-                the top bar rather than a banner"*** —
-                [TASK-1435](../../../docs/BACKLOG.md). ⛔ **`system-status` is
-                a declared slot in `lib/shell/top-bar.ts`, placed by
-                [TASK-1408](../../../docs/BACKLOG.md) before anything filled
-                it**, so this fills a region rather than adding one and shell
-                rule 14 is untouched. ⚡ **It renders nothing when the
-                connection is fine and the queue is empty.** */}
-            <OfflineStatus />
-            <ThemeToggle />
-            {signOut}
-          </div>
-        </header>
+        {/* 📁 **The top bar is now the design's slot set** —
+            [TASK-1440](../../../docs/BACKLOG.md). ⛔ **The frame no longer
+            arranges controls; it hands the bar what the bar needs and the slot
+            order is `TopBar`'s.** ⚡ **The theme toggle and `Sign out` left this
+            file for the account menu**, which is where the design puts both. */}
+        <TopBar breadcrumb={breadcrumb} role={role} email={email} signOut={signOut} />
 
         {/* The main region is the one place a failure is acceptable to
             isolate: the frame around it stays usable.

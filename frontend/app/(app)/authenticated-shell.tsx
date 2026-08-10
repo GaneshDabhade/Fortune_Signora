@@ -110,6 +110,10 @@ function ShellForViewer({ email, children }: { email: string; children: ReactNod
     <AppShell
       role={resolved ? role : null}
       userId={session?.user.id ?? null}
+      // ⚡ **Named rather than buried** — TASK-1440. The address was already
+      // crossing this boundary inside the `signOut` node; the account menu's
+      // identity block needs it as a value, not as markup.
+      email={email}
       signOut={<SignOutButton email={email} />}
     >
       {/* ⚡ **Onboarding's only entrance** — TASK-469. It renders nothing
