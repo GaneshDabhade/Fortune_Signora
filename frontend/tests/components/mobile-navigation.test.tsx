@@ -26,7 +26,7 @@ describe('a phone has a way to get somewhere else', () => {
   it('offers the same destinations the sidebar does', () => {
     render(<MobileNavigation role="owner" />);
 
-    const bar = screen.getByRole('navigation', { name: /main/i });
+    const bar = screen.getByRole('navigation', { name: /primary/i });
     expect(within(bar).getByRole('link', { name: /attention/i })).toBeInTheDocument();
     expect(within(bar).getByRole('link', { name: /your business/i })).toBeInTheDocument();
     expect(within(bar).getByRole('link', { name: /settings/i })).toBeInTheDocument();

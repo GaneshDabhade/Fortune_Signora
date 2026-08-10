@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 import { RegionBoundary } from '@/components/ui/region-boundary';
 import { MobileNavigation, Navigation } from '@/components/shell/navigation';
 import { ShellPalette } from '@/components/shell/shell-palette';
+import { RouteAnnouncer } from '@/components/shell/route-announcer';
+import { SKIP_TARGETS, SkipLinks } from '@/components/shell/skip-links';
 import { TopBar } from '@/components/shell/top-bar';
 import { WorkspaceSwitcher } from '@/components/shell/workspace-switcher';
 import { ShellBanners, type ShellBanner } from '@/components/ui';
@@ -87,7 +89,24 @@ export function AppShell({
        top bar, then everything else. ⚡ **The banner region sits ABOVE the
        frame's columns** because it spans them — a banner inside the content
        column would leave the rail beside a warning that does not apply to it. */
-    <div className="flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col">
+      {/* 📁 **Rule 2.4.1**, and first in the DOM because a skip link somebody
+          has already tabbed past is not a skip link. */}
+      <SkipLinks />
+
+      {/* 📁 **Rule 4.1.3** — a client-side route change is silent otherwise. */}
+      <RouteAnnouncer />
+
+      {/* 📁 **`header[banner]`** — *"environment and trial banners, then the
+          top bar. First in the DOM, first in tab order."*
+          ⚠️ **The design asks for ONE header holding both, and this shell
+          cannot express it**: the rail is full-height, so the banner strip
+          spans the frame while the top bar sits inside the content column
+          beside it. ⛔ **A second `<header>` here produced TWO `banner`
+          landmarks, which is worse than the gap** — a screen-reader user
+          choosing "banner" would get a menu of two. ✅ **So the top bar keeps
+          the landmark and this stays a plain region**; the structural question
+          is [C-278](../../../docs/LANE_COORDINATION.md)'s. */}
       <ShellBanners banners={banners} inSandbox={inSandbox} />
 
       <div className="flex min-h-0 flex-1">
@@ -148,7 +167,14 @@ export function AppShell({
             whatever the page ends with. The last row of the attention list is
             the row a seller scrolls to; covering it is the defect this slice
             exists to avoid rather than one to introduce. */}
-        <main className="min-w-0 flex-1 p-4 pb-20 sm:p-6 md:pb-6">
+        {/* 📁 **`main`** — *"the content region. Receives focus on route change
+            and announces the new page title."* ⚡ `tabIndex={-1}` is what makes
+            it a focus target without putting it in the tab order. */}
+        <main
+          id={SKIP_TARGETS.content}
+          tabIndex={-1}
+          className="min-w-0 flex-1 p-4 pb-20 outline-none sm:p-6 md:pb-6"
+        >
           {/* ⛔ **The one boundary whose default reassurance would be false.**
               *"Everything else on this page is unaffected"* is exactly wrong
               when the content region IS the page — what survives is the frame,

@@ -59,7 +59,7 @@ describe('📁 D-225 §4 — currently reachable navigation is not removed', () 
      * assertion is against a ruling rather than a preference.
      */
     render(<Navigation role="owner" />);
-    const rail = screen.getByRole('navigation', { name: 'Main' });
+    const rail = screen.getByRole('navigation', { name: 'Primary' });
 
     expect(within(rail).getByRole('link', { name: 'Attention' })).toHaveAttribute('href', '/');
     expect(within(rail).getByRole('link', { name: 'Your business' })).toHaveAttribute(
@@ -79,7 +79,7 @@ describe('📁 D-225 §4 — currently reachable navigation is not removed', () 
      * absence checks below would pass over an empty frame.
      */
     render(<Navigation role="owner" />);
-    const rail = screen.getByRole('navigation', { name: 'Main' });
+    const rail = screen.getByRole('navigation', { name: 'Primary' });
     expect(within(rail).getAllByRole('link').length).toBeGreaterThan(2);
 
     for (const absent of ['Forecast', 'Pipeline', 'Deals', 'Conversations', 'Reports', 'Home']) {
@@ -97,7 +97,7 @@ describe('📁 restricted destinations stay visible', () => {
      * reasoning the component was contradicting.
      */
     render(<Navigation role="member" />);
-    const rail = screen.getByRole('navigation', { name: 'Main' });
+    const rail = screen.getByRole('navigation', { name: 'Primary' });
 
     expect(within(rail).queryByRole('link', { name: 'Settings' })).toBeNull();
     expect(within(rail).getByLabelText(/Settings — restricted/)).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe('📁 restricted destinations stay visible', () => {
 
   it('✅ an owner gets it as an ordinary link', () => {
     render(<Navigation role="owner" />);
-    const rail = screen.getByRole('navigation', { name: 'Main' });
+    const rail = screen.getByRole('navigation', { name: 'Primary' });
     expect(within(rail).getByRole('link', { name: 'Settings' })).toHaveAttribute(
       'href',
       '/settings',
@@ -125,7 +125,7 @@ describe('📁 restricted destinations stay visible', () => {
     // a frame that blanks while a membership loads is the defect
     // `authenticated-shell.tsx` documents at length.
     render(<Navigation role={null} />);
-    const rail = screen.getByRole('navigation', { name: 'Main' });
+    const rail = screen.getByRole('navigation', { name: 'Primary' });
     expect(within(rail).queryByRole('link', { name: 'Settings' })).toBeNull();
     expect(within(rail).getByRole('link', { name: 'Attention' })).toBeInTheDocument();
   });
@@ -137,7 +137,7 @@ describe('📁 the design\'s structure', () => {
     // *"utilities at the bottom keep the funnel order uninterrupted at the
     // top."* ⚡ Asserted as ORDER, which is the part a customer perceives.
     render(<Navigation role="owner" />);
-    const rail = screen.getByRole('navigation', { name: 'Main' });
+    const rail = screen.getByRole('navigation', { name: 'Primary' });
     const labels = within(rail)
       .getAllByRole('link')
       .map((el) => el.textContent);
@@ -161,7 +161,7 @@ describe('📁 the design\'s structure', () => {
      * screen reader while looking fine.
      */
     render(<Navigation role="owner" collapsed />);
-    const rail = screen.getByRole('navigation', { name: 'Main' });
+    const rail = screen.getByRole('navigation', { name: 'Primary' });
 
     const attention = within(rail).getByRole('link', { name: 'Attention' });
     expect(attention).toBeInTheDocument();

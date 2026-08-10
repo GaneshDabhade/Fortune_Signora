@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
+import { SKIP_TARGETS } from '@/components/shell/skip-links';
 import { Tooltip } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 import { railViolations, visibleDestinations, type RailDestination } from '@/lib/shell/rail';
@@ -284,7 +285,14 @@ export function Navigation({
   collapsed?: boolean;
 }) {
   return (
-    <nav aria-label="Main" className="flex h-full flex-col gap-0.5 p-3">
+    // 📁 **`nav[navigation]`, labelled "Primary"** — TASK-1444. ⛔ It said
+    // "Main", which is not the design's word and, more importantly, is the
+    // word a screen reader user hears when choosing between landmarks.
+    <nav
+      id={SKIP_TARGETS.navigation}
+      aria-label="Primary"
+      className="flex h-full flex-col gap-0.5 p-3"
+    >
       {visibleDestinations(DESTINATIONS).map((item) => (
         <RailLink key={item.id} item={item as RailItem} role={role} collapsed={collapsed} />
       ))}
@@ -324,7 +332,7 @@ export function MobileNavigation({ role }: { role: WorkspaceRole | null }) {
 
   return (
     <nav
-      aria-label="Main"
+      aria-label="Primary"
       className={cn(
         'fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-surface md:hidden',
         // The safe area on a phone with a home indicator.

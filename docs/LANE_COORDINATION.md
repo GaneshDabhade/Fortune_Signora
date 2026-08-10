@@ -10231,3 +10231,35 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 ⛔ **This lane reported *three of five roles do not exist*. Measured: NOT ONE of the five exists.** 📁 The product has `TeamRole = 'owner' | 'member'`; the design names **Admin · Manager · Rep · Analyst · Guest**. ⚡ **It is not a subset — it is a different model**, so the matrix cannot be rendered truthfully **and nothing about the design's vocabulary or its form is the problem.**
 
 ⚠️ **Recorded as [C-1416](#c-1416)'s third instance** — 📁 **C-272 assumed an Executive Dashboard already built, [C-1415](#c-1415) assumed a workspace has region, environment and a fiscal calendar, and this assumes five roles.** **Three rows, three screens, two days, one shape.**
+
+## C-278 · The design's single `header[banner]` cannot be expressed while the rail is full-height
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, **implementing [TASK-1444](BACKLOG.md)** — ⚡ **found by building it and producing the wrong thing first** |
+| **Owner** | **Lane C** — ⛔ **it is a shell STRUCTURE question, not an accessibility one** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN-VERSUS-LAYOUT** — ⛔ **the accessibility rule is satisfiable; the landmark GROUPING is not** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **Nothing.** ✅ **[TASK-1444](BACKLOG.md) shipped every other landmark and all nine rules** |
+
+### What the design asks for
+
+📁 **App Shell `landmarks`, first entry**: ***"`header[banner]` — Environment and trial banners, then the top bar. First in the DOM, first in tab order."***
+
+⚡ **One `banner` landmark, holding both.**
+
+### 🔴 Why this shell cannot express it
+
+⛔ **The rail is full-height.** The frame is: **banner strip spanning the width → [rail | (top bar, content)]** — so **the top bar sits inside the content column, beside the rail**, while the banners span above both. ⚡ **A single element cannot contain the banners and the top bar without also containing the rail**, which would make the rail part of the banner landmark.
+
+### ⚠️ What this lane built first, and why it was worse than the gap
+
+✅ **Reported rather than quietly reverted.** **A `<header>` was wrapped around the banner strip** — which looked like the fix and **gave the shell TWO `banner` landmarks**, because the top bar's element is already one. 🔴 **A screen-reader user choosing *banner* would have been offered a menu of two**, which is a worse outcome than the missing grouping.
+
+✅ **Reverted.** **The top bar keeps the landmark, the banner strip is a plain region, and a test asserts there is exactly one `<header>`** so a second cannot arrive quietly.
+
+### The question
+
+> ⓐ **The layout changes** — the top bar spans the full width above the rail, which is what the design's landmark order implies and 📁 what its own App Shell drawing shows · ⓑ **the landmark grouping is accepted as unexpressible here** and the design's first entry is read as *banner strip, then top bar, in DOM order* rather than as one element · ⓒ **something else.**
+
+⛔ **This lane does not pick**, because ⓐ is a shell restructure that would touch every screen and is not an accessibility defect — **every one of the nine `a11yRules` is satisfied either way.**

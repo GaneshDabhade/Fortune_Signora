@@ -33,7 +33,7 @@ test.describe('reaching the product without a mouse', () => {
 
   test('@a11y every navigation entry is reachable by keyboard', async ({ page }) => {
     await page.goto('/');
-    const nav = page.getByRole('navigation', { name: 'Main' });
+    const nav = page.getByRole('navigation', { name: 'Primary' });
     await expect(nav).toBeVisible();
 
     for (const link of await nav.getByRole('link').all()) {
@@ -45,7 +45,7 @@ test.describe('reaching the product without a mouse', () => {
   test('@a11y the current page is announced, not only coloured', async ({ page }) => {
     await page.goto('/');
     const current = page
-      .getByRole('navigation', { name: 'Main' })
+      .getByRole('navigation', { name: 'Primary' })
       .locator('[aria-current="page"]');
 
     // Colour alone tells a screen-reader user nothing about where they are.

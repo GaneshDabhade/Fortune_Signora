@@ -110,8 +110,14 @@ export function TopBar({ breadcrumb, role, email, signOut }: TopBarProps) {
           ✅ **`AccountSearch` is not decoration** — it finds accounts today,
           which is why it stays rather than being swapped for a palette opener
           that would open nothing. */}
+      {/* 📁 **`search` landmark, labelled "Search Fortune Signora"** —
+          [TASK-1444](../../../docs/BACKLOG.md), App Shell `landmarks`. ⛔ **The
+          slot published no landmark at all**, so a screen-reader user could not
+          jump to search the way they can jump to navigation. */}
       <div
         data-slot="search"
+        role="search"
+        aria-label="Search Fortune Signora"
         style={{ width: SEARCH_WIDTH.rest, height: SLOT_SPEC.search.height }}
         className="hidden shrink-0 sm:block"
       >

@@ -55,7 +55,7 @@ test.describe('a member of the organization', () => {
      * exists and who holds the key.**
      */
     await page.goto('/');
-    const rail = page.getByRole('navigation', { name: 'Main' });
+    const rail = page.getByRole('navigation', { name: 'Primary' });
     await expect(rail).toBeVisible();
 
     // Visible, and not followable.
