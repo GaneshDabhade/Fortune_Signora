@@ -363,6 +363,30 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-233 · The navigation region failed on every authenticated screen, at every width
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`components/shell/navigation.tsx`](../frontend/components/shell/navigation.tsx) |
+| **Current assignee** | **Lane A** — ⚡ **found and fixed on the poll it was found** |
+| **Severity** | 🟠 **Wrong behaviour a customer would hit.** ⛔ **Not 🔴** — the `RegionBoundary` contained it, so **the page's own content was always intact**; ⚠️ **but every authenticated screen showed a failure band, and the primary navigation was one of the things it contained** |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-10. **Runtime-verified in a browser**: `region_failed` **0**, `Dynamic href` **0**, and the band is gone. 🔴 **And a JOURNEY was red because of it and is now green** — 📁 `accessibility.spec.ts` *"the first tab stop is reachable and visible"*: **7 accessibility journeys failed before this fix and 6 after**, ⚡ **measured by stashing the change and re-running rather than argued.** ⛔ **The remaining 6 are pre-existing and data-dependent** (the lane workspace has no accounts) **and are untouched by this fix** |
+| **Commit found** | Found during [TASK-1417](BACKLOG.md)'s **headed review** ([D-134](DECISION_REGISTER.md)) — ⛔ **not by a test, and no test could have failed** |
+
+**Steps.** Sign in. Open **any** authenticated screen, at **any** viewport width.
+
+**Expected.** The navigation renders.
+
+**Actual.** 📁 ***"Signora could not load the navigation. Everything else on this page is unaffected — reload to try again."*** — a full-width failure band, plus *"Retry — attempt 1 of 3"*, **on every screen.** ⚡ **The console names the cause exactly**: `Dynamic href '/w/[workspace]/home' found in <Link>`.
+
+🔴 **The cause, and it is a two-renderer defect rather than a typo.** 📁 **`Navigation` resolves `[workspace]` from the active workspace and DROPS the entry when none is known** — its own comment says *"an entry whose segment cannot be filled is dropped, not linked half-built"*. ⛔ **`MobileNavigation` mapped `RAIL_DESTINATIONS` raw and never called that logic**, so the literal reached a `<Link>` — **and a dynamic href throws in the App Router.**
+
+⚠️ **At EVERY width, which is the part worth recording.** **The phone bar is hidden with `smalllaptop:hidden` — CSS, not conditional rendering — so it is mounted, and it throws, on a 1280px desktop.**
+
+⚡ **The file already claimed the right thing and meant only half of it**: ***"One source, two renderings. A second array would be a second answer to what can this person reach."*** ✅ **True of the LIST and false of the RESOLUTION.** **`resolved()` is now shared, which is what that sentence had to mean to be true.**
+
+⛔ **Why no test caught it.** 📁 **`navigation-rail.test.tsx` asserts the substitution and the drop — for `Navigation` only.** **`mobile-navigation.test.tsx` did not even stub the workspace provider**, so **the renderer that was broken was the one nobody asked the question of.** ✅ **Three regression tests added there, and the third is the general form** — ⚡ ***no rendered href contains `[`*** — **because the defect was never about Home; it was about one renderer not applying a resolution the other did.** **Fire-tested: reintroducing the raw map turns all three red.**
+
 ### B-232 · A lane's rebase resolution reverted QE's `PROMOTED` cell, and the revert reached `main`
 
 | | |

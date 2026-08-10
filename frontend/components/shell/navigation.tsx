@@ -1,6 +1,15 @@
 'use client';
 
-import { BookOpen, Briefcase, Home, LineChart, Lock, Radio, Settings as SettingsIcon } from 'lucide-react';
+import {
+  BarChart3,
+  BookOpen,
+  Briefcase,
+  Home,
+  LineChart,
+  Lock,
+  Radio,
+  Settings as SettingsIcon,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -120,6 +129,19 @@ const DESTINATIONS: readonly RailItem[] = [
   // ⛔ **No count is passed** — nothing publishes one, and a rail that invents
   // a number is worse than a rail without one.
   { id: 'signals', label: 'Signals', href: '/signals', icon: Radio, depth: 1 },
+  // ✅ **`Reports` gains its route** — [TASK-1417](../../../docs/BACKLOG.md).
+  //
+  // ⚠️ **This lane first decided NOT to add the line**, reasoning from the
+  // warning above: *"at M12.3, three of six said `coming soon` on the screen a
+  // customer sees first."* 🔴 **`reachability.py` refused that** — *"no
+  // entrance at all: 1 ← every one is a defect"* — **and it was right.**
+  //
+  // ⚡ **The distinction the caution missed**: ⛔ **`coming soon` is a screen
+  // that does not exist yet.** ✅ **This one resolves, states in the customer's
+  // words what a report needs and why Signora cannot answer it today, and
+  // names the eight charts it will draw.** **A route a customer cannot reach
+  // is a route that does not exist**, which is the worse of the two.
+  { id: 'reports', label: 'Reports', href: '/reports', icon: BarChart3, depth: 1 },
 ];
 
 /**
@@ -157,6 +179,37 @@ const GRANTED_BY: Readonly<Record<Capability, string>> = {
  * what it checks.
  */
 export const RAIL_DESTINATIONS = [...DESTINATIONS, ...UTILITIES];
+
+/**
+ * 🔴 **`[workspace]` filled from the active workspace, for EVERY renderer** —
+ * [B-233](../../../docs/BUGS.md).
+ *
+ * ⛔ **An entry whose segment cannot be filled is DROPPED, not linked
+ * half-built**: `/w/[workspace]/home` as a literal href is a `404` with a
+ * plausible shape, and 📁 `workspaceHome` in
+ * [`lib/entry/rules.ts`](../../lib/entry/rules.ts) is the authority for the
+ * shape.
+ *
+ * ⚠️ **This was a function inside `Navigation` and `MobileNavigation` never
+ * called it**, so the phone bar rendered the literal — **and a dynamic href in
+ * a `<Link>` THROWS in the App Router**, taking the whole navigation region
+ * down with it. 🔴 **At every width**, because the phone bar is hidden by CSS
+ * and still mounted.
+ *
+ * ⚡ **This file already claimed *"one source, two renderings"* and meant the
+ * LIST.** ✅ **The resolution is now shared too**, which is what that sentence
+ * had to mean for it to be true.
+ */
+export function resolved(
+  items: readonly RailItem[],
+  workspaceId: string | null,
+): readonly RailItem[] {
+  return items.flatMap((item) => {
+    if (!item.href.includes('[workspace]')) return [item];
+    if (workspaceId === null) return [];
+    return [{ ...item, href: workspaceHome(workspaceId) }];
+  });
+}
 
 function RailLink({
   item,
@@ -300,19 +353,7 @@ export function Navigation({
   collapsed?: boolean;
 }) {
   const { activeWorkspace } = useWorkspaceContext();
-
-  /**
-   * ⚡ **`[workspace]` is filled from the active workspace at render.** ⛔ **An
-   * entry whose segment cannot be filled is DROPPED, not linked half-built** —
-   * `/w/[workspace]/home` as a literal href is a 404 with a plausible shape,
-   * and 📁 `workspaceHome` in [`lib/entry/rules.ts`](../../lib/entry/rules.ts)
-   * is the authority for the shape.
-   */
-  const destinations = DESTINATIONS.flatMap((item) => {
-    if (!item.href.includes('[workspace]')) return [item];
-    if (activeWorkspace === null) return [];
-    return [{ ...item, href: workspaceHome(activeWorkspace.id) }];
-  });
+  const destinations = resolved(DESTINATIONS, activeWorkspace?.id ?? null);
 
   return (
     // 📁 **`nav[navigation]`, labelled "Primary"** — TASK-1444. ⛔ It said
@@ -359,6 +400,11 @@ export function Navigation({
  */
 export function MobileNavigation({ role }: { role: WorkspaceRole | null }) {
   const pathname = usePathname();
+  const { activeWorkspace } = useWorkspaceContext();
+  // 🔴 **[B-233](../../../docs/BUGS.md)** — this mapped `RAIL_DESTINATIONS`
+  // raw, so `/w/[workspace]/home` reached a `<Link>` as a literal and the
+  // App Router threw, blanking the navigation region on every screen.
+  const destinations = resolved(RAIL_DESTINATIONS, activeWorkspace?.id ?? null);
 
   return (
     <nav
@@ -373,7 +419,7 @@ export function MobileNavigation({ role }: { role: WorkspaceRole | null }) {
         'pb-[env(safe-area-inset-bottom)]',
       )}
     >
-      {RAIL_DESTINATIONS.map((item) => {
+      {destinations.map((item) => {
         const guard = guardFor(item.href);
         const restricted = guard !== undefined && !can(role, guard.requires as Capability);
         const isActive = pathname === item.href;

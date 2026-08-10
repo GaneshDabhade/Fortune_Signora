@@ -1266,3 +1266,19 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ### ⏸️ Named as remaining, not implied
 
 ⛔ **Scheduling · exports · sharing** — 📁 the row's own three, *"a job runner, a rendering pipeline, and a link with its own authorization"*. ⛔ **The narrative's generation** — [C-283](../LANE_COORDINATION.md). ⛔ **The query engine** — **`ReportQuery.produces` carries what a server will one day answer; the MECHANISM of the design's refusal is built, and the vocabulary of measures arrives with the engine that produces them.**
+
+### 🔴 `/reports` ships a designed empty state, and the rail entry was a correction
+
+⛔ **[§20c](../../CLAUDE.md): *"Never introduce mock business data. Screens without a shipped module behind them ship a designed empty state."*** 📁 **The design's screen is a Q3 board pack** — *"$42.8M commit"*, *"−$2.4M vs. Friday"*, *"3,104 opportunities"*, three named deals — ⚠️ **every figure from a query engine that does not exist.** ⛔ **A screen showing a plausible $42.8M would be indistinguishable from a working report tool, and somebody would eventually carry a figure from it into a meeting.**
+
+✅ **What ships instead**: **the empty state, in the customer's words** — *"a report starts with one question… Signora cannot answer one across your pipeline yet"* — **and the chart library**, ⚡ **which is finalized product copy about what Signora draws and contains no customer data at all.** **A test names each refused figure literally**, so a reader can check the list against the design file rather than trusting a regex, **and adding one to the screen turns it red.**
+
+⚠️ **The rail entry was added after this lane decided against it, and the repository was right.** ⛔ **The reasoning for holding back was this file's own warning** — *"at M12.3, three of six said `coming soon` on the screen a customer sees first"* — 🔴 **and `reachability.py` refused it: *"no entrance at all: 1 ← every one is a defect."*** ⚡ **The distinction the caution missed**: *coming soon* **is a screen that does not exist**; this one resolves and explains itself. ✅ **A route a customer cannot reach is the worse of the two**, and the journey now walks the door rather than typing the URL.
+
+### 🔴 [B-233](../BUGS.md) — found by the headed review, not by the suite
+
+⚡ **[D-134](../DECISION_REGISTER.md)'s headed review is *"continuous product review"* rather than verification, and this is what that buys.** ⛔ **Every authenticated screen carried a failure band** — 📁 *"Signora could not load the navigation"* — **at every viewport width**, and **2696 tests were green.**
+
+🔴 **`MobileNavigation` mapped `RAIL_DESTINATIONS` raw** while `Navigation` resolved `[workspace]` and dropped an entry it could not fill. ⛔ **A dynamic href throws in the App Router**, and the phone bar is hidden with `smalllaptop:hidden` — **CSS, not conditional rendering** — **so it is mounted and throwing on a 1280px desktop.**
+
+⚠️ **The file claimed *"one source, two renderings"* and meant the LIST.** ✅ **`resolved()` is shared now**, which is what that sentence had to mean to be true. 📁 **And the reason no test caught it is the useful half**: `mobile-navigation.test.tsx` **did not stub the workspace provider at all**, so **the renderer that was broken was the one nobody asked the question of.** ✅ **The third regression test is the general form** — ⚡ ***no rendered href contains `[`*** — because the defect was never about Home.

@@ -22,6 +22,28 @@ import { MobileNavigation } from '@/components/shell/navigation';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 
+/**
+ * 🔴 **[B-233](../../../docs/BUGS.md)** — ⚠️ **this mock did not exist, and its
+ * absence is why the defect shipped.** ⛔ **`MobileNavigation` mapped
+ * `RAIL_DESTINATIONS` raw**, so `/w/[workspace]/home` reached a `<Link>` as a
+ * literal — **and a dynamic href THROWS in the App Router**, taking the whole
+ * navigation region down on every authenticated screen at every width, because
+ * the phone bar is hidden by CSS and still mounted.
+ *
+ * ⚡ **Stubbed the way [`navigation-rail.test.tsx`](navigation-rail.test.tsx)
+ * stubs it** — the real provider brings a query client and a network fixture.
+ */
+let activeWorkspace: { id: string; name: string } | null = { id: 'w1', name: 'Northwind' };
+vi.mock('@/lib/state/workspace-provider', () => ({
+  useWorkspaceContext: () => ({
+    activeWorkspace,
+    workspaces: [],
+    setActiveWorkspace: vi.fn(),
+    isLoading: false,
+    error: null,
+  }),
+}));
+
 describe('a phone has a way to get somewhere else', () => {
   it('offers the same destinations the sidebar does', () => {
     render(<MobileNavigation role="owner" />);
@@ -128,5 +150,38 @@ describe('it is built for a thumb, not a cursor', () => {
      */
     const { container } = render(<MobileNavigation role="owner" />);
     expect(container.querySelector('nav')?.className).toContain('smalllaptop:hidden');
+  });
+});
+
+describe('🔴 B-233 · the phone bar resolves `[workspace]` exactly as the rail does', () => {
+  it('fills the segment from the active workspace', () => {
+    render(<MobileNavigation role="owner" />);
+
+    const home = screen.getByRole('link', { name: /home/i });
+    expect(home).toHaveAttribute('href', '/w/w1/home');
+  });
+
+  it('⛔ drops the entry when no workspace is known, rather than linking half a path', () => {
+    activeWorkspace = null;
+    render(<MobileNavigation role="owner" />);
+
+    expect(screen.queryByRole('link', { name: /home/i })).toBeNull();
+    // The rest of the bar is unaffected.
+    expect(screen.getByRole('link', { name: /attention/i })).toBeInTheDocument();
+    activeWorkspace = { id: 'w1', name: 'Northwind' };
+  });
+
+  it('🔴 NO rendered href carries an unresolved segment — the general form of the defect', () => {
+    /**
+     * ⚡ **Asserted over every link rather than over `Home`**, because the
+     * defect was not about Home: **it was about one renderer not applying a
+     * resolution the other did.** ⛔ **A `[` in a rendered href is a dynamic
+     * route pattern that escaped**, whichever entry grows one next.
+     */
+    render(<MobileNavigation role="owner" />);
+
+    for (const link of screen.getAllByRole('link')) {
+      expect(link.getAttribute('href'), link.textContent ?? '').not.toContain('[');
+    }
   });
 });

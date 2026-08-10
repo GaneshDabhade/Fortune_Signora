@@ -106,8 +106,21 @@ describe('📁 D-225 §4 — currently reachable navigation is not removed', () 
 
     // ⚡ **`Home` LEFT this list** — [TASK-1438](../../../docs/BACKLOG.md) built
     // `/w/:workspace/home`, so the design's first entry finally has somewhere
-    // to go. ⛔ **The other six still have no route and stay absent.**
-    for (const absent of ['Forecast', 'Pipeline', 'Deals', 'Conversations', 'Reports']) {
+    // to go. ✅ **And `Reports` left it too** —
+    // [TASK-1417](../../../docs/BACKLOG.md) built `/reports`.
+    //
+    // 🔴 **The assertion is INVERTED for each rather than deleted.** ⚡ **This
+    // list's job is *the rail holds what resolves*, and that is two claims:
+    // absent while there is no route, PRESENT once there is.** ⛔ **Dropping a
+    // name when its route lands would leave the second half unguarded, and the
+    // rail could quietly lose an entry it had earned.**
+    expect(within(rail).getByRole('link', { name: 'Reports' })).toHaveAttribute(
+      'href',
+      '/reports',
+    );
+
+    // ⛔ **The remaining four still have no route and stay absent.**
+    for (const absent of ['Forecast', 'Pipeline', 'Deals', 'Conversations']) {
       expect(within(rail).queryByText(absent), `${absent} has no route`).toBeNull();
     }
   });
