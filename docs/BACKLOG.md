@@ -1548,7 +1548,7 @@
 | **Design authority** | 📁 **App Shell `topBarSlots`: *"Search — opens the palette on click or ⌘K"*** · 📁 **shell rule 07: *"anything clickable is reachable in the palette"*** |
 | **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
+| **Status** | ✅ **`CLAIMED` — Lane A, 2026-08-10, by the Task Claim Protocol, under [D-229A](DECISION_REGISTER.md).** ⚡ **Queue's next and in the coordination `backlog` array.** 🔴 **It resolves [C-259](LANE_COORDINATION.md), which this lane raised**, and ⚡ **[TASK-1451](#task-1451--a-component-nobody-imports-fails-the-suite) — landed hours ago — currently lists `CommandPalette` as an orphan awaiting THIS row.** ✅ **So the guard's allowlist shrinks by one when this lands, which is the shape that list was built to have.** **Was: `READY` — Lane C, 2026-08-09** |
 | 🔴 **The measurement** | ⛔ **`components/intelligence/account-search.tsx`:72 binds `⌘K` to account search.** ✅ **`components/ui/command-palette.tsx` is complete and tested and NO PRODUCTION FILE MOUNTS IT** — ⚡ **flagged by the [D-214](DECISION_REGISTER.md) §8 conformance audit before this ruling and raised independently by Lane A as [C-259](LANE_COORDINATION.md)** |
 | 📁 **What the palette is meant to hold** | **`Ask Signora` · `Recents` · `Actions` (`⌘⇧T`, `⌘⇧E`) · `Navigate`** — ⛔ **account search is ONE group inside it, not the thing that owns the shortcut** |
 | ⚡ **Delivers** | **`⌘K` and the Search slot both open the palette; account results become a group inside it** |
