@@ -37,6 +37,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from modules.workspace_tenancy.application.use_cases.last_used_workspace import (
+    ForgetWorkspaceEntry,
+)
+
 from modules.workspace_tenancy.application.ports import MembershipRepository
 from modules.workspace_tenancy.domain.entities import Membership
 
@@ -74,8 +78,23 @@ class LeaveWorkspaceCommand:
 
 
 class LeaveWorkspace:
-    def __init__(self, *, memberships: MembershipRepository) -> None:
+    def __init__(
+        self,
+        *,
+        memberships: MembershipRepository,
+        forget: ForgetWorkspaceEntry | None = None,
+    ) -> None:
         self._memberships = memberships
+        # 🔴 **[TASK-1422](../../../../../docs/BACKLOG.md) — hygiene, not the
+        # control.** ⚡ **The control is that last-used is DERIVED over live
+        # memberships**, so this person's row is unreachable the moment the
+        # membership ends. ⛔ **The row is still cleared**, because a record of
+        # where somebody used to work should not outlive their access to it.
+        #
+        # ⚠️ **Optional so that every existing construction still compiles and
+        # behaves identically.** A required argument here would make this a
+        # breaking change to callers that have nothing to do with preferences.
+        self._forget = forget
 
     async def execute(self, command: LeaveWorkspaceCommand, *, now: datetime) -> Membership:
         membership = await self._memberships.get(command.workspace_id, command.user_id)
@@ -107,6 +126,8 @@ class LeaveWorkspace:
             remaining_owners=remaining,
         )
         await self._memberships.end(membership)
+        if self._forget is not None:
+            await self._forget.execute(command.workspace_id, command.user_id)
         return membership
 
 

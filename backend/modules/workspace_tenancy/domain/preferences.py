@@ -58,6 +58,7 @@ database, where a token edit could not reach it.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
@@ -141,6 +142,28 @@ class PersonPreferences:
     #: *"Used in mentions and comments"*, 2–32 characters per the design.
     display_name: str | None = None
 
+    #: 🔴 **When this person last entered THIS workspace** —
+    #: [TASK-1422](../../../../docs/BACKLOG.md).
+    #:
+    #: ⚡ **A timestamp per workspace, never a pointer to one.**
+    #: 📁 [§2](../../../../CLAUDE.md): *truth has exactly one authoritative
+    #: representation; everything else derives from it.* ⛔ **A stored
+    #: `last_used_workspace_id` would be a second representation of a fact
+    #: these rows already carry**, and the two would disagree the first time a
+    #: membership ended without something remembering to rewrite the pointer.
+    #:
+    #: 🔴 **That disagreement is exactly the hazard
+    #: [D-196](../../../../docs/DECISION_REGISTER.md) named**: *"a stored
+    #: preference that OUTLIVES membership."* ✅ **Deriving the answer over the
+    #: person's LIVE memberships makes a departed member's row unreachable
+    #: rather than merely stale** — the workspace they left is not in the set
+    #: the derivation reads, so there is nothing to forget to clear.
+    #:
+    #: ⚠️ **`None` means never entered**, which is not the same as *entered
+    #: long ago*: rule 12 `LAST_USED` must not fire for somebody who has never
+    #: been anywhere.
+    last_entered_at: datetime | None = None
+
     # ── Screen `04 · AI preferences` ──────────────────────────────────────
     #
     # ⚡ **Every default here is the conservative end**, and that is the
@@ -164,6 +187,44 @@ class PersonPreferences:
     #: workspace AI floor exists**, so the personal floor is stored and the
     #: comparison is not asserted ([C-249](../../../../docs/LANE_COORDINATION.md)).
     confidence_floor: int = MIN_CONFIDENCE_FLOOR
+
+    def entered(self, at: datetime) -> PersonPreferences:
+        """Record that this person is in this workspace, now.
+
+        ⛔ **Monotonic.** An `at` older than what is already stored is ignored
+        rather than written: entries can arrive out of order — a retried
+        request, a clock that stepped back — and **letting an older moment win
+        would move somebody's last-used workspace backwards**, which is
+        precisely the wrong answer at the one moment it matters.
+
+        ⚡ **Not a `choose_` method, deliberately.** The others record a
+        decision the person made about the product; this records something they
+        did. **Naming it `choose_last_workspace` would imply a setting they can
+        see and change**, and there is no such control in the design.
+        """
+        if self.last_entered_at is not None and at <= self.last_entered_at:
+            return self
+        return replace(self, last_entered_at=at)
+
+    def left(self) -> PersonPreferences:
+        """Forget that they were ever here.
+
+        ⚡ **Called when a membership ends**, and 🔴 **it is hygiene rather than
+        the control.** The control is that the derivation reads only live
+        memberships, so this row is already unreachable by the time this runs —
+        ⛔ **but a record of where somebody used to work should not outlive
+        their access to it**, and leaving it costs nothing to remove.
+
+        ⚠️ **Returns `self` when there is nothing to forget, and that is not an
+        optimisation.** ⚡ **Every membership that ends calls this, and most people
+        have never entered most of their workspaces** — so a `replace` that always
+        produced a new object would make the caller write a preferences row **that
+        did not previously exist**, for somebody who never opened a screen, in
+        order to store the absence of a fact.
+        """
+        if self.last_entered_at is None:
+            return self
+        return replace(self, last_entered_at=None)
 
     def choose_theme(self, theme: Theme) -> PersonPreferences:
         return replace(self, theme=theme)

@@ -320,3 +320,12 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
     always_show_citations: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     answer_style: Mapped[str] = mapped_column(String(16), nullable=False, default="direct")
     confidence_floor: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+
+    # 🔴 **[TASK-1422] — when this person last entered THIS workspace.**
+    # ⛔ **A timestamp per workspace, never a pointer to one**: the answer is
+    # derived over live memberships, so a row for a workspace somebody has left
+    # is unreachable rather than stale. `NULL` is *never entered*, which rule 12
+    # must be able to tell from *entered long ago*.
+    last_entered_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )

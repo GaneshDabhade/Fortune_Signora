@@ -633,6 +633,7 @@ def _preferences_to_domain(model: PersonPreferencesModel) -> PersonPreferences:
         always_show_citations=model.always_show_citations,
         answer_style=AnswerStyle(model.answer_style),
         confidence_floor=model.confidence_floor,
+        last_entered_at=model.last_entered_at,
     )
 
 
@@ -676,6 +677,11 @@ class SqlAlchemyPersonPreferencesRepository(SqlAlchemyRepository):
             "always_show_citations": preferences.always_show_citations,
             "answer_style": preferences.answer_style.value,
             "confidence_floor": preferences.confidence_floor,
+            # 🔴 **[TASK-1422] — round-trips like every other column.** ⛔ Omitting
+            # it here would make `entered()` a no-op that every unit test still
+            # passed, because the aggregate would be correct and the row never
+            # written.
+            "last_entered_at": preferences.last_entered_at,
         }
         if model is None:
             self._session.add(

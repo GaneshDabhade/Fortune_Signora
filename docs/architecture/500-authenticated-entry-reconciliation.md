@@ -180,3 +180,42 @@ tests/unit/entry-engine.test.ts:            35 tests, green
 ⛔ **What no gate asked was whether the product routes through it.** 📁 [§2](../../CLAUDE.md) has a name for the class: **implementation that appears to enforce a property but whose removal would not change the product.** ⚠️ **Delete `lib/entry/` today and every customer-visible behaviour is identical** — which is the only test that would have caught this, and **it is cheap enough to be a gate.**
 
 > 🔴 **The same shape has now been found five times**: 📁 `command-palette.tsx` ([C-259](../LANE_COORDINATION.md)) · `confidence.tsx` ([C-266](../LANE_COORDINATION.md)) · `drawer.tsx` and `copyable-id.tsx` ([498](498-common-platform-audit.md) §5.1) · **and this, which is a subsystem rather than a component.** ⛔ **[TASK-1451](../BACKLOG.md)'s guard as specified would not catch it — that guard walks `components/ui`, and this is `lib/`.**
+
+---
+
+## TASK-1422 · Last-used workspace — the write half the engine was missing *(2026-08-10)*
+
+⚡ **This document's audit found the engine's read half correct and complete.** 📁 **`resolveEntry` reads `session.lastUsedWorkspaceId` for rule 12 `LAST_USED`** — ⛔ **and nothing in the platform wrote it, or cleared it.**
+
+### 🔴 The hazard, and the shape that removes it rather than guarding against it
+
+📁 **[D-196](../DECISION_REGISTER.md)**: *"last-used workspace is a stored preference that **OUTLIVES MEMBERSHIP** — if it is not cleared on removal, a departed member's next login routes at a workspace they can no longer see, which is an authorization failure wearing a convenience feature's clothes."*
+
+⛔ **The obvious implementation is a `last_used_workspace_id` pointer, and it is the one that carries the hazard.** ⚡ **The pointer is a second representation of a fact the preference rows already hold**, so the two disagree the first time a membership ends without something remembering to rewrite it — 📁 [§2](../../CLAUDE.md), *truth has exactly one authoritative representation.*
+
+✅ **So there is no pointer.** **Each workspace's `person_preferences` row records `last_entered_at`, and the answer is DERIVED over the person's LIVE memberships.**
+
+🔴 **That is what makes the clearing provable rather than diligent.** **A workspace somebody has left is not in the set the derivation reads**, so the stale row is **unreachable rather than merely stale** — ⛔ **there is nothing to forget to clear**, which is [§2](../../CLAUDE.md)'s *prefer a violation that is unrepresentable over one that is merely discouraged.*
+
+⚠️ **`ForgetWorkspaceEntry` still runs on both membership-ending paths, and it is documented as HYGIENE rather than sold as the fix** — **a guard that is not load-bearing but is described as one is exactly the Decorative Logic [§2](../../CLAUDE.md) names.** ✅ **A record of where somebody used to work should not outlive their access to it, and removing it costs nothing.**
+
+### ⚠️ The row names three paths; this product has two, and the third is structural
+
+| Path | Found |
+|---|---|
+| **Removal** — `remove_member` | ✅ **Exists, and now forgets** |
+| **Leaving** — `leave_workspace` | ✅ **Exists, and now forgets** |
+| **Workspace deletion** | ⛔ **No use case exists.** ✅ **The `person_preferences.workspace_id` foreign key is `ON DELETE CASCADE`, so the rows go with the workspace whenever one is built** — **structural rather than something a future use case has to remember** |
+| **Role change that revokes access** | ⚠️ **Does not revoke access in this product.** ⛔ **Both roles — `owner` and `member` — can see the workspace**, so a role change ends nothing. **Rule 20 `ROLE_CHANGED` exists for what a person is shown, not for whether they may enter.** ⛔ **A clear wired here would fire on nothing**, which is the Decorative Logic case again — **so it is recorded rather than built** |
+
+### ⚡ The row's own distinction, kept in the tests
+
+📁 *"A stale preference cannot ROUTE anybody — [TASK-1400](../BACKLOG.md) already asserts that over 2,880 session/intent pairs — ⛔ but it CAN cost a person their real destination and land them at the chooser, which is a correctness defect rather than a security one."*
+
+✅ **Both halves are true and the tests state them separately.** **The engine is the security control; this is the correctness one, and neither is asked to be the other.**
+
+### ⛔ Two defects the tests caught before they shipped
+
+**① `left()` would have INSERTED a row for somebody who never had one.** ⚡ **Every membership that ends calls it, and most people have never entered most of their workspaces** — so a `replace` that always produced a new object would write a preferences row **that did not previously exist**, in order to store the absence of a fact. ✅ **It returns `self` when there is nothing to forget.**
+
+**② Entry is monotonic.** ⛔ **An `at` older than the stored moment is ignored rather than written**: entries arrive out of order — a retried request, a clock that stepped back — **and letting an older moment win would move somebody's last-used workspace backwards, which is the wrong answer at the one moment it matters.**
