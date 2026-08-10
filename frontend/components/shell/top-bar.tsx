@@ -4,7 +4,6 @@ import type { ReactNode } from 'react';
 
 import { AccountSearch } from '@/components/intelligence/account-search';
 import { AccountMenu } from '@/components/shell/account-menu';
-import { WorkspaceSelector } from '@/components/shell/workspace-selector';
 import { Breadcrumb, OfflineStatus } from '@/components/ui';
 import { RegionBoundary } from '@/components/ui/region-boundary';
 import type { Crumb } from '@/lib/shell/breadcrumb';
@@ -53,28 +52,19 @@ import type { WorkspaceRole } from '@/lib/state/permissions';
  * | `OfflineStatus` | ✅ **Slot 3**, now honouring `statusLabelVisible` |
  * | Theme toggle | ✅ **Moved into the account menu** — 📁 the design has no top-bar theme control, and its account menu has a three-way one |
  * | `Sign out` | ✅ **Moved into the account menu**, 📁 *"below a hairline"* |
- * | Workspace selector | ⚠️ **STILL HERE, and it is the row's one unmet clause** — §*The switcher* below |
+ * | Workspace selector | ✅ **GONE — it is the rail's first child now** ([TASK-1441](../../../docs/BACKLOG.md)) |
  *
- * ## ⚠️ The workspace switcher is still here, deliberately, and it is raised
+ * ## ✅ The workspace switcher has LEFT, and [C-274](../../../docs/LANE_COORDINATION.md) closes with it
  *
- * 📁 **[TASK-1440](../../../docs/BACKLOG.md)'s `Delivers` says the switcher
- * LEAVES the top bar, and points at [TASK-1441](../../../docs/BACKLOG.md) for
- * where it goes: *"the rail's FIRST CHILD, which is what the design's landmarks
- * say."*** ⛔ **[TASK-1441](../../../docs/BACKLOG.md) is `BLOCKED` behind
- * [TASK-1439](../../../docs/BACKLOG.md), which is blocked on
- * [C-269](../../../docs/LANE_COORDINATION.md).**
+ * ⛔ **[TASK-1440](../../../docs/BACKLOG.md) said it should leave and this
+ * component kept it**, because 📁 [TASK-1441](../../../docs/BACKLOG.md) — where
+ * the design puts it, the rail's first child — **was blocked, and removing a
+ * control whose destination does not exist deletes it rather than moving it.**
  *
- * 🔴 **So removing it here does not move it — it deletes it.** **This is the
- * only control a customer has for changing workspace**, and its designed
- * destination is two blocked rows away. ⚡ **Shipping the deletion would trade
- * a rule violation for a capability loss**, and 📁 [§2](../../../CLAUDE.md)
- * ranks those the other way round: *a control that does nothing* is the defect,
- * **and this one does something.**
- *
- * ✅ **Raised as [C-274](../../../docs/LANE_COORDINATION.md) rather than
- * decided here**, because the sequencing between three rows is Product
- * Office's. ⛔ **And it is marked in the markup**, so it cannot be mistaken for
- * a slot.
+ * ✅ **[D-225](../../../docs/DECISION_REGISTER.md) §4 ruled that reasoning**:
+ * *"do not remove currently valid, reachable navigation that is required for an
+ * existing user role."* ⚡ **The rail was rebuilt, [TASK-1441](../../../docs/BACKLOG.md)
+ * freed, and the switcher moved.** **The bar is the design's five slots now.**
  */
 export interface TopBarProps {
   breadcrumb: readonly Crumb[];
@@ -100,13 +90,6 @@ export function TopBar({ breadcrumb, role, email, signOut }: TopBarProps) {
           keeping it. */}
       <div className="flex min-w-0 flex-1 items-center" data-slot="breadcrumb">
         <Breadcrumb trail={breadcrumb} />
-      </div>
-
-      {/* ⚠️ NOT A SLOT — see the component note. [C-274]. */}
-      <div data-not-a-slot="workspace-switcher" className="shrink-0">
-        <RegionBoundary subject="your organizations">
-          <WorkspaceSelector />
-        </RegionBoundary>
       </div>
 
       {/* ── Slot 2 · Search ────────────────────────────────────────────────

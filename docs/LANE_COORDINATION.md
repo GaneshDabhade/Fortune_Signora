@@ -10069,3 +10069,41 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 ### Slot 5 · Help has no destination
 
 📁 **`Fortune Signora Help Center.dc.html` is in the snapshot.** ⛔ **There is no help, docs or support route.** ⚡ **A help control that goes nowhere is [C-269](#c-269) in miniature and gets the same answer: absent, not *coming soon*.**
+
+## C-276 · The switcher cannot show role or environment, and the design gives that a safety reason
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, **implementing [TASK-1441](BACKLOG.md)** |
+| **Owner** | **Lane C** — ⚡ **which module publishes an environment is row scope, and the answer may be [C-256](#c-256)'s** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ✅ **MISSING IMPLEMENTATION** — ⛔ **the design is complete; the fields are not** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **Nothing.** ✅ **[TASK-1441](BACKLOG.md) shipped the switcher without them** |
+
+### The measurement
+
+📁 **The design's row is *"22px avatar, name, role and environment, right-hand tag"*, grouped by organisation.** ⛔ **Measured: `Workspace` publishes `id` · `name` · `created_at` · `updated_at`. Nothing else.**
+
+| Design | Source |
+|---|---|
+| Name · avatar | ✅ **`name`, initials derived** |
+| Organisation grouping | ⛔ **no parent organisation on the contract** |
+| Role per workspace | ⛔ **`useViewerRole` answers for the ACTIVE workspace only** |
+| Environment · sandbox | ⛔ **no field** — ⚡ **and [C-256](#c-256) already carries the sandbox banner's half of this** |
+| Right-hand tag | ⛔ **it renders the three above** |
+
+### 🔴 Why this one is not cosmetic
+
+📁 **The design states the reason, and it is a safety reason rather than an aesthetic one**: ***"Role and environment on the row prevent the classic mistake of editing production while thinking it is sandbox."***
+
+⛔ **So the switcher this row shipped is exactly the control that warning describes** — **it moves a person between workspaces without telling them what they are entering.** ⚠️ **Today that is survivable because no sandbox exists to be confused with production.** 🔴 **The moment one does, this becomes the defect the design predicted**, and it will not announce itself.
+
+### ⛔ What was deliberately NOT done
+
+**A tag reading *"Prod"* on every row because no field says otherwise.** ⚡ **It would be the product asserting a fact it does not have, about the one thing the design says people get wrong** — 📁 [§2](../CLAUDE.md), and the same reasoning that kept a confidence figure off the signal queue ([C-267](#c-267)).
+
+✅ **A test states the absence** so the day a field arrives is loud, and 📁 **fire-tested**: adding a `Production` label with nothing behind it fails it.
+
+### ⚡ The cheapest first step, and it is one field
+
+⛔ **Not the whole design.** ✅ **`environment` on `Workspace` alone closes the safety half** — grouping and per-workspace role are convenience, and **the mistake the design names is an environment mistake.**

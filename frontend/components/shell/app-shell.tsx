@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { RegionBoundary } from '@/components/ui/region-boundary';
 import { MobileNavigation, Navigation } from '@/components/shell/navigation';
 import { TopBar } from '@/components/shell/top-bar';
+import { WorkspaceSwitcher } from '@/components/shell/workspace-switcher';
 import { ShellBanners, type ShellBanner } from '@/components/ui';
 import type { Crumb } from '@/lib/shell/breadcrumb';
 import { RAIL_WIDTH } from '@/lib/shell/rail';
@@ -114,6 +115,14 @@ export function AppShell({
             {rail.collapsed ? '»' : '«'}
           </button>
         </div>
+        {/* 📁 **The rail's FIRST CHILD** — [TASK-1441](../../../docs/BACKLOG.md),
+            *"placement at the top of the rail matches the mental model:
+            everything below belongs to it."* ⚡ **Its own boundary**: a failing
+            switcher must not take the navigation with it, which is the rule
+            every other region here already follows. */}
+        <RegionBoundary subject="your organizations">
+          <WorkspaceSwitcher collapsed={rail.collapsed} />
+        </RegionBoundary>
         <RegionBoundary subject="the navigation">
           {/* ⚡ **The rail is told it is collapsed rather than measuring it** —
               TASK-1439. The frame owns the collapse state (`useRailCollapse`);

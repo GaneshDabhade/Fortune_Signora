@@ -25,6 +25,9 @@ import { WorkspaceProvider } from '@/lib/state/workspace-provider';
 vi.mock('@/components/intelligence/account-search', () => ({
   AccountSearch: () => <div data-testid="account-search" />,
 }));
+// ⚡ **Kept after the switcher left the bar, and deliberately.** If a future
+// change re-mounts `WorkspaceSelector` here, the assertion below sees it — ⛔ a
+// removed mock would make that test pass by accident.
 vi.mock('@/components/shell/workspace-selector', () => ({
   WorkspaceSelector: () => <div data-testid="workspace-selector" />,
 }));
@@ -80,18 +83,25 @@ describe('📁 the slots the design draws', () => {
     expect(search.style.height).toBe(`${SLOT_SPEC.search.height}px`);
   });
 
-  it('⚠️ the workspace switcher is still present and is NOT marked as a slot', () => {
+  it('✅ the workspace switcher has LEFT the bar', () => {
     /**
-     * 🔴 **This test states today's truth so the day it changes is loud.**
-     * 📁 [TASK-1440](../../../docs/BACKLOG.md) says the switcher leaves;
-     * [TASK-1441](../../../docs/BACKLOG.md) is where it goes and is `BLOCKED`.
-     * ⛔ **Removing it here would delete a customer's only way to change
-     * workspace**, so it stays and is marked — [C-274](../../../docs/LANE_COORDINATION.md).
+     * 🔴 **This test was written to state today's truth so the day it changed
+     * would be loud, and today is that day.** ⚡ It previously asserted the
+     * switcher was present and marked *not a slot*.
+     *
+     * 📁 [TASK-1440](../../../docs/BACKLOG.md) said it should leave and this
+     * lane kept it, because [TASK-1441](../../../docs/BACKLOG.md) — the rail's
+     * first child, where the design puts it — **was blocked, and removing a
+     * control whose destination does not exist deletes it rather than moving
+     * it.** ✅ **[D-225](../../../docs/DECISION_REGISTER.md) §4 ruled that
+     * reasoning and [C-274](../../../docs/LANE_COORDINATION.md) closes here.**
+     *
+     * ⛔ **The bar is the design's five slots now**, and the switcher is
+     * asserted in `tests/components/workspace-switcher.test.tsx`.
      */
     const { container } = bar();
-    expect(screen.getByTestId('workspace-selector')).toBeInTheDocument();
-    expect(container.querySelector('[data-not-a-slot="workspace-switcher"]')).not.toBeNull();
-    expect(container.querySelector('[data-slot="workspace-switcher"]')).toBeNull();
+    expect(screen.queryByTestId('workspace-selector')).toBeNull();
+    expect(container.querySelector('[data-not-a-slot="workspace-switcher"]')).toBeNull();
   });
 });
 
