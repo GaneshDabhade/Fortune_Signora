@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `cea60d4`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `346a0c4`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,23 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `cea60d4`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `346a0c4`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`cea60d4`** — the certified commit itself |
-| **Release candidate** | **9 commits.** ⚠️ **Assembled by cherry-pick**: `lane-a-product-surface` stood **32 ahead** with a real code delta of **one slice**, and was simultaneously **behind** on `backend/tests` |
-| **Certification** | ✅ [`cea60d4178dc`](certification/reports/cea60d4178dc.md) · migration head **`0047`** · protocol **v2** · profile **`platform`** · ✅ **first attempt** |
+| **`main`** | **`346a0c4`** — the certification record, one commit past the certified `57d6bc8` |
+| **Release candidate** | **18 commits, fast-forwarded.** ⚡ **Lane A rebased**, so the branch that stood 32-ahead-and-behind last cycle arrived **0 behind and ff-able**. Every commit resolved **NEW** by patch-id against all 1,578 on `main` — nothing re-applied, nothing lost |
+| **Certification** | ✅ [`57d6bc85af1a`](certification/reports/57d6bc85af1a.md) · migration head **`0047`** · protocol **v2** · profile **`documentation+frontend`** · ✅ **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None.** **189 rows, 63 unresolved, 0 blocking** |
-| **Customer value this cycle** | ⚡ **Pasting a list of colleagues skips the ones already invited, instead of refusing the lot** — the failure mode that makes bulk invitation useless on the second attempt |
-| ⛔ **QE's own defects this cycle** | **Two, both in assembly and both caught by counting rather than by reading.** **A cherry-pick loop ran `git add` after its resolver refused, committing four conflict markers** — [B-142](docs/BUGS.md)'s class, cited at two lanes this session and then repeated here. **And five duplicate board rows were reintroduced**, because the conflict resolver deduplicates within a hunk and cannot see a copy elsewhere in the file |
+| **Blocking Quality Defects** | ✅ **None.** **0 blocking** |
+| **Customer value this cycle** | ⚡ **Reports opens, and says plainly what it cannot do yet** — one report definition read three ways, rather than three screens that drift apart. ⚡ **A saved view can say which lists it is able to open.** ⚡ **Signing in returns you to the page you were going to** — and cannot be talked into sending you somewhere else |
+| ⛔ **QE's own defects this cycle** | **Two false *green* signals in QE's own tooling, neither in the repository.** **A `pgrep -f "make certify"` wait-loop matched its own command line** and reported `RUNNING` on a run that had already certified. **A backgrounded launcher reported `exit code 0`** that belonged to its `echo`, not to `make dr`. ⚡ **Both are [B-175](docs/BUGS.md)'s shape — a true signal answering a narrower question than the reader assumed — and both were caught by an end-of-chain marker rather than by a status** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ⚠️ **Certification named 17 gates and executed 6.** **Four QE ran by hand** — `dr` ✅, `vitest` **2620 across 133 files** ✅, `eslint` ✅, **migration reversibility stated rather than skipped** *(no migration)*.
+> ⚠️ **Certification named 12 gates and executed 6.** **Four QE ran by hand** — `dr` ✅, `vitest` **2696 across 138 files** ✅, `eslint` ✅, `tsc` ✅. **`dr` was not selected by the planner for this profile and was run anyway**: where impact is uncertain the answer is broader certification, never narrower.
 
-**Repository health:** **4385 backend tests** · **95.11% coverage** ✅ *(floor 95)* · **2620 frontend tests** across **133 files** *(+10)* · **401 Security Invariants** · mypy strict over **860 files** · **48 migrations**, `0000`–`0047` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **219s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
+**Repository health:** **4385 backend tests** · **95.11% coverage** ✅ *(floor 95)* · **2696 frontend tests** across **138 files** *(+76 tests, +5 files)* · **401 Security Invariants** · mypy strict over **860 files** · **48 migrations**, `0000`–`0047` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **235s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+
+> ⚠️ **Two figures above are corrected rather than updated.** The dashboard has carried **54 ADRs** and **147 numbered architecture documents**; the repository holds **53** and **145**, and `git ls-tree` returns the same pair at `cea60d41`, `57d6bc85` and `HEAD` — **so they did not change this cycle, they were transcribed.** The ADR count included `adr/README.md`. **A measured figure that never moves is the one to re-measure** (§20e: *metrics are measured, never transcribed*).
 
 ---
 
@@ -1023,6 +1025,48 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-10, cycle 196
+
+**Derived from the promoted commit `346a0c4`, certified at `57d6bc8`.** **Eighteen commits, fast-forwarded, certified first attempt — the first cycle in four that needed no cherry-picking, because the lane rebased.**
+
+### What a customer can now do
+
+⚡ **Reports opens, and says honestly what it cannot do yet.** **One report definition, read three ways** — table, chart, narrative — rather than three screens that drift apart. **A saved view can say which working lists it is able to open.** ⚡ **Signing in returns you to the page you were heading for**, and cannot be talked into sending you somewhere else. **The navigation rail stops failing on mobile.**
+
+### ✅ Lane A rebased, and the whole cycle changed shape
+
+**Last cycle the branch stood 32 ahead with a real delta of one slice, simultaneously *behind* on `backend/tests`, and had to be cherry-picked.** ⚡ **This cycle it arrived 18 ahead, 0 behind, fast-forwardable** — every commit resolving **NEW** by patch-id against all 1,578 on `main`. ✅ **No assembly step, and therefore none of the assembly defects that produced cycles 194 and 195.**
+
+### ⛔ Both of QE's defects were false *green* signals in its own tooling
+
+**Neither was in the repository, and both would have been reported to the product owner as fact.**
+
+**A wait-loop ran `until ! pgrep -f "make certify"`.** ⛔ **`pgrep -f` matched the loop's own command line** — the pattern sat inside the `eval` string of the process doing the checking — **so it reported `RUNNING` on a run that had already printed `CERTIFIED`, and would have done so until the 30-minute timeout.**
+
+**A backgrounded launcher reported `completed (exit code 0)`.** ⛔ **The exit code belonged to its own `echo "launched"`; `make dr` was still building images.** ⚡ **Caught only because the chain planted a `DR_EXIT=` marker at its end and the marker was absent** — the log's last lines showed containers coming *up*, which reads exactly like a run that has finished.
+
+⚡ **Both are [B-175](docs/BUGS.md)'s shape, which QE has now filed against three lanes and hit twice itself in one cycle: *a true signal that answers something narrower than the reader believed*.** **`pgrep` answered "does any command line contain this text". The notification answered "did the process I was handed exit". Neither answered "is the gate finished".** ✅ **The end-of-chain marker is the difference between a run's exit code and a gate's result, and it is now the habit rather than the exception.**
+
+### ⚠️ Two dashboard figures were transcribed, not measured
+
+**The dashboard carried 54 ADRs and 147 numbered architecture documents.** **`git ls-tree` returns 53 and 145 — and returns the same pair at `cea60d41`, `57d6bc85` and `HEAD`.** ⛔ **So they did not change this cycle; they had been carried forward.** The ADR count was including `adr/README.md`. ⚡ **A measured figure that never moves is the one to re-measure.**
+
+### ✅ The execution board had accumulated 38 stale rows, and a better rule cleared them
+
+**`ACTIVE_ASSIGNMENTS.md` carried 47 rows in `Current`; 9 describe live work.** ⛔ **The rest were assignments to work that had already reached `main`** — exactly what §20e forbids: *"no lane may remain assigned to work that has reached `main`, and no stale assignment is left behind."*
+
+⚠️ **They survived previous Closeouts because QE's sweep matched on commit subject** — a row whose work shipped under a differently-titled commit could never be cleared, and 17 were recorded as unclearable rather than worked around.
+
+⚡ **The replacement rule needs no subjects: `git merge-base --is-ancestor origin/lane-a-product-surface main` returns true**, so **every commit that branch has is on `main`** and every Lane A row therefore describes shipped work. ✅ **38 rows removed, 16 backlog rows advanced `VERIFIED`/`IN VALIDATION` → `PROMOTED`, each carrying the containment evidence in its own status line.**
+
+⛔ **Lane B's rows were deliberately left.** **Its branch is *not* contained** — `fd0f55cd` and `2e3d33e0` are outstanding — **so the same evidence does not exist for it**, and the rule is only worth having if it refuses where it cannot prove.
+
+### `dr` was run although the planner did not select it
+
+**Profile `documentation+frontend` names 8 gates, and `dr` is not among them** — no migration moved, head stays `0047`. ✅ **It was run anyway and passed**, because where impact is uncertain the correct default is broader certification, never narrower.
 
 ---
 
