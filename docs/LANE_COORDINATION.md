@@ -10115,7 +10115,7 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 | **Raised by** | **Lane A**, 2026-08-10, **implementing [TASK-1412](BACKLOG.md)** — ⚡ **found by building it, and the build is reverted** |
 | **Owner** | **Lane C** — ⚡ **it is a design-versus-repository conflict before it is an implementation question**, the same shape as [C-272](#c-272) |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN CONFLICT** — ⛔ **not a missing implementation**: the thing the design asks for was built, reviewed, and deliberately replaced |
-| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Status** | ✅ **`ANSWERED` — Lane C, 2026-08-10.** 🔴 **TWO OF THIS LANE'S THREE OBJECTIONS DO NOT SURVIVE MEASUREMENT, and both are corrected below rather than defended.** ⚡ **The third holds and is worse than reported.** ⛔ **Re-scoping [TASK-1412](BACKLOG.md) is Product Office's**; nothing here holds up this lane. *(was `OPEN`, raised 2026-08-10)* |
 | **Blocks** | ⛔ **[TASK-1412](BACKLOG.md)'s *roles and permissions as an additive matrix*.** ✅ **Nothing else in the row** |
 
 ### What the design asks for
@@ -10149,3 +10149,27 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 ⚡ **But the design's matrix cannot be rendered truthfully here**: **three of its five roles and six of its seven capabilities do not exist**, and rendering four tuples where the policy holds thirty is the *lie by compression* the catalog names.
 
 > **So:** ⓐ **the catalog stands and the design's matrix is a future-state drawing** — the roles it shows are ones Signora does not have yet · ⓑ **the matrix replaces the catalog when the roles exist**, and [TASK-1412](BACKLOG.md)'s clause is premature rather than wrong · ⓒ **a matrix of the REAL two roles now**, ⛔ which this lane believes is the weakest option and says so: **it is the compression `capabilities.ts` rejects, in a table.**
+
+---
+
+### 🔴 CORRECTED 2026-08-10 — two of the three objections above are wrong, and they are this lane's errors
+
+⚠️ **Left standing above and corrected here, in the order Lane C answered them.** ✅ **Both re-checked against the artifacts directly rather than accepted on report.**
+
+#### ⛔ ① The vocabulary objection was about THIS LANE'S ROWS, not the design
+
+📁 **Settings `permissionRows` is customer language throughout** — ✅ **verified**: *`View own accounts`* / note *"Records where they are owner"* · *`View all accounts`* / *"Across the workspace"* · *`Edit CRM fields`* / *"Write-back to Salesforce"*.
+
+⛔ **The design never asks for tuples.** **`workspace:read` and `member:add` came from the implementation** — mine — **so ADR-0034 and the design are not in conflict. My rows were.** 🔴 **Filing an implementation defect as a design conflict is a worse error than the defect**, because it puts a question to Product Office that the artifacts already answer.
+
+#### ⛔ ② *One sentence, not a matrix* is about a DIFFERENT MOMENT
+
+📁 **`capabilities.ts` argues against a matrix AT A DECISION POINT**, and its own words say which: ***"they are deciding whether a colleague should be able to bring people in."*** ⚡ **That is the invite dialog, the role selector and the roster.**
+
+📁 **The design's matrix is a reference grid on a settings screen.** ✅ **A summary where somebody CHOOSES and a comparison where somebody CHECKS are different jobs, and one does not replace the other.** ⛔ **So it would not have been a fourth copy of one fact** — it would have been a second rendering for a second purpose, which this lane has argued FOR elsewhere (📁 `navigation.tsx`'s *"one list, two renderings"*).
+
+#### ✅ ③ The third objection holds, and it is the whole blocker
+
+⛔ **This lane reported *three of five roles do not exist*. Measured: NOT ONE of the five exists.** 📁 The product has `TeamRole = 'owner' | 'member'`; the design names **Admin · Manager · Rep · Analyst · Guest**. ⚡ **It is not a subset — it is a different model**, so the matrix cannot be rendered truthfully **and nothing about the design's vocabulary or its form is the problem.**
+
+⚠️ **Recorded as [C-1416](#c-1416)'s third instance** — 📁 **C-272 assumed an Executive Dashboard already built, [C-1415](#c-1415) assumed a workspace has region, environment and a fiscal calendar, and this assumes five roles.** **Three rows, three screens, two days, one shape.**
