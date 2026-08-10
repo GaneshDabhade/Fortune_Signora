@@ -1081,3 +1081,32 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ⛔ **The ordering is the control.** **A classifier that asked first and mapped `404` to `not_member` would be correct in its output and wrong in its behaviour** — it would have probed for a workspace the caller has no business knowing about, ⚠️ **and timing alone answers the question the status code refused to.**
 
 ✅ **Both properties were fire-tested**: removing the protocol-relative guard turns three tests red, and moving the server call ahead of the membership test turns three others red. ⛔ **A "never called" assertion passes just as well against a function nobody calls**, so the discriminating case — the same call for a workspace they ARE in — is asserted beside it.
+
+---
+
+## TASK-481 · Global search — the four states it owed *(2026-08-10)*
+
+⚠️ **Two of the row's premises were already satisfied, and are recorded rather than rebuilt.** ⛔ **`CommandPalette` IS mounted** — [TASK-1442](../BACKLOG.md) landed it on ⌘K and owns it under [D-189](../DECISION_REGISTER.md) §3's whichever-lands-first rule — **and `account-search.tsx` is composed rather than rewritten**, which is what the row's *bound* requires: *"a component bent to suit one caller is slightly wrong for every other."*
+
+### 🔴 What was genuinely missing was a real defect, and the row named it before it was met
+
+📁 **The palette had ONE branch for an empty list**, and it read ***"Nothing matches"***. ⛔ **So a search still in flight, a search that failed, and a query nobody had typed all rendered as NO RESULTS.**
+
+🔴 **[P-A](../DOMAIN_DISCOVERY_REGISTER.md): *a failed read must never render as an empty result*** — ⚡ **and on a search surface this is the most expensive version of that confusion.** ***"Nothing matches"* is a statement about the customer's DATA**, so somebody who reads it about a request that never completed concludes their record is gone. 📁 **[C-226](../LANE_COORDINATION.md) found the same mistake six times on one screen.**
+
+| State | What it says, and why it is not the others |
+|---|---|
+| **`error`** | 🔴 *"Signora could not search just now. Nothing has changed — try again in a moment."* ⚡ **Three parts, as `StatedAbsence` established**: what failed · what is still true · what to do. **`role="alert"`, because a failure nobody hears is a failure nobody retries** |
+| **`loading`** | *"Searching…"*, ⛔ **announced POLITELY** — a search that resolves in 200ms would otherwise interrupt a screen reader mid-word on every keystroke |
+| **`idle`** | *"Type to search accounts, people and settings."* ⚡ **Saying *nothing matches ""* answers a question nobody asked** |
+| **`ready`** | ✅ *"Nothing matches …"* — **unchanged, and asserted**, because three tests checking for its absence all pass if the sentence is simply deleted |
+
+⛔ **A union rather than `isLoading | isError`.** ⚡ **A pair of booleans has a fourth combination that means nothing — *loading and failed at once* — and the first caller to set both decides what it renders.**
+
+### ⚠️ `isFetching`, not `isLoading`, and the difference is the whole point
+
+⛔ **`isLoading` is true only for the FIRST fetch of a query key.** ⚡ **Typing a second character against a cached-then-refetching query would report *ready* while a request was in flight** — **and the palette would say *nothing matches* about a search that had not finished**, which is the same defect one layer up.
+
+### ✅ Additive, and the states only speak when there is nothing to show
+
+⚠️ **`status` defaults to `ready`**, so every existing caller keeps its behaviour — [§20c](../../CLAUDE.md), this is *adding to the library* rather than bending a frozen component. ⛔ **And results are never replaced by a state screen**: a stale-while-revalidating search still has rows worth reading, and replacing them on every keystroke is the flicker that makes a palette feel slower than it is.

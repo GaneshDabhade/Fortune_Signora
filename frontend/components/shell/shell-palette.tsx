@@ -58,7 +58,11 @@ export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  const { data: groups } = useAccountSearch(activeWorkspace?.id ?? null, query);
+  const {
+    data: groups,
+    isFetching: searching,
+    isError: searchFailed,
+  } = useAccountSearch(activeWorkspace?.id ?? null, query);
 
   const items = useMemo<CommandItem[]>(() => {
     // 📁 **`Navigate` — the destinations the shell owns.** ⛔ **Filtered by the
@@ -115,6 +119,25 @@ export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
       items={items}
       query={query}
       onQueryChange={setQuery}
+      /**
+       * 🔴 **[TASK-481](../../../docs/BACKLOG.md) — the real status, so an
+       * empty list means what it says.**
+       *
+       * ⛔ **Before this, a failed search rendered *"Nothing matches"***, which
+       * is a statement about the customer's data rather than about the request
+       * — 📁 [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md).
+       *
+       * ⚠️ **`isFetching` rather than `isLoading`.** ⚡ **`isLoading` is only
+       * true for the FIRST fetch of a key**, so typing a second character
+       * against a cached-then-refetching query would report *ready* while a
+       * request was in flight — **and the palette would say *nothing matches*
+       * about a search that had not finished.**
+       *
+       * ⛔ **Nav items are local and always present**, so the status describes
+       * the ACCOUNT search only; the palette shows a state screen solely when
+       * the whole list is empty, which is exactly when the distinction matters.
+       */
+      status={searchFailed ? 'error' : searching ? 'loading' : query === '' ? 'idle' : 'ready'}
       onSelect={(item) => {
         close();
         // ⛔ **No `panel` destination yet, and both are treated the same** —

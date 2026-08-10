@@ -29,7 +29,37 @@ export interface CommandPaletteProps {
    * treats both the same. */
   onSelect: (item: CommandItem, where: 'here' | 'panel') => void;
   placeholder?: string;
+  /**
+   * 🔴 **What the caller's search is DOING** — [TASK-481](../../../docs/BACKLOG.md).
+   *
+   * ⛔ **Before this prop the palette had one branch for an empty list and it
+   * read *"Nothing matches"*** — so a search **still in flight**, a search that
+   * **failed**, and a query **nobody has typed** all rendered as *no results*.
+   *
+   * 🔴 **[P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md): *a failed read must
+   * never render as an empty result.*** ⚡ **On a search surface that is the
+   * most expensive version of the confusion**: *"nothing matches"* is a
+   * **statement about the customer's data**, and a person who reads it about a
+   * request that never completed concludes the record is gone.
+   * 📁 **[C-226](../../../docs/LANE_COORDINATION.md) found that exact mistake
+   * six times on one screen.**
+   *
+   * ⚠️ **Defaults to `ready`**, so every existing caller keeps its behaviour
+   * and this is additive rather than a breaking change to a frozen component
+   * ([§20c](../../../CLAUDE.md)).
+   */
+  status?: SearchStatus;
 }
+
+/**
+ * ⚡ **Four states, because they are four different sentences.**
+ *
+ * ⛔ **Not a boolean and not `isLoading | isError`.** A pair of booleans has a
+ * fourth combination that means nothing — *loading and failed at once* — and
+ * the first caller to set both decides what it renders. **A union has exactly
+ * the states that exist.**
+ */
+export type SearchStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 /**
  * The fastest path to anything, and the second of §12's four overlays that
@@ -63,6 +93,7 @@ export function CommandPalette({
   onQueryChange,
   onSelect,
   placeholder = 'Search or ask…',
+  status = 'ready',
 }: CommandPaletteProps) {
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -168,12 +199,7 @@ export function CommandPalette({
 
         <div id={listId} role="listbox" aria-label="Results" className="max-h-80 overflow-y-auto">
           {items.length === 0 ? (
-            // Stated absence: the palette says it found nothing rather than
-            // rendering an empty box, which is indistinguishable from a
-            // failure to search at all.
-            <p className="px-4 py-6 text-center text-sm text-content-muted">
-              Nothing matches “{query}”.
-            </p>
+            <PaletteState status={status} query={query} />
           ) : (
             groups.map((group) => (
               <div key={group.label}>
@@ -235,3 +261,52 @@ export const KEY_MAP = [
   { key: 'Meta+Enter', hint: '⌘↵ open in panel' },
   { key: 'Escape', hint: 'esc close' },
 ] as const;
+
+/**
+ * **The four states an empty result list can be in** —
+ * [TASK-481](../../../docs/BACKLOG.md).
+ *
+ * ⛔ **Four sentences, because they are four different facts about the world.**
+ * ⚡ **The one that matters most is `error`**: 🔴 *"nothing matches"* is a
+ * **statement about the customer's data**, and rendering it for a request that
+ * never completed tells somebody their record is gone.
+ * 📁 [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md), and
+ * [C-226](../../../docs/LANE_COORDINATION.md) found the same confusion six
+ * times on one screen.
+ *
+ * ⚠️ **`idle` is not silence.** A palette that opens to a blank box looks
+ * broken for the half-second before anybody types, and 📁 the design's
+ * placeholder — *"Search or ask…"* — is a prompt rather than an answer.
+ */
+function PaletteState({ status, query }: { status: SearchStatus; query: string }) {
+  const line = 'px-4 py-6 text-center text-sm text-content-muted';
+
+  if (status === 'error') {
+    return (
+      // ⚡ **Says what is still true, then what to do** — the same three-part
+      // sentence `StatedAbsence` established, at the scale a palette can carry.
+      <p role="alert" className={line}>
+        Signora could not search just now. Nothing has changed — try again in a moment.
+      </p>
+    );
+  }
+
+  if (status === 'loading') {
+    // ⛔ **Announced politely rather than assertively**: a search that resolves
+    // in 200ms would otherwise interrupt a screen reader mid-word on every
+    // keystroke.
+    return (
+      <p aria-live="polite" className={line}>
+        Searching…
+      </p>
+    );
+  }
+
+  if (status === 'idle' || query === '') {
+    // ⚡ **A query nobody has typed has no result to report.** Saying *nothing
+    // matches ""* is answering a question that was not asked.
+    return <p className={line}>Type to search accounts, people and settings.</p>;
+  }
+
+  return <p className={line}>Nothing matches “{query}”.</p>;
+}
