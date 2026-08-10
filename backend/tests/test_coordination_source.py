@@ -663,3 +663,31 @@ def test_queue_backlog_rewrite_reports_no_change_when_already_current(
     monkeypatch.setattr(coordination, "QUEUES", queues)
 
     assert coordination._rewrite_queue_backlog("Lane C", ["TASK-1"]) is False
+
+
+def test_render_never_writes_a_queue_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """**B-174** — `render` is pure. QE's exact reproduction, kept as the test.
+
+    ⛔ **The defect this pins is worse than the drift B-423 removed.** A test
+    calling `render` with one BLOCKED row computed an empty backlog and wrote
+    it through to the real repository, so a lane polling between a suite run
+    and a `git checkout` read `backlog = []` and correctly concluded it had no
+    work. **A queue offering nothing beats a queue offering the wrong thing.**
+    """
+    queues = tmp_path / "queues"
+    queues.mkdir()
+    queue = queues / "lane-a.toml"
+    original = 'lane = "Lane A"\nbacklog = ["TASK-465", "TASK-1418"]\n'
+    queue.write_text(original, encoding="utf-8")
+    monkeypatch.setattr(coordination, "QUEUES", queues)
+
+    blocked = coordination.Task(
+        id="TASK-1439", title="the rail", state=coordination.BLOCKED,
+        declared="BLOCKED", lane="Lane A", depends_on=[], on_integration=True,
+    )
+    coordination.render([blocked])
+
+    # ⛔ Untouched — not "restored", never written.
+    assert queue.read_text(encoding="utf-8") == original

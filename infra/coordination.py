@@ -1014,6 +1014,15 @@ def _notice(lane: str, reachable: frozenset[str] | set[str] = frozenset()) -> st
             f"rows themselves (D-204 §6) — read those.]")
 
 
+#: What the last `render` computed per lane, for the WRITE PATH to apply.
+#: ⛔ **B-174** — `render` used to write the queue files itself, so any test
+#: calling it with a short row list blanked a real lane's queue in the working
+#: tree. **A pure function that renders must not touch the repository**, and
+#: `--check`/`--dry-run` were already correct precisely because they only call
+#: `render`. The write now happens where every other write happens.
+_PENDING_QUEUES: dict[str, list[str]] = {}
+
+
 def render(rows: list[Task]) -> str:
     lanes = sorted({r.lane for r in rows if r.lane != "—"})
     out = [
@@ -1114,7 +1123,7 @@ def render(rows: list[Task]) -> str:
         # `[[blocked]]` entries and every hand-written paragraph are a lane's
         # reasoning and are not this function's to touch — which is why this
         # edits one line rather than regenerating the file.
-        _rewrite_queue_backlog(lane, [r.id for r in backlog])
+        _PENDING_QUEUES[lane] = [r.id for r in backlog]
         m = stats[lane]
         out += [
             f"[lane.{lane.replace(' ', '_')}]",
@@ -1415,6 +1424,9 @@ def main() -> int:
         return 0
 
     OUT.write_text(fresh)
+    # ✅ **B-423's derivation, applied on the WRITE path only** — B-174.
+    for _lane, _ids in _PENDING_QUEUES.items():
+        _rewrite_queue_backlog(_lane, _ids)
 
     if args.publish:
         # ⚡ Regenerate first, always. Publishing a stale projection is the
