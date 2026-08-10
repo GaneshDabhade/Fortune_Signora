@@ -1182,3 +1182,35 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ### ✅ The five className assertions are kept and relabelled, not deleted
 
 ⛔ **A missing class is cheap to catch in a component test; a class that emits nothing can only be caught in a browser.** ⚡ **Both are worth having** — the block is now titled *intent, not layout* and points at the browser test, **so neither claims to be the other.**
+
+---
+
+## TASK-452 · Saved View — the consumer that owns the declaration *(2026-08-10)*
+
+🔴 **Measured before anything was written**: 📁 **`workspace_tenancy` publishes four saved-view endpoints** — list/create, read/update, `retirement`, `revisions` — ⛔ **and ZERO files under `frontend/` mentioned any of them.** ⚡ **A complete backend capability with no door**, which is the class `settings/page.tsx` already named: *"a page nobody can reach… a closed loop with no door."*
+
+### ⚡ The declaration belongs to the consumer, and 455 says so twice
+
+📁 **[455 §4](455-context-definitions-r02-r03.md)**: ***"Never parses, validates, executes, ranks or optimises a declaration. Never knows what a filter or a sort means."*** **The store keeps an opaque `dict`** — *"stores the query, the filters and the sort — not the results"*.
+
+⛔ **That cuts both ways.** **Nothing on the server will ever tell a screen that a declaration is wrong**, ✅ **so the screen has to be the thing that refuses one it does not understand.** `lib/views/working-list.ts` is that, for this consumer.
+
+📁 **And one consumer, deliberately**: *"a contract proven by one real caller before six adopt it… a port with seven simultaneous first callers has no chance of being corrected cheaply."* ✅ **The working list is that caller** — its three URL params, `owner` · `raises` · `by`, **are the declaration**, and the URL is already where this screen keeps them.
+
+### 🔴 Three refusals, and the reason each is a refusal rather than a best effort
+
+| | |
+|---|---|
+| **Another screen's view** | ⚡ **The commonest real case, and not an error.** 📁 The store is workspace-wide and 455 names four consumers, **so a Reports view and a working-list view sit in the same list** — ⛔ **opening one on the other would silently show the wrong records** |
+| **A newer Signora's view** | 🔴 **Partly applying is the worst outcome**: **the customer gets a list that is neither what they saved nor what they asked for, and nothing says so** |
+| **Not a declaration at all** | ⛔ Refused, not coerced |
+
+✅ **`whyNotApplicable` returns a SENTENCE rather than a boolean**, because the screen has to say *which* view it cannot open — 📁 `LockedField`'s rule: *a lock with no reason is worse than an absent field.*
+
+⚠️ **An OLDER version stays readable, deliberately.** ⛔ **The version is bumped only when an old declaration would be MISREAD — not when a filter is added** — **because a missing key means *not narrowed*, which is what those views meant when they were written.**
+
+### ⛔ Two smaller decisions worth recording
+
+**A default is not written into the URL.** ⚡ A URL carrying every default is one nobody can read at a glance, and `scopeFrom` already answers `all` for a missing value.
+
+**A view nobody named is never *"Untitled"*.** 📁 The store bounds a name at 200 characters *"long enough for a sentence a person would actually type"* — ✅ **so the default describes the filters**, and somebody scanning a list of views can tell them apart.
