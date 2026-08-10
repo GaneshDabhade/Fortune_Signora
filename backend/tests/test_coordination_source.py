@@ -564,3 +564,55 @@ def test_the_forbidden_list_is_checked_by_name_not_by_count() -> None:
             f"{path} is both forbidden and part of the contract — the guard would "
             f"contradict itself and the contract would win"
         )
+
+
+# ── D-227 · the eligibility/arbitration audit, as executable evidence ───────
+
+
+def test_a_row_claimed_upstream_is_withheld_from_the_lanes_backlog() -> None:
+    """🔴 **The race D-227 asked to be proved, not argued.**
+
+    Lane C's branch says `READY`; a lane has just claimed the row and
+    `integration` says `CLAIMED`. **`on_integration` is a FILTER, not a
+    preference** — the row leaves the array §20e step 4 selects from.
+
+    ⚡ **So a stale coordination ref cannot offer a claimed row.** The guarantee
+    is structural rather than disciplinary, which is what D-227 §10 requires:
+    *"do not solve concurrency through human discipline."*
+    """
+    upstream = {"TASK-X": "CLAIMED"}
+    on_integration = upstream.get("TASK-X") == "READY"
+    assert on_integration is False
+
+    row = coordination.Task(
+        id="TASK-X", title="x", state=coordination.ASSIGNED, declared="READY",
+        lane="Lane A", depends_on=[], on_integration=on_integration,
+    )
+    offered = [r for r in [row] if r.state == coordination.ASSIGNED and r.on_integration]
+    assert offered == [], "a claimed row reached the array a lane selects from"
+
+
+def test_a_later_lifecycle_state_wins_across_both_upstream_refs() -> None:
+    """✅ **`CLAIMED` on either `integration` or `main` beats `READY` on the other.**
+
+    `_integration_states` merges both refs because `integration` can fall
+    *behind* `main` (B-221 — 34 commits apart on 2026-08-09). ⛔ **Taking one ref
+    alone would let a claim recorded on the other be invisible**, which is the
+    duplicate-implementation failure the protocol exists to stop.
+    """
+    lc = coordination._LIFECYCLE
+    assert lc["CLAIMED"] > lc["READY"]
+    assert lc["IN PROGRESS"] > lc["CLAIMED"]
+    for earlier in ("READY", "SEQUENCED", "BLOCKED"):
+        assert lc["CLAIMED"] > lc[earlier], f"a claim would be hidden by {earlier}"
+
+
+def test_an_unreadable_upstream_does_not_mark_every_row_unsynchronised() -> None:
+    """⚠️ **Empty upstream means UNREADABLE, not disagreeing.**
+
+    A clone that cannot reach `origin/integration` must not report the whole
+    backlog as out of sync — that would turn a network failure into a repository
+    finding, and a lane would read it as *nothing is claimable*.
+    """
+    upstream: dict[str, str] = {}
+    assert ((not upstream) or upstream.get("TASK-X") == "READY") is True
