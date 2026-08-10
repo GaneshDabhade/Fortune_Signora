@@ -2566,6 +2566,39 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-417 · I resolved a conflict in a lane's favour and then appended to its line, which breaks that lane's next commit
+
+| | |
+|---|---|
+| **Module** | **`docs/BACKLOG.md`** — Product Office's editing practice |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **it returns another lane's branch from QE and costs that lane a manual conflict resolution it did not cause.** ⚡ **Twice now, on two lanes' time** |
+| **Status** | ⚠️ **`OPEN` — Lane C, 2026-08-10.** ✅ **Practice corrected below; the rule is the fix and there is nothing to code** |
+| **Found** | **2026-08-10, testing QE's diagnosis of why Lane A's branch would not rebase** — ⛔ **and the diagnosis was wrong, which is how this was found** |
+| **Steps** | **① A lane claims a row this office has released, so both edit one `Status` cell. ② This office rebases, resolves in the lane's favour — correctly — and APPENDS its own `*(Was: …)*` rationale to the lane's line. ③ The resolution reaches `integration`. ④ The lane's next commit changes that cell again and finds context it never wrote** |
+| **Expected** | **A resolution in a lane's favour leaves that lane's next commit applying cleanly** |
+| **Actual** | ⛔ **`TASK-1441`'s cell on `integration` carries this office's appended text, and Lane A's delivery commit conflicts on it** |
+
+> ## ⛔ **QE proposed changing [§20e](../CLAUDE.md) step 7 for this. It is not step 7, and the measurement says so.**
+
+📁 **QE's reading: *"integration says `CLAIMED`, Lane A's commit says `IN VALIDATION`… it is B-227's mechanism again, and it will keep recurring until step 7 changes."*** ⚡ **Two candidate causes were tested and both are innocent:**
+
+| Candidate | Measured |
+|---|---|
+| **QE's sync rebase rewrites claim shas** *(`08d11ce0` → `0da0b0b1`)* | ⛔ **Innocent.** ✅ **`git patch-id --stable` is IDENTICAL for both — `fec2f35aa3af`. Git skips it as previously-applied**, which is exactly what it did on this lane's own rebases all day |
+| **[§20e](../CLAUDE.md) step 7's push shape** | ⛔ **Innocent here.** **The conflict is not on the claim commit at all — it is on the DELIVERY commit, one cell, one line** |
+| ✅ **This office appending to the winning line** | 🔴 **Exact correlation.** **Of the three conflicts resolved this way today, `TASK-1441` is the ONLY one whose `Status` cell carries this office's text on `integration` — and it is the only one Lane A cannot rebase past** |
+
+### ✅ The correction, and it needs no rule change anywhere
+
+> ## **When a conflict resolves in favour of another lane's execution-state cell, take that line VERBATIM. Put the rationale in a cell of its own.**
+
+⚡ **Appending makes the line partly this office's, and the owning lane's next commit then finds context it never wrote.** ✅ **A separate cell carries the same reasoning and collides with nothing** — 📁 **which is what this office did on `TASK-1453`, adding three cells beside Lane A's untouched status line, and that row has caused nobody a conflict.**
+
+⛔ **The rationale is worth keeping** — a release this office made and a lane then claimed is exactly the history [§2](../CLAUDE.md) says not to erase. **The defect is WHERE it was written, not that it was.**
+
+---
+
 ### B-416 · 23 coordination items have a section and no index row, so they are unfindable from the register's own index
 
 | | |

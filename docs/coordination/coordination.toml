@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "08d11ce"
+generated_from = "0da0b0b"
 task_count     = 158
 
 [lane.Lane_A]
@@ -256,7 +256,7 @@ critical_path  = 0
 estimated_ready = "— Lane A, 2026-08-10, claim released.** 🔴 **All three deliverables are"
 waiting_for    = "— Lane A, 2026-08-10, claim released.** 🔴 **All three deliverables are blocked, unsourced, or already built** — ✅ **measured by building, not by readi"
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1414"
