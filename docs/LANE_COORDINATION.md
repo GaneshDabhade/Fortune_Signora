@@ -689,10 +689,10 @@ Provider Normalization is an **anticorruption layer for vendor vocabulary** — 
 
 | | |
 |---|---|
-| **Owner** | **Product owner** |
+| **Owner** | 🔵 **Lane C** — ⚡ **reassigned 2026-08-10, [D-232](DECISION_REGISTER.md) §7: a technical clarification, not a product decision** *(was: product owner)* |
 | **Requesting lane** | Lane B |
 | **Category** | API contract |
-| **Status** | `OPEN` |
+| **Status** | 🔵 **`OPEN` — REASSIGNED TO LANE C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ⛔ **A technical clarification, not a product decision.** ✅ **This office resolves it from repository evidence and returns it only if the evidence genuinely runs out** |
 | **Blocks** | Nothing — **but it gets worse with every slice** |
 | **Raised** | `960b604` as F-B7 |
 
@@ -819,7 +819,7 @@ Raised again because [C-008](#c-008--sellers-cannot-see-what-their-company-sells
 | **Owner** | Lane A (routing and shell) + **product owner** (sequencing) |
 | **Requesting lane** | Lane B |
 | **Category** | Product decision · cross-lane build |
-| **Status** | `OPEN` |
+| **Status** | 🟣 **`OPEN` — PARKED, CORRECTLY. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ✅ **Strategic, and its own trigger is named.** ⛔ **Out of the active product owner queue and not raised again until its trigger fires** |
 | **Blocks** | Nothing until M12.5 slice 5 is done |
 | **Raised** | `960b604`, assessed at the product owner's direction |
 
@@ -1088,10 +1088,10 @@ Products and ICP beside the account brief; the buying committee where contacts a
 
 | | |
 |---|---|
-| **Owner** | **Product owner** — the change is in `signora_platform/`, which is frozen (§20a) |
+| **Owner** | 🔵 **Lane C** — ⚡ **reassigned 2026-08-10, [D-232](DECISION_REGISTER.md) §7: a technical clarification, not a product decision** *(was: product owner)* |
 | **Requesting lane** | Lane A, while assigned to `opportunity_engine` |
 | **Category** | Error contract · platform change · **failure attribution** |
-| **Status** | `OPEN` |
+| **Status** | 🔵 **`OPEN` — REASSIGNED TO LANE C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ⛔ **A technical clarification, not a product decision.** ✅ **This office resolves it from repository evidence and returns it only if the evidence genuinely runs out** |
 | **Blocks** | Nothing today. It blocks *doing this properly* in any module that wants to split its error hierarchy |
 | **Raised** | `R4-02/R4-03` slice, 2026-08-02 |
 
@@ -1331,10 +1331,10 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 | | |
 |---|---|
-| **Owner** | **Product owner** (ratification). **`38-product-design-principles.md` is QE's** by the Change Budget — QE places the text once it is ratified |
+| **Owner** | 🔵 **Lane C** — ⚡ **reassigned 2026-08-10, [D-232](DECISION_REGISTER.md) §7: a technical clarification, not a product decision** *(was: product owner)* |
 | **Requesting lane** | Lane B |
 | **Category** | Product design principle · cross-cutting |
-| **Status** | `OPEN` — **text ready to paste.** Lane B may not place it |
+| **Status** | 🔵 **`OPEN` — REASSIGNED TO LANE C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ⛔ **A technical clarification, not a product decision.** ✅ **This office resolves it from repository evidence and returns it only if the evidence genuinely runs out** |
 | **Blocks** | Nothing being built. **Every future onboarding flow, guided setup, wizard and assistant** |
 | **Raised** | 2026-08-02, on the product owner's direction to formalize the distinction found in [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) |
 
@@ -2219,10 +2219,10 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 | | |
 |---|---|
-| **Owner** | **Product owner** — it is a new cross-tier surface with a privacy property |
+| **Owner** | 🔵 **Lane C** — ⚡ **reassigned 2026-08-10, [D-232](DECISION_REGISTER.md) §7: a technical clarification, not a product decision** *(was: product owner)* |
 | **Requesting lane** | Lane A |
 | **Category** | Cross-tier boundary · identity · privacy |
-| **Status** | `OPEN` |
+| **Status** | 🔵 **`OPEN` — REASSIGNED TO LANE C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ⛔ **A technical clarification, not a product decision.** ✅ **This office resolves it from repository evidence and returns it only if the evidence genuinely runs out** |
 | **Blocks** | ~~TS-01, the Team page~~ — **narrowed 2026-08-02, see below.** Display names, avatars, AI attribution, audit actors, mentions and notifications |
 | **Raised** | 2026-08-02, during the Team module's readiness review |
 
@@ -4018,7 +4018,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 | **Current assignee(s)** | **Product owner** — `CLAUDE.md` is theirs, and a review practice is governance |
 | **Blocking** | **Nothing** |
 | **Raised** | 2026-08-02, by Lane B, at the product owner's suggestion after it caught a real error |
-| **Status** | **`OPEN`** — **a standing review question, owner the product owner** (`CLAUDE.md` is theirs). ⚡ **Not a blocker and not closeable**: it asks that a rejection state whether it rejects the whole option or one instance. ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
+| **Status** | 🟣 **`OPEN` — PARKED, CORRECTLY. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ✅ **Strategic, and its own trigger is named.** ⛔ **Out of the active product owner queue and not raised again until its trigger fires** |
 
 **The question, ready to adopt:**
 
@@ -4070,7 +4070,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 | **Current assignee(s)** | **Product owner** — `CLAUDE.md` §2 is governance |
 | **Blocking** | **Nothing.** Both are being applied; this decides whether they are named |
 | **Raised** | 2026-08-02, by Lane B, at the product owner's direction |
-| **Status** | **`OPEN`** — **two principles that outgrew their ADR, owner the product owner** (`CLAUDE.md` is theirs). ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
+| **Status** | 🟣 **`OPEN` — PARKED, CORRECTLY. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ✅ **Strategic, and its own trigger is named.** ⛔ **Out of the active product owner queue and not raised again until its trigger fires** |
 
 **Neither was invented. Both were *found* — each already enforced in a module that had never described it as a rule**, which is the evidence that they are repository principles rather than ICP details.
 
@@ -4238,7 +4238,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 | **Current assignee(s)** | **Product owner** — a recommendation is stated below and **Lane B is proceeding on it rather than waiting** |
 | **Blocking** | **Nothing Lane B intends to build.** Named because the answer changes where one table goes |
 | **Raised** | 2026-08-03, by Lane B, assigned User Profile, **after the reuse audit and before any code** |
-| **Status** | **`OPEN`** — **"the product cannot tell me who my colleagues are."** **Grouped with People Intelligence alongside [C-203](#c-203--nothing-in-the-product-can-render-a-persons-name) and [C-210](#c-210--will-signora-hold-personal-data).** ⚡ **Field added 2026-08-06 — the item carried none, so no instrument could route it** ([D-131](DECISION_REGISTER.md): *structured state is canonical*). |
+| **Status** | 🟣 **`OPEN` — PARKED, CORRECTLY. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ✅ **Strategic, and its own trigger is named.** ⛔ **Out of the active product owner queue and not raised again until its trigger fires** |
 
 ### 1 · The audit's finding, and it is not "there is no profile screen"
 
@@ -4678,8 +4678,8 @@ return hashlib.sha256(f"{self.workspace_id}\x1d{canonical}".encode()).hexdigest(
 
 | | |
 |---|---|
-| **Status** | **`OPEN`** — ⚙️ **operational, and not blocking today.** The remote is HTTPS and pushes cleanly; **this costs nothing until somebody switches a remote back to SSH** |
-| **Owner** | **The product owner.** ⛔ **Not a lane's**: it is the network this workstation is on, not anything in the repository (§20e — *a workstation gap must never be recorded as a repository defect*, [B-011](BUGS.md)) |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7. ⚙️ OPERATIONAL, never a product decision.** 📁 **Its own status: *the remote is HTTPS and pushes cleanly*.** ⛔ **A workstation condition carried in the product owner's queue for days** |
+| **Owner** | **Lane C / the implementing lane** — ⚡ **reassigned 2026-08-10, [D-232](DECISION_REGISTER.md) §7: operational or sequencing, never a product decision** *(was: product owner)* |
 | **Raised by** | **Lane B**, 2026-08-07, on `git fetch` failing mid-slice with `REMOTE HOST IDENTIFICATION HAS CHANGED` |
 | ✅ **Corroborated independently** | **Lane C, 2026-08-07**, which hit the same failure in the same window and measured before reading this row: **`ssh-keyscan` returns a single 2048-bit RSA key, `SHA256:7zYnlSpxx6z0t477lR5vNYfelxewzWwu8N1X6v+wsZA`, and offers no ed25519 or ecdsa at all**, while `known_hosts` holds GitHub's three published fingerprints. ⚡ **Two lanes, two measurements, one answer — so it is not a transient.** ⛔ **Lane C did not run `ssh-keygen -R`**, for the reason this row exists |
 
@@ -7703,7 +7703,7 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 | | |
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-06, decomposing [TASK-477](BACKLOG.md) |
-| **Owner** | **Product owner** — ⚡ **[D-112](DECISION_REGISTER.md) took the identical decision for `B-`, `C-` and `TASK-` ids, so extending it is theirs by precedent** |
+| **Owner** | 🔵 **Lane C** — ⚡ **reassigned 2026-08-10, [D-232](DECISION_REGISTER.md) §7: identifier allocation is this office's mechanism and [TASK-477](BACKLOG.md) proceeds either way** *(was: product owner)* |
 | **Status** | **`READY FOR PRODUCT DECISION`** — **one question, and [TASK-477](BACKLOG.md) proceeds either way** |
 | **Blocks** | ⛔ **Nothing.** **[TASK-477](BACKLOG.md) fixes today's three collisions regardless; this decides whether a fourth can occur** |
 
@@ -7951,8 +7951,8 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 | | |
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-07, ⚡ **running the command `CLAUDE.md` §19 instructs it to run.** ✅ **Confirmed by Lane C the same day, by running it** |
-| **Owner** | **Product owner** — ⛔ **`CLAUDE.md` is the one file this office may never edit** (§20e) |
-| **Status** | 🟡 **`OPEN` — raised 2026-08-07.** **One sentence, and the repository has already written the argument for it** |
+| **Owner** | 🔵 **Lane C** — ⚡ **reassigned 2026-08-10, [D-232](DECISION_REGISTER.md) §7: a technical clarification, not a product decision** *(was: product owner)* |
+| **Status** | 🔵 **`OPEN` — REASSIGNED TO LANE C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ⚡ **`HEADED=1` still appears in [`CLAUDE.md`](../CLAUDE.md) and [TASK-476](BACKLOG.md) shipped the headed default.** ✅ **This office DRAFTS the one-sentence correction; [`CLAUDE.md`](../CLAUDE.md) remains the product owner's to apply** |
 | **Blocks** | ✅ **Nothing.** ⚡ **Lane A wrote its Playwright journey without it and said so** |
 
 ### The measurement
@@ -9162,7 +9162,7 @@ frontend/components/intelligence/account-search.tsx:72
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-09, **implementing [TASK-1400](BACKLOG.md)** — ⚡ **all three found by building the table, not by reading it** |
 | **Owner** | **Lane C (Product Office)** for ① · ⛔ **the product owner** for ③, because it is a behaviour a customer sees |
-| **Status** | **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **The engine ships against the design** ([D-138](DECISION_REGISTER.md)), **with every number asserted from the design document rather than transcribed**, so a ruling either way changes one file and fails loudly |
+| **Status** | 🟠 **REVIEW NOTE — not a queue item. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §6.** 📁 **Its own `Blocks` cell says nothing is blocked; what changes is what a REVIEWER is shown.** ✅ **Surfaced at the review of the screen it names, and not raised again before then** *(was: **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **The engine shi)* |
 | **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is what a reviewer is shown** — three points where the row and the design disagree, and a reader holding both should see them as raised rather than as slips |
 
 ### ① The count is 24, and [TASK-1400](BACKLOG.md) says 21 — three times
@@ -9207,7 +9207,7 @@ rules parsed: 24   ·   distinct reason codes: 24
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-08, building [TASK-470](BACKLOG.md) screen `04` |
 | **Owner** | **Product owner** — ⚡ **both are statements about what a customer's organization allows**, which is not a lane's to assert |
-| **Status** | **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **The five personal preferences ship**; the two policy rows do not |
+| **Status** | 🟠 **REVIEW NOTE — not a queue item. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §6.** 📁 **Its own `Blocks` cell says nothing is blocked; what changes is what a REVIEWER is shown.** ✅ **Surfaced at the review of the screen it names, and not raised again before then** *(was: **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **The five perso)* |
 | **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 9 review is shown** |
 
 **The design draws seven rows on screen `04`. Five are the person's and ship. Two are not, and neither has anything behind it.**
@@ -9228,7 +9228,7 @@ rules parsed: 24   ·   distinct reason codes: 24
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-08, **building [TASK-470](BACKLOG.md) screen `01` and grepping for the sync before drawing the lock** |
 | **Owner** | **Product owner** — ⚡ **it is a promise about who owns a customer's identity data**, not a build estimate |
-| **Status** | **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **Screen `01` ships with the fields that are real**, and the ones with no source are absent rather than drawn locked |
+| **Status** | 🟠 **REVIEW NOTE — not a queue item. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §6.** 📁 **Its own `Blocks` cell says nothing is blocked; what changes is what a REVIEWER is shown.** ✅ **Surfaced at the review of the screen it names, and not raised again before then** *(was: **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **Screen `01` sh)* |
 | **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is how complete screen `01` looks at review** — named here so it reads as a stated absence rather than an omission |
 
 **The design's own headline statistic on this screen is `0` — *"Edits accepted that a sync would undo."*** ⚡ **That is not decoration: it is the invariant the three field kinds exist to keep** — *Yours* · *From directory* · *Workspace policy*.
@@ -9252,7 +9252,7 @@ rules parsed: 24   ·   distinct reason codes: 24
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-08, **implementing [TASK-470](BACKLOG.md) — the row asked for this answer rather than leaving it assumed** |
 | **Owner** | **Product owner** — ⚡ **it is a product question wearing a tenancy question's clothes**: *does a person have one Signora, or one per organization?* |
-| **Status** | **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **Preferences ship person-within-workspace**, which is what the architecture already says |
+| **Status** | 🟠 **REVIEW NOTE — not a queue item. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §6.** 📁 **Its own `Blocks` cell says nothing is blocked; what changes is what a REVIEWER is shown.** ✅ **Surfaced at the review of the screen it names, and not raised again before then** *(was: **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **Preferences sh)* |
 | **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is a customer's experience of belonging to two organizations**, which nobody has yet |
 
 **[TASK-470](BACKLOG.md)'s row says the preferences are *account*-scoped**: *"Theme, density, locale and AI preference are account-scoped, not workspace-scoped — which makes this the first row in the migration whose data is not workspace-owned."*
@@ -9275,7 +9275,7 @@ rules parsed: 24   ·   distinct reason codes: 24
 | **Owner** | ⛔ **Product owner** — ⚡ **it is a *design* correction, not a build**: [ADR-0034](architecture/adr/0034-ubiquitous-language.md) is ratified and the snapshot disagrees with it, so the fix is a snapshot refresh rather than a row. ✅ **Lane A resolved it correctly for the slice — the screen ships reading *Organization*, which is the ADR's word** — ⛔ **and the design document still says *Workspace*, which is what will be re-raised by the next lane that reads it.** ⚠️ **Owner cell added 2026-08-09 on the ownership check; the item arrived with QE's integration carrying none** |
 | **Raised by** | **Lane A**, 2026-08-08, **implementing [TASK-469](BACKLOG.md) — found by a guard rather than by reading** |
 | **Owner** | **Lane C (Product Office)** — the design snapshot and [ADR-0034](architecture/adr/0034-ubiquitous-language.md) are both theirs, and this is the seam between them. ⚠️ **Named as the lane and not only the role**, because the register is read by routing as well as by people: `state-check` matches `Lane [ACD]`, `QE` or *product owner*, and **an owner a reader cannot route to is an absent owner** — it flagged this row, and the flag was right |
-| **Status** | **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **The screen ships reading *Organization***, which is what [ADR-0034](architecture/adr/0034-ubiquitous-language.md) requires and what `vocabulary.test.tsx` enforces |
+| **Status** | 🟠 **REVIEW NOTE — not a queue item. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §6.** 📁 **Its own `Blocks` cell says nothing is blocked; what changes is what a REVIEWER is shown.** ✅ **Surfaced at the review of the screen it names, and not raised again before then** *(was: **`OPEN`** — ⛔ **and it blocks nothing.** ✅ **The screen shi)* |
 | **Blocks** | ⛔ **Nothing.** ⚠️ **What it changes is what the Workflow 8 review is shown** — a reviewer holding the design will see one label differ, and this is so they read it as a ruled translation rather than a slip |
 
 **The design's flow table names step 2 `Workspace`.** [ADR-0034](architecture/adr/0034-ubiquitous-language.md) is explicit that **`workspace` is platform vocabulary and never reaches a screen**: *"A customer says Organization… the platform says workspace,"* and *"the translation lives at the frontend edge and never travels inward."*
@@ -9320,7 +9320,7 @@ rules parsed: 24   ·   distinct reason codes: 24
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-08, **building [TASK-488](BACKLOG.md) and reading `node_modules` and `lib/auth/server.ts` rather than the sentence** |
 | **Owner** | **Product owner** — ⛔ **a security *behaviour*, not a copy fix** ([D-151](DECISION_REGISTER.md) ④) |
-| **Status** | **`OPEN`** |
+| **Status** | 🟠 **REVIEW NOTE — not a queue item. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §6.** 📁 **Its own `Blocks` cell says nothing is blocked; what changes is what a REVIEWER is shown.** ✅ **Surfaced at the review of the screen it names, and not raised again before then** *(was: **`OPEN`**)* |
 | **Blocks** | ⛔ **Nothing.** ✅ **Screens `09` and `10` ship without the claim.** ⚠️ **What is open is whether the claim should become true** |
 
 **The design's sentence, verbatim:** *"This signs you out of **4 other devices**, including the iPad last used 3 days ago."*
@@ -9346,7 +9346,7 @@ rules parsed: 24   ·   distinct reason codes: 24
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-08, **implementing [TASK-489](BACKLOG.md) under [D-190](DECISION_REGISTER.md)** — ⚡ **reported and implementation continued on the half that is real**, as [D-190](DECISION_REGISTER.md) §3 directs |
 | **Owner** | **Product owner** — ⛔ **a disclosure boundary, not a build estimate** |
-| **Status** | **`OPEN`** |
+| **Status** | 🟠 **REVIEW NOTE — not a queue item. Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §6.** 📁 **Its own `Blocks` cell says nothing is blocked; what changes is what a REVIEWER is shown.** ✅ **Surfaced at the review of the screen it names, and not raised again before then** *(was: **`OPEN`**)* |
 | **Blocks** | ⚠️ **Most of screen `13`, and — measured 2026-08-09 — the *Wrong account* and *Declined* screens too.** ✅ **Screen `14 Invitation expired` SHIPPED 2026-08-09** at `/invite/expired`, unblocked by [B-214](BUGS.md); see *the other two screens* below |
 
 ### ⚡ UPDATE 2026-08-09 — the other two screens, and one of them must NOT be built
@@ -9450,9 +9450,9 @@ rules parsed: 24   ·   distinct reason codes: 24
 | | |
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-09, **splitting [C-261](#c-261--task-492s-producer-instruction-rests-on-a-premise-that-measurement-contradicts-and-either-reading-ships-a-defect) under [D-216](DECISION_REGISTER.md)** — ⚡ **the analysis and both options are Lane A's, measured while holding [TASK-492](BACKLOG.md); this office is routing them, not re-deriving them** |
-| **Owner** | 🔴 **Product owner** — ⛔ **[§20a](../CLAUDE.md): `signora_platform/` is frozen, and the reliable option needs a change inside it. That is *product owner + ADR*, and a lane choosing between these two has taken an architectural decision inside a feature slice** |
+| **Owner** | **Lane C / the implementing lane** — ⚡ **reassigned 2026-08-10, [D-232](DECISION_REGISTER.md) §7: operational or sequencing, never a product decision** *(was: product owner)* |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **ARCHITECTURAL BLOCKER** — ⛔ **not a design question and not a missing capability: no accepted architecture exists for how a fact born in the Better Auth tier reaches a table Python owns** |
-| **Status** | 🔴 **`OPEN`** |
+| **Status** | ⏸️ **`OPEN` — RECLASSIFIED to SEQUENCING, Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ⛔ **Not a product decision: it waits on three of [TASK-492](BACKLOG.md)'s four producers.** ✅ **Owner is the implementing lane, not the product owner** |
 | **Blocks** | ⚠️ **Three of [TASK-492](BACKLOG.md)'s four producers — sign-in, sign-out, password reset.** ✅ **The table, the domain type, the repository and the `public/` contract are BUILT AND GREEN** — 401 Security Invariants, 29 domain tests, `mypy --strict` clean. ⛔ **Nothing else in the repository waits on this** |
 
 📁 **[493 §](architecture/493-security-platform-architecture.md) names the producer — *"Workflow 1 (Login) — already producing them"* — and specifies nothing about how the fact crosses the tier boundary.** 🔴 **Four authentication journeys are on `main` today and nothing records them.**
@@ -9609,8 +9609,8 @@ rules parsed: 24   ·   distinct reason codes: 24
 | | |
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-09, decomposing [workflow 11](coordination/workflows.toml) under [D-204](DECISION_REGISTER.md) §3–§4 |
-| **Owner** | 🔴 **Product Office → then the product owner if a new module is required** — ⛔ **inventing a module boundary is architecture** ([§21](../CLAUDE.md)) |
-| **Status** | 🟠 **`OPEN`** |
+| **Owner** | **Lane C / the implementing lane** — ⚡ **reassigned 2026-08-10, [D-232](DECISION_REGISTER.md) §7: operational or sequencing, never a product decision** *(was: product owner)* |
+| **Status** | ⏸️ **`OPEN` — RECLASSIFIED to SEQUENCING, Lane C, 2026-08-10, [D-232](DECISION_REGISTER.md) §7.** ⛔ **Not a product decision: it waits on [TASK-1413](BACKLOG.md), and nothing is being built today** |
 | **Blocks** | ⏸️ **[TASK-1413](BACKLOG.md)** — and nothing being built today |
 
 📁 **The Settings design specifies API keys and webhooks: *"Scoped, rotatable, and logged per call"*, *"A key is shown once at creation and never again"*, *"Failed webhook deliveries retry with backoff for 24 hours, then park with the payload retained."*** ⛔ **None of it exists, and no module in [`modules.toml`](coordination/modules.toml) owns machine credentials.**
@@ -9697,6 +9697,93 @@ rules parsed: 24   ·   distinct reason codes: 24
 
 ✅ **What this office did with the three it could rule on** — [`DECISION_PACKS.md`](DECISION_PACKS.md) superseded · [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) never adopted · [`PRODUCT_EXPERIENCE.md`](PRODUCT_EXPERIENCE.md) reassigned from the closed Lane B — **is a banner saying which of the three it is.** ⛔ **Nothing deleted.** ⚡ **The same treatment fits here once QE says which.**
 
+## C-1419 · The decision briefs — the whole Product Owner queue
+
+> ⚠️ **FIVE, not four. Corrected 2026-08-10 before it was reported.** ⛔ **[C-338](#c-338) surfaced on the re-measurement and is genuine: it blocks [TASK-003](BACKLOG.md), which a lane holds `IN PROGRESS` with no code written.** ⚡ **It shares its subject with [C-331](#c-331) and could be ruled together — but it is a distinct question and is not folded in.**
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-10, on [D-232](DECISION_REGISTER.md) §5 |
+| **Owner** | 🔴 **Product owner** — ⚡ **and these four are the entire queue** |
+| **Status** | 🟠 **`READY FOR PRODUCT DECISION`** |
+| **Blocks** | **Named per row below** |
+
+---
+
+### 🔴 C-306 · Opportunities & Signals — rebuild to the design, or keep what exists?
+
+| | |
+|---|---|
+| **What must you decide** | **Is the shipped Opportunities & Signals experience rebuilt to the finalized design, or retained?** |
+| **Why it matters** | ⛔ **[D-128](DECISION_REGISTER.md) makes the design canonical and [D-217](DECISION_REGISTER.md) §6 says existing code is not an argument for keeping it.** ⚡ **This is the first screen where that rule meets a working, shipped experience** |
+| **What the repository does** | **A working Opportunities & Signals experience is on `main` and customers can use it** |
+| **What the design says** | ⚠️ **The finalized design draws it differently.** ⛔ **This office has NOT re-audited the delta — doing so is the first act of whichever option you choose, not a precondition of choosing** |
+| **Options** | **① Rebuild to the design** (D-128/D-217 applied literally) · **② Retain and re-point the design** · ⛔ **there is no third: a partial rebuild is the *decorate an incorrect implementation* D-232 §8 forbids** |
+| **What each blocks** | **A refinement slice has already reached this screen — that is why the row self-escalated to P1** |
+| **Cost / risk** | **L** — a working customer experience is replaced |
+| **Recommendation** | ⛔ **None. [§20e](../CLAUDE.md) reserves product direction, and this is the largest instance of it in the repository** |
+| **Needed by** | 🔴 **Before the next slice touches that screen** |
+
+### 🔴 C-335 · Epic C's next stage — two of four have no owner
+
+| | |
+|---|---|
+| **What must you decide** | **Who owns the two unassigned rows in Epic C's next stage?** |
+| **Why it matters** | ⛔ **A row with no owner is startable by nobody**, and [§20e](../CLAUDE.md) forbids a lane to self-assign |
+| **What the repository does** | **[TASK-427](BACKLOG.md) reached `main` and returned to the queue for the stage its own trigger names; four rows deep, two ownerless** |
+| **What the design says** | ✅ **n/a — an ownership question, not a design one** |
+| **Options** | **① Assign to Lane A** (it holds 19 modules) · **② leave unassigned and mark *review at first implementation*** — 📁 **[§20e](../CLAUDE.md)'s own remedy: *ownership becomes obvious when implementation reaches a module; predicting it earlier buys nothing*** |
+| **What each blocks** | **[TASK-428](BACKLOG.md)'s S3 entirely** |
+| **Cost / risk** | **S** |
+| **Recommendation** | ✅ **Option ②, and this office states it because [§20e](../CLAUDE.md) already prescribes it** — ⚡ **evidence over prediction** |
+| **Needed by** | **When Epic C's stage is next scheduled** |
+
+### 🔴 C-223 · `competitor_entry` cannot be implemented across the current dependency graph
+
+| | |
+|---|---|
+| **What must you decide** | **Does the dependency graph change to permit `competitor_entry` detection, or does detection wait?** |
+| **Why it matters** | ⛔ **A new cross-module dependency is 🔴 in the Change Budget and needs an ADR** ([§20e](../CLAUDE.md)) |
+| **What the repository does** | ✅ **[TASK-203](BACKLOG.md) is implementation-complete to this boundary. The declaration, its API and its screen all ship** |
+| **What the design says** | **The design assumes detection; it does not assume a graph shape** |
+| **Options** | **① A graph change with its ADR** · **② detection waits until a module naturally owns it** |
+| **What each blocks** | ⛔ **Only Epic D phase 1's DETECTION half** — everything else ships |
+| **Cost / risk** | **M** — ⚠️ **a graph edge is permanent in a way a slice is not** |
+| **Recommendation** | ⛔ **None — a cross-module dependency is architecture** |
+| **Needed by** | **When Epic D phase 1 is scheduled** |
+
+### 🔴 C-331 · TASK-003 changes what the model is shown, which un-releases the prompt
+
+| | |
+|---|---|
+| **What must you decide** | **Does [TASK-003](BACKLOG.md) proceed, accepting that it re-opens a released prompt's evaluation?** |
+| **Why it matters** | 🔴 **[§10](../CLAUDE.md): a released prompt version is IMMUTABLE, and changing its input silently invalidates every evaluation citing it.** ⛔ **The cost is not the change — it is that nothing would say the evaluations no longer apply** |
+| **What the repository does** | **The prompt is released against an evaluated `(model, dataset)` set; `TASK-003` alters what the model receives** |
+| **What the design says** | ✅ **n/a — an AI-platform contract question** |
+| **Options** | **① Proceed and re-evaluate as a new prompt version** (§10's own remedy: a change is a new version, never an edit) · **② defer `TASK-003` until a re-evaluation is scheduled anyway** |
+| **What each blocks** | **Three rows, consolidated into this one item on 2026-08-05** |
+| **Cost / risk** | **M** — ⚠️ **re-evaluation needs a real model, and [C-334](#c-334)'s hosted credential is its own dependency** |
+| **Recommendation** | ✅ **Option ① IF a re-evaluation is affordable, because §10 already prescribes the mechanism** — ⛔ **whether to spend it now is yours** |
+| **Needed by** | **Before `TASK-003` is claimed** |
+
+### 🔴 C-338 · `TASK-003` would put customer labels in the file that builds the evidence digest
+
+| | |
+|---|---|
+| **What must you decide** | **May customer-facing labels live in the file that builds the evidence digest, or must they be sourced separately?** |
+| **Why it matters** | 🔴 **The digest is COMPUTED over a canonical form and is the basis of replay and audit** ([§2](../CLAUDE.md), *determinism outranks convenience*). ⛔ **Putting display text in it makes a customer-visible wording change alter a digest** — and a digest that moves when nothing substantive changed breaks every artifact citing it |
+| **What the repository does** | **The digest is computed, not stored; labels are not currently in that path** |
+| **What the design says** | ✅ **n/a — an AI-platform contract question, not a screen** |
+| **Options** | **① Labels in the digest file** — simple, and couples wording to determinism · **② labels sourced separately** — one more indirection, and the digest stays a function of evidence alone |
+| **What each blocks** | ⛔ **[TASK-003](BACKLOG.md), which a lane holds `IN PROGRESS` and has written no code against** |
+| **Cost / risk** | **M** — ⚠️ **cheap now, structural later: a digest input is very hard to remove once artifacts cite it** |
+| **Recommendation** | ✅ **Option ②, and this office states it because [§2](../CLAUDE.md) already prescribes the property** — ⛔ *"a system whose behaviour varies with something outside its declared inputs cannot be replayed"* |
+| **Needed by** | 🔴 **Now — a lane is holding the row and not writing code** |
+
+---
+
+---
+
 ## C-1418 · The Product Owner queue, swept — 23 items into six classes
 
 | | |
@@ -9746,7 +9833,7 @@ rules parsed: 24   ·   distinct reason codes: 24
 | **Raised by** | **Lane C**, 2026-08-10, on a discovery sweep for backend capability a customer cannot reach |
 | **Owner** | 🔴 **Product owner** — ⚡ **and it is a MISSING-DESIGN question, raised rather than answered** |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN GAP** — ⛔ **not a defect. The endpoint is correct, tested and workspace-scoped; nothing is wrong with it** |
-| **Status** | 🟠 **`READY FOR PRODUCT DECISION` — Lane C, 2026-08-10, on the full trace [D-231](DECISION_REGISTER.md) §3 required.** ⛔ **The smallest decision is named below and it is one word** *(was `OPEN`)* |
+| **Status** | ✅ **`CLOSED` — DORMANT / NOT CURRENTLY PRODUCT-SPECIFIED. [D-232](DECISION_REGISTER.md) §3, product owner, 2026-08-10.** ✅ **Retain the capability · ⛔ do not build UI because the API exists · ⛔ do not deprecate it yet · ⛔ nobody creates a customer-facing workflow for it without a finalized design.** ⚡ **`pipeline-health` ([TASK-438](BACKLOG.md)) has the SAME dormant pattern and is recorded here rather than in a new initiative** — 📁 ***"An API without a finalized customer-facing workflow is not permission to invent a UI."*** |
 | ✅ **The final trace — eight axes, and only one is non-zero** | **frontend callers `0` · backend consumers `0` · jobs and workers `0` · design snapshot `0` · `workflows.toml` `0` · backlog rows `0` · externally exposed `0`** · ⚡ **architecture docs `1`.** 📁 **And that one is [27-opportunity-engine.md](architecture/27-opportunity-engine.md) recording its own delivery** — *"Delivered 2026-08-06 by Lane B. `GET /workspaces/{id}/icp-performance`"* — **a module noting what it shipped, not a product destination** |
 | ✅ **The two items that produced it establish no destination either** | 📁 **[C-328](#c-328) and [C-330](#c-330) were both `RULED` on 2026-08-05, and both are about whether the measurement is POSSIBLE** — a contract boundary, and whether anything can say which accounts are in the ICP. ⛔ **Neither asks where a customer sees the answer** |
 | ✅ **The classification, and it is the middle one** | ⛔ **NOT a customer-facing product capability** — nothing draws it. ⛔ **NOT an implementation artifact that should not be exposed** — it is a correct, tested, workspace-scoped read of a real commercial question. ✅ **It is an internal capability that is not currently product-specified** |
@@ -9805,7 +9892,7 @@ GET /workspaces/{id}/icp-performance
 | **Raised by** | **Lane C**, 2026-08-10, **answering [C-277](#c-277)** — ⚡ **and noticing it is the same item for the third time in two days** |
 | **Owner** | 🔴 **Product owner** — **one question, asked once rather than three times** |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **MISSING DOMAIN DECISION** — ⛔ **not a design defect, not an implementation defect, and not three separate gaps** |
-| **Status** | ✅ **ASSESSED — Lane C, 2026-08-10, under [D-231](DECISION_REGISTER.md) §2.** 🔴 **CLASSIFICATION: DESIGN/MODEL GAP, not a product decision about RBAC** — ⛔ **the finalized design does NOT establish five roles as the canonical authorization model, and the evidence is a count.** ⚡ **Implementation continues; no new RBAC system is invented** *(was `OPEN`, owner: product owner)* |
+| **Status** | ⚡ **RBAC PORTION RESOLVED BY EVIDENCE — [D-232](DECISION_REGISTER.md) §2, product owner, 2026-08-10.** ✅ **Ruled: retain the existing authorization model · introduce no five-role RBAC · invent no `Manager` or `Rep` semantics · do not modify authorization to make design vocabulary match.** ⛔ **THE ITEM STAYS OPEN for its other three instances** — [C-272](#c-272)'s Executive Dashboard, [C-1415](#c-1415)'s region and environment, the Help Center's entitlement — **which are genuine domain gaps and independently classified** ([D-232](DECISION_REGISTER.md) §2's closing clause) |
 | 🔴 **The five roles are NOT established across the design set** | **Design documents mentioning each:** `Admin` **9** · `Analyst` **6** · `Guest` **6** · `Rep` **4** · `Manager` **1**. ⛔ **Exactly ONE document carries all five — `Settings.dc.html`, the matrix itself. `Manager` appears there and nowhere else in twenty-eight documents** |
 | 🔴 **And the ASSIGNMENT screen still uses the product's own two** | ⚡ **`Team Management.dc.html` is where a role is granted — the one screen that must offer five if five were canonical.** 📁 **Measured literals: `Member` ×10 · `Guest` ×3 · `Analyst` ×3 · `Admin` ×3 · `Owner` ×2 · `Manager` ×0 · `Rep` ×0.** ⛔ **It offers `Owner` and `Member` and never mentions two of the matrix's five.** ✅ **A canonical model would be assignable; this one is not** |
 | ✅ **What the authorization model actually is** | 📁 **`signora_platform/authorization/policies/policy.csv` has exactly two subjects — `owner` and `member`** — enforced by Casbin, and every workflow on `main` depends on it |

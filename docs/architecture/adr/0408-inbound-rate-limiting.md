@@ -1,6 +1,6 @@
 # ADR-0408 · Inbound rate limiting — a limiter at the edge, backed by Redis
 
-**Status: DRAFT — Lane C, 2026-08-10. Awaiting the product owner.**
+**Status: ACCEPTED — product owner, 2026-08-10, [D-232](../../DECISION_REGISTER.md) §4. Drafted by Lane C.**
 **Unblocks [TASK-1430](../../BACKLOG.md), which reads `SEQUENCED` with *"needs the ADR before it is claimable"* — and that ADR is this office's to draft. The row has waited on work only Lane C could do.**
 
 > ⛔ **This is a draft. Nothing in the repository behaves as though it were ratified, and `signora_platform/` stays frozen until it is** ([§20a](../../../CLAUDE.md)).
@@ -146,3 +146,55 @@
 | ✅ **The exemption permits** | ⛔ **It does not permit** |
 |---|---|
 | **One ASGI middleware in `signora_platform/api/`**, its typed `Settings`, and its Security Invariant | **Any other platform change.** **Any authorization logic** — Casbin decides *who may*; this decides *how often anyone may*, and a limiter reading a workspace claim has started deciding authorization before authorization runs |
+
+
+---
+
+## 12 · 🔴 Redis degradation — the behaviour, not the preference
+
+> ## ⛔ **This is the one thing the ADR must not leave implicit.** ⚡ **A limiter's failure mode is a product decision, not a library setting.**
+
+| Redis state | Fail-OPEN | Fail-CLOSED |
+|---|---|---|
+| **Unavailable** | ⛔ **Authentication protection disappears silently.** An attacker who can degrade Redis has removed the control | 🔴 **Authentication becomes unavailable.** A Redis outage becomes a sign-in outage for every customer |
+| **Slow** | ⚠️ **Latency added to every sign-in** unless bounded | ⚠️ **Same, plus refusals under load** |
+
+### ✅ The ruling, and it is deliberately asymmetric
+
+> **Fail-OPEN on the limiter, and make the failure LOUD.**
+
+⛔ **The alternative trades a defence against a determined attacker for an outage affecting every legitimate customer**, and an authentication outage is the larger harm. ⚡ **But fail-open is only acceptable because it is observable** — a silent fail-open is the [§2](../../../CLAUDE.md) *decorative guard*, protection that has stopped protecting with nothing saying so.
+
+| | |
+|---|---|
+| **Timeout** | **A short, explicit bound owned by the module** — ⛔ **never the client default.** A limiter that adds unbounded latency to sign-in has become the outage it was avoiding |
+| **On timeout or error** | ✅ **Allow the request, increment a failure counter, and emit a WARN** carrying `correlation_id` ([§16](../../../CLAUDE.md)) |
+| **Observability** | 🔴 **The degraded state must be alertable.** ⛔ *"Rate limiting is currently not enforced"* is an operational condition somebody must be able to see — **it is not a log line nobody reads** |
+| **Local emergency fallback** | ⚠️ **Assessed and NOT recommended as a first slice.** ⛔ **A per-process fallback re-introduces the *n* × budget this ADR exists to avoid, and it does so exactly when the system is already degraded** — **the worst moment for a control that silently weakens.** ✅ **If it is added later it is a separate, measured decision** |
+
+## 13 · ⚡ Two policies, not one — [D-232](../../DECISION_REGISTER.md) §4
+
+| | |
+|---|---|
+| ✅ **Authentication abuse protection** *(this ADR)* | **Unauthenticated, credential-sensitive routes.** **The attacker's goal is achieved by VOLUME**, and the cost of a refusal is one retry |
+| ⛔ **General API throttling** *(NOT this ADR)* | **Authenticated routes, capacity protection, fair use.** **A different policy, a different key, a different failure posture** — and it does not belong in the same slice |
+
+## 14 · ✅ Identity and key strategy — the property that matters more than the number
+
+> ## 🔴 **Key on what an attacker cannot choose on somebody else's behalf.**
+
+⛔ **Keying sign-in solely on the submitted address lets anybody lock any customer out by spending their budget** — **the control becomes the attack.** ✅ **The Security Invariant** ([§11](../../../CLAUDE.md)): **a refused caller must never be able to cause the refusal of a caller they do not control.**
+
+## 15 · ✅ Configuration model — and why no number appears in this ADR
+
+**Every threshold is configuration** in the module's own typed `Settings` ([§6](../../../CLAUDE.md)), **changed without a code change.** ⛔ **This ADR states no production number**, because none is derivable: **there is no traffic to measure and no security requirement in this repository specifying one.** ✅ **A conservative default ships, and tuning follows measurement.**
+
+## 16 · ✅ The §20a exemption, stated exactly
+
+| | |
+|---|---|
+| **What is added** | **One ASGI middleware in `signora_platform/api/`, a typed `Settings`, and a Security Invariant** |
+| **Why security-critical** | ⛔ **Nothing stands between a credential-stuffing script and `/signin`**, and no module can fix it because **no module owns the edge** |
+| **Which boundary it crosses** | **The [§20a](../../../CLAUDE.md) platform freeze** — the substrate every module imports |
+| **Why delay is unacceptable** | **The exposure is live on every deployed environment**, and it grows with each authentication route added |
+| ⛔ **What is explicitly NOT changed** | **No other platform internals · no authorization logic · no module contract · no existing endpoint's behaviour when under the limit.** ⚡ **The exemption is one middleware and its configuration — it is not a licence to expand the platform** |
