@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "f62ec7b"
+generated_from = "d96f57a"
 task_count     = 158
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-1411", "TASK-1442", "TASK-1448", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-1447", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
+backlog            = ["TASK-1411", "TASK-1442", "TASK-1448", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-1447", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
 assigned_total     = 137
-claimable          = 25
-claimable_now      = 24
+claimable          = 24
+claimable_now      = 23
 awaiting_sync      = 1
-in_flight          = 79
-actionable         = 6
+in_flight          = 80
+actionable         = 7
 awaiting_qe_transition = 0
 blocked_on_integration = 1
 supply_state       = "working"
 blocked            = 33
-lane_utilization   = 15.8
-idle_prediction_days   = 3.6
+lane_utilization   = 16.0
+idle_prediction_days   = 3.4
 dependency_wait_days   = 0.1
 blocked_duration_days  = 0.1
 critical_path_max      = 3
@@ -837,15 +837,15 @@ on_integration = true
 [[task]]
 id            = "TASK-1452"
 title         = "🔴 SCRAP AND REBUILD · The table is the v1 table Design System v2 was written to replace"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -2245,7 +2245,7 @@ on_integration = true
 [[task]]
 id            = "TASK-1430"
 title         = "Inbound rate limiting — nothing guards Signora's own API"
-state         = "WAITING_ARCHITECTURE"
+state         = "WAITING_PRODUCT_OWNER"
 declared      = "SEQUENCED"
 lane          = "Lane C"
 depends_on     = []
@@ -2253,8 +2253,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— Lane C, 2026-08-09.** ⛔ **Needs the ADR before it is claimable**"
-waiting_for    = "— Lane C, 2026-08-09.** ⛔ **Needs the ADR before it is claimable**"
+estimated_ready = "— Lane C, 2026-08-09.** ⛔ **Needs the ADR before it is claimable** — ✅"
+waiting_for    = "— Lane C, 2026-08-09.** ⛔ **Needs the ADR before it is claimable** — ✅ **AND THE ADR IS NOW DRAFTED: [ADR-0408](architecture/adr/0408-inbound-rate-lim"
 blocked_days   = 0.0
 on_integration = true
 
