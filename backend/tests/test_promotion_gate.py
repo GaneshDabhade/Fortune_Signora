@@ -182,10 +182,23 @@ class TestValidRowsKeepPassing:
         assert guard.backlog_states(text) == {}
 
     def test_progressing_forward_from_verified_is_not_a_regression(self) -> None:
+        """⚠️ **This assertion used to say the opposite of its own name, and the
+        name was right** — corrected 2026-08-10 with [B-176](../../docs/BUGS.md).
+
+        ⛔ **The original implementation reported ANY departure from `VERIFIED`,
+        including QE's own advance to `PROMOTED`**, and this test was written to
+        match the implementation rather than the property. **So the gate could
+        refuse a correct promotion**, and only the comparison it happens to make
+        — `origin/main` against the candidate — kept that from firing.
+
+        ⚡ **A test written to match the code cannot report that the code is
+        wrong.** ✅ **The property is the one the name always stated: QE's
+        sequence runs one way, and moving along it is not undoing it.**
+        """
         before = _row("TASK-7", "✅ **`VERIFIED` — QE**")
         after = _row("TASK-7", "✅ **`PROMOTED` — QE**")
 
-        assert guard.verified_regressions(before, after) == [("TASK-7", "PROMOTED")]
+        assert guard.verified_regressions(before, after) == []
 
 
 def _load_coordination() -> ModuleType:

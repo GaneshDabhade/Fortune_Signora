@@ -122,6 +122,14 @@ verified_regressions(before, after)   # -> []
 
 **Six regression tests** in [`test_promotion_gate.py`](../backend/tests/test_promotion_gate.py), including **B-232 itself as the smallest reproducing case**, the `CERTIFIED → VERIFIED` smaller step, both directions of *advancing is not regressing*, and **the watched set pinned by name rather than by count** — a set that grew by accident would still satisfy a length assertion.
 
+> ⚠️ **A SECOND HALF OF THE SAME DEFECT, found by certification after the first fix and recorded rather than folded in quietly.**
+>
+> ⛔ **The old implementation reported ANY departure from `VERIFIED`, including QE's own advance to `PROMOTED`** — so the gate could **refuse a correct promotion**, and only the pair it happens to compare (`origin/main` against the candidate) kept that from firing.
+>
+> 🔴 **An existing test asserted that false-positive as correct, under a name that stated the opposite**: `test_progressing_forward_from_verified_is_not_a_regression` asserted `== [("TASK-7", "PROMOTED")]`. ⚡ **The name described the property; the assertion described the implementation.** ⛔ **A test written to match the code cannot report that the code is wrong** — which is [B-175](#b-175)'s class once more, on QE's own suite.
+>
+> ✅ **The assertion is corrected to match its name, and the correction is stated in the test's own docstring** so the next reader sees why it changed rather than finding a weakened check. ⚠️ **QE did not run the module's suite before certifying** — mypy, import-linter, `tsc` and eslint were run and pytest was not, and certification is what caught it. **The cheap gates are not the lane's gates, and this row is QE being the lane.**
+
 **What it does not fix, stated so nobody assumes otherwise.** ⚠️ **This catches the revert at the promotion boundary. It does not stop a lane resolving a rebase conflict in its own favour**, and [B-232](#b-232)'s own repair — a lane never un-writing a QE cell — is the one that prevents rather than detects.
 
 ### B-175 · Five tests assert responsive classes that emit no CSS, so the suite reported a working layout while every auth screen was broken
