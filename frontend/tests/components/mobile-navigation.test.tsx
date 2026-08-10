@@ -51,16 +51,37 @@ describe('a phone has a way to get somewhere else', () => {
 });
 
 describe('the guard is the same one, applied to the same list', () => {
-  it('hides Settings from a member, exactly as the sidebar does', () => {
-    // **One list, two renderings.** A second array would be a second answer to
-    // *what can this person reach*, and the two would diverge the first time
-    // an entry was added to one — which is what CX-05 did to the sidebar.
+  it('shows Settings to a member as RESTRICTED, not as a link and not hidden', () => {
+    /**
+     * 🔴 **REVERSED by TASK-1439, and the old assertion passed through the
+     * change without noticing** — which is why it is rewritten rather than
+     * deleted. It queried for a `link` named Settings; the restricted
+     * rendering is a `span`, **so the query kept returning null and the test
+     * kept passing while the behaviour it named had inverted.**
+     *
+     * ⚠️ **A test that survives the reversal of its own subject is asserting
+     * the wrong thing** ([§2](../../../CLAUDE.md)), and the fix is to assert
+     * the property rather than the absence of one element type.
+     *
+     * 📁 The design, carried in [`lib/shell/rail.ts`](../../lib/shell/rail.ts)
+     * rule ①: *"Restricted destinations stay visible at 45% with a lock…
+     * a hidden destination teaches a person the feature does not exist, so
+     * they ask for the wrong thing or ask nobody."*
+     *
+     * ⛔ **Still not reachable**: it is not a link, so there is nothing to
+     * follow — and 📁 Casbin refuses the request regardless
+     * ([§20c](../../../CLAUDE.md)). **One list, two renderings**, and the
+     * restriction rule is the design's rather than the desktop's.
+     */
     render(<MobileNavigation role="member" />);
 
+    // Present…
+    expect(screen.getByLabelText(/settings — restricted/i)).toBeInTheDocument();
+    // …and not followable.
     expect(screen.queryByRole('link', { name: /settings/i })).not.toBeInTheDocument();
   });
 
-  it('still offers a member the two they can reach', () => {
+  it('still offers a member the destinations they can reach', () => {
     render(<MobileNavigation role="member" />);
 
     expect(screen.getByRole('link', { name: /attention/i })).toBeInTheDocument();

@@ -1,10 +1,12 @@
 'use client';
 
-import { Briefcase, LineChart, Settings } from 'lucide-react';
+import { Briefcase, LineChart, Lock, Radio, Settings as SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 import { cn } from '@/lib/design/cn';
+import { railViolations, visibleDestinations, type RailDestination } from '@/lib/shell/rail';
 import {
   can,
   guardFor,
@@ -12,96 +14,279 @@ import {
   type WorkspaceRole,
 } from '@/lib/state/permissions';
 
-interface NavItem {
+/**
+ * **The navigation rail** — [TASK-1439](../../../docs/BACKLOG.md), rebuilt
+ * against 📁 `docs/design-snapshot/screens/Fortune Signora App Shell.dc.html`
+ * ([D-138](../../../docs/DECISION_REGISTER.md), [D-225](../../../docs/DECISION_REGISTER.md)).
+ *
+ * ## ⚡ What was rebuilt, and what was kept — [D-225](../../../docs/DECISION_REGISTER.md) drew the line
+ *
+ * 📁 **§1 released the row for everything the design specifies**: *hierarchy,
+ * levels, labels, icons, active state, count slot, pinned utility group,
+ * structure, responsive and collapse behaviour.* ✅ **All of that is the
+ * design's now and none of it was before.**
+ *
+ * 🔴 **§4 is the clause that decides the ENTRY SET, and it is a ruling rather
+ * than a preference**: ⛔ ***"Do not remove currently valid, reachable
+ * navigation that is required for an existing user role."***
+ *
+ * ⚡ **So `/` and `/business` stay**, though the design's `navItems` names
+ * neither — 📁 **nine of the design's thirteen entries have no route at all**
+ * ([C-269](../../../docs/LANE_COORDINATION.md), and
+ * [500](../../../docs/architecture/500-authenticated-entry-reconciliation.md) §3
+ * measured the same absence from the other side: **eighteen of the entry
+ * engine's twenty-four destinations return `404`**). ⛔ **Building the
+ * design's list literally would remove two working destinations and add nine
+ * that do not resolve** — and this file already paid that price once: ⚠️ **at
+ * M12.3, *three of six said `coming soon` on the screen a customer sees
+ * first.***
+ *
+ * ✅ **The reconciliation is therefore structural, not editorial: the design's
+ * RAIL, holding the entries that exist.** **Home, Forecast, Pipeline, Deals,
+ * Conversations, Reports, Accounts and the two sub-entries arrive as their
+ * routes do** — 📁 [TASK-1438](../../../docs/BACKLOG.md) builds the first of
+ * them — **and each is one line here.**
+ *
+ * ## 🔴 The law existed and nothing used it. Six exports, zero callers
+ *
+ * ⚠️ **Measured 2026-08-10 before this rebuild**: 📁 [`lib/shell/rail.ts`](../../lib/shell/rail.ts)
+ * exports `MAX_DESTINATIONS`, `MAX_DEPTH`, `TAB_ORDER`, `RailDestination`,
+ * `railViolations` and `visibleDestinations` — **all six with no production
+ * caller.** ⛔ **The rail's rules were written, tested and never consulted by
+ * the rail.**
+ *
+ * ⚡ **This is the seventh instance of one pattern** — the entry engine, the
+ * narrowing law, the top-bar slot set, the command palette, `confidence.tsx`,
+ * `drawer.tsx`, and this. ✅ **This file now consumes it**, which is the only
+ * thing that turns a law into a rule.
+ *
+ * ## 🔴 A restricted destination is now VISIBLE, and that reverses this file's own rule
+ *
+ * ⛔ **This component used to remove what a member could not reach**, and said
+ * so: *"a link the caller cannot follow is not rendered. Rendering it disabled
+ * would advertise a capability they do not have."*
+ *
+ * 📁 **The design refuses that, and [`rail.ts`](../../lib/shell/rail.ts) rule ①
+ * already carried the reasoning this file was contradicting**: *"Restricted
+ * destinations stay visible at 45% with a lock and explain on click… a hidden
+ * destination teaches a person the feature does not exist, so they ask for the
+ * wrong thing or ask nobody."*
+ *
+ * ⚡ **[D-154](../../../docs/DECISION_REGISTER.md) settles which wins**:
+ * *"if an existing visual implementation differs from the finalized design,
+ * the design wins. Always."* ⚠️ **And the old rule was not wrong in general** —
+ * it is right for a BUTTON, which promises an action. **A rail is a map, and a
+ * map that hides the rooms you may not enter is a map you cannot trust.**
+ *
+ * 🔴 **Presentational, never enforcement** ([§20c](../../../CLAUDE.md)):
+ * **Casbin on the server is the authorization decision and is unchanged.**
+ * Dimming an item is a courtesy; the server refuses the request either way.
+ */
+
+interface RailItem extends RailDestination {
   href: string;
-  label: string;
-  icon: typeof Settings;
+  icon: typeof SettingsIcon;
 }
 
 /**
- * **Two entries, reviewed from first principles at M12.3** (D38).
+ * 📁 **The destinations, in the design's funnel order**, holding the entries
+ * that resolve.
  *
- * It was six: Overview, Companies, Signals, Timeline, Opportunities, Settings
- * — four of the thirteen pipeline modules with a menu item each, which is a
- * data model rendered as navigation. That was defensible at M1.5, when the
- * point was to settle the information architecture *before* pages were written
- * into it. The pages have since been written and they disagree with it.
- *
- * **None of the six customer journeys is *show me all the signals* or *show me
- * all the companies*.** A signal is what explains an account; a company is what
- * an account is. Both are already on the brief, because that is where they
- * answer something. Timeline is journey J6 and is explicitly *per-account* —
- * when M7 ships it belongs beside the workflow history on the brief, not here.
- *
- * And an entry that leads nowhere advertises absence: three of six said
- * *coming soon* on the screen a customer sees first.
- *
- * `Attention` rather than `Opportunities` because *Opportunity* is Signora's
- * own word for **the workflow object a human commits to**, and most rows on
- * this list are not that yet. *Attention* is the domain's word too — the score
- * measures commercial attention, the ledger splits it by posture, the query is
- * `attention_list` — so the vocabulary is now the same from the database to
- * the sidebar.
- *
- * ---
- *
- * ### Three entries from CX-05, and the third had to earn it
- *
- * **D38 reduced this to two on purpose, so adding one back is a claim that
- * needs defending.** *Your business* earns it on a fact that was not measured
- * until 2026-08-03: **a `member` saw a sidebar with one item in it.** `Settings`
- * is guarded and correctly not rendered for them, so of the two entries, a
- * salesperson — the person Signora is built for — saw one. **A navigation of
- * one is not navigation; it is a label.**
- *
- * **It is the only door, not a second one.** Every test D38 applied still
- * holds: this is not a pipeline module with a menu item, it is not *show me all
- * the X*, and it does not lead to a *coming soon*. `/settings/products` remains
- * the authoring screen for owners; **for a member there is no other route to
- * five declarations `policy.csv` explicitly grants them** ([C-008](../../../docs/LANE_COORDINATION.md)).
- *
- * **Unguarded, deliberately.** `guardFor` is a deny-list, so leaving `/business`
- * out of `GUARDED_ROUTES` is what makes it member-reachable — the property that
- * chose option C over option A and kept `permissions.ts` untouched (§20c).
+ * ⛔ **`depth` and `count` are the design's slots, not decoration** — a second
+ * level indents to 30px and never nests further, and `railViolations` refuses
+ * a tenth destination or a third level at test time.
  */
-const ITEMS: readonly NavItem[] = [
-  { href: '/', label: 'Attention', icon: LineChart },
-  { href: '/business', label: 'Your business', icon: Briefcase },
-  { href: '/settings', label: 'Settings', icon: Settings },
+const DESTINATIONS: readonly RailItem[] = [
+  { id: 'attention', label: 'Attention', href: '/', icon: LineChart, depth: 1 },
+  { id: 'business', label: 'Your business', href: '/business', icon: Briefcase, depth: 1 },
+  // 📁 *"Counts are neutral; a dot means unread and only Signals uses it."*
+  // ⛔ **No count is passed** — nothing publishes one, and a rail that invents
+  // a number is worse than a rail without one.
+  { id: 'signals', label: 'Signals', href: '/signals', icon: Radio, depth: 1 },
 ];
 
-export function Navigation({ role }: { role: WorkspaceRole | null }) {
+/**
+ * 📁 **The pinned utility group** — *"Utilities and the assistant pin to the
+ * bottom above the fold"*, and *"utilities at the bottom keep the funnel order
+ * uninterrupted at the top."*
+ *
+ * ⛔ **The design names three: Settings, Shortcuts, Docs & support.**
+ * **Shortcuts and Docs & support have no route** — ✅ measured against the
+ * route tree — **so they are absent rather than rendered as a dead end**
+ * ([C-269](../../../docs/LANE_COORDINATION.md)).
+ */
+const UTILITIES: readonly RailItem[] = [
+  { id: 'settings', label: 'Settings', href: '/settings', icon: SettingsIcon, depth: 1 },
+];
+
+/** ⚡ Which role can grant a capability, so the lock explains rather than refuses. */
+const GRANTED_BY: Readonly<Record<Capability, string>> = {
+  'workspace:read': 'any member',
+  'workspace:update': 'an owner',
+  'member:add': 'an owner',
+  'member:remove': 'an owner',
+};
+
+/**
+ * ⚡ **Exported so the suite asserts the rail's own law against the real list**
+ * rather than against a fixture — 📁 `railViolations` is the check and this is
+ * what it checks.
+ */
+export const RAIL_DESTINATIONS = [...DESTINATIONS, ...UTILITIES];
+
+function RailLink({
+  item,
+  role,
+  collapsed,
+}: {
+  item: RailItem;
+  role: WorkspaceRole | null;
+  collapsed: boolean;
+}) {
   const pathname = usePathname();
+  const [explaining, setExplaining] = useState(false);
+
+  const guard = guardFor(item.href);
+  const restricted = guard !== undefined && !can(role, guard.requires as Capability);
+  const isActive = pathname === item.href;
+  const Icon = item.icon;
+
+  const body = (
+    <>
+      <Icon
+        className={cn('h-4 w-4 shrink-0', isActive ? 'text-accent' : 'text-content-subtle')}
+        aria-hidden
+      />
+      {/* ⛔ **Collapsed hides the LABEL, never the accessible name** — 📁
+          *"collapsed items expose their label as an accessible name."* The
+          `aria-label` on the control carries it either way. */}
+      {collapsed ? null : (
+        <>
+          <span className="min-w-0 flex-1 truncate">{item.label}</span>
+          {/* 📁 *"Counts are neutral"* — content colour, never brand or risk. */}
+          {item.count !== undefined ? (
+            <span className="shrink-0 text-2xs tabular-nums text-content-subtle">
+              {item.count.toLocaleString()}
+            </span>
+          ) : null}
+          {/* 📁 *"a dot means unread and only Signals uses it."* `railViolations`
+              refuses it anywhere else. */}
+          {item.unread ? (
+            <span
+              className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+              aria-label="unread"
+            />
+          ) : null}
+          {restricted ? <Lock className="h-3 w-3 shrink-0" aria-hidden /> : null}
+        </>
+      )}
+    </>
+  );
+
+  const shape = cn(
+    // 📁 *"Item 32px tall, 8px radius, 10px icon-to-label gap."* ⛔ The values
+    // are the design's; `gap-2.5` is 10px and `rounded-md` is the 8px token.
+    'flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm transition-colors',
+    // 📁 *"Second level indents to 30px and never nests further."*
+    item.depth === 2 && !collapsed && 'pl-[30px]',
+    collapsed && 'justify-center px-0',
+    // 📁 *"Focus: 1px brand border plus a 3px tint halo — never the browser
+    // ring."* ⛔ `outline-none` alone would be an accessibility defect; this
+    // replaces the ring rather than removing it.
+    'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent',
+    'focus-visible:ring-offset-[3px] focus-visible:ring-offset-accent-subtle',
+  );
+
+  if (restricted) {
+    /**
+     * 📁 *"Restricted destinations stay visible at 45% with a lock and
+     * **explain on click**."* ⛔ **A `<button>`, not a `<Link>`** — the
+     * destination is not reachable, and rendering an anchor that refuses to
+     * navigate is the *control that does nothing* [§2](../../../CLAUDE.md)
+     * names.
+     */
+    return (
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setExplaining((was) => !was)}
+          aria-expanded={explaining}
+          aria-label={`${item.label} — restricted. ${
+            guard ? `Requires ${GRANTED_BY[guard.requires as Capability]}.` : ''
+          }`}
+          // 📁 *"stay visible at 45%"* — the design's own number.
+          className={cn(shape, 'w-full opacity-45', 'text-content-muted hover:bg-surface-sunken')}
+        >
+          {body}
+        </button>
+        {explaining && !collapsed ? (
+          <p
+            role="status"
+            className="mt-1 rounded-md bg-surface-sunken px-2.5 py-2 text-2xs leading-5 text-content-muted"
+          >
+            {/* ⛔ **It names who can grant it rather than saying *no*.** 📁 The
+                design's reason, in `rail.ts`: a person who is only refused
+                *"asks for the wrong thing or asks nobody."* */}
+            {item.label} is available to {guard ? GRANTED_BY[guard.requires as Capability] : 'an owner'}.
+            Ask someone with that role to open it for you.
+          </p>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
-    <nav aria-label="Main" className="flex flex-col gap-0.5 p-3">
-      {ITEMS.map((item) => {
-        const guard = guardFor(item.href);
-        // A link the caller cannot follow is not rendered. Rendering it
-        // disabled would advertise a capability they do not have; the
-        // server enforces the same rule regardless.
-        if (guard && !can(role, guard.requires as Capability)) return null;
+    <Link
+      href={item.href}
+      aria-current={isActive ? 'page' : undefined}
+      aria-label={collapsed ? item.label : undefined}
+      // 📁 *"Collapsed items expose their label as an accessible name and a
+      // 300ms tooltip."* ⚡ `title` is the tooltip the platform already delays;
+      // a bespoke one would be a component this row does not own.
+      title={collapsed ? item.label : undefined}
+      className={cn(
+        shape,
+        isActive
+          ? // 📁 *"Active: brand tint, 600 label, brand icon."*
+            'bg-accent-subtle font-semibold text-accent'
+          : // 📁 *"Hover: sunken tint."*
+            'text-content-muted hover:bg-surface-sunken hover:text-content',
+      )}
+    >
+      {body}
+    </Link>
+  );
+}
 
-        const isActive = pathname === item.href;
-        const Icon = item.icon;
+/**
+ * The rail, on a screen wide enough for it.
+ *
+ * 📁 *"12px outer / 10px inner padding"*, and the utility group pinned to the
+ * bottom — which is why this is a column with a spacer rather than one list.
+ */
+export function Navigation({
+  role,
+  collapsed = false,
+}: {
+  role: WorkspaceRole | null;
+  collapsed?: boolean;
+}) {
+  return (
+    <nav aria-label="Main" className="flex h-full flex-col gap-0.5 p-3">
+      {visibleDestinations(DESTINATIONS).map((item) => (
+        <RailLink key={item.id} item={item as RailItem} role={role} collapsed={collapsed} />
+      ))}
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-current={isActive ? 'page' : undefined}
-            className={cn(
-              'flex items-center gap-2.5 rounded px-3 py-2 text-sm transition-colors',
-              isActive
-                ? 'bg-accent-subtle font-medium text-accent'
-                : 'text-content-muted hover:bg-surface-sunken hover:text-content',
-            )}
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            <span className="flex-1">{item.label}</span>
-          </Link>
-        );
-      })}
+      {/* 📁 *"Utilities and the assistant pin to the bottom above the fold."*
+          ⚡ The spacer is what pins them, and it is why the rail is a flex
+          column: a margin would put them below the fold on a short viewport. */}
+      <div className="flex-1" />
+
+      <div className="flex flex-col gap-0.5 border-t border-border pt-2">
+        {visibleDestinations(UTILITIES).map((item) => (
+          <RailLink key={item.id} item={item as RailItem} role={role} collapsed={collapsed} />
+        ))}
+      </div>
     </nav>
   );
 }
@@ -109,35 +294,18 @@ export function Navigation({ role }: { role: WorkspaceRole | null }) {
 /**
  * The same navigation, on a phone. **CX-07 · [B-203](../../../docs/BUGS.md).**
  *
- * **Below `768px` the product had no navigation at all.** `app-shell.tsx` hides
- * the sidebar and nothing replaced it, so a signed-in customer on a phone could
- * reach the screen they landed on and nothing else. That was 🟠 and
- * *undecided* — *"whether it is a defect or a non-goal depends on a product
- * decision nobody has made"* — until [C-205](../../../docs/LANE_COORDINATION.md)
- * was ruled on 2026-08-03: **a phone is in scope.** It is now a defect, and
- * §20c names this exact class — *an unreachable control* — as one the frozen
- * foundation is changed for.
+ * ### It reads the same lists, and that is the point
  *
- * ### A bar, not a drawer
- *
- * **Three entries do not earn a drawer.** A drawer buys room for many
- * destinations and costs open/close state, a focus trap, an escape handler, a
- * scrim, and one tap before a customer can go anywhere. **Signora has two or
- * three destinations** (D38, and CX-05's third), so the room is worth nothing
- * and the cost is real.
- *
- * **A bar is one tap, always visible, and holds no state that can be wrong.**
- * It also sits where a thumb already is, which the sidebar's position never
- * could.
- *
- * ### It reads `ITEMS`, and that is the point
- *
- * **One list, two renderings.** A second array would be a second answer to
+ * **One source, two renderings.** A second array would be a second answer to
  * *what can this person reach*, and the two would diverge the first time an
- * entry was added to one — which is exactly what CX-05 just did to the
- * sidebar. The guard is applied identically, so **a control the server would
- * refuse is absent here too** rather than absent in one place and offered in
- * the other.
+ * entry was added to one.
+ *
+ * ⚡ **The utilities are appended rather than pinned** — 📁 a bottom bar has no
+ * *bottom* to pin to, and the design's reason for pinning (*"keep the funnel
+ * order uninterrupted at the top"*) is satisfied by order alone here.
+ *
+ * ⛔ **A restricted entry is rendered restricted here too**, not dropped: the
+ * rule is the design's, not the desktop's.
  */
 export function MobileNavigation({ role }: { role: WorkspaceRole | null }) {
   const pathname = usePathname();
@@ -145,47 +313,72 @@ export function MobileNavigation({ role }: { role: WorkspaceRole | null }) {
   return (
     <nav
       aria-label="Main"
-      // **Fixed to the bottom, and only below `md`.** Above it the sidebar is
-      // the navigation and a second one would be a second answer.
       className={cn(
         'fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-surface md:hidden',
-        // The safe area on a phone with a home indicator. Without it the last
-        // few pixels of the bar sit under the system gesture strip.
+        // The safe area on a phone with a home indicator.
         'pb-[env(safe-area-inset-bottom)]',
       )}
     >
-      {ITEMS.map((item) => {
+      {RAIL_DESTINATIONS.map((item) => {
         const guard = guardFor(item.href);
-        if (guard && !can(role, guard.requires as Capability)) return null;
-
+        const restricted = guard !== undefined && !can(role, guard.requires as Capability);
         const isActive = pathname === item.href;
         const Icon = item.icon;
 
+        const content = (
+          <>
+            <Icon className="h-5 w-5 shrink-0" aria-hidden />
+            <span className="max-w-full truncate px-1">{item.label}</span>
+          </>
+        );
+
+        // **`min-h-11` is the touch target**, not decoration: a control smaller
+        // than roughly 44px is one a thumb misses.
+        const shape = cn(
+          'flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2 text-2xs',
+          'transition-colors',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2',
+          'focus-visible:outline-accent',
+        );
+
+        if (restricted) {
+          return (
+            <span
+              key={item.id}
+              className={cn(shape, 'opacity-45 text-content-muted')}
+              aria-label={`${item.label} — restricted`}
+            >
+              {content}
+            </span>
+          );
+        }
+
         return (
           <Link
-            key={item.href}
+            key={item.id}
             href={item.href}
             aria-current={isActive ? 'page' : undefined}
-            className={cn(
-              // **`min-h-11` is the touch target**, not decoration: a control
-              // smaller than roughly 44px is one a thumb misses, and missing a
-              // navigation control is how a customer decides the product does
-              // not work on their phone.
-              'flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2 text-xs',
-              'transition-colors',
-              'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2',
-              'focus-visible:outline-accent',
-              isActive ? 'font-medium text-accent' : 'text-content-muted',
-            )}
+            className={cn(shape, isActive ? 'font-semibold text-accent' : 'text-content-muted')}
           >
-            <Icon className="h-5 w-5 shrink-0" aria-hidden />
-            {/* **The label stays.** An icon-only bar asks a first-time customer
-                to guess what a briefcase means, and *Your business* is not a
-                word an icon carries. */}
-            <span className="max-w-full truncate px-1">{item.label}</span>
+            {content}
           </Link>
         );
       })}
     </nav>
   );
+}
+
+/**
+ * ⚡ **The rail checks its own law at module load, in development only.**
+ *
+ * ⛔ **`railViolations` had no caller before this row** — it was a rule nobody
+ * ran. **The suite asserts it too**, and this makes a tenth destination or a
+ * third level fail the moment somebody adds one rather than at the next test
+ * run.
+ */
+if (process.env.NODE_ENV !== 'production') {
+  const problems = railViolations(RAIL_DESTINATIONS);
+  if (problems.length > 0) {
+    throw new Error(`The rail breaks its own law:\n  ${problems.join('\n  ')}`);
+  }
 }

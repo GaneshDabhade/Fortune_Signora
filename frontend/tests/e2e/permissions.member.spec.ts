@@ -40,15 +40,34 @@ test.describe('a member of the organization', () => {
     await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
   });
 
-  test('@journey is not offered Settings in the navigation', async ({ page }) => {
+  test('@journey sees Settings as restricted rather than absent', async ({ page }) => {
+    /**
+     * 🔴 **REVERSED by TASK-1439 under D-225.** This asserted Settings was
+     * absent. 📁 The App Shell design says the opposite — *"restricted
+     * destinations stay visible at 45% with a lock and explain on click"* —
+     * and [D-154](../../../docs/DECISION_REGISTER.md) settles which wins:
+     * *"if an existing visual implementation differs from the finalized
+     * design, the design wins. Always."*
+     *
+     * ⛔ **Nothing about REACHABILITY changed**, and the next test still
+     * proves it: there is no link to follow, and the server refuses the
+     * request regardless. **What changed is that a member is told the room
+     * exists and who holds the key.**
+     */
     await page.goto('/');
-    await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
-    await expect(
-      page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Settings' }),
-    ).toHaveCount(0);
-    await expect(
-      page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Attention' }),
-    ).toBeVisible();
+    const rail = page.getByRole('navigation', { name: 'Main' });
+    await expect(rail).toBeVisible();
+
+    // Visible, and not followable.
+    await expect(rail.getByRole('link', { name: 'Settings' })).toHaveCount(0);
+    await expect(rail.getByLabel(/Settings — restricted/)).toBeVisible();
+
+    // 📁 *"explain on click"* — and it names who can grant it, because a
+    // person who is only refused asks for the wrong thing or asks nobody.
+    await rail.getByLabel(/Settings — restricted/).first().click();
+    await expect(page.getByText(/available to an owner/i)).toBeVisible();
+
+    await expect(rail.getByRole('link', { name: 'Attention' })).toBeVisible();
   });
 
   test('@regression typing the settings address does not open it', async ({ page }) => {

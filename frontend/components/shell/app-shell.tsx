@@ -115,7 +115,10 @@ export function AppShell({
           </button>
         </div>
         <RegionBoundary subject="the navigation">
-          <Navigation role={role} />
+          {/* ⚡ **The rail is told it is collapsed rather than measuring it** —
+              TASK-1439. The frame owns the collapse state (`useRailCollapse`);
+              a second reader would be a second answer to the same question. */}
+          <Navigation role={role} collapsed={rail.collapsed} />
         </RegionBoundary>
       </aside>
 
