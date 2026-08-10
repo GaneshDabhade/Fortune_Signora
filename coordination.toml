@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "dc5e123"
+generated_from = "08d11ce"
 task_count     = 158
 
 [lane.Lane_A]
-notice             = "THE PATTERN YOU ASKED ME TO SEE IS REAL, AND IT IS TWO REMEDIES NOT ONE — C-1415. Measured from origin/main: GET /workspaces, the endpoint that lists the workspaces a caller belongs to, returns CursorPage of WorkspaceResponse, and WorkspaceResponse is exactly id, name, created_at, updated_at. So the switcher and the Settings identity block read the same four fields and neither finds what it […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-1411", "TASK-1442", "TASK-1448", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1420", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-1447", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
+notice             = "C-277 ANSWERED — and two of your three objections do not survive measurement, which is good news for the design and mildly awkward for the implementation. You were right to build it, right to revert it whole, and right to file rather than settle. THE VOCABULARY OBJECTION IS NOT THE DESIGN. Settings permissionRows is customer language throughout — View own accounts, note Records where they are […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
+backlog            = ["TASK-1411", "TASK-1442", "TASK-1448", "TASK-464", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-1447", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
 assigned_total     = 137
-claimable          = 26
+claimable          = 25
 claimable_now      = 25
-awaiting_sync      = 1
+awaiting_sync      = 0
 in_flight          = 78
 actionable         = 5
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 33
+blocked            = 34
 lane_utilization   = 15.6
-idle_prediction_days   = 3.7
+idle_prediction_days   = 3.6
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 3
@@ -46,8 +46,8 @@ supply_state       = "working"
 blocked            = 8
 lane_utilization   = 1.4
 idle_prediction_days   = 0.3
-dependency_wait_days   = 3.0
-blocked_duration_days  = 3.0
+dependency_wait_days   = 3.1
+blocked_duration_days  = 3.1
 critical_path_max      = 0
 
 [[task]]
@@ -245,16 +245,16 @@ on_integration = true
 [[task]]
 id            = "TASK-1412"
 title         = "Workflow 11 · Settings — workspace identity, users and roles"
-state         = "IN FLIGHT"
-declared      = "CLAIMED"
+state         = "BLOCKED"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
+estimated_ready = "— Lane A, 2026-08-10, claim released.** 🔴 **All three deliverables are"
+waiting_for    = "— Lane A, 2026-08-10, claim released.** 🔴 **All three deliverables are blocked, unsourced, or already built** — ✅ **measured by building, not by readi"
 blocked_days   = 0.0
 on_integration = true
 
@@ -357,15 +357,15 @@ on_integration = true
 [[task]]
 id            = "TASK-1420"
 title         = "Workflow 27 · Help Center — an answer for THIS workspace"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -1712,7 +1712,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-465"
@@ -2447,7 +2447,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 3.0
+blocked_days   = 3.1
 on_integration = true
 
 [[task]]
@@ -2496,7 +2496,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-906"
@@ -2511,7 +2511,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 3.0
+blocked_days   = 3.1
 on_integration = true
 
 [[task]]
@@ -2559,7 +2559,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 2.6
+blocked_days   = 2.7
 on_integration = true
 
 [[task]]
