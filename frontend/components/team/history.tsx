@@ -48,7 +48,23 @@ export function OrganizationHistory({
       </p>
     );
   }
-  if (entries.length === 0) {
+  /**
+   * 🔴 **[B-420](../../../docs/BUGS.md) — this guard HID the crash rather than
+   * catching it.**
+   *
+   * ⛔ **When the hook handed over the `CursorPage` envelope instead of an
+   * array, `entries.length` was `undefined`** — and `undefined === 0` is
+   * `false`, **so the envelope passed straight through this guard to the
+   * `for…of` below it.** ⚡ **A guard standing directly in front of the defect
+   * and waving it past is worse than no guard**: it is where a reader looks
+   * first and finds nothing wrong.
+   *
+   * ✅ **`Array.isArray` asks the question the `for…of` actually needs
+   * answered.** ⛔ **It is not defensive noise** — the hook's type is a claim
+   * about the wire, and this is the one place that claim meets reality before
+   * something iterates it.
+   */
+  if (!Array.isArray(entries) || entries.length === 0) {
     return (
       <p className="text-sm text-content-muted">
         Nothing has happened here yet. Inviting somebody, changing what they can do,

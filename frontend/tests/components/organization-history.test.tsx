@@ -193,3 +193,27 @@ describe('the states around it', () => {
     expect(container.querySelectorAll('section')).toHaveLength(2);
   });
 });
+
+describe('🔴 B-420 — the envelope that reached a `for…of`', () => {
+  it('⛔ survives being handed the CursorPage envelope instead of an array', () => {
+    /**
+     * ⚡ **The product owner opened `/settings/team` and it threw**:
+     * `entries is not iterable`. 📁 The hook declared `HistoryEntry[]` while
+     * the endpoint returns `CursorPage[...]`, and **the empty-state guard hid
+     * it**: `entries.length === 0` evaluates `undefined === 0` → `false`.
+     *
+     * ⛔ **This suite passed throughout, because every fixture it had was
+     * already an array.** 🔴 **A test that cannot see the real shape is
+     * asserting the wrong thing** — so this one hands over the shape the wire
+     * actually sent.
+     *
+     * ✅ **The hook is fixed and the compiler now catches it at the call
+     * site**; this asserts the component no longer CRASHES on it, which is
+     * what the customer experienced.
+     */
+    const envelope = { items: [], next_cursor: null } as unknown as HistoryEntry[];
+    expect(() =>
+      render(<OrganizationHistory entries={envelope} isLoading={false} isError={false} />),
+    ).not.toThrow();
+  });
+});

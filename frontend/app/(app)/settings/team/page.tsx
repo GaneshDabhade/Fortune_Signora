@@ -272,7 +272,11 @@ export default function TeamPage() {
         </CardHeader>
         <CardBody>
           <OrganizationHistory
-            entries={history.data ?? []}
+            // 🔴 B-420 — this was `history.data ?? []`, and `history.data`
+            // was the ENVELOPE. The hook declares `CursorPage<HistoryEntry>`
+            // now, so the compiler catches at this line what the wire was
+            // doing silently.
+            entries={history.data?.items ?? []}
             isLoading={history.isLoading}
             isError={history.isError}
           />

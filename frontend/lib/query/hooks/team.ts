@@ -232,12 +232,31 @@ export function useTransferOwnership(workspaceId: string | null) {
   });
 }
 
-/** What has happened to this organization. Everyone in it may read it. */
+/**
+ * What has happened to this organization. Everyone in it may read it.
+ *
+ * ## 🔴 [B-420](../../../../docs/BUGS.md) — this declared a bare array and the endpoint returns an envelope
+ *
+ * ⛔ **`GET /workspaces/{id}/history` is `response_model=CursorPage[...]`** —
+ * `{ items, next_cursor }` — **and this asked for `HistoryEntry[]`.** ⚡ **The
+ * product owner opened `/settings/team` and it threw**: `entries is not
+ * iterable`, because the envelope reached a `for…of`.
+ *
+ * ⚠️ **`apiRequest<T>` is a CLAIM about the wire, not a check of it.**
+ * TypeScript believed the claim, so nothing typed failed — and 🔴 **the
+ * component's empty-state guard hid it rather than catching it**:
+ * `entries.length === 0` evaluates `undefined === 0` → `false`, so the
+ * envelope passed straight through.
+ *
+ * ✅ **The pattern was already right two functions above** —
+ * `useWorkspaceMembers` reads `CursorPage<Membership>` — so this was a
+ * divergence inside one file rather than a missing convention.
+ */
 export function useOrganizationHistory(workspaceId: string | null) {
   return useQuery({
     queryKey: queryKeys.organizationHistory(workspaceId ?? ''),
     queryFn: () =>
-      apiRequest<HistoryEntry[]>(`/workspaces/${workspaceId}/history`, {
+      apiRequest<CursorPage<HistoryEntry>>(`/workspaces/${workspaceId}/history`, {
         workspaceId: workspaceId ?? undefined,
       }),
     enabled: workspaceId !== null,
