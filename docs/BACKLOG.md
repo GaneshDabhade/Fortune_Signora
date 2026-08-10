@@ -1847,13 +1847,14 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **Treating [TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes) as evidence of compliance because it was implemented, tested, covered, reviewed and accepted.** 📁 **[D-224](DECISION_REGISTER.md) §15: *"the final product must be judged against the finalized design, not against the historical task that produced the current code."*** ⚡ **Every gate passed on TASK-1400. None asked whether anything called it** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
-### TASK-1457 · The rail's third pinned utility — `Shortcuts`, which the design names and the rail omits
+### TASK-1458 · The rail's third pinned utility — `Shortcuts`, which the design names and the rail omits
 
 | | |
 |---|---|
 | **Classification** | ⛔ **MISSING IMPLEMENTATION** — the design names it; nothing renders it |
 | **Epic** | **Common Platform Foundation** |
 | **Module** | **`product_surface`** |
+| ⚠️ **Renumbered** | ⛔ **Opened as `TASK-1457` and corrected to `TASK-1458` on the poll that found it.** 📁 **`TASK-1457` was already allocated — to a row WITHDRAWN as a duplicate of [TASK-440](#task-440).** ⚡ **A withdrawn id stays allocated** ([§20e](../CLAUDE.md): *an id is immutable*), **and I took the next free number instead of the next unused one — which is the allocation defect the block scheme exists to make impossible inside a block too.** ✅ **Found by [`state-check`](../infra/state-check.py), not by a reader** |
 | **Status** | ✅ **`READY` — Lane C, 2026-08-10, from the navigation implementation audit.** ⚡ **A decomposition of already-approved design, never new scope** ([§20e](../CLAUDE.md)) |
 | **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/)** — **`railUtility` names exactly three: `Settings`, `Shortcuts`, `Docs & support`.** **§15 specifies the shortcuts surface itself; §02 specifies the `?` meta glyph on the rail entry** |
 | 🔴 **The measurement** | 📁 **`components/shell/navigation.tsx` `UTILITIES` holds TWO** — `Settings` → `/settings` and `Docs & support` → `/help`. ⛔ **`Shortcuts` is absent, and the file says why: *"`Shortcuts` still has none and stays absent rather than rendered as a dead end."*** ✅ **That reasoning was correct when written and is what this row resolves** |

@@ -1497,7 +1497,7 @@ updated      = 2026-08-10
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-465", "TASK-1418", "TASK-1430", "TASK-1445", "TASK-412", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-493", "TASK-495", "TASK-496"]
+backlog = ["TASK-465", "TASK-1418", "TASK-1430", "TASK-1445", "TASK-412", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-495", "TASK-496"]
 # ⚠️ TWO ADDITIONS, 2026-08-10 — both were READY and in NO queue, reported by QE
 #    and confirmed here by `state-check` rather than taken on trust.
 #
@@ -1862,15 +1862,11 @@ owner   = "Lane A"
 note    = "the filter strip — D-219 §6, ruled SECOND. Its prerequisite is genuinely unmet and is named rather than glossed: no module reads lib/shell/scope.ts, so the four chips would narrow nothing. It frees itself the moment one module does, with no further product decision. TASK-1405 is a candidate to assess when it lands, not an assertion"
 
 
-[[blocked]]
-task    = "TASK-1445"
-blocker = ["TASK-1442"]
+["TASK-1442"]
 owner   = "Lane A"
 note    = "the published keyboard map. G H / G F / G P / G A name rail destinations that do not exist until TASK-1439 rebuilds the rail, and Cmd-K is TASK-1442's to bind. Both blockers are this lane's own rows, so nothing outside Lane A gates it"
 
-[[blocked]]
-task    = "TASK-1430"
-blocker = ["an ADR — signora_platform/ is frozen"]
+["an ADR — signora_platform/ is frozen"]
 owner   = "Lane C"
 note    = "inbound rate limiting. Nothing guards Signora's own API; 38 files rate-limit OUTBOUND calls to vendors, which is the opposite concern. Four authentication journeys are on main and /sign-in accepts unlimited attempts. C-431 already records that no lockout capability exists, which is why screens 11 and 12 are excluded from Workflow 1 — this is the capability that makes them reachable"
 
@@ -1912,9 +1908,7 @@ note    = "M-U · The People experiences a customer opens"
 
 
 
-[[blocked]]
-task    = "TASK-465"
-blocker = ["TASK-464"]
+["TASK-464"]
 owner   = "Lane A"
 note    = "consumes TASK-464's output — its input does not exist yet, not a Product Office hold"
 
