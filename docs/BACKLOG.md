@@ -1858,6 +1858,31 @@
 | ✅ **Nothing is lost** | 📁 **Every measurement this row carried is already in TASK-1432**: the model is correct, the surface never arrived, and the consumer is the missing half. ⛔ **No content is folded across — a second copy is what caused this** |
 | ⚡ **The real work** | ➡️ **[TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope)**, unchanged, still correctly waiting on its consumer |
 
+### TASK-1461 · 🔴 SCRAP AND REBUILD · Two navigation generations are mounted at once, and CSS hides one
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **LEGACY IMPLEMENTATION CO-RESIDENT WITH THE FINALIZED ONE** — ⛔ **not a partial migration, and not a defect in either renderer** |
+| **Epic** | **Common Platform Foundation** |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-10.** ⛔ **No predecessor** — it depends on neither [TASK-1460](#task-1460) nor [B-428](BUGS.md) |
+| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/) §02, the `breakpoints` array, `Tablet & phone`** — ⛔ **read it; this row does not restate it** |
+| 🔴 **The design, verbatim** | 📁 **`{ name: 'Tablet & phone', range: '< 1024px', railW: '0', … lines: ['Rail becomes a sheet from a top-bar button.', …] }`** ⚡ **A sheet. From a top-bar button.** |
+| ⛔ **What is implemented instead** | 📁 **`navigation.tsx`:360 `MobileNavigation`** — **`fixed inset-x-0 bottom-0 … border-t … smalllaptop:hidden`.** 🔴 **A fixed BOTTOM BAR, hidden by CSS above 1024** |
+| ⚠️ **Where the bottom bar came from, so nobody restores it** | 📁 **[43 §4a](architecture/43-customer-experience.md), ruled 2026-08-03: *"the sidebar appears above it, the **bottom bar** below it"*** — ⛔ **at `768px`, Tailwind's old `md`.** ⚡ **That ruling was the PREVIOUS generation and was corrected 2026-08-10** ([B-428](BUGS.md)). ✅ **`MobileNavigation` is a faithful implementation of a superseded ruling, which is why it looks deliberate** |
+| 🔴 **Both are mounted simultaneously** | 📁 **`app-shell.tsx`:151 `<Navigation>` and :212 `<MobileNavigation>`** — ⛔ **neither conditionally rendered.** ⚡ **[B-233](BUGS.md) is what that cost**: the unseen renderer threw on every authenticated screen at every width, **because nothing ever asked it a question** |
+| ⛔ **An accessibility defect today** | 🔴 **Two `<nav aria-label="Primary">` landmarks at every viewport.** 📁 The design names exactly one — §02's *"The rail, labelled 'Primary'"* |
+| ⚡ **Delivers** | **① Delete `MobileNavigation` entirely** — component, export, mount, tests. **② A sheet opened from a top-bar button**, per §02. **③ Exactly one `Primary` landmark at every width** |
+| 🔴 **The trigger does not exist, and is part of this row** | 📁 **`lib/shell/top-bar.ts` defines five slots — `search · system-status · notifications · help · account`.** ✅ **[TASK-1440](#task-1440) correctly built only the five the design names for ≥1024**; the `<1024` trigger is this row's, not a sixth permanent slot |
+| 🔴 **What it must NOT do** | ⛔ **Do not restyle `MobileNavigation` into a sheet** — a bottom bar and a sheet are different structures. ⛔ **Do not hide either renderer with CSS.** ⛔ **Do not change `Navigation`'s ≥1024 behaviour** — [TASK-1439](#task-1439) shipped it from the design. ⛔ **Do not add rail destinations** — [C-269](LANE_COORDINATION.md) |
+| ✅ **Reuse, not rebuild** | 📁 **`components/ui/drawer.tsx` exists — assess it as the sheet's substrate before writing a new overlay.** ⚡ **`NAV_ITEMS` stays shared**: [B-233](BUGS.md) made the resolution common and this row must not re-fork it |
+| **Change Budget** | 🟢 **`components/shell/**`** · 🟢 its tests · 🟠 **`top-bar.ts` gains a `<1024` trigger — announce it** |
+| ✅ **Legacy-removal verification — a Definition-of-Done item, not a side effect** | ⛔ **`git grep -n MobileNavigation` returns ZERO.** **No export · no import · no mount · no test · no `smalllaptop:hidden` remnant** |
+| **Playwright coverage** | ⚠️ **The `<1024` half waits on [B-428](BUGS.md).** ✅ **Assertable TODAY at 1280: exactly one `nav[aria-label="Primary"]` in the DOM** — ⚡ **which fails against the current implementation, so it is the regression test for the whole row** |
+| ♿ **Accessibility** | **One primary landmark at every width · trigger keyboard-reachable and labelled · focus trapped in the open sheet and restored to the trigger on close** |
+| **Definition of Done** | **A customer below 1024 opens navigation from the top bar and it arrives as a sheet** · **the bottom bar does not exist in the codebase** · **certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **LEVEL 1/2 NOT VERIFIED by Lane C** — no authenticated session. ✅ **The product owner reports both generations visible in the running product, and the DOM evidence is consistent with that report** |
+
 ### TASK-1460 · 🔴 The layout grid the design specifies and the repository has never had
 
 | | |
