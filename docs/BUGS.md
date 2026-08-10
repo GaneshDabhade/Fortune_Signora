@@ -2701,6 +2701,23 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-427 · 🔴 A lane notice truncates silently, so the author believes it was delivered
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`infra/coordination.py`](../infra/coordination.py), the `notice` field |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **it is the channel [D-144](DECISION_REGISTER.md) makes a lane's whole poll.** ⚡ **A message that is silently dropped is worse than a channel that does not exist: the author stops looking for another way to send it** |
+| **Status** | ⚠️ **`OPEN` — Lane C, 2026-08-10, found by Lane A disproving this office's claim** |
+| **Found** | **2026-08-10.** 🔴 **This office told the product owner *"Lane A has what it needs"* about [B-424](#b-424). THAT WAS FALSE and Lane A said so: *"the reason I hadn't picked it up isn't the channel."*** |
+| **Steps** | **Append text to a lane's `notice` in [`notices.toml`](coordination/notices.toml) when the existing notice already exceeds the projection's cap. Publish. Read the notice back from `origin/coordination`** |
+| **Expected** | ✅ **Either the whole notice, or a visible marker that it was cut and where to read the rest** |
+| **Actual** | ⛔ **Measured: the published notice is 193 characters; [`notices.toml`](coordination/notices.toml) holds 6,242.** 📁 **Everything appended after the cap is gone with no error, no warning and no diff a reader would notice.** ⚡ **`--publish` reported success** |
+| 🔴 **What it cost, concretely** | ⛔ **B-424 sat 🔴 and unfixed for a full poll cycle.** **This office diagnosed the cause as *"the coordination ref carries zero bug ids"*, appended the whole briefing to Lane A's notice, published it, and reported the routing done.** ⚠️ **None of it was delivered.** ✅ **Lane A fixed B-424 by measuring the defect directly, which is the only reason the wrong diagnosis cost nothing further** |
+| ⚡ **And the real cause was simpler and also mine** | 📁 **[B-424](#b-424)'s ROW is not on `main` or `integration` — it exists only on `lane-c-sync`, one of eight unintegrated commits.** ⛔ **So the Task Claim Protocol could not see it, exactly as Lane A said.** **The channel was not the gap; the row never reached the branch a lane reads** — **[C-422](LANE_COORDINATION.md)'s class, turned on the register instead of the backlog** |
+| ✅ **What Lane A got wrong, stated because accuracy runs both ways** | ⛔ **[B-219](#b-219) IS published** — measured on both `origin/main` and `origin/integration`. **If it is theirs to take, it is readable now** |
+| ✅ **The fix, bounded** | **Make truncation impossible to miss: emit a marker naming what was cut, or refuse to publish a notice that exceeds the cap.** ⛔ **Not a redesign of the notice channel, and not bug ids in the projection** — ⚡ **that was the wrong diagnosis and it is withdrawn** |
+
 ### B-426 · The generator reports four correct states as a finding — "resolves to no lane"
 
 | | |
