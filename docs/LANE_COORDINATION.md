@@ -10552,6 +10552,33 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ⚠️ **Recorded as [C-1416](#c-1416)'s third instance** — 📁 **C-272 assumed an Executive Dashboard already built, [C-1415](#c-1415) assumed a workspace has region, environment and a fiscal calendar, and this assumes five roles.** **Three rows, three screens, two days, one shape.**
 
+## C-281 · Meilisearch is ratified as a vendor and unowned as a module, and a second datastore needs an exception a lane cannot grant
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, evaluating [TASK-496](BACKLOG.md) |
+| **Owner** | ⛔ **Product owner** — ⚡ **one half is an architecture decision and the other is a Principle 6 exception** |
+| **State** | 🟡 **`READY FOR PRODUCT DECISION`** |
+| **Blocks** | **[TASK-496](BACKLOG.md) only.** ✅ **Lane A continued down the queue** ([D-229A](DECISION_REGISTER.md)) |
+
+**What is NOT the problem.** ✅ **The vendor is ratified** — 📁 [09-build-vs-buy.md](architecture/09-build-vs-buy.md) — **so this is not a dependency question**, and it is deliberately not filed as one alongside [C-280](#c-280--two-of-task-493s-four-better-auth-plugins-do-not-ship-in-the-installed-version-so-adopting-them-is-a-dependency-decision), which is.
+
+**① The owning module is explicitly undecided.** 📁 **The row's own Module cell**: *"the index adapter's owning module is decided at decomposition, when a design says what is searched."* ⛔ **Building the adapter answers that**, and 📁 [§20e](../CLAUDE.md) is explicit: *"a dependency on a decision nobody has made is architectural however small the code would be."*
+
+**② A second datastore needs an exception, and stating one is not granting one.** 📁 **[§3](../CLAUDE.md) Principle 6 is a single PostgreSQL database**, and 📁 **[§8](../CLAUDE.md)**: *"Claude must never introduce a second datastore… without an explicit, approved exception."* ⚠️ **The row says the exception *"must be stated in the commit"*.** ⛔ **A lane can state it; only the product owner can approve it** — 📁 [§3](../CLAUDE.md): *"never silently work around a principle because compliance is inconvenient for the task at hand. If a principle appears to block a legitimate need, that is a signal to stop and raise it, not to route around it."*
+
+**The alternatives.**
+
+| | |
+|---|---|
+| **①** | ✅ **Grant the exception explicitly**, naming Meilisearch as a **derived index rather than a system of record** — ⚡ **which is the distinction Principle 6 actually protects**, and 📁 [§8](../CLAUDE.md) already phrases the danger as *"a cache used as a system of record"* |
+| **②** | **Defer, and keep the Postgres search path** — 📁 [450](architecture/450-global-search-traceability-audit.md) measured that it works, and ⛔ **[TASK-481](BACKLOG.md) shipped its surface against it** |
+
+**The recommendation, and it is input rather than authority** ([§20e](../CLAUDE.md)). ✅ **Option ①, with the exception worded as *derived index, never a system of record*** — ⚡ **because that is what makes it survivable**: the index can be dropped and rebuilt from Postgres at any time, so no customer data lives only there.
+
+🔴 **And the Security Invariant the row itself names is the reason this is worth ruling carefully**: ***"an index is a SECOND place tenant data lives — workspace scoping asserted at query time, not assumed."*** ⚠️ **Meilisearch has no RLS.** ⛔ **Every tenancy guarantee [§11](../CLAUDE.md) makes is a Postgres guarantee**, so the index reproduces none of them and the scoping must be proven in the adapter rather than inherited.
+
+
 ## C-280 · Two of TASK-493's four Better Auth plugins do not ship in the installed version, so adopting them is a dependency decision
 
 | | |
