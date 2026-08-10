@@ -17,10 +17,36 @@ import { describe, expect, it } from 'vitest';
 
 const SERVER = readFileSync(join(process.cwd(), 'lib', 'auth', 'server.ts'), 'utf8');
 
-describe('✅ the two capabilities that ship are registered', () => {
-  it.each(['twoFactor', 'multiSession'])('⚡ %s is registered', (plugin) => {
-    expect(SERVER).toContain(`${plugin}()`);
-    expect(SERVER).toMatch(new RegExp(`import \\{[^}]*${plugin}[^}]*\\} from 'better-auth/plugins'`));
+describe('✅ the capability that ships AND works is registered', () => {
+  it('⚡ multiSession is registered', () => {
+    expect(SERVER).toContain('multiSession()');
+    expect(SERVER).toMatch(/import \{[^}]*multiSession[^}]*\} from 'better-auth\/plugins'/);
+  });
+
+  it('🔴 twoFactor is NOT registered, because registering it broke registration', () => {
+    /**
+     * 📁 **[B-231](../../../docs/BUGS.md).** ⛔ **Every `POST /api/auth/sign-up`
+     * failed with `column "twoFactorEnabled" of relation "user" does not
+     * exist`** — the plugin needs schema and this repository has no route to
+     * create it.
+     *
+     * 🔴 **This test previously asserted the OPPOSITE and was green while
+     * registration was dead.** ⚡ **It asserted the plugin was imported and
+     * never touched Better Auth's database** — **a test of the configuration,
+     * not of the capability.** ⛔ **That is why the assertion is inverted here
+     * rather than deleted: the next reader needs to know it is absent on
+     * purpose.**
+     *
+     * ✅ **It returns when the schema mechanism does**, which is
+     * [C-280](../../../docs/LANE_COORDINATION.md)'s ADR.
+     */
+    // ⚠️ **Asserted against the IMPORT, not against the file's prose.** The
+    // comment recording why it is absent necessarily names it, and a
+    // `toContain` would match that — **a guard that fails on its own
+    // explanation is a guard nobody keeps.**
+    expect(SERVER).not.toMatch(/import \{[^}]*twoFactor[^}]*\} from 'better-auth\/plugins'/);
+    // ⛔ And no bare call survives in the plugins array.
+    expect(SERVER).not.toMatch(/^\s*twoFactor\(\),\s*$/m);
   });
 
   it('⛔ and they are imported from the vendor, never re-implemented', () => {

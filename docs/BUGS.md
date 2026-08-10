@@ -192,6 +192,40 @@ error: Your local changes to the following files would be overwritten by merge:
 
 **Why it was not caught earlier.** ⚠️ **§19 puts the coverage check on the implementing lane before handover, and names the command.** ⛔ **`make coverage-debt ARGS="action_batch"` would have printed both files in seconds.** ⚡ **This is the second consecutive cycle where a required gate that the lane owns was first run by QE** — [B-171](#b-171--a-new-test-types-the-coordination-module-as-moduletype-and-then-sets-an-attribute-on-it-so-mypy---strict-fails) was `mypy --strict`, this one is coverage. **QE is reporting the pattern, not only the row.**
 
+### B-231 · Registering Better Auth's `twoFactor()` plugin broke account registration outright
+
+| | |
+|---|---|
+| **Module** | `product_surface` — [`frontend/lib/auth/server.ts`](../frontend/lib/auth/server.ts) |
+| **Current assignee** | **Lane A** — and 🔴 **this lane shipped it**, in [TASK-493](BACKLOG.md), hours earlier |
+| **Severity** | 🔴 **Blocks a milestone.** ⛔ **Nobody could create an account** — the first journey in the product |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-10, in the slice that found it.** ⚠️ **QE verifies and closes** |
+| **Commit found** | Found by [TASK-475](BACKLOG.md)'s journeys running against the real stack |
+
+**Steps.** Register `twoFactor()` in `lib/auth/server.ts`, then complete `/register` with any valid details.
+
+**Expected.** 📁 **TASK-493's own Definition of Done**: *"Four capabilities registered and reachable, **zero journeys changed**."*
+
+**Actual.** ⛔ **Every `POST /api/auth/sign-up` failed**:
+
+```
+[Better Auth]: Failed to create user
+  error: column "twoFactorEnabled" of relation "user" does not exist
+```
+
+**Cause.** ⚡ **The plugin needs schema and this repository has no route to create it.** 📁 `0005_auth_schema.py` is explicit — *"this migration creates the schema and nothing inside it"*, **Better Auth owns its tables** — and ⛔ **there is no `better-auth migrate` step in `package.json`**, so a plugin that adds columns has nothing to add them.
+
+> 🔴 **Why the suite did not catch it, and this is the part worth keeping.** ⚡ **`vitest` passed throughout — 2607 green** — because [`auth-plugins.test.ts`](../frontend/tests/unit/auth-plugins.test.ts) asserts the plugin is **imported and registered** and **never touches Better Auth's database.** ⛔ **It was a test of the configuration, not of the capability.**
+>
+> ⚠️ **That is [§2](../CLAUDE.md)'s decorative class in its most expensive form**: **the test was green, the type checker was clean, the row's Definition of Done said *zero journeys changed*, and registration was dead.** ✅ **📁 [§19](../CLAUDE.md) is exactly right and this is the evidence**: *"The responsibility does not end with writing the tests. It includes executing them."*
+
+**Fix.** ⛔ **`twoFactor()` removed until its schema exists**, with the reason recorded where the next reader will be — in the plugins array itself, not only here. ✅ **`multiSession()` stays and is proven safe by the same journeys**: registration, verification and reset all pass with it registered.
+
+✅ **Verified by running the journeys**, not by reasoning: **7 of 7 green** against the lane's own stack afterwards, including `@journey somebody with no account can create one`.
+
+⚡ **The condition for its return is stated rather than remembered**: **when this repository has a mechanism that creates Better Auth's plugin schema**, `twoFactor()` can be registered again — ⛔ **and [C-280](LANE_COORDINATION.md)'s ADR should cover that mechanism, because `passkey` and `sso` will need the same thing.**
+
+
 ### B-230 · An account-level refusal carries the workspace id the design says it must not see
 
 | | |

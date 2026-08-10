@@ -1158,3 +1158,38 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ⚡ **`tests/unit/auth-plugins.test.ts` asserts that `passkey` and `sso` are NOT registered and that the package genuinely does not carry them.** ✅ **If a future upgrade ships them, the resolve-throws assertion breaks and the row becomes buildable** — ⛔ **until then it is what stops a later session quietly adding a dependency to satisfy a row that says all four ship.**
 
 ✅ **And it asserts the two the row named**: **RS256 stays pinned** ([ADR-0026](adr/0026-jwt-boundary-architecture.md)) and **no plugin brought an authorization model with it.**
+
+---
+
+## TASK-475 · The credential journeys, run rather than written *(2026-08-10)*
+
+📁 **[ADR-0406 §6](adr/0406-authentication-execution-modes.md) lists seventeen authentication journeys.** ✅ **Four were green and are NOT rewritten** — the row is explicit that this adds what is missing and leaves what works.
+
+### ⚡ What made the email-dependent journeys buildable
+
+📁 **Ten of the seventeen carry *"Needs: Dev email"*.** ✅ **`/dev/mailbox` renders what the process actually sent**, so a journey opens the link a customer would open.
+
+🔴 **This is not a bypass.** 📁 [`mailbox.ts`](../../frontend/lib/auth/mailbox.ts): *"Better Auth still mints the token, still builds the URL, still sets the expiry… only the last hop is local."* ⛔ **Nothing in the suite mints a token, writes a cookie or reaches into Better Auth's tables** — 📁 [§20e](../../CLAUDE.md): *test data enters the way a customer's data enters.* **The developer's mailbox is a door the product has.**
+
+⚠️ **It needed `SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox` in the lane's own `.env.local`** — the route `notFound()`s otherwise. ⛔ **A real transport this build ships, refused in deployed environments by `loadAuthConfig` itself**, so it cannot leak past development.
+
+### 🔴 The journeys found a defect this lane had shipped hours earlier
+
+⛔ **[B-231](../BUGS.md): registering `twoFactor()` in [TASK-493](../BACKLOG.md) broke account registration outright** — *`column "twoFactorEnabled" of relation "user" does not exist`* on every sign-up.
+
+⚡ **The unit suite was green throughout — 2607 tests — because it asserted the plugin was imported and never touched Better Auth's database.** ⛔ **A test of the configuration, not of the capability**, and 📁 [§19](../../CLAUDE.md) names exactly this: ***"The responsibility does not end with writing the tests. It includes executing them."***
+
+✅ **`twoFactor()` removed; `multiSession()` proven safe by the same journeys.**
+
+### ⚠️ Three failures were setup and one was a misread of the product, and the row's rule separated them
+
+📁 **The stopping rule**: *"a journey that needs its ASSERTIONS changed rather than its setup has found a behaviour change, and the slice stops."*
+
+| What failed | Which kind | What was done |
+|---|---|---|
+| `/signup`, `getByLabel(/email/)` | ⚡ **Setup** — the routes are `/register`, `/reset/:token`, and the labels are *Work email*, *New password* | ✅ **Corrected against the real forms** |
+| Button matcher missed *Update password* | ⚡ **Setup** | ✅ **Corrected** |
+| Sign-in after reset stayed on `/signin` | ⚠️ **Neither** — ⛔ **an unverified account cannot sign in, which is CORRECT**, and the journey had skipped verification | ✅ **The journey verifies first.** ⛔ **The assertion — *the new password works* — was not weakened** |
+| Registration failing outright | 🔴 **A behaviour change, and it was this lane's own** | ✅ **Fixed at the cause** ([B-231](../BUGS.md)), not asserted around |
+
+✅ **7 of 7 pass against the lane's own stack.** ⚠️ **Run headless, not headed** — there is no display in this environment — 📁 which [D-134](../DECISION_REGISTER.md) permits for certification and which is **stated rather than claimed as a headed review.**
