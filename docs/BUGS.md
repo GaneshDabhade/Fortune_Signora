@@ -2663,6 +2663,36 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-421 · `state-check` releases a parked row when ANY predecessor moves, not when all do
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`infra/state-check.py`](../infra/state-check.py) |
+| **Current assignee** | **QE** — 📁 **[§20e](../CLAUDE.md) names `state-check.py` in QE's row: *a defect in a gate is QE's to fix*.** ⛔ **Lane C authored the check and is deliberately NOT fixing it** |
+| **Severity** | 🟡 — ⛔ **wrong but survivable.** ⚡ **It cannot release a row by itself; it can only make a person do so.** 🔴 **And it nearly did: this office was one step from releasing three correctly-parked rows on its report** |
+| **Status** | ⚠️ **`OPEN` — reported by Lane C, 2026-08-10, confirmed by the product owner as an instrument defect rather than something to work around by editing task states** |
+| **Found** | **2026-08-10**, checking QE's finding ① row by row instead of releasing the batch |
+| **Steps** | **Park a row behind two predecessors. Move ONE of them to a handed-over state. Run `python3 infra/state-check.py`** |
+| **Expected** | ✅ **Silence. A dependent row is eligible only when EVERY required predecessor satisfies the release condition** |
+| **Actual** | ⛔ **The row is reported as *"parked behind a predecessor that has already been handed over"*.** 📁 **Measured on three rows at once: `TASK-1414` waits on `TASK-493`, still `READY` and unbuilt · `TASK-1415` and `TASK-1417` wait on `TASK-1411`, only `CLAIMED`. All three were reported; all three are correctly parked** |
+| ⛔ **Scope, stated because the product owner bounded it** | **The predecessor evaluation ONLY.** ⛔ **Not a redesign of the lifecycle state machine, and not a broadening of what the check covers.** ⚡ **It must not infer readiness from the first predecessor that changes** |
+| ✅ **The three rows stay parked** | **`TASK-1414`, `TASK-1415`, `TASK-1417` are unchanged and annotated with the unmet predecessor.** ⛔ **Another predecessor moving must not release them** |
+
+### B-422 · `state-check` assumes Product Office can never transition its own row, and D-022 says otherwise
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`infra/state-check.py`](../infra/state-check.py) |
+| **Current assignee** | **QE** — same reason as [B-421](#b-421) |
+| **Severity** | 🟡 — ⚡ **a false accusation rather than a missed defect, which is the safer direction but still teaches a reader to ignore the check** |
+| **Status** | ⚠️ **`OPEN` — reported by Lane C, 2026-08-10** |
+| **Found** | **2026-08-10**, against this office's own work — the check accused Lane C of an illegal mutation on a row Lane C legitimately owns |
+| **Steps** | **Have Lane C claim a Platform Foundation slice, implement it, and set `IN VALIDATION`. Run `state-check`** |
+| **Expected** | ✅ **Silence.** 📁 **[§20e](../CLAUDE.md) gives `IN VALIDATION` to *the lane*, and 📁 [D-022](DECISION_REGISTER.md) makes Lane C an implementing lane for Platform Foundation work — *"Lane C is rowed on the execution board for Platform Foundation work"*** |
+| **Actual** | ⛔ **`Product Office changed a lane-owned execution state: TASK-1455 (CLAIMED → IN VALIDATION)`** |
+| 🔴 **The real defect, named precisely** | ⛔ **The check tests WHO, and the rule is about WHICH ROW.** ⚡ **Lane C wears two hats — Product Office on other lanes' rows, implementing lane on its own Platform Foundation slices — and the check only knows the first.** ✅ **The condition that is genuinely illegal is *a lane transitioning a row it does not hold*, and that is checkable from [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md): `TASK-1455` names Lane C as the claiming lane** |
+| ⛔ **Do NOT weaken it globally** | **The product owner was explicit.** ⚡ **`Product Office edits another lane's row` must still fire** — [D-123](DECISION_REGISTER.md) is real and this office has done it. **The fix is to make the check understand ownership, not to exempt Lane C** |
+
 ### B-420 · The Team page's history region crashes — the hook claims an array and the endpoint is cursor-paginated
 
 | | |
