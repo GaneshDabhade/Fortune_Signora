@@ -1580,7 +1580,7 @@
 | **Design authority** | 📁 **App Shell `Rules` (2.4.1 · 2.4.3 · 2.4.7 · 2.1.2 · 4.1.3 · 1.4.13 · 2.5.8 · 1.4.10 · 2.2.6) and `landmarks`** |
 | **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-09** |
+| **Status** | ✅ **`CLAIMED` — Lane A, 2026-08-10, by the Task Claim Protocol, under [D-229A](DECISION_REGISTER.md).** ⚡ **Queue's next and in the coordination `backlog` array.** ⛔ **Accessibility is a defect class, never an enhancement** ([§20c](../CLAUDE.md)) — **so this does not wait on the frozen foundation**, the same basis [B-315](BUGS.md) and [B-312](BUGS.md) were fixed on this morning. **Was: `READY` — Lane C, 2026-08-09** |
 | 🔴 **The measurement** | ⛔ **Skip links: the design requires THREE — to content, to navigation, to the utility panel, visible on focus. `grep` finds NONE.** ⛔ **`nav` is labelled `"Main"`; the design says `"Primary"`.** ⛔ **No `search` landmark.** ⛔ **Nothing announces a route change politely (4.1.3)** |
 | ⚡ **Delivers** | **The three skip links · the design's landmark names · the 2px brand focus ring at 2px offset, never suppressed · a polite route-change announcement · reflow to 320px at 400% zoom** |
 | ✅ **What already holds** | 📁 **`ErrorBoundary region=` per shell region is in place, and rule 13 — *errors render inside the shell unless the shell itself failed* — is satisfied** |
