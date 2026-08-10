@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "a4c1f51"
+generated_from = "079c5a1"
 task_count     = 158
 
 [lane.Lane_A]
-notice             = "D-226 RULED — ONE EXECUTION MODEL, AND THE GATE IS GONE. D-169 is authoritative; the D-153/D-160 rule that only an active workflow may be built in, and that the next workflow needs product owner review, is SUPERSEDED. Retired behaviour, named exactly: workflow N, PO review, manually activate N+1, then Lane A may begin. Current behaviour: workflow N completes, independently executable backlog work […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-1411", "TASK-1442", "TASK-1448", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-1446", "TASK-1447", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
+notice             = "TWO ROWS RELEASED AND THE ENTRY FIGURE CORRECTED. Settings (workflow 11) and Help Center (workflow 27) were both parked behind the Application Shell, which is VERIFIED and promoted at e72b6af0. Verified by CONTENT rather than by the status string: git ls-tree origin/main returns components/shell/app-shell.tsx, navigation.tsx, route-guard.tsx, workspace-selector.tsx and lib/shell constitution, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
+backlog            = ["TASK-1439", "TASK-1411", "TASK-1442", "TASK-1448", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-1446", "TASK-1447", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-1452", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
 assigned_total     = 137
-claimable          = 26
-claimable_now      = 25
-awaiting_sync      = 1
+claimable          = 28
+claimable_now      = 26
+awaiting_sync      = 2
 in_flight          = 74
 actionable         = 5
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 37
+blocked            = 35
 lane_utilization   = 14.8
-idle_prediction_days   = 3.7
+idle_prediction_days   = 4.0
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 4
@@ -40,11 +40,11 @@ claimable_now      = 2
 awaiting_sync      = 0
 in_flight          = 7
 actionable         = 1
-awaiting_qe_transition = 0
+awaiting_qe_transition = 7
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 8
-lane_utilization   = 1.4
+lane_utilization   = 0.0
 idle_prediction_days   = 0.3
 dependency_wait_days   = 3.0
 blocked_duration_days  = 3.0
@@ -185,7 +185,7 @@ state         = "IN FLIGHT"
 declared      = "VERIFIED"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-1412", "TASK-1415", "TASK-1417", "TASK-1420"]
+unblocks       = ["TASK-1415", "TASK-1417"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
@@ -245,18 +245,18 @@ on_integration = true
 [[task]]
 id            = "TASK-1412"
 title         = "Workflow 11 · Settings — workspace identity, users and roles"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
-depends_on     = ["TASK-1408"]
+depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 1
-estimated_ready = "when TASK-1408 complete"
-waiting_for    = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for), Lane C 2026-08-09.** ⛔ **It is a full page inside"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1414"
@@ -357,18 +357,18 @@ on_integration = true
 [[task]]
 id            = "TASK-1420"
 title         = "Workflow 27 · Help Center — an answer for THIS workspace"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
-depends_on     = ["TASK-1408"]
+depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 1
-estimated_ready = "when TASK-1408 complete"
-waiting_for    = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for)**"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1421"
@@ -640,7 +640,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1440"
@@ -896,7 +896,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-200"
@@ -2352,7 +2352,7 @@ critical_path  = 0
 estimated_ready = "on [C-1413](LANE_COORDINATION.md) — Lane C, 2026-08-10, withdrawing it"
 waiting_for    = "on [C-1413](LANE_COORDINATION.md) — Lane C, 2026-08-10, withdrawing its own `READY`.** ⛔ **The row contradicts itself: its Change Budget names 🟢 `modu"
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-413"
