@@ -1054,6 +1054,22 @@ Found 5 errors in 1 file (checked 854 source files)
 
 **The dashboard carried 54 ADRs and 147 numbered architecture documents.** **`git ls-tree` returns 53 and 145 — and returns the same pair at `cea60d41`, `57d6bc85` and `HEAD`.** ⛔ **So they did not change this cycle; they had been carried forward.** The ADR count was including `adr/README.md`. ⚡ **A measured figure that never moves is the one to re-measure.**
 
+### ⚠️ Synchronization required a lease-protected rewrite of `integration`
+
+**Lane A pushed `785ae051` — a bounded claim for [TASK-465](docs/BACKLOG.md) — onto `integration` *after* promotion and while Closeout was being written.** ✅ **Legitimate: a claim-only commit is the one thing a lane may push to `integration`** (§20e), and it touched `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md` and nothing else.
+
+⛔ **It was based on the pre-promotion `342872ec`, so `integration` could no longer fast-forward.** **Closeout step 10 — *rebase `integration` onto `main`, always* — replayed it as `7128bd1f`.**
+
+**Publishing the replay needed a rewrite of the shared ref, so it was pushed under a lease pinned to the exact SHA it expected to replace:**
+
+```
+git push --force-with-lease=integration:785ae051 origin integration
+```
+
+⚡ **The lease is what makes this safe rather than merely careful: had Lane A pushed again first, the push would have refused instead of overwriting them.** ✅ **Survival was verified by content, not by subject** — the claim's file list and its board and backlog additions were byte-compared against Lane A's original and are identical. ⛔ **`--force` was not used, the lease was not broadened, and no certified commit was touched.**
+
+⚠️ **Between promotion and that push, `origin/integration` pointed at a pre-promotion tree** — a lane polling in that window would have seen Reports and Saved View as absent and could have rebuilt them. **That window is the cost of writing Closeout before synchronizing, and it closes at stage 6 rather than stage 5.**
+
 ### ✅ The execution board had accumulated 38 stale rows, and a better rule cleared them
 
 **`ACTIVE_ASSIGNMENTS.md` carried 47 rows in `Current`; 9 describe live work.** ⛔ **The rest were assignments to work that had already reached `main`** — exactly what §20e forbids: *"no lane may remain assigned to work that has reached `main`, and no stale assignment is left behind."*
