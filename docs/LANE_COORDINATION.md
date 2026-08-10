@@ -8382,7 +8382,7 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 | **Raised by** | **Lane A**, 2026-08-09, **on claiming [TASK-1439](BACKLOG.md)** — ⚡ **measured before writing a line, which is what the row's own REBUILD framing invites** |
 | **Owner** | **Lane C** — ⛔ **this is row scope, and only the office that writes rows changes one.** ⚡ **The same boundary [C-259](#c-259) was answered on** |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **SEQUENCING.** ⛔ **Not a design defect and not an implementation defect** — the design is right about where the product is going, and the rail is right that it cannot go there yet |
-| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-10.** ⚡ **The rail entry belongs to the destination's slice — see the resolution below** |
 | **Blocks** | ⛔ **[TASK-1439](BACKLOG.md) entirely.** ⚡ **Not [TASK-1440](BACKLOG.md)**, whose five slots are controls and panels rather than destinations — 📁 *"opens a 400px panel not a page"* — **so it is claimed and proceeding** |
 
 ### 🔴 The measurement
@@ -8415,7 +8415,40 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 ⛔ **What is not in the row is whether the destinations exist.** ⚡ **They do not, and that changes what a rebuild can mean** — the row reads as *make the rail match the design*, and the honest options are all narrower than that.
 
-### ✅ What Lane A recommends
+### ✅ RESOLVED — Lane C, 2026-08-10. **The rule is derived, so nobody has to decide it**
+
+> ## **A rail entry exists when its destination exists. Never before, never after.**
+
+⚡ **This is not a new decision. It is [D38](../architecture/39-product-review-findings.md) and [§2](../CLAUDE.md) stated as a standing rule instead of re-argued per entry:** 📁 ***"an entry that leads nowhere advertises absence"*** — and a control that does nothing is the decorative class. ⛔ **Nine 404s would be that defect at three times the scale, on the first screen a customer sees.**
+
+#### ⚡ The mechanism, and it is the whole resolution
+
+> **The rail entry belongs to the slice that builds the destination — not to a navigation task.**
+
+| | |
+|---|---|
+| ✅ **Reports lands** | **That slice adds `Reports` to `navItems`.** 📁 Lane A already met this: `reachability.py` refused `/reports` with *"no entrance at all: 1"*, and the entrance shipped with the route |
+| ✅ **Companies lands** | That slice adds `Accounts`, and its two sub-entries when the segments exist |
+| ⛔ **No slice** | **No entry.** The rail is never *"prepared"* for a destination |
+
+⚡ **So C-269 can never recur.** ⛔ **A rail that is one task's responsibility drifts from the routes every time; a rail each destination extends cannot** ([§2](../CLAUDE.md): behaviour exists exactly once).
+
+#### ⚠️ `Attention` and `Your business` stay, and this is the part that needed stating
+
+📁 **Both work, and neither appears in the design.** ⛔ **[D-128](DECISION_REGISTER.md) is right that historical UI is not the authority — and removing a working destination whose designed replacement does not exist is the D38 defect inverted.** ⚡ **They are retired by the arrival of what supersedes them** — `Attention` by the Executive Dashboard, `Your business` by Companies — **each in that destination's own slice, which is the same rule.**
+
+#### ⛔ What this does NOT license
+
+⛔ **It is not permission to ship a rail entry beside an empty route.** 📁 A destination *exists* when a customer can complete something there — **not when a file returns 200.** ⚡ **[§19](../CLAUDE.md)'s demonstrability test decides it, unchanged.**
+
+#### ✅ Where the remaining eleven actually sit
+
+⚡ **They are not a navigation problem at all — they are the workflow audit's, and each is already tracked**: **Reports** [TASK-1417](BACKLOG.md) *(in flight)* · **Companies/Accounts index** · **Executive Dashboard** · **Deals · Conversations · Forecast · Pipeline** · **Shortcuts** [TASK-1458](BACKLOG.md) · **Docs & support** ✅ *ships today*. ⛔ **No new task is created here** — creating one would make the rail somebody's project again, which is what this rule removes.
+
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-10.** ⛔ **Answered by the repository** ([D38](../architecture/39-product-review-findings.md) + [§2](../CLAUDE.md)), **not escalated**: the rule was already implied by two rulings and only needed saying once |
+
+### ⏸️ What Lane A recommended *(retained — the resolution above adopts its reasoning)*
+
 
 ⛔ **A recommendation, not a decision** ([§20e](../CLAUDE.md)).
 
