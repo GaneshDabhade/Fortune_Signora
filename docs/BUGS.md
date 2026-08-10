@@ -3224,6 +3224,48 @@ def _load_state_check() -> ModuleType:
 
 📁 **Design System v2 ships `2xl: "1920px"`. `tailwind.config.ts` defines four screens and stops at 1600.** ⚡ **Small, real, and separate from everything above.**
 
+### B-429 · 🟠 The user menu drops the design's first fact, on a premise the registration form disproves
+
+| | |
+|---|---|
+| **Module** | `product_surface` — [`frontend/components/shell/account-menu.tsx`](../frontend/components/shell/account-menu.tsx) · [`frontend/app/(app)/layout.tsx`](../frontend/app/(app)/layout.tsx):37 |
+| **Current assignee** | **Lane A** — `product_surface` is this lane's in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — **a stated design requirement is absent from a shipped screen** |
+| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-10, from the global-UX reconciliation |
+| **Commit found** | [TASK-1440](BACKLOG.md), `PROMOTED` |
+
+#### 📁 The design requirement
+
+**App Shell §11, `userSpecs` → `Content rules`:** ⚡ ***"Always states name, email, role and workspace."*** **Four facts. The mock renders all four** — *"MR · Marta Reinhardt · marta@northwind.com · Admin · Northwind Global"*.
+
+#### ✅ Three of four ship, and the implementation is otherwise faithful
+
+⛔ **This is NOT a legacy component and must not be rebuilt.** 📁 It quotes the design verbatim in its own docstring and delivers **280px right-aligned · email · role as a brand-tint chip (`bg-accent-subtle text-accent`) · workspace name · a three-way segmented theme control** rather than a toggle · **sign out below a hairline**. ✅ **[TASK-1440](BACKLOG.md) built this from the finalized design and got it right.**
+
+#### 🔴 The defect is the reason given for the fourth
+
+📁 **`account-menu.tsx`:155, in the code:**
+
+> ***"Name is not stated, because the platform does not publish one — the session carries an email and nothing else. Inventing a display name from the local part would be the shell asserting a fact about a person it does not have."***
+
+⛔ **The reasoning is sound and the premise is false.**
+
+| Evidence | |
+|---|---|
+| 📁 `register-form.tsx`:63 | ⚡ **Registration REQUIRES it** — *"Enter your full name."* **No account exists without one** |
+| 📁 `profile/page.tsx`:36 | ✅ **Another route in this application reads `user?.name` from the same session** |
+| 📁 **`app/(app)/layout.tsx`:37** | 🔴 **The root cause, and it is one line**: `<AuthenticatedShell email={session.user.email}>` — **`session.user.name` is in scope on that line and is not passed** |
+
+⚡ **So the shell's own composition drops the fact one line before the menu needs it**, and the comment then explains the absence as a platform limitation. ⛔ **The guard was honest; the measurement behind it was never taken.**
+
+#### The fix
+
+✅ **Thread `name` from `layout.tsx` through `AuthenticatedShell` to `AccountMenu`, and render it above the email as the design's identity block draws it.** ⛔ **Do not derive a name from the email local part** — that half of the comment is correct and stays.
+
+#### ⚠️ Why this is worth a row rather than a silent patch
+
+📁 **[§2](../CLAUDE.md): *a comment justifying absent behaviour is a false claim sitting in the codebase*.** ⚡ **The comment will outlive the fix unless it is removed with it** — and it currently reads as a considered design decision, which is how it survived review and promotion.
+
 ### B-427 · 🔴 A lane notice truncates silently, so the author believes it was delivered
 
 | | |
