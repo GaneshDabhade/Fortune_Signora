@@ -3169,6 +3169,61 @@ def _load_state_check() -> ModuleType:
 
 ⛔ **A `[[blocked]]` entry naming a blocker that is stale but NOT in the claimable array is still invisible.** ⚡ **The derived array is the only signal this check has**, and a genuinely-blocked row has no derived counterpart to disagree with. **Named as a limitation, not left to be discovered.**
 
+### B-428 · 🔴 The responsive verification was declared missing in writing, and the milestone shipped anyway
+
+| | |
+|---|---|
+| **Module** | **Repository-wide** — `frontend/playwright.config.ts` · [`43-customer-experience.md` §4a](architecture/43-customer-experience.md) |
+| **Current assignee** | **QE** — 📁 `playwright.config.ts` decides what certification means, and [§20e](../CLAUDE.md) makes a gate QE's |
+| **Severity** | 🔴 — ⛔ **an entire verification class is absent, not weak** |
+| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-10, on the product owner's responsive-fidelity audit |
+| **Found** | **By the product owner using the product at different widths** — ⚡ **the fifth defect this repository has found that way and the suite did not** |
+
+#### 🔴 The answer to *"why does a non-responsive UI pass green tests?"*
+
+⛔ **Neither the implementation nor the tests are wrong in the way expected. The verification was declared missing seven days ago, in writing, and the milestone was marked shipped anyway.**
+
+📁 **[43 §4a](architecture/43-customer-experience.md):337, written 2026-08-03 — the same day CX-07 was marked ✅ Shipped:**
+
+> ***"No test in this repository can see a reflow. jsdom computes no layout, so every assertion here is on markup and class strings; what a screen looks like at 320px is verifiable only in a browser, and Playwright cannot start on this machine. A Playwright viewport check is the missing half, recorded for QE rather than left implied."***
+
+⚡ **It was recorded honestly and never built.** ⛔ **`Playwright cannot start on this machine` is no longer true** — it runs today, and 2696 tests pass at one width.
+
+#### ✅ The measurement
+
+| | |
+|---|---|
+| **Playwright viewport** | 📁 `playwright.config.ts`:148 — **`{ width: 1280, height: 900 }`, inherited by every project** |
+| **Tests below 1280** | ⚡ **Two.** Both in `workflow1-login.spec.ts`, both at 390px |
+| ⛔ **And the sharpest part** | **The one screen verified responsively is the only screen with no App Shell.** 🔴 **Every screen that HAS a rail, top bar, filter strip or utility panel is verified at 1280 and nowhere else** |
+| ✅ **Those two tests are GOOD** | 📁 They assert real geometry — `boundingBox().width === 400`, computed `border-radius`, `border-top-width`, `box-shadow`. ⛔ **The problem is not assertion quality. It is that there are two of them** |
+| **`tests/components/*.test.tsx`** | ⚠️ **Vitest in jsdom — no layout engine.** `mobile-navigation` · `app-shell-rail` · `shell-banners` **cannot detect overflow, collision, distortion or compression at any width.** ✅ **§4a says so itself** |
+
+#### ⚠️ §4a's own ruling is now stale, and it is the document the ruling lives in
+
+📁 **§4a, ruled 2026-08-03:** *"Supported: `320px` and up"* · *"The breakpoint that matters is **`768px` (`md`)** — the sidebar appears above it, the bottom bar below it."*
+
+⛔ **`768` exists in neither the finalized design nor the implementation.** ⚡ **It was Tailwind's default `md`, and [TASK-1443](BACKLOG.md) replaced the default set on 2026-08-10.**
+
+| | Floor | Navigation switch |
+|---|---|---|
+| **43 §4a** *(ruled)* | **320px** | **768** ⛔ **no longer exists** |
+| **Design System v2** | **`sm` 640** | **`md` 1024** |
+| **App Shell design** | *"Below 640px: review, approve, comment and ask only"* | ***"< 1024px: rail becomes a sheet"*** |
+| **Implementation** | `phone` 640 | `smalllaptop` 1024 |
+
+✅ **The design and the implementation AGREE** — 640 · 1024 · 1280 · 1600, identical values. ⛔ **§4a agrees with neither**, and it is the document a lane would read to learn what responsive means here.
+
+#### ✅ What is NOT wrong, stated so nobody re-finds it
+
+⛔ **The breakpoint vocabulary difference is NOT a defect.** 📁 The design ships `sm/md/lg/xl`; the implementation uses `phone/smalllaptop/laptop/desktop`. **The VALUES map 1:1** — this is [§20e](../CLAUDE.md)'s *"different names represented the same design concept"*, and calling it a defect would be a false finding.
+
+⛔ **There are ZERO orphaned breakpoint classes.** ⚠️ **This office reported six earlier today and was wrong** — `sm:`/`md:`/`lg:` in `button.tsx` and `avatar.tsx` are **size-prop record keys, not Tailwind classes**, and the `navigation.tsx` hit is a comment recording a fix. ✅ **[B-424](#b-424) held.**
+
+#### ⛔ One real implementation gap
+
+📁 **Design System v2 ships `2xl: "1920px"`. `tailwind.config.ts` defines four screens and stops at 1600.** ⚡ **Small, real, and separate from everything above.**
+
 ### B-427 · 🔴 A lane notice truncates silently, so the author believes it was delivered
 
 | | |

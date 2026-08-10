@@ -285,8 +285,8 @@
 
 | | |
 |---|---|
-| **Supported** | **`320px` and up.** A phone in portrait is a first-class viewport, not a courtesy |
-| **The breakpoint that matters** | **`768px` (`md`)** — the sidebar appears above it, the bottom bar below it. **Exactly one navigation exists at any width** |
+| **Supported** | **`320px` and up.** A phone in portrait is a first-class viewport, not a courtesy. ⚠️ **Reconciled 2026-08-10**: the finalized design's lowest named breakpoint is `sm` 640 and it states what happens beneath it — 📁 *"Below 640px: review, approve, comment and ask only."* ✅ **Both are true and neither is withdrawn**: 320 is the floor the layout must not break at; 640 is where the product deliberately narrows to four verbs |
+| **The breakpoint that matters** | ⛔ **CORRECTED 2026-08-10 — this cell said `768px` (`md`), and `768` no longer exists.** ⚡ It was Tailwind's default `md`, and [TASK-1443](../BACKLOG.md) replaced the default set. ✅ **The switch is `1024px`** — 📁 the App Shell design: *"< 1024px: rail becomes a sheet from a top-bar button"*, and Design System v2 names that breakpoint `md`. ⚠️ **The RULE this cell states is unchanged and still binds: exactly one navigation exists at any width.** ⛔ **Only the number was wrong, and it was wrong in the direction that matters** — a lane implementing 768 would switch the navigation 256px late |
 | **Touch target floor** | **`44px`** (`min-h-11`). A control smaller than that is one a thumb misses |
 | **What this makes of [B-203](../BUGS.md)** | **A defect**, not a non-goal. It was 🟠 and explicitly undecided; the decision closes it |
 

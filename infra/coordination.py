@@ -211,7 +211,7 @@ def _rewrite_queue_backlog(lane: str, ids: list[str]) -> bool:
 
 
 def _queue_contradictions(lane: str, ids: list[str]) -> list[str]:
-    """Tasks a queue file calls claimable AND blocked at once. **B-428.**
+    """Tasks a queue file calls claimable AND blocked at once. **B-425.**
 
     ⛔ **Half this file is derived and half is hand-written, so the two halves
     can disagree** — and they did. `backlog` became derived at B-423;
@@ -1482,7 +1482,7 @@ def main() -> int:
     # ✅ **B-423's derivation, applied on the WRITE path only** — B-174.
     for _lane, _ids in _PENDING_QUEUES.items():
         _rewrite_queue_backlog(_lane, _ids)
-        # ✅ **B-428** — the derived half and the written half, compared.
+        # ✅ **B-425** — the derived half and the written half, compared.
         for _task in _queue_contradictions(_lane, _ids):
             print(
                 f"coordination: CONTRADICTION for {_lane} — {_task} is in `backlog` "
