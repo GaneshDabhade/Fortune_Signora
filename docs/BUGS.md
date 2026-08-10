@@ -2559,6 +2559,29 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-415 · Seven rulings are cited across the repository and have no row in the decision register
+
+| | |
+|---|---|
+| **Module** | **`docs/DECISION_REGISTER.md`** — Product Office's register |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟡 — ⛔ **wrong but survivable.** ⚡ **Every one is cited with its substance beside it, so no lane has been misled** — **but a cold session following the citation reaches nothing, and the register is the one place a ruling is supposed to be findable** |
+| **Status** | ⚠️ **`OPEN` — Lane C, 2026-08-10.** ✅ **Three of the ten found were recorded in the same change (D-225, D-227, D-228), because the product owner's exact words were available to source them from.** ⛔ **The other seven are NOT recorded and must not be reconstructed from citation context** |
+| **Found** | **2026-08-10, measuring citations against register rows after [D-228](DECISION_REGISTER.md) §5 returned this lane to normal governance** |
+| **Steps** | **Parse `^\| \*\*(D-\d+)\*\*` from `DECISION_REGISTER.md`; parse `\bD-\d{3}\b` from every `docs/**/*.md` and `CLAUDE.md`; subtract** |
+| **Expected** | **Every cited ruling resolves to a row** |
+| **Actual** | ⛔ **211 recorded, 221 cited.** **Unrecorded: `D-132` · `D-159` · `D-190` · `D-200` · `D-218` · `D-222` · `D-224`** |
+
+> ## ⛔ **These are NOT being reconstructed from context, and that is the point of the row rather than a limitation of it.**
+
+📁 **[§21](../CLAUDE.md): *"When information required to proceed correctly is missing from the documentation, say so and propose a `TODO`, rather than filling the gap with an assumption."*** ⚡ **A ruling is the product owner's words. A register row inferred from how other documents cite a ruling is a paraphrase wearing a citation's clothes** — and [§6](../CLAUDE.md)'s repaired paraphrase defect ([D-112](DECISION_REGISTER.md)) is what that costs: *"a second paraphrase is the same defect one generation later."*
+
+✅ **What each one needs is the original directive text.** ⚠️ **`D-222` and `D-224` are the most reachable** — this lane cited both in commit messages on 2026-08-09/10 and the substance is in those bodies, but **the ruling text itself came from a session this lane does not hold.**
+
+⛔ **Nothing is blocked by this.** **The rulings are being obeyed** — `D-224` shaped TASK-1456 into an audit, `D-218` and `D-222` are cited in live rows — **so this is a findability defect, not a compliance one.**
+
+---
+
 ### B-414 · A trigger steward became an executor, and the ref offered Lane C a module it may not build
 
 | | |
