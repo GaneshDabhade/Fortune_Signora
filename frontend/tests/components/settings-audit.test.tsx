@@ -22,6 +22,10 @@ const entry = (over: Partial<HistoryEntry> = {}): HistoryEntry => ({
   subject_membership_id: 'mem_2',
   previous_role: 'member',
   new_role: 'owner',
+  // ⚡ **The wire carries a reason on every entry**, and the fixture states it
+  // rather than letting `Partial` quietly make the field optional — the same
+  // slip the entry fixtures made one row earlier.
+  reason: null,
   ...over,
 });
 
@@ -49,7 +53,7 @@ describe('🔴 the record that had no door', () => {
      * values."* ⚡ **The platform publishes `previous_role` and `new_role`**,
      * so that half is real rather than promised.
      */
-    historyState = { data: { items: [entry()], next_cursor: null }, isLoading: false, isError: false };
+    historyState = { data: { items: [entry()], next_cursor: null, has_more: false }, isLoading: false, isError: false };
 
     render(<AuditLogPage />);
 
@@ -60,7 +64,7 @@ describe('🔴 the record that had no door', () => {
   it('⛔ states that entries cannot be edited, because that is the claim being made', () => {
     // ⚡ **An audit log's only value is that nobody can change it**, so the
     // page says so rather than leaving a reader to assume it.
-    historyState = { data: { items: [entry()], next_cursor: null }, isLoading: false, isError: false };
+    historyState = { data: { items: [entry()], next_cursor: null, has_more: false }, isLoading: false, isError: false };
 
     render(<AuditLogPage />);
 
@@ -76,7 +80,7 @@ describe('⛔ what the platform cannot answer is shown locked, never invented', 
      * screen whose entire value is that it does not make things up** — and a
      * customer would rely on it.
      */
-    historyState = { data: { items: [entry()], next_cursor: null }, isLoading: false, isError: false };
+    historyState = { data: { items: [entry()], next_cursor: null, has_more: false }, isLoading: false, isError: false };
 
     const { container } = render(<AuditLogPage />);
 
@@ -85,7 +89,7 @@ describe('⛔ what the platform cannot answer is shown locked, never invented', 
   });
 
   it('⚡ every locked field carries its reason — a lock without one is worse than absence', () => {
-    historyState = { data: { items: [], next_cursor: null }, isLoading: false, isError: false };
+    historyState = { data: { items: [], next_cursor: null, has_more: false }, isLoading: false, isError: false };
 
     render(<AuditLogPage />);
 
@@ -113,7 +117,7 @@ describe('♿ the states every route owes', () => {
   });
 
   it('⚡ and a genuinely empty log is not mistaken for a failure either', () => {
-    historyState = { data: { items: [], next_cursor: null }, isLoading: false, isError: false };
+    historyState = { data: { items: [], next_cursor: null, has_more: false }, isLoading: false, isError: false };
 
     render(<AuditLogPage />);
 
@@ -122,7 +126,7 @@ describe('♿ the states every route owes', () => {
 
   it('⛔ no workspace is its own answer, not an empty audit log', () => {
     workspaceState = { activeWorkspace: null, isLoading: false, error: null };
-    historyState = { data: { items: [], next_cursor: null }, isLoading: false, isError: false };
+    historyState = { data: { items: [], next_cursor: null, has_more: false }, isLoading: false, isError: false };
 
     render(<AuditLogPage />);
 
