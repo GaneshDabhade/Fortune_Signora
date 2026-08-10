@@ -65,6 +65,8 @@ Events are listed in pipeline order. Payload fields below are illustrative and i
 | `business_event.superseded` | Business Event Engine | Signal Engine, Timeline | `business_event_id`, `supersedes`, `entity_id`, `type_key` |
 | `signal.generated` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `entity_id`, `signal_type`, `relevance`, `relevant_until`, `catalog_version`, `profile_version` — see the M5A section below |
 | `signal.superseded` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `supersedes`, `entity_id`, `signal_type` |
+| `action_batch.applied` | Action Batch | Timeline | `batch_id`, `name`, `item_count`, `approved_by`, `reversible_until` — see the R-03 section below |
+| `action_batch.reversed` | Action Batch | Timeline | `batch_id`, `applied_at`, `reversed_by` |
 | `buying_score.updated` | Buying Score Engine | Opportunity Engine, Timeline | `score_id`, `entity_id`, `score`, `trend`, `delta`, `contested`, `source_signal_ids`, `dissenting_signal_ids`, `trigger`, `valid_until`, `model_version` — see the M5B section below |
 | `opportunity.created` | Opportunity Engine | AI Research Engine, AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `originating_buying_score_id`, `score_at_creation`, `contested_at_creation`, `qualification`, `stage`, `policy_version` — see the M6 section below |
 | `opportunity.stage_changed` | Opportunity Engine | AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `previous_stage`, `new_stage`, `owner_id`, `actor_id`, `reason`, `sequence` |
@@ -313,6 +315,17 @@ One event per raw record rather than one per claim: the claims from a record are
 |---|---|---|---|
 | `signal.generated` | 1 | `signal_id`, `entity_id`, `signal_type`, `relevance`, `occurred_at`, `relevant_until`, `catalog_version`, `profile_version`, `payload_version` | A commercial hypothesis is supported **for this workspace** |
 | `signal.superseded` | 1 | `signal_id`, `supersedes`, `entity_id`, `signal_type` | A hypothesis gained evidence, or a conclusion was corrected |
+
+### R-03 · The Action Batch
+
+**Two events, and the pair is the whole catalog for this context.** A batch has six transitions — proposed, approved, rejected, withdrawn, applied, reversed — and **only two of them change anything outside the module**: the moment it took effect, and the moment it was taken back.
+
+⛔ **There is deliberately no `action_batch.approved`.** Approval is *permission to apply*, not the application. A subscriber acting on it would act before the work happened, and the gap between the two moments is real — `APPROVED` with no `applied_at` is a state the domain models on purpose. **P-C: an event exists when a consumer appears**, and nothing consumes an approval.
+
+| Event | Version | Payload | Meaning |
+|---|---|---|---|
+| `action_batch.applied` | 1 | `batch_id`, `name`, `item_count`, `approved_by`, `reversible_until` | A named unit of work took effect. `name` is the customer's own words, so a history reads as a record of decisions rather than identifiers. `item_count` is a count and **never the payload** — what each item means belongs to the domain that proposed it. `reversible_until` is `null` when **reversal was never offered**, which is not the same as a window that has closed |
+| `action_batch.reversed` | 1 | `batch_id`, `applied_at`, `reversed_by` | The work was taken back inside its window. ⚠️ **Not a retraction of `applied`** — both happened, in that order, and a subscriber that dropped the first on seeing the second would lose the interval during which the work was live, which is exactly what a customer asks about. `applied_at` is **stated rather than inferred from ordering**, because a subscriber may see the two out of order |
 
 **These are the first events in the pipeline that are not globally true.** Everything upstream describes what happened; a signal describes what it might mean *to one customer* — which is why both versions travel with it. `catalog_version` is Signora's vocabulary; `profile_version` is the customer's interpretation, and a historical signal missing either is unexplainable.
 

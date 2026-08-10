@@ -140,7 +140,7 @@ class TestItIsAContractAndNotAnImplementation:
         reader: ActionBatchReader = Fake()
         assert reader is not None
 
-    def test_the_context_exposes_nothing_and_publishes_no_event_yet(self) -> None:
+    def test_the_context_exposes_nothing_and_publishes_only_its_two_events(self) -> None:
         """**No endpoint, no events** — P-C: an event exists when a consumer
         appears.
 
@@ -168,15 +168,33 @@ class TestItIsAContractAndNotAnImplementation:
         assert "infrastructure" in present
         assert "interface" not in present
 
-        # **No event is published by anything in this context.** Checked by
-        # reading the source rather than the directory names, because slice 4
-        # will add events *inside* `application/` — where a directory check
-        # would never look.
+        # **Events arrived with THIS slice, and the assertion is re-aimed a
+        # third time rather than deleted** — the comment above already said
+        # slice 4 would add them *inside* `application/`, where a directory
+        # check would never look.
+        #
+        # ⛔ **What is pinned is not *no events* but *exactly the two the
+        # domain justifies*.** A batch has six transitions and only two change
+        # anything outside this module: it took effect, and it was taken back.
+        # **Approval is permission for work that has not happened**, and a
+        # subscriber acting on it would act early — so `action_batch.approved`
+        # appearing here is the defect this now catches.
         sources = "\n".join(
             p.read_text() for p in root.rglob("*.py") if "__pycache__" not in str(p)
         )
-        for announcement in ("OutboxEvent", "publish(", "event_bus"):
-            assert announcement not in sources, (
-                f"{announcement!r} appears in action_batch, which publishes no event until "
-                "slice 4. P-C: an event exists when a consumer appears."
-            )
+
+        published = {
+            name
+            for name in ("ActionBatchApplied", "ActionBatchReversed", "ActionBatchApproved",
+                         "ActionBatchRejected", "ActionBatchWithdrawn", "ActionBatchProposed")
+            if f"class {name}" in sources
+        }
+        assert published == {"ActionBatchApplied", "ActionBatchReversed"}, (
+            f"action_batch defines {sorted(published)}. Exactly two transitions change "
+            "anything outside this module — applied and reversed. P-C: an event exists "
+            "when a consumer appears, and nothing consumes an approval."
+        )
+
+        # ⛔ **Still no HTTP surface**, which is the half that has not changed:
+        # nothing here is reachable from outside the process.
+        assert "interface" not in present
