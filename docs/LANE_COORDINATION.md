@@ -373,6 +373,7 @@ databaseUrl: required(
 | [C-273](#c-273--the-lane-a-dependency-chain-drawn-once-and-one-row-in-it-has-already-freed) | **The Lane A dependency chain, drawn once — and one row in it has already freed** | **Lane A**, 2026-08-10, **on the product owner's explicit in | **Lane C** — ⚡ **every unmet input below is either a `C-` item address | 🟡 **`OPEN`** — raised 2026-08-10 | — |
 | [C-274](#c-274--the-switcher-s-exit-and-its-destination-are-in-different-rows-and-the-destination-is-blocked) | **The switcher's exit and its destination are in different rows, and the destination is blocked** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.m | **Lane C** — ⛔ **sequencing between three rows is row scope** | 🟡 **`OPEN`** — raised 2026-08-10 | — |
 | [C-275](#c-275--two-top-bar-slots-have-no-data-source-and-lib-shell-top-bar-ts-had-zero-callers-until-today) | **Two top-bar slots have no data source, and `lib/shell/top-bar.ts` had zero callers until today** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.m | **Lane C** — ⚡ **both halves need a module to publish something, and w | 🟡 **`OPEN`** — raised 2026-08-10 | — |
+| [C-1416](#c-1416--the-design-describes-a-richer-product-than-exists-three-times-now-and-c-277-is-the-third) | **The design describes a richer product than exists — three times now, and C-277 is the third** | **Lane C**, 2026-08-10, answering [C-277](#c-277) | **Product owner** — ⚡ **one question, asked once instead of three times** | 🟡 **`OPEN`** | ⛔ **Nothing — every instance ships a designed absent state** |
 | [C-1415](#c-1415--two-rows-hit-one-gap-a-workspace-publishes-its-identity-and-nothing-about-its-character) | **Two rows hit one gap: a workspace publishes its identity and nothing about its character** | **Lane C**, 2026-08-10, on Lane A's pattern report | **Split** — ⚡ **the read-shape half is Lane A's; the domain half is the product owner's** | 🟡 **`OPEN`** | ⚠️ **[C-276](#c-276) · TASK-1412's identity deliverables** |
 | [C-1414](#c-1414--the-design-system-specimens-are-drawn-in-sizes-its-own-type-system-does-not-define) | **The design system's specimens are drawn in sizes its own type system does not define** | **Lane C**, 2026-08-10, from Lane A's §04/§08 report | **Lane C** — derived, not escalated | ✅ **`CLOSED`** — **§04 is the type authority; §08's raw px are illustrative** | ✅ **Nothing** |
 | [C-1413](#c-1413--task-412s-module-is-deliberately-unnamed-and-its-change-budget-names-one) | **TASK-412's Module is deliberately unnamed and its Change Budget names one** | **Lane C**, 2026-08-10, from [B-414](BUGS.md) | **Product owner** — a module boundary | 🔴 **`OPEN`** | ⚠️ **`TASK-412` reads `WAITING ARCHITECTURE`; nothing is mid-flight** |
@@ -9693,6 +9694,54 @@ rules parsed: 24   ·   distinct reason codes: 24
 > ## ⚠️ **Three outcomes are possible and only QE can choose: LIVE and governance forgot to reference it · SUPERSEDED by [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) · or ABSORBED elsewhere, leaving a remnant.**
 
 ✅ **What this office did with the three it could rule on** — [`DECISION_PACKS.md`](DECISION_PACKS.md) superseded · [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) never adopted · [`PRODUCT_EXPERIENCE.md`](PRODUCT_EXPERIENCE.md) reassigned from the closed Lane B — **is a banner saying which of the three it is.** ⛔ **Nothing deleted.** ⚡ **The same treatment fits here once QE says which.**
+
+## C-1416 · The design describes a richer product than exists — three times now, and C-277 is the third
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-10, **answering [C-277](#c-277)** — ⚡ **and noticing it is the same item for the third time in two days** |
+| **Owner** | 🔴 **Product owner** — **one question, asked once rather than three times** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **MISSING DOMAIN DECISION** — ⛔ **not a design defect, not an implementation defect, and not three separate gaps** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **Nothing.** ✅ **Every instance has a correct behaviour available today, and every lane has already taken it** |
+
+### ✅ First — most of [C-277](#c-277) dissolves, and Lane A was measuring its own code rather than the design
+
+**Lane A reverted a permission matrix after four guards refused it, and filed rather than settling. Both were right. But two of the three objections do not survive measurement.**
+
+| The objection | Measured |
+|---|---|
+| ⛔ *"`vocabulary.test.tsx` refused it — my rows put `workspace:read` and `member:add` in front of a customer"* | ✅ **The DESIGN does not ask for tuples.** 📁 `permissionRows` is customer language throughout: **`View own accounts` / *"Records where they are owner"*, `View all accounts` / *"Across the workspace"*, `Edit CRM fields` / *"Write-back to Salesforce"*.** ⚡ **The tuples came from the implementation, not the specification** — so [ADR-0034](architecture/adr/0034-ubiquitous-language.md) is not in conflict with the design here |
+| ⛔ *"`capabilities.ts` argues against the matrix by name — one sentence, not a matrix"* | ⚠️ **It argues against a matrix AT A DECISION POINT.** 📁 Its own words: *"they are deciding whether a colleague should be able to bring people in"* — **the invite dialog, the role selector, the roster.** ⚡ **The design's matrix is a REFERENCE grid on a settings screen. Different job, different moment** — a summary where somebody chooses, a comparison where somebody checks |
+| 🔴 *"Three of five roles and six of seven capabilities do not exist"* | ✅ **THIS ONE HOLDS, and it is worse than reported.** 📁 **The product has `TeamRole = 'owner' \| 'member'`. The design names `Admin · Manager · Rep · Analyst · Guest`.** ⛔ **Not one of the design's five exists.** **It is not a subset — it is a different model** |
+
+> ## ⛔ **So the matrix cannot be rendered truthfully, and that is the whole blocker.** ✅ **Nothing about the design's vocabulary or its form is the problem.**
+
+### 🔴 The pattern, and why it is one question rather than three
+
+| Item | The design assumes | The repository has |
+|---|---|---|
+| **[C-272](#c-272)** | *"The Executive Dashboard already built"* | ⛔ **No such screen** — the composition exists, the screen does not |
+| **[C-1415](#c-1415)** | A workspace has a **region**, an **environment**, a **fiscal calendar** | ⛔ **`WorkspaceResponse` is `id · name · created_at · updated_at`** |
+| **[C-277](#c-277)** | **Five roles across seven capabilities in five grades** | ⛔ **Two roles** |
+
+⚡ **Three rows, three screens, two days, one shape: the finalized design describes a product further along than this one.** ⛔ **That is not a criticism of the design — a design SHOULD describe the product being built.** ✅ **It is a statement about sequencing, and it will recur on every screen until the domain catches up.**
+
+### ✅ What every lane has already done, correctly and without being told
+
+📁 **Ship the designed absent state and do not fabricate the missing model.** ⚡ **Lane A reached this three times independently** — the rail's routeless entries rendered as locked rather than hidden, the region selector left absent because *"a customer would choose one"*, and this matrix reverted with no residue.
+
+⛔ **The alternative is the failure the Settings screen already names in its own words**: **a control populated with plausible values is worse than an absent one, because a customer will believe it.** 🔴 **A five-column matrix over a two-role product is that failure at its largest — four of five columns would mean nothing, and a customer comparing them would be reading fiction.**
+
+### 🔴 The one question, asked once
+
+> ## **Does the product acquire the design's role model — `Admin · Manager · Rep · Analyst · Guest` across seven capabilities — and if so, when?**
+
+⛔ **This office does not recommend either answer.** ⚡ **It is a product decision about what Signora sells, not a schema question**, and the same is true of a workspace's region, environment and fiscal calendar in [C-1415](#c-1415).
+
+✅ **Until it is answered, nothing is blocked**: the designed absent state is correct, three lanes have already shipped it, and [D-225](DECISION_REGISTER.md) §4's principle — *the unresolved design question must not create a functional regression* — already governs the behaviour.
+
+---
 
 ## C-1415 · Two rows hit one gap: a workspace publishes its identity and nothing about its character
 
