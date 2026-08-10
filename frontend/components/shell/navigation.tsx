@@ -1,11 +1,13 @@
 'use client';
 
-import { BookOpen, Briefcase, LineChart, Lock, Radio, Settings as SettingsIcon } from 'lucide-react';
+import { BookOpen, Briefcase, Home, LineChart, Lock, Radio, Settings as SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import { SKIP_TARGETS } from '@/components/shell/skip-links';
+import { workspaceHome } from '@/lib/entry';
+import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { Tooltip } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 import { railViolations, visibleDestinations, type RailDestination } from '@/lib/shell/rail';
@@ -99,6 +101,19 @@ interface RailItem extends RailDestination {
  * a tenth destination or a third level at test time.
  */
 const DESTINATIONS: readonly RailItem[] = [
+  // ✅ **`Home` gains its route** — [TASK-1438](../../../docs/BACKLOG.md).
+  // ⛔ **It was the first entry the design draws and the rail could not carry
+  // it**, because `/w/:workspace/home` did not exist and
+  // [C-269](../../../docs/LANE_COORDINATION.md) refuses an entry that leads
+  // nowhere.
+  //
+  // ⚡ **Declared as the ROUTE names itself, and resolved at render.** 📁
+  // `infra/reachability.py` reads static route strings, and its `href:`
+  // property pattern matches quoted strings ONLY — **a backtick template here
+  // would be invisible to it**, and a route entered only through a helper call
+  // reads as having no entrance at all. ⛔ **The check would have been right to
+  // fail: it cannot verify what it cannot see.**
+  { id: 'home', label: 'Home', href: '/w/[workspace]/home', icon: Home, depth: 1 },
   { id: 'attention', label: 'Attention', href: '/', icon: LineChart, depth: 1 },
   { id: 'business', label: 'Your business', href: '/business', icon: Briefcase, depth: 1 },
   // 📁 *"Counts are neutral; a dot means unread and only Signals uses it."*
@@ -284,6 +299,21 @@ export function Navigation({
   role: WorkspaceRole | null;
   collapsed?: boolean;
 }) {
+  const { activeWorkspace } = useWorkspaceContext();
+
+  /**
+   * ⚡ **`[workspace]` is filled from the active workspace at render.** ⛔ **An
+   * entry whose segment cannot be filled is DROPPED, not linked half-built** —
+   * `/w/[workspace]/home` as a literal href is a 404 with a plausible shape,
+   * and 📁 `workspaceHome` in [`lib/entry/rules.ts`](../../lib/entry/rules.ts)
+   * is the authority for the shape.
+   */
+  const destinations = DESTINATIONS.flatMap((item) => {
+    if (!item.href.includes('[workspace]')) return [item];
+    if (activeWorkspace === null) return [];
+    return [{ ...item, href: workspaceHome(activeWorkspace.id) }];
+  });
+
   return (
     // 📁 **`nav[navigation]`, labelled "Primary"** — TASK-1444. ⛔ It said
     // "Main", which is not the design's word and, more importantly, is the
@@ -293,7 +323,7 @@ export function Navigation({
       aria-label="Primary"
       className="flex h-full flex-col gap-0.5 p-3"
     >
-      {visibleDestinations(DESTINATIONS).map((item) => (
+      {visibleDestinations(destinations).map((item) => (
         <RailLink key={item.id} item={item as RailItem} role={role} collapsed={collapsed} />
       ))}
 

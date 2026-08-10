@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { Navigation, RAIL_DESTINATIONS } from '@/components/shell/navigation';
 import { MAX_DEPTH, MAX_DESTINATIONS, railViolations } from '@/lib/shell/rail';
+import { workspaceHome } from '@/lib/entry';
 
 /**
  * **The navigation rail** — [TASK-1439](../../../docs/BACKLOG.md), under
@@ -19,6 +20,27 @@ import { MAX_DEPTH, MAX_DESTINATIONS, railViolations } from '@/lib/shell/rail';
 // ⚡ The rail reads the current route to mark the active destination. `/` is
 // Attention's, so the active-state assertion below has something to assert.
 vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
+
+/**
+ * ⚡ **The rail reads the active workspace since
+ * [TASK-1438](../../../docs/BACKLOG.md)** — Home's `[workspace]` segment is
+ * filled from it. ⛔ **Stubbed rather than wrapped in the real provider**:
+ * this suite is about the rail's own rules, and the provider brings a query
+ * client and a network fixture with it.
+ */
+let activeWorkspace: { id: string; name: string } | null = {
+  id: 'w1',
+  name: 'Northwind',
+};
+vi.mock('@/lib/state/workspace-provider', () => ({
+  useWorkspaceContext: () => ({
+    activeWorkspace,
+    workspaces: [],
+    setActiveWorkspace: vi.fn(),
+    isLoading: false,
+    error: null,
+  }),
+}));
 
 describe('🔴 the rail obeys its own law', () => {
   it('✅ the real destination list passes railViolations', () => {
@@ -82,9 +104,51 @@ describe('📁 D-225 §4 — currently reachable navigation is not removed', () 
     const rail = screen.getByRole('navigation', { name: 'Primary' });
     expect(within(rail).getAllByRole('link').length).toBeGreaterThan(2);
 
-    for (const absent of ['Forecast', 'Pipeline', 'Deals', 'Conversations', 'Reports', 'Home']) {
+    // ⚡ **`Home` LEFT this list** — [TASK-1438](../../../docs/BACKLOG.md) built
+    // `/w/:workspace/home`, so the design's first entry finally has somewhere
+    // to go. ⛔ **The other six still have no route and stay absent.**
+    for (const absent of ['Forecast', 'Pipeline', 'Deals', 'Conversations', 'Reports']) {
       expect(within(rail).queryByText(absent), `${absent} has no route`).toBeNull();
     }
+  });
+});
+
+describe('🔴 Home, and the segment it is resolved from', () => {
+  it('✅ it links to the ACTIVE workspace, not to the declared template', () => {
+    /**
+     * ⚡ **The list declares `/w/[workspace]/home`** — the form
+     * `infra/reachability.py` can see, since its `href:` pattern matches
+     * quoted strings only and a backtick template would be invisible. ⛔ **But
+     * a customer must never be handed that literal**: it is a 404 with a
+     * plausible shape.
+     */
+    render(<Navigation role="owner" />);
+    const home = screen.getByRole('link', { name: 'Home' });
+    expect(home).toHaveAttribute('href', '/w/w1/home');
+    expect(home.getAttribute('href')).not.toContain('[workspace]');
+  });
+
+  it('⛔ and it is DROPPED when no workspace is known', () => {
+    // ⚡ Half a path is worse than no entry: `/w//home` is a 404 that looks
+    // like a link.
+    activeWorkspace = null;
+    render(<Navigation role="owner" />);
+    expect(screen.queryByRole('link', { name: 'Home' })).toBeNull();
+    // The rest of the rail is unaffected.
+    expect(screen.getByRole('link', { name: 'Attention' })).toBeInTheDocument();
+    activeWorkspace = { id: 'w1', name: 'Northwind' };
+  });
+
+  it('📁 the path is `workspaceHome`\'s, so the two cannot drift', () => {
+    // ⛔ **The declared template is not a second definition of the route.**
+    // `lib/entry/rules.ts` is the authority — *"the one authenticated landing
+    // route"* — and this asserts the rail agrees with it.
+    expect(workspaceHome('w1')).toBe('/w/w1/home');
+    render(<Navigation role="owner" />);
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute(
+      'href',
+      workspaceHome('w1'),
+    );
   });
 });
 

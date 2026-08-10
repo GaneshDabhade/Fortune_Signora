@@ -24,6 +24,16 @@ vi.mock('@/components/shell/shell-palette', () => ({ ShellPalette: () => null })
 vi.mock('@/components/shell/workspace-switcher', () => ({ WorkspaceSwitcher: () => null }));
 vi.mock('@/components/intelligence/account-search', () => ({ AccountSearch: () => null }));
 vi.mock('@/components/shell/account-menu', () => ({ AccountMenu: () => null }));
+// ⚡ The rail reads the active workspace since TASK-1438 (Home's segment).
+vi.mock('@/lib/state/workspace-provider', () => ({
+  useWorkspaceContext: () => ({
+    activeWorkspace: { id: 'w1', name: 'Northwind' },
+    workspaces: [],
+    setActiveWorkspace: vi.fn(),
+    isLoading: false,
+    error: null,
+  }),
+}));
 
 function shell() {
   return render(

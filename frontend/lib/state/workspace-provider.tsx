@@ -10,6 +10,8 @@ import {
   type ReactNode,
 } from 'react';
 
+import { useSelectedLayoutSegments } from 'next/navigation';
+
 import type { Workspace } from '@/lib/api/types';
 import { useInvalidateWorkspaceScope, useWorkspaces } from '@/lib/query/hooks';
 
@@ -40,6 +42,29 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const invalidateScope = useInvalidateWorkspaceScope();
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  /**
+   * 🔴 **The URL segment, and it is EXACTLY as untrusted as the stored id** —
+   * [TASK-1438](../../../docs/BACKLOG.md).
+   *
+   * 📁 **The design's route is `/w/:workspace/home`**, and the row's named risk
+   * is *"treating the URL as a grant because it looks like routing rather than
+   * input."* ⛔ **It is input.** ⚡ **The provider's existing rule carries over
+   * unchanged and is what makes this safe**: *"the stored id is a hint, never
+   * a grant… validated against the list the API returned."*
+   *
+   * ✅ **So a member of nothing typing another workspace's id lands where a
+   * non-member lands**, because the segment is filtered by the same
+   * membership check the stored id always was. 📁 **Server-side
+   * re-verification is unchanged and is still the control**
+   * ([§13](../../../CLAUDE.md)).
+   */
+  // ⚠️ **`?? []` is not defensive noise.** Outside a layout context — which is
+  // every component test that renders the provider directly — Next returns
+  // `null` here, and reading `[0]` off it throws. ⛔ **A provider that only
+  // works inside a route tree is a provider no test can mount.**
+  const segment = useSelectedLayoutSegments() ?? [];
+  const fromUrl = segment[0] === 'w' ? (segment[1] ?? null) : null;
+
   const workspaces = useMemo(() => data?.items ?? [], [data]);
 
   useEffect(() => {
@@ -48,12 +73,17 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
     const stored = window.localStorage.getItem(ACTIVE_WORKSPACE_KEY);
     const isStillAMember = stored !== null && workspaces.some((w) => w.id === stored);
+    // ⚡ **The URL wins over the stored id when both are valid** — a shared
+    // link must open the workspace it names, not the last one this browser
+    // happened to use. ⛔ **But it wins only if it passes the SAME check.**
+    const urlIsAMember = fromUrl !== null && workspaces.some((w) => w.id === fromUrl);
 
     setActiveId((current) => {
+      if (urlIsAMember) return fromUrl;
       if (current !== null && workspaces.some((w) => w.id === current)) return current;
       return isStillAMember ? stored : first.id;
     });
-  }, [workspaces]);
+  }, [workspaces, fromUrl]);
 
   const setActiveWorkspace = useCallback(
     (workspaceId: string) => {
