@@ -218,7 +218,9 @@ updated      = 2026-08-10
 #    it was "yours today". `platform_foundation` is THIS lane's in
 #    modules.toml. ⛔ Not a synchronization lag — a misassignment of this
 #    office's own work, on the one channel that reaches a lane without QE.
-backlog = ["TASK-1455", "TASK-497", "TASK-1431"]
+backlog = ["TASK-1455", "TASK-1431"]
+# ⚠️ TASK-497 removed 2026-08-10 — CLAIMED by this lane (b5267f77).
+#    `backlog` is what is claimable; a row this lane is holding is not.
 
 
 
