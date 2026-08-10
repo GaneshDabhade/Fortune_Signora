@@ -325,8 +325,21 @@ def _classify(declared: str, blocker_text: str, lane: str | None) -> str:
 #: stale `integration` still says so.
 _LIFECYCLE = {
     "READY": 1, "SEQUENCED": 1, "BLOCKED": 1, "WAITING": 1,
-    "CLAIMED": 2, "IN PROGRESS": 3, "CHANGES REQUESTED": 3,
-    "IN VALIDATION": 4, "VERIFIED": 5, "CERTIFIED": 6, "PROMOTED": 7, "DONE": 8,
+    "CLAIMED": 2, "IN PROGRESS": 3,
+    "IN VALIDATION": 4,
+    # ⛔ **`CHANGES REQUESTED` ranks ABOVE `IN VALIDATION`, not below it —
+    # [B-163](../docs/BUGS.md), corrected under [D-228](../docs/DECISION_REGISTER.md).**
+    #
+    # 🔴 **It is the one transition §20e places AFTER `IN VALIDATION`**: *"QE,
+    # during validation. Something did not hold. Returned to the implementing
+    # lane."* **Every other transition is monotonic; this one is a return.**
+    #
+    # ⚠️ **Ranked below, "later wins" resolved a returned slice back to `IN
+    # VALIDATION`** — so a row QE had handed back read as still waiting on QE,
+    # and **the lane that had to act could not see that it had to act.**
+    # ⚡ **Reachable precisely in the divergence this function exists for.**
+    "CHANGES REQUESTED": 5,
+    "VERIFIED": 6, "CERTIFIED": 7, "PROMOTED": 8, "DONE": 9,
 }
 
 

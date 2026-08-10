@@ -115,6 +115,129 @@ def _migration_head(commit: str | None = None) -> str | None:
     return sorted(names)[-1] if names else None
 
 
+#: The twelve lifecycle states §20e defines, and nothing else.
+#: **A row's state is the leading backticked token of its `Status` CELL** — never
+#: a word that happens to appear in the row's prose.
+_STATE_TOKEN = re.compile(r"`([A-Z][A-Z ]*[A-Z])`")
+_STATUS_CELL = re.compile(r"^\|\s*\*\*Status\*\*\s*\|(.*)$", re.M)
+_ROW_HEAD = re.compile(r"^### (TASK-\d+)\b", re.M)
+
+
+def backlog_states(text: str) -> dict[str, str]:
+    """Every row's state, read from its `Status` cell and from nowhere else.
+
+    ⛔ **[B-168](../docs/BUGS.md)'s false positive is the reason this exists.**
+    The first implementation matched the word VERIFIED anywhere in a removed line, which
+    matched a `READY` cell whose *prose* cited a verified row — *"Released:
+    `TASK-1408` is `VERIFIED` and promoted at `e72b6af0`"* — and reported a
+    regression that had not happened. **Measured at the time: 12 `VERIFIED`
+    status cells before, 12 after, no row changed.**
+
+    ⚡ **The repair is to read the authoritative field rather than the text
+    around it.** A row contributes a state only if it has a `Status` cell and
+    that cell opens with a backticked token; **prose in a title, a note, an
+    evidence line or a reference cannot reach this function's output.**
+    """
+    states: dict[str, str] = {}
+    heads = list(_ROW_HEAD.finditer(text))
+    for index, head in enumerate(heads):
+        end = heads[index + 1].start() if index + 1 < len(heads) else len(text)
+        cell = _STATUS_CELL.search(text, head.start(), end)
+        if not cell:
+            continue
+        token = _STATE_TOKEN.search(cell.group(1))
+        if token:
+            states[head.group(1)] = token.group(1).strip()
+    return states
+
+
+def verified_regressions(before: str, after: str) -> list[tuple[str, str]]:
+    """Rows that were `VERIFIED` and no longer are — QE's judgement, undone.
+
+    **The check [B-168](../docs/BUGS.md) asked for, as a function rather than a
+    habit.** A clean rebase silently reverted QE's own `VERIFIED` cells three
+    times, and twice a conflict happened to make it visible; the third had none.
+    """
+    old, new = backlog_states(before), backlog_states(after)
+    return sorted(
+        (task, new.get(task, "ABSENT"))
+        for task, state in old.items()
+        if state == "VERIFIED" and new.get(task) != "VERIFIED"
+    )
+
+
+def _promote(sha: str) -> int:
+    """Run every blocking gate, and promote **only** if all of them pass.
+
+    ⛔ **[D-228](../docs/DECISION_REGISTER.md), the product owner, after QE
+    promoted while a gate was firing**: *"the promotion command itself must be
+    structurally incapable of proceeding after a blocking gate failure."*
+
+    🔴 **Before this existed there was no promotion command.** Promotion was a
+    shell sequence an operator typed, so every check beside it was advisory *by
+    construction* — **a check whose output nobody is forced to read is a log
+    line, not a gate.** ⚡ **The fix is not a warning, a flag or an approval
+    step: it is that `git merge` now lives behind the gates in the same
+    process, and the only way past a failure is to fix it.**
+
+    ⛔ **There is deliberately no `--force`, no override and no skip.**
+    """
+    target = _git("rev-parse", sha)
+    if not target:
+        print(f"promote: '{sha}' is not a commit in this repository.")
+        return 2
+
+    failures: list[str] = []
+
+    matching = [run for run in _runs() if str(run.get("commit", "")) == target]
+    ok = any(_satisfied(run)[0] for run in matching)
+    print(f"  {'PASS' if ok else 'FAIL'}  certified — this exact commit")
+    if not ok:
+        failures.append(f"{target[:7]} is not a certified commit")
+
+    main_backlog = _git("show", "origin/main:docs/BACKLOG.md")
+    cand_backlog = _git("show", f"{target}:docs/BACKLOG.md")
+    lost = verified_regressions(main_backlog, cand_backlog) if main_backlog and cand_backlog else []
+    print(f"  {'PASS' if not lost else 'FAIL'}  no VERIFIED state is undone (B-168)")
+    for task, became in lost:
+        print(f"          {task}: VERIFIED -> {became}")
+    if lost:
+        failures.append(f"{len(lost)} row(s) lose a VERIFIED state")
+
+    if failures:
+        print()
+        print("  PROMOTION REFUSED — a blocking gate failed:")
+        for reason in failures:
+            print(f"    · {reason}")
+        print()
+        print("  Nothing was promoted, integrated or recorded. Fix the gate or")
+        print("  the commit, re-run, and promotion proceeds on its own.")
+        return 1
+
+    head = _git("rev-parse", "HEAD")
+    branch = _git("rev-parse", "--abbrev-ref", "HEAD")
+    if branch != "main":
+        print(f"  PROMOTION REFUSED — HEAD is on '{branch}', not 'main'.")
+        return 1
+
+    merged = subprocess.run(
+        ["git", "merge", "--ff-only", target],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=False,
+    )
+    if merged.returncode != 0:
+        print("  PROMOTION REFUSED — not a fast-forward.")
+        print(merged.stderr.strip()[:400])
+        return 1
+
+    now = _git("rev-parse", "HEAD")
+    if now != target:
+        print(f"  EQUALITY VIOLATED — promoted {now[:7]}, certified {target[:7]}.")
+        return 1
+
+    print(f"\n  PROMOTED {target[:7]} — promoted == certified, from {head[:7]}.")
+    return 0
+
+
 def _runs() -> list[dict[str, object]]:
     """Every certification run this repository holds, from wherever it holds it.
 
@@ -912,6 +1035,11 @@ def main() -> int:
         action="store_true",
         help="is there anything on `integration` worth certifying, and what is it?",
     )
+    parser.add_argument(
+        "--promote",
+        metavar="SHA",
+        help="run every BLOCKING gate and promote only if all of them pass (D-228)",
+    )
     args = parser.parse_args()
 
     if args.audit_main:
@@ -924,6 +1052,8 @@ def main() -> int:
         return _report_plan(args.plan)
     if args.next_cycle:
         return _next_cycle()
+    if args.promote:
+        return _promote(args.promote)
 
     target = _git("rev-parse", args.commit)
     if not target:

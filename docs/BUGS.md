@@ -470,7 +470,7 @@ after:                4 unparsed   (TASK-1441, 1442, 1443, 1444)
 | **Module** | Repository process — QE's candidate construction |
 | **Current assignee** | **QE** — QE's own defect, found when a lane's report disagreed with QE's belief |
 | **Severity** | 🟠 — ⛔ **the repository's record of what QE has verified is silently wrong**, and QE is the only author of that record |
-| **Status** | **`OPEN`** — cells restored below; the process gap is not closed |
+| **Status** | ✅ **`FIXED` — QE**, 2026-08-10, under [D-228](DECISION_REGISTER.md). ⛔ **Root cause: the check was never implemented.** **It existed only as a shell command written in this row, so there was nothing to fail and nothing to honour** — which is also why it could be ignored. ✅ **`certification-guard.py::backlog_states()` now reads the authoritative `Status` cell and nothing else**, and `verified_regressions()` compares two revisions by state. ⚡ **Prose cannot reach the output**: a title, a note, an evidence line or a reference naming `VERIFIED` contributes nothing. 📁 **9 regression tests in [`backend/tests/test_promotion_gate.py`](../backend/tests/test_promotion_gate.py)**, including the exact cell that produced the false positive |
 | **Commit found** | `0a60ae83` on `main`, found during cycle 172's poll |
 
 **Steps.** A lane's branch carries its own copy of a row it set to `IN VALIDATION`. QE verifies the row and writes `VERIFIED` in a Closeout. The lane later rebases; **its original commit still contains the older cell.** QE rebases the branch, the rebase applies **cleanly**, and QE promotes.
@@ -647,7 +647,7 @@ git rev-list --count origin/main..origin/integration     # must be 0, or rebase 
 | **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) |
 | **Current assignee** | **Lane C** — its own module, and its own fix |
 | **Severity** | 🟡 — ⚡ **the fix is right and QE is not asking for it back.** ⛔ **But it is a guard against a defect that recurred three times, and nothing proves it still works tomorrow** |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — QE**, 2026-08-10, under [D-228](DECISION_REGISTER.md). ⚡ **`CHANGES REQUESTED` now ranks ABOVE `IN VALIDATION`** — the one transition §20e places *after* it. Ranked below, it resolved a returned slice back to `IN VALIDATION`, **hiding from the lane that it had to act.** 📁 **6 regression tests**, including the reverse cases so a stale return cannot override a later `VERIFIED` |
 | **Commit found** | `de88facd`, found by QE during cycle 153 validation |
 
 **① The guard has no test.** ⚡ **Measured, not asserted**: `de88facd` changes **63 lines of `infra/coordination.py` and zero lines of any test file.**
@@ -2071,6 +2071,7 @@ cd backend && uv run pytest tests/test_claim_agreement.py -q
 | **Module** | QE procedure — [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md), Closeout step 10 |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 — **two commits were removed from a shared branch.** ✅ **Recovered in full; nothing was lost** |
+| ✅ **THE CLASS IS NOW GATED — D-228, 2026-08-10** | ⛔ **Root cause of the recurrence: there was no promotion command.** **Promotion was a shell sequence an operator typed, so every check beside it was advisory by construction.** ✅ **`certification-guard.py --promote <sha>` runs the blocking gates and calls `git merge` only if all pass** — one process, **no path between a failure and a promotion.** ⛔ **No `--force`, no override, no skip, no approval step.** 📁 **Measured: exit `1`, `&&` short-circuits, `main` unchanged** |
 | **Status** | ✅ **`FIXED`** — recovered 2026-08-07, and the checklist step made fail-fast in the same change |
 | **Found** | 2026-08-07 by QE, cycle 90, **by checking its own synchronization rather than assuming it** |
 
