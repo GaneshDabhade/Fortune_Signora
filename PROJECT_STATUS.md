@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `e3eeca2`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `cea60d4`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,23 +12,23 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `e3eeca2`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `cea60d4`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`e3eeca2`** — the certified commit itself |
-| **Release candidate** | **21 commits, both lanes plus QE.** ⚠️ **Held for a full cycle on [B-424](docs/BUGS.md)'s 🔴**, then promoted the moment it was fixed and measured |
-| **Certification** | ✅ [`e3eeca245038`](certification/reports/e3eeca245038.md) · migration head **`0047`** · protocol **v2** · profile **`platform`** · **second attempt — the first failed on a QE test and the failure was QE's** |
+| **`main`** | **`cea60d4`** — the certified commit itself |
+| **Release candidate** | **9 commits.** ⚠️ **Assembled by cherry-pick**: `lane-a-product-surface` stood **32 ahead** with a real code delta of **one slice**, and was simultaneously **behind** on `backend/tests` |
+| **Certification** | ✅ [`cea60d4178dc`](certification/reports/cea60d4178dc.md) · migration head **`0047`** · protocol **v2** · profile **`platform`** · ✅ **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None.** **189 rows, 64 unresolved, 0 blocking.** ✅ **[B-424](docs/BUGS.md), [B-232](docs/BUGS.md), [B-174](docs/BUGS.md) and [B-423](docs/BUGS.md) `VERIFIED` by measurement.** ⚠️ **[B-231](docs/BUGS.md) and [B-176](docs/BUGS.md) stay `FIXED` and say why** |
-| 🔴 **Four instances of one shape, in a day** | ⛔ **A true sentence answering something narrower than the reader believed.** **[B-175](docs/BUGS.md)** a test asserting a class *string* · **[B-231](docs/BUGS.md)** a test asserting an *import* · **[B-176](docs/BUGS.md)** a guard asserting one of four states · **and QE's own poll** printing *"still a replacement"* while testing for the wrong repair. ✅ **The response is a review question in [`frontend/tests/README.md`](frontend/tests/README.md), not a gate** — *does this assertion fail if the product breaks?* |
-| **Customer value this cycle** | ⚡ **Every authentication screen renders at its designed width again** — 45 utilities named breakpoints that no longer existed · **account registration works** ([B-231](docs/BUGS.md)) · **the seventeen authentication journeys run as one suite** · **two Better Auth capabilities registered and two named as a decision rather than installed** |
+| **Blocking Quality Defects** | ✅ **None.** **189 rows, 63 unresolved, 0 blocking** |
+| **Customer value this cycle** | ⚡ **Pasting a list of colleagues skips the ones already invited, instead of refusing the lot** — the failure mode that makes bulk invitation useless on the second attempt |
+| ⛔ **QE's own defects this cycle** | **Two, both in assembly and both caught by counting rather than by reading.** **A cherry-pick loop ran `git add` after its resolver refused, committing four conflict markers** — [B-142](docs/BUGS.md)'s class, cited at two lanes this session and then repeated here. **And five duplicate board rows were reintroduced**, because the conflict resolver deduplicates within a hunk and cannot see a copy elsewhere in the file |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ⚠️ **Certification named 17 gates and executed 6.** **Four QE ran by hand** — `dr` ✅, `vitest` **2610 across 126 files** ✅, `eslint` ✅, **migration reversibility stated rather than skipped** *(no migration)*. ⛔ **No gate, profile, threshold or test was weakened**; the one test QE changed was corrected to match its own name, and the reason is in its docstring.
+> ⚠️ **Certification named 17 gates and executed 6.** **Four QE ran by hand** — `dr` ✅, `vitest` **2620 across 133 files** ✅, `eslint` ✅, **migration reversibility stated rather than skipped** *(no migration)*.
 
-**Repository health:** **4383 backend tests** · **95.11% coverage** ✅ *(floor 95)* · **2610 frontend tests** across **126 files** *(+11)* · **401 Security Invariants** · mypy strict over **860 files** · **48 migrations**, `0000`–`0047` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **149s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
+**Repository health:** **4385 backend tests** · **95.11% coverage** ✅ *(floor 95)* · **2620 frontend tests** across **133 files** *(+10)* · **401 Security Invariants** · mypy strict over **860 files** · **48 migrations**, `0000`–`0047` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **219s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
 
 ---
 
@@ -1023,6 +1023,32 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-10, cycle 195
+
+**Derived from the promoted commit `cea60d4`.** **Nine commits, certified first attempt — and both of the cycle's defects were QE's, in assembly rather than in judgement.**
+
+### What a customer can now do
+
+⚡ **Pasting a list of colleagues skips the ones already invited, instead of refusing the whole list.** ⛔ **That is the failure mode which makes bulk invitation useless on the second attempt** — a customer adds five people, two are already members, and the operation rejects all five.
+
+### ⛔ QE committed conflict markers, and it is B-142's class
+
+**A cherry-pick loop ran `git add` after its resolver had refused.** **The refusal printed, the exit code was ignored, and four markers went into `docs/BUGS.md`.**
+
+⚡ **[B-142](docs/BUGS.md) is the row that says a check whose result nobody is forced to read is a log line rather than a gate — and QE cited it at two lanes this session before repeating it.** ✅ **Caught by counting markers against `integration`'s baseline of two, and the candidate was rebuilt from scratch with every resolver call gating the `add`.**
+
+### ⚠️ And five duplicate board rows, from a resolver that cannot see the whole file
+
+**Two rows each for `TASK-481`, `TASK-482`, `TASK-1402`, `TASK-1407` and `TASK-1422` — one `IN VALIDATION`, one `CLAIMED`.** **Lane A had already removed them on its own branch.** ⛔ **QE's resolver deduplicates within a conflict hunk and cannot see a copy elsewhere in the file, so assembling reintroduced them.**
+
+✅ **Resolved by lifecycle rank — the further state of each pair — then verified by counting ids across the whole file rather than the hunk.** ⛔ **`TASK-202` and `TASK-440` left alone: they are duplicated on `integration` already, and removing them here would be an unasked-for change riding on a repair.**
+
+### The branch was 32 ahead and one slice deep
+
+**`lane-a-product-surface` stood 32 commits ahead of `main`.** ⚡ **The real code delta was `frontend/lib/team/invitations.ts` and its tests — and the branch was simultaneously *behind* on `backend/tests`, missing [B-176](docs/BUGS.md)'s and [B-423](docs/BUGS.md)'s regressions.** ⛔ **Rebasing produced code conflicts between the branch and its own promoted history, so five commits were cherry-picked instead.**
 
 ---
 
