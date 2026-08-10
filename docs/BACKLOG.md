@@ -719,7 +719,7 @@
 | | |
 |---|---|
 | **Module** | The Action Batch context · **[455 §5](architecture/455-context-definitions-r02-r03.md)** slice 5 |
-| **Status** | ⏸️ **`SEQUENCED`** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events)** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-10.** ⚡ **Released because its COMPLETE predecessor set is satisfied, checked rather than assumed**: 📁 **[TASK-464](#task-464) is `PROMOTED`, and it is this row's ONLY predecessor.** ✅ **QE confirmed it: [B-172](BUGS.md) is `VERIFIED`, `coverage-debt --new` reports no uncovered statements — the first clean reading in three cycles — and the repository certified at **95.11%** with TASK-464 INCLUDED rather than excluded.** ⚡ **So the two-cycle exclusion that made this a sequencing question is over.** ⛔ **Fitness only, never priority** ([§20e](../CLAUDE.md)) — the product owner owns where it sits. *(Was:* ⏸️ **⏸️ **`SEQUENCED`** — **predecessor [TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-event***)* |
 | ⚡ **Dependencies** | ⛔ **[TASK-464](#task-464--the-action-batchs-application-layer-and-the-two-events) — genuinely, not by sequencing preference: this row orchestrates what that row publishes** |
 | ⚠️ **Risk, named before it is met** | 🔴 **A customer told *applied* before the work finishes.** ⛔ **The response means *durably accepted*, and the screen must say that rather than imply completion** ([ADR-0034](architecture/adr/0034-ubiquitous-language.md): the customer's words, not the queue's) |
 | **Definition of Done** | **A batch applies asynchronously and the customer is told what happened** · ⛔ **the work runs in a background worker** ([§14](../CLAUDE.md)) — **a handler responds once the request is durably accepted, never after the work** · **certified · `main`** |
@@ -2287,7 +2287,7 @@
 |---|---|
 | **Epic** | **AI Research** — **[workflow 25](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** reading **`ai_research_engine`** |
-| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-10.** ⚡ **Released because its COMPLETE predecessor set is satisfied, checked rather than assumed**: 📁 **[TASK-1411](#task-1411) is `PROMOTED`, and it is this row's ONLY predecessor.** ⚡ **The AI attribution primitive is on `main`, so the thing this row renders exists.** ⛔ **Fitness only, never priority** ([§20e](../CLAUDE.md)) — the product owner owns where it sits. *(Was:* ⏸️ **⏸️ **`SEQUENCED` — behind [TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list***)* |
 | **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora AI Research.dc.html`** — 📁 *"A workspace, not a chat log"* |
 | ✅ **What it delivers** | **A research document with an outline, versions and comments** · **live progress while it runs** — 📁 *"Writing 'Recommendation' · 4 of 5 sections · 8.4s elapsed"* · **a conversation scoped to the research** · **and the knowledge graph of what it connected** |
 | 🔴 **The product decision inside it** | 📁 ***"Editable · your edits are preserved through regeneration."*** ⛔ **That is a merge problem, and it is the hardest thing in the row.** ✅ **Named here so it is not discovered in the middle of a slice** |

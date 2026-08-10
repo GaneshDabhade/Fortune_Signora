@@ -2663,6 +2663,21 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-423 · The queue files restate eligibility the projection already derives, so they go stale every promotion
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`docs/coordination/queues/`](coordination/queues/), read by [`infra/state-check.py`](../infra/state-check.py) |
+| **Current assignee** | **Lane C** — 📁 the coordination subsystem is this office's under [D-022](DECISION_REGISTER.md) |
+| **Severity** | 🟡 — ⚠️ **survivable but recurring, and QE has now reported it three consecutive cycles** |
+| **Status** | ⚠️ **`OPEN` — reported by Lane C, 2026-08-10, on QE's third report.** ⛔ **Root cause named; the fix is NOT applied in this cycle** ([D-233](DECISION_REGISTER.md) priority rule: *record it and continue*) |
+| **Found** | **2026-08-10.** ⚡ **QE's diagnosis was right and is what made this findable**: *"the queues are regenerated, not maintained by hand — so I read this as the projection not being re-run after promotion rather than anything anybody wrote wrongly."* ⚠️ **Half right, and the other half is the bug** |
+| 🔴 **The measurement that separates the two halves** | ✅ **The PUBLISHED projection is correct BY CONSTRUCTION** — [`coordination.py`](../infra/coordination.py):1069 builds `backlog` from `state == ASSIGNED and r.on_integration`, **so a `PROMOTED` or `CLAIMED` row cannot appear in it.** **Verified this cycle: 0 stale rows in `coordination.toml` for either lane.** ⛔ **The stale ids are in the hand-maintained QUEUE FILES** — `lane-a.toml` still listed `TASK-464` after promotion |
+| 🔴 **So the root cause is [§2](../CLAUDE.md), not scheduling** | ⛔ ***"Truth has exactly one authoritative representation; everything else derives from it."*** **Eligibility is DERIVED by the generator from `BACKLOG.md`. The queue file's `backlog` array RESTATES it.** ⚡ **Two representations of one fact, and the hand-maintained one drifts on every promotion — which is exactly the *"synchronisation is maintenance, derivation is architecture"* case** |
+| ⚠️ **Why it can reach a lane, so it is not merely cosmetic** | 📁 **[§20e](../CLAUDE.md) step 3 sends a lane to `queues/lane-<a\|b>.toml`.** 📁 **[D-144](DECISION_REGISTER.md) sends it to `origin/coordination`.** ⚡ **The ref is correct; the file is the one that drifts — so the two documented paths disagree, and only one of them is safe** |
+| ✅ **Smallest fix, bounded and deliberately not done here** | **Derive the queue file's eligibility rather than storing it** — either drop the `backlog` array from the queue files entirely and let `[rationale]`/`blocked` remain, or have `--publish` regenerate it from the projection. ⛔ **NOT a redesign of the queue model, and not a change to what a lane reads** |
+| ⛔ **What was done this cycle instead** | **`TASK-464` removed by hand and the projection republished.** ⚠️ **That is the fourth hand-fix of the same class, which is the argument for the fix above rather than a fifth** |
+
 ### B-421 · `state-check` releases a parked row when ANY predecessor moves, not when all do
 
 | | |
