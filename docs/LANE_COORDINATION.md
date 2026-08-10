@@ -10480,6 +10480,36 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ⚠️ **Recorded as [C-1416](#c-1416)'s third instance** — 📁 **C-272 assumed an Executive Dashboard already built, [C-1415](#c-1415) assumed a workspace has region, environment and a fiscal calendar, and this assumes five roles.** **Three rows, three screens, two days, one shape.**
 
+## C-279 · TASK-480's notification badge has three candidate sources, and two are foreclosed by rules the repository already has
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, on [TASK-480](BACKLOG.md)'s own instruction: ⚠️ *"Nothing publishes a notification today. Whether the badge counts a domain event, an outbox row or an unread record is a question for the design, and [D-140](DECISION_REGISTER.md) says ask one precise question rather than make one convenient assumption."* |
+| **Owner** | ⛔ **Product owner** — it is a product decision about what a notification *is*, and an architecture decision about which module owns it |
+| **State** | 🟡 **`READY FOR PRODUCT DECISION`** — ⚡ **the alternatives are prepared and two of the three are already eliminated by existing rules, so the ruling is narrow** |
+| **Blocks** | **[TASK-480](BACKLOG.md) only.** ✅ **Lane A filed it and continued to the next independent row rather than idling** ([D-229A](DECISION_REGISTER.md)) |
+
+**The problem.** 📁 **The App Shell §10 design is rich about the SHAPE** — *"a 400px popover, not a page, with three tabs: Needs you, Mentions, All… grouped by day, unread carries a 6px brand dot rather than a coloured row… Agent and AI notifications are marked with the intelligence hue so a generated nudge never reads as a colleague's request"* — ⛔ **and silent about what the badge COUNTS.**
+
+**The affected modules.** `product_surface` (the surface) · a new workspace-scoped read model **whose owning module is not yet decided** · `signora_platform`'s outbox, if option ② were taken.
+
+**The alternatives, and why two are already closed.**
+
+| | Option | Verdict |
+|---|---|---|
+| **①** | **A count of domain events** | ⛔ **Closed by the design itself.** ⚡ **The design has *"Mark all read"* and a per-item unread dot**, and **a domain event is workspace-wide with no per-recipient state** — so two people could never have different unread counts, which the design plainly requires |
+| **②** | **A count of outbox rows** | ⛔ **Closed by [§8](../CLAUDE.md), absolutely.** 📁 *"`outbox_event` … a business module must never query one — not to check whether an event was relayed, not to inspect a dead letter, not for debugging."* ⚡ **These tables carry no RLS**, so the grant is the only thing separating tenants there |
+| **③** | **A per-person unread record** | ✅ **The only option the existing rules leave standing**, and the one the design's *"Mark all read"* and per-person dot imply |
+
+**The recommendation, and it is input rather than authority** ([§20e](../CLAUDE.md)). ✅ **Option ③**, as a **person-scoped read model** — 📁 the third tenancy class [492](architecture/492-person-scoped-tenancy.md) already ratified and [TASK-470](BACKLOG.md) already built for `person_preferences`, **so it needs no new classification and no new Security Invariant meaning.**
+
+**The trade-off, stated.** ⚠️ **A per-person record means one row per recipient per notification**, which is more rows than a shared event with a read-marker set. ⛔ **The alternative shape — one notification row plus a per-person `read_at` join — is also option ③**, and the ruling need not choose between them; that is an implementation decision inside whichever module owns it.
+
+**The implementation impact.** **One table with its `tenancy_policy.py` registration in the same change** ([§8](../CLAUDE.md)) · **one workspace-scoped read** · **the popover, its three tabs, the four kinds — agent · ai · human · system — and the four states.** ⚡ **None of it is blocked on Novu**: 📁 [TASK-495](BACKLOG.md) owns delivery and [ADR-0017](architecture/adr/0017-notifications.md) is its approval — **this row is what a customer sees, not how it is sent.**
+
+> ⚠️ **Why this is raised rather than assumed, when two options are already closed.** ⛔ **The elimination is strong but it is still a lane's reading**, and 📁 the row itself instructed *ask one precise question*. ✅ **A single ruling unblocks the whole row**, and **the second half is the part a lane genuinely cannot decide**: `product_surface` owns no tables, and the natural owner may be `workspace_tenancy` or a new bounded context — 🔴 **which is an architectural blocker rather than an implementation one** ([§20e](../CLAUDE.md), *two kinds of blocker*: *"a dependency on a decision nobody has made is architectural however small the code would be"*).
+
+
 ## C-278 · The design's single `header[banner]` cannot be expressed while the rail is full-height
 
 | | |
