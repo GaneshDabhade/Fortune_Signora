@@ -100,6 +100,8 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Status** | ✅ **`FIXED` — QE**, 2026-08-10, in the poll that found it. **Widened, with six regression tests.** ⚠️ **QE does not close its own row; the fix is measured at the next certification** |
 | **Commit found** | Found by reading [B-232](#b-232), which **Lane A** filed against itself |
 
+> ⚠️ **NOT `VERIFIED`, deliberately: this row is QE's own.** ⛔ **A lane does not verify its own fix and neither does QE.** ✅ **The evidence is recorded rather than the verdict**: six regression tests, `mypy --strict` clean, and **4383 tests passing** at `e3eeca2` with the widened gate in force. **It closes when somebody other than its author judges it, or when it catches a real regression in the field.**
+
 **Steps.** Reproduced in six lines, no database:
 
 ```python
@@ -195,7 +197,7 @@ $ git grep -nE '\b(sm|md|lg|xl|2xl):' -- frontend/tests/components/auth-shell.te
 | **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) `render()` → `_rewrite_queue_backlog` |
 | **Current assignee** | **Lane C** — `infra/` is Platform Foundation's ([D-022](DECISION_REGISTER.md)) |
 | **Severity** | 🟠 — ⛔ **A Blocking Quality Defect**: certification returns NOT CERTIFIED on *"the working tree was dirty, so the tree certified was never stored"*, so nothing containing this slice can be promoted |
-| **Status** | 🔵 **`OPEN` — QE**, 2026-08-10. **`CHANGES REQUESTED` on the B-423 slice.** ⚡ **Found by the suite run Lane C asked QE to take, which is exactly what that hand-off was for** |
+| **Status** | ✅ **`VERIFIED` — QE**, 2026-08-10, at promoted `e3eeca2`. **Verified the way it was found**: `render()` with a one-row list leaves `docs/coordination/` untouched, and a full **4383-test** run produces zero drift there. ⚠️ **The row read `OPEN` for two cycles after Lane C fixed it — QE's omission, not a lapsed fix** |
 | **Commit found** | `27ff180f`, found by QE running `make certify` |
 
 **Steps.** Reproduced deterministically, without a database, in three lines:
@@ -307,7 +309,7 @@ error: Your local changes to the following files would be overwritten by merge:
 | **Module** | `product_surface` — [`frontend/tailwind.config.ts`](../frontend/tailwind.config.ts) and 11 files across `app/`, `components/` |
 | **Current assignee** | **Lane A** — 🔴 **and this lane caused it**, in [TASK-1443](BACKLOG.md) |
 | **Severity** | 🟠 **Wrong behaviour a customer would hit** — ⛔ **every responsive rule using `sm:` or `lg:` silently stopped applying.** ⚠️ **Reported by Lane C as 🔴 because it parks finished work; the register keeps this lane's own reading and QE decides** |
-| **Status** | ✅ **`FIXED` — Lane A, 2026-08-10.** ⚠️ **QE verifies and closes** |
+| **Status** | ✅ **`VERIFIED` — QE**, 2026-08-10, at promoted `e3eeca2`. **Measured, not accepted**: a strict scan for a responsive prefix preceded by whitespace, quote or backtick and followed by a utility returns **zero live occurrences**; **all six remaining hits are inside comments**. ⚠️ **Previously `FIXED` — Lane A**, and the row below is that account unedited |
 | **Commit found** | Reported by Lane C; **measured independently here before any change** |
 
 **Steps.** Render any authentication screen, the account brief, Settings, or the onboarding shell at ≥640px.
@@ -368,7 +370,7 @@ error: Your local changes to the following files would be overwritten by merge:
 | **Module** | Repository governance — [`docs/BACKLOG.md`](BACKLOG.md) |
 | **Current assignee** | **Lane A** — 🔴 **this lane caused it** |
 | **Severity** | 🟠 **Wrong behaviour a reader would act on.** ⛔ **Not 🔴 — no code was affected and no gate was weakened** |
-| **Status** | ✅ **`FIXED` — Lane A, 2026-08-10, on the poll that found it.** ⚠️ **QE verifies and closes** |
+| **Status** | ✅ **`VERIFIED` — QE**, 2026-08-10, at promoted `e3eeca2`. **Measured on `main` rather than accepted**: `TASK-1403` reads `PROMOTED — QE, in certified e71e74d` again. ⚡ **And the gate that let it past is repaired** — [B-176](#b-176) |
 | **Commit found** | Found by a directional scan of every Lane A row across `origin/integration`'s history |
 
 **Steps.** QE promoted [TASK-1403](BACKLOG.md) and wrote `PROMOTED — QE, in certified e71e74d`. This lane then rebased, hit a conflict in `BACKLOG.md`, and resolved it by taking its own side.
@@ -397,6 +399,8 @@ error: Your local changes to the following files would be overwritten by merge:
 | **Severity** | 🔴 **Blocks a milestone.** ⛔ **Nobody could create an account** — the first journey in the product |
 | **Status** | ✅ **`FIXED` — Lane A, 2026-08-10, in the slice that found it.** ⚠️ **QE verifies and closes** |
 | **Commit found** | Found by [TASK-475](BACKLOG.md)'s journeys running against the real stack |
+
+> ⚠️ **NOT `VERIFIED` — and the reason is the rule QE applied to sixteen backlog rows this morning.** ⛔ **QE has not measured that account registration works.** **The suite passes and Lane A's own journeys found and fixed it, which is why the row reads `FIXED` rather than `OPEN`** — ✅ **but `VERIFIED` means QE pointed at the behaviour, and the certification gates never create an account.** **It closes when a journey QE can run does.**
 
 **Steps.** Register `twoFactor()` in `lib/auth/server.ts`, then complete `/register` with any valid details.
 
@@ -2973,7 +2977,7 @@ def _load_state_check() -> ModuleType:
 | **Module** | **`platform_foundation`** — [`docs/coordination/queues/`](coordination/queues/), read by [`infra/state-check.py`](../infra/state-check.py) |
 | **Current assignee** | **Lane C** — 📁 the coordination subsystem is this office's under [D-022](DECISION_REGISTER.md) |
 | **Severity** | 🟡 — ⚠️ **survivable but recurring, and QE has now reported it three consecutive cycles** |
-| **Status** | ✅ **`FIXED` — Lane C, 2026-08-10, awaiting QE verification.** ⚡ **`coordination.py` now DERIVES the queue file's `backlog` array from the projection instead of leaving it beside one.** ⛔ **Only that array is rewritten** — the notice, the `[[blocked]]` entries and every hand-written paragraph have no source and are untouched, which is why this edits one line rather than regenerating the file. ✅ **Proven at the CALL SITE, not only in the helper**: running the generator cleared `TASK-1412` and `TASK-1402` from `lane-a.toml` with no hand-edit — ⚠️ **the distinction that made two earlier Lane C tests decorative.** ✅ **`mypy --strict` clean · `--self-test` 5/5 · `--check` current.** ⛔ **The two pytest regressions are WRITTEN AND NOT RUN, and that is stated rather than implied**: `backend/tests/conftest.py` truncates every table and the only two databases on this workstation are `signora` and `signora_lane_c` — **the latter is the demo data the product owner was browsing at the time.** ⚡ **Verified instead by executing the helper directly in a throwaway `tmpdir`, no database touched: rewrite · stale id removed · hand-written content preserved · idempotent on a second call.** **QE runs the suite against a disposable environment** |
+| **Status** | ✅ **`VERIFIED` — QE**, 2026-08-10, at promoted `e3eeca2`. **Measured**: the generator is idempotent on a second run, no queued id sits at `CLAIMED` or beyond in either lane, and `--check`/`--dry-run` write nothing |
 | **Found** | **2026-08-10.** ⚡ **QE's diagnosis was right and is what made this findable**: *"the queues are regenerated, not maintained by hand — so I read this as the projection not being re-run after promotion rather than anything anybody wrote wrongly."* ⚠️ **Half right, and the other half is the bug** |
 | 🔴 **The measurement that separates the two halves** | ✅ **The PUBLISHED projection is correct BY CONSTRUCTION** — [`coordination.py`](../infra/coordination.py):1069 builds `backlog` from `state == ASSIGNED and r.on_integration`, **so a `PROMOTED` or `CLAIMED` row cannot appear in it.** **Verified this cycle: 0 stale rows in `coordination.toml` for either lane.** ⛔ **The stale ids are in the hand-maintained QUEUE FILES** — `lane-a.toml` still listed `TASK-464` after promotion |
 | 🔴 **So the root cause is [§2](../CLAUDE.md), not scheduling** | ⛔ ***"Truth has exactly one authoritative representation; everything else derives from it."*** **Eligibility is DERIVED by the generator from `BACKLOG.md`. The queue file's `backlog` array RESTATES it.** ⚡ **Two representations of one fact, and the hand-maintained one drifts on every promotion — which is exactly the *"synchronisation is maintenance, derivation is architecture"* case** |

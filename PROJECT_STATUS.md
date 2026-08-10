@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `b9d6b76`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `e3eeca2`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,23 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `b9d6b76`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `e3eeca2`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`b9d6b76`** — the certified commit itself |
-| **`integration`** | ✅ **Rebased onto `main`** |
-| **Release candidate** | **22 commits, both lanes plus QE.** ⚠️ **One slice was returned first: [B-174](docs/BUGS.md), fixed by Lane C within the hour and re-verified here** |
-| **Certification** | ✅ [`b9d6b76d2019`](certification/reports/b9d6b76d2019.md) · migration head **`0047`** · protocol **v2** · profile **`platform`** · **second attempt** |
-| **Migration reversibility** | ✅ **RAN, and passed** — `upgrade head` · `downgrade base` · `upgrade head`, against a database the check creates. ⚡ **First cycle in five where it applied rather than being stated as not applicable** |
+| **`main`** | **`e3eeca2`** — the certified commit itself |
+| **Release candidate** | **21 commits, both lanes plus QE.** ⚠️ **Held for a full cycle on [B-424](docs/BUGS.md)'s 🔴**, then promoted the moment it was fixed and measured |
+| **Certification** | ✅ [`e3eeca245038`](certification/reports/e3eeca245038.md) · migration head **`0047`** · protocol **v2** · profile **`platform`** · **second attempt — the first failed on a QE test and the failure was QE's** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None.** **182 rows, 63 unresolved, 0 blocking.** ✅ **[B-423](docs/BUGS.md) and [B-174](docs/BUGS.md) both closed.** ⚠️ **[B-211](docs/BUGS.md) 🟠 ungated** · ⛔ **[B-156](docs/BUGS.md)/[B-166](docs/BUGS.md)/[B-224](docs/BUGS.md) Playwright unrunnable by QE** · 🔴 **[B-173](docs/BUGS.md) QE's own, fourth occurrence** |
-| 🔴 **A board correction QE owed for many cycles** | ⛔ **76 rows sat at `IN VALIDATION` — the state that means *awaiting QE* — and every one was already on `main`.** ✅ **60 with a work commit titled `TASK-n —` are now `PROMOTED`; 55 stale board rows removed.** ⚠️ **16 are left deliberately**: their work shipped under another subject, so the evidence is inference rather than a title, and QE does not set a state it cannot point at |
-| **Customer value this cycle** | ⚡ **A login remembers where you were going — and cannot be told to send you elsewhere** · **you land where you were working, and stop the moment you lose access** · **a search that fails says so, instead of saying nothing matched** · **Ask Signora has a door, and says plainly the room is not finished** · **the audit log becomes somewhere an administrator can go** · **the entry engine admits a machine and refuses to give it a person's screen** |
-| **Overall progress** | **~84%** by engineering effort — an estimate, and marked as one |
+| **Blocking Quality Defects** | ✅ **None.** **189 rows, 64 unresolved, 0 blocking.** ✅ **[B-424](docs/BUGS.md), [B-232](docs/BUGS.md), [B-174](docs/BUGS.md) and [B-423](docs/BUGS.md) `VERIFIED` by measurement.** ⚠️ **[B-231](docs/BUGS.md) and [B-176](docs/BUGS.md) stay `FIXED` and say why** |
+| 🔴 **Four instances of one shape, in a day** | ⛔ **A true sentence answering something narrower than the reader believed.** **[B-175](docs/BUGS.md)** a test asserting a class *string* · **[B-231](docs/BUGS.md)** a test asserting an *import* · **[B-176](docs/BUGS.md)** a guard asserting one of four states · **and QE's own poll** printing *"still a replacement"* while testing for the wrong repair. ✅ **The response is a review question in [`frontend/tests/README.md`](frontend/tests/README.md), not a gate** — *does this assertion fail if the product breaks?* |
+| **Customer value this cycle** | ⚡ **Every authentication screen renders at its designed width again** — 45 utilities named breakpoints that no longer existed · **account registration works** ([B-231](docs/BUGS.md)) · **the seventeen authentication journeys run as one suite** · **two Better Auth capabilities registered and two named as a decision rather than installed** |
+| **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ⚠️ **Certification named 17 gates and executed 6.** **Five QE ran by hand this cycle** — `dr` ✅, `vitest` **2599 across 126 files** ✅, `eslint` ✅, **migration reversibility ✅ (it applied)**, and the B-174 reproduction. ⛔ **No gate, profile, threshold or test was changed**; the D-233 plan remains with Lane C.
+> ⚠️ **Certification named 17 gates and executed 6.** **Four QE ran by hand** — `dr` ✅, `vitest` **2610 across 126 files** ✅, `eslint` ✅, **migration reversibility stated rather than skipped** *(no migration)*. ⛔ **No gate, profile, threshold or test was weakened**; the one test QE changed was corrected to match its own name, and the reason is in its docstring.
 
-**Repository health:** **4377 backend tests** *(+15)* · **95.11% coverage** ✅ *(floor 95)* · **2599 frontend tests** across **126 files** *(+96)* · **401 Security Invariants** · mypy strict over **860 files** · **48 migrations**, `0000`–`0047`, **reversible to base and back, verified** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **211s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
+**Repository health:** **4383 backend tests** · **95.11% coverage** ✅ *(floor 95)* · **2610 frontend tests** across **126 files** *(+11)* · **401 Security Invariants** · mypy strict over **860 files** · **48 migrations**, `0000`–`0047` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **149s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
 
 ---
 
@@ -1025,6 +1023,49 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-10, cycle 194
+
+**Derived from the promoted commit `e3eeca2`.** **Twenty-one commits, held a full cycle on a 🔴, and the cycle's real output is four instances of one defect shape — including two of QE's own.**
+
+### What a customer can now do
+
+⚡ **Every authentication screen renders at its designed width again.** ⛔ **[B-424](docs/BUGS.md): `theme.screens` replaced Tailwind's defaults instead of extending them, so 45 utilities named breakpoints that no longer existed and compiled to nothing.** ✅ **Account registration works** — [B-231](docs/BUGS.md), where registering Better Auth's `twoFactor()` plugin had broken sign-up outright. ✅ **The seventeen authentication journeys run as one suite.** ✅ **Two Better Auth capabilities registered, and two named as a decision rather than installed.**
+
+### 🔴 Four instances of one shape, in a single day, and two were QE's
+
+> ## **A true sentence that answers something narrower than the reader believed.**
+
+| | The claim | What it actually answered | What was broken |
+|---|---|---|---|
+| **[B-175](docs/BUGS.md)** | `toContain('sm:max-w-card')` | the string is in the attribute | every authentication screen |
+| **[B-231](docs/BUGS.md)** | the plugin is imported | the configuration names it | nobody could create an account |
+| **[B-176](docs/BUGS.md)** | `PASS  no VERIFIED state is undone` | one of the four states QE writes | a `PROMOTED` cell reverted onto `main` |
+| **QE's poll** | *"still a replacement"* on three branches | the config still overrides — **true, and the wrong question** | nothing; Lane A had taken the other repair |
+
+⛔ **B-176 is the one that stings: the gate D-228 built to be structurally incapable of proceeding after a failure printed `PASS` on the defect it exists to catch**, because [B-168](docs/BUGS.md) named the state it had just been burned by and the guard inherited that name as if it were the rule. ✅ **All four QE-written states are watched now, with six regression tests and the watched set pinned by name rather than by count.**
+
+⚡ **The response is a review question rather than a gate**, and the two instances that prompted it are the argument against one: **a test can name an input in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **[`frontend/tests/README.md`](frontend/tests/README.md) now asks: *does this assertion fail if the product breaks?***
+
+### ⚠️ And the question caught QE twice more within the hour
+
+**Widening the gate turned an existing test red, and reading it showed the test had asserted the opposite of its own name** — `test_progressing_forward_from_verified_is_not_a_regression` asserted that advancing *was* a regression. ⛔ **So the old gate could refuse a correct promotion, and a test written to match the code could not report that the code was wrong.** ✅ **Corrected to match its name, with the reason in its docstring.**
+
+⚠️ **QE ran mypy, import-linter, `tsc` and eslint before certifying, and not pytest.** **On that change QE was the lane, and the cheap gates are not the lane's gates.**
+
+### ⛔ Two `B-424` rows, and neither branch was wrong
+
+**Lane C filed it from its own block and the row never reached `integration`** — it sat on `lane-c-sync` among a dozen unintegrated commits — **so Lane A could not see it and wrote its own row for the same id.** ⚡ **[C-422](docs/LANE_COORDINATION.md)'s class, *approved is not merged*, turned on the defect register.**
+
+✅ **Merged rather than renumbered — one defect with two accounts — with Lane C's preserved unedited beneath Lane A's**, because one carries the repair and the guard and the other the cause and the pixel mapping. ⚠️ **The severity disagreement is kept rather than settled: Lane C reported 🔴, Lane A recorded 🟠, and QE acted on the 🔴 and held promotion for a full cycle.**
+
+🔴 **The merge went wrong once and that is on the record too.** **The first attempt spliced from the first row's start to the second row's end, and the rows are 2,600 lines apart — it deleted 61 rows.** ✅ **Caught by asserting the row count, restored from git before anything else touched it, and redone by deleting the later block first.**
+
+### Three counts, and the load-bearing one was the lane's
+
+**Lane C measured 46 and named its scan's limit. QE measured 51 and was too high, having counted `--radius-xl` and every `text-xl` declaration as a prefix. Lane A measured 45 on the tree it changed.** ⛔ **Two offices measured a defect neither could see properly, and the lane that owned the code got it right first by measuring before changing anything.**
 
 ---
 
