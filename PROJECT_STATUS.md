@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `da889fd`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3f498b7`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `da889fd`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `3f498b7`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`da889fd`** — the certified commit itself |
+| **`main`** | **`3f498b7`** — the certified commit itself |
 | **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
 | **Release candidate** | ⚡ **Cycle 177 took Lane A ahead of ordinary order, on Lane C's request** — **a lane was stuck behind a bug report that had not synchronized.** ✅ **[B-169](docs/BUGS.md) `VERIFIED`: 167 rows, 0 unparsed** |
-| **Certification** | ✅ [`da889fd7764b`](certification/reports/da889fd7764b.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Certification** | ✅ [`3f498b74e1fa`](certification/reports/3f498b74e1fa.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** · ⚡ **promoted through `--promote`, not through a shell** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **167 rows, 59 unresolved, 0 blocking**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4324 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2224 frontend tests** across **110 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **854 files** · **47 migrations**, `0000`–`0046`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **203s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md); and [B-166](docs/BUGS.md) is why the lane could not run them either** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
+**Repository health:** **4339 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2224 frontend tests** across **110 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **854 files** · **47 migrations**, `0000`–`0046`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **203s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md); and [B-166](docs/BUGS.md) is why the lane could not run them either** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
 
 ---
 
@@ -1227,6 +1227,60 @@ rows that LOST a VERIFIED state          NONE
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** |
 | **Register** | **171 rows, 61 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · ⛔ **[B-168](docs/BUGS.md) fired falsely and was not honoured** · [B-164](docs/BUGS.md) before the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-10, cycle 188 — [D-228](docs/DECISION_REGISTER.md)
+
+**Derived from the promoted commit `3f498b7`.** ⚡ **Three defects fixed at the mechanism. The first promotion in this repository's history that a command performed rather than an operator typed.**
+
+### ⛔ [B-168](docs/BUGS.md) — root cause: the check was never implemented
+
+**It existed only as a shell command written inside its own bug row.** 🔴 **So there was nothing to fail and nothing to honour** — which is also why it could be ignored.
+
+✅ **Fix**: `certification-guard.py::backlog_states()` reads a row's state from its **`Status` cell and from nowhere else**; `verified_regressions()` compares two revisions by state. ⛔ **Prose cannot reach the output** — a title, a note, an evidence line or a reference naming `VERIFIED` contributes nothing.
+
+**Regression test**: the exact cell that produced the false positive — a `READY` cell citing *"`TASK-1408` is `VERIFIED` and promoted"* — **asserts to `READY`, no regression.** ✅ **Result: 9 tests.**
+
+### 🔴 The promotion gate — root cause: there was no promotion command
+
+**Promotion was a shell sequence an operator typed, so every check beside it was advisory *by construction*.**
+
+| | |
+|---|---|
+| **Previous behaviour** | A check printed, and the next line ran regardless |
+| **New behaviour** | `--promote <sha>` runs the blocking gates and calls `git merge` **only if all pass**, in one process |
+
+⛔ **No `--force`, no override, no skip, no approval step.** **Measured from `main`'s own installed gate:**
+
+```
+--promote <uncertified>   FAIL certified · PROMOTION REFUSED · exit 1 · main unchanged
+--promote <certified>     PASS · PASS · PROMOTED 3f498b7 · exit 0
+```
+
+### ✅ [B-163](docs/BUGS.md) — `CHANGES REQUESTED` now outranks `IN VALIDATION`
+
+**It is the one transition §20e places *after* it.** ⛔ **Ranked below, *"later wins"* resolved a returned slice back to `IN VALIDATION`** — so a row QE had handed back read as still waiting on QE, and **the lane that had to act could not see it.** ⚡ **`_LIFECYCLE` *is* the reconciliation, so a wrong rank is a wrong answer about which ref is newer.** ✅ **6 tests, including the reverse cases so a stale return cannot override a later `VERIFIED`.**
+
+### ⚡ [B-227](docs/BUGS.md)'s root cause is neither step 7 nor QE's sync — both cleared by measurement
+
+```
+QE's sync rebase:  08d11ce0 and 0da0b0b1  ->  patch-id fec2f35aa3af for BOTH
+```
+
+**Identical, so git skips the claim as previously-applied.** ✅ **Lane C then found the real cause against itself** ([B-417](docs/BUGS.md)): it resolved a conflict in Lane A's favour and **appended its own rationale to Lane A's `Status` line**, so Lane A's delivery commit met context it never wrote. ⛔ **Of three conflicts resolved that way, `TASK-1441` is the only one carrying Lane C's text and the only one that would not rebase.**
+
+> ⚡ **No step-7 change is carried forward on this evidence.** **Lane C's own words**: *"I would rather the finding stand against me than against a rule that did nothing wrong."*
+
+### Measured
+
+| | |
+|---|---|
+| **Certified** | [`3f498b74e1fa`](certification/reports/3f498b74e1fa.md) · profile **`platform`** · **first attempt** |
+| **Quality** | ⚡ **4339 backend** *(+15)* · **95.09%** · **401 invariants** · mypy strict **855 files** · **37 contracts**, 0 broken · eslint clean · `tsc` clean |
+| **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **185s** |
+| **Register** | **171 rows, 59 unresolved, 0 blocking** · ✅ **[B-168](docs/BUGS.md) and [B-163](docs/BUGS.md) FIXED** |
+| **Promotion** | ⚡ **`--promote` performed it** · `promoted == certified` ✓ · **no promotion occurred while a blocking gate was failing** |
 
 ---
 
