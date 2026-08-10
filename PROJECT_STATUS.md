@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `f22b89d`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `6c42af4`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,24 +12,24 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `f22b89d`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `6c42af4`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`f22b89d`** — the certified commit itself |
-| **`integration`** | ✅ **Rebased onto `main`.** ⚡ **It moved twice during certification and both times the arrivals were claim-only** — the Certification Snapshot rule leaving them for the next cycle, by design |
-| **Release candidate** | **15 commits, two lanes.** ⛔ **One slice excluded for the second consecutive cycle: `TASK-464`** ([B-172](docs/BUGS.md)). ✅ **Nine Lane A slices and five Lane C commits promoted regardless** |
-| **Certification** | ✅ [`f22b89dde03e`](certification/reports/f22b89dde03e.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · ⚠️ **second attempt; [`819802b09b0f`](certification/reports/819802b09b0f.md) NOT CERTIFIED is parked beside it** |
+| **`main`** | **`6c42af4`** — the certified commit itself |
+| **`integration`** | ✅ **Rebased onto `main`** |
+| **Release candidate** | **12 commits, two lanes.** ✅ **Nothing excluded — the first cycle in three where `TASK-464` travelled with the rest** |
+| **Certification** | ✅ [`6c42af4642c0`](certification/reports/6c42af4642c0.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · ✅ **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1317 commits, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None.** `registers.bug_rows()` reads **176 rows, 60 unresolved, 0 blocking**. ⚠️ **[B-211](docs/BUGS.md) 🟠 and ungated** — `ruff check .` red and no gate invokes it. ⛔ **[B-156](docs/BUGS.md)/[B-166](docs/BUGS.md)/[B-224](docs/BUGS.md): Playwright journeys still unrunnable by QE** |
-| **The repeating finding** | 🔴 **[B-172](docs/BUGS.md) failed the floor twice on identical arithmetic** — 94.66% with `TASK-464`, 95.09% without, **and all three of its files are byte-identical across the two cycles.** ⚡ **Nine slices landed between the two runs and the backend numbers did not move**, because every one of them is frontend |
-| **Customer value this cycle** | ⚡ **Tabs, Avatar, Tooltip and Toast join the library, each landing with its first caller** · **the command palette gets its shortcut back** · **the chart ramp in both themes** · **the four breakpoints are the design's** · **the shell's accessibility contract, which caught two errors as it was written** |
-| **Overall progress** | **~82%** by engineering effort — an estimate, and marked as one |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1334 commits, none outside a certified snapshot** |
+| **Blocking Quality Defects** | ✅ **None.** **177 rows, 60 unresolved, 0 blocking.** ✅ **[B-172](docs/BUGS.md) `VERIFIED`** — `coverage-debt --new` reports **no uncovered statements at all**, for the first time in three cycles. ⚠️ **[B-211](docs/BUGS.md) 🟠 and ungated** · ⛔ **[B-156](docs/BUGS.md)/[B-166](docs/BUGS.md)/[B-224](docs/BUGS.md): Playwright journeys still unrunnable by QE** · 🔴 **[B-173](docs/BUGS.md) open, QE's own** |
+| **Customer value this cycle** | ⚡ **A generated answer now says what it stood on and refuses to invent a confidence** (M12.6) · **`/w/:workspace/home` exists, so eight navigation rules stop pointing at nothing** · **the Team page's history region no longer crashes** ([B-420](docs/BUGS.md), found by using the product) · **the Action Batch can propose, approve, apply and reverse** |
+| **Design authority** | ✅ **The Design Snapshot is complete — 29 of 29**, ICP Builder and People Intelligence added, manifest re-baselined ([D-138](docs/DECISION_REGISTER.md)) |
+| **Overall progress** | **~83%** by engineering effort — an estimate, and marked as one |
 
-> ⚠️ **Certification named 17 gates and executed 6, again.** **Four of the eleven QE ran by hand** — `dr` ✅, `vitest` **2474 across 122 files** ✅, `eslint` ✅, and **migration reversibility stated rather than skipped** *(no migration in the candidate)*. ⛔ **No gate, profile, threshold or test was changed to reach this promotion**, and the D-233 plan remains with Lane C for governance review.
+> ⚠️ **Certification named 17 gates and executed 6, again.** **Four QE ran by hand** — `dr` ✅, `vitest` **2503 across 124 files** ✅, `eslint` ✅, **migration reversibility stated rather than skipped** *(no migration)*. ⛔ **No gate, profile, threshold or test was changed**; the D-233 plan remains with Lane C for governance review.
 
-**Repository health:** **4343 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2474 frontend tests** across **122 files** *(+92 this cycle; **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **855 files** · **47 migrations**, `0000`–`0046`, **none added this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **172s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** — 5 restart stages, nothing lost, **401 invariants against the restarted stack** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
+**Repository health:** **4362 backend tests** *(+19)* · **95.11% coverage** ✅ *(floor 95)* · ✅ **zero uncovered statements introduced** · **2503 frontend tests** across **124 files** *(+29)* · **401 Security Invariants** · mypy strict over **858 files** · **47 migrations**, `0000`–`0046`, **none added** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **201s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** — 5 restart stages, nothing lost, **401 invariants against the restarted stack** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
 
 ---
 
@@ -1024,6 +1024,38 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-10, cycle 191
+
+**Derived from the promoted commit `6c42af4`.** ✅ **Twelve commits, two lanes, nothing excluded** — the first cycle in three where every slice travelled together.
+
+### What a customer can now do
+
+**A generated answer says what it stood on, and refuses to invent a confidence** (`TASK-1411`, M12.6) — ⚡ **`Show reasoning` with a source count, and no fabricated certainty where the platform has none.** ✅ **`/w/:workspace/home` exists**, so eight navigation rules stop pointing at nothing (`TASK-1438`). ✅ **The Team page's history region no longer crashes** — [B-420](docs/BUGS.md), **found by Lane C using the product, not by the suite.** ✅ **The Action Batch can propose, approve, apply and reverse** (`TASK-464`).
+
+### ✅ [B-172](docs/BUGS.md) `VERIFIED` — and the lane's diagnosis was sharper than QE's row
+
+**Measured on the promoted commit rather than accepted:** `coverage-debt --new` reports ***"No uncovered statements. Nothing to pay down."*** — ⚡ **the first time in three cycles** — and the repository certified at **95.11% with `TASK-464` included**, 4362 tests, **+19**.
+
+> ⚡ **Lane A named the defect more precisely than QE had:** *"`test_public_contract.py` imported them and asserted their shape. **An import is not an execution** — it runs the `@dataclass` lines and nothing else, so nothing behind them is covered."* ✅ **`test_batches.py`, 404 lines, exercises the four transitions and both events.**
+>
+> ⚠️ **Cost: two cycles excluded.** ✅ **And the mechanism worked exactly as designed throughout** — the slice was excluded twice, **neither lane was ever held**, and the row closed on a measurement rather than on agreement.
+
+### ⛔ A rebase artifact that patch-id resolution did not catch
+
+**`tsc` failed on the assembled candidate with eight `TS2300: Duplicate identifier` errors** — `TabItem`, `Avatar`, `Tooltip`, each exported **twice** from `components/ui/index.ts`.
+
+⚠️ **Two commits were re-applying export lines `main` already carried, and git added them with no textual conflict.** ⛔ **Patch-id had marked both NEW, correctly — their surrounding context differed — while their *effect* was pure duplication.**
+
+> 🔴 **This is a limit of patch-id worth recording rather than a failure of the practice.** **Patch-id answers *"has this exact change been applied?"*, not *"does applying it change anything?"*** ✅ **The cheap gates caught it in seconds, which is why they run before certification** — and **the commits were dropped rather than the file edited**, because editing the file would have left the branch still carrying them.
+
+⚠️ **Lane A's branch still holds both, so this recurs on their next push unless they rebase.** **Reported to the lane.**
+
+### The Design Snapshot is complete
+
+✅ **29 of 29** — **ICP Builder** and **People Intelligence** entered the snapshot and the manifest was re-baselined ([D-138](docs/DECISION_REGISTER.md), `TASK-1455`). ⚡ **Lane C's assessment names the shape of the gap it closes**: *"both implementations predate the design, not drift."* ⛔ **And one gap is named rather than papered over** — [`TASK-1425`](docs/BACKLOG.md) **said the Executive Dashboard shipped; nothing renders it.**
 
 ---
 
