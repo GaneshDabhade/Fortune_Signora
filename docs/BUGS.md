@@ -192,6 +192,33 @@ error: Your local changes to the following files would be overwritten by merge:
 
 **Why it was not caught earlier.** ⚠️ **§19 puts the coverage check on the implementing lane before handover, and names the command.** ⛔ **`make coverage-debt ARGS="action_batch"` would have printed both files in seconds.** ⚡ **This is the second consecutive cycle where a required gate that the lane owns was first run by QE** — [B-171](#b-171--a-new-test-types-the-coordination-module-as-moduletype-and-then-sets-an-attribute-on-it-so-mypy---strict-fails) was `mypy --strict`, this one is coverage. **QE is reporting the pattern, not only the row.**
 
+### B-232 · A lane's rebase resolution reverted QE's `PROMOTED` cell, and the revert reached `main`
+
+| | |
+|---|---|
+| **Module** | Repository governance — [`docs/BACKLOG.md`](BACKLOG.md) |
+| **Current assignee** | **Lane A** — 🔴 **this lane caused it** |
+| **Severity** | 🟠 **Wrong behaviour a reader would act on.** ⛔ **Not 🔴 — no code was affected and no gate was weakened** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-10, on the poll that found it.** ⚠️ **QE verifies and closes** |
+| **Commit found** | Found by a directional scan of every Lane A row across `origin/integration`'s history |
+
+**Steps.** QE promoted [TASK-1403](BACKLOG.md) and wrote `PROMOTED — QE, in certified e71e74d`. This lane then rebased, hit a conflict in `BACKLOG.md`, and resolved it by taking its own side.
+
+**Expected.** ⛔ **A lane never writes `VERIFIED`, `CERTIFIED`, `PROMOTED` or `DONE`** ([§20e](../CLAUDE.md)) — **and never un-writes one either.**
+
+**Actual.** ⚡ **The cell reverted to `IN VALIDATION`**, and because it landed on `integration` before the next cycle, **QE promoted the revert to `main`.** 📁 **All three refs then said a promoted slice was still awaiting validation.**
+
+**Cause, and it is a process defect rather than a slip.** ⛔ **This lane resolved several `BACKLOG.md` conflicts with a blanket rule — *take the incoming side* — applied by a script.** ⚡ **That rule is right for a lane's own execution state and WRONG for QE's judgement cells**, and it cannot tell the two apart because it never looks at what the cell says.
+
+> 🔴 **This is [B-168](#b-168) exactly, one generation later.** 📁 B-168: *"a clean rebase can silently revert QE's `VERIFIED` cells."* ⚠️ **This lane knew the rule, ran the directional check earlier the same day, and caught a `CHANGES REQUESTED` cell with it** — ⛔ **then stopped running it once the rebases became routine.** ✅ **A check that is only run when somebody remembers is the class of guard [§2](../CLAUDE.md) calls documentation pretending to be code.**
+
+**Scope, measured rather than assumed.** ✅ **Exactly ONE row was affected.** ⚡ **Every Lane A row was scanned across the last forty versions of `BACKLOG.md` on `integration`** — `TASK-1412`, `TASK-1438`, `TASK-464` and `TASK-1411` all retain their `PROMOTED` cells, and the rows still in flight were never stronger than `IN VALIDATION`.
+
+**Fix.** ✅ **QE's cell restored VERBATIM**, recovered from `ee7f1523` rather than re-typed — ⛔ **a paraphrase of somebody else's judgement is a second defect wearing a repair's clothes.**
+
+⚠️ **The durable fix is not this commit.** ⛔ **It is that a `BACKLOG.md` conflict must be resolved cell by cell**, keeping QE's word wherever the cell carries one — **and the scan that found this is the thing to run after every rebase**, which is what [B-168](#b-168) already asked for.
+
+
 ### B-231 · Registering Better Auth's `twoFactor()` plugin broke account registration outright
 
 | | |
