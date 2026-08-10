@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `8b85192`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `63a9d6b`, 2026-08-09.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `8b85192`, 2026-08-09.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `63a9d6b`, 2026-08-09.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`8b85192`** — the certified commit itself |
+| **`main`** | **`63a9d6b`** — the certified commit itself |
 | **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
 | **Release candidate** | ⚡ **Cycle 177 took Lane A ahead of ordinary order, on Lane C's request** — **a lane was stuck behind a bug report that had not synchronized.** ✅ **[B-169](docs/BUGS.md) `VERIFIED`: 167 rows, 0 unparsed** |
-| **Certification** | ✅ [`8b85192a67a4`](certification/reports/8b85192a67a4.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Certification** | ✅ [`63a9d6b0eeb0`](certification/reports/63a9d6b0eeb0.md) · migration head **`0046`** · protocol **v2** · profile **`documentation`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **167 rows, 59 unresolved, 0 blocking**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
@@ -983,6 +983,48 @@ git add docs/BUGS.md && git rebase --continue    # ran despite the assertion fai
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **260s** |
 | **Register** | **167 rows, 59 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md)'s check ran ✓ · [B-164](docs/BUGS.md)'s check ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-09, cycle 182
+
+**Derived from the promoted commit `63a9d6b`.** ⛔ **One lane excluded on a red gate; the other certified because a stale projection was hiding claimable work.**
+
+### ⛔ [B-171](docs/BUGS.md) — Lane C excluded, twice, on `mypy --strict`
+
+```
+tests/test_coordination_source.py: Module has no attribute "NOTICES"  ×4
+                                   Returning Any from function declared to return "str"
+Found 5 errors in 1 file (checked 854 source files)
+```
+
+⚡ **`NOTICES` is not missing** — QE checked before concluding: it is at `infra/coordination.py:865`, and on `main`. **The module is loaded through `importlib` and typed `ModuleType`**, so reassigning `coordination.NOTICES` is unprovable to strict mypy.
+
+✅ **The test's intent is right and QE is not asking for it back.** ⚡ **The repair is the typing**: the sibling loader in `test_certification_state_reading.py` has the same shape and passes, because `monkeypatch.setattr` takes `object` where direct attribute assignment does not. ⛔ **Eight of Lane C's commits are held behind a one-line fix in its own test.**
+
+### ✅ Why Lane A certified when its diff is documentation
+
+**`profile: documentation` normally accumulates** — §20e, *"certifying them alone spends a full gate run proving a markdown table is still true."* ⛔ **This table was not merely true-but-dull. It was hiding work.**
+
+> 📁 **[C-273](docs/LANE_COORDINATION.md), measured by Lane A**: *"The queue lists `TASK-1406` as blocked on `TASK-1405`; **`TASK-1405` was promoted to `main` at `830ad1c1` today**."*
+
+⚡ **A lane is being told a claimable row is blocked.** ✅ **That is the exception this office has applied twice before** — cycle 151's board reading *"Blocked by: Nothing"* for seven-way-blocked rows, and cycle 162's queue offering back six already-shipped rows — **and [D-136](docs/DECISION_REGISTER.md) names it the Planning class: high-priority synchronization.**
+
+⚠️ **The projection itself is on Lane C's excluded branch**, so what promoted is the **finding**, not the fix — **which is what lets Lane C regenerate the queue once [B-171](docs/BUGS.md) clears.**
+
+### ✅ `TASK-1456` — an audit that reports the engine is faithful and routes nothing
+
+**+1 architecture document** ([500](docs/architecture/500-authenticated-entry-reconciliation.md)). ⚡ **[C-269](docs/LANE_COORDINATION.md) alongside it**: *"nine of the rail's eleven entries have no destination."*
+
+### Measured
+
+| | |
+|---|---|
+| **Certified** | [`63a9d6b0eeb0`](certification/reports/63a9d6b0eeb0.md) · profile **`documentation`** · **first attempt** |
+| **Quality** | **4310 backend** · **95.09%** · **401 invariants** · mypy strict **854 files** · **37 contracts**, 0 broken · eslint clean · `tsc` clean |
+| **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
+| **Register** | **168 rows, 60 unresolved, 0 blocking** |
+| **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
 
 ---
 
