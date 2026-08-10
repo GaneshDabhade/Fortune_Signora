@@ -10,7 +10,7 @@
 
 import { betterAuth } from 'better-auth';
 import { createAuthMiddleware } from 'better-auth/api';
-import { emailOTP, haveIBeenPwned } from 'better-auth/plugins';
+import { emailOTP, haveIBeenPwned, multiSession, twoFactor } from 'better-auth/plugins';
 import { Pool } from 'pg';
 
 import { loadAuthConfig, type AuthConfig } from '@/lib/auth/config';
@@ -88,6 +88,46 @@ export function createAuth(config: AuthConfig = loadAuthConfig()) {
           await deliver({ to: email, purpose: 'verify-email', code: otp });
         },
       }),
+
+      /**
+       * 🔴 **[TASK-493](../../../docs/BACKLOG.md) — two-factor, and it is
+       * BOUGHT rather than built.**
+       *
+       * 📁 **[§13](../../../CLAUDE.md) forbids a bespoke authentication
+       * mechanism by name**, and a hand-rolled TOTP loop is exactly the thing
+       * it names. ✅ **This registers the vendor's.**
+       *
+       * ⛔ **Nothing here decides an issuer, a digit count or a window.** The
+       * plugin's defaults are the vendor's, and 📁 the standing rule from
+       * [D-185](../../../docs/DECISION_REGISTER.md) applies: *"the framework
+       * should implement the product, not define it"* — **the design has not
+       * yet said anything about second factors, so nothing is configured
+       * against it.** ⚠️ **When it does, the number moves here and not in a
+       * screen.**
+       *
+       * ⚡ **Registering it changes no journey.** It adds endpoints nobody
+       * calls yet; **a person with no second factor enrolled signs in exactly
+       * as they did**, which is the row's own Definition of Done and what
+       * `auth-journey.spec.ts` proves.
+       */
+      twoFactor(),
+
+      /**
+       * ⚡ **[TASK-493](../../../docs/BACKLOG.md) — multi-session.**
+       *
+       * 📁 **The App Shell's account menu is drawn with more than one identity
+       * available**, and 📁 **Workspace §19**: *"a workspace is the hard
+       * boundary of data, permission and configuration"* — ⛔ **which is about
+       * WORKSPACES and says nothing against one person holding two accounts.**
+       *
+       * 🔴 **It changes no authorization.** ⛔ **[D-175](../../../docs/DECISION_REGISTER.md)
+       * refuses Better Auth's organization roles permanently, and this is not
+       * that**: Casbin still decides everything, `active_workspace_id` is
+       * still a routing hint re-verified server-side
+       * ([§13](../../../CLAUDE.md)), and **each session verifies as its own
+       * RS256 token exactly as it did.**
+       */
+      multiSession(),
     ],
 
     /**

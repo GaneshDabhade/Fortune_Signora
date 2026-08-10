@@ -1135,3 +1135,26 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ### ⚠️ Two of the four doors are elsewhere, deliberately
 
 ✅ **This owns the keyboard door — 📁 §15's own binding, `⌘⇧A`, read rather than chosen — and the shell's entry control.** ⛔ **The table-selection door and the explain-this-metric door belong to the surfaces that own those controls** — `table.tsx`'s AI summary row and [TASK-1411](../BACKLOG.md)'s attribution strip — **and building them here would put shell code inside a data table.**
+
+---
+
+## TASK-493 · Better Auth plugins — the two that actually ship *(2026-08-10)*
+
+⚠️ **The row's central premise is half wrong, and it was measured before anything was written.** 📁 It states *"All four ship in Better Auth 1.6.25 and are UNREGISTERED"*. ✅ **`two-factor` and `multi-session` do.** ⛔ **`passkey` and `sso` do not** — `require.resolve('better-auth/plugins/passkey')` throws and neither name appears in the package.
+
+🔴 **So two of the four are configuration and two are a NEW DEPENDENCY**, which [§6](../../CLAUDE.md) and [§21](../../CLAUDE.md) put behind an ADR — ⛔ **and the row's own budget is 🟠 one file with 🔴 nothing.** ✅ **Filed as [C-280](../LANE_COORDINATION.md); the half that ships is built.**
+
+### ✅ Registered, and nothing configured against a design that has not spoken
+
+| | |
+|---|---|
+| **`twoFactor()`** | 📁 **[§13](../../CLAUDE.md) forbids a bespoke authentication mechanism by name, and a hand-rolled TOTP loop is exactly that.** ⛔ **No issuer, digit count or window is set**: 📁 [D-185](../DECISION_REGISTER.md)'s standing rule — *"the framework should implement the product, not define it"* — **and the design has not yet said anything about second factors, so nothing is configured against it** |
+| **`multiSession()`** | 🔴 **It changes no authorization.** ⛔ **[D-175](../DECISION_REGISTER.md) refuses Better Auth's organization roles permanently and this is not that**: Casbin still decides everything, `active_workspace_id` is still a routing hint re-verified server-side, and **each session verifies as its own RS256 token exactly as before** |
+
+⚡ **Registering either changes no journey.** **They add endpoints nobody calls yet** — a person with no second factor enrolled signs in exactly as they did — **which is the row's own Definition of Done and what `auth-journey.spec.ts` proves.**
+
+### ⛔ The test asserts the absence, and fails in the right direction
+
+⚡ **`tests/unit/auth-plugins.test.ts` asserts that `passkey` and `sso` are NOT registered and that the package genuinely does not carry them.** ✅ **If a future upgrade ships them, the resolve-throws assertion breaks and the row becomes buildable** — ⛔ **until then it is what stops a later session quietly adding a dependency to satisfy a row that says all four ship.**
+
+✅ **And it asserts the two the row named**: **RS256 stays pinned** ([ADR-0026](adr/0026-jwt-boundary-architecture.md)) and **no plugin brought an authorization model with it.**

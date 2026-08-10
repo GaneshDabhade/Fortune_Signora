@@ -10552,6 +10552,35 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ⚠️ **Recorded as [C-1416](#c-1416)'s third instance** — 📁 **C-272 assumed an Executive Dashboard already built, [C-1415](#c-1415) assumed a workspace has region, environment and a fiscal calendar, and this assumes five roles.** **Three rows, three screens, two days, one shape.**
 
+## C-280 · Two of TASK-493's four Better Auth plugins do not ship in the installed version, so adopting them is a dependency decision
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, building [TASK-493](BACKLOG.md) |
+| **Owner** | ⛔ **Product owner + an ADR** — 📁 [§6](../CLAUDE.md): *"never introduce a new framework, library, or major dependency without explicit approval"*, and [§21](../CLAUDE.md) repeats it |
+| **State** | 🟡 **`READY FOR PRODUCT DECISION`** |
+| **Blocks** | **Half of [TASK-493](BACKLOG.md).** ✅ **The other half is built and `IN VALIDATION`** |
+
+**The measurement.** 📁 **The row states *"All four ship in Better Auth 1.6.25 and are UNREGISTERED"*.** ⚠️ **Two do and two do not**, and it was checked against `node_modules` rather than against a memory of the vendor's documentation:
+
+| | Ships in 1.6.25? |
+|---|---|
+| **`two-factor`** | ✅ **Yes** — `better-auth/dist/plugins/two-factor` · **registered by this slice** |
+| **`multi-session`** | ✅ **Yes** — `better-auth/dist/plugins/multi-session` · **registered by this slice** |
+| **`passkey`** | ⛔ **No.** `require.resolve('better-auth/plugins/passkey')` throws; the name appears nowhere in the package |
+| **`sso`** | ⛔ **No.** Same |
+
+**Why a lane cannot simply install them.** 🔴 **Each is a separate package**, so adopting either is **a new dependency** — ⛔ **and the row's own Change Budget is 🟠 one file with 🔴 nothing.** ⚡ **A lane that `npm install`s its way past that has worked around a repository rule**, which [§21](../CLAUDE.md) forbids by name.
+
+**Why it matters beyond the packaging.** ⚠️ **Passkeys and SSO are both authentication mechanisms**, and 📁 [§13](../CLAUDE.md) is emphatic that authentication is **bought, not built**, with Better Auth as the sole Authority. ✅ **Adopting the vendor's own packages is the compliant route** — ⛔ **but it is still an adoption, and [09-build-vs-buy.md](architecture/09-build-vs-buy.md) is where that is recorded.**
+
+**The recommendation, and it is input rather than authority.** ✅ **Adopt both, as vendor packages, under one ADR** — **they are the same decision** (Better Auth ecosystem plugins for capabilities [493](architecture/493-security-platform-architecture.md) already anticipates), **and splitting them would produce two ADRs with one argument.** ⚠️ **SSO additionally interacts with [C-431](#c-431--three-controls-on-the-approved-sign-in-card-have-no-backing-capability)**, whose sign-in card already draws a control with no backing capability.
+
+**The implementation impact once ruled.** ⚡ **Small and additive**: two `npm` dependencies, two lines in the same registry file, and Better Auth's own schema push — ⛔ **no Signora API changes, no Alembic migration** (📁 `0005_auth_schema.py`: *"this migration creates the schema and nothing inside it"* — **Better Auth owns its tables**).
+
+> ⚡ **`tests/unit/auth-plugins.test.ts` asserts the absence rather than only reporting it**, and **it fails in the correct direction**: if a future upgrade ships the two plugins, the resolve-throws assertion breaks and the row becomes buildable. ⛔ **Until then it is what stops a later session quietly adding a dependency to satisfy a row that says all four ship.**
+
+
 ## C-279 · TASK-480's notification badge has three candidate sources, and two are foreclosed by rules the repository already has
 
 | | |
