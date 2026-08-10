@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2pulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:6px 20px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+    <span style="font-weight:600">People intelligence</span>
+    <span style="color:var(--ink-2)">Deals are lost by people, not by accounts · roles, relationships and who is missing</span>
+    <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft)">
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};white-space:nowrap" onClick="{{ setLight }}">Light</span>
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};white-space:nowrap" onClick="{{ setDark }}">Dark</span>
+    </span>
+  </div>
+
+  <div style="display:flex;align-items:flex-start">
+    <nav style="width:56px;flex:none;position:sticky;top:0;height:100vh;background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">NG</div>
+      <div style="height:1px;width:28px;background:var(--line-soft);margin:6px 0"></div>
+      <sc-for list="{{ railIcons }}" as="r" hint-placeholder-count="8">
+        <div style="width:38px;height:32px;border-radius:8px;display:grid;place-items:center;background:{{ r.bg }};color:{{ r.color }}">{{ r.icon }}</div>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:10px 20px;border-bottom:1px solid var(--line-soft);background:var(--surface);flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:7px;font-size:13px;min-width:0">
+          <span style="color:var(--ink-3)">Accounts</span><span style="color:var(--ink-4)">/</span>
+          <span style="color:var(--ink-3)">Vantage Logistics</span><span style="color:var(--ink-4)">/</span>
+          <span style="font-weight:600">People</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap">Add contact</span>
+          <span style="display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:6px 12px;border-radius:8px;background:var(--ai);color:#fff;font-size:12px;font-weight:600;box-shadow:var(--e1);white-space:nowrap">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+            Plan the committee
+          </span>
+        </div>
+      </div>
+
+      <div style="padding:18px 20px 0">
+        <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <h1 style="font-size:25px;font-weight:700;letter-spacing:-0.026em;margin:0">Buying committee</h1>
+              <span style="font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:var(--risk-tint);color:var(--risk);white-space:nowrap">1 gap · 2 changes</span>
+              <span style="font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:var(--sunken);color:var(--ink-2);white-space:nowrap">24 contacts · 6 on the committee</span>
+            </div>
+            <div style="font-size:13px;color:var(--ink-2);margin-top:4px">Roles are inferred from behaviour — who speaks, who is copied, who approves — and every inference says what it was inferred from.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:11px;margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--ai-tint);border:1px solid var(--ai-line);flex-wrap:wrap">
+          <span style="width:20px;height:20px;flex:none;border-radius:6px;background:var(--ai);display:grid;place-items:center;margin-top:1px">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+          </span>
+          <div style="min-width:260px;flex:1">
+            <div style="font-size:13.5px;line-height:1.65">The committee has inverted. Sørensen built the business case and has now moved into procurement, so your strongest advocate is the function blocking the uplift. Hald remains supportive but cannot approve. Bruun signs and has never been contacted — and she is two degrees away through Hald.</div>
+            <div style="display:flex;align-items:center;gap:14px;margin-top:10px;flex-wrap:wrap">
+              <span style="font-size:12px;font-weight:600;color:var(--ai-ink);white-space:nowrap">Show reasoning</span>
+              <span style="font-size:12px;font-weight:600;color:var(--ai-ink);white-space:nowrap">9 sources</span>
+              <span style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-2)"><span style="display:flex;gap:3px">{{ summaryPips }}</span>Confidence 4 of 5</span>
+              <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);white-space:nowrap">Updated 09:14</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:16px 20px 30px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="display:flex;flex-wrap:wrap;gap:12px">
+            <sc-for list="{{ roleCards }}" as="r" hint-placeholder-count="4">
+              <div style="flex:1 1 210px;border-radius:14px;background:var(--surface);border:1px solid {{ r.border }};box-shadow:var(--e1);padding:15px;min-width:0">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:6px;background:{{ r.tint }};color:{{ r.color }};white-space:nowrap">{{ r.role }}</span>
+                  <span style="margin-left:auto;font-size:10.5px;color:var(--ink-4);white-space:nowrap">{{ r.count }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+                  <span style="width:32px;height:32px;flex:none;border-radius:999px;background:{{ r.avatarBg }};color:{{ r.avatarFg }};display:grid;place-items:center;font-size:11px;font-weight:600">{{ r.initials }}</span>
+                  <div style="min-width:0">
+                    <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+                    <div style="font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.title }}</div>
+                  </div>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-2);margin-top:10px;line-height:1.5">{{ r.evidence }}</div>
+                <div style="font-size:11px;font-weight:600;color:{{ r.color }};margin-top:8px">{{ r.action }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Contacts</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Sorted by influence on this deal, not alphabetically</span>
+              <span style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+                <sc-for list="{{ contactTabs }}" as="t" hint-placeholder-count="4">
+                  <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.shadow }};white-space:nowrap">{{ t.label }}</span>
+                </sc-for>
+              </span>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:900px">
+                <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 116px minmax(0,1fr) 148px 128px 84px;gap:12px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Person</div><div>Role</div><div>Stance &amp; evidence</div><div>Engagement</div><div>Risk</div><div style="text-align:right">Act</div>
+                </div>
+                <sc-for list="{{ contacts }}" as="c" hint-placeholder-count="7">
+                  <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 116px minmax(0,1fr) 148px 128px 84px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line-soft);background:{{ c.bg }};border-left:2px solid {{ c.edge }}">
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                      <span style="width:30px;height:30px;flex:none;border-radius:999px;background:{{ c.avatarBg }};color:{{ c.avatarFg }};display:grid;place-items:center;font-size:10.5px;font-weight:600">{{ c.initials }}</span>
+                      <div style="min-width:0">
+                        <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div>
+                        <div style="font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.title }}</div>
+                      </div>
+                    </div>
+                    <div><span style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ c.roleBg }};color:{{ c.roleFg }};white-space:nowrap">{{ c.role }}</span></div>
+                    <div style="min-width:0">
+                      <div style="font-size:11.5px;color:{{ c.stanceColor }};font-weight:600">{{ c.stance }}</div>
+                      <div style="font-size:10.5px;color:var(--ink-3);margin-top:2px;line-height:1.4">{{ c.evidence }}</div>
+                    </div>
+                    <div>
+                      <div style="height:5px;border-radius:999px;background:var(--sunken);overflow:hidden">
+                        <div style="width:{{ c.pct }};height:100%;border-radius:999px;background:{{ c.engageColor }}"></div>
+                      </div>
+                      <div style="font-size:10.5px;color:var(--ink-3);margin-top:4px">{{ c.engageLabel }}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:7px;min-width:0">
+                      <span style="width:6px;height:6px;flex:none;border-radius:999px;background:{{ c.riskColor }}"></span>
+                      <span style="font-size:11px;color:{{ c.riskColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.risk }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:5px">
+                      <span style="width:26px;height:26px;border-radius:7px;border:1px solid var(--line);display:grid;place-items:center;font-size:10px;color:var(--ink-2)">✉</span>
+                      <span style="width:26px;height:26px;border-radius:7px;background:var(--ai-tint);color:var(--ai-ink);display:grid;place-items:center;font-size:10px;font-weight:700">✦</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap">
+              <span>18 further contacts have no role on this deal and are hidden by default.</span>
+              <span style="margin-left:auto;font-weight:600;color:var(--brand-ink);white-space:nowrap">Show all 24</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px">
+            <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;align-self:start">
+              <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+                <span style="font-size:13.5px;font-weight:600">Org chart</span>
+                <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--ai-tint);color:var(--ai-ink);white-space:nowrap">Partly inferred</span>
+              </div>
+              <div style="padding:18px">
+                <sc-for list="{{ orgLevels }}" as="l" hint-placeholder-count="3">
+                  <div style="display:flex;gap:10px;justify-content:center;margin-bottom:{{ l.gap }};flex-wrap:wrap">
+                    <sc-for list="{{ l.nodes }}" as="n" hint-placeholder-count="3">
+                      <div style="width:{{ n.w }};padding:9px 10px;border-radius:10px;background:{{ n.bg }};border:1px {{ n.style }} {{ n.border }};text-align:center;min-width:0">
+                        <div style="font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.name }}</div>
+                        <div style="font-size:10px;color:var(--ink-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.title }}</div>
+                        <div style="font-size:9.5px;font-weight:600;color:{{ n.tagColor }};margin-top:4px">{{ n.tag }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+                <div style="display:flex;gap:14px;margin-top:6px;font-size:10.5px;color:var(--ink-2);flex-wrap:wrap;justify-content:center">
+                  <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:8px;border:1px solid var(--line);border-radius:3px"></span>Confirmed</span>
+                  <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:8px;border:1px dashed var(--line);border-radius:3px"></span>Inferred</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden;align-self:start">
+              <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+                <span style="font-size:13.5px;font-weight:600">Relationships</span>
+                <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);white-space:nowrap">Ours vs. theirs</span>
+              </div>
+              <div style="padding:10px 18px 16px">
+                <svg viewBox="0 0 360 230" style="width:100%;height:auto">
+                  <g stroke="var(--line)" stroke-width="1.2">
+                    <line x1="180" y1="115" x2="72" y2="52"></line>
+                    <line x1="180" y1="115" x2="64" y2="176"></line>
+                    <line x1="180" y1="115" x2="290" y2="60"></line>
+                    <line x1="72" y1="52" x2="290" y2="60" stroke-dasharray="4 4"></line>
+                    <line x1="64" y1="176" x2="290" y2="60" stroke-dasharray="4 4"></line>
+                  </g>
+                  <line x1="180" y1="115" x2="290" y2="60" stroke="var(--pos)" stroke-width="2.6"></line>
+                  <line x1="180" y1="115" x2="64" y2="176" stroke="var(--risk)" stroke-width="2.6"></line>
+                  <line x1="290" y1="60" x2="296" y2="172" stroke="var(--ai)" stroke-width="2" stroke-dasharray="5 4"></line>
+                  <circle cx="180" cy="115" r="22" fill="var(--brand)"></circle>
+                  <text x="180" y="119" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">MR</text>
+                  <text x="180" y="150" text-anchor="middle" font-size="9" fill="var(--ink-3)">us</text>
+                  <sc-for list="{{ graphNodes }}" as="n" hint-placeholder-count="4">
+                    <g>
+                      <circle cx="{{ n.cx }}" cy="{{ n.cy }}" r="{{ n.r }}" fill="{{ n.fill }}" stroke="{{ n.stroke }}" stroke-width="1.6" stroke-dasharray="{{ n.dash }}"></circle>
+                      <text x="{{ n.cx }}" y="{{ n.cy }}" text-anchor="middle" font-size="9.5" font-weight="600" fill="{{ n.textFill }}">{{ n.abbr }}</text>
+                      <text x="{{ n.cx }}" y="{{ n.labelY }}" text-anchor="middle" font-size="9" fill="var(--ink-3)">{{ n.label }}</text>
+                    </g>
+                  </sc-for>
+                </svg>
+                <div style="display:flex;gap:12px;font-size:10.5px;color:var(--ink-2);flex-wrap:wrap">
+                  <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:2.6px;border-radius:2px;background:var(--pos)"></span>Strong</span>
+                  <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:2.6px;border-radius:2px;background:var(--risk)"></span>Damaged</span>
+                  <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:2px;border-radius:2px;background:var(--ai)"></span>Path in</span>
+                  <span style="margin-left:auto;color:var(--ink-3)">Dashed circle = no relationship</span>
+                </div>
+                <div style="margin-top:12px;padding:11px 12px;border-radius:11px;background:var(--ai-tint);border:1px solid var(--ai-line);font-size:12px;line-height:1.55">
+                  <span style="font-weight:600;color:var(--ai-ink)">Shortest path to the signer: </span>
+                  <span>Hald → Bruun. They sat on the same steering group for 14 months and Hald has offered help twice.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="width:8px;height:8px;border-radius:999px;background:var(--risk);animation:v2pulse 2s ease-in-out infinite"></span>
+              <span style="font-size:13.5px;font-weight:600">People timeline</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Who joined, left or changed side</span>
+              <span style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+                <sc-for list="{{ timelineTabs }}" as="t" hint-placeholder-count="3">
+                  <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.shadow }};white-space:nowrap">{{ t.label }}</span>
+                </sc-for>
+              </span>
+            </div>
+            <div style="padding:18px 18px 6px">
+              <div style="position:relative;padding-left:26px">
+                <div style="position:absolute;left:8px;top:6px;bottom:16px;width:1.5px;border-radius:2px;background:var(--line-soft)"></div>
+                <sc-for list="{{ timeline }}" as="t" hint-placeholder-count="6">
+                  <div style="position:relative;padding-bottom:16px">
+                    <span style="position:absolute;left:-22px;top:3px;width:10px;height:10px;border-radius:999px;background:{{ t.dot }};box-shadow:0 0 0 3px {{ t.ring }}"></span>
+                    <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                      <span style="font-size:13px;font-weight:600">{{ t.title }}</span>
+                      <span style="font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ t.tagBg }};color:{{ t.tagFg }};white-space:nowrap">{{ t.tag }}</span>
+                      <span style="font-size:11px;color:var(--ink-4);font-variant-numeric:tabular-nums;white-space:nowrap">{{ t.when }}</span>
+                      <span style="margin-left:auto;font-size:11.5px;font-weight:600;color:var(--brand-ink);white-space:nowrap">{{ t.action }}</span>
+                    </div>
+                    <div style="font-size:12.5px;color:var(--ink-2);margin-top:4px;line-height:1.55">{{ t.body }}</div>
+                    <div style="font-size:11px;color:var(--ink-3);margin-top:5px">{{ t.source }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--risk);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;background:var(--risk-tint);border-bottom:1px solid var(--line-soft)">
+              <span style="width:18px;height:18px;flex:none;border-radius:5px;background:var(--risk);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700">!</span>
+              <span style="font-size:12.5px;font-weight:600;color:var(--risk)">Committee gap</span>
+            </div>
+            <div style="padding:14px 15px">
+              <div style="font-size:13px;font-weight:600;line-height:1.4">No relationship above VP</div>
+              <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">Mette Bruun signs contracts of this size and has never been contacted. Renewals of this value close 41% less often without a CFO relationship.</div>
+              <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+                <sc-for list="{{ gapPath }}" as="g" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:9px;font-size:11.5px">
+                    <span style="width:16px;height:16px;flex:none;border-radius:999px;border:1.5px solid var(--line);color:var(--ink-3);display:grid;place-items:center;font-size:9px;font-weight:700">{{ g.n }}</span>
+                    <span style="color:var(--ink-2)">{{ g.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:34px;margin-top:13px;padding:6px 12px;border-radius:8px;background:var(--ai);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">Draft the ask to Hald</span>
+            </div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Coverage by role</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">Against won deals</span>
+            </div>
+            <sc-for list="{{ coverage }}" as="c" hint-placeholder-count="5">
+              <div style="padding:11px 15px;border-bottom:1px solid var(--line-soft)">
+                <div style="display:flex;align-items:baseline;gap:8px;font-size:11.5px;flex-wrap:wrap">
+                  <span style="font-weight:600">{{ c.role }}</span>
+                  <span style="margin-left:auto;font-weight:600;color:{{ c.color }};white-space:nowrap">{{ c.state }}</span>
+                </div>
+                <div style="height:5px;border-radius:999px;background:var(--sunken);margin-top:6px;overflow:hidden">
+                  <div style="width:{{ c.pct }};height:100%;border-radius:999px;background:{{ c.color }}"></div>
+                </div>
+                <div style="font-size:10.5px;color:var(--ink-3);margin-top:4px;line-height:1.45">{{ c.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Engagement</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">Last 90 days</span>
+            </div>
+            <div style="padding:14px 15px">
+              <div style="display:flex;align-items:flex-end;gap:6px;height:74px">
+                <sc-for list="{{ engagementBars }}" as="b" hint-placeholder-count="12">
+                  <div style="flex:1;min-width:0">
+                    <div style="height:{{ b.h }};border-radius:3px 3px 0 0;background:{{ b.color }}"></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink-4);margin-top:5px">
+                <span>13 weeks ago</span><span>this week</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+                <sc-for list="{{ engagementFacts }}" as="e" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:9px;font-size:11.5px">
+                    <span style="color:var(--ink-2);min-width:0">{{ e.k }}</span>
+                    <span style="margin-left:auto;font-weight:600;color:{{ e.color }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ e.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:11px;color:var(--ink-2);margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft);line-height:1.5">Engagement did not fall gradually — it stopped after 14 July. That date is the objection, not a holiday.</div>
+            </div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">People risk</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--risk-tint);color:var(--risk);white-space:nowrap">4 active</span>
+            </div>
+            <sc-for list="{{ risks }}" as="r" hint-placeholder-count="4">
+              <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:6px;height:6px;flex:none;border-radius:999px;background:{{ r.color }};margin-top:6px"></span>
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;font-weight:600">{{ r.label }}</div>
+                  <div style="font-size:11px;color:var(--ink-2);margin-top:2px;line-height:1.45">{{ r.detail }}</div>
+                </div>
+                <span style="margin-left:auto;flex:none;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ r.tint }};color:{{ r.color }};white-space:nowrap">{{ r.severity }}</span>
+              </div>
+            </sc-for>
+            <div style="padding:12px 15px;font-size:10.5px;color:var(--ink-3);line-height:1.5">Departures are detected from signature changes, calendar declines and public profiles — and are always shown with the evidence, because being wrong about a person is expensive.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+    });
+  }
+
+  icon(kind) {
+    const p = {
+      home: 'M2.5 7 8 2.5 13.5 7v6.5h-11V7Z', chart: 'M3 13V7M8 13V3M13 13V9',
+      flow: 'M2.5 4h11M4.5 8h7M6.5 12h3', grid: 'M2.5 2.5h5v5h-5zM8.5 2.5h5v5h-5zM2.5 8.5h5v5h-5zM8.5 8.5h5v5h-5z',
+      case: 'M2.5 5.5h11v8h-11zM6 5.5V3h4v2.5', chat: 'M2.5 3h11v7H7l-4.5 3.5z',
+      people: 'M6 7.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM2.5 13c0-2 1.6-3.2 3.5-3.2S9.5 11 9.5 13M11 4.2a1.8 1.8 0 0 1 0 3.6M11.5 9.9c1.3.3 2 1.4 2 3.1',
+      file: 'M4 2h5l3 3v9H4zM9 2v3h3',
+    }[kind];
+    return R('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }, R('path', { d: p }));
+  }
+
+  pips(n, w) {
+    return [1, 2, 3, 4, 5].map(i => R('span', { key: i, style: { width: w || 14, height: 5, borderRadius: 999, display: 'block', background: i <= n ? 'var(--ai)' : 'rgba(128,128,128,.25)' } }));
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--brand)',
+      lightFg: dark ? 'var(--ink-3)' : '#fff',
+      darkBg: dark ? 'var(--brand)' : 'transparent',
+      darkFg: dark ? '#fff' : 'var(--ink-3)',
+
+      railIcons: ['home', 'chart', 'flow', 'grid', 'case', 'chat', 'people', 'file'].map((k, i) => ({
+        icon: this.icon(k),
+        bg: i === 6 ? 'var(--brand-tint)' : 'transparent',
+        color: i === 6 ? 'var(--brand)' : 'var(--ink-3)',
+      })),
+
+      summaryPips: this.pips(4, 13),
+
+      roleCards: [
+        { role: 'Champion', count: 'was Sørensen', name: 'Jonas Hald', title: 'VP Operations', initials: 'JH', evidence: 'Advocated in 6 of 8 calls, forwarded our material internally twice, replies within a day.', action: 'Ask for the CFO intro', tint: 'var(--pos-tint)', color: 'var(--pos)', border: 'var(--pos)', avatarBg: 'var(--pos)', avatarFg: '#fff' },
+        { role: 'Blocker', count: 'new', name: 'Peter Sørensen', title: 'Head of Procurement', initials: 'PS', evidence: 'Raised the uplift objection twice, holds the DKK 5m renegotiation mandate. Was our champion until 21 July.', action: 'Reframe on compliance', tint: 'var(--risk-tint)', color: 'var(--risk)', border: 'var(--risk)', avatarBg: 'var(--risk)', avatarFg: '#fff' },
+        { role: 'Signer', count: 'no contact', name: 'Mette Bruun', title: 'Chief Financial Officer', initials: 'MB', evidence: 'Approves contracts above DKK 5m. Never emailed, never met, not on any call.', action: 'Reach via Hald', tint: 'var(--warn-tint)', color: 'var(--warn)', border: 'var(--warn)', avatarBg: 'var(--sunken)', avatarFg: 'var(--ink-2)' },
+        { role: 'Influencer', count: 'rising', name: 'Line Krogh', title: 'Sustainability Lead', initials: 'LK', evidence: 'Asked for the emissions audit trail; her mandate is the board commitment our case rests on.', action: 'Arm with data', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', border: 'var(--brand-line)', avatarBg: 'var(--sunken)', avatarFg: 'var(--ink-2)' },
+      ],
+
+      contactTabs: ['Committee · 6', 'All · 24', 'Changed · 2', 'Gaps · 1'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--surface)' : 'transparent',
+        color: i === 0 ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: i === 0 ? 'var(--e1)' : 'none',
+      })),
+
+      contacts: [
+        { name: 'Peter Sørensen', title: 'Head of Procurement (was Ops)', initials: 'PS', role: 'Blocker', stance: 'Opposed on price', evidence: 'Two objections on record · owns the mandate', pct: '34%', engageLabel: '3 touches · 24 days', risk: 'Was champion', sel: true, roleKind: 'risk', engageKind: 'risk', riskKind: 'risk' },
+        { name: 'Mette Bruun', title: 'Chief Financial Officer', initials: 'MB', role: 'Signer', stance: 'Unknown', evidence: 'No contact of any kind · inferred from approval matrix', pct: '8%', engageLabel: '0 direct touches', risk: 'Unengaged signer', sel: false, roleKind: 'warn', engageKind: 'risk', riskKind: 'risk' },
+        { name: 'Jonas Hald', title: 'VP Operations', initials: 'JH', role: 'Champion', stance: 'Supportive', evidence: 'Advocated in 6 of 8 calls · forwarded material', pct: '88%', engageLabel: '22 touches · 2 days', risk: 'None', sel: false, roleKind: 'pos', engageKind: 'pos', riskKind: 'ok' },
+        { name: 'Rasmus Thorsen', title: 'Chief Information Officer', initials: 'RT', role: 'Technical', stance: 'Compliance-driven', evidence: 'Asked for export format · cleared security review', pct: '56%', engageLabel: '9 touches · 11 days', risk: 'Cooling', sel: false, roleKind: 'brand', engageKind: 'warn', riskKind: 'warn' },
+        { name: 'Line Krogh', title: 'Sustainability Lead', initials: 'LK', role: 'Influencer', stance: 'Likely ally', evidence: 'Owns the CSRD commitment · engaged 6 days ago', pct: '42%', engageLabel: '4 touches · 6 days', risk: 'Under-used', sel: false, roleKind: 'neutral', engageKind: 'warn', riskKind: 'warn' },
+        { name: 'Anders Vik', title: 'Group Legal Counsel', initials: 'AV', role: 'Gatekeeper', stance: 'Neutral', evidence: 'Appears only at signature stage · 1 prior renewal', pct: '18%', engageLabel: '1 touch · 71 days', risk: 'Unknown to us', sel: false, roleKind: 'neutral', engageKind: 'risk', riskKind: 'warn' },
+        { name: 'Dorte Køhler', title: 'Former COO', initials: 'DK', role: 'Departed', stance: 'Left 21 Jul', evidence: 'Out-of-office permanent · profile updated', pct: '0%', engageLabel: 'archived', risk: 'Lost sponsor', sel: false, roleKind: 'off', engageKind: 'off', riskKind: 'risk' },
+      ].map(c => {
+        const roles = {
+          risk: ['var(--risk-tint)', 'var(--risk)'], warn: ['var(--warn-tint)', 'var(--warn)'],
+          pos: ['var(--pos-tint)', 'var(--pos)'], brand: ['var(--brand-tint)', 'var(--brand-ink)'],
+          neutral: ['var(--sunken)', 'var(--ink-2)'], off: ['var(--sunken)', 'var(--ink-3)'],
+        }[c.roleKind];
+        const eng = { risk: 'var(--risk)', warn: 'var(--warn)', pos: 'var(--pos)', off: 'var(--ink-4)' }[c.engageKind];
+        const rk = { risk: 'var(--risk)', warn: 'var(--warn)', ok: 'var(--pos)' }[c.riskKind];
+        return {
+          name: c.name, title: c.title, initials: c.initials, role: c.role, stance: c.stance,
+          evidence: c.evidence, pct: c.pct, engageLabel: c.engageLabel, risk: c.risk,
+          roleBg: roles[0], roleFg: roles[1],
+          stanceColor: c.roleKind === 'pos' ? 'var(--pos)' : (c.roleKind === 'risk' ? 'var(--risk)' : 'var(--ink)'),
+          engageColor: eng, riskColor: rk,
+          bg: c.sel ? 'var(--risk-tint)' : 'transparent',
+          edge: c.sel ? 'var(--risk)' : 'transparent',
+          avatarBg: c.sel ? 'var(--risk)' : 'var(--sunken)',
+          avatarFg: c.sel ? '#fff' : 'var(--ink-2)',
+        };
+      }),
+
+      orgLevels: [
+        { gap: '14px', nodes: [
+          { name: 'M. Bruun', title: 'CFO · signs', tag: 'No relationship', w: '128px', bg: 'var(--warn-tint)', border: 'var(--warn)', style: 'solid', tagColor: 'var(--warn)' } ] },
+        { gap: '14px', nodes: [
+          { name: 'R. Thorsen', title: 'CIO', tag: 'Technical', w: '112px', bg: 'var(--brand-tint)', border: 'var(--brand-line)', style: 'solid', tagColor: 'var(--brand-ink)' },
+          { name: 'P. Sørensen', title: 'Procurement', tag: 'Blocker', w: '112px', bg: 'var(--risk-tint)', border: 'var(--risk)', style: 'solid', tagColor: 'var(--risk)' },
+          { name: 'A. Vik', title: 'Legal', tag: 'Gatekeeper', w: '100px', bg: 'var(--surface)', border: 'var(--line)', style: 'dashed', tagColor: 'var(--ink-3)' } ] },
+        { gap: '6px', nodes: [
+          { name: 'J. Hald', title: 'VP Operations', tag: 'Champion', w: '112px', bg: 'var(--pos-tint)', border: 'var(--pos)', style: 'solid', tagColor: 'var(--pos)' },
+          { name: 'L. Krogh', title: 'Sustainability', tag: 'Influencer', w: '112px', bg: 'var(--surface)', border: 'var(--line)', style: 'solid', tagColor: 'var(--ink-3)' },
+          { name: '3 unknown', title: 'Ops managers', tag: 'Inferred', w: '100px', bg: 'var(--surface)', border: 'var(--line)', style: 'dashed', tagColor: 'var(--ink-4)' } ] },
+      ],
+
+      graphNodes: [
+        { cx: 72, cy: 52, r: 18, abbr: 'RT', label: 'CIO · warm', labelY: 26, fill: 'var(--brand-tint)', stroke: 'var(--brand-line)', textFill: 'var(--brand-ink)', dash: '0' },
+        { cx: 64, cy: 176, r: 20, abbr: 'PS', label: 'Procurement · damaged', labelY: 208, fill: 'var(--risk-tint)', stroke: 'var(--risk)', textFill: 'var(--risk)', dash: '0' },
+        { cx: 290, cy: 60, r: 21, abbr: 'JH', label: 'Champion · strong', labelY: 30, fill: 'var(--pos-tint)', stroke: 'var(--pos)', textFill: 'var(--pos)', dash: '0' },
+        { cx: 296, cy: 172, r: 19, abbr: 'MB', label: 'CFO · signs, unknown', labelY: 204, fill: 'var(--surface)', stroke: 'var(--warn)', textFill: 'var(--warn)', dash: '4 3' },
+      ],
+
+      timelineTabs: ['All', 'Role changes', 'Departures'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--surface)' : 'transparent',
+        color: i === 0 ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: i === 0 ? 'var(--e1)' : 'none',
+      })),
+
+      timeline: [
+        { title: 'Sørensen moved from Operations to Procurement', tag: 'Role change', when: '21 Jul', action: 'Re-map', body: 'The person who built the internal business case now owns the mandate to renegotiate it. This single change accounts for 7 points of the deal’s probability fall.', source: 'Email signature · corroborated by public profile', dot: 'var(--risk)', ring: 'var(--risk-tint)', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)' },
+        { title: 'Køhler left the company', tag: 'Departure', when: '21 Jul', action: 'Archive', body: 'Former COO and executive sponsor. No replacement sponsor has been identified, and her successor has not appeared on any thread.', source: 'Permanent out-of-office · profile updated', dot: 'var(--risk)', ring: 'var(--risk-tint)', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)' },
+        { title: 'Krogh joined the conversation', tag: 'New entrant', when: '29 Jul', action: 'Engage', body: 'Sustainability lead, asked directly for the emissions audit trail. She owns the board commitment that makes our compliance argument matter.', source: 'Email thread · 4 messages', dot: 'var(--pos)', ring: 'var(--pos-tint)', tagBg: 'var(--pos-tint)', tagFg: 'var(--pos)' },
+        { title: 'Thorsen stopped replying', tag: 'Cooling', when: '24 Jul', action: 'Nudge', body: 'Two messages unanswered after the security review closed successfully. Historically he replies within three days.', source: 'Engagement pattern · 11 days silent', dot: 'var(--warn)', ring: 'var(--warn-tint)', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)' },
+        { title: 'Hald offered to help internally', tag: 'Opening', when: 'Yesterday', action: 'Take it', body: '“Let me know what procurement needs from us.” Second unprompted offer. He also sat on a steering group with Bruun for 14 months.', source: 'Email · positive sentiment', dot: 'var(--pos)', ring: 'var(--pos-tint)', tagBg: 'var(--pos-tint)', tagFg: 'var(--pos)' },
+        { title: 'Committee mapped at 6 people', tag: 'Baseline', when: '12 Jun', action: '', body: 'Original map at deal creation: 1 champion, 1 sponsor, 1 technical, 3 users. Two of those six are now gone or opposed.', source: 'CRM · manual entry', dot: 'var(--ink-4)', ring: 'var(--sunken)', tagBg: 'var(--sunken)', tagFg: 'var(--ink-2)' },
+      ],
+
+      gapPath: [
+        { n: '1', label: 'Hald sat on a steering group with Bruun' },
+        { n: '2', label: 'He has offered help twice, unprompted' },
+        { n: '3', label: 'Ask for a 20-minute compliance briefing' },
+      ],
+
+      coverage: [
+        { role: 'Champion', state: 'Covered', pct: '88%', color: 'var(--pos)', note: 'Present in 96 of 96 won deals' },
+        { role: 'Economic buyer / signer', state: 'Missing', pct: '8%', color: 'var(--risk)', note: 'Present in 91 of 96 won deals — the biggest gap here' },
+        { role: 'Technical buyer', state: 'Covered', pct: '56%', color: 'var(--warn)', note: 'Cooling; review passed but contact has stopped' },
+        { role: 'Executive sponsor', state: 'Lost', pct: '0%', color: 'var(--risk)', note: 'Køhler left 21 Jul, no replacement identified' },
+        { role: 'Procurement', state: 'Adversarial', pct: '34%', color: 'var(--warn)', note: 'Present in 74 of 96 won deals — needed, not fatal' },
+      ],
+
+      engagementBars: [72, 78, 84, 80, 88, 76, 82, 90, 34, 20, 14, 10, 6].map((v, i) => ({
+        h: v + '%',
+        color: i >= 8 ? 'var(--risk)' : 'var(--brand)',
+      })),
+
+      engagementFacts: [
+        { k: 'Touches before 14 July', v: '18 in 8 weeks', color: 'var(--pos)' },
+        { k: 'Touches since', v: '3 in 5 weeks', color: 'var(--risk)' },
+        { k: 'People engaged', v: '5 → 2', color: 'var(--risk)' },
+        { k: 'Their outbound to us', v: '1 message', color: 'var(--risk)' },
+      ],
+
+      risks: [
+        { label: 'Champion became the blocker', detail: 'Sørensen holds both the history and the mandate', severity: 'Critical', color: 'var(--risk)', tint: 'var(--risk-tint)' },
+        { label: 'Signer never contacted', detail: 'Bruun approves; we have no relationship', severity: 'High', color: 'var(--risk)', tint: 'var(--risk-tint)' },
+        { label: 'Sponsor departed with no successor', detail: 'Køhler left 21 Jul', severity: 'High', color: 'var(--risk)', tint: 'var(--risk-tint)' },
+        { label: 'Single-threaded on Hald', detail: '73% of our engagement is with one person', severity: 'Medium', color: 'var(--warn)', tint: 'var(--warn-tint)' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
