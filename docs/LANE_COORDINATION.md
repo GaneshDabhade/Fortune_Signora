@@ -10552,6 +10552,34 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ⚠️ **Recorded as [C-1416](#c-1416)'s third instance** — 📁 **C-272 assumed an Executive Dashboard already built, [C-1415](#c-1415) assumed a workspace has region, environment and a fiscal calendar, and this assumes five roles.** **Three rows, three screens, two days, one shape.**
 
+## C-282 · B-219 needs a one-line ruling and has never been routed to anyone who can give it
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, on the poll that found it still `OPEN` |
+| **Owner** | ⛔ **Product owner** — 📁 **the fix is `next.config`, which [§20c](../CLAUDE.md) and the Change Budget put at 🔴** |
+| **State** | 🟡 **`READY FOR PRODUCT DECISION`** — ⚡ **the options were prepared a day ago; only the routing was missing** |
+| **Blocks** | **Lane C's [TASK-1431](BACKLOG.md)**, which is that lane's only claimable row. ⚠️ **It does not block Lane A** |
+
+**The gap this row exists to close, and it is a process one.** ⛔ **[B-219](BUGS.md) has been `OPEN` since 2026-08-09 with its own status reading *"Not fixed: `next.config` and the runbook are frontend foundation, 🔴 in the Change Budget."*** 🔴 **Nothing carried it any further.** ⚡ **A defect whose fix a lane may not make, with no coordination item, is a defect that can sit forever** — 📁 [§20e](../CLAUDE.md): *"an item exists only when another module's assignee or the product owner must answer something before implementation can safely continue."* **That was true of B-219 on the day it was filed.**
+
+⚠️ **This lane filed the bug and did not file the item, and that is the miss.** ⛔ **Recording the blocker in the row it blocks is not the same as routing it.**
+
+**The problem.** 📁 **`next dev` and `next build` share one `.next/`.** ⚡ **Completion gate 4 (`next build`) destroys the dev server that gate 5 (the headed journey) runs against**, and ⛔ **the symptom names the wrong subsystem entirely**: every route returns `500`, Playwright fails at *"sign in as the owner"*, and **the diagnosis goes to authentication.** **This lane spent it there — rate limiting, then the Better Auth tables, then which schema they were in.**
+
+**The alternatives, unchanged from the row.**
+
+| | | |
+|---|---|---|
+| **①** | ⚡ **`distDir` for the production build** | ✅ **One line.** **The two stop sharing state and the ordering stops mattering** |
+| **②** | **Runbook order** | ⛔ **Weaker — it relies on remembering**, and the whole defect is that nobody remembers |
+| **③** | **`make validate` restarts the dev server** | **Most convenient, most machinery** |
+
+**The recommendation, and it is input rather than authority** ([§20e](../CLAUDE.md)). ✅ **Option ①.** ⚡ **It removes the interaction instead of documenting it**, which is [§2](../CLAUDE.md)'s preference for a violation that is *unrepresentable* over one that is *discouraged* — **and it is the only one of the three that cannot be forgotten.**
+
+**The implementation impact.** ⛔ **One line in `frontend/next.config.ts` and a sentence in [`RUNNING.md`](RUNNING.md)** — **whose owner is QE.** ⚡ **No product code, no migration, no test change.** ⚠️ **Every lane that runs the Completion gates is exposed to this today**, which is why it is worth a minute rather than a cycle.
+
+
 ## C-281 · Meilisearch is ratified as a vendor and unowned as a module, and a second datastore needs an exception a lane cannot grant
 
 | | |
