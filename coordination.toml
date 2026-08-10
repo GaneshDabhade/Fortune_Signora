@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "d96f57a"
+generated_from = "bd2f37f"
 task_count     = 158
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-1411", "TASK-1442", "TASK-1448", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-1447", "TASK-1449", "TASK-1450", "TASK-1451", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
+backlog            = ["TASK-1411", "TASK-1442", "TASK-1402", "TASK-1403", "TASK-1407", "TASK-1422", "TASK-1438", "TASK-1443", "TASK-1444", "TASK-1450", "TASK-1451", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
 assigned_total     = 137
-claimable          = 24
-claimable_now      = 23
+claimable          = 21
+claimable_now      = 20
 awaiting_sync      = 1
-in_flight          = 80
-actionable         = 7
+in_flight          = 83
+actionable         = 10
 awaiting_qe_transition = 0
 blocked_on_integration = 1
 supply_state       = "working"
 blocked            = 33
-lane_utilization   = 16.0
-idle_prediction_days   = 3.4
+lane_utilization   = 16.6
+idle_prediction_days   = 3.0
 dependency_wait_days   = 0.1
 blocked_duration_days  = 0.1
 critical_path_max      = 3
@@ -47,7 +47,7 @@ blocked            = 8
 lane_utilization   = 1.4
 idle_prediction_days   = 0.3
 dependency_wait_days   = 3.1
-blocked_duration_days  = 3.1
+blocked_duration_days  = 2.1
 critical_path_max      = 0
 
 [[task]]
@@ -63,7 +63,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lan"
 waiting_for    = "— Lane B, 2026-08-07, on [C-338](LANE_COORDINATION.md), which this lane raised.** ⚠️ **An architectural blocker, not an implementation one** (§20e): *"
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
@@ -95,7 +95,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md): twelve of the"
 waiting_for    = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md): twelve of the engine's destinations do not exist.** ⚠️ **RE-POINTED on [D-208](DECISION_REGIS"
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
@@ -143,7 +143,7 @@ next_lane      = "Lane A"
 critical_path  = 0
 estimated_ready = "(the route) · ✅ the RESOLVER DELIVERED — Lane A, 2026-08-09, claim rel"
 waiting_for    = "(the route) · ✅ the RESOLVER DELIVERED — Lane A, 2026-08-09, claim released.** ⛔ **[C-268](LANE_COORDINATION.md)**: creating `/w/:workspace/home` turn"
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
@@ -383,7 +383,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md): the Workspace"
 waiting_for    = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md): the Workspace Chooser specification does not exist.** 🔴 **THIS ROW WAS RELEASED `READY` EARLI"
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
@@ -415,7 +415,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md).** 🔴 **Also re"
 waiting_for    = "— Lane C, 2026-08-09, on [C-1405](LANE_COORDINATION.md).** 🔴 **Also released `READY` earlier today in error**: ⛔ **eleven gate screens were treated as"
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
@@ -463,7 +463,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane C, 2026-08-09, on [C-1410](LANE_COORDINATION.md).** ✅ **THE ONE"
 waiting_for    = "— Lane C, 2026-08-09, on [C-1410](LANE_COORDINATION.md).** ✅ **THE ONE ROW OF THE FOUR THAT IS GENUINELY DEPENDENT**, and [D-208](DECISION_REGISTER.md"
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
@@ -541,7 +541,7 @@ unblocks       = ["TASK-1432"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 1
-estimated_ready = "after [TASK-1448](BACKLOG.md)** — ⚡ **Lane C, 2026-08-09, re-pointed u"
+estimated_ready = "when TASK-1448 complete"
 waiting_for    = "after [TASK-1448](BACKLOG.md)** — ⚡ **Lane C, 2026-08-09, re-pointed under [D-219](DECISION_REGISTER.md) §6.** ✅ **The product owner ruled the order: "
 blocked_days   = 0.0
 on_integration = true
@@ -757,15 +757,15 @@ on_integration = true
 [[task]]
 id            = "TASK-1447"
 title         = "The loading and error states every route owes"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -773,15 +773,15 @@ on_integration = true
 [[task]]
 id            = "TASK-1448"
 title         = "Tabs, Avatar and Tooltip — the three controls the design uses and the library lacks"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = ["TASK-1433"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -789,15 +789,15 @@ on_integration = true
 [[task]]
 id            = "TASK-1449"
 title         = "Toast joins the shared library, with the design's three kinds"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -1359,7 +1359,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane A, 2026-08-09, claim released.** ⛔ **Behind [TASK-472](#task-47"
 waiting_for    = "— Lane A, 2026-08-09, claim released.** ⛔ **Behind [TASK-472](#task-472--a-workspace-can-list-its-accounts-and-blank-input-currently-refuses-to) — Lan"
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
@@ -1807,7 +1807,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— Lane A, 2026-08-08, claim released.** ✅ **Milestones 1 and 2 are del"
 waiting_for    = "— Lane A, 2026-08-08, claim released.** ✅ **Milestones 1 and 2 are delivered and PROMOTED** — screens `01`, `02`, `03`, `04`, migrations `0044` and `0"
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
@@ -2351,7 +2351,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "on [C-1413](LANE_COORDINATION.md) — Lane C, 2026-08-10, withdrawing it"
 waiting_for    = "on [C-1413](LANE_COORDINATION.md) — Lane C, 2026-08-10, withdrawing its own `READY`.** ⛔ **The row contradicts itself: its Change Budget names 🟢 `modu"
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
