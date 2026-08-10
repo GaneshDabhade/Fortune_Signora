@@ -1023,6 +1023,26 @@ def _notice(lane: str, reachable: frozenset[str] | set[str] = frozenset()) -> st
 _PENDING_QUEUES: dict[str, list[str]] = {}
 
 
+
+def _notice_health(rows: list[Task]) -> dict[str, str]:
+    """Which lanes' notices the guards suppressed, and why. **B-427.**
+
+    ⛔ **Reports; never repairs.** The guard is right to withhold — the fix is
+    for the author to reword, and a generator that silently rewrote a notice
+    would be inventing coordination text nobody wrote.
+    """
+    out: dict[str, str] = {}
+    for lane in sorted({r.lane for r in rows if r.lane != "—"}):
+        # ⛔ **Render, never inspect the source.** `NOTICES` is a PATH, not a
+        # mapping — a first attempt at this helper guarded on `isinstance(…,
+        # dict)`, was False every time, and reported nothing. **The fix for a
+        # silent failure must not itself fail silently**, so this asks the same
+        # function the projection asks and reads its answer.
+        rendered = _notice(lane, {r.id for r in rows if r.lane == lane and r.on_integration})
+        if rendered.startswith("NOTICE WITHHELD"):
+            out[lane] = rendered.split("—", 1)[-1].strip()[:120]
+    return out
+
 def render(rows: list[Task]) -> str:
     lanes = sorted({r.lane for r in rows if r.lane != "—"})
     out = [
@@ -1423,6 +1443,15 @@ def main() -> int:
         print(f"coordination: current — {len(rows)} task(s)")
         return 0
 
+    # ✅ **B-427** — report a notice the guards SUPPRESSED, because suppression
+    # is silent to its author. **A withheld notice is the guard working**
+    # (B-216, B-221): a notice may not assert a task state, and one naming
+    # unreachable work is refused. ⛔ **But the whole notice goes, including
+    # text that was already there and correct** — and `--publish` said nothing,
+    # so this office appended a briefing for Lane A, destroyed the notice it
+    # was appended to, and reported the routing done.
+    for _lane, _spec in sorted(_notice_health(rows).items()):
+        print(f"coordination: NOTICE WITHHELD for {_lane} — {_spec}")
     OUT.write_text(fresh)
     # ✅ **B-423's derivation, applied on the WRITE path only** — B-174.
     for _lane, _ids in _PENDING_QUEUES.items():

@@ -691,3 +691,38 @@ def test_render_never_writes_a_queue_file(
 
     # ⛔ Untouched — not "restored", never written.
     assert queue.read_text(encoding="utf-8") == original
+
+
+def test_publishing_reports_a_withheld_notice(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """**B-427** — suppression must be visible to the author.
+
+    ⛔ **The guards are right to withhold** (B-216, B-221). **The defect was that
+    they did it silently**, so this office appended a briefing to a lane's
+    notice, destroyed the notice it appended to, and reported the routing done.
+    """
+    monkeypatch.setattr(
+        coordination, "_notice",
+        lambda lane, reachable=frozenset(): "NOTICE WITHHELD — it asserted a task state",
+    )
+    row = coordination.Task(
+        id="TASK-1", title="t", state=coordination.ASSIGNED, declared="READY",
+        lane="Lane A", depends_on=[], on_integration=True,
+    )
+    assert "Lane A" in coordination._notice_health([row])
+
+
+def test_notice_health_is_silent_when_nothing_is_withheld(
+    monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """⚡ **Silent on the healthy case** — a reporter that always prints is one
+    people stop reading, which is how the original suppression stayed unseen."""
+    monkeypatch.setattr(
+        coordination, "_notice", lambda lane, reachable=frozenset(): "ordinary reasoning"
+    )
+    row = coordination.Task(
+        id="TASK-1", title="t", state=coordination.ASSIGNED, declared="READY",
+        lane="Lane A", depends_on=[], on_integration=True,
+    )
+    assert coordination._notice_health([row]) == {}
