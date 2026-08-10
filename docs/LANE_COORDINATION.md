@@ -5409,7 +5409,7 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-05, on the product owner's instruction: *"If no coordination item exists for this ownership, create one so the decision becomes permanently traceable instead of remaining implicit inside [TASK-418](BACKLOG.md)."* |
 | **Owner** | **Product owner** — ruled |
-| **Status** | **`RULED`** — 2026-08-05, and **closed on the same day it was opened.** Recorded for traceability, not for deliberation |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-10, the requesting lane.** ⚡ **Ruled and closed the day it was opened; it has sat `RULED` since 2026-08-05 because nobody performed the close.** ⛔ **[§20e](../CLAUDE.md): *the requesting lane closes* — and the requesting lane was this office** *(was: **`RULED`** — 2026-08-05, and **closed on the same day it was opened.** Recorded for traceability, not for deliberation)* |
 | **Blocks** | ~~**[TASK-418](BACKLOG.md)**, and **[TASK-901](BACKLOG.md)'s seven independently certifiable slices behind it**~~ — **released by this ruling** |
 
 ### Why it existed
@@ -7272,7 +7272,7 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 | **Raised by** | **Lane C**, Product-Led Domain Discovery |
 | **Owner** | **The product owner.** It is a product decision with a ratified engineering principle on one side of it |
 | **Blocks** | **Nothing today.** **[TASK-438](BACKLOG.md) delivers five of the screen's sections without it** |
-| **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-10, the requesting lane.** ⚡ **Ruled by the product owner on 2026-08-06 ([D-112](DECISION_REGISTER.md)) and blocking nothing since.** ✅ **The question — does Signora forecast revenue — was answered; leaving it open advertised a decision nobody was waiting for** *(was: ✅ **`RULED`** — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this fiel)* |
 
 ### The conflict, in two quotations
 
@@ -7328,7 +7328,7 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 | **Raised by** | **Lane C**, auditing the screen before implementation reached it |
 | **Owner** | **The product owner** — it decides a module's published language and a platform boundary |
 | **Blocks** | **Nothing today.** [TASK-202](BACKLOG.md) is blocked on [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) for unrelated reasons |
-| **Status** | ✅ **`RULED`** — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this field was not.** **Twelve items carried the same defect**, and every one would have been escalated as an open question. |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-10, the requesting lane.** ⚡ **Ruled by the product owner on 2026-08-06 ([D-112](DECISION_REGISTER.md)).** ⛔ **Its own `Blocks` field has read *nothing today* since then** *(was: ✅ **`RULED`** — product owner, 2026-08-06, [D-112](DECISION_REGISTER.md). ⚡ **Field re-synced 2026-08-06 — the ruling above was recorded and this fiel)* |
 
 ### Two halves, and the second cannot be answered without the first
 
@@ -8053,7 +8053,7 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-08, ⚡ **on Lane A's 136th consecutive idle cycle** — **and as the first unprompted exercise of [D-171](DECISION_REGISTER.md) §7** |
 | **Owner** | ⛔ **Product owner.** **It proposes changing a rule, and the governance freeze reserves that** |
-| **Status** | ✅ **`READY FOR IMPLEMENTATION` — ruled 2026-08-08, [D-181](DECISION_REGISTER.md) §6: **Option 3**.** ⛔ **Neither of the other two.** ⚡ **The ruling's own framing is the constraint: *narrowly scoped, auditable, limited to planning synchronization only* — and ⛔ *never a mechanism for bypassing QE for executable implementation changes*** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-10, the requesting lane.** 🔴 **Discharged by implementation, not merely by ruling.** ✅ **[D-181](DECISION_REGISTER.md) §6 ruled Option 3; [TASK-497](BACKLOG.md) built it — `BACKLOG.md` now reaches `origin/coordination`, so a lane polls one ref for both order and scope.** ⚡ **[D-227](DECISION_REGISTER.md) then proved the remaining authority half unnecessary and [D-228](DECISION_REGISTER.md) closed it.** ⛔ **Nothing is left of this item** *(was: ✅ **`READY FOR IMPLEMENTATION` — ruled 2026-08-08, [D-181](DECISION_REGISTER.md) §6: **Option 3**.** ⛔ **Neither of the other two.** ⚡ **The ruling's )* |
 | **Blocks** | ✅ **Nothing, from 2026-08-08.** ⚡ **Instance 3 cleared when QE integrated `50e81139`.** ⛔ **The class did not clear, which is what Option 3 closes** |
 
 > ## ✅ **RULED — Option 3.** **`BACKLOG.md`'s planning state reaches lanes through `origin/coordination`, the ref Product Office already owns and publishes.** **`ACTIVE_ASSIGNMENTS.md` stays exactly where it is.**
