@@ -9725,7 +9725,11 @@ rules parsed: 24   ·   distinct reason codes: 24
 | **[C-1415](#c-1415)** | A workspace has a **region**, an **environment**, a **fiscal calendar** | ⛔ **`WorkspaceResponse` is `id · name · created_at · updated_at`** |
 | **[C-277](#c-277)** | **Five roles across seven capabilities in five grades** | ⛔ **Two roles** |
 
-⚡ **Three rows, three screens, two days, one shape: the finalized design describes a product further along than this one.** ⛔ **That is not a criticism of the design — a design SHOULD describe the product being built.** ✅ **It is a statement about sequencing, and it will recur on every screen until the domain catches up.**
+| **[TASK-1420](BACKLOG.md)** *(added 2026-08-10)* | **Entitlement · support tickets · region-scoped status · a docs corpus** | ⛔ **None of the four has a source** |
+
+⚡ **FOURTH INSTANCE, reported by Lane A on the poll after this item was filed.** 🔴 **And it carries the sharpest statement of the risk anybody has made: *"a contractual response time is the worst possible thing to invent."*** ✅ **That is this whole item in one sentence** — the cost of fabricating a missing model is not a wrong pixel, it is a customer believing a commitment the product never made.
+
+⚡ **Four rows, four screens, three days, one shape: the finalized design describes a product further along than this one.** ⛔ **That is not a criticism of the design — a design SHOULD describe the product being built.** ✅ **It is a statement about sequencing, and it will recur on every screen until the domain catches up.**
 
 ### ✅ What every lane has already done, correctly and without being told
 
