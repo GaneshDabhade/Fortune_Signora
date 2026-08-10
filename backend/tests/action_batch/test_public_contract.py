@@ -164,9 +164,26 @@ class TestItIsAContractAndNotAnImplementation:
         root = Path(context.__file__).parent
         present = {p.name for p in root.iterdir() if p.is_dir()} - {"__pycache__"}
 
-        # Persistence arrived with this slice; an HTTP surface has not.
+        # Persistence arrived with slice 3; the worker's handler with slice 5.
         assert "infrastructure" in present
-        assert "interface" not in present
+
+        # ⚠️ **`interface/` now EXISTS, and the assertion is re-aimed rather
+        # than deleted** — [TASK-465](../../../docs/BACKLOG.md).
+        #
+        # ⛔ **What this line was protecting was never the directory**: it was
+        # *"an HTTP surface has not arrived"*, and a directory check was the
+        # cheapest proxy while the layer was empty. ⚡ **A worker's event handler
+        # lives in `interface/` too** — it is an edge, the same as a router —
+        # **so the proxy stopped meaning what it said the moment slice 5 landed.**
+        #
+        # ✅ **Aimed at the router itself now.** 📁 The apply endpoint IS this
+        # row's remaining work, so this will be re-aimed once more when it
+        # arrives — **which is the point: each time it moves, somebody has to
+        # say why.**
+        interface = root / "interface"
+        assert interface.is_dir()
+        assert not (interface / "router.py").exists()
+        assert (interface / "handlers.py").exists()
 
         # **Events arrived with THIS slice, and the assertion is re-aimed a
         # third time rather than deleted** — the comment above already said
@@ -195,6 +212,14 @@ class TestItIsAContractAndNotAnImplementation:
             "when a consumer appears, and nothing consumes an approval."
         )
 
-        # ⛔ **Still no HTTP surface**, which is the half that has not changed:
-        # nothing here is reachable from outside the process.
-        assert "interface" not in present
+        # ⚡ **Slice 5's third event is deliberately NOT in the list above.**
+        # ⛔ **It is a work trigger, not an integration event**: nothing outside
+        # this module subscribes to it, and it exists because §9 forbids
+        # publishing straight to Redis. **Asserted separately so the two-event
+        # claim keeps meaning what it says.**
+        assert "class ActionBatchApplicationRequested" in sources
+
+        # ⛔ **Still no HTTP surface** — 📁 asserted on the ROUTER above, because
+        # `interface/` now holds slice 5's worker handler and a directory check
+        # stopped meaning *"unreachable from outside the process"* the moment it
+        # did.

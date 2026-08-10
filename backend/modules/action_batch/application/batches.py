@@ -300,6 +300,16 @@ class ActionBatches:
         )
         return decided
 
+    async def current(self, workspace_id: UUID, batch_id: UUID) -> ActionBatch | None:
+        """The batch as it stands, or `None` when this workspace has no such batch.
+
+        ⚡ **The AGGREGATE, for this module's own use** — ⛔ **not the published
+        `ActionBatchView`**, which is `public/`'s projection for other modules.
+        📁 Two audiences, two shapes: a consumer gets a view it cannot misuse,
+        and this module gets the object its own guards live on.
+        """
+        return await self._repository.get(workspace_id, batch_id)
+
     async def _load(self, workspace_id: UUID, batch_id: UUID) -> ActionBatch:
         batch = await self._repository.get(workspace_id, batch_id)
         if batch is None:
