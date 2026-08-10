@@ -373,6 +373,7 @@ databaseUrl: required(
 | [C-273](#c-273--the-lane-a-dependency-chain-drawn-once-and-one-row-in-it-has-already-freed) | **The Lane A dependency chain, drawn once — and one row in it has already freed** | **Lane A**, 2026-08-10, **on the product owner's explicit in | **Lane C** — ⚡ **every unmet input below is either a `C-` item address | 🟡 **`OPEN`** — raised 2026-08-10 | — |
 | [C-274](#c-274--the-switcher-s-exit-and-its-destination-are-in-different-rows-and-the-destination-is-blocked) | **The switcher's exit and its destination are in different rows, and the destination is blocked** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.m | **Lane C** — ⛔ **sequencing between three rows is row scope** | 🟡 **`OPEN`** — raised 2026-08-10 | — |
 | [C-275](#c-275--two-top-bar-slots-have-no-data-source-and-lib-shell-top-bar-ts-had-zero-callers-until-today) | **Two top-bar slots have no data source, and `lib/shell/top-bar.ts` had zero callers until today** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.m | **Lane C** — ⚡ **both halves need a module to publish something, and w | 🟡 **`OPEN`** — raised 2026-08-10 | — |
+| [C-1420](#c-1420--task-1430s-module-registry-and-its-ruling-name-different-lanes) | **TASK-1430's module registry and its ruling name different lanes** | **Lane C**, 2026-08-10, on QE's report | **Product owner** — ⚡ **a one-word reconciliation, not an ownership debate** | 🟡 **`READY FOR PRODUCT DECISION`** | ⛔ **TASK-1430 is invisible to Lane A's poll** |
 | [C-1417](#c-1417--the-inverse-of-c-1416-a-shipped-capability-no-design-draws-and-no-row-surfaces) | **The INVERSE of C-1416: a shipped capability no design draws and no row surfaces** | **Lane C**, 2026-08-10, discovery sweep | **Product owner** — ⚡ **a missing-design question, raised rather than answered** | 🟡 **`OPEN`** | ⛔ **Nothing** |
 | [C-1416](#c-1416--the-design-describes-a-richer-product-than-exists-three-times-now-and-c-277-is-the-third) | **The design describes a richer product than exists — three times now, and C-277 is the third** | **Lane C**, 2026-08-10, answering [C-277](#c-277) | **Product owner** — ⚡ **one question, asked once instead of three times** | 🟡 **`OPEN`** | ⛔ **Nothing — every instance ships a designed absent state** |
 | [C-1415](#c-1415--two-rows-hit-one-gap-a-workspace-publishes-its-identity-and-nothing-about-its-character) | **Two rows hit one gap: a workspace publishes its identity and nothing about its character** | **Lane C**, 2026-08-10, on Lane A's pattern report | **Split** — ⚡ **the read-shape half is Lane A's; the domain half is the product owner's** | 🟡 **`OPEN`** | ⚠️ **[C-276](#c-276) · TASK-1412's identity deliverables** |
@@ -9696,6 +9697,55 @@ rules parsed: 24   ·   distinct reason codes: 24
 > ## ⚠️ **Three outcomes are possible and only QE can choose: LIVE and governance forgot to reference it · SUPERSEDED by [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) · or ABSORBED elsewhere, leaving a remnant.**
 
 ✅ **What this office did with the three it could rule on** — [`DECISION_PACKS.md`](DECISION_PACKS.md) superseded · [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) never adopted · [`PRODUCT_EXPERIENCE.md`](PRODUCT_EXPERIENCE.md) reassigned from the closed Lane B — **is a banner saying which of the three it is.** ⛔ **Nothing deleted.** ⚡ **The same treatment fits here once QE says which.**
+
+## C-1420 · TASK-1430's module registry and its ruling name different lanes
+
+| | |
+|---|---|
+| **Opened** | **2026-08-10, Lane C**, on QE's report that `TASK-1430` is `READY` and appears in no lane queue |
+| **Owner** | **Product owner** — ⚡ **an ownership reconciliation, and [§20e](../CLAUDE.md) reserves those** |
+| **Status** | 🟡 **`READY FOR PRODUCT DECISION`** — **options, trade-offs and a recommendation are below; waiting only on a ruling** |
+| **Module** | **`platform_foundation`** |
+| **Blocks** | ⛔ **[TASK-1430](BACKLOG.md) is invisible to Lane A's poll** |
+
+
+### 🔴 The conflict, measured rather than recalled
+
+📁 **[TASK-1430](BACKLOG.md)'s Module cell reads `platform_foundation`.**
+📁 **[`modules.toml`](coordination/modules.toml) assigns `platform_foundation` to **Lane C** — `current_owner = "Lane C"`, `transition = "settled"`.**
+⛔ **The same row says, in terms: *"implemented by LANE A, not by this office"* ([D-232](DECISION_REGISTER.md) §4).**
+
+> ⚠️ **The registry says Lane C. The ruling says Lane A. Both cannot be executed.**
+
+### ⚡ Why it surfaced now, and why the obvious fix does not work
+
+**QE reported the row as `READY` and in no queue.** ✅ **Adding it to [`queues/lane-a.toml`](coordination/queues/lane-a.toml) was tried and reverted within minutes**: the generator joins ownership from `modules.toml`, resolved the row to **Lane C**, and overrode the hand-edit.
+
+⛔ **That is the generator behaving correctly** ([§20e](../CLAUDE.md): *no document restates an assignee; ownership is joined at render time*). **A queue file cannot express a ruling that contradicts the registry, and it should not be able to.**
+
+### ⚠️ And the label may itself be the defect
+
+📁 **`modules.toml` describes `platform_foundation` as *"Environment framework, repository tooling, developer commands"*.**
+⛔ **TASK-1430 is INBOUND RATE LIMITING in `signora_platform/` — production platform code, not tooling.**
+
+⚡ **So [D-232](DECISION_REGISTER.md) §4 may be exactly right and the Module cell simply wrong**, which would make this a one-word correction rather than an ownership question. **Stated as a possibility. Not asserted, and not acted on.**
+
+### ⛔ What this office did not do
+
+**Did not force the queue. Did not re-label the module. Did not re-rule D-232.**
+
+📁 **[D-228](DECISION_REGISTER.md): *"Verify first. Change only when evidence proves the current model is incorrect. Never invent a new process merely because an existing process initially appears ambiguous."*** **An ownership change requires its own explicit decision** ([§20e](../CLAUDE.md), and [C-213](#c-213) is what it costs when one is inferred).
+
+### ✅ The decision needed, and it is one word
+
+| | |
+|---|---|
+| **①** | **The Module cell is wrong.** Correct it to the module that owns inbound request handling; **[D-232](DECISION_REGISTER.md) §4 stands unchanged and Lane A implements** |
+| **②** | **The ruling is superseded and Lane C implements it** — in which case [§20a](../CLAUDE.md) applies and the row **already says it needs an ADR** |
+
+⚡ **Until one is chosen the row is invisible to Lane A's poll, and that is the cost being paid** — **the same shape as [C-426](#c-426), one layer down: there the projection was stale, here the projection is correct and the inputs disagree.**
+
+---
 
 ## C-1419 · The decision briefs — the whole Product Owner queue
 

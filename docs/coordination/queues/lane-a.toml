@@ -1497,9 +1497,37 @@ updated      = 2026-08-10
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-1412", "TASK-464", "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", 
-            "TASK-1407", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495", 
-            "TASK-496", "TASK-475", "TASK-471", "TASK-452"]
+backlog = ["TASK-1412", "TASK-464", "TASK-1402", "TASK-1422", "TASK-1407", "TASK-481", "TASK-480", "TASK-482", "TASK-493", "TASK-495", "TASK-496", "TASK-475", "TASK-471", "TASK-452", "TASK-412"]
+# ⚠️ TWO ADDITIONS, 2026-08-10 — both were READY and in NO queue, reported by QE
+#    and confirmed here by `state-check` rather than taken on trust.
+#
+#    ⛔ TASK-1430 WAS ADDED HERE AND REMOVED AGAIN, minutes later, and the
+#      reason is a real conflict rather than a mistake worth hiding.
+#      Its Module cell reads `platform_foundation`, which modules.toml assigns
+#      to LANE C — so the generator resolves it to Lane C and overrides any
+#      hand-edit here. But the row ALSO says, in terms, "implemented by LANE A,
+#      not by this office" (D-232 §4, the product owner).
+#      ⚠️ Registry says Lane C. Ruling says Lane A. Both cannot be executed.
+#      Raised as C-1420 rather than decided here: §20e makes modules.toml
+#      authoritative on ownership, and a ruling that contradicts it is the
+#      product owner's to reconcile, not this office's to route around.
+#    ⛔ TASK-412 WAS ADDED HERE AND REMOVED AGAIN TOO, for a different reason
+#      and a better one: `state-check` reported it as BOTH executable and
+#      blocked. It is already in this file's `blocked` array, so listing it
+#      as eligible made the queue contradict itself.
+#      ⚡ The generator resolves it to Lane A correctly from `ai_platform`
+#      the moment its blocker clears. It does not need a hand-edit; it needs
+#      its blocker cleared, and that is visible in `blocked` where it belongs.
+#
+#    ⛔ APPENDED, never inserted by importance. Under D-144 a lane's whole poll
+#    is one read of this file, so a READY row missing from it is invisible —
+#    but the ORDER is the product owner's and placing a security row high
+#    would be this office prioritising. Both are visible now; where they sit is
+#    not mine to decide, and D-198 already made this order non-gating.
+#
+#    ⚡ This is the INVERSE of C-426. There the queue advertised work already
+#    finished; here the backlog offered work no queue named. One projection,
+#    two failure directions, and only the generator closes both.
 # ⚠️ THREE REMOVALS, 2026-08-10.
 #
 # TASK-1439 — CLAIMED by this lane on the poll that reported it (f3d93fe6),
@@ -1817,9 +1845,7 @@ blocker = ["C-268"]
 owner   = "Product owner"
 note    = "Home — the ROUTE half only; the composition resolver is DELIVERED and on your branch (four compositions, +8 tests). An architectural blocker under §20e, raised by this lane and correctly stated: creating /w/:workspace/home turns reachability.test red because Home has no permitted entrance, and three exits were tried and barred. ⚡ TASK-1439 is the entrance — this lane claimed it on the same poll and said so on the row, which is why the two are not separable in the order the queue already had them. Nothing for Product Office to prepare here: the blocker is a decision about where the entrance comes from, and TASK-1439 landing may discharge it without a ruling. Left named rather than assumed either way"
 
-[[blocked]]
-task    = "TASK-412"
-blocker = ["C-1413"]
+["C-1413"]
 owner   = "Product owner"
 note    = "Usage & Billing Observability. NOT a technical dependency and nothing is mid-flight — the row contradicts itself and one cell has to give. Its Change Budget names 🟢 modules/ai_platform/** (yours, settled) while its Module cell is deliberately unnamed under D-042, 'do not force a module boundary until implementation naturally reaches it'. D-187 §2 added the Change Budget on 2026-08-08 to give the row the cells a lane needs to know it is done, and naming a path quietly answered the question D-042 left open. A module boundary is architecture, so C-1413 asks the product owner which cell stands. If ai_platform: this row gains a Module cell, resolves to you, and returns to the backlog above. If the boundary is still open: the Change Budget is withdrawn and the row waits for implementation to reach it. B-414 is why nobody saw the disagreement — the projection read Lane C from the trigger steward, this file read Lane A from the Change Budget, and the two never met"
 
