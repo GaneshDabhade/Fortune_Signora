@@ -80,6 +80,36 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-172 · TASK-464 ships 306 lines of application and domain code that no test executes, and it takes the repository under the coverage floor
+
+| | |
+|---|---|
+| **Module** | `action_batch` — [`backend/modules/action_batch/application/batches.py`](../backend/modules/action_batch/application/batches.py), [`backend/modules/action_batch/domain/events.py`](../backend/modules/action_batch/domain/events.py) |
+| **Current assignee** | **Lane A** — `action_batch` is this lane's in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **A Blocking Quality Defect**: coverage below the floor stops promotion (§20e). **It blocks no milestone, so it is not 🔴** |
+| **Status** | 🔵 **`OPEN` — QE**, 2026-08-10. **`CHANGES REQUESTED` on TASK-464.** ⚡ **The slice is excluded from this cycle and the lane's other five are not held** |
+| **Commit found** | `348a2efc`, found by QE running `make certify` against candidate `ef245b09` |
+
+**Steps.** `make certify`, then `python3 ./infra/coverage-debt.py --new`
+
+```
+  Coverage debt  ·  repository at 94.66%
+
+    MISSED   COVER  FILE
+        69      0%  modules/action_batch/application/batches.py  <-  never executed
+        24      0%  modules/action_batch/domain/events.py  <-  never executed
+```
+
+**Expected.** ✅ **No file the slice introduced sits at 0%, and the slice does not push the repository under the floor** — [`CLAUDE.md`](../CLAUDE.md) §19, *Coverage expectations met*, which names the exact command: `make coverage-debt ARGS="<your module>"`.
+
+**Actual.** ⛔ **Both production files the slice adds have never been executed by a test.** ⚡ **The slice does carry test work** — `tests/action_batch/test_public_contract.py` grew by 38 lines — **but the contract test exercises `public/`, and the 306 lines behind it are untouched.**
+
+> ✅ **The arithmetic is exact and it names one cause.** **94.66% with the two files · 95.09% without them**, measured with `coverage report --precision=2 --omit=`. ⛔ **No other slice in the candidate moves the number.**
+>
+> ⚡ **This is not a coverage-percentage complaint.** **`propose · approve · apply · reverse` is a state machine whose own row names the risk it was built to avoid** — *"a reversal overwrote `state`, so reading the decision off it recorded an approval AS a reversal"* — **and the code that replays the log to derive state is the code nothing runs.** **The four transitions and the two events are what the tests are missing.**
+
+**Why it was not caught earlier.** ⚠️ **§19 puts the coverage check on the implementing lane before handover, and names the command.** ⛔ **`make coverage-debt ARGS="action_batch"` would have printed both files in seconds.** ⚡ **This is the second consecutive cycle where a required gate that the lane owns was first run by QE** — [B-171](#b-171--a-new-test-types-the-coordination-module-as-moduletype-and-then-sets-an-attribute-on-it-so-mypy---strict-fails) was `mypy --strict`, this one is coverage. **QE is reporting the pattern, not only the row.**
+
 ### B-229 · One journey creates a workspace and never restores the previous one, so every account-backed journey after it fails
 
 | | |
