@@ -10,23 +10,23 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "ac4f88f"
-task_count     = 141
+task_count     = 142
 
 [lane.Lane_A]
 notice             = "NOTICE WITHHELD — it asserted a task state ('is promoted'), which only BACKLOG.md may do (D-144, B-216). Read the backlog on origin/integration for state; read queues/lane-*.toml for reasoning."
 backlog            = ["TASK-465", "TASK-1407", "TASK-1418", "TASK-1430", "TASK-1445", "TASK-412", "TASK-452", "TASK-471", "TASK-475", "TASK-480", "TASK-481", "TASK-482", "TASK-493", "TASK-495", "TASK-496"]
-assigned_total     = 123
-claimable          = 15
+assigned_total     = 124
+claimable          = 18
 claimable_now      = 15
-awaiting_sync      = 0
+awaiting_sync      = 3
 in_flight          = 78
 actionable         = 5
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 30
+blocked            = 28
 lane_utilization   = 15.6
-idle_prediction_days   = 2.1
+idle_prediction_days   = 2.6
 dependency_wait_days   = 0.3
 blocked_duration_days  = 0.3
 critical_path_max      = 3
@@ -169,9 +169,9 @@ state         = "IN FLIGHT"
 declared      = "VERIFIED"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-1415", "TASK-1417"]
-next_owner     = ["Lane A"]
-next_lane      = "Lane A"
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
@@ -245,18 +245,18 @@ on_integration = true
 [[task]]
 id            = "TASK-1415"
 title         = "Workflow 15 · Account 360 — the record page a rep works instead of the CRM"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
-depends_on     = ["TASK-1408"]
+depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 1
-estimated_ready = "when TASK-1408 complete"
-waiting_for    = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for) and [TASK-1411](#task-1411--the-ai-attribution-pri"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1416"
@@ -268,8 +268,8 @@ depends_on     = ["TASK-1417"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 2
-estimated_ready = "when TASK-1417 complete"
+critical_path  = 1
+estimated_ready = "— behind [TASK-1417](#task-1417--workflow-22--reports--built-once-read"
 waiting_for    = "— behind [TASK-1417](#task-1417--workflow-22--reports--built-once-read-three-ways)'s shared query**, whose output it composes"
 blocked_days   = 0.0
 on_integration = true
@@ -277,18 +277,18 @@ on_integration = true
 [[task]]
 id            = "TASK-1417"
 title         = "Workflow 22 · Reports — built once, read three ways"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
-depends_on     = ["TASK-1408"]
+depends_on     = []
 unblocks       = ["TASK-1416"]
 next_owner     = ["Lane A"]
 next_lane      = "Lane A"
-critical_path  = 1
-estimated_ready = "when TASK-1408 complete"
-waiting_for    = "— behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for) and [TASK-1411](#task-1411--the-ai-attribution-pri"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1418"
@@ -673,6 +673,22 @@ estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.3
 on_integration = true
+
+[[task]]
+id            = "TASK-1457"
+title         = "The rail's third pinned utility — `Shortcuts`, which the design names and the rail omits"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-200"

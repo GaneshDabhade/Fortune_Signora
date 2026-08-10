@@ -1847,6 +1847,23 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **Treating [TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes) as evidence of compliance because it was implemented, tested, covered, reviewed and accepted.** 📁 **[D-224](DECISION_REGISTER.md) §15: *"the final product must be judged against the finalized design, not against the historical task that produced the current code."*** ⚡ **Every gate passed on TASK-1400. None asked whether anything called it** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
+### TASK-1457 · The rail's third pinned utility — `Shortcuts`, which the design names and the rail omits
+
+| | |
+|---|---|
+| **Classification** | ⛔ **MISSING IMPLEMENTATION** — the design names it; nothing renders it |
+| **Epic** | **Common Platform Foundation** |
+| **Module** | **`product_surface`** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-10, from the navigation implementation audit.** ⚡ **A decomposition of already-approved design, never new scope** ([§20e](../CLAUDE.md)) |
+| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/)** — **`railUtility` names exactly three: `Settings`, `Shortcuts`, `Docs & support`.** **§15 specifies the shortcuts surface itself; §02 specifies the `?` meta glyph on the rail entry** |
+| 🔴 **The measurement** | 📁 **`components/shell/navigation.tsx` `UTILITIES` holds TWO** — `Settings` → `/settings` and `Docs & support` → `/help`. ⛔ **`Shortcuts` is absent, and the file says why: *"`Shortcuts` still has none and stays absent rather than rendered as a dead end."*** ✅ **That reasoning was correct when written and is what this row resolves** |
+| ⚡ **Delivers** | **The third pinned utility with its `?` meta**, and the surface it opens — 📁 **App Shell §15, the shortcut list already specified there.** ⛔ **Not a new palette**: 📁 §09's command palette ships and `TASK-1442` restored its shortcut |
+| 🔴 **What it must NOT do** | ⛔ **Invent shortcuts.** 📁 **§15 enumerates them and §02 names four rail jumps — `G H`/`G F`/`G P`/`G A` — three of which target destinations that do not exist.** ⚡ **Render what resolves; a shortcut to a 404 is worse than an absent one** |
+| **Change Budget** | 🟢 **`frontend/components/shell/**`** · 🟢 its tests |
+| **Playwright coverage** | **A signed-in user opens the shortcuts surface from the rail and closes it** |
+| ♿ **Accessibility** | **Reachable by keyboard; the `?` meta is not the only affordance** |
+| **Definition of Done** | **The rail's pinned group is the design's three** · **certified · `main`** |
+
 ### TASK-1455 · 🔴 Two finalized designs are missing from the snapshot, and both already have implementations
 
 | | |
@@ -2222,7 +2239,7 @@
 |---|---|
 | **Epic** | **Account 360** — **[workflow 15](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** |
-| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for) and [TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)** ⚠️ **RE-CHECKED 2026-08-10 and CORRECTLY STILL PARKED.** ⛔ **[`state-check`](../infra/state-check.py) reported this row as waiting on a handed-over predecessor. It has TWO, and only one has moved: [TASK-1411](#task-1411) is `CLAIMED` — Lane A is building the AI attribution primitive now; it is not delivered.** ✅ **So the row stays `SEQUENCED` — releasing it would advertise work whose dependency genuinely does not exist.** 🔴 **The check appears to fire when ANY predecessor is handed over rather than ALL, which makes three of its four reports false positives — raised with QE, whose gate it is ([§20e](../CLAUDE.md)), rather than fixed here.** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-10.** ⚡ **Released because the COMPLETE predecessor set is now satisfied** — 📁 **[TASK-1408](#task-1408) `VERIFIED` and [TASK-1411](#task-1411) `PROMOTED`.** ⚠️ **Held parked on 2026-08-10 earlier the same day because TASK-1411 was only `CLAIMED`; it has since been promoted, and the product owner's instruction was to release *when all* dependencies are satisfied, not to leave rows parked indefinitely.** ⛔ **Fitness only, never priority** ([§20e](../CLAUDE.md)). *(Was:* ⏸️ **⏸️ **`SEQUENCED` — behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-bac***)* |
 | **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Account 360.dc.html`** — 📁 *"Flagship record page · everything a rep needs without opening the CRM"* |
 | ✅ **What it delivers** | **Account score with its delta · customer health · buying intent · the signals timeline · a research summary · open opportunities** — ⚡ **each a composition of intelligence the platform ALREADY produces** |
 | 🔴 **The reuse finding, and it is large** | ⚡ **Almost nothing here is new backend.** ✅ **[TASK-417](#task-417--account-360-renders-what-the-platform-already-knows) is titled *renders what the platform already knows* and is `IN VALIDATION`** — ⛔ **this row must begin by measuring what that delivered rather than rebuilding it**, which is [C-428](LANE_COORDINATION.md)'s rule and what [TASK-483](#task-483--the-authentication-shell) cost when it was skipped |
@@ -2265,7 +2282,7 @@
 |---|---|
 | **Epic** | **Reports** — **[workflow 22](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** |
-| **Status** | ⏸️ **`SEQUENCED` — behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-backlog-rows-are-waiting-for) and [TASK-1411](#task-1411--the-ai-attribution-primitive--one-confidence-one-source-list-one-show-reasoning)** ⚠️ **RE-CHECKED 2026-08-10 and CORRECTLY STILL PARKED.** ⛔ **[`state-check`](../infra/state-check.py) reported this row as waiting on a handed-over predecessor. It has TWO, and only one has moved: [TASK-1411](#task-1411) is `CLAIMED` — same primitive, same reason.** ✅ **So the row stays `SEQUENCED` — releasing it would advertise work whose dependency genuinely does not exist.** 🔴 **The check appears to fire when ANY predecessor is handed over rather than ALL, which makes three of its four reports false positives — raised with QE, whose gate it is ([§20e](../CLAUDE.md)), rather than fixed here.** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-10.** ⚡ **Released because the COMPLETE predecessor set is now satisfied** — 📁 **[TASK-1408](#task-1408) `VERIFIED` and [TASK-1411](#task-1411) `PROMOTED`.** ⚠️ **Held parked on 2026-08-10 earlier the same day because TASK-1411 was only `CLAIMED`; it has since been promoted, and the product owner's instruction was to release *when all* dependencies are satisfied, not to leave rows parked indefinitely.** ⛔ **Fitness only, never priority** ([§20e](../CLAUDE.md)). *(Was:* ⏸️ **⏸️ **`SEQUENCED` — behind [TASK-1408](#task-1408--the-application-shell--the-frame-six-bac***)* |
 | **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Reports.dc.html`** |
 | ✅ **What it delivers** | **A block builder over ONE shared query** — 📁 *"Every block inherits this"* · **an AI narrative that regenerates when the data moves and keeps the author's edits** · **screen, presentation and executive modes of the SAME blocks** — 📁 ***"never a separate deck to maintain"*** |
 | 🔴 **The architectural claim inside the design** | ⚡ **Three modes, one source.** ⛔ **A separate presentation renderer is the thing the design explicitly refuses**, and building one would satisfy a screenshot review while creating the maintenance burden the sentence exists to prevent |
