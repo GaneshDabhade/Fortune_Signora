@@ -35,6 +35,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from enum import StrEnum
+from typing import Final
 from uuid import UUID
 
 
@@ -92,7 +93,9 @@ class Transition(StrEnum):
     APPROVED = "approved"
     REJECTED = "rejected"
     WITHDRAWN = "withdrawn"
+    DISPATCHED = "dispatched"
     APPLIED = "applied"
+    APPLICATION_FAILED = "application_failed"
     REVERSED = "reversed"
 
     @property
@@ -104,7 +107,53 @@ class Transition(StrEnum):
         `actor_id`. Stated here so the database constraint and the repository
         derive from one rule rather than restating it twice (§2).
         """
-        return self is not Transition.APPLIED
+        return self not in _UNATTRIBUTED_TRANSITIONS
+
+
+#: ⛔ **The transitions performed on the authority of an approval already
+#: recorded**, rather than by a person deciding again. **Application is the
+#: original one**; ⚡ **dispatch and failure joined it in slice 5 for the same
+#: reason** — *a worker is not an actor*, and attributing a background failure
+#: to whoever approved the batch hours earlier would put a false name in a
+#: history somebody may have to defend.
+_UNATTRIBUTED_TRANSITIONS: Final = frozenset(
+    {Transition.DISPATCHED, Transition.APPLIED, Transition.APPLICATION_FAILED}
+)
+
+
+class ApplicationProgress(StrEnum):
+    """How far the *work* has got, which is a different question from approval.
+
+    🔴 **Derived, never stored** — the same rule this module already applies to
+    `state` itself, which is *"derived by replaying the log"* rather than kept
+    in a column that a reversal once overwrote.
+
+    📁 **The gap this makes visible was named here before slice 5 existed**:
+    *"`APPROVED` with no `applied_at` is a real state, not an inconsistency:
+    approval and application are two moments, and the gap between them is what
+    slice 5 makes visible."*
+    """
+
+    NOT_STARTED = "not_started"
+    """Approved, and nothing has been asked to run yet."""
+
+    ACCEPTED = "accepted"
+    """⚡ **Durably accepted and not yet done.** 📁 The row's risk in one word:
+    *"a customer told **applied** before the work finishes"* — **the response to
+    an apply request means THIS**, and a screen that says *applied* here is the
+    defect the row names."""
+
+    APPLIED = "applied"
+    """The work finished."""
+
+    FAILED = "failed"
+    """⛔ **It did not run, and somebody must be told why.**
+    📁 [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md), which
+    [455](../../../../docs/architecture/455-context-definitions-r02-r03.md)
+    applies to this slice by name: **a batch that is *still running* and one
+    that *failed to start* must never render alike.** ⚠️ **Collapsing this into
+    `ACCEPTED` is exactly that failure** — a customer would wait for something
+    that is never coming."""
 
 
 def has_settled(
@@ -185,10 +234,18 @@ class ActionBatch:
     #: The decision that left `PROPOSED` — an approval, a rejection or a
     #: withdrawal. `None` while none has been taken.
     decided: Decision | None = None
+    #: ⚡ **When the application was durably ACCEPTED** — the moment a handler
+    #: may answer, and 📁 slice 5's whole subject: *"a handler responds once the
+    #: request is durably accepted, never after the work."*
+    dispatched_at: datetime | None = None
     #: When it became effective. **`APPROVED` with no `applied_at` is a real
     #: state**, not an inconsistency: approval and application are two
     #: moments, and the gap between them is what slice 5 makes visible.
     applied_at: datetime | None = None
+    #: ⛔ **Why the work did not run, verbatim.** **Set exactly when the
+    #: progress is `FAILED` and never otherwise** — a failure with no reason is
+    #: a state a customer can see and nobody can act on.
+    failure: str | None = None
     #: How long a reversal remains possible after it applied. `None` means
     #: **reversal was never offered**, which is not the same as expired.
     reversible_for: timedelta | None = None
@@ -271,6 +328,84 @@ class ActionBatch:
                 f"{self.proposed.at}."
             )
         return replace(self, applied_at=moment)
+
+    def dispatched_on(self, moment: datetime) -> ActionBatch:
+        """The application was **durably accepted**. ⛔ **Nothing has run yet.**
+
+        🔴 **This is what an apply request records before it answers**, and the
+        reason the answer is honest: 📁 §14 — *"a handler responds once the
+        request has been durably accepted"* — and the row's own risk, *"a
+        customer told applied before the work finishes."*
+
+        ⛔ **No `actor_id`**, for the same reason `applied_on` takes none: the
+        authority is the approval already recorded.
+        """
+        if self.state is not ApprovalState.APPROVED:
+            raise ActionBatchError(
+                f"an action batch that is {self.state.value} cannot be dispatched for "
+                "application. Approval is the authority the work is performed on, and "
+                "dispatching without it would queue work nobody agreed to."
+            )
+        if self.dispatched_at is not None:
+            raise ActionBatchError(
+                f"this batch was already dispatched at {self.dispatched_at}. Dispatching "
+                "it again would run the same approved change twice, which is a defect "
+                "to surface rather than a job to enqueue."
+            )
+        if self.applied_at is not None:  # pragma: no cover — unreachable via applied_on
+            raise ActionBatchError("a batch that already took effect cannot be dispatched")
+        return replace(self, dispatched_at=moment)
+
+    def failed_to_apply(self, reason: str, *, at: datetime) -> ActionBatch:
+        """The work did not run, and the customer is told why.
+
+        ⛔ **Only after a dispatch.** ⚡ **A batch that was never dispatched has
+        not failed — it has not started**, and 📁 [P-A] is precisely that the
+        two must not render alike.
+
+        ⚠️ **`reason` is required and non-empty.** **A failure nobody can act on
+        is worse than a spinner**, because it ends the wait without ending the
+        question.
+        """
+        if not reason.strip():
+            raise ActionBatchError(
+                "a failed application with no stated reason tells a customer only that "
+                "waiting is pointless. The reason is the whole of what this state is for."
+            )
+        if self.dispatched_at is None:
+            raise ActionBatchError(
+                "a batch that was never dispatched has not failed to apply — it has not "
+                "started. P-A: still running and failed to start must never render alike, "
+                "and neither must not-started and failed."
+            )
+        if self.applied_at is not None:
+            raise ActionBatchError(
+                f"this batch took effect at {self.applied_at}. Recording a failure over a "
+                "completed application would deny a change that really happened."
+            )
+        if at < self.dispatched_at:
+            raise ActionBatchError(
+                f"a batch cannot fail at {at}, before it was dispatched at "
+                f"{self.dispatched_at}."
+            )
+        return replace(self, failure=reason.strip())
+
+    @property
+    def progress(self) -> ApplicationProgress:
+        """How far the WORK has got. ⛔ **Derived, never stored** (§2).
+
+        ⚡ **Order matters and it is the P-A rule in code**: a failure is
+        reported ahead of acceptance, because a batch that was dispatched and
+        then failed is still `dispatched_at`-stamped — **and reporting it as
+        *accepted* would leave somebody waiting for work that has stopped.**
+        """
+        if self.applied_at is not None:
+            return ApplicationProgress.APPLIED
+        if self.failure is not None:
+            return ApplicationProgress.FAILED
+        if self.dispatched_at is not None:
+            return ApplicationProgress.ACCEPTED
+        return ApplicationProgress.NOT_STARTED
 
     def reversed_by(self, actor_id: UUID, *, at: datetime) -> ActionBatch:
         """Undone after it took effect, **inside the window**.

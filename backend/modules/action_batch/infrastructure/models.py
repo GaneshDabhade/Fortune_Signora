@@ -31,7 +31,10 @@ from signora_platform.db.base import AuditMixin, Base, TimestampMixin, Workspace
 #: The alphabet, derived from the domain rather than restated. A sixth
 #: transition added to the enum reaches the constraint automatically.
 _KNOWN_TRANSITIONS = " OR ".join(f"transition = '{t.value}'" for t in Transition)
-_UNATTRIBUTED = "".join(t.value for t in Transition if not t.is_attributed)
+#: ⚡ **Derived from the enum, so a transition added there reaches the
+#: constraint automatically** — [TASK-465](../../../../docs/BACKLOG.md) added
+#: two and this needed no edit beyond the plural.
+_UNATTRIBUTED_LIST = ", ".join(f"'{t.value}'" for t in Transition if not t.is_attributed)
 
 
 class ActionBatchModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
@@ -77,7 +80,7 @@ class ActionBatchTransitionModel(Base, WorkspaceScopedMixin, TimestampMixin, Aud
             _KNOWN_TRANSITIONS, name="ck_action_batch_transition_is_a_known_transition"
         ),
         CheckConstraint(
-            f"actor_id IS NOT NULL OR transition = '{_UNATTRIBUTED}'",
+            f"actor_id IS NOT NULL OR transition IN ({_UNATTRIBUTED_LIST})",
             name="ck_action_batch_transition_only_application_is_unattributed",
         ),
     )
@@ -87,7 +90,10 @@ class ActionBatchTransitionModel(Base, WorkspaceScopedMixin, TimestampMixin, Aud
         PGUUID(as_uuid=True), ForeignKey("action_batch.id", ondelete="CASCADE"), nullable=False
     )
     sequence: Mapped[int] = mapped_column(Integer(), nullable=False)
-    transition: Mapped[str] = mapped_column(String(length=16), nullable=False)
+    #: ⚡ **32, widened by migration `0048`** — `application_failed` is 18, and
+    #: ⛔ **a column width must not decide a domain verb's name**
+    #: ([TASK-465](../../../../docs/BACKLOG.md)).
+    transition: Mapped[str] = mapped_column(String(length=32), nullable=False)
     #: `NULL` only for `applied`, enforced above.
     actor_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

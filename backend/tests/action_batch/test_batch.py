@@ -21,8 +21,10 @@ import pytest
 from modules.action_batch.domain.batch import (
     ActionBatch,
     ActionBatchError,
+    ApplicationProgress,
     ApprovalState,
     Decision,
+    Transition,
     has_settled,
 )
 
@@ -256,3 +258,103 @@ class TestTheWindowIsComputedInExactlyOnePlace:
 
         assert not has_settled(None, WINDOW, now=now)
         assert not has_settled(PROPOSED_AT, None, now=now)
+
+
+_LATER = PROPOSED_AT + timedelta(minutes=10)
+
+
+def _approved() -> ActionBatch:
+    """⚡ **Approved and NOT applied** — the state this slice exists for.
+
+    ⛔ **Deliberately not `_applied()`**, which this file already defines and
+    which applies the batch: **the gap between the two moments is the whole
+    subject here**, so a helper that closed it would make every assertion below
+    vacuous.
+    """
+    return _proposed().approved_by(uuid4(), at=PROPOSED_AT + timedelta(minutes=5))
+
+
+class TestApplicationProgress:
+    """**The gap between approval and application, made visible** —
+    [TASK-465](../../../docs/BACKLOG.md), slice 5.
+
+    🔴 **The row's risk in one sentence**: *"a customer told **applied** before
+    the work finishes."* ⛔ **And [P-A], which
+    [455](../../../docs/architecture/455-context-definitions-r02-r03.md) applies
+    to this slice by name**: *a batch that is still running and one that failed
+    to start must never render alike.*
+    """
+
+    def test_an_approved_batch_has_not_started(self) -> None:
+        batch = _approved()
+
+        assert batch.progress is ApplicationProgress.NOT_STARTED
+
+    def test_dispatch_is_accepted_and_is_not_applied(self) -> None:
+        # 🔴 **The whole row.** §14: a handler answers once the request is
+        # durably accepted — and *accepted* is not *done*.
+        batch = _approved().dispatched_on(_LATER)
+
+        assert batch.progress is ApplicationProgress.ACCEPTED
+        assert batch.applied_at is None
+
+    def test_a_batch_that_never_dispatched_cannot_fail_to_apply(self) -> None:
+        # ⚡ **It has not started.** Collapsing the two would tell somebody the
+        # work broke when nothing ever asked it to run.
+        with pytest.raises(ActionBatchError, match="has not started"):
+            _approved().failed_to_apply("the worker refused", at=_LATER)
+
+    def test_a_failure_states_its_reason_or_is_refused(self) -> None:
+        dispatched = _approved().dispatched_on(_LATER)
+
+        with pytest.raises(ActionBatchError, match="stated reason"):
+            dispatched.failed_to_apply("   ", at=_LATER)
+
+    def test_failed_and_accepted_are_different_states(self) -> None:
+        # 🔴 **P-A, executably.** The dispatched batch is still stamped
+        # `dispatched_at`, so reporting progress off that alone would leave a
+        # customer waiting for work that has stopped.
+        dispatched = _approved().dispatched_on(_LATER)
+        failed = dispatched.failed_to_apply("the provider refused the write", at=_LATER)
+
+        assert dispatched.progress is ApplicationProgress.ACCEPTED
+        assert failed.progress is ApplicationProgress.FAILED
+        assert failed.dispatched_at is not None
+        assert failed.failure == "the provider refused the write"
+
+    def test_applying_after_dispatch_reports_applied(self) -> None:
+        applied = _approved().dispatched_on(_LATER).applied_on(_LATER)
+
+        assert applied.progress is ApplicationProgress.APPLIED
+
+    def test_a_batch_is_dispatched_once(self) -> None:
+        # ⛔ **Two dispatches of one approval is the change performed twice.**
+        dispatched = _approved().dispatched_on(_LATER)
+
+        with pytest.raises(ActionBatchError, match="already dispatched"):
+            dispatched.dispatched_on(_LATER)
+
+    def test_only_an_approved_batch_is_dispatched(self) -> None:
+        with pytest.raises(ActionBatchError, match="cannot be dispatched"):
+            _proposed().dispatched_on(_LATER)
+
+    def test_a_completed_application_cannot_be_recorded_as_a_failure(self) -> None:
+        # ⛔ **Denying a change that really happened** is worse than any state
+        # this could otherwise be in.
+        applied = _approved().dispatched_on(_LATER).applied_on(_LATER)
+
+        with pytest.raises(ActionBatchError, match="took effect"):
+            applied.failed_to_apply("too late", at=_LATER)
+
+    def test_dispatch_and_failure_name_no_actor(self) -> None:
+        """⚡ **A worker is not an actor.**
+
+        ⛔ **Attributing a background failure to whoever approved the batch
+        hours earlier would put a false name in a history somebody may have to
+        defend** — the same reasoning `applied_on` already carries.
+        """
+        assert not Transition.DISPATCHED.is_attributed
+        assert not Transition.APPLICATION_FAILED.is_attributed
+        assert not Transition.APPLIED.is_attributed
+        assert Transition.APPROVED.is_attributed
+        assert Transition.REVERSED.is_attributed

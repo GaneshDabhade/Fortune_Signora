@@ -47,13 +47,25 @@ def _migration_source() -> str:
     return MIGRATION.read_text()
 
 
-def _migration_module() -> ModuleType:
+def _migration_module(path: Path = MIGRATION, name: str = "migration_0042") -> ModuleType:
     """Loaded by path, because `0042_action_batch` is not an importable name."""
-    spec = importlib.util.spec_from_file_location("migration_0042", MIGRATION)
+    spec = importlib.util.spec_from_file_location(name, path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+#: 🔴 **The migration that CURRENTLY defines the transition constraint** —
+#: [TASK-465](../../../docs/BACKLOG.md).
+#:
+#: ⚠️ **`0042` is not updated to match, and that is the rule rather than an
+#: oversight.** 📁 [§2](../../../CLAUDE.md): *a record of what was true then must
+#: not be rewritten to match now.* **`0042` created the table with five
+#: transitions and that is what it did**; `0048` widened the alphabet to seven.
+#: ⛔ **Rewriting `0042`'s tuple would make the repository lie about its own
+#: history and would break any deployment replaying the chain.**
+CURRENT_CONSTRAINT = MIGRATION.parent / "0048_action_batch_dispatch.py"
 
 
 PROPOSED = datetime(2026, 8, 7, 9, 0, tzinfo=UTC)
@@ -315,10 +327,13 @@ class TestTheStoredShapeMatchesTheDomain:
         """**The migration is a frozen historical artifact and may not import
         live code**, so its tuple is a copy — and a copy nothing checks is the
         duplicated truth §2 forbids. This is the check."""
-        migration = _migration_module()
+        migration = _migration_module(CURRENT_CONSTRAINT, "migration_0048")
 
         assert set(migration.TRANSITIONS) == {t.value for t in Transition}
-        assert Transition.APPLIED.value == migration.UNATTRIBUTED
+        # ⚡ **Three unattributed now** — [TASK-465](../../../docs/BACKLOG.md).
+        # ⛔ **Compared as a SET against the enum rather than named literally**,
+        # so a fourth reaches the migration's constraint by failing here.
+        assert set(migration.UNATTRIBUTED) == {t.value for t in Transition if not t.is_attributed}
 
     def test_the_migration_withholds_update_on_both_tables(self) -> None:
         """⛔ **The grant and the policy are both withheld, never one.** A
@@ -335,7 +350,9 @@ class TestTheStoredShapeMatchesTheDomain:
 
         for transition in Transition:
             assert f"transition = '{transition.value}'" in models._KNOWN_TRANSITIONS
-        assert Transition.APPLIED.value == models._UNATTRIBUTED
+        for transition in Transition:
+            listed = f"'{transition.value}'" in models._UNATTRIBUTED_LIST
+            assert listed is (not transition.is_attributed), transition
 
     def test_no_column_stores_the_state_or_the_window_having_elapsed(self) -> None:
         """**Both derive** (§2). A stored `state` beside the log is the copy
@@ -360,7 +377,12 @@ class TestTheStoredShapeMatchesTheDomain:
             Transition.APPROVED: "approved_by",
             Transition.REJECTED: "rejected_by",
             Transition.WITHDRAWN: "withdrawn_by",
+            # ⚡ **Slice 5's two** — [TASK-465](../../../docs/BACKLOG.md).
+            # **This guard is what made me add them here rather than only to
+            # the enum**, which is exactly what it was written for.
+            Transition.DISPATCHED: "dispatched_on",
             Transition.APPLIED: "applied_on",
+            Transition.APPLICATION_FAILED: "failed_to_apply",
             Transition.REVERSED: "reversed_by",
         }
 
@@ -449,8 +471,15 @@ def test_the_actor_column_is_nullable_only_because_application_has_no_actor() ->
 
     assert columns["actor_id"].nullable
     assert not columns["occurred_at"].nullable
-    assert Transition.APPLIED.is_attributed is False
-    assert all(t.is_attributed for t in Transition if t is not Transition.APPLIED)
+
+    # ⚡ **Three unattributed transitions now, and the argument is unchanged**
+    # — [TASK-465](../../../docs/BACKLOG.md). **A worker is not an actor**:
+    # dispatch and failure happen on the authority of the approval already
+    # recorded, and naming the approver as the author of a background failure
+    # would put a false name in a history somebody may have to defend.
+    unattributed = {Transition.DISPATCHED, Transition.APPLIED, Transition.APPLICATION_FAILED}
+    assert {t for t in Transition if not t.is_attributed} == unattributed
+    assert all(t.is_attributed for t in Transition if t not in unattributed)
 
 
 def test_the_batch_id_is_carried_and_the_workspace_is_never_a_foreign_key() -> None:
