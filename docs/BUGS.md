@@ -80,6 +80,106 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+> ⚡ **A SECOND INSTANCE OF THIS CLASS ARRIVED WITHIN HOURS, from a different lane, in a different technology, and it is recorded here because [B-424](#b-424)'s conversation asked for exactly this evidence.**
+>
+> ⛔ **[B-231](#b-231)** — registering Better Auth's `twoFactor()` plugin broke account registration outright, and **the unit suite was green throughout at 2607 tests.** ⚡ **Lane A's own words: it *"asserted the plugin was imported and never touched Better Auth's database. That is a test of the configuration rather than of the capability."***
+>
+> 🔴 **Same defect, different surface.** **B-175 asserts a class string rather than the rendered result; B-231 asserted an import rather than the capability.** ⛔ **Both are tests of an INPUT to a framework, and both stayed green while the product was broken** — one on every authentication screen, the other on the first journey a customer takes.
+>
+> ⚠️ **Neither was caught by a gate, and in both cases the thing that found it was somebody using the product** — the product owner opening `/verify`, and a Playwright journey running against the real stack. ✅ **That is [§20e](../CLAUDE.md)'s sentence with two fresh instances rather than a restatement.**
+>
+> ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
+
+### B-176 · The promotion gate watched one of the four states only QE may write, so [B-232](#b-232) walked through it printing `PASS`
+
+| | |
+|---|---|
+| **Module** | QE tooling — [`infra/certification-guard.py`](../infra/certification-guard.py) `verified_regressions` |
+| **Current assignee** | **QE** — ⛔ **its own gate, written under [D-228](DECISION_REGISTER.md)** |
+| **Severity** | 🟠 — ⛔ **A guard that reports `PASS` on the defect it exists to catch.** **Not 🔴: no code was affected and the damage is a register cell** |
+| **Status** | ✅ **`FIXED` — QE**, 2026-08-10, in the poll that found it. **Widened, with six regression tests.** ⚠️ **QE does not close its own row; the fix is measured at the next certification** |
+| **Commit found** | Found by reading [B-232](#b-232), which **Lane A** filed against itself |
+
+**Steps.** Reproduced in six lines, no database:
+
+```python
+before = "| **Status** | `PROMOTED` — QE |"
+after  = "| **Status** | `IN VALIDATION` — Lane A |"
+verified_regressions(before, after)   # -> []
+```
+
+**Expected.** ⛔ **`PROMOTED` is a state only QE may write ([§20e](../CLAUDE.md)), so a lane un-writing one is exactly what this guard is for.**
+
+**Actual.** ⚡ **An empty list, so `--promote` printed `PASS  no VERIFIED state is undone` — truthfully, and uselessly — and carried the revert to `main`.**
+
+> 🔴 **The gap was the noun, not the logic.** ⛔ **[B-168](#b-168) named the state it had just been burned by, and the guard inherited that name as if it were the rule.** ⚡ **The rule is *QE's judgement*, and QE writes four states: `VERIFIED`, `CERTIFIED`, `PROMOTED`, `DONE`.**
+>
+> ⚠️ **This is the [Decorative Logic](../CLAUDE.md) shape one level up from [B-175](#b-175), and worth naming as such.** **B-175 is a test asserting an input; this is a guard asserting a subset.** **Both printed a true sentence that answered a narrower question than the reader believed.**
+
+**The fix.** ✅ **All four states are watched, and a move to a *lower* one counts as well as an erasure** — `PROMOTED → CERTIFIED` is the same defect with a smaller step. ✅ **Advancing along QE's own sequence is not a regression**, because a guard that fires on progress is one people learn to ignore. ✅ **A lane's own states are untouched**: `IN VALIDATION → CLAIMED` is a lane moving its own row and none of this guard's business.
+
+⛔ **The function keeps its name.** It is referenced from the promotion path and the regression suite, and renaming it would be a second change riding on a fix.
+
+**Six regression tests** in [`test_promotion_gate.py`](../backend/tests/test_promotion_gate.py), including **B-232 itself as the smallest reproducing case**, the `CERTIFIED → VERIFIED` smaller step, both directions of *advancing is not regressing*, and **the watched set pinned by name rather than by count** — a set that grew by accident would still satisfy a length assertion.
+
+**What it does not fix, stated so nobody assumes otherwise.** ⚠️ **This catches the revert at the promotion boundary. It does not stop a lane resolving a rebase conflict in its own favour**, and [B-232](#b-232)'s own repair — a lane never un-writing a QE cell — is the one that prevents rather than detects.
+
+### B-175 · Five tests assert responsive classes that emit no CSS, so the suite reported a working layout while every auth screen was broken
+
+| | |
+|---|---|
+| **Module** | `product_surface` — [`frontend/tests/components/auth-shell.test.tsx`](../frontend/tests/components/auth-shell.test.tsx) |
+| **Current assignee** | **Lane A** — `product_surface` is this lane's in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **The layout defect is [B-424](#b-424)'s and 🔴. This row is the reason nothing caught it**, which outlives the fix |
+| **Status** | 🔵 **`OPEN` — QE**, 2026-08-10. **Filed alongside [B-424](#b-424), not instead of it** |
+| **Commit found** | `5ea36c2c` (TASK-1443), found by QE while verifying [B-424](#b-424) |
+
+**Steps.** On `main`:
+
+```
+$ git grep -nE '\b(sm|md|lg|xl|2xl):' -- frontend/tests/components/auth-shell.test.tsx
+58:    expect(frame().className).toContain('sm:max-w-card');
+65:    expect(card().className).toContain('sm:rounded-xl');
+66:    expect(card().className).toContain('sm:shadow');
+88:    expect(main.className).toContain('sm:pt-24');
+89:    expect(main.className).toMatch(/lg:/);
+```
+
+**Expected.** ✅ **A test of responsive layout fails when the responsive layout stops working.**
+
+**Actual.** ⛔ **All five pass, and passed on the commit that broke every authentication screen.** ⚡ **They assert that a *class string contains a substring* — never that any CSS is emitted.** **`theme.screens` replaced Tailwind's defaults ([B-424](#b-424)), so `sm:` and `lg:` no longer exist and every one of those utilities compiles to nothing.** **The strings are still in `className`, so the assertions are still true.**
+
+> 🔴 **This is [Decorative Logic](../CLAUDE.md) by the repository's own definition** — *"implementation that appears to enforce a property but whose removal does not change the property it claims to protect… more dangerous than dead code, because it gives engineers confidence that something is enforced when it is not."* ⚡ **Here it is a test rather than a branch, and the confidence it gave was total: `tsc`, `eslint` and 2599 frontend tests all passed on the breaking commit.**
+>
+> ⛔ **The repair is not "add a check that every prefix resolves".** ⚡ **It is that a test asserting layout must assert the *computed* result, not the class attribute** — the attribute is an input to the framework, and testing an input proves the caller's intent rather than the product's behaviour.
+
+**Blast radius — and QE's first figure was wrong in the opposite direction to the report's.**
+
+⚠️ **[B-424](#b-424) reported 46**, across `app/` and `components/` with `--include=*.tsx`, **and named that limit itself.** ⛔ **QE then reported 99 and that was too high**: a word-boundary match counted `--radius-xl:`, and every `text-xl` / `rounded-xl` token declaration, as a responsive prefix. **Corrected here rather than left standing, because QE quoted it at two lanes.**
+
+**Measured strictly — a prefix preceded by whitespace, quote or backtick and followed by a utility:**
+
+```
+44  sm:      → phone:        640 → 640    EXACT
+ 7  lg:      → smalllaptop: 1024 → 1024   EXACT
+ 4  md:      ALL FOUR ARE INSIDE COMMENTS — no live utility
+ 0  xl: 2xl: none live
+──
+51  live occurrences · 16 files · app/ 37 · components/ 10 · tests/ 7
+```
+
+✅ **So the repair is a pure mechanical rename at identical pixel values, and there is not one judgement call in it.** ⛔ **The `md:` case — Tailwind's 768, which the design has no band for — was the only thing that needed a decision per occurrence, and it does not occur.** ⚡ **Every renamed utility renders exactly as it did before TASK-1443.**
+
+**Ten shipped surfaces carry a dead prefix in a `className`**: `accounts/[accountId]`, `authenticated-shell`, `(app)/page`, `settings`, `settings/team`, `auth-shell`, `onboarding-shell`, `commercial/profile`, `intelligence/offering`, `intelligence/sequence`.
+
+⚠️ **`shell-a11y.test.tsx` reasons about the rail being `hidden md:block`** — ✅ **QE checked: `navigation.tsx` no longer uses `md:` outside a comment, so the rail is not affected.** **Recorded because the comment reads as though it were.**
+
+> 🔴 **The five tests will go green again the moment the classes are renamed, while proving no more than they do today** *(Lane C, and it is the right thing to state on this row rather than B-424's)*. ⛔ **A rename must not be mistaken for these tests having been fixed.** ✅ **This row closes when a layout assertion reads the computed result, not when `sm:max-w-card` becomes `phone:max-w-card`.**
+
+**Ten shipped surfaces carry a dead prefix in a `className`**, not only the authentication screens: `accounts/[accountId]`, `authenticated-shell`, `(app)/page`, `settings`, `settings/team`, `auth-shell`, `onboarding-shell`, `commercial/profile`, `intelligence/offering`, `intelligence/sequence`.
+
+⚠️ **`shell-a11y.test.tsx` reasons about the rail being `hidden md:block`** — ✅ **QE checked and `navigation.tsx` no longer uses `md:` outside a comment, so the rail itself is not affected.** **Recorded because the comment reads as though it were.**
+
 ### B-174 · B-423's fix gave `render()` a filesystem side effect, so running the test suite empties a lane's queue in the working tree
 
 | | |

@@ -87,6 +87,60 @@ class TestProseCannotBecomeAStatus:
         assert guard.backlog_states(text) == {"TASK-2": "CLAIMED"}
 
 
+class TestEveryStateOnlyQEMayWriteIsWatched:
+    """**B-232** — the gate said `PASS  no VERIFIED state is undone` while a
+    `PROMOTED` cell was being reverted through it, and the revert reached `main`.
+
+    ⛔ **The gap was the noun, not the logic.** [B-168](../../docs/BUGS.md) named
+    the state it had just been burned by; the guard inherited that name as if it
+    were the rule. **The rule is *QE's judgement*, and QE writes four states.**
+    """
+
+    def test_promoted_reverted_to_in_validation_is_reported(self) -> None:
+        """🔴 B-232 itself, as the smallest case that reproduces it."""
+        before = _row("TASK-1403", "✅ **`PROMOTED` — QE**, in certified `e71e74d`")
+        after = _row("TASK-1403", "✅ **`IN VALIDATION` — Lane A**")
+
+        assert guard.verified_regressions(before, after) == [("TASK-1403", "IN VALIDATION")]
+
+    def test_certified_falling_back_to_verified_is_reported(self) -> None:
+        """⚡ A smaller step is the same defect — QE's sequence only runs one way."""
+        before = _row("TASK-5", "✅ **`CERTIFIED` — QE**")
+        after = _row("TASK-5", "✅ **`VERIFIED` — QE**")
+
+        assert guard.verified_regressions(before, after) == [("TASK-5", "VERIFIED")]
+
+    def test_a_promoted_row_that_disappears_entirely_is_reported(self) -> None:
+        before = _row("TASK-6", "✅ **`PROMOTED` — QE**")
+
+        assert guard.verified_regressions(before, "") == [("TASK-6", "ABSENT")]
+
+    def test_advancing_along_qes_own_sequence_is_not_a_regression(self) -> None:
+        """⛔ **A guard that fires on progress is one people learn to ignore.**"""
+        assert guard.verified_regressions(
+            _row("TASK-7", "✅ **`VERIFIED` — QE**"),
+            _row("TASK-7", "✅ **`PROMOTED` — QE**"),
+        ) == []
+        assert guard.verified_regressions(
+            _row("TASK-8", "✅ **`PROMOTED` — QE**"),
+            _row("TASK-8", "✅ **`DONE` — QE**"),
+        ) == []
+
+    def test_a_lanes_own_states_are_not_this_guards_business(self) -> None:
+        """✅ `IN VALIDATION` → `CLAIMED` is a lane moving its own row (§20e)."""
+        assert guard.verified_regressions(
+            _row("TASK-9", "✅ **`IN VALIDATION` — Lane A**"),
+            _row("TASK-9", "✅ **`CLAIMED` — Lane A**"),
+        ) == []
+
+    def test_the_watched_set_is_exactly_the_states_only_qe_writes(self) -> None:
+        """⚠️ Pinned by name rather than by count — a set that grew by accident
+        would still satisfy a length assertion."""
+        assert guard.QE_TERMINAL_STATES == frozenset(
+            {"VERIFIED", "CERTIFIED", "PROMOTED", "DONE"}
+        )
+
+
 class TestARealRegressionStillFires:
     def test_verified_becoming_in_validation_is_reported(self) -> None:
         before = _row("TASK-3", "✅ **`VERIFIED` — QE**, at `1874df08`")

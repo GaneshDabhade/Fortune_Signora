@@ -151,19 +151,52 @@ def backlog_states(text: str) -> dict[str, str]:
     return states
 
 
+#: The states only QE may write ([§20e](../CLAUDE.md)) — and therefore the only
+#: ones a lane's rebase can *un*-write. **`VERIFIED` was the whole set until
+#: [B-232](../docs/BUGS.md)**, which reverted a `PROMOTED` cell straight through
+#: the check that prints *"no VERIFIED state is undone"* and onto `main`.
+#:
+#: ⛔ **The gap was not the logic; it was the noun.** [B-168](../docs/BUGS.md)
+#: named the state it had just been burned by, and the guard inherited that
+#: name as if it were the rule. **The rule is *QE's judgement*, and QE writes
+#: four of these.**
+QE_TERMINAL_STATES: frozenset[str] = frozenset(
+    {"VERIFIED", "CERTIFIED", "PROMOTED", "DONE"}
+)
+
+
 def verified_regressions(before: str, after: str) -> list[tuple[str, str]]:
-    """Rows that were `VERIFIED` and no longer are — QE's judgement, undone.
+    """Rows whose QE-written state has been undone or weakened.
 
     **The check [B-168](../docs/BUGS.md) asked for, as a function rather than a
     habit.** A clean rebase silently reverted QE's own `VERIFIED` cells three
     times, and twice a conflict happened to make it visible; the third had none.
+
+    ⚠️ **Widened by [B-232](../docs/BUGS.md), which this function watched go
+    past.** A lane resolved a rebase conflict in its own favour, `PROMOTED`
+    became `IN VALIDATION`, and the promotion that carried it printed **`PASS
+    no VERIFIED state is undone`** — truthfully, and uselessly. **All four
+    QE-written states are checked now, and a move to a *lower* one counts as
+    well as an erasure**, because `PROMOTED → CERTIFIED` is the same defect
+    with a smaller step.
+
+    ⛔ **The name is kept.** It is referenced from the promotion path and from
+    the regression suite, and renaming it here would be a second change riding
+    on a fix — which is what §2 asks a repair not to do.
     """
+    order = {"VERIFIED": 1, "CERTIFIED": 2, "PROMOTED": 3, "DONE": 4}
     old, new = backlog_states(before), backlog_states(after)
-    return sorted(
-        (task, new.get(task, "ABSENT"))
-        for task, state in old.items()
-        if state == "VERIFIED" and new.get(task) != "VERIFIED"
-    )
+    lost: list[tuple[str, str]] = []
+    for task, state in old.items():
+        if state not in QE_TERMINAL_STATES:
+            continue
+        now = new.get(task, "ABSENT")
+        if now == state:
+            continue
+        if now in order and order[now] >= order[state]:
+            continue  # advanced further along QE's own sequence
+        lost.append((task, now))
+    return sorted(lost)
 
 
 def _promote(sha: str) -> int:
