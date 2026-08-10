@@ -9,26 +9,26 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "0cbf4e6"
-task_count     = 83
+generated_from = "a69497b"
+task_count     = 82
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-1417", "TASK-465", "TASK-1415", "TASK-1418", "TASK-1430", "TASK-1445", "TASK-412", "TASK-452", "TASK-471", "TASK-495", "TASK-496"]
-assigned_total     = 71
-claimable          = 13
-claimable_now      = 11
-awaiting_sync      = 2
+backlog            = ["TASK-1417", "TASK-1433", "TASK-465", "TASK-1415", "TASK-1418", "TASK-1430", "TASK-1445", "TASK-1458", "TASK-412", "TASK-452"]
+assigned_total     = 70
+claimable          = 10
+claimable_now      = 10
+awaiting_sync      = 0
 in_flight          = 30
-actionable         = 4
+actionable         = 3
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 28
+blocked            = 30
 lane_utilization   = 6.0
-idle_prediction_days   = 1.9
-dependency_wait_days   = 0.3
-blocked_duration_days  = 0.3
+idle_prediction_days   = 1.4
+dependency_wait_days   = 0.4
+blocked_duration_days  = 0.4
 critical_path_max      = 3
 
 [lane.Lane_C]
@@ -101,22 +101,6 @@ on_integration = true
 [[task]]
 id            = "TASK-1402"
 title         = "The intent resolver — what the person was trying to reach"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-1403"
-title         = "Reason codes become a diagnosable record, not a log line"
 state         = "IN FLIGHT"
 declared      = "IN VALIDATION"
 lane          = "Lane A"
@@ -480,7 +464,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1434"
@@ -575,8 +559,8 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 0.3
-on_integration = false
+blocked_days   = 0.4
+on_integration = true
 
 [[task]]
 id            = "TASK-1458"
@@ -592,7 +576,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-200"
@@ -981,15 +965,15 @@ on_integration = true
 [[task]]
 id            = "TASK-471"
 title         = "Workflow 10 — Team Management, to the approved design"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -1014,7 +998,7 @@ on_integration = true
 id            = "TASK-475"
 title         = "The seventeen authentication journeys run as one suite, in any mode"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -1126,7 +1110,7 @@ on_integration = true
 id            = "TASK-493"
 title         = "Better Auth plugins — four capabilities, one file"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
@@ -1141,32 +1125,32 @@ on_integration = true
 [[task]]
 id            = "TASK-495"
 title         = "Notification delivery through the ratified vendor"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "BLOCKED"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane A, 2026-08-10, on [C-279](LANE_COORDINATION.md)'s second half, "
+waiting_for    = "— Lane A, 2026-08-10, on [C-279](LANE_COORDINATION.md)'s second half, and the row BLOCKS ITSELF by its own Module cell**: 📁 ***'`product_surface` and "
 blocked_days   = 0.0
 on_integration = true
 
 [[task]]
 id            = "TASK-496"
 title         = "Search infrastructure through the ratified vendor"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "WAITING_EXTERNAL"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane A, 2026-08-10, on TWO things, and the second is not a lane's to"
+waiting_for    = "— Lane A, 2026-08-10, on TWO things, and the second is not a lane's to settle.** ⛔ **① The same deferral as [TASK-495](#task-495--notification-deliver"
 blocked_days   = 0.0
 on_integration = true
 
