@@ -179,6 +179,36 @@ def _owners() -> dict[str, str]:
     }
 
 
+
+#: Where a lane's hand-written queue lives. **Read by [§20e](../CLAUDE.md)
+#: Startup step 3, which is why a stale one reaches a lane rather than merely
+#: looking untidy** — [D-144](../docs/DECISION_REGISTER.md) sends a lane to the
+#: published ref and step 3 sends it here, and only one of those was derived.
+QUEUES = ROOT / "docs" / "coordination" / "queues"
+
+
+def _rewrite_queue_backlog(lane: str, ids: list[str]) -> bool:
+    """Rewrite one lane's `backlog` array from the projection. **B-423.**
+
+    ⛔ **Rewrites exactly one assignment and nothing else.** A queue file also
+    carries a notice, `[[blocked]]` entries and a lane's own reasoning; those
+    are hand-written by this office and are not derived from anything, so
+    regenerating the whole file would destroy the half that has no source.
+
+    Returns whether the file changed, so a caller can report drift rather than
+    silently repairing it.
+    """
+    path = QUEUES / f"lane-{lane.rsplit(' ', 1)[-1].lower()}.toml"
+    if not path.exists():
+        return False
+    before = path.read_text(encoding="utf-8")
+    array = "backlog = [" + ", ".join(f'"{i}"' for i in ids) + "]"
+    after = re.sub(r"^backlog = \[.*?\]", array, before, count=1, flags=re.S | re.M)
+    if after == before:
+        return False
+    path.write_text(after, encoding="utf-8")
+    return True
+
 def _lane_for(
     module_cell: str, body: str, owners: dict[str, str], declared: str = ""
 ) -> str | None:
@@ -1070,6 +1100,21 @@ def render(rows: list[Task]) -> str:
             (r for r in mine if r.state == ASSIGNED and r.on_integration),
             key=lambda r: (-len(r.unblocks), r.critical_path, r.id),
         )
+        # ✅ **B-423** — the queue file's array is now DERIVED from this list
+        # rather than maintained beside it. **Both were representations of one
+        # fact and only one of them could be recomputed**, so the stored copy
+        # drifted on every promotion: QE reported it three consecutive cycles
+        # and this office hand-fixed it four times before fixing the cause.
+        #
+        # 📁 **[§2](../CLAUDE.md)** — *"truth has exactly one authoritative
+        # representation; everything else derives from it… synchronisation is
+        # maintenance, derivation is architecture."*
+        #
+        # ⛔ **Only the `backlog` array is rewritten.** The notice, the
+        # `[[blocked]]` entries and every hand-written paragraph are a lane's
+        # reasoning and are not this function's to touch — which is why this
+        # edits one line rather than regenerating the file.
+        _rewrite_queue_backlog(lane, [r.id for r in backlog])
         m = stats[lane]
         out += [
             f"[lane.{lane.replace(' ', '_')}]",

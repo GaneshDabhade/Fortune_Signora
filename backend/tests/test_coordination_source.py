@@ -616,3 +616,50 @@ def test_an_unreadable_upstream_does_not_mark_every_row_unsynchronised() -> None
     """
     upstream: dict[str, str] = {}
     assert ((not upstream) or upstream.get("TASK-X") == "READY") is True
+
+
+def test_queue_backlog_is_rewritten_from_the_projection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """**B-423** — a stale id in a queue file is removed, not synchronised.
+
+    ⛔ **The defect this pins is not "the file was wrong".** It is that
+    eligibility had two representations and only one could be recomputed, so
+    the stored copy drifted on every promotion — four hand-fixes and three
+    consecutive QE reports before the cause was addressed ([§2](CLAUDE.md)).
+    """
+    queues = tmp_path / "queues"
+    queues.mkdir()
+    queue = queues / "lane-a.toml"
+    queue.write_text(
+        'lane = "Lane A"\n'
+        'backlog = ["TASK-100", "TASK-999"]\n'
+        '\n[[blocked]]\nid = "TASK-200"\nnote = "hand-written, must survive"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(coordination, "QUEUES", queues)
+
+    changed = coordination._rewrite_queue_backlog("Lane A", ["TASK-100"])
+
+    assert changed is True
+    body = queue.read_text(encoding="utf-8")
+    assert 'backlog = ["TASK-100"]' in body
+    # ⛔ TASK-999 is the promoted row that kept coming back.
+    assert "TASK-999" not in body
+    # ✅ The half with no source survives untouched — the whole reason this
+    # rewrites one assignment rather than regenerating the file.
+    assert 'note = "hand-written, must survive"' in body
+    assert 'lane = "Lane A"' in body
+
+
+def test_queue_backlog_rewrite_reports_no_change_when_already_current(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """⚡ **Returns False when nothing drifted**, so a caller can report rather
+    than silently repair — the difference between an instrument and a fixer."""
+    queues = tmp_path / "queues"
+    queues.mkdir()
+    (queues / "lane-c.toml").write_text('backlog = ["TASK-1"]\n', encoding="utf-8")
+    monkeypatch.setattr(coordination, "QUEUES", queues)
+
+    assert coordination._rewrite_queue_backlog("Lane C", ["TASK-1"]) is False
