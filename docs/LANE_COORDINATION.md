@@ -9735,6 +9735,35 @@ rules parsed: 24   ·   distinct reason codes: 24
 
 **If ① is refused, this office recommends ③ over ②** — 📁 **[`Fortune Signora Notification Center.dc.html`](design-snapshot/screens/) is a full screen design, so this is not one table for one badge; it is the first slice of a context that already has an approved surface.** ⚡ **[TASK-495](BACKLOG.md) *Notification delivery through the ratified vendor* is already a row, which means the context exists in the backlog whatever we call it.**
 
+
+### 🔴 Evidence pass, 2026-08-10 — and it moves the question
+
+**Product owner asked for evidence before ruling. Two of this office's own assumptions did not survive it.**
+
+⛔ **CORRECTION 1.** **I first read [`Fortune Signora Notification Center.dc.html`](../design-snapshot/screens/) and concluded it was *"a preferences screen — no inbox, no feed, no unread count"*.** ⚠️ **I had read 55 lines of a 12-section document.** ✅ **§07 *Notification history & delivery log* and §08 *Inbox, empty, loading & failure* both exist.** **The design specifies an inbox in detail.**
+
+⛔ **CORRECTION 2.** **`grep` for *notification* matched `workspace_tenancy/domain/preferences.py` and `infrastructure/delivery.py`, which looked like existing notification ownership.** ✅ **Opened both: `preferences.py` is theme and density; `delivery.py` is `ConsoleInvitationDelivery`.** ⛔ **`workspace_tenancy` owns NO notification concern today** — a keyword match, which is the instrument [D-220](DECISION_REGISTER.md) §10 forbids relying on.
+
+#### What the finalized design requires — measured, not inferred
+
+📁 **§08 Inbox**: unread count · **Mark all read** · filters `All` · `Direct` · `AI` · **`Held · 4`** · grouping — *"Grouped: 6 more events on Halden Systems"* · empty state — *"You have read everything. 4 items are held until 07:00 and 3 rules are muted"* · ⛔ **a correctness constraint: *"The inbox loads from cache first and reconciles in the background. Unread counts never decrease optimistically."***
+
+📁 **§07 Delivery log**: **last 30 days, every attempt including failures** · columns **When · Notification · Channel · Delivery · Opened · Acted** · **Export** · channel filter.
+
+📁 **App Shell §10**: *"Opening the panel does not mark items read; opening an item does."*
+
+#### 🔴 The discriminator, and it is §07 rather than the inbox
+
+⚡ **The inbox alone is a commodity and a vendor could plausibly own it.** ⛔ **§07 is not**: *Opened* and *Acted* per notification, **exportable, thirty days, including failed attempts** — and 📁 [§17](../../CLAUDE.md) *observability is a product capability*: **a system cannot be improved using information it never recorded.**
+
+⛔ **And the inbox is not generic either**: it groups by **account**, and its empty state joins **held items** to Signora quiet hours and **muted rules** to Signora alert rules. **Three Signora domain concepts inside a feed row.**
+
+#### ⚠️ What this office CANNOT verify, stated rather than assumed
+
+⛔ **Novu appears in ZERO source files** — `grep -rli novu` across `backend/` and `frontend/` returns nothing. **[ADR-0017](architecture/adr/0017-notifications.md) is `Accepted` and nothing is integrated**, so *"what our current integration provides"* is **nothing**, and [TASK-495](BACKLOG.md) is the row that would build it.
+
+🔴 **Novu's actual product capability is NOT verified here.** **No vendor documentation was consulted — this office has no approved documentation path to it in this session.** ⛔ **Every statement about what Novu can do would be recall, not evidence, and [D-220](DECISION_REGISTER.md) §10 forbids exactly that.** ✅ **The matrix column is left UNVERIFIED rather than filled plausibly.**
+
 ### ⛔ What this office did not do
 
 **Did not choose. Did not create the module. Did not amend ADR-0017.** 📁 **A new bounded context and a vendor-scope change are both 🔴** ([§20e](../CLAUDE.md) Change Budget), **and Lane A was right that this is architectural rather than implementation.**
