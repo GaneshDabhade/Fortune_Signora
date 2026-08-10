@@ -1858,6 +1858,26 @@
 | ✅ **Nothing is lost** | 📁 **Every measurement this row carried is already in TASK-1432**: the model is correct, the surface never arrived, and the consumer is the missing half. ⛔ **No content is folded across — a second copy is what caused this** |
 | ⚡ **The real work** | ➡️ **[TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope)**, unchanged, still correctly waiting on its consumer |
 
+### TASK-1462 · The App Shell values the design specifies exactly and the implementation approximates
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🟣 **IMPLEMENTED INCORRECTLY** — ⛔ **each region exists and is otherwise faithful; a specified value is wrong or absent** |
+| **Epic** | **Common Platform Foundation** |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-10, from the forensic App Shell audit (22 sections, design-first)** |
+| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/) §03 · §09 · §14** — ⛔ **read each; this row does not restate them** |
+| ⚡ **Why one row and not four** | 📁 **[§15 of the directive](../CLAUDE.md): one implementation effort, one task.** **Three regions, one defect class, one verification method — `boundingBox()` against a number the design states** |
+| 🔴 **§03 · the switcher trigger states one fact of three** | 📁 ***"The trigger states the workspace, its plan and its region."*** ⛔ **`workspace-switcher.tsx`:226 renders `activeWorkspace.name` only.** ⚠️ **`plan` and `region` appear nowhere in the file.** ⚡ **The MENU rows are correct** — the file quotes *"22px avatar, name, role and environment"* and implements it; **only the trigger is short** |
+| ⚠️ **§03 — check the contract before assuming a UI gap** | ⛔ **Verify `plan` and `region` exist on the workspace contract first.** ⚡ **If they do not, this half is a dependency on `workspace_tenancy` and is raised as a [`C-`](LANE_COORDINATION.md) item, not invented client-side** — 📁 **[B-429](BUGS.md) is the worked example of the opposite mistake**: a fact declared unavailable that the session already carried |
+| 🔴 **§09 · the palette's anchor** | 📁 ***"640px, anchored at 14vh, modal elevation."*** ✅ **640 exists (`lib/shell/rail.ts`).** ⛔ **`14vh` appears NOWHERE in `frontend/`** — the palette is positioned by some other rule |
+| 🔴 **§14 · the context drawer's third width** | 📁 ***"480 / 640 / 800px"*** — **three sizes, chosen by task.** ⛔ **`800` appears nowhere in `components/shell` or `components/ui`.** ⚡ **480 is present; the largest — *"review agent output"* — cannot be selected** |
+| ✅ **What this row must NOT touch** | ⛔ **The rail (232/56), user menu (280), top bar (56) and copilot (420) all carry their specified values — verified.** ⛔ **Do not rebuild any region.** ⛔ **Not the filter strip ([TASK-1432](#task-1432)), utility panel ([TASK-1433](#task-1433)), notifications ([C-279](LANE_COORDINATION.md)), user-menu name ([B-429](BUGS.md)) or mobile navigation ([TASK-1461](#task-1461))** — **each has its own row** |
+| **Change Budget** | 🟢 **`components/shell/**`** · 🟢 `lib/shell/**` · 🟢 their tests |
+| **Playwright coverage** | ✅ **Assertable TODAY at 1280, no responsive matrix needed**: **palette top offset = 14% of viewport height** · **drawer opens at 800px in its largest mode** · **the trigger's accessible name carries plan and region**. ⚡ **All three fail against the current implementation** |
+| **Definition of Done** | **Every value in §03, §09 and §14 is asserted from geometry rather than from a class name** · **certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **LEVEL 1/2 NOT VERIFIED by Lane C** — no authenticated session. **Every measurement is of the source** |
+
 ### TASK-1461 · 🔴 SCRAP AND REBUILD · Two navigation generations are mounted at once, and CSS hides one
 
 | | |

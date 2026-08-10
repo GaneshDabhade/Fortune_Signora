@@ -10,15 +10,15 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "604a0d6"
-task_count     = 85
+task_count     = 86
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1415", "TASK-1418", "TASK-1430", "TASK-1445", "TASK-1458", "TASK-412"]
-assigned_total     = 72
-claimable          = 13
+assigned_total     = 73
+claimable          = 14
 claimable_now      = 6
-awaiting_sync      = 7
+awaiting_sync      = 8
 in_flight          = 31
 actionable         = 3
 awaiting_qe_transition = 0
@@ -26,7 +26,7 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 28
 lane_utilization   = 6.2
-idle_prediction_days   = 1.9
+idle_prediction_days   = 2.0
 dependency_wait_days   = 0.2
 blocked_duration_days  = 0.1
 critical_path_max      = 3
@@ -597,6 +597,22 @@ on_integration = false
 [[task]]
 id            = "TASK-1461"
 title         = "🔴 SCRAP AND REBUILD · Two navigation generations are mounted at once, and CSS hides one"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1462"
+title         = "The App Shell values the design specifies exactly and the implementation approximates"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
