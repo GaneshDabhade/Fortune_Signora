@@ -13,6 +13,31 @@ export default {
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}'],
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {
+    /* 🔴 **The design's four bands, REPLACING Tailwind's defaults** —
+     * TASK-1443, App Shell `breakpoints`.
+     *
+     * ⛔ **`screens` at this level OVERRIDES rather than extends**, and that is
+     * the point: `md:` and `sm:` were 768 and 640, and the design names 1600,
+     * 1280, 1024 and 640. Leaving Tailwind's set beside these would give the
+     * frame two vocabularies for one question, and every future decision would
+     * be taken at whichever width the author happened to reach for.
+     *
+     * ⚡ **Named for the band, not the number** — `laptop:` says which of the
+     * design's four rows a rule belongs to; `min-[1280px]:` says nothing and
+     * drifts the moment the design moves a boundary.
+     *
+     * 📁 The bands, in the design's own words:
+     *   `desktop`      ≥1600  — rail 232, panel 360, both open
+     *   `laptop`       1280+  — THE REFERENCE LAYOUT, rail 232, panel 300
+     *   `smalllaptop`  1024+  — rail collapses to 56px icons with tooltips
+     *   (below 1024)          — rail becomes a sheet; `phone` is the <640 floor
+     */
+    screens: {
+      phone: '640px',
+      smalllaptop: '1024px',
+      laptop: '1280px',
+      desktop: '1600px',
+    },
     extend: {
       colors: {
         canvas: 'rgb(var(--color-canvas) / <alpha-value>)',

@@ -83,7 +83,7 @@ export function TopBar({ breadcrumb, role, email, signOut }: TopBarProps) {
           Shown here below `md` so the product is still named on the one
           viewport where the frame is otherwise anonymous. ⛔ Not a slot — the
           design's five begin after it, and above `md` it is absent. */}
-      <span className="shrink-0 text-sm font-semibold tracking-tight md:hidden">Signora</span>
+      <span className="shrink-0 text-sm font-semibold tracking-tight smalllaptop:hidden">Signora</span>
 
       {/* ── Slot 1 · Breadcrumb ────────────────────────────────────────────
           📁 *"flex, min 0. Truncates from the middle. Never wraps. Always
@@ -119,7 +119,7 @@ export function TopBar({ breadcrumb, role, email, signOut }: TopBarProps) {
         role="search"
         aria-label="Search Fortune Signora"
         style={{ width: SEARCH_WIDTH.rest, height: SLOT_SPEC.search.height }}
-        className="hidden shrink-0 sm:block"
+        className="hidden shrink-0 phone:block"
       >
         <RegionBoundary subject="account search">
           <AccountSearch />

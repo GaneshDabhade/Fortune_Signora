@@ -124,7 +124,47 @@ export function collapseKey(userId: string, device: DeviceClass): string {
   return `signora.rail.collapsed.${userId}.${device}`;
 }
 
-/** 📁 The design's breakpoint language: below `md` is compact. */
+/**
+ * 📁 **The design's four bands, as numbers the law can hold** —
+ * [TASK-1443](../../../docs/BACKLOG.md), App Shell `breakpoints`.
+ *
+ * ⛔ **`deviceClassFor` hardcoded `768`** — Tailwind's `md`, a number the
+ * design never names — **inside the rail's own law.** ⚡ **The design's bands
+ * are 1600 · 1280 · 1024 · 640**, and *"< 1024px: rail becomes a sheet"* is
+ * the boundary that actually decides whether a rail exists.
+ */
+export const BREAKPOINTS = {
+  /** 📁 *"Below 640px: review, approve, comment and ask only."* */
+  phone: 640,
+  /** 📁 *"< 1024px: rail becomes a sheet from a top-bar button."* */
+  smallLaptop: 1024,
+  /** 📁 *"1280–1599 — the REFERENCE layout."* */
+  laptop: 1280,
+  /** 📁 *"≥ 1600 — rail 232px, utility panel 360px, both open."* */
+  desktop: 1600,
+} as const;
+
+/**
+ * 📁 **Which band a viewport is in**, by the design's name for it.
+ *
+ * ⚡ **Returned as a band rather than a boolean** because the design gives four
+ * behaviours, not two — ⛔ and a helper answering *is this small* would have to
+ * be replaced the first time a caller needed to tell a laptop from a desktop.
+ */
+export type Band = 'phone' | 'smallLaptop' | 'laptop' | 'desktop';
+
+export function bandFor(viewportWidth: number): Band {
+  if (viewportWidth >= BREAKPOINTS.desktop) return 'desktop';
+  if (viewportWidth >= BREAKPOINTS.laptop) return 'laptop';
+  if (viewportWidth >= BREAKPOINTS.smallLaptop) return 'smallLaptop';
+  return 'phone';
+}
+
+/**
+ * 📁 **Compact is *no rail at all*, which the design puts at 1024** — ⛔ not at
+ * Tailwind's 768. ⚡ **The collapse preference is remembered per device class**,
+ * so this boundary decides which of a person's two saved states applies.
+ */
 export function deviceClassFor(viewportWidth: number): DeviceClass {
-  return viewportWidth < 768 ? 'compact' : 'regular';
+  return viewportWidth < BREAKPOINTS.smallLaptop ? 'compact' : 'regular';
 }

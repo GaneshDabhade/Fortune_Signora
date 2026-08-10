@@ -334,7 +334,11 @@ export function MobileNavigation({ role }: { role: WorkspaceRole | null }) {
     <nav
       aria-label="Primary"
       className={cn(
-        'fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-surface md:hidden',
+        // 📁 **The design's `< 1024px` band** — *"rail becomes a sheet from a
+        // top-bar button"*. ⛔ **It was `md:hidden`, Tailwind's 768**, so the
+        // rail vanished 256px earlier than the design says and the phone bar
+        // appeared on a small laptop that should have had the collapsed rail.
+        'fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-surface smalllaptop:hidden',
         // The safe area on a phone with a home indicator.
         'pb-[env(safe-area-inset-bottom)]',
       )}

@@ -115,7 +115,7 @@ export function AppShell({
         // 232px expanded and 56px collapsed.
         style={{ width: rail.collapsed ? RAIL_WIDTH.collapsed : RAIL_WIDTH.expanded }}
         data-collapsed={rail.collapsed}
-        className="hidden shrink-0 border-r border-border bg-surface transition-[width] duration-150 md:block"
+        className="hidden shrink-0 border-r border-border bg-surface transition-[width] duration-150 smalllaptop:block"
       >
         <div className="flex h-topbar items-center justify-between gap-2 px-5">
           {/* ⚡ The wordmark goes when the rail does — 56px cannot hold it,
@@ -162,7 +162,8 @@ export function AppShell({
         {/* The main region is the one place a failure is acceptable to
             isolate: the frame around it stays usable.
 
-            **`pb-20 md:pb-6` is not padding taste** — below `md` the bottom
+            **`pb-20 smalllaptop:pb-6` is not padding taste** — below the
+            design's 1024 band the bottom
             navigation is `fixed`, so it is out of flow and would sit on top of
             whatever the page ends with. The last row of the attention list is
             the row a seller scrolls to; covering it is the defect this slice
@@ -173,7 +174,7 @@ export function AppShell({
         <main
           id={SKIP_TARGETS.content}
           tabIndex={-1}
-          className="min-w-0 flex-1 p-4 pb-20 outline-none sm:p-6 md:pb-6"
+          className="min-w-0 flex-1 p-4 pb-20 outline-none phone:p-6 smalllaptop:pb-6"
         >
           {/* ⛔ **The one boundary whose default reassurance would be false.**
               *"Everything else on this page is unaffected"* is exactly wrong

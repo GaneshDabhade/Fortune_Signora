@@ -116,8 +116,17 @@ describe('it is built for a thumb, not a cursor', () => {
   });
 
   it('is hidden once the sidebar exists, so there is never a second navigation', () => {
+    /**
+     * ⚡ **The band moved from `md` to `smalllaptop`** —
+     * [TASK-1443](../../../docs/BACKLOG.md). ⛔ **`md:` was Tailwind's 768**,
+     * so the rail vanished 256px earlier than the design says and this bar
+     * appeared on a small laptop that should have had the collapsed rail
+     * instead. 📁 The design's band is *"< 1024px: rail becomes a sheet"*.
+     *
+     * ✅ **The property is unchanged and is what this test is about**: the two
+     * navigations are never both visible.
+     */
     const { container } = render(<MobileNavigation role="owner" />);
-
-    expect(container.querySelector('nav')?.className).toContain('md:hidden');
+    expect(container.querySelector('nav')?.className).toContain('smalllaptop:hidden');
   });
 });

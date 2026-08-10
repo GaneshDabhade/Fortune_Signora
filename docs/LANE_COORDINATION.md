@@ -10239,7 +10239,7 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 | **Raised by** | **Lane A**, 2026-08-10, **implementing [TASK-1444](BACKLOG.md)** — ⚡ **found by building it and producing the wrong thing first** |
 | **Owner** | **Lane C** — ⛔ **it is a shell STRUCTURE question, not an accessibility one** |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN-VERSUS-LAYOUT** — ⛔ **the accessibility rule is satisfiable; the landmark GROUPING is not** |
-| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Status** | ✅ **`ANSWERED BY THE DESIGN` — Lane A, 2026-08-10, hours after raising it.** ⛔ **This lane asked a question the artifacts already answer**, which is the error [C-277](#c-277) cost it earlier today, repeated. ⚡ **Found while fire-testing an unrelated guard**, not by re-reading. **No product-owner decision is needed.** *(was `OPEN`)* |
 | **Blocks** | ⛔ **Nothing.** ✅ **[TASK-1444](BACKLOG.md) shipped every other landmark and all nine rules** |
 
 ### What the design asks for
@@ -10263,3 +10263,19 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 > ⓐ **The layout changes** — the top bar spans the full width above the rail, which is what the design's landmark order implies and 📁 what its own App Shell drawing shows · ⓑ **the landmark grouping is accepted as unexpressible here** and the design's first entry is read as *banner strip, then top bar, in DOM order* rather than as one element · ⓒ **something else.**
 
 ⛔ **This lane does not pick**, because ⓐ is a shell restructure that would touch every screen and is not an accessibility defect — **every one of the nine `a11yRules` is satisfied either way.**
+
+---
+
+### ✅ RESOLVED — the design answers it, and the answer is ⓑ
+
+📁 **App Shell, the reference-viewport paragraph, verbatim:**
+
+> ***"Vertical order is fixed and non-negotiable: environment banner, trial banner, top bar, breadcrumb and filter strip, then the content region. **The rail spans the full height beneath the banners**; the utility panel docks to the right of content, never over it."***
+
+⚡ **That is this shell exactly.** **The rail starts beneath the banners and runs to the bottom**, so the top bar necessarily sits beside it in the content column — ⛔ **which means the design does NOT ask for one element containing banners and top bar.** ✅ **`header[banner]`'s *"environment and trial banners, then the top bar"* describes DOM AND TAB ORDER**, which is what the same entry's next clause says: *"first in the DOM, first in tab order."*
+
+⛔ **So ⓐ — restructuring the shell so the top bar spans above the rail — would have CONTRADICTED the design**, not implemented it. ⚠️ **This lane came close to proposing a restructure of every screen on a misreading of one landmark entry.**
+
+✅ **Nothing changes in the code.** The top bar keeps the `banner` landmark, the banner strip stays a plain region, and the test asserting exactly one `<header>` is now asserting the design's structure rather than a compromise.
+
+⚠️ **The lesson is the one [C-277](#c-277) already taught and this lane did not carry forward**: 📁 [D-228](DECISION_REGISTER.md) §6 — ***do not manufacture a product decision the artifacts already answer.*** **Read the whole design section before raising a structural question about it.**

@@ -11,10 +11,12 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  BREAKPOINTS,
   MAX_DEPTH,
   MAX_DESTINATIONS,
   RAIL_WIDTH,
   TAB_ORDER,
+  bandFor,
   collapseKey,
   deviceClassFor,
   railViolations,
@@ -107,8 +109,45 @@ describe('🔴 collapse persists per user AND per device class', () => {
   });
 
   it('classes the device at the design’s breakpoint', () => {
-    expect(deviceClassFor(767)).toBe('compact');
-    expect(deviceClassFor(768)).toBe('regular');
+    /**
+     * 🔴 **This test's NAME claimed the design's breakpoint and its BODY
+     * asserted Tailwind's.** ⛔ It pinned `768`, which is `md:` — **a number
+     * the App Shell never names** — while calling it the design's.
+     *
+     * 📁 **The design's boundary is 1024**: *"< 1024px: rail becomes a sheet
+     * from a top-bar button."* ⚡ **That is the width at which a rail stops
+     * existing**, which is exactly what a *device class* has to mean if the
+     * remembered collapse state is to apply to the right thing.
+     *
+     * ⚠️ **A test whose title asserts one thing and whose body asserts another
+     * is worse than no test** — it reads as coverage of the rule it names.
+     */
+    expect(deviceClassFor(1023)).toBe('compact');
+    expect(deviceClassFor(1024)).toBe('regular');
+    expect(BREAKPOINTS.smallLaptop).toBe(1024);
+  });
+
+  it('📁 the four bands are the design’s four, at the design’s widths', () => {
+    // ⛔ **Four behaviours, not two.** A helper answering *is this small* would
+    // have to be replaced the first time a caller told a laptop from a desktop.
+    expect(bandFor(639)).toBe('phone');
+    expect(bandFor(640)).toBe('phone');
+    expect(bandFor(1024)).toBe('smallLaptop');
+    expect(bandFor(1280)).toBe('laptop');
+    expect(bandFor(1600)).toBe('desktop');
+    expect(bandFor(1599)).toBe('laptop');
+  });
+
+  it('⛔ and the numbers come from the design document, not from this test', () => {
+    /**
+     * ⚡ **Parsed out of the App Shell's own `breakpoints`**, so a design
+     * refresh that moves a boundary fails here rather than passing over a
+     * frame that no longer matches — 📁 [D-137](../../../docs/DECISION_REGISTER.md):
+     * *"the copy is always the one somebody reads."*
+     */
+    for (const width of Object.values(BREAKPOINTS)) {
+      expect(DESIGN, `${width} is not a width the design names`).toContain(String(width));
+    }
   });
 });
 
