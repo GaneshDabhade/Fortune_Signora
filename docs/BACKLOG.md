@@ -1704,7 +1704,7 @@
 | **Design authority** | 📁 **[Design System v2](design-snapshot/screens/) `chartRamp` — eight series, `--c1`…`--c8`, with a separate dark ramp** |
 | **Epic** | **Common Platform Foundation** — **[workflow 13](coordination/workflows.toml)** |
 | **Module** | **`product_surface`** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-09, [D-218](DECISION_REGISTER.md)** |
+| **Status** | ✅ **`CLAIMED` — Lane A, 2026-08-10, by the Task Claim Protocol, under [D-229A](DECISION_REGISTER.md).** ⚡ **Queue's next and in the coordination `backlog` array.** 🔴 **Tokens first, and the row says why**: ⛔ **a chart built before them hardcodes eight colours**, which is the [§20c](../CLAUDE.md) violation `design-tokens.test.tsx` already refuses — ⚡ **and this is the ONE part of the token layer [D-217](DECISION_REGISTER.md) measured as otherwise exact.** **Was: `READY` — Lane C, 2026-08-09, [D-218](DECISION_REGISTER.md)** |
 | 🔴 **The measurement** | ⛔ **`--c1` through `--c8` are absent from `app/globals.css`** — ⚡ **the ONE part of the token layer that does not match, against a design system [D-217](DECISION_REGISTER.md) otherwise measured as exact.** ⛔ **And no chart component exists anywhere in `components/`** |
 | ⚡ **Why the tokens come first** | 📁 **The design gives a light ramp AND a dark ramp.** ⛔ **A chart built before the tokens will hardcode eight colours**, which is the [§20c](../CLAUDE.md) violation the token test already forbids for every other colour — ⚡ **and `design-tokens.test.tsx` cannot catch it, because there is no token to compare against** |
 | ⚡ **Delivers** | **The eight-series ramp as tokens in both themes**, then **the chart primitives the Executive Dashboard and Reports need** — ⛔ **not every chart type; the ones those two screens draw** |
