@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `6c42af4`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `e71e74d`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,24 +12,24 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `6c42af4`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `e71e74d`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`6c42af4`** — the certified commit itself |
+| **`main`** | **`e71e74d`** — the certified commit itself |
 | **`integration`** | ✅ **Rebased onto `main`** |
-| **Release candidate** | **12 commits, two lanes.** ✅ **Nothing excluded — the first cycle in three where `TASK-464` travelled with the rest** |
-| **Certification** | ✅ [`6c42af4642c0`](certification/reports/6c42af4642c0.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · ✅ **first attempt** |
+| **Release candidate** | **4 commits.** ⚠️ **Assembled by cherry-pick, not rebase** — `lane-a-product-surface` read **20 ahead** and carried **one** commit of unpromoted work |
+| **Certification** | ✅ [`e71e74db1c16`](certification/reports/e71e74db1c16.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · ✅ **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1334 commits, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None.** **177 rows, 60 unresolved, 0 blocking.** ✅ **[B-172](docs/BUGS.md) `VERIFIED`** — `coverage-debt --new` reports **no uncovered statements at all**, for the first time in three cycles. ⚠️ **[B-211](docs/BUGS.md) 🟠 and ungated** · ⛔ **[B-156](docs/BUGS.md)/[B-166](docs/BUGS.md)/[B-224](docs/BUGS.md): Playwright journeys still unrunnable by QE** · 🔴 **[B-173](docs/BUGS.md) open, QE's own** |
-| **Customer value this cycle** | ⚡ **A generated answer now says what it stood on and refuses to invent a confidence** (M12.6) · **`/w/:workspace/home` exists, so eight navigation rules stop pointing at nothing** · **the Team page's history region no longer crashes** ([B-420](docs/BUGS.md), found by using the product) · **the Action Batch can propose, approve, apply and reverse** |
-| **Design authority** | ✅ **The Design Snapshot is complete — 29 of 29**, ICP Builder and People Intelligence added, manifest re-baselined ([D-138](docs/DECISION_REGISTER.md)) |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
+| **Blocking Quality Defects** | ✅ **None.** **181 rows, 63 unresolved, 0 blocking.** ⚠️ **[B-211](docs/BUGS.md) 🟠 and ungated** · ⛔ **[B-156](docs/BUGS.md)/[B-166](docs/BUGS.md)/[B-224](docs/BUGS.md): Playwright journeys unrunnable by QE** · 🔴 **[B-173](docs/BUGS.md) QE's own, open** · 🟠 **[B-423](docs/BUGS.md) — the queue files restate what the generator derives** |
+| **A QE diagnosis corrected** | ⛔ **QE reported queue staleness three cycles running and attributed it to regeneration timing. That was wrong.** ⚡ **Lane C measured it: the published projection is correct *by construction* — `coordination.py:1069` builds from `state == ASSIGNED and r.on_integration`, so a `PROMOTED` row cannot appear. The stale ids are in the hand-maintained queue files.** 🔴 **[§2](CLAUDE.md) exactly: eligibility has two representations, one derived and one restated** |
+| **Customer value this cycle** | ⚡ ***"Why did I land here"* is answerable without making somebody sign in again** — entry diagnostics, 250 lines with 305 of tests |
 | **Overall progress** | **~83%** by engineering effort — an estimate, and marked as one |
 
-> ⚠️ **Certification named 17 gates and executed 6, again.** **Four QE ran by hand** — `dr` ✅, `vitest` **2503 across 124 files** ✅, `eslint` ✅, **migration reversibility stated rather than skipped** *(no migration)*. ⛔ **No gate, profile, threshold or test was changed**; the D-233 plan remains with Lane C for governance review.
+> ⚠️ **Certification named 17 gates and executed 6.** **Four QE ran by hand** — `dr` ✅, `vitest` **2519 across 124 files** ✅, `eslint` ✅, **migration reversibility stated rather than skipped**. ⛔ **No gate, profile, threshold or test was changed**; the D-233 plan remains with Lane C for governance review.
 
-**Repository health:** **4362 backend tests** *(+19)* · **95.11% coverage** ✅ *(floor 95)* · ✅ **zero uncovered statements introduced** · **2503 frontend tests** across **124 files** *(+29)* · **401 Security Invariants** · mypy strict over **858 files** · **47 migrations**, `0000`–`0046`, **none added** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **201s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** — 5 restart stages, nothing lost, **401 invariants against the restarted stack** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
+**Repository health:** **4362 backend tests** · **95.11% coverage** ✅ *(floor 95)* · **2519 frontend tests** across **124 files** *(+16)* · **401 Security Invariants** · mypy strict over **858 files** · **47 migrations**, `0000`–`0046` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **219s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
 
 ---
 
@@ -1024,6 +1024,38 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-10, cycle 192
+
+**Derived from the promoted commit `e71e74d`.** **Four commits — and the most useful output of the cycle is a QE diagnosis being corrected by measurement.**
+
+### What a customer can now do
+
+⚡ ***"Why did I land here"* is answerable without making somebody sign in again** (`TASK-1411`, M12.6) — **entry diagnostics, 250 lines of implementation against 305 of tests.**
+
+### ⛔ QE was wrong about the queue staleness, three cycles running
+
+**QE reported stale lane queues in cycles 189, 190 and 191, and last cycle attributed the cause to *"the projection not being re-run after promotion."*** ⛔ **That was wrong, and Lane C measured it rather than arguing it.**
+
+> ✅ **The published projection is correct *by construction*.** `coordination.py:1069` builds the backlog from `state == ASSIGNED and r.on_integration`, **so a `PROMOTED` or `CLAIMED` row cannot appear in it.** **Zero stale rows this cycle, for either lane.**
+>
+> 🔴 **The stale ids live in the hand-maintained queue files.** ⚡ **[§2](CLAUDE.md) exactly — *truth has exactly one authoritative representation*: eligibility is DERIVED by the generator from [`BACKLOG.md`](docs/BACKLOG.md) and RESTATED in the queue file.** ⛔ ***"Synchronisation is maintenance, derivation is architecture."***
+>
+> ⚠️ **And it reaches a lane, so it is not cosmetic**: §20e step 3 sends a lane to the queue file, [D-144](docs/DECISION_REGISTER.md) sends it to `origin/coordination`. **Two documented paths, one of them safe.**
+
+**Raised as [B-423](docs/BUGS.md) with a bounded fix — derive the array or drop it — and deliberately not applied this cycle**, under the product owner's priority rule. ⚠️ **`TASK-464` was removed by hand: the fourth hand-fix of this class, and the argument for the real one.**
+
+⚡ **Two rows were genuinely free and would have stayed hidden either way.** **`TASK-465`'s only predecessor is `TASK-464`, now `PROMOTED`; `TASK-1418`'s is `TASK-1411`, likewise.** ✅ **Both released to `READY`.**
+
+### ⚠️ The candidate was assembled by cherry-pick, and the reason is worth recording
+
+**`lane-a-product-surface` read 20 commits ahead of `main`.** **Patch-id resolved seven as `NEW` — correctly, because their surrounding context differed — but comparing file statistics against `main` showed only ONE carried unpromoted work.** ⛔ **`22c861ac`'s M12.6 is `46cbfecd` on `main`, identical stats, differing by a single line in a board file.**
+
+> ⛔ **Rebasing reproduced cycle 191's duplicate-export collision** in `components/ui/index.ts`, **because the lane has not rebased since its work was promoted.** ✅ **The rebase was abandoned and `48fd91dd` cherry-picked alone** — same result, provably, without carrying nineteen commits of shipped history through a merge that would silently double their additions.
+>
+> ⚡ **Patch-id remains the right first instrument and it is not sufficient alone.** **It answers *"has this exact change been applied?"* — file statistics against `main` answer *"does applying it change anything?"*, and this cycle needed both.**
 
 ---
 
