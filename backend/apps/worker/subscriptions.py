@@ -28,7 +28,7 @@ from uuid import UUID
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from apps.worker.pools import AI_RESEARCH, INTELLIGENCE, READ_MODEL
+from apps.worker.pools import AI_RESEARCH, DEFAULT, INTELLIGENCE, READ_MODEL
 
 # **Two `build_provider_registry` functions exist and they are different
 # things.** `ai_platform`'s resolves a *model* to a vendor adapter;
@@ -36,6 +36,14 @@ from apps.worker.pools import AI_RESEARCH, INTELLIGENCE, READ_MODEL
 # tripped over the collision and TASK-419's row warns about it by name, so
 # both are imported under explicit aliases here rather than one shadowing the
 # other by import order.
+from modules.action_batch.domain.events import (
+    APPLICATION_REQUESTED as ACTION_BATCH_APPLICATION_REQUESTED,
+)
+from modules.action_batch.infrastructure.composition import build_action_batches
+from modules.action_batch.interface.handlers import (
+    CONSUMER_NAME as ACTION_BATCH_CONSUMER,
+)
+from modules.action_batch.interface.handlers import apply_accepted_batch
 from modules.ai_platform.infrastructure.composition import (
     build_provider_registry as build_ai_provider_registry,
 )
@@ -236,6 +244,16 @@ def _opportunities(session: AsyncSession, workspace_id: UUID) -> OpportunityQuer
     return build_opportunity_queries(session, scores=scores)
 
 
+async def _apply_accepted_batch(envelope: EventEnvelope) -> None:
+    current = runtime()
+
+    await apply_accepted_batch(
+        envelope,
+        session_factory=current.session_factory,
+        batches=build_action_batches,
+    )
+
+
 async def _run_requested_research(envelope: EventEnvelope) -> None:
     current = runtime()
 
@@ -375,6 +393,28 @@ def register() -> None:
         # agentic, multi-step and measured in minutes; sharing a pool with fast
         # internal work would let one run starve everything behind it.
         pool=AI_RESEARCH.name,
+    )
+
+    # **The Action Batch applies what somebody accepted** —
+    # [TASK-465](../../../docs/BACKLOG.md), slice 5.
+    #
+    # ⚡ **This module publishes to itself, and that is the point**: §14 says a
+    # handler answers once a request is durably accepted, and §9 says the only
+    # durable way to hand work onward is the outbox. **`ai_research_engine`
+    # established the shape and this follows it** rather than adding a second
+    # mechanism.
+    #
+    # ⛔ **`default`, and named rather than assumed.** 📁 The pool's own
+    # description is *"consumers that have not yet been assigned a specific
+    # pool"*, and that is the honest answer: applying a batch is fast internal
+    # work with no model call and no provider, so it belongs to none of the
+    # named pools — **and inventing an `action_batch` pool for one consumer
+    # would be capacity nobody has measured a need for** (§14).
+    registry.subscribe(
+        consumer_name=ACTION_BATCH_CONSUMER,
+        event_type=ACTION_BATCH_APPLICATION_REQUESTED,
+        handler=_apply_accepted_batch,
+        pool=DEFAULT.name,
     )
 
     # **Signal generation, TASK-901 slice 2 — the second module to consume

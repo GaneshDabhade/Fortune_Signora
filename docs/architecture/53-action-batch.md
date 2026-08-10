@@ -180,3 +180,23 @@
 **③ Amending a migration that has not left the branch is correct; alembic will not notice.** ⚠️ **`0048` was already stamped, so an edit to it never re-ran, and `downgrade` then failed trying to drop a column the earlier version never added.** ✅ **Recreating the lane database from base is the honest fix** — it also verifies what QE will do: **49 migrations apply cleanly and `0048` reverses and re-applies.** ⛔ **A `0049` adding a column to a table `0048` had just touched would have been noise**, and the immutability rule protects *shipped* migrations rather than unshipped ones.
 
 **④ A status token inside a REFERENCE is not a status, and it has now produced two false positives.** ⚠️ **The [B-168](../BUGS.md) directional check flagged a row as losing a QE cell** because the replacement line *mentioned* `PROMOTED`; ⚠️ **a board classifier read `TASK-465` as `PROMOTED`** because its cell says *"TASK-464 is `PROMOTED`"*. ✅ **The reliable pattern is the FIRST backticked state token in the `Status` cell**, and ⛔ **either way the answer is verified directly before anything is removed** — both times the check was right to fire and wrong about which row.
+
+### 🔴 [B-236](../BUGS.md) — the two events could never have been published
+
+⚠️ **Found by the first code path that publishes through the real outbox**, which is this row's apply endpoint. ⛔ **`PublishableEvent` requires `event_type`, `event_version`, `causation_id` and `to_payload()`, and neither existing event declared any of them.**
+
+🔴 **Why it was invisible is the useful half.** ⛔ **Every test of these events used a fake publisher** that records what it is handed and asks nothing of it. 📁 **This is [B-172](../BUGS.md)'s lesson one level up**: *"an import is not an execution"* becomes **a fake more permissive than the real port proves the caller compiles, not that it works.** ⚡ **The `# type: ignore[list-item]` on `_publish` was the visible tell**, and its comment named a real constraint while hiding a simpler one: the fields were absent entirely.
+
+✅ **All three events now declare what the protocol asks for**, and the regression is the API test that found it — **it publishes through the real outbox and reads the row back**, so a future unpublishable event fails there rather than in production.
+
+### ⚡ The HTTP surface, and the guard that has now moved twice
+
+📁 **Two endpoints**: `POST …/action-batches/{id}/apply` → **`202`**, and `GET …/action-batches/{id}` → progress. 🔴 **The status code IS the contract** — ⛔ **`200` would say the work is done.**
+
+⚠️ **`test_public_contract.py`'s HTTP-surface guard has been re-aimed twice in two increments, and each time the comment says why.** ⛔ **It began as *the module has no `interface/` directory***, a cheap proxy while the layer was empty; **a worker handler lives in `interface/` too**, so the proxy stopped meaning what it said. ⛔ **Then *no `router.py`*, which this row's own Definition of Done was always going to break.** ✅ **It now asserts the SHAPE of the edge — two transports and no more** — **which is a constraint that survives the next slice**, because a third transport is an architectural decision rather than something a slice adds quietly.
+
+### ⏸️ What remains, named rather than implied
+
+⛔ **`fail_application` has no caller.** ✅ **Slice 6 is it**: the consuming domain performs the work, so it is what discovers the work could not be done and records why. ⚠️ **Until then a batch whose application genuinely fails cannot be told so** — 📁 the progress model supports it and nothing produces it.
+
+⛔ **There is still no propose or approve endpoint.** ⚡ **The apply endpoint assumes an approved batch exists**, and slice 6's consumer is what creates one through a customer-facing path.

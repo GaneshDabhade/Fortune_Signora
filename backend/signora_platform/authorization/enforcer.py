@@ -124,6 +124,12 @@ class Resource(StrEnum):
     #: own verified id is the only one that enters, so a grant cannot be
     #: widened into reading a colleague's preferences by editing `policy.csv`.
     PREFERENCES = "preferences"
+    #: ⚡ **[TASK-465](../../../docs/BACKLOG.md), slice 5.** 📁 [§20a](../../../CLAUDE.md)
+    #: ruled at [C-224](../../../docs/LANE_COORDINATION.md) that adding a member
+    #: here is a **declarative registration and never an authorization grant** —
+    #: *"a `Resource` entry without policy grants provides no runtime
+    #: capability"* — so the grants live in `policy.csv` beside it.
+    ACTION_BATCH = "action_batch"
 
 
 class Action(StrEnum):

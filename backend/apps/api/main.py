@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
+from modules.action_batch.interface.router import router as action_batch_router
 from modules.ai_platform.interface.router import router as narration_router
 from modules.ai_reasoning_engine.interface.router import router as reasoning_router
 from modules.ai_research_engine.interface.errors import (
@@ -151,6 +152,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     instrument_fastapi(app)
     register_exception_handlers(app, domain_errors=_error_mappings())
+    app.include_router(action_batch_router)
     app.include_router(workspace_tenancy_router)
     app.include_router(opportunity_router)
     app.include_router(knowledge_graph_router)

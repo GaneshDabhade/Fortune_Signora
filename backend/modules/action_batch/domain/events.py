@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Final
+from typing import Any, Final
 from uuid import UUID
 
 EVENT_VERSION: Final = 1
@@ -26,6 +26,8 @@ EVENT_VERSION: Final = 1
 #: descriptor, so a subscription registered from `Event.event_type` would point
 #: at a repr nothing publishes. **Found exactly that way, there.**
 APPLICATION_REQUESTED: Final = "action_batch.application_requested"
+APPLIED: Final = "action_batch.applied"
+REVERSED: Final = "action_batch.reversed"
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,6 +70,12 @@ class ActionBatchApplicationRequested:
     #: what stops a replayed event applying a batch that has since been
     #: reversed.
     name: str
+    causation_id: UUID | None = None
+    event_type: str = APPLICATION_REQUESTED
+    event_version: int = EVENT_VERSION
+
+    def to_payload(self) -> dict[str, Any]:
+        return {"batch_id": str(self.batch_id), "name": self.name}
 
 
 @dataclass(frozen=True, slots=True)
@@ -96,6 +104,20 @@ class ActionBatchApplied:
     #: offered**, which is not the same as a window that has closed — and a
     #: subscriber is told the two differently.
     reversible_until: datetime | None
+    causation_id: UUID | None = None
+    event_type: str = APPLIED
+    event_version: int = EVENT_VERSION
+
+    def to_payload(self) -> dict[str, Any]:
+        return {
+            "batch_id": str(self.batch_id),
+            "name": self.name,
+            "item_count": self.item_count,
+            "approved_by": str(self.approved_by),
+            "reversible_until": (
+                self.reversible_until.isoformat() if self.reversible_until else None
+            ),
+        }
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,3 +138,13 @@ class ActionBatchReversed:
     #: ordering, because a subscriber may see them out of order.
     applied_at: datetime
     reversed_by: UUID
+    causation_id: UUID | None = None
+    event_type: str = REVERSED
+    event_version: int = EVENT_VERSION
+
+    def to_payload(self) -> dict[str, Any]:
+        return {
+            "batch_id": str(self.batch_id),
+            "applied_at": self.applied_at.isoformat(),
+            "reversed_by": str(self.reversed_by),
+        }

@@ -176,14 +176,24 @@ class TestItIsAContractAndNotAnImplementation:
         # lives in `interface/` too** — it is an edge, the same as a router —
         # **so the proxy stopped meaning what it said the moment slice 5 landed.**
         #
-        # ✅ **Aimed at the router itself now.** 📁 The apply endpoint IS this
-        # row's remaining work, so this will be re-aimed once more when it
-        # arrives — **which is the point: each time it moves, somebody has to
-        # say why.**
+        # ✅ **And re-aimed once more, exactly as the last version predicted.**
+        # 📁 **The apply endpoint arrived** — [TASK-465](../../../docs/BACKLOG.md)'s
+        # Definition of Done names it — **so *no router* stopped being true and
+        # was replaced rather than deleted.**
+        #
+        # 🔴 **What still binds is the SHAPE of the edge**: this context has two
+        # ways in and no more. ⛔ **A third file here is a second transport** —
+        # a GraphQL surface, a second router, a CLI — **and that is an
+        # architectural decision** ([§7](../../../CLAUDE.md): *do not introduce
+        # a second API paradigm*), **not something a slice adds quietly.**
         interface = root / "interface"
         assert interface.is_dir()
-        assert not (interface / "router.py").exists()
-        assert (interface / "handlers.py").exists()
+        edges = {p.name for p in interface.iterdir() if p.suffix == ".py"} - {"__init__.py"}
+        assert edges == {"handlers.py", "router.py", "schemas.py"}, (
+            f"action_batch's interface layer holds {sorted(edges)}. Two edges — an event "
+            "handler and one HTTP router — plus the shapes that router puts on the wire. "
+            "A third transport is an architectural decision, not a slice."
+        )
 
         # **Events arrived with THIS slice, and the assertion is re-aimed a
         # third time rather than deleted** — the comment above already said

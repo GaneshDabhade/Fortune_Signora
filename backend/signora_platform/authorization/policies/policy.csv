@@ -59,3 +59,7 @@ p, owner, *, preferences, read
 p, member, *, preferences, read
 p, owner, *, preferences, update
 p, member, *, preferences, update
+p, owner, *, action_batch, read
+p, member, *, action_batch, read
+p, owner, *, action_batch, update
+p, member, *, action_batch, update

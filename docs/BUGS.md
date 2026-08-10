@@ -363,6 +363,28 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-236 · The Action Batch's two events cannot be published, and every test used a fake
+
+| | |
+|---|---|
+| **Module** | **`action_batch`** — [`domain/events.py`](../backend/modules/action_batch/domain/events.py) |
+| **Current assignee** | **Lane A** — ⚡ **found and fixed while building [TASK-465](BACKLOG.md)** |
+| **Severity** | 🟠 **Wrong behaviour a customer would hit** — ⛔ **the first real publish raises**, so an application would appear to succeed and the timeline would never hear about it. ⚠️ **Not 🔴 only because nothing published them yet** |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-10, in the slice that found it. **QE verifies** |
+| **Commit found** | ⛔ **Found by the FIRST code path that publishes through the real outbox** — [TASK-465](BACKLOG.md)'s apply endpoint — **not by a test** |
+
+**Steps.** Publish `ActionBatchApplied` or `ActionBatchReversed` through `PostgresOutboxEventPublisher`.
+
+**Expected.** A row in `outbox_event`.
+
+**Actual.** ⚡ `AttributeError: 'ActionBatchApplied' object has no attribute 'event_type'`. 📁 **`PublishableEvent` requires `event_type`, `event_version`, `causation_id` and `to_payload()`** — **the two events declare none of them.**
+
+🔴 **Why it was invisible, and this is the useful half.** ⛔ **Every test of these events used a fake publisher** that records what it is handed and asks nothing of it. ⚠️ **`test_public_contract.py` asserted the events' SHAPE and `test_batches.py` executed the use cases through `FakePublisher`** — 📁 exactly the pattern [B-172](#b-172) already found in this module: *"an import is not an execution."* ✅ **This is the same lesson one level up: a fake that is more permissive than the real port proves the caller compiles, not that it works.**
+
+⚡ **The `# type: ignore[list-item]` on `_publish` was the visible tell**, and its comment said the protocol *"declares settable members which frozen domain events cannot satisfy"* — ⛔ **a real constraint, but it hid a second, simpler problem: the fields were absent entirely.**
+
+✅ **Fixed by declaring what the protocol asks for on all three events** — `event_type`, `event_version`, `causation_id` and `to_payload()` — **the shape `ai_research_engine`'s events already use.** ⚡ **And the regression is the API test that found it**: `test_api_action_batch.py` publishes through the real outbox and reads the row back, so a future event that cannot be published fails there rather than in production.
+
 ### B-235 · A lane's blanket conflict resolution duplicates board rows, and this is the second time
 
 | | |
