@@ -1017,3 +1017,33 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ⚡ **It stayed invisible because the engine has no caller yet** — ⛔ **a leak nobody reads is a leak waiting for its first reader**, and this row is that reader: it hands the field to a bundle the row itself calls *"a data-egress surface… where tenancy is usually forgotten."* ✅ **Fixed in one expression, with the regression asserted over the whole sweep by gate number** rather than by fixture, so a future rule placed in gate 1 or 2 cannot reintroduce it.
 
 ⚠️ **And the first draft of the diagnostics fixture carried an `as EntrySession` cast that hid three wrong field names**, so a fixture describing no session at all compiled and the account-level test silently exercised gate 6. **Exactly [B-420](../BUGS.md)'s defect — a claim about a shape TypeScript believed because it was told to.** ✅ **The cast is gone and the fixtures are checked.**
+
+---
+
+## TASK-1412 · Settings — the audit log becomes somewhere you can go *(2026-08-10)*
+
+⚡ **Claimed on the re-scope this lane's own finding produced.** ⛔ **The three removals were accepted rather than re-argued**: the roles matrix is [C-1416](../LANE_COORDINATION.md)'s, region and fiscal calendar are [C-1415](../LANE_COORDINATION.md)'s, and the user roster already exists at `/settings/team`.
+
+### 🔴 What was measured before anything was built
+
+| Deliverable | Found |
+|---|---|
+| **The identity block on `name`, unsourced fields designed-locked** | ⚠️ **Already built** at `/settings/organization` by TASK-468 — ⛔ **so a second one is the duplicate work [§21](../../CLAUDE.md) forbids**, the same objection Lane C accepted for the roster. ✅ **Two of the Settings design's six `workspaceFields` were missing and were added there**, locked with reasons |
+| **A workspace rename to attribute** | ⛔ **There is no write path.** `workspace_tenancy`'s router publishes no `PATCH`/`PUT` on `/workspaces/{id}` — **so an `Edit` control would be the affordance-with-nothing-behind-it this surface has refused since the narration's fact count** |
+| **The audit log** | 🔴 **The data existed and NOTHING could reach it** — and that is the slice |
+
+### ⚡ The record had no door
+
+📁 **The Settings design carries *"View audit log"* as a page action, *Audit log* as a Governance destination, and its page promise is *"Every change is attributed, reversible and visible in the audit log."*** ✅ **`GET /workspaces/{id}/history` already publishes it**, with `previous_role` and `new_role` on every entry — **which is the design's *"before and after values"*.**
+
+⛔ **But the only surface rendering it was a section inside `/settings/team`**, so an administrator looking for an audit log had to already know it lived under *Your team*. 🔴 **That is this codebase's own CX-01 rule**, written in `settings/page.tsx`: *"a page not listed on this screen is a page nobody can reach… A closed loop with no door."* **The Connection Center was exactly that once, and this is the same defect one screen later.**
+
+✅ **So the route and its card ship in the same commit** — the rule that file states — and **`OrganizationHistory` is reused unchanged**: ⚠️ **a second renderer of the same entries is how two surfaces start disagreeing about what a role change looked like, and an audit log that disagrees with itself is worth less than none.**
+
+### ⛔ What the design promises that the platform cannot keep, shown locked
+
+📁 *"Immutable · 7 years"* · *"Every entry records actor, before and after values, IP and session. Exportable to SIEM."* ✅ **Actor and before/after render.** ⛔ **IP, session, retention and export are shown designed-locked with reasons** ([D-225](../DECISION_REGISTER.md) §4).
+
+🔴 **And no retention figure is printed.** ⚡ **Stating *7 years* would be [§20c](../../CLAUDE.md)'s mock business data on the one screen whose entire value is that it does not make things up** — **worse than absent, because a customer would rely on it in an audit.**
+
+⚠️ **The sharpest state on this page is the failed read.** 📁 [P-A](../DOMAIN_DISCOVERY_REGISTER.md) — *a failed read must never render as an empty result* — **and on an audit log an empty list reads as *nothing happened*, which is a different and far more dangerous claim than *this did not load*.** ✅ **Both are tested, and so is the difference between them.**

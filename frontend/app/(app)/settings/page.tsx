@@ -169,6 +169,31 @@ export default function SettingsPage() {
         </CardBody>
       </Card>
 
+      {/**
+       * ⚡ **[TASK-1412](../../../../docs/BACKLOG.md) — the card that makes the
+       * audit log reachable**, and it ships in the same slice as the page it
+       * points at because **this file is where that rule was written**:
+       * *"a settings page ships with its card here… a page with no entrance is
+       * not shipped, whatever its own tests say."*
+       *
+       * 🔴 **The record existed and had no door.** The history rendered only
+       * inside `/settings/team`, so an administrator looking for an audit log
+       * had to already know it lived under *Your team* — **the Connection
+       * Center's defect exactly, one screen later.**
+       */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Audit log</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <p className="text-sm text-content-muted">
+            Who changed what, and when. Every change to your team is recorded here and
+            nothing can edit it afterwards — not an administrator, and not Signora.
+          </p>
+          <SettingsLink href="/settings/audit">Audit log</SettingsLink>
+        </CardBody>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Connections</CardTitle>

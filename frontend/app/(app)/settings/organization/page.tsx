@@ -173,6 +173,29 @@ export default function OrganizationSetupPage() {
             label="Data region"
             reason="Not yet selectable, and permanent once it is. Moving data between regions later means exporting and recreating the organization, so this is deliberately not offered before it can be honoured."
           />
+          {/**
+            * ⚡ **[TASK-1412](../../../../../docs/BACKLOG.md) — two more of the
+            * Settings design's identity fields, shown locked rather than
+            * absent.**
+            *
+            * 📁 **`Fortune Signora Settings.dc.html` lists six `workspaceFields`**
+            * and this block carried three of them. ⛔ **The two below have no
+            * platform behind them either**, so they arrive the same way the
+            * region does: **named, with the reason, and carrying no value.**
+            *
+            * ⚠️ **Fiscal year is deliberately NOT among them.** It is
+            * [C-1415](../../../../../docs/LANE_COORDINATION.md)'s and was
+            * removed from this row's scope; adding it here would be re-taking
+            * scope Lane C removed.
+            */}
+          <LockedField
+            label="Default currency"
+            reason="Not yet selectable. Amounts are shown in the currency each source reports, and no conversion is applied — so nothing here is silently restated in another currency."
+          />
+          <LockedField
+            label="Test organization"
+            reason="Not yet available. There is no separate copy of your data to try changes against, so every change here is to the real thing."
+          />
 
           <div>
             <Button onClick={submit} disabled={!name.trim() || createWorkspace.isPending}>
