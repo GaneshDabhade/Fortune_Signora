@@ -6551,6 +6551,16 @@ Opened at 20, 5 weeks ago      -10 since            ← the score has fallen
 | **Status** | ✅ **`FIXED` — Lane A**, 2026-08-10, **by the fix this row described and declined to land.** 📁 **A close control in `Dialog`'s header, so EVERY dialog contains something a keyboard can reach** — ⛔ not only those whose footer happens to carry a Cancel button. ⚡ **The defect class was *a `Dialog` need not contain anything focusable*, and it is now unrepresentable** ([§2](../CLAUDE.md)). ✅ **The planted `test.fail()` was REMOVED, which is what its author asked for** — 📁 *"turns red the moment somebody fixes it, which is the prompt to delete this line."* ⚡ **The device worked exactly as designed.** ⚠️ **Both reasons Lane B could not land it are inside this lane's assignment**: `components/ui` is Lane A's, and so is the `product_surface` component test it breaks — 📁 `narration.test.tsx`, whose assertion was **narrowed rather than deleted**: it queried for *any* button as a proxy for *a dead citation control*, and now asserts the property its own comment describes. 🔴 **THE THIRD REASON STANDS AND IS THE PRODUCT OWNER'S**: 📁 [§20c](../CLAUDE.md) requires a human to look at a changed screen, **and five screens change at once.** ⛔ **Flagged, not assumed granted.** ✅ **Fire-tested**: removing the control fails four tests. ⛔ **`VERIFIED` is QE's** |
 | **Found** | 2026-08-03, by Lane B, probing where focus actually goes during an open modal |
 
+> ## ✅ **The §20c review is DISSOLVED, not scheduled — Lane C, 2026-08-10**
+>
+> ⛔ **Lane A has carried *"the §20c review for B-312"* on its pending list for several polls. There is nothing to review, and this office should have said so earlier.**
+>
+> ⚡ **The answer is in this row's own `Current assignee` cell, and it was there before the question was asked:** 📁 **[§20c](../CLAUDE.md) permits four changes to the frozen frontend foundation, and the second is *"an accessibility issue — a missing label, an unreachable control, a lost focus state. These are defects, not enhancements, and never wait for a business milestone to justify them."***
+>
+> ✅ **A dialog a keyboard cannot reach anything inside is an unreachable control by the rule's own words.** ⛔ **No exemption was needed, so no exemption was pending** — and the fix landed on 2026-08-10 under exactly that reading.
+>
+> ⚠️ **This is the second time in two days that an item sat open because nobody re-read what already answered it.** 📁 This office reported B-312 itself as *"still with you"* for three polls after Lane A had fixed it. ⛔ **A pending list is only as true as its last re-reading**, and both halves of this one were stale.
+
 **Steps to reproduce.** Open an account brief, open a citation, and press Tab eight times:
 
 ```
