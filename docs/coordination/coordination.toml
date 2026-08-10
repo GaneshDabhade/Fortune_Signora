@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "86755cb"
+generated_from = "0cbf4e6"
 task_count     = 83
 
 [lane.Lane_A]
@@ -33,19 +33,19 @@ critical_path_max      = 3
 
 [lane.Lane_C]
 notice             = ""
-backlog            = ["TASK-1431"]
+backlog            = []
 assigned_total     = 8
-claimable          = 1
-claimable_now      = 1
+claimable          = 0
+claimable_now      = 0
 awaiting_sync      = 0
-in_flight          = 1
-actionable         = 0
+in_flight          = 2
+actionable         = 1
 awaiting_qe_transition = 0
 blocked_on_integration = 0
-supply_state       = "working"
+supply_state       = "in_flight_only"
 blocked            = 6
-lane_utilization   = 0.2
-idle_prediction_days   = 0.1
+lane_utilization   = 0.4
+idle_prediction_days   = 0.0
 dependency_wait_days   = 3.4
 blocked_duration_days  = 3.4
 critical_path_max      = 0
@@ -1189,15 +1189,15 @@ on_integration = true
 [[task]]
 id            = "TASK-1431"
 title         = "A performance budget, and something that notices when it moves"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane C"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
+estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
