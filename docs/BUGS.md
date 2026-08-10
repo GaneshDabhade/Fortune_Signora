@@ -2566,6 +2566,37 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-419 · A blind replace closed the wrong coordination item, and I reported it as closed
+
+| | |
+|---|---|
+| **Module** | **`docs/LANE_COORDINATION.md`** — Product Office's editing practice |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **an item was marked `CLOSED` with no analysis under it, and this office told the product owner it was closed.** ⚡ **A false `CLOSED` is worse than an `OPEN` nobody has reached: an open item is visibly waiting, a closed one is answered** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-10.** **Both rows repaired by anchored edit, and [C-271](LANE_COORDINATION.md) then actually analysed.** **`VERIFIED` is QE's** |
+| **Found** | **2026-08-10, opening C-271 to work it and finding it already `CLOSED` by me** |
+| **Steps** | **`t.replace("\| **Status** \| 🟡 **`OPEN`** — raised 2026-08-10 \|", new, 1)`, intending C-272** |
+| **Expected** | **C-272 closed** |
+| **Actual** | ⛔ **`count=1` replaces the FIRST match IN THE FILE. C-271 appears above C-272 and had a byte-identical `Status` line, so C-271 was closed and C-272 stayed `OPEN`** — **with C-272's three answer cells sitting under an open row** |
+
+> ## 🔴 **THIRD INSTANCE OF ONE CLASS, and the previous two are this office's too.**
+
+📁 **[B-411](#b-411)** — a non-greedy regex under `re.S` swallowed the row below the one it edited. 📁 **[B-412](#b-412)** — a blind replace matched its own explanatory comment, *"and a `.replace()` with `count=1` looks maximally careful and still cannot tell data from prose."*
+
+⛔ **B-412 named this exact mechanism and I used it anyway.** ⚡ **The rule already existed**: 📁 **[D-185](DECISION_REGISTER.md) §5 — *"continue preferring repository operations that target explicit rows, fields and structured data rather than broad pattern replacement."***
+
+### ✅ The repair, and why the practice is the fix rather than a check
+
+**Both rows were repaired by locating the section heading first and editing the `Status` line at a known offset from it** — the same anchored form B-412's repair adopted. **C-271 was then given the analysis it never had**, because reopening it and closing it again unanalysed would have been the worse error.
+
+⛔ **No check is added.** ⚡ **A linter that verified every `CLOSED` had analysis beneath it would be a new mechanism for a practice failure** ([D-229](DECISION_REGISTER.md) §1), **and the practice is one line: anchor on the heading, never on the cell text.**
+
+### ⚠️ And the reporting half, which is the part that matters most
+
+🔴 **This office reported C-272 as closed in a status report to the product owner while the file said `OPEN`.** ✅ **The analysis was real and was under the right item** — **only the state was wrong** — **but the report asserted a state this office had not verified after writing it.** 📁 **[§2](../CLAUDE.md): the repository must always tell the truth, and a report about the repository is held to the same standard.**
+
+---
+
 ### B-418 · A partial test-database configuration reports a migration error, and migrations are fine
 
 | | |
