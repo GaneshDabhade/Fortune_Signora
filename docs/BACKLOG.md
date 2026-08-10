@@ -1858,6 +1858,26 @@
 | ✅ **Nothing is lost** | 📁 **Every measurement this row carried is already in TASK-1432**: the model is correct, the surface never arrived, and the consumer is the missing half. ⛔ **No content is folded across — a second copy is what caused this** |
 | ⚡ **The real work** | ➡️ **[TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope)**, unchanged, still correctly waiting on its consumer |
 
+### TASK-1460 · 🔴 The layout grid the design specifies and the repository has never had
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **MISSING FOUNDATION — and it is the root cause of the screen-level layout findings, not one more of them** |
+| **Epic** | **Common Platform Foundation** |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-10, from the UI foundation reconciliation** |
+| **Design authority** | 📁 **[`Fortune Signora Design System v2.dc.html`](design-snapshot/screens/)**, the `inherited` block: ⚡ ***"12-column grid, 24px gutters, 1600px content maximum"*** — ⛔ **read it; this row does not restate it** |
+| 🔴 **The measurement** | ⛔ **`grid-cols-12` appears NOWHERE in `frontend/`.** ⛔ **`1600` appears only as a BREAKPOINT (`tailwind.config.ts`:39) and never as a content maximum.** ⚡ **There is no `Grid`, `Container`, `PageLayout` or `Stack` in a 38-component `components/ui/` library** |
+| ⚠️ **What screens do instead** | 📁 **Seven different width models, invented per screen**: `max-w-3xl` ×9 · `max-w-md` ×5 · `max-w-sm` ×4 · `max-w-card` ×3 · `max-w-[57…]` ×2 · `max-w-xl` · `max-w-[35rem]`. ⛔ **The dominant one is `max-w-3xl` — 768px.** ⚡ **[43 §4a](architecture/43-customer-experience.md) already described the product this way in its own words: *"a single `max-w-3xl` column of stacked cards"*** |
+| 🔴 **Why this is the foundation finding** | ⛔ **A 768px centred column and a 12-column grid to 1600px are two different layout models, not two settings of one.** ⚡ **On a 1600px screen the current model uses 48% of the width** — which is what *"components designed for desktop but squeezed"*, *"layouts not adapting"* and *"spacing inconsistent"* look like from the outside. ✅ **Fix this once and the screen-level symptoms resolve together; fix them per screen and the eighth screen invents an eighth width** |
+| ✅ **NOT a rebuild of the token layer — it is verified correct** | 🔴 **This row's most important line.** ⚡ **The colour tokens carry Design System v2's EXACT values** — `--primary 203 72% 27%` → `rgb(19 78 118)` = `--color-accent`, and six others match to ±3/255. ⛔ **Do not renumber, rename or "migrate" the palette; it is already the finalized one.** ✅ **Same for the four breakpoints** |
+| ⚡ **Delivers** | **One layout primitive in `components/ui/`** implementing the design's grid — **12 columns · 24px gutters · 1600px content maximum** — and **the shell's content region composed through it.** ⛔ **Migration of the seven ad-hoc widths is NOT in this row** — see *Sequencing* |
+| 🔴 **What it must NOT do** | ⛔ **Do not touch `globals.css` colour tokens** (verified correct). ⛔ **Do not change the four breakpoints** (verified correct). ⛔ **Do not migrate screens in this slice** — one primitive, one consumer, then measure. 📁 **[455](architecture/455-context-definitions-r02-r03.md) §4: *"a port with seven simultaneous first callers has no chance of being corrected cheaply"*** |
+| **Change Budget** | 🟠 **`components/ui/` gains a component — announce it** · 🟢 `app-shell.tsx`'s content region · 🟢 its tests |
+| **Playwright coverage** | ⚠️ **Blocked on [B-428](BUGS.md) for the responsive half** — the matrix runs at 1280 only. ✅ **What IS assertable today: content maximum 1600px and 24px gutters at 1280, by `boundingBox()`** |
+| **Definition of Done** | **One primitive, composed into the shell, with the design's three numbers asserted from geometry rather than class names** · **certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **LEVEL 1/2 NOT VERIFIED.** **This row is source-derived.** ⚡ **No authenticated session was available to Lane C**; the visual claim is the design's, and the measurements above are of the code |
+
 ### TASK-1458 · The rail's third pinned utility — `Shortcuts`, which the design names and the rail omits
 
 | | |
