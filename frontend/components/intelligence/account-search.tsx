@@ -64,19 +64,19 @@ export function AccountSearch() {
    * `active` holds must count matches rather than rendered rows. */
   const rows = (groups ?? []).flatMap((group) => group.results);
 
-  useEffect(() => {
-    // **⌘K, and Ctrl+K for everyone not on a Mac.** Bound on the document
-    // because the whole value is reaching search from wherever you are; a
-    // shortcut that only works once the control has focus is not a shortcut.
-    function onKey(event: KeyboardEvent) {
-      if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return;
-      event.preventDefault();
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, []);
+  // ⛔ **`⌘K` NO LONGER BELONGS TO THIS CONTROL** —
+  // [TASK-1442](../../../docs/BACKLOG.md), resolving
+  // [C-259](../../../docs/LANE_COORDINATION.md).
+  //
+  // ⚡ **The binding was here and it was not wrong to write** — the shortcut's
+  // whole value is reaching search from wherever you are, and this was the only
+  // search there was. 📁 **The App Shell binds it to the palette** — *"Search —
+  // opens the palette on click or ⌘K"* — **and shell rule 07 makes the palette
+  // the place everything clickable is reachable.**
+  //
+  // ✅ **Account results are now ONE GROUP inside it**, which is what the
+  // design draws. ⛔ **Two document-level `⌘K` handlers would both fire**, so
+  // this one is removed rather than guarded.
 
   // The highlighted row returns to the top whenever the answer changes.
   // Without this, typing one more letter leaves the highlight on whatever is

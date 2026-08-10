@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { RegionBoundary } from '@/components/ui/region-boundary';
 import { MobileNavigation, Navigation } from '@/components/shell/navigation';
+import { ShellPalette } from '@/components/shell/shell-palette';
 import { TopBar } from '@/components/shell/top-bar';
 import { WorkspaceSwitcher } from '@/components/shell/workspace-switcher';
 import { ShellBanners, type ShellBanner } from '@/components/ui';
@@ -161,6 +162,14 @@ export function AppShell({
         </main>
       </div>
       </div>
+
+      {/* 📁 **The command palette** — [TASK-1442](../../../docs/BACKLOG.md),
+          resolving [C-259](../../../docs/LANE_COORDINATION.md). ⛔ **It was
+          complete, tested, and mounted by nothing**, while `⌘K` opened account
+          search instead. ⚡ **Mounted at the shell because it must reach
+          destinations no single module knows** — which is exactly why C-259
+          found that neither candidate row could mount it alone. */}
+      <ShellPalette role={role} />
 
       {/* **Outside the column, because it is fixed to the viewport.** Its own
           boundary for the same reason the sidebar has one: a failure here must

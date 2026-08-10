@@ -50,9 +50,10 @@ const ROOTS = ['app', 'components', 'lib'];
  * refuses one.
  */
 const AWAITING_A_CALLER: Readonly<Record<string, string>> = {
-  // 📁 Shell rule 07 depends on it; mounting it is TASK-1442's scope, which
-  // C-259 closed on explicitly.
-  CommandPalette: 'TASK-1442',
+  // ✅ **`CommandPalette` LEFT this list when TASK-1442 mounted it**, and the
+  // stale-entry test below is what required its removal — ⚡ **the allowlist
+  // shrinking on its own is the property that keeps it from becoming a
+  // silencer, and it just did.**
   // 📁 498 §5.1. Wanted by the utility panel.
   Drawer: 'TASK-1433',
   CopyableId: 'TASK-1409',
