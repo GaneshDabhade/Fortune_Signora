@@ -10552,61 +10552,6 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ⚠️ **Recorded as [C-1416](#c-1416)'s third instance** — 📁 **C-272 assumed an Executive Dashboard already built, [C-1415](#c-1415) assumed a workspace has region, environment and a fiscal calendar, and this assumes five roles.** **Three rows, three screens, two days, one shape.**
 
-## C-282 · B-219 needs a one-line ruling and has never been routed to anyone who can give it
-
-| | |
-|---|---|
-| **Raised by** | **Lane A**, 2026-08-10, on the poll that found it still `OPEN` |
-| **Owner** | ⛔ **Product owner** — 📁 **the fix is `next.config`, which [§20c](../CLAUDE.md) and the Change Budget put at 🔴** |
-| **State** | 🟡 **`READY FOR PRODUCT DECISION`** — ⚡ **the options were prepared a day ago; only the routing was missing** |
-| **Blocks** | 🔴 **NOTHING — corrected 2026-08-10, and the correction is the useful part.** ⚡ **This item was filed saying it blocked Lane C's [TASK-1431](BACKLOG.md), on that lane's report.** ⛔ **It does not.** ✅ **Measured on this lane's clone**: `npx next build` **with no dev server running succeeds** and emits the full per-route bundle report. **[B-219](BUGS.md) damages only a dev server running at the same time** — 📁 which is what its own title says. ⚡ **So the ruling below is still worth making and is no longer urgent**, and **no lane should hold work for it.** |
-
-**The gap this row exists to close, and it is a process one.** ⛔ **[B-219](BUGS.md) has been `OPEN` since 2026-08-09 with its own status reading *"Not fixed: `next.config` and the runbook are frontend foundation, 🔴 in the Change Budget."*** 🔴 **Nothing carried it any further.** ⚡ **A defect whose fix a lane may not make, with no coordination item, is a defect that can sit forever** — 📁 [§20e](../CLAUDE.md): *"an item exists only when another module's assignee or the product owner must answer something before implementation can safely continue."* **That was true of B-219 on the day it was filed.**
-
-⚠️ **This lane filed the bug and did not file the item, and that is the miss.** ⛔ **Recording the blocker in the row it blocks is not the same as routing it.**
-
-**The problem.** 📁 **`next dev` and `next build` share one `.next/`.** ⚡ **Completion gate 4 (`next build`) destroys the dev server that gate 5 (the headed journey) runs against**, and ⛔ **the symptom names the wrong subsystem entirely**: every route returns `500`, Playwright fails at *"sign in as the owner"*, and **the diagnosis goes to authentication.** **This lane spent it there — rate limiting, then the Better Auth tables, then which schema they were in.**
-
-**The alternatives, unchanged from the row.**
-
-| | | |
-|---|---|---|
-| **①** | ⚡ **`distDir` for the production build** | ✅ **One line.** **The two stop sharing state and the ordering stops mattering** |
-| **②** | **Runbook order** | ⛔ **Weaker — it relies on remembering**, and the whole defect is that nobody remembers |
-| **③** | **`make validate` restarts the dev server** | **Most convenient, most machinery** |
-
-**The recommendation, and it is input rather than authority** ([§20e](../CLAUDE.md)). ✅ **Option ①.** ⚡ **It removes the interaction instead of documenting it**, which is [§2](../CLAUDE.md)'s preference for a violation that is *unrepresentable* over one that is *discouraged* — **and it is the only one of the three that cannot be forgotten.**
-
-**The implementation impact.** ⛔ **One line in `frontend/next.config.ts` and a sentence in [`RUNNING.md`](RUNNING.md)** — **whose owner is QE.** ⚡ **No product code, no migration, no test change.** ⚠️ **Every lane that runs the Completion gates is exposed to this today**, which is why it is worth a minute rather than a cycle.
-
-
-## C-281 · Meilisearch is ratified as a vendor and unowned as a module, and a second datastore needs an exception a lane cannot grant
-
-| | |
-|---|---|
-| **Raised by** | **Lane A**, 2026-08-10, evaluating [TASK-496](BACKLOG.md) |
-| **Owner** | ⛔ **Product owner** — ⚡ **one half is an architecture decision and the other is a Principle 6 exception** |
-| **State** | 🟡 **`READY FOR PRODUCT DECISION`** |
-| **Blocks** | **[TASK-496](BACKLOG.md) only.** ✅ **Lane A continued down the queue** ([D-229A](DECISION_REGISTER.md)) |
-
-**What is NOT the problem.** ✅ **The vendor is ratified** — 📁 [09-build-vs-buy.md](architecture/09-build-vs-buy.md) — **so this is not a dependency question**, and it is deliberately not filed as one alongside [C-280](#c-280--two-of-task-493s-four-better-auth-plugins-do-not-ship-in-the-installed-version-so-adopting-them-is-a-dependency-decision), which is.
-
-**① The owning module is explicitly undecided.** 📁 **The row's own Module cell**: *"the index adapter's owning module is decided at decomposition, when a design says what is searched."* ⛔ **Building the adapter answers that**, and 📁 [§20e](../CLAUDE.md) is explicit: *"a dependency on a decision nobody has made is architectural however small the code would be."*
-
-**② A second datastore needs an exception, and stating one is not granting one.** 📁 **[§3](../CLAUDE.md) Principle 6 is a single PostgreSQL database**, and 📁 **[§8](../CLAUDE.md)**: *"Claude must never introduce a second datastore… without an explicit, approved exception."* ⚠️ **The row says the exception *"must be stated in the commit"*.** ⛔ **A lane can state it; only the product owner can approve it** — 📁 [§3](../CLAUDE.md): *"never silently work around a principle because compliance is inconvenient for the task at hand. If a principle appears to block a legitimate need, that is a signal to stop and raise it, not to route around it."*
-
-**The alternatives.**
-
-| | |
-|---|---|
-| **①** | ✅ **Grant the exception explicitly**, naming Meilisearch as a **derived index rather than a system of record** — ⚡ **which is the distinction Principle 6 actually protects**, and 📁 [§8](../CLAUDE.md) already phrases the danger as *"a cache used as a system of record"* |
-| **②** | **Defer, and keep the Postgres search path** — 📁 [450](architecture/450-global-search-traceability-audit.md) measured that it works, and ⛔ **[TASK-481](BACKLOG.md) shipped its surface against it** |
-
-**The recommendation, and it is input rather than authority** ([§20e](../CLAUDE.md)). ✅ **Option ①, with the exception worded as *derived index, never a system of record*** — ⚡ **because that is what makes it survivable**: the index can be dropped and rebuilt from Postgres at any time, so no customer data lives only there.
-
-🔴 **And the Security Invariant the row itself names is the reason this is worth ruling carefully**: ***"an index is a SECOND place tenant data lives — workspace scoping asserted at query time, not assumed."*** ⚠️ **Meilisearch has no RLS.** ⛔ **Every tenancy guarantee [§11](../CLAUDE.md) makes is a Postgres guarantee**, so the index reproduces none of them and the scoping must be proven in the adapter rather than inherited.
-
-
 ## C-280 · Two of TASK-493's four Better Auth plugins do not ship in the installed version, so adopting them is a dependency decision
 
 | | |

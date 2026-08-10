@@ -10,7 +10,7 @@
 
 import { betterAuth } from 'better-auth';
 import { createAuthMiddleware } from 'better-auth/api';
-import { emailOTP, haveIBeenPwned, multiSession } from 'better-auth/plugins';
+import { emailOTP, haveIBeenPwned, multiSession, twoFactor } from 'better-auth/plugins';
 import { Pool } from 'pg';
 
 import { loadAuthConfig, type AuthConfig } from '@/lib/auth/config';
@@ -90,29 +90,27 @@ export function createAuth(config: AuthConfig = loadAuthConfig()) {
       }),
 
       /**
-       * 🔴 **[TASK-493](../../../docs/BACKLOG.md) — `twoFactor()` is NOT
-       * registered, and the reason is a defect this lane shipped and caught.**
+       * 🔴 **[TASK-493](../../../docs/BACKLOG.md) — two-factor, and it is
+       * BOUGHT rather than built.**
        *
-       * ⛔ **Registering it broke registration outright**: Better Auth raised
-       * *`column "twoFactorEnabled" of relation "user" does not exist`* on
-       * every `POST /api/auth/sign-up`, so **nobody could create an account.**
-       * 📁 **[B-231](../../../docs/BUGS.md).**
+       * 📁 **[§13](../../../CLAUDE.md) forbids a bespoke authentication
+       * mechanism by name**, and a hand-rolled TOTP loop is exactly the thing
+       * it names. ✅ **This registers the vendor's.**
        *
-       * ⚠️ **The plugin needs schema, and this repository has no route to
-       * create it.** 📁 `0005_auth_schema.py` says *"this migration creates the
-       * schema and nothing inside it"* — **Better Auth owns its tables** — and
-       * ⛔ **there is no `better-auth migrate` step in `package.json`**, so a
-       * plugin that adds columns has nothing to add them.
+       * ⛔ **Nothing here decides an issuer, a digit count or a window.** The
+       * plugin's defaults are the vendor's, and 📁 the standing rule from
+       * [D-185](../../../docs/DECISION_REGISTER.md) applies: *"the framework
+       * should implement the product, not define it"* — **the design has not
+       * yet said anything about second factors, so nothing is configured
+       * against it.** ⚠️ **When it does, the number moves here and not in a
+       * screen.**
        *
-       * 🔴 **Found by a JOURNEY, not by the suite.** ⚡ **`vitest` passed
-       * throughout**, because it asserts the plugin is imported and never
-       * touches Better Auth's database — **which is exactly why
-       * [§19](../../../CLAUDE.md) requires the journey to be run rather than
-       * written.**
-       *
-       * ✅ **It returns when its schema does**, which is [B-231](../../../docs/BUGS.md)'s
-       * own condition rather than a note somebody has to remember.
+       * ⚡ **Registering it changes no journey.** It adds endpoints nobody
+       * calls yet; **a person with no second factor enrolled signs in exactly
+       * as they did**, which is the row's own Definition of Done and what
+       * `auth-journey.spec.ts` proves.
        */
+      twoFactor(),
 
       /**
        * ⚡ **[TASK-493](../../../docs/BACKLOG.md) — multi-session.**

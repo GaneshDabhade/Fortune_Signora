@@ -1081,3 +1081,80 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ⛔ **The ordering is the control.** **A classifier that asked first and mapped `404` to `not_member` would be correct in its output and wrong in its behaviour** — it would have probed for a workspace the caller has no business knowing about, ⚠️ **and timing alone answers the question the status code refused to.**
 
 ✅ **Both properties were fire-tested**: removing the protocol-relative guard turns three tests red, and moving the server call ahead of the membership test turns three others red. ⛔ **A "never called" assertion passes just as well against a function nobody calls**, so the discriminating case — the same call for a workspace they ARE in — is asserted beside it.
+
+---
+
+## TASK-481 · Global search — the four states it owed *(2026-08-10)*
+
+⚠️ **Two of the row's premises were already satisfied, and are recorded rather than rebuilt.** ⛔ **`CommandPalette` IS mounted** — [TASK-1442](../BACKLOG.md) landed it on ⌘K and owns it under [D-189](../DECISION_REGISTER.md) §3's whichever-lands-first rule — **and `account-search.tsx` is composed rather than rewritten**, which is what the row's *bound* requires: *"a component bent to suit one caller is slightly wrong for every other."*
+
+### 🔴 What was genuinely missing was a real defect, and the row named it before it was met
+
+📁 **The palette had ONE branch for an empty list**, and it read ***"Nothing matches"***. ⛔ **So a search still in flight, a search that failed, and a query nobody had typed all rendered as NO RESULTS.**
+
+🔴 **[P-A](../DOMAIN_DISCOVERY_REGISTER.md): *a failed read must never render as an empty result*** — ⚡ **and on a search surface this is the most expensive version of that confusion.** ***"Nothing matches"* is a statement about the customer's DATA**, so somebody who reads it about a request that never completed concludes their record is gone. 📁 **[C-226](../LANE_COORDINATION.md) found the same mistake six times on one screen.**
+
+| State | What it says, and why it is not the others |
+|---|---|
+| **`error`** | 🔴 *"Signora could not search just now. Nothing has changed — try again in a moment."* ⚡ **Three parts, as `StatedAbsence` established**: what failed · what is still true · what to do. **`role="alert"`, because a failure nobody hears is a failure nobody retries** |
+| **`loading`** | *"Searching…"*, ⛔ **announced POLITELY** — a search that resolves in 200ms would otherwise interrupt a screen reader mid-word on every keystroke |
+| **`idle`** | *"Type to search accounts, people and settings."* ⚡ **Saying *nothing matches ""* answers a question nobody asked** |
+| **`ready`** | ✅ *"Nothing matches …"* — **unchanged, and asserted**, because three tests checking for its absence all pass if the sentence is simply deleted |
+
+⛔ **A union rather than `isLoading | isError`.** ⚡ **A pair of booleans has a fourth combination that means nothing — *loading and failed at once* — and the first caller to set both decides what it renders.**
+
+### ⚠️ `isFetching`, not `isLoading`, and the difference is the whole point
+
+⛔ **`isLoading` is true only for the FIRST fetch of a query key.** ⚡ **Typing a second character against a cached-then-refetching query would report *ready* while a request was in flight** — **and the palette would say *nothing matches* about a search that had not finished**, which is the same defect one layer up.
+
+### ✅ Additive, and the states only speak when there is nothing to show
+
+⚠️ **`status` defaults to `ready`**, so every existing caller keeps its behaviour — [§20c](../../CLAUDE.md), this is *adding to the library* rather than bending a frozen component. ⛔ **And results are never replaced by a state screen**: a stale-while-revalidating search still has rows worth reading, and replacing them on every keystroke is the flicker that makes a palette feel slower than it is.
+
+---
+
+## TASK-482 · Ask Signora — the entry, the panel, and an honest refusal *(2026-08-10)*
+
+📁 **App Shell §12**: ***"Four doors, one room. Wherever it opens from, the assistant inherits the current scope, states that scope above the input, and opens as a non-modal 420px drawer that pushes content. There is no floating bubble: a persistent circle in the corner is a consumer pattern and it covers data."***
+
+✅ **`Drawer` already existed, tested, with ZERO callers**, so this **mounts it rather than building a second overlay** — 📁 the row's own *one, not two* and [D-189](../DECISION_REGISTER.md) §3's whichever-lands-first. ⚡ **It is already non-modal and already pushes content**, because §14 stated the mechanism rather than the look — **which is why it is the right primitive rather than a dialog with different padding.** ✅ **It left the reachability allowlist in the same commit, and the stale-entry test is what required that.**
+
+### 🔴 The slice is the refusal, and the row says so
+
+⛔ **There is no route and no request shape** — both Epic G's — and 📁 **[C-334](../LANE_COORDINATION.md) means there is no host credential.** 📁 **The Definition of Done**: *"it must state honestly when it cannot answer — a panel that renders a hopeful empty state instead of saying so is the false-affordance class this lane has refused three times."*
+
+| ⛔ Refused | Why |
+|---|---|
+| **An input box** | 🔴 **A field that accepts a question nothing will answer is worse than no field.** ⚡ **Somebody types their real question, loses it, and learns the product is unreliable rather than unfinished** |
+| ***"Try again"* / *"reload"*** | ⚠️ **The refusal is not an error state.** **Nothing failed — the capability is not built** — so borrowing [`StatedAbsence`](../../frontend/components/feedback/stated-absence.tsx)'s wording would be a false instruction, **exactly as it would be for [TASK-1411](../BACKLOG.md)'s absent confidence** |
+| **A floating bubble** | 📁 **The design refuses one by name.** ✅ **The entry is a control in the flow of the shell's utilities** |
+| ***"Everything"* as a scope** | ⛔ **A claim about what the assistant can see.** ✅ **No scope renders no scope line** |
+
+✅ **And the refusal points at what DOES exist** — the narration, its evidence and the drawer are all shipped. ⚡ **A refusal that leaves somebody with nothing teaches them the product is empty**, which is a different and wronger lesson than *this part is not built yet*.
+
+### ⚠️ Two of the four doors are elsewhere, deliberately
+
+✅ **This owns the keyboard door — 📁 §15's own binding, `⌘⇧A`, read rather than chosen — and the shell's entry control.** ⛔ **The table-selection door and the explain-this-metric door belong to the surfaces that own those controls** — `table.tsx`'s AI summary row and [TASK-1411](../BACKLOG.md)'s attribution strip — **and building them here would put shell code inside a data table.**
+
+---
+
+## TASK-493 · Better Auth plugins — the two that actually ship *(2026-08-10)*
+
+⚠️ **The row's central premise is half wrong, and it was measured before anything was written.** 📁 It states *"All four ship in Better Auth 1.6.25 and are UNREGISTERED"*. ✅ **`two-factor` and `multi-session` do.** ⛔ **`passkey` and `sso` do not** — `require.resolve('better-auth/plugins/passkey')` throws and neither name appears in the package.
+
+🔴 **So two of the four are configuration and two are a NEW DEPENDENCY**, which [§6](../../CLAUDE.md) and [§21](../../CLAUDE.md) put behind an ADR — ⛔ **and the row's own budget is 🟠 one file with 🔴 nothing.** ✅ **Filed as [C-280](../LANE_COORDINATION.md); the half that ships is built.**
+
+### ✅ Registered, and nothing configured against a design that has not spoken
+
+| | |
+|---|---|
+| **`twoFactor()`** | 📁 **[§13](../../CLAUDE.md) forbids a bespoke authentication mechanism by name, and a hand-rolled TOTP loop is exactly that.** ⛔ **No issuer, digit count or window is set**: 📁 [D-185](../DECISION_REGISTER.md)'s standing rule — *"the framework should implement the product, not define it"* — **and the design has not yet said anything about second factors, so nothing is configured against it** |
+| **`multiSession()`** | 🔴 **It changes no authorization.** ⛔ **[D-175](../DECISION_REGISTER.md) refuses Better Auth's organization roles permanently and this is not that**: Casbin still decides everything, `active_workspace_id` is still a routing hint re-verified server-side, and **each session verifies as its own RS256 token exactly as before** |
+
+⚡ **Registering either changes no journey.** **They add endpoints nobody calls yet** — a person with no second factor enrolled signs in exactly as they did — **which is the row's own Definition of Done and what `auth-journey.spec.ts` proves.**
+
+### ⛔ The test asserts the absence, and fails in the right direction
+
+⚡ **`tests/unit/auth-plugins.test.ts` asserts that `passkey` and `sso` are NOT registered and that the package genuinely does not carry them.** ✅ **If a future upgrade ships them, the resolve-throws assertion breaks and the row becomes buildable** — ⛔ **until then it is what stops a later session quietly adding a dependency to satisfy a row that says all four ship.**
+
+✅ **And it asserts the two the row named**: **RS256 stays pinned** ([ADR-0026](adr/0026-jwt-boundary-architecture.md)) and **no plugin brought an authorization model with it.**
