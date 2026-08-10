@@ -90,6 +90,45 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-177 · `mypy --strict` passes over 564 files and fails over 866, so a lane can hand over a branch it measured as clean
+
+| | |
+|---|---|
+| **Module** | `action_batch` — [`backend/tests/action_batch/test_handler.py`](../backend/tests/action_batch/test_handler.py) lines 158 and 205 |
+| **Current assignee** | **Lane A** — current assignee of `action_batch` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — **a Blocking Quality Defect**: `make certify` runs `mypy` over the full scope, so the slice cannot certify. ⛔ **Not 🔴 — no customer behaviour is wrong, and no other lane is held** |
+| **Status** | 🔵 **`OPEN` — found by QE**, 2026-08-10, in the cheap gates before certification of `ca7ee6c9` |
+| **Commit found** | `ca7ee6c9` — TASK-465 / TASK-1433 handover |
+
+> ⚡ **The defect worth naming is not the two type errors; it is that the lane measured the gate and got a different answer than the gate gives.** **Lane A reported `mypy --strict` clean across 535 files and it was telling the truth about what it ran.** ⛔ **`make certify` runs `cd backend && uv run mypy .` — 866 files, including `tests/`.** **Two scopes, one gate name, opposite verdicts.**
+
+**Steps.**
+
+```
+cd backend
+uv run mypy --strict signora_platform modules   # Success: no issues found in 564 source files
+uv run mypy --strict .                          # Found 2 errors in 1 file (checked 866 source files)
+```
+
+**Expected.** The command a lane runs to check a gate reports what the gate reports.
+
+**Actual.**
+
+```
+tests/action_batch/test_handler.py:158: error: Incompatible types in assignment
+  (expression has type "def racing_get(workspace_id: UUID, wanted: UUID) -> Coroutine[Any, Any, Any]",
+   variable has type "def get(self, workspace_id: UUID, batch_id: UUID) -> Coroutine[Any, Any, ActionBatch | None]")
+  [assignment]
+  note: Error code "assignment" not covered by "type: ignore[method-assign]" comment
+tests/action_batch/test_handler.py:205: error: (the same, for `get`)
+```
+
+**The fix is small and belongs to the lane.** Both lines carry `# type: ignore[method-assign]`, which covers the *method-assignment* complaint and not the *signature-mismatch* one that follows it. The replacement stub drops `self` and returns `Any`, so it is not assignable to the bound method's type. ⛔ **Widening the ignore to bare `# type: ignore` would silence it and is the wrong fix** — it disables every future check on those lines. ✅ **Either match the bound signature (`async def racing_get(self, workspace_id: UUID, batch_id: UUID) -> ActionBatch | None`) or name both codes: `# type: ignore[method-assign,assignment]`.**
+
+> ⚠️ **The second half of this row is QE's, and it is the half that will recur.** **Nothing in the repository tells a lane which scope the gate uses.** The `Makefile` mentions `cd backend && uv run mypy .` only in a comment, and [`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) L-15 names the gate without naming its scope. ⛔ **A lane that runs the narrower command has satisfied §19 as written and still hands over a branch that cannot certify.** ✅ **This is [B-175](#b-175)'s shape once more — a true measurement answering a narrower question than the reader believed — and it is the fourth instance in two cycles.**
+
+---
+
 ### B-176 · The promotion gate watched one of the four states only QE may write, so [B-232](#b-232) walked through it printing `PASS`
 
 | | |
