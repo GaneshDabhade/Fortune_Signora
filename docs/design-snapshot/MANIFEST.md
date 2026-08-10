@@ -27,6 +27,35 @@
 >
 > ---
 >
+> ## ⚡ [D-138](../DECISION_REGISTER.md)'s required assessment — what this new baseline affects
+>
+> ⛔ **A refresh is a new baseline, and Product Office assesses the already-planned work BEFORE it propagates.** ✅ **This is that assessment. It is the deliverable; the two files are the input.**
+>
+> ### The two implementations, measured against the designs they were built without
+>
+> 📁 **Method is [478](../architecture/478-design-conformance-audit.md)'s, unchanged: extract the design's own named elements, then search the implementation for each.** ⛔ **Not an import count and not a keyword impression** ([D-220](../DECISION_REGISTER.md) §10).
+>
+> | Implementation | Created | Design elements present |
+> |---|---|---|
+> | `frontend/components/commercial/icp.tsx` · **437 lines** | **2026-08-01** | 🔴 **0 of 16** — *Firmographics · Technographics · Geography · Buying signals · Decision makers · Negative signals · Scoring model · Predictive weight · TAM · Backtest · Add criterion · Build the list · Refit · Near misses · Validation · Templates*, **none of them** |
+> | `frontend/components/commercial/committee.tsx` · **353 lines** | **2026-08-01** | 🔴 **2 of 16** — ✅ *Buying committee* and *Stance*; ⛔ absent: *Champion · Blocker · Signer · Influencer · Gatekeeper · Org chart · Relationships · People timeline · Committee gap · Coverage by role · People risk · Plan the committee · Draft the ask · Departed* |
+>
+> ### 🔴 So [D-222](../DECISION_REGISTER.md) §15 answers cleanly, and the answer is *not* the one that was feared
+>
+> ⛔ **Neither was built against an OUTDATED design. Both PREDATE the finalized design entirely** — created **2026-08-01**, three days before the design landed on **2026-08-04** and five before the snapshot existed. ⚡ **This is [478](../architecture/478-design-conformance-audit.md) §4's finding holding on two more surfaces**: *"no UI in this repository is derived from the finalized design"*, and there five of eight predated it too.
+>
+> ✅ **Which means these are not drift and must not be reported as regressions.** ⚠️ **They are pre-design implementations, and [D-225](../DECISION_REGISTER.md) §3 is the clause that governs them** — *the existing implementation is a candidate to scrap and rebuild against the design*, **a product-owner call on sequencing rather than a lane's to take.**
+>
+> ⛔ **And the risk [TASK-1455](../BACKLOG.md) named still binds**: *"assuming the two implementations are wrong because they had no design."* **0 of 16 and 2 of 16 measure DERIVATION, not quality.** ⚡ **`committee.tsx` reaching the design's own words *Buying committee* and *Stance* independently is evidence the domain thinking converged — which is worth more than the two matches suggest.**
+>
+> ### Planned rows this baseline touches
+>
+> 📁 **Measured across [`BACKLOG.md`](../BACKLOG.md), not recalled: eleven rows name ICP, People Intelligence or the buying committee** — **TASK-434 · TASK-200 · TASK-201 · TASK-205 · TASK-405 · TASK-406 · TASK-902 · TASK-903 · TASK-002 · TASK-003 · TASK-1425.**
+>
+> ⛔ **None is re-sequenced here, and none is re-scoped.** ⚡ **Ownership of scope and order is the product owner's** ([§20e](../../CLAUDE.md)); **what changes is that every one of them now has a design authority to point at, where until today two of them could not.** ✅ **[TASK-201](../BACKLOG.md) *Epic C — People Intelligence* is the row that was most exposed** — an epic named for a design no lane could open.
+>
+> ---
+>
 > ## 🔴 The two designs no lane has ever been able to read *(the dated record, kept)*
 >
 > **Measured 2026-08-09 by `DesignSync · list_files` against project `1d043179-1ee9-4c9f-b59e-592e04297cad`, on the product owner's [D-222](../DECISION_REGISTER.md) instruction.**
