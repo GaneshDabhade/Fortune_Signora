@@ -363,6 +363,28 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-235 · A lane's blanket conflict resolution duplicates board rows, and this is the second time
+
+| | |
+|---|---|
+| **Module** | Repository governance — [`docs/ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md), [`docs/BACKLOG.md`](BACKLOG.md) |
+| **Current assignee** | **Lane A** — 🔴 **this lane caused it, twice** |
+| **Severity** | 🟠 **Wrong behaviour a reader would act on.** 📁 [§20e](../CLAUDE.md): *"no lane may remain assigned to work that has reached `main`, and no stale assignment is left behind"* — ⛔ **a board carrying a row's `CLAIMED` state BESIDE its `IN VALIDATION` state answers *"who is doing what"* twice, differently** |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-10. **8 duplicated board rows collapsed to one each, keeping the furthest state**, and **[TASK-452](BACKLOG.md)'s second `Status` cell removed.** ⚠️ **QE verifies** |
+| **Commit found** | Found by **scanning for it**, not by reading — a script that counts `TASK-nnn` occurrences per board row and `Status` cells per backlog row |
+
+**Steps.** Rebase a lane branch that is many commits ahead of `integration`, resolve the `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md` conflicts by taking the union of both sides, and read the board.
+
+**Expected.** 📁 **One row per `TASK-nnn`, at one status.**
+
+**Actual.** ⚡ **Up to THREE rows for one task** — `TASK-471`, `TASK-482`, `TASK-481`, `TASK-493` and `TASK-475` each appeared twice or three times, **one saying `CLAIMED` and another `IN VALIDATION`** — and `TASK-452` carried two `Status` cells in one row.
+
+🔴 **The cause is a resolution strategy, not a slip.** ⚠️ **A union keeps both sides of every hunk**, which is right for two lanes appending different rows and **wrong for one row whose status a later commit changed** — **the older cell is not a competing row, it is the same row before the edit.**
+
+⛔ **And it is the SECOND occurrence**: 📁 *"TASK-471 to `IN VALIDATION`, and five duplicate board rows removed"* (`3e07724f`) **repaired exactly this a cycle earlier, and the strategy that produced it was used again.** ⚡ **Related to [B-232](#b-232), which is the same resolution failing in the other direction** — there a blanket *"take my side"* reverted a QE cell.
+
+✅ **What actually prevents it, and it is not care.** ⚡ **The union resolution stays** — it is the safe default against B-232 — ⛔ **but it is no longer the end of the process.** **A scan now runs after every rebase, beside the [B-168](#b-168) directional check that already runs there**: *no `TASK-nnn` appears in more than one board row, and no backlog row carries more than one `Status` cell.* 🔴 **Both defects are of one kind — a mechanical resolution needs a mechanical check, because the whole reason the resolution is mechanical is that reading every hunk does not scale.**
+
 ### B-234 · The rail was a second `complementary` landmark, and the utility panel made it a collision
 
 | | |
