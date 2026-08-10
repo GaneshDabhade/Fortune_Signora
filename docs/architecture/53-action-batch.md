@@ -133,3 +133,50 @@
 **You cannot, and that is still true after slice 3.** The demonstration belongs to **slice 6 — one consumer end to end**, recommended as Companies bulk, *"because a contract proven by one real caller before six adopt it"* is the discipline [ADR-0403](adr/0403-signal-engine-reads-a-declaration.md) used. **A port with seven simultaneous first callers has no chance of being corrected cheaply.**
 
 ⚠️ **So this slice is not a completed product slice under §2** — it is infrastructure that has not reached a customer, and it is reported as such rather than as a demoable increment.
+
+---
+
+## Slice 5 · Applying asynchronously, and saying so while it runs *(TASK-465, 2026-08-10)*
+
+🔴 **The row's risk is a sentence rather than a race**: ⛔ ***"a customer told **applied** before the work finishes."*** 📁 **The response to an apply request means *durably accepted*** ([§14](../../CLAUDE.md)), **and this slice is what makes the difference representable.**
+
+### ⚡ The domain named this slice before it existed
+
+📁 **`applied_at`'s own comment, written in slice 2**: *"`APPROVED` with no `applied_at` is a real state, not an inconsistency: approval and application are two moments, **and the gap between them is what slice 5 makes visible**."* ✅ **That is exactly what was built**, which is worth recording because it is the strongest evidence this module's documentation is load-bearing: **a slice arriving three rows later found its own specification already written down.**
+
+### 🔴 Progress is DERIVED, and there is no fifth state
+
+**Two transitions join the alphabet — `dispatched` and `application_failed` — and `ApplicationProgress` derives four answers from them.** ⛔ **Nothing is stored to say how far the work got**, for the reason this module already paid for once: 📁 *a reversal overwrote `state`, so reading the decision off it recorded an approval AS a reversal.*
+
+| Progress | When | 📁 Why it is its own answer |
+|---|---|---|
+| `NOT_STARTED` | Approved, nothing asked to run | ⛔ Not the same as *failed* |
+| `ACCEPTED` | `dispatched_at` set, no outcome | 🔴 **The row's risk in one word** — a screen saying *applied* here is the defect |
+| `APPLIED` | `applied_at` set | The work finished |
+| `FAILED` | a failure recorded | 📁 **[P-A](../DOMAIN_DISCOVERY_REGISTER.md)**, which [455](455-context-definitions-r02-r03.md) applies to this slice by name |
+
+⚡ **`progress` reports failure AHEAD of acceptance, and that ordering is the P-A rule in code**: **a failed batch still carries its `dispatched_at`**, so testing acceptance first would report it as *accepted* and leave somebody waiting for work that has stopped.
+
+### ⛔ A third event, in a file whose first line says two
+
+📁 **The claim in `domain/events.py` is unchanged and still true**: *only `applied` and `reversed` change anything outside this module.* ⚡ **`action_batch.application_requested` is a WORK TRIGGER** — **nothing outside subscribes to it**, its only consumer is this module's own worker, and it exists because [§9](../../CLAUDE.md) forbids publishing directly to Redis. 📁 **`ai_research_engine` established the shape**; this follows it rather than inventing a second mechanism. **Catalogued in [06-events.md](06-events.md).**
+
+⚠️ **The test asserting *two events* failed, and that is what made this a decision rather than a drift.** ✅ **It now asserts the closed set AND, separately, that there is still no `action_batch.approved`** — so the set cannot quietly absorb the refusal it was written for.
+
+### ⚡ A worker is not an actor
+
+⛔ **Three transitions are now unattributed** — `dispatched`, `applied`, `application_failed` — **on the authority of the approval already recorded.** **Naming the approver as the author of a background failure would put a false name in a history somebody may have to defend.**
+
+⚠️ **`record`'s `actor_id` is a DIFFERENT question and stays one**: it writes the audit columns — *who wrote this row* — while the transition's own actor is derived by `_history`. **A person does press Apply, so the audit columns have a real answer**; the transition stays unattributed.
+
+## ⚠️ Observations for whoever holds this module next
+
+**Recorded because each cost time and none is a defect.**
+
+**① A failure had to become a value, not a string.** ⚡ **The log is rebuilt by replaying the aggregate, so every entry needs the moment it happened** — a bare `reason` had none, and `_history` could not place it in order. ✅ **`ApplicationFailure(reason, at)`**, and the `reason` column is the one thing about a failure the aggregate cannot recompute.
+
+**② `_replay` refused every NULL actor outside `applied`.** ⛔ **So a dispatched batch could not be read back at all.** ✅ **Caught by the round-trip tests slice 3 wrote for exactly this** — and it is the second time those tests have earned their keep.
+
+**③ Amending a migration that has not left the branch is correct; alembic will not notice.** ⚠️ **`0048` was already stamped, so an edit to it never re-ran, and `downgrade` then failed trying to drop a column the earlier version never added.** ✅ **Recreating the lane database from base is the honest fix** — it also verifies what QE will do: **49 migrations apply cleanly and `0048` reverses and re-applies.** ⛔ **A `0049` adding a column to a table `0048` had just touched would have been noise**, and the immutability rule protects *shipped* migrations rather than unshipped ones.
+
+**④ A status token inside a REFERENCE is not a status, and it has now produced two false positives.** ⚠️ **The [B-168](../BUGS.md) directional check flagged a row as losing a QE cell** because the replacement line *mentioned* `PROMOTED`; ⚠️ **a board classifier read `TASK-465` as `PROMOTED`** because its cell says *"TASK-464 is `PROMOTED`"*. ✅ **The reliable pattern is the FIRST backticked state token in the `Status` cell**, and ⛔ **either way the answer is verified directly before anything is removed** — both times the check was right to fire and wrong about which row.
