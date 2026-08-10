@@ -124,6 +124,14 @@ error: Your local changes to the following files would be overwritten by merge:
 | **Status** | 🔵 **`OPEN` — QE**, 2026-08-10. **`CHANGES REQUESTED` on TASK-464.** ⚡ **The slice is excluded from this cycle and the lane's other five are not held** |
 | **Commit found** | `348a2efc`, found by QE running `make certify` against candidate `ef245b09` |
 
+> ⚠️ **Re-measured 2026-08-10, one cycle later, and the row is unchanged because the code is.** **Lane A re-pushed `TASK-464` and set the row back to `IN VALIDATION`** — **which is the lane's to set, so QE kept it and let the gate re-judge** (§20e). ⛔ **The gate returned the same verdict, to two decimal places.**
+>
+> ✅ **All three files are byte-identical to the excluded commit `348a2efc`**, verified by diff: `batches.py` · `events.py` · `test_public_contract.py`. ⚡ **Nine other Lane A slices landed in the same candidate and the backend numbers did not move at all — 4343 tests, 94.66%, both times** — because every one of those slices is frontend.
+>
+> 🔴 **Why the contract test does not close this, since it is the natural place to look.** **`test_the_context_exposes_nothing_and_publishes_only_its_two_events` reads the module's sources as *text*** — `p.read_text()` over `root.rglob("*.py")` — **and greps for `class ActionBatchApplied`.** ⛔ **It never imports or executes either file**, so it pins the *shape* of the module and covers none of its behaviour. ✅ **The pin is worth keeping; it is simply not a test of the application layer.**
+>
+> **What would close it:** the four transitions and the two events, exercised through `application/batches.py` — **and the row's own named risk is the test worth writing first**: *replay the log and assert a reversal after an approval reads as a reversal, not as an approval.*
+
 **Steps.** `make certify`, then `python3 ./infra/coverage-debt.py --new`
 
 ```

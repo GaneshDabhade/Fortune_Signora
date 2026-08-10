@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `964131d`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `f22b89d`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,24 +12,24 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `9b4082e`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `f22b89d`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`9b4082e`** — the certified commit itself, with Closeout at `964131d` |
-| **`integration`** | ✅ **Rebased onto `main` this cycle.** ⚡ **Five Lane A claim commits arrived *during* certification and were left for the next cycle by design** — the Certification Snapshot rule, working exactly as written. **All five verified claim-only** |
-| **Release candidate** | **17 commits, two lanes.** ⛔ **One slice excluded: `TASK-464`, returned `CHANGES REQUESTED`** ([B-172](docs/BUGS.md)). ✅ **Neither lane was held for it** |
-| **Certification** | ✅ [`9b4082e2102f`](certification/reports/9b4082e2102f.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · ⚠️ **second attempt — the first was NOT CERTIFIED on coverage, and the record is parked** |
+| **`main`** | **`f22b89d`** — the certified commit itself |
+| **`integration`** | ✅ **Rebased onto `main`.** ⚡ **It moved twice during certification and both times the arrivals were claim-only** — the Certification Snapshot rule leaving them for the next cycle, by design |
+| **Release candidate** | **15 commits, two lanes.** ⛔ **One slice excluded for the second consecutive cycle: `TASK-464`** ([B-172](docs/BUGS.md)). ✅ **Nine Lane A slices and five Lane C commits promoted regardless** |
+| **Certification** | ✅ [`f22b89dde03e`](certification/reports/f22b89dde03e.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · ⚠️ **second attempt; [`819802b09b0f`](certification/reports/819802b09b0f.md) NOT CERTIFIED is parked beside it** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** · ⚡ **promoted through `--promote`, which refused twice before it agreed** |
-| **Blocking Quality Defects** | ✅ **None.** `registers.bug_rows()` reads **176 rows, 60 unresolved, 0 blocking**. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated** — `ruff check .` red across the tree and no gate invokes it. ⛔ **[B-156](docs/BUGS.md)/[B-166](docs/BUGS.md)/[B-224](docs/BUGS.md): the Playwright journeys are still unrunnable by QE** |
-| **New this cycle** | 🔴 **[B-172](docs/BUGS.md)** — TASK-464 ships 306 lines executed by no test; **the coverage floor caught it, and the lane's own §19 command would have caught it in seconds.** 🔴 **[B-173](docs/BUGS.md)** — **QE's own `--promote` cannot promote a candidate that touches `certification/manifest.json`**, found by using it |
-| **Customer value this cycle** | ⚡ **Every route that reads now has a loading state and an error path that is not the empty state** · **the workspace switcher moves into the rail** · **the Help Center answers from telemetry** · **the table is rebuilt to the design system** · **two Dialog accessibility defects fixed** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1317 commits, none outside a certified snapshot** |
+| **Blocking Quality Defects** | ✅ **None.** `registers.bug_rows()` reads **176 rows, 60 unresolved, 0 blocking**. ⚠️ **[B-211](docs/BUGS.md) 🟠 and ungated** — `ruff check .` red and no gate invokes it. ⛔ **[B-156](docs/BUGS.md)/[B-166](docs/BUGS.md)/[B-224](docs/BUGS.md): Playwright journeys still unrunnable by QE** |
+| **The repeating finding** | 🔴 **[B-172](docs/BUGS.md) failed the floor twice on identical arithmetic** — 94.66% with `TASK-464`, 95.09% without, **and all three of its files are byte-identical across the two cycles.** ⚡ **Nine slices landed between the two runs and the backend numbers did not move**, because every one of them is frontend |
+| **Customer value this cycle** | ⚡ **Tabs, Avatar, Tooltip and Toast join the library, each landing with its first caller** · **the command palette gets its shortcut back** · **the chart ramp in both themes** · **the four breakpoints are the design's** · **the shell's accessibility contract, which caught two errors as it was written** |
 | **Overall progress** | **~82%** by engineering effort — an estimate, and marked as one |
 
-> ⚠️ **Certification named 17 gates and executed 6.** The run prints its own gap — *"platform: 11 planned gate(s) NOT recorded"* — and **four of the eleven QE runs by hand** (`dr`, `eslint`, `frontend-suite`, `migration-reversibility`). **That is the D-231/D-232/D-233 finding, printing itself on a green run.** The implementation plan is with Lane C for governance review; **no gate, profile or test was changed to reach this promotion.**
+> ⚠️ **Certification named 17 gates and executed 6, again.** **Four of the eleven QE ran by hand** — `dr` ✅, `vitest` **2474 across 122 files** ✅, `eslint` ✅, and **migration reversibility stated rather than skipped** *(no migration in the candidate)*. ⛔ **No gate, profile, threshold or test was changed to reach this promotion**, and the D-233 plan remains with Lane C for governance review.
 
-**Repository health:** **4343 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2382 frontend tests** across **116 files** *(run by QE this cycle; **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **855 files** · **47 migrations**, `0000`–`0046`, **no migration added this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **178s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** — 5 restart stages, nothing lost, **401 invariants against the restarted stack** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
+**Repository health:** **4343 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2474 frontend tests** across **122 files** *(+92 this cycle; **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **855 files** · **47 migrations**, `0000`–`0046`, **none added this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **172s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** — 5 restart stages, nothing lost, **401 invariants against the restarted stack** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
 
 ---
 
@@ -1024,6 +1024,45 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-10, cycle 190
+
+**Derived from the promoted commit `f22b89d`.** ⚡ **Fifteen commits, two lanes, and the same slice excluded for the second consecutive cycle on arithmetic that did not move.**
+
+### What a customer can now do
+
+**Four controls the design uses and the library lacked now exist, each landing with its first caller** — **Tabs**, **Avatar**, **Tooltip** (`TASK-1448`) and **Toast** (`TASK-1449`). ⛔ **`TASK-1451`'s row names why that matters: a component with no caller is the class this repository found seven times by accident**, and the same slice ships the detector for it. ✅ **The command palette gets its keyboard shortcut back** (`TASK-1442`). ✅ **The chart ramp renders in both themes** (`TASK-1450`). ✅ **The four breakpoints are the design's** (`TASK-1443`). ✅ **The shell has an accessibility contract, and writing it caught two errors** (`TASK-1444`).
+
+**+92 frontend tests, 2474 across 122 files.**
+
+### 🔴 [B-172](docs/BUGS.md) failed the floor twice, on the same two numbers
+
+```
+  819802b0   coverage 94.66%   NOT CERTIFIED     TASK-464 included
+  f22b89dd   coverage 95.09%   CERTIFIED         TASK-464 excluded
+```
+
+⚡ **Identical to two decimal places against the previous cycle**, because all three of `TASK-464`'s files are **byte-identical** to the version excluded then — verified by diff, not inferred.
+
+> ⚠️ **Nine Lane A slices landed between the two runs and the backend numbers did not move at all** — 4343 tests both times — **because every one of those slices is frontend.** ⛔ **So the repository-wide percentage could not absorb the gap, and no amount of other good work was going to.**
+>
+> 🔴 **Why the contract test does not close it, since it is the natural place to look.** **It reads the module's sources as *text* and greps for `class ActionBatchApplied`.** ⛔ **It never imports or executes either file** — it pins the module's *shape* and covers none of its behaviour. ✅ **The pin is worth keeping; it is simply not a test of the application layer.**
+
+**Lane A re-set the row to `IN VALIDATION` over QE's `CHANGES REQUESTED`, and QE kept it.** ⚡ **Execution state is the lane's (§20e); QE re-judges by running the gate, never by holding a state.** **The gate reached the same verdict, which is the loop working rather than a dispute.**
+
+### ⚠️ The failed run's record was nearly lost, and the near-miss is recorded
+
+**Rebuilding the candidate meant stashing the working tree. `git stash pop` reported a conflict, kept the entry, and it was dropped** — **discarding the only copy of `819802b0`'s NOT CERTIFIED record.** ✅ **Recovered from the dropped stash object by sha and merged back in chronological order.**
+
+⛔ **It is [B-173](docs/BUGS.md)'s seam from the other side**: the certification record lives in the working tree while git needs that tree clean, so every rebuild puts the record through a stash. **The register keeps the observation rather than the luck.**
+
+### Nine board conflicts, and a resolver that refused once
+
+**Every Lane A commit carried a board block written against a base Closeout had already reconciled.** A resolver classified each row — **`PROMOTED` drop · `EXCLUDED` keep QE's · `CANDIDATE` take the lane's** — **and stopped on anything unclassified.**
+
+✅ **It stopped once, on `TASK-1448`, which was genuinely new work the first rule had not covered.** ⛔ **The classification was extended rather than the rule widened to swallow it**, and every resulting state was then verified against Lane A's own branch tip: **1444/1450/1449/1448 `IN VALIDATION`, 1442/1451 `CLAIMED` — nothing lost**, which is the [B-163](docs/BUGS.md)/[B-168](docs/BUGS.md) class this could otherwise have joined.
 
 ---
 
