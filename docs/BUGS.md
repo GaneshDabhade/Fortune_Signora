@@ -321,6 +321,38 @@ error: Your local changes to the following files would be overwritten by merge:
 ⚠️ **One assertion was repointed rather than deleted** — `auth-shell.test.tsx` now names `smalllaptop:justify-center`, **so it fails if a band is renamed again instead of passing over a dead utility.**
 
 
+
+> ⚠️ **THIS ROW WAS TWO ROWS, AND QE MERGED THEM AT INTEGRATION.** ⛔ **Lane C filed `B-424` from its own block and the row never reached `integration`** — it sat on `lane-c-sync` among a dozen unintegrated commits. **So Lane A could not see it and wrote its own row for the same id.** ⚡ **Neither branch was wrong on its own; combining them produced a duplicate.**
+>
+> 🔴 **That is [C-422](LANE_COORDINATION.md)'s class — approved is not merged — turned on the defect register.** **Lane C's account is preserved below, unedited**, because the two differ usefully: this one carries the repair and the guard, that one carries the cause and the pixel mapping.
+>
+> ⚠️ **Severity was reported 🔴 by Lane C and recorded 🟠 by Lane A, and the disagreement is kept rather than settled retrospectively.** ⛔ **QE acted on the 🔴 and held promotion for a full cycle**, on §20e's one blocking rule. ✅ **Both readings are defensible.**
+>
+> ⚡ **Three counts, and the load-bearing one was the lane's.** **Lane C measured 46 and named its scan's limit; QE measured 51 and was too high, having counted `--radius-xl` and every `text-xl` declaration as a prefix; Lane A measured 45 on the tree it changed.** ⛔ **Two offices measured a defect neither could see properly, and the lane that owned the code got it right first by measuring before changing anything.**
+
+✅ **`VERIFIED` — QE**, 2026-08-10, **measured on the candidate rather than accepted**: a strict scan for a responsive prefix preceded by whitespace, quote or backtick and followed by a utility returns **zero live occurrences**. **All six remaining hits are inside comments** — `navigation.tsx`, `playwright.config.ts`, `globals.css`, `design-foundation.test.tsx`, and two in `shell-a11y.test.tsx`.
+
+---
+
+#### The report and the cause, as Lane C recorded them *(row merged here by QE)*
+
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tailwind.config.ts`](../frontend/tailwind.config.ts):35 |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🔴 — ⛔ **a shipped visual regression on every authentication screen, which is the first thing every customer sees.** ⚡ **Reported by the product owner from the browser, not by the suite** |
+| **Status** | ⚠️ **`OPEN` — reported by Lane C, 2026-08-10.** ⛔ **NOT fixed here: `product_surface` is Lane A's** ([§20e](../CLAUDE.md)) |
+| **Found** | **2026-08-10, by the product owner USING the product** at `localhost:3300` — 📁 *"the text boxes are stretched to full width… purely regression… seen on all the login and authentication screens"* |
+| 🔴 **Root cause, measured** | 📁 **[TASK-1443](BACKLOG.md) (`5ea36c2c`) introduced the design's four breakpoints as `theme.screens`** — `phone` · `smalllaptop` · `laptop` · `desktop`. ⛔ **`screens:` is at line 35, inside `theme:` (line 15) and BEFORE `extend:` (line 41), so it REPLACES Tailwind's defaults rather than adding to them.** ⚡ **`sm`, `md`, `lg`, `xl` and `2xl` no longer exist, so every utility using them emits NO CSS at all** |
+| ⚡ **Blast radius, counted** | **46 utilities across `app/` and `components/`: 38 `sm:` · 7 `lg:` · 1 `md:`.** ⛔ **Each is silently dead — not overridden, not wrong, ABSENT** |
+| **Steps** | **Open `/signin`, `/register`, `/verify` or `/reset/<token>` at any width above 640px** |
+| **Expected** | 📁 **The card is `--card-width: 25rem`** — *"a single 400px card carries all 24 screens"* ([`Fortune Signora Authentication.dc.html`](../docs/design-snapshot/screens/)) |
+| **Actual** | ⛔ **Full viewport width.** 📁 [`app/(auth)/auth-shell.tsx`](../frontend/app/\(auth\)/auth-shell.tsx):90 is `flex w-full flex-col sm:max-w-card` — **`w-full` applies, `sm:max-w-card` compiles to nothing, so the constraint that was meant to win never renders** |
+| ✅ **Not the token** | ⛔ **Ruled out before blaming it**: `--card-width: 25rem` is defined at `globals.css`:255 under `@layer base > :root`, and `maxWidth: { card: 'var(--card-width)' }` is present at `tailwind.config.ts`:173. **Both halves are intact; only the breakpoint prefix is gone** |
+| 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
+| ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
+
 ### B-232 · A lane's rebase resolution reverted QE's `PROMOTED` cell, and the revert reached `main`
 
 | | |
@@ -2925,24 +2957,6 @@ def _load_state_check() -> ModuleType:
 | 🔴 **So the defect is the REPORT, not the rows** | ⛔ **The line reads as a problem and describes four correct states.** ⚡ **That is the shape [§2](../CLAUDE.md) warns about from the other side — not a document asserting something untrue, but an INSTRUMENT whose output a reader must investigate to discover means nothing.** ⚠️ **QE handed it over in good faith as four unclaimable rows; it cost a poll to find that none of them is** |
 | ✅ **The fix, bounded** | **Distinguish *no owner because the registry has none* — a real defect, and [TASK-1430](BACKLOG.md)'s class — from *no single owner by construction*: an epic spanning modules, a `RATIFIED` row, or one deliberately unassigned with a coordination item.** ⛔ **Not a change to how ownership resolves; a change to what is worth printing** |
 | ⚠️ **Why it is worth a row at all rather than silence** | **The four names recur every poll.** ⚡ **Recording the negative result is what stops the next reader — or the next office — spending the same poll on it** |
-
-### B-424 · 🔴 `theme.screens` was overridden, not extended — 46 responsive utilities compile to nothing
-
-| | |
-|---|---|
-| **Module** | **`product_surface`** — [`frontend/tailwind.config.ts`](../frontend/tailwind.config.ts):35 |
-| **Current assignee** | **Lane A** |
-| **Severity** | 🔴 — ⛔ **a shipped visual regression on every authentication screen, which is the first thing every customer sees.** ⚡ **Reported by the product owner from the browser, not by the suite** |
-| **Status** | ⚠️ **`OPEN` — reported by Lane C, 2026-08-10.** ⛔ **NOT fixed here: `product_surface` is Lane A's** ([§20e](../CLAUDE.md)) |
-| **Found** | **2026-08-10, by the product owner USING the product** at `localhost:3300` — 📁 *"the text boxes are stretched to full width… purely regression… seen on all the login and authentication screens"* |
-| 🔴 **Root cause, measured** | 📁 **[TASK-1443](BACKLOG.md) (`5ea36c2c`) introduced the design's four breakpoints as `theme.screens`** — `phone` · `smalllaptop` · `laptop` · `desktop`. ⛔ **`screens:` is at line 35, inside `theme:` (line 15) and BEFORE `extend:` (line 41), so it REPLACES Tailwind's defaults rather than adding to them.** ⚡ **`sm`, `md`, `lg`, `xl` and `2xl` no longer exist, so every utility using them emits NO CSS at all** |
-| ⚡ **Blast radius, counted** | **46 utilities across `app/` and `components/`: 38 `sm:` · 7 `lg:` · 1 `md:`.** ⛔ **Each is silently dead — not overridden, not wrong, ABSENT** |
-| **Steps** | **Open `/signin`, `/register`, `/verify` or `/reset/<token>` at any width above 640px** |
-| **Expected** | 📁 **The card is `--card-width: 25rem`** — *"a single 400px card carries all 24 screens"* ([`Fortune Signora Authentication.dc.html`](../docs/design-snapshot/screens/)) |
-| **Actual** | ⛔ **Full viewport width.** 📁 [`app/(auth)/auth-shell.tsx`](../frontend/app/\(auth\)/auth-shell.tsx):90 is `flex w-full flex-col sm:max-w-card` — **`w-full` applies, `sm:max-w-card` compiles to nothing, so the constraint that was meant to win never renders** |
-| ✅ **Not the token** | ⛔ **Ruled out before blaming it**: `--card-width: 25rem` is defined at `globals.css`:255 under `@layer base > :root`, and `maxWidth: { card: 'var(--card-width)' }` is present at `tailwind.config.ts`:173. **Both halves are intact; only the breakpoint prefix is gone** |
-| 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
-| ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
 ### B-423 · The queue files restate eligibility the projection already derives, so they go stale every promotion
 
