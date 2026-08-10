@@ -488,6 +488,12 @@ after:                4 unparsed   (TASK-1441, 1442, 1443, 1444)
 >
 > ⚠️ **It surfaced only because a lane's own status report said rows were *"with QE"* that QE believed it had verified.** **Neither instrument caught it**: `state-check` compares documents against git, not QE's past writes against its present ones.
 
+> ⛔ **The check produced its first FALSE POSITIVE on 2026-08-10 at `da889fd7`, and QE promoted through it — twice-wrong, and both halves are recorded.**
+>
+> **① The pattern is too loose.** `grep '^-.*\`VERIFIED\`'` matches **any** removed line containing the word, including a `READY` cell whose *prose* cites a verified row: *"Released: `TASK-1408` is `VERIFIED` and promoted at `e72b6af0`."* ⚡ **Measured: `VERIFIED` status cells were 12 before and 12 after, and NO row lost a `VERIFIED` state.** ✅ **The repair is to anchor on the cell**: `^-\| \*\*Status\*\* \| ✅ \*\*\`VERIFIED\`` — **which returns 0 on this same diff.**
+>
+> **② QE promoted while the check was firing**, because the check and the promotion sat in one command block with no gate between them. ⛔ **That is [B-142](#b-142)'s class — an exit code not consulted — and it is the third time this session that pattern has cost something.** 🔴 **A check whose output nobody is forced to read is a log line, not a gate.** ✅ **The promotion happened to be safe; that was luck, and it is recorded as luck.**
+
 **Repair — a check, not more care**, since care demonstrably failed on the third occurrence. ⚡ **Before promoting, diff the candidate's `docs/BACKLOG.md` against `main` for `VERIFIED` cells that disappear:**
 
 ```
