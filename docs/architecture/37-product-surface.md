@@ -1214,3 +1214,55 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 **A default is not written into the URL.** ⚡ A URL carrying every default is one nobody can read at a glance, and `scopeFrom` already answers `all` for a missing value.
 
 **A view nobody named is never *"Untitled"*.** 📁 The store bounds a name at 200 characters *"long enough for a sentence a person would actually type"* — ✅ **so the default describes the filters**, and somebody scanning a list of views can tell them apart.
+
+---
+
+## TASK-1417 · Reports — one definition, three renderings *(2026-08-10)*
+
+🔴 **Measured before anything was written, and the measurement changed the slice.** ⛔ **There is no `frontend/app/(app)/reports/` route, no reports module in `backend/modules/`, and `ai_platform` publishes exactly ONE endpoint** — `account_narration`, scoped to an account. ⚡ **So the row's line *"scheduling, exports and sharing each need a capability that does not exist"* was one item short: generating the narrative has nothing behind it either.**
+
+### ✅ A report is stored as a saved-view declaration, and nothing new was built to hold it
+
+📁 **[455 §4](455-context-definitions-r02-r03.md) names the consumers of the saved-view store**: *"Companies · App Shell · Global Search · **Reports**"*, and the store keeps *"the query, the filters and the sort — **not the results**"*. ✅ **That is a report definition exactly** — **no new table, no new module, no new endpoint** — and 📁 the store's lifecycle is already the design's: *"a declaration is never edited; a change is a new version naming the one it replaces"* beside the design's own ***"v7 · autosaved"***.
+
+⚡ **Reports is the SECOND consumer**, which is why the three refusals moved to [`lib/views/declaration.ts`](../../frontend/lib/views/declaration.ts). 📁 **455 §4 asked for one caller first** — *"a contract proven by one real caller before six adopt it"* — ✅ **[TASK-452](../BACKLOG.md)'s working list was that caller, and two callers is where the shared half stops being speculation** ([§6](../../CLAUDE.md)). ⛔ **Only the refusals are shared; each screen still owns its own declaration shape**, because the refusals are about the STORE — workspace-wide, opaque, outliving the build that wrote a row — rather than about any screen.
+
+### 🔴 The row's named risk was *"three renderers"*, and it is refused by the types
+
+📁 **The design's acceptance sentence**: ***"The same blocks, re-laid out — never a separate deck to maintain."*** ⛔ **A second renderer would satisfy a screenshot review** while creating exactly the maintenance burden that sentence exists to prevent.
+
+✅ **`LaidOutBlock` carries a `ReportBlock` taken from the definition and has no field into which a title, a figure or a sentence could be introduced.** ⚡ **There is nowhere to put invented content** ([§2](../../CLAUDE.md): *prefer a violation that is unrepresentable over one that is merely discouraged*), **so a mode decides which blocks appear, in what order, at what scale — and never what they say.** **A test asserts it as a property across all three modes rather than by reading the code.**
+
+| Mode | What it does | 📁 Why |
+|---|---|---|
+| **Builder** | Everything, in the author's order, hover available | The divider means something here: it is where the author put a break |
+| **Presentation** | Drops the divider and **only** the divider · `pointerAvailable: false` | *"One idea per slide"* — the slide boundary IS the divider. **A figure available only on hover does not exist in a room with a projector** |
+| **Executive** | At most three, ordered by CLAIM · **every chart withheld and counted** | *"Three points maximum, each a claim rather than a topic"* · *"No chart unless it changes the decision"* |
+
+⚠️ **Charts are withheld rather than included on a guess.** ⛔ **Nothing in the product can currently decide whether a chart changes a decision**, and including them would make executive mode a shorter builder, which is not what the design asks for. ✅ **`withheld` is a COUNT** — 📁 the design's own sharing rule, *"withheld with a count, never silently dropped, so totals stay honest"*, applied to a mode that deliberately shows less.
+
+### ⚠️ A fire-test found one of these assertions decorative, and that is recorded rather than quietly fixed
+
+⛔ **The first *"executive withholds every chart"* test passed with the rule REMOVED.** ⚡ **Its fixture had three non-chart blocks, so the cap of three excluded the chart whether or not the rule existed.** ✅ **A second fixture with two blocks, one of them a chart, is what the rule alone can satisfy** — **and admitting charts to the priority list now turns it red.** 📁 **[§2](../../CLAUDE.md)'s Decorative Logic, found the way it is always found: by removing the thing and watching nothing happen.**
+
+### 🔴 The narrative's merge is built; its generation is [C-283](../LANE_COORDINATION.md)
+
+📁 **The design's guarantee**: ***"Edited sentences are preserved through regeneration and marked, so the board sees what a person asserted versus what the model derived."*** ✅ **`regenerate` takes the incoming sentences as an ARGUMENT — it calls nothing, awaits nothing and knows no model** — **so the law is testable today.**
+
+⛔ **Three things a regeneration may never do**: **① delete a sentence a person wrote** · **② relabel one as generated** — ⚠️ **the quieter failure, because the text is still on the page and the board is now told a human judgement came from the model** — · **③ move one**, since the narrative is an argument in order.
+
+⛔ **Generating it is refused rather than approximated.** 📁 **[§10](../../CLAUDE.md): no mock provider, no fabricated inference** — **a template producing plausible sentences would be indistinguishable from a working narrative.** 🔴 **The ids are the contract C-283 must honour**: matching on text would treat a person's edit as a deletion plus an insertion, which is the outcome ① forbids.
+
+### ⚡ The picker recommends from the shape, and the order of the checks IS the logic
+
+📁 ***"The picker recommends a type from the shape of the data and explains why. No doughnuts, no dual axes, no 3D."*** ✅ **The three refusals are refused by `ChartType` having eight members** — ⛔ **a caller cannot ask for a doughnut, so no guard has to remember to say no** ([§2](../../CLAUDE.md): *a guard that cannot fail is documentation pretending to be code*).
+
+⚠️ **Specific before general, and it is load-bearing.** ⛔ **A bridge's data is ALSO a comparison across categories, and a pace chart's is ALSO a measure over time** — **testing the general case first recommends `bar` for a bridge and `line` for a pace chart, both defensible, both wrong, and neither ever reported as a defect because a chart drew fine.** ✅ **Fire-tested by moving the general case to the top: five tests red.**
+
+### ♿ Reordering is a pure function, so the pointer is one caller and never its owner
+
+🔴 **The row**: ***"Drag-to-reorder MUST have a keyboard equivalent — a drag-only builder is unusable without a mouse."*** ⛔ **A reorder implemented inside a drag handler is a reorder a keyboard cannot reach**, which is how a builder becomes mouse-only without anybody deciding it should be. ✅ **`reorder` returns the SAME array when the move is impossible**, so identity is the signal and a focus announcement is not made for a move that did not occur.
+
+### ⏸️ Named as remaining, not implied
+
+⛔ **Scheduling · exports · sharing** — 📁 the row's own three, *"a job runner, a rendering pipeline, and a link with its own authorization"*. ⛔ **The narrative's generation** — [C-283](../LANE_COORDINATION.md). ⛔ **The query engine** — **`ReportQuery.produces` carries what a server will one day answer; the MECHANISM of the design's refusal is built, and the vocabulary of measures arrives with the engine that produces them.**

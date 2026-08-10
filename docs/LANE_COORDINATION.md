@@ -10552,6 +10552,23 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ⚠️ **Recorded as [C-1416](#c-1416)'s third instance** — 📁 **C-272 assumed an Executive Dashboard already built, [C-1415](#c-1415) assumed a workspace has region, environment and a fiscal calendar, and this assumes five roles.** **Three rows, three screens, two days, one shape.**
 
+## C-283 · A report's narrative has no capability that can write it, and one endpoint is not it
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, from [TASK-1417](BACKLOG.md) |
+| **Owner** | **Lane B** — 📁 [`modules.toml`](coordination/modules.toml) assigns `ai_platform`'s inference surface; ⛔ **not Lane A's to extend** |
+| **State** | 🟡 **`OPEN`** |
+| **Blocks** | ⛔ **Nothing today.** ⚡ **The narrative's MERGE rule is built and tested; only its GENERATION waits** |
+
+**Measured, not assumed.** 📁 **`backend/modules/ai_platform/interface/router.py` publishes exactly ONE endpoint** — `GET …/account-narration`, *"what the evidence about this account says, in plain language"*, **scoped to an account.** ⛔ **Nothing in the repository can write commentary over a report's blocks.**
+
+**Why this is a dependency rather than something to build.** 📁 **The design's narrative is *"written from the blocks above, not from a separate prompt — so the prose cannot contradict the charts"*.** ⚡ **That is an inference over a report's own figures**, and [§10](../CLAUDE.md) is explicit: ⛔ **no mock provider, no fabricated inference.** ⚠️ **A narrative block that produced plausible sentences from a template would be indistinguishable from a working one** — **which is the exact failure mode [ADR-0028](architecture/adr/0028-model-runtime-by-environment.md) names for the mock in production.**
+
+**What was built instead, and it is the half that has a law rather than a model.** ✅ **[`lib/reports/narrative.ts`](../frontend/lib/reports/narrative.ts) implements the design's guarantee** — *"edited sentences are preserved through regeneration and marked, so the board sees what a person asserted versus what the model derived"* — **as a pure merge over sentences.** ⚡ **`regenerate` takes the incoming sentences as an argument, calls nothing and knows no model**, ✅ **so the three refusals are tested today**: ⛔ never overwrite a person's sentence · ⛔ never relabel one as generated · ⛔ never delete or move one.
+
+**What is needed, when somebody builds it.** **An inference whose input is a report's blocks and whose output is an ordered list of sentences with stable ids.** 🔴 **The ids are the whole contract** — ⚠️ **a generator that returned prose without them would make the merge above impossible**, because matching on text treats a person's edit as a deletion plus an insertion.
+
 ## C-282 · B-219 needs a one-line ruling and has never been routed to anyone who can give it
 
 | | |

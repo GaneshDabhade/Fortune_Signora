@@ -40,6 +40,7 @@
  */
 
 import { scopeFrom, type OwnerScope } from '@/lib/state/owner-scope';
+import { whyNotReadable, type DeclarationKind } from './declaration';
 
 /**
  * ⚡ **Bumped only when an OLD declaration would be misread by this screen** —
@@ -88,31 +89,24 @@ export function declare(params: URLSearchParams): WorkingListDeclaration {
  * now knows something is missing and not why.*
  */
 export function whyNotApplicable(declaration: unknown): string | null {
-  if (typeof declaration !== 'object' || declaration === null) {
-    return 'This view was saved in a form this list cannot read.';
-  }
-
-  const candidate = declaration as Partial<WorkingListDeclaration>;
-
-  if (candidate.kind !== 'working-list') {
-    /**
-     * ⚡ **The commonest real case, and it is not an error.** 📁 The store is
-     * workspace-wide and 455 names four consumers, **so a Reports view and a
-     * working-list view sit in the same list** — ⛔ **and opening one on the
-     * other would silently show the wrong records.**
-     */
-    return 'This view belongs to a different screen.';
-  }
-
-  if (typeof candidate.version !== 'number' || candidate.version > WORKING_LIST_DECLARATION_VERSION) {
-    // ⚠️ **Newer than this build.** ⛔ **Refused rather than partly applied**:
-    // the customer would get a list that is neither what they saved nor what
-    // they asked for, and nothing would say so.
-    return 'This view was saved by a newer version of Signora.';
-  }
-
-  return null;
+  return whyNotReadable(declaration, WORKING_LIST);
 }
+
+/**
+ * ⚠️ **The frame moved to [`declaration.ts`](declaration.ts) when Reports
+ * became the second caller** — 📁 455 §4's *"a contract proven by one real
+ * caller before six adopt it"*, and **two callers is where the shared half
+ * stops being speculation** ([§6](../../../CLAUDE.md)).
+ *
+ * ⛔ **The DECLARATION did not move and will not.** **Only the three refusals
+ * are shared**, because they are about the STORE — workspace-wide, opaque, and
+ * outliving the build that wrote a row — **rather than about this list.**
+ */
+const WORKING_LIST: DeclarationKind = {
+  kind: 'working-list',
+  version: WORKING_LIST_DECLARATION_VERSION,
+  screen: 'the working list',
+};
 
 /**
  * **A stored declaration as URL parameters**, or `null` if it cannot be read.
