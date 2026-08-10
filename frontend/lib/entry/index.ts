@@ -31,6 +31,15 @@
 export { REASON_CODES, GATES, type ReasonCode, type Gate } from './reasons';
 export { RULES, resolveWorkspace, workspaceHome, type Rule } from './rules';
 export {
+  INTENT_PARAM,
+  captureIntent,
+  classifyIntent,
+  decodeIntent,
+  encodeIntent,
+  workspaceFromPath,
+  type PathAccess,
+} from './intent';
+export {
   ENTRY_EVENT_KIND,
   ForbiddenDetail,
   diagnosticsBundle,

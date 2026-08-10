@@ -1047,3 +1047,37 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 🔴 **And no retention figure is printed.** ⚡ **Stating *7 years* would be [§20c](../../CLAUDE.md)'s mock business data on the one screen whose entire value is that it does not make things up** — **worse than absent, because a customer would rely on it in an audit.**
 
 ⚠️ **The sharpest state on this page is the failed read.** 📁 [P-A](../DOMAIN_DISCOVERY_REGISTER.md) — *a failed read must never render as an empty result* — **and on an audit log an empty list reads as *nothing happened*, which is a different and far more dangerous claim than *this did not load*.** ✅ **Both are tested, and so is the difference between them.**
+
+---
+
+## TASK-1402 · The intent resolver — what the person was trying to reach *(2026-08-10)*
+
+📁 **The spec**: ***"Authentication hands over an identity AND AN INTENT — the route the person was trying to reach."*** ⚡ **Four of the twenty-four reason codes are intent codes**, so intent is a first-class input rather than a query parameter somebody remembered to forward.
+
+✅ **The shape was already settled and is not re-decided.** 📁 `Intent` exists in [`session.ts`](../../frontend/lib/entry/session.ts) as `{ path, workspaceId, access }`, and its own comment names this file's boundary: *"⛔ Never computed here… the engine has no way to produce them — which is the point."* ⛔ **`frontend/lib/entry/intent.ts` is the producer of those four values and nothing else.**
+
+### 🔴 Two security properties, and they are the row
+
+#### ① A captured route must never become an open redirect
+
+⚠️ **The classic vulnerability in exactly this feature.** **A login that faithfully returns you to where you were going is also a login that will send you to `https://evil.example` if it is told to** — and the attacker's link is indistinguishable from the honest one, because both are *"the page you asked for."*
+
+✅ **The rule is POSITIVE rather than a blocklist**: *begins with exactly one `/`, no scheme, no control characters.* ⛔ **A blocklist of tricks is a list somebody eventually finds a gap in.** **Three refusals are worth naming because each defeats a different naive check:**
+
+| Refused | Why the obvious check misses it |
+|---|---|
+| `//evil.example` · `/\evil.example` | ⛔ **They start with `/`** — *"starts with a slash"* is not the test people think it is |
+| `/\njavascript:alert(1)` | ⛔ **No scheme AT THE MOMENT IT IS CHECKED.** ⚡ **The browser strips the newline and then there is one** |
+| A malformed `%` escape | ⛔ **Refused rather than partially decoded** — passing it on hands the next reader a value this one could not parse |
+
+🔴 **And the same test runs on the way back.** ⚡ **An attacker never calls `captureIntent`** — they hand the browser a crafted `?next=` — **so a sanitiser that runs only at capture protects the single path they do not use.**
+
+#### ② `not_member` is reached WITHOUT asking whether the workspace exists
+
+📁 **[§7](../../CLAUDE.md)**: *"A caller who is not a member of the workspace they name gets `404`, never `403`. This is a security property — it prevents workspace enumeration."*
+
+⚡ **Applied BEFORE the question is asked rather than after it.** `classifyIntent` tests membership against the caller's own list, locally, and **only consults the server when the workspace is one of theirs** — which is why the server's answer arrives as a **callback rather than a value**: ⛔ **a value would already have been fetched.**
+
+⛔ **The ordering is the control.** **A classifier that asked first and mapped `404` to `not_member` would be correct in its output and wrong in its behaviour** — it would have probed for a workspace the caller has no business knowing about, ⚠️ **and timing alone answers the question the status code refused to.**
+
+✅ **Both properties were fire-tested**: removing the protocol-relative guard turns three tests red, and moving the server call ahead of the membership test turns three others red. ⛔ **A "never called" assertion passes just as well against a function nobody calls**, so the discriminating case — the same call for a workspace they ARE in — is asserted beside it.
