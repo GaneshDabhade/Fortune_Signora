@@ -2701,6 +2701,24 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-426 · The generator reports four correct states as a finding — "resolves to no lane"
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`infra/coordination.py`](../infra/coordination.py) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟢 — ⛔ **cosmetic, and recorded rather than fixed** ([D-229](DECISION_REGISTER.md): *record it and continue*) |
+| **Status** | ⚠️ **`OPEN` — Lane C, 2026-08-10.** ⛔ **NOT fixed this cycle. The repository is held on [B-424](#b-424) and a 🟢 reporting refinement is not what unblocks it** |
+| **Found** | **2026-08-10**, investigating QE's hand-off — *"the generator reports TASK-300, TASK-900, TASK-901 and TASK-1413 resolve to no lane — four rows nobody can claim"* |
+| ✅ **The measurement, and it is a NEGATIVE result** | ⛔ **All four are correct. None is a defect. Nobody needs to act on any of them.** |
+| | 📁 **`TASK-300`** — `IN VALIDATION`, module *"Six slices across four modules"*. **An epic row, not claimable as one thing** |
+| | 📁 **`TASK-900`** — **`RATIFIED`, and the row says *"Owner: none, correctly"* in terms.** ✅ **The RFC is approved and the task is COMPLETE** |
+| | 📁 **`TASK-901`** — `BLOCKED`, module *"Seven pipeline modules, one per slice"*. **An epic row** |
+| | 📁 **`TASK-1413`** — **deliberately `UNASSIGNED`, tracked at [C-1404](LANE_COORDINATION.md)** |
+| 🔴 **So the defect is the REPORT, not the rows** | ⛔ **The line reads as a problem and describes four correct states.** ⚡ **That is the shape [§2](../CLAUDE.md) warns about from the other side — not a document asserting something untrue, but an INSTRUMENT whose output a reader must investigate to discover means nothing.** ⚠️ **QE handed it over in good faith as four unclaimable rows; it cost a poll to find that none of them is** |
+| ✅ **The fix, bounded** | **Distinguish *no owner because the registry has none* — a real defect, and [TASK-1430](BACKLOG.md)'s class — from *no single owner by construction*: an epic spanning modules, a `RATIFIED` row, or one deliberately unassigned with a coordination item.** ⛔ **Not a change to how ownership resolves; a change to what is worth printing** |
+| ⚠️ **Why it is worth a row at all rather than silence** | **The four names recur every poll.** ⚡ **Recording the negative result is what stops the next reader — or the next office — spending the same poll on it** |
+
 ### B-424 · 🔴 `theme.screens` was overridden, not extended — 46 responsive utilities compile to nothing
 
 | | |
