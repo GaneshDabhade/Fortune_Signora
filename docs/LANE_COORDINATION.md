@@ -373,6 +373,7 @@ databaseUrl: required(
 | [C-273](#c-273--the-lane-a-dependency-chain-drawn-once-and-one-row-in-it-has-already-freed) | **The Lane A dependency chain, drawn once — and one row in it has already freed** | **Lane A**, 2026-08-10, **on the product owner's explicit in | **Lane C** — ⚡ **every unmet input below is either a `C-` item address | 🟡 **`OPEN`** — raised 2026-08-10 | — |
 | [C-274](#c-274--the-switcher-s-exit-and-its-destination-are-in-different-rows-and-the-destination-is-blocked) | **The switcher's exit and its destination are in different rows, and the destination is blocked** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.m | **Lane C** — ⛔ **sequencing between three rows is row scope** | 🟡 **`OPEN`** — raised 2026-08-10 | — |
 | [C-275](#c-275--two-top-bar-slots-have-no-data-source-and-lib-shell-top-bar-ts-had-zero-callers-until-today) | **Two top-bar slots have no data source, and `lib/shell/top-bar.ts` had zero callers until today** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.m | **Lane C** — ⚡ **both halves need a module to publish something, and w | 🟡 **`OPEN`** — raised 2026-08-10 | — |
+| [C-1421](#c-1421--c-279-prepared--who-owns-unread-state-and-whether-we-own-it-at-all) | **C-279 prepared — who owns unread state, and whether we own it at all** | **Lane C**, 2026-08-10, on Lane A's blocker | **Product owner** — ⚡ **a build-vs-buy question before it is an ownership one** | 🟡 **`READY FOR PRODUCT DECISION`** | ⛔ **TASK-480 only** |
 | [C-1420](#c-1420--task-1430s-module-registry-and-its-ruling-name-different-lanes) | **TASK-1430's module registry and its ruling name different lanes** | **Lane C**, 2026-08-10, on QE's report | **Product owner** — ✅ **ruled Outcome B, same day** | ✅ **`CLOSED`** | ⛔ **Nothing — TASK-1430 is Lane A's and reaches its poll** |
 | [C-1417](#c-1417--the-inverse-of-c-1416-a-shipped-capability-no-design-draws-and-no-row-surfaces) | **The INVERSE of C-1416: a shipped capability no design draws and no row surfaces** | **Lane C**, 2026-08-10, discovery sweep | **Product owner** — ⚡ **a missing-design question, raised rather than answered** | 🟡 **`OPEN`** | ⛔ **Nothing** |
 | [C-1416](#c-1416--the-design-describes-a-richer-product-than-exists-three-times-now-and-c-277-is-the-third) | **The design describes a richer product than exists — three times now, and C-277 is the third** | **Lane C**, 2026-08-10, answering [C-277](#c-277) | **Product owner** — ⚡ **one question, asked once instead of three times** | 🟡 **`OPEN`** | ⛔ **Nothing — every instance ships a designed absent state** |
@@ -9697,6 +9698,48 @@ rules parsed: 24   ·   distinct reason codes: 24
 > ## ⚠️ **Three outcomes are possible and only QE can choose: LIVE and governance forgot to reference it · SUPERSEDED by [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) · or ABSORBED elsewhere, leaving a remnant.**
 
 ✅ **What this office did with the three it could rule on** — [`DECISION_PACKS.md`](DECISION_PACKS.md) superseded · [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) never adopted · [`PRODUCT_EXPERIENCE.md`](PRODUCT_EXPERIENCE.md) reassigned from the closed Lane B — **is a banner saying which of the three it is.** ⛔ **Nothing deleted.** ⚡ **The same treatment fits here once QE says which.**
+
+## C-1421 · C-279 prepared — who owns unread state, and whether we own it at all
+
+| | |
+|---|---|
+| **Opened** | **2026-08-10, Lane C**, preparing [C-279](#c-279) which Lane A raised and correctly refused to decide |
+| **Owner** | **Product owner** |
+| **Status** | 🟡 **`READY FOR PRODUCT DECISION`** |
+| **Module** | **`product_surface`** *(consumer)* — **the owner is the question** |
+| **Blocks** | ⛔ **[TASK-480](BACKLOG.md) only.** ✅ **Lane A moved on, which was right** |
+
+### ✅ What Lane A settled, and it does not need re-deciding
+
+📁 **A domain event cannot carry per-recipient unread state** — one event, many recipients, and [§9](../CLAUDE.md)'s envelope has no per-person field. 📁 **[§8](../CLAUDE.md) forbids a business module querying `outbox_event` outright.** ⚡ **So a per-person unread record is the only survivor of the three candidates, and that reasoning is sound.**
+
+### 🔴 The third option Lane A could not see, because it sits above implementation scope
+
+⛔ **The question was framed as *which module owns the table*. There may be no table.**
+
+📁 **[ADR-0017](architecture/adr/0017-notifications.md) ratifies **Novu** as *"the notification infrastructure layer — a cross-channel notification orchestrator"*.** ⚠️ **It is SILENT on in-app inbox and unread state** — `grep` for *unread · inbox · feed · read state · seen* returns nothing. 🔴 **So the repository has bought a notification vendor and never decided whether its inbox is in scope.**
+
+⚡ **That makes this a [Principle 15](architecture/02-principles.md) question first — *build the advantage, buy the commodity* — and an ownership question only if the answer is *build*.** ⛔ **Per-recipient read state is the most commodity thing a notification vendor sells.**
+
+### The three options, with what each costs
+
+| | | |
+|---|---|---|
+| **①** | **Novu's inbox owns it** | ✅ **No table, no migration, no new bounded context, no RLS surface.** ⛔ **Costs: unread state leaves our database, so it cannot be joined, replayed or audited with our own data, and [§20b](../CLAUDE.md)'s offline story weakens.** ⚠️ **Needs ADR-0017 amended to say the inbox is in scope — it currently says neither** |
+| **②** | **`workspace_tenancy` owns it** | ✅ **The table is `(workspace_id, user_id, …)` and that module already owns workspace identity and membership, so the tenancy and the foreign keys are already there.** ⛔ **Costs: unread state is not tenancy. The module's stated context is *"the tenancy root"*, and a notification concern lands in it because the ids are convenient — which is [§4](../CLAUDE.md)'s *never repurpose a term from one module inside another*** |
+| **③** | **A new bounded context** | ✅ **Honest about what it is, and [§20a](../CLAUDE.md) does not bar a new MODULE — only platform changes.** ⛔ **Costs: 🔴 a new bounded context is a product-owner + ADR decision, and it is a whole module for one table until the Notification Center is built** |
+
+### ⚡ Recommendation, and it is deliberately conditional
+
+**Rule out ① or adopt it BEFORE choosing between ② and ③.** ⛔ **Choosing an owner for a table we may not need is the expensive order to do this in.**
+
+**If ① is refused, this office recommends ③ over ②** — 📁 **[`Fortune Signora Notification Center.dc.html`](design-snapshot/screens/) is a full screen design, so this is not one table for one badge; it is the first slice of a context that already has an approved surface.** ⚡ **[TASK-495](BACKLOG.md) *Notification delivery through the ratified vendor* is already a row, which means the context exists in the backlog whatever we call it.**
+
+### ⛔ What this office did not do
+
+**Did not choose. Did not create the module. Did not amend ADR-0017.** 📁 **A new bounded context and a vendor-scope change are both 🔴** ([§20e](../CLAUDE.md) Change Budget), **and Lane A was right that this is architectural rather than implementation.**
+
+---
 
 ## C-1420 · TASK-1430's module registry and its ruling name different lanes
 
