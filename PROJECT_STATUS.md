@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `e71e74d`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `b9d6b76`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,24 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `e71e74d`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `b9d6b76`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`e71e74d`** — the certified commit itself |
+| **`main`** | **`b9d6b76`** — the certified commit itself |
 | **`integration`** | ✅ **Rebased onto `main`** |
-| **Release candidate** | **4 commits.** ⚠️ **Assembled by cherry-pick, not rebase** — `lane-a-product-surface` read **20 ahead** and carried **one** commit of unpromoted work |
-| **Certification** | ✅ [`e71e74db1c16`](certification/reports/e71e74db1c16.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · ✅ **first attempt** |
+| **Release candidate** | **22 commits, both lanes plus QE.** ⚠️ **One slice was returned first: [B-174](docs/BUGS.md), fixed by Lane C within the hour and re-verified here** |
+| **Certification** | ✅ [`b9d6b76d2019`](certification/reports/b9d6b76d2019.md) · migration head **`0047`** · protocol **v2** · profile **`platform`** · **second attempt** |
+| **Migration reversibility** | ✅ **RAN, and passed** — `upgrade head` · `downgrade base` · `upgrade head`, against a database the check creates. ⚡ **First cycle in five where it applied rather than being stated as not applicable** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None.** **181 rows, 63 unresolved, 0 blocking.** ⚠️ **[B-211](docs/BUGS.md) 🟠 and ungated** · ⛔ **[B-156](docs/BUGS.md)/[B-166](docs/BUGS.md)/[B-224](docs/BUGS.md): Playwright journeys unrunnable by QE** · 🔴 **[B-173](docs/BUGS.md) QE's own, open** · 🟠 **[B-423](docs/BUGS.md) — the queue files restate what the generator derives** |
-| **A QE diagnosis corrected** | ⛔ **QE reported queue staleness three cycles running and attributed it to regeneration timing. That was wrong.** ⚡ **Lane C measured it: the published projection is correct *by construction* — `coordination.py:1069` builds from `state == ASSIGNED and r.on_integration`, so a `PROMOTED` row cannot appear. The stale ids are in the hand-maintained queue files.** 🔴 **[§2](CLAUDE.md) exactly: eligibility has two representations, one derived and one restated** |
-| **Customer value this cycle** | ⚡ ***"Why did I land here"* is answerable without making somebody sign in again** — entry diagnostics, 250 lines with 305 of tests |
-| **Overall progress** | **~83%** by engineering effort — an estimate, and marked as one |
+| **Blocking Quality Defects** | ✅ **None.** **182 rows, 63 unresolved, 0 blocking.** ✅ **[B-423](docs/BUGS.md) and [B-174](docs/BUGS.md) both closed.** ⚠️ **[B-211](docs/BUGS.md) 🟠 ungated** · ⛔ **[B-156](docs/BUGS.md)/[B-166](docs/BUGS.md)/[B-224](docs/BUGS.md) Playwright unrunnable by QE** · 🔴 **[B-173](docs/BUGS.md) QE's own, fourth occurrence** |
+| 🔴 **A board correction QE owed for many cycles** | ⛔ **76 rows sat at `IN VALIDATION` — the state that means *awaiting QE* — and every one was already on `main`.** ✅ **60 with a work commit titled `TASK-n —` are now `PROMOTED`; 55 stale board rows removed.** ⚠️ **16 are left deliberately**: their work shipped under another subject, so the evidence is inference rather than a title, and QE does not set a state it cannot point at |
+| **Customer value this cycle** | ⚡ **A login remembers where you were going — and cannot be told to send you elsewhere** · **you land where you were working, and stop the moment you lose access** · **a search that fails says so, instead of saying nothing matched** · **Ask Signora has a door, and says plainly the room is not finished** · **the audit log becomes somewhere an administrator can go** · **the entry engine admits a machine and refuses to give it a person's screen** |
+| **Overall progress** | **~84%** by engineering effort — an estimate, and marked as one |
 
-> ⚠️ **Certification named 17 gates and executed 6.** **Four QE ran by hand** — `dr` ✅, `vitest` **2519 across 124 files** ✅, `eslint` ✅, **migration reversibility stated rather than skipped**. ⛔ **No gate, profile, threshold or test was changed**; the D-233 plan remains with Lane C for governance review.
+> ⚠️ **Certification named 17 gates and executed 6.** **Five QE ran by hand this cycle** — `dr` ✅, `vitest` **2599 across 126 files** ✅, `eslint` ✅, **migration reversibility ✅ (it applied)**, and the B-174 reproduction. ⛔ **No gate, profile, threshold or test was changed**; the D-233 plan remains with Lane C.
 
-**Repository health:** **4362 backend tests** · **95.11% coverage** ✅ *(floor 95)* · **2519 frontend tests** across **124 files** *(+16)* · **401 Security Invariants** · mypy strict over **858 files** · **47 migrations**, `0000`–`0046` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **219s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
+**Repository health:** **4377 backend tests** *(+15)* · **95.11% coverage** ✅ *(floor 95)* · **2599 frontend tests** across **126 files** *(+96)* · **401 Security Invariants** · mypy strict over **860 files** · **48 migrations**, `0000`–`0047`, **reversible to base and back, verified** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **211s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
 
 ---
 
@@ -1024,6 +1025,46 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-10, cycle 193
+
+**Derived from the promoted commit `b9d6b76`.** **Twenty-two commits, both lanes and QE — a returned slice, a defect fixed within the hour, and a board correction QE had owed for many cycles.**
+
+### What a customer can now do
+
+⚡ **A login remembers where you were going — and cannot be told to send you elsewhere.** ✅ **You land where you were working, and stop landing there the moment you lose access.** ✅ **A search that fails says so, instead of saying nothing matched** — ⛔ **[P-A](docs/DOMAIN_DISCOVERY_REGISTER.md) again: a failed read must never render as an empty result.** ✅ **Ask Signora has a door, and says plainly that the room is not finished.** ✅ **The audit log becomes somewhere an administrator can go.** ✅ **The entry engine admits a machine and refuses to give it a person's screen.**
+
+### 🔴 [B-174](docs/BUGS.md) — the hand-off worked exactly as it was meant to
+
+**Lane C fixed [B-423](docs/BUGS.md) and handed QE the suite run, saying plainly why it had not run it**: `conftest.py` truncates every table, and the only two databases here are `signora` and `signora_lane_c` — **the second holding the demo the product owner was browsing.** ✅ **The refusal was correct.**
+
+⛔ **QE ran it in a disposable database and it returned NOT CERTIFIED** — *"the working tree was dirty"* — **because `render()` had rewritten `docs/coordination/queues/lane-a.toml` to `backlog = []`.**
+
+> ⚡ **Reproduced without a database in three lines**: one `BLOCKED` task, one `render()` call, and a real lane's queue is emptied. **An existing test calls `render` with a one-row list and monkeypatches `NOTICES` but not `QUEUES` — it predates the fix and could not have known.**
+>
+> 🔴 **The write was worse than the drift it replaced.** **B-423's subject was a queue offering work that was not eligible; this wrote one offering nothing at all, from a test, into the working tree.**
+>
+> ✅ **Fixed by Lane C within the hour** — the write moved out of `render` onto the write path — **and verified here by reproducing the failure rather than reading the diff: the same three lines now leave the tree clean, and a full 4377-test run produced zero coordination drift.**
+
+**QE also verified what was *not* in question rather than assuming it:** the four predicted rows present, a second generator run producing zero diff, no queued id at `CLAIMED` or beyond, `--check` and `--dry-run` both clean.
+
+### 🔴 76 rows claimed to be awaiting QE, and every one was already on `main`
+
+⛔ **`IN VALIDATION` means *the lane's responsibility has ended and the work is with QE*. 76 rows said that, and all 76 had shipped.** ⚠️ **QE had not been setting `PROMOTED` at Closeout — a responsibility §20e assigns to nobody else.**
+
+✅ **60 rows with a work commit titled `TASK-n —` are now `PROMOTED`, and 55 stale board rows are removed.** ⛔ **16 are deliberately left**: their work shipped under another subject — `M12.6 —`, `B-172 —` — so the evidence is inference rather than a title, **and QE does not set a state it cannot point at.** **They are named in the register rather than swept.**
+
+### ✅ Migration reversibility ran, for the first time in five cycles
+
+**`0047_last_entered_at` is in this candidate, so §19's condition was met rather than waived.** `upgrade head` · `downgrade base` · `upgrade head` — **all ok, against a database the check creates rather than a shared one.** ⚡ **The four previous cycles stated it as *not applicable*; this one states a result.**
+
+### ⚠️ QE's own conflict resolver introduced a duplicate
+
+**Seventeen board conflicts, resolved by lifecycle rank — whichever side names the further state is the later fact.** ⛔ **The rule was right and the ordering pass emitted `TASK-1407` twice.**
+
+✅ **Found by counting ids on the assembled candidate and diffing against `integration`** — **the only way to tell a duplicate QE introduced from the ten already there.** **The two rows were asserted byte-identical before one was deleted, and the correction was committed on its own rather than folded into a lane's slice.**
 
 ---
 
