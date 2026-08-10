@@ -8358,6 +8358,60 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-269 · Nine of the rail's eleven entries have no destination, and the file's own history says what that costs
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-09, **on claiming [TASK-1439](BACKLOG.md)** — ⚡ **measured before writing a line, which is what the row's own REBUILD framing invites** |
+| **Owner** | **Lane C** — ⛔ **this is row scope, and only the office that writes rows changes one.** ⚡ **The same boundary [C-259](#c-259) was answered on** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **SEQUENCING.** ⛔ **Not a design defect and not an implementation defect** — the design is right about where the product is going, and the rail is right that it cannot go there yet |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-09 |
+| **Blocks** | ⛔ **[TASK-1439](BACKLOG.md) entirely.** ⚡ **Not [TASK-1440](BACKLOG.md)**, whose five slots are controls and panels rather than destinations — 📁 *"opens a 400px panel not a page"* — **so it is claimed and proceeding** |
+
+### 🔴 The measurement
+
+📁 **The design draws thirteen entries** — ten in `navItems` (eight primary, two sub under Accounts) and three in `railUtility`. ⛔ **Two of them have a route that exists.**
+
+| Design entry | Route | Exists? |
+|---|---|---|
+| **Signals** | `/signals` | ✅ |
+| **Settings** | `/settings` | ✅ |
+| Home | `/w/:workspace/home` | ⛔ **held on [C-268](#c-268)** |
+| Forecast · Pipeline · Deals · Conversations · Reports | — | ⛔ **no route** |
+| Accounts | `/accounts` | ⛔ **no index — only `/accounts/[accountId]`** |
+| Enterprise · Mid-market | — | ⛔ **no route** |
+| Shortcuts · Docs & support | — | ⛔ **no route** |
+
+⚠️ **And the two entries the product ships that DO work — `/` (Attention) and `/business` — appear nowhere in the design.** ⛔ **So a literal rebuild removes two working destinations and adds nine that 404.**
+
+### ⛔ The file already knows what that costs, in its own words
+
+📁 **`navigation.tsx`'s own comment, recording why D38 cut six entries to two:**
+
+> ***"And an entry that leads nowhere advertises absence: three of six said *coming soon* on the screen a customer sees first."***
+
+⚡ **Nine of eleven is not three of six.** 🔴 **The rail D-217 asks for would be the defect D38 removed, at three times the scale, on the first screen a customer sees.**
+
+### ⚠️ What the row measured, and the one thing it did not
+
+✅ **[TASK-1439](BACKLOG.md)'s measurement is correct and this item does not dispute it**: the design draws eleven, `navigation.tsx:68–70` ships three, and not one of the three appears in the design. ✅ **[D-128](DECISION_REGISTER.md) is right that historical UI is not the authority.**
+
+⛔ **What is not in the row is whether the destinations exist.** ⚡ **They do not, and that changes what a rebuild can mean** — the row reads as *make the rail match the design*, and the honest options are all narrower than that.
+
+### ✅ What Lane A recommends
+
+⛔ **A recommendation, not a decision** ([§20e](../CLAUDE.md)).
+
+**①** ⚡ **Ship the design's STRUCTURE now and its ENTRIES as their destinations arrive** — the hierarchy with indented sub-entries, the pinned utility group behind its rule, the *Ask Signora* row with `⌘K`, the count slot. **All of that is buildable and none of it needs a destination.** **Populate it with the entries that resolve, and let each new screen add its own row.**
+
+**②** ⛔ **Do not render an entry to a route that does not exist**, in any form — not disabled, not *coming soon*, not hidden-but-present. 📁 **[C-248](#c-248)'s precedent and the D38 comment agree.**
+
+**③** ⚠️ **The count slot needs real reads.** 📁 The design shows `8,412`, `312`, `1,140`, `14` — **placeholder data.** ⛔ **[§20c](../CLAUDE.md) forbids mock business data**, so a count renders only where something publishes it, and absent otherwise.
+
+**④** ⚡ **`/accounts` having no index is worth a row of its own** — the design's Accounts entry needs one, and the detail route alone cannot serve a nav destination.
+
+---
+
 ## C-268 · Home's route has no permitted entrance, and three of its four compositions have no data
 
 | | |
