@@ -373,6 +373,7 @@ databaseUrl: required(
 | [C-273](#c-273--the-lane-a-dependency-chain-drawn-once-and-one-row-in-it-has-already-freed) | **The Lane A dependency chain, drawn once — and one row in it has already freed** | **Lane A**, 2026-08-10, **on the product owner's explicit in | **Lane C** — ⚡ **every unmet input below is either a `C-` item address | 🟡 **`OPEN`** — raised 2026-08-10 | — |
 | [C-274](#c-274--the-switcher-s-exit-and-its-destination-are-in-different-rows-and-the-destination-is-blocked) | **The switcher's exit and its destination are in different rows, and the destination is blocked** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.m | **Lane C** — ⛔ **sequencing between three rows is row scope** | 🟡 **`OPEN`** — raised 2026-08-10 | — |
 | [C-275](#c-275--two-top-bar-slots-have-no-data-source-and-lib-shell-top-bar-ts-had-zero-callers-until-today) | **Two top-bar slots have no data source, and `lib/shell/top-bar.ts` had zero callers until today** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.m | **Lane C** — ⚡ **both halves need a module to publish something, and w | 🟡 **`OPEN`** — raised 2026-08-10 | — |
+| [C-1415](#c-1415--two-rows-hit-one-gap-a-workspace-publishes-its-identity-and-nothing-about-its-character) | **Two rows hit one gap: a workspace publishes its identity and nothing about its character** | **Lane C**, 2026-08-10, on Lane A's pattern report | **Split** — ⚡ **the read-shape half is Lane A's; the domain half is the product owner's** | 🟡 **`OPEN`** | ⚠️ **[C-276](#c-276) · TASK-1412's identity deliverables** |
 | [C-1414](#c-1414--the-design-system-specimens-are-drawn-in-sizes-its-own-type-system-does-not-define) | **The design system's specimens are drawn in sizes its own type system does not define** | **Lane C**, 2026-08-10, from Lane A's §04/§08 report | **Lane C** — derived, not escalated | ✅ **`CLOSED`** — **§04 is the type authority; §08's raw px are illustrative** | ✅ **Nothing** |
 | [C-1413](#c-1413--task-412s-module-is-deliberately-unnamed-and-its-change-budget-names-one) | **TASK-412's Module is deliberately unnamed and its Change Budget names one** | **Lane C**, 2026-08-10, from [B-414](BUGS.md) | **Product owner** — a module boundary | 🔴 **`OPEN`** | ⚠️ **`TASK-412` reads `WAITING ARCHITECTURE`; nothing is mid-flight** |
 | [C-264](#c-264--c-241-was-resolved-and-the-screen-that-motivated-it-was-never-revisited) | **C-241 was resolved and the screen that motivated it was never revisited** | **Lane A**, 2026-08-09 | **Lane C** — row scope | 🔴 **`OPEN`** | ✅ **Nothing** |
@@ -9692,6 +9693,45 @@ rules parsed: 24   ·   distinct reason codes: 24
 > ## ⚠️ **Three outcomes are possible and only QE can choose: LIVE and governance forgot to reference it · SUPERSEDED by [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) · or ABSORBED elsewhere, leaving a remnant.**
 
 ✅ **What this office did with the three it could rule on** — [`DECISION_PACKS.md`](DECISION_PACKS.md) superseded · [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) never adopted · [`PRODUCT_EXPERIENCE.md`](PRODUCT_EXPERIENCE.md) reassigned from the closed Lane B — **is a banner saying which of the three it is.** ⛔ **Nothing deleted.** ⚡ **The same treatment fits here once QE says which.**
+
+## C-1415 · Two rows hit one gap: a workspace publishes its identity and nothing about its character
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-10 — ⚡ **on Lane A's request to *"see it as a pattern rather than as two separate gaps"*, which is the correct reading** |
+| **Owner** | ⚠️ **SPLIT, and the split is the finding** — **the read-shape half is Lane A's own module; the domain half is the product owner's** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **MISSING IMPLEMENTATION** *(half)* · 🔴 **MISSING DOMAIN DECISION** *(half)* |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **Nothing today.** ✅ **Both rows ship a designed locked state instead, which the design itself asks for** |
+
+### 🔴 The measurement, from `origin/main`
+
+📁 **`GET /workspaces` — *"List the workspaces the caller belongs to"* — returns `CursorPage[WorkspaceResponse]`, and `WorkspaceResponse` is exactly four fields:**
+
+```
+id · name · created_at · updated_at
+```
+
+**So the switcher and the Settings identity block both read the same four fields, and neither finds what it needs.**
+
+### ⚡ But the two halves are NOT the same defect, and treating them as one would misroute both
+
+| What is wanted | Modelled? | Class | Whose |
+|---|---|---|---|
+| **The caller's ROLE per workspace** ([C-276](#c-276)) | ✅ **YES** — `MembershipResponse` publishes `role` with `workspace_id`, and `GET /workspaces/{id}/members` returns it | ⚠️ **READ-SHAPE.** ⛔ **The endpoint that lists a caller's workspaces returns the WORKSPACE, not the membership** — so role is reachable only by one call per workspace, which is the N+1 [§14](../CLAUDE.md) forbids | **Lane A** — `workspace_tenancy` is its module, and this is 🟠 inside it |
+| **Environment** ([C-276](#c-276)) · **region** · **fiscal calendar** ([TASK-1412](BACKLOG.md)) | ⛔ **NO** — no field, no column, no domain concept | 🔴 **MISSING DOMAIN.** **Nothing to project, because nothing decided a workspace HAS these** | **Product owner** — *does a workspace have a region, an environment, a fiscal calendar?* is a product question, not a schema one |
+
+> ## ⚡ **The pattern is real and the remedy is two remedies.** **One is a read returning the wrong shape and is cheap; three are concepts nobody has decided the product has.**
+
+⛔ **`GET /workspaces` already filters by membership** — it knows the caller's role while assembling the page and discards it. ✅ **That is why the first half is small: the data is present at the moment the response is built.**
+
+### ✅ What both lanes should keep doing meanwhile, and it needs no ruling
+
+📁 **The Settings screen states it in its own words, and the design agrees:** ***"a region selector populated with plausible regions would be the mock business data §20c forbids, and worse than absent: a customer would choose one."*** ⚡ **Locked is shown, not hidden** — the same judgement [D-225](DECISION_REGISTER.md) §4 ruled for navigation, and the same one Lane A applied to restricted rail destinations.
+
+⛔ **Neither row is blocked**, and neither should wait on this item.
+
+---
 
 ## C-1414 · The design system's specimens are drawn in sizes its own type system does not define
 
