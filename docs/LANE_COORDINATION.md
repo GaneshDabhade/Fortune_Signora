@@ -365,6 +365,7 @@ databaseUrl: required(
 | [C-258](#c-258--two-of-statedabsences-thirteen-callers-cannot-render-at-region-scope-and-the-ladder-is-what-is-short) | 🔴 **Two of `StatedAbsence`'s thirteen callers cannot render at region scope, and the ladder is what is short** | **Lane A**, 2026-08-09, holding [TASK-1428](BACKLOG.md) | **Design Authority** | 🔴 **`OPEN`** | ⚠️ **Five of thirteen call sites.** ✅ **Eight compose and are being built** |
 | [C-1411](#c-1411--an-audit-stream-whose-reliable-shape-needs-the-frozen-platform-and-whose-cheap-shape-is-lossy) | **An audit stream whose reliable shape needs the frozen platform, and whose cheap shape is lossy** | **Lane C**, 2026-08-09, splitting [C-261](#c-261--task-492s-producer-instruction-rests-on-a-premise-that-measurement-contradicts-and-either-reading-ships-a-defect) | 🔴 **Product owner** — [§20a](../CLAUDE.md) | 🔴 **`OPEN`** | ⚠️ **Three of [TASK-492](BACKLOG.md)'s four producers.** ✅ **The table, type, repository and `public/` are green** |
 | [C-1412](#c-1412--two-shell-regions-are-parked-behind-consumers-that-no-row-schedules) | **Two shell regions are parked behind consumers that no row schedules** | **Lane C**, 2026-08-09, from [498](architecture/498-common-platform-audit.md) | **Product owner** — priority | ✅ **`CLOSED`** — **[D-219](DECISION_REGISTER.md) §6: utility panel first** | ✅ **Nothing** |
+| [C-1414](#c-1414--the-design-system-specimens-are-drawn-in-sizes-its-own-type-system-does-not-define) | **The design system's specimens are drawn in sizes its own type system does not define** | **Lane C**, 2026-08-10, from Lane A's §04/§08 report | **Lane C** — derived, not escalated | ✅ **`CLOSED`** — **§04 is the type authority; §08's raw px are illustrative** | ✅ **Nothing** |
 | [C-1413](#c-1413--task-412s-module-is-deliberately-unnamed-and-its-change-budget-names-one) | **TASK-412's Module is deliberately unnamed and its Change Budget names one** | **Lane C**, 2026-08-10, from [B-414](BUGS.md) | **Product owner** — a module boundary | 🔴 **`OPEN`** | ⚠️ **`TASK-412` reads `WAITING ARCHITECTURE`; nothing is mid-flight** |
 | [C-264](#c-264--c-241-was-resolved-and-the-screen-that-motivated-it-was-never-revisited) | **C-241 was resolved and the screen that motivated it was never revisited** | **Lane A**, 2026-08-09 | **Lane C** — row scope | 🔴 **`OPEN`** | ✅ **Nothing** |
 | [C-265](#c-265--step-up-is-built-and-the-only-module-whose-controls-require-it-is-not) | **Step-up is built and the only module whose controls require it is not** | **Lane A**, 2026-08-09 | **Lane C** — row scope | 🔴 **`OPEN`** | ⚠️ **One sentence of [TASK-1410](BACKLOG.md)'s DoD** |
@@ -9683,6 +9684,43 @@ rules parsed: 24   ·   distinct reason codes: 24
 > ## ⚠️ **Three outcomes are possible and only QE can choose: LIVE and governance forgot to reference it · SUPERSEDED by [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) · or ABSORBED elsewhere, leaving a remnant.**
 
 ✅ **What this office did with the three it could rule on** — [`DECISION_PACKS.md`](DECISION_PACKS.md) superseded · [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) never adopted · [`PRODUCT_EXPERIENCE.md`](PRODUCT_EXPERIENCE.md) reassigned from the closed Lane B — **is a banner saying which of the three it is.** ⛔ **Nothing deleted.** ⚡ **The same treatment fits here once QE says which.**
+
+## C-1414 · The design system's specimens are drawn in sizes its own type system does not define
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-10, on Lane A's report from [TASK-1446](BACKLOG.md) — ⚡ **the lane found two divergent values and recorded them rather than quietly preferring one; measuring the whole section found six** |
+| **Owner** | **Lane C** — ⛔ **derived from the artifacts, NOT escalated.** 📁 **[D-228](DECISION_REGISTER.md) §6: *"do not turn an implementation detail into a new Product Owner decision when the existing operating model already answers it"*** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN CONFORMANCE** — ⛔ **not a defect in the design and not one in the implementation** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-10, on measurement** |
+| **Blocks** | ✅ **Nothing.** ⚡ **Lane A already built to the correct reading before asking** |
+
+### 🔴 The measurement — the whole section, not the two values reported
+
+**§04's `typeRows` names eight roles, each with a token.** **§08 *Headers* draws seven distinct sizes.** ⛔ **Six of the seven match no §04 role:**
+
+| §08 draws | §04 role |
+|---|---|
+| **30px** | ✅ `Metric` |
+| **24 · 16 · 15 · 14.5 · 13 · 11.5px** | ⛔ **none — six of seven** |
+
+### ✅ The rule, and it is a derivation rather than a decision
+
+> ## **§04 is the type authority. §08's raw pixel values are illustrative and are not a second specification.**
+
+⚡ **The reason is in the artifacts and needs no ruling: §04's entries NAME TOKENS — `--text-title`, `--text-label` — and §08's are inline `font-size:` inside a rendered mockup.** ⛔ **A section that names no token cannot be the token authority.** ✅ **Had this been a genuine contradiction between two specifications it would be Design Authority's; it is a specification and a picture of one.**
+
+📁 **[D-138](DECISION_REGISTER.md) makes the snapshot the implementation authority; it does not make every pixel in it a requirement.** ⚡ **A specimen drawn at 24px where the token says 26 is a mockup imprecision, and treating it as a competing value would produce exactly the *"eleven screens, five heading treatments"* fragmentation [D-218](DECISION_REGISTER.md) §9 measured.**
+
+✅ **Lane A reached this reading before asking and built to it** — *"I used the named roles, because §04 is the type authority."* **This item ratifies that reasoning and records the scope, so it is not re-derived per screen.**
+
+### ⚠️ One correction, because the conclusion was right and the evidence was not
+
+📁 **Lane A closed the `--text-label` question citing *"§08's fact strip renders its labels at 12.5px"*.** ⛔ **It renders them at 11.5px** — `{{ f.k }}` at `font-size:11.5px`, with `{{ f.v }}` at 14.5px.
+
+✅ **The conclusion stands and is unaffected**, because it never rested on §08: **§04's `typeRows` carries `['Label', '--text-label', '12.5 / 1.45 / 600', 12.5, 600, …]` verbatim**, which is what this office measured when it answered. ⚡ **Recorded because a right answer resting on a wrong measurement is one refresh away from becoming a wrong answer** — and because Lane A extended this office the same courtesy on [C-270](#c-270--the-count-of-entry-destinations-that-render-nothing-is-eleven-on-record-and-eighteen-at-runtime).
+
+---
 
 ## C-1413 · TASK-412's Module is deliberately unnamed and its Change Budget names one
 
