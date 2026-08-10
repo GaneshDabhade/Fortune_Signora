@@ -443,12 +443,12 @@ def _notice_for(tmp_path: Path, body: str, lane: str, reachable: set[str]) -> st
     """Run `_notice` against a substituted notices file, not the real one."""
     f = tmp_path / "notices.toml"
     f.write_text(f'["{lane}"]\nnotice = """{body}"""\n')
-    original = coordination.NOTICES
-    coordination.NOTICES = f
+    original = getattr(coordination, "NOTICES")
+    setattr(coordination, "NOTICES", f)
     try:
-        return coordination._notice(lane, reachable)
+        return str(coordination._notice(lane, reachable))
     finally:
-        coordination.NOTICES = original
+        setattr(coordination, "NOTICES", original)
 
 
 def test_a_notice_may_name_this_lanes_own_integrated_row(tmp_path: Path) -> None:
@@ -521,11 +521,11 @@ def test_render_publishes_a_notice_naming_a_blocked_row_of_that_lane(tmp_path: P
     )
     f = tmp_path / "notices.toml"
     f.write_text('["Lane A"]\nnotice = """C-269 answered — TASK-1439\'s entry set needs a ruling."""\n')
-    original = coordination.NOTICES
-    coordination.NOTICES = f
+    original = getattr(coordination, "NOTICES")
+    setattr(coordination, "NOTICES", f)
     try:
         out = coordination.render([blocked])
     finally:
-        coordination.NOTICES = original
+        setattr(coordination, "NOTICES", original)
     assert "WITHHELD" not in out, "a lane's own blocked row was refused by its own notice"
     assert "TASK-1439" in out

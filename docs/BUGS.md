@@ -377,7 +377,8 @@ await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
 | **Module** | Platform Foundation — [`backend/tests/test_coordination_source.py`](../backend/tests/test_coordination_source.py) |
 | **Current assignee** | **Lane C** — its own test, in its own module |
 | **Severity** | 🟠 — ⛔ **`mypy --strict` is a required gate and a Definition-of-Done row**, so the slice cannot be certified |
-| **Status** | **`OPEN`** — slice **excluded**; Lane A's work in the same candidate was taken and is unaffected |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-10, in the same session QE reported it.** **`VERIFIED` is QE's.** ⚡ **Fixed by matching the pattern this very file already used**: `setattr(coordination, "datetime", Exploding)` sits forty lines above what I wrote, and I wrote direct attribute assignment instead — 📁 [§6](../CLAUDE.md), *match existing patterns in the module you're working in*. ✅ **`mypy --strict tests/` now clean over 269 files; 28 tests pass** *(was `OPEN` — slice excluded; Lane A's work in the same candidate was taken and is unaffected)* |
+| 🔴 **What actually went wrong, and it is not the type error** | ⛔ **I ran `mypy --strict` on `infra/coordination.py` and `infra/state-check.py` and never on the test file I had just written.** ⚡ **I even verified the tests were load-bearing by reverting the fix and watching them fail — thorough about behaviour, and I skipped the gate my own Definition of Done names.** 📁 **QE found it with *the cheap gates before certification*, which is exactly where it should have been found second and my own run first.** ✅ **The correction is a habit, not a rule: type-check the whole directory I touched, not the file I was thinking about** — **`mypy --strict tests/` rather than a named path** |
 | **Commit found** | `525a1b10`, found by QE running the cheap gates before certification |
 
 **Steps.** `uv run --directory backend mypy --strict .`
