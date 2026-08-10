@@ -90,7 +90,7 @@ export function Dialog({
       ref={ref}
       aria-labelledby="dialog-title"
       className={cn(
-        'w-full max-w-md rounded-lg border border-border bg-surface p-0 text-content shadow-lg',
+        'w-full max-w-md rounded-xl border border-border bg-surface p-0 text-content shadow-lg',
         'backdrop:bg-backdrop/40',
       )}
       // Clicking the backdrop closes; clicking the panel must not. The

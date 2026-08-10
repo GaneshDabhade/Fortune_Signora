@@ -78,6 +78,13 @@ export default {
         xs: 'var(--radius-xs)',
         xl: 'var(--radius-xl)',
         '2xl': 'var(--radius-2xl)',
+        /* 📁 §05 `radii` — *"999px · Avatar, status dot, count badge,
+         * progress track."* ⛔ **This SHADOWS Tailwind's own `rounded-full`
+         * (9999px), and that is the point**: the utility already existed and
+         * no token controlled it, so `rounded-full` now resolves to the
+         * design's value everywhere it is already written — including the
+         * avatar TASK-1440 shipped. */
+        full: 'var(--radius-full)',
       },
       /* **The type scale becomes tokens** (TASK-448). Declared here rather
        * than left to Tailwind's defaults so that `design-tokens.test.tsx` can
@@ -91,7 +98,28 @@ export default {
         base: 'var(--text-base)',
         lg: 'var(--text-lg)',
         xl: 'var(--text-xl)',
-        display: 'var(--text-display)',
+        /* ⚡ **The design's roles carry four numbers, not one** — 📁 §04
+         * `typeRows` gives size / leading / weight / tracking, and a
+         * size-only entry silently drops three of them. **Tailwind's tuple
+         * form carries all four**, so `text-title` produces the design's
+         * type rather than the design's size at whatever leading it
+         * inherits. TASK-1453.
+         *
+         * ⛔ **Only the roles this row adds or corrects use the tuple.** The
+         * entries above stay size-only: widening them is a sweep across every
+         * surface in the product, and 📁 [D-220](../docs/DECISION_REGISTER.md)
+         * §10's *do not create churn for a faithful implementation* applies to
+         * this file as much as to a rename. */
+        display: ['var(--text-display)', { lineHeight: '1.05', letterSpacing: '-0.032em', fontWeight: '700' }],
+        title: ['var(--text-title)', { lineHeight: '1.15', letterSpacing: '-0.026em', fontWeight: '700' }],
+        /* 📁 *"30 / 1.05 / 700 / **tabular**"* — ⚠️ **the tabular half is NOT
+         * here.** `fontVariantNumeric` is not a `fontSize` option in Tailwind,
+         * so it cannot ride on the token; **`tabular-nums` is applied at the
+         * call site.** ⛔ **Recorded rather than silently dropped**: a metric
+         * rendered with proportional figures jitters as it updates, which is
+         * the whole reason the design specifies it. */
+        metric: ['var(--text-metric)', { lineHeight: '1.05', letterSpacing: '-0.028em', fontWeight: '700' }],
+        label: ['var(--text-label)', { lineHeight: '1.45', letterSpacing: '-0.002em', fontWeight: '600' }],
       },
       boxShadow: {
         sm: 'var(--shadow-sm)',

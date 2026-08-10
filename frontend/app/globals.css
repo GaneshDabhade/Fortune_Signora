@@ -123,6 +123,19 @@
      * two earlier slices already settled. */
     --radius-xl: 1rem;
     --radius-2xl: 1.25rem;
+    /* 📁 **§05 `radii` — `--r-full` 999px: *"Avatar, status dot, count badge,
+     * progress track."*** — TASK-1453.
+     *
+     * ⚠️ **The gap stopped being latent hours before this token existed.**
+     * [TASK-1440](../../docs/BACKLOG.md) shipped the account menu's avatar on
+     * Tailwind's own `rounded-full`, which is 9999px and controlled by no
+     * token — ⛔ **precisely the condition the scale exists to remove**, and
+     * the same one `--radius-md` was added for.
+     *
+     * ⚡ **999px rather than 9999px, because the design says 999px.** Both
+     * pill a control of any realistic height; **the value is the design's and
+     * this file is where the design's values live.** */
+    --radius-full: 999px;
 
     /* The type scale. **Six steps, and they are tokens for the same reason
      * the colours are** (TASK-448): before this, `text-[0.9375rem]` appeared
@@ -144,7 +157,36 @@
      * account brief, which is the only number in the product rendered as a
      * display size. A scale that omitted it would push that one number back
      * to an arbitrary value, which is what this slice removed. */
-    --text-display: 2.25rem;
+    --text-display: 2.5rem;
+
+    /* ⚡ **THREE ROLES THE DESIGN NAMES AND THIS SCALE DID NOT HAVE** —
+     * TASK-1453, 📁 Design System v2 §04 `typeRows`.
+     *
+     * ⛔ **`Title` had no token at any name**, and the nearest was
+     * `--text-xl` at 20px against the design's 26 — a 6px gap on **every
+     * `h1` in the product**.
+     *
+     * ⛔ **`Metric` had none either**, and it is every figure on an
+     * analytical surface.
+     *
+     * ⚠️ **`Display` was 36px against the design's 40** and is corrected
+     * above — 📁 [D-218](../../docs/DECISION_REGISTER.md) recorded the token
+     * layer as exact, which [D-220](../../docs/DECISION_REGISTER.md)
+     * corrects: **the COLOUR tokens are exact and that was generalised to
+     * *the token layer* without testing the type scale.**
+     *
+     * ✅ **`Section` and `Body` are NOT renamed.** 📁 `--text-lg` is 18px and
+     * `--text-sm` is 14px — **faithful values under different internal
+     * names**, and [D-220](../../docs/DECISION_REGISTER.md) §10 forbids
+     * renaming them: it would be churn across the whole product for no
+     * visible change. */
+    --text-title: 1.625rem;
+    --text-metric: 1.875rem;
+    /* 📁 **`Label` — 12.5 / 1.45 / 600.** ⚠️ **Not in this row's measured
+     * three, and added because the Definition of Done says *every role in
+     * §04's `typeRows`*** — see the announcement in the commit. **`--text-xs`
+     * is 12px, half a pixel short**, and 12.5px is what the design says. */
+    --text-label: 0.78125rem;
 
     --shadow-sm: 0 1px 2px rgb(33 31 29 / 0.04), 0 1px 3px rgb(33 31 29 / 0.05);
     --shadow: 0 1px 2px rgb(33 31 29 / 0.04), 0 4px 12px -2px rgb(33 31 29 / 0.07);

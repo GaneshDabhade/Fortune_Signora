@@ -349,7 +349,26 @@ function declaredScale(key: 'fontSize' | 'borderRadius'): string[] {
   const config = readFileSync(join(process.cwd(), 'tailwind.config.ts'), 'utf8');
   const block = config.slice(config.indexOf(`${key}: {`));
   const body = block.slice(0, block.indexOf('},'));
-  return [...body.matchAll(/^\s*'?([A-Za-z0-9]+)'?:\s*'var\(/gm)].map(([, name]) =>
+  /**
+   * ⚡ **Two declaration forms, one requirement** — TASK-1453.
+   *
+   * `xl: 'var(--text-xl)'` and
+   * `title: ['var(--text-title)', { lineHeight: … }]` both declare a step.
+   * 📁 **Design System v2 §04 gives every role FOUR numbers** — size, leading,
+   * weight and tracking — **and a size-only entry silently drops three**, so
+   * the roles this scale added use Tailwind's tuple form.
+   *
+   * ⛔ **The contract is NOT widened, only the parser** — **the value must
+   * still be a `var(…)`.**
+   *
+   * ⚠️ **Fire-tested, and the first attempt proved the wrong thing.** Making
+   * `title` a literal on its own changed nothing, because **the caller checks
+   * only the steps a component actually USES** and nothing uses `text-title`
+   * yet. **With a component using it, the literal fails and the `var()` form
+   * passes** — so the guard bites on the property it claims, and the claim is
+   * narrower than *any literal fails*.
+   */
+  return [...body.matchAll(/^\s*'?([A-Za-z0-9]+)'?:\s*\[?'var\(/gm)].map(([, name]) =>
     name === 'DEFAULT' ? '' : (name as string),
   );
 }
