@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes v2pulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em">
+
+  <div style="display:flex;align-items:center;gap:10px;min-height:34px;padding:6px 20px;background:var(--brand-tint);color:var(--brand-ink);font-size:12px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+    <span style="font-weight:600">ICP builder</span>
+    <span style="color:var(--ink-2)">Every criterion is scored against closed-won evidence, not opinion</span>
+    <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:9px;background:var(--surface);border:1px solid var(--line-soft)">
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};white-space:nowrap" onClick="{{ setLight }}">Light</span>
+      <span style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};white-space:nowrap" onClick="{{ setDark }}">Dark</span>
+    </span>
+  </div>
+
+  <div style="display:flex;align-items:flex-start">
+    <nav style="width:56px;flex:none;position:sticky;top:0;height:100vh;background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">NG</div>
+      <div style="height:1px;width:28px;background:var(--line-soft);margin:6px 0"></div>
+      <sc-for list="{{ railIcons }}" as="r" hint-placeholder-count="8">
+        <div style="width:38px;height:32px;border-radius:8px;display:grid;place-items:center;background:{{ r.bg }};color:{{ r.color }}">{{ r.icon }}</div>
+      </sc-for>
+    </nav>
+
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:14px;min-height:56px;padding:10px 20px;border-bottom:1px solid var(--line-soft);background:var(--surface);flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:7px;font-size:13px;min-width:0">
+          <span style="color:var(--ink-3)">Territories</span><span style="color:var(--ink-4)">/</span>
+          <span style="color:var(--ink-3)">ICP</span><span style="color:var(--ink-4)">/</span>
+          <span style="font-weight:600">Nordic logistics — Enterprise</span>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap">Validate</span>
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;white-space:nowrap">Save as template</span>
+          <span style="display:inline-flex;align-items:center;min-height:32px;padding:6px 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600;box-shadow:var(--e1);white-space:nowrap">Build the list · 1,104</span>
+        </div>
+      </div>
+
+      <div style="padding:18px 20px 0;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <h1 style="font-size:25px;font-weight:700;letter-spacing:-0.026em;margin:0">Nordic logistics — Enterprise</h1>
+            <span style="font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:var(--pos-tint);color:var(--pos);white-space:nowrap">Fit 0.78</span>
+            <span style="font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;background:var(--sunken);color:var(--ink-2);white-space:nowrap">v2 · edited 09:04</span>
+          </div>
+          <div style="font-size:13px;color:var(--ink-2);margin-top:4px">Derived from 96 closed-won deals in the last 8 quarters, then tightened by hand. Fit is measured against outcomes, so a criterion that does not predict revenue lowers the score.</div>
+        </div>
+      </div>
+
+      <div style="padding:16px 20px 30px;display:grid;grid-template-columns:minmax(0,1fr) 348px;gap:16px;align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <sc-for list="{{ groups }}" as="g" hint-placeholder-count="7">
+            <div style="border-radius:16px;background:var(--surface);border:1px solid {{ g.border }};box-shadow:var(--e1);overflow:hidden">
+              <div style="display:flex;align-items:center;gap:11px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+                <span style="width:22px;height:22px;flex:none;border-radius:7px;background:{{ g.tint }};color:{{ g.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ g.icon }}</span>
+                <span style="font-size:13.5px;font-weight:600">{{ g.title }}</span>
+                <span style="font-size:11.5px;color:var(--ink-3)">{{ g.subtitle }}</span>
+                <span style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <span style="font-size:11px;color:var(--ink-3)">Predictive weight</span>
+                  <span style="width:74px;height:6px;border-radius:999px;background:var(--sunken);overflow:hidden;flex:none">
+                    <span style="display:block;width:{{ g.weightPct }};height:100%;border-radius:999px;background:{{ g.weightColor }}"></span>
+                  </span>
+                  <span style="font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ g.weightColor }};white-space:nowrap">{{ g.weight }}</span>
+                  <span style="color:var(--ink-4);font-size:12px">▾</span>
+                </span>
+              </div>
+              <div style="overflow-x:auto">
+                <div style="min-width:700px">
+                  <sc-for list="{{ g.criteria }}" as="c" hint-placeholder-count="4">
+                    <div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1.2fr) 110px minmax(0,1fr);gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line-soft);background:{{ c.bg }}">
+                      <div style="display:flex;align-items:center;gap:9px;min-width:0">
+                        <span style="width:14px;height:14px;flex:none;border-radius:4px;border:1.5px solid {{ c.checkBorder }};background:{{ c.checkBg }};color:#fff;display:grid;place-items:center;font-size:9px">{{ c.tick }}</span>
+                        <span style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.label }}</span>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0">
+                        <span style="font-size:11px;color:var(--ink-3);white-space:nowrap">{{ c.op }}</span>
+                        <span style="display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:7px;background:var(--sunken);border:1px solid var(--line-soft);font-family:ui-monospace,monospace">{{ c.value }}</span>
+                      </div>
+                      <div><span style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ c.roleBg }};color:{{ c.roleFg }};white-space:nowrap">{{ c.role }}</span></div>
+                      <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                        <span style="width:52px;height:5px;flex:none;border-radius:999px;background:var(--sunken);overflow:hidden">
+                          <span style="display:block;width:{{ c.liftPct }};height:100%;border-radius:999px;background:{{ c.liftColor }}"></span>
+                        </span>
+                        <span style="font-size:11px;color:{{ c.liftColor }};font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap">{{ c.lift }}</span>
+                        <span style="font-size:10.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.evidence }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:11px 18px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:5px 10px;border-radius:7px;border:1px dashed var(--line);font-size:11.5px;color:var(--ink-3);white-space:nowrap">＋ Add criterion</span>
+                <span style="font-size:11.5px;color:{{ g.noteColor }};line-height:1.5;min-width:200px;flex:1">{{ g.note }}</span>
+              </div>
+            </div>
+          </sc-for>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Scoring model</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Weights are fitted to closed-won outcomes, then adjustable by hand</span>
+              <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Reset to fitted</span>
+                <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;background:var(--ai-tint);color:var(--ai-ink);font-size:11.5px;font-weight:600;white-space:nowrap">✦ Refit on last 8 quarters</span>
+              </span>
+            </div>
+            <div style="padding:16px 18px">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <sc-for list="{{ weights }}" as="w" hint-placeholder-count="6">
+                  <div>
+                    <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;flex-wrap:wrap">
+                      <span style="font-weight:600">{{ w.label }}</span>
+                      <span style="font-size:11px;color:var(--ink-3)">{{ w.note }}</span>
+                      <span style="margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap">{{ w.value }}</span>
+                      <span style="font-size:11px;color:{{ w.driftColor }};font-weight:600;white-space:nowrap">{{ w.drift }}</span>
+                    </div>
+                    <div style="position:relative;height:6px;border-radius:999px;background:var(--sunken);margin-top:6px">
+                      <div style="position:absolute;left:0;top:0;bottom:0;width:{{ w.pct }};border-radius:999px;background:{{ w.color }}"></div>
+                      <span style="position:absolute;top:-3px;left:{{ w.fitted }};width:2px;height:12px;background:var(--ink-3);opacity:.7"></span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;margin-top:13px;font-size:11px;color:var(--ink-3);flex-wrap:wrap">
+                <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:2px;height:11px;background:var(--ink-3)"></span>Fitted value</span>
+                <span>Manual overrides are kept and shown, never silently normalised away.</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Preview — who this actually selects</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Live against 8,412 accounts · sorted by fit</span>
+              <span style="margin-left:auto;display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--sunken)">
+                <sc-for list="{{ previewTabs }}" as="p" hint-placeholder-count="3">
+                  <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:{{ p.bg }};color:{{ p.color }};box-shadow:{{ p.shadow }};white-space:nowrap">{{ p.label }}</span>
+                </sc-for>
+              </span>
+            </div>
+            <div style="overflow-x:auto">
+              <div style="min-width:760px">
+                <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 86px 118px minmax(0,1.3fr) 108px;gap:12px;padding:10px 18px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Account</div><div style="text-align:right">Fit</div><div>Segment</div><div>Why it matched</div><div style="text-align:right">Est. ACV</div>
+                </div>
+                <sc-for list="{{ previewRows }}" as="r" hint-placeholder-count="6">
+                  <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 86px 118px minmax(0,1.3fr) 108px;gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line-soft);font-size:12.5px;background:{{ r.bg }}">
+                    <div style="display:flex;align-items:center;gap:9px;min-width:0">
+                      <span style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center;font-size:9px;font-weight:600">{{ r.initials }}</span>
+                      <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                    </div>
+                    <div style="text-align:right;font-weight:600;font-variant-numeric:tabular-nums;color:{{ r.fitColor }}">{{ r.fit }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-2)">{{ r.segment }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.why }}</div>
+                    <div style="text-align:right;font-variant-numeric:tabular-nums">{{ r.acv }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:11px;padding:13px 18px;background:var(--ai-tint);flex-wrap:wrap">
+              <span style="width:18px;height:18px;flex:none;border-radius:5px;background:var(--ai);display:grid;place-items:center;margin-top:1px">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+              </span>
+              <div style="font-size:12.5px;line-height:1.55;min-width:220px;flex:1">
+                <span style="font-weight:600">Sanity check: </span>
+                <span style="color:var(--ink-2)">this ICP excludes 14 of your 96 closed-won accounts, mostly on the 500-employee floor. Lowering it to 250 recovers 11 of them and adds 340 accounts to the list.</span>
+              </div>
+              <span style="margin-left:auto;flex:none;font-size:11.5px;font-weight:600;color:var(--ai-ink);white-space:nowrap">Show the 14 →</span>
+            </div>
+          </div>
+
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap">
+              <span style="font-size:13.5px;font-weight:600">Templates</span>
+              <span style="font-size:11.5px;color:var(--ink-3)">Starting points, then fitted to your own outcomes</span>
+              <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--brand-ink);white-space:nowrap">Browse all 14</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr))">
+              <sc-for list="{{ templates }}" as="t" hint-placeholder-count="6">
+                <div style="padding:15px 18px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);min-width:0">
+                  <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                    <span style="width:22px;height:22px;flex:none;border-radius:7px;background:{{ t.tint }};color:{{ t.color }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ t.icon }}</span>
+                    <span style="font-size:12.5px;font-weight:600">{{ t.name }}</span>
+                    <span style="margin-left:auto;flex:none;font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;background:{{ t.badgeBg }};color:{{ t.badgeFg }};white-space:nowrap">{{ t.badge }}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--ink-2);margin-top:7px;line-height:1.55">{{ t.body }}</div>
+                  <div style="display:flex;align-items:center;gap:10px;margin-top:9px;font-size:11px;color:var(--ink-3);flex-wrap:wrap">
+                    <span>{{ t.meta }}</span>
+                    <span style="margin-left:auto;font-weight:600;color:var(--brand-ink);white-space:nowrap">{{ t.action }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Estimated TAM</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">Nordics · logistics</span>
+            </div>
+            <div style="padding:16px 15px">
+              <div style="display:flex;align-items:flex-end;gap:9px">
+                <span style="font-size:32px;font-weight:700;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums">$412M</span>
+                <span style="font-size:11.5px;color:var(--ink-3);padding-bottom:4px">addressable</span>
+              </div>
+              <div style="font-size:11.5px;color:var(--ink-2);margin-top:7px;line-height:1.5">4,180 companies match the firmographics. 1,104 are in your CRM; 3,076 are not yet known to you.</div>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+                <sc-for list="{{ tamFunnel }}" as="t" hint-placeholder-count="5">
+                  <div>
+                    <div style="display:flex;align-items:baseline;gap:8px;font-size:11.5px">
+                      <span style="color:var(--ink-2)">{{ t.label }}</span>
+                      <span style="margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap">{{ t.value }}</span>
+                    </div>
+                    <div style="height:8px;border-radius:5px;background:var(--sunken);margin-top:5px;overflow:hidden">
+                      <div style="width:{{ t.pct }};height:100%;border-radius:5px;background:{{ t.color }}"></div>
+                    </div>
+                    <div style="font-size:10.5px;color:var(--ink-4);margin-top:3px">{{ t.note }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:10.5px;color:var(--ink-3);margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft);line-height:1.5">TAM is a range, not a number: $340M–$470M at 80% confidence. The point estimate assumes your median enterprise ACV of $98K holds outside your current book, which is the weakest assumption here.</div>
+            </div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--ai-line);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;background:var(--ai-tint);border-bottom:1px solid var(--ai-line)">
+              <span style="width:18px;height:18px;flex:none;border-radius:5px;background:var(--ai);display:grid;place-items:center">
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14"></path></svg>
+              </span>
+              <span style="font-size:12.5px;font-weight:600;color:var(--ai-ink)">AI suggestions</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">From your outcomes</span>
+            </div>
+            <sc-for list="{{ suggestions }}" as="s" hint-placeholder-count="4">
+              <div style="padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ s.tagBg }};color:{{ s.tagFg }};white-space:nowrap">{{ s.tag }}</span>
+                  <span style="margin-left:auto;font-size:11px;font-weight:600;color:{{ s.effectColor }};font-variant-numeric:tabular-nums;white-space:nowrap">{{ s.effect }}</span>
+                </div>
+                <div style="font-size:12.5px;font-weight:600;line-height:1.4;margin-top:7px">{{ s.title }}</div>
+                <div style="font-size:11.5px;color:var(--ink-2);margin-top:5px;line-height:1.5">{{ s.body }}</div>
+                <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+                  <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;background:var(--ai);color:#fff;font-size:11.5px;font-weight:600;white-space:nowrap">Apply</span>
+                  <span style="display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);font-size:11.5px;font-weight:600;white-space:nowrap">Evidence</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Validation</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:var(--warn-tint);color:var(--warn);white-space:nowrap">2 warnings</span>
+            </div>
+            <sc-for list="{{ validation }}" as="v" hint-placeholder-count="6">
+              <div style="display:flex;gap:10px;padding:11px 15px;border-bottom:1px solid var(--line-soft)">
+                <span style="width:16px;height:16px;flex:none;border-radius:5px;background:{{ v.tint }};color:{{ v.color }};display:grid;place-items:center;font-size:9px;font-weight:700;margin-top:2px">{{ v.mark }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;font-weight:600;color:{{ v.labelColor }}">{{ v.label }}</div>
+                  <div style="font-size:11px;color:var(--ink-2);margin-top:2px;line-height:1.45">{{ v.detail }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="padding:12px 15px;font-size:10.5px;color:var(--ink-3);line-height:1.5">An ICP can be saved with warnings, but not with an error. Warnings are recorded alongside the version so the trade-off is visible later.</div>
+          </div>
+
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:12.5px;font-weight:600">Backtest</span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);white-space:nowrap">Last 8 quarters</span>
+            </div>
+            <div style="padding:14px 15px">
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ backtest }}" as="b" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px;font-size:11.5px">
+                    <span style="color:var(--ink-2);min-width:0">{{ b.label }}</span>
+                    <span style="margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap">{{ b.value }}</span>
+                    <span style="width:56px;height:5px;flex:none;border-radius:999px;background:var(--sunken);overflow:hidden">
+                      <span style="display:block;width:{{ b.pct }};height:100%;border-radius:999px;background:{{ b.color }}"></span>
+                    </span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:11px;color:var(--ink-2);margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft);line-height:1.5">In-ICP deals close at more than twice the rate and 31 days faster. That gap is the only justification an ICP needs — if it narrows, the definition is drifting.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4',
+      '--risk': '#a83329', '--risk-tint': '#fcefed',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+    });
+  }
+
+  icon(kind) {
+    const p = {
+      home: 'M2.5 7 8 2.5 13.5 7v6.5h-11V7Z', chart: 'M3 13V7M8 13V3M13 13V9',
+      flow: 'M2.5 4h11M4.5 8h7M6.5 12h3', grid: 'M2.5 2.5h5v5h-5zM8.5 2.5h5v5h-5zM2.5 8.5h5v5h-5zM8.5 8.5h5v5h-5z',
+      case: 'M2.5 5.5h11v8h-11zM6 5.5V3h4v2.5', chat: 'M2.5 3h11v7H7l-4.5 3.5z',
+      target: 'M8 14.5A6.5 6.5 0 1 0 8 1.5a6.5 6.5 0 0 0 0 13ZM8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+      file: 'M4 2h5l3 3v9H4zM9 2v3h3',
+    }[kind];
+    return R('svg', { width: 14, height: 14, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }, R('path', { d: p }));
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    const crit = (label, op, value, role, lift, liftPct, evidence, on) => {
+      const roleMap = {
+        Must: ['var(--brand-tint)', 'var(--brand-ink)'],
+        Should: ['var(--sunken)', 'var(--ink-2)'],
+        Bonus: ['var(--pos-tint)', 'var(--pos)'],
+        Exclude: ['var(--risk-tint)', 'var(--risk)'],
+      }[role];
+      const neg = String(lift).trim().charAt(0) === '−';
+      return {
+        label, op, value, role, lift, liftPct, evidence,
+        roleBg: roleMap[0], roleFg: roleMap[1],
+        liftColor: role === 'Exclude' || neg ? 'var(--risk)' : (parseFloat(String(lift).replace(/[^\d.]/g, '')) >= 1.5 ? 'var(--pos)' : 'var(--warn)'),
+        tick: on ? '✓' : '',
+        checkBg: on ? 'var(--brand)' : 'transparent',
+        checkBorder: on ? 'var(--brand)' : 'var(--line)',
+        bg: on ? 'transparent' : 'var(--sunken)',
+      };
+    };
+
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--brand)',
+      lightFg: dark ? 'var(--ink-3)' : '#fff',
+      darkBg: dark ? 'var(--brand)' : 'transparent',
+      darkFg: dark ? '#fff' : 'var(--ink-3)',
+
+      railIcons: ['home', 'chart', 'flow', 'grid', 'case', 'chat', 'target', 'file'].map((k, i) => ({
+        icon: this.icon(k),
+        bg: i === 6 ? 'var(--brand-tint)' : 'transparent',
+        color: i === 6 ? 'var(--brand)' : 'var(--ink-3)',
+      })),
+
+      groups: [
+        {
+          title: 'Firmographics', subtitle: 'Who the company is', icon: '⌂', weight: '0.34', weightPct: '68%',
+          weightColor: 'var(--pos)', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', border: 'var(--line-soft)',
+          note: 'The employee floor is doing most of the work here — and most of the exclusion damage.', noteColor: 'var(--warn)',
+          criteria: [
+            crit('Employees', 'at least', '500', 'Must', '2.1×', '84%', '96 won deals', true),
+            crit('Annual revenue', 'at least', 'DKK 1bn', 'Should', '1.7×', '68%', '88 won deals', true),
+            crit('Industry', 'is any of', 'Freight, 3PL, Rail', 'Must', '2.4×', '92%', '96 won deals', true),
+            crit('Fleet size', 'at least', '120 vehicles', 'Bonus', '1.4×', '56%', '41 won deals', true),
+            crit('Ownership', 'is', 'Private', 'Should', '1.1×', '22%', 'weak — 62 deals', false),
+          ],
+        },
+        {
+          title: 'Technographics', subtitle: 'What they already run', icon: '⚙', weight: '0.18', weightPct: '36%',
+          weightColor: 'var(--warn)', tint: 'var(--sunken)', color: 'var(--ink-2)', border: 'var(--line-soft)',
+          note: 'Detected from job posts, public integrations and enrichment — never asserted with certainty.', noteColor: 'var(--ink-3)',
+          criteria: [
+            crit('ERP', 'is any of', 'SAP, IFS', 'Should', '1.6×', '64%', '71 won deals', true),
+            crit('Telematics platform', 'exists', 'any', 'Must', '1.9×', '76%', '96 won deals', true),
+            crit('Identity provider', 'is any of', 'Okta, Entra', 'Bonus', '1.3×', '52%', 'shortens security review', true),
+            crit('Competitor installed', 'is', 'Cadenza', 'Exclude', '0.4×', '80%', '18 losses', true),
+          ],
+        },
+        {
+          title: 'Geography', subtitle: 'Where they operate', icon: '◎', weight: '0.10', weightPct: '20%',
+          weightColor: 'var(--warn)', tint: 'var(--sunken)', color: 'var(--ink-2)', border: 'var(--line-soft)',
+          note: 'Data residency is a hard gate: without an EU region we cannot serve them at all.', noteColor: 'var(--ink-3)',
+          criteria: [
+            crit('Headquarters', 'is in', 'DK, SE, NO, FI', 'Must', '1.8×', '72%', '96 won deals', true),
+            crit('Operates in', 'includes', 'EU freight corridors', 'Should', '1.4×', '56%', '84 won deals', true),
+            crit('Data residency', 'requires', 'EU', 'Must', '—', '100%', 'hard requirement', true),
+          ],
+        },
+        {
+          title: 'Intent', subtitle: 'Signs they are in market', icon: '↑', weight: '0.14', weightPct: '28%',
+          weightColor: 'var(--warn)', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', border: 'var(--ai-line)',
+          note: 'Intent decays. Every criterion here carries a window, and stale intent is dropped rather than counted.', noteColor: 'var(--ai-ink)',
+          criteria: [
+            crit('Category research', 'in last', '30 days', 'Should', '1.9×', '76%', '3rd-party intent', true),
+            crit('Pricing page visits', 'at least', '3 in 14 days', 'Bonus', '1.5×', '60%', 'first-party', true),
+            crit('Hiring', 'includes', 'fleet ops roles', 'Bonus', '1.6×', '64%', '34 expansions', true),
+            crit('RFP published', 'in last', '90 days', 'Should', '2.2×', '88%', 'small sample — 22', true),
+          ],
+        },
+        {
+          title: 'Buying signals', subtitle: 'Events that start a cycle', icon: '✦', weight: '0.12', weightPct: '24%',
+          weightColor: 'var(--warn)', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', border: 'var(--ai-line)',
+          note: 'These feed the Signal Center directly — an account entering the ICP with a live signal is routed, not just listed.', noteColor: 'var(--ai-ink)',
+          criteria: [
+            crit('Compliance deadline', 'within', '18 months', 'Must', '2.6×', '96%', 'CSRD cohort', true),
+            crit('Recent acquisition', 'in last', '2 quarters', 'Bonus', '1.7×', '68%', '29 expansions', true),
+            crit('New ops leadership', 'in last', '2 quarters', 'Should', '1.5×', '60%', '38 won deals', true),
+            crit('Contract renewal', 'within', '9 months', 'Bonus', '1.4×', '56%', 'displacement window', true),
+          ],
+        },
+        {
+          title: 'Decision makers', subtitle: 'Who has to exist', icon: '◐', weight: '0.12', weightPct: '24%',
+          weightColor: 'var(--warn)', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', border: 'var(--line-soft)',
+          note: 'The strongest single predictor in the whole model: a named sustainability owner.', noteColor: 'var(--pos)',
+          criteria: [
+            crit('VP Operations or above', 'exists', 'identified', 'Must', '2.0×', '80%', '96 won deals', true),
+            crit('Sustainability owner', 'exists', 'named', 'Must', '2.8×', '100%', '91 of 96 won', true),
+            crit('CFO reachable', 'within', '2 degrees', 'Should', '1.8×', '72%', 'halves slip rate', true),
+            crit('Central procurement', 'exists', 'yes', 'Should', '0.9×', '36%', 'slows, not blocks', true),
+          ],
+        },
+        {
+          title: 'Negative signals', subtitle: 'Disqualify early, cheaply', icon: '⊘', weight: '0.00', weightPct: '100%',
+          weightColor: 'var(--risk)', tint: 'var(--risk-tint)', color: 'var(--risk)', border: 'var(--risk)',
+          note: 'Exclusions are absolute and are shown as a count on every list so nobody wonders where an account went.', noteColor: 'var(--risk)',
+          criteria: [
+            crit('Lost to us', 'in last', '12 months', 'Exclude', '0.3×', '86%', '41 losses', true),
+            crit('Insolvency or filing', 'any', 'flag', 'Exclude', '0.1×', '96%', 'credit feed', true),
+            crit('Employees', 'fewer than', '150', 'Exclude', '0.4×', '78%', 'churn 3× higher', true),
+            crit('Region', 'is in', 'sanctioned list', 'Exclude', '—', '100%', 'compliance', true),
+            crit('Existing customer', 'is', 'true', 'Exclude', '—', '100%', 'expansion, not ICP', true),
+          ],
+        },
+      ],
+
+      weights: [
+        { label: 'Firmographics', note: 'size, industry, fleet', value: '0.34', pct: '34%', fitted: '31%', drift: '+0.03 manual', driftColor: 'var(--warn)', color: 'var(--brand)' },
+        { label: 'Decision makers', note: 'roles present and reachable', value: '0.20', pct: '20%', fitted: '24%', drift: '−0.04 manual', driftColor: 'var(--warn)', color: 'var(--brand)' },
+        { label: 'Technographics', note: 'ERP, telematics, identity', value: '0.18', pct: '18%', fitted: '18%', drift: 'fitted', driftColor: 'var(--pos)', color: 'var(--brand)' },
+        { label: 'Intent', note: 'windowed, decaying', value: '0.14', pct: '14%', fitted: '14%', drift: 'fitted', driftColor: 'var(--pos)', color: 'var(--ai)' },
+        { label: 'Buying signals', note: 'events with a window', value: '0.12', pct: '12%', fitted: '12%', drift: 'fitted', driftColor: 'var(--pos)', color: 'var(--ai)' },
+        { label: 'Geography', note: 'HQ and residency', value: '0.02', pct: '2%', fitted: '1%', drift: 'near-gate', driftColor: 'var(--ink-3)', color: 'var(--brand)' },
+      ],
+
+      previewTabs: ['Matches · 1,104', 'Near misses · 340', 'Excluded · 612'].map((label, i) => ({
+        label,
+        bg: i === 0 ? 'var(--surface)' : 'transparent',
+        color: i === 0 ? 'var(--ink)' : 'var(--ink-3)',
+        shadow: i === 0 ? 'var(--e1)' : 'none',
+      })),
+
+      previewRows: [
+        { name: 'Lindqvist Marine', initials: 'LM', fit: '0.94', segment: 'Enterprise · SE', why: 'CSRD deadline, sustainability owner named, SAP', acv: '$520K', good: true },
+        { name: 'Nordhavn Transport', initials: 'NT', fit: '0.91', segment: 'Enterprise · DK', why: 'Acquired last quarter, fleet 340, Okta', acv: '$410K', good: true },
+        { name: 'Fjordline Logistics', initials: 'FL', fit: '0.88', segment: 'Enterprise · NO', why: 'RFP published 41 days ago, IFS ERP', acv: '$380K', good: true },
+        { name: 'Suomi Rail Freight', initials: 'SR', fit: '0.84', segment: 'Enterprise · FI', why: 'New COO, telematics present, no competitor', acv: '$295K', good: false },
+        { name: 'Baltic Haul Group', initials: 'BH', fit: '0.79', segment: 'Enterprise · SE', why: 'Fleet 210, hiring 9 ops roles', acv: '$260K', good: false },
+        { name: 'Kattegat Shipping', initials: 'KS', fit: '0.76', segment: 'Mid-market · DK', why: 'Below revenue floor, everything else fits', acv: '$180K', good: false },
+      ].map(r => ({
+        name: r.name, initials: r.initials, fit: r.fit, segment: r.segment, why: r.why, acv: r.acv,
+        fitColor: parseFloat(r.fit) >= 0.85 ? 'var(--pos)' : 'var(--warn)',
+        bg: r.good ? 'var(--pos-tint)' : 'transparent',
+      })),
+
+      templates: [
+        { icon: '✦', name: 'Fitted to your wins', badge: 'Recommended', body: 'Derives every criterion from your last 8 quarters of closed-won, with weights fitted rather than guessed.', meta: '96 deals · rebuilt weekly', action: 'Refit now', tint: 'var(--ai-tint)', color: 'var(--ai-ink)', badgeBg: 'var(--ai-tint)', badgeFg: 'var(--ai-ink)' },
+        { icon: '⌂', name: 'Nordic logistics — Enterprise', badge: 'Current', body: 'This ICP. Compliance-led, telematics-present, sustainability owner required.', meta: '1,104 matches · $412M TAM', action: 'Editing', tint: 'var(--brand-tint)', color: 'var(--brand-ink)', badgeBg: 'var(--pos-tint)', badgeFg: 'var(--pos)' },
+        { icon: '↑', name: 'Expansion-ready customers', badge: 'Template', body: 'Inverts the ICP for existing accounts: usage, whitespace and contract timing instead of firmographics.', meta: '118 matches', action: 'Use', tint: 'var(--pos-tint)', color: 'var(--pos)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+        { icon: '◐', name: 'Mid-market motion', badge: 'Template', body: 'Lower floors, fewer committee requirements, self-serve security review. Different economics, so a separate model.', meta: '2,840 matches', action: 'Use', tint: 'var(--sunken)', color: 'var(--ink-2)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+        { icon: '⚑', name: 'Cadenza displacement', badge: 'Template', body: 'Targets accounts running the competitor with a renewal inside 9 months. Excludes those we lost in the last year.', meta: '186 matches', action: 'Use', tint: 'var(--warn-tint)', color: 'var(--warn)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+        { icon: '✎', name: 'Blank ICP', badge: 'Start', body: 'Seven empty groups. Add criteria and each one is scored against your outcomes as you go.', meta: 'Nothing assumed', action: 'Create', tint: 'var(--sunken)', color: 'var(--ink-3)', badgeBg: 'var(--sunken)', badgeFg: 'var(--ink-3)' },
+      ],
+
+      tamFunnel: [
+        { label: 'Match firmographics', value: '4,180 · $412M', pct: '100%', color: 'var(--brand)', note: 'From the market database' },
+        { label: 'Pass technographics', value: '2,910 · $304M', pct: '70%', color: 'var(--brand)', note: 'Telematics present' },
+        { label: 'Pass decision makers', value: '1,740 · $196M', pct: '42%', color: 'var(--brand)', note: 'Sustainability owner identifiable' },
+        { label: 'In your CRM today', value: '1,104 · $128M', pct: '26%', color: 'var(--pos)', note: 'Actionable now' },
+        { label: 'Live buying signal', value: '186 · $24M', pct: '4%', color: 'var(--ai)', note: 'Routed to Signals' },
+      ],
+
+      suggestions: [
+        { tag: 'Loosen', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)', effect: '+340 accounts', effectColor: 'var(--pos)', title: 'Lower the employee floor to 250', body: 'Eleven of your closed-won accounts sit between 250 and 500 employees, and they churn no faster. The floor is excluding proven customers.' },
+        { tag: 'Add', tagBg: 'var(--pos-tint)', tagFg: 'var(--pos)', effect: '2.8× lift', effectColor: 'var(--pos)', title: 'Require a named sustainability owner', body: 'Present in 91 of 96 wins and in 34% of losses. Already applied — the strongest single criterion in this model.' },
+        { tag: 'Drop', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)', effect: 'no effect', effectColor: 'var(--ink-3)', title: 'Remove “private ownership”', body: 'Lift of 1.1× is inside noise for a 62-deal sample. It removes 214 accounts and predicts nothing.' },
+        { tag: 'Watch', tagBg: 'var(--sunken)', tagFg: 'var(--ink-2)', effect: 'sample of 22', effectColor: 'var(--warn)', title: '“RFP published” looks strong but is thin', body: '2.2× lift on only 22 deals. Keep it as Should rather than Must until the sample doubles.' },
+      ],
+
+      validation: [
+        { label: 'Excludes 14 of 96 closed-won accounts', detail: 'Mostly on the employee floor. A definition that rejects your own best customers needs a reason.', mark: '!', tint: 'var(--warn-tint)', color: 'var(--warn)', labelColor: 'var(--warn)' },
+        { label: '“RFP published” sample is small', detail: '22 deals. Treat the 2.2× lift as directional, not settled.', mark: '!', tint: 'var(--warn-tint)', color: 'var(--warn)', labelColor: 'var(--warn)' },
+        { label: 'No criterion contradicts another', detail: 'Checked across all 7 groups, including exclusions.', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)', labelColor: 'var(--ink)' },
+        { label: 'Every criterion is measurable today', detail: 'All 29 map to a field, an enrichment source or a signal — none require manual research.', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)', labelColor: 'var(--ink)' },
+        { label: 'Weights sum to 1.00', detail: 'Manual overrides are within the ±0.05 tolerance.', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)', labelColor: 'var(--ink)' },
+        { label: 'Data residency gate present', detail: 'Required for EU sale. Without it the list is not compliant to work.', mark: '✓', tint: 'var(--pos-tint)', color: 'var(--pos)', labelColor: 'var(--ink)' },
+      ],
+
+      backtest: [
+        { label: 'Win rate — in ICP', value: '38%', pct: '76%', color: 'var(--pos)' },
+        { label: 'Win rate — outside', value: '16%', pct: '32%', color: 'var(--risk)' },
+        { label: 'Median cycle — in ICP', value: '71 days', pct: '58%', color: 'var(--pos)' },
+        { label: 'Median cycle — outside', value: '102 days', pct: '84%', color: 'var(--risk)' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
