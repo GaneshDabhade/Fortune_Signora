@@ -3134,6 +3134,41 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-425 · 🔴 Lane A's queue answered "may I claim this?" twice, and named four blockers no tool could see
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — [`infra/coordination.py`](../infra/coordination.py), [`docs/coordination/queues/lane-a.toml`](coordination/queues/lane-a.toml) |
+| **Current assignee** | **Lane C** *(Platform Foundation, [D-022](DECISION_REGISTER.md))* |
+| **Severity** | 🟠 **wrong behaviour a lane would hit** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-10.** Awaiting QE verification |
+| **Commit found** | `f38882e8` |
+| 🔴 **Found by** | ⛔ **The product owner asking *"why did Lane A go idle?"*** — ✅ **it had not.** ⚡ **But the question sent this office into its own queue file, which is where the defects were** |
+
+#### Three defects, one file, all in the half that is hand-written
+
+📁 **[B-423](#b-423) made the `backlog` array DERIVED from `BACKLOG.md`. The `[[blocked]]` entries stay hand-written and that is correct — they carry reasoning no other file holds.** ⛔ **What was missing is anything comparing the two halves.**
+
+| # | Defect | Measured |
+|---|---|---|
+| **1** | ⛔ **Four `[[blocked]]` entries lost their header and `task` key**, becoming **top-level TOML tables** — `["C-1413"]`, `["TASK-1442"]`, `["an ADR — signora_platform/ is frozen"]`, `["TASK-464"]` | ✅ **The file still PARSED**, which is why nothing caught it. **Anything reading `blocked` saw 12 entries where 16 existed** |
+| **2** | ⛔ **`TASK-1432` appeared twice** with two generations of contradictory blocker text | ✅ Both parsed; the older one had been superseded and never removed |
+| **3** | 🔴 **Five rows were `backlog` (claimable) and `[[blocked]]` at once** — `TASK-412` · `TASK-465` · `TASK-1430` · `TASK-1433` · `TASK-1445` | ⚡ **Every one of the five blockers was ALREADY DISCHARGED**: `TASK-464`, `TASK-1439`, `TASK-1442`, `TASK-1448` all `PROMOTED` 2026-08-10; `ADR-0408` accepted; `C-1413` closed |
+
+#### ⚠️ The direction of the error is the part worth recording
+
+⛔ **This office over-reported blockers, never under-reported them.** ⚡ **Not one of the five was real.** **A lane consulting the prose would have skipped work it was free to do** — and the stale answer is the convincing one, **because it carries a reason and the derived array does not.**
+
+#### The fix
+
+✅ **`_queue_contradictions()`** in [`infra/coordination.py`](../infra/coordination.py) compares the derived half against the written half at publish time and **prints, never repairs** — which of the two is wrong is a judgement about the work, [`state-check.py`](../infra/state-check.py)'s rule for the same reason.
+
+⚡ **Fire-tested live rather than afterwards**: it fired five times, and went silent one contradiction at a time as each was resolved. ✅ **Four orphans repaired, one duplicate and six stale entries removed; `lane-c.toml` audited and clean.**
+
+#### ⛔ What it does NOT catch, stated rather than implied
+
+⛔ **A `[[blocked]]` entry naming a blocker that is stale but NOT in the claimable array is still invisible.** ⚡ **The derived array is the only signal this check has**, and a genuinely-blocked row has no derived counterpart to disagree with. **Named as a limitation, not left to be discovered.**
+
 ### B-427 · 🔴 A lane notice truncates silently, so the author believes it was delivered
 
 | | |

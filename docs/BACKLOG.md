@@ -1847,26 +1847,16 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **Treating [TASK-1400](#task-1400--the-authenticated-entry-engine--one-resolver-twenty-one-reason-codes) as evidence of compliance because it was implemented, tested, covered, reviewed and accepted.** 📁 **[D-224](DECISION_REGISTER.md) §15: *"the final product must be judged against the finalized design, not against the historical task that produced the current code."*** ⚡ **Every gate passed on TASK-1400. None asked whether anything called it** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
-### TASK-1459 · The global filter strip — the shell's fourth region, specified and never mounted
+### TASK-1459 · ⛔ WITHDRAWN — a duplicate of [TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope)
 
 | | |
 |---|---|
-| **Classification** | ⛔ **MISSING IMPLEMENTATION — the surface, not the model** |
-| **Epic** | **Common Platform Foundation** |
-| **Module** | **`product_surface`** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-10, from the common-foundation audit.** ⚡ **A decomposition of already-approved design, never new scope** |
-| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/) §06 *Global filters*** — ⛔ **read it; this row does not restate it** |
-| 🔴 **The gap, measured** | 📁 **The design calls the frame fixed and non-negotiable: *"environment banner, trial banner, top bar, breadcrumb and filter strip, then the content region."*** ⛔ **`app-shell.tsx` mounts ten components and the filter strip is not among them.** ⚡ **Measured by listing what the shell actually mounts, not by searching for a filename** |
-| ✅ **DO NOT REBUILD `lib/shell/scope.ts` — it is CORRECT** | 🔴 **This is the row's most important line.** 📁 **`SCOPE_DIMENSIONS = ['period', 'region', 'segment', 'owner']` is the design's four, in the design's order.** 📁 **`chipStyle()` returns `'tinted'` for global and `'outlined'` for module — §06 says *"global filters are tinted, local filters are outlined."*** 📁 **`narrow()` and `ScopeWidenedError` implement *"module-local filters live in the module's own toolbar"* as a type that refuses widening.** ⛔ **The model shipped and the surface never arrived** |
-| ⚠️ **Zero consumers, and the one apparent caller is a comment** | 📁 **`grep` for `shell/scope` across `app/` and `components/` returns ONE hit: `components/shell/top-bar.tsx`:28, inside a docstring — *"`lib/shell/scope.ts` has to the filter strip."*** ⛔ **Not an import. Nothing renders any of it** |
-| ⚡ **Delivers** | **A 46px strip directly under the top bar, mounted in `app-shell.tsx`, rendering the four dimensions from `SCOPE_DIMENSIONS` and styling chips through `chipStyle`.** ⛔ **`＋ Add filter` and *Save as view* are the design's controls — build what §06 draws** |
-| 🔴 **What it must NOT do** | ⛔ **Do not create a second filter concept.** ⛔ **Do not re-derive the dimensions, the order, or the tinted/outlined rule — they exist and are correct.** ⛔ **Do not collapse the strip**: §06 says *"nothing here is ever hidden behind a collapse."* ⛔ **Do not invent values** — a dimension with no data source renders its empty state, never a fixture ([`no-mock-data.test.tsx`](../frontend/tests/components/no-mock-data.test.tsx)) |
-| ⚠️ **The half §06 specifies that has no model yet** | 📁 ***"Global scope survives navigation, serialises to the URL, and can be saved as a named view."*** ⛔ **`scope.ts` carries no URL serialisation and no saved views.** ⚡ **Sizing note, not a blocker: the strip renders and propagates before either exists, and a saved view without a strip to save is unreachable** |
-| **Change Budget** | 🟢 **`frontend/components/shell/**`** · 🟢 its tests · 🟠 **`app-shell.tsx` gains a region — announce it** |
-| **Playwright coverage** | **A signed-in user changes a scope dimension and the content region reflects it; the scope survives a navigation** |
-| **Component coverage** | **The four dimensions in the design's order · global chips tinted and module chips outlined, read from `chipStyle` rather than restated · the strip does not collapse at any breakpoint** |
-| ♿ **Accessibility** | **Each control keyboard-reachable; the strip is in the tab order between the rail and the content region** — 📁 §02: *"tab order is rail → filter strip → content → utility panel"* |
-| **Definition of Done** | **The shell has the design's four regions and a customer can scope every module from one place** · **certified · `main`** |
+| **Status** | ⛔ **`WITHDRAWN` — Lane C, 2026-08-10, by the office that wrote it.** ⚡ **The id stays allocated and is never reused** |
+| 🔴 **What went wrong** | ⛔ **This row was written for the filter strip on 2026-08-10 without checking whether a row already existed. [TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope) has covered exactly this work since 2026-08-09**, carved out of [TASK-1408](#task-1408) by [D-215](DECISION_REGISTER.md) and ordered by [D-219](DECISION_REGISTER.md) §6. ⚡ **The reuse audit ([`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) L-1) is a rule this office applies to implementation lanes and did not apply to itself** |
+| ⛔ **And it deleted the blocker** | 🔴 **This is the damage, not the duplication.** 📁 **TASK-1432 is `SEQUENCED` for a stated, checkable reason — *no module reads [`lib/shell/scope.ts`](../frontend/lib/shell/scope.ts)*, so four chips would narrow nothing.** ⛔ **TASK-1459 marked the same work `READY` and carried that constraint only as a footnote.** ⚡ **A lane claiming it would have shipped a control that does nothing — the [§2](../CLAUDE.md) defect TASK-1432 exists to prevent, reintroduced by the office that ruled against it** |
+| ⚠️ **It was also mis-briefed upward** | ⛔ **Reported to the product owner as implementation priority #2, "✅ ready", in the 29-workflow audit of 2026-08-10.** ✅ **Corrected in the same session, before any lane claimed it** |
+| ✅ **Nothing is lost** | 📁 **Every measurement this row carried is already in TASK-1432**: the model is correct, the surface never arrived, and the consumer is the missing half. ⛔ **No content is folded across — a second copy is what caused this** |
+| ⚡ **The real work** | ➡️ **[TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope)**, unchanged, still correctly waiting on its consumer |
 
 ### TASK-1458 · The rail's third pinned utility — `Shortcuts`, which the design names and the rail omits
 

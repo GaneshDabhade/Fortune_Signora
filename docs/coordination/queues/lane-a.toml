@@ -1497,7 +1497,7 @@ updated      = 2026-08-10
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-1417", "TASK-1433", "TASK-465", "TASK-1415", "TASK-1418", "TASK-1430", "TASK-1445", "TASK-1458", "TASK-412", "TASK-452"]
+backlog = ["TASK-1417", "TASK-1433", "TASK-465", "TASK-1415", "TASK-1418", "TASK-1430", "TASK-1445", "TASK-1458", "TASK-412"]
 # ⚠️ TWO ADDITIONS, 2026-08-10 — both were READY and in NO queue, reported by QE
 #    and confirmed here by `state-check` rather than taken on trust.
 #
@@ -1845,30 +1845,12 @@ blocker = ["C-268"]
 owner   = "Product owner"
 note    = "Home — the ROUTE half only; the composition resolver is DELIVERED and on your branch (four compositions, +8 tests). An architectural blocker under §20e, raised by this lane and correctly stated: creating /w/:workspace/home turns reachability.test red because Home has no permitted entrance, and three exits were tried and barred. ⚡ TASK-1439 is the entrance — this lane claimed it on the same poll and said so on the row, which is why the two are not separable in the order the queue already had them. Nothing for Product Office to prepare here: the blocker is a decision about where the entrance comes from, and TASK-1439 landing may discharge it without a ruling. Left named rather than assumed either way"
 
-["C-1413"]
-owner   = "Product owner"
-note    = "Usage & Billing Observability. NOT a technical dependency and nothing is mid-flight — the row contradicts itself and one cell has to give. Its Change Budget names 🟢 modules/ai_platform/** (yours, settled) while its Module cell is deliberately unnamed under D-042, 'do not force a module boundary until implementation naturally reaches it'. D-187 §2 added the Change Budget on 2026-08-08 to give the row the cells a lane needs to know it is done, and naming a path quietly answered the question D-042 left open. A module boundary is architecture, so C-1413 asks the product owner which cell stands. If ai_platform: this row gains a Module cell, resolves to you, and returns to the backlog above. If the boundary is still open: the Change Budget is withdrawn and the row waits for implementation to reach it. B-414 is why nobody saw the disagreement — the projection read Lane C from the trigger steward, this file read Lane A from the Change Budget, and the two never met"
-
-[[blocked]]
-task    = "TASK-1433"
-blocker = ["TASK-1448"]
-owner   = "Lane A"
-note    = "the utility panel — D-219 §6, ruled FIRST of the two shell regions. The panel is tabbed and there is no shared Tabs; TASK-1448 builds it and sits three rows above this one in your backlog. The old blocker (no tab content exists) was wrong: AccountHistory renders on the Account 360 record today and is the Activity tab's content. Both blockers are this lane's own rows, so nothing outside Lane A gates it"
-
 [[blocked]]
 task    = "TASK-1432"
 blocker = ["TASK-1433"]
 owner   = "Lane A"
 note    = "the filter strip — D-219 §6, ruled SECOND. Its prerequisite is genuinely unmet and is named rather than glossed: no module reads lib/shell/scope.ts, so the four chips would narrow nothing. It frees itself the moment one module does, with no further product decision. TASK-1405 is a candidate to assess when it lands, not an assertion"
 
-
-["TASK-1442"]
-owner   = "Lane A"
-note    = "the published keyboard map. G H / G F / G P / G A name rail destinations that do not exist until TASK-1439 rebuilds the rail, and Cmd-K is TASK-1442's to bind. Both blockers are this lane's own rows, so nothing outside Lane A gates it"
-
-["an ADR — signora_platform/ is frozen"]
-owner   = "Lane C"
-note    = "inbound rate limiting. Nothing guards Signora's own API; 38 files rate-limit OUTBOUND calls to vendors, which is the opposite concern. Four authentication journeys are on main and /sign-in accepts unlimited attempts. C-431 already records that no lockout capability exists, which is why screens 11 and 12 are excluded from Workflow 1 — this is the capability that makes them reachable"
 
 [[blocked]]
 task    = "TASK-1401"
@@ -1908,27 +1890,11 @@ note    = "M-U · The People experiences a customer opens"
 
 
 
-["TASK-464"]
-owner   = "Lane A"
-note    = "consumes TASK-464's output — its input does not exist yet, not a Product Office hold"
-
 [[blocked]]
 task    = "TASK-466"
 blocker = ["TASK-465"]
 owner   = "Lane A"
 note    = "consumes TASK-465's output — its input does not exist yet, not a Product Office hold"
-
-[[blocked]]
-task    = "TASK-1432"
-blocker = ["the first module that reads scope"]
-owner   = "Lane A"
-note    = "the filter strip, carved out of TASK-1408 by D-215 ruling C-257. Your argument is adopted verbatim: four chips serialise scope into the URL and no module reads scope, and a seller who sets the period to Q3 and sees every figure unchanged learns the filter is broken. lib/shell/scope.ts already ships the narrowing law, which was the half that belonged in TASK-1408. Not BLOCKED — nobody owes an answer; it frees itself when any module consults scope.ts"
-
-[[blocked]]
-task    = "TASK-1433"
-blocker = ["the first of Insights, Activity or Notes"]
-owner   = "Lane A"
-note    = "the utility panel, carved out of TASK-1408 by D-215 ruling C-257. All three tabs are module content and none exists. An empty 300px panel does not reserve space for a future feature, it takes 300px from the one the customer is using today"
 
 [[blocked]]
 task    = "TASK-1434"

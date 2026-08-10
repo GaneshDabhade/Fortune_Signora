@@ -9,15 +9,15 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "30d0c37"
+generated_from = "f38882e"
 task_count     = 83
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-1417", "TASK-1433", "TASK-465", "TASK-1415", "TASK-1418", "TASK-1430", "TASK-1445", "TASK-1458", "TASK-412", "TASK-452"]
-assigned_total     = 71
-claimable          = 11
-claimable_now      = 10
+backlog            = ["TASK-1417", "TASK-1433", "TASK-465", "TASK-1415", "TASK-1418", "TASK-1430", "TASK-1445", "TASK-1458", "TASK-412"]
+assigned_total     = 70
+claimable          = 10
+claimable_now      = 9
 awaiting_sync      = 1
 in_flight          = 30
 actionable         = 2
@@ -26,7 +26,7 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 30
 lane_utilization   = 6.0
-idle_prediction_days   = 1.6
+idle_prediction_days   = 1.4
 dependency_wait_days   = 0.4
 blocked_duration_days  = 0.1
 critical_path_max      = 3
@@ -46,8 +46,8 @@ supply_state       = "in_flight_only"
 blocked            = 6
 lane_utilization   = 0.4
 idle_prediction_days   = 0.0
-dependency_wait_days   = 3.4
-blocked_duration_days  = 3.4
+dependency_wait_days   = 3.5
+blocked_duration_days  = 3.5
 critical_path_max      = 0
 
 [[task]]
@@ -579,22 +579,6 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
-id            = "TASK-1459"
-title         = "The global filter strip — the shell's fourth region, specified and never mounted"
-state         = "ASSIGNED"
-declared      = "READY"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = false
-
-[[task]]
 id            = "TASK-200"
 title         = "CX-07 — the Responsive Product Surface"
 state         = "IN FLIGHT"
@@ -864,7 +848,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-453"
@@ -1295,7 +1279,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 3.4
+blocked_days   = 3.5
 on_integration = true
 
 [[task]]
@@ -1311,7 +1295,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 3.4
+blocked_days   = 3.5
 on_integration = true
 
 [[task]]
@@ -1329,6 +1313,22 @@ estimated_ready = "— behind [C-1404](LANE_COORDINATION.md)**, which is Product
 waiting_for    = "— behind [C-1404](LANE_COORDINATION.md)**, which is Product Office's own and answerable this week"
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-1459"
+title         = "⛔ WITHDRAWN — a duplicate of [TASK-1432](#task-1432--the-filter-strip-behind-the-first-mod"
+state         = "FUTURE_MILESTONE"
+declared      = "WITHDRAWN"
+lane          = "—"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.4
+on_integration = false
 
 [[task]]
 id            = "TASK-300"
@@ -1359,7 +1359,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 3.0
+blocked_days   = 3.1
 on_integration = true
 
 [[task]]

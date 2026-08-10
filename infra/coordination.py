@@ -209,6 +209,32 @@ def _rewrite_queue_backlog(lane: str, ids: list[str]) -> bool:
     path.write_text(after, encoding="utf-8")
     return True
 
+
+def _queue_contradictions(lane: str, ids: list[str]) -> list[str]:
+    """Tasks a queue file calls claimable AND blocked at once. **B-428.**
+
+    ⛔ **Half this file is derived and half is hand-written, so the two halves
+    can disagree** — and they did. `backlog` became derived at B-423;
+    ``[[blocked]]`` carries reasoning with no source and stays hand-written,
+    which is correct. **What was missing is anything noticing when a row leaves
+    one half and not the other.**
+
+    Observed 2026-08-10: `TASK-1448` was promoted, which freed `TASK-1433`. The
+    derived array picked that up; the prose did not. Lane A's own queue then
+    answered *"may I claim this?"* twice, and **the stale answer was the
+    convincing one, because it carried a reason.**
+
+    ⛔ **Reports; never repairs.** Removing the entry would destroy a note no
+    other file holds, and which of the two halves is wrong is a judgement about
+    the work — [`state-check.py`](state-check.py)'s rule, for the same reason.
+    """
+    path = QUEUES / f"lane-{lane.rsplit(' ', 1)[-1].lower()}.toml"
+    if not path.exists():
+        return []
+    blocked = set(re.findall(r'^task\s*=\s*"(TASK-\d+)"', path.read_text(encoding="utf-8"), re.M))
+    return sorted(blocked & set(ids))
+
+
 def _lane_for(
     module_cell: str, body: str, owners: dict[str, str], declared: str = ""
 ) -> str | None:
@@ -1456,6 +1482,13 @@ def main() -> int:
     # ✅ **B-423's derivation, applied on the WRITE path only** — B-174.
     for _lane, _ids in _PENDING_QUEUES.items():
         _rewrite_queue_backlog(_lane, _ids)
+        # ✅ **B-428** — the derived half and the written half, compared.
+        for _task in _queue_contradictions(_lane, _ids):
+            print(
+                f"coordination: CONTRADICTION for {_lane} — {_task} is in `backlog` "
+                "(derived, claimable) and `[[blocked]]` (written) at once. "
+                "**Resolve the prose or the row; a lane reading this gets two answers.**"
+            )
 
     if args.publish:
         # ⚡ Regenerate first, always. Publishing a stale projection is the
