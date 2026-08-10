@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
+import { Tooltip } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 import { railViolations, visibleDestinations, type RailDestination } from '@/lib/shell/rail';
 import {
@@ -242,15 +243,11 @@ function RailLink({
     );
   }
 
-  return (
+  const link = (
     <Link
       href={item.href}
       aria-current={isActive ? 'page' : undefined}
       aria-label={collapsed ? item.label : undefined}
-      // 📁 *"Collapsed items expose their label as an accessible name and a
-      // 300ms tooltip."* ⚡ `title` is the tooltip the platform already delays;
-      // a bespoke one would be a component this row does not own.
-      title={collapsed ? item.label : undefined}
       className={cn(
         shape,
         isActive
@@ -263,6 +260,14 @@ function RailLink({
       {body}
     </Link>
   );
+
+  // 📁 *"Collapsed items expose their label as an accessible name and a 300ms
+  // tooltip."* ⚡ **The `title` attribute was the honest thing to ship before
+  // [TASK-1448](../../../docs/BACKLOG.md)** — ⛔ **but the browser's delay is
+  // its own and varies between engines**, and a rule naming a duration needs
+  // something that can hold one. ✅ **The accessible name stays on the link**,
+  // so the tooltip describes rather than names.
+  return collapsed ? <Tooltip content={item.label}>{link}</Tooltip> : link;
 }
 
 /**

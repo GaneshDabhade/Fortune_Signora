@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
-import { Badge, Button, Card, Dialog, EmptyState, ErrorState, Input, Skeleton } from '@/components/ui';
+import { Badge, Button, Card, Dialog, EmptyState, ErrorState, Input, Skeleton, Tabs } from '@/components/ui';
 import type { QueueEntry, QueueState, ResolveOutcome } from '@/lib/api/types';
 import { useSignalCatalog } from '@/lib/query/hooks';
 import { useAccountIdentities } from '@/lib/query/hooks';
@@ -135,28 +135,27 @@ export function SignalQueue() {
         </p>
       </header>
 
-      {/* 📁 The design's three states, and the count is on the tab. */}
-      <div role="tablist" aria-label="Queue state" className="flex flex-wrap gap-2">
-        {STATES.map((tab) => (
-          <button
-            key={tab.value}
-            role="tab"
-            type="button"
-            aria-selected={state === tab.value}
-            onClick={() => setState(tab.value)}
-            className={
-              state === tab.value
-                ? 'rounded-md border border-accent bg-accent/10 px-3 py-1.5 text-sm font-medium text-accent'
-                : 'rounded-md border border-border px-3 py-1.5 text-sm text-content-muted transition-colors hover:text-content'
-            }
-          >
-            {tab.label}
-            {state === tab.value && !queue.isPending ? (
-              <span className="ml-2 tabular-nums text-content-subtle">{entries.length}</span>
-            ) : null}
-          </button>
-        ))}
-      </div>
+      {/* 📁 The design's three states, and the count is on the tab.
+          ⛔ **This block WAS a local `role="tab"` implementation** — 📁 the only
+          workflow-local reimplementation
+          [498](../../../../docs/architecture/498-common-platform-audit.md)
+          found. ⚡ **[TASK-1448](../../../../docs/BACKLOG.md) makes it the
+          shared `Tabs`**, and the migration is not cosmetic: **the local one
+          had `role="tab"` and `aria-selected` and no arrow-key navigation**,
+          so it announced itself as tabs and behaved like a row of buttons. */}
+      <Tabs
+        label="Queue state"
+        items={STATES.map((tab) => ({
+          value: tab.value,
+          label: tab.label,
+          // ⛔ **The count only when it is known.** A count rendered while the
+          // read is pending would be a number the screen cannot support.
+          badge:
+            state === tab.value && !queue.isPending ? entries.length : undefined,
+        }))}
+        value={state}
+        onChange={setState}
+      />
 
       {queue.isPending ? (
         <div className="flex flex-col gap-3" aria-hidden>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { ThemeToggle } from '@/components/shell/theme-toggle';
+import { Avatar } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 import { SLOT_SPEC } from '@/lib/shell/top-bar';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
@@ -115,7 +116,6 @@ export function AccountMenu({ email, role, signOut }: AccountMenuProps) {
     };
   }, [open]);
 
-  const initials = email.slice(0, 2).toUpperCase();
 
   return (
     <div ref={containerRef} className="relative">
@@ -130,18 +130,19 @@ export function AccountMenu({ email, role, signOut }: AccountMenuProps) {
         aria-label={`Account menu for ${email}`}
         style={{ width: SLOT_SPEC.account.width, height: SLOT_SPEC.account.height }}
         className={cn(
-          // 📁 *"Avatar is the only circle in the shell."* ⛔ `rounded-full` is
-          // load-bearing rather than decorative — it is what makes the control
-          // findable without reading, and a second circle anywhere in the frame
-          // costs that.
           'flex shrink-0 items-center justify-center rounded-full',
-          'bg-surface-sunken text-xs font-semibold text-content-muted',
           'transition-colors hover:text-content',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
           'focus-visible:outline-accent',
         )}
       >
-        {initials}
+        {/* ⚡ **The shared `Avatar`** — [TASK-1448](../../../docs/BACKLOG.md).
+            ⛔ **This circle was drawn by hand here** because `components/ui`
+            had no avatar when [TASK-1440](../../../docs/BACKLOG.md) built the
+            slot. ✅ **`decorative` because the button already carries the
+            accessible name** — announcing the initials and then the address
+            would read the same person twice. */}
+        <Avatar name={email} decorative />
       </button>
 
       {open ? (

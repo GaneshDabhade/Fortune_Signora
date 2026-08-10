@@ -153,7 +153,7 @@ describe('📁 the design\'s structure', () => {
     expect(utilities[1]).toContain('Docs & support');
   });
 
-  it('✅ collapsed hides the label and keeps the accessible name', () => {
+  it('✅ collapsed hides the label and keeps the accessible name', async () => {
     /**
      * 📁 *"Collapsed items expose their label as an accessible name and a
      * 300ms tooltip."* 🔴 **The accessible name is the half that gets
@@ -167,8 +167,20 @@ describe('📁 the design\'s structure', () => {
     expect(attention).toBeInTheDocument();
     // The visible text is gone…
     expect(within(rail).queryByText('Attention')).toBeNull();
-    // …and the tooltip is there.
-    expect(attention).toHaveAttribute('title', 'Attention');
+
+    /**
+     * ⚡ **…and the tooltip is now a COMPONENT rather than a `title`** —
+     * [TASK-1448](../../../docs/BACKLOG.md). ⛔ **`title` was the honest thing
+     * to ship before it existed**, but 📁 the rule names *a 300ms tooltip* and
+     * the browser's delay is its own and varies between engines.
+     *
+     * ✅ **The accessible name is what this test is really about, and it is
+     * unchanged** — the tooltip DESCRIBES, and a tooltip that were the only
+     * name would be unreachable by touch.
+     */
+    expect(attention).not.toHaveAttribute('title');
+    await userEvent.hover(attention);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Attention');
   });
 
   it('✅ the active destination is marked for assistive technology', () => {
