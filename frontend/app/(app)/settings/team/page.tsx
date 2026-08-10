@@ -143,7 +143,7 @@ export default function TeamPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <header className="flex flex-col gap-3 phone:flex-row phone:items-start phone:justify-between phone:gap-4">
         <div>
           <h1 className="text-xl font-semibold text-content">Your team</h1>
           {/* **The answer to *is this right?*, before any row.** How many

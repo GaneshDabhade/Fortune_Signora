@@ -78,16 +78,16 @@ export function AuthShell({
         // own beyond the 20px gutters the design names.
         'flex min-h-screen flex-col bg-surface-sunken px-5 py-8',
         // Tablet: top-aligned at 96px rather than centred.
-        'sm:items-center sm:px-6 sm:pt-24',
+        'phone:items-center phone:px-6 phone:pt-24',
         // Desktop: centred, with a 64px floor.
-        'lg:justify-center lg:py-16',
+        'smalllaptop:justify-center smalllaptop:py-16',
       ].join(' ')}
     >
       {/* ⚡ **`max-w-card`, not an arbitrary 400px** — TASK-491 gap ⑦, and
           [D-162](../../../docs/DECISION_REGISTER.md) ④ named this exact line.
           **The measurement is the Design System's**, so the screen consumes it
           rather than restating it. */}
-      <div className="flex w-full flex-col sm:max-w-card">
+      <div className="flex w-full flex-col phone:max-w-card">
         {/* The product mark, above the card. `Fortune Signora` is the combined
             brand and this is a branding surface — the sign-in page is named in
             §4's list, so the full mark is correct here and `Signora` alone is
@@ -119,7 +119,7 @@ export function AuthShell({
             'flex flex-col gap-6 bg-surface',
             // Mobile drops the frame entirely rather than shrinking it.
             'rounded-none border-0 p-0 shadow-none',
-            'sm:rounded-xl sm:border sm:border-border sm:p-8 sm:shadow',
+            'phone:rounded-xl phone:border phone:border-border phone:p-8 phone:shadow',
           ].join(' ')}
         >
           {masthead}

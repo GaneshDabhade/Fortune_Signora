@@ -153,8 +153,8 @@ function Signatories({ roles, sayMissing }: { roles: BuyingCommittee['committees
   }
 
   return (
-    <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
-      <span className="shrink-0 text-xs text-content-subtle sm:w-32 sm:pt-0.5">
+    <div className="flex flex-col gap-0.5 phone:flex-row phone:gap-3">
+      <span className="shrink-0 text-xs text-content-subtle phone:w-32 phone:pt-0.5">
         Who has to agree
       </span>
       <ul className="flex flex-wrap items-center gap-x-3 gap-y-1">

@@ -48,17 +48,17 @@ export function OnboardingShell({
   railFooter,
 }: OnboardingShellProps) {
   return (
-    <div className="min-h-screen bg-canvas px-5 py-10 sm:py-16">
-      <div className="mx-auto flex w-full max-w-[57.5rem] flex-col gap-8 lg:flex-row lg:gap-12">
+    <div className="min-h-screen bg-canvas px-5 py-10 phone:py-16">
+      <div className="mx-auto flex w-full max-w-[57.5rem] flex-col gap-8 smalllaptop:flex-row smalllaptop:gap-12">
         <StepRail
           steps={steps}
           currentId={currentId}
           completedIds={completedIds}
           footer={railFooter}
-          className="lg:w-60 lg:shrink-0"
+          className="smalllaptop:w-60 smalllaptop:shrink-0"
         />
 
-        <main className="flex w-full flex-col gap-6 lg:max-w-[35rem]">
+        <main className="flex w-full flex-col gap-6 smalllaptop:max-w-[35rem]">
           {/*
             **Focus moves here on every step change and the heading carries
             its own position** — WCAG 2.4.3, which the design names by number

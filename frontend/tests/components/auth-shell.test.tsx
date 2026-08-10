@@ -55,15 +55,15 @@ describe('the one card every authentication screen sits in', () => {
     // closed in the foundation, and the screen simplified rather than patched.
     render(<AuthShell title="Sign in">{null}</AuthShell>);
 
-    expect(frame().className).toContain('sm:max-w-card');
+    expect(frame().className).toContain('phone:max-w-card');
     expect(frame().className).not.toMatch(/max-w-\[/);
   });
 
   it('carries the design radius and an elevation', () => {
     render(<AuthShell title="Sign in">{null}</AuthShell>);
 
-    expect(card().className).toContain('sm:rounded-xl');
-    expect(card().className).toContain('sm:shadow');
+    expect(card().className).toContain('phone:rounded-xl');
+    expect(card().className).toContain('phone:shadow');
   });
 
   it('⚡ drops the frame below 640px rather than shrinking it', () => {
@@ -80,13 +80,24 @@ describe('the one card every authentication screen sits in', () => {
   });
 
   it('is top-aligned on a tablet and centred on a desktop', () => {
-    // A tablet keyboard in portrait would push the primary action off screen
-    // if the card were centred, which is why the three are genuinely three.
+    /**
+     * A tablet keyboard in portrait would push the primary action off screen
+     * if the card were centred, which is why the three are genuinely three.
+     *
+     * ⚠️ **This asserted `/lg:/` and kept passing after
+     * [TASK-1443](../../../docs/BACKLOG.md) replaced Tailwind's `screens`** —
+     * ⛔ **so it was proving that a class STRING was present, while the class
+     * itself had stopped resolving to any width.** ⚡ **The behaviour it
+     * names — centred on a desktop — had silently stopped happening.**
+     *
+     * ✅ **It now names the design's own band**, so the assertion fails if the
+     * breakpoint is renamed again rather than passing over a dead utility.
+     */
     render(<AuthShell title="Sign in">{null}</AuthShell>);
     const main = screen.getByRole('main');
 
-    expect(main.className).toContain('sm:pt-24');
-    expect(main.className).toMatch(/lg:/);
+    expect(main.className).toContain('phone:pt-24');
+    expect(main.className).toContain('smalllaptop:justify-center');
     expect(main.className).toContain('px-5');
   });
 });

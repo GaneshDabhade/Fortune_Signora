@@ -169,11 +169,11 @@ function SignOutButton({ email }: { email: string }) {
           entrance" `infra/reachability.py` refused. */}
       <Link
         href="/profile"
-        className="hidden rounded text-sm text-content-muted underline decoration-border underline-offset-4 transition-colors hover:text-content hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:inline"
+        className="hidden rounded text-sm text-content-muted underline decoration-border underline-offset-4 transition-colors hover:text-content hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent phone:inline"
       >
         {email}
       </Link>
-      <span className="text-sm text-content-muted sm:hidden">{email}</span>
+      <span className="text-sm text-content-muted phone:hidden">{email}</span>
       <Button
         type="button"
         variant="secondary"

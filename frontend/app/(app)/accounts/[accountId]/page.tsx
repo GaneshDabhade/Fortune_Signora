@@ -197,7 +197,7 @@ export default function AccountBriefPage() {
           company name is the longest thing on this page and the one a reader
           is looking for; at 320px, sharing the row with the score block leaves
           it a few characters. Stacked below `sm`, side by side above it. */}
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <header className="flex flex-col gap-3 phone:flex-row phone:items-start phone:justify-between phone:gap-4">
         <div className="min-w-0">
           {/* **The page's only level-1 heading** (B-313). The brief had none,
               so its two `<h2>`s hung under nothing and a reader navigating by

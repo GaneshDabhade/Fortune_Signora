@@ -192,6 +192,35 @@ error: Your local changes to the following files would be overwritten by merge:
 
 **Why it was not caught earlier.** ⚠️ **§19 puts the coverage check on the implementing lane before handover, and names the command.** ⛔ **`make coverage-debt ARGS="action_batch"` would have printed both files in seconds.** ⚡ **This is the second consecutive cycle where a required gate that the lane owns was first run by QE** — [B-171](#b-171--a-new-test-types-the-coordination-module-as-moduletype-and-then-sets-an-attribute-on-it-so-mypy---strict-fails) was `mypy --strict`, this one is coverage. **QE is reporting the pattern, not only the row.**
 
+### B-424 · TASK-1443 replaced Tailwind's breakpoints and left 45 utilities naming prefixes that no longer exist
+
+| | |
+|---|---|
+| **Module** | `product_surface` — [`frontend/tailwind.config.ts`](../frontend/tailwind.config.ts) and 11 files across `app/`, `components/` |
+| **Current assignee** | **Lane A** — 🔴 **and this lane caused it**, in [TASK-1443](BACKLOG.md) |
+| **Severity** | 🟠 **Wrong behaviour a customer would hit** — ⛔ **every responsive rule using `sm:` or `lg:` silently stopped applying.** ⚠️ **Reported by Lane C as 🔴 because it parks finished work; the register keeps this lane's own reading and QE decides** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-10.** ⚠️ **QE verifies and closes** |
+| **Commit found** | Reported by Lane C; **measured independently here before any change** |
+
+**Steps.** Render any authentication screen, the account brief, Settings, or the onboarding shell at ≥640px.
+
+**Expected.** 📁 The design's bands apply — a card centres on a small laptop, a row becomes horizontal above the phone floor.
+
+**Actual.** ⛔ **Nothing applied.** ⚡ **[TASK-1443](BACKLOG.md) replaced Tailwind's `screens` with `phone · smalllaptop · laptop · desktop`** — the config's own comment says *"OVERRIDES rather than extends"*, **which was correct** — **and left 45 live `sm:` and `lg:` utilities naming prefixes that no longer exist.**
+
+> 🔴 **A Tailwind utility with an undefined prefix does not error. It is simply not generated.** ⛔ **So `tsc` saw a string, `eslint` saw a string, and the component tests asserted the string was PRESENT rather than that it resolved.**
+>
+> ⚠️ **`auth-shell.test.tsx` is the worked example and it is the sharpest part of this row**: it asserted `toMatch(/lg:/)` under the name ***"is top-aligned on a tablet and centred on a desktop"*** and **passed throughout** — **proving a class name sat in an attribute while the behaviour it described had stopped happening.** ⚡ **That is [§2](../CLAUDE.md)'s Decorative Logic in a test rather than in production code.**
+
+**Measured, not taken on report.** ⚡ **38 `sm:` · 7 `lg:` · 0 live `md:`** across **11 files**. ✅ **The single `md:` in the tree is inside a comment explaining why it was removed** — 📁 Lane C's count said `md:` does not occur as a live utility and **that is confirmed.**
+
+**Fix — rename, never revive.** ✅ **`sm:` → `phone:`** and **`lg:` → `smalllaptop:`**, at **identical pixel values** — 640 and 1024 — ⛔ **so no layout changes and nothing of [TASK-1443](BACKLOG.md) is reverted; its values were right.** 📁 **[§20c](../CLAUDE.md)'s migration clause already decides this direction**: *toward* the finalized design is the migration, *away* from it is the defect. **No ruling was needed and none was asked for.**
+
+✅ **And a guard, because the whole defect was a dead class nothing noticed** — [`tests/components/breakpoint-utilities.test.tsx`](../frontend/tests/components/breakpoint-utilities.test.tsx) **reads the bands from `tailwind.config.ts` and the utilities from the source, and fails on any that names a breakpoint the config replaced.** ⚡ **Fire-tested**: reintroducing one `sm:` turns it red.
+
+⚠️ **One assertion was repointed rather than deleted** — `auth-shell.test.tsx` now names `smalllaptop:justify-center`, **so it fails if a band is renamed again instead of passing over a dead utility.**
+
+
 ### B-232 · A lane's rebase resolution reverted QE's `PROMOTED` cell, and the revert reached `main`
 
 | | |
