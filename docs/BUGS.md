@@ -80,6 +80,44 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-174 · B-423's fix gave `render()` a filesystem side effect, so running the test suite empties a lane's queue in the working tree
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`infra/coordination.py`](../infra/coordination.py) `render()` → `_rewrite_queue_backlog` |
+| **Current assignee** | **Lane C** — `infra/` is Platform Foundation's ([D-022](DECISION_REGISTER.md)) |
+| **Severity** | 🟠 — ⛔ **A Blocking Quality Defect**: certification returns NOT CERTIFIED on *"the working tree was dirty, so the tree certified was never stored"*, so nothing containing this slice can be promoted |
+| **Status** | 🔵 **`OPEN` — QE**, 2026-08-10. **`CHANGES REQUESTED` on the B-423 slice.** ⚡ **Found by the suite run Lane C asked QE to take, which is exactly what that hand-off was for** |
+| **Commit found** | `27ff180f`, found by QE running `make certify` |
+
+**Steps.** Reproduced deterministically, without a database, in three lines:
+
+```python
+blocked = coordination.Task(id="TASK-1439", title="the rail", state=coordination.BLOCKED,
+                            declared="BLOCKED", lane="Lane A", depends_on=[], on_integration=True)
+coordination.render([blocked])
+```
+
+```
+$ git status --short docs/coordination/queues/
+ M docs/coordination/queues/lane-a.toml
+
+-backlog = ["TASK-465", "TASK-1407", "TASK-1418", "TASK-1430", "TASK-1445", …]
++backlog = []
+```
+
+**Expected.** ✅ **`render()` renders.** A pure projection returns text and writes nothing.
+
+**Actual.** ⛔ **`render()` writes to `docs/coordination/queues/lane-<n>.toml` in the real repository**, because [`coordination.py:1117`](../infra/coordination.py) calls `_rewrite_queue_backlog` inside the render loop. ⚠️ **The existing test `test_render_publishes_a_notice_naming_a_blocked_row_of_that_lane` calls `render` with a one-row list and monkeypatches `NOTICES` but not `QUEUES`** — **it predates the fix and could not have known** — so **the suite empties Lane A's queue to `backlog = []` and leaves it there.**
+
+> 🔴 **The write is worse than the drift it replaced.** ⛔ **B-423's whole subject was a queue file that offered work which was not eligible; this writes one that offers *nothing at all*, from a test, into the working tree.** ⚡ **Any lane polling between a suite run and a `git checkout` reads an empty queue and correctly concludes it has no work.**
+>
+> ✅ **The derivation is right and is not what is being questioned.** `_rewrite_queue_backlog` itself is correct, bounded and idempotent — **QE verified it at the call site: the four predicted rows are present, a second generator run produces zero diff, and no queued id sits at `CLAIMED` or beyond.** ⛔ **What is wrong is *where it is called from*.**
+>
+> ⚡ **The likely repair is one move, not a redesign**: call it from the generator's write path — where `--check` and `--dry-run` already correctly avoid it, **which QE confirmed: both are clean** — rather than from `render`, which several tests call directly and legitimately.
+
+**Why certification caught it and the lane could not.** ⚠️ **`conftest.py` refuses to run without `SIGNORA_ALLOW_DESTRUCTIVE_TESTS`, and Lane C correctly declined to set it against a database holding the product owner's live demo** ([B-418](#b-418)'s guard, protecting real data rather than a fixture). ✅ **The hand-off was right, the reason was right, and the suite run found a defect in the slice that produced it.** ⛔ **This is not an argument for running it anyway; it is the argument for QE holding a disposable environment.**
+
 ### B-173 · `--promote` cannot promote any candidate that touches `certification/manifest.json`, because its gate and its merge want opposite things from the working tree
 
 | | |
