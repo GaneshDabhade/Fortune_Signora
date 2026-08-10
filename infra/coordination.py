@@ -936,6 +936,22 @@ def _notice(lane: str, reachable: frozenset[str] | set[str] = frozenset()) -> st
     # the notice told Lane A it was *"yours today"*. ⛔ **Not a lag — this office
     # handing its own work to another lane on the one channel that bypasses QE.**
     # ✅ **The reachable set is per-lane, so the guard catches both causes.**
+    #
+    # ⚡ **Widened from *claimable* to *this lane's, on `integration`* — 2026-08-10.**
+    # ⛔ **It was the lane's `backlog` array, which is `ASSIGNED and on_integration`**,
+    # so a notice could not name a row the lane was **blocked** on — and answering a
+    # blocker is exactly what a notice is for. 🔴 **Measured: Lane A raised `C-269`
+    # against `TASK-1439`, released the claim, and this office's answer was withheld
+    # for naming the row Lane A had itself asked about.**
+    #
+    # ✅ **Both recorded causes are untouched, which is why this is safe.** B-221's
+    # own diagnosis names them: *"`backlog` is computed from what is SYNCHRONIZED,
+    # the notice from what was AUTHORED"* — **an unintegrated row still fails
+    # `on_integration`** — and *"this office handing its own work to another lane"*
+    # — **another lane's row is still not in `mine`.** ⛔ **What is no longer
+    # refused is the one case neither cause covers: this lane's own integrated row,
+    # in whatever state the backlog carries it.** **State words remain banned
+    # above**, so a notice still cannot say what that state *is*.
     named = set(re.findall(r"TASK-\d+", text))
     unreachable = sorted(named - set(reachable))
     if unreachable:
@@ -1044,7 +1060,7 @@ def render(rows: list[Task]) -> str:
         m = stats[lane]
         out += [
             f"[lane.{lane.replace(' ', '_')}]",
-            f'notice             = "{_notice(lane, {r.id for r in backlog})}"',
+            f'notice             = "{_notice(lane, {r.id for r in mine if r.on_integration})}"',
             "backlog            = [" + ", ".join(f'"{r.id}"' for r in backlog) + "]",
             f"assigned_total     = {len(mine)}",
             f"claimable          = {m['claimable']}",

@@ -434,3 +434,98 @@ def test_a_startable_row_with_no_lane_reads_as_waiting_architecture() -> None:
     """
     assert coordination._classify("READY", "", None) == coordination.WAITING_ARCHITECTURE
     assert coordination._classify("READY", "", "Lane A") == coordination.ASSIGNED
+
+
+# ── a notice may answer a blocker on this lane's own row ───────────────────
+
+
+def _notice_for(tmp_path: Path, body: str, lane: str, reachable: set[str]) -> str:
+    """Run `_notice` against a substituted notices file, not the real one."""
+    f = tmp_path / "notices.toml"
+    f.write_text(f'["{lane}"]\nnotice = """{body}"""\n')
+    original = coordination.NOTICES
+    coordination.NOTICES = f
+    try:
+        return coordination._notice(lane, reachable)
+    finally:
+        coordination.NOTICES = original
+
+
+def test_a_notice_may_name_this_lanes_own_integrated_row(tmp_path: Path) -> None:
+    """⚡ Answering a blocker is what a notice is FOR — measured 2026-08-10.
+
+    **`reachable` was the lane's `backlog` array**, which is `ASSIGNED and
+    on_integration`, **so a notice could not name a row the lane was BLOCKED
+    on.** 🔴 Lane A raised `C-269` against `TASK-1439`, released the claim, and
+    this office's answer was withheld **for naming the row Lane A had itself
+    asked about** — the one case neither of B-221's recorded causes covers.
+    """
+    body = "C-269 answered — TASK-1439's entry set needs a ruling; its structure does not."
+    out = _notice_for(tmp_path, body, "Lane A", {"TASK-1439"})
+    assert "WITHHELD" not in out
+    assert "TASK-1439" in out
+
+
+def test_an_unintegrated_row_is_still_refused(tmp_path: Path) -> None:
+    """⛔ B-221's first cause, and the widening must not reopen it.
+
+    *"`backlog` is computed from what is SYNCHRONIZED, the notice from what was
+    AUTHORED."* **A row this office has only authored is absent from the
+    reachable set and must still be refused**, which is why the notice written
+    on 2026-08-10 names the `/accounts` row by description rather than by id.
+    """
+    body = "A row is opened for the missing index — TASK-1457 — and sequenced."
+    out = _notice_for(tmp_path, body, "Lane A", {"TASK-1439"})
+    assert "WITHHELD" in out
+    assert "TASK-1457" in out
+
+
+def test_another_lanes_row_is_still_refused(tmp_path: Path) -> None:
+    """⛔ B-221's second cause, which mattered more than the first.
+
+    *"`TASK-1431` is `platform_foundation`, Lane C's own module, and the notice
+    told Lane A it was yours today"* — **this office handing its own work to
+    another lane on the one channel that bypasses QE.** The reachable set is
+    per-lane, so a row outside it is refused however integrated it is.
+    """
+    out = _notice_for(tmp_path, "TASK-1431 is worth a look.", "Lane A", {"TASK-1439"})
+    assert "WITHHELD" in out
+
+
+def test_a_notice_still_may_not_assert_a_state(tmp_path: Path) -> None:
+    """⛔ B-216 is independent of the widening and must survive it.
+
+    A notice may now name this lane's blocked row; it still may not say what
+    the state IS. **Only `BACKLOG.md` may**, and the widening deliberately did
+    not touch the banned-word check that enforces it.
+    """
+    out = _notice_for(tmp_path, "TASK-1439 is BLOCKED, so take another.", "Lane A", {"TASK-1439"})
+    assert "WITHHELD" in out
+    assert "state" in out.lower()
+
+
+def test_render_publishes_a_notice_naming_a_blocked_row_of_that_lane(tmp_path: Path) -> None:
+    """🔴 The CALL SITE, and the first version of these tests missed it.
+
+    **`_notice` was always correct given a reachable set.** What changed on
+    2026-08-10 is *which set `render` passes it* — it passed the lane's
+    `backlog` array, which excludes blocked rows. ⚡ **Testing `_notice`
+    directly cannot see that**, and the first three tests here passed with the
+    fix reverted: **decorative, by the repository's own definition** (§2).
+
+    This goes through `render`, so reverting the call site turns it red.
+    """
+    blocked = coordination.Task(
+        id="TASK-1439", title="the rail", state=coordination.BLOCKED,
+        declared="BLOCKED", lane="Lane A", depends_on=[], on_integration=True,
+    )
+    f = tmp_path / "notices.toml"
+    f.write_text('["Lane A"]\nnotice = """C-269 answered — TASK-1439\'s entry set needs a ruling."""\n')
+    original = coordination.NOTICES
+    coordination.NOTICES = f
+    try:
+        out = coordination.render([blocked])
+    finally:
+        coordination.NOTICES = original
+    assert "WITHHELD" not in out, "a lane's own blocked row was refused by its own notice"
+    assert "TASK-1439" in out
