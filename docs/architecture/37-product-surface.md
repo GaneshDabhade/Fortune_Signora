@@ -1193,3 +1193,34 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 | Registration failing outright | 🔴 **A behaviour change, and it was this lane's own** | ✅ **Fixed at the cause** ([B-231](../BUGS.md)), not asserted around |
 
 ✅ **7 of 7 pass against the lane's own stack.** ⚠️ **Run headless, not headed** — there is no display in this environment — 📁 which [D-134](../DECISION_REGISTER.md) permits for certification and which is **stated rather than claimed as a headed review.**
+
+---
+
+## TASK-471 · Team Management — an existing member is skipped, not rejected *(2026-08-10)*
+
+📁 **`Fortune Signora Team Management.dc.html` §02**: ***"j.okafor@northwind.com is already a member. It will be skipped."***
+
+⚡ **Skipped, not rejected, and the difference is the whole rule.** ⛔ **Somebody pasting twenty addresses from a spreadsheet must not have the batch refused because one colleague is already here** — **or they will send nineteen invitations one at a time instead**, which is worse for them and worse for the audit trail.
+
+✅ **The verdicts render UNDER the input, before Send** — 📁 as the design draws them — **so a person knows what will happen rather than reading about it afterwards in a toast.** ⛔ **Nothing is said about an ordinary address**: a line under every one of twenty turns the list into a wall nobody reads.
+
+### ⚠️ It classifies only what the platform actually knows
+
+📁 **`member_email` is *"the address this membership was created with, when one is known"*** — ⛔ **`null` for a founder and for anybody added by identifier before invitations existed.**
+
+⚡ **So a member with no recorded address is not detected, and the invitation goes out.** ✅ **That is correct — the server is the authority and refuses it.** ⛔ **Claiming to have checked what was never on the wire would be the worse failure**, because somebody would trust the absence of a warning.
+
+### ⛔ What was measured and NOT built
+
+| The design asks for | Found |
+|---|---|
+| ***"outside your verified domains… invited as a `Guest`"*** | ⛔ **Neither half exists.** **No verified domains, and the product has `owner` and `member`** — the design's five roles are [C-1416](../LANE_COORDINATION.md)'s open decision. ⚡ **An external address is classified as ordinary**, and a test asserts no `Guest` appears — **inventing that chip would be a permission the server does not enforce**, which is [§20c](../../CLAUDE.md)'s *a client check is a courtesy* inverted into a lie |
+| ***"SCIM-managed rows cannot be edited here"*** | ⛔ **SCIM does not exist** — it is [C-280](../LANE_COORDINATION.md)'s blocked half |
+| ***"Select all 148 matching this filter"*** | ⚠️ **The directory table is not rebuilt in this slice.** ✅ **`table.tsx` already carries selection** ([TASK-1452](../BACKLOG.md)), **so the primitive is there and the filter-spanning select-all is the remaining work** — **named rather than implied** |
+| **Teams column · permission preview** | ⛔ **No teams exist, and the preview is [C-277](../LANE_COORDINATION.md)'s matrix, already refused once with reasons that still hold** |
+
+### ⚡ The separators are the ones people actually paste
+
+📁 **The label says commas.** ✅ **Newlines and semicolons split too** — **a spreadsheet column pastes as newlines and Outlook pastes as semicolons** — ⛔ **and a form that only honours the separator its label mentions punishes the commonest way anybody will use it.**
+
+⚠️ **The address check is deliberately permissive.** ⛔ **A strict local pattern rejects valid addresses** — new TLDs, tagged mailboxes — ✅ **so this only catches the paste that obviously went wrong**, and the server decides the rest.

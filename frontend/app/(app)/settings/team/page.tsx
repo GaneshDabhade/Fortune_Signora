@@ -30,6 +30,11 @@ import {
 } from '@/components/team/capabilities';
 import { OrganizationHistory } from '@/components/team/history';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
+import {
+  classifyAddresses,
+  explainVerdict,
+  sendable,
+} from '@/lib/team/invitations';
 import { ApiError } from '@/lib/api/client';
 import type { Invitation, Membership } from '@/lib/api/types';
 import {
@@ -117,9 +122,41 @@ export default function TeamPage() {
     (one) => Date.now() - Date.parse(one.created_at) > 7 * 24 * 60 * 60 * 1000,
   );
 
+  /**
+   * ⚡ **[TASK-471](../../../../docs/BACKLOG.md) — every address that can be
+   * invited, and only those.**
+   *
+   * 📁 **The design's §02**: *"j.okafor@northwind.com is already a member. It
+   * will be skipped."* ⛔ **Skipped, not rejected** — somebody pasting twenty
+   * addresses from a spreadsheet must not have the batch refused because one
+   * colleague is already here, **or they will send nineteen invitations one at
+   * a time instead.**
+   */
+  /**
+   * ⚠️ **Only the addresses the platform actually knows.** 📁 `member_email` is
+   * *"the address this membership was created with, **when one is known**"* —
+   * ⛔ **`null` for a founder, and for anybody added by identifier before
+   * invitations existed.**
+   *
+   * ⚡ **So a member with no recorded address cannot be detected here, and the
+   * invitation goes out** — ✅ **which is correct: the server is the authority
+   * and will refuse it.** ⛔ **Claiming to have checked what was never on the
+   * wire would be the worse failure**, because somebody would trust the
+   * absence of a warning.
+   */
+  const classified = classifyAddresses(
+    email,
+    people.map((one) => one.member_email).filter((one): one is string => one !== null),
+    waiting.map((one) => one.invited_email),
+  );
+  const toInvite = sendable(classified);
+
   const send = () => {
+    // ⛔ **One request per address, because the contract takes one.** ⚡ The
+    // batching is the customer's, not the API's, and inventing a bulk endpoint
+    // here would be this row designing `workspace_tenancy`'s contract.
     invite.mutate(
-      { email: email.trim(), role },
+      { email: toInvite[0] ?? '', role },
       {
         onSuccess: (created) => {
           setDialogOpen(false);
@@ -581,21 +618,38 @@ export default function TeamPage() {
             <Button variant="secondary" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={send} loading={invite.isPending} disabled={email.trim() === ''}>
-              Send invitation
+            <Button onClick={send} loading={invite.isPending} disabled={toInvite.length === 0}>
+              {/* 📁 The design counts what will actually be sent — *"Send 3
+                  invitations"* — ⛔ **not how many were typed.** */}
+              {toInvite.length > 1 ? `Send ${toInvite.length} invitations` : 'Send invitation'}
             </Button>
           </>
         }
       >
         <div className="flex flex-col gap-3">
           <Input
-            label="Their email address"
-            type="email"
+            label="Their email addresses"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="colleague@yourcompany.com"
+            placeholder="colleague@yourcompany.com, another@yourcompany.com"
             autoFocus
           />
+          {/**
+            * ⚡ **The verdicts, BEFORE Send** — 📁 the design puts them under the
+            * input rather than in a toast afterwards, **so somebody knows what
+            * will happen rather than reading about it once it has.**
+            *
+            * ⛔ **Nothing is said about an ordinary address.** A line under every
+            * one of twenty turns the list into a wall nobody reads.
+            */}
+          {classified.some((entry) => entry.verdict !== 'invite') ? (
+            <ul className="flex flex-col gap-1 text-sm text-content-muted">
+              {classified.map((entry) => {
+                const line = explainVerdict(entry);
+                return line === null ? null : <li key={entry.address}>{line}</li>;
+              })}
+            </ul>
+          ) : null}
           <Select
             label="What they can do"
             value={role}

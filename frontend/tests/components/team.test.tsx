@@ -259,7 +259,7 @@ describe('sending an invitation', () => {
   it('sends the address and the role together', () => {
     const dialog = openDialog();
 
-    fireEvent.change(within(dialog).getByLabelText('Their email address'), {
+    fireEvent.change(within(dialog).getByLabelText('Their email addresses'), {
       target: { value: ' Sam@Acme.com ' },
     });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Send invitation' }));
