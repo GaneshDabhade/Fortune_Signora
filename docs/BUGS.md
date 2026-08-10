@@ -370,6 +370,37 @@ await expect(page.getByRole('link', { name: MEMBER.email })).toBeVisible();
 
 ⚡ **Same repair this lane made in `app-shell-rail.test.tsx`** when the shell's second wordmark broke an unscoped query: ⛔ **the duplicate render is correct and the query was wrong.** ✅ **And it asserts something stronger than before** — not merely that the address appears somewhere, but that it is the link to their own profile.
 
+### B-171 · a new test types the coordination module as `ModuleType` and then sets an attribute on it, so `mypy --strict` fails
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — [`backend/tests/test_coordination_source.py`](../backend/tests/test_coordination_source.py) |
+| **Current assignee** | **Lane C** — its own test, in its own module |
+| **Severity** | 🟠 — ⛔ **`mypy --strict` is a required gate and a Definition-of-Done row**, so the slice cannot be certified |
+| **Status** | **`OPEN`** — slice **excluded**; Lane A's work in the same candidate was taken and is unaffected |
+| **Commit found** | `525a1b10`, found by QE running the cheap gates before certification |
+
+**Steps.** `uv run --directory backend mypy --strict .`
+
+```
+tests/test_coordination_source.py:447: error: Module has no attribute "NOTICES"  [attr-defined]
+tests/test_coordination_source.py:449: error: Returning Any from function declared to return "str"  [no-any-return]
+tests/test_coordination_source.py:451: error: Module has no attribute "NOTICES"  [attr-defined]
+tests/test_coordination_source.py:525: error: Module has no attribute "NOTICES"  [attr-defined]
+tests/test_coordination_source.py:529: error: Module has no attribute "NOTICES"  [attr-defined]
+Found 5 errors in 1 file (checked 854 source files)
+```
+
+**Expected.** The gate passes, as §19 requires **before** handover.
+
+**Actual.** ⛔ **Five errors.** ⚡ **`NOTICES` is not missing** — QE checked, it is at `infra/coordination.py:865` and on `main` too. **The module is loaded through `importlib` and typed `ModuleType`, which declares no such attribute**, so `_notice_for` reading and reassigning `coordination.NOTICES` is unprovable to `mypy --strict`.
+
+> ✅ **The test's intent is right and QE is not asking for it back.** *"Run `_notice` against a substituted notices file, not the real one"* is exactly the discipline this suite already uses elsewhere — **a monkeypatched path rather than the live projection.**
+>
+> ⚡ **The repair is the typing, not the test.** **The sibling loader in [`test_certification_state_reading.py`](../backend/tests/test_certification_state_reading.py) has the same shape and passes** — it registers the module in `sys.modules` and uses `monkeypatch.setattr(module, "MANIFEST", path)`, **which mypy accepts because `monkeypatch.setattr` takes `object`.** ⛔ **Direct attribute assignment on a `ModuleType` does not.**
+
+**Why it was not caught earlier.** ⚠️ **§19 puts `mypy --strict` on the implementing lane before handover.** ⛔ **This is the first slice in this run of cycles to reach QE with a red required gate**, and it was caught by the cheap gates in under a minute — **which is the whole reason they run first.**
+
 ### B-170 · `state-check` skips backlog rows whose state it cannot parse, so the same defect can recur silently a fourth time
 
 | | |
