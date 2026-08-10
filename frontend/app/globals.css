@@ -137,6 +137,29 @@
      * this file is where the design's values live.** */
     --radius-full: 999px;
 
+    /* ⚡ **The eight-series chart ramp** — TASK-1450, 📁 Design System v2
+     * `chartRamp`.
+     *
+     * 🔴 **This was the ONE part of the token layer that did not match.**
+     * D-217 measured the colour tokens as exact and they are; `--c1`…`--c8`
+     * were simply absent, so a chart had nowhere to take a series colour from.
+     *
+     * ⛔ **Tokens before the chart, deliberately.** A chart built first would
+     * hardcode eight hex values, which is the §20c violation
+     * `design-tokens.test.tsx` already refuses — and eight of them at once.
+     *
+     * ⚡ **The order is the design's and is not arbitrary**: the ramp opens on
+     * the brand and moves away from it, so a two-series chart reads as
+     * *ours versus theirs* rather than as two arbitrary colours. */
+    --color-c1: 19 78 118;
+    --color-c2: 63 129 173;
+    --color-c3: 75 94 196;
+    --color-c4: 31 122 92;
+    --color-c5: 180 118 42;
+    --color-c6: 138 90 134;
+    --color-c7: 93 122 134;
+    --color-c8: 160 142 122;
+
     /* The type scale. **Six steps, and they are tokens for the same reason
      * the colours are** (TASK-448): before this, `text-[0.9375rem]` appeared
      * fourteen times and `text-[0.6875rem]` once, so a change to body size
@@ -272,6 +295,18 @@
     /* The same role, lifted for a dark ground. §14's grammar is the hue plus
      * the tint field, so both steps move together or the pairing breaks. */
     --color-ai: 143 154 232;
+
+    /* 📁 **The design gives a SEPARATE dark ramp, not a filter.** ⛔ Lightening
+     * the light ramp algorithmically produces muddy mid-tones on a dark
+     * surface, which is why the design draws eight different values. */
+    --color-c1: 124 192 229;
+    --color-c2: 79 163 209;
+    --color-c3: 143 154 232;
+    --color-c4: 79 174 135;
+    --color-c5: 211 160 90;
+    --color-c6: 187 149 182;
+    --color-c7: 138 165 177;
+    --color-c8: 192 176 154;
     --color-ai-subtle: 26 31 56;
 
     --color-focus: 79 163 209;

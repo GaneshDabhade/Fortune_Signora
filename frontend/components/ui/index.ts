@@ -34,6 +34,15 @@ export { ErrorState, type ErrorStateProps } from './error-state';
 export { SystemState, type SystemStateProps } from './system-state';
 export { Breadcrumb } from './breadcrumb';
 export {
+  Sparkline,
+  BarSeries,
+  CHART_SERIES,
+  seriesAt,
+  type ChartSeries,
+  type SparklineProps,
+  type BarSeriesProps,
+} from './chart';
+export {
   ToastProvider,
   useToast,
   kindOf,

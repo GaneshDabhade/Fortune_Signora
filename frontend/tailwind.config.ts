@@ -63,6 +63,18 @@ export default {
         /* §14's reserved hue. Named `ai` rather than `indigo` because the
          * token names a role — what produced the content — and a hue name
          * would make the next theme's choice of colour a rename. */
+        /* ⚡ **The chart ramp as colours** — TASK-1450. ⛔ Named `c1`…`c8`
+         * rather than by hue: **a series is a position in the ramp, not a
+         * colour a caller chooses**, and naming them `blue`/`green` would
+         * invite exactly that choice. */
+        c1: 'rgb(var(--color-c1) / <alpha-value>)',
+        c2: 'rgb(var(--color-c2) / <alpha-value>)',
+        c3: 'rgb(var(--color-c3) / <alpha-value>)',
+        c4: 'rgb(var(--color-c4) / <alpha-value>)',
+        c5: 'rgb(var(--color-c5) / <alpha-value>)',
+        c6: 'rgb(var(--color-c6) / <alpha-value>)',
+        c7: 'rgb(var(--color-c7) / <alpha-value>)',
+        c8: 'rgb(var(--color-c8) / <alpha-value>)',
         ai: {
           DEFAULT: 'rgb(var(--color-ai) / <alpha-value>)',
           subtle: 'rgb(var(--color-ai-subtle) / <alpha-value>)',
