@@ -29,6 +29,14 @@
  */
 
 export { REASON_CODES, GATES, type ReasonCode, type Gate } from './reasons';
+export {
+  PRINCIPAL_KINDS,
+  human,
+  isHuman,
+  whyNoScreen,
+  type Principal,
+  type PrincipalKind,
+} from './principal';
 export { RULES, resolveWorkspace, workspaceHome, type Rule } from './rules';
 export {
   INTENT_PARAM,
@@ -62,6 +70,7 @@ export type {
 } from './session';
 
 import { GATES } from './reasons';
+import { whyNoScreen, type Principal, type PrincipalKind } from './principal';
 import { RULES, resolveWorkspace } from './rules';
 import type { EntryDecision, EntrySession, Intent } from './session';
 
@@ -156,4 +165,46 @@ export function resolveEntry(
     gate: home.gate,
     workspaceId,
   };
+}
+
+/**
+ * ⚡ **What the engine answers for ANY principal** —
+ * [TASK-1407](../../../docs/BACKLOG.md).
+ *
+ * ⛔ **A discriminated union rather than a nullable route**, because the two
+ * outcomes are different kinds of answer and a caller must handle both. 🔴 **A
+ * `route: string | null` would let somebody write `route ?? "/"`** — which is
+ * exactly the defect the row names: **an agent on a human's Home.**
+ */
+export type EntryOutcome =
+  | { readonly outcome: 'route'; readonly decision: EntryDecision }
+  | {
+      readonly outcome: 'no-screen';
+      readonly kind: Exclude<PrincipalKind, 'HUMAN'>;
+      readonly why: string;
+    };
+
+/**
+ * **The engine's entry point once a principal exists** —
+ * [TASK-1407](../../../docs/BACKLOG.md).
+ *
+ * 📁 **[495](../../../docs/architecture/495-principal-and-identity-boundary.md)**
+ * ratified the model; this admits it. ⚡ **Widened while `resolveEntry` has
+ * ZERO callers** — after the shell, the compositions and the cards consume it,
+ * the same change is a refactor across six.
+ *
+ * ⛔ **A machine principal resolves to no route at all**, and the twenty-four
+ * rules are never walked for one: **they are questions about a person's
+ * account, session, memberships and readiness**, and asking them of a service
+ * account would produce a confident answer to a question nobody asked.
+ */
+export function resolveEntryFor(
+  principal: Principal,
+  session: EntrySession,
+  intent: Intent | null = null,
+): EntryOutcome {
+  if (principal.kind !== 'HUMAN') {
+    return { outcome: 'no-screen', kind: principal.kind, why: whyNoScreen(principal.kind) };
+  }
+  return { outcome: 'route', decision: resolveEntry(session, intent) };
 }

@@ -219,3 +219,32 @@ tests/unit/entry-engine.test.ts:            35 tests, green
 **① `left()` would have INSERTED a row for somebody who never had one.** ⚡ **Every membership that ends calls it, and most people have never entered most of their workspaces** — so a `replace` that always produced a new object would write a preferences row **that did not previously exist**, in order to store the absence of a fact. ✅ **It returns `self` when there is nothing to forget.**
 
 **② Entry is monotonic.** ⛔ **An `at` older than the stored moment is ignored rather than written**: entries arrive out of order — a retried request, a clock that stepped back — **and letting an older moment win would move somebody's last-used workspace backwards, which is the wrong answer at the one moment it matters.**
+
+---
+
+## TASK-1407 · The engine admits a non-human principal, before one exists *(2026-08-10)*
+
+⛔ **This does not build the principal model.** 📁 **[495](495-principal-and-identity-boundary.md) ratified it** — *"One principal type. A `kind`. A `subject_id`. A workspace. And — the field that does the real work — `acting_for`."* ✅ **This makes the engine's signature admit one.**
+
+⚡ **Why now is the whole argument, and it is a measurement rather than a preference**: **`resolveEntry` has ZERO callers today** and [TASK-1401](../BACKLOG.md) is the one caller-to-be. ⛔ **After the shell, the compositions and the cards consume it, the same change is a refactor across six.**
+
+⚠️ **Not speculative generality** ([§6](../../CLAUDE.md)). **The test that rule asks is whether the requirement exists**, and [D-196](../DECISION_REGISTER.md) §8 states it: *support AI agents, service accounts, delegated access and SSO **without architectural redesign***. **The abstraction is ratified and dated; only the signature is new.**
+
+### 🔴 `EntryOutcome` is a union, not a nullable route
+
+⛔ **A `route: string | null` would let somebody write `route ?? '/'`** — ⚡ **which is precisely the defect the row names: an agent on a human's Home, and therefore an agent inside a human's session.** ✅ **A discriminated union makes both outcomes something a caller has to handle.**
+
+⛔ **The twenty-four rules are never walked for a machine.** ⚡ **They are questions about a person's account, session, memberships and readiness** — asking them of a service account produces a confident answer to a question nobody asked.
+
+### ⚡ Two properties the type carries rather than a comment
+
+| | |
+|---|---|
+| 🔴 **An unscoped machine credential is unconstructable** | 📁 495: *"a machine identity that is not workspace-scoped is a cross-tenant credential, and [§11](../../CLAUDE.md) has no category for one."* ✅ **A discriminated union gives the human branch a nullable workspace and every machine branch a required one** — [§2](../../CLAUDE.md), *prefer a violation that is unrepresentable over one that is merely discouraged* |
+| ⚡ **A machine principal names its owning human** | 📁 *"Every machine principal is owned by a human"* — **what makes revocation on offboarding tractable and audit attributable.** ⛔ **Required on the machine branch**, so it cannot be forgotten |
+
+⚠️ **An impersonated human is still a human and still gets a screen.** 📁 495: *"an impersonated session must set `acting_for` and be marked in the audit."* ⛔ **`acting_for` marks it; it does not refuse it** — **support looking at somebody's account needs to see what they see.**
+
+### ⛔ The nine kinds are read from the ratified document, not retyped
+
+⚡ **`entry-principal.test.ts` asserts every kind against [495](495-principal-and-identity-boundary.md) itself.** 📁 [D-137](../DECISION_REGISTER.md): *the copy is always the one somebody reads* — **a hand-written list would be a second specification, and it would drift.**
