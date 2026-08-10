@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { useToast } from '@/components/feedback/toast';
+import { useToast } from '@/components/ui/toast';
 import {
   Button,
   Card,

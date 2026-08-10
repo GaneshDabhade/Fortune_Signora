@@ -14,7 +14,7 @@ import {
   LockedField,
 } from '@/components/ui';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
-import { useToast } from '@/components/feedback/toast';
+import { useToast } from '@/components/ui/toast';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { useCreateWorkspace } from '@/lib/query/hooks';
 import { ApiError } from '@/lib/api/client';

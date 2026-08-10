@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { useToast } from '@/components/feedback/toast';
+import { useToast } from '@/components/ui/toast';
 import {
   Badge,
   Button,

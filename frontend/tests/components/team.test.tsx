@@ -47,7 +47,7 @@ vi.mock('@/lib/query/hooks/team', () => ({
 
 vi.mock('@/lib/auth/client', () => ({ useSession: session }));
 
-vi.mock('@/components/feedback/toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
+vi.mock('@/components/ui/toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 
 import TeamPage from '@/app/(app)/settings/team/page';
 

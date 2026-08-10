@@ -33,7 +33,7 @@ vi.mock('@/lib/query/hooks', () => ({
 // The toast provider lives in the shell, above this page. Stubbed rather than
 // wrapped: nothing here raises a toast, and a provider in the tree would be
 // scaffolding the assertions do not use.
-vi.mock('@/components/feedback/toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
+vi.mock('@/components/ui/toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 
 import SettingsPage from '@/app/(app)/settings/page';
 

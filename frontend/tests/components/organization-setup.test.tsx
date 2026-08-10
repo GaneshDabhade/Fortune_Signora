@@ -37,7 +37,7 @@ vi.mock('@/lib/state/workspace-provider', () => ({
 vi.mock('@/lib/query/hooks', () => ({
   useCreateWorkspace: () => ({ mutate: createMutate, isPending: false }),
 }));
-vi.mock('@/components/feedback/toast', () => ({
+vi.mock('@/components/ui/toast', () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
 

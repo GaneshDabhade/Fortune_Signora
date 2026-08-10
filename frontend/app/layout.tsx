@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Archivo } from 'next/font/google';
 
-import { ToastProvider } from '@/components/feedback/toast';
+import { ToastProvider } from '@/components/ui/toast';
 import { THEME_INIT_SCRIPT } from '@/lib/design/theme';
 import { QueryProvider } from '@/lib/query/client';
 import { ThemeProvider } from '@/lib/state/theme-provider';

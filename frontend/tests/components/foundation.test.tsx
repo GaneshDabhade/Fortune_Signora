@@ -10,7 +10,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ToastProvider, useToast } from '@/components/feedback/toast';
+import { ToastProvider, useToast } from '@/components/ui/toast';
 import { ApiError } from '@/lib/api/client';
 import { isTheme, resolveTheme } from '@/lib/design/theme';
 import { queryClientConfig } from '@/lib/query/client';

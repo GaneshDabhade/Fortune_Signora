@@ -25,7 +25,7 @@
  * list would have passed, which is [§2](../../../CLAUDE.md)'s *guard that
  * cannot fail* — and the reason TASK-448's third slice was stuck for two days.
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -130,17 +130,20 @@ describe('§12 Overlays — every member of the language the design names exists
     },
   );
 
-  it('toast exists, outside components/ui and knowingly so', () => {
-    // **Stated rather than silently tolerated.** §12 groups toast with the
-    // other three; this repository has it in `components/feedback` with a
-    // provider and a hook, and relocating a live component is a change to
-    // every caller — not a design-system slice. The check keeps the fact
-    // true rather than assumed.
-    const toast = readFileSync(
-      join(process.cwd(), 'components', 'feedback', 'toast.tsx'),
-      'utf8',
-    );
+  it('toast is IN components/ui, where §12 groups it', () => {
+    /**
+     * ⚡ **This test previously pinned the misplacement**, and its own words
+     * said why that was honest: *"relocating a live component is a change to
+     * every caller — not a design-system slice."*
+     *
+     * ✅ **[TASK-1449](../../../docs/BACKLOG.md) is that slice**, so the fact
+     * it kept true has changed and the assertion moves with it. ⛔ **Re-aimed
+     * rather than deleted** — 📁 [§20c](../../../CLAUDE.md): *"a genuinely new
+     * component belongs in `components/ui` with its tokens and its test."*
+     */
+    const toast = readFileSync(join(process.cwd(), 'components', 'ui', 'toast.tsx'), 'utf8');
     expect(toast).toContain('export function ToastProvider');
+    expect(existsSync(join(process.cwd(), 'components', 'feedback', 'toast.tsx'))).toBe(false);
   });
 
   it('the shared plane is a token, because the design gives one radius for all four', () => {
