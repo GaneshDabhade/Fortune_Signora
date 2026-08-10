@@ -529,3 +529,38 @@ def test_render_publishes_a_notice_naming_a_blocked_row_of_that_lane(tmp_path: P
         setattr(coordination, "NOTICES", original)
     assert "WITHHELD" not in out, "a lane's own blocked row was refused by its own notice"
     assert "TASK-1439" in out
+
+
+# ── the widened publish contract — TASK-497, D-181 §6 Option 3 ──────────────
+
+
+def test_the_contract_carries_the_backlog_and_refuses_the_board() -> None:
+    """⚡ Order and scope travel together; arbitration does not travel at all.
+
+    **[D-181](../docs/DECISION_REGISTER.md) §6 ruling [C-435] Option 3:**
+    *"`BACKLOG.md` moves to `origin/coordination`. `ACTIVE_ASSIGNMENTS.md` stays
+    on `integration`."*
+
+    ⛔ **The asymmetry is the whole design.** Eligibility has **one author** and
+    can travel at poll cadence. Arbitration has **two lanes racing** and only a
+    push to a shared ref is atomic — so a Product Office publish carrying the
+    board could overwrite a claim, which is D-123's defect.
+    """
+    assert "BACKLOG.md" in coordination.COORD_CONTRACT
+    assert "ACTIVE_ASSIGNMENTS.md" not in coordination.COORD_CONTRACT
+    assert "ACTIVE_ASSIGNMENTS.md" in coordination.COORD_FORBIDDEN
+
+
+def test_the_forbidden_list_is_checked_by_name_not_by_count() -> None:
+    """⛔ A count would pass a three-file tree holding the wrong three files.
+
+    The guard already learned this once — its own comment says the repository
+    tree case is checked *by name, deliberately*. **The forbidden list inherits
+    that reasoning rather than restating it**, and this asserts the property
+    rather than the implementation.
+    """
+    for path in coordination.COORD_FORBIDDEN:
+        assert path not in coordination.COORD_CONTRACT, (
+            f"{path} is both forbidden and part of the contract — the guard would "
+            f"contradict itself and the contract would win"
+        )

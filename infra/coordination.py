@@ -1121,8 +1121,34 @@ def _content(source: str) -> str:
 
 
 COORD_REF = "coordination"
-COORD_CONTRACT = ("README.md", "coordination.toml")
+
+#: ⚡ **`BACKLOG.md` joined the contract on 2026-08-10 — TASK-497, under
+#: [D-181](../docs/DECISION_REGISTER.md) §6 ruling [C-435](../docs/LANE_COORDINATION.md)
+#: Option 3.** [491 §3](../docs/architecture/491-planning-synchronization-architecture.md)
+#: states it exactly: *"`BACKLOG.md` moves to `origin/coordination`.
+#: `ACTIVE_ASSIGNMENTS.md` stays on `integration`."*
+#:
+#: 🔴 **The problem it closes.** `coordination.toml` already carries everything a
+#: lane needs to *choose* — the backlog array, the dependency graph, the metrics.
+#: **What it does not carry is a row's SCOPE**, which is what [§20e](../CLAUDE.md)
+#: step 3b sends a lane to `BACKLOG.md` for — **and `BACKLOG.md` reaches a lane
+#: only when QE integrates.** So a lane could see *which* row was next at poll
+#: cadence and *what it was* only at release cadence.
+#:
+#: ⛔ **`ACTIVE_ASSIGNMENTS.md` is deliberately absent and must stay absent.**
+#: Eligibility (*is this claimable*) and arbitration (*did I claim it first*) are
+#: different facts: **one author versus two lanes racing, and only a push to a
+#: shared ref is atomic.** A Product Office write to the board could overwrite a
+#: lane's claim, which is [D-123](../docs/DECISION_REGISTER.md)'s defect. The
+#: `--self-test` proves the guard refuses it rather than trusting this comment.
+COORD_CONTRACT = ("BACKLOG.md", "README.md", "coordination.toml")
 COORD_SECTIONS = ("meta", "lane", "task")
+
+#: Paths the ref must never carry, checked by name so a rename cannot smuggle one
+#: past a count. **`ACTIVE_ASSIGNMENTS.md` is the arbitration point** (above);
+#: the rest are the executable surfaces that make this a planning ref rather than
+#: a second `integration`.
+COORD_FORBIDDEN = ("ACTIVE_ASSIGNMENTS.md", "Makefile", "conftest.py")
 
 
 def _coordination_findings(tree: str, ref: str) -> list[str]:
@@ -1166,6 +1192,21 @@ def _coordination_findings(tree: str, ref: str) -> list[str]:
             f"**The coordination ref is flat by contract; a directory here means a "
             f"repository tree is being published, which is exactly the 2026-08-08 defect.**"
         )
+    # ⛔ **Named refusals first, so the message says WHICH rule was broken.**
+    # `unexpected` below would already catch these — but it reports *"unexpected
+    # file"*, and `ACTIVE_ASSIGNMENTS.md` reaching this ref is not an untidy
+    # tree, it is the arbitration point being overwritten by the one author who
+    # must never hold it. **A guard whose message does not name the invariant
+    # teaches nobody why it fired.**
+    forbidden = [n for n in names if n in COORD_FORBIDDEN]
+    if forbidden:
+        findings.append(
+            f"{len(forbidden)} forbidden path(s) — {', '.join(forbidden)}. "
+            f"**`ACTIVE_ASSIGNMENTS.md` is the claim protocol's arbitration point and "
+            f"stays on `integration` (D-181 §6, Option 3): eligibility has one author, "
+            f"arbitration has two lanes racing, and only a push to a shared ref is "
+            f"atomic.** A planning publish that carried it could overwrite a claim."
+        )
     unexpected = [n for n in names if n not in COORD_CONTRACT]
     if unexpected:
         findings.append(
@@ -1201,9 +1242,16 @@ def _publish(dry_run: bool) -> int:
     """Build the two-file tree, validate it, and only then move the ref."""
     readme = _git_strict("rev-parse", f"origin/{COORD_REF}:README.md")
     toml_blob = _git_strict("hash-object", "-w", str(OUT))
+    # ⚡ **The backlog travels with the projection — TASK-497.** A lane polling
+    # this one ref now gets ORDER (`coordination.toml`'s backlog array) and
+    # SCOPE (the row itself) together, instead of the first at poll cadence and
+    # the second at QE's.
+    backlog_blob = _git_strict("hash-object", "-w", str(BACKLOG))
     tree = _git_strict(
         "mktree",
-        stdin=f"100644 blob {readme}\tREADME.md\n100644 blob {toml_blob}\tcoordination.toml\n",
+        stdin=(f"100644 blob {backlog_blob}\tBACKLOG.md\n"
+               f"100644 blob {readme}\tREADME.md\n"
+               f"100644 blob {toml_blob}\tcoordination.toml\n"),
     )
 
     findings = _coordination_findings(tree, COORD_REF)
@@ -1237,9 +1285,31 @@ def _publish(dry_run: bool) -> int:
 
 def _self_test() -> int:
     """⚡ Prove the guard fails on the case that caused D-181, not only that it passes."""
+    # ⚡ **A tree carrying the arbitration point — TASK-497.** Built here rather
+    # than described, because the whole of D-181 §6 Option 3 rests on
+    # `ACTIVE_ASSIGNMENTS.md` never reaching this ref, and a claim in a comment
+    # is not a guarantee. **The blob content is irrelevant; the NAME is the
+    # violation**, so the board's own current blob is used.
+    board = _git("rev-parse", "HEAD:docs/ACTIVE_ASSIGNMENTS.md")
+    readme = _git("rev-parse", f"origin/{COORD_REF}:README.md")
+    toml = _git("rev-parse", f"origin/{COORD_REF}:coordination.toml")
+    backlog = _git("rev-parse", "HEAD:docs/BACKLOG.md")
+    with_board = _git_strict("mktree", stdin=(
+        f"100644 blob {backlog}\tBACKLOG.md\n"
+        f"100644 blob {board}\tACTIVE_ASSIGNMENTS.md\n"
+        f"100644 blob {readme}\tREADME.md\n"
+        f"100644 blob {toml}\tcoordination.toml\n")) if board else ""
+    # ⛔ **And a tree with the backlog MISSING**, which is the other half of the
+    # widened contract: after TASK-497 a lane polls this ref for scope, so a
+    # publish without it is a lane that can see an order and not the work.
+    without_backlog = _git_strict("mktree", stdin=(
+        f"100644 blob {readme}\tREADME.md\n"
+        f"100644 blob {toml}\tcoordination.toml\n"))
     cases = [
         ("the repository tree itself", _git("rev-parse", "HEAD^{tree}"), COORD_REF),
         ("the correct tree, wrong destination", _git("rev-parse", f"origin/{COORD_REF}^{{tree}}"), "integration"),
+        ("a tree carrying ACTIVE_ASSIGNMENTS.md — the arbitration point", with_board, COORD_REF),
+        ("a tree with BACKLOG.md missing — order without scope", without_backlog, COORD_REF),
     ]
     ok = True
     for name, tree, ref in cases:

@@ -213,7 +213,12 @@ def _satisfied(run: dict[str, object]) -> bool:
         except (OSError, ImportError):
             del sys.modules[spec.name]
             return False
-    ok, _ = guard._satisfied(run)  # type: ignore[attr-defined]
+    # ⚡ `getattr` rather than a `type: ignore` — the module is loaded by
+    # `importlib` and typed `ModuleType`, so the attribute genuinely is not
+    # declared. The ignore was reported UNUSED under a newer mypy, which is
+    # the quieter half of B-171: a suppression that stops suppressing looks
+    # identical to one that still works.
+    ok, _ = getattr(guard, "_satisfied")(run)
     return bool(ok)
 
 
@@ -240,7 +245,9 @@ def _latest_certification() -> dict[str, object] | None:
     runs = json.loads(MANIFEST.read_text()).get("runs") or []
     for run in reversed(runs):
         if _satisfied(run):
-            return run
+            # `json.loads` is `Any`; the signature promises a mapping, so the
+            # narrowing belongs here rather than in the caller.
+            return dict(run)
     return None
 
 
