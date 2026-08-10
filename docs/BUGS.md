@@ -2640,6 +2640,39 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-420 · The Team page's history region crashes — the hook claims an array and the endpoint is cursor-paginated
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/lib/query/hooks/team.ts`](../frontend/lib/query/hooks/team.ts):236 |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — ⛔ **a shipped screen a customer reaches.** ⚡ **Contained by `RegionBoundary`, so the page survives and the region fails** — which is that primitive working exactly as designed |
+| **Status** | ⚠️ **`OPEN` — reported by Lane C, 2026-08-10.** ⛔ **NOT fixed here: `product_surface` is Lane A's and [§20e](../CLAUDE.md) makes finding a defect an obligation to report, never permission to fix** |
+| **Found** | **2026-08-10, by the product owner USING the product** — 📁 **`/settings/team` in a browser.** ⚡ **Not by any suite** |
+| **Steps** | **Sign in as an owner · open `/settings/team`** |
+| **Expected** | **The organization history renders, or says it could not load** |
+| **Actual** | ⛔ **`TypeError: entries is not iterable` at `history.tsx:137`**, caught by `RegionBoundary` and logged as `signora.region_failed` |
+
+### 🔴 Root cause — a type ASSERTION standing where a check was needed
+
+| | |
+|---|---|
+| **The endpoint** | `GET /workspaces/{id}/history` → **`response_model=CursorPage[HistoryEntryResponse]`** — an envelope, `{items, next_cursor}` |
+| **The hook** | `apiRequest<HistoryEntry[]>(...)` — ⛔ **declares a bare ARRAY** |
+| **Why it reaches `groupByDay`** | ⚡ **`entries.length === 0` evaluates `undefined === 0` → `false`**, so the empty-state guard **passes the envelope straight through** to a `for…of` |
+
+> ## ⛔ **`apiRequest<T>` is a CLAIM about the wire, not a check of it.** ⚡ **TypeScript believed it, so nothing typed failed** — and the component's own tests pass an array fixture directly, which never exercises the envelope.
+
+### ✅ Measured scope — it is ONE hook, not a class
+
+**Five hooks declare a bare array. Four are correct**: `/integrations`, `/invitations`, `/ownership` and `/account-search` are all genuinely `response_model=list[...]`. ⛔ **`/history` is the only `CursorPage` among them.**
+
+📁 **Ten endpoints return `CursorPage` repository-wide** ([§7](../CLAUDE.md): *cursor-based pagination for all collections*), **and this is the only one a bare-array hook reads.**
+
+⚠️ **So the fix is one hook — and the interesting question for Lane A is whether the guard belongs in `apiRequest` rather than in each caller**, because the next `CursorPage` endpoint a hook adopts will fail the same silent way.
+
+---
+
 ### B-419 · A blind replace closed the wrong coordination item, and I reported it as closed
 
 | | |
