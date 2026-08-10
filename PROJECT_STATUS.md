@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `edd8211`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `1db8f58`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `edd8211`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `1db8f58`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`edd8211`** — the certified commit itself |
+| **`main`** | **`1db8f58`** — the certified commit itself |
 | **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
 | **Release candidate** | ⚡ **Cycle 177 took Lane A ahead of ordinary order, on Lane C's request** — **a lane was stuck behind a bug report that had not synchronized.** ✅ **[B-169](docs/BUGS.md) `VERIFIED`: 167 rows, 0 unparsed** |
-| **Certification** | ✅ [`edd82116ad87`](certification/reports/edd82116ad87.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
+| **Certification** | ✅ [`1db8f58f7251`](certification/reports/1db8f58f7251.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **167 rows, 59 unresolved, 0 blocking**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **4319 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2174 frontend tests** across **106 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **854 files** · **47 migrations**, `0000`–`0046`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **203s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md); and [B-166](docs/BUGS.md) is why the lane could not run them either** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
+**Repository health:** **4319 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2213 frontend tests** across **109 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **854 files** · **47 migrations**, `0000`–`0046`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **203s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md); and [B-166](docs/BUGS.md) is why the lane could not run them either** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
 
 ---
 
@@ -1069,6 +1069,38 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **144s** |
 | **Register** | **169 rows, 59 unresolved, 0 blocking** · ✅ **[B-171](docs/BUGS.md) and [B-414](docs/BUGS.md) both closed** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) before the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-10, cycle 184
+
+**Derived from the promoted commit `1db8f58`.** ⚡ **Three shell slices land, and a lane closes a coordination item by measuring the same thing twice, independently.**
+
+### ✅ The App Shell takes the design's shape
+
+**`TASK-1440`** — the top bar becomes the design's slots, **and two of them have no source, which the row says rather than inventing one.** **`TASK-1406`** — the card registry, *"built like the two registries the row named."* **`TASK-1453`** — the type scale becomes the design's, and the avatar gets its token.
+
+⚡ **+39 frontend tests, 2213 across 109 files.**
+
+### ✅ [C-270](docs/LANE_COORDINATION.md) closed by two independent measurements agreeing
+
+**Lane A measured at runtime. Lane C parsed all 24 rules and their route expressions separately** — ⚡ ***"which is the point of doing it twice"*** — **and got the same answer:**
+
+> ⛔ **18 of 24 entry rules return a destination that does not exist, unconditionally.**
+
+✅ **A figure confirmed by a second method rather than a second reading of the first.**
+
+### Measured
+
+| | |
+|---|---|
+| **Certified** | [`1db8f58f7251`](certification/reports/1db8f58f7251.md) · profile **`platform`** · **17 gates planned** · **first attempt** |
+| **Quality** | **4319 backend** · **95.09%** · **401 invariants** · ⚡ **2213 frontend / 109 files** *(+39)* · mypy strict **854 files** · **37 contracts**, 0 broken · eslint clean · `tsc` clean |
+| **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **206s** |
+| **Register** | **169 rows, 59 unresolved, 0 blocking** |
+| **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) before the push ✓ |
+
+⚠️ **Lane C pushed `TASK-497` during this certification** — **it belongs to the next cycle by construction, and QE did not chase the head.** ⛔ **It moves `BACKLOG.md` onto `origin/coordination` under [D-181](docs/DECISION_REGISTER.md) §6, which changes what a ref carries** — **QE will verify that ruling's authority the way it verified [D-226](docs/DECISION_REGISTER.md)'s.**
 
 ---
 
