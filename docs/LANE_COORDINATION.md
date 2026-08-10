@@ -10107,3 +10107,45 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 ### ⚡ The cheapest first step, and it is one field
 
 ⛔ **Not the whole design.** ✅ **`environment` on `Workspace` alone closes the safety half** — grouping and per-workspace role are convenience, and **the mistake the design names is an environment mistake.**
+
+## C-277 · The Settings design asks for a permission matrix this repository reviewed and rejected, with reasons that still hold
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, **implementing [TASK-1412](BACKLOG.md)** — ⚡ **found by building it, and the build is reverted** |
+| **Owner** | **Lane C** — ⚡ **it is a design-versus-repository conflict before it is an implementation question**, the same shape as [C-272](#c-272) |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN CONFLICT** — ⛔ **not a missing implementation**: the thing the design asks for was built, reviewed, and deliberately replaced |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **[TASK-1412](BACKLOG.md)'s *roles and permissions as an additive matrix*.** ✅ **Nothing else in the row** |
+
+### What the design asks for
+
+📁 **Settings, `permissionRows` and `roleHeads`**: **five roles — Admin · Manager · Rep · Analyst · Guest — across seven capabilities in five grades** (`full · region · own · read · none`), with two rows flagged. 📁 **[TASK-1412](BACKLOG.md)** carries it as *"roles and permissions as an additive matrix"* with an accessibility requirement for a real `<table>`.
+
+### 🔴 What this repository already decided, and it is not a gap — it is a ruling in code
+
+📁 **[`components/team/capabilities.ts`](../frontend/components/team/capabilities.ts) exists, is reviewed, and argues against the matrix by name:**
+
+> ⛔ ***"`policy.csv` holds thirty tuples across twelve resources. A customer does not think in tuples and cannot act on one… which is one sentence, not a matrix."***
+>
+> ⛔ ***"A tooltip listing `member:add`, `member:remove`, `workspace:update` would be a lie by compression: it looks complete, omits twenty-seven rows, and uses engineering's vocabulary on the one screen where a customer is making a decision about a person."***
+>
+> ⛔ ***"It is deliberately not generated from the policy… the output would drift into resource names the moment somebody added a resource, and nobody would notice until a customer read it."***
+
+⚡ **And the screen already renders it** — *"What each role can do"*, a `<details>` catalog in the customer's words, **one authoritative copy replacing three that had disagreed.**
+
+### ⚠️ This lane built the matrix before reading that, and the guards caught it
+
+✅ **Reported rather than quietly reverted.** **The matrix was written, mounted, and failed four existing tests** — 📁 `vocabulary.test.tsx`'s *"never uses the platform's vocabulary"* among them, **because the rows rendered `workspace:read` and `member:add` to a customer.**
+
+⛔ **Two independent findings, and the second is the one that matters**: **it would have been a fourth copy of a fact that already has one authoritative representation** — 📁 exactly what `capabilities.ts` was created to end.
+
+✅ **Fully reverted**: the component deleted, the mount removed, and the `ROLE_CAPABILITIES` export it needed in [`lib/state/permissions.ts`](../frontend/lib/state/permissions.ts) taken back out. **2258 tests green, tsc and eslint clean, no residue.**
+
+### The question, and this lane does not answer it
+
+⛔ **[D-154](DECISION_REGISTER.md) says the design wins when an implementation differs from it — *"Always."*** ⚠️ **And [D-217](DECISION_REGISTER.md) §6 says existing code is not an argument for keeping it.** 🔴 **Both point at replacing the catalog with the matrix.**
+
+⚡ **But the design's matrix cannot be rendered truthfully here**: **three of its five roles and six of its seven capabilities do not exist**, and rendering four tuples where the policy holds thirty is the *lie by compression* the catalog names.
+
+> **So:** ⓐ **the catalog stands and the design's matrix is a future-state drawing** — the roles it shows are ones Signora does not have yet · ⓑ **the matrix replaces the catalog when the roles exist**, and [TASK-1412](BACKLOG.md)'s clause is premature rather than wrong · ⓒ **a matrix of the REAL two roles now**, ⛔ which this lane believes is the weakest option and says so: **it is the compression `capabilities.ts` rejects, in a table.**
