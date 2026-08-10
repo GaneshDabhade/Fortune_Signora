@@ -1497,7 +1497,7 @@ updated      = 2026-08-10
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-1441", "TASK-1412", "TASK-1420", "TASK-1452",
+backlog = ["TASK-464", "TASK-1441", "TASK-1412", "TASK-1420", "TASK-1452",
             "TASK-1447", "TASK-1448", "TASK-1449", "TASK-1450", "TASK-1451",
             "TASK-1442", "TASK-1444", "TASK-1443",
             "TASK-1438", "TASK-1411", "TASK-1403", "TASK-1402", "TASK-1422", "TASK-1407",
@@ -1888,11 +1888,6 @@ owner   = "Lane A"
 note    = "M-U · The People experiences a customer opens"
 
 
-[[blocked]]
-task    = "TASK-464"
-blocker = ["TASK-476"]
-owner   = "Lane A"
-note    = "consumes TASK-476's output — its input does not exist yet, not a Product Office hold"
 
 [[blocked]]
 task    = "TASK-465"
