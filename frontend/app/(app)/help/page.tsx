@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
-import { Card, CardBody, Input, PageHeader, SkeletonText } from '@/components/ui';
+import { Card, CardBody, ErrorState, Input, PageHeader, SkeletonText } from '@/components/ui';
+import { ApiError } from '@/lib/api/client';
 import { useIntegrations } from '@/lib/query/hooks/integrations';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import type { Connection } from '@/lib/api/types';
@@ -59,7 +60,9 @@ import { answerFor, answerableSubjects } from './answer';
  */
 export default function HelpPage() {
   const { activeWorkspace, isLoading: workspaceLoading } = useWorkspaceContext();
-  const { data: systems, isLoading } = useIntegrations(activeWorkspace?.id ?? null);
+  const { data: systems, isLoading, isError, error, refetch } = useIntegrations(
+    activeWorkspace?.id ?? null,
+  );
   const [question, setQuestion] = useState('');
 
   const connections: Connection[] = useMemo(
@@ -96,6 +99,23 @@ export default function HelpPage() {
           {isLoading ? (
             <div className="mt-4">
               <SkeletonText lines={2} />
+            </div>
+          ) : isError ? (
+            /* 🔴 **[P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): a failed
+               read must never render as an empty result** — and this screen did
+               exactly that when it shipped. ⛔ **A failed `useIntegrations` fell
+               through to *"none are connected yet"***, which tells a customer
+               their workspace is empty when Signora simply could not look.
+               ⚠️ **This lane wrote that defect and found it measuring for
+               [TASK-1447](../../../../docs/BACKLOG.md)**, which exists because
+               the same mistake is repository-wide. */
+            <div className="mt-4">
+              <ErrorState
+                title="Signora could not check this organization's systems"
+                description="Nothing is wrong with your connections as far as we know — we could not read them. Your data is unchanged."
+                correlationId={error instanceof ApiError ? error.correlationId : undefined}
+                onRetry={() => void refetch()}
+              />
             </div>
           ) : answer !== null ? (
             <div className="mt-4">
