@@ -9804,3 +9804,71 @@ rules parsed: 24   ·   distinct reason codes: 24
 > **So the question is narrow.** ⓐ **The design describes a state this repository never reached, and the executive composition must be BUILT** — in which case §04's argument survives but its evidence does not · ⓑ **the dashboard exists somewhere this lane did not search** · ⓒ **the design was written against a different implementation's state** ([TASK-1455](BACKLOG.md) established that two finalized designs were built against *no* snapshot, so the reverse is worth asking).
 
 ⛔ **This lane does not pick.** ⚡ **It matters because ⓐ adds a screen to the entry programme that nobody has sized, and it is currently sized as re-labelling.**
+
+## C-273 · The Lane A dependency chain, drawn once — and one row in it has already freed
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, **on the product owner's explicit instruction** to document the dependency and put it in front of Lane C |
+| **Owner** | **Lane C** — ⚡ **every unmet input below is either a `C-` item addressed to this office or a row only this office may write** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **SEQUENCING.** ⛔ **Nothing here is a defect and nothing here is a design gap.** ✅ **It is one picture of what is waiting on what, because the pieces are currently spread across five registers** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **Nothing. This lane is executing** — 📁 [TASK-1440](BACKLOG.md) is claimed and in progress. ⚡ **Filed so a dependency is visible before it is met, not discovered on claiming** ([D-070](DECISION_REGISTER.md)) |
+
+### ✅ FIRST, THE PART THAT IS ACTIONABLE TODAY — [TASK-1406](BACKLOG.md) HAS FREED AND THE QUEUE DOES NOT KNOW
+
+⛔ **This is the one item in this whole record that needs no decision from anybody.** 📁 [`queues/lane-a.toml`](coordination/queues/lane-a.toml) carries:
+
+```toml
+[[blocked]]
+task    = "TASK-1406"
+blocker = ["TASK-1405"]
+note    = "consumes TASK-1405's output — its input does not exist yet"
+```
+
+✅ **Its input exists now.** 📁 **[TASK-1405](BACKLOG.md) was promoted to `main` at `830ad1c1` on 2026-08-10** — `lib/home/composition.ts`, the four compositions, `resolveComposition` total, 8 exhaustive tests. ⚡ **Measured against the row rather than assumed**: [TASK-1406](BACKLOG.md)'s Change Budget is 🟢 `frontend/lib/home/**` — **the exact directory that landed** — its *Reusable components required* is ✅ **none**, and its *Manual review gate* is ✅ **n/a, no customer surface.**
+
+> ⛔ **So it needs no route, no design ruling and no Product Office decision.** ⚡ **It is a registry, and 📁 the row already names the two registries in this repository it should look like — `policy.csv` and `tenancy_policy.py`.** ✅ **Moving it from `blocked` to the head of `eligible` is a queue edit, and only this office may make it.**
+
+### 🔴 THE CRITICAL PATH, AND IT IS ONE ITEM LONG
+
+⚡ **[C-268](#c-268) is not one blocker among several. It is the blocker**, and [500](architecture/500-authenticated-entry-reconciliation.md)'s runtime evidence is what makes that measurable rather than arguable.
+
+```
+C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 404
+(Home's route has        (/w/:workspace/home,        11 · 12 · 14 · 19 · 20 · 21 · 22 · 24
+ no permitted             already READY)              — including 24, the DEFAULT
+ entrance)                                              and most common outcome)
+                              │
+                              └──▶  TASK-1401 (wire resolveEntry) becomes sizeable
+                              └──▶  TASK-1405's resolver gains its first caller
+                              └──▶  TASK-1406's registry gains its first consumer
+```
+
+📁 **No other single change in the entry programme moves more than one rule.** ⛔ **Eighteen of twenty-four destinations return 404 today** ([C-270](#c-270), measured at runtime), **and one row fixes eight of them.**
+
+### The whole chain, by who owes the answer
+
+| Waiting on | Owner | What it holds | Cost today |
+|---|---|---|---|
+| **[C-268](#c-268)** | **Lane C** | 📁 **[TASK-1438](BACKLOG.md)** — and transitively the 8 rules above | 🔴 **The largest single unblock in the programme** |
+| **[C-269](#c-269)** | **Lane C** | 📁 **[TASK-1439](BACKLOG.md)**, and behind it **[TASK-1441](BACKLOG.md)** (switcher into the rail) and **[TASK-1445](BACKLOG.md)** (keyboard map) | 🟠 **Three rows, all this lane's** |
+| **[C-270](#c-270)** | **Lane C** | ⛔ **Nothing.** ⚡ **But rows are being SIZED against eleven when the number is eighteen** | 🟡 **Sizing accuracy** |
+| **[C-271](#c-271)** | **Design Authority** | 📁 **Rule 04 only**, and the shape of `EntryDecision` | 🟡 **One rule of twenty-four** |
+| **[C-272](#c-272)** | **Lane C** | 📁 **The executive composition, and [TASK-1401](BACKLOG.md)'s sizing** | 🟠 **A screen nobody has sized is currently sized as re-labelling** |
+| **[C-267](#c-267)** | **Lane C** | ⛔ **Nothing** — 📁 the signal queue shipped without confidence deliberately | 🟢 **Recorded, not waiting** |
+| **[C-1405](#c-1405)** | **Product Owner** | 📁 **[TASK-1401](BACKLOG.md) · [TASK-1421](BACKLOG.md) · [TASK-1423](BACKLOG.md) · [TASK-1426](BACKLOG.md)** | 🟠 **Four rows, and three of them need documents that do not exist** |
+
+### ⚠️ AND THE DEPENDENCY THAT MAKES THIS FILE UNABLE TO CARRY ITSELF
+
+🔴 **[C-269](#c-269), [C-270](#c-270), [C-271](#c-271), [C-272](#c-272) and this item are on `lane-a-product-surface` and NOT on `integration`.** 📁 [§20e](../CLAUDE.md) permits a lane exactly one push to a shared branch — **a claim commit carrying [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) and [`BACKLOG.md`](BACKLOG.md)** — ⛔ **and a coordination item is neither.**
+
+⚡ **So five items addressed to the office that must answer them are invisible to it until QE integrates.** ✅ **Lane C already diagnosed this and claimed [TASK-497](BACKLOG.md) for it**, in that row's own words: *"the gap now runs both ways: planning state does not reach a lane, and a lane's blocker does not reach the office that must answer it."*
+
+> ⛔ **This lane is not working around it.** ⚡ **The rule is the rule, and pushing a coordination item to `integration` to be helpful is exactly the class of shortcut [B-227](BUGS.md) was filed for.** ✅ **It is recorded here as a fifth worked instance, offered as evidence for [TASK-497](BACKLOG.md) rather than as a second report of the same thing.**
+
+### ⛔ What this item is not
+
+**It is not a request to reprioritise.** 📁 [§20e](../CLAUDE.md): *"a lane never reorders, reprioritizes, removes, or inserts `READY` work without the product owner."* ⚡ **Every row above already exists and every owner is joined from [`modules.toml`](coordination/modules.toml).** ✅ **The one concrete ask is the first section: [TASK-1406](BACKLOG.md)'s stated blocker is met, and the queue still lists it as unmet.**
+
+**And it is not a report of an idle lane.** ⛔ **[TASK-1440](BACKLOG.md) is claimed and in progress**, [TASK-1456](BACKLOG.md) went to `IN VALIDATION` today, and 📁 [500](architecture/500-authenticated-entry-reconciliation.md) shipped with it.
