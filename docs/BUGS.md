@@ -2701,6 +2701,24 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-424 · 🔴 `theme.screens` was overridden, not extended — 46 responsive utilities compile to nothing
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tailwind.config.ts`](../frontend/tailwind.config.ts):35 |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🔴 — ⛔ **a shipped visual regression on every authentication screen, which is the first thing every customer sees.** ⚡ **Reported by the product owner from the browser, not by the suite** |
+| **Status** | ⚠️ **`OPEN` — reported by Lane C, 2026-08-10.** ⛔ **NOT fixed here: `product_surface` is Lane A's** ([§20e](../CLAUDE.md)) |
+| **Found** | **2026-08-10, by the product owner USING the product** at `localhost:3300` — 📁 *"the text boxes are stretched to full width… purely regression… seen on all the login and authentication screens"* |
+| 🔴 **Root cause, measured** | 📁 **[TASK-1443](BACKLOG.md) (`5ea36c2c`) introduced the design's four breakpoints as `theme.screens`** — `phone` · `smalllaptop` · `laptop` · `desktop`. ⛔ **`screens:` is at line 35, inside `theme:` (line 15) and BEFORE `extend:` (line 41), so it REPLACES Tailwind's defaults rather than adding to them.** ⚡ **`sm`, `md`, `lg`, `xl` and `2xl` no longer exist, so every utility using them emits NO CSS at all** |
+| ⚡ **Blast radius, counted** | **46 utilities across `app/` and `components/`: 38 `sm:` · 7 `lg:` · 1 `md:`.** ⛔ **Each is silently dead — not overridden, not wrong, ABSENT** |
+| **Steps** | **Open `/signin`, `/register`, `/verify` or `/reset/<token>` at any width above 640px** |
+| **Expected** | 📁 **The card is `--card-width: 25rem`** — *"a single 400px card carries all 24 screens"* ([`Fortune Signora Authentication.dc.html`](../docs/design-snapshot/screens/)) |
+| **Actual** | ⛔ **Full viewport width.** 📁 [`app/(auth)/auth-shell.tsx`](../frontend/app/\(auth\)/auth-shell.tsx):90 is `flex w-full flex-col sm:max-w-card` — **`w-full` applies, `sm:max-w-card` compiles to nothing, so the constraint that was meant to win never renders** |
+| ✅ **Not the token** | ⛔ **Ruled out before blaming it**: `--card-width: 25rem` is defined at `globals.css`:255 under `@layer base > :root`, and `maxWidth: { card: 'var(--card-width)' }` is present at `tailwind.config.ts`:173. **Both halves are intact; only the breakpoint prefix is gone** |
+| 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
+| ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
+
 ### B-423 · The queue files restate eligibility the projection already derives, so they go stale every promotion
 
 | | |
