@@ -154,6 +154,29 @@ error: Your local changes to the following files would be overwritten by merge:
 
 **Why it was not caught earlier.** ⚠️ **§19 puts the coverage check on the implementing lane before handover, and names the command.** ⛔ **`make coverage-debt ARGS="action_batch"` would have printed both files in seconds.** ⚡ **This is the second consecutive cycle where a required gate that the lane owns was first run by QE** — [B-171](#b-171--a-new-test-types-the-coordination-module-as-moduletype-and-then-sets-an-attribute-on-it-so-mypy---strict-fails) was `mypy --strict`, this one is coverage. **QE is reporting the pattern, not only the row.**
 
+### B-230 · An account-level refusal carries the workspace id the design says it must not see
+
+| | |
+|---|---|
+| **Module** | `product_surface` — [`frontend/lib/entry/index.ts`](../frontend/lib/entry/index.ts) |
+| **Current assignee** | **Lane A** — `product_surface` is this lane's in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟡 **Wrong but survivable** — ⛔ **nothing consumed the field, which is exactly why it was invisible.** ⚠️ **It would have become 🟠 the moment [TASK-1403](BACKLOG.md)'s support bundle shipped without this fix, because the bundle is a data-egress surface** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-10, in the same slice that found it.** ⚠️ **QE verifies and closes; this lane does not** (§20e) |
+| **Commit found** | Found by [TASK-1403](BACKLOG.md) writing the first consumer of `EntryDecision.workspaceId` |
+
+**Steps.** `resolveEntry({ ...session, account: 'suspended' })`, then read `.workspaceId`.
+
+**Expected.** ⛔ **`null`.** 📁 **The design states this as the REASON gate 1 is first**: *"Can this identity use the product at all? **Evaluated before any workspace is loaded, because a suspended account must not see workspace names it no longer has rights to.**"*
+
+**Actual.** ⛔ **The person's workspace id.** ⚡ **`resolveWorkspace` runs once before the rule walk and answers regardless of which gate then decides** — so every gate 1 and gate 2 decision carried a resolved workspace, **which is the exact disclosure the gate ordering exists to prevent, reintroduced by computing the answer eagerly.**
+
+> ⚡ **How it stayed invisible, and it is the useful half.** 📁 **The engine ships with no caller** ([TASK-1400](BACKLOG.md) says so deliberately; [TASK-1401](BACKLOG.md) is the wiring row), **so nothing read the field.** ⛔ **A leak nobody reads is still a leak — it is a leak waiting for its first reader**, and [TASK-1403](BACKLOG.md) is that reader: it hands the field to a **support diagnostics bundle**, which the row itself calls *"a data-egress surface… where tenancy is usually forgotten."*
+>
+> ✅ **The existing sweep did not catch it and was not wrong to miss it.** `entry-engine.test.ts` asserted *"never routes to a workspace the person is not a member of"* — **and a suspended member IS still a member**, so the id was legitimate by that test's rule. **The property that was missing is the design's own ordering**, which is now asserted over the whole sweep by gate number rather than by fixture.
+
+**Fix.** ⚡ **One expression, and the gate number is the test because the design's is**: `rule.gate < GATES.WORKSPACE_RESOLUTION ? null : workspaceId`. ⛔ **Gates 1 and 2 precede workspace resolution by construction, so a decision from either cannot have resolved one.** ✅ **Regression test in `entry-engine.test.ts`, asserted across every session in the sweep**, so a future rule placed in gate 1 or 2 cannot reintroduce it.
+
+
 ### B-229 · One journey creates a workspace and never restores the previous one, so every account-backed journey after it fails
 
 | | |

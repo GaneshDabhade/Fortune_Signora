@@ -20,6 +20,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  GATES,
   REASON_CODES,
   RULES,
   resolveEntry,
@@ -337,6 +338,32 @@ describe('the property that decides correctness', () => {
       const { workspaceId } = resolveEntry(session, intent);
       if (workspaceId === null) continue;
       expect(session.memberships.map((m) => m.workspaceId)).toContain(workspaceId);
+    }
+  });
+
+  it('🔴 and names NO workspace at all from gates 1 and 2 — [B-230](../../../docs/BUGS.md)', () => {
+    /**
+     * 📁 **The design states this as the REASON gate 1 is first**: *"Evaluated
+     * before any workspace is loaded, **because a suspended account must not
+     * see workspace names it no longer has rights to**."*
+     *
+     * ⛔ **`resolveWorkspace` ran before the walk and answered regardless**, so
+     * an account-level refusal carried a workspace id — **the exact disclosure
+     * the ordering exists to prevent, reintroduced by computing the answer
+     * eagerly.** ⚠️ **Nothing consumed the field, which is why it was
+     * invisible**; [TASK-1403](../../../docs/BACKLOG.md) is the first consumer
+     * and it hands the field to a support bundle.
+     *
+     * ⚡ **Asserted over the whole sweep rather than over one fixture**, so a
+     * future rule placed in gate 1 or 2 cannot reintroduce it.
+     */
+    for (const { session, intent } of pairs) {
+      const decision = resolveEntry(session, intent);
+      if (decision.gate >= GATES.WORKSPACE_RESOLUTION) continue;
+      expect(
+        decision.workspaceId,
+        `${decision.reason} is a gate ${decision.gate} decision and named a workspace`,
+      ).toBeNull();
     }
   });
 

@@ -30,6 +30,17 @@
 
 export { REASON_CODES, GATES, type ReasonCode, type Gate } from './reasons';
 export { RULES, resolveWorkspace, workspaceHome, type Rule } from './rules';
+export {
+  ENTRY_EVENT_KIND,
+  ForbiddenDetail,
+  diagnosticsBundle,
+  entryMark,
+  entryRecord,
+  explainEntry,
+  type DiagnosticsBundle,
+  type EntryMark,
+  type EntryRecord,
+} from './diagnostics';
 export type {
   AccountStanding,
   EntryDecision,
@@ -41,6 +52,7 @@ export type {
   WorkspaceStanding,
 } from './session';
 
+import { GATES } from './reasons';
 import { RULES, resolveWorkspace } from './rules';
 import type { EntryDecision, EntrySession, Intent } from './session';
 
@@ -79,7 +91,29 @@ export function resolveEntry(
       route: rule.route(session, intent),
       reason: rule.reason,
       gate: rule.gate,
-      workspaceId,
+      /**
+       * 🔴 **A decision from gate 1 or 2 names NO workspace** —
+       * [B-230](../../../docs/BUGS.md), found by
+       * [TASK-1403](../../../docs/BACKLOG.md) building the record that carries
+       * this field to support.
+       *
+       * 📁 **The design states it as the REASON gate 1 is first**: *"Can this
+       * identity use the product at all? Evaluated before any workspace is
+       * loaded, **because a suspended account must not see workspace names it
+       * no longer has rights to**."*
+       *
+       * ⛔ **`resolveWorkspace` runs before the walk and answered regardless**,
+       * so a suspended account's decision carried a workspace id — **the exact
+       * disclosure the ordering exists to prevent, reintroduced by computing
+       * the answer eagerly.** ⚠️ **Nothing consumed it yet, which is why it was
+       * invisible**; this row is the first consumer and it hands the field to a
+       * support bundle.
+       *
+       * ✅ **The gate number is the test because the design's is**: gates 1 and
+       * 2 precede workspace resolution by construction, so a decision from
+       * either cannot have resolved one.
+       */
+      workspaceId: rule.gate < GATES.WORKSPACE_RESOLUTION ? null : workspaceId,
     };
     if (rule.kind === 'terminal') return decision;
     // ⚡ **The first resolution is kept, not the last.** Gate 3 answers *which

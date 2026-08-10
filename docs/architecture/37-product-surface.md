@@ -986,3 +986,34 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ✅ **`NarrativeBlock` mounts it**, which is Account 360's summary block. **`generated_at` moved out of the provenance sentence** so one fact has one rendering. ⛔ **Account 360's *"updates on new evidence"* is omitted deliberately**: that panel's own rule is *"a narration is never rewritten to catch up"*, so the phrase would be a false promise.
 
 ⚠️ **The row's Playwright requirement — *"the same component renders on Account 360 and on a report with the same markup"* — is NOT met, and is recorded rather than claimed.** ⛔ **There is no Reports screen**, and 📁 **`ai_narration` holds 0 rows in `signora_lane_a`**, so the strip has no runtime instance to visit on Account 360 either. ✅ **Twelve component tests cover every state**, and both invariants above were fire-tested by reverting them.
+
+---
+
+## TASK-1403 · Reason codes become a diagnosable record, not a log line *(2026-08-10)*
+
+📁 **The design's sentence, which it states twice**: ***"Every rule carries a reason code. The code is written to the session, logged with the redirect, and shown to support in the diagnostics bundle — so 'why did I land here' is answerable WITHOUT REPRODUCING THE LOGIN."***
+
+⚡ **That last clause is the requirement and everything else is implementation**, which is why the three ship together: ⛔ **a code on the session tells the person's own browser and nobody else · a line in a log has no session to join it to · a bundle with nothing in it is a screen.** **Any two of them still require reproducing the login.**
+
+### `frontend/lib/entry/diagnostics.ts`, and it is pure like everything else in the module
+
+| | |
+|---|---|
+| **`entryMark`** | ⛔ **The code, the gate and the moment — and NOT the route.** ⚠️ **A session carrying the destination is a second copy of a fact the URL already states**, and the two disagree the moment somebody navigates. 🔴 **And never the workspace id**: the session is readable by the browser, so anything on it is disclosed to whoever holds the machine |
+| **`entryRecord`** | ⚡ **Shaped so the security event stream can take it verbatim** — `kind` is `entry.resolved` (`noun.verb_past`), **both identities travel together**, and a value that looks like a credential is refused on construction. ⛔ **Mirrored rather than trusted**: a producer that only learns the rule when the server rejects it has already put the secret in a browser's memory |
+| **`diagnosticsBundle`** | 🔴 **Workspace-tenanted, and the scope is a required argument** — ⛔ **a signature that let a caller ask for *everything* is one somebody will eventually call that way.** ✅ **What was withheld is COUNTED**: support seeing eleven of fourteen needs to know the three exist, or they read the gap as a missing record and chase it |
+| **`explainEntry`** | ⚡ **Names the gate, not only the code** — *"gate 4, workspace standing"* rather than `WS_ARCHIVED` alone. ⛔ **Not customer copy**: [ADR-0034](adr/0034-ubiquitous-language.md) governs what reaches a customer's screen, and this reaches an engineer's |
+
+⚠️ **A record with no workspace is KEPT in the bundle.** 🔴 **Gates 1 and 2 fire before any workspace is loaded** — `ACCOUNT_SUSPENDED`, `SESSION_EXPIRED` — **and those are the refusals support is most often asked about.** ✅ **They belong to the person rather than to a tenant, so they leak nothing, and dropping them would answer the commonest question with silence.**
+
+### ⛔ This is deliberately not a second log, and the producer is not this row
+
+⚠️ **The row is explicit that a reason code is security-relevant** — `ACCOUNT_LOCKED`, `STEPUP_REQUIRED` say why somebody was refused — **so it belongs in the stream [TASK-492](../BACKLOG.md) writes.** ⛔ **The producer that hands it over is NOT this row**: the stream is Python, this is `frontend/lib/entry/**`, and the row's Change Budget is 🟢 this directory · 🟠 a session field · 🔴 **nothing.** ✅ **Stated rather than exceeded.**
+
+### 🔴 It found a real defect on its first read — [B-230](../BUGS.md)
+
+📁 **The design states gate 1's position as its own reason**: *"Evaluated before any workspace is loaded, **because a suspended account must not see workspace names it no longer has rights to**."* ⛔ **`resolveWorkspace` ran once before the rule walk and answered regardless**, so every gate 1 and gate 2 decision carried a resolved workspace id.
+
+⚡ **It stayed invisible because the engine has no caller yet** — ⛔ **a leak nobody reads is a leak waiting for its first reader**, and this row is that reader: it hands the field to a bundle the row itself calls *"a data-egress surface… where tenancy is usually forgotten."* ✅ **Fixed in one expression, with the regression asserted over the whole sweep by gate number** rather than by fixture, so a future rule placed in gate 1 or 2 cannot reintroduce it.
+
+⚠️ **And the first draft of the diagnostics fixture carried an `as EntrySession` cast that hid three wrong field names**, so a fixture describing no session at all compiled and the account-level test silently exercised gate 6. **Exactly [B-420](../BUGS.md)'s defect — a claim about a shape TypeScript believed because it was told to.** ✅ **The cast is gone and the fixtures are checked.**
