@@ -139,12 +139,21 @@ describe('📁 §08 — the record header', () => {
 
   it('✅ the fact label uses --text-label, the role TASK-1453 added', () => {
     /**
-     * 🔴 **This is the token's first caller, and the reason it exists.**
-     * ⚠️ **[TASK-1453](../../../docs/BACKLOG.md)'s own measurement named three
+     * 🔴 **This is the token's first caller.** ⚠️
+     * **[TASK-1453](../../../docs/BACKLOG.md)'s own measurement named three
      * missing roles and `Label` was not one of them** — it was added because
      * that row's Definition of Done says *every role in §04's `typeRows`*.
-     * ✅ **§08's fact strip renders its labels at 12.5px**, which is exactly
-     * `Label`, **so the DoD was right and the measurement was short.**
+     *
+     * ⛔ **CORRECTED.** This lane first justified it with *"§08's fact strip
+     * renders its labels at 12.5px."* **It renders them at 11.5px** —
+     * [C-1414](../../../docs/LANE_COORDINATION.md), measured directly rather
+     * than taken on trust.
+     *
+     * ✅ **The justification never needed §08 and does not now**: 📁 §04's
+     * `typeRows` carries `['Label', '--text-label', '12.5 / 1.45 / 600', …]`
+     * verbatim, and `design-scale.test.ts` asserts the token against **that**,
+     * parsed from the design document. ⚡ **§04 is the type authority and §08's
+     * pixels are illustrative** ([C-1414](../../../docs/LANE_COORDINATION.md)).
      */
     render(<RecordHeader title="Vantage" facts={facts} />);
     expect(screen.getByText('Open ACV')).toHaveClass('text-label');

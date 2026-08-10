@@ -28,17 +28,37 @@ import { cn } from '@/lib/design/cn';
  * scan**, and the shell already made the same choice for *"help before
  * account, always last."*
  *
- * ## ⚠️ Two type values in §08 disagree with §04, and neither is invented here
+ * ## 🔴 §04 is the type authority; §08's pixels are illustrative — [C-1414](../../../docs/LANE_COORDINATION.md)
  *
- * 📁 **§04 `typeRows` names `Title` at 26px**; 📁 **§08's specimen renders its
- * record title at 24px inline.** ✅ **This uses `text-title`** — **the named
- * role from the scale, which is the type authority** — and the specimen's 24px
- * is recorded here rather than silently preferred. ⚠️ **Likewise the fact
- * VALUE is 14.5px inline against `Body`'s 14** — `text-sm` is used.
+ * ⚡ **Ruled after this component was written, and it ratifies what it does.**
+ * 📁 **§04's entries NAME TOKENS; §08's are inline `font-size:` in a rendered
+ * mockup** — ⛔ **a section that names no token cannot be the token authority**,
+ * and [D-138](../../../docs/DECISION_REGISTER.md) makes the snapshot the
+ * implementation authority without making every pixel in it a requirement.
  *
- * ✅ **The fact LABEL is 12.5px and that is exactly `--text-label`** — 📁 the
- * role added by [TASK-1453](../../../docs/BACKLOG.md) **which that row's own
- * measurement had missed**, and this is the caller that needed it.
+ * ⚠️ **The scale of the divergence was measured by Lane C and it is larger than
+ * this lane reported.** **§08 draws SEVEN distinct sizes — `11.5 · 13 · 14.5 ·
+ * 15 · 16 · 24 · 30` — and only `30` matches a §04 role.** ⛔ **So §08 is drawn
+ * almost entirely outside the type system**, and anyone migrating a screen
+ * against its pixels rather than §04's roles would reproduce exactly the
+ * fragmentation [D-218](../../../docs/DECISION_REGISTER.md) §9 measured.
+ *
+ * ✅ **This component therefore uses `text-title`, `text-sm` and `text-label`** —
+ * the named roles — **and none of §08's inline values.**
+ *
+ * ## ⚠️ A correction this lane owes, because a right answer rested on a wrong measurement
+ *
+ * 🔴 **This file previously claimed *"the fact LABEL is 12.5px and that is
+ * exactly `--text-label`"*. §08 renders it at `11.5px`.** ✅ **Measured directly
+ * after [C-1414](../../../docs/LANE_COORDINATION.md) reported it, not taken on
+ * trust.**
+ *
+ * ✅ **The conclusion is unchanged and never needed §08**: 📁 §04's `typeRows`
+ * carries `['Label', '--text-label', '12.5 / 1.45 / 600', 12.5, 600, …]`
+ * verbatim, **which is the evidence `design-scale.test.ts` already asserts
+ * against.** ⛔ **But a correct answer resting on a wrong measurement is one
+ * design refresh away from being a wrong answer**, so the evidence is repaired
+ * rather than the conclusion defended.
  */
 
 export interface PageHeaderProps {
@@ -191,8 +211,11 @@ export function RecordHeader({
             <dl className="mt-3.5 flex flex-wrap gap-x-7 gap-y-2">
               {facts.map((fact) => (
                 <div key={fact.label}>
-                  {/* ✅ `text-label` — 12.5px, the role TASK-1453 added and its
-                      own measurement had missed. This is its first caller. */}
+                  {/* ✅ `text-label` — §04's `Label` role, 12.5 / 1.45 / 600.
+                      ⚡ Added by TASK-1453 because its DoD said *every role*,
+                      and missed by that row's own measurement. First caller.
+                      ⛔ **§08 draws this at 11.5px and that is not followed** —
+                      C-1414: §04 is the type authority. */}
                   <dt className="text-label text-content-subtle">{fact.label}</dt>
                   <dd className="mt-0.5 text-sm font-semibold tabular-nums text-content">
                     {fact.value}
