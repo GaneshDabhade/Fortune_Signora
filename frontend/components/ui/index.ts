@@ -33,6 +33,13 @@ export { EmptyState, type EmptyStateProps } from './empty-state';
 export { ErrorState, type ErrorStateProps } from './error-state';
 export { SystemState, type SystemStateProps } from './system-state';
 export { Breadcrumb } from './breadcrumb';
+export {
+  PageHeader,
+  RecordHeader,
+  type PageHeaderProps,
+  type RecordHeaderProps,
+  type RecordFact,
+} from './page-header';
 export { ShellBanners, type ShellBanner } from './shell-banners';
 export { CopyableId } from './copyable-id';
 export { CodeInput, type CodeInputProps } from './code-input';

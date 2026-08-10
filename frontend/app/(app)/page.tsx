@@ -22,7 +22,7 @@ import { NeedsIdentity } from '@/components/intelligence/needs-identity';
 import { NothingRaises, TriageStrip } from '@/components/intelligence/triage';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
-import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
+import { Card, CardBody, EmptyState, PageHeader, SkeletonText } from '@/components/ui';
 import type { AccountAttention, AccountIdentity, SignalTypeName, Stage } from '@/lib/api/types';
 import {
   useAccountIdentities,
@@ -172,19 +172,22 @@ export default function AttentionPage() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
-      <header>
-        <h1 className="text-xl font-semibold text-content">Attention</h1>
-        {/* **The subtitle describes what is on the screen, not what the screen
-            is for.** Filtered to one question it was claiming the whole list,
-            which is the same defect class as a dashboard describing the
-            previous milestone — a sentence a reader has no way to check
-            against anything but itself. */}
-        <p className="mt-1 text-sm text-content-muted">
-          {raised === null
+      {/* ⚡ **The shared header** — [TASK-1446](../../../docs/BACKLOG.md).
+          ⛔ **The subtitle survives verbatim and its reasoning with it**: it
+          describes what is on the screen, not what the screen is for. Filtered
+          to one question it was claiming the whole list, which is the same
+          defect class as a dashboard describing the previous milestone — a
+          sentence a reader has no way to check against anything but itself.
+          ✅ **No primary action**: this screen has none, and `primaryAction` is
+          optional precisely so a screen without one is not made to invent one. */}
+      <PageHeader
+        title="Attention"
+        description={
+          raised === null
             ? 'Accounts your evidence says are worth a look, most pressing first.'
-            : 'Accounts raising one question, in the same order.'}
-        </p>
-      </header>
+            : 'Accounts raising one question, in the same order.'
+        }
+      />
 
       {/*
         ⚡ **The Signal Center's door** — [TASK-439](../../../docs/BACKLOG.md).

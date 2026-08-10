@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { CommercialProfile } from '@/components/commercial/profile';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
-import { SkeletonText } from '@/components/ui';
+import { PageHeader, SkeletonText } from '@/components/ui';
 import { useSession } from '@/lib/auth/client';
 import {
   useBuyingCommittee,
@@ -91,27 +91,36 @@ export default function BusinessPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-content">Your business</h1>
-          <p className="mt-1 text-sm text-content-muted">
-            What Signora compares every account against.
-          </p>
-        </div>
-        {/* **An owner reading this can change it from here.** Without the link
-            they would have to know that the authoring screen is under Settings
-            and is called Products — which is the product asking somebody to
-            remember its own filing system. Absent for a member, whose only
-            recourse is a colleague, and for whom this would 403. */}
-        {authoring === null ? null : (
-          <Link
-            href={authoring}
-            className="shrink-0 rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            Change this
-          </Link>
-        )}
-      </header>
+      {/* ⚡ **The shared header** — [TASK-1446](../../../../docs/BACKLOG.md).
+          ⛔ **This screen used to author its own**, which is the class
+          [498](../../../../docs/architecture/498-common-platform-audit.md)
+          named: twenty-six route directories, each inventing the same strip.
+          📁 Shell rule 03 — *"one primary action per view, and it lives in the
+          page header"* — **is now structural: `primaryAction` is one slot.** */}
+      <PageHeader
+        title="Your business"
+        description="What Signora compares every account against."
+        // **An owner reading this can change it from here.** Without the link
+        // they would have to know that the authoring screen is under Settings
+        // and is called Products — which is the product asking somebody to
+        // remember its own filing system. Absent for a member, whose only
+        // recourse is a colleague, and for whom this would 403.
+        primaryAction={
+          authoring === null ? undefined : (
+            // ⚠️ **The control is unchanged and that is deliberate.** §08 draws
+            // the primary action as a brand fill, and `Button` has no `asChild`
+            // — ⛔ **adding one is `button.tsx`, outside this row's 🟠 budget**
+            // (a NEW component in `components/ui`). ✅ **This row owns the SLOT;
+            // the control's appearance is a migration row's.**
+            <Link
+              href={authoring}
+              className="shrink-0 rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              Change this
+            </Link>
+          )
+        }
+      />
 
       {!workspacesLoading && activeWorkspace === null ? <NoWorkspace /> : null}
       {loading ? <SkeletonText lines={5} /> : null}
