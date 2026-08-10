@@ -373,6 +373,7 @@ databaseUrl: required(
 | [C-273](#c-273--the-lane-a-dependency-chain-drawn-once-and-one-row-in-it-has-already-freed) | **The Lane A dependency chain, drawn once — and one row in it has already freed** | **Lane A**, 2026-08-10, **on the product owner's explicit in | **Lane C** — ⚡ **every unmet input below is either a `C-` item address | 🟡 **`OPEN`** — raised 2026-08-10 | — |
 | [C-274](#c-274--the-switcher-s-exit-and-its-destination-are-in-different-rows-and-the-destination-is-blocked) | **The switcher's exit and its destination are in different rows, and the destination is blocked** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.m | **Lane C** — ⛔ **sequencing between three rows is row scope** | 🟡 **`OPEN`** — raised 2026-08-10 | — |
 | [C-275](#c-275--two-top-bar-slots-have-no-data-source-and-lib-shell-top-bar-ts-had-zero-callers-until-today) | **Two top-bar slots have no data source, and `lib/shell/top-bar.ts` had zero callers until today** | **Lane A**, 2026-08-10, **implementing [TASK-1440](BACKLOG.m | **Lane C** — ⚡ **both halves need a module to publish something, and w | 🟡 **`OPEN`** — raised 2026-08-10 | — |
+| [C-1417](#c-1417--the-inverse-of-c-1416-a-shipped-capability-no-design-draws-and-no-row-surfaces) | **The INVERSE of C-1416: a shipped capability no design draws and no row surfaces** | **Lane C**, 2026-08-10, discovery sweep | **Product owner** — ⚡ **a missing-design question, raised rather than answered** | 🟡 **`OPEN`** | ⛔ **Nothing** |
 | [C-1416](#c-1416--the-design-describes-a-richer-product-than-exists-three-times-now-and-c-277-is-the-third) | **The design describes a richer product than exists — three times now, and C-277 is the third** | **Lane C**, 2026-08-10, answering [C-277](#c-277) | **Product owner** — ⚡ **one question, asked once instead of three times** | 🟡 **`OPEN`** | ⛔ **Nothing — every instance ships a designed absent state** |
 | [C-1415](#c-1415--two-rows-hit-one-gap-a-workspace-publishes-its-identity-and-nothing-about-its-character) | **Two rows hit one gap: a workspace publishes its identity and nothing about its character** | **Lane C**, 2026-08-10, on Lane A's pattern report | **Split** — ⚡ **the read-shape half is Lane A's; the domain half is the product owner's** | 🟡 **`OPEN`** | ⚠️ **[C-276](#c-276) · TASK-1412's identity deliverables** |
 | [C-1414](#c-1414--the-design-system-specimens-are-drawn-in-sizes-its-own-type-system-does-not-define) | **The design system's specimens are drawn in sizes its own type system does not define** | **Lane C**, 2026-08-10, from Lane A's §04/§08 report | **Lane C** — derived, not escalated | ✅ **`CLOSED`** — **§04 is the type authority; §08's raw px are illustrative** | ✅ **Nothing** |
@@ -9695,6 +9696,60 @@ rules parsed: 24   ·   distinct reason codes: 24
 > ## ⚠️ **Three outcomes are possible and only QE can choose: LIVE and governance forgot to reference it · SUPERSEDED by [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) · or ABSORBED elsewhere, leaving a remnant.**
 
 ✅ **What this office did with the three it could rule on** — [`DECISION_PACKS.md`](DECISION_PACKS.md) superseded · [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) never adopted · [`PRODUCT_EXPERIENCE.md`](PRODUCT_EXPERIENCE.md) reassigned from the closed Lane B — **is a banner saying which of the three it is.** ⛔ **Nothing deleted.** ⚡ **The same treatment fits here once QE says which.**
+
+## C-1417 · The inverse of C-1416: a shipped capability no design draws and no row surfaces
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-10, on a discovery sweep for backend capability a customer cannot reach |
+| **Owner** | 🔴 **Product owner** — ⚡ **and it is a MISSING-DESIGN question, raised rather than answered** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN GAP** — ⛔ **not a defect. The endpoint is correct, tested and workspace-scoped; nothing is wrong with it** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **Nothing.** ✅ **No lane is waiting and no row is parked on it** |
+
+### 🔴 The measurement
+
+**Swept all 59 backend routes for a frontend caller. Eight have none.** ✅ **Seven are explained** — four `saved-views` routes have [TASK-452](BACKLOG.md) *"the screens that use it"* `READY`, `accounts-list` has [TASK-440](BACKLOG.md), and `approach` and `decision-package` have rows in validation.
+
+⛔ **One is explained by nothing:**
+
+```
+GET /workspaces/{id}/icp-performance
+    "Whether each declared criterion actually predicts a win"
+    opportunity_engine · shipped by TASK-406 · has an integration test
+```
+
+| Question | Answer |
+|---|---|
+| **Frontend callers** | ⛔ **Zero** — checked as a path, a hook name and a camelCase identifier |
+| **Backlog rows** | ⛔ **Zero.** No row mentions it, in any state |
+| **Screen designs drawing it** | ⛔ **None.** `ICP` appears in `Design Review` and `AI Copilot` only, neither of which is a screen this product builds |
+
+### ⚡ Why this is the INVERSE of [C-1416](#c-1416), and worth its own item
+
+📁 **[C-1416](#c-1416) is four instances of one shape: *the design describes a product further along than this one*.** 🔴 **This is the opposite: the PRODUCT is further along than the design.**
+
+⛔ **It is not the same finding and must not be folded into it.** ⚡ **C-1416's remedy is *ship the designed absent state and wait for the domain*. That remedy is meaningless here** — the domain exists, is tested, and answers a real commercial question. **There is simply no screen asking it.**
+
+### ⛔ What this office deliberately did NOT do
+
+**Create a row.** 📁 **[D-225](DECISION_REGISTER.md) §5 is the precedent and it is exact**: *"If the design specifies the Accounts index: implement it from the design. If the design does not specify it: **do not invent the screen. Raise the exact missing-design question instead.**"*
+
+⚡ **A row here would be inventing scope** ([§20e](../CLAUDE.md) — this office *"may not introduce scope the product owner has not approved"*), **and inventing a screen for a capability is a larger invention than inventing a task.**
+
+### ✅ The question, asked once
+
+> ## **`icp-performance` answers *whether each declared ICP criterion actually predicts a win*. Does a customer ever see that, and on which screen?**
+
+**Three outcomes and this office recommends none:**
+
+| | |
+|---|---|
+| ✅ **A design names it** | **It becomes a row like any other** |
+| ⚠️ **It is a reporting concern** | **It belongs to Reports or the Executive Dashboard, both `planned`, and waits for them** |
+| ⛔ **It is premature** | **The capability stands as correct, unreached backend, recorded as such rather than quietly rotting** — 📁 **and [TASK-438](BACKLOG.md)'s `pipeline-health` is the same shape and already known** |
+
+---
 
 ## C-1416 · The design describes a richer product than exists — three times now, and C-277 is the third
 
