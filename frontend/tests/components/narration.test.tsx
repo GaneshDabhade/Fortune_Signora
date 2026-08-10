@@ -93,11 +93,17 @@ describe('every sentence arrives with the evidence it rests on', () => {
     // A closed opportunity keeps its narration (D27) and has no current
     // explanation to re-derive. The sentence is still anchored; the anchor is
     // out of reach, and a dead control would say otherwise.
-    const { container } = render(
-      <NarrativeBlock narration={narration({ facts: [], evidence_unchanged: false })} />,
-    );
+    //
+    // ⚠️ **Narrowed from `querySelector('button')`, and the property is
+    // unchanged.** [B-312](../../../docs/BUGS.md) gave `Dialog` a Close control
+    // in its header so that **every** dialog contains something a keyboard can
+    // reach — and a `<dialog>` renders its children whether or not it is open,
+    // so *any* button is no longer the same question as *a citation control*.
+    // ⛔ **Asserting the absence of one element type was always a proxy**; this
+    // asserts the thing the comment above actually describes.
+    render(<NarrativeBlock narration={narration({ facts: [], evidence_unchanged: false })} />);
 
-    expect(container.querySelector('button')).toBeNull();
+    expect(screen.queryByRole('button', { name: /evidence|citation|fact/i })).toBeNull();
     expect(screen.getByText('2 facts')).toBeInTheDocument();
   });
 

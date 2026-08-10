@@ -321,14 +321,15 @@ test.describe('the editing dialog answers the same questions', () => {
     attention,
     brief,
   }) => {
-    // **`test.fail()` rather than `test.skip()`, deliberately.** [B-312](../../../docs/BUGS.md)
-    // is open and is not Lane B's to fix — the close control belongs in the
-    // frozen shared `Dialog`, and adding it there changes every dialog in the
-    // product and breaks a component test in a module this lane is not
-    // assigned. A skip would assert nothing and be forgotten; this asserts the
-    // defect is **still there**, and turns red the moment somebody fixes it —
-    // which is the prompt to delete this line.
-    test.fail();
+    // ✅ **`test.fail()` REMOVED — [B-312](../../../docs/BUGS.md) is fixed**, and
+    // removing this line is what its author asked for: *"turns red the moment
+    // somebody fixes it, which is the prompt to delete this line."*
+    //
+    // ⚡ **The device worked exactly as designed.** A `test.skip()` would have
+    // asserted nothing and been forgotten; this stayed red-when-correct until
+    // the defect was gone, and then told the lane fixing it that it was done.
+    // ⛔ **Both reasons it was not Lane B's are inside this lane's assignment**:
+    // `components/ui` and the `product_surface` component test it breaks.
     await openReadingDialog(attention, brief);
 
     // **The other half of a focus trap, and the half nobody checks.** Trapping
