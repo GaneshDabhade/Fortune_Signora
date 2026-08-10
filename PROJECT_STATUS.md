@@ -12,25 +12,24 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `3f498b7`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `9b4082e2`, 2026-08-10.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`3f498b7`** — the certified commit itself |
-| **`integration`** | ✅ **SYNCHRONIZED — the divergence stays closed, a second cycle running.** ⚡ **`main` is an ancestor, so the next promotion fast-forwards.** **It is `main` plus one claim commit, which is the correct resting state**, and `--next-cycle` now answers *"no cycle needed"* instead of reporting one permanently |
-| **Release candidate** | ⚡ **Cycle 177 took Lane A ahead of ordinary order, on Lane C's request** — **a lane was stuck behind a bug report that had not synchronized.** ✅ **[B-169](docs/BUGS.md) `VERIFIED`: 167 rows, 0 unparsed** |
-| **Certification** | ✅ [`3f498b74e1fa`](certification/reports/3f498b74e1fa.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · **first attempt** · ⚡ **promoted through `--promote`, not through a shell** |
+| **`main`** | **`9b4082e2`** — the certified commit itself |
+| **`integration`** | ✅ **Rebased onto `main` this cycle.** ⚡ **Five Lane A claim commits arrived *during* certification and were left for the next cycle by design** — the Certification Snapshot rule, working exactly as written. **All five verified claim-only** |
+| **Release candidate** | **17 commits, two lanes.** ⛔ **One slice excluded: `TASK-464`, returned `CHANGES REQUESTED`** ([B-172](docs/BUGS.md)). ✅ **Neither lane was held for it** |
+| **Certification** | ✅ [`9b4082e2102f`](certification/reports/9b4082e2102f.md) · migration head **`0046`** · protocol **v2** · profile **`platform`** · ⚠️ **second attempt — the first was NOT CERTIFIED on coverage, and the record is parked** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None — and this cycle the gate *fired* before it cleared** ([B-151](docs/BUGS.md), [B-413](docs/BUGS.md)): `registers.bug_rows()` reads **167 rows, 59 unresolved, 0 blocking**, and the repaired predicate is proved able to fail. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated.** ✅ **[B-209](docs/BUGS.md) fixed and closed.** ⛔ **The gate reporting this was blind for six days** ([B-413](docs/BUGS.md)) — **now proved able to fail.** **[B-209](docs/BUGS.md)** — eleven Playwright journeys failing on `integration`, four `@journey` and five `@regression`, found by Lane A 2026-08-06 · **[B-211](docs/BUGS.md)** — `ruff check .` red across the whole tree and **no gate invokes it**. ⚡ **Re-measured 2026-08-08: 232 errors, exit 1.** ⛔ **QE published `None` while both rows were open** — see §1d |
-| **Implementation waiting** | ⚡ **Lane A found a seventh path and took it — `TASK-1428` needed only [C-252](docs/LANE_COORDINATION.md), which was already ruled.** ⛔ **The other six still hold `TASK-1408`/`TASK-1409`, and none is Lane A's to clear** — — [C-252](docs/LANE_COORDINATION.md) · [C-253](docs/LANE_COORDINATION.md) · [C-254](docs/LANE_COORDINATION.md) · [C-255](docs/LANE_COORDINATION.md) · [C-256](docs/LANE_COORDINATION.md) · [C-257](docs/LANE_COORDINATION.md) · C-1403. ⚡ **Visible for the first time this cycle** |
-| **Validation queue** | ✅ **Empty. The hold is cleared** — `TASK-499` and `TASK-1410` both `VERIFIED`, [B-226](docs/BUGS.md)'s fix promoted. ⚡ **Lane B remains a stale pointer** — 3 ahead by ref, **level by content**, all three patch-ids already on `main`. ⚡ **Lane B likewise** — its one remaining commit is a claim `main` already carries, patch-id verified against a 400-commit window. ⛔ **Lane C's `dfe4a746` still conflicts on generated files and is the lane's to rebase** |
-| **Customer value this cycle** | ⚡ **Signora can now ask a customer to prove it is still them before something destructive** — **and the proof lasts ten minutes, not a day** |
-| **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** · ⚡ **promoted through `--promote`, which refused twice before it agreed** |
+| **Blocking Quality Defects** | ✅ **None.** `registers.bug_rows()` reads **176 rows, 60 unresolved, 0 blocking**. ⚠️ **[B-211](docs/BUGS.md) remains 🟠 and ungated** — `ruff check .` red across the tree and no gate invokes it. ⛔ **[B-156](docs/BUGS.md)/[B-166](docs/BUGS.md)/[B-224](docs/BUGS.md): the Playwright journeys are still unrunnable by QE** |
+| **New this cycle** | 🔴 **[B-172](docs/BUGS.md)** — TASK-464 ships 306 lines executed by no test; **the coverage floor caught it, and the lane's own §19 command would have caught it in seconds.** 🔴 **[B-173](docs/BUGS.md)** — **QE's own `--promote` cannot promote a candidate that touches `certification/manifest.json`**, found by using it |
+| **Customer value this cycle** | ⚡ **Every route that reads now has a loading state and an error path that is not the empty state** · **the workspace switcher moves into the rail** · **the Help Center answers from telemetry** · **the table is rebuilt to the design system** · **two Dialog accessibility defects fixed** |
+| **Overall progress** | **~82%** by engineering effort — an estimate, and marked as one |
 
-> ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
+> ⚠️ **Certification named 17 gates and executed 6.** The run prints its own gap — *"platform: 11 planned gate(s) NOT recorded"* — and **four of the eleven QE runs by hand** (`dr`, `eslint`, `frontend-suite`, `migration-reversibility`). **That is the D-231/D-232/D-233 finding, printing itself on a green run.** The implementation plan is with Lane C for governance review; **no gate, profile or test was changed to reach this promotion.**
 
-**Repository health:** **4339 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2224 frontend tests** across **110 files** *(**gated in stage 1** since [B-123](docs/BUGS.md); **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **854 files** · **47 migrations**, `0000`–`0046`, **verified reversible this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · smoke 24 stages in **203s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md); and [B-166](docs/BUGS.md) is why the lane could not run them either** *(⚠️ `Researched account 23s` — the slow-population stage on a fast run, second time, [B-141](docs/BUGS.md))* · **disaster recovery passed** — 5 restart stages, nothing lost · **18 module directories** · **53 ADRs** · **144 numbered architecture documents**.
+**Repository health:** **4343 backend tests** · **95.09% coverage** ✅ *(floor 95)* · **2382 frontend tests** across **116 files** *(run by QE this cycle; **certification still does not run them**)* · **401 Security Invariants** · mypy strict over **855 files** · **47 migrations**, `0000`–`0046`, **no migration added this cycle** · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **178s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** — 5 restart stages, nothing lost, **401 invariants against the restarted stack** · **18 module directories** · **54 ADRs** · **147 numbered architecture documents**.
 
 ---
 
@@ -1025,6 +1024,63 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-10, cycle 189
+
+**Derived from the promoted commit `9b4082e2`.** ⚡ **Seventeen commits, two lanes, one slice excluded — and the two most useful things this cycle produced were both refusals.**
+
+### What a customer can now do
+
+**Every route that reads has a loading state, and an error path that is not the empty state.** ⛔ **[P-A](docs/DOMAIN_DISCOVERY_REGISTER.md) — *a failed read must never render as an empty result* — was found six times on one screen at [C-226](docs/LANE_COORDINATION.md); `TASK-1447` closes the class across the app.** ✅ **The workspace switcher moves out of the top bar and into the rail**, where a person can tell a production workspace from a sandbox copy *before* switching into it. ✅ **The Help Center answers from telemetry.** ✅ **The table is rebuilt to the design system's four rules.** ✅ **Two Dialog accessibility defects fixed — [B-315](docs/BUGS.md), [B-312](docs/BUGS.md).**
+
+### 🔴 [B-172](docs/BUGS.md) — the coverage floor did what §19 asked the lane to do
+
+**The first certification returned NOT CERTIFIED on exactly one condition: coverage 94.66% against a 95.0% floor.** ⚡ **`coverage-debt --new` named the cause in one line, and it was one slice** — `action_batch/application/batches.py` (69 statements, 0%) and `domain/events.py` (24, 0%).
+
+**94.66% with those two files · 95.09% without · no other slice moves the number.** ✅ **Attribution by arithmetic, not inference.**
+
+> 🔴 **The gap is not a percentage.** `propose · approve · apply · reverse` is a state machine whose **own backlog row names the risk it exists to avoid** — *"a reversal overwrote `state`, so reading the decision off it recorded an approval AS a reversal"* — **and the code that replays the log to derive state is precisely the code nothing runs.**
+>
+> ⚠️ **Second consecutive cycle where a required gate the lane owns was first run by QE.** [B-171](docs/BUGS.md) was `mypy --strict`; this is coverage. **§19 names the exact command both times.** **Quality is meant to be cheaper on the left, and twice now it was not taken there.**
+
+**`TASK-464` returned `CHANGES REQUESTED`, the slice excluded, and neither lane held.** Lane A's other five slices and Lane C's eight promoted on schedule.
+
+### 🔴 [B-173](docs/BUGS.md) — QE's own promotion command refused a certified commit, and was right to
+
+**[D-228](docs/DECISION_REGISTER.md) built `--promote` so that `git merge` lives behind the gates in one process, with no override.** ⚡ **This is the first cycle in which it refused something, and it refused twice.**
+
+**The first refusal was correct and unremarkable** — the record was stashed, so the evidence genuinely was not visible. **A gate that passed there would have been reading intention rather than a file.**
+
+⛔ **The second refusal is a real defect in that code**: `_runs` reads the certification record **from the working tree**, and `git merge --ff-only` requires the working tree **clean**. **Both gates passed; git refused.** **So `--promote` cannot promote any candidate that modifies `certification/manifest.json`** — which this one did, **because it parked the failed `ef245b09` run rather than discarding it.**
+
+> ⚠️ **The trigger is honesty, and that is what makes it worth fixing rather than avoiding.** ⛔ **The cheapest "fix" is to stop parking failed runs in the candidate, and that is the wrong lesson entirely** — a manifest holding only successes claims a platform that never failed to certify.
+>
+> ✅ **Resolved by a documented route, not a flag: the record was committed on `lane-qe` and `integration` fast-forwarded to it** — the one way anything reaches `integration`. ⛔ **A `git commit --no-verify` onto `integration` was attempted first and was blocked. The block was correct and was not retried.**
+
+### ⚠️ Certification named 17 gates and ran 6, on a green run
+
+```
+  validation plan     platform: 11 planned gate(s) NOT recorded
+    · accessibility · doc-drift · dr · eslint · event-catalog
+    · frontend-suite · migration-reversibility · prompt-evaluation
+    · reachability · runtime-composition · state-check
+```
+
+**QE ran four of the eleven by hand and recorded them in the certification record's commit**: `dr` passed *(5 restart stages, 401 invariants against the restarted stack)* · `eslint` clean · `vitest` **2382 passed across 116 files** · **migration reversibility stated rather than skipped** — this candidate adds no migration, so §19's condition is not met.
+
+⛔ **No gate, profile, threshold or test was changed to reach this promotion.** **The D-233 implementation plan is with Lane C for governance review, and implementation stays frozen until it returns.**
+
+### ⚠️ A shared-environment incident, reported by Lane C before QE found it
+
+**Lane C's `make demo-seed` wrote to the shared stack on 5432 instead of its own slot, and `_retire_previous` hard-deleted the Playground that was there.** ✅ **They reported it immediately and did not attempt a second uninstructed write.**
+
+**Measured blast radius: none of this cycle.** Certification ran in `signora_certify_9b4082e2102f` — created for the run, dropped after. `make dr` runs against `signora-prod-postgres-1`. **Neither is 5432.**
+
+> ⚡ **Three facts QE measured that the report did not have.** **① The seed missed on two axes** — the migrated database was `signora_lane_c` on **5932**; the write went to `signora` on **5432**. **Wrong host *and* wrong database name**, so a guard comparing hosts alone would still have let it through. **② What was destroyed was at head `0040` against a repository at `0046`** — it could not have validly served a review of anything current. **③ The seeder succeeded against a schema six migrations stale and reported success**, which is the more serious defect: the repository's standard is to refuse unsafe states, not to proceed through them.
+
+**One `dr` failure during that window was QE's own** — `make dr` run without `make up`, which the Makefile documents in a comment QE had not read. **An abort, not a verdict on the commit.** Recorded because the timing would otherwise have made it look like Lane C's.
 
 ---
 

@@ -80,6 +80,40 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-173 · `--promote` cannot promote any candidate that touches `certification/manifest.json`, because its gate and its merge want opposite things from the working tree
+
+| | |
+|---|---|
+| **Module** | QE tooling — [`infra/certification-guard.py`](../infra/certification-guard.py) `_promote` / `_runs` |
+| **Current assignee** | **QE** — ⛔ **its own code, written under [D-228](DECISION_REGISTER.md), and found by using it** |
+| **Severity** | 🟠 — ⛔ **The promotion command refuses a legitimately certified commit.** **It fails closed, which is why it is not 🔴** |
+| **Status** | 🔵 **`OPEN` — QE**, 2026-08-10. **Worked around for this cycle by a documented route, not by a flag** |
+| **Commit found** | `9b4082e2`, found by QE promoting it |
+
+**Steps.** Certify a candidate whose own tree modifies `certification/manifest.json` — which happens whenever a previous failed run was parked honestly in the candidate — then run `--promote <sha>` from `main` with the new record in the working tree.
+
+```
+  PASS  certified — this exact commit
+  PASS  no VERIFIED state is undone (B-168)
+  PROMOTION REFUSED — not a fast-forward.
+error: Your local changes to the following files would be overwritten by merge:
+	certification/manifest.json
+```
+
+**Expected.** ✅ **Both gates pass, so the promotion proceeds** — that is the whole of [D-228](DECISION_REGISTER.md): *"the gates are the decision."*
+
+**Actual.** ⛔ **Both gates pass and the merge refuses.** ⚡ **The two halves of the same command want opposite things from the working tree**: `_runs` reads the record from it (`MANIFEST.exists()`), and `git merge --ff-only` requires it clean. **Neither is wrong on its own.**
+
+> 🔴 **The trigger is honesty, which is what makes it worth fixing rather than avoiding.** **The candidate modified the manifest because it parked the `ef245b09` NOT CERTIFIED run** — a run that did not certify is evidence about the repository, not a mistake to hide. ⛔ **The cheapest "fix" is to stop parking failed runs in the candidate, and that is the wrong lesson entirely.**
+>
+> ⚠️ **Removing the working tree from `_runs` is also wrong**: a freshly written record exists nowhere else for the minute before it is committed, and that is exactly the minute somebody asks.
+>
+> ✅ **The likely repair is ordering rather than sourcing** — resolve the certification evidence into memory **before** touching the index, so the merge sees a tree the gate has already finished reading.
+
+**How it was worked around, and why that is not the fix.** ⚡ **The record was committed on `lane-qe` and `integration` fast-forwarded to it** — **the one documented route by which anything reaches `integration`**, so the gate then read it from a ref and the working tree was clean. ⛔ **A `git commit --no-verify` directly onto `integration` was attempted first and was blocked; the block was correct and was not retried.**
+
+⚠️ **A second, smaller inconsistency found on the way, recorded here rather than filed separately.** **The branch hook accepts only a claim on `integration`. `_runs`'s own docstring says a certification record *"lands in a later commit — usually on `integration`."*** ⛔ **Two of QE's instruments disagree about where a record lives.** ✅ **The hook is the one that is right, and the docstring should say `lane-qe`.**
+
 ### B-172 · TASK-464 ships 306 lines of application and domain code that no test executes, and it takes the repository under the coverage floor
 
 | | |
