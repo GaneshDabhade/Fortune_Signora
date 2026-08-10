@@ -9725,3 +9725,82 @@ rules parsed: 24   ·   distinct reason codes: 24
 | ⓒ **Accept the wait** | ✅ **A legitimate answer.** ⛔ **But it should be a decision rather than a side effect, and [TASK-1451](BACKLOG.md) then carries the interim cost: `TAB_ORDER` and `scope.ts` name a region the frame does not render** |
 
 > ⚡ **This office's read, and it is a recommendation rather than a ruling.** **ⓑ before ⓐ.** 📁 **The utility panel is named by a shell rule that every subsequent screen is supposed to obey; the filter strip is named by none.** ⛔ **A rule nothing can satisfy is the more expensive of the two to leave open**, because each screen shipped meanwhile makes its own decision about where context goes, and those decisions are what a migration later has to undo.
+
+## C-270 · The count of entry destinations that render nothing is eleven on record and eighteen at runtime
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, **inside [TASK-1456](BACKLOG.md)'s audit** — ⚡ **found by requesting every destination rather than by reading the rules** |
+| **Owner** | **Lane C** — ⛔ **[D-205](DECISION_REGISTER.md) is a Product Office ruling and this lane does not rewrite another register's number from the outside** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **PLANNING CORRECTION** — ⛔ **not a code defect.** ⚡ **The code is the same either way; what changes is how large the gap is understood to be** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **Nothing.** ⚡ **Filed because rows are being sized against the smaller figure** |
+
+### 🔴 The measurement, and it is a runtime one
+
+📁 **[D-205](DECISION_REGISTER.md) records *"eleven terminal reason codes render nothing"*, and [TASK-1438](BACKLOG.md) and [TASK-1401](BACKLOG.md) both carry that figure.**
+
+⚡ **Lane A dev server on 3300, 2026-08-10, every destination `RULES` can return, requested.** ⛔ **`404` proves the route is absent** — Next.js matches a route *before* `(app)/layout.tsx` reads a session, so an existing-but-gated route answers `307 → /signin` instead, and the two never blur.
+
+| Destination | Result | Rules that return it |
+|---|---|---|
+| `/w/:ws/home` | **404** | ⛔ **11 · 12 · 14 · 19 · 20 · 21 · 22 · 24** |
+| `/workspaces` | **404** | ⛔ **09 · 13**, and the fallback of **04 · 23** |
+| `/workspaces/none` | **404** | ⛔ **10** |
+| `/w/:ws/suspended` · `/archived` · `/deleted` | **404** | ⛔ **15 · 16 · 17** |
+| `/account/deleted` · `/account/suspended` | **404** | ⛔ **01 · 02** |
+| `/auth/locked` · `/auth/step-up` | **404** | ⛔ **03 · 05** |
+| `/onboarding/:step` | ✅ **307 → `/signin`** | ✅ **18 — the only rule whose destination exists** |
+| the intent path | ✅ **307 → `/signin`** | ✅ **06**, ⛔ **and the intent is never captured, so it is never taken** |
+
+> 🔴 **Eighteen of twenty-four, unconditionally. Twenty counting the two fallbacks**, which are the paths taken whenever there is no intent and no stored preference — **and nothing in the product writes either.**
+
+### ⚡ Why it is worth a number rather than a shrug
+
+⛔ **The two figures imply different work.** **Eleven of twenty-four reads as a subsystem most of the way there; eighteen of twenty-four reads as a subsystem with two live rules.** ✅ **And the second framing makes [TASK-1438](BACKLOG.md) obviously the highest-leverage row in the set** — 📁 **it alone converts eight rules from 404 to reachable, which no other row comes close to.**
+
+⚠️ **This lane may have the smaller number's basis wrong** — *terminal* has a precise meaning in `rules.ts` (`kind: 'terminal'`, 20 of the 24) and **eleven may have counted something narrower on purpose.** ⛔ **Which is exactly why this is raised rather than corrected.**
+
+## C-271 · Rule 04 asks for behaviour a route-returning function cannot express
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, **inside [TASK-1456](BACKLOG.md)'s audit** |
+| **Owner** | **Design Authority** — ⚡ **routed through Lane C** ([D-224](DECISION_REGISTER.md) §7) |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⛔ **DESIGN AMBIGUITY** — ⚡ **and a narrow one: twenty-three of the twenty-four rules are unaffected** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **Rule 04 only.** ✅ **[TASK-1456](BACKLOG.md)'s audit completed around it, per [D-224](DECISION_REGISTER.md) §7's *surgically*** |
+
+### The question
+
+📁 **Rule 04, `SESSION_EXPIRED`: *"Re-authenticate **in place**. Route, filters and **unsaved drafts** preserved and restored."*** Destination column: *"(intent preserved)"*.
+
+⛔ **Every other rule answers *where does this person go*. This one answers *do not go anywhere* — and it names two kinds of state, filters and unsaved drafts, that no route can carry.**
+
+📁 **The implementation resolves it by picking the readable half**: [`rules.ts`](../frontend/lib/entry/rules.ts):196 returns `intent?.path ?? '/workspaces'`. ✅ **A reasonable reading.** ⛔ **But it makes rule 04 a navigation, which is the one thing the design says it is not** — and the fallback 404s.
+
+> **So: is rule 04 a routing rule at all?** ⓐ **A modal contract the engine only tags**, leaving the current route mounted and the DOM alive · ⓑ **a routing rule whose destination genuinely is the current path**, with draft preservation a separate concern the design mentions in passing · ⓒ **something else.**
+
+⚠️ **The distinction is not cosmetic: ⓐ changes the shape of `EntryDecision`** — a decision that is *"stay here and show a modal"* is not a `{ route, reason }` — **and this lane will not widen a published contract on an inference.**
+
+## C-272 · §04 rests on an Executive Dashboard that does not exist in this repository
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-10, **inside [TASK-1456](BACKLOG.md)'s audit** |
+| **Owner** | **Lane C** — ⚡ **it is a snapshot-versus-repository question before it is a design question** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN PREMISE** — ⛔ **the design is not wrong about what it wants; it is wrong about what is already here** |
+| **Status** | 🟡 **`OPEN`** — raised 2026-08-10 |
+| **Blocks** | ⛔ **The executive composition, and the sizing of [TASK-1401](BACKLOG.md)** |
+
+### The measurement
+
+📁 **§04 states it as settled fact, and builds an argument on it**: ***"The Executive Dashboard already built **is** the executive composition of Home. It does not sit beneath Home in a hierarchy; it is what Home resolves to for a CRO."*** ⚡ **The whole *Home is a slot, not a screen* resolution depends on that dashboard existing to be re-labelled.**
+
+⛔ **Searched, 2026-08-10: `Executive` appears in exactly three files in `frontend/` —** 📁 `app/(onboarding)/onboarding/steps.ts` and `goals-form.tsx`, where it is an option in a role picker, **and `lib/home/composition.ts`, which this lane wrote last week.** ⛔ **There is no Executive Dashboard screen, route, or component.**
+
+✅ **What DOES exist is the data behind one.** 📁 **[TASK-438](BACKLOG.md) shipped `GET /workspaces/{id}/pipeline-health`** — conversion, ageing, movement, roll-up by owner. ⛔ **And it has no frontend consumer: grepped for `pipeline-health` and `pipelineHealth` across `app/`, `components/` and `lib/` — zero hits.** ⚠️ **Which is the same shape as the finding this audit exists for, one layer down.**
+
+> **So the question is narrow.** ⓐ **The design describes a state this repository never reached, and the executive composition must be BUILT** — in which case §04's argument survives but its evidence does not · ⓑ **the dashboard exists somewhere this lane did not search** · ⓒ **the design was written against a different implementation's state** ([TASK-1455](BACKLOG.md) established that two finalized designs were built against *no* snapshot, so the reverse is worth asking).
+
+⛔ **This lane does not pick.** ⚡ **It matters because ⓐ adds a screen to the entry programme that nobody has sized, and it is currently sized as re-labelling.**
