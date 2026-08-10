@@ -11,9 +11,23 @@
 | **Upstream reference** | `https://claude.ai/design/p/1d043179-1ee9-4c9f-b59e-592e04297cad` |
 | **Design system** | **Modernist** — `c798a756-9b5d-4587-a7bc-6f61a447ebab`, the version every screen links |
 | **Design version** | ⚠️ **The project exposes none.** **This snapshot's identity is the content hashes below** — stated rather than invented |
-| **Contents** | **28 files · 2,124,212 bytes · 27 screen designs** — 🔴 **and the upstream project holds 29 `Fortune Signora` screens. THE TWO THAT ARE MISSING ARE NAMED BELOW** |
+| **Contents** | ✅ **31 files · 2,286,072 bytes · 29 screen designs** — **re-measured 2026-08-10 by [TASK-1455](../BACKLOG.md), never transcribed forward.** ⚡ **The snapshot now holds every `Fortune Signora` screen the upstream project has: 29 of 29** |
+| ⚠️ **Why the previous total did not reconcile** | ⛔ **This row read *"28 files · 2,124,212 bytes · 27 screen designs"* and had been WRONG SINCE 2026-08-08.** ⚡ **Adding the two new designs to the old total gives 2,215,560 — 70,512 short of the measured 2,286,072, and the gap is the finding.** 📁 **Measured by `git log --diff-filter=A`: `Fortune Signora Authenticated Entry.dc.html` was added 2026-08-08 and `Fortune Signora Entry Coverage Review.dc.html` on 2026-08-09, and NEITHER updated this header.** 🔴 **[§2](../../CLAUDE.md) — *the repository itself should always tell the truth* — and a summary row that silently stops counting is the same defect class as the count that hid the two missing designs for three days. ✅ **Recorded rather than quietly overwritten** |
 
-> ## 🔴 The two designs no lane has ever been able to read
+> ## ✅ RESOLVED 2026-08-10 by [TASK-1455](../BACKLOG.md) — both designs are in the snapshot
+>
+> | Retrieved | Bytes | SHA-256 |
+> |---|---|---|
+> | `screens/Fortune Signora ICP Builder.dc.html` | **45,852** | `ab4e9438a7d06c19` |
+> | `screens/Fortune Signora People Intelligence.dc.html` | **45,496** | `b97bd11ab8bf08ea` |
+>
+> ⚠️ **Both were TRANSCRIBED, not binary-copied** — `DesignSync · get_file` returns content through a session's context, so writing it to disk is the drift risk [D-137](../DECISION_REGISTER.md) forbids. **This is the same disclosure `design-system/styles.css` already carries below, and the same reason it is acceptable: the check, not the intention.** ✅ **Verified structurally rather than asserted** — sc-for blocks balanced open-to-close (11 and 14), `x-dc` balanced, 29 `crit()` calls corroborated by the ICP design's own prose *"All 29 map to a field"*, 7 contacts, 6 timeline entries, 30 `&quot;` entities each, the `/[^\d.]/g` regex intact across the JSON boundary, and the characters most likely to be lost in transit present: the curly apostrophe, both curly quotes, `Sørensen`, `Køhler`, `→`, `✦`, `✉`.
+>
+> ⛔ **The record below is NOT rewritten** ([§2](../../CLAUDE.md) — *a record of what was true then must not be rewritten to match now*). **It is why this took until 2026-08-10, and it is the more useful half.**
+>
+> ---
+>
+> ## 🔴 The two designs no lane has ever been able to read *(the dated record, kept)*
 >
 > **Measured 2026-08-09 by `DesignSync · list_files` against project `1d043179-1ee9-4c9f-b59e-592e04297cad`, on the product owner's [D-222](../DECISION_REGISTER.md) instruction.**
 >
