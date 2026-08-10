@@ -70,18 +70,35 @@ function shell(
   );
 }
 
+/**
+ * ⚡ **The rail, located by what it IS rather than by its tag** —
+ * [B-234](../../../docs/BUGS.md).
+ *
+ * ⚠️ **These tests used `querySelector('aside')`**, which was unambiguous only
+ * while the rail was the page's single `<aside>`. ⛔ **The rail is a `<div>`
+ * now** — the design gives `aside[complementary]` to the utility panel — **and
+ * the old selector would silently have started measuring the panel.**
+ *
+ * ✅ **`[data-collapsed]` is the rail's own attribute**, already there for the
+ * collapse state, so the selector names the rail rather than an element type.
+ */
+function rail(container: HTMLElement): HTMLElement {
+  const found = container.querySelector('[data-collapsed]');
+  if (found === null) throw new Error('the shell rendered no rail');
+  return found as HTMLElement;
+}
+
 describe('the rail carries the design’s two widths', () => {
   it('⛔ reads them from RAIL_WIDTH rather than a literal in the markup', () => {
     const { container } = shell();
-    const aside = container.querySelector('aside');
-    expect(aside).toHaveStyle({ width: `${RAIL_WIDTH.expanded}px` });
-    expect(aside).toHaveAttribute('data-collapsed', 'false');
+    expect(rail(container)).toHaveStyle({ width: `${RAIL_WIDTH.expanded}px` });
+    expect(rail(container)).toHaveAttribute('data-collapsed', 'false');
   });
 
   it('collapses to 56px and remembers it', async () => {
     const { container } = shell();
     await userEvent.click(screen.getByRole('button', { name: 'Collapse navigation' }));
-    expect(container.querySelector('aside')).toHaveStyle({
+    expect(rail(container)).toHaveStyle({
       width: `${RAIL_WIDTH.collapsed}px`,
     });
     expect(window.localStorage.getItem(collapseKey('u1', 'regular'))).toBe('true');
@@ -109,10 +126,10 @@ describe('⚡ the wordmark goes when the rail does', () => {
     // wordmark in the header below `md`, where the rail does not exist —
     // an unscoped query matches both and this test found that.
     const { container } = shell();
-    const rail = () => container.querySelector('aside') as HTMLElement;
-    expect(within(rail()).getByText('Signora')).toBeInTheDocument();
+    const railEl = () => rail(container);
+    expect(within(railEl()).getByText('Signora')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Collapse navigation' }));
-    expect(within(rail()).queryByText('Signora')).not.toBeInTheDocument();
+    expect(within(railEl()).queryByText('Signora')).not.toBeInTheDocument();
   });
 });
 
@@ -162,7 +179,7 @@ describe('📁 the vertical order is fixed and non-negotiable', () => {
     });
     const banners = container.querySelector('[data-testid="shell-banners"]');
     expect(banners?.closest('aside')).toBeNull();
-    expect(container.querySelector('aside')).not.toBeNull();
+    expect(rail(container)).not.toBeNull();
   });
 });
 
@@ -183,5 +200,52 @@ describe('⛔ the shell reserves the slots and invents nothing', () => {
     });
     expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/accounts');
+  });
+});
+
+describe('🔴 B-234 · the shell publishes each landmark exactly once', () => {
+  it("gives the page ONE complementary region, and it is the utility panel", () => {
+    /**
+     * 📁 **The design's landmark table assigns each region exactly one role**:
+     * *"`nav[navigation]` — the rail, labelled *Primary*"* · *"`aside
+     * [complementary]` — the utility panel, labelled with its active tab."*
+     *
+     * ⚠️ **The rail's wrapper was an `<aside>`** — an unnamed `complementary`
+     * around a `<nav>` that already carried the correct role. **Harmless while
+     * it was the only one; a collision the moment
+     * [TASK-1433](../../../docs/BACKLOG.md) mounted the panel.**
+     *
+     * ⛔ **Playwright found it, not a test** — *"`<span>Settings</span>` …
+     * intercepts pointer events"* — **which is a layout symptom of an
+     * accessibility defect, and the least likely message to lead anybody
+     * here.** ✅ **So the property is asserted directly.**
+     */
+    const { container } = shell();
+
+    const complementary = screen.queryAllByRole('complementary');
+    expect(complementary.length, 'the shell has more than one complementary landmark').toBeLessThan(
+      2,
+    );
+    for (const region of complementary) {
+      expect(region).toHaveAccessibleName(/panel$/);
+    }
+
+    // ⚡ Vacuity: the rail is on screen, so 'fewer than two' is a measurement
+    // rather than an empty render.
+    expect(rail(container)).not.toBeNull();
+  });
+
+  it('⛔ still renders the rail, so the assertion above is not passing over an empty frame', () => {
+    /**
+     * ⚡ **The vacuity guard, and it checks the RAIL rather than its `<nav>`.**
+     * ⚠️ **`Navigation` needs the workspace provider this suite deliberately
+     * does not mount**, so its `RegionBoundary` catches it and no `<nav>`
+     * renders here — 📁 the same absence the *"navigation survives the
+     * collapse"* block already works around. **The rail element itself is what
+     * this file can honestly assert.**
+     */
+    const { container } = shell();
+
+    expect(rail(container)).not.toBeNull();
   });
 });

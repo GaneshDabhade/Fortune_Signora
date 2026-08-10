@@ -3,6 +3,7 @@
 import { ArrowLeft, Scale } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
 
 import {
   ContestedMark,
@@ -15,6 +16,7 @@ import {
   ReadingValidity,
   ScoreArithmetic,
 } from '@/components/intelligence/contributions';
+import { useUtilityPanel } from '@/components/shell/utility-panel';
 import { CompetitorContext } from '@/components/intelligence/competitors';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { EntityName } from '@/components/intelligence/entity-name';
@@ -150,6 +152,39 @@ export default function AccountBriefPage() {
   // an `accountId`. Stage 2 of [C-008](../../../../docs/LANE_COORDINATION.md).
   const catalog = useProductCatalog(workspaceId);
   const committee = useBuyingCommittee(workspaceId);
+
+  /**
+   * 🔴 **The account's history, built ONCE and placed by the shell** —
+   * [TASK-1433](../../../../docs/BACKLOG.md).
+   *
+   * ⚡ **`useMemo` is not an optimisation here** — ⛔ **it is what stops the
+   * publish effect re-running on every render**, which would republish the
+   * same node into the panel forever.
+   */
+  const historyFeed = useMemo(
+    () => (
+      <AccountHistory
+        entries={timeline.data?.pages.flatMap((page) => page.items) ?? []}
+        hasMore={timeline.hasNextPage}
+        isLoading={timeline.isLoading}
+        isLoadingMore={timeline.isFetchingNextPage}
+        isError={timeline.isError}
+        onLoadMore={() => void timeline.fetchNextPage()}
+      />
+    ),
+    [
+      timeline.data,
+      timeline.hasNextPage,
+      timeline.isLoading,
+      timeline.isFetchingNextPage,
+      timeline.isError,
+      timeline.fetchNextPage,
+    ],
+  );
+
+  // 📁 **§13's Activity tab** — ⛔ the panel takes it only where the panel
+  // exists; below 1024 `carrying` is false and the section above renders.
+  const history = useUtilityPanel('Activity', historyFeed);
   // **The roster, so an account can be handed to a colleague.** The same query
   // the Team page holds, same cache key, so this costs no request — and
   // TM-01's `member_email` is what makes a name renderable at all.
@@ -487,17 +522,21 @@ export default function AccountBriefPage() {
             />
           </section>
 
-          <section className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-content">What has happened</h2>
-            <AccountHistory
-              entries={timeline.data?.pages.flatMap((page) => page.items) ?? []}
-              hasMore={timeline.hasNextPage}
-              isLoading={timeline.isLoading}
-              isLoadingMore={timeline.isFetchingNextPage}
-              isError={timeline.isError}
-              onLoadMore={() => void timeline.fetchNextPage()}
-            />
-          </section>
+          {/* 🔴 **The history docks into the panel's Activity tab when there is
+              a panel, and renders here when there is not** —
+              [TASK-1433](../../../../docs/BACKLOG.md).
+
+              ⛔ **Never both.** 📁 The design gives the panel no width below
+              1024, and it never says the CONTENT disappears — only the panel.
+              ⚡ **So `carrying` decides the PLACEMENT of one component over one
+              data source**, rather than there being two copies to keep in
+              step. */}
+          {history.carrying ? null : (
+            <section className="flex flex-col gap-3">
+              <h2 className="text-sm font-semibold text-content">What has happened</h2>
+              {historyFeed}
+            </section>
+          )}
 
           {/* **Where the argument ends.** Every line above is Signora's
               reasoning about a fact; this is the fact. Rendered once for the

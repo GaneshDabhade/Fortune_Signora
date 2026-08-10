@@ -1292,3 +1292,41 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 🔴 **Then established as NOT a repository defect at all.** 📁 **The twelve accounts every one of those journeys reads come from `tests.playground.seed`** — *"twelve accounts through the real pipeline"* — **and this lane's `signora_lane_a` had never been seeded, or had been truncated by `make test`.** ✅ **Seeded through that same approved door and re-run: 21 of 21 green.**
 
 ⚡ **The correction is to how this lane runs the suite, and the tooling already had it right.** 📁 **`make e2e` re-seeds and then runs Playwright**, in one target, *"so a run is reproducible"*. ⛔ **Running `npx playwright test` directly skips the seed**, which is what produced twelve failures that looked like product defects. 🔴 **[§20e](../../CLAUDE.md) is explicit about the trap on the other side**: ***a workstation gap must never be recorded as a repository defect*** — **so the row that was not written is the correct outcome here.**
+
+---
+
+## TASK-1433 · The utility panel — the dock is the shell's, the content is not *(2026-08-10)*
+
+🔴 **The row names its own risk and it decided the shape of everything below**: ⚠️ ***"Building the chrome because it is the easy half. The chrome is not the deliverable."***
+
+✅ **So the acceptance test is the Activity tab rendering `AccountHistory` on the account record**, and it is checked in a browser: **the panel docks at 300px, the content narrows, the tab carries the account's real history, and the section that used to hold it stands down.**
+
+### ⚡ Measured first, and the measurement changed the work
+
+📁 **`AccountHistory` already existed** — [`components/timeline/feed.tsx`](../../frontend/components/timeline/feed.tsx), with its own loading, empty and error states — **and was already mounted on the account record.** ⛔ **So this row was never *build a history*; it was *give the history a dock*, and the risk was building a panel and calling that done.**
+
+### 🔴 The panel is not the only home for what it holds, and that is the load-bearing rule
+
+📁 **Below 1024 the design gives the panel no width at all.** ⚠️ **A module that put its ONLY copy of something in the panel would lose it entirely on a phone** — ⛔ **and the design never says the CONTENT disappears, only the panel.**
+
+✅ **`useUtilityPanel` therefore reports `carrying`**, and the account record renders the history inline when the panel is not taking it. ⚡ **One component, one data source, two placements decided by the band** — ⛔ **never two copies, and never both at once.** **A journey asserts both halves: at 1440 the body section is absent, at 390 the panel is absent and the section is there.**
+
+### ⛔ Three defects of my own, each found in a browser and none by a test
+
+| | |
+|---|---|
+| **The panel floated instead of docking** | ⚡ **The provider rendered it, and the provider wraps the whole shell** — so it landed *after* the frame's flex row and the rail's `Settings` link sat on its tabs. ⛔ **Playwright reported it as *"intercepts pointer events"***. ✅ **Placement moved to the layout (`UtilityPanelDock`) and state stayed with the provider**: a panel that *pushes* has to be a sibling of what it pushes |
+| **[B-234](../BUGS.md) — two `complementary` landmarks** | 📁 **The design's table gives the rail `nav[navigation]` and the panel `aside[complementary]`.** ⚠️ **The rail's wrapper was an `<aside>`** — harmless while it was the only one, **a collision the moment the panel mounted.** ✅ **One element changed; fire-tested by restoring the `<aside>`** |
+| **The stored preference clobbered the toggle** | ⛔ **`⌘.` pressed just after a route change did nothing**: the hydration effect was still queued and wrote the stored `false` over the `true` the keypress had set. ✅ **Hydration now happens once per module and never after a deliberate action** |
+
+### ⚠️ And one thing that looked like a defect and was the feature
+
+⛔ **A journey that clicked through from the attention list and pressed `⌘.` immediately kept failing.** ⚡ **The panel *"remembers its open state per module"***, so a keypress landing mid-navigation toggles the module being LEFT, and the arriving module then applies its own memory. ✅ **That is correct**, and 📁 **the journeys now enter by deep link** — which is the design's own reason for mandatory breadcrumbs: *"most sessions start from a deep link in Slack or email."*
+
+### ✅ The skip link the shell owed since [TASK-1444](../BACKLOG.md)
+
+📁 **Rule 2.4.1 names three targets**: content, navigation, **the utility panel.** ⛔ **The third was absent because the panel did not exist**, and [`skip-links.tsx`](../../frontend/components/shell/skip-links.tsx) said so. ✅ **It exists now** — ⚡ **and the link is CONDITIONAL rather than simply added**, because the file's own rule still binds: *a skip link to a missing landmark sends a keyboard user nowhere.* **The panel is absent below 1024, so both read one source and cannot disagree.**
+
+### ⏸️ Named as remaining
+
+⛔ **Insights and Notes carry the panel's own empty state and no content**, which is what the row asked for: *"tab stubs only if the design's own empty state is used; never invented copy."* **They gain content when a module publishes into them.**

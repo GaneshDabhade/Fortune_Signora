@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { RegionBoundary } from '@/components/ui/region-boundary';
@@ -9,6 +10,7 @@ import { ShellPalette } from '@/components/shell/shell-palette';
 import { RouteAnnouncer } from '@/components/shell/route-announcer';
 import { SKIP_TARGETS, SkipLinks } from '@/components/shell/skip-links';
 import { TopBar } from '@/components/shell/top-bar';
+import { UtilityPanelDock, UtilityPanelProvider } from '@/components/shell/utility-panel';
 import { WorkspaceSwitcher } from '@/components/shell/workspace-switcher';
 import { ShellBanners, type ShellBanner } from '@/components/ui';
 import type { Crumb } from '@/lib/shell/breadcrumb';
@@ -85,11 +87,21 @@ export function AppShell({
   // decision ([D-193](../../../docs/DECISION_REGISTER.md)).
   const rail = useRailCollapse(userId);
 
+  const pathname = usePathname();
+
   return (
     /* 📁 **The vertical order is fixed and non-negotiable**: banners, then the
        top bar, then everything else. ⚡ **The banner region sits ABOVE the
        frame's columns** because it spans them — a banner inside the content
        column would leave the rail beside a warning that does not apply to it. */
+    /* 📁 **§13's dock, wrapping the whole frame** —
+       [TASK-1433](../../../docs/BACKLOG.md). ⚡ **Outside `<SkipLinks />`
+       deliberately**: the skip link to the panel exists only when the panel
+       does, and both read `useUtilityPanelPresent` so they cannot disagree.
+       ⛔ **The module segment is the FIRST path segment, not the route** —
+       📁 *"remembers its open state per module"*, and a per-ROUTE memory would
+       forget the moment somebody opened a different account. */
+    <UtilityPanelProvider userId={userId ?? null} module={moduleOf(pathname)}>
     <div className="relative flex min-h-screen flex-col">
       {/* 📁 **Rule 2.4.1**, and first in the DOM because a skip link somebody
           has already tabbed past is not a skip link. */}
@@ -111,7 +123,17 @@ export function AppShell({
       <ShellBanners banners={banners} inSandbox={inSandbox} />
 
       <div className="flex min-h-0 flex-1">
-      <aside
+      {/* 🔴 **A `<div>`, not an `<aside>`** — [B-234](../../../docs/BUGS.md).
+          📁 **The design's landmark table gives the rail exactly one role**:
+          *"`nav[navigation]` — the rail, labelled 'Primary'"* — **and reserves
+          `aside[complementary]` for the UTILITY PANEL.** ⛔ **An `<aside>` here
+          is a second, unnamed `complementary` landmark wrapping a `<nav>` that
+          already carries the right one**, and the moment
+          [TASK-1433](../../../docs/BACKLOG.md) mounted the panel the page had
+          TWO — the same defect [TASK-1444](../../../docs/BACKLOG.md) found
+          with `banner`, where a screen-reader user choosing a landmark gets a
+          menu of two and neither says which is which. */}
+      <div
         // ⛔ **The width is the design's, from `RAIL_WIDTH`, not a literal** —
         // 232px expanded and 56px collapsed.
         style={{ width: rail.collapsed ? RAIL_WIDTH.collapsed : RAIL_WIDTH.expanded }}
@@ -150,7 +172,7 @@ export function AppShell({
               a second reader would be a second answer to the same question. */}
           <Navigation role={role} collapsed={rail.collapsed} />
         </RegionBoundary>
-      </aside>
+      </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* 📁 **The top bar is now the design's slot set** —
@@ -189,6 +211,13 @@ export function AppShell({
           </RegionBoundary>
         </main>
       </div>
+
+      {/* 📁 **§13's dock — the THIRD column, and the design's own word is
+          *"pushes content"***. ⛔ **In flow beside the content, never over it**:
+          a panel that covered the table would make somebody close it to read
+          what it describes. ⚡ **Rendered here rather than by the provider**,
+          because a panel that pushes has to be a sibling of what it pushes. */}
+      <UtilityPanelDock />
       </div>
 
       {/* 📁 **The command palette** — [TASK-1442](../../../docs/BACKLOG.md),
@@ -212,5 +241,19 @@ export function AppShell({
         <MobileNavigation role={role} />
       </RegionBoundary>
     </div>
+    </UtilityPanelProvider>
   );
+}
+
+/**
+ * ⚡ **Which module a route belongs to**, for the panel's per-module memory.
+ *
+ * 📁 ***"Remembers its open state per module."*** ⛔ **The first path segment,
+ * never the whole route**: `/accounts/abc` and `/accounts/def` are the same
+ * module, and a per-route key would make somebody re-open the panel on every
+ * record they looked at — **which is the opposite of remembering.**
+ */
+function moduleOf(pathname: string | null): string {
+  const first = (pathname ?? '/').split('/').filter((part) => part !== '')[0];
+  return first ?? 'home';
 }

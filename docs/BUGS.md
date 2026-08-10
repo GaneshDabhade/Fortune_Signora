@@ -363,6 +363,28 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-234 · The rail was a second `complementary` landmark, and the utility panel made it a collision
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`components/shell/app-shell.tsx`](../frontend/components/shell/app-shell.tsx) |
+| **Current assignee** | **Lane A** — ⚡ **found and fixed while building [TASK-1433](BACKLOG.md)** |
+| **Severity** | 🟡 **Wrong but survivable** while the rail was the only one; ⚠️ **🟠 the moment the utility panel mounted**, because two unlabelled-and-labelled `complementary` regions is a landmark menu that answers nothing |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-10. **Runtime-verified**: `getByRole('complementary')` returns **2** before and **1** after, and the one that remains is the panel |
+| **Commit found** | ⛔ **Found by Playwright refusing to click**, not by a test asserting landmarks — *"`<span>Settings</span>` … intercepts pointer events"* |
+
+**Steps.** Sign in, open any authenticated screen, and enumerate the `complementary` landmarks.
+
+**Expected.** 📁 **One, and it is the utility panel.** **The design's landmark table is explicit and assigns each region exactly one role**: *"`nav[navigation]` — the rail, labelled *Primary*"* and *"`aside[complementary]` — the utility panel, labelled with its active tab."*
+
+**Actual.** ⚡ **The rail's wrapper was an `<aside>`**, which is a `complementary` landmark in its own right — **an unnamed one, wrapping a `<nav>` that already carried the correct role.** ⛔ **So the rail announced itself twice, as two different kinds of region.**
+
+🔴 **Latent until [TASK-1433](BACKLOG.md).** **While the rail was the only `<aside>` the extra landmark was merely noise**; **mounting the utility panel made the page carry two**, and 📁 **this is the same defect [TASK-1444](BACKLOG.md) already found with `banner`** — *"a screen-reader user choosing that landmark would get a menu of two."*
+
+✅ **The fix is one element.** **The wrapper is a `<div>`; the `<nav aria-label="Primary">` inside it is unchanged and still carries the landmark the design asks for.** ⛔ **Nothing about the rail's width, collapse or contents moved.**
+
+⚠️ **And the test that should have caught it did not exist, so it does now**: **the shell asserts exactly one `complementary` and that its accessible name is the panel's** — **which fails if either the rail regains an `<aside>` or a second panel is ever mounted.**
+
 ### B-233 · The navigation region failed on every authenticated screen, at every width
 
 | | |

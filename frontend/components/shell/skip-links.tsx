@@ -1,4 +1,7 @@
+'use client';
+
 import { cn } from '@/lib/design/cn';
+import { useUtilityPanelPresent } from './utility-panel';
 
 /**
  * **Skip links** — [TASK-1444](../../../docs/BACKLOG.md), 📁 App Shell rule
@@ -18,23 +21,33 @@ import { cn } from '@/lib/design/cn';
  * is the only technique that keeps it in the tab order while invisible to a
  * pointer user.
  *
- * ## ⚠️ Three targets, and the third is not built
+ * ## ✅ Three targets, and the third arrived with its landmark
  *
- * 📁 **The design names content, navigation and the utility panel.** ⛔ **The
- * utility panel is [TASK-1433](../../../docs/BACKLOG.md)'s and does not
- * exist** — ⚡ **so its link is absent rather than pointing at nothing**: a
- * skip link to a missing landmark sends a keyboard user nowhere and is worse
- * than the omission, which is [C-269](../../../docs/LANE_COORDINATION.md)'s
- * rule applied to focus rather than to navigation.
+ * 📁 **The design names content, navigation and the utility panel.**
+ * ⚠️ **This block used to say the third *"does not exist"*** — ✅ **it does
+ * now**, built by [TASK-1433](../../../docs/BACKLOG.md).
+ *
+ * 🔴 **But the rule that kept it absent still binds, and it is why the link is
+ * CONDITIONAL rather than added**: *a skip link to a missing landmark sends a
+ * keyboard user nowhere and is worse than the omission.* ⛔ **The design gives
+ * the panel no width below 1024**, so an unconditional third link would be
+ * exactly that failure, on every phone. ✅ **`useUtilityPanelPresent` is the
+ * one source both this and the panel read**, so they cannot disagree.
  */
 
 /** ⚡ The landmark ids the shell renders, so a link and its target agree. */
 export const SKIP_TARGETS = {
   content: 'shell-content',
   navigation: 'shell-navigation',
+  utilityPanel: 'shell-utility-panel',
 } as const;
 
+/** ⚡ Re-exported so the panel names its own landmark from one place. */
+export const UTILITY_PANEL_TARGET = SKIP_TARGETS.utilityPanel;
+
 export function SkipLinks() {
+  const panelPresent = useUtilityPanelPresent();
+
   return (
     // ⛔ **First in the DOM.** A skip link that is not first is a skip link
     // somebody has already tabbed past.
@@ -42,6 +55,10 @@ export function SkipLinks() {
       {[
         { href: `#${SKIP_TARGETS.content}`, label: 'Skip to content' },
         { href: `#${SKIP_TARGETS.navigation}`, label: 'Skip to navigation' },
+        // ⛔ **Only when the landmark is there.** See the note above.
+        ...(panelPresent
+          ? [{ href: `#${SKIP_TARGETS.utilityPanel}`, label: 'Skip to the utility panel' }]
+          : []),
       ].map((link) => (
         <a
           key={link.href}
