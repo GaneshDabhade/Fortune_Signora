@@ -1158,3 +1158,27 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ⚡ **`tests/unit/auth-plugins.test.ts` asserts that `passkey` and `sso` are NOT registered and that the package genuinely does not carry them.** ✅ **If a future upgrade ships them, the resolve-throws assertion breaks and the row becomes buildable** — ⛔ **until then it is what stops a later session quietly adding a dependency to satisfy a row that says all four ship.**
 
 ✅ **And it asserts the two the row named**: **RS256 stays pinned** ([ADR-0026](adr/0026-jwt-boundary-architecture.md)) and **no plugin brought an authorization model with it.**
+
+---
+
+## B-175 · A layout assertion that fails when the layout breaks *(2026-08-10)*
+
+📁 **QE's repair instruction, and it is the whole row**: ***"a test asserting layout must assert the COMPUTED result, not the class attribute — the attribute is an input to the framework, and testing an input proves the caller's intent rather than the product's behaviour."***
+
+⛔ **The rename did not fix these tests and was never going to.** 📁 The row says so: *"the five tests will go green again the moment the classes are renamed, while proving no more than they do today."* ✅ **That prediction was exactly right — after [B-424](../BUGS.md)'s rename all five were green again and proved nothing.**
+
+### ⚡ It has to be a browser, because nothing else can answer
+
+⛔ **jsdom has no stylesheet and no layout engine**, so `getComputedStyle` there returns what was set inline. **A component test cannot tell whether a Tailwind utility emitted CSS.** ✅ **[`auth-layout.spec.ts`](../../frontend/tests/e2e/auth-layout.spec.ts) compares the same element across two viewport widths** — radius across the `phone` floor, padding-top across it, justification across `smalllaptop`.
+
+⚠️ **Each assertion compares two widths rather than pinning a value.** ⛔ **An absolute expectation — *the radius is 12px* — would pin a design decision**, and the question here is whether the band applies at all.
+
+### 🔴 The fire-test is the evidence, and it discriminates
+
+✅ **Renaming the `phone` band out of `tailwind.config.ts` turns 2 of the 3 layout tests RED**; restoring it returns all 5 to green. ⚡ **The `smalllaptop` test correctly stayed green**, because only the phone band was broken — **so the suite fails on the thing that broke rather than wholesale.**
+
+⚠️ **One locator detail is load-bearing**: the card is found **two levels up from the `<h1>`**, the way the component test finds it — ⛔ **a selector built from `phone:rounded-xl` would match only when the class is present, so the test would pass by not running.**
+
+### ✅ The five className assertions are kept and relabelled, not deleted
+
+⛔ **A missing class is cheap to catch in a component test; a class that emits nothing can only be caught in a browser.** ⚡ **Both are worth having** — the block is now titled *intent, not layout* and points at the browser test, **so neither claims to be the other.**

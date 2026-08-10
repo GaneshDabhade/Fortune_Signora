@@ -48,6 +48,26 @@ function frame(): HTMLElement {
   return found;
 }
 
+/**
+ * ⚠️ **What the assertions in this block DO and DO NOT prove** —
+ * [B-175](../../../docs/BUGS.md).
+ *
+ * ⛔ **They check that a class string is applied. They do not check that any
+ * CSS is emitted for it**, and on the commit that broke every authentication
+ * screen they all passed: `theme.screens` had stopped defining `sm:` and
+ * `lg:`, the utilities compiled to nothing, and the strings were still in the
+ * attribute.
+ *
+ * 🔴 **So this block is the CALLER'S INTENT, and it is labelled as that.**
+ * ✅ **The behaviour is asserted where it can be** —
+ * [`tests/e2e/auth-layout.spec.ts`](../e2e/auth-layout.spec.ts) **compares the
+ * computed radius, padding and justification across the design's bands in a
+ * real browser**, and 📁 **removing a band turns it red**, which is the check
+ * B-175 asked for.
+ *
+ * ⚡ **Both are kept deliberately.** ⛔ **A missing class is cheap to catch
+ * here**; **a class that emits nothing can only be caught there.**
+ */
 describe('the one card every authentication screen sits in', () => {
   it('carries the design width as a token, never as an arbitrary value', () => {
     // ⚡ **`max-w-card`, not `max-w-[400px]`.** The override was TASK-491 gap
@@ -59,7 +79,7 @@ describe('the one card every authentication screen sits in', () => {
     expect(frame().className).not.toMatch(/max-w-\[/);
   });
 
-  it('carries the design radius and an elevation', () => {
+  it('applies the design radius and elevation classes — intent, not layout', () => {
     render(<AuthShell title="Sign in">{null}</AuthShell>);
 
     expect(card().className).toContain('phone:rounded-xl');
@@ -79,7 +99,7 @@ describe('the one card every authentication screen sits in', () => {
     }
   });
 
-  it('is top-aligned on a tablet and centred on a desktop', () => {
+  it('applies the top-alignment and centring classes — intent, not layout', () => {
     /**
      * A tablet keyboard in portrait would push the primary action off screen
      * if the card were centred, which is why the three are genuinely three.
@@ -96,6 +116,9 @@ describe('the one card every authentication screen sits in', () => {
     render(<AuthShell title="Sign in">{null}</AuthShell>);
     const main = screen.getByRole('main');
 
+    // ⚠️ **These name classes; they do not prove any of them render.**
+    // 📁 [`auth-layout.spec.ts`](../e2e/auth-layout.spec.ts) is where the
+    // computed padding and justification are compared across the bands.
     expect(main.className).toContain('phone:pt-24');
     expect(main.className).toContain('smalllaptop:justify-center');
     expect(main.className).toContain('px-5');
