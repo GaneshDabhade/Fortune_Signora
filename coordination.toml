@@ -39,7 +39,7 @@ claimable          = 2
 claimable_now      = 2
 awaiting_sync      = 0
 in_flight          = 7
-actionable         = 1
+actionable         = 0
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
@@ -2486,7 +2486,7 @@ on_integration = true
 id            = "TASK-497"
 title         = "Planning state reaches a lane without waiting for a certification cycle"
 state         = "IN FLIGHT"
-declared      = "CLAIMED"
+declared      = "IN VALIDATION"
 lane          = "Lane C"
 depends_on     = []
 unblocks       = []
@@ -2496,7 +2496,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-906"
