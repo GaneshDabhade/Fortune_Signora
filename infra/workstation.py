@@ -47,6 +47,7 @@ from __future__ import annotations
 import argparse
 import re
 import secrets
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -64,6 +65,64 @@ REQUIRED_FRONTEND: Final = (
     "BETTER_AUTH_SECRET",
     "SIGNORA_JWT_PRIVATE_KEY",
 )
+
+
+#: The three that must name ONE database, and the order a reader would set them.
+#:
+#: 🔴 **Setting a subset is the trap this pair of names exists to catch.** The
+#: suite then reads a DIFFERENT database from the one the migrations ran
+#: against and reports ``relation "action_batch" does not exist`` — **against a
+#: schema already at head 0046.** ⛔ **The diagnostic points at migrations, and
+#: migrations are fine**, so the search starts in the wrong place.
+#:
+#: ⚠️ **Measured cost: twice.** The first occurrence took two lanes an hour
+#: (`B-228`, which was WITHDRAWN — the seeder was never broken, the invocation
+#: had split one database into two). The second cost Lane A part of a slice on
+#: 2026-08-10, with only ``SIGNORA_TEST_APP_DATABASE_URL`` set.
+#:
+#: ✅ **Checked only when at least one is set** — a clone configuring no test
+#: run has nothing to disagree about, which keeps this silent on a Product
+#: Office clone that holds no database at all (`CLAUDE.md` §20e).
+TEST_DATABASE_VARS: Final = (
+    "SIGNORA_TEST_ADMIN_DATABASE_URL",
+    "SIGNORA_TEST_APP_DATABASE_URL",
+    "SIGNORA_DATABASE_URL",
+)
+
+
+def _database_name(url: str) -> str:
+    """The database a URL names, ignoring credentials, host and query."""
+    return url.rsplit("/", 1)[-1].split("?", 1)[0]
+
+
+def test_database_findings(env: dict[str, str]) -> list[str]:
+    """Do the three test database variables agree, if any of them is set?
+
+    **A pure function of its argument**, so the trap can be reproduced in a
+    test without touching the process environment — which is what makes this a
+    guard rather than a comment (`CLAUDE.md` §2).
+    """
+    present = {k: v for k in TEST_DATABASE_VARS if (v := env.get(k, "").strip())}
+    if not present:
+        return []
+
+    findings: list[str] = []
+    absent = [k for k in TEST_DATABASE_VARS if k not in present]
+    if absent:
+        findings.append(
+            f"{len(present)} of 3 test database variables set — {', '.join(absent)} "
+            f"missing. The suite will read a DIFFERENT database from the one "
+            f"migrations ran against and report `relation ... does not exist` "
+            f"against a schema that is already at head. Set all three to one database"
+        )
+
+    names = {_database_name(v) for v in present.values()}
+    if len(names) > 1:
+        findings.append(
+            f"the test database variables name {len(names)} different databases — "
+            f"{', '.join(sorted(names))}. They must name one"
+        )
+    return findings
 
 
 def _profile(name: str) -> object:
@@ -156,6 +215,8 @@ def check() -> int:
                 "the two tiers hold DIFFERENT public keys — every request will 401 "
                 "with no diagnostic. `--force` regenerates a matched pair"
             )
+
+    problems.extend(test_database_findings(dict(os.environ)))
 
     if problems:
         for problem in problems:

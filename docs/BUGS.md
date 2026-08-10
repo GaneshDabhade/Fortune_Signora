@@ -2566,6 +2566,40 @@ def _load_state_check() -> ModuleType:
 
 ---
 
+### B-418 · A partial test-database configuration reports a migration error, and migrations are fine
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`infra/workstation.py`](../infra/workstation.py) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **it costs an hour rather than a minute, because the diagnostic names the wrong subsystem.** ⚡ **Measured twice: the first occurrence cost two lanes an hour, the second cost Lane A part of a slice on 2026-08-10** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-10, with four regression tests.** **`VERIFIED` is QE's** |
+| **Found** | **2026-08-10, in Lane A's TASK-464 report** — 📁 *"that's the second time that specific trap has cost me time — the first time it cost two lanes an hour"* |
+| **Steps** | **Set `SIGNORA_TEST_APP_DATABASE_URL` and not the other two, then run the integration suite** |
+| **Expected** | **Something names the misconfiguration** |
+| **Actual** | ⛔ **`relation "action_batch" does not exist` — against a schema already at head `0046`.** 🔴 **The suite read a DIFFERENT database from the one migrations ran against, and the error points at migrations, which are fine** |
+
+> ## ⛔ **The cost is not the misconfiguration. It is that the error names the wrong subsystem, so the search starts in the wrong place.**
+
+📁 **The first occurrence was filed as [B-228](#b-228) and WITHDRAWN** — *"the seeder was never broken, and my invocation split one database into two."* ⚡ **The withdrawal was correct and the trap survived it**, because a withdrawn row leaves nothing behind that would catch the next instance.
+
+### ✅ The fix — in the check that already exists for exactly this shape
+
+⚡ **`workstation.py --check` already prevents one silent-mismatch failure**: a mismatched RSA pair that *"mints tokens successfully and 401s every request, with nothing in either tier naming the cause."* ✅ **This is the same shape, so it goes in the same place rather than into a new tool** ([D-229](DECISION_REGISTER.md) §1).
+
+**`test_database_findings()` is a pure function of an environment mapping**, so both shapes of the trap are reproducible in a test rather than described in a comment:
+
+| Shape | Caught |
+|---|---|
+| **A subset set** | ✅ **Names which variables are missing and what the resulting error will falsely blame** |
+| **All three set, naming different databases** | ✅ **The count check cannot see this one — only the database name is compared, so differing credentials, host and query string stay legal** |
+| **All three naming one database** | ⛔ **Silent** |
+| **None set** | ⛔ **Silent** — 📁 **Lane C holds no database at all** ([§20e](../CLAUDE.md)), **and this check runs most often on exactly that clone** |
+
+⚠️ **That last row is the one the tests exist for.** 📁 **This file's own opening: *"A setup check that cries wolf is worse than no setup check"*** — its advice is `--force`, which would destroy a working configuration it failed to recognise. **Fire-tested: reverting the check turns the two detection tests red and leaves both silence tests green.**
+
+---
+
 ### B-417 · I resolved a conflict in a lane's favour and then appended to its line, which breaks that lane's next commit
 
 | | |
