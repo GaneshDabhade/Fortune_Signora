@@ -1324,6 +1324,24 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **Clearing on removal only.** ✅ **Three paths end access — removal, deletion, role change — and the design's rule 20 `ROLE_CHANGED` exists because the third is real** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
+### TASK-1467 · The three gate screens that are already drawn — sliced out of a row blocked on four documents
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚡ **MISSING IMPLEMENTATION — and it needs no commissioning decision** |
+| **Epic** | **Authenticated Entry** |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-11.** ⛔ **Sliced out of [TASK-1423](#task-1423), which stays `BLOCKED` on [C-1405](LANE_COORDINATION.md) for its other eight screens** |
+| 🔴 **Why this row exists** | 📁 **[TASK-1423](#task-1423) treats eleven gate screens as one unit, and [D-206](DECISION_REGISTER.md) measured that they span FOUR design documents, three of which do not exist.** ⛔ **So the whole row was blocked on a commissioning decision.** ⚡ **But its own `Design authority` cell already records the answer**: *"Covered today — `403` and `404` are fully drawn in `System States` (rules 07, 08); `/auth/locked` is drawn in `Authentication` (rule 03)."* ✅ **Three of eleven need nothing from anybody** |
+| **Design authority** | 📁 **`Fortune Signora System States.dc.html` rules 07 and 08** — `403`, `404`. 📁 **`Fortune Signora Authentication.dc.html` rule 03** — `/auth/locked`. ⛔ **Read them; this row does not restate them** |
+| ⚡ **Delivers** | **A designed screen for `INTENT_FORBIDDEN` (403), the not-found gate (404), and `ACCOUNT_LOCKED` (`/auth/locked`)** — ⛔ **each stating what happened, what it means for the reader's data, and one route forward**, per the shared contract [TASK-1423](#task-1423) already carries |
+| 🔴 **What it must NOT do** | ⛔ **Do not build the other eight** — `ACCOUNT_SUSPENDED` · `ACCOUNT_DELETED` · `SESSION_EXPIRED` · `STEPUP_REQUIRED` · `WS_SUSPENDED` · `WS_ARCHIVED` · `WS_DELETED` · `NO_WORKSPACE` · `INTENT_NOT_MEMBER`. ⚡ **Their designs do not exist and inventing one is [§21](../CLAUDE.md)'s named failure.** ⛔ **Do not adopt the entry engine** — that is [TASK-1401](#task-1401) |
+| ⚠️ **Reuse before building** | 📁 **`components/ui/system-state.tsx` and `error-state.tsx` exist and `error-state.tsx` already carries the copyable correlation ID.** ⚡ **[TASK-1409](#task-1409) owns the System States ladder — check whether 403 and 404 are already its, and if so this row narrows to `/auth/locked` alone.** ⛔ **Verify before writing a line ([`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) L-1)** |
+| **Change Budget** | 🟢 **`frontend/app/**`** · 🟢 its tests · 🟠 **a `components/ui` addition only if the reuse audit finds none — announce it** |
+| **Dependencies** | ✅ **None.** ⛔ **Explicitly NOT blocked on [C-1405](LANE_COORDINATION.md)** — that item commissions the documents the *other eight* need |
+| **Definition of Done** | **Three designed gates render as their designs draw them** · **certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **LEVEL 1/2 NOT VERIFIED** — source-derived |
+
 ### TASK-1423 · The six gate screens — a failure that is designed, not a redirect loop
 
 | | |
