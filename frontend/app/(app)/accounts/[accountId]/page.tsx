@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Scale } from 'lucide-react';
+import { ArrowLeft, Lock, Scale } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
@@ -21,6 +21,7 @@ import { AbsentSection, OnThisPage } from '@/components/accounts/sections';
 import { absent } from '@/lib/accounts/sections';
 import { CompetitorContext } from '@/components/intelligence/competitors';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
+import { SystemState } from '@/components/ui/system-state';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { DecisionHistory } from '@/components/intelligence/decision-history';
 import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
@@ -106,6 +107,29 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 export default function AccountBriefPage() {
   const { accountId } = useParams<{ accountId: string }>();
   const router = useRouter();
+  /**
+   * 🔴 **The entry engine's 403, rendered where it says to render it** —
+   * [TASK-1467](../../../../../docs/BACKLOG.md).
+   *
+   * 📁 [`lib/entry/rules.ts`](../../../../lib/entry/rules.ts) rule 07,
+   * `INTENT_FORBIDDEN`, routes to **`${intent.path}?error=403`** and its own
+   * note says why: ***"the 403 page for that object… Not Home, not a silent
+   * redirect."***
+   *
+   * ⛔ **So a 403 is not a route.** ⚡ **It is a state an object's own route
+   * renders**, which is what makes it possible to say *this account* rather
+   * than *something*. ⚠️ **The engine has produced this URL since it shipped
+   * and nothing read the parameter** — **a person following a deep link they
+   * could not open got the account screen's ordinary loading and then an
+   * outage-shaped failure**, which says the product is broken rather than that
+   * the door is closed.
+   *
+   * ✅ **This is `403`'s first caller.** 📁 The state has been legal in the
+   * ladder — `page: ['404', '403', …]` — **with nothing rendering it**, the
+   * same law-without-a-surface pattern this repository has now found nine
+   * times.
+   */
+  const forbidden = useSearchParams().get('error') === '403';
   const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
   // Only so the page can say *you* rather than an identifier, and assign an
@@ -225,6 +249,45 @@ export default function AccountBriefPage() {
   // different ones in a single visit.
   const upNext = nextInSequence(ranked, accountId);
   const upNextName = upNext ? rankedIdentities?.get(upNext.account_id)?.name : undefined;
+
+  /**
+   * ⛔ **After every hook, never before one** — React's rules, and the reason
+   * the read of `?error=403` sits at the top while the branch sits here.
+   *
+   * ✅ **The refusal replaces the brief rather than sitting inside it.** ⚡ **A
+   * banner above the account's data would be a refusal the reader can scroll
+   * past** — and 📁 [§20c](../../../../../CLAUDE.md) is explicit that a
+   * client-side check is *"a courtesy, never enforcement"*: **Casbin already
+   * refused the request, so there is no data here to protect.** ⛔ **What this
+   * screen protects is the reader's understanding**, which a half-rendered
+   * page destroys.
+   */
+  if (forbidden) {
+    return (
+      <div className="mx-auto flex max-w-3xl flex-col gap-6">
+        <SystemState
+          scope="page"
+          state="403"
+          glyph={Lock}
+          // 📁 **Named as *this account*, which is the whole reason the engine
+          // routes to the object rather than to a shared `/403`.**
+          title="You do not have access to this account"
+          // ⛔ **It names who can grant it rather than only refusing.** 📁 The
+          // rail's own rule: *"a person who is only refused asks for the wrong
+          // thing or asks nobody."*
+          description="This account is in your organization, and your role does not include it. An owner or an admin can give you access."
+          primaryAction={
+            <Link
+              href="/accounts"
+              className="rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              Back to the accounts you can see
+            </Link>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">

@@ -557,6 +557,45 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-242 · The entry engine has routed locked accounts to a route that does not exist, since it shipped
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/lib/entry/rules.ts`](../frontend/lib/entry/rules.ts) rule 05, and the route it names |
+| **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **wrong behaviour a customer would hit, at the worst possible moment.** ⚠️ **Not 🔴: nothing is lost and the account still unlocks** — **what is lost is the person's ability to find that out** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-11**, in [TASK-1467](BACKLOG.md), **which is the row that went looking.** ⚠️ **QE verifies and closes** |
+| **Found** | **2026-08-11, by Lane A**, doing [TASK-1467](BACKLOG.md)'s reuse audit — ⛔ **before writing a line, which is what the row instructed** |
+| **Commit found** | **`beae7d86`** — ⚠️ **the defect is far older than the row that found it** |
+
+**Steps.** Lock an account by failing sign-in enough times, then sign in.
+
+**Expected.** 📁 The design's §11: *"This account is locked"*, and a route forward.
+
+**Actual.** ⛔ **The 404 gate** — ***"That address does not lead anywhere."***
+
+### 🔴 The mechanism, and it is one line meeting nothing
+
+📁 **[`rules.ts`](../frontend/lib/entry/rules.ts) rule 05** — *"Account locked — failed attempts"* — **routes to `/auth/locked`.** ⛔ **No such route existed.** ⚡ **Next.js answers an unmatched path with `not-found.tsx`**, which is a correct 404 screen giving a completely wrong answer.
+
+> ⚠️ **This is the worst screen in the product to lose to a 404**, and the reason is not severity but *sequence*. **Somebody who cannot sign in has already tried the one thing they know how to do.** ⛔ **Telling them the address does not exist says the PRODUCT is broken, not their account** — and **there is no second surface for them to check**, because every other surface is behind the sign-in they cannot complete.
+
+### ⚡ Why it survived, which is the part worth keeping
+
+⛔ **Every gate the repository has was watching a different thing.** 📁 `make reachability` asks *"does anything LINK here"* — ✅ **and it is right to have said nothing**: nobody links to their own lockout. **It never asked whether the destination exists.** ⚠️ **And `rules.ts` is thoroughly tested** — the rule fires correctly and returns the correct string. **The string was never resolved against the route table.**
+
+> 🔴 **The general form: a router tested against its own output is tested against a claim, not a destination.** ⚡ **Every `route: () => '…'` in that file is a promise nothing checks**, and [C-290](LANE_COORDINATION.md) asks for the check rather than another screen.
+
+### ✅ The fix
+
+📁 **[`app/(auth)/auth/locked/page.tsx`](../frontend/app/(auth)/auth/locked/page.tsx)** — the design's heading, the lock stated as temporary, the reassurance a lock actually needs (*nobody has been signed in*), and **a password reset as the one route forward that works while signed out.**
+
+⛔ **The design's numbers are NOT rendered** — *"five attempts… 09:02… unlocks at 09:17"* — **because none of the three is published**: `AccountStanding` is `'locked'` and nothing more. ⚠️ **A wrong unlock time is worse than none**, and that gap is [C-290](LANE_COORDINATION.md).
+
+✅ **Regression test**: `account-locked.test.tsx` **reads the route out of `RULES` rather than restating it**, so re-pointing the rule turns it red instead of making the screen quietly unreachable again.
+
+---
+
 ### B-241 · The rail's pinned utilities have always overflowed the viewport by 106px, and a `fixed` sheet is where it became reachability
 
 | | |

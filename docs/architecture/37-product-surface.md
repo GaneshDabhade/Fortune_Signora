@@ -1628,3 +1628,49 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 **② A rejected query failed the test while its assertions passed.** ⚠️ React discards a render, react-query's promise for it is never awaited, and vitest reports the unhandled rejection. ✅ **The failure tests stub the HOOK instead** — 📁 **which is the more honest test anyway: [P-A](../DOMAIN_DISCOVERY_REGISTER.md) governs the page's rendering decision, not react-query's transport.** ⚡ **The same split [`attention-failed-read.test.tsx`](../../frontend/tests/components/attention-failed-read.test.tsx) already draws for [B-237](../BUGS.md).**
 
 🔴 **The P-A guard is load-bearing, proved rather than asserted**: **removing the `isError` branch turns 3 of 4 failure tests red.**
+
+---
+
+## TASK-1467 · Two gate screens, and the row shrank from three — 2026-08-11
+
+**Against 📁 `Fortune Signora System States.dc.html` rules 07–08 and `Fortune Signora Authentication.dc.html` §11 ([D-138](../DECISION_REGISTER.md)).**
+
+### ✅ The reuse audit the row demanded, done before any code — and it changed the scope
+
+📁 **The row's own instruction**: *"`system-state.tsx` and `error-state.tsx` exist… check whether 403 and 404 are already [TASK-1409](../BACKLOG.md)'s, and if so this row shrinks."*
+
+| Screen | Found | Outcome |
+|---|---|---|
+| **404** | ✅ **BUILT** — `app/not-found.tsx` renders `SystemState state="404"`, [TASK-1409](../BACKLOG.md)'s | ⛔ **Not rebuilt.** 📁 [D-229A](../DECISION_REGISTER.md) cuts both ways: do not preserve an obsolete implementation, **and do not rebuild a correct one** |
+| **403** | ⚠️ **The STATE existed and nothing rendered it** — `page: ['404', '403', …]` has been legal in the ladder since [TASK-1409](../BACKLOG.md) | ✅ **Given its first caller** |
+| **`/auth/locked`** | 🔴 **The entry engine routed here and the route did not exist** | ✅ **Built.** [B-242](../BUGS.md) |
+
+> ⚡ **The audit is the reason this row is two screens and not three**, and the shrink is recorded rather than the third screen being rewritten to look like work.
+
+### 🔴 `/auth/locked` — a destination that existed before its screen did
+
+📁 **[`rules.ts`](../../frontend/lib/entry/rules.ts) rule 05** routes a locked account to `/auth/locked`. ⛔ **Nothing was there**, so Next.js answered with `not-found.tsx` — **a correct 404 giving a completely wrong answer.**
+
+⚠️ **It is the worst screen in the product to lose to a 404, and the reason is sequence rather than severity.** **Somebody who cannot sign in has already tried the one thing they know how to do**; ⛔ **telling them the address does not exist says the PRODUCT is broken rather than their account** — **and every other surface is behind the sign-in they cannot complete.**
+
+⛔ **The design's numbers are absent, deliberately.** 📁 It draws *"Five failed sign-in attempts locked the account at 09:02. It unlocks automatically at **09:17**."* 🔴 **`AccountStanding` is `'locked'` and nothing more** — no count, no lock time, no unlock time, anywhere in `lib/auth` or `lib/entry`. ⚡ **A wrong unlock time is worse than none: somebody told *09:17* waits until 09:17, and if it was a guess they wait for nothing, twice.** **The gap is [C-290](../LANE_COORDINATION.md).**
+
+### 🔴 403 is not a route, and the engine already said so
+
+📁 **Rule 07, `INTENT_FORBIDDEN`, routes to `${intent.path}?error=403`**, and its own note gives the reason: ***"the 403 page for that object… Not Home, not a silent redirect."***
+
+⛔ **So building a `/403` route would have contradicted the shipped engine.** ✅ **The refusal is a state an object's own route renders**, which is what makes it possible to say ***this account*** rather than *something*.
+
+⚠️ **The parameter has been produced since the engine shipped and read by nothing** — **a person following a deep link they could not open got the brief's ordinary loading and then an outage-shaped failure**, which says *broken* rather than *closed*.
+
+✅ **It replaces the brief rather than sitting above it.** ⛔ **A refusal a reader can scroll past is a refusal they misread** — and 📁 [§20c](../../CLAUDE.md) is explicit that the client check is *"a courtesy, never enforcement"*: **Casbin already refused, so there is no data here to protect. What this protects is the reader's understanding.**
+
+✅ **And it names who can grant access rather than only refusing** — the rail's own rule, applied: *"a person who is only refused asks for the wrong thing or asks nobody."*
+
+### ⚡ The finding, which outlasts both screens
+
+> 🔴 **A router tested against its own output is tested against a claim, not against a destination.**
+
+⛔ **`rules.ts` is thoroughly tested**: the right rule fires and returns the right string. ⚠️ **The string was never resolved against the route table**, and `make reachability` asks the opposite question — *does anything link here* — **and was right to be silent, because nobody links to their own lockout.**
+
+📁 **[C-290](../LANE_COORDINATION.md) asks for the check rather than for more screens.** ⛔ **Six other declared destinations are unverified and this lane did not check them**: finding a defect outside the row it holds is an obligation to report, never a licence to fix.

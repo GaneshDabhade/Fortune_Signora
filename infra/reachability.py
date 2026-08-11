@@ -104,6 +104,24 @@ ENTERED_FROM_OUTSIDE: Final = {
     # the lane that knows why a route has no entrance is the lane that built
     # it. ⚠️ **Its placement was the product owner's choice** — `infra/` is
     # Lane C's module (TASK-474).
+    # **Reached by the entry engine, which is the only thing that can know.**
+    # `lib/entry/rules.ts` rule 05 — *"Account locked — failed attempts"* —
+    # routes here, and the engine is the authority on where a refused sign-in
+    # lands. **An in-product link would be a link to a screen that is only
+    # correct for somebody who cannot use the product**, and every reader who
+    # can see the link is a reader for whom it is false.
+    #
+    # **This route existed as a destination before it existed as a screen**
+    # (B-242): the rule shipped, nothing was at the address, and a locked
+    # account met the 404 gate — *"that address does not lead anywhere"* — which
+    # is the worst possible answer to *why can I not sign in*.
+    #
+    # **Declared by Lane A on the same B-123 delegation as the rows above**:
+    # the lane that knows why a route has no entrance is the lane that built it.
+    "/auth/locked": (
+        "reached by the entry engine when an account is locked — rule 05 in "
+        "`lib/entry/rules.ts`; nobody navigates to their own lockout"
+    ),
     "/dev/mailbox": (
         "the development mailbox — a developer tool, reachable only where "
         "`emailTransport` is `mailbox`, which cannot be a deployed environment"

@@ -11157,3 +11157,38 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 > **Should `accounts-list` carry the fields the design's table draws — or does Companies stay a browse surface that hands off to the account for everything else?**
 
 ⚡ **Either answer is implementable and neither is this lane's to choose.** ⛔ **What must not happen is the columns arriving by the frontend inventing them**, which is the rule this item exists to keep.
+
+---
+
+## C-290 · Every `route:` in the entry engine is a promise nothing resolves, and one of them was empty
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, from [B-242](BUGS.md) — ⛔ **found by a reuse audit, not by a gate** |
+| **Owner** | **QE** — ⚡ **this asks for a CHECK, and a repository-wide gate is QE's** ([§20e](../CLAUDE.md), *QE creates, maintains, extends and retires repository-wide automated tests*) |
+| **Status** | 🟡 **`OPEN` — NOT BLOCKING.** ✅ **The one empty promise is fixed**; this item is about the class |
+| **Blocks** | ⛔ **Nothing** |
+
+### 🔴 The finding, in one sentence
+
+> **[`lib/entry/rules.ts`](../frontend/lib/entry/rules.ts) declares where every refused or redirected person lands, and nothing checks that any of those destinations exists.**
+
+⛔ **[B-242](BUGS.md) is what that cost**: rule 05 has routed locked accounts to `/auth/locked` since the engine shipped, **the route did not exist**, and a person who could not sign in met *"that address does not lead anywhere."*
+
+### ⚡ Why every existing gate was blind to it, and each was right to be
+
+| Gate | What it asks | Why it missed this |
+|---|---|---|
+| **`make reachability`** | *"Does anything LINK to this route?"* | ✅ **Correct to be silent** — **nobody links to their own lockout**, and the route was not there to be reported on |
+| **`rules.ts`'s own suite** | *"Does the right rule fire, and does it return the right string?"* | ⚡ **Both true.** ⛔ **The string was never resolved against the route table** |
+| **`tsc`** | Types | ⛔ **A route is a `string`** |
+
+> 🔴 **The general form is worth more than the instance: a router tested against its own output is tested against a claim, not against a destination.**
+
+### ✅ What is asked
+
+**A check that every literal route the entry engine can return resolves to a route the application actually serves.** ⚡ **The inputs already exist** — `RULES` is exported and enumerable, and `infra/reachability.py` already walks the route tree for a different question.
+
+⚠️ **Seven destinations are declared today** and this lane has verified only the one it fixed: `/account/deleted` · `/account/suspended` · **`/auth/locked` ✅** · `/auth/step-up` · `/workspaces/none` · and the two `WORKSPACES` constants. ⛔ **This lane did not check the other six**, because **finding a defect outside the row it holds is an obligation to report, never a licence to fix** ([§20e](../CLAUDE.md)) — **and six more screens is a commissioning decision, not a slice.**
+
+> ⚡ **[TASK-1423](BACKLOG.md) is already the row for the missing gate screens and is `BLOCKED` on [C-1405](#c-1405) for exactly this reason** — their designs do not exist. **This item is not asking for those screens. It is asking for the check that says which ones are missing**, so the next one is found by a gate rather than by a lane reading a file.
