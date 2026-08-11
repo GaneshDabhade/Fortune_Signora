@@ -8,6 +8,7 @@ import {
   coverage,
   keysFor,
   pressable,
+  publishedByTheDesign,
 } from '@/lib/shell/shortcuts';
 
 /**
@@ -154,7 +155,24 @@ describe('the shortcut registry describes the product', () => {
       'Navigate',
       'Work',
     ]);
-    expect(allShortcuts()).toHaveLength(18);
+    expect(publishedByTheDesign()).toHaveLength(18);
+  });
+
+  /**
+   * 🔴 **[B-239](../../../docs/BUGS.md)** — ⛔ **the map shipped omitting a
+   * live shortcut.** ⚡ **`1`–`9` selects a workspace by position and the
+   * design does not publish it**, so a map built from the design alone was
+   * silent about a key a customer can press. ⚠️ **A live key omitted is the
+   * same defect as a dead key listed**, and it is the quieter one.
+   */
+  it('carries shortcuts the product binds that the design never published', () => {
+    const unpublished = allShortcuts().filter((shortcut) => !shortcut.published);
+    expect(unpublished.length).toBeGreaterThan(0);
+    // ⛔ **An unpublished entry only earns its place by being REAL** — the map
+    // is not a wishlist, so nothing unbound may be added outside the design.
+    for (const shortcut of unpublished) {
+      expect(pressable(shortcut), shortcut.id).toBe(true);
+    }
   });
 
   it('never claims a shortcut works without naming what binds it', () => {
@@ -267,9 +285,13 @@ describe('what the reference tells a customer', () => {
    * is the register asserting something untrue of the thing it describes.
    */
   it('counts the working shortcuts rather than stating a number', () => {
-    const working = allShortcuts().filter(pressable).length;
-    const dead = allShortcuts().length - working;
-    expect(coverage()).toContain(`${working} of these 18`);
+    const all = allShortcuts();
+    const working = all.filter(pressable).length;
+    const dead = all.length - working;
+    // ⚠️ **The total is the MAP's, not the design's** — 📁 [B-239](../../../docs/BUGS.md).
+    // ⛔ **Saying *"of these 18"* while rendering nineteen rows is the register
+    // miscounting itself in front of the customer.**
+    expect(coverage()).toContain(`${working} of these ${all.length}`);
     expect(coverage()).toContain(`other ${dead}`);
   });
 

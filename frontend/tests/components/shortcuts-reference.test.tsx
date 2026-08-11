@@ -79,7 +79,7 @@ describe('what it shows', () => {
     fireEvent.keyDown(window, { key: '?' });
   };
 
-  it("lists every one of the design's eighteen, including the dead ones", () => {
+  it('lists every shortcut in the map, including the dead ones', () => {
     open();
     for (const shortcut of allShortcuts()) {
       expect(screen.getByText(shortcut.what), shortcut.id).toBeInTheDocument();
@@ -121,7 +121,9 @@ describe('what it shows', () => {
     open();
     const working = allShortcuts().filter(pressable).length;
     expect(
-      screen.getByText(new RegExp(`${working} of these 18 shortcuts work today`)),
+      screen.getByText(
+        new RegExp(`${working} of these ${allShortcuts().length} shortcuts work today`),
+      ),
     ).toBeInTheDocument();
   });
 

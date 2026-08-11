@@ -35,7 +35,7 @@ test.describe('finding out what the keyboard does', () => {
 
     // ⛔ **The sentence is derived from the registry**, so this asserts the
     // shape rather than a number that a new binding would make stale.
-    await expect(page.getByText(/\d+ of these 18 shortcuts work today/)).toBeVisible();
+    await expect(page.getByText(/\d+ of these \d+ shortcuts work today/)).toBeVisible();
     await expect(page.getByText('Not bound', { exact: true }).first()).toBeVisible();
   });
 

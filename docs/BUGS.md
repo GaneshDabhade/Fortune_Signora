@@ -532,6 +532,47 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-239 · The keyboard map omitted a live shortcut, and its own guard cannot see the class
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/lib/shell/shortcuts.ts`](../frontend/lib/shell/shortcuts.ts) |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟡 — ⛔ **wrong but survivable**: a real shortcut goes unused because the screen that exists to teach it does not mention it. ⚡ **Nothing breaks and nobody complains, which is why it is the quieter half of the defect** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-11, on the poll that found it**, in the slice that introduced it. ⚠️ **QE verifies and closes.** 🔴 **One half is deliberately NOT fixed — see *the open half* below** |
+| **Found** | **2026-08-11, by Lane A**, reading `workspace-switcher.tsx` while claiming [TASK-1458](BACKLOG.md) — ⛔ **not by the suite, and not by the guard written to prevent exactly this** |
+| **Commit found** | **`6e1bd4f8`** — [TASK-1445](BACKLOG.md), the commit that shipped the map |
+
+### 🔴 The defect
+
+📁 **[`components/shell/workspace-switcher.tsx`](../frontend/components/shell/workspace-switcher.tsx):162** — *"1–9 selects by position."* ⚡ **A customer with several organizations can press `3` while the switcher is open and land in the third.** ⛔ **The keyboard reference did not list it.**
+
+⚠️ **The map was built from the design's `shortcutGroups`, which publishes eighteen and does not publish this one.** 🔴 **So the reference was complete with respect to the DESIGN and incomplete with respect to the PRODUCT** — and a customer opens it to learn what the product does.
+
+### ⛔ It is the same defect as listing a dead key, pointed the other way
+
+📁 **[TASK-1445](BACKLOG.md)'s whole thesis**: *"a reference that lists a shortcut nothing implements is a promise the product breaks the moment somebody presses it."* ⚡ **The inverse costs less per customer and is far harder to notice**: **nothing fails, nobody presses anything, and the feature is simply never discovered.** ⛔ **Both are [§2](../CLAUDE.md) — the repository asserting something untrue of itself.**
+
+### ✅ The fix
+
+📁 **`Shortcut` gains `published`** — *does the DESIGN list it* — **which is a different question from *does the product bind it*.** ⚡ **`1`–`9` joins the map as `partial`**, with its scope stated in the customer's words: *"Works while the organization switcher is open, and not while you are typing in it."*
+
+⛔ **The count stopped being a literal.** **`coverage()` and both suites said *"of these 18"*; the map now renders nineteen** — ⚠️ **a register miscounting itself in front of the customer is the defect this row is about, so the assertions derive the total.** ✅ **`publishedByTheDesign()` keeps the design's eighteen countable**, because a change to that list is a design change and a change to the product's bindings is not.
+
+⚡ **A new assertion bounds the extension**: ⛔ **an unpublished entry must be `pressable`.** **The map is not a wishlist — nothing may be added outside the design unless the product genuinely binds it.**
+
+### 🔴 The open half — the guard verifies FILES, not CHORDS
+
+⛔ **[`shortcut-registry.test.ts`](../frontend/tests/unit/shortcut-registry.test.ts)'s direction 2 was written for exactly this class** — *"a file that binds a global key without appearing in the registry fails"* — **and it passed the whole time.**
+
+📁 **Because `workspace-switcher.tsx` was already registered, for `⌘⇧W`.** ⚡ **The file appears in the registry, so the scan is satisfied; the SECOND binding inside it is invisible.** 🔴 **A file registered for one shortcut may bind five.**
+
+⚠️ **Closing it needs a parser rather than a scan** — the chords are `event.key` comparisons spread across guards, and matching them textually would produce exactly the false positives [B-162](#b-162) warns about. ⛔ **Not fixed here**, and **the limit is now stated in the guard's own docstring rather than left for the next reader to discover the way this lane did.**
+
+✅ **The lesson is the row's, not the regex's**: 📁 **a guard proven to fire is not a guard proven to be SUFFICIENT.** ⚡ **Direction 2 was fire-tested — adding an unregistered keydown file turned it red — and the fire test used a NEW file, which is the case it handles.** ⛔ **The case it misses is a second binding in a file that already passes**, and **fire-testing the case you thought of never finds it.**
+
+---
+
 ### B-238 · A lane pushed an unvalidated implementation commit to `integration`, and the claim guard cannot see it
 
 | | |
