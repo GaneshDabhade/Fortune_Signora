@@ -282,15 +282,41 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 lane         = "Lane A"
-updated      = 2026-08-10
+updated      = 2026-08-11
 
-# ⚠️  4 claimable, but only 0 claimable TODAY.
-#    4 row(s) are READY here and still read otherwise in
+# ⚡  11 claimable, and 5 claimable TODAY — measured 2026-08-11, not carried
+#    forward. `backlog` below holds exactly those 5, and it is generated.
+#    6 row(s) are READY here and still read otherwise in
 #    BACKLOG.md on origin/integration — the backlog every claim is pushed
 #    against. ⛔ Claiming one would contradict it (C-425: the backlog wins,
 #    and the disagreement is Product Office's defect).
 #    ⚡ They are released and waiting on QE, not on planning. `current` is
 #    ordered to put a claimable-today row first whenever one exists.
+#
+# ⚡  FIVE ROWS RELEASED 2026-08-11 on the routine sequenced-row sweep, each
+#    checked against its predecessor's ACTUAL state rather than a status string:
+#      TASK-466  — TASK-465 PROMOTED (certified 78f2c72). The batch chain's
+#                  first consumer; nothing beneath it is missing.
+#      TASK-1414 — BOTH predecessors now PROMOTED (TASK-1410, TASK-493). It was
+#                  correctly held on 2026-08-10 when only one had moved.
+#      TASK-1416 — TASK-1417 PROMOTED (certified 57d6bc8). ⚠️ Read TASK-1417's
+#                  handover first: it ships a DESIGNED EMPTY STATE, because the
+#                  design's board pack is a query engine's output and there is
+#                  no query engine. The figures you drill into are the saved-view
+#                  declaration's.
+#      TASK-1464 — TASK-1460 is on integration at 261bcb1a and post-implementation
+#                  reviewed. `CONTENT_GRID` publishes the design's three numbers
+#                  exactly. ⛔ Do not rebuild it; this row REMOVES nine max-w-3xl.
+#      TASK-1470/1471 — App Shell §12 and §16, released 2026-08-11.
+#
+# ⛔  TASK-1432 stays SEQUENCED and the reason is now HALF discharged: the ruled
+#    order (D-219 §6, Utility Panel first) is satisfied — TASK-1433 is PROMOTED —
+#    but `lib/shell/scope.ts` is still imported by nothing except its own test.
+#    Four chips would narrow nothing. Do not claim it because state-check names it.
+#
+# 🔴  TASK-1472 is WITHDRAWN — it was a duplicate of TASK-1464 written by this
+#    office and caught by its own sweep the next morning. If you read it in an
+#    older poll, TASK-1464 is the row that stands.
 #
 # ══════════════════════════════════════════════════════════════════════════════
 # 🔴  LEGACY UI — 2026-08-07 · D-152 · read before the next screen
@@ -1497,7 +1523,7 @@ updated      = 2026-08-10
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-1405", "TASK-1462", "TASK-1463", "TASK-1465", "TASK-1466", "TASK-202"]
+backlog = ["TASK-1405", "TASK-1462", "TASK-1465", "TASK-1466", "TASK-202"]
 # ⚠️ TWO ADDITIONS, 2026-08-10 — both were READY and in NO queue, reported by QE
 #    and confirmed here by `state-check` rather than taken on trust.
 #

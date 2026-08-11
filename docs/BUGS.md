@@ -3553,6 +3553,49 @@ def _load_state_check() -> ModuleType:
 
 📁 **Design System v2 ships `2xl: "1920px"`. `tailwind.config.ts` defines four screens and stops at 1600.** ⚡ **Small, real, and separate from everything above.**
 
+### B-430 · 🟡 `state-check` reports a correct row as defective, and the fix it invites is the one C-213 cost two days
+
+| | |
+|---|---|
+| **Module** | **Repository-wide** — [`infra/state-check.py`](../infra/state-check.py) |
+| **Current assignee** | **QE** — 📁 `state-check.py` is a gate, and [§20e](../CLAUDE.md) makes a gate QE's |
+| **Severity** | 🟡 — ⛔ **wrong but survivable: the check is advisory and blocks nothing.** ⚠️ **Filed because of what it invites, not what it stops** |
+| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-11, on the routine poll |
+| **Found** | **By acting on the check's own output** — ⚡ **the sweep it prompted found four real releases and two false reports** |
+
+#### 🔴 The defect that matters
+
+📁 **[C-289](LANE_COORDINATION.md#c-289)'s `Owner` cell reads:**
+
+> ***"`knowledge_graph`'s current assignee — joined from [`modules.toml`](coordination/modules.toml), ⛔ not named here ([C-213](LANE_COORDINATION.md#c-213))"***
+
+⛔ **`state-check` reports it as `C-289's Owner names no lane, QE or the product owner. An owner a reader cannot route to is an absent owner.`**
+
+✅ **The owner IS routable. `modules.toml` gives `knowledge_graph` → `current_owner = "Lane A"`, and the join resolves today.**
+
+🔴 **The row is not merely acceptable — it is the ratified practice.** 📁 **[§20e](../CLAUDE.md), *Ownership is determined by architecture, and recorded in one registry*: *"No document restates an assignee, and a coordination item, backlog row or defect names its module; the assignee is joined at render time."***
+
+⚡ **So the check flags the one row in the register that follows the rule, and the obvious way to satisfy it is to hard-code `Lane A` into the cell** — ⛔ **which is exactly the stale-assignee defect [C-213](LANE_COORDINATION.md#c-213) cost two days of blocked work to establish.** 🔴 **A check that is satisfied by reintroducing a known defect is worse than no check.**
+
+#### ⚠️ A second false positive in the same gate, and it is milder
+
+📁 **The `SEQUENCED`-row check fires when ANY predecessor has been handed over, not when ALL have.**
+
+⚡ **Measured across two days on the same rows:**
+
+| Date | Reported | Genuinely free | False |
+|---|---|---|---|
+| **2026-08-10** | **4** | **1** | **3** |
+| **2026-08-11** | **5** | **4** | **1** |
+
+⚠️ **This one is defensible and is NOT asked to change.** ⛔ **It is advisory and its job is to prompt a re-check, which is what it did — the 2026-08-11 sweep released four rows because of it.** ✅ **The cost is one verification pass; the alternative is a row that stays parked because nothing re-asks.** 📁 **It is recorded here only so the two are not confused: the first report is a defect, the second is a design choice, and [TASK-1414](BACKLOG.md#task-1414--workflow-23--security-center--a-persons-own-security) carries the dated evidence for both.**
+
+#### ✅ What a fix looks like
+
+⚡ **Resolve the `Owner` cell through [`modules.toml`](coordination/modules.toml) before judging it** — the same join every other consumer of that registry already performs. ⛔ **Do not ask the register to name lanes inline.**
+
+⚠️ **`infra/coordination.py` already does this join correctly**, which is where the reference implementation is.
+
 ### B-429 · 🟠 The user menu drops the design's first fact, on a premise the registration form disproves
 
 | | |
