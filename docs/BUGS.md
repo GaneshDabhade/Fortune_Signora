@@ -613,6 +613,60 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-253 · On every cold boot an owner is shown their own destinations locked, because "role not yet known" is passed as "no permission"
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`app/(app)/authenticated-shell.tsx`](../frontend/app/\(app\)/authenticated-shell.tsx) and [`components/shell/navigation.tsx`](../frontend/components/shell/navigation.tsx) |
+| **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **the product states something false about a customer's permissions**, on the screen they see most often. ⚡ **Not 🔴: it corrects itself in a few hundred milliseconds and nothing is lost** — **but it is a claim about access, which is the class a customer escalates** |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **deliberately NOT fixed in [TASK-1471](BACKLOG.md).** ✅ **That row fixed the WORKSPACE half of the same conflation and this is the ROLE half**, which has a product trade-off underneath it that a feature slice should not settle alone — see below |
+| **Found** | **2026-08-11, by Lane A**, measuring a cold boot for [TASK-1471](BACKLOG.md) — **by watching the frame, not by reading it** |
+| **Commit found** | **`481b6540`** |
+
+**Steps.** Sign in as an **owner**. Reload any authenticated route and watch the rail during the first few hundred milliseconds — or count the rail's `<a href>` elements as the page settles.
+
+**Expected.** An owner's destinations are their destinations, throughout.
+
+**Actual.** ⛔ **Measured across one cold boot:**
+
+```
+destinations=7  pending=1     <- workspace unknown
+destinations=7  pending=0     <- workspace resolved
+destinations=8  pending=0     <- role resolved
+```
+
+⚡ **The count changes because a guarded destination renders as a LOCKED BUTTON rather than a link while the role is unknown** — 📁 `navigation.tsx`: `const restricted = guard !== undefined && !can(role, guard.requires)`, **and `restricted` renders `<button>` with *"Ask someone with that role to open it for you."***
+
+#### 🔴 The cause is one conflation, and it is [B-306](#b-306)'s exactly
+
+📁 [`authenticated-shell.tsx`](../frontend/app/\(app\)/authenticated-shell.tsx):
+
+```tsx
+role={resolved ? role : null}
+```
+
+⛔ **`null` means BOTH *"this person has no role"* and *"the role has not arrived"***, and the rail can only read it as the first. ⚠️ **The shell computes `resolved` correctly and then throws the distinction away at the boundary.**
+
+✅ **[TASK-1471](BACKLOG.md) fixed the identical conflation for the WORKSPACE** — `workspaceId === null` meant *absent* and *not yet arrived*, and Home was dropped from the frame until the read landed. **This row is the same sentence with `role` in it.**
+
+#### ⚠️ Why it was not fixed with the workspace half — the trade is a product decision
+
+**Two repairs, and each shows a customer something untrue for a moment:**
+
+| | |
+|---|---|
+| **Pending, like Home** | ⛔ **Several rail rows sit in a resolving state on every cold boot**, which is visually heavy for a state that lasts a moment, **and the rail is the most-looked-at surface in the product** |
+| **Optimistic — render as a normal link until the role is known** | ✅ **Defensible under [§20c](../CLAUDE.md)**: *"client-side permission checks are presentational. Casbin on the server is the authorization decision… hiding a control the caller cannot use is a courtesy, never enforcement."* ⛔ **But a member briefly sees a destination they cannot open**, and clicking it lands them on a refusal |
+
+🔴 **The current behaviour is the third option and the worst of the three**: **it makes the false claim in the direction that accuses the customer** — *you may not go here* — **about a place they own.**
+
+⚡ **This lane's recommendation, offered as input rather than authority** ([§20e](../CLAUDE.md)): **optimistic.** 📁 **§20c already says the client check is a courtesy and never the enforcement**, so being briefly generous costs a refusal the server was always going to give — **while being briefly restrictive tells an owner they are not an owner.**
+
+#### ✅ Whatever is chosen, the shape of the fix is the same
+
+**Thread the distinction rather than collapsing it**: the shell already knows `resolved`, so pass *role* and *whether the role is known* separately — **exactly as [TASK-1471](BACKLOG.md) now does for the workspace** — and let the rail decide once, in one place, rather than inferring it from a `null` that means two things.
+
 ### B-252 · The library-reachability guard counts an identifier in a comment as a caller, so a doc-comment can retire an orphan
 
 | | |

@@ -130,6 +130,24 @@ interface RailAction extends RailEntryBase {
 }
 
 /**
+ * 🔴 **An entry that WILL go somewhere, once the workspace is known** —
+ * [TASK-1471](../../../docs/BACKLOG.md), §16 tier one.
+ *
+ * ⛔ **A third member rather than an optional `href` on {@link RailItem}**, for
+ * the reason the union header already gives: **an optional href makes a dead
+ * entry ordinary code that happens to be wrong.** ⚡ **A pending entry is a
+ * different THING from a broken one** — it holds the frame's shape while the
+ * workspace read is in flight — **and the type says which it is.**
+ *
+ * ⚠️ **It exists for exactly one entry today**, `Home`, because it is the only
+ * destination whose path carries a `[workspace]` segment. **If a second gains
+ * one, it gets this behaviour for free.**
+ */
+interface RailPending extends RailEntryBase {
+  pending: true;
+}
+
+/**
  * ⛔ **A union, so a rail entry with NEITHER a route nor an action cannot be
  * written.** 📁 [§2](../../../CLAUDE.md): *"prefer a violation that is
  * unrepresentable over one that is merely discouraged."* ⚡ **The alternative —
@@ -137,10 +155,15 @@ interface RailAction extends RailEntryBase {
  * wrong**, which is exactly the shape [C-269](../../../docs/LANE_COORDINATION.md)
  * refuses.
  */
-type RailEntry = RailItem | RailAction;
+type RailEntry = RailItem | RailAction | RailPending;
 
 function goesSomewhere(entry: RailEntry): entry is RailItem {
   return 'href' in entry;
+}
+
+/** ⚡ **Present in the frame, not yet a destination** — §16 tier one. */
+function isPendingEntry(entry: RailEntry): entry is RailPending {
+  return 'pending' in entry;
 }
 
 /**
@@ -305,11 +328,42 @@ export const RAIL_DESTINATIONS = [...DESTINATIONS, ...UTILITIES.filter(goesSomew
 export function resolved(
   items: readonly RailItem[],
   workspaceId: string | null,
-): readonly RailItem[] {
-  return items.flatMap((item) => {
+  workspaceKnown = true,
+): readonly RailEntry[] {
+  return items.flatMap<RailEntry>((item) => {
     if (!item.href.includes('[workspace]')) return [item];
-    if (workspaceId === null) return [];
-    return [{ ...item, href: workspaceHome(workspaceId) }];
+    if (workspaceId !== null) return [{ ...item, href: workspaceHome(workspaceId) }];
+    /**
+     * 🔴 **§16 tier one, and [TASK-1471](../../../docs/BACKLOG.md)'s whole
+     * finding** — 📁 *"Cold boot paints the shell chrome immediately and
+     * skeletons only the content region — **the frame is never blank, because
+     * the frame is the same on every route**."*
+     *
+     * ⛔ **`workspaceId === null` meant two opposite things and both dropped the
+     * entry**: *this person has no organization* and *the list has not arrived
+     * yet.* ⚡ **Home is the rail's FIRST destination**, so on every cold boot
+     * the rail rendered without it and **everything below shifted down when the
+     * read landed** — measured 6 → 7 → 8 links across one page load.
+     *
+     * ✅ **The distinction already exists one level up**: `authenticated-shell`
+     * computes `workspaceKnown` for exactly this reason, and 📁
+     * [B-306](../../../docs/BUGS.md) is the row that established it — *"`resolved`
+     * alone conflates a workspace that is absent with one that has not
+     * arrived."* **This is that lesson, one component along.**
+     *
+     * ⛔ **Pending renders the entry without a destination rather than with a
+     * false one.** ⚠️ **A `[workspace]` literal in a `<Link>` THROWS in the App
+     * Router** ([B-233](../../../docs/BUGS.md)) and a link to `/` would be a
+     * different screen wearing Home's label — **so the row holds its place and
+     * says it is not ready yet.**
+     */
+    if (workspaceKnown) return [];
+    // ⚡ **The `href` is dropped rather than emptied** — 📁 the union refuses an
+    // entry with a route it cannot honour, which is the whole reason
+    // {@link RailPending} is a third member instead of an optional field.
+    const { href, ...withoutRoute } = item;
+    void href;
+    return [{ ...withoutRoute, pending: true }];
   });
 }
 
@@ -354,6 +408,41 @@ function railShape(depth: number, collapsed: boolean): string {
  * nothing**, which is precisely the dead end
  * [C-269](../../../docs/LANE_COORDINATION.md) refuses.
  */
+/**
+ * 🔴 **A destination that is in the frame and not yet reachable** —
+ * [TASK-1471](../../../docs/BACKLOG.md), §16 tier one.
+ *
+ * 📁 ***"Cold boot paints the shell chrome immediately and skeletons only the
+ * content region — the frame is never blank, because the frame is the same on
+ * every route."***
+ *
+ * ⚡ **It holds Home's place, its icon, its label and its exact geometry**, so
+ * nothing below it moves when the workspace read lands. ⛔ **It is not a link
+ * and not a button**: there is nowhere to go yet, and 📁 [§2](../../../CLAUDE.md)
+ * calls a control that does nothing the worse kind — **one a person presses and
+ * believes.**
+ *
+ * ♿ **`aria-busy` says what a sighted reader sees**: this row is resolving, not
+ * disabled and not forbidden. ⛔ **`aria-disabled` would be wrong** — nothing
+ * about this entry is refused, and a screen-reader user told *disabled* would
+ * reasonably stop waiting for it.
+ */
+function RailPendingRow({ item, collapsed }: { item: RailPending; collapsed: boolean }) {
+  const Icon = item.icon;
+
+  return (
+    <div
+      data-pending="true"
+      aria-busy="true"
+      aria-label={item.label}
+      className={cn(railShape(item.depth, collapsed), 'text-content-subtle')}
+    >
+      <Icon className="h-4 w-4 shrink-0 text-content-subtle" aria-hidden />
+      {collapsed ? null : <span className="min-w-0 flex-1 truncate">{item.label}</span>}
+    </div>
+  );
+}
+
 function RailAction({ item, collapsed }: { item: RailAction; collapsed: boolean }) {
   const reference = useShortcutsReference();
   const Icon = item.icon;
@@ -518,8 +607,16 @@ export function Navigation({
   role: WorkspaceRole | null;
   collapsed?: boolean;
 }) {
-  const { activeWorkspace } = useWorkspaceContext();
-  const destinations = resolved(DESTINATIONS, activeWorkspace?.id ?? null);
+  const { activeWorkspace, workspaces, isLoading } = useWorkspaceContext();
+  /**
+   * ⚡ **The same question `authenticated-shell` asks, asked once more here** —
+   * 📁 *"the question is answered when there is an active organization, or when
+   * the list came back and there are none, and it is genuinely open in
+   * between."* ⛔ **Not a second answer**: the shell's copy governs whether the
+   * CONTENT is guarded, and this one governs whether a DESTINATION exists.
+   */
+  const workspaceKnown = !isLoading && (activeWorkspace !== null || workspaces.length === 0);
+  const destinations = resolved(DESTINATIONS, activeWorkspace?.id ?? null, workspaceKnown);
 
   return (
     // 📁 **`nav[navigation]`, labelled "Primary"** — TASK-1444. ⛔ It said
@@ -530,9 +627,18 @@ export function Navigation({
       aria-label="Primary"
       className="flex h-full flex-col gap-0.5 p-3"
     >
-      {visibleDestinations(destinations).map((item) => (
-        <RailLink key={item.id} item={item as RailItem} role={role} collapsed={collapsed} />
-      ))}
+      {visibleDestinations(destinations).map((item) => {
+        const entry = item as RailEntry;
+        /* 🔴 **§16 tier one: the frame holds its shape while the workspace read
+           is in flight** — [TASK-1471](../../../docs/BACKLOG.md). ⛔ **Not a
+           link**, because it has no destination yet and a link to the wrong
+           screen is worse than one that waits. */
+        return isPendingEntry(entry) ? (
+          <RailPendingRow key={entry.id} item={entry} collapsed={collapsed} />
+        ) : goesSomewhere(entry) ? (
+          <RailLink key={entry.id} item={entry} role={role} collapsed={collapsed} />
+        ) : null;
+      })}
 
       {/* 📁 *"Utilities and the assistant pin to the bottom above the fold."*
           ⚡ The spacer is what pins them, and it is why the rail is a flex
@@ -542,9 +648,13 @@ export function Navigation({
       <div className="flex flex-col gap-0.5 border-t border-border pt-2">
         {visibleDestinations(UTILITIES).map((item) => {
           const entry = item as RailEntry;
-          return goesSomewhere(entry) ? (
-            <RailLink key={entry.id} item={entry} role={role} collapsed={collapsed} />
-          ) : (
+          // ⛔ **The utilities are static and none carries a `[workspace]`
+          // segment**, so a pending entry cannot occur here — ⚡ **and the
+          // exhaustive branch says so rather than casting it away.**
+          if (goesSomewhere(entry)) {
+            return <RailLink key={entry.id} item={entry} role={role} collapsed={collapsed} />;
+          }
+          return isPendingEntry(entry) ? null : (
             <RailAction key={entry.id} item={entry} collapsed={collapsed} />
           );
         })}

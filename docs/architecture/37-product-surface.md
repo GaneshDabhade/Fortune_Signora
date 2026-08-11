@@ -1910,3 +1910,45 @@ return refreshing > 0 && firstLoads === 0;
 | **TASK-1474** | **`SEARCH_WIDTH`'s focus rule** — ✅ **now called**; **`statusLabelVisible`** — ⛔ **cannot be** |
 
 ⚠️ **`library-reachability` catches this for `components/ui` and catches nothing in `lib/`.** ⚡ **All three were in `lib/`**, and each was found by a row that happened to read the file rather than by a gate.
+
+---
+
+## §16 tier one — the frame is the same on every route, including the first — [TASK-1471](../BACKLOG.md)
+
+📁 ***"Cold boot paints the shell chrome immediately and skeletons only the content region — the frame is never blank, because the frame is the same on every route."***
+
+### 🔴 Measured before anything was changed, which is what the row asked for
+
+⚡ **[TASK-1463](../BACKLOG.md) built tier THREE and was told not to touch tiers one and two *"without measuring them first."*** ✅ **This is that measurement**, taken in a browser across one cold boot:
+
+```
+rail links=6  ->  links=7  ->  links=8
+```
+
+⛔ **The frame changes shape three times.** 🔴 **`Home` is the rail's FIRST destination**, so everything beneath it moved when the workspace read landed.
+
+### ⛔ The cause: one `null` meaning two opposite things
+
+📁 **`resolved()` dropped any entry whose `[workspace]` segment could not be filled:**
+
+```ts
+if (workspaceId === null) return [];   // absent  AND  not-yet-arrived
+```
+
+⚡ **That is [B-306](../BUGS.md)'s conflation exactly, one component along** — *"`resolved` alone conflates a workspace that is absent with one that has not arrived"* — **and the shell already computes the distinction as `workspaceKnown` for precisely this reason.** ✅ **The rail now asks the same question rather than inferring it from a `null`.**
+
+### ✅ A third union member, not an optional field
+
+⛔ **`RailPending` is its own member of `RailEntry`.** 📁 The union's own header explains why: *"an optional `href` makes the dead entry ordinary code that happens to be wrong."* ⚡ **A pending entry is a different THING from a broken one** — it holds the frame's shape while a read is in flight — **and the type says which it is.**
+
+**⛔ It renders as neither a link nor a button.** 📁 A `[workspace]` literal in a `<Link>` **throws** in the App Router ([B-233](../BUGS.md)), and a link to `/` would be a different screen wearing Home's label. ♿ **`aria-busy`, never `aria-disabled`**: nothing about the entry is refused, and **a reader told *disabled* would reasonably stop waiting for it.**
+
+### 🔴 The half deliberately not fixed, and why it is [B-253](../BUGS.md)
+
+⚠️ **After the fix the count still moves once**, `7 → 8`, **and the cause is the same conflation in the other input**: 📁 `authenticated-shell` passes `role={resolved ? role : null}`, **so *"the role has not arrived"* reaches the rail as *"no permission"*** — and a guarded destination renders as a **locked button** until it resolves.
+
+🔴 **So on every cold boot an owner is briefly told they may not open their own settings.**
+
+⛔ **Not fixed here, because the repair is a product decision rather than a mechanism**: *pending* is visually heavy on the most-looked-at surface in the product; *optimistic* briefly offers a member a door that will refuse them. ⚡ **The current behaviour is the third option and the worst of the three — it makes the false claim in the direction that accuses the customer.** ✅ **Recommended as input rather than authority: optimistic**, because 📁 [§20c](../../CLAUDE.md) already says the client check *"is a courtesy, never enforcement."*
+
+> ⚡ **The journey allows two counts and would fail on a third.** ⛔ **A test written to today's whole behaviour would have to be edited when B-253 is fixed** — **so it asserts the property this row owns and names the one it does not.**
