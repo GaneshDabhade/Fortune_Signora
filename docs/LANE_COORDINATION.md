@@ -10946,3 +10946,76 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 > ⓐ **`Dialog` gains a documented width variant** — a foundation change, and every future wide overlay uses it · ⓑ **one column is correct for an overlay** and the design's three columns are the spec page's own layout · ⓒ **the reference stops being a modal** and becomes a route or a utility-panel tab, where width is free.
 
 ⛔ **This lane does not pick.** ⚡ **ⓑ costs nothing and is what ships today**, so the register is not holding any work — **but a foundation question answered by silence is answered badly.**
+
+---
+
+## C-287 · ADR-0408's mechanism and its route scope cannot both be satisfied — the limiter is specified in the tier that cannot see the routes
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, on the first hour of [TASK-1430](BACKLOG.md) — ⛔ **before writing any code** |
+| **Owner** | **Product owner** — 🔴 **an architectural blocker** ([§20e](../CLAUDE.md)): **no accepted architecture exists for the next step**, and the accepted one contradicts itself |
+| **Status** | 🔴 **`OPEN`** |
+| **Blocks** | ⛔ **[TASK-1430](BACKLOG.md) entirely.** ✅ **Claim released** |
+
+### 🔴 ① The problem
+
+📁 **[ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) is `ACCEPTED` and its two halves are incompatible.**
+
+| The ADR says | Where |
+|---|---|
+| ✅ **The mechanism**: *"One ASGI middleware in `signora_platform/api/`"* | §4 · §11 · §16, three times |
+| ✅ **The routes**: *"`/signin` · `/register` · password-reset request · verification resend"* | §10 |
+
+⛔ **Every one of those four routes is a Better Auth route in Next.js.** ⚡ **An ASGI middleware in the Python tier can never see them.**
+
+📁 **Measured, not assumed:**
+
+- **`frontend/app/(auth)/signin`** and **`frontend/app/(auth)/register`** exist; **`frontend/app/api/auth/[...all]`** is Better Auth's handler.
+- **`backend/apps/api/main.py` mounts sixteen routers and not one serves authentication.** A search of every `interface/` layer for `signin|login|register|reset|verif|password` returns **nothing**.
+- 📁 **[§13](../CLAUDE.md) and [ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md) make this permanent**: ***"Better Auth runs in Next.js and is the sole Authentication Authority. The Python tier only ever verifies RS256 JWTs"*** — ⛔ **and Claude must never add a login route to the Python tier.**
+
+🔴 **The ADR's own measurement proves the contradiction rather than contradicting it.** 📁 §1: ***"nothing stands between a credential-stuffing script and Better Auth."*** ✅ **True — and Better Auth is in Next.js.**
+
+### ⚠️ Why this is not a cell to correct quietly
+
+⛔ **The ASGI middleware is buildable, and building it would satisfy the exemption while closing none of the gap.** ⚡ **It would guard sixteen business routers that already require a verified RS256 JWT** — **real value, and not the stated one.**
+
+🔴 **And it would make the gap invisible.** 📁 **`infra/production-readiness.py` exists because its own first version reported ✅ on 38 outbound files** ([D-213](DECISION_REGISTER.md)) — ⚠️ **a limiter merged under this ADR would flip that probe to ✅ while `/signin` still accepted unlimited attempts.** ⛔ **That is worse than the gap: it is the gap plus a green light.**
+
+### ⚡ ② Affected modules
+
+**`signora_platform/api/`** *(the named home)* · **the Next.js authentication tier** *(where the routes are)* · **`product_surface`** *(this row's module)* · **[TASK-1431](BACKLOG.md)**'s production-readiness probe, which would report on it.
+
+### ✅ ③ The alternatives
+
+| | | |
+|---|---|---|
+| **ⓐ** | **The limiter runs in the Next.js tier, where the routes are** | ⛔ **Outside the §20a exemption** — the exemption names `signora_platform/api/`. ⚡ **`frontend/middleware.ts` or Better Auth's own facility.** ⚠️ **Whether this Better Auth version exposes a core `rateLimit` is UNVERIFIED** — 📁 in the installed `better-auth ^1.1.0` tree it appears in **plugin** option shapes (`email-otp`, `magic-link`, `two-factor`, `phone-number`) and **not in `dist/types/`** — ⛔ **so *"Better Auth does it"* must be checked before it is believed** |
+| **ⓑ** | **An edge limiter in front of both tiers** | ⚡ **The conventional answer**, and 📁 **deferred with the rest of infrastructure to M14.5** ([§20b](../CLAUDE.md)). ⛔ **Nothing to build today** |
+| **ⓒ** | **Build the ASGI middleware as specified, and restate what it protects** | ✅ **Honest and buildable now** — the business API gains a limiter. ⛔ **It does NOT close the credential-stuffing gap**, and the ADR must stop claiming it does |
+| **ⓓ** | **Both, as two policies** | 📁 **ADR-0408 §13 already says *"two policies, not one"*.** ✅ **ⓐ for the four named routes, ⓒ for the business API** |
+
+### ⚡ ④ Recommendation
+
+> ✅ **ⓓ, taken in the order ⓐ then ⓒ** — and ⛔ **neither is this lane's to start without a ruling.**
+
+🔴 **ⓐ first, because it is the whole reason the row exists.** 📁 **[§9](../CLAUDE.md) and [§13](../CLAUDE.md) both point the same way**: authentication is **bought, not built**, and ***"Claude must never implement a bespoke auth mechanism, even a small or temporary one."*** ⚡ **A limiter on the authentication endpoints is authentication infrastructure**, so **configuring the vendor's facility beats writing one** — ⚠️ **if the facility exists, which must be verified rather than assumed.**
+
+✅ **ⓒ is worth doing on its own merits and should be re-scoped rather than cancelled** — ⛔ **but its row must say *the business API*, not *`/signin`*.**
+
+### ⚠️ ⑤ Trade-offs
+
+⛔ **ⓐ costs the §20a exemption its subject** — the exemption was granted for a Python middleware and would need re-granting for a different tier. ⚡ **It is also the cheaper build if the vendor already ships it, and the more correct one either way.**
+
+⛔ **ⓒ alone is the dangerous option**, for the reason above: **it satisfies the ADR, the exemption, the row and the probe, and leaves the attack open.**
+
+⚡ **ⓑ is not a competitor** — it is what M14.5 adds on top, and it does not remove the need for a per-identity key that only the application knows.
+
+### 📁 ⑥ Implementation impact
+
+⛔ **Zero code written.** ✅ **Found by reading the ADR against the repository before building**, which is the cheapest place to find it.
+
+⚠️ **[TASK-1430](BACKLOG.md) cannot proceed under its current scope.** ⛔ **This lane will not "just build the ASGI half"** — 📁 [§20e](../CLAUDE.md): ***"'I could just add it' is how an architectural blocker becomes a silent design decision inside a feature slice."***
+
+⚡ **What survives whatever is ruled** is the reuse audit the row asked for: ✅ **`redis>=5.2` is already a dependency**, **`require_redis_url()` already exists**, and **`event_bus/queue.py` is the access pattern** — ⛔ **so no rate-limiting library and no new dependency is needed in the Python tier.** 📁 **The in-process counter is rejected on the ADR's own argument**: it gives an attacker *n* × the budget across *n* replicas and loosens silently as the service scales.
