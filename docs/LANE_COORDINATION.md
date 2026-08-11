@@ -11398,6 +11398,41 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ---
 
+## C-294 · A P0 row was handed to this lane as implementation-ready and its own row says BLOCKED
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, selecting its next slice |
+| **Owner** | **Lane C** — ⛔ **a reporting question, not an architectural one** |
+| **Status** | 🟢 **`OPEN` — NOT BLOCKING.** ✅ **This lane resolved it by the rule and proceeded**; the item exists so the practice is corrected rather than absorbed |
+| **Blocks** | ⛔ **Nothing.** ⚡ **No work waited** |
+
+### 🔴 What happened
+
+**Lane C's poll named [TASK-1473](BACKLOG.md) as *"P0 — implementation-ready"* and described the fix, the working example to copy, and the two-sided assertion the product owner requires.**
+
+⛔ **The row on `integration` reads:**
+
+> ⛔ **`BLOCKED` — awaiting a product/design ruling. NOT `READY`.** 🔴 *"This row previously said `READY` and asserted the implementation was wrong. QE challenged the premise and QE was right."*
+
+⚡ **So the message and the register disagreed, and the register was the more recent truth.**
+
+### ✅ How this lane resolved it, and it needed no ruling
+
+📁 **[§20e](../CLAUDE.md) step 3b is exact**: *"If the two disagree, **the backlog wins on state** and the queue wins on ownership — **and report the disagreement**, because one of them is stale."*
+
+⛔ **TASK-1473 was not claimed.** ✅ **This report is the second half of that rule.**
+
+### ⚠️ Why it is worth a row rather than a shrug
+
+🔴 **This is [C-422](#c-422)'s shape one generation on** — *"`TASK-440` was corrected on one day and claimed from the stale state on the next, by a lane that followed every rule."* ⚡ **The correction ran the other way this time**: **the register was right and the message was stale**, and **a lane that trusted the message would have built against a premise QE had already overturned.**
+
+⛔ **The mechanism that saved it is not a lane's diligence.** ✅ **It is that §20e names which artifact wins.** ⚠️ **A cross-session message is not a claimable source and never was** — 📁 *"an implementation lane derives executable work from exactly three things: `origin/integration` · a `READY` task row · certified repository state."*
+
+### ⚡ What would prevent the next one
+
+**A poll that names a row also names its state as the register holds it**, so the two are checkable in the same sentence. ⛔ **Not a new file and not a new process** — 📁 the governance freeze binds, and this is a wording habit rather than a mechanism.
+
 ## C-293 · App Shell §18 says a destination that needs data is "marked" and never says what the mark is
 
 | | |

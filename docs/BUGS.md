@@ -613,6 +613,66 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-250 · The Playground seeder ignores `SIGNORA_DATABASE_URL` and silently seeds the shared demo database
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`backend/tests/playground/seed.py`](../backend/tests/playground/seed.py) via [`backend/tests/conftest.py:52`](../backend/tests/conftest.py) |
+| **Current assignee** | **Lane C** — current assignee of `platform_foundation` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **a lane can write to a database that is not its own and be told it succeeded.** ⚡ **Nothing is corrupted** — the seeder replaces only the Playground it owns — **but the write lands in the environment reserved for human review** ([§20e](../CLAUDE.md): *ports 3000 and 8000 belong to human review and to no lane*) |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed here.** `backend/tests/` is Platform Foundation's and QE's, not this lane's |
+| **Found** | **2026-08-11, by Lane A**, restoring its own environment during [TASK-1463](BACKLOG.md) — ⚠️ **by doing it twice before noticing** |
+| **Commit found** | **`4b830a7b`** |
+
+**Steps.**
+
+```
+cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+  SIGNORA_DATABASE_URL=postgresql+asyncpg://…@localhost:5432/signora_lane_a \
+  uv run python -m tests.playground.seed
+```
+
+**Expected.** The Playground is seeded into `signora_lane_a`, the database the command names.
+
+**Actual.** ⛔ **It is seeded into `signora`** — the shared demo database — **and the command reports success**, printing a workspace id that does not exist in the database the operator asked for:
+
+```
+workspace   e17a2216-6d51-4145-9217-da10f4e36c2b
+$ psql -d signora_lane_a -c "select count(*) from workspace where id='e17a2216…'"
+ 0
+$ psql -d signora      -c "select count(*) from workspace where id='e17a2216…'"
+ 1
+```
+
+#### 🔴 The mechanism
+
+📁 **The seeder builds its engines from [`tests/conftest.py`](../backend/tests/conftest.py), which reads different variables entirely:**
+
+```python
+DEFAULT_APP_DATABASE_URL = os.environ.get(
+    "SIGNORA_TEST_APP_DATABASE_URL",
+    "postgresql+asyncpg://signora_app:…@localhost:5432/signora",   # <- the default
+)
+```
+
+⛔ **`SIGNORA_DATABASE_URL` is never consulted**, so setting it does nothing and **the fallback is the shared database.**
+
+#### ⚠️ Why the silence is the defect rather than the variable name
+
+⚡ **`conftest.py`'s own comment shows the hazard was already understood** — *"Two lanes running `pytest` at the same time would have truncated each other's rows mid-run, producing failures neither could reproduce."* ✅ **That is exactly right, and it is why the `SIGNORA_TEST_*` variables exist.**
+
+🔴 **What is missing is that the command accepts the WRONG variable without complaint.** 📁 **[`RUNNING.md`](RUNNING.md) line 344 records the same class for migrations** — *"`migrations/env.py` reads `SIGNORA_DATABASE_URL` from `os.environ` directly and never sees `backend/.env`… **set it to a different database and the migration runner locks one and migrates the other**. That is [B-007](#b-007)"* — ⛔ **so this is B-007's shape in the seeder, and B-007 is still open.**
+
+⚠️ **And `make demo-seed` passes nothing at all**, so the documented invocation is correct only because the default happens to be the demo database. **A lane copying that line for its own database gets no error and no effect where it looked.**
+
+#### ✅ The suggested repair, and it is a refusal rather than a rename
+
+⛔ **Do not simply teach the seeder to read `SIGNORA_DATABASE_URL`** — 📁 **the two-variable split is deliberate and correct** (migration identity vs runtime identity, [§8](../CLAUDE.md)).
+
+✅ **Make the mismatch impossible to miss**: **when `SIGNORA_DATABASE_URL` is set and names a different database from `SIGNORA_TEST_ADMIN_DATABASE_URL`, refuse and say so.** ⚡ **A destructive command that already demands `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1` is exactly the place to demand that the operator and the tool agree about which database is disposable** — 📁 [§2](../CLAUDE.md), *prefer a violation that is unrepresentable over one that is merely discouraged.*
+
+⚠️ **Printing the database name beside the workspace id would also have caught it in seconds**, and costs one line.
+
 ### B-249 · Journeys assert App Shell surfaces that App Shell rows moved, and none was updated with the change
 
 | | |
