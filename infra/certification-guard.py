@@ -871,6 +871,26 @@ def _claim_stowaways(claims: list[str]) -> list[tuple[str, str, list[tuple[str, 
                 subject = _git("log", "-1", "--format=%s", commit)
                 if subject.startswith("Claim TASK-"):
                     continue
+                # ⛔ **Executable paths only, and this is the whole
+                # discriminator.** The harm B-238 names is *uncertified code*
+                # reaching `integration`, never *a commit arriving*. Between a
+                # promotion and the next one, `integration` is legitimately
+                # ahead of `main` with work QE fast-forwarded — and every claim
+                # pushed after that would otherwise name all of it.
+                #
+                # ⚠️ **Measured on the first live firing, 2026-08-11**: it
+                # reported three of Lane C's planning commits, published by QE
+                # under an approved push, as stowaways. **0 executable files
+                # each. B-238's real stowaway had 5.** A guard that cries on
+                # the normal state gets switched off, and then it protects
+                # nothing (B-180's lesson, one file over).
+                changed = _git("show", "--name-only", "--format=", commit).splitlines()
+                if not any(
+                    path.startswith(("frontend/", "backend/", "infra/"))
+                    for path in changed
+                    if path
+                ):
+                    continue
                 riders.append((commit[:7], subject))
         if riders:
             found.append((claim[:7], _git("log", "-1", "--format=%s", claim), riders))
