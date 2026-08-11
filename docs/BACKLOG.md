@@ -1362,6 +1362,25 @@
 | **Definition of Done** | **A seller triages from a saved view, filters it, and actions in bulk** · **certified · `main`** |
 | ⚠️ **Runtime status** | ⛔ **LEVEL 1/2 NOT VERIFIED** — source-derived; no authenticated session |
 
+### TASK-1470 · `Ask Signora` sits below the utilities and the design pins it above them
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🟣 **IMPLEMENTED INCORRECTLY — ordering, not absence** |
+| **Epic** | **Common Platform Foundation** — App Shell |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-11, from the product owner's screenshot reconciliation** |
+| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/) §12, door `01`** — ⛔ **read it; this row does not restate it** |
+| 🔴 **The requirement, verbatim** | 📁 ***"A permanent 'Ask Signora' item pinned ABOVE the utilities. The only always-visible door."*** |
+| ⛔ **What renders** | 📁 **Screenshot of `localhost:3300`, 2026-08-11, product owner**: the rail's bottom group reads **`Settings` → `Shortcuts` → `Docs & support` → `Ask Signora`.** ⚡ **The assistant is LAST, below all three utilities** |
+| ✅ **Why it happened, and it is worth recording** | 📁 **`navigation.tsx`:210 and :537 both quote the design — *"Utilities and the assistant pin to the bottom above the fold."*** ⚡ **That sentence is true and says nothing about their ORDER relative to each other.** ⛔ **§12 door `01` is the sentence that does, and it was not consulted.** ⚠️ **Two design statements, one implemented, and the implemented one reads like authority because it is quoted in the code** |
+| ⚡ **Delivers** | **`Ask Signora` rendered above `Settings`, so the bottom group reads `Ask Signora` → `Settings` → `Shortcuts` → `Docs & support`** |
+| 🔴 **What it must NOT do** | ⛔ **Do not move the assistant out of the rail** — §12 calls it *"the only always-visible door"*, and the other three doors are the palette, explain-in-place and the selection bar. ⛔ **Do not add a floating bubble**: §12 is explicit — *"There is no floating bubble: a persistent circle in the corner is a consumer pattern and it covers data."* ⛔ **Do not reorder the three utilities among themselves** — `Settings · Shortcuts · Docs & support` is the design's `railUtility` order and is correct today |
+| **Change Budget** | 🟢 **`components/shell/navigation.tsx`** · 🟢 its tests |
+| **Component coverage** | **The rail's bottom group renders in the design's order, asserted by position rather than by presence** — ⚡ **a test that only checks `Ask Signora` exists passes against the current defect** |
+| **Definition of Done** | **The assistant is the first item of the pinned bottom group** · **certified · `main`** |
+| ⚠️ **Runtime status** | ✅ **RUNTIME EVIDENCE OBTAINED** — the product owner's screenshot of the running product at `localhost:3300`. ⛔ **Source confirms it: `RAIL_UTILITY` holds the three utilities and the assistant renders after them** |
+
 ### TASK-1467 · The three gate screens that are already drawn — sliced out of a row blocked on four documents
 
 | | |
