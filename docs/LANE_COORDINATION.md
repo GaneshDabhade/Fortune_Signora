@@ -4744,7 +4744,7 @@ return hashlib.sha256(f"{self.workspace_id}\x1d{canonical}".encode()).hexdigest(
 |---|---|
 | **Raised by** | **Lane B**, 2026-08-06, on TASK-427 reaching `main` and returning to the queue for the stage its own trigger names |
 | **Owner** | **Lane C** for ① · **the product owner** for ③. ② and ④ resolve themselves once those move |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-11.** ⛔ **NOT escalated: the product owner asked for the decision only, and there is no longer one.** ⚡ **Every link measured today: ① [TASK-428](BACKLOG.md) is `PROMOTED` · ② [TASK-901](BACKLOG.md) is `IN PROGRESS` · ③ [C-417](#c-417) was **`RULED` on 2026-08-06** ([D-111](DECISION_REGISTER.md), Option A bounded) and its own text says it *releases TASK-901's dependent slices* · ④ resolves with ②.** ⚠️ **The chain discharged itself five days ago and the row went on reading `OPEN`** — the same stale-blocker class as [B-425](BUGS.md) and [TASK-440](BACKLOG.md), one layer up in the register |
 | **Blocks** | **[TASK-428](BACKLOG.md)'s S3 entirely.** ✅ **Not its `commercial_profile` half** — see *What is buildable anyway* below, which is what this lane is doing meanwhile |
 
 ### The chain, in the order a lane hits it
@@ -8382,7 +8382,7 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 | **Raised by** | **Lane C**, 2026-08-10, completing the App Shell forensic audit (§21 Accessibility) |
 | **Owner** | 🔴 **Product owner** — ⛔ **two ratified authorities disagree and neither can yield to the other without a ruling** |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN ↔ GOVERNANCE CONFLICT.** ⛔ **Not an implementation defect** — the implementation follows the design exactly |
-| **Status** | 🔵 **`READY FOR PRODUCT DECISION`** — ⚡ **options and a recommendation below; nothing further to investigate** |
+| **Status** | ✅ **`RULED` — product owner, 2026-08-11. APPROVED: the brand rule wins — `Search Signora`.** ⚡ **Implementation is [TASK-1466](BACKLOG.md), `READY`.** ⚠️ **The design-copy discrepancy is recorded for the next refresh and is explicitly *not a blocker*** |
 | **Blocks** | ⛔ **Nothing.** ✅ **No lane is waiting**, and this must not stop shell work |
 
 ### The conflict, in two sentences
@@ -9780,7 +9780,7 @@ rules parsed: 24   ·   distinct reason codes: 24
 |---|---|
 | **Opened** | **2026-08-10, Lane C**, preparing [C-279](#c-279) which Lane A raised and correctly refused to decide |
 | **Owner** | **Product owner** |
-| **Status** | 🟡 **`READY FOR PRODUCT DECISION`** |
+| **Status** | ⏸️ **`REVIEW LATER` — product owner, 2026-08-11. [C-279](#c-279) consolidated into this row.** ⛔ **No new bounded context, no unread-state table, no ADR, no `workspace_tenancy` claim.** ✅ **Novu remains the notification infrastructure layer.** ⚡ ***"Do not let an unresolved future notification architecture decision block shell/navigation/common-foundation implementation."*** **Revisit when the Notification Center implementation actually reaches the point that needs it** |
 | **Module** | **`product_surface`** *(consumer)* — **the owner is the question** |
 | **Blocks** | ⛔ **[TASK-480](BACKLOG.md) only.** ✅ **Lane A moved on, which was right** |
 
@@ -10669,7 +10669,7 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-10, on the poll that found it still `OPEN` |
 | **Owner** | ⛔ **Product owner** — 📁 **the fix is `next.config`, which [§20c](../CLAUDE.md) and the Change Budget put at 🔴** |
-| **State** | 🟡 **`READY FOR PRODUCT DECISION`** — ⚡ **the options were prepared a day ago; only the routing was missing** |
+| **State** | ✅ **`RULED` — product owner, 2026-08-11. APPROVED: `distDir`.** ⚡ **Implementation is [TASK-1465](BACKLOG.md), `READY` for Lane A.** ⛔ ***"Do not turn it into a broader build-system redesign."*** **Closes when [B-219](BUGS.md) does** |
 | **Blocks** | **Lane C's [TASK-1431](BACKLOG.md)**, which is that lane's only claimable row. ⚠️ **It does not block Lane A** |
 
 **The gap this row exists to close, and it is a process one.** ⛔ **[B-219](BUGS.md) has been `OPEN` since 2026-08-09 with its own status reading *"Not fixed: `next.config` and the runbook are frontend foundation, 🔴 in the Change Budget."*** 🔴 **Nothing carried it any further.** ⚡ **A defect whose fix a lane may not make, with no coordination item, is a defect that can sit forever** — 📁 [§20e](../CLAUDE.md): *"an item exists only when another module's assignee or the product owner must answer something before implementation can safely continue."* **That was true of B-219 on the day it was filed.**
@@ -10697,7 +10697,7 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-10, evaluating [TASK-496](BACKLOG.md) |
 | **Owner** | ⛔ **Product owner** — ⚡ **one half is an architecture decision and the other is a Principle 6 exception** |
-| **State** | 🟡 **`READY FOR PRODUCT DECISION`** |
+| **State** | ⏸️ **`REVIEW LATER` — product owner, 2026-08-11. DEFERRED.** ⛔ **No Meilisearch, no second datastore, no ADR, no module, no infrastructure, no Lane A task.** ⚡ **Return it only with a concrete customer-facing workflow and its alternatives** |
 | **Blocks** | ⚪ **NO CUSTOMER-FACING WORKFLOW — reclassified REVIEW LATER, Lane C 2026-08-10, on the product owner's own test.** 📁 **They asked: *is Meilisearch actually required for the customer-facing workflow, or merely the currently proposed technical implementation?*** ✅ **Measured, and it is the second.** 📁 **[TASK-496](BACKLOG.md)'s own cells answer it: *"a search read path already works"* ([450](architecture/450-global-search-traceability-audit.md)), and *"this row replaces the INDEX, not the surface, and the surface must not change"* — with **Routes unchanged · APIs unchanged**.** ⛔ **So no customer capability is missing and none is blocked.** ⚡ **Meilisearch has ONE reference in the entire repository — `infra/repository-dashboard.py` — and no adapter, no config, no compose service.** 🔴 **A second datastore still needs an ADR if it is ever adopted, and Principle 6 is untouched by this reclassification.** ✅ **But the product owner's directive is explicit: do not create a Product Owner blocker merely because a vendor was previously ratified.** **Bring it back when a design says what is searched and PostgreSQL is measured insufficient — neither has happened** |
 
 **What is NOT the problem.** ✅ **The vendor is ratified** — 📁 [09-build-vs-buy.md](architecture/09-build-vs-buy.md) — **so this is not a dependency question**, and it is deliberately not filed as one alongside [C-280](#c-280--two-of-task-493s-four-better-auth-plugins-do-not-ship-in-the-installed-version-so-adopting-them-is-a-dependency-decision), which is.
@@ -10724,7 +10724,7 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-10, building [TASK-493](BACKLOG.md) |
 | **Owner** | ⛔ **Product owner + an ADR** — 📁 [§6](../CLAUDE.md): *"never introduce a new framework, library, or major dependency without explicit approval"*, and [§21](../CLAUDE.md) repeats it |
-| **State** | 🟡 **`READY FOR PRODUCT DECISION`** |
+| **State** | ⏸️ **`REVIEW LATER` — product owner, 2026-08-11. DEFERRED.** ⛔ **Do NOT upgrade Better Auth for passkey/SSO now, and do NOT write an ADR.** ✅ **Ship `two-factor` and `multi-session`, which exist in 1.6.25.** ⚡ **[TASK-493](BACKLOG.md) is rescoped: *ship now* vs *deferred*, and the deferral must not block the pipeline** |
 | **Blocks** | **Half of [TASK-493](BACKLOG.md).** ✅ **The other half is built and `IN VALIDATION`** |
 
 **The measurement.** 📁 **The row states *"All four ship in Better Auth 1.6.25 and are UNREGISTERED"*.** ⚠️ **Two do and two do not**, and it was checked against `node_modules` rather than against a memory of the vendor's documentation:
@@ -10753,7 +10753,7 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-10, on [TASK-480](BACKLOG.md)'s own instruction: ⚠️ *"Nothing publishes a notification today. Whether the badge counts a domain event, an outbox row or an unread record is a question for the design, and [D-140](DECISION_REGISTER.md) says ask one precise question rather than make one convenient assumption."* |
 | **Owner** | ⛔ **Product owner** — it is a product decision about what a notification *is*, and an architecture decision about which module owns it |
-| **State** | 🟡 **`READY FOR PRODUCT DECISION`** — ⚡ **the alternatives are prepared and two of the three are already eliminated by existing rules, so the ruling is narrow** |
+| **State** | ⏸️ **`REVIEW LATER` — product owner, 2026-08-11. CONSOLIDATED INTO [C-1421](#c-1421).** ⛔ **Do not decide it here; the findings stay documented on both** |
 | **Blocks** | ⚪ **NOTHING IN THE CURRENT PRIORITY SET — reclassified REVIEW LATER, Lane C 2026-08-10.** ⛔ **It blocks [TASK-480](BACKLOG.md), a notification badge, and nothing else.** ⚡ **The product owner's implementation-first order puts the shell, navigation, common layout and shared components ahead of it, and none of those needs this answer.** 🔴 **So it must not hold the queue**: *"there is an architectural question, therefore implementation is blocked"* is the reasoning the directive forbids. ✅ **The evidence pass stands and is not repeated** — §07 requires an exportable 30-day log with `Opened` and `Acted`, so Signora owns SOME interaction record whatever Novu provides. **Bring it back when the Notification Center is scheduled** |
 
 **The problem.** 📁 **The App Shell §10 design is rich about the SHAPE** — *"a 400px popover, not a page, with three tabs: Needs you, Mentions, All… grouped by day, unread carries a 6px brand dot rather than a coloured row… Agent and AI notifications are marked with the intelligence hue so a generated nudge never reads as a colleague's request"* — ⛔ **and silent about what the badge COUNTS.**

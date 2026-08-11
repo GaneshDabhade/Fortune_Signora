@@ -1940,6 +1940,39 @@
 | **Definition of Done** | **A customer below 1024 opens navigation from the top bar and it arrives as a sheet** · **the bottom bar does not exist in the codebase** · **certified · `main`** |
 | ⚠️ **Runtime status** | ⛔ **LEVEL 1/2 NOT VERIFIED by Lane C** — no authenticated session. ✅ **The product owner reports both generations visible in the running product, and the DOM evidence is consistent with that report** |
 
+### TASK-1465 · `distDir` — a production build stops destroying the running dev server
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **FOUNDATION DEFECT — [B-219](BUGS.md), open since 2026-08-09** |
+| **Epic** | **Common Platform Foundation** |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-11, on the product owner's ruling of [C-282](LANE_COORDINATION.md): *"Approved: use a separate Next.js build directory via `distDir`."*** |
+| 🔴 **The defect** | 📁 **`next dev` and `next build` share one `.next/`.** ⛔ **Completion gate 4 (`next build`) destroys the dev server gate 5's headed journey runs against.** ⚠️ **And the symptom names the wrong subsystem**: every route returns `500` and Playwright fails at *"sign in as the owner"*, which reads as an authentication defect |
+| ⚡ **Why it needed a ruling at all** | 📁 **`next.config.ts` is 🔴 frontend foundation ([§20c](../CLAUDE.md)) — a lane may not touch it.** ⚠️ **[B-219](BUGS.md) sat `OPEN` for two days with no coordination item; the bug was filed and the routing was not** |
+| ⚡ **Delivers** | **`distDir` set so a build writes somewhere the dev server does not read.** ⛔ **The product owner's words: *"Do not introduce any additional architecture or configuration changes… Do not turn it into a broader build-system redesign."*** |
+| ✅ **Verification — the product owner's five, verbatim** | **① `next dev` continues working · ② `next build` succeeds using the separate directory · ③ the dev server remains functional AFTER a build · ④ the Playwright authentication flow no longer fails because the build overwrote dev state · ⑤ a regression test or executable check if appropriate** |
+| ⚠️ **③ and ④ are the ones that matter** | ⛔ **Do not report this fixed on ① and ② alone** — 📁 **those pass today. The defect only appears in the ORDER `dev` → `build` → use `dev`** |
+| **Change Budget** | 🟠 **`frontend/next.config.ts` — 🔴 by default, unlocked for this row by [C-282](LANE_COORDINATION.md)'s ruling and NOTHING ELSE in that file** · 🟢 `.gitignore` if the new directory needs it |
+| **Definition of Done** | **All five verifications pass** · **[B-219](BUGS.md) closed with a regression check** · **certified · `main`** |
+| ⚡ **Unblocks** | 📁 **Lane C's [TASK-1431](BACKLOG.md)** — that lane's only claimable row |
+
+### TASK-1466 · The search field says `Search Signora`, because the application is already inside Signora
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🟣 **IMPLEMENTED INCORRECTLY — one string** |
+| **Epic** | **Common Platform Foundation** |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-11, on the product owner's ruling of [C-1422](LANE_COORDINATION.md): *"Brand rule wins."*** |
+| 🔴 **The change, and it is the whole change** | 📁 **`frontend/components/shell/top-bar.tsx`:113 and :120** — **`Search Fortune Signora` → `Search Signora`** |
+| ✅ **The test that must move with it** | 📁 **`frontend/tests/components/shell-a11y.test.tsx`:113** asserts `getByRole('search', { name: 'Search Fortune Signora' })`. ⛔ **A rename that leaves the test passing on the old string has renamed nothing** |
+| ⚡ **The ruling, in the product owner's words** | ***"the application is already inside Signora; the newer brand rule explicitly says the in-product product name is `Signora`; the finalized design copy is therefore superseded for this specific wording."*** |
+| ⚠️ **The design still says otherwise, and that is recorded rather than fixed** | 📁 **App Shell §21 `landmarks` reads *"Search Fortune Signora"*.** ⛔ **[D-138](DECISION_REGISTER.md): a snapshot is refreshed, never edited.** ✅ **Recorded on [C-1422](LANE_COORDINATION.md) for the next refresh — ⛔ *"not a blocker"*, the product owner's word** |
+| 🔴 **What it must NOT do** | ⛔ **Do not sweep the repository for `Fortune Signora`.** ⚡ **79 occurrences exist and MOST ARE CORRECT** — the sign-in masthead, the welcome title, and the `<title>` of `maintenance.html` and `outage.html` are **branding surfaces the rule itself permits.** 📁 **[`CLAUDE.md`](../CLAUDE.md): *"Prospective, never a rename exercise. No repository-wide sweep."*** ⛔ **This row changes two lines and one test** |
+| **Change Budget** | 🟢 **`components/shell/top-bar.tsx`** · 🟢 `tests/components/shell-a11y.test.tsx` |
+| **Definition of Done** | **A screen-reader user inside the application hears `Search Signora`** · **certified · `main`** |
+
 ### TASK-1460 · 🔴 The layout grid the design specifies and the repository has never had
 
 | | |

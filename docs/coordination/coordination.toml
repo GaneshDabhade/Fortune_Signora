@@ -10,15 +10,15 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "2f0e559"
-task_count     = 63
+task_count     = 65
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1418", "TASK-1430", "TASK-1445", "TASK-1458", "TASK-412"]
-assigned_total     = 50
-claimable          = 11
+assigned_total     = 52
+claimable          = 13
 claimable_now      = 5
-awaiting_sync      = 6
+awaiting_sync      = 8
 in_flight          = 10
 actionable         = 3
 awaiting_qe_transition = 0
@@ -26,7 +26,7 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 29
 lane_utilization   = 2.0
-idle_prediction_days   = 1.6
+idle_prediction_days   = 1.9
 dependency_wait_days   = 0.6
 blocked_duration_days  = 0.6
 critical_path_max      = 3
@@ -447,6 +447,38 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "after [TASK-1460](#task-1460)** — ⛔ **NOT `READY`, and deliberately so"
 waiting_for    = "after [TASK-1460](#task-1460)** — ⛔ **NOT `READY`, and deliberately so: there is nothing to migrate onto until the primitive exists.** ⚡ **It frees th"
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1465"
+title         = "`distDir` — a production build stops destroying the running dev server"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1466"
+title         = "The search field says `Search Signora`, because the application is already inside Signora"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
 on_integration = false
 
