@@ -225,6 +225,15 @@ export default defineConfig({
     // invariants are about layout holding, not about a prefix being used.
     ...(
       [
+        // ⛔ **Below the smallest named breakpoint, and this row is the one the
+        // matrix was missing.** `phone: 640px` is a MIN-width, so a real
+        // handset gets the UNPREFIXED styles and no project exercised them.
+        //
+        // ⚡ **[B-241](../docs/BUGS.md) needed exactly this viewport**: the rail
+        // overflowed at `844` and fits at `900`, so a matrix whose shortest
+        // screen was 900 tall could not reproduce it however many widths it ran.
+        // **390×844 is the device Lane A found it on.**
+        { name: 'handset', width: 390, height: 844 },
         { name: 'phone', width: 640, height: 900 },
         { name: 'smalllaptop', width: 1024, height: 800 },
         { name: 'laptop', width: 1280, height: 900 },

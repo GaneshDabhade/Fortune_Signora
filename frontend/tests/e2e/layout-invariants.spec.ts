@@ -79,6 +79,101 @@ async function expectNoHorizontalOverflow(page: Page): Promise<void> {
 }
 
 /**
+ * **Is anything inside a fixed region pushed below the fold, where nothing can
+ * scroll it into view?**
+ *
+ * The customer-visible failure: a control is in the DOM, Playwright reports it
+ * **visible**, and a customer cannot press it. ⛔ **`expect(button).toBeVisible()`
+ * passes; a click times out.**
+ *
+ * ⚡ **[B-241](../../../docs/BUGS.md) is exactly this, and QE's matrix could not
+ * see it.** The rail's `nav` was `h-full` while starting 106px below the
+ * wordmark, so its pinned utilities sat at **y=872 on an 844px viewport**. **It
+ * overflowed at every width for several cycles** — a scrollbar absorbed it
+ * until a `fixed` sheet had nowhere to scroll to. **Lane A found it because a
+ * journey timed out, not because anything asserted it.**
+ *
+ * ⛔ **The reason this file missed it is one word**: `expectNoHorizontalOverflow`
+ * reads `rect.right` and **nothing read `rect.bottom`.** A whole axis was
+ * unasserted, and the axis that carries the shell's own furniture.
+ *
+ * **Fixed subtrees only, and that is the discriminating property.** Ordinary
+ * content below the fold is *reachable by scrolling* and is not a defect. **A
+ * descendant of a `position: fixed` element cannot be scrolled into view by
+ * anybody**, so its bottom edge is a promise the layout has to keep.
+ */
+async function expectNothingFixedBelowTheFold(page: Page): Promise<void> {
+  // ⛔ **The sheet is CLOSED by default, and a closed sheet measures nothing.**
+  // Below 1024 the rail is a `fixed` overlay carrying `invisible
+  // -translate-x-full`, so every element inside it is skipped as hidden — and
+  // this check passed cleanly on a tree with B-241 deliberately reintroduced.
+  //
+  // ⚡ **B-241 was found by a journey that OPENED the navigation**, which is the
+  // only state where the sheet's contents are reachable at all. **So the check
+  // opens it too**, and where there is no such control the rail is already in
+  // flow and there is nothing to open.
+  const opener = page.getByRole('button', { name: /open navigation/i });
+  if (await opener.count()) {
+    await opener.first().click();
+    await page.waitForTimeout(300);
+  }
+
+  const offenders = await page.evaluate(() => {
+    const viewportHeight = window.innerHeight;
+    const found: { tag: string; text: string; bottom: number; overflow: number }[] = [];
+
+    const fixedRoots = Array.from(document.body.querySelectorAll<HTMLElement>('*')).filter(
+      (element) => getComputedStyle(element).position === 'fixed',
+    );
+
+    for (const root of fixedRoots) {
+      const rootStyle = getComputedStyle(root);
+      if (rootStyle.display === 'none' || rootStyle.visibility === 'hidden') continue;
+      // A fixed panel that scrolls internally CAN bring its own children into
+      // view, so only the panel's own edge is a promise.
+      const scrolls = ['auto', 'scroll'].includes(rootStyle.overflowY);
+      const candidates = scrolls ? [root] : [root, ...Array.from(root.querySelectorAll<HTMLElement>('*'))];
+
+      for (const element of candidates) {
+        const style = getComputedStyle(element);
+        if (style.display === 'none' || style.visibility === 'hidden') continue;
+        const rect = element.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) continue;
+        // Leaf elements only for the descendants: a container reported alongside
+        // every child it holds is noise, and noise is what gets a gate ignored.
+        if (element !== root && element.children.length > 0) continue;
+        if (rect.bottom > viewportHeight + 1) {
+          found.push({
+            tag: element.tagName.toLowerCase(),
+            text: (element.textContent || '').trim().slice(0, 40),
+            bottom: Math.round(rect.bottom),
+            overflow: Math.round(rect.bottom - viewportHeight),
+          });
+        }
+      }
+    }
+    return { viewportHeight, offenders: found.slice(0, 5), total: found.length };
+  });
+
+  // ⛔ **Put the sheet back, and this is not tidiness.** An open overlay
+  // legitimately covers `main`, so leaving it open made the *overlap* check
+  // fail on a correct layout — a check breaking the check after it, which is
+  // the worst kind of false positive because the error names the wrong
+  // assertion entirely.
+  const closer = page.getByRole('button', { name: /close navigation/i });
+  if (await closer.count()) {
+    await closer.first().click();
+    await page.waitForTimeout(250);
+  }
+
+  expect(
+    offenders.total,
+    `${offenders.total} element(s) inside a fixed region sit below the ${offenders.viewportHeight}px fold, ` +
+      `where nothing can scroll them into view — a customer cannot press them: ${JSON.stringify(offenders.offenders)}`,
+  ).toBe(0);
+}
+
+/**
  * **Does the document itself scroll sideways?**
  *
  * The complement of the check above, and deliberately separate: the one above
@@ -327,6 +422,7 @@ for (const route of ROUTES) {
     const width = page.viewportSize()?.width ?? 0;
     await test.step(`${route.path} is a real route`, () => expectRouteExists(page, route.path));
     await test.step(`no horizontal overflow at ${width}px`, () => expectNoHorizontalOverflow(page));
+    await test.step(`nothing fixed below the fold at ${width}px`, () => expectNothingFixedBelowTheFold(page));
     await test.step(`document does not scroll sideways at ${width}px`, () => expectNoDocumentScroll(page));
     await test.step(`shell regions do not overlap at ${width}px`, () => expectShellRegionsDoNotOverlap(page));
     await test.step(`navigation is reachable at ${width}px`, () => expectNavigationReachable(page));
