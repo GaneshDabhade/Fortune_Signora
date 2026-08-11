@@ -266,7 +266,7 @@ export const RAIL_DESTINATIONS = [...DESTINATIONS, ...UTILITIES.filter(goesSomew
  * [`lib/entry/rules.ts`](../../lib/entry/rules.ts) is the authority for the
  * shape.
  *
- * ⚠️ **This was a function inside `Navigation` and `MobileNavigation` never
+ * ⚠️ **This was a function inside `Navigation` and the phone bar never
  * called it**, so the phone bar rendered the literal — **and a dynamic href in
  * a `<Link>` THROWS in the App Router**, taking the whole navigation region
  * down with it. 🔴 **At every width**, because the phone bar is hidden by CSS
@@ -275,6 +275,11 @@ export const RAIL_DESTINATIONS = [...DESTINATIONS, ...UTILITIES.filter(goesSomew
  * ⚡ **This file already claimed *"one source, two renderings"* and meant the
  * LIST.** ✅ **The resolution is now shared too**, which is what that sentence
  * had to mean for it to be true.
+ *
+ * ⚠️ **The two renderings are gone** — [TASK-1461](../../../docs/BACKLOG.md)
+ * deleted the second. ✅ **This function stays**, because the reason it exists
+ * is that a `[workspace]` literal must never reach a `<Link>`, **and that is
+ * true of one renderer as much as of two.**
  */
 export function resolved(
   items: readonly RailItem[],
@@ -528,90 +533,32 @@ export function Navigation({
 }
 
 /**
- * The same navigation, on a phone. **CX-07 · [B-203](../../../docs/BUGS.md).**
+ * ⛔ **The phone's bottom navigation bar is DELETED** —
+ * [TASK-1461](../../../docs/BACKLOG.md).
  *
- * ### It reads the same lists, and that is the point
+ * 📁 **The design's `< 1024px` band gives the rail `railW: 0` and one
+ * sentence** — *"Rail becomes a sheet from a top-bar button"* — **and its
+ * landmark table names exactly one `nav[navigation]`: *"the rail, labelled
+ * 'Primary'. Workspace switcher is its first child."***
  *
- * **One source, two renderings.** A second array would be a second answer to
- * *what can this person reach*, and the two would diverge the first time an
- * entry was added to one.
+ * 🔴 **A fixed bottom bar is neither.** ⛔ **It was a SECOND `nav[aria-label="Primary"]`
+ * mounted at every width** — `display:none` leaves the element in the DOM, so
+ * the page carried two Primary landmarks at 390, 1024, 1280 and 1600, and 📁
+ * [B-180](../../../docs/BUGS.md) is what that cost: QE's own overlap guard
+ * resolved the region with `querySelector`, got the 0×0 one, and **could not
+ * fail at any width on any page.**
  *
- * ⚡ **The utilities are appended rather than pinned** — 📁 a bottom bar has no
- * *bottom* to pin to, and the design's reason for pinning (*"keep the funnel
- * order uninterrupted at the top"*) is satisfied by order alone here.
+ * ⚠️ **Scrapped rather than restyled** ([D-229A](../../../docs/DECISION_REGISTER.md)):
+ * a bottom bar and a sheet are different structures, and **restyling would
+ * have kept two generations alive** — which is the defect the row exists to
+ * remove, not a step towards removing it.
  *
- * ⛔ **A restricted entry is rendered restricted here too**, not dropped: the
- * rule is the design's, not the desktop's.
+ * ✅ **What replaced it is not a second renderer.** 📁 [`app-shell.tsx`](app-shell.tsx)
+ * moves the ONE rail between two positions: **in flow at ≥1024, off-canvas
+ * below it**, opened by the top bar's trigger. ⚡ **The band is
+ * {@link deviceClassFor}'s, already shipped** — no component measures itself,
+ * and the count of `nav[aria-label="Primary"]` is one at every width.
  */
-export function MobileNavigation({ role }: { role: WorkspaceRole | null }) {
-  const pathname = usePathname();
-  const { activeWorkspace } = useWorkspaceContext();
-  // 🔴 **[B-233](../../../docs/BUGS.md)** — this mapped `RAIL_DESTINATIONS`
-  // raw, so `/w/[workspace]/home` reached a `<Link>` as a literal and the
-  // App Router threw, blanking the navigation region on every screen.
-  const destinations = resolved(RAIL_DESTINATIONS, activeWorkspace?.id ?? null);
-
-  return (
-    <nav
-      aria-label="Primary"
-      className={cn(
-        // 📁 **The design's `< 1024px` band** — *"rail becomes a sheet from a
-        // top-bar button"*. ⛔ **It was `md:hidden`, Tailwind's 768**, so the
-        // rail vanished 256px earlier than the design says and the phone bar
-        // appeared on a small laptop that should have had the collapsed rail.
-        'fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-surface smalllaptop:hidden',
-        // The safe area on a phone with a home indicator.
-        'pb-[env(safe-area-inset-bottom)]',
-      )}
-    >
-      {destinations.map((item) => {
-        const guard = guardFor(item.href);
-        const restricted = guard !== undefined && !can(role, guard.requires as Capability);
-        const isActive = pathname === item.href;
-        const Icon = item.icon;
-
-        const content = (
-          <>
-            <Icon className="h-5 w-5 shrink-0" aria-hidden />
-            <span className="max-w-full truncate px-1">{item.label}</span>
-          </>
-        );
-
-        // **`min-h-11` is the touch target**, not decoration: a control smaller
-        // than roughly 44px is one a thumb misses.
-        const shape = cn(
-          'flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2 text-2xs',
-          'transition-colors',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2',
-          'focus-visible:outline-accent',
-        );
-
-        if (restricted) {
-          return (
-            <span
-              key={item.id}
-              className={cn(shape, 'opacity-45 text-content-muted')}
-              aria-label={`${item.label} — restricted`}
-            >
-              {content}
-            </span>
-          );
-        }
-
-        return (
-          <Link
-            key={item.id}
-            href={item.href}
-            aria-current={isActive ? 'page' : undefined}
-            className={cn(shape, isActive ? 'font-semibold text-accent' : 'text-content-muted')}
-          >
-            {content}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
 
 /**
  * ⚡ **The rail checks its own law at module load, in development only.**

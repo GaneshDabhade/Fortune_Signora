@@ -1461,3 +1461,60 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 📁 **The row requires it explicitly.** ✅ **The entry is a labelled `<button>` reachable by Tab**, with `aria-haspopup="dialog"`; ⛔ **the `?` is `aria-hidden`**, because a question mark read aloud inside a label is noise rather than information. ⛔ **A `<button>` and never an anchor** — it goes nowhere, and **a screen reader announcing a link that never changes the page is the control lying about itself.**
 
 ⛔ **Without the provider above it the entry is OMITTED, not rendered dead** — 📁 C-269 again, and a rail mounted in a test or a story would otherwise show a button that silently does nothing.
+
+---
+
+## TASK-1461 · One navigation, moved between two positions — 2026-08-11
+
+**Against 📁 `docs/design-snapshot/screens/Fortune Signora App Shell.dc.html` ([D-138](DECISION_REGISTER.md)), the `breakpoints` table and the `landmarks` table.**
+
+### 🔴 What was wrong, and it was structural rather than cosmetic
+
+⛔ **The shell mounted TWO `nav[aria-label="Primary"]` elements** — the rail and a fixed bottom bar — **and hid one with CSS at every width.** ⚡ **`display:none` does not remove an element from the DOM**, so the page carried two Primary landmarks at **390, 1024, 1280 and 1600**, measured before the row was claimed.
+
+⚠️ **The reason it survived a suite that asserts the rail on every screen is mechanical**: 🔴 **`getByRole` cannot see a `display:none` node** — it is removed from the accessibility tree — **so every role query resolved exactly one navigation and passed.** 📁 [B-180](BUGS.md) is the same trap from QE's side: a `querySelector` returned the 0×0 one, the code skipped it as zero-size, and **the overlap guard could not fail at any width on any page.**
+
+### 📁 What the design actually specifies
+
+| Band | The design's words |
+|---|---|
+| **≥ 1600** · **1280–1599** · **1024–1279** | Rail 232px, collapsing to 56px of icons at the small-laptop band |
+| **< 1024px** | `railW: 0` — ***"Rail becomes a sheet from a top-bar button."*** |
+| **Landmarks** | ***"`nav[navigation]` — the rail, labelled 'Primary'. Workspace switcher is its first child."*** — **one, singular** |
+
+⛔ **A fixed bottom bar is neither a rail nor a sheet**, and 📁 [D-229A](DECISION_REGISTER.md) forbids preserving an obsolete implementation because it exists. ✅ **So it was scrapped, not restyled.**
+
+### ⚡ How one element is in flow at ≥1024 and off-canvas below it
+
+> **CSS owns the POSITION. JavaScript owns the SEMANTICS.** ⛔ **The band is never used to decide whether the rail EXISTS.**
+
+**The reason for that split is the first paint.** ⚠️ **The server cannot know the viewport**, so a JavaScript decision about which navigation to render would either flash the wrong layout on a phone or ship a hydration mismatch. ✅ **The markup is correct at both bands before JavaScript runs**, and there is exactly one `nav[aria-label="Primary"]` at every width from the first frame.
+
+| | |
+|---|---|
+| **≥1024** | `smalllaptop:static smalllaptop:visible` returns the container to flow. **Behaviour unchanged** |
+| **<1024, closed** | `fixed`, `-translate-x-full` **and `invisible`** — ⛔ `visibility:hidden` is what takes it out of the tab order and the accessibility tree; **a translate alone leaves every rail link keyboard-reachable off the side of the screen**, which is worse than the defect being fixed because the eye cannot see it |
+| **<1024, open** | Slid in over a backdrop. **Closed by Escape, the backdrop, its own close control, or following a link** |
+
+### ✅ Reuse, and what it saved — the [L-1](../ENGINEERING_LAWS.md) audit
+
+| | |
+|---|---|
+| `deviceClassFor` · `RailCollapse.device` | ✅ **Reused.** 📁 The hook already resolves the design's 1024 boundary, because collapse is remembered *per device class*. ⛔ **A second listener would be a second answer to *which band is this*** ([§2](../CLAUDE.md)) |
+| `NAV_ITEMS` · `resolved()` · `visibleDestinations` | ✅ **Untouched and still shared.** 📁 [B-233](BUGS.md) made resolution common and it must not re-fork |
+| `components/ui/drawer.tsx` | ⛔ **REJECTED as the substrate, and the reason is a landmark.** 📁 `Drawer` renders an `<aside>` — the `complementary` role — **and the design reserves `complementary` for the utility panel.** ⚠️ [B-234](BUGS.md) is that exact defect, already paid for once. **Making it configurable would mean restyling a shared component for one caller** (🔴, [§20c](../CLAUDE.md)) |
+| `TOP_BAR_SLOTS` | ⛔ **NOT widened.** 📁 The union is the design's **anatomy** — *"no module may add anything to the top bar"* — **and the sheet trigger belongs to the `<1024` BAND, not to that table.** ✅ **Placed on the wordmark's own precedent**, which this file already documents as *"not a slot — the design's five begin after it"* |
+
+### ⚠️ Two defects the row surfaced, both recorded rather than absorbed
+
+**🟢 [B-240](BUGS.md) closes at its cause.** ⛔ `Shortcuts` was unreachable below 1024 **because the bottom bar rendered anchors and this entry opens an overlay.** ✅ **Nothing is added back to anything: the surface that could not hold it no longer exists**, and the rail's pinned utilities arrive below 1024 with the rest of the rail.
+
+**🟠 [B-241](BUGS.md) is older than this row and became visible inside it.** 📁 The rail's `<nav>` is `h-full` while sitting **106px** below the wordmark row and the workspace switcher, **so its pinned group was pinned to a bottom edge 106px past the real one.** ⛔ **At 390×844, `Shortcuts` rendered at `y = 872` — visible by every definition the accessibility tree uses, and unclickable.** ⚡ **The overflow existed at every width and in every previous cycle; a scrollbar absorbed it.** **A `fixed` sheet has nowhere to scroll to.**
+
+> 🔴 **The general form is worth keeping: a layout defect a scrollbar absorbs is a layout defect nobody reports.**
+
+### 🔴 The assertion the shell has never had
+
+⛔ **Every locator that counts navigations here is a DOM locator, and that is not a style preference** — it is the only kind that can see the defect. ✅ **Fire-tested**: restoring a second `<nav aria-label="Primary">` anywhere in the frame turns **6 of 15** component tests red.
+
+📁 [`navigation-bands.spec.ts`](../../frontend/tests/e2e/navigation-bands.spec.ts) runs the count **in a browser at 390, 1024, 1280 and 1600**, because ⚡ **jsdom applies no CSS and every rule this row turns on is a media query** — the component test can assert the class and only a browser can assert the effect.

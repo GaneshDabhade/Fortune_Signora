@@ -56,6 +56,12 @@ const LOCAL_TO_A_COMPONENT: Readonly<Record<string, string>> = {
   'components/ui/tooltip.tsx': 'Escape dismisses the tooltip it belongs to',
   'components/ui/drawer.tsx': 'Escape closes the drawer it belongs to',
   'components/shell/account-menu.tsx': 'Escape and arrows move within the open menu',
+  // ⚡ **[TASK-1461](../../../docs/BACKLOG.md) — and this guard is what found
+  // it**, on the first full run after the sheet was built. ⛔ **Escape closes
+  // the navigation sheet the shell owns**, which is the same contract the
+  // drawer above implements — 📁 **not a published chord**: the design's `<1024`
+  // band names one control, *"a top-bar button"*, and no key.
+  'components/shell/app-shell.tsx': 'Escape closes the navigation sheet while it is open',
 };
 
 /**

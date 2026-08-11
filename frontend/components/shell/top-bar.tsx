@@ -1,6 +1,6 @@
 'use client';
 
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Menu } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -74,11 +74,66 @@ export interface TopBarProps {
   role: WorkspaceRole | null;
   email: string;
   signOut: ReactNode;
+  /**
+   * 📁 **The `<1024` sheet trigger** — [TASK-1461](../../../docs/BACKLOG.md),
+   * App Shell `breakpoints`: *"Rail becomes a sheet from a top-bar button."*
+   *
+   * ⛔ **The bar does not own the sheet's state and must not**: the trigger is
+   * here and the surface is the rail, so 📁 [`app-shell.tsx`](app-shell.tsx) —
+   * the only thing containing both — holds it and passes both halves down.
+   *
+   * ⚡ **Optional, so every existing test and story that renders the bar alone
+   * keeps working** — ⛔ and **the button is omitted rather than rendered dead**
+   * when nothing is passed, on the rule [`navigation.tsx`](navigation.tsx)'s
+   * `RailAction` already follows.
+   */
+  onOpenNavigation?: () => void;
+  navigationOpen?: boolean;
 }
 
-export function TopBar({ breadcrumb, role, email, signOut }: TopBarProps) {
+export function TopBar({
+  breadcrumb,
+  role,
+  email,
+  signOut,
+  onOpenNavigation,
+  navigationOpen = false,
+}: TopBarProps) {
   return (
     <header className="flex h-topbar shrink-0 items-center gap-2 border-b border-border bg-surface px-4">
+      {/* 📁 **The sheet trigger** — [TASK-1461](../../../docs/BACKLOG.md).
+          ⛔ **Not a slot, on the wordmark's own precedent below**: 📁
+          [`lib/shell/top-bar.ts`](../../lib/shell/top-bar.ts)'s union is the
+          design's ANATOMY — *"no module may add anything to the top bar"* — and
+          this control belongs to the `<1024` BAND rather than to that table.
+          ✅ **So `TOP_BAR_SLOTS` stays closed and is not widened for one
+          viewport**, which is the change the closed union exists to refuse.
+
+          ⚡ **First in the bar, before the wordmark**: it is the only way to
+          reach navigation at this width, and a control that IS the navigation
+          cannot sit after the identity. */}
+      {onOpenNavigation === undefined ? null : (
+        <button
+          type="button"
+          onClick={onOpenNavigation}
+          aria-label="Open navigation"
+          aria-expanded={navigationOpen}
+          aria-haspopup="dialog"
+          className={cn(
+            'flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-content-subtle',
+            'transition-colors hover:bg-surface-sunken hover:text-content',
+            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+            'focus-visible:outline-accent',
+            // ⛔ **The rail is in flow at and above 1024**, so the trigger is
+            // not merely redundant there — it would open a sheet over a rail
+            // that is already visible.
+            'smalllaptop:hidden',
+          )}
+        >
+          <Menu className="h-4 w-4" aria-hidden />
+        </button>
+      )}
+
       {/* **The wordmark lives in the rail, which does not exist on a phone.**
           Shown here below `md` so the product is still named on the one
           viewport where the frame is otherwise anonymous. ⛔ Not a slot — the

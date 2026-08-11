@@ -13,9 +13,11 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// ⚡ **The phone bar was stubbed here as a second `Primary mobile` nav and
+// is gone** — [TASK-1461](../../../docs/BACKLOG.md). ⛔ **The stub was honest
+// about the product**: the shell really did mount two navigations.
 vi.mock('@/components/shell/navigation', () => ({
   Navigation: () => <nav aria-label="Primary" />,
-  MobileNavigation: () => <nav aria-label="Primary mobile" />,
 }));
 vi.mock('@/components/shell/workspace-selector', () => ({ WorkspaceSelector: () => null }));
 vi.mock('@/components/intelligence/account-search', () => ({ AccountSearch: () => null }));

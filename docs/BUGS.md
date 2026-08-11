@@ -532,6 +532,47 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-241 · The rail's pinned utilities have always overflowed the viewport by 106px, and a `fixed` sheet is where it became reachability
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/components/shell/app-shell.tsx`](../frontend/components/shell/app-shell.tsx) |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — ⛔ **wrong behaviour a customer would hit**: **on a phone, three of the rail's entries could not be pressed.** ⚡ **Not 🔴: every one of them is reachable another way, and the destinations above them were fine** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-11**, in the row that exposed it. ⚠️ **QE verifies and closes** |
+| **Found** | **2026-08-11, by Lane A**, when [TASK-1461](BACKLOG.md)'s own new journey timed out clicking a button Playwright reported as **visible** — 📁 *"element is outside of the viewport"* |
+| **Commit found** | **`071f6a5e`** — ⚠️ **the defect is older than the row that found it** |
+
+**Steps.** At **390×844**, open the navigation, and try to press `Shortcuts`, `Docs & support` or `Settings` in the rail's pinned group.
+
+**Expected.** They are at the foot of the rail, on screen.
+
+**Actual.** ⛔ **`Shortcuts` renders at `y = 872` on an 844px viewport.** It is in the DOM, it is `visible` by every definition the accessibility tree uses, **and it cannot be clicked.**
+
+### 🔴 The cause, measured rather than reasoned
+
+📁 **The rail's `<nav>` is `h-full`** and the rail's container also holds **the wordmark row and the workspace switcher above it** — ⚡ **106px of them.** ⛔ **So the nav claimed the container's FULL height while starting 106px down**, and its `flex-1` spacer then pinned the utility group to a bottom edge that is 106px past the real one.
+
+| | |
+|---|---|
+| **Container** | `top: 0`, `height: 844` |
+| **Nav** | `top: 106`, `height: **844**` — ⛔ **should be 738** |
+| **`Shortcuts`** | `top: **872**` — **28px below the fold** |
+
+> ⚠️ **This is not a defect the sheet introduced.** ⚡ **The same 106px of overflow existed at every width and in every previous cycle** — 📁 **the rail's container was a scrollable child of `min-h-screen`, so the overflow simply extended the page and a customer could scroll to it.** ⛔ **A `fixed` sheet has nowhere to scroll to**, which is the only reason it stopped being invisible.
+>
+> 🔴 **The general form is worth more than the fix: a layout defect that a scrollbar absorbs is a layout defect nobody reports.** **It became a bug the moment one container stopped scrolling**, and every `h-full` child of a container with siblings above it is the same shape.
+
+### ✅ The fix
+
+**The rail's container becomes a flex column** and the navigation gets a wrapper that is `min-h-0 flex-1`, **so `h-full` resolves against the space that is actually left.** ⛔ **`RegionBoundary` takes no `className` and was not given one** — 🔴 it is `components/ui`, and widening a shared component for one caller is what [§20c](../CLAUDE.md) forbids.
+
+**Re-measured after: nav `top: 106`, `height: 738`, `Shortcuts` at `766`.** ✅ **106 + 738 = 844 exactly.**
+
+⚠️ **The assertion that caught it was geometric, and a role query never would have been.** 📁 `toBeVisible()` passes on an element outside the viewport — **`visibility` is not position** — which is the same class as [B-180](#b-180) and this register's third instance of it in one day.
+
+---
+
 ### B-240 · The keyboard reference is unreachable below 1024px, and the first explanation for it was invented
 
 | | |
@@ -539,7 +580,7 @@ error: Your local changes to the following files would be overwritten by merge:
 | **Module** | **`product_surface`** — [`frontend/components/shell/navigation.tsx`](../frontend/components/shell/navigation.tsx) |
 | **Current assignee** | **Lane A** |
 | **Severity** | 🟢 — ⚡ **cosmetic in effect**: the shortcuts it lists cannot be pressed on a touch device anyway. ⚠️ **Filed at 🟢 rather than not filed, because the REASONING defect is worth more than the gap** |
-| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed here.** 🔴 **The cause is structural and predates this row** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-11**, in [TASK-1461](BACKLOG.md), **at the cause.** ⚠️ **QE verifies and closes.** ⛔ **Was `OPEN`** — *not fixed here; the cause is structural and predates this row* — **and the row that fixed the structure is the one that fixed this** |
 | **Found** | **2026-08-11, by QE**, reviewing [TASK-1458](BACKLOG.md) — 📁 *"a capability that disappears because of a type filter is the kind of thing that reads as a bug six weeks later even when the reasoning was sound."* ✅ **QE was right to ask, and the reasoning was NOT sound** |
 | **Commit found** | **`4f37beb9`** — [TASK-1458](BACKLOG.md) |
 
@@ -560,6 +601,16 @@ error: Your local changes to the following files would be overwritten by merge:
 ### ✅ What was actually changed
 
 ⛔ **Nothing behavioural.** 📁 **The comment now states the truth**: the entry is unreachable below 1024px, the design does not sanction that, and the cause is the bottom bar rather than a judgement about keyboards. ⚡ **The gap is now visible to whoever builds the sheet**, which is the only thing that closes it.
+
+### ✅ Closed 2026-08-11 by [TASK-1461](BACKLOG.md), and closed at the cause
+
+⚡ **This row predicted its own fix and the prediction held**: *"the gap is now visible to whoever builds the sheet, which is the only thing that closes it."*
+
+📁 **The bottom bar is deleted and the `<1024` surface is the rail itself**, opened from the top-bar button the band names. ⛔ **So `Shortcuts` is not added back to anything** — **the surface that could not hold it no longer exists**, and the rail's pinned utility group arrives below 1024 with the rest of the rail.
+
+✅ **Asserted rather than asserted-about**: 📁 [`navigation-bands.spec.ts`](../frontend/tests/e2e/navigation-bands.spec.ts) opens the sheet at 390×844, finds `Shortcuts`, presses it and reads the reference's own heading.
+
+⚠️ **And that assertion found a second defect the same day, which is recorded as [B-241](#b-241) rather than folded in silently** — **the button was in the DOM, visible, and 28px below the fold.**
 
 ---
 
