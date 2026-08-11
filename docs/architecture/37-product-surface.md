@@ -1358,3 +1358,23 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ⚠️ **`supplied` means a READ exists — not that this page renders it.** ⛔ **Three sections have reads and no section here yet**: *Open opportunities*, *Contacts & decision makers*, *Competitors*. **They are not in the rail**, because a link to nothing is the defect above.
 
 ⛔ **The seven absent sections render as a block after the existing content rather than interleaved in the design's order.** ⚡ **Interleaving needs the page restructured around the section list**, which is the larger Account 360 rebuild rather than this increment — **stated here so the next assignee does not read the current order as the design's.**
+
+---
+
+## TASK-1418 · AI Research — measured, and the law that moved *(2026-08-11)*
+
+🔴 **The finding is the shape of the ask, not a count of gaps.** 📁 **`ai_research_engine` publishes two endpoints and research is scoped to an ACCOUNT.** ⛔ **The design's subject is a QUESTION** — *"Why is EMEA enterprise slipping?"*, scoped to a segment and a quarter — **and nothing in this product can be asked anything.** ⚠️ **Raised as [C-284](../LANE_COORDINATION.md) rather than built around**: a `/research` route with a question box would be [§20c](../../CLAUDE.md)'s failure in its worst form — **not an empty state over an unbuilt list, but a control that invites the product's headline promise and cannot honour it.**
+
+### ✅ What already ships, which is why this is scoped rather than blocking
+
+📁 **`ResearchPanel` surfaces every published feature** — the answer, its findings, the prompt, the model, the evidence digest, and `requested`/`running` with polling — **and already distinguishes a failed read from *nobody has asked***, which is [P-A](../DOMAIN_DISCOVERY_REGISTER.md). ⛔ **Rebuilding it would be the hybridisation [D-229A](../DECISION_REGISTER.md) forbids.**
+
+### ⚡ `partial` is its own answer and is never collapsed into `absent`
+
+⚠️ **`running` really is published**, and the read already polls while it holds; **what is missing is the design's *"step 4 of 5 · 8.4s elapsed"*.** ⛔ **Rendering that as absent would understate what the product does** — **the same failure as overstating it, in the other direction.**
+
+### 🔴 The edit law moved on its second caller, and not before
+
+📁 **Both designs write the same sentence.** **Reports**: *"edited sentences are preserved through regeneration and marked."* **AI Research**: *"Editable · your edits are preserved through regeneration."* ✅ **So the merge moved to [`lib/research/edits.ts`](../../frontend/lib/research/edits.ts)** — the discipline [455 §4](455-context-definitions-r02-r03.md) states for a port and [`lib/views/declaration.ts`](../../frontend/lib/views/declaration.ts) already followed: *"a contract proven by one real caller before six adopt it."*
+
+⚡ **The extraction is behaviour-preserving and its own tests prove it**: `report-narrative.test.ts` passes **unchanged** against the moved law.

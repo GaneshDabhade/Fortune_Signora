@@ -10552,6 +10552,25 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ⚠️ **Recorded as [C-1416](#c-1416)'s third instance** — 📁 **C-272 assumed an Executive Dashboard already built, [C-1415](#c-1415) assumed a workspace has region, environment and a fiscal calendar, and this assumes five roles.** **Three rows, three screens, two days, one shape.**
 
+## C-284 · AI Research can be requested for an account and cannot be asked a question
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, from [TASK-1418](BACKLOG.md) |
+| **Owner** | **Lane B** — 📁 [`modules.toml`](coordination/modules.toml) assigns `ai_research_engine`; ⛔ **not Lane A's to extend** |
+| **State** | 🟡 **`OPEN`** |
+| **Blocks** | **[TASK-1418](BACKLOG.md)'s central deliverable.** ✅ **Not the row entirely** — what the engine publishes is already surfaced, and this lane continued to the next row rather than idling ([D-229A](DECISION_REGISTER.md)) |
+
+**Measured, not assumed.** 📁 **`ai_research_engine/interface/router.py` publishes two endpoints** — `POST …/accounts/{id}/research` and `GET …/accounts/{id}/research`. ⚡ **Research is scoped to an ACCOUNT and takes no other input.**
+
+🔴 **The design's subject is a QUESTION.** 📁 *"Why is EMEA enterprise slipping?"* — **scoped to a segment, a quarter and eleven open renewals**, with the answer becoming a document that carries its sources. ⛔ **Nothing in this product can be asked anything.**
+
+⚠️ **This is not a missing screen; it is a missing capability, and the difference decides what may be built.** ⛔ **A `/research` route with a question box would be [§20c](../CLAUDE.md)'s failure in its worst form** — **not an empty state over an unbuilt list, but a control that invites the product's headline promise and cannot honour it.** 📁 **[TASK-1417](BACKLOG.md) shipped an empty state because a builder had no query engine; a question box with no question-answering is a different thing entirely.**
+
+✅ **What already ships, so this is scoped rather than blocking:** 📁 **`ResearchPanel` surfaces every published feature** — the answer, its findings, the prompt, the model, the evidence digest, and the `requested`/`running` states with polling. **It also already distinguishes a failed read from *nobody has asked*, which is [P-A](DOMAIN_DISCOVERY_REGISTER.md).**
+
+**What is needed, when somebody builds it.** ⚡ **A request that carries a question and a scope**, and an artifact that names the question it answers. ⛔ **The scope is the harder half** — *EMEA · Enterprise · Q3 FY26* is the filter strip's vocabulary ([`lib/shell/scope.ts`](../frontend/lib/shell/scope.ts)), **and nothing currently reads it**, which is [TASK-1432](BACKLOG.md)'s own blocker.
+
 ## C-283 · A report's narrative has no capability that can write it, and one endpoint is not it
 
 | | |
