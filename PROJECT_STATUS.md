@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `e93fb81`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `a037b6f`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,23 +12,23 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `e93fb81`, 2026-08-11.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `a037b6f`, 2026-08-11.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`e93fb81`** — the certification record, one commit past the certified `7874db3` |
-| **Release candidate** | **3 commits, and they are QE's own.** ⚡ **A gate change certified through the lifecycle rather than around it** — the rule QE broke on itself one cycle earlier |
-| **Certification** | ✅ [`7874db388221`](certification/reports/7874db388221.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** (17 gates) · ✅ **first attempt** |
+| **`main`** | **`a037b6f`** — the certification record, one commit past the certified `ec2db89` |
+| **Release candidate** | **32 commits** — Lane C's planning wave and `infra/coordination.py`, plus QE's responsive matrix and bug documentation. ✅ **Certified first attempt, and no lease was needed**: rebasing `lane-qe` onto `integration` made both pushes plain fast-forwards, which is the ordinary route and should have been the first one taken |
+| **Certification** | ✅ [`ec2db89ee1ad`](certification/reports/ec2db89ee1ad.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** (21 gates) · ✅ **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **0 blocking** |
-| **Customer value this cycle** | ⛔ **None, and that is correct.** **This cycle is QE's own instruments**: a gate that now sees what rode in with a claim, and the first responsive validation the repository has ever had. **Lane A's product work is next and already ff-able** |
-| ✅ **QE's own defects this cycle** | **None.** ⚡ **And the cycle's finding came from Lane A, about QE's gate**: [B-238](docs/BUGS.md), reported against itself with the breach as the evidence. **QE had framed it as a lane's process breach and queued a ruling request; Lane A reframed it as a guard defect, which it is** — the third row after [B-161](docs/BUGS.md) and [B-220](docs/BUGS.md), both QE's and both still open |
+| **Customer value this cycle** | ⛔ **None directly, and that is correct** — this cycle is planning and instruments. ⚡ **What it buys is that the product's responsive behaviour is measured in a real browser at four widths for the first time**, and it immediately found a screen that never stops re-rendering |
+| ⛔ **QE's own defects this cycle** | **Two, both in QE's own guards, both found by running them rather than reading them.** ⛔ **[B-180](docs/BUGS.md) — the layout invariant could not fail at any width, on any page**: `querySelector` returned the nav that is 0×0, so the fixed bar was never measured. **Three mutations passed before the vacuity was found.** ⛔ **[B-182](docs/BUGS.md) — the stowaway guard shipped one cycle earlier cried on the normal state**, naming three of Lane C's planning commits as smuggled. **Both fixed, both fire-tested in each direction** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ✅ **Certification named 17 gates and executed 6; QE measured three more by hand.** `vitest` **2751 across 144 files** · `eslint` ✅ · `tsc` ✅. ⚡ **The guard's four regressions build real git repositories and move a branch the way a push moves it** — a stubbed `git` would have proven the function reads a dict, and the defect was never in the function.
+> ✅ **Certification named 21 gates and executed 6; QE measured three more by hand.** `vitest` **2751 across 144 files** · `eslint` ✅ · `tsc` ✅. ⚡ **And the responsive matrix ran against the real product for the first time** — 26 invariants, four breakpoints, reading geometry from a real engine.
 
-**Repository health:** **4410 backend tests** *(+4)* · ⚠️ **95.04% coverage** ✅ *(floor 95 — **4 basis points of headroom**)* · **2751 frontend tests** across **144 files** · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **276s** · ⚡ **16 layout invariants across four breakpoints now exist and list — NOT YET RUN against the product, and not counted as coverage** · **[B-156](docs/BUGS.md) remains open and undiagnosed** · **disaster recovery from cycle 197 still current** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4410 backend tests** · ⚠️ **95.04% coverage** ✅ *(floor 95 — **4 basis points of headroom**)* · **2751 frontend tests** across **144 files** · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **186s** · ⚡ **Playwright journeys ARE now runnable by QE — [B-156](docs/BUGS.md)'s environment half is solved**, and **26 layout invariants run at four breakpoints: 24 pass, and both failures are [B-179](docs/BUGS.md)** · **disaster recovery from cycle 197 still current** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
 > ⚠️ **Two figures above are corrected rather than updated.** The dashboard has carried **54 ADRs** and **147 numbered architecture documents**; the repository holds **53** and **145**, and `git ls-tree` returns the same pair at `cea60d41`, `57d6bc85` and `HEAD` — **so they did not change this cycle, they were transcribed.** The ADR count included `adr/README.md`. **A measured figure that never moves is the one to re-measure** (§20e: *metrics are measured, never transcribed*).
 
@@ -1025,6 +1025,46 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-11, cycle 201
+
+**Derived from the promoted commit `a037b6f`, certified at `ec2db89`.** **Thirty-two commits, certified first attempt. No customer-facing change and that is the correct shape: this cycle buys the repository its first real responsive verification, and two of its own guards turned out to be wrong.**
+
+### ⚡ The product's responsive behaviour has now been measured
+
+**26 layout invariants ran against the running product at `phone` 640 · `smalllaptop` 1024 · `laptop` 1280 · `desktop` 1600** — reading geometry from a real engine, not class strings. **24 pass.**
+
+⛔ **The two failures are [B-179](docs/BUGS.md), and it is a real defect**: the Team screen's `scrollHeight` changes on every one of 20 attempts across 3 seconds, **at 1024 and 1280 and not at 640 or 1600.** Something in the two middle breakpoints re-renders in a loop.
+
+⚠️ **QE's first hand-probe of that screen said it was clean, and was wrong** — it measured before the member list rendered. **The suite was right and the manual check was not**, which is worth recording because the instinct runs the other way.
+
+### ✅ [B-156](docs/BUGS.md) is diagnosed after many cycles of *"NOT MEASURED BY QE"*
+
+⛔ **`auth.user` did not exist in `signora_lane_qe`, and the database was five migrations behind head.** Never the suite, the browser or the config. **Two earlier diagnoses were wrong and both were QE's** — including [B-178](docs/BUGS.md), filed and withdrawn the same day.
+
+✅ **The environment was brought up through the repository's own doors**: `auth:migrate`, `alembic upgrade head`, `demo:users` through Better Auth's real sign-up, and `tests.playground.seed`. ⛔ **No inserted rows.** ⚠️ **`.env.local` points auth at `signora` — the Playground — so every command needed an override, and `signora` was verified untouched afterwards.**
+
+### ⛔ Both of QE's own guards were wrong, and running them is what showed it
+
+**[B-180](docs/BUGS.md) — the layout invariant could not fail at any width, on any page, for any layout.** `querySelector` returned the **first** `nav`, which is collapsed to 0×0 and then skipped as zero-size, **so the fixed bottom bar was never measured.** ⚡ **Three deliberate mutations passed before the vacuity was found.**
+
+**Four corrections followed, each forced by a number rather than by review:** `querySelectorAll` · **content box** rather than border box for fixed overlays *(15,680px² false positive on six screens)* · **containment is not collision** *(22 of 26 failed on a correct product)* · **depth** tolerance rather than area *(296px² was half a pixel of rounding)*. **Then a fifth from B-179: scroll until the page settles, and assert it actually reached the bottom.**
+
+**[B-182](docs/BUGS.md) — the stowaway guard shipped in cycle 200 cried on the normal state.** It named three of Lane C's planning commits as smuggled — **commits QE had published itself under an approved push.** ⛔ **It would have fired on every claim pushed onto an `integration` legitimately ahead of `main`, which is most of the time.**
+
+⚡ **The discriminator was wrong, not the idea.** Lane C's planning commits touch **0 executable files**; B-238's real stowaway touched **5**. **The harm is uncertified *code* reaching `integration`, never a commit arriving.** ✅ **Re-run live it now names exactly two, and both are true** — Lane C's `infra/coordination.py` is executable and was on `integration` uncertified, a classification QE had already stated rather than assumed.
+
+### ⚠️ A third defect in a gate, handed over by Lane C
+
+**[B-181](docs/BUGS.md) — `production-readiness.py` has reported inbound rate limiting green twice, for two different wrong reasons.** It greps `backend/`, **where authentication permanently cannot live** under [§13](CLAUDE.md) and [ADR-0026](docs/architecture/adr/0026-jwt-boundary-architecture.md). ⚡ **The limiter does ship and is enabled**, so [ADR-0408](docs/architecture/adr/0408-inbound-rate-limiting.md) §1 is false — **and the probe agreeing with it by accident is how that survived.** ⛔ **The discriminating property is `storage`, not `enabled`.**
+
+> **Three guards in two days, each green or red for a reason nobody had tested.** ⚡ **Every one was found by *running* it. None was found by reading it** — and [B-180](docs/BUGS.md) is the sharpest case, because the assertion was blind to precisely the defect it had been written to catch.
+
+### ✅ And no lease was needed
+
+**Rebasing `lane-qe` onto `integration` made both pushes plain fast-forwards.** ⚠️ **That is the ordinary route and should have been the first one taken** — the previous cycle spent several exchanges on lease-protected rewrites that a rebase would have avoided.
 
 ---
 
