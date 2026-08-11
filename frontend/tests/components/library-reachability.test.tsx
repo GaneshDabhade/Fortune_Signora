@@ -73,6 +73,23 @@ const AWAITING_A_CALLER: Readonly<Record<string, string>> = {
   // need rather than a charting library.
   Sparkline: 'TASK-1450',
   BarSeries: 'TASK-1450',
+  // ⚡ **[TASK-1460](../../../docs/BACKLOG.md) built the layout container and
+  // this guard caught its column axis the same turn** — ⛔ **which is the guard
+  // doing exactly its job.** 📁 The container itself IS reachable: the shell's
+  // content region composes through it. **`Columns` and `Column` are not**, and
+  // that is deliberate rather than an oversight.
+  //
+  // 🔴 **They are separate from `Container` for a stated reason**: a
+  // `grid-cols-12` whose only child spans twelve is indistinguishable from a
+  // block — [§2](../../../CLAUDE.md)'s decorative logic — **so merging them
+  // would have made the grid decorative on every screen in the product.**
+  //
+  // ✅ **[TASK-206](../../../docs/BACKLOG.md) is the caller**: the eleven ad-hoc
+  // screen widths, where a screen genuinely lays out on the axis. ⛔ **Not this
+  // row, on 📁 [455 §4](../../../docs/architecture/455-context-definitions-r02-r03.md)
+  // — one consumer, measured, then the migration.**
+  Columns: 'TASK-206',
+  Column: 'TASK-206',
 };
 
 /** ⚡ Components only. ⛔ `SCREAMING_CASE` constants are not components. */

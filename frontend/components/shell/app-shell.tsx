@@ -13,7 +13,7 @@ import { SKIP_TARGETS, SkipLinks } from '@/components/shell/skip-links';
 import { TopBar } from '@/components/shell/top-bar';
 import { UtilityPanelDock, UtilityPanelProvider } from '@/components/shell/utility-panel';
 import { WorkspaceSwitcher } from '@/components/shell/workspace-switcher';
-import { ShellBanners, type ShellBanner } from '@/components/ui';
+import { Container, ShellBanners, type ShellBanner } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 import type { Crumb } from '@/lib/shell/breadcrumb';
 import { RAIL_WIDTH } from '@/lib/shell/rail';
@@ -362,18 +362,35 @@ export function AppShell({
         <main
           id={SKIP_TARGETS.content}
           tabIndex={-1}
-          className="min-w-0 flex-1 p-4 outline-none phone:p-6"
+          // 🔴 **The padding moved into [`Container`](../ui/container.tsx)** —
+          // [TASK-1460](../../../docs/BACKLOG.md). ⛔ **`flex-1` with NO maximum
+          // was this repository's measured root cause for eleven screens
+          // inventing their own width**: content ran edge to edge on a wide
+          // monitor, so every screen constrained itself instead. ⚡ **`min-w-0`
+          // stays and is right** — it is what lets a wide table shrink rather
+          // than push the rail off the frame.
+          className="min-w-0 flex-1 outline-none"
         >
-          {/* ⛔ **The one boundary whose default reassurance would be false.**
-              *"Everything else on this page is unaffected"* is exactly wrong
-              when the content region IS the page — what survives is the frame,
-              so the frame is what it names. */}
-          <RegionBoundary
-            subject="this page"
-            reassurance="The navigation and your organizations are unaffected"
-          >
-            {children}
-          </RegionBoundary>
+          {/* 📁 *"12-column grid, 24px gutters, 1600px content maximum"* —
+              Design System v2's `inherited` block. ⚡ **The shell is the ONE
+              consumer this slice gives it**, deliberately: 📁
+              [455 §4](../../../docs/architecture/455-context-definitions-r02-r03.md)
+              — *"a port with seven simultaneous first callers has no chance of
+              being corrected cheaply."* ⛔ **The eleven ad-hoc widths are NOT
+              migrated here**; the list is on the row and the migration is its
+              own slice. */}
+          <Container>
+            {/* ⛔ **The one boundary whose default reassurance would be false.**
+                *"Everything else on this page is unaffected"* is exactly wrong
+                when the content region IS the page — what survives is the frame,
+                so the frame is what it names. */}
+            <RegionBoundary
+              subject="this page"
+              reassurance="The navigation and your organizations are unaffected"
+            >
+              {children}
+            </RegionBoundary>
+          </Container>
         </main>
       </div>
 

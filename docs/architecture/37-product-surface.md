@@ -1518,3 +1518,59 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ⛔ **Every locator that counts navigations here is a DOM locator, and that is not a style preference** — it is the only kind that can see the defect. ✅ **Fire-tested**: restoring a second `<nav aria-label="Primary">` anywhere in the frame turns **6 of 15** component tests red.
 
 📁 [`navigation-bands.spec.ts`](../../frontend/tests/e2e/navigation-bands.spec.ts) runs the count **in a browser at 390, 1024, 1280 and 1600**, because ⚡ **jsdom applies no CSS and every rule this row turns on is a media query** — the component test can assert the class and only a browser can assert the effect.
+
+---
+
+## TASK-1460 · The layout container the repository has never had — 2026-08-11
+
+**Against 📁 [`Fortune Signora Design System v2.dc.html`](../design-snapshot/screens/)'s `inherited` block ([D-138](DECISION_REGISTER.md)):**
+
+> ⚡ ***"12-column grid, 24px gutters, 1600px content maximum"***
+
+### 🔴 The measurement, re-taken by this lane rather than inherited
+
+⚠️ **The row was marked *source-derived, LEVEL 1/2 NOT VERIFIED*, so every figure below was measured again before any code:**
+
+| | |
+|---|---|
+| `grid-cols-12` in `frontend/` | ⛔ **0 occurrences** |
+| `1600` as a content maximum | ⛔ **None.** It appears only as a breakpoint and in design citations |
+| A `Grid` · `Container` · `PageLayout` · `Stack` in `components/ui/` | ⛔ **None of the 38** |
+| Distinct width models across `frontend/app` | ⚠️ **Eight** — `max-w-3xl` ×9 · `max-w-md` ×2 · `max-w-card` ×2 · `max-w-[57.5rem]` ×2 · `max-w-2xl` · `max-w-4xl` · `max-w-5xl` · `max-w-[35rem]` |
+
+🔴 **The root cause is one line, and the screens are not independently wrong.** 📁 `app-shell.tsx`'s content region was **`flex-1` with no maximum**, so content ran edge to edge on a wide monitor and **every screen constrained itself instead.** ⚡ **Fix the container and the eleven become a mechanical removal.**
+
+### ⛔ Why the column axis is a SEPARATE export, and this is the design decision of the slice
+
+📁 **[§2](../../CLAUDE.md), *Decorative Logic*: implementation that appears to enforce a property but whose removal does not change it.**
+
+⚠️ **A `grid-cols-12` whose only child spans twelve is exactly that** — **remove the grid and nothing moves.** ⛔ **Merging the columns into `Container` would have made every consumer of the content maximum silently a grid consumer**, and the grid would then be decorative on every screen that does not lay out on columns.
+
+✅ **So `Container` carries the maximum and the gutters** — where they fix a measured defect on every screen — **and `Columns`/`Column` are opted into by a region that genuinely needs the axis.**
+
+⚡ **They therefore ship with NO caller, and that is recorded rather than excused**: 📁 `library-reachability.test.tsx` caught them on the same turn they were written — **which is the guard doing its job** — and they are listed against **[TASK-206](../BACKLOG.md)**, the migration slice that gives them a real one.
+
+> 🔴 **This is the eighth time this repository has found a law shipped without a surface** — the entry engine, the narrowing law, the top-bar slot set, the command palette, `confidence.tsx`, `drawer.tsx`, the rail's own law, and now this. ✅ **The difference is that this one was caught by a test in the same turn, not by an audit weeks later.**
+
+### ✅ What is NOT in this slice, and the row is explicit about it
+
+⛔ **The eleven ad-hoc widths are not migrated.** 📁 [455 §4](455-context-definitions-r02-r03.md): ***"a port with seven simultaneous first callers has no chance of being corrected cheaply."*** ✅ **One consumer — the shell's content region — measured, and then [TASK-206](../BACKLOG.md).**
+
+⛔ **The colour tokens and the four breakpoints are untouched.** ⚡ **Both were verified correct against Design System v2 before this row**, and the row's sharpest line is that they must not be renumbered or "migrated".
+
+### 🔴 The numbers are measured, not read off class names
+
+📁 **The row's Definition of Done says exactly that**, and the reason is mechanical: ⚠️ **a test reading `max-w-[1600px]` off a `className` proves somebody typed a string.** ⛔ **It passes when the class is absent from Tailwind's output, when a parent's `overflow` defeats it, or when a later utility wins the cascade.**
+
+| Assertion | How |
+|---|---|
+| **1600px maximum** | `boundingBox()` **at a 2400px viewport** — ⚠️ **at 1600 the rail and the panel leave content well under the cap, so a test there would pass whether or not the maximum existed** |
+| **Centred** | Both gaps **> 100px** *and* equal to within 2px |
+| **24px gutter** | `getComputedStyle().paddingLeft` — **the browser's used value in pixels**, not the class |
+| **16px below 640** | 📁 *"chrome yields before data"* — **24px each side of a 390px phone is 12% of the viewport spent on nothing** |
+
+### ⚠️ Two things fire-testing found, both in the tests rather than in the product
+
+**① The centring assertion could not fail.** 🔴 **With the maximum removed, the container filled `main`, both gaps were `0`, and *equal gaps* was satisfied by there being no gaps at all.** ✅ **The `> 100px` line exists because of that**, and both assertions now go red when the cap is deleted.
+
+**② The gutter could not be measured from page content.** ⚠️ **The first version measured from the Attention heading and read 87px.** ⛔ **Not a defect — the row's own premise**: that screen carries `max-w-3xl mx-auto`, **one of the eleven**, so it centres itself inside the container. ✅ **A test asserting 24px there would have been asserting that the migration had already happened.**

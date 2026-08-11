@@ -110,3 +110,13 @@ export {
   type Segment,
   type SegmentedControlProps,
 } from './segmented-control';
+export {
+  CONTENT_GRID,
+  Column,
+  Columns,
+  Container,
+  type ColumnProps,
+  type ColumnSpan,
+  type ColumnsProps,
+  type ContainerProps,
+} from './container';
