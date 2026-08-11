@@ -69,7 +69,15 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * claims can be read beside the evidence they cite.
  */
 export default function AttentionPage() {
-  const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
+  const {
+    activeWorkspace,
+    isLoading: workspacesLoading,
+    // 🔴 **[B-237](../../../docs/BUGS.md)** — **the provider has published this
+    // since it was written and this screen never asked.** ⛔ **A failed read
+    // satisfied `!loading && activeWorkspace === null` exactly as an empty one
+    // does**, so a `500` told the customer they had no organization.
+    error: workspacesFailed,
+  } = useWorkspaceContext();
   // **From the URL, so the view survives a refresh, browser back and a second
   // tab** — and so it can travel on the account link, which is what keeps the
   // brief's *next* inside the list a seller was working (D41).
@@ -221,7 +229,29 @@ export default function AttentionPage() {
           `data` were all falsy and every branch below was skipped (D36). It
           is the state every brand-new account is in, and a blank page is
           indistinguishable from a broken one. */}
-      {!workspacesLoading && activeWorkspace === null ? <NoWorkspace /> : null}
+      {/* 🔴 **[P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md)** — ***a failed
+          read must never render as an empty result*** — **and this is its
+          worst instance** ([B-237](../../../docs/BUGS.md)).
+
+          ⛔ **Every previous one made a SECTION look empty. This one made the
+          customer's own membership look absent**, and the copy then invited
+          them to act on it: *create one, or ask a colleague to add you.* ⚠️ **A
+          customer who follows that advice creates a duplicate organization
+          because Signora said the first did not exist.**
+
+          ⚡ **So the failure is answered first.** **Only a read that succeeded
+          and genuinely returned nothing is a customer with no organization.** */}
+      {/* ⚠️ **Truthiness, not `!== null`.** **A caller that supplies no
+          `error` at all gives `undefined`**, and treating that as a failure
+          made a customer with genuinely no organization see the failure state
+          — **caught by `first-run.test.tsx`, which is exactly the case that
+          screen exists for.** */}
+      {!workspacesLoading && workspacesFailed ? (
+        <StatedAbsence subject="your organizations" />
+      ) : null}
+      {!workspacesLoading && !workspacesFailed && activeWorkspace === null ? (
+        <NoWorkspace />
+      ) : null}
 
       {/* **Three views, as links.** A link is what makes the choice
           bookmarkable, openable in a new tab and reachable by keyboard without

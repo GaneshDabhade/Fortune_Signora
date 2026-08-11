@@ -404,6 +404,30 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-237 · A failed workspace read tells the customer they have no organization
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`app/(app)/page.tsx`](../frontend/app/(app)/page.tsx) |
+| **Current assignee** | **Lane A** — ⚡ **found and fixed on the run that found it** |
+| **Severity** | 🟠 **Wrong behaviour a customer would hit, and the wrong answer is the confident one.** ⛔ **The screen does not say *something went wrong* — it says *you are not part of an organization yet*, which is a statement about the customer's account rather than about the platform** |
+| **Status** | ✅ **`FIXED` — Lane A**, 2026-08-11. **QE verifies** |
+| **Commit found** | ⛔ **Found by using the product with a broken API tier**, not by a test — the attention screen was read while `/api/proxy/workspaces` was returning `500` |
+
+**Steps.** Break the workspace read — any `500` will do — and open the attention screen while signed in as a member of an organization.
+
+**Expected.** 📁 **[P-A](DOMAIN_DISCOVERY_REGISTER.md)**: ***a failed read must never render as an empty result.*** **The screen should say the read failed.**
+
+**Actual.** ⚡ **It renders `NoWorkspace`** — *"You are not part of an organization yet. Your organization is your company on Signora — where its accounts, evidence and decisions live. Create one, or ask a colleague to add you to theirs."*
+
+🔴 **The customer is told a fact about themselves that is false.** ⛔ **They are a member of an organization.** ⚠️ **And the copy invites them to act on it** — create one, or ask a colleague — **so the most likely outcome is a duplicate organization created because Signora said the first one did not exist.**
+
+**The cause is one missing question.** 📁 `app/(app)/page.tsx:224` reads `!workspacesLoading && activeWorkspace === null`. ⛔ **A failed read satisfies both**: loading is over and nothing arrived. ⚡ **`WorkspaceProvider` has published `error` since it was written** — the screen simply never asked.
+
+✅ **Fixed by asking.** **A failed read renders the failure; only a successful read that genuinely returned nothing renders `NoWorkspace`.**
+
+⚠️ **This is [P-A](DOMAIN_DISCOVERY_REGISTER.md)'s eighth instance and the first at WORKSPACE scope.** 📁 [C-226](LANE_COORDINATION.md) found six on one screen and [B-006](#b-006) another — **every previous one made a section look empty. This one makes the customer's own membership look absent**, which is a larger claim than any of them.
+
 ### B-236 · The Action Batch's two events cannot be published, and every test used a fake
 
 | | |
