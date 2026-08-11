@@ -4124,6 +4124,29 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 ---
 
 ## C-306 · The Opportunities & Signals experience already exists, and Lane A owns half of it
+> ## ✅ **ANSWERED 2026-08-11 — Lane C, by design-first reconciliation. The question was *rebuild or keep*, and the two halves answer differently.**
+>
+> | | | |
+> |---|---|---|
+> | **Signal Center** | ✅ **KEEP — additive only** | 📁 The design's thesis *"a triage queue, not a notification list · every signal ends in a decision"* **is implemented**: `useWorkspaceTriage`, and `ResolveOutcome` carries exactly the design's four exits — `actioned · assigned · snoozed · dismissed`. `MIN_REASON` implements *"dismissed with a reason"*. ⛔ **Nothing invented, no legacy structure.** **Eight surfaces missing → [TASK-1468](BACKLOG.md), `READY`** |
+> | **Opportunity Intelligence** | ⚪ **NOT STARTED** | ⛔ **No route. None of the design's seven sections exist.** **→ [TASK-1469](BACKLOG.md), `SEQUENCED`** |
+>
+> ### ⛔ **Neither half is a previous generation, and that is the finding**
+>
+> ⚡ **This item has read *"the experience already exists"* since 2026-08-03, and the reconciliation shows the two halves are unlike in exactly the way that matters.**
+>
+> **Signals is a faithful SUBSET** — the model is right and surfaces are missing. **Opportunity Intelligence is ABSENT** — and what sits nearest it is **not an old version of it.**
+>
+> 🔴 **`/accounts/[accountId]` mounts nine intelligence components** — `EvidenceHealth · WhyNow · ContributionList · PostureSplit · ReadingValidity · ScoreArithmetic · ContestedSince · OpportunityMomentum · WorkflowStage`. ⚡ **They are built around the BUYING SCORE on an ACCOUNT; this design is built around WIN PROBABILITY on a DEAL.** ⛔ **Different subject, different aggregate, different page — and they most likely belong to [Account 360](../design-snapshot/screens/), a separate finalized document with its own row ([TASK-1415](BACKLOG.md)).**
+>
+> ⚠️ **So the rebuild instinct would have been wrong in both halves**: it would have discarded a correct triage model, and deleted an adjacent screen's correct implementation as if it were this screen's legacy.
+>
+> ### ✅ **Parallel work available immediately, no decision required**
+>
+> **Lane B:** measure `opportunity_engine`'s endpoints against the four reads [TASK-1469](BACKLOG.md) names — **win probability · forecast gap · deal health · contributions.** ⚡ **That measurement is what turns TASK-1469 from `SEQUENCED` into `READY`**, and it has no frontend dependency.
+>
+> | **Status** | ✅ **`CLOSED` — Lane C, 2026-08-11.** ⛔ **No product decision was required.** ⚡ **The escalation to P1 on [D-217](DECISION_REGISTER.md) was correct and is now discharged by measurement rather than by a ruling** |
+
 
 | | |
 |---|---|

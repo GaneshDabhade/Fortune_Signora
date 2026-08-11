@@ -10,12 +10,12 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "dbe793a"
-task_count     = 66
+task_count     = 67
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1430", "TASK-1458", "TASK-412"]
-assigned_total     = 53
+assigned_total     = 54
 claimable          = 13
 claimable_now      = 3
 awaiting_sync      = 10
@@ -24,7 +24,7 @@ actionable         = 4
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 29
+blocked            = 30
 lane_utilization   = 2.2
 idle_prediction_days   = 1.9
 dependency_wait_days   = 0.0
@@ -495,6 +495,22 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1469"
+title         = "Opportunity Intelligence — the deal record the design draws and the product does not have"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "** — ⛔ **NOT `READY`, deliberately.** ⚡ **The prerequisite is named be"
+waiting_for    = "** — ⛔ **NOT `READY`, deliberately.** ⚡ **The prerequisite is named below and is genuinely unmet**"
 blocked_days   = 0.0
 on_integration = false
 

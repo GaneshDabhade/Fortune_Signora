@@ -1324,6 +1324,25 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **Clearing on removal only.** ✅ **Three paths end access — removal, deletion, role change — and the design's rule 20 `ROLE_CHANGED` exists because the third is real** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
+### TASK-1469 · Opportunity Intelligence — the deal record the design draws and the product does not have
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚪ **NOT STARTED** — ⛔ **not legacy, not partial, and not a refinement of anything that exists** |
+| **Epic** | **Opportunities & Signals** — [C-306](LANE_COORDINATION.md) |
+| **Module** | **`product_surface` — Lane A** *(frontend)* · **`opportunity_engine`** *(reads)* |
+| **Status** | ⏸️ **`SEQUENCED`** — ⛔ **NOT `READY`, deliberately.** ⚡ **The prerequisite is named below and is genuinely unmet** |
+| **Design authority** | 📁 **[`Fortune Signora Opportunity Intelligence.dc.html`](design-snapshot/screens/)** — ⛔ **read it; this row does not restate it** |
+| 🔴 **The measurement** | ⛔ **No route exists.** `find app -type d | grep -iE 'deal|opportunit'` returns nothing. 📁 **The design's breadcrumb is `Deals / EMEA enterprise / Vantage renewal — Q4 FY26`** — **a DEAL record, reached through a Deals destination.** ⛔ **Neither exists** |
+| ⛔ **Seven named sections, none present** | **AI win probability vs rep forecast** *(`Commit 90%` against `34% win probability`, `−23 pts`, `gap 56 points`)* · **What moved it** *(contribution bars, centre line is no effect)* · **Deal health** *(five dimensions, equal weight)* · **Opportunity summary** *(`Since Friday · 14 sources`, `Confidence 4 of 5`, `Show reasoning`)* · **Update deal** · **Add to forecast call** · **Ask about this deal** |
+| ⚠️ **What IS built, and why it is NOT this screen** | 📁 **`/accounts/[accountId]` mounts nine intelligence components** — `EvidenceHealth · WhyNow · ContributionList · PostureSplit · ReadingValidity · ScoreArithmetic · ContestedSince · OpportunityMomentum · WorkflowStage`. ⚡ **They are conceptually adjacent — contributions, arithmetic, evidence — and they are built around the BUYING SCORE on an ACCOUNT.** ⛔ **The design here is built around WIN PROBABILITY on a DEAL.** 🔴 **Different subject, different aggregate, different page** |
+| ✅ **⛔ DO NOT DELETE OR REBUILD THOSE NINE** | 🔴 **This row's most important line.** ⚡ **They are not legacy and not an earlier draft of this screen** — **they are most likely Account 360's** ([`Fortune Signora Account 360.dc.html`](design-snapshot/screens/)), **which is a separate finalized document with its own row, [TASK-1415](#task-1415).** ⛔ **Verify against that document before touching one of them.** ⚠️ **Treating an adjacent screen's correct implementation as this screen's legacy is the failure this row exists to prevent** |
+| 🔴 **The unmet prerequisite — why `SEQUENCED` and not `READY`** | ⛔ **A deal record needs a deal.** 📁 **The design reaches it through `Deals`, which is one of the rail destinations [C-269](LANE_COORDINATION.md) records as having no route.** ⚡ **And `opportunity_engine`'s read surface has not been measured against this screen's needs** — **win probability, forecast gap, deal health and the contribution set are four distinct reads, and this office has confirmed none of them.** ✅ **It frees when a Deals destination exists and that measurement is done** |
+| ⚡ **What Lane B can do NOW, in parallel** | ✅ **Measure `opportunity_engine`'s seven endpoints against the four reads above and report the gap.** ⛔ **No frontend dependency, no product decision, and it is the thing that turns this row from `SEQUENCED` into `READY`** |
+| **Change Budget** | 🟢 **`app/(app)/**`** and 🟢 **`components/intelligence/**`** *(new components only)* · 🟠 a new route — announce it |
+| **Definition of Done** | **A seller opens a deal and sees why the model disagrees with the forecast** · **certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **LEVEL 1/2 NOT VERIFIED** — source-derived |
+
 ### TASK-1468 · Signal Center — the triage model is right and eight surfaces the design draws are missing
 
 | | |
