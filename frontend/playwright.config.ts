@@ -206,6 +206,40 @@ export default defineConfig({
       },
     },
     ...OTHER_ENGINES,
+    // **The responsive matrix — one project per breakpoint the design defines.**
+    //
+    // ⛔ **Before this existed the suite ran at a single 1280×900 viewport**,
+    // and four of twenty-five specs set their own. **Three asserted measured
+    // geometry.** So "responsive" was verified by reading class strings, which
+    // is [B-175](../docs/BUGS.md)'s defect one level down: an assertion that
+    // cannot fail when the thing it names actually breaks.
+    //
+    // ⚡ **The widths are the product's own**, from `tailwind.config.ts`, which
+    // replaces Tailwind's defaults outright — `phone` · `smalllaptop` ·
+    // `laptop` · `desktop`. They are not invented here and not copied from a
+    // device list, because a breakpoint the design does not define is a width
+    // nobody promised anything about.
+    //
+    // ⚠️ **`laptop` and `desktop` currently have zero `laptop:`/`desktop:`
+    // consumers in `components/` or `app/`** — they run anyway, because the
+    // invariants are about layout holding, not about a prefix being used.
+    ...(
+      [
+        { name: 'phone', width: 640, height: 900 },
+        { name: 'smalllaptop', width: 1024, height: 800 },
+        { name: 'laptop', width: 1280, height: 900 },
+        { name: 'desktop', width: 1600, height: 1000 },
+      ] as const
+    ).map((breakpoint) => ({
+      name: `layout-${breakpoint.name}`,
+      testMatch: /layout-invariants\.spec\.ts/,
+      dependencies: ['authenticate'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: storageStatePath(OWNER.email),
+        viewport: { width: breakpoint.width, height: breakpoint.height },
+      },
+    })),
     {
       // The same product seen by somebody who administers nothing. A separate
       // project rather than a fixture, because the difference is the browser

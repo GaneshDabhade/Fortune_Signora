@@ -90,6 +90,40 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-178 · Chromium cannot launch on the QE workstation — `libnspr4.so` is missing, and this is [B-156](#b-156)'s actual cause
+
+| | |
+|---|---|
+| **Module** | QE workstation — Playwright browser runtime |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **Every Playwright journey is unrunnable by QE**, so `--journeys` selects specs that never execute. **Not 🔴: no product code is wrong, and the lanes can run them** |
+| **Status** | 🔵 **`OPEN` — diagnosed by QE**, 2026-08-11, while fire-testing the new layout invariants |
+| **Commit found** | `dbe793a7` |
+
+> ⚡ **[B-156](#b-156) has said "Playwright journeys NOT MEASURED BY QE" for many cycles without a cause.** **This is the cause, and it is one missing shared library rather than anything about the suite.**
+
+**Steps.**
+
+```
+~/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome --headless --no-sandbox --dump-dom about:blank
+```
+
+**Expected.** A DOM.
+
+**Actual.**
+
+```
+error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory
+```
+
+**Every browser binary is installed** — `chromium-1234`, `chromium_headless_shell-1234`, `firefox-1538`, `webkit-2336`. ⛔ **The system libraries they link against are not.** `npx playwright install-deps --dry-run` names them, `xvfb` and `xfonts-utils` among them.
+
+> ⚠️ **What Playwright reports instead is the reason this took so long to find.** **`browserType.launch: Target page, context or browser has been closed`** — ⛔ **which reads as a crash, a timeout or resource pressure, and QE first suspected memory.** ✅ **The binary run directly names the missing library in one line.** **A launcher that swallows the child's loader error is [B-175](#b-175)'s shape once more: a true message answering a narrower question than the reader believed.**
+
+**The fix is `playwright install-deps`, which installs system packages and needs elevation.** ⚡ **§20e's *QE removes its own blockers* covers installing a documented prerequisite** — **this is not a new project dependency, it is the browser the ratified testing strategy already requires** ([ADR-0023](architecture/adr/0023-testing-strategy.md)). ⛔ **Raised rather than run, because it needs privileges this session does not hold.**
+
+---
+
 ### B-177 · `mypy --strict` passes over 564 files and fails over 866, so a lane can hand over a branch it measured as clean
 
 | | |
