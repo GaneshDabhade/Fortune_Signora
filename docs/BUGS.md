@@ -3505,7 +3505,29 @@ def _load_state_check() -> ModuleType:
 | **Module** | **Repository-wide** — `frontend/playwright.config.ts` · [`43-customer-experience.md` §4a](architecture/43-customer-experience.md) |
 | **Current assignee** | **QE** — 📁 `playwright.config.ts` decides what certification means, and [§20e](../CLAUDE.md) makes a gate QE's |
 | **Severity** | 🔴 — ⛔ **an entire verification class is absent, not weak** |
-| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-10, on the product owner's responsive-fidelity audit |
+
+> ## ⛔ **QE promoted three cycles with this row open, and that is a breach**
+>
+> **§20e: *`integration` never fast-forwards to `main` with an open 🔴 bug.*** ⛔ **Cycles 201, 202 and 203 promoted while this was `OPEN`.** ⚠️ **`state-check.py` reported it on every one** — *"BUGS.md carries 1 unresolved 🔴 (B-428)"* — **and QE read past the advisory while grepping for `ok` lines.**
+>
+> ⚡ **The row arrived on `main` inside the planning wave QE integrated itself**, in the same delta where QE classified `infra/coordination.py` as executable — **so the bug rows travelling with it were never read.**
+>
+> **Product owner's ruling, 2026-08-11:** **the three certified cycles stand** — reverting certified history to repair a procedural breach damages more than it fixes — **and no further promotion occurs until this row is independently verified.**
+>
+> ## ✅ **What QE built, and the four gaps QE is disclosing rather than leaving to be found**
+>
+> **`frontend/tests/e2e/layout-invariants.spec.ts` + five viewport projects** — `390×844` · `640×900` · `1024×800` · `1280×900` · `1600×1000`. **32/32 on `5a9743a7`.** Seven checks, all reading geometry from a real engine; **none asserts a class string or DOM presence.**
+>
+> ⛔ **Only three of seven are fire-tested.** *shell-region overlap* (fails with `phone:pb-0`), *nothing fixed below the fold* (fails naming 12 elements under a forced 1200px overflow), *route-exists* (caught `/accounts`, which does not exist). **Horizontal overflow, document scroll, navigation reachable and crushed text have never been made to fail.**
+>
+> ⛔ **The vertical check is NOT proven against [B-241](#b-241).** Removing `min-h-0` does not reproduce it — the nav still fits at `106..844`. **Proven against a synthetic overflow only.**
+>
+> ⛔ **The matrix was built from `tailwind.config.ts`, not from the App Shell design.** The design defines four bands — **Desktop ≥1600 · Laptop 1280–1599 · Small laptop 1024–1279 · Tablet & phone <1024**. **One viewport lands in each**, ⛔ **but only at the LOWER edge — 1023, 1279 and 1599 are untested, which is where an off-by-one breakpoint error lives.**
+>
+> ⛔ **And the design states responsive BEHAVIOURS the matrix does not assert at all**: *"green pill hides its label at <1280px"* and *"search widens to 320px on focus at ≥1600px"*. **The matrix asserts structural invariants only.**
+>
+> ⚠️ **A correction QE owes this row**: QE told the product owner the design names 768px and 1440px and the matrix runs neither. **Those widths are in Billing and Authentication, not App Shell.** **True of the snapshot, wrong about the document this row is against.**
+| **Status** | 🔵 **`OPEN` — routed to Lane C for INDEPENDENT VERIFICATION**, 2026-08-11, on the product owner's ruling. ⛔ **QE implemented the remediation and is the assignee, so QE does not verify it.** ⚠️ **The §20e promotion gate is CLOSED until Lane C rules** |
 | **Found** | **By the product owner using the product at different widths** — ⚡ **the fifth defect this repository has found that way and the suite did not** |
 
 #### 🔴 The answer to *"why does a non-responsive UI pass green tests?"*
