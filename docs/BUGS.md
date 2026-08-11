@@ -532,6 +532,49 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-238 · A lane pushed an unvalidated implementation commit to `integration`, and the claim guard cannot see it
+
+| | |
+|---|---|
+| **Module** | **repository process** — [`infra/certification-guard.py`](../infra/certification-guard.py) `--audit-claims` |
+| **Current assignee** | **QE** — 📁 the guard is QE's ([§20e](../CLAUDE.md), *a defect in a gate that stops QE certifying is QE's to fix*) |
+| **Severity** | 🟠 — ⛔ **`integration` carries a commit QE has not validated**, and **QE's next Certification Snapshot would pin it** believing every commit there had been fast-forwarded after validation |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **reported by Lane A against itself, on the poll it happened.** 🔴 **NOT fixed and deliberately not force-corrected — see below** |
+| **Found** | **2026-08-11, by Lane A, doing it.** ⚡ **Reported WITH the breach it caused, because the breach is the evidence** |
+| **Commit found** | **`1f9731a5`** pushed to `integration`, **carrying `6e1bd4f8`** — [TASK-1445](BACKLOG.md)'s implementation |
+
+### 🔴 What happened, exactly
+
+📁 **[§20e](../CLAUDE.md) step 7** — *"`git checkout integration && git merge --ff-only <lane-branch> && git push origin integration`"*. ⚡ **This lane ran the modern equivalent, `git push origin HEAD:integration`**, with the claim commit at `HEAD`.
+
+⛔ **The claim commit is clean.** It touches [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) and [`BACKLOG.md`](BACKLOG.md) and nothing else, which is the bound §20e sets — **and `--audit-claims` passes it.**
+
+🔴 **But a push moves a BRANCH, not a commit.** **`6e1bd4f8` was its parent**, so the implementation went with it. **`integration` moved from `dbe793a7` to `1f9731a5` and gained a slice QE has not seen.**
+
+### ⛔ Why the guard did not catch it, and this is the whole finding
+
+⚡ **`--audit-claims` inspects the PATHS INSIDE each claim commit.** ✅ **It correctly refuses a commit calling itself a claim while carrying code** — it refused two, live, in this run. ⛔ **It never asks what ELSE arrived in the same push.**
+
+⚠️ **This blind spot is already recorded** — 📁 [B-220](#b-220) named it and [B-161](#b-161--the-task-claim-protocols-own-step-7-pushes-a-lanes-unpromoted-implementation-to-integration) is QE's better diagnosis of the same defect. 🔴 **Both are `OPEN`, and this row is the third instance** — **which is the argument for fixing the guard rather than restating the rule.**
+
+### ✅ The check that would have caught it
+
+⚡ **A claim push is legitimate only when the lane branch is EXACTLY `integration` plus the claim.** 📁 **`git rev-list origin/integration..HEAD` should return one commit, and that commit should be the claim.** ⛔ **This lane's returned three.**
+
+⚠️ **That check belongs in the guard, where a machine runs it** — 📁 [§2](../CLAUDE.md): *"prefer a violation that is unrepresentable over one that is merely discouraged."* **A rule kept by remembering is the class of rule this repository has watched fail three times.**
+
+### ⛔ Why this lane did NOT force-correct `integration`
+
+🔴 **Resetting `integration` to `dbe793a7` and re-pushing the claim alone would fix it in one command**, and **this lane did not run it.**
+
+📁 **[§20e](../CLAUDE.md): `integration` is QE's**, and a lane may fast-forward it **only** with a claim-only commit. ⛔ **A force-push is not a fast-forward** — it rewrites a shared ref, and **any lane or QE session that has already fetched would diverge silently.** ⚠️ **Recovering from a mistake is not a licence to take an authority the mistake did not grant**, and *"I could just fix it"* is exactly how a lane's error becomes a second, larger one.
+
+✅ **Nothing is hidden and the cost is bounded**: the carried commit is a real slice that was going to reach `integration` anyway, with tests green, `tsc` clean and its journey run headed. ⛔ **What it lacks is QE's validation, and that is what QE must be told rather than left to infer.**
+
+**QE decides**: ⓐ **reset `integration` to `dbe793a7`** and let the slice arrive normally · ⓑ **accept it in place** and validate it where it stands · ⓒ **treat the push order as harmless** and close this as guard-only.
+
+---
+
 ### B-237 · A failed workspace read tells the customer they have no organization
 
 | | |
