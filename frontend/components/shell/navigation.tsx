@@ -237,12 +237,22 @@ const GRANTED_BY: Readonly<Record<Capability, string>> = {
  * a nav item with no destination** — the defect the `RailEntry` union exists to
  * prevent, one consumer over.
  *
- * 🔴 **So `Shortcuts` is absent from the phone bar, and that is a decision
- * rather than a side effect.** ⛔ **A keyboard-shortcut reference on a device
- * with no keyboard is a control that cannot help anybody**, and the phone bar is
- * the most space-constrained surface in the product — 📁 five slots for what the
- * design gives eleven. ✅ **`?` and the rail entry both remain on every viewport
- * that has a keyboard.**
+ * 🔴 **So `Shortcuts` is unreachable below 1024px** — 📁
+ * [B-240](../../../docs/BUGS.md), **filed against this slice.**
+ *
+ * ⚠️ **This comment first justified that as a decision** — *"a keyboard
+ * reference on a device with no keyboard cannot help anybody"* — ⛔ **and the
+ * design does not support it.** 📁 The App Shell's `< 1024px` band reads *"rail
+ * becomes a sheet from a top-bar button"*: **the whole rail, utilities
+ * included.** ⛔ **The design nowhere says this entry is desktop-only**, and
+ * writing a plausible reason for an accident is how a side effect becomes a
+ * decision nobody took.
+ *
+ * ⚡ **The real cause is structural and it predates this row**: the phone
+ * surface is a fixed bottom bar ([B-203](../../../docs/BUGS.md)), not the
+ * design's sheet, **and a bottom bar renders anchors** — so an entry that opens
+ * an overlay has nowhere to live in it. ✅ **The filter is right for what that
+ * surface is; the surface is what disagrees with the design.**
  */
 export const RAIL_DESTINATIONS = [...DESTINATIONS, ...UTILITIES.filter(goesSomewhere)];
 

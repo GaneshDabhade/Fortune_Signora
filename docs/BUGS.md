@@ -532,6 +532,37 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-240 · The keyboard reference is unreachable below 1024px, and the first explanation for it was invented
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/components/shell/navigation.tsx`](../frontend/components/shell/navigation.tsx) |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟢 — ⚡ **cosmetic in effect**: the shortcuts it lists cannot be pressed on a touch device anyway. ⚠️ **Filed at 🟢 rather than not filed, because the REASONING defect is worth more than the gap** |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed here.** 🔴 **The cause is structural and predates this row** |
+| **Found** | **2026-08-11, by QE**, reviewing [TASK-1458](BACKLOG.md) — 📁 *"a capability that disappears because of a type filter is the kind of thing that reads as a bug six weeks later even when the reasoning was sound."* ✅ **QE was right to ask, and the reasoning was NOT sound** |
+| **Commit found** | **`4f37beb9`** — [TASK-1458](BACKLOG.md) |
+
+### 🔴 The reasoning defect, which is the actual finding
+
+⛔ **`RAIL_DESTINATIONS` publishes links only**, because the command palette and the phone bar both render anchors and 📁 [TASK-1458](BACKLOG.md) added an entry that opens an overlay. ⚡ **That filter is correct.** ⚠️ **Its side effect was that `Shortcuts` vanished from the phone bar**, and **this lane wrote a justification for it**: *"a keyboard-shortcut reference on a device with no keyboard is a control that cannot help anybody."*
+
+🔴 **The design does not say that.** 📁 **App Shell, the `< 1024px` band, verbatim**: ***"Rail becomes a sheet from a top-bar button."*** ⛔ **The whole rail, utilities included** — **and the design nowhere marks this entry desktop-only.**
+
+⚠️ **Writing a plausible reason for an accident is how a side effect becomes a decision nobody took**, and it is worse than the gap: **the next lane reads the comment, believes the exclusion was considered, and does not re-open it.** 📁 **The same class as [TASK-1439](BACKLOG.md)'s row claiming an assertion it did not have** — a register asserting a rigour it does not possess.
+
+### ⚡ The real cause, and why it is not fixed here
+
+📁 **The phone surface is a fixed bottom bar** — [B-203](#b-203--below-768px-the-product-has-no-navigation-at-all)'s remedy — **and the design specifies a SHEET.** ⛔ **A bottom bar renders anchors**, so an entry that opens an overlay has nowhere to live in it. ✅ **The filter is right for what that surface is; the surface is what disagrees with the design.**
+
+⛔ **Adding a sixth control to the bottom bar would be this lane inventing a phone treatment the design replaced.** ⚠️ **Building the sheet is not this row's scope** and would change every screen below 1024px.
+
+### ✅ What was actually changed
+
+⛔ **Nothing behavioural.** 📁 **The comment now states the truth**: the entry is unreachable below 1024px, the design does not sanction that, and the cause is the bottom bar rather than a judgement about keyboards. ⚡ **The gap is now visible to whoever builds the sheet**, which is the only thing that closes it.
+
+---
+
 ### B-239 · The keyboard map omitted a live shortcut, and its own guard cannot see the class
 
 | | |
