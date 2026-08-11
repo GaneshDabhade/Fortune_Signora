@@ -169,7 +169,15 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 lane         = "Lane C"
-updated      = 2026-08-10
+updated      = 2026-08-11
+
+# ⚡ RE-MEASURED 2026-08-11 on the routine poll and UNCHANGED: 0 claimable of 8
+#    assigned, 2 in flight, 6 parked behind a named trigger. The note below
+#    still describes this lane correctly, which is why it is restamped rather
+#    than rewritten.
+#    ⚠️ The date moved because the measurement was taken, not because the
+#    answer did. A stamp that lags a re-check is indistinguishable from one
+#    nobody re-ran.
 
 # ⚡ D-151 ① — 2026-08-07. C-430 is ruled and closed: `frontend/` is Lane A's.
 #
