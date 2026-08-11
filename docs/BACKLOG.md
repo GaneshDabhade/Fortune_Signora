@@ -1362,6 +1362,26 @@
 | **Definition of Done** | **A seller triages from a saved view, filters it, and actions in bulk** · **certified · `main`** |
 | ⚠️ **Runtime status** | ⛔ **LEVEL 1/2 NOT VERIFIED** — source-derived; no authenticated session |
 
+### TASK-1471 · The shell frame skeletonises itself on cold boot, and §16 says the frame is never blank
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🟣 **IMPLEMENTED INCORRECTLY — a loading model, not a missing control** |
+| **Epic** | **Common Platform Foundation** — App Shell §16 |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-11** |
+| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/) §16 *Global loading*** — ⛔ **read it; this row does not restate it** |
+| 🔴 **The requirement, verbatim** | 📁 ***"Cold boot paints the shell chrome immediately and skeletons only the content region — the frame is never blank, because the frame is the same on every route."*** |
+| ⛔ **What happens instead** | 📁 **`workspace-switcher.tsx`:185 — `if (isLoading) return <div className="mx-3 mt-3 h-[38px] animate-pulse rounded-md bg-surface-sunken" />`.** ⚡ **The frame skeletonises ITSELF.** 📁 **:188 — `if (activeWorkspace === null) return null`, so it vanishes entirely rather than painting** |
+| ✅ **This is what the product owner's screenshot shows** | 🔴 **The empty grey box beneath the `Signora` wordmark is that skeleton, not a missing switcher.** ⚡ **And it explains the top-right**: the search and system-status slots render unconditionally in `top-bar.tsx` — 📁 `role="search"` at :174 with `hidden … phone:block`, visible at ≥640 — **so at the screenshot's ~1300px they are painting an EMPTY slot while their contents wait on workspace context.** ⛔ **The controls are not missing from the shell; they are absent during boot, which is the thing §16 forbids** |
+| ⚠️ **Why this matters more than it looks** | ⛔ **Every reviewer who opens the product cold sees a shell that appears unbuilt.** ⚡ **[§16](../CLAUDE.md)'s reasoning is exactly this — *"the frame is the same on every route"*, so it can be painted before anything is known.** 🔴 **A frame that waits for data is indistinguishable from a frame that was never built, and this office read it as the second for three polls** |
+| ⚡ **Delivers** | **The rail, the workspace-switcher trigger, the top bar and all five of its slots paint immediately on cold boot with their chrome present** — ⛔ **only the CONTENT region skeletonises.** ✅ **The switcher trigger shows the workspace name once known and its own frame before that; it does not return `null`** |
+| 🔴 **What it must NOT do** | ⛔ **Do not invent placeholder data** — 📁 `no-mock-data.test.tsx`. **Paint the chrome, not fake content.** ⛔ **Do not remove the loading state** — the design wants a skeleton, in the CONTENT region. ⛔ **Do not touch §16's other two tiers** — route change and in-place refresh are [TASK-1463](#task-1463)'s |
+| **Change Budget** | 🟢 **`components/shell/**`** · 🟢 its tests |
+| **Playwright coverage** | ⚡ **Assertable today at 1280 with no responsive matrix**: on first paint of an authenticated route, `nav[aria-label="Primary"]`, the search landmark and all five top-bar slots are present **before** the content region resolves |
+| **Definition of Done** | **A cold boot shows the complete frame and an empty content region** · **certified · `main`** |
+| ⚠️ **Runtime status** | ✅ **RUNTIME EVIDENCE OBTAINED** — the product owner's screenshot of `localhost:3300`, corroborated in source at `workspace-switcher.tsx`:185–188 |
+
 ### TASK-1470 · `Ask Signora` sits below the utilities and the design pins it above them
 
 | | |
