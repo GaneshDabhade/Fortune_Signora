@@ -11019,3 +11019,55 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 ⚠️ **[TASK-1430](BACKLOG.md) cannot proceed under its current scope.** ⛔ **This lane will not "just build the ASGI half"** — 📁 [§20e](../CLAUDE.md): ***"'I could just add it' is how an architectural blocker becomes a silent design decision inside a feature slice."***
 
 ⚡ **What survives whatever is ruled** is the reuse audit the row asked for: ✅ **`redis>=5.2` is already a dependency**, **`require_redis_url()` already exists**, and **`event_bus/queue.py` is the access pattern** — ⛔ **so no rate-limiting library and no new dependency is needed in the Python tier.** 📁 **The in-process counter is rejected on the ADR's own argument**: it gives an attacker *n* × the budget across *n* replicas and loosens silently as the service scales.
+
+### 🔴 C-287 — MEASURED, 2026-08-11, and the measurement changes the item
+
+⚠️ **Lane C named the question that decides this: *does Better Auth actually ship a limiter, or only plugin option shapes?*** ✅ **Measured, and the answer changes both halves of the row.**
+
+#### ⛔ ① The installed version is not the declared one
+
+📁 **`package.json` declares `better-auth: ^1.1.0`. The installed version is `1.6.25`.** ⚠️ **My first search read the 1.1-era layout and found `rateLimit` only in plugin declarations** — ⛔ **which is why I flagged it as unverified instead of asserting it, and that caution was the right call for the wrong reason.**
+
+#### ✅ ② A core rate limiter exists, and it has every property ADR-0408 requires
+
+📁 **`node_modules/better-auth/dist/api/rate-limiter/index.mjs`:**
+
+| ADR-0408 requires | Better Auth 1.6.25 |
+|---|---|
+| **Per-route policy** (§10's four routes, §13's *"two policies, not one"*) | ✅ **`customRules[path]`**, each with its own window and max |
+| **A SHARED counter** (§9 — an in-process one gives *n* × budget across *n* replicas) | ✅ **`storage: "secondary-storage"`**, driving `secondaryStorage.get / set / increment` |
+| **Configuration rather than code** (§15 — no number in the ADR) | ✅ **`enabled`, `window`, `max`, all options** |
+
+#### 🔴 ③ And it is already enabled in this product
+
+📁 **[`frontend/lib/auth/server.ts`](../frontend/lib/auth/server.ts):147 — `rateLimit: { enabled: true }`**, deliberately, with a comment recording why: **the vendor defaults it to production only, so the throttled screen Workflow 1 built could not be reached at any review.** ✅ **`app/(auth)/signin/throttled.tsx` exists and was built against the real `429` and the real `X-Retry-After`.**
+
+> ⛔ **So ADR-0408 §1 is false.** 📁 It reads *"nothing stands between a credential-stuffing script and Better Auth."* **Something does, it is enabled in every mode, and this product already renders its refusal.**
+
+#### ⚠️ ④ The same probe, the same blind spot, twice
+
+📁 **[D-213](DECISION_REGISTER.md) records the first error: the readiness probe matched `rate.?limit|throttl` and reported ✅ on 38 files that were Signora pacing itself against vendors.** ⚡ **Corrected to inbound-only — and the correction searched `backend/` only.**
+
+🔴 **Authentication does not live in `backend/`.** ⛔ **[§13](../CLAUDE.md) and [ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md) put it in Next.js, permanently** — **so the corrected probe measured the wrong TIER, having first measured the wrong DIRECTION.** ⚠️ **Both readings were confident and neither looked where the routes are.**
+
+#### ✅ ⑤ What the real gap is, and it is smaller and entirely configuration
+
+⛔ **`storage` is unset and no `secondaryStorage` is configured**, so 📁 `create-context.mjs`:174 resolves it to **`"memory"`** — ⚡ **in-process counters, which is exactly what [ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) §9 rejects**: *n* × the budget across *n* replicas, **loosening silently as the service scales.**
+
+⚠️ **And no `customRules` are declared**, so **password-reset request and verification resend get the default policy** rather than the tighter one their mail-amplification shape earns — 📁 the routes §10 calls *"arguably worse"*.
+
+> ✅ **TASK-1430 is not *build a limiter*. It is *the limiter that exists is in-process and unconfigured per route*, and both halves are configuration in the Next.js tier.**
+
+#### ⚡ ⑥ What this does to the recommendation
+
+⛔ **The two-policy split still stands and is now cheaper on both sides.**
+
+**ⓐ** ✅ **Point Better Auth's limiter at shared storage and declare `customRules` for the four routes.** ⛔ **No new dependency, no bespoke mechanism** — 📁 [§13](../CLAUDE.md): *"never implement a bespoke auth mechanism, even a small or temporary one."* ⚡ **This is configuring the vendor, which is what [§9](../CLAUDE.md) buys.**
+
+**ⓒ** ⚠️ **The Python ASGI middleware is still worth building and still must be re-scoped** — **its row must say *the business API*, never `/signin`.**
+
+⛔ **What must NOT happen is unchanged and is now sharper**: **building the ASGI middleware under the current row would leave the in-process auth counter exactly as it is** — ✅ **and the readiness probe, which reads `backend/`, would turn green on the one tier that never had the problem.**
+
+#### 📁 ⑦ What is still the product owner's
+
+⚠️ **[ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) is `ACCEPTED` and its §1 measurement is now known to be wrong.** ⛔ **A lane does not amend an accepted ADR** — **the correction, and whether the §20a exemption still has a subject, are the product owner's.** ✅ **Every number remains configuration and none is proposed here.**
