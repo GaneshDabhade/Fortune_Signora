@@ -17,6 +17,8 @@ import {
   ScoreArithmetic,
 } from '@/components/intelligence/contributions';
 import { useUtilityPanel } from '@/components/shell/utility-panel';
+import { AbsentSection, OnThisPage } from '@/components/accounts/sections';
+import { absent } from '@/lib/accounts/sections';
 import { CompetitorContext } from '@/components/intelligence/competitors';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { EntityName } from '@/components/intelligence/entity-name';
@@ -323,6 +325,17 @@ export default function AccountBriefPage() {
       {notScored ? <NeverScored /> : null}
       {error && !notScored ? <Unavailable /> : null}
 
+      {/* 📁 **The design's *"On this page"* rail** —
+          [TASK-1415](../../../../docs/BACKLOG.md). ⚡ **Horizontal here rather
+          than a right-hand column**, because the right-hand column on this
+          screen is the utility panel ([TASK-1433](../../../../docs/BACKLOG.md))
+          and two rails competing for one edge is a layout that serves neither.
+          ⛔ **It lists every section, including the seven nothing can fill** —
+          a map that hides the empty rooms is one nobody can trust. */}
+      {score ? (
+        <OnThisPage className="phone:flex-row phone:flex-wrap phone:items-center phone:gap-1" />
+      ) : null}
+
       {score ? (
         <>
           <Card>
@@ -521,6 +534,20 @@ export default function AccountBriefPage() {
               isError={observations.isError}
             />
           </section>
+
+          {/* 🔴 **The seven sections the design draws and nothing can fill** —
+              [TASK-1415](../../../../docs/BACKLOG.md).
+
+              ⛔ **Rendered rather than omitted** ([§20c](../../../../CLAUDE.md)):
+              a page that silently left them out would be indistinguishable
+              from one with a bug, and a rep who has seen the design would
+              assume the screen was broken. ⚡ **Each says what it would show
+              and what Signora cannot answer yet** — 📁 the measurement is
+              [`lib/accounts/sections.ts`](../../../../lib/accounts/sections.ts),
+              not this file's memory. */}
+          {absent().map((section) => (
+            <AbsentSection key={section.id} section={section} />
+          ))}
 
           {/* 🔴 **The history docks into the panel's Activity tab when there is
               a panel, and renders here when there is not** —

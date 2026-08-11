@@ -23,7 +23,11 @@ from uuid import UUID, uuid4
 import pytest
 
 from modules.action_batch.application.batches import ActionBatches, ProposeBatch
-from modules.action_batch.domain.batch import ActionBatchError, ApplicationProgress
+from modules.action_batch.domain.batch import (
+    ActionBatch,
+    ActionBatchError,
+    ApplicationProgress,
+)
 from modules.action_batch.interface import handlers
 from tests.action_batch.test_batches import FakePublisher, FakeRepository
 
@@ -31,6 +35,28 @@ NOW = datetime(2026, 8, 10, 9, 0, tzinfo=UTC)
 WORKSPACE = UUID("11111111-1111-1111-1111-111111111111")
 PROPOSER = UUID("33333333-3333-3333-3333-333333333333")
 APPROVER = UUID("44444444-4444-4444-4444-444444444444")
+
+
+class ScriptedRepository(FakeRepository):
+    """A repository whose reads are scripted, for the RACE this handler must survive.
+
+    ⚡ **A subclass rather than a monkey-patched method**, and that is not
+    style. ⛔ **Assigning a plain function to `repository.get` is not
+    assignable to the bound method's type** — it drops `self` — **so it needed
+    a `type: ignore` that silenced the very check worth having.** ✅ **An
+    override satisfies the port exactly**, which is what a fake standing in for
+    a port is supposed to do ([B-236](../../../docs/BUGS.md) is what a fake
+    more permissive than its port costs).
+    """
+
+    def __init__(self, reads: list[ActionBatch]) -> None:
+        super().__init__()
+        self._reads = list(reads)
+
+    async def get(self, workspace_id: UUID, batch_id: UUID) -> ActionBatch | None:
+        # ⚡ The last scripted read repeats, so a handler that reads three times
+        # is not fighting the fixture.
+        return self._reads.pop(0) if len(self._reads) > 1 else (self._reads[0] if self._reads else None)
 
 
 class Envelope:
@@ -141,7 +167,7 @@ class TestWhenTheDomainRefuses:
     async def test_a_concurrent_application_converges_instead_of_recording_a_failure(
         self, wiring: tuple[ActionBatches, FakeRepository, FakePublisher]
     ) -> None:
-        batches, repository, _ = wiring
+        batches, repository, publisher = wiring
         batch_id = await _accepted(batches)
 
         # ⚡ **The race, made deterministic.** The first read returns the
@@ -150,14 +176,13 @@ class TestWhenTheDomainRefuses:
         # leave it.
         accepted = repository.stored[(WORKSPACE, batch_id)]
         applied_elsewhere = accepted.applied_on(NOW + timedelta(minutes=3))
-        reads = iter([accepted, applied_elsewhere, applied_elsewhere, applied_elsewhere])
 
-        async def racing_get(workspace_id: UUID, wanted: UUID) -> Any:
-            return next(reads, applied_elsewhere)
+        racing = ScriptedRepository([accepted, applied_elsewhere])
+        racing.stored = repository.stored
+        raced = ActionBatches(racing, publisher, session=None)  # type: ignore[arg-type]
 
-        repository.get = racing_get  # type: ignore[method-assign]
-
-        await _run(batches, batch_id)
+        await _run(raced, batch_id)
+        repository = racing
 
         # ⛔ **No failure recorded.** The work succeeded; somebody else did it.
         recorded_failures = [b for b, _ in repository.recorded if b.failure is not None]
@@ -181,7 +206,7 @@ class TestWhenTheDomainRefuses:
         explain **dead-letters with the domain's own sentence attached**, rather
         than writing a reassuring state over an unexplained one.
         """
-        batches, repository, _ = wiring
+        batches, repository, publisher = wiring
         batch_id = await _accepted(batches)
         accepted = repository.stored[(WORKSPACE, batch_id)]
 
@@ -197,15 +222,14 @@ class TestWhenTheDomainRefuses:
             now=NOW,
         )
         refusing = never_dispatched.withdrawn_by(PROPOSER, at=NOW + timedelta(minutes=1))
-        reads = iter([accepted, refusing, refusing])
 
-        async def get(workspace_id: UUID, wanted: UUID) -> Any:
-            return next(reads, refusing)
-
-        repository.get = get  # type: ignore[method-assign]
+        scripted = ScriptedRepository([accepted, refusing])
+        scripted.stored = repository.stored
+        raced = ActionBatches(scripted, publisher, session=None)  # type: ignore[arg-type]
 
         with pytest.raises(ActionBatchError, match="did not take effect"):
-            await _run(batches, batch_id)
+            await _run(raced, batch_id)
+        repository = scripted
 
         # ⛔ **Nothing was recorded as failed.** The event dead-letters instead,
         # which is the failure mode worth having.
