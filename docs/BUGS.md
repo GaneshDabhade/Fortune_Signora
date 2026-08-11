@@ -116,6 +116,16 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **9 · does the fix prevent it?** | ✅ **Yes** — names `signora_app` | `lane-c-sync:.env.example:31` |
 | **10 · regression** | ✅ **Fire-tested both directions in a disposable database — 2 failed pre-fix, 2 passed post-fix** | `TestTheShippedConfigurationNamesARuntimeCredential` |
 
+> ## ✅ **Independent corroboration, found while Lane C renumbered — and it predates both of us**
+>
+> 📁 **`Makefile:117-122`**, written before either lane looked at this: *"migrations run under the **owner** identity, never the runtime one, so this passes the URL explicitly rather than inheriting whatever `backend/.env` happens to hold. **A `.env` pointing at `signora_app` (the correct runtime value)** would otherwise fail migrations with a permissions error that reads like a broken schema."*
+>
+> ⚡ **The architecture already named `signora_app` as the correct runtime value.** ⛔ **Only `.env.example` disagreed** — which is why flipping the default was safe rather than a change of design. **QE read those lines directly rather than accepting the citation.**
+>
+> ⚠️ **And a circular block QE created and did not resolve itself.** This row is 🔴 and `OPEN until promoted`; §20e blocks promotion while a 🔴 is open. **So the fix cannot ship and the row cannot close.** ⛔ **A rule that prevents a security fix from shipping is not the rule working.**
+>
+> **The measurable distinction, offered to the product owner rather than acted on:** `main`'s `.env.example:35` **carries the defect**; the candidate's `:31` **does not**. **§20e's natural reading is *do not promote a tree carrying the defect*, and the candidate is the tree that removes it** — but that is an interpretation of the rule, and **the party it releases is QE.**
+>
 > ⚡ **`FORCE ROW LEVEL SECURITY` is enabled on the tenant tables and cannot help**, because a `BYPASSRLS` role is exempt unconditionally. **The strongest tenancy control in the schema was irrelevant to the identity the runtime was told to use.**
 
 ### **Classification — neither overstated nor understated**
