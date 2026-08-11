@@ -2222,6 +2222,7 @@
 
 | | |
 |---|---|
+| ⚡ **Responsive geometry — added by Lane C 2026-08-11, [B-428](BUGS.md) criterion B** | 📁 **The design gives the strip three band-dependent behaviours and this row owns all three, because the surface is this row's**: **① 1024–1279 — *"Filter strip stays; chips scroll horizontally."*** **② <1024 — *"Filter strip collapses to one 'Scope' button with a count."*** **③ <1024 — `filterOpacity: .35`.** ⛔ **QE searched all 191 rows and found no other coverage; the one opacity mention elsewhere is [TASK-1463](#task-1463)'s §16 stale-dim at 60%, which is a DIFFERENT requirement and must not be conflated.** ✅ **No separate row was created — a filter behaviour with no filter strip is unbuildable, and a second row would have been the [TASK-1459](#task-1459--withdrawn--a-duplicate-of-task-1432) mistake a third time** |
 | 🔴 **Why this exists** | ⛔ **Carved out of [TASK-1408](BACKLOG.md) by [D-215](DECISION_REGISTER.md), ruling [C-257](LANE_COORDINATION.md).** ⚡ **Lane A measured the assembled frame against the row's own `Delivers` and found this region unbuildable — correctly** |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⛔ **MISSING IMPLEMENTATION — and it is the CONSUMER that is missing, not the strip** |
 | **Epic** | **App Shell** — **[workflow 29](coordination/workflows.toml)** |

@@ -164,7 +164,7 @@ class TestTheShippedConfigurationNamesARuntimeCredential:
     *test harness* connects correctly. None of them reads the file a
     developer actually runs.
 
-    B-243, 2026-08-11: ``backend/.env.example`` shipped the owner as the
+    B-183, 2026-08-11: ``backend/.env.example`` shipped the owner as the
     default value of ``SIGNORA_DATABASE_URL`` for months, with a comment
     asking the reader to override it before starting the API. Every local run
     that did not therefore bypassed RLS, and every Playwright journey ever
