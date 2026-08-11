@@ -1497,7 +1497,7 @@ updated      = 2026-08-10
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = []
+backlog = ["TASK-1405", "TASK-1462", "TASK-1463", "TASK-1465", "TASK-1466", "TASK-1467", "TASK-1468", "TASK-202", "TASK-440"]
 # ⚠️ TWO ADDITIONS, 2026-08-10 — both were READY and in NO queue, reported by QE
 #    and confirmed here by `state-check` rather than taken on trust.
 #
@@ -1838,12 +1838,6 @@ backlog = []
 # with its blocker named below. ⛔ Nothing here is invented scope: every row
 # already existed and its owner was joined from modules.toml (D-135).
 
-
-[[blocked]]
-task    = "TASK-1405"
-blocker = ["C-268"]
-owner   = "Product owner"
-note    = "Home — the ROUTE half only; the composition resolver is DELIVERED and on your branch (four compositions, +8 tests). An architectural blocker under §20e, raised by this lane and correctly stated: creating /w/:workspace/home turns reachability.test red because Home has no permitted entrance, and three exits were tried and barred. ⚡ TASK-1439 is the entrance — this lane claimed it on the same poll and said so on the row, which is why the two are not separable in the order the queue already had them. Nothing for Product Office to prepare here: the blocker is a decision about where the entrance comes from, and TASK-1439 landing may discharge it without a ruling. Left named rather than assumed either way"
 
 [[blocked]]
 task    = "TASK-1432"
