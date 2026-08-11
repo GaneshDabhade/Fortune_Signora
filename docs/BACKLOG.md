@@ -1369,7 +1369,7 @@
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🟣 **IMPLEMENTED INCORRECTLY — a loading model, not a missing control** |
 | **Epic** | **Common Platform Foundation** — App Shell §16 |
 | **Module** | **`product_surface` — Lane A** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-11** |
+| **Status** | 🔵 **`CLAIMED` — Lane A, 2026-08-11**, by the Task Claim Protocol ([§20e](../CLAUDE.md)). ⚡ **The top Lane A row in `READY`, taken from the top.** ✅ **It pairs with [TASK-1463](#task-1463) rather than repeating it**: that row built §16's **third** tier — the in-place refresh — **and deliberately did not touch tiers one and two**, because its own instruction was *"do not build tiers one and two of §16 without measuring them first."* ⚡ **This row is that measurement and whatever it turns out to require.** *(was ✅ **`READY` — Lane C, 2026-08-11**)* |
 | **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/) §16 *Global loading*** — ⛔ **read it; this row does not restate it** |
 | 🔴 **The requirement, verbatim** | 📁 ***"Cold boot paints the shell chrome immediately and skeletons only the content region — the frame is never blank, because the frame is the same on every route."*** |
 | ⛔ **What happens instead** | 📁 **`workspace-switcher.tsx`:185 — `if (isLoading) return <div className="mx-3 mt-3 h-[38px] animate-pulse rounded-md bg-surface-sunken" />`.** ⚡ **The frame skeletonises ITSELF.** 📁 **:188 — `if (activeWorkspace === null) return null`, so it vanishes entirely rather than painting** |
