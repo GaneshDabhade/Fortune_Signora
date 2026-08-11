@@ -10875,3 +10875,74 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 ✅ **Nothing changes in the code.** The top bar keeps the `banner` landmark, the banner strip stays a plain region, and the test asserting exactly one `<header>` is now asserting the design's structure rather than a compromise.
 
 ⚠️ **The lesson is the one [C-277](#c-277) already taught and this lane did not carry forward**: 📁 [D-228](DECISION_REGISTER.md) §6 — ***do not manufacture a product decision the artifacts already answer.*** **Read the whole design section before raising a structural question about it.**
+
+---
+
+## C-285 · Three designs publish a shortcut table and three chords carry two meanings
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, implementing [TASK-1445](BACKLOG.md) |
+| **Owner** | **Product owner** — ⛔ **it is a product decision about what a key means, and no lane may pick between two finalized designs** |
+| **Status** | ⚠️ **`OPEN`** |
+| **Blocks** | ⛔ **Nothing today.** ✅ **The keyboard map shipped** by following App Shell and saying so |
+| **Becomes blocking when** | 🔴 **Anybody binds `E`, `⏎`, `⌘⏎` or `⌘⇧K`** — the four chords in dispute. **At that moment a lane must choose, and choosing silently is how one design quietly wins** |
+
+### 📁 The disagreement, measured
+
+**Three snapshot documents declare `shortcutGroups`:** `Fortune Signora App Shell.dc.html` §15 · `Fortune Signora Help Center.dc.html` · `Fortune Signora User Profile.dc.html`.
+
+| The command | App Shell | Help Center | User Profile |
+|---|---|---|---|
+| **Ask Signora** | `⌘⇧A` | — | ⛔ **`⌘⏎`** |
+| **Switch workspace** | `⌘⇧W` | — | ⛔ **`⌘⇧K`** |
+| **Edit cell** | `E` | ⛔ **`⏎`** | ⛔ **`⏎`** |
+| **Open record** | `↵` | — | — |
+| **Open in panel** | `⌘↵` | — | — |
+
+🔴 **Two of the three are not a naming difference — they are the SAME CHORD meaning two different things.**
+
+- ⛔ **`⌘⏎` is *Ask Signora* in User Profile and *Open in panel* in App Shell.**
+- ⛔ **`⏎` is *Edit cell* in Help Center and User Profile, and *Open record* in App Shell.**
+
+⚠️ **A keyboard map cannot render one chord twice with different meanings**, so this is an interaction-design conflict rather than a documentation tidy-up. ⚡ **And a customer who learns `⏎` on one screen and presses it on another gets the other behaviour** — **which is worse than an unbound key, because it does something.**
+
+### ✅ What this lane did, and what it deliberately did not
+
+📁 **[`lib/shell/shortcuts.ts`](../frontend/lib/shell/shortcuts.ts) follows App Shell**, on a stated reading: **the shortcut reference is a shell surface and App Shell is the one design whose subject is the shell.** ⛔ **That is a reading, not a ruling**, and it is recorded in the file rather than left to be inferred.
+
+⛔ **`E` and `⏎` are both registered `unbound`** — **nothing was bound to either**, so no code encodes an answer to this question. ✅ **The conflict is visible and costs nothing to resolve later.**
+
+### The question
+
+> **Which table is authoritative where they disagree — App Shell for every surface, or the screen's own design for that screen?** ⚠️ **And if the second, what does a global reference print for a chord whose meaning depends on where you are standing?**
+
+---
+
+## C-286 · The shortcut reference is three columns in the design and the shared `Dialog` is 448 pixels
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, implementing [TASK-1445](BACKLOG.md) |
+| **Owner** | **Product owner** — 🔴 **`components/ui` is the frontend foundation**, ⛔ **🔴 in the Change Budget** |
+| **Status** | ⚠️ **`OPEN`** |
+| **Blocks** | ⛔ **Nothing.** ✅ **The reference ships at one column** and every one of the design's eighteen shortcuts is in it, in the design's three groups, in the design's order |
+| **Severity** | 🟢 **Presentation only** — ⚡ **no content is missing, dropped or reworded** |
+
+### 📁 The constraint, measured
+
+⛔ **[`components/ui/dialog.tsx`](../frontend/components/ui/dialog.tsx) is `max-w-md` — 448px — and ten callers read that width.** 📁 **App Shell §15 draws the shortcut card as `grid-template-columns:repeat(3,1fr)`.** ⚡ **Three columns inside 448px gives roughly 150px per column**, which does not hold *"Toggle utility panel"* beside its chord.
+
+### ⛔ Why this lane did not simply widen it
+
+📁 **[§20c](../CLAUDE.md)**: ***"Compose pages from `components/ui`, never restyle a shared component for one page's benefit. A component bent to suit one caller is slightly wrong for every other."*** ⚠️ **Adding a `wide` variant is the same change wearing a nicer coat** unless somebody decides the library should have one.
+
+### ⚡ Why it may not be a defect at all
+
+📁 **§15 is a SPEC PAGE section, not a modal.** **The design says *"`?` opens the reference from anywhere"* and never says what shape the overlay is.** ✅ **One column is arguably better on a phone**, and the content is identical either way — **so this may be a case where the design's layout describes the specification rather than the product.**
+
+### The question
+
+> ⓐ **`Dialog` gains a documented width variant** — a foundation change, and every future wide overlay uses it · ⓑ **one column is correct for an overlay** and the design's three columns are the spec page's own layout · ⓒ **the reference stops being a modal** and becomes a route or a utility-panel tab, where width is free.
+
+⛔ **This lane does not pick.** ⚡ **ⓑ costs nothing and is what ships today**, so the register is not holding any work — **but a foundation question answered by silence is answered badly.**

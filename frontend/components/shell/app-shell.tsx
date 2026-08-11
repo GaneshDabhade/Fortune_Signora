@@ -7,6 +7,7 @@ import { RegionBoundary } from '@/components/ui/region-boundary';
 import { MobileNavigation, Navigation } from '@/components/shell/navigation';
 import { Copilot } from '@/components/shell/copilot';
 import { ShellPalette } from '@/components/shell/shell-palette';
+import { ShortcutsReference } from '@/components/shell/shortcuts-reference';
 import { RouteAnnouncer } from '@/components/shell/route-announcer';
 import { SKIP_TARGETS, SkipLinks } from '@/components/shell/skip-links';
 import { TopBar } from '@/components/shell/top-bar';
@@ -232,6 +233,12 @@ export function AppShell({
           📁 the design refuses a corner bubble by name, *"a persistent circle
           in the corner is a consumer pattern and it covers data."* */}
       <Copilot />
+      {/* 📁 **[TASK-1445](../../../docs/BACKLOG.md) — *"`?` opens the reference
+          from anywhere."*** ⚡ **Mounted at the shell for the literal reason the
+          design gives**: *anywhere* is a property of the shell, and a reference
+          owned by one screen is reachable from one screen. ⛔ **It renders
+          nothing until the key is pressed.** */}
+      <ShortcutsReference />
 
       {/* **Outside the column, because it is fixed to the viewport.** Its own
           boundary for the same reason the sidebar has one: a failure here must

@@ -1378,3 +1378,54 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 📁 **Both designs write the same sentence.** **Reports**: *"edited sentences are preserved through regeneration and marked."* **AI Research**: *"Editable · your edits are preserved through regeneration."* ✅ **So the merge moved to [`lib/research/edits.ts`](../../frontend/lib/research/edits.ts)** — the discipline [455 §4](455-context-definitions-r02-r03.md) states for a port and [`lib/views/declaration.ts`](../../frontend/lib/views/declaration.ts) already followed: *"a contract proven by one real caller before six adopt it."*
 
 ⚡ **The extraction is behaviour-preserving and its own tests prove it**: `report-narrative.test.ts` passes **unchanged** against the moved law.
+
+## TASK-1445 · The keyboard map — the registry is the map, and a test keeps it true *(2026-08-11)*
+
+🔴 **The design publishes eighteen shortcuts and five were bound.** 📁 `Fortune Signora App Shell.dc.html` §15 declares `shortcutGroups` — *Surfaces · Navigate · Work*, six each — and 📁 the measurement is [`lib/shell/shortcuts.ts`](../../frontend/lib/shell/shortcuts.ts), taken against every `addEventListener('keydown'` in `app/`, `components/` and `lib/` before any screen was written.
+
+⛔ **A reference is the one screen where reading it is free and disproving it costs a keypress.** ⚠️ **Rendering the design's list would have told every customer that thirteen things work**, and **the failure mode of a dead key is SILENCE** — nothing to read, nothing to retry, nothing to report. 🔴 **A person who presses a published shortcut and gets nothing concludes the PRODUCT is broken, not that the shortcut is unbuilt.**
+
+### ✅ Nine of eighteen, and the number is counted rather than written
+
+| | |
+|---|---|
+| ✅ **`live` — 5** | `⌘K` palette · `⌘⇧A` Ask Signora · `⌘⇧W` switch workspace · `⌘.` utility panel · `[` collapse rail. **Plus `?` itself, which this row built** |
+| ⚠️ **`partial` — 3** | `J / K` steps through a sequence on an account · `↵` and `⌘↵` work inside the palette. ⛔ **Never collapsed into `absent`** — the key works, and saying otherwise is as wrong as claiming it works everywhere |
+| ⛔ **`unbound` — 9** | `⌘⇧N` · `?`-adjacent `/` · the whole `G` family · `⌘[ / ⌘]` · `X / ⇧X` · `E` |
+
+⚡ **[`coverage()`](../../frontend/lib/shell/shortcuts.ts) derives the sentence.** ⛔ **A hand-typed tally goes stale on the next binding**, and a reference whose own summary is wrong is [§2](../../CLAUDE.md)'s defect — the product asserting something untrue of itself.
+
+### 🔴 The guard runs in both directions, and the second one is why this is not a snapshot
+
+📁 [`command-palette.tsx`](../../frontend/components/ui/command-palette.tsx) already states the rule for its own four keys — ***"a legend that can drift from the behaviour it documents is worse than no legend — it is read as a contract."*** ⚡ **It enforces that by construction: one table feeds both the hint and the handler.** ⚠️ **A product-wide map cannot** — the handlers live in nine files.
+
+✅ **So [`shortcut-registry.test.ts`](../../frontend/tests/unit/shortcut-registry.test.ts) cross-references source and registry:**
+
+| | |
+|---|---|
+| **Direction 1** | A `live` entry whose file binds nothing fails |
+| 🔴 **Direction 2** | **A file that binds a global key without appearing in the registry fails** |
+
+⛔ **Direction 2 is the one that keeps the file true, and it is the direction a registry rots in.** **Without it the ordinary failure is invisible**: somebody implements `G H`, ships it, and the reference goes on saying `Not bound` — **the register telling a customer a working feature does not exist.** ⚠️ **This lane shipped that exact shape once**, at [B-3180](../BUGS.md): a defect fixed in code and left reading `OPEN`.
+
+⚡ **Both fire-tested.** Adding a `window.addEventListener('keydown'` to an unregistered file turns direction 2 red; pointing a `live` entry at a keyless file turns direction 1 red.
+
+### ⚠️ The scan found its own false positive on the first run
+
+⛔ **[`shortcuts.ts`](../../frontend/lib/shell/shortcuts.ts) DOCUMENTS that it was measured against *"every `addEventListener('keydown'`"*, and the scan matched the sentence describing the search** — **a file reported as binding a key because it explained the rule.** ✅ **The stripper is string-aware**, and 📁 [B-162](../BUGS.md)'s lesson is its shape: *"narrowing a guard is only safe if you measure what STOPS firing."* ⚡ **Four cases, both directions**: a comment that mentions a binding, a real binding beside such a comment, `//` inside a string and a template literal, and an escaped quote.
+
+### ⛔ Two things deliberately not built
+
+🔴 **The palette does not list shortcuts beside its commands**, though 📁 the design asks for it — *"every shortcut is listed beside its command in the palette, which is how users discover them."* ⚡ **None of the palette's commands has a bound shortcut**, so the code would be a branch nothing can reach: **[§2](../../CLAUDE.md)'s decorative class, added deliberately.** ✅ **It becomes buildable the moment the `G` family lands.**
+
+⛔ **The `G` family is one piece of work, not four.** 📁 The design calls them *"Vim-style sequences"* — **a two-key prefix state machine nothing in this product has** — and binding it for one destination would leave three published chords still dead.
+
+### 📁 What the customer's own eyes changed
+
+⚠️ **The first version wrote *"Not bound — pressing it does nothing"* on all nine rows**, and 📁 `coverage()` already says that once, at the top, for all of them. ⛔ **Nine copies of an explanation is how a reference stops being read** — **it buried the five that work.** ✅ **Shortened to `Not bound`, still TEXT** — the accessibility reason is unchanged, because **dimming alone puts the whole meaning in contrast and a person who cannot see it reads nine dead keys as live** ([§20c](../../CLAUDE.md): accessibility is a defect class, never an enhancement).
+
+### 🟠 Two findings raised rather than settled
+
+⚠️ **[C-285](../LANE_COORDINATION.md) — three designs publish a shortcut table and they disagree.** 📁 **App Shell, Help Center and User Profile each declare `shortcutGroups`**, and **three chords carry two meanings between them**: *Ask Signora* is `⌘⇧A` or `⌘⏎` · *Switch workspace* is `⌘⇧W` or `⌘⇧K` · *Edit cell* is `E` or `⏎`. ⛔ **Two of those are the same chord meaning two different things** — `⌘⏎` is *Open in panel* in App Shell, and `⏎` is *Open record*. ✅ **This file follows App Shell**, because the reference is a shell surface and App Shell is the one design whose subject is the shell — ⛔ **a reading, never a ruling.**
+
+⚠️ **[C-286](../LANE_COORDINATION.md) — the design's card is three columns and the shared `Dialog` is 448px.** 📁 **`components/ui` is 🔴 in the Change Budget** and ten other dialogs read that width, so 📁 [§20c](../../CLAUDE.md)'s *"never restyle a shared component for one page's benefit"* decides it. ✅ **The CONTENT is identical** — the same eighteen, the same three groups, the same order — **and the design specifies a spec-page card rather than the shape of the overlay `?` opens.**
