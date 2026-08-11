@@ -1874,3 +1874,39 @@ return refreshing > 0 && firstLoads === 0;
 ⛔ **The renderer filter could not fail.** ⚡ **`cardsFor` already returns nothing from an empty registry**, so *"no cards render"* asserted somebody else's guarantee and **removing the filter changed nothing.** ✅ **Fixed by testing the SEAM rather than the outcome**: the registry is stubbed with a real contract, and **a registered card with no renderer must be skipped rather than drawn as an empty title.** **Now removing the filter turns it red.**
 
 > 📁 **[§2](../../CLAUDE.md): *a guard that cannot fail is not protection.*** ⚠️ **Found by fire-testing, which is the only thing that finds it** — the test passed, the code was reasonable, and the assertion was measuring the wrong layer.
+
+---
+
+## Two top-bar rules the contract held and nothing called — [TASK-1474](../BACKLOG.md)
+
+### ✅ §07's search focus rule, delivered
+
+📁 ***"Search — 224 × 32… Widens to 320px on focus at ≥1600px."*** ⚡ **Both numbers and the threshold come from `SEARCH_WIDTH`** — ⛔ **not restated in the markup**, which is the whole reason the contract exists.
+
+⚠️ **`onFocus`/`onBlur` rather than `:focus-within`, and that is a trade rather than a preference.** ⛔ **A CSS pseudo-class cannot read `SEARCH_WIDTH`**, so the alternative was two Tailwind arbitrary values restating `224` and `320` in the markup — **the design's numbers in two places, which is how a contract and a screen start disagreeing.** ✅ **The band comes from `bandFor`**, the repository's single answer to *which band is this*.
+
+**⛔ Only the width animates.** `transition-[width]`, never `transition-all`: **a focus ring that fades in behind the growth is the one part of a focus state that must be immediate** for somebody navigating by keyboard.
+
+> 🔴 **Two-sided at 1599 and 1600, in a browser.** ⚡ **A one-sided check passes on a search that is always 320px**, and `>= 1600` versus `> 1600` differ by exactly one test. **Fire-tested both ways: dropping the band condition turns one red, dropping the focus condition turns two.**
+
+### ⛔ `statusLabelVisible` stays uncalled, and the reason is stronger than "no source"
+
+📁 **The row instructed: *"check whether `OfflineStatus` already carries a tone before opening a coordination item."*** ✅ **Checked.**
+
+⚡ **`OfflineStatus`'s first line is `if (!offline && queued.length === 0) return null`** — ⛔ **when the system is healthy it renders NOTHING.** **`statusLabelVisible`'s entire content is *when the healthy pill hides its label*, and there is no healthy pill.**
+
+⚠️ **And "implement against the tone the component already renders" is not available either**: it carries a binary, and **both states it can render are non-healthy, for which the rule returns `true` at every width** — 📁 **a call whose result cannot change the output is [§2](../../CLAUDE.md)'s Decorative Logic.**
+
+✅ **[C-296](../LANE_COORDINATION.md) records it**, and the point is not the function: **a shipped, correct, tested contract has been waiting on a source since it was written**, which is a better argument for scheduling [C-275](../LANE_COORDINATION.md) than the original absence was.
+
+> ⚡ **The rule itself needs no rewriting when the source arrives.** 📁 It already carries the design's asymmetry exactly — *"a healthy system may go quiet on a narrow screen; a degraded one may not"* — **so the work is the source and the pill, never the rule.**
+
+### 🔴 Three unreachable mechanisms in two days
+
+| Slice | What had no caller |
+|---|---|
+| [TASK-1460](../BACKLOG.md) | the column primitives |
+| [TASK-1405](../BACKLOG.md) | `resolveComposition`, and `cardsFor` behind it |
+| **TASK-1474** | **`SEARCH_WIDTH`'s focus rule** — ✅ **now called**; **`statusLabelVisible`** — ⛔ **cannot be** |
+
+⚠️ **`library-reachability` catches this for `components/ui` and catches nothing in `lib/`.** ⚡ **All three were in `lib/`**, and each was found by a row that happened to read the file rather than by a gate.

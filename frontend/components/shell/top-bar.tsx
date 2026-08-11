@@ -2,7 +2,7 @@
 
 import { HelpCircle, Menu } from 'lucide-react';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { AccountSearch } from '@/components/intelligence/account-search';
 import { AccountMenu } from '@/components/shell/account-menu';
@@ -10,6 +10,7 @@ import { Breadcrumb, OfflineStatus } from '@/components/ui';
 import { RegionBoundary } from '@/components/ui/region-boundary';
 import { cn } from '@/lib/design/cn';
 import type { Crumb } from '@/lib/shell/breadcrumb';
+import { bandFor } from '@/lib/shell/rail';
 import { SEARCH_WIDTH, SLOT_SPEC } from '@/lib/shell/top-bar';
 import type { WorkspaceRole } from '@/lib/state/permissions';
 
@@ -99,6 +100,40 @@ export function TopBar({
   onOpenNavigation,
   navigationOpen = false,
 }: TopBarProps) {
+  /**
+   * 🔴 **§07: *"Search … widens to 320px on focus at ≥1600px."*** ⚡ **Two
+   * conditions, and both are needed** — 📁 the design widens the field only on
+   * the band that has room for it, **so a laptop focusing the search must NOT
+   * grow** and take 96px from the breadcrumb beside it.
+   *
+   * ⚠️ **`focus` and `blur` rather than `:focus-within`** — ⛔ **the width comes
+   * from [`SEARCH_WIDTH`](../../lib/shell/top-bar.ts) and a CSS pseudo-class
+   * cannot read it.** ✅ **The alternative was two Tailwind arbitrary values
+   * restating `224` and `320` in the markup**, which is exactly what the
+   * contract exists to prevent and what this row was told not to do.
+   */
+  const [searchFocused, setSearchFocused] = useState(false);
+  /**
+   * ⚡ **Reused, never re-derived** — 📁 [`bandFor`](../../lib/shell/rail.ts) is
+   * the repository's single answer to *which band is this*, and
+   * `SEARCH_WIDTH.focusWidensAbove` is the design's own threshold rather than a
+   * literal typed here. ⛔ **A second boundary would be a second answer**
+   * ([§2](../../../CLAUDE.md)).
+   *
+   * ⚠️ **Starts at the reference band and corrects on mount.** **The server
+   * cannot know the viewport**, so the first paint is the design's reference
+   * layout — never a guess that a customer sees jump.
+   */
+  const [viewportWidth, setViewportWidth] = useState<number>(SEARCH_WIDTH.focusWidensAbove);
+  useEffect(() => {
+    const measure = () => setViewportWidth(window.innerWidth);
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  const widened = searchFocused && bandFor(viewportWidth) === 'desktop';
+
   return (
     <header className="flex h-topbar shrink-0 items-center gap-2 border-b border-border bg-surface px-4">
       {/* 📁 **The sheet trigger** — [TASK-1461](../../../docs/BACKLOG.md).
@@ -169,12 +204,27 @@ export function TopBar({
           [TASK-1444](../../../docs/BACKLOG.md), App Shell `landmarks`. ⛔ **The
           slot published no landmark at all**, so a screen-reader user could not
           jump to search the way they can jump to navigation. */}
+      {/* 🔴 **§07's focus rule, which the contract has always held and nothing
+          called** — [TASK-1474](../../../docs/BACKLOG.md). 📁 *"Search — opens
+          the palette on click or ⌘K. **Widens to 320px on focus at ≥1600px**."*
+
+          ⚡ **Both numbers and the threshold come from `SEARCH_WIDTH`** — ⛔ **not
+          restated here**, which is the whole reason the contract exists and the
+          row's explicit instruction. ⚠️ **`transition-[width]` and not
+          `transition-all`**: only the width may animate, so a focus ring
+          appears at once rather than fading in behind the growth. */}
       <div
         data-slot="search"
         role="search"
         aria-label="Search Fortune Signora"
-        style={{ width: SEARCH_WIDTH.rest, height: SLOT_SPEC.search.height }}
-        className="hidden shrink-0 phone:block"
+        data-widened={widened ? 'true' : undefined}
+        onFocus={() => setSearchFocused(true)}
+        onBlur={() => setSearchFocused(false)}
+        style={{
+          width: widened ? SEARCH_WIDTH.focused : SEARCH_WIDTH.rest,
+          height: SLOT_SPEC.search.height,
+        }}
+        className="hidden shrink-0 transition-[width] duration-150 motion-reduce:transition-none phone:block"
       >
         <RegionBoundary subject="account search">
           <AccountSearch />

@@ -11398,6 +11398,58 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ---
 
+## C-296 · `statusLabelVisible` cannot be called, because the pill whose label it hides is never rendered
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, implementing [TASK-1474](BACKLOG.md) |
+| **Owner** | **Product owner**, via **Lane C** — ⛔ **it needs a source for system status, which is a product decision about what Signora reports on itself** |
+| **Status** | 🟡 **`OPEN` — NOT BLOCKING.** ✅ **The row's other half is DELIVERED.** ⚡ **This half is refused with a measurement rather than deferred with a shrug** |
+| **Blocks** | ⛔ **Nothing.** ⚠️ **It duplicates half of [C-275](#c-275) deliberately** — that item asks for the status SOURCE; this one records that a shipped contract cannot be wired without it |
+
+### 📁 What the row asked for
+
+> **TASK-1474**: *"`statusLabelVisible(tone, width) => tone === 'healthy' ? width >= 1280 : true` … `statusLabelVisible` is called by nothing — the component says so at `:201`. **The real work is the status rule's source**, and the component's note is right that it needs one. **If none exists, implement against the tone the component already renders and say so — check whether `OfflineStatus` already carries a tone before opening a coordination item.**"*
+
+✅ **Checked, exactly as instructed.** ⛔ **And the answer is stronger than *"no tone"*.**
+
+### 🔴 The measurement
+
+📁 **[`offline-status.tsx`](../frontend/components/ui/offline-status.tsx), first line of its render:**
+
+```tsx
+if (!offline && queued.length === 0) return null;
+```
+
+⚡ **When the system is healthy, the component renders NOTHING** — ⛔ **not a green pill with a hidden label, not a dot: no element at all.**
+
+**⇒ `statusLabelVisible`'s entire content is *when the healthy pill hides its label*, and there is no healthy pill.** ⚠️ **Calling it would be asking a question about an element that does not exist.**
+
+### ⛔ Implementing "against the tone the component already renders" is not available either
+
+⚡ **`OfflineStatus` carries a binary `offline`, not a tone**, and the two states it *does* render are:
+
+| What renders | The design's tone |
+|---|---|
+| *"You are offline"* | **not healthy** — and `statusLabelVisible` returns `true` for every non-healthy tone at every width |
+| *"Sending 3 edits"* | **not healthy**, same |
+
+🔴 **So for both states the component can produce, the rule's answer is `true` — always show the label — which is what it already does.** ⛔ **A call whose result cannot change the output is [§2](../CLAUDE.md)'s Decorative Logic**, and adding one to satisfy a row would be the exact defect this repository names most often.
+
+### ⚠️ The previous lane reached the same conclusion and wrote it in the code
+
+📁 **[`top-bar.tsx`](../frontend/components/shell/top-bar.tsx), slot 3, already says:**
+
+> *"`OfflineStatus` fills this slot and does NOT call `statusLabelVisible` — read, not assumed. And it is correct not to: the helper's whole content is what the GREEN tone does, and `OfflineStatus` never renders a green tone… **the design's healthy pill is genuinely absent, and nothing publishes the state it would show.** The design lists five subsystems — Application, CRM sync, Scoring service, Conversation ingest, Exports — **and none of them is published by any module.** Raised as [C-275](#c-275); `statusLabelVisible` stays uncalled **until there is a source, rather than gaining a caller that invents one**."*
+
+⚡ **That analysis is unchanged and this lane re-measured rather than inheriting it**: `git grep` finds no subsystem status endpoint, and `lib/api/types.ts` publishes no health tone.
+
+### ✅ What would make it buildable, and it is one decision rather than one function
+
+⛔ **Not a caller.** ⚡ **A source**: something that publishes whether Signora's own subsystems are healthy. 📁 **[C-275](#c-275) already holds that request**, and this row is the evidence that a shipped, correct, tested contract has been waiting on it — **which is a better argument for scheduling it than the original absence was.**
+
+⚠️ **And when it arrives, the rule needs no rewriting**: `statusLabelVisible` already carries the design's asymmetry exactly — *"a healthy system may go quiet on a narrow screen; a degraded one may not"* — **so the work is the source and the pill, never the rule.**
+
 ## C-295 · Home is now the design's composition, and the composition is empty because no module has shipped a card
 
 | | |
