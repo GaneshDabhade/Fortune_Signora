@@ -1216,7 +1216,7 @@
 | **Epic** | **E4 · Home composition** — **[workflow 29](coordination/workflows.toml)**, `kind = platform` |
 | ⚡ **Why it exists** | 📁 **The spec: *"Home is a slot, not a screen… one route, four compositions."*** 🔴 **And it settles a question this office got wrong in [D-192](DECISION_REGISTER.md): *"the Executive Dashboard already built IS THE EXECUTIVE COMPOSITION of Home"*** — ⛔ **not a separate screen it leads to** |
 | **Module** | **`product_surface`** — ⛔ **presentational routing, never authorization** ([§20c](../CLAUDE.md)) |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-10, by the stale-blocker sweep.** ⚡ **[C-268](LANE_COORDINATION.md)'s premise is DISCHARGED and was discharged by two rows that shipped after it was written.** 📁 **C-268 said `/w/:workspace/home` *"has no permitted entrance"* — `reachability.test.tsx`'s *"No entrance at all"* would go 0 → 1.** ✅ **[TASK-1439](#task-1439) put `Home` in the rail (`navigation.tsx`:116, `href: '/w/[workspace]/home'`) and [TASK-1438](#task-1438) built the route. Both are `PROMOTED` on `main`.** ⛔ **The entrance C-268 said did not exist is the first entry of the rail.** ⚠️ **The block was correct on 2026-08-09 and stale by 2026-08-10** — and nothing re-asks the question, because the state that would move it is QE's. ⚡ **The resolver was already delivered**, so this is the route half only. *(Was:* ⏸️ **`BLOCKED` (the route) behind C-268** *)* |
+| **Status** | 🔵 **`CLAIMED` — Lane A, 2026-08-11**, by the Task Claim Protocol ([§20e](../CLAUDE.md)). ⚡ **The TOP Lane A row in the `READY` section**, taken from the top as §20e requires. ⚠️ **[TASK-1473](#task-1473) was relayed to this lane as *"P0 — implementation-ready"* and its own row reads `BLOCKED — NOT `READY``** — 📁 **the backlog wins on state** (§20e step 3b), **so it was not claimed and the disagreement is [C-294](LANE_COORDINATION.md).** ✅ **The resolver half of this row was DELIVERED by this lane on 2026-08-09 and is on `main`**; ⛔ **this claim is the ROUTE half only**, which is what [C-268](LANE_COORDINATION.md)'s discharge released. *(was ✅ **`READY` — Lane C, 2026-08-10, by the stale-blocker sweep**; before that ⏸️ `BLOCKED` behind C-268)* |
 | **Design authority** | ⛔ **`docs/design-snapshot/screens/Fortune Signora Authenticated Entry.dc.html`** ([D-138](DECISION_REGISTER.md)). **No checklist, no restatement** ([D-137](DECISION_REGISTER.md)) |
 | ⚡ **Delivers** | **The single route `/w/:workspace/home`** · **a composition resolver** · ⛔ **and the guarantee the App Shell depends on: *a composition always resolves*, so Home ALWAYS renders** |
 | ✅ **Backend reuse — measured, not assumed** | 🔴 **The Executive Dashboard is designed and NOT built** ([workflow 19](coordination/workflows.toml)). ⚡ **This row delivers the SLOT and one honest empty composition; the executive composition is workflow 19's content moved into it, not rebuilt** |
@@ -1381,6 +1381,42 @@
 | **Playwright coverage** | ⚡ **Assertable today at 1280 with no responsive matrix**: on first paint of an authenticated route, `nav[aria-label="Primary"]`, the search landmark and all five top-bar slots are present **before** the content region resolves |
 | **Definition of Done** | **A cold boot shows the complete frame and an empty content region** · **certified · `main`** |
 | ⚠️ **Runtime status** | ✅ **RUNTIME EVIDENCE OBTAINED** — the product owner's screenshot of `localhost:3300`, corroborated in source at `workspace-switcher.tsx`:185–188 |
+
+### TASK-1473 · ⛔ BLOCKED ON A DESIGN RULING — the rail at 1024–1279, and whether a band overrides a person
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN AMBIGUITY — not a defect.** ⛔ **Reclassified from *"design non-compliance"* 2026-08-11** |
+| **Epic** | **Common Platform Foundation** — App Shell |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ⛔ **`BLOCKED` — awaiting a product/design ruling. NOT `READY`.** 🔴 **This row previously said `READY` and asserted the implementation was wrong. QE challenged the premise and QE was right** |
+| 🔴 **What this office got wrong, in its own words** | ⛔ **The row read *"the design gives it 56"* and treated `deviceClassFor`'s persisted preference as an oversight.** ⚡ **The design names that persistence explicitly and twice** — 📁 **Rail spec: *"Collapse state persists per user."*** 📁 **Keyboard: *"`[` toggles collapse; the state persists per user, PER DEVICE CLASS."*** ✅ **So `collapseKey(userId, device)` implements a stated design requirement rather than inventing one.** 🔴 **This office inferred a defect and would have had Lane A build to that inference — the exact failure it flags in others** |
+| ⚖️ **The genuine ambiguity, and it is small** | 📁 **Small laptop 1024–1279: *"Rail collapses to 56px icons with tooltips."*** 📁 **Rail component: size *"232px / 56px"*, *"Collapse state persists per user."*** ⚠️ **Two readings, both defensible: ① the BAND collapses the rail, and persistence governs only ≥1280 · ② *"collapses to 56px"* names the geometry OF the collapsed state, and the user's per-device preference decides when it applies.** ⛔ **The design states neither, and nothing elsewhere in it resolves the conflict** |
+| ⚡ **Why reading ② is not obviously wrong** | 📁 **The band lines elsewhere DO read as state claims** — *"both open"* at Desktop. ⛔ **But `232px / 56px` is given as the Rail's SIZE PAIR in the component spec, which is geometry rather than trigger** — ⚡ **and *"per device class"* would be doing no work at all under reading ①, because a band-forced state needs no stored preference** |
+| ⛔ **What must NOT happen** | ⛔ **Lane A must not implement either reading.** ⛔ **This office must not pick one and call it a decomposition.** ⚡ **The decision is one sentence and belongs to the design authority** ([§21](../CLAUDE.md): implement the design, never invent it) |
+| ✅ **What is already known and survives either ruling** | 📁 **`RAIL_WIDTH = { expanded: 232, collapsed: 56 }` is correct.** 📁 **The `<1024` sheet is correct.** 📁 **`bandFor` exists if reading ① wins.** ⚡ **Under reading ② there is NO WORK AT ALL and this row closes** |
+| **Change Budget** | 🟢 **`lib/shell/rail.ts`** · 🟢 **`components/shell/app-shell.tsx`** · 🟢 their tests — ⛔ **only once the ruling lands** |
+| **Playwright coverage** | ⚡ **Written after the ruling, and two-sided either way** — under ① the assertion must fail at 232px@1279 *and* at 56px@1280 |
+| ⚠️ **Runtime status** | ⛔ **NOT VERIFIED** — no runtime was reachable |
+
+### TASK-1474 · Two top-bar rules the design states, the contract implements, and nothing calls
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **DESIGN NON-COMPLIANCE — [B-428](BUGS.md) criterion B, rows 6 and 7** |
+| **Epic** | **Common Platform Foundation** — App Shell |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-11.** ⚡ **One row for two rules because they are one file, one band vocabulary and one test surface** — ⛔ **splitting them would buy nothing and cost a second rebase of `top-bar.tsx`** |
+| **Design authority** | 📁 **App Shell `topBarSpecs`: *"Search … Widens to 320px on focus at ≥1600px"*** · 📁 ***"System status … Green pill hides its label at <1280px; amber and red always show it"*** |
+| ✅ **The cheap half is already done, correctly** | 📁 **`lib/shell/top-bar.ts:70` — `SEARCH_WIDTH = { rest: 224, focused: 320, focusWidensAbove: 1600 }`, the design's three numbers exactly.** 📁 **`:81` — `statusLabelVisible(tone, width) => tone === 'healthy' ? width >= 1280 : true`, the design's asymmetry exactly.** ⛔ **Neither is a guess and neither is to be rewritten** |
+| 🔴 **The gap** | ⛔ **`top-bar.tsx:176` applies `SEARCH_WIDTH.rest` only — `focused` and `focusWidensAbove` are referenced by nothing in `components/` or `app/`.** ⛔ **`statusLabelVisible` is called by nothing, and `top-bar.tsx:201` says so: *"stays uncalled until there is a source."*** ⚡ **These are UNBUILT, not untested** — 🔴 **which is why [B-428](BUGS.md) does not ask QE to assert them yet** |
+| ⚠️ **The status rule needs a source, and that is the real work** | 📁 **The component's own note is correct: a tone must come from somewhere before an asymmetry by tone means anything.** ⚠️ **If no health source exists, IMPLEMENT THE RULE AGAINST THE TONE THE COMPONENT ALREADY RENDERS and say so** — ⛔ **do not invent a health check, and do not open a coordination item for one before checking whether `OfflineStatus` already carries a tone** |
+| ⛔ **What it must NOT do** | ⛔ **Do not change either constant.** ⛔ **Do not add a breakpoint vocabulary** — `tailwind.config.ts` already names the four bands. ⛔ **Do not make search widen below 1600** — 📁 the design scopes it to Desktop alone |
+| **Change Budget** | 🟢 **`components/shell/top-bar.tsx`** · 🟢 its tests · 🟠 **`lib/shell/top-bar.ts` only if a signature must change** |
+| **Playwright coverage** | 🔴 **Search: width is 224 unfocused at 1600, 320 focused at 1600, and STILL 224 focused at 1599.** ⛔ **The third is the one that catches an off-by-one.** 🔴 **Status: a healthy pill has no label at 1279 and has one at 1280; an amber or red pill has one at BOTH** |
+| ♿ **Accessibility** | 🔴 **A hidden label is visual only** — ⛔ **the pill keeps its accessible name at every width.** ⚡ **A green pill that goes silent to a screen reader below 1280 is a regression the design does not ask for** |
+| **Definition of Done** | **Both rules honoured at their stated boundaries · all six Playwright assertions above · accessible name preserved · certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **SOURCE VERIFIED** — grep across `components/` and `app/`; not observed rendered |
 
 ### TASK-1472 · ⛔ WITHDRAWN — a duplicate of [TASK-1464](#task-1464--migrate-the-nine-screens-off-max-w-3xl-onto-the-designs-grid)
 
@@ -2186,6 +2222,7 @@
 
 | | |
 |---|---|
+| ⚡ **Responsive geometry — added by Lane C 2026-08-11, [B-428](BUGS.md) criterion B** | 📁 **The design gives the strip three band-dependent behaviours and this row owns all three, because the surface is this row's**: **① 1024–1279 — *"Filter strip stays; chips scroll horizontally."*** **② <1024 — *"Filter strip collapses to one 'Scope' button with a count."*** **③ <1024 — `filterOpacity: .35`.** ⛔ **QE searched all 191 rows and found no other coverage; the one opacity mention elsewhere is [TASK-1463](#task-1463)'s §16 stale-dim at 60%, which is a DIFFERENT requirement and must not be conflated.** ✅ **No separate row was created — a filter behaviour with no filter strip is unbuildable, and a second row would have been the [TASK-1459](#task-1459--withdrawn--a-duplicate-of-task-1432) mistake a third time** |
 | 🔴 **Why this exists** | ⛔ **Carved out of [TASK-1408](BACKLOG.md) by [D-215](DECISION_REGISTER.md), ruling [C-257](LANE_COORDINATION.md).** ⚡ **Lane A measured the assembled frame against the row's own `Delivers` and found this region unbuildable — correctly** |
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⛔ **MISSING IMPLEMENTATION — and it is the CONSUMER that is missing, not the strip** |
 | **Epic** | **App Shell** — **[workflow 29](coordination/workflows.toml)** |
