@@ -3568,6 +3568,31 @@ def _load_state_check() -> ModuleType:
 
 ⛔ **A IS NOT EVIDENCE FOR B AND MAY NEVER BE OFFERED AS SUCH.** ⚡ **The whole finding is that *"nothing overflows"* and *"it matches the design"* are different claims** — an implementation honouring none of the declared widths passes all 32 of A's assertions.
 
+#### 🖼️ SCREENSHOT RECONCILIATION — product owner, 2026-08-11, three runtime captures
+
+⛔ **RUNTIME NOT VERIFIED BY THIS OFFICE.** 📁 **Ports 3000, 3300 and 3400 were all unreachable at the time of writing**, so every identification below is **source-derived and matched against the capture** — ⚡ **never claimed as observed.**
+
+##### ⛔ Two elements in the captures are NOT defects, and a task for either would have been wrong
+
+| Seen | What it actually is | Evidence |
+|---|---|---|
+| **The `I / A / N` vertical strip at the right edge** | ✅ **THE DESIGN'S OWN 28px UTILITY-PANEL TAB RAIL.** 📁 **The design's `utilityTabs: ['Insights', 'Activity', 'Notes']`, and Small laptop reads *"Utility panel closes to a 28px tab rail."*** ⚡ **`utility-panel.tsx:344` renders `{open ? tab : tab.charAt(0)}` — the initials ARE the closed state** | `utility-panel.tsx:344` · design `breakpoints[]`, `utilityTabs` |
+| **The black circle bottom-left** | ✅ **The Next.js development indicator.** ⛔ **`devIndicators` is unset in `next.config`, so the framework default is on. It is not Signora UI and cannot appear in a production build** | `next.config`, absence of `devIndicators` |
+
+🔴 **Recorded because the instinct — *"clutter on the right edge, remove it"* — would have sent Lane A to delete a finalized design element.** ⚡ **The tab rail is correct; the only open question is whether the BAND or a remembered preference put it there, and the design permits the preference at Laptop (*"Utility panel remembers per-module state"*).**
+
+##### ✅ Everything else in the captures is ALREADY A FILED ROW, and none of it is a regression
+
+| Seen in capture | Row | State |
+|---|---|---|
+| **`Ask Signora` below Settings/Shortcuts/Docs** | **[TASK-1470](BACKLOG.md)** | ✅ **`READY`, never implemented** |
+| **Blank skeleton region under the header** | **[TASK-1471](BACKLOG.md)** | ✅ **`READY`, never implemented** |
+| **Rail present-but-compressed rather than transformed** | **[TASK-1473](BACKLOG.md)** | ✅ **`READY`, created today** |
+
+> 🔴 **So the answer to *"why are these problems still visible?"* is not a regression, a stale build, a missed finding or a test defect. It is that the rows describing them are `READY` and unimplemented.**
+>
+> ⛔ **And six of them — including TASK-1470 and TASK-1471 — are on `lane-c-sync` behind the closed promotion gate, where Lane A cannot see them.** ⚡ **This office's own planning output is held by a gate this office's rejection keeps closed.** 📁 **Stated here because it is the strongest argument in the promotion-gate decision, and it argues for the outcome this office benefits from.**
+
 #### 📐 CRITERION B — THE DESIGN-COMPLIANCE GAP, MEASURED
 
 📁 **Authority: [`Fortune Signora App Shell.dc.html`](../design-snapshot/screens/), `breakpoints[]`. Nothing below is inferred from how a responsive layout normally behaves.**
