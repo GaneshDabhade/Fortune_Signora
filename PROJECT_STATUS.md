@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `5f7f1bf`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `a792be6`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,23 +12,23 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `5f7f1bf`, 2026-08-11.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `a792be6`, 2026-08-11.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`5f7f1bf`** — the certification record, one commit past the certified `563e517` |
-| **Release candidate** | **19 commits** — Lane A's M12.6 wave plus QE's withdrawal of [B-179](docs/BUGS.md). ⚠️ **Returned once on `eslint`**, which `make certify` names in its plan and does not run |
-| **Certification** | ✅ [`563e517846b7`](certification/reports/563e517846b7.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** (17 gates) |
+| **`main`** | **`a792be6`** — the certification record, one commit past the certified `5a9743a` |
+| **Release candidate** | **1 commit, and it is QE's own** — the responsive matrix gains a vertical axis and a real handset viewport, both exposed by Lane A's [B-241](docs/BUGS.md). ⏳ **Neither lane was fast-forwardable**: Lane A 19 ahead / 21 behind, Lane C 5 / 23 |
+| **Certification** | ✅ [`5a9743a73b21`](certification/reports/5a9743a73b21.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** · ✅ **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **0 blocking** |
-| **Customer value this cycle** | ⚡ **Companies exists and has an entrance** — the account list a seller actually works. ⚡ **A locked account says it is locked, and a closed door says which.** ⚡ **Content stops at 1600px instead of every screen inventing its own width**, and **the navigation moves between two positions rather than existing twice** |
-| ⛔ **QE's own defect this cycle** | **One, and it is a product defect QE reported that does not exist.** ⛔ **[B-179](docs/BUGS.md) is WITHDRAWN** — it does not reproduce on the commit it was filed against, warm cache or cold. ⚡ **Lane A challenged it rather than accepting credit for fixing it**, and was right on both counts: the commit QE called a repair changed no production code, and the mechanism QE proposed has **zero occurrences** in the codebase |
+| **Customer value this cycle** | ⛔ **None, and that is correct** — this is an instrument slice. ⚡ **What it buys: the product is now measured at `390×844`, a real handset, which no viewport in this repository had ever exercised** — `phone: 640px` is a min-width, so a handset gets the unprefixed styles and nothing tested them |
+| ⛔ **QE's own defects this cycle** | **Two, both in the new check, both found by running it.** ⛔ **It opened the navigation sheet and left it open**, so the *overlap* assertion after it failed on a correct layout — **a check breaking the check after it, where the error names the wrong assertion entirely.** ⛔ **And a closed sheet measures nothing**: below 1024 the rail is `invisible`, so the check **passed cleanly on a tree with the defect deliberately reintroduced** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ✅ **Certification named 17 gates and executed 6; QE measured four more by hand.** `vitest` **2838 across 147 files** · `eslint` **0 across 460 files** · `tsc` ✅ · **26/26 layout invariants at four breakpoints, run on the certified tree.**
+> ✅ **Certification named 17 gates and executed 6; QE measured three more by hand.** `vitest` **2838 across 151 files** · `eslint` **0 across 460** · **32/32 layout invariants at five breakpoints.** ⚠️ **The new check is proven against a forced 1200px overflow and NOT against [B-241](docs/BUGS.md) itself**, which could not be reproduced — **stated rather than implied, because *it would have caught it* is the claim [B-179](docs/BUGS.md) taught QE not to make.**
 
-**Repository health:** **4410 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **2838 frontend tests** across **147 files** *(+87)* · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **213s** · ⚡ **26 layout invariants pass at 640/1024/1280/1600 on the certified tree** · **disaster recovery from cycle 197 still current** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4410 backend tests** · ⚠️ **95.04% coverage** ✅ *(floor 95 — **4 basis points of headroom**)* · **2838 frontend tests** across **151 files** · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **148s** · ⚡ **32 layout invariants pass at 390/640/1024/1280/1600, on both axes** · **disaster recovery from cycle 197 still current** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
 > ⚠️ **Two figures above are corrected rather than updated.** The dashboard has carried **54 ADRs** and **147 numbered architecture documents**; the repository holds **53** and **145**, and `git ls-tree` returns the same pair at `cea60d41`, `57d6bc85` and `HEAD` — **so they did not change this cycle, they were transcribed.** The ADR count included `adr/README.md`. **A measured figure that never moves is the one to re-measure** (§20e: *metrics are measured, never transcribed*).
 
@@ -1025,6 +1025,32 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-11, cycle 203
+
+**Derived from the promoted commit `a792be6`, certified at `5a9743a`.** **One commit, QE's own. An instrument slice, and the gap it closed was larger than the one it was written for.**
+
+### ⚡ The product had never been measured on a phone
+
+**[B-241](docs/BUGS.md) exposed two gaps and the second is the bigger one.**
+
+⛔ **A whole axis was unasserted.** `expectNoHorizontalOverflow` reads `rect.right`; **nothing read `rect.bottom`** — and that is the axis carrying the shell's own furniture. **`expectNothingFixedBelowTheFold` closes it**: a descendant of a `position: fixed` element **cannot be scrolled into view by anybody**, so its bottom edge is a promise the layout must keep. Ordinary content below the fold is reachable and is not a defect.
+
+⛔ **And there was no project below the smallest named breakpoint.** **`phone: 640px` is a MIN-width**, so a real handset gets the *unprefixed* styles and **nothing exercised them.** ⚠️ **The matrix's shortest screen was 900 tall; B-241 overflows at 844 and fits at 900** — **it could not have been reproduced however many widths ran.** ✅ **`390×844` is now a project, the device Lane A found it on.**
+
+### ⛔ Two defects in the new check, both found by running it
+
+**It opened the navigation sheet and left it open**, so the *overlap* assertion after it failed on a correct layout. ⚠️ **A check breaking the check after it is the worst false positive available: the error names the wrong assertion entirely.**
+
+**And a closed sheet measures nothing.** Below 1024 the rail is `invisible -translate-x-full`, so every element inside was skipped as hidden — **the check passed cleanly on a tree with the defect deliberately reintroduced.** ✅ **It now opens the sheet, measures, and closes it**, which is the state B-241's journey was in when it found it.
+
+### ⚠️ What this check is NOT proven against
+
+⛔ **B-241 itself could not be reproduced.** Removing `min-h-0` from the sheet's flex wrapper does not restore it — the nav still fits at `106..844`. **So the check is proven against a forced 1200px overflow**, where it fails naming 12 elements and their pixel overflow, **and is not proven against the original defect.**
+
+> ⚡ **Recorded in the commit that added it rather than implied by a passing suite.** ***"It would have caught it"* is exactly the claim [B-179](docs/BUGS.md) taught QE not to make** — one cycle earlier, on a defect QE had filed and could not reproduce.
 
 ---
 
