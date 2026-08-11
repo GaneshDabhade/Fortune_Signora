@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `2ddde59`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `1f38069`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,23 +12,23 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `2ddde59`, 2026-08-11.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `1f38069`, 2026-08-11.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`2ddde59`** — the certification record and a replayed claim, two commits past the certified `fe33002` |
-| **Release candidate** | **3 commits, fast-forwarded, certified first attempt.** ✅ **Third consecutive clean hand-over from Lane A.** All 3 **NEW** by patch-id |
-| **Certification** | ✅ [`fe330029a631`](certification/reports/fe330029a631.md) · migration head **`0048`** · protocol **v2** · profile **`documentation+frontend`** · ✅ **first attempt** |
+| **`main`** | **`1f38069`** — the certification record, one commit past the certified `a75b665` |
+| **Release candidate** | **3 commits, fast-forwarded.** ✅ **Fourth consecutive clean hand-over from Lane A.** ⚠️ **Certified on the third launch — the first two were killed with the parent process, not failed** |
+| **Certification** | ✅ [`a75b665a108e`](certification/reports/a75b665a108e.md) · migration head **`0048`** · protocol **v2** · profile **`documentation+frontend`** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **0 blocking** |
-| **Customer value this cycle** | 🔴 **A broken connection no longer tells a customer they have no organization** — [B-237](docs/BUGS.md). ⛔ **The screen said *You are not part of an organization yet* and invited them to create one; following that advice creates a duplicate.** ⚡ **And an account now says which of its fifteen sections Signora cannot answer yet, rather than showing blanks** |
-| ⛔ **QE's own defect this cycle** | **One, and it is the worst kind: QE typed a commit SHA from memory instead of reading it from git.** `fe330029a631eb9f…` does not exist; the commit is `fe330029a6315dcf…`. ⛔ **The guard correctly refused, and QE blamed [B-173](docs/BUGS.md) twice before checking whether the object existed** — **a fabricated identifier diagnosed as a known bug is how a real defect gets papered over.** ✅ **Fixed by reading the SHA from `git rev-parse` rather than from a previous message** |
+| **Customer value this cycle** | ⚡ **Signora says what it can and cannot research, measured rather than promised** — and where the ask has no shape to take, it says so instead of producing something. ⚡ **One edit law now serves two callers**, so a correction behaves the same wherever it is made |
+| ⛔ **QE's own defects this cycle** | **Two, and both are the same failure to check what already exists.** ⛔ **QE filed [B-178](docs/BUGS.md) claiming Chromium cannot launch here — it launches**, and `environment.ts` has solved it since it was written. **QE fire-tested under a throwaway config that bypassed the repository's own `browserEnvironment()`, then blamed the workstation.** ⛔ **And QE fast-forwarded its own uncertified commit onto `main`** — caught by `--audit-main`, unwound before publication |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ✅ **Certification named 12 gates and executed 6; QE measured three more by hand.** `vitest` **2744 across 143 files** · `eslint` ✅ · `tsc` ✅. ⚡ **And [B-237](docs/BUGS.md)'s regression was *fire-tested*, not read**: disabling the failure branch made it fail, so the guard is load-bearing rather than decorative (§2). **The tree was verified clean before certifying** — a mutation left behind would have certified something nobody wrote.
+> ✅ **Certification named 12 gates and executed 6; QE measured three more by hand.** `vitest` **2751 across 144 files** · `eslint` ✅ · `tsc` ✅. ⚡ **The `CERTIFY_EXIT=` marker is what made two killed runs legible**: no marker and an empty log is unambiguously an abort, where a truncated log ending in `working tree clean` reads exactly like a run still going.
 
-**Repository health:** **4406 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **2744 frontend tests** across **143 files** *(+4 tests, +1 file)* · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **205s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery from cycle 197 still current** *(no migration, no backend change)* · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4406 backend tests** · ⚠️ **95.04% coverage** ✅ *(floor 95 — **4 basis points of headroom**)* · **2751 frontend tests** across **144 files** *(+7 tests, +1 file)* · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **204s** · ⚡ **Playwright journeys: QE CAN run them — 169 tests list, and [B-178](docs/BUGS.md)'s claim to the contrary was QE's own harness error.** **[B-156](docs/BUGS.md) remains open and undiagnosed** · **disaster recovery from cycle 197 still current** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
 > ⚠️ **Two figures above are corrected rather than updated.** The dashboard has carried **54 ADRs** and **147 numbered architecture documents**; the repository holds **53** and **145**, and `git ls-tree` returns the same pair at `cea60d41`, `57d6bc85` and `HEAD` — **so they did not change this cycle, they were transcribed.** The ADR count included `adr/README.md`. **A measured figure that never moves is the one to re-measure** (§20e: *metrics are measured, never transcribed*).
 
@@ -1025,6 +1025,44 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-11, cycle 199
+
+**Derived from the promoted commit `1f38069`, certified at `a75b665`.** **Three commits. The cycle's real content is two QE errors of the same kind, both caught, and one of them by a gate rather than by QE.**
+
+### What a customer can now do
+
+⚡ **Signora says what it can and cannot research, measured rather than promised** — and where the ask has no shape to take, **it says so instead of producing something.** ⚡ **One edit law now serves two callers**, so a correction behaves identically wherever it is made; `narrative.ts` lost 155 lines to it.
+
+### ⛔ QE filed a bug against the workstation that was its own harness
+
+**[B-178](docs/BUGS.md), filed and withdrawn within the hour.** QE reported Chromium unlaunchable — `libnspr4.so` missing, needing elevation, **and named it as [B-156](docs/BUGS.md)'s long-missing cause.**
+
+⛔ **Chromium launches.** `~/.cache/ms-playwright-deps/lib/libnspr4.so` exists, and `frontend/tests/e2e/fixtures/environment.ts` has had a `browserEnvironment()` putting exactly that directory on `LD_LIBRARY_PATH` since it was written — **wired into `launchOptions.env`, with a comment recording that the suite "could not launch a browser at all" without it.** ✅ **`playwright test --list --project=owner` lists 169 tests.**
+
+⚡ **QE fire-tested its new invariants under a throwaway config written from scratch, which had no `launchOptions.env`** — so the failure was QE's harness, and the diagnosis blamed the machine. ⛔ **[B-156](docs/BUGS.md) therefore still has no diagnosed cause.**
+
+### ⛔ And QE put its own uncertified commit on `main`
+
+**The responsive-validation commit was fast-forwarded onto `main` alongside the certification record.** ⛔ **It changes `playwright.config.ts`, which decides what a gate does — executable, never a Closeout.**
+
+✅ **`--audit-main` refused it by name**, `main` was rebuilt as the certified commit plus a records-only Closeout, and the work moved back to `lane-qe` to be certified next cycle. ⚡ **Nothing had been pushed, so nothing public was unwound** — but that was timing, not process.
+
+> ⚠️ **Both defects are one shape, and it is worth naming rather than counting: QE acted without checking what already existed.** **The repository had already solved the browser problem; the guard had already defined what may reach `main`.** **[L-1](ENGINEERING_LAWS.md)'s reuse audit is a rule QE cites at lanes and did not apply to itself.**
+
+### ⚠️ Two aborts, and the marker is what made them legible
+
+**The first two certification launches were killed with the parent process.** ⛔ **The second took its log with it** — QE had been writing logs to `/tmp/claude-1000/` root, a shared directory subject to cleanup, rather than the session scratchpad.
+
+✅ **No marker and an empty log is unambiguously an abort.** **A truncated log ending in `working tree clean` reads exactly like a run still in progress**, and without the `CERTIFY_EXIT=` marker QE could not have told them apart. **Neither abort recorded anything against the commit.**
+
+### ✅ Responsive validation exists, and is honest about its state
+
+**Four Playwright projects at the product's own breakpoints** — `phone` 640 · `smalllaptop` 1024 · `laptop` 1280 · `desktop` 1600, from `tailwind.config.ts` rather than a device list. **16 layout checks** asserting geometry from a real engine: overflow, document scroll, **shell-region overlap** *(an `expect(toBeVisible)` passes while a button sits under a sidebar)*, navigation reachable at every width, crushed text.
+
+⛔ **Not yet executed against the product and not counted as coverage.** ⚠️ **The previous state, measured:** one global 1280×900 viewport; **4 of 25 specs set their own; 3 asserted measured geometry.** ⚡ **Also found: `laptop:` and `desktop:` have zero consumers, and 25 dead Tailwind default prefixes survive because `screens:` replaced them.**
 
 ---
 
