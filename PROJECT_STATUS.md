@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `bbee38d`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `2ddde59`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,23 +12,23 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `bbee38d`, 2026-08-11.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `2ddde59`, 2026-08-11.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`bbee38d`** — the certification record and [B-177](docs/BUGS.md), two commits past the certified `78f2c72` |
-| **Release candidate** | **15 commits, fast-forwarded.** ⚠️ **Returned once**: `mypy --strict` passed for the lane over 564 files and failed for the gate over 866 — [B-177](docs/BUGS.md). ✅ **Fixed and re-handed within one exchange.** All 15 **NEW** by patch-id against 1,602 on `main` |
-| **Certification** | ✅ [`78f2c72fbbc2`](certification/reports/78f2c72fbbc2.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** (17 gates) · ⚠️ **third attempt — two aborts, both QE's environment, neither a statement about the commit** |
+| **`main`** | **`2ddde59`** — the certification record and a replayed claim, two commits past the certified `fe33002` |
+| **Release candidate** | **3 commits, fast-forwarded, certified first attempt.** ✅ **Third consecutive clean hand-over from Lane A.** All 3 **NEW** by patch-id |
+| **Certification** | ✅ [`fe330029a631`](certification/reports/fe330029a631.md) · migration head **`0048`** · protocol **v2** · profile **`documentation+frontend`** · ✅ **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **0 blocking** |
-| **Customer value this cycle** | ⚡ **Applying a batch tells you it was *accepted*, not *applied*, and lets you watch the difference** — the gap between approving work and the work happening becomes something visible rather than a spinner. ⚡ **An account's history gets a dock you can open with `⌘.`** |
-| ⛔ **QE's own defects this cycle** | **Three, and all one shape.** **`make dr` tore the stack down and nothing restarted it**, so certification aborted on an absent database. **The relaunch then raced the stack it had just started** — `COMPOSE_EXIT=0` was true when printed and stale one command later. **And `set -e` did not abort a failed `--ff-only` because it sat inside a `&&` list**, so a certification record was committed onto the wrong base — ⛔ **[B-142](docs/BUGS.md)'s exact class, which QE has cited at two lanes** |
+| **Customer value this cycle** | 🔴 **A broken connection no longer tells a customer they have no organization** — [B-237](docs/BUGS.md). ⛔ **The screen said *You are not part of an organization yet* and invited them to create one; following that advice creates a duplicate.** ⚡ **And an account now says which of its fifteen sections Signora cannot answer yet, rather than showing blanks** |
+| ⛔ **QE's own defect this cycle** | **One, and it is the worst kind: QE typed a commit SHA from memory instead of reading it from git.** `fe330029a631eb9f…` does not exist; the commit is `fe330029a6315dcf…`. ⛔ **The guard correctly refused, and QE blamed [B-173](docs/BUGS.md) twice before checking whether the object existed** — **a fabricated identifier diagnosed as a known bug is how a real defect gets papered over.** ✅ **Fixed by reading the SHA from `git rev-parse` rather than from a previous message** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ✅ **Certification named 17 gates and executed 6; QE measured four more by hand and every one is a measurement rather than a lane's report.** `vitest` **2740 across 142 files** · `dr` ✅ *(pipeline recovered unattended, 401 invariants against the restarted stack)* · **migration `0048` reversible to base and back, head restored** · `eslint` ✅. ⚡ **Lane A's reported 2740 was exactly right and was confirmed anyway** — a lane offers a claim, QE publishes a measurement.
+> ✅ **Certification named 12 gates and executed 6; QE measured three more by hand.** `vitest` **2744 across 143 files** · `eslint` ✅ · `tsc` ✅. ⚡ **And [B-237](docs/BUGS.md)'s regression was *fire-tested*, not read**: disabling the failure branch made it fail, so the guard is load-bearing rather than decorative (§2). **The tree was verified clean before certifying** — a mutation left behind would have certified something nobody wrote.
 
-**Repository health:** **4406 backend tests** *(+21)* · ⚠️ **95.04% coverage** ✅ *(floor 95 — **4 basis points of headroom**, down from 95.11%)* · **2740 frontend tests** across **142 files** *(+44 tests, +4 files)* · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **245s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4406 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **2744 frontend tests** across **143 files** *(+4 tests, +1 file)* · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **205s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery from cycle 197 still current** *(no migration, no backend change)* · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
 > ⚠️ **Two figures above are corrected rather than updated.** The dashboard has carried **54 ADRs** and **147 numbered architecture documents**; the repository holds **53** and **145**, and `git ls-tree` returns the same pair at `cea60d41`, `57d6bc85` and `HEAD` — **so they did not change this cycle, they were transcribed.** The ADR count included `adr/README.md`. **A measured figure that never moves is the one to re-measure** (§20e: *metrics are measured, never transcribed*).
 
@@ -1025,6 +1025,40 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-11, cycle 198
+
+**Derived from the promoted commit `2ddde59`, certified at `fe33002`.** **Three commits, certified first attempt. The cycle's content is one defect a customer would have acted on, and it was found by breaking an environment rather than by a test.**
+
+### 🔴 [B-237](docs/BUGS.md) — a broken read told a customer they had no organization
+
+**Lane A's API tier came up with an unparseable JWT public key, `/api/proxy/workspaces` returned `500`, and the attention screen rendered *"You are not part of an organization yet."*** ⛔ **The copy then invited them to act on it: *create one, or ask a colleague to add you.*** ⚠️ **A customer following that advice creates a duplicate organization, because Signora told them the first did not exist.**
+
+**This is [P-A](docs/DOMAIN_DISCOVERY_REGISTER.md) — *a failed read must never render as an empty result* — and its worst instance so far.** ⚡ **Every earlier one made a *section* look empty. This one made the customer's own membership look absent and then gave destructive advice about it.**
+
+**One missing question caused it.** `!loading && activeWorkspace === null` is satisfied by a failed read exactly as by an empty one, **and `WorkspaceProvider` has published `error` since it was written.**
+
+⚡ **The near-miss inside the fix is the better lesson.** The first attempt compared `error !== null`; **a caller supplying no `error` gives `undefined`**, so a customer with genuinely no organization saw the failure state — **caught by `first-run.test.tsx`, which is the exact case that screen exists for.** Truthiness was the correct predicate.
+
+### ✅ QE fire-tested the regression rather than reading it
+
+**Disabling the failure branch made the new test fail**, so the guard is load-bearing rather than decorative (§2). ✅ **The working tree was verified clean before certification** — a mutation left in place would have certified a tree nobody wrote.
+
+### ⚡ Two of three defects were found by looking, not by testing
+
+**Lane A reports the *"On this page"* rail linked to ids only the absent sections carried**, so *Account score* and *Summary* were links to nowhere — **the defect that component exists to prevent, one level up, visible only in the headed review.** ⚡ **That is [D-134](docs/DECISION_REGISTER.md)'s argument restated by evidence rather than by assertion.**
+
+### ⛔ QE typed a commit SHA from memory
+
+**`--promote` refused twice and QE blamed [B-173](docs/BUGS.md) both times.** ⛔ **The actual cause: the SHA passed to it — `fe330029a631eb9f…` — does not exist. The commit is `fe330029a6315dcf…`, and QE had reconstructed the tail rather than reading it.**
+
+⚠️ **The dangerous part is not the typo; it is the misdiagnosis.** **A fabricated identifier explained away as a known bug is how a real defect gets papered over** — and B-173 is a real bug QE has hit four times, which is precisely what made it a plausible wrong answer. ✅ **The fix is procedural: the SHA now comes from `git rev-parse`, never from a previous message.**
+
+### ⚠️ Coverage is at three basis points
+
+**95.04% → 95.03%, floor 95.0.** ✅ **This cycle is frontend-only, so backend coverage did not move in either direction** — Lane A flagged that it had not improved the margin rather than claiming it had. ⛔ **The trend across three cycles is 95.11 → 95.04 → 95.03, and the next backend slice decides it.**
 
 ---
 
