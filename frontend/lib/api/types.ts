@@ -193,6 +193,42 @@ export type NameAgreement = 'unknown' | 'single_source' | 'agreed' | 'disputed';
  * chose *and* whether anything else agreed. `name`, `source` and `observed_at`
  * are null together when nobody has named the account.
  */
+/**
+ * **What kind of thing an account is** — [TASK-440](../../../docs/BACKLOG.md).
+ *
+ * ⛔ **Read it rather than assuming `company`.** 📁 The browse endpoint's own
+ * words: *"the list answers for companies today and the graph knows more kinds
+ * than it can search."* ⚡ **A screen that hard-codes the word `company` will
+ * be wrong the first time the graph lists anything else**, and it will be wrong
+ * silently.
+ */
+export type EntityKind = 'company' | 'person' | 'product' | 'technology';
+
+/**
+ * **One account on a browse page** — [TASK-440](../../../docs/BACKLOG.md),
+ * `GET /workspaces/{id}/accounts-list`.
+ *
+ * 🔴 **This is NOT `AccountAttention`, and the difference decides the screen.**
+ * 📁 `/accounts` is `attention_list` — *"accounts worth attention, most
+ * pressing first"* — **a ranked, narrowed set.** ⚡ **This read is *"show me my
+ * accounts"* — browse, not search, and not triage.**
+ *
+ * ⛔ **It is also not `AccountMatch`**, and the endpoint states why: a match
+ * carries `matched_name`, `matched_source` and `is_renamed` **because a search
+ * result has to explain why it is in the list. A browse row is in the list
+ * because it exists**, and those three would be null on every one of them.
+ *
+ * ⚠️ **Two fields, and that is the whole contract.** **Score, owner, trend,
+ * stage and every other column the design draws are NOT published by this
+ * read** — 📁 [§20c](../../../CLAUDE.md): *"screens without a shipped module
+ * behind them ship a designed empty state"*, ⛔ **and inventing them here would
+ * be the mock business data that rule forbids.**
+ */
+export interface ListedAccount {
+  account: AccountIdentity;
+  kind: EntityKind;
+}
+
 export interface AccountIdentity {
   account_id: string;
   name: string | null;

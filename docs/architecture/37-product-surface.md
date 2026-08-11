@@ -1574,3 +1574,57 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 **① The centring assertion could not fail.** 🔴 **With the maximum removed, the container filled `main`, both gaps were `0`, and *equal gaps* was satisfied by there being no gaps at all.** ✅ **The `> 100px` line exists because of that**, and both assertions now go red when the cap is deleted.
 
 **② The gutter could not be measured from page content.** ⚠️ **The first version measured from the Attention heading and read 87px.** ⛔ **Not a defect — the row's own premise**: that screen carries `max-w-3xl mx-auto`, **one of the eleven**, so it centres itself inside the container. ✅ **A test asserting 24px there would have been asserting that the migration had already happened.**
+
+---
+
+## TASK-440 · Companies — the account list a seller actually works, shipped — 2026-08-11
+
+> ⚠️ **This supersedes the *(built 2026-08-06 · **not shipped**)* section above, which described a screen that was never in the repository.** 📁 **That section stays** as the dated record of what was true then ([§2](../../CLAUDE.md)) — **and this one records what shipped.**
+
+### 🔴 The entrance, which is why the earlier attempt was withheld
+
+⛔ **[C-229](../LANE_COORDINATION.md) held it**: `/accounts` was built, green on every other gate, and `make reachability` reported *"NO ENTRANCE — built, and no screen leads here."* 📁 [D38](39-product-review-findings.md) had removed *Companies* from navigation **by name** — *"a company is what an account is."*
+
+✅ **The finalized design settles it, and this lane verified the evidence rather than trusting the closure**: 📁 the App Shell's rail reads `Home · Forecast · Pipeline · **Accounts (8,412)** · Deals · Conversations · Signals · Reports`. ⚡ **`8,412` is the exact row count this row cites**, so it is the same screen. 📁 [D-141](../DECISION_REGISTER.md) ① closed the item on that evidence; [D-128](../DECISION_REGISTER.md) makes the finalized design the authority over historical UI.
+
+⚡ **`make reachability` now reports `No entrance at all — 0`**, and `/accounts` is ✓.
+
+### 🔴 The read, and the audit that named the wrong one
+
+⛔ **`GET /accounts` is `attention_list`** — *"accounts worth attention, most pressing first"*, a **ranked, narrowed triage set that returns open opportunities.** ⚠️ **[446](446-companies-traceability-audit.md) described this table as *"every company this workspace watches"* and cited it.**
+
+✅ **The correct read is `GET /workspaces/{id}/accounts-list`**, which [TASK-472](../BACKLOG.md) built. 📁 Its own docstring draws the distinction: ***"browse, not search… a second read rather than a parameter on `/account-search`"*** — because relaxing search's blank-input guard *"ships a search box that dumps the customer's whole book of business on the first keystroke."*
+
+### ⛔ Nine columns drawn, two published — and the difference is stated, never filled
+
+| | |
+|---|---|
+| **Published** | `account` *(the shared `AccountIdentity`)* · `kind` |
+| **Drawn by the design and NOT published** | score · trend · stage · owner · value · last activity |
+
+🔴 **A column of `—` would be worse than no column**: it says Signora looked and found nothing, when nothing was ever asked. 📁 [§20c](../../CLAUDE.md) forbids the alternative by name.
+
+✅ **So the header tells the reader**: *"Score, owner, stage and value are not on this list yet — open an account to see them."* ⚡ **The gap is [C-289](../LANE_COORDINATION.md)**, so the columns arrive as reads rather than as inventions.
+
+⚠️ **The owner column costs a journey step, and it is named rather than dropped.** 📁 The row's journey is *"…**filters to their own book**…"* — ⛔ **and the browse read has no notion of who owns an account.** **The attention list has `?owner=`; the read that browses the whole book does not.**
+
+### 🔴 The count is what arrived, never what was claimed
+
+📁 **The design prints *"8,412 total · 312 in view"*, and the read publishes no total.** ⛔ **Printing one would fabricate the number a seller trusts most.** ✅ **The screen says `16 loaded`** — true, and a browser journey asserts `8,412` never appears.
+
+### ✅ Reuse — the [L-1](../ENGINEERING_LAWS.md) audit
+
+| | |
+|---|---|
+| `EntityName` | ✅ **Reused.** It already carries the name, the agreement state and the *no source has named it* fallback, and it is what the attention list and search both render. ⛔ **A second name renderer would be a second answer to *what is this called*** |
+| `useAccountTimeline`'s keyset pattern | ✅ **Followed, not re-invented** — `useInfiniteQuery`, `has_more` rather than `next_cursor != null`, the cursor echoed and never computed |
+| `StatedAbsence` · `EmptyState` · `SkeletonText` · `Table` · `PageHeader` | ✅ **All reused.** ⛔ **Nothing new in `components/ui`** |
+| A new query key | ⚡ **`accountsList`, deliberately separate from `accounts`** — **two questions, two reads, two caches.** ⛔ **Sharing a key would let one screen's refetch overwrite the other's data with a different set** |
+
+### ⚠️ Two defects found in this slice's own tests, both by fire-testing
+
+**① The click-through was skipping itself and reporting a pass.** ⛔ **It counted links before the table rendered, got `0`, and `test.skip` fired** — 🔴 **on the one step the journey exists to prove.** ⚡ **A skip that fires on a timing race is indistinguishable from one that fires on an empty environment.** ✅ **Fixed by awaiting a designed state first; the environment was then seeded through the Playground and the step runs.**
+
+**② A rejected query failed the test while its assertions passed.** ⚠️ React discards a render, react-query's promise for it is never awaited, and vitest reports the unhandled rejection. ✅ **The failure tests stub the HOOK instead** — 📁 **which is the more honest test anyway: [P-A](../DOMAIN_DISCOVERY_REGISTER.md) governs the page's rendering decision, not react-query's transport.** ⚡ **The same split [`attention-failed-read.test.tsx`](../../frontend/tests/components/attention-failed-read.test.tsx) already draws for [B-237](../BUGS.md).**
+
+🔴 **The P-A guard is load-bearing, proved rather than asserted**: **removing the `isError` branch turns 3 of 4 failure tests red.**

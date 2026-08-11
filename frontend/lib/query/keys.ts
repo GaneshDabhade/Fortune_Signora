@@ -29,6 +29,16 @@ export const queryKeys = {
   accounts: (workspaceId: string, scope: string = 'all') =>
     ['workspace', workspaceId, 'accounts', scope] as const,
 
+  /**
+   * ⛔ **A different key from `accounts` above, and that is deliberate** —
+   * [TASK-440](../../../docs/BACKLOG.md). ⚡ **`accounts` is the ATTENTION
+   * list**, ranked and narrowed; **this is the whole book, oldest first.**
+   * 📁 Two questions, two reads, two caches — **sharing a key would make one
+   * screen's refetch overwrite the other's data with a different set.**
+   */
+  accountsList: (workspaceId: string) =>
+    ['workspace', workspaceId, 'accounts-list'] as const,
+
   accountScore: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'score'] as const,
 

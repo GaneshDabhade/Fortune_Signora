@@ -4,6 +4,7 @@ import {
   BarChart3,
   BookOpen,
   Briefcase,
+  Building2,
   Home,
   // 📁 The design's `navIcon('key')` for `Shortcuts`.
   KeyRound,
@@ -182,6 +183,26 @@ const DESTINATIONS: readonly RailItem[] = [
   // words what a report needs and why Signora cannot answer it today, and
   // names the eight charts it will draw.** **A route a customer cannot reach
   // is a route that does not exist**, which is the worse of the two.
+  // ✅ **`Accounts` gains its route** — [TASK-440](../../../docs/BACKLOG.md),
+  // and this is the line [C-229](../../../docs/LANE_COORDINATION.md) was
+  // waiting for.
+  //
+  // 🔴 **The entrance question is CLOSED, not assumed.** ⛔ [D38](../../../docs/architecture/39-product-review-findings.md)
+  // removed *Companies* from navigation by name — *"a company is what an
+  // account is"* — **and the finalized design puts it back**: 📁 the App
+  // Shell's rail reads `Home · Forecast · Pipeline · Accounts (8,412) · Deals
+  // · Conversations · Signals (14) · Reports`. ⚡ **`8,412` is the exact row
+  // count [TASK-440](../../../docs/BACKLOG.md) cites**, so this is the same
+  // screen and not a coincidence. 📁 [D-141](../../../docs/DECISION_REGISTER.md) ①
+  // closed the item on that evidence, and [D-128](../../../docs/DECISION_REGISTER.md)
+  // makes the finalized design the authority over historical UI.
+  //
+  // ⚠️ **D38 is superseded on navigation and NOT deleted** — it remains an
+  // accurate record of a decision taken on 2026-08-02 ([§2](../../../CLAUDE.md)).
+  //
+  // ⛔ **No count is passed**, for the reason every other entry here gives:
+  // nothing publishes one, and the design's `8,412` is a mockup's number.
+  { id: 'accounts', label: 'Accounts', href: '/accounts', icon: Building2, depth: 1 },
   { id: 'reports', label: 'Reports', href: '/reports', icon: BarChart3, depth: 1 },
 ];
 

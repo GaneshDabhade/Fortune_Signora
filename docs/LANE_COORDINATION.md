@@ -11112,3 +11112,48 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 | ⛔ **The file's order stands** | **[TASK-1460](BACKLOG.md)'s claim is returned and [TASK-1468](BACKLOG.md) is claimed instead.** **Cost: one commit** |
 
 > ⚠️ **The general form is worth more than this instance.** ⛔ **A queue whose order is authoritative, and an instruction that overrides it, cannot both be true without the override being written down** — **otherwise every future lane re-derives the same conflict, and the quiet resolution is indistinguishable from a lane choosing its own work.**
+
+---
+
+## C-289 · Companies renders two of the nine columns the design draws, because the browse read publishes two fields
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, building [TASK-440](BACKLOG.md) — ⛔ **after reading the contract, before drawing a column** |
+| **Owner** | **`knowledge_graph`'s current assignee** — joined from [`modules.toml`](coordination/modules.toml), ⛔ **not named here** ([C-213](#c-213)) |
+| **Status** | 🟡 **`OPEN` — NOT BLOCKING.** ✅ **[TASK-440](BACKLOG.md) shipped what the contract publishes**; this item exists so the remaining columns arrive as reads rather than as inventions |
+| **Blocks** | ⛔ **Nothing today.** ⚠️ **It blocks the design's table being *complete*, which is a different claim from the screen being *correct*** |
+
+### 🔴 The measurement
+
+📁 **The design's Companies table draws nine columns**: a selection box, an avatar, the name, and six of score, stage, owner and value.
+
+🔴 **`ListedAccount` publishes two fields — `account` and `kind` — and that is the whole contract.**
+
+| The design draws | Published by `accounts-list`? |
+|---|---|
+| **Name · identity** | ✅ **Yes** — `account`, the same `AccountIdentity` search and the brief return |
+| **Kind** | ✅ **Yes** — and the endpoint says to read it: *"the list answers for companies today and the graph knows more kinds than it can search"* |
+| **Score · trend · stage · owner · value · last activity** | ⛔ **No. None of them** |
+
+### ⛔ Why the screen shows two columns rather than nine with dashes
+
+📁 **[§20c](../CLAUDE.md): *"never introduce mock business data — screens without a shipped module behind them ship a designed empty state."*** ⚠️ **An omission is not one.**
+
+🔴 **A column of `—` is worse than no column.** ⚡ **It says Signora looked and found nothing, when the truth is that nothing was ever asked** — and a seller who reads *"score: —"* on eight thousand rows concludes the scoring is broken.
+
+✅ **So the screen names the gap to the reader instead**: *"Score, owner, stage and value are not on this list yet — open an account to see them."* ⚡ **The same treatment the rail gives a destination with no route**, and the same one `freshness.tsx` gives *"last checked"*.
+
+### ⚠️ The owner column is the one that matters most, and it costs a journey step
+
+📁 **[TASK-440](BACKLOG.md)'s own journey is *"a seller opens Companies, **filters to their own book**, searches a company by name, and opens it."***
+
+⛔ **The browse read has no notion of who owns an account**, so **there is nothing to filter on** — ⚡ **and this was already known**: 📁 the previously-built version of this screen recorded it as a decision a later change must not reverse — *"the projection has no notion of who owns an account, so a seller filtered to Mine can be shown a company that is not theirs."*
+
+⚠️ **The attention list DOES have `?owner=`.** ⛔ **Two reads, one with the predicate and one without** — **and the one that browses the whole book is the one that needs it more.**
+
+### ✅ What is asked, and it is one question
+
+> **Should `accounts-list` carry the fields the design's table draws — or does Companies stay a browse surface that hands off to the account for everything else?**
+
+⚡ **Either answer is implementable and neither is this lane's to choose.** ⛔ **What must not happen is the columns arriving by the frontend inventing them**, which is the rule this item exists to keep.
