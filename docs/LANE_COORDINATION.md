@@ -11395,3 +11395,47 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 ⛔ **This lane is not asking to be released from ①.** **It is asking that the row say what ① is**, so the next lane reading it is not told *reuse* about work that is *first caller*.
 
 > ✅ **Meanwhile ② ③ ⑦ proceed**, and they are genuinely queue-local: filtering by `signal_type`, bulk selection, and the counts header — **none of them touches the store.**
+
+---
+
+## C-292 · The Signal Center's counts header draws three numbers and the queue publishes one
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, building [TASK-1468](BACKLOG.md) ⑦ |
+| **Owner** | **`signal_engine`'s current assignee** — joined from [`modules.toml`](coordination/modules.toml), ⛔ **not named here** ([C-213](#c-213)) |
+| **Status** | 🟡 **`OPEN` — NOT BLOCKING.** ✅ **The one publishable count ships** |
+| **Blocks** | ⛔ **Nothing** |
+
+### 🔴 The measurement
+
+📁 **The design's header**: ***"14 need review · 6 assigned to you · 41 this week."***
+
+🔴 **`QueueEntry` publishes six fields** — `signal_id · signal_type · entity_id · rationale · state · resolution`.
+
+| The design draws | Publishable? |
+|---|---|
+| **`N` need review** | ✅ **Yes** — the open queue's length |
+| **`N` assigned to you** | ⛔ **No. There is no assignee on the entry** |
+| **`N` this week** | ⛔ **No. There is no timestamp on the entry** |
+
+⚠️ **And the second one has a further wrinkle worth stating**: 📁 `ResolveOutcome` carries `{ kind: 'assigned'; to: string }` — **so the platform can RECORD an assignment and the queue cannot REPORT one.** ⛔ **The fact exists in the write path and not in the read.**
+
+### ⛔ Why one number ships rather than three
+
+📁 **[§20c](../CLAUDE.md): *"never introduce mock business data."*** ⚡ **A count is the single most trusted thing on a triage screen** — **it is what a person decides whether to open the queue at all** — and **a wrong one is worse than a missing one because nothing about it looks wrong.**
+
+✅ **So the strip says `16 need review` and stops**, and a component test and a browser journey both assert that *"assigned to you"* and *"this week"* never appear. ⛔ **A later change filling the design's shape fails rather than shipping.**
+
+### ⚡ Two related absences on the same screen, recorded together
+
+| | |
+|---|---|
+| 📁 **The design's filter chip is *"Confidence ≥ 3"*** | ⛔ **Confidence is not on the entry.** ✅ **The chips filter by `signal_type`, which is** |
+| 📁 **The design lists `Critical` severity** | ⛔ **Not a field the entry carries** — already recorded on the screen by [TASK-439](BACKLOG.md), and unchanged |
+
+### ✅ What is asked
+
+**Whether the triage read should carry an assignee and a raised-at timestamp** — ⚡ **or whether the counts header is a smaller thing than the design draws.**
+
+⛔ **Either answer is implementable.** **What must not happen is the numbers arriving by the frontend counting something it invented.**

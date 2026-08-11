@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Badge, Button, Card, Dialog, EmptyState, ErrorState, Input, Skeleton, Tabs } from '@/components/ui';
 import type { QueueEntry, QueueState, ResolveOutcome } from '@/lib/api/types';
 import { useSignalCatalog } from '@/lib/query/hooks';
 import { useAccountIdentities } from '@/lib/query/hooks';
 import { useResolveSignal, useWorkspaceTriage } from '@/lib/query/hooks/triage';
+import { cn } from '@/lib/design/cn';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -75,11 +76,57 @@ export function SignalQueue() {
   const [dismissing, setDismissing] = useState<QueueEntry | null>(null);
   const [reason, setReason] = useState('');
 
+  /**
+   * 📁 **Surface ② — the design's filter chips** ([TASK-1468](../../../../docs/BACKLOG.md)).
+   *
+   * ⛔ **By `signal_type`, and NOT by the design's own example.** 📁 It draws
+   * *"Confidence ≥ 3"* — 🔴 **`QueueEntry` publishes six fields and confidence
+   * is not one of them**, so a confidence chip would be filtering on a number
+   * this screen invented. **The gap is stated to the reader instead**
+   * ([§20c](../../../../CLAUDE.md)).
+   *
+   * 🔴 **And the filter is CLIENT-side while the state tabs are SERVER-side —
+   * the two are not the same decision.** 📁 [`triage.ts`](../../../lib/query/hooks/triage.ts)
+   * says why: *"queue state is derived on the server from the decision in force
+   * and the clock; a browser re-filtering a cached page would be re-deriving it
+   * from stale inputs, and a snooze that had elapsed would keep looking
+   * snoozed."* ⚡ **`signal_type` carries no clock** — it is a fact about the
+   * signal, fixed when it was raised — **so narrowing on it locally cannot go
+   * stale.** ⛔ **Nothing here may narrow `state`.**
+   */
+  const [types, setTypes] = useState<ReadonlySet<string>>(() => new Set());
+
+  /**
+   * 📁 **Surface ③ — bulk selection.** ⚡ **Held as `signal_id`s rather than as
+   * entries**, so a selection survives a refetch that replaced the objects: 📁
+   * `useResolveSignal` invalidates every triage view on each decision, **and a
+   * selection of stale objects would act on rows that had already moved.**
+   */
+  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
+
   const queue = useWorkspaceTriage(workspaceId, state);
+  /**
+   * 📁 **Surface ⑦ — the counts header.** ⚡ **A second read of the OPEN queue**,
+   * so *"needs review"* is true on every tab rather than only on the one that
+   * happens to be showing. ⛔ **react-query de-duplicates it against the tab's
+   * own request when `state` is `open`**, so this is one request, not two.
+   */
+  const open = useWorkspaceTriage(workspaceId, 'open');
   const catalog = useSignalCatalog(workspaceId);
   const resolve = useResolveSignal(workspaceId);
 
-  const entries = useMemo(() => queue.data?.items ?? [], [queue.data]);
+  const all = useMemo(() => queue.data?.items ?? [], [queue.data]);
+
+  /**
+   * ⚡ **What the list shows** — `all` narrowed by the chosen types. ⛔ **An
+   * empty selection is *not narrowed*, never *nothing*** — the same rule
+   * [`working-list.ts`](../../../lib/views/working-list.ts) applies to `all`:
+   * **the absence of a narrowing is not a narrowing to zero.**
+   */
+  const entries = useMemo(
+    () => (types.size === 0 ? all : all.filter((entry) => types.has(entry.signal_type))),
+    [all, types],
+  );
 
   // ⚡ **One request for every name on the page**, not one per row — the hook
   // de-duplicates and sorts the ids so the key is stable.
@@ -107,8 +154,57 @@ export function SignalQueue() {
     return [...byType.entries()].sort((a, b) => b[1].length - a[1].length);
   }, [entries]);
 
+  /**
+   * ⛔ **The chips are built from the UNFILTERED page, never from `entries`.**
+   * ⚡ **Otherwise choosing a type removes every other chip** — the control
+   * that narrows the list would delete the way back, which is the
+   * control-that-traps-you shape rather than a filter.
+   */
+  const availableTypes = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const entry of all) counts.set(entry.signal_type, (counts.get(entry.signal_type) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  }, [all]);
+
+  const toggleType = (type: string) =>
+    setTypes((was) => {
+      const next = new Set(was);
+      if (next.has(type)) next.delete(type);
+      else next.add(type);
+      return next;
+    });
+
+  /**
+   * ⛔ **Selection is cleared whenever the visible set changes.** ⚠️ **A
+   * selection that survives a filter is a selection whose action bar says
+   * *"3 selected"* while two of them are off screen** — and the person presses
+   * it believing it means the three they can see.
+   */
+  const visibleIds = entries.map((entry) => entry.signal_id).join(',');
+  useEffect(() => setSelected(new Set()), [visibleIds]);
+
+  const toggleSelected = (signalId: string) =>
+    setSelected((was) => {
+      const next = new Set(was);
+      if (next.has(signalId)) next.delete(signalId);
+      else next.add(signalId);
+      return next;
+    });
+
   const decide = (entry: QueueEntry, outcome: ResolveOutcome) => {
     resolve.mutate({ signalId: entry.signal_id, outcome });
+  };
+
+  /**
+   * 📁 **Surface ③'s action bar.** ⛔ **Only the outcomes that need no further
+   * input.** ⚠️ **Dismissal is deliberately NOT here**: 📁 the queue's own rule
+   * is that a dismissal carries a reason — *"a dismissal without a reason is
+   * unconstructable rather than merely rejected"* — **and one reason typed once
+   * for eleven different signals is the reason nobody can cite later.**
+   */
+  const decideMany = (outcome: ResolveOutcome) => {
+    for (const signalId of selected) resolve.mutate({ signalId, outcome });
+    setSelected(new Set());
   };
 
   if (queue.isError || catalog.isError) {
@@ -143,6 +239,25 @@ export function SignalQueue() {
           shared `Tabs`**, and the migration is not cosmetic: **the local one
           had `role="tab"` and `aria-selected` and no arrow-key navigation**,
           so it announced itself as tabs and behaved like a row of buttons. */}
+      {/* 📁 **Surface ⑦ — the counts header.** The design draws *"14 need review
+          · 6 assigned to you · 41 this week"*.
+          🔴 **ONE of those three is publishable and the other two are absent
+          rather than approximated.** ⛔ **`QueueEntry` has no assignee** — so
+          *"assigned to you"* would be a number this screen invented — **and no
+          timestamp**, so *"this week"* has no clock to count against.
+          ⚡ **[§20c](../../../../CLAUDE.md): screens without a shipped module
+          behind them state the absence.** **The gap is
+          [C-292](../../../../docs/LANE_COORDINATION.md).** */}
+      {open.isPending ? null : (
+        <p className="text-sm text-content-muted" data-testid="queue-counts">
+          <span className="font-medium text-content tabular-nums">
+            {open.data?.items.length ?? 0}
+          </span>{' '}
+          need review
+          {/* ⛔ **Never a second number here to fill the design's shape.** */}
+        </p>
+      )}
+
       <Tabs
         label="Queue state"
         items={STATES.map((tab) => ({
@@ -156,6 +271,98 @@ export function SignalQueue() {
         value={state}
         onChange={setState}
       />
+
+      {/* 📁 **Surface ② — the filter chips and *"14 of 22 shown"*.**
+          ⛔ **Rendered only when there is more than one type to choose
+          between**: a single chip that cannot narrow anything is a control
+          that does nothing ([§2](../../../../CLAUDE.md)). */}
+      {availableTypes.length > 1 ? (
+        <div className="flex flex-wrap items-center gap-2" data-testid="signal-filters">
+          <span className="text-2xs uppercase tracking-wide text-content-subtle">Filter</span>
+          {availableTypes.map(([type, count]) => {
+            const on = types.has(type);
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => toggleType(type)}
+                // ♿ **`aria-pressed`, not a styled `div`.** A chip that only
+                // looks selected is unselected to a screen reader.
+                aria-pressed={on}
+                className={cn(
+                  'flex h-7 items-center gap-1.5 rounded-full border px-3 text-2xs transition-colors',
+                  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+                  on
+                    ? 'border-accent bg-accent-subtle font-semibold text-accent'
+                    : 'border-border text-content-muted hover:bg-surface-sunken hover:text-content',
+                )}
+              >
+                {titleFor(type)}
+                <span className="tabular-nums">{count}</span>
+              </button>
+            );
+          })}
+          {types.size > 0 ? (
+            <>
+              {/* 📁 The design's *"14 of 22 shown"*, and ⚡ **both numbers are
+                  counted rather than claimed.** */}
+              <span className="tabular-nums text-2xs text-content-subtle">
+                {entries.length} of {all.length} shown
+              </span>
+              {/* ⛔ **The way back is always offered.** ⚠️ A narrowing a reader
+                  cannot undo in one action is how an empty list gets reported
+                  as missing data. */}
+              <button
+                type="button"
+                onClick={() => setTypes(new Set())}
+                className="rounded text-2xs text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Clear
+              </button>
+            </>
+          ) : null}
+        </div>
+      ) : null}
+
+      {/* 📁 **Surface ③'s action bar** — the design's *"✓ 3 selected"*.
+          ⛔ **Present only when something is selected**, and ♿ **`role="status"`**
+          so a screen-reader user learns the count changed without being
+          interrupted mid-row. */}
+      {selected.size > 0 ? (
+        <div
+          role="status"
+          data-testid="bulk-bar"
+          className="flex flex-wrap items-center gap-3 rounded-lg border border-accent bg-accent-subtle px-4 py-2.5"
+        >
+          <span className="text-sm font-medium text-accent tabular-nums">
+            {selected.size} selected
+          </span>
+          <Button variant="secondary" onClick={() => decideMany({ kind: 'actioned' })}>
+            Mark actioned
+          </Button>
+          {/* 🔴 **One action, and the other three are absent for reasons the
+              contract states rather than for lack of room.**
+              ⛔ **No bulk dismissal** — 📁 `ResolveOutcome` makes a dismissal
+              without a reason *unconstructable rather than merely rejected*,
+              and **one reason typed once for eleven signals is the reason
+              nobody can cite later.**
+              ⛔ **No bulk snooze** — **`snoozed` requires an `until`**, this
+              screen has no per-row snooze to borrow a duration from, and ⚡
+              **inventing one would decide on a customer's behalf when a signal
+              comes back.**
+              ⛔ **No bulk assign** — `assigned` requires a person, which is a
+              choice per signal rather than per selection.
+              ✅ **`actioned` is the only outcome the union lets a bulk control
+              construct honestly.** */}
+          <button
+            type="button"
+            onClick={() => setSelected(new Set())}
+            className="ml-auto rounded text-2xs text-accent underline decoration-border underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Clear selection
+          </button>
+        </div>
+      ) : null}
 
       {queue.isPending ? (
         <div className="flex flex-col gap-3" aria-hidden>
@@ -189,6 +396,24 @@ export function SignalQueue() {
                   return (
                     <li key={entry.signal_id}>
                       <Card className="flex flex-wrap items-start justify-between gap-3 p-4">
+                        {/* 📁 **Surface ③'s per-row control.**
+                            ♿ **A real `<input type="checkbox">`**, not a styled
+                            button: ⛔ **it is what gives a screen reader the
+                            checked state, the group semantics and the shift-
+                            click behaviour a reader already knows** — and
+                            reimplementing those is the workflow-local
+                            reimplementation [498](../../../../docs/architecture/498-common-platform-audit.md)
+                            found once already on this very screen's tabs.
+                            ⚡ **The label names the SIGNAL, never *"select"***,
+                            so somebody hearing the row hears what they are
+                            about to act on. */}
+                        <input
+                          type="checkbox"
+                          checked={selected.has(entry.signal_id)}
+                          onChange={() => toggleSelected(entry.signal_id)}
+                          aria-label={`Select ${titleFor(entry.signal_type)}`}
+                          className="mt-1 h-4 w-4 shrink-0 accent-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                        />
                         <div className="flex min-w-0 flex-col gap-1">
                           <span className="text-sm font-medium text-content">
                             {titleFor(entry.signal_type)}

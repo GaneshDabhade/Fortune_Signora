@@ -1674,3 +1674,58 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ⛔ **`rules.ts` is thoroughly tested**: the right rule fires and returns the right string. ⚠️ **The string was never resolved against the route table**, and `make reachability` asks the opposite question — *does anything link here* — **and was right to be silent, because nobody links to their own lockout.**
 
 📁 **[C-290](../LANE_COORDINATION.md) asks for the check rather than for more screens.** ⛔ **Six other declared destinations are unverified and this lane did not check them**: finding a defect outside the row it holds is an obligation to report, never a licence to fix.
+
+---
+
+## TASK-1468 ② ③ ⑦ · The Signal Center's queue-local surfaces — 2026-08-11
+
+**Against 📁 [`Fortune Signora Signal Center.dc.html`](../design-snapshot/screens/) ([D-138](../DECISION_REGISTER.md)).**
+
+⛔ **Three of eight surfaces, and the row set that scope itself**: *"eight surfaces is not one slice… take ①–③ and ⑦ first."* ⏭️ **④ Rules and ⑤ Analytics are destinations** ([C-269](../LANE_COORDINATION.md)); **⑥ depends on ③'s selection model**; **⑧ is a behaviour with a transport question behind it.** **① is [C-291](../LANE_COORDINATION.md) — see below.**
+
+### 🔴 The client filters by type and never by state, and that is not a preference
+
+📁 **[`triage.ts`](../../frontend/lib/query/hooks/triage.ts) already established it**: ***"queue state is derived on the server from the decision in force and the clock; a browser re-filtering a cached page would be re-deriving it from stale inputs, and a snooze that had elapsed would keep looking snoozed."***
+
+⚡ **`signal_type` carries no clock.** **It is a fact about the signal, fixed when it was raised**, so narrowing on it in the browser cannot go stale. ⛔ **Nothing added here narrows `state`.**
+
+### ⛔ The action bar offers one outcome, because the union only lets it construct one
+
+📁 **`ResolveOutcome` is a discriminated union**: `actioned` · `assigned { to }` · `snoozed { until }` · `dismissed { reason }`.
+
+| | |
+|---|---|
+| **`dismissed`** | ⛔ **Carries a reason** — 📁 *"a dismissal without a reason is unconstructable rather than merely rejected."* ⚡ **One reason typed once for eleven signals is the reason nobody can cite later** |
+| **`snoozed`** | ⛔ **Carries an `until`**, and **this screen has no per-row snooze to borrow a duration from** — ⚡ **inventing one decides on a customer's behalf when a signal comes back** |
+| **`assigned`** | ⛔ **Carries a person**, which is a choice per signal rather than per selection |
+| **`actioned`** | ✅ **The only one a bulk control can construct honestly** |
+
+> ⚡ **The type did the design work.** **A `ResolveOutcome` of loose optional fields would have made all four bulk-able and three of them wrong** — [§2](../../CLAUDE.md), *types should make incorrect architecture impossible*, paying out on a screen written months later.
+
+### 🔴 Two rules that protect a customer, and both are fire-tested
+
+**① The chips are built from the UNFILTERED page.** ⚠️ **Building them from the filtered list is the obvious mistake**: choosing one type removes every other chip, **so the control that narrows becomes the control that traps.** ✅ **Mutating it turns 4 tests red.**
+
+**② A selection is cleared whenever the visible set changes.** ⛔ **A selection that survives a filter says *"3 selected"* while two of them are off screen** — **and the person presses the button believing it means the three in front of them.** ✅ **Mutating it turns 1 test red.**
+
+### ⛔ What the design draws and the contract does not publish
+
+📁 **The counts header**: *"14 need review · 6 assigned to you · 41 this week."* 🔴 **`QueueEntry` publishes six fields and neither an assignee nor a timestamp is among them.** ✅ **One number ships.**
+
+⚠️ **`ResolveOutcome` carries `{ kind: 'assigned'; to }`, so the platform can RECORD an assignment and the queue cannot REPORT one** — **the fact exists in the write path and not in the read.** **That is [C-292](../LANE_COORDINATION.md).**
+
+⚡ **A count is the most trusted thing on a triage screen** — **it is what decides whether somebody opens the queue at all** — **and a wrong one is worse than a missing one because nothing about it looks wrong.**
+
+### ⚠️ [C-291](../LANE_COORDINATION.md) — this row's reuse premise was wrong, and it re-sizes ①
+
+📁 **The row says *"Signals is another consumer of that same store."*** ⛔ **`grep -rn "saved-views"` over `frontend/**` returns zero**; so does `SavedView`. **No type, no hook, no query key, no fetch.**
+
+🔴 **So Signals would be the store's FIRST frontend caller**, and 📁 [455 §4](455-context-definitions-r02-r03.md) puts the cost of proving a contract on the first one. ⚠️ **`working-list.ts` is the other half: it builds declarations nothing stores and nothing reads back**, while its own docstring says *"a saved view outlives the screen that wrote it."*
+
+### 🔴 The same false skip, twice in one day
+
+⚠️ **[TASK-440](../BACKLOG.md) shipped a `test.skip` that fired on a render race and reported a pass.** ⛔ **It happened again here** — **and `networkidle` did not prevent it**: the request had settled, React had not painted, and a queue of **16 signals across 9 types** read as `0`.
+
+✅ **The fix is to await the ELEMENT rather than the network**, and it is now a named helper in the spec so the next journey inherits it rather than rediscovering it.
+
+> 🔴 **The general form: a skip whose condition is measured rather than configured is a guard, and a guard needs the state it measures to have settled.** ⚡ **`networkidle` is a claim about the transport; `toBeVisible` is a claim about the screen.**
