@@ -3553,6 +3553,42 @@ def _load_state_check() -> ModuleType:
 
 📁 **Design System v2 ships `2xl: "1920px"`. `tailwind.config.ts` defines four screens and stops at 1600.** ⚡ **Small, real, and separate from everything above.**
 
+### B-431 · 🟠 The workflow registry's task lists are four days stale, and a workflow reads complete because its remaining rows are not in it
+
+| | |
+|---|---|
+| **Module** | **Repository-wide** — [`docs/coordination/workflows.toml`](coordination/workflows.toml) |
+| **Current assignee** | **Lane C** — 📁 `docs/coordination/**` is Product Office's ([§20e](../CLAUDE.md)) |
+| **Severity** | 🟠 — ⛔ **wrong behaviour a reader would act on**: the file is the only per-workflow state the repository has, and it under-reports remaining work |
+| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-11, answering *"how many workflows are completed, pending, blocked"* |
+| **Found** | **By cross-checking the registry's `tasks` arrays against `BACKLOG.md` rather than reading either alone** |
+
+#### 🔴 The measurement
+
+| | |
+|---|---|
+| **Rows in `BACKLOG.md`** | **189** |
+| **Rows listed against any workflow** | **78** |
+| ⛔ **Rows belonging to no workflow** | **111** |
+
+⚠️ **Not all 111 are defects.** 📁 **13 are pre-workflow-model legacy rows (`<400`) and 7 more are `500`–`999`** — platform and infrastructure work that legitimately maps to no customer journey.
+
+🔴 **21 in the `1400+` block are.** ⛔ **They are the entire App Shell audit output** — `TASK-1460`–`1472`, plus `TASK-1413`, `1430`, `1431`, `1454`, `1455`, `1457`, `1458`, `1459` — **and every one of them is remaining work inside a workflow the registry already names.**
+
+#### ⛔ Why it misleads rather than merely lags
+
+📁 **`[meta] updated = 2026-08-07`.** ⚡ **Four days, and the decomposition has moved substantially since.**
+
+⛔ **The failure is directional and it always reads the same way: a workflow looks MORE finished than it is.** ⚡ **Worked example — workflow 13, Application Shell: the registry lists 21 tasks, 19 of them terminal. `TASK-1461` (two navigation generations mounted at once), `TASK-1470` (`Ask Signora` in the wrong position) and `TASK-1471` (the frame skeletonises itself) are three structural defects inside that workflow, and none of the three is in its list.**
+
+⚠️ **The `state` field is separately stale in the other direction** — 📁 **eleven workflows declare `planned` or `decomposed` while every task the registry lists for them is terminal.** ⛔ **Neither measure is safe alone, which is the actual finding.**
+
+#### ✅ What a fix looks like
+
+⚡ **Assign the 21 `1400+` rows to the workflows they already belong to, restamp `[meta] updated`, and re-check the eleven `state` values against their rows.** ⛔ **Do not close the gap by relabelling states** ([D-187](DECISION_REGISTER.md) §6).
+
+⚠️ **The legacy 20 are a separate question** — 📁 **either they map to a workflow or the registry should say they are platform work, and guessing is what produced this row.**
+
 ### B-430 · 🟡 `state-check` reports a correct row as defective, and the fix it invites is the one C-213 cost two days
 
 | | |
