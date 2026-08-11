@@ -1324,6 +1324,25 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **Clearing on removal only.** ✅ **Three paths end access — removal, deletion, role change — and the design's rule 20 `ROLE_CHANGED` exists because the third is real** |
 | **Build-vs-Buy** | ✅ **n/a** |
 
+### TASK-1468 · Signal Center — the triage model is right and eight surfaces the design draws are missing
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚡ **MISSING IMPLEMENTATION — additive.** ⛔ **NOT a rebuild, and that is this row's most important line** |
+| **Epic** | **Opportunities & Signals** — [C-306](LANE_COORDINATION.md) |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-11, from the C-306 design-first reconciliation** |
+| **Design authority** | 📁 **[`Fortune Signora Signal Center.dc.html`](design-snapshot/screens/)** — ⛔ **read it; this row does not restate it** |
+| ✅ **KEEP the existing implementation — it is not previous-generation** | 🔴 **[C-306](LANE_COORDINATION.md) asks *rebuild or keep*, and the measurement answers KEEP.** 📁 The design's thesis is *"a triage queue, not a notification list · every signal ends in a decision"* — ✅ **`useWorkspaceTriage` implements the queue, and `ResolveOutcome` is exactly the design's four exits: `actioned` · `assigned` · `snoozed` · `dismissed`.** ✅ **`MIN_REASON` implements *"dismissed with a reason"*.** ✅ **The three state tabs — *Needs review · Snoozed · Closed* — are the design's.** ⛔ **Nothing invented was found, and no legacy structure. The implementation is a faithful SUBSET** |
+| ⛔ **Missing — eight surfaces, measured** | **① Saved views** (`＋ New view`, each with a count) · **② `＋ Filter` and filter chips** (*"Confidence ≥ 3"*, *"14 of 22 shown"*) · **③ bulk selection** (*"✓ 3 selected"* and its action bar) · **④ `Rules`** destination · **⑤ `Analytics`** destination · **⑥ `Review next ⏎`** — the keyboard triage flow · **⑦ the counts header** (*"14 need review · 6 assigned to you · 41 this week"*) · **⑧ live arrival** (*"Live · 3 arrived while you were reading"*) |
+| ⚠️ **Also absent, and it is a behaviour rather than a surface** | 📁 ***"Virtualised · newest signals never reorder the list while it is focused."*** ⚡ **The second half is the load-bearing one** — a list that reorders under a reader's cursor loses the row they were about to action. **Severity (`Critical`) is not displayed either** |
+| ✅ **REUSE — ① is already built and this row must not build a second one** | 🔴 **[TASK-452](#task-452) shipped the Saved View store**, and 📁 [455](architecture/455-context-definitions-r02-r03.md) §4 **names Reports among its consumers.** ⚡ **Signals is another consumer of that same store — ⛔ not a new saved-view mechanism.** 📁 **`lib/views/working-list.ts` carries the three refusals; read them before writing a fourth** |
+| ⚠️ **Sequencing — split before claiming** | ⛔ **Eight surfaces is not one slice.** ✅ **① · ② · ③ · ⑦ are queue-local and independent.** ⚠️ **④ and ⑤ are DESTINATIONS — [C-269](LANE_COORDINATION.md) applies: the rail entry belongs to the slice that builds the destination, and neither destination exists.** ⚡ **⑥ depends on ③'s selection model.** ⛔ **Take ①–③ and ⑦ first; raise ④/⑤ as their own rows when reached** |
+| **Change Budget** | 🟢 **`app/(app)/signals/**`** · 🟢 its tests · 🟠 **a `components/ui` addition only if the reuse audit finds none** |
+| **Playwright coverage** | **A signal leaves the queue by each of the four exits · a saved view survives navigation · the list does not reorder while a row is focused** |
+| **Definition of Done** | **A seller triages from a saved view, filters it, and actions in bulk** · **certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **LEVEL 1/2 NOT VERIFIED** — source-derived; no authenticated session |
+
 ### TASK-1467 · The three gate screens that are already drawn — sliced out of a row blocked on four documents
 
 | | |

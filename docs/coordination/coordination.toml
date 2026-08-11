@@ -10,15 +10,15 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "dbe793a"
-task_count     = 65
+task_count     = 66
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1430", "TASK-1458", "TASK-412"]
-assigned_total     = 52
-claimable          = 12
+assigned_total     = 53
+claimable          = 13
 claimable_now      = 3
-awaiting_sync      = 9
+awaiting_sync      = 10
 in_flight          = 11
 actionable         = 4
 awaiting_qe_transition = 0
@@ -26,7 +26,7 @@ blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 29
 lane_utilization   = 2.2
-idle_prediction_days   = 1.7
+idle_prediction_days   = 1.9
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 3
@@ -469,6 +469,22 @@ on_integration = false
 [[task]]
 id            = "TASK-1467"
 title         = "The three gate screens that are already drawn — sliced out of a row blocked on four docume"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1468"
+title         = "Signal Center — the triage model is right and eight surfaces the design draws are missing"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
