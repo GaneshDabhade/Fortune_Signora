@@ -90,6 +90,90 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-181 · `production-readiness.py` has reported inbound rate limiting green twice, for two different wrong reasons
+
+| | |
+|---|---|
+| **Module** | QE tooling — [`infra/production-readiness.py`](../infra/production-readiness.py), the *Inbound rate limiting* finding |
+| **Current assignee** | **QE** — a gate QE runs is QE's to fix (§20e) |
+| **Severity** | 🟠 — ⛔ **A security probe that cannot see the thing it names.** **Not 🔴: the limiter turns out to exist, so the product is not exposed — the probe is** |
+| **Status** | 🔵 **`OPEN` — reported by Lane C at C-1423, verified by QE**, 2026-08-11 |
+| **Commit found** | `9c5ff83f`, line 159 |
+
+**Steps.** Read what the probe searches:
+
+```python
+_grep_count(ref, "…rate.?limit|throttl…", "backend/apps/*.py")
+```
+
+**Expected.** An assertion that goes red when nothing rate-limits inbound authentication traffic.
+
+**Actual.** ⛔ **It searches `backend/`, and authentication does not live there — it permanently cannot**, under [§13](../CLAUDE.md) and [ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md): **Better Auth runs in Next.js and the Python tier only verifies.** The probe is looking in the one tree the answer can never be in.
+
+> ⚠️ **Twice green, twice wrong, and the two failures are different** — which is what makes this worth a row rather than a patch.
+>
+> **First**, `rate.?limit|throttl` matched **38 files**, every one of them Signora pacing *itself* against a vendor — *"HubSpot rate limit reached"*. **Outbound throttling read as inbound protection.** The file's own comment records that correction.
+> **Second**, the correction narrowed the search to `backend/apps/*.py` — **which fixed the pattern and kept the wrong tree.**
+>
+> ⚡ **The limiter does ship and is enabled**, at `frontend/lib/auth/server.ts:147`, with `throttled.tsx` rendering its `429`. **So [ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) §1's claim that nothing stands between a credential-stuffing script and Better Auth is false**, and the probe agreeing with it by accident is how that survived.
+
+**The fix, and it is a different question from the one being asked.** ⛔ **`enabled` is not the discriminating property — `storage` is.** `create-context.mjs:174` resolves storage to `"memory"` unless `storage` or `secondaryStorage` is set, and `server.ts` sets neither, **so the counter is in-process — exactly what ADR-0408 §9 rejects.** ✅ **The assertion must read `frontend/lib/auth/` and check the storage backing, not the presence of a word.**
+
+> ⛔ **Do not fix this by widening the glob.** A probe that greps two trees for a word would go green on the same 38 outbound files. **This is [B-175](#b-175)'s shape in a security gate: a true match answering a narrower question than the reader believes** — and the reader here believes the product is protected.
+
+---
+
+### B-179 · The Team screen never settles: `scrollHeight` keeps changing for 3 seconds at 1024 and 1280
+
+| | |
+|---|---|
+| **Module** | `product_surface` — `frontend/app/(app)/settings/team` |
+| **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **A screen that re-renders continuously burns battery, fights the scroll position, and makes every measurement of it unreliable.** **Not 🔴: the content is correct and reachable** |
+| **Status** | 🔵 **`OPEN` — found by QE**, 2026-08-11, by the first real run of the responsive matrix |
+| **Commit found** | `9c5ff83f` |
+
+**Steps.** At **1024px** or **1280px**, open `/settings/team`, wait for `networkidle`, then scroll to the bottom repeatedly and watch `document.documentElement.scrollHeight`.
+
+**Expected.** The page reaches a stable height and stays there.
+
+**Actual.** ⛔ **`scrollHeight` changes on every one of 20 attempts across 3 seconds and never repeats.** The layout invariant refuses to judge clearance and reports *"the page never settled at its bottom"* — **deliberately, rather than measuring a page that is still moving.**
+
+> ⚡ **It does not reproduce at 640px or 1600px**, which is the most useful part of the report: **something in the two middle breakpoints re-renders in a loop.** A responsive container measuring itself and reflowing is the usual cause of exactly this shape.
+>
+> ⚠️ **QE's first hand-probe of this screen said it was clean, and the probe was wrong** — it measured before the member list rendered. **The suite was right and the manual check was not**, which is worth recording because the instinct is the other way round.
+
+---
+
+### B-180 · QE's own layout invariant could not fail — `querySelector` returned the nav that is 0×0
+
+| | |
+|---|---|
+| **Module** | QE tooling — `frontend/tests/e2e/layout-invariants.spec.ts` |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **A guard that reports PASS on every possible input.** **Not 🔴: it was never certified, so nothing was ever protected by it** |
+| **Status** | ✅ **`FIXED` — QE**, 2026-08-11, in the session that wrote it. ⚠️ **QE does not close its own row** |
+| **Commit found** | Found by mutating the product and watching the suite stay green **three times** |
+
+**The defect.** The overlap check resolved each shell region with `document.querySelector(...)` — **the FIRST match.** ⛔ **The shell mounts two `nav[aria-label="Primary"]` elements**, and the first is collapsed to 0×0, which the code then skipped as zero-size. **So the fixed bottom bar was never measured, and the assertion could not fail at any width, on any page, for any layout.**
+
+> ⚡ **Three deliberate mutations passed before the vacuity was found.** Removing `pb-20`, then `phone:pb-0`, then measuring at scroll-bottom — all green. **A green check is not evidence until something has made it red**, and this is the clearest instance the repository has: the assertion was *written to catch* the exact defect it was blind to.
+
+**Four corrections followed, each forced by a measurement rather than by review:**
+
+| | |
+|---|---|
+| `querySelector` → `querySelectorAll` | the real fix; also independently confirms [TASK-1461](BACKLOG.md)'s *two navigation generations mounted* |
+| border box → **content box** for fixed overlays | 15,680px² reported on all six screens; `main`'s `padding-bottom` covered it exactly |
+| **containment is not collision** | a `<header>` inside `<main>` overlaps 100% by construction — **22 of 26 failed on a correct product** |
+| area tolerance → **depth** tolerance | 296px² was 640px wide × half a pixel of rounding |
+
+**And a fifth, from [B-179](#b-179):** the check now scrolls until `scrollHeight` stops changing and **asserts it actually reached the bottom**, because content below a bar on an unsettled page is *further down*, not *hidden*.
+
+✅ **Fire-tested both directions after the repair**: with `phone:pb-0` applied it fails on all six phone screens; restored, it passes.
+
+---
+
 ### B-178 · ⛔ **WITHDRAWN — the premise was false.** QE reported Chromium unlaunchable; it launches, and the repository had already solved this
 
 | | |
@@ -1521,10 +1605,31 @@ re.findall(r"\b[0-9a-f]{7}\b", ...)   →  []
 | **Module** | Repository tooling — `frontend/tests/e2e/fixtures/environment.ts`, `Makefile` `e2e` |
 | **Current assignee** | **QE** — `make e2e` is a gate QE runs, so the gate is QE's (§20e, *QE removes its own blockers*) |
 | **Severity** | 🟠 — **it produces a confident wrong answer**, which is worse than refusing |
-| **Status** | **`OPEN`** |
+| **Status** | ⚠️ **`PARTIALLY FIXED` — QE, 2026-08-11.** ✅ **The environment half is SOLVED and QE has now run journeys.** ⛔ **The guard half — a run with no port passing both URL guards — is untouched and stays `OPEN`** |
 | **Commit found** | `a540f5ee` — found running the journey suite this cycle, on the plan's own instruction |
 
 > ⚡ **Cycle 159 — this row is no longer a nuisance. It is the reason the journey gate has no owner who can run it.**
+
+> ## ✅ **2026-08-11 — why QE could never run a journey, measured at last**
+>
+> ⛔ **`auth.user` did not exist in `signora_lane_qe`.** The `auth` schema was there and empty, so **every sign-in timed out with no diagnostic** and the whole suite reported as an authentication failure. **QE's database was also five migrations behind head** (`0043` → `0048`), which the seeder found second.
+>
+> ⚠️ **Two earlier diagnoses of this were wrong, and both were QE's.** [B-178](#b-178) blamed a missing system library — withdrawn the same day. Before that it was recorded as *"NOT MEASURED BY QE"* for many cycles with no cause at all. **The cause was never in the suite, the browser, or the config.**
+>
+> **The sequence that works**, and every step uses the repository's own mechanism:
+>
+> ```
+> SIGNORA_AUTH_DATABASE_URL=…/signora_lane_qe  npm run auth:migrate
+> SIGNORA_DATABASE_URL=…/signora_lane_qe       uv run alembic upgrade head
+> SIGNORA_AUTH_DATABASE_URL=…/signora_lane_qe  npm run demo:users
+> SIGNORA_*_DATABASE_URL=…/signora_lane_qe     uv run python -m tests.playground.seed
+> ```
+>
+> ⚠️ **`frontend/.env.local` points `SIGNORA_AUTH_DATABASE_URL` at `signora` — the Playground.** **Every command above must override it**, and the dev server must be started with the override too, or the app authenticates against a database the personas are not in. **QE verified `signora` was untouched afterwards.**
+>
+> ✅ **`auth:migrate` refuses to guess a database or a secret, by name, twice** — *"guessing one would connect this tier to somebody else's environment."* **That is why this was never a silent failure, only an undiagnosed one.**
+>
+> ⛔ **What remains OPEN is this row's actual subject**: a journey run with no port still passes both URL guards. **The environment is fixed; the guard is not.**
 >
 > **[B-225](#b-225) reports that a shipped `@smoke` journey was red for a day and *"nothing said so, because nothing runs the journeys"*, and it names QE**: *"QE's cycle measurements name `make smoke` — 24 stages — and never a Playwright count."* ✅ **True, and QE accepts it.**
 >

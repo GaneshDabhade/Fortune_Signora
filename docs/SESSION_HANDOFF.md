@@ -64,6 +64,50 @@
 
 ---
 
+## 1b · Blockers and dependencies — nothing here is discoverable from the code
+
+> **Written 2026-08-11 by QE.** ⚡ **Every row names who owns the next move**, because the failure this section exists to prevent is a blocker that looks answered. ⛔ **A stale assignee is worse than a missing one** ([C-213](LANE_COORDINATION.md)).
+
+### Waiting on the product owner
+
+| | Blocks | Owner |
+|---|---|---|
+| **`lane-qe` remote push** — `origin/lane-qe` is at `37e095c6`, the guard commit **before** it was amended with the real-git regressions. Local is `main`. **Needs `--force-with-lease=lane-qe:37e095c6`** | Nothing executable. `lane-qe`'s content is on `main` and certified | **Product owner** — deliberately held; both remote-ref operations were scoped as one controlled pair |
+
+### Waiting on a lane
+
+| | Blocks | Owner |
+|---|---|---|
+| **Lane A rebase onto `integration`** (`ab519d82`). Its branch is 9 ahead of `main` but does **not** fast-forward from `integration` | ⛔ **The whole certification cycle.** `--next-cycle` says a cycle is available and the candidate cannot be assembled without it | **Lane A** |
+| **[B-179](BUGS.md)** — the Team screen never settles at 1024/1280 | Nothing yet; it will block any measurement of that screen | **Lane A** (`product_surface`) |
+| **Lane B is 641 commits behind** with 2 uncertified commits on its branch | Its own work only | **Lane B** |
+
+### QE's own, and none of them block another lane
+
+| | State |
+|---|---|
+| **[B-181](BUGS.md)** — `production-readiness.py` greps `backend/` for a limiter that lives in `frontend/lib/auth/`. **Green twice for two different wrong reasons** | `OPEN`. ⛔ **Do not fix by widening the glob** — the discriminating property is `storage`, not `enabled` |
+| **[B-177](BUGS.md)** — `mypy --strict` passes over 564 files and fails over 866; nothing tells a lane which scope the gate uses | **Lane's half FIXED, QE's half `OPEN`.** The next lane pays it again |
+| **[B-173](BUGS.md)** — `--promote` reads the certification record from the working tree while the merge needs it clean | `OPEN`, **five occurrences**. Worked around by ordering every cycle |
+| **[B-156](BUGS.md)** — a journey run with no port passes both URL guards | ⚠️ **Environment half SOLVED 2026-08-11** *(see the row — `auth.user` was missing from `signora_lane_qe`)*. **The guard half is untouched** |
+| **[B-161](BUGS.md) · [B-220](BUGS.md) · [B-238](BUGS.md)** — one defect, three rows | **Repair shipped and certified** (`_claim_stowaways`). ⛔ **Consolidate before closing**: discovery · diagnosis · repair · protecting test, in that order |
+| **[B-180](BUGS.md)** — QE's layout invariant could not fail | **FIXED**, fire-tested both directions. QE does not close its own row |
+| **The responsive matrix is uncertified** | 26 checks across four breakpoints, running against the real product on `lane-qe`. ⛔ **Not counted as coverage until it goes through a cycle** |
+
+### Dependencies that are decisions, not work
+
+| | Owner |
+|---|---|
+| **C-1405 — Workspace Chooser** | **Product owner.** The only outstanding design decision |
+| **C-287 — inbound rate limiting** | **Deferred** until Better Auth 1.1.0 is verified. [TASK-1430](BACKLOG.md) stays `BLOCKED` either way |
+| **C-285 · C-286** — three designs publish shortcut tables with colliding chords; the design's card is three columns and the shared `Dialog` is 448px and 🔴 | **Product owner** |
+
+### The environment fact that cost the most, so it is written down once
+
+> ⛔ **`frontend/.env.local` points `SIGNORA_AUTH_DATABASE_URL` at `signora` — the Playground.** **Every QE auth/seed command must override it**, and **the dev server must be started with the override too**, or the app authenticates against a database the personas are not in. ✅ **QE verified `signora` was untouched afterwards, and that verification should be repeated every time.**
+
+---
+
 ## 2 · Architecture state
 
 Permanent contracts. Each is enforced by automated test, not convention. **Changing any of these requires an RFC.**

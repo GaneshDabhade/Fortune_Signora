@@ -28,9 +28,6 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
  * width, because a viewport written in two places drifts.
  */
 
-/** Everything a page must satisfy at every width, whatever it is showing. */
-const SHELL_REGIONS = ['banner', 'navigation', 'main'] as const;
-
 async function boxOf(locator: Locator): Promise<{ x: number; y: number; width: number; height: number } | null> {
   if ((await locator.count()) === 0) return null;
   if (!(await locator.first().isVisible())) return null;
@@ -105,29 +102,123 @@ async function expectNoDocumentScroll(page: Page): Promise<void> {
  * and *unclickable*. ⛔ **An `expect(button).toBeVisible()` passes while the
  * button sits underneath a sidebar** — which is exactly the class of defect
  * this file exists for.
+ *
+ * ⚠️ **Measured against the CONTENT box when a fixed overlay is involved, and
+ * that correction came from a false positive on the first real run.** At 640px
+ * every screen reported `<navigation>` and `<main>` overlapping by 15,680px².
+ * **The layout was correct**: `main` runs to y=867 with `padding-bottom: 24px`,
+ * the fixed bottom bar starts at y=843, and **the padding covers the overlap
+ * exactly**. Nothing was ever under the bar.
+ *
+ * ⛔ **A guard that fires on correct behaviour gets switched off, and then it
+ * protects nothing** — so the border box was the wrong thing to measure. **The
+ * property that matters is content clearance**, and this now fails if that
+ * `padding-bottom` is removed while passing when it is there.
  */
 async function expectShellRegionsDoNotOverlap(page: Page): Promise<void> {
-  const boxes: { role: string; box: NonNullable<Awaited<ReturnType<typeof boxOf>>> }[] = [];
-  for (const role of SHELL_REGIONS) {
-    const box = await boxOf(page.getByRole(role));
-    if (box) boxes.push({ role, box });
-  }
-
-  for (let i = 0; i < boxes.length; i += 1) {
-    for (let j = i + 1; j < boxes.length; j += 1) {
-      const a = boxes[i];
-      const b = boxes[j];
-      const overlapX = Math.min(a.box.x + a.box.width, b.box.x + b.box.width) - Math.max(a.box.x, b.box.x);
-      const overlapY = Math.min(a.box.y + a.box.height, b.box.y + b.box.height) - Math.max(a.box.y, b.box.y);
-      const area = Math.max(0, overlapX) * Math.max(0, overlapY);
-      // Tolerance is an area rather than a distance: a shared one-pixel border
-      // between two adjacent regions is correct, a covered control is not.
-      expect(
-        area,
-        `<${a.role}> and <${b.role}> overlap by ${Math.round(area)}px², so a control in one is drawn under the other`,
-      ).toBeLessThan(64);
+  // ⚠️ **Scrolled to the bottom first, and that is the whole check.** A fixed
+  // bottom bar covers content only once the page is scrolled down to it — at
+  // scroll 0 the last element is far above and every measurement is clean.
+  //
+  // ⛔ **Found by trying to make this fail and failing.** Removing the
+  // compensating `padding-bottom` left the suite green twice, because `main`'s
+  // height is content *plus* padding: take the padding away and the box shrinks
+  // by exactly as much, so the overlap never appears. **The assertion was
+  // measuring a position where the defect cannot occur** — decorative, in §2's
+  // sense, and it passed on the real product for the wrong reason.
+  // ⛔ **Scrolled until the page STOPS GROWING, not once.** A single
+  // `scrollTo(bottom)` lands mid-page while a list is still rendering, and the
+  // content that then sits below the bar is not hidden — it is simply further
+  // down, reachable by scrolling. **Asserting there reports a defect that does
+  // not exist**, which it did on the Team screen: 34,040px², consistently, on a
+  // correct product.
+  //
+  // ⚡ **The property is only meaningful at a settled bottom**, so this waits
+  // for `scrollHeight` to stop changing and confirms it actually reached it.
+  await page.evaluate(async () => {
+    let previous = -1;
+    for (let attempt = 0; attempt < 20 && previous !== document.documentElement.scrollHeight; attempt += 1) {
+      previous = document.documentElement.scrollHeight;
+      window.scrollTo(0, previous);
+      await new Promise((resolve) => setTimeout(resolve, 150));
     }
-  }
+  });
+  const atBottom = await page.evaluate(
+    () => window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2,
+  );
+  expect(atBottom, 'the page never settled at its bottom, so clearance cannot be judged').toBe(true);
+
+  const overlaps = await page.evaluate(() => {
+    const roles = ['banner', 'navigation', 'main'];
+    const found: { a: string; b: string; area: number }[] = [];
+    const boxes: { role: string; el: HTMLElement; r: DOMRect; fixed: boolean; content: DOMRect }[] = [];
+
+    for (const role of roles) {
+      // ⛔ **`querySelectorAll`, and this is the correction that made the whole
+      // check real.** It was `querySelector`, which returns the FIRST match —
+      // and the shell mounts TWO `nav[aria-label="Primary"]` elements, the
+      // first collapsed to 0×0. That one was skipped as zero-size, so the
+      // fixed bottom bar was never measured and **this assertion could not
+      // fail at any width, on any page, for any layout.**
+      //
+      // ⚡ **Three mutations passed before the vacuity was found**, which is
+      // why a green check is not evidence until something has made it red.
+      const els = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          role === 'main' ? 'main' : role === 'banner' ? 'header, [role="banner"]' : 'nav, [role="navigation"]',
+        ),
+      );
+      for (const el of els) {
+      const style = getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') continue;
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) continue;
+      // **The content box, not the border box** — see the note below.
+      const content = new DOMRect(
+        r.x + parseFloat(style.paddingLeft),
+        r.y + parseFloat(style.paddingTop),
+        r.width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+        r.height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom),
+      );
+      boxes.push({ role, el, r, fixed: style.position === 'fixed', content });
+      }
+    }
+
+    for (let i = 0; i < boxes.length; i += 1) {
+      for (let j = i + 1; j < boxes.length; j += 1) {
+        const a = boxes[i];
+        const b = boxes[j];
+        // ⛔ **Containment is not collision.** A `<header>` inside `<main>` is a
+        // section heading, not a banner drawn over the content, and it overlaps
+        // by 100% by construction. **`querySelectorAll` made that visible the
+        // moment it stopped looking only at the first match** — 22 of 26 failed
+        // on a correct product, which is the false-positive shape that gets a
+        // gate switched off.
+        if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+        // A fixed overlay is *supposed* to sit above the flow. What matters is
+        // whether the other region's CONTENT reaches under it — which is what
+        // its padding exists to prevent.
+        const ra = a.fixed || b.fixed ? a.content : a.r;
+        const rb = a.fixed || b.fixed ? b.content : b.r;
+        const ox = Math.min(ra.x + ra.width, rb.x + rb.width) - Math.max(ra.x, rb.x);
+        const oy = Math.min(ra.y + ra.height, rb.y + rb.height) - Math.max(ra.y, rb.y);
+        const depth = Math.min(Math.max(0, ox), Math.max(0, oy));
+        const area = Math.max(0, ox) * Math.max(0, oy);
+        // ⚠️ **Tolerance on DEPTH, not area** — the same 1px reasoning the
+        // overflow check uses, and for the same measured reason. A full-width
+        // region overlapping by half a pixel of rounding is 296px², which is
+        // large as an area and invisible as a defect. **A bar actually covering
+        // content overlaps by tens of pixels**, so nothing real is masked.
+        if (depth > 1) found.push({ a: a.role, b: b.role, area: Math.round(area) });
+      }
+    }
+    return found;
+  });
+
+  expect(
+    overlaps,
+    `shell regions overlap so a control in one is drawn under the other: ${JSON.stringify(overlaps)}`,
+  ).toEqual([]);
 }
 
 /**
@@ -200,10 +291,32 @@ async function expectNoCrushedText(page: Page): Promise<void> {
  */
 const ROUTES: { path: string; name: string }[] = [
   { path: '/', name: 'Attention' },
-  { path: '/accounts', name: 'Accounts' },
+  { path: '/signals', name: 'Signals' },
   { path: '/reports', name: 'Reports' },
   { path: '/settings/team', name: 'Team' },
+  { path: '/settings/products', name: 'Products' },
+  { path: '/business', name: 'Business' },
 ];
+
+/**
+ * ⛔ **A route that 404s is a defect in this list, not in the layout** — and it
+ * has to say so, because the 404 page legitimately has no navigation and would
+ * otherwise fail `expectNavigationReachable` with a message about the shell.
+ *
+ * ⚠️ **Found on the first real run.** The list opened with `/accounts`, which
+ * does not exist — only `/accounts/[accountId]` does. The invariant reported
+ * *"the product has no way out of this page"*, which was **true of the page it
+ * was given and false about the product.** That is the same shape this file was
+ * written to catch, one level up: a correct assertion answering a question
+ * nobody meant to ask.
+ */
+async function expectRouteExists(page: Page, path: string): Promise<void> {
+  const notFound = page.getByRole('heading', { name: /does not lead anywhere/i });
+  expect(
+    await notFound.count(),
+    `${path} 404s — fix the route list in this file, not the shell`,
+  ).toBe(0);
+}
 
 for (const route of ROUTES) {
   test(`${route.name} holds its layout invariants`, async ({ page }, testInfo) => {
@@ -212,6 +325,7 @@ for (const route of ROUTES) {
     await page.waitForLoadState('networkidle');
 
     const width = page.viewportSize()?.width ?? 0;
+    await test.step(`${route.path} is a real route`, () => expectRouteExists(page, route.path));
     await test.step(`no horizontal overflow at ${width}px`, () => expectNoHorizontalOverflow(page));
     await test.step(`document does not scroll sideways at ${width}px`, () => expectNoDocumentScroll(page));
     await test.step(`shell regions do not overlap at ${width}px`, () => expectShellRegionsDoNotOverlap(page));
