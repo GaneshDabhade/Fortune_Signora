@@ -827,6 +827,56 @@ def _audit_planning() -> int:
     return 1
 
 
+def _claim_stowaways(claims: list[str]) -> list[tuple[str, str, list[tuple[str, str]]]]:
+    """Implementation commits that reached `integration` riding a claim push.
+
+    ⛔ **`--audit-claims` inspected the paths *inside* each claim commit and
+    nothing else, so it passed a clean claim while the slice underneath it went
+    through with the same push.** ⚡ **A push moves a branch, not a commit** —
+    every ancestor not already on the target arrives too, and the guard was
+    asking the wrong question about the right object.
+
+    ⚠️ **Third instance before it was fixed.** [B-161](../docs/BUGS.md) is QE's
+    own diagnosis, [B-220](../docs/BUGS.md) named the blind spot, and
+    [B-238](../docs/BUGS.md) is Lane A reporting it **against itself, with the
+    breach as the evidence**. **Three rows describing one defect is the argument
+    for a machine rather than a better-remembered rule** (`CLAUDE.md` §2:
+    *prefer a violation that is unrepresentable over one that is merely
+    discouraged*).
+
+    **The check is Lane A's, and it is exact**: a claim commit is only ever a
+    legitimate arrival on `integration` when its parent was *already* there. Any
+    other parent is a commit that skipped validation, certification and
+    promotion — whatever it contains, and however good it is.
+
+    ⚡ **It reports rather than refuses, deliberately.** The condition is
+    historical the moment it is detected: the commits are on the shared ref, and
+    the lane that caused it cannot unwind them without a force-push it may not
+    perform. **A gate that fails on something nobody present can fix teaches
+    people to skip the gate** — the same reasoning `state-check.py` applies to
+    `Planning-Sync`. **What QE does about it is validate the stowaway before the
+    next snapshot pins it, which is what this makes visible.**
+    """
+    found: list[tuple[str, str, list[tuple[str, str]]]] = []
+    for claim in claims:
+        parents = _git("rev-list", "--parents", "-n", "1", claim).split()[1:]
+        riders: list[tuple[str, str]] = []
+        for parent in parents:
+            # Everything between `main` and the claim's parent that is not
+            # itself a claim. On a healthy claim push this range is empty,
+            # because the parent *is* what `integration` already pointed at.
+            for commit in _git("rev-list", f"main..{parent}").splitlines():
+                if not commit:
+                    continue
+                subject = _git("log", "-1", "--format=%s", commit)
+                if subject.startswith("Claim TASK-"):
+                    continue
+                riders.append((commit[:7], subject))
+        if riders:
+            found.append((claim[:7], _git("log", "-1", "--format=%s", claim), riders))
+    return found
+
+
 def _audit_claims() -> int:
     """Every claim commit on `integration` touches the registers and nothing else."""
     _scope_note()
@@ -849,6 +899,7 @@ def _audit_claims() -> int:
         if offending:
             violations.append((commit[:7], _git("log", "-1", "--format=%s", commit), offending))
         skips.extend(_unexplained_skips(commit))
+    stowaways = _claim_stowaways(commits)
 
     print(f"audit — {len(commits)} claim commit(s)\n")
     if skips:
@@ -861,6 +912,20 @@ def _audit_claims() -> int:
             print(f"    · {short}  {subject[:56]}")
             print(f"        claimed {task}, skipped {', '.join(above[:4])}")
         print()
+    if stowaways:
+        # **Reported, never refused** — the reasoning is with `_claim_stowaways`.
+        print(f"  {len(stowaways)} claim push(es) carried an implementation commit with them.")
+        print("  The claim itself is clean; a push moves a BRANCH, so its parents arrived too.\n")
+        for short, subject, riders in stowaways:
+            print(f"    · {short}  {subject[:56]}")
+            for rider_sha, rider_subject in riders[:4]:
+                print(f"        brought {rider_sha}  {rider_subject[:52]}")
+        print(
+            "\n  These reached `integration` without validation, certification or\n"
+            "  promotion. Validate them before the next Certification Snapshot pins\n"
+            "  them — a snapshot assumes every commit here was fast-forwarded after\n"
+            "  QE validated it (B-161, B-220, B-238).\n"
+        )
     if not violations:
         print(
             "  every one touches only ACTIVE_ASSIGNMENTS.md and BACKLOG.md.\n\n"

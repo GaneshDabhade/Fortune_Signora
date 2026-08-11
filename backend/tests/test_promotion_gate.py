@@ -20,9 +20,12 @@ Two defects, one ruling:
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
+
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -261,3 +264,159 @@ class TestTheLatestLifecycleStateWins:
                       "IN PROGRESS", "IN VALIDATION", "CHANGES REQUESTED",
                       "VERIFIED", "CERTIFIED", "PROMOTED", "DONE"):
             assert coordination._LIFECYCLE.get(state, 0) > 0, state
+
+
+
+
+class TestAClaimPushCannotSmuggleASlice:
+    """A push moves a branch, so a clean claim can carry a slice in with it.
+
+    **[B-238](../../docs/BUGS.md), reported by Lane A against itself with the
+    breach as the evidence** — the third row after [B-161](../../docs/BUGS.md)
+    (QE's own diagnosis) and [B-220](../../docs/BUGS.md) (the blind spot named).
+    ⛔ **The claim commit was clean, `--audit-claims` passed it correctly, and
+    `M12.6 — the keyboard map…` arrived on `integration` underneath it**: 1,148
+    lines that had never been validated, certified or promoted.
+
+    ## These build a real repository, deliberately
+
+    ⛔ **A test that stubs `git` proves the function reads a dict.** **The defect
+    was never in the function — it was in which object the guard asked about**,
+    and only a real branch movement can distinguish those two. So each case
+    below `git init`s a repository, makes real commits, and **moves a branch the
+    way a push moves it**, then points the guard's `REPO_ROOT` at it.
+
+    **Nothing here touches the Signora repository**, and nothing here is a
+    fixture the other classes share: `_LIFECYCLE` and `verified_regressions` are
+    about text, and text is correctly tested as text.
+    """
+
+    @staticmethod
+    def _run(root: Path, *args: str) -> str:
+        done = subprocess.run(
+            ["git", *args], cwd=root, check=True, capture_output=True, text=True
+        )
+        return done.stdout.strip()
+
+    @classmethod
+    def _repo(cls, tmp_path: Path) -> Path:
+        root = tmp_path / "repo"
+        root.mkdir()
+        cls._run(root, "init", "-q", "-b", "main")
+        cls._run(root, "config", "user.email", "qe@example.test")
+        cls._run(root, "config", "user.name", "QE")
+        cls._run(root, "commit", "-q", "--allow-empty", "-m", "base")
+        cls._run(root, "branch", "integration")
+        return root
+
+    @classmethod
+    def _commit(cls, root: Path, branch: str, subject: str, path: str, body: str) -> str:
+        cls._run(root, "checkout", "-q", branch)
+        target = root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(body)
+        cls._run(root, "add", path)
+        cls._run(root, "commit", "-q", "-m", subject)
+        return cls._run(root, "rev-parse", "HEAD")
+
+    @staticmethod
+    def _push(root: Path, source: str, target: str) -> None:
+        """**What a push actually does** — move `target` to wherever `source` is.
+
+        ⚡ **This is the whole defect in one line.** The lane pushed a branch
+        whose tip was a claim; every ancestor not already on `integration` went
+        with it, and the guard only ever looked at the tip.
+        """
+        TestAClaimPushCannotSmuggleASlice._run(root, "branch", "-f", target, source)
+
+    def _guard_on(self, monkeypatch: pytest.MonkeyPatch, root: Path) -> ModuleType:
+        guard = _load_guard()
+        monkeypatch.setattr(guard, "REPO_ROOT", root)
+        return guard
+
+    def test_the_b238_breach_is_detected_through_a_real_branch_move(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The exact sequence that happened, reproduced rather than described."""
+        root = self._repo(tmp_path)
+        self._run(root, "checkout", "-q", "-b", "lane")
+        self._commit(root, "lane", "M12.6 — the keyboard map says which work",
+                     "frontend/lib/shell/shortcuts.ts", "export const SHORTCUTS = [];\n")
+        self._commit(root, "lane", "Claim TASK-1458 — the rail's third pinned utility",
+                     "docs/BACKLOG.md", "TASK-1458 CLAIMED\n")
+        # The lane ran `git push origin HEAD:integration` with the claim at HEAD.
+        self._push(root, "lane", "integration")
+
+        guard = self._guard_on(monkeypatch, root)
+        claims = guard._claim_commits("main..integration")
+        assert len(claims) == 1, "the claim itself is present and well-formed"
+
+        found = guard._claim_stowaways(claims)
+        assert len(found) == 1
+        riders = [subject for _, subject in found[0][2]]
+        assert riders == ["M12.6 — the keyboard map says which work"]
+
+    def test_a_claim_pushed_from_integration_reports_nothing(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The healthy case — and the one a false positive would destroy.
+
+        ⛔ **A guard that fires on correct behaviour gets switched off, and then
+        it protects nothing at all.** This is the case worth more than the one
+        above, because the defect it prevents is the gate's own abandonment.
+        """
+        root = self._repo(tmp_path)
+        self._commit(root, "integration", "Claim TASK-9 — something",
+                     "docs/BACKLOG.md", "TASK-9 CLAIMED\n")
+        guard = self._guard_on(monkeypatch, root)
+        claims = guard._claim_commits("main..integration")
+        assert len(claims) == 1
+        assert guard._claim_stowaways(claims) == []
+
+    def test_a_legitimate_claim_beside_a_stowaway_is_not_itself_flagged(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """**The mixed case, and it is the one that decides the gate is usable.**
+
+        ⚡ **Two claims on `integration`: one pushed correctly, one carrying a
+        slice.** A gate that reports both has told the reader nothing about
+        which lane to talk to, and a gate that reports neither has missed the
+        breach. ⛔ **It must name exactly the second.**
+        """
+        root = self._repo(tmp_path)
+        # Lane A pushes a claim the proper way — its parent is `integration`.
+        good = self._commit(root, "integration", "Claim TASK-8 — done properly",
+                            "docs/BACKLOG.md", "TASK-8 CLAIMED\n")
+        # Lane B branches from there, builds, and pushes claim-at-HEAD.
+        self._run(root, "checkout", "-q", "-b", "laneb", good)
+        self._commit(root, "laneb", "M12.6 — an unvalidated slice",
+                     "frontend/lib/thing.ts", "export const x = 1;\n")
+        self._commit(root, "laneb", "Claim TASK-9 — carried a slice",
+                     "docs/BACKLOG.md", "TASK-9 CLAIMED\n")
+        self._push(root, "laneb", "integration")
+
+        guard = self._guard_on(monkeypatch, root)
+        claims = guard._claim_commits("main..integration")
+        assert len(claims) == 2, "both claims are on integration"
+
+        found = guard._claim_stowaways(claims)
+        assert len(found) == 1, "exactly one claim carried something"
+        assert found[0][1] == "Claim TASK-9 — carried a slice"
+        assert [s for _, s in found[0][2]] == ["M12.6 — an unvalidated slice"]
+
+    def test_a_claim_riding_another_claim_is_not_a_stowaway(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Two claims in one push is not this defect.
+
+        ⚡ **Both are things a lane may legitimately put on `integration`**, so
+        reporting the earlier one is noise — and noise is what makes a real
+        finding easy to scroll past.
+        """
+        root = self._repo(tmp_path)
+        self._run(root, "checkout", "-q", "-b", "lane")
+        self._commit(root, "lane", "Claim TASK-8 — first", "docs/BACKLOG.md", "8\n")
+        self._commit(root, "lane", "Claim TASK-9 — second", "docs/BACKLOG.md", "8\n9\n")
+        self._push(root, "lane", "integration")
+        guard = self._guard_on(monkeypatch, root)
+        assert guard._claim_stowaways(guard._claim_commits("main..integration")) == []
