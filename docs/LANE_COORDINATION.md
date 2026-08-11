@@ -11071,3 +11071,44 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 #### 📁 ⑦ What is still the product owner's
 
 ⚠️ **[ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) is `ACCEPTED` and its §1 measurement is now known to be wrong.** ⛔ **A lane does not amend an accepted ADR** — **the correction, and whether the §20a exemption still has a subject, are the product owner's.** ✅ **Every number remains configuration and none is proposed here.**
+
+---
+
+## C-288 · The backlog's READY order and the relayed priority disagree, and six Lane A rows sit above the one being built
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, at the moment of claiming — ⛔ **before any code**, and recorded rather than resolved by choosing |
+| **Owner** | **Product owner** — 📁 [§20e](../CLAUDE.md): *"a lane never reorders, reprioritizes, removes, or inserts `READY` work without the product owner"* |
+| **Status** | 🟡 **`OPEN` — NOT BLOCKING.** ✅ **Implementation is proceeding on [TASK-1460](BACKLOG.md)**; this item exists so the choice is visible, not so it is waited on |
+| **Blocks** | ⛔ **Nothing.** ⚠️ **If the ruling goes the other way, one claim commit is abandoned and no code is lost** — which is the whole reason the Task Claim Protocol makes a claim a standalone commit |
+
+### 🔴 The disagreement, measured
+
+📁 **[`BACKLOG.md`](BACKLOG.md)'s `READY` section is *"claimable now, in priority order"*, and [§20e](../CLAUDE.md) is explicit that *"the queue order **is** the priority."*** **Read literally, the highest Lane A row is [TASK-1468](BACKLOG.md).**
+
+⚡ **The order the product owner relayed to this lane was different**: 📁 ***"TASK-1461. High priority."*** **and then TASK-1460, TASK-440, TASK-1467.** ⛔ **[TASK-1461](BACKLOG.md) sits BELOW four of those rows in the file** and was nonetheless the stated first priority — **so the file's order and the relayed order were already known to disagree, and the relayed one won.**
+
+| Position in the file | Row |
+|---|---|
+| 1 | **[TASK-1468](BACKLOG.md)** — Signal Center, eight missing surfaces |
+| 2 | **[TASK-1467](BACKLOG.md)** — the three gate screens |
+| 3 · 4 | **[TASK-1463](BACKLOG.md)** · **[TASK-1462](BACKLOG.md)** — App Shell sections and values |
+| 5 | ✅ **[TASK-1461](BACKLOG.md)** — **built first, on the relayed priority.** `IN VALIDATION` |
+| 6 · 7 | **[TASK-1465](BACKLOG.md)** · **[TASK-1466](BACKLOG.md)** |
+| 8 | 🔵 **[TASK-1460](BACKLOG.md)** — **claimed now, on the same relayed priority** |
+
+### ⚡ Why this lane took the relayed order rather than the file
+
+📁 **[§20e](../CLAUDE.md), *Continuous execution*, names four things that stop a lane claiming from the top, and the second is *"a higher-priority task has been explicitly assigned by the product owner."*** ✅ **That is what happened for [TASK-1461](BACKLOG.md), and the same instruction named this row next.**
+
+⛔ **But a relayed instruction is not a durable artifact.** ⚠️ **[§20e](../CLAUDE.md)'s own words for exactly this case**: *"if the top item cannot be taken… say so in its backlog note and take the next one. **Skipping quietly is re-prioritizing, and priority is not a lane's to hold.**"* ✅ **So the skip is written into both the claim commit and the row, and this item exists so it is not only in a commit message.**
+
+### ✅ What would resolve it, and it is one sentence either way
+
+| | |
+|---|---|
+| ✅ **The relayed order stands** | **Nothing to do.** ⚡ **Ideally [`BACKLOG.md`](BACKLOG.md)'s `READY` section is re-sorted to match**, so the file stops disagreeing with the instruction and the next lane does not have to ask this question again |
+| ⛔ **The file's order stands** | **[TASK-1460](BACKLOG.md)'s claim is returned and [TASK-1468](BACKLOG.md) is claimed instead.** **Cost: one commit** |
+
+> ⚠️ **The general form is worth more than this instance.** ⛔ **A queue whose order is authoritative, and an instruction that overrides it, cannot both be true without the override being written down** — **otherwise every future lane re-derives the same conflict, and the quiet resolution is indistinguishable from a lane choosing its own work.**
