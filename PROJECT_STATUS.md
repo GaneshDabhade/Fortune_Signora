@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `a037b6f`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `5f7f1bf`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,23 +12,23 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `a037b6f`, 2026-08-11.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `5f7f1bf`, 2026-08-11.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`a037b6f`** — the certification record, one commit past the certified `ec2db89` |
-| **Release candidate** | **32 commits** — Lane C's planning wave and `infra/coordination.py`, plus QE's responsive matrix and bug documentation. ✅ **Certified first attempt, and no lease was needed**: rebasing `lane-qe` onto `integration` made both pushes plain fast-forwards, which is the ordinary route and should have been the first one taken |
-| **Certification** | ✅ [`ec2db89ee1ad`](certification/reports/ec2db89ee1ad.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** (21 gates) · ✅ **first attempt** |
+| **`main`** | **`5f7f1bf`** — the certification record, one commit past the certified `563e517` |
+| **Release candidate** | **19 commits** — Lane A's M12.6 wave plus QE's withdrawal of [B-179](docs/BUGS.md). ⚠️ **Returned once on `eslint`**, which `make certify` names in its plan and does not run |
+| **Certification** | ✅ [`563e517846b7`](certification/reports/563e517846b7.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** (17 gates) |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **0 blocking** |
-| **Customer value this cycle** | ⛔ **None directly, and that is correct** — this cycle is planning and instruments. ⚡ **What it buys is that the product's responsive behaviour is measured in a real browser at four widths for the first time**, and it immediately found a screen that never stops re-rendering |
-| ⛔ **QE's own defects this cycle** | **Two, both in QE's own guards, both found by running them rather than reading them.** ⛔ **[B-180](docs/BUGS.md) — the layout invariant could not fail at any width, on any page**: `querySelector` returned the nav that is 0×0, so the fixed bar was never measured. **Three mutations passed before the vacuity was found.** ⛔ **[B-182](docs/BUGS.md) — the stowaway guard shipped one cycle earlier cried on the normal state**, naming three of Lane C's planning commits as smuggled. **Both fixed, both fire-tested in each direction** |
+| **Customer value this cycle** | ⚡ **Companies exists and has an entrance** — the account list a seller actually works. ⚡ **A locked account says it is locked, and a closed door says which.** ⚡ **Content stops at 1600px instead of every screen inventing its own width**, and **the navigation moves between two positions rather than existing twice** |
+| ⛔ **QE's own defect this cycle** | **One, and it is a product defect QE reported that does not exist.** ⛔ **[B-179](docs/BUGS.md) is WITHDRAWN** — it does not reproduce on the commit it was filed against, warm cache or cold. ⚡ **Lane A challenged it rather than accepting credit for fixing it**, and was right on both counts: the commit QE called a repair changed no production code, and the mechanism QE proposed has **zero occurrences** in the codebase |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ✅ **Certification named 21 gates and executed 6; QE measured three more by hand.** `vitest` **2751 across 144 files** · `eslint` ✅ · `tsc` ✅. ⚡ **And the responsive matrix ran against the real product for the first time** — 26 invariants, four breakpoints, reading geometry from a real engine.
+> ✅ **Certification named 17 gates and executed 6; QE measured four more by hand.** `vitest` **2838 across 147 files** · `eslint` **0 across 460 files** · `tsc` ✅ · **26/26 layout invariants at four breakpoints, run on the certified tree.**
 
-**Repository health:** **4410 backend tests** · ⚠️ **95.04% coverage** ✅ *(floor 95 — **4 basis points of headroom**)* · **2751 frontend tests** across **144 files** · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **186s** · ⚡ **Playwright journeys ARE now runnable by QE — [B-156](docs/BUGS.md)'s environment half is solved**, and **26 layout invariants run at four breakpoints: 24 pass, and both failures are [B-179](docs/BUGS.md)** · **disaster recovery from cycle 197 still current** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4410 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **2838 frontend tests** across **147 files** *(+87)* · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **213s** · ⚡ **26 layout invariants pass at 640/1024/1280/1600 on the certified tree** · **disaster recovery from cycle 197 still current** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
 > ⚠️ **Two figures above are corrected rather than updated.** The dashboard has carried **54 ADRs** and **147 numbered architecture documents**; the repository holds **53** and **145**, and `git ls-tree` returns the same pair at `cea60d41`, `57d6bc85` and `HEAD` — **so they did not change this cycle, they were transcribed.** The ADR count included `adr/README.md`. **A measured figure that never moves is the one to re-measure** (§20e: *metrics are measured, never transcribed*).
 
@@ -1025,6 +1025,38 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-11, cycle 202
+
+**Derived from the promoted commit `5f7f1bf`, certified at `563e517`.** **Nineteen commits. A real product wave, and the cycle's most useful event is a lane refusing credit for a fix QE had already written down.**
+
+### What a customer can now do
+
+⚡ **Companies exists and has an entrance** — the account list a seller actually works, after four endpoints spent months with no caller. ⚡ **A locked account says it is locked, and a closed door says which.** ⚡ **Content stops at 1600px** instead of every screen inventing its own width. ⚡ **The navigation moves between two positions rather than existing twice.**
+
+### ⛔ QE filed a product defect that does not exist, and the lane caught it
+
+**[B-179](docs/BUGS.md) is WITHDRAWN.** QE reported the Team screen as never settling — `scrollHeight` changing on all 20 samples across 3 seconds at 1024 and 1280.
+
+⚡ **Lane A declined the fix credit and asked for a re-test instead.** ⛔ **It does not reproduce on the commit it was filed against — twice, and again with `.next` deleted for a cold server.** **QE cannot reproduce it and cannot explain it.**
+
+**Their two challenges were both decisive:**
+**`142854bc` changed no production code** — only `docs/BUGS.md`. ⛔ **QE had written *"they fixed my finding"* off a commit subject**, which is the defect QE has filed against three lanes this week: **reading a subject instead of a diff.**
+**`ResizeObserver`, `getBoundingClientRect` and `offsetHeight` appear zero times** across `app`, `components` and `lib`. ⛔ **The mechanism QE proposed had no code behind it.** It was offered because the shape looked familiar, not because anybody had looked.
+
+> ⚠️ **The lesson is the one QE has been applying to guards all week and did not apply to its own finding: *consistent is not reproducible*.** **Three runs in one session is a sample.** The missing step was re-running on the same commit before filing — **exactly the discipline that found [B-180](docs/BUGS.md) by mutating three times.** ⚡ **The instrument was three days old and QE trusted it against the product on its third run.**
+
+### ⚠️ `eslint` is named by the plan and executed by nobody
+
+**The candidate was returned once, on a single unused import** — and it reached QE **by hand rather than by gate.** ⛔ **`make certify` lists `eslint` among its planned gates and does not run it**, so a lint failure certifies cleanly. **The gate existed only as QE's habit**, which is invisible to every lane. **Filed rather than absorbed.**
+
+### ⚠️ And a gap the matrix has, found by a journey rather than by QE
+
+**Lane A's [B-241](docs/BUGS.md)**: the rail's `h-full` began 106px below the wordmark, putting its pinned utilities at **y=872 on an 844px viewport**. ⛔ **That overflowed at every width for several cycles**, absorbed by a scrollbar until a fixed sheet had nowhere to scroll to.
+
+⛔ **QE's responsive matrix could not have caught it: `expectNoHorizontalOverflow` reads `rect.right` and nothing reads `rect.bottom`.** ✅ **Verified rather than assumed** — a probe for fixed elements extending past the viewport height returns 0 offenders on the fixed tree, and there is no assertion behind it. **A vertical check is the next slice, and B-241 is its evidence.**
 
 ---
 
