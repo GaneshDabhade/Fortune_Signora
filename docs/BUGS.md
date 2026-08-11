@@ -613,6 +613,55 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-252 · The library-reachability guard counts an identifier in a comment as a caller, so a doc-comment can retire an orphan
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tests/components/library-reachability.test.tsx`](../frontend/tests/components/library-reachability.test.tsx) |
+| **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **the guard reports a PASS it has not earned.** ⚡ **A guard that can be satisfied by prose is worse than no guard**, because the thing it protects — *every component in the library is reachable* — **stops being true silently** |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed here.** **Found running [TASK-1405](BACKLOG.md)'s gates; that row is Home's route.** ✅ **This lane worked around it by rewording, and the workaround is exactly the evidence** |
+| **Found** | **2026-08-11, by Lane A**, twice — 📁 once as [TASK-1461](BACKLOG.md)'s `MobileNavigation` and once here |
+| **Commit found** | **`09fd0704`** |
+
+**Steps.** Write a doc-comment in any `app/**` or `components/**` file that mentions an unreferenced library export **by its identifier** — `` `Columns` `` is enough — and run `npx vitest run tests/components/library-reachability.test.tsx`.
+
+**Expected.** The component is still an orphan; the allowlist is still correct.
+
+**Actual.** ⛔ **The guard reports it as reachable and fails the OPPOSITE assertion:**
+
+```
+these are reachable now and should leave the allowlist:
+  expected [ 'Columns' ] to deeply equal []
+```
+
+⚡ **The only occurrence was this, inside a JSDoc block:**
+
+```
+ * shape [TASK-1460](…)'s `Columns` and [C-291](…)'s Saved View store have.
+```
+
+#### 🔴 Why this is the dangerous direction
+
+⚠️ **The failure this lane hit is the loud one** — a false *reachable*, which fails a different assertion and gets noticed. ⛔ **The quiet one is the same defect pointing the other way**: **a component with no callers whose name appears in any comment anywhere is reported reachable**, so **it leaves the allowlist, nobody schedules it, and the library grows an orphan the guard says is fine.**
+
+📁 **[§2](../CLAUDE.md): *a guard that cannot fail is documentation pretending to be code.*** ⚡ **This one can fail — it just cannot fail for the right reason**, which is the same class one step along.
+
+#### ⚠️ It has now cost two slices, which is the argument for fixing it
+
+| | |
+|---|---|
+| **[TASK-1461](BACKLOG.md)** | `git grep MobileNavigation` had to return zero for the row's DoD, and **four prose mentions kept it non-zero.** ✅ **Resolved by rewriting them to name the thing** — *"the phone's bottom navigation bar"* |
+| **[TASK-1405](BACKLOG.md)** | ⛔ **The same rewrite, for the same reason** — *"TASK-1460's column primitives"* rather than the identifier |
+
+🔴 **Twice is the threshold [§20e](../CLAUDE.md) names**: *"one lane's inconvenience is not evidence; two lanes' is."* ⚡ **And the workaround is itself a cost** — **a lane cannot name a component in a comment**, which is a strange constraint to impose on documentation in a repository that values it this highly.
+
+#### ✅ The repair, and it is the same one `B-162` already applied elsewhere
+
+📁 **[B-162](#b-162) narrowed a guard to strip comments** and this lane fixed its own regression there — **so the repository already has string-aware source walking to borrow.** ⛔ **Strip comments before scanning for callers**, and ⚡ **an import statement is a stronger signal still**: a caller imports, prose does not.
+
+⚠️ **And whatever the mechanism, the fix must be measured the way B-162's was** — 📁 *"narrowing a guard is only safe if you measure what STOPS firing."* **Add a fixture with a commented identifier and no import, and prove it reports an orphan.**
+
 ### B-251 · `eslint` is red on `integration`, and the gate that would have caught it does not run
 
 | | |
