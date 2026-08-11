@@ -1436,7 +1436,7 @@
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🟣 **IMPLEMENTED INCORRECTLY — ordering, not absence** |
 | **Epic** | **Common Platform Foundation** — App Shell |
 | **Module** | **`product_surface` — Lane A** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-11, from the product owner's screenshot reconciliation** |
+| **Status** | 🔵 **`CLAIMED` — Lane A, 2026-08-11**, by the Task Claim Protocol ([§20e](../CLAUDE.md)). ⚡ **The top Lane A row in `READY`.** ✅ **Taken with its own warning in hand**: 📁 the row's Component coverage says *"a test that only checks `Ask Signora` exists passes against the current defect"* — ⛔ **so the assertion is by POSITION, and this lane has already shipped the same mistake once**, in [TASK-1458](#task-1458), where the utility group was unasserted and 2782 tests stayed green while an entry was missing. *(was ✅ **`READY` — Lane C, 2026-08-11, from the product owner's screenshot reconciliation**)* |
 | **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/) §12, door `01`** — ⛔ **read it; this row does not restate it** |
 | 🔴 **The requirement, verbatim** | 📁 ***"A permanent 'Ask Signora' item pinned ABOVE the utilities. The only always-visible door."*** |
 | ⛔ **What renders** | 📁 **Screenshot of `localhost:3300`, 2026-08-11, product owner**: the rail's bottom group reads **`Settings` → `Shortcuts` → `Docs & support` → `Ask Signora`.** ⚡ **The assistant is LAST, below all three utilities** |
