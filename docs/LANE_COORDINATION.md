@@ -9812,6 +9812,31 @@ rules parsed: 24   ·   distinct reason codes: 24
 | **Status** | 🔴 **`OPEN` — and it is the highest-ranked conflict in the repository**, because §2 makes `CLAUDE.md` outrank every document that contradicts it |
 | **Blocks** | ⚠️ **Nothing today, and that is luck rather than design** — Lane A read `BACKLOG.md` instead and claimed correctly. **A lane following §20e literally reads `current` and finds nothing** |
 
+### ✅ RE-VERIFIED 2026-08-11 — Lane C, independently and against the live files
+
+⛔ **Not taken from this row on trust.** ⚡ **Measured today, on `origin/integration` and on the published ref:**
+
+| Claim | Check | Result |
+|---|---|---|
+| `current` · `next` · `future` gone from the queue files | `grep -cE "^(current\|next\|future)\s*=" queues/lane-a.toml queues/lane-c.toml` | ✅ **`0` and `0`** |
+| `coordination.toml` emits no `current` | `git show origin/coordination:coordination.toml` | ✅ **`backlog` only** |
+
+🔴 **So the constitution instructs a step that cannot be performed.** ⚡ **Still blocking nothing, and still by luck** — Lane A reads `BACKLOG.md`, which is what [§20e](../CLAUDE.md) step 3b tells it to do second.
+
+### ⚖️ THE DECISION, PREPARED — two lines, and the replacement text is written
+
+⛔ **[`CLAUDE.md`](../CLAUDE.md) is the product owner's and this office does not edit it undirected.** ⚡ **What follows is a draft for ruling, not a change.**
+
+| Line | Currently reads | Proposed |
+|---|---|---|
+| **§20e, Task Claim Protocol step 3** | *"Read your queue first — `current`, then `next`, then `future`, **in that order**"* | ***"Read your queue first — [`docs/coordination/queues/lane-<a\|b>.toml`](docs/coordination/queues/). Its `backlog` array holds every task you are eligible to start, in priority order, and its `blocked` array names the rest with each blocker's owner"*** |
+| **§20e, *A lane learns what to build from `origin/coordination`*** | *"It reads the row where `lane` is its own, takes `current`, and starts"* | ***"It reads the row where `lane` is its own, takes the first entry in `backlog`, and starts"*** |
+
+✅ **Nothing else in either section changes.** ⛔ **The three-deep pipeline sentence that follows the second line describes `current`/`next`/`next_after_that` and would also need striking** — ⚡ **the projection now publishes ONE ordered array, which carries the same information without three fields to keep consistent.**
+
+⚠️ **Why this is a ruling rather than a correction**: 📁 **[§2](../CLAUDE.md), *governance describes reality; it never quietly changes it*** — ⛔ **applying this edit changes what every lane does tomorrow, so it needed a decision yesterday.** ⚡ **Both previous Lane C edits to that file were DIRECTED rather than drafted, and this office is not breaking that.**
+
+
 **Measured, line by line, at `1c9c97dc`:**
 
 | Line | What it instructs | Why it is now wrong |
