@@ -449,9 +449,21 @@ certify: release-preflight
 ## change exists to end."* **It was right, and these two lines were the gap.**
 E2E_URL ?= http://localhost:$(SIGNORA_WEB)
 E2E_DB  ?= $(SIGNORA_DB)
+## ⛔ **B-243, 2026-08-11 — a third owner credential used to sit here and it was
+## read by nothing.** `SIGNORA_DATABASE_URL=…//signora:signora@…` was in this
+## block; the seeder takes `SIGNORA_TEST_ADMIN_DATABASE_URL` and
+## `SIGNORA_TEST_APP_DATABASE_URL` (`tests/playground/seed.py:261`), and
+## `playwright.config.ts` declares **no `webServer`**, so nothing `make e2e`
+## starts ever read it. **Removed rather than left**: an unread variable holding
+## the highest-privilege credential is not harmless, it is a value waiting for
+## its first reader — which is precisely how [B-243] happened one file over.
+##
+## ⚠️ **The API under test is the lane's own dev server, configured from its own
+## `backend/.env`.** That is why B-243's fix is in `.env.example` and not here:
+## the Playwright journeys ran with RLS disarmed because the *server* was
+## started as the owner, and no line in this file could have changed that.
 E2E_ENV := SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \
            SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \
-           SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \
            SIGNORA_APP_URL=$(E2E_URL) \
            SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
 
