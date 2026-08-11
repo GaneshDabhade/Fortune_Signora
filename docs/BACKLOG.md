@@ -1382,6 +1382,27 @@
 | **Definition of Done** | **A cold boot shows the complete frame and an empty content region** · **certified · `main`** |
 | ⚠️ **Runtime status** | ✅ **RUNTIME EVIDENCE OBTAINED** — the product owner's screenshot of `localhost:3300`, corroborated in source at `workspace-switcher.tsx`:185–188 |
 
+### TASK-1472 · Nine screens still carry `max-w-3xl`, and the container they should use now exists
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚡ **MIGRATION — the follow-on slice [TASK-1460](#task-1460) deliberately excluded** |
+| **Epic** | **Common Platform Foundation** — App Shell |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-11, on post-implementation review of [TASK-1460](#task-1460).** ⚡ **Its predecessor is delivered and proven with a consumer, which is the condition it was sequenced behind** |
+| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/)** — ***"12-column grid, 24px gutters, 1600px content maximum"*** |
+| ✅ **What [TASK-1460](#task-1460) delivered — reviewed, not assumed** | 📁 **`components/ui/container.tsx` publishes `CONTENT_GRID = { columns: 12, gutter: 24, maxWidth: 1600 }` — the design's three numbers exactly.** ✅ **`app-shell.tsx`'s content region lost its unconstrained `flex-1 p-4 phone:p-6` and now composes through the container.** ✅ **107-line component test and a 152-line `content-grid.spec.ts` asserting geometry rather than class names.** ⛔ **Nothing here is to be rebuilt** |
+| ⚡ **The measured delta** | **Before: 11 route directories, with `(app)` alone using FOUR widths — `2xl · 3xl · 4xl · 5xl`.** **After: 10, and `(app)` is down to one.** ✅ **`/reports` and `/onboarding` left the list entirely.** ⛔ **Nine still carry `max-w-3xl` (768px)**: `accounts/[accountId]` · `business` · `help` · `settings` · `settings/connections` · `settings/organization` · `settings/products` · `settings/team` · `dev/mailbox`. ⚠️ **Plus `(app)` at `max-w-4xl`** |
+| 🔴 **Why they are wrong rather than merely different** | ⚡ **A 768px column inside a 1600px container uses 48% of the width the design allots.** 📁 **The container exists precisely so a screen does not decide this** — ⛔ **a screen that keeps its own `max-w-*` is opting out of the grid it now sits inside** |
+| ⚡ **Delivers** | **Each of the ten drops its ad-hoc `max-w-*` and inherits the container's width** — ⛔ **and nothing else changes.** ✅ **This is a removal slice** |
+| 🔴 **What it must NOT do** | ⛔ **Do not redesign any screen's internal layout** — that is each screen's own row. ⛔ **Do not change `container.tsx`** — it is delivered and tested. ⛔ **Do not remove a `max-w-*` that is CONSTRAINING A FORM rather than the page**: 📁 a sign-in card at `max-w-md` is the design's, and the ten above are page-level. ⚠️ **Verify each is page-level before removing it** |
+| **Change Budget** | 🟢 **`frontend/app/**`** · 🟢 their tests |
+| **Playwright coverage** | ⚡ **Extend `content-grid.spec.ts` rather than writing a second spec**: each migrated route's content region reaches the container's width at 1600, asserted by `boundingBox()` |
+| ♿ **Accessibility** | ⚪ **None specific** — a width change with no semantic effect |
+| **Dependencies** | ✅ **None remaining.** [TASK-1460](#task-1460) is delivered |
+| **Definition of Done** | **`git grep 'max-w-' frontend/app` returns only form-level constraints** · **certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **SOURCE VERIFIED** — measured across both branches; not observed rendered |
+
 ### TASK-1470 · `Ask Signora` sits below the utilities and the design pins it above them
 
 | | |

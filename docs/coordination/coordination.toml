@@ -9,16 +9,16 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "392a1c3"
-task_count     = 67
+generated_from = "c8e3b4e"
+task_count     = 69
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1405", "TASK-1462", "TASK-1463", "TASK-1465", "TASK-1466", "TASK-202"]
-assigned_total     = 54
-claimable          = 10
+assigned_total     = 56
+claimable          = 12
 claimable_now      = 6
-awaiting_sync      = 4
+awaiting_sync      = 6
 in_flight          = 13
 actionable         = 5
 awaiting_qe_transition = 0
@@ -26,7 +26,7 @@ blocked_on_integration = 1
 supply_state       = "working"
 blocked            = 31
 lane_utilization   = 2.6
-idle_prediction_days   = 1.4
+idle_prediction_days   = 1.7
 dependency_wait_days   = 0.2
 blocked_duration_days  = 0.2
 critical_path_max      = 3
@@ -304,7 +304,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1457"
@@ -352,7 +352,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1461"
@@ -368,7 +368,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1462"
@@ -501,6 +501,38 @@ on_integration = true
 [[task]]
 id            = "TASK-1470"
 title         = "`Ask Signora` sits below the utilities and the design pins it above them"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1471"
+title         = "The shell frame skeletonises itself on cold boot, and §16 says the frame is never blank"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1472"
+title         = "Nine screens still carry `max-w-3xl`, and the container they should use now exists"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
