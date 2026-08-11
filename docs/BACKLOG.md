@@ -1858,6 +1858,26 @@
 | ✅ **Nothing is lost** | 📁 **Every measurement this row carried is already in TASK-1432**: the model is correct, the surface never arrived, and the consumer is the missing half. ⛔ **No content is folded across — a second copy is what caused this** |
 | ⚡ **The real work** | ➡️ **[TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope)**, unchanged, still correctly waiting on its consumer |
 
+### TASK-1463 · Three App Shell sections the design specifies and the shell does not implement
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **MISSING IMPLEMENTATION** — ⛔ **three whole sections, not details of a built one** |
+| **Epic** | **Common Platform Foundation** |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-10.** ⚡ **Completing the App Shell forensic audit: seven sections were unaudited, four are compliant, three are absent** |
+| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/) §16 · §18 · §19** — ⛔ **read each; this row does not restate them** |
+| 🔴 **§16 · the third loading tier** | 📁 ***"In-place refreshes show a 2px bar under the top bar and dim stale figures to 60%; they never cover data that is already readable."*** ⛔ **No `h-[2px]`/`h-0.5` bar and no `opacity-60` exists in `components/shell/`.** ✅ **Tiers one and two — cold boot paints chrome and skeletons content, route changes keep the shell — appear satisfied by `Skeleton` and `RegionBoundary`; VERIFY before building, and build only tier three** |
+| 🔴 **§18 · the empty workspace** | 📁 ***"the full shell with real navigation, not a stripped-down wizard: destinations that need data are visible but marked… a three-step activation checklist with live counts."*** ⛔ **No activation checklist exists.** ⚡ **A brand-new workspace is the first screen every customer sees, and the design is explicit that it is not a wizard** |
+| 🔴 **§19 · workspace-labelled surfaces** | 📁 ***"Every workspace-scoped surface — search, notifications, filters, the assistant — is labelled with the workspace it belongs to whenever more than one is available to the user."*** ⛔ **Neither `shell-palette.tsx` nor `copilot.tsx` reads `activeWorkspace`.** 🔴 **A user in two workspaces cannot tell which one the palette is searching** — 📁 §19 calls the workspace *"the hard boundary of data, permission and configuration"* |
+| ⚠️ **§19 is conditional and the condition matters** | ⛔ ***"whenever more than one is available to the user"*** — ✅ **a single-workspace user must NOT see the label.** ⚡ **`useWorkspaceContext` already exposes `workspaces`, so the condition is available and must not be approximated** |
+| ✅ **Four of the seven need nothing — verified, so nobody re-audits them** | 📁 **§05 Breadcrumbs**: ellipsis, `aria-current` and the status dot are all in `breadcrumb.tsx`. 📁 **§07 Banners**: `ShellBanners` stacks, and **system status is correctly a pill in the top bar rather than a banner** — the design's sharpest distinction here, and the implementation gets it right. 📁 **§17 Errors**: `error-state.tsx` carries the copyable correlation ID; `RegionBoundary` keeps failures inside the shell. 📁 **§21 Accessibility**: landmarks present — ⚠️ **except the duplicate `Primary`, which is [TASK-1461](#task-1461)'s**, and the label conflict, which is [C-1422](LANE_COORDINATION.md)'s |
+| 🔴 **What it must NOT do** | ⛔ **Do not build tiers one and two of §16 without measuring them first.** ⛔ **Do not label a single-workspace user's surfaces.** ⛔ **Do not touch the search `aria-label`** — [C-1422](LANE_COORDINATION.md) is with the product owner. ⛔ **Do not build the filter strip or utility panel** — [TASK-1432](#task-1432), [TASK-1433](#task-1433) |
+| **Change Budget** | 🟢 **`components/shell/**`** · 🟢 its tests · 🟠 **a new `components/ui` component if the checklist needs one — announce it** |
+| **Playwright coverage** | ✅ **All three assertable at 1280 today**: a refresh shows a 2px bar and dims figures to 60% · a workspace with no data shows three steps with counts · **a user in two workspaces sees the workspace named in the palette, and a user in one does not** |
+| **Definition of Done** | **§16, §18 and §19 are implemented as written** · **certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **LEVEL 1/2 NOT VERIFIED by Lane C** — no authenticated session. **Every measurement is of the source** |
+
 ### TASK-1462 · The App Shell values the design specifies exactly and the implementation approximates
 
 | | |

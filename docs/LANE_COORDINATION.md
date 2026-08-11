@@ -8375,6 +8375,48 @@ enabled: options.rateLimit?.enabled ?? isProduction,
 
 > ⚡ **Neither is urgent and this row says so.** **The queue is useful without them** — a seller sees what is waiting, on which account, and every item leaves by a decision. **These two make it faster to triage, not possible to.**
 
+## C-1422 · The finalized design labels the search field with the combined brand, and the brand rule forbids it there
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-10, completing the App Shell forensic audit (§21 Accessibility) |
+| **Owner** | 🔴 **Product owner** — ⛔ **two ratified authorities disagree and neither can yield to the other without a ruling** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN ↔ GOVERNANCE CONFLICT.** ⛔ **Not an implementation defect** — the implementation follows the design exactly |
+| **Status** | 🔵 **`READY FOR PRODUCT DECISION`** — ⚡ **options and a recommendation below; nothing further to investigate** |
+| **Blocks** | ⛔ **Nothing.** ✅ **No lane is waiting**, and this must not stop shell work |
+
+### The conflict, in two sentences
+
+📁 **The finalized design, App Shell §21 `landmarks`:** *"`search` — The top-bar field, labelled **“Search Fortune Signora”**."*
+
+📁 **[`CLAUDE.md`](../CLAUDE.md), ratified 2026-08-04:** *"**Wherever the product speaks** — the assistant, notifications, emails, tooltips, help, empty states, system messages, **UI copy** — it is `Signora`, alone."* ⚡ ***"Once the application is open, the experience belongs to Signora."***
+
+⛔ **`top-bar.tsx`:120 renders `aria-label="Search Fortune Signora"`.** **An accessible label inside the authenticated application is the product speaking**, not a branding surface — 🔴 **and a screen-reader user is then the only customer who hears the combined brand in-product**, which is the outcome [ADR-0034](architecture/adr/0034-ubiquitous-language.md) exists to prevent.
+
+### ⚠️ A second, separate finding — [`CLAUDE.md`](../CLAUDE.md) states something untrue about the repository
+
+📁 **The brand section asserts:** *"The inventory is [421](architecture/421-product-naming-inventory.md), and it is empty: `git grep "Fortune Signora"` returns zero matches."*
+
+⛔ **It returns 79.** ✅ **Measured 2026-08-10 across `frontend/` and `backend/`.**
+
+⚡ **Most are legitimate and the rule permits them** — the sign-in masthead, the welcome title, and the `<title>` of `maintenance.html` and `outage.html` are **branding surfaces by the rule's own list.** ⛔ **But the literal claim is false**, and [§2](../CLAUDE.md) is explicit that the repository must not assert something untrue of itself. **`CLAUDE.md` is the product owner's file and this office does not edit it** — recorded here instead.
+
+### The options
+
+| | | |
+|---|---|---|
+| **A** ✅ **RECOMMENDED** | **The brand rule wins; the label becomes `Search Signora`** | ⚡ **The rule is newer (2026-08-04) and names *UI copy* explicitly.** 📁 The design predates it, and **[D-138](DECISION_REGISTER.md) makes the snapshot the *implementation* authority — not an authority over governance.** ⛔ **One-word change, one test line** |
+| **B** | **The design wins; the label stays** | ⚠️ Requires amending the brand rule to exempt accessible labels — ⛔ **which would mean the only customer hearing the combined brand in-product is a screen-reader user** |
+| **C** | **Refresh the design so §21 reads `Search Signora`** | ⛔ **[D-138](DECISION_REGISTER.md): a refresh is Product Office retrieving a new upstream package, not an edit.** ⚡ Correct long-term, slower than A, and **A is what the repository would do in the meantime anyway** |
+
+⚡ **A and C are not exclusive** — **A now, C at the next refresh**, and the snapshot stops disagreeing with governance.
+
+### ⛔ What this office did NOT do
+
+⛔ **Did not change the label.** 📁 **[§18 of the audit directive](../CLAUDE.md): *"If the finalized design is ambiguous, report the ambiguity. Do not redesign it."*** ⚡ **This is sharper than ambiguity — it is two ratified authorities disagreeing — and neither is Lane C's to overrule.**
+
+---
+
 ## C-269 · Nine of the rail's eleven entries have no destination, and the file's own history says what that costs
 
 | | |
