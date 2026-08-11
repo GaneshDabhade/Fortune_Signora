@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `346a0c4`, 2026-08-10.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `bbee38d`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,23 +12,23 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `346a0c4`, 2026-08-10.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `bbee38d`, 2026-08-11.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`346a0c4`** — the certification record, one commit past the certified `57d6bc8` |
-| **Release candidate** | **18 commits, fast-forwarded.** ⚡ **Lane A rebased**, so the branch that stood 32-ahead-and-behind last cycle arrived **0 behind and ff-able**. Every commit resolved **NEW** by patch-id against all 1,578 on `main` — nothing re-applied, nothing lost |
-| **Certification** | ✅ [`57d6bc85af1a`](certification/reports/57d6bc85af1a.md) · migration head **`0047`** · protocol **v2** · profile **`documentation+frontend`** · ✅ **first attempt** |
+| **`main`** | **`bbee38d`** — the certification record and [B-177](docs/BUGS.md), two commits past the certified `78f2c72` |
+| **Release candidate** | **15 commits, fast-forwarded.** ⚠️ **Returned once**: `mypy --strict` passed for the lane over 564 files and failed for the gate over 866 — [B-177](docs/BUGS.md). ✅ **Fixed and re-handed within one exchange.** All 15 **NEW** by patch-id against 1,602 on `main` |
+| **Certification** | ✅ [`78f2c72fbbc2`](certification/reports/78f2c72fbbc2.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** (17 gates) · ⚠️ **third attempt — two aborts, both QE's environment, neither a statement about the commit** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **0 blocking** |
-| **Customer value this cycle** | ⚡ **Reports opens, and says plainly what it cannot do yet** — one report definition read three ways, rather than three screens that drift apart. ⚡ **A saved view can say which lists it is able to open.** ⚡ **Signing in returns you to the page you were going to** — and cannot be talked into sending you somewhere else |
-| ⛔ **QE's own defects this cycle** | **Two false *green* signals in QE's own tooling, neither in the repository.** **A `pgrep -f "make certify"` wait-loop matched its own command line** and reported `RUNNING` on a run that had already certified. **A backgrounded launcher reported `exit code 0`** that belonged to its `echo`, not to `make dr`. ⚡ **Both are [B-175](docs/BUGS.md)'s shape — a true signal answering a narrower question than the reader assumed — and both were caught by an end-of-chain marker rather than by a status** |
+| **Customer value this cycle** | ⚡ **Applying a batch tells you it was *accepted*, not *applied*, and lets you watch the difference** — the gap between approving work and the work happening becomes something visible rather than a spinner. ⚡ **An account's history gets a dock you can open with `⌘.`** |
+| ⛔ **QE's own defects this cycle** | **Three, and all one shape.** **`make dr` tore the stack down and nothing restarted it**, so certification aborted on an absent database. **The relaunch then raced the stack it had just started** — `COMPOSE_EXIT=0` was true when printed and stale one command later. **And `set -e` did not abort a failed `--ff-only` because it sat inside a `&&` list**, so a certification record was committed onto the wrong base — ⛔ **[B-142](docs/BUGS.md)'s exact class, which QE has cited at two lanes** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ⚠️ **Certification named 12 gates and executed 6.** **Four QE ran by hand** — `dr` ✅, `vitest` **2696 across 138 files** ✅, `eslint` ✅, `tsc` ✅. **`dr` was not selected by the planner for this profile and was run anyway**: where impact is uncertain the answer is broader certification, never narrower.
+> ✅ **Certification named 17 gates and executed 6; QE measured four more by hand and every one is a measurement rather than a lane's report.** `vitest` **2740 across 142 files** · `dr` ✅ *(pipeline recovered unattended, 401 invariants against the restarted stack)* · **migration `0048` reversible to base and back, head restored** · `eslint` ✅. ⚡ **Lane A's reported 2740 was exactly right and was confirmed anyway** — a lane offers a claim, QE publishes a measurement.
 
-**Repository health:** **4385 backend tests** · **95.11% coverage** ✅ *(floor 95)* · **2696 frontend tests** across **138 files** *(+76 tests, +5 files)* · **401 Security Invariants** · mypy strict over **860 files** · **48 migrations**, `0000`–`0047` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **235s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4406 backend tests** *(+21)* · ⚠️ **95.04% coverage** ✅ *(floor 95 — **4 basis points of headroom**, down from 95.11%)* · **2740 frontend tests** across **142 files** *(+44 tests, +4 files)* · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **245s** · ⛔ **Playwright journeys NOT MEASURED BY QE — [B-156](docs/BUGS.md)** · **disaster recovery passed** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
 > ⚠️ **Two figures above are corrected rather than updated.** The dashboard has carried **54 ADRs** and **147 numbered architecture documents**; the repository holds **53** and **145**, and `git ls-tree` returns the same pair at `cea60d41`, `57d6bc85` and `HEAD` — **so they did not change this cycle, they were transcribed.** The ADR count included `adr/README.md`. **A measured figure that never moves is the one to re-measure** (§20e: *metrics are measured, never transcribed*).
 
@@ -1025,6 +1025,40 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-11, cycle 197
+
+**Derived from the promoted commit `bbee38d`, certified at `78f2c72`.** **Fifteen commits. Returned once on a gate, certified on the third attempt at an unchanged tree, and all three of the cycle's QE defects were the same mistake wearing different clothes.**
+
+### What a customer can now do
+
+⚡ **Applying a batch says *accepted*, not *applied* — and lets you watch the difference.** **The gap between approving work and the work actually happening becomes something visible** rather than a spinner that might mean either. ⚡ **An account's history gets a dock, opened with `⌘.`**
+
+### ⚠️ The slice was returned once, and the gate disagreed with itself
+
+**Lane A reported `mypy --strict` clean across 535 files and was telling the truth about what it ran.** ⛔ **`make certify` runs `cd backend && uv run mypy .` over 866 files including `tests/`, and found two errors.** **Two scopes, one gate name, opposite verdicts** — [B-177](docs/BUGS.md).
+
+⚡ **The half that will recur is QE's**: nothing in the repository tells a lane which scope the gate uses. The `Makefile` mentions it in a comment; [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) L-15 names the gate without its scope. **A lane can satisfy §19 exactly as written and still hand over a branch that cannot certify.**
+
+✅ **And the fix QE proposed was wrong, which the lane said so.** Matching the bound signature would have satisfied `mypy` and broken the test — `repository.get = racing_get` assigns a plain function to an *instance* attribute, so it is called without `self`. **Lane A removed the monkey-patch instead**: a `ScriptedRepository(FakeRepository)` overrides `get` exactly as the port declares it, **no `type: ignore` on either line**. ⚡ **That is B-236's own lesson applied to the test that found B-236**, and it is a better outcome than the one QE named.
+
+### ⛔ Three QE defects, and they are one mistake
+
+**Every one was a correct signal read as answering a wider question than it did.**
+
+**`make dr` ends in `make down`**, so the stack QE tore down in cycle 196 was gone when cycle 197 certified — **an abort on an absent database, not a failure of the commit.** **The relaunch then raced the stack it had just started**: `COMPOSE_EXIT=0` was true when printed and stale by the time the next command needed it, and the log timestamps prove certification finished *before* postgres came up. ✅ **Fixed by gating the launch on a fresh `release-preflight.py` in the same command rather than sequencing after a remembered success.**
+
+⛔ **And `set -e` did not abort a failed `git merge --ff-only`, because it sat inside a `&&` list** — so a certification record was committed onto a base that did not contain the certified work. **That is [B-142](docs/BUGS.md)'s exact class, which QE has cited at two lanes.** ✅ **Nothing was lost**: the commit's content was correct, `lane-qe` was rebased onto the certified tip, and both claim commits were verified present before `integration` was moved.
+
+### ⚠️ Coverage has four basis points of headroom
+
+**95.11% → 95.04%, floor 95.0.** ✅ **Not blocking, and named rather than left as noise.** ⛔ **Two more slices at this rate cross the floor and become a Blocking Quality Defect for whoever holds the module that week** — cheaper to see now than at a refused certification.
+
+### ✅ Every hand-run gate is a measurement
+
+**`vitest` 2740 across 142 files · `dr` passed, pipeline recovered unattended with 401 invariants against the restarted stack · migration `0048` reversible to base and back with the head restored · `eslint` clean.** ⚡ **Lane A's reported 2740 was exactly right and was confirmed anyway** — the rule is not distrust, it is that `PROJECT_STATUS.md` may only publish what QE measured from the promoted commit.
 
 ---
 
