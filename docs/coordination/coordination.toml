@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "dbe793a"
-task_count     = 67
+generated_from = "7f93958"
+task_count     = 66
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-1430", "TASK-1458", "TASK-412"]
-assigned_total     = 54
-claimable          = 14
-claimable_now      = 3
-awaiting_sync      = 11
-in_flight          = 11
-actionable         = 4
+backlog            = []
+assigned_total     = 53
+claimable          = 12
+claimable_now      = 0
+awaiting_sync      = 12
+in_flight          = 10
+actionable         = 3
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 29
-lane_utilization   = 2.2
-idle_prediction_days   = 2.0
+blocked            = 31
+lane_utilization   = 2.0
+idle_prediction_days   = 1.7
 dependency_wait_days   = 0.0
 blocked_duration_days  = 0.0
 critical_path_max      = 3
@@ -46,8 +46,8 @@ supply_state       = "in_flight_only"
 blocked            = 6
 lane_utilization   = 0.4
 idle_prediction_days   = 0.0
-dependency_wait_days   = 4.0
-blocked_duration_days  = 4.0
+dependency_wait_days   = 4.2
+blocked_duration_days  = 4.2
 critical_path_max      = 0
 
 [[task]]
@@ -127,22 +127,6 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "— behind [TASK-1417](#task-1417--workflow-22--reports--built-once-read"
 waiting_for    = "— behind [TASK-1417](#task-1417--workflow-22--reports--built-once-read-three-ways)'s shared query**, whose output it composes"
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-1418"
-title         = "Workflow 25 · AI Research — answers become documents, and documents keep their sources"
-state         = "IN FLIGHT"
-declared      = "CLAIMED"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
 
@@ -261,16 +245,16 @@ on_integration = true
 [[task]]
 id            = "TASK-1430"
 title         = "Inbound rate limiting — nothing guards Signora's own API"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "WAITING_ARCHITECTURE"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+estimated_ready = "— Lane A, 2026-08-11, [C-287](LANE_COORDINATION.md).** 🔴 **[ADR-0408]("
+waiting_for    = "— Lane A, 2026-08-11, [C-287](LANE_COORDINATION.md).** 🔴 **[ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) specifies the limiter as one ASG"
 blocked_days   = 0.0
 on_integration = true
 
@@ -320,7 +304,7 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1457"
@@ -352,7 +336,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1460"
@@ -613,18 +597,18 @@ on_integration = true
 [[task]]
 id            = "TASK-412"
 title         = "Usage & Billing Observability"
-state         = "ASSIGNED"
-declared      = "READY"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
 lane          = "Lane A"
-depends_on     = []
+depends_on     = ["TASK-411"]
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
+critical_path  = 1
+estimated_ready = "when TASK-411 complete"
+waiting_for    = "behind [TASK-411](#task-411) — Lane C, 2026-08-11, on Lane A's finding.** ⛔ **It read `READY` and should not have.** ⚡ *'Every figure derives from TAS"
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-420"
@@ -937,9 +921,9 @@ state         = "SEQUENCED"
 declared      = "SEQUENCED"
 lane          = "Lane C"
 depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
+unblocks       = ["TASK-412"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
 critical_path  = 0
 estimated_ready = "** — **trigger: the Billing screen is scheduled for implementation**"
 waiting_for    = "** — **trigger: the Billing screen is scheduled for implementation**"
@@ -1023,7 +1007,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
 waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 4.0
+blocked_days   = 4.2
 on_integration = true
 
 [[task]]
@@ -1039,7 +1023,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved ou"
 waiting_for    = "** — **trigger: implementation naturally reaches M14b.** ⚠️ **Moved out of `READY` by Lane C, 2026-08-05**, on [C-412](LANE_COORDINATION.md)'s finding"
-blocked_days   = 4.0
+blocked_days   = 4.2
 on_integration = true
 
 [[task]]
@@ -1103,7 +1087,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 3.6
+blocked_days   = 3.8
 on_integration = true
 
 [[task]]
