@@ -3553,6 +3553,64 @@ def _load_state_check() -> ModuleType:
 
 📁 **Design System v2 ships `2xl: "1920px"`. `tailwind.config.ts` defines four screens and stops at 1600.** ⚡ **Small, real, and separate from everything above.**
 
+#### 🔵 INDEPENDENT VERIFICATION — Lane C, 2026-08-11, on the product owner's routing
+
+> ## ⛔ **VERDICT: `OPEN`. The remediation does not close this row.**
+>
+> ⚡ **It closes half of it, and the half it closes is real work that must not be discarded.**
+
+**QE implemented the remediation and is the assignee, so QE does not verify it.** ⛔ **This office did not build any of it and reviewed the evidence against the eight criteria rather than against `5a9743a7` existing.**
+
+##### ✅ What genuinely passes
+
+| # | Criterion | |
+|---|---|---|
+| **2** | **Relevant viewports incl. 390×844** | ✅ **Five projects — 390×844 · 640×900 · 1024×800 · 1280×900 · 1600×1000.** ⚡ **One lands in each of the design's four bands** |
+| **3** | **Width *and* height** | ✅ **A whole axis was unasserted and now is not.** `expectNothingFixedBelowTheFold` is the right shape: a descendant of a `position:fixed` element cannot be scrolled to, so its bottom edge is a promise |
+| **4** | **Layout, not DOM presence** | ✅ **Verified by reading the spec.** Every check reads geometry from a real engine; **none asserts a class string** — which is exactly what this row was opened about |
+
+##### ⛔ What does not
+
+| # | Criterion | |
+|---|---|---|
+| **5** | **Can fail when broken** | ⚠️ **PARTIAL — 3 of 7 fire-tested**, and QE disclosed this rather than being caught at it. ⛔ **Horizontal overflow · document scroll · navigation reachable · crushed text have never been made to fail.** 📁 [§2](../CLAUDE.md): an assertion nobody has seen fail is a guard nobody has seen work |
+| **1 · 6 · 8** | **Design coverage · not narrower than the design · nothing excluded** | 🔴 **THE DECISIVE FAILURE, and it is one failure wearing three numbers.** ⛔ **The matrix asserts STRUCTURAL INVARIANTS — nothing overflows, nothing collides, nothing is unreachable.** 📁 **The design declares GEOMETRY PER BAND**: **rail 232px → 56px icons → a sheet · utility panel 360px → 300px → 0 → a 28px tab rail · filter strip opacity 1 → .35.** ⚡ ***"Nothing is broken"* is strictly narrower than *"it matches the design"*, and an implementation that ignored every declared width would pass all 32** |
+| **3b** | **Upper edges** | ⛔ **1023 · 1279 · 1599 are untested.** ⚡ **An off-by-one breakpoint error lives at exactly one of those three and nowhere else.** ✅ **QE named this itself** |
+| **7** | **Genuinely closes B-428** | 🔴 **No.** 📁 **This row asks *"why does a visibly non-responsive implementation pass green tests?"*** ⛔ **A suite proving nothing overflows still passes on an implementation that honours none of the declared widths — which is the question restated, not answered** |
+
+##### ⚡ A correction to QE's own assessment, and it makes QE's position better rather than worse
+
+📁 **QE reported two design behaviours as *"uncovered"*** — *"green pill hides its label at <1280px"* and *"search widens to 320px on focus at ≥1600px"*.
+
+⛔ **They are not uncovered. They are UNBUILT, and that is a different finding with a different owner.**
+
+✅ **Measured, not inferred:**
+
+| | |
+|---|---|
+| 📁 **`lib/shell/top-bar.ts:70`** | **`SEARCH_WIDTH = { rest: 224, focused: 320, focusWidensAbove: 1600 }` — the design's three numbers exactly** |
+| 📁 **`lib/shell/top-bar.ts:81`** | **`statusLabelVisible(tone, width) => tone === 'healthy' ? width >= 1280 : true` — the design's asymmetry exactly** |
+| ⛔ **`top-bar.tsx:176`** | **applies `SEARCH_WIDTH.rest` only.** ⚡ **`focused` and `focusWidensAbove` are referenced by nothing in `components/` or `app/`** |
+| ⛔ **`statusLabelVisible`** | **called by nothing.** 📁 **The component says so itself at `:201` — *"stays uncalled until there is a source"*** |
+
+⚡ **So a responsive test asserting either would be asserting a feature nobody has implemented.** ⛔ **QE must not be blocked on them and this row does not ask for them** — 📁 **they are a `product_surface` implementation gap, and the contract is already written and correct, which is the cheap half already done.**
+
+##### ✅ What would close this row
+
+⛔ **Nothing here weakens the requirement, and the product owner and QE both asked that it not be.**
+
+**① Assert the per-band geometry the design declares AND the implementation already has** — rail and panel widths at each of the four bands. **② Add 1023 · 1279 · 1599.** **③ Fire-test the remaining four checks**, or record each as unproven where it cannot be made to fail.
+
+##### 🔴 The promotion gate — and this recommendation is the product owner's to take, not mine
+
+⛔ **Three cycles were promoted with this row open, disclosed by QE unprompted.** 📁 **The ruling is that they stand and that nothing further promotes until this row is verified or rejected.** ⚡ **I reject it, so the gate stays closed on that ruling — and the consequence must be named rather than discovered.**
+
+🔴 **Nine planning corrections are held behind the gate, six of them `READY` rows Lane A cannot see.** ⚡ **Lane A is not idle today — it holds two claims — but the gate now sits between this office's output and every lane that consumes it.**
+
+> ⚠️ **The honest reading is that this row conflated two questions**: *does the suite verify layout at all* (⛔ it did not; ✅ it now does) and *does it verify the design* (⛔ it does not, and never did). ⚡ **Splitting them would close the structural half and reopen promotion.**
+>
+> ⛔ **This office is not taking that decision, and the reason is that it is the office asking to be unblocked.** 📁 **A split that happens to release my own queue is indistinguishable from weakening a requirement to unblock promotion, whatever the reasoning** — **so it goes to the product owner with the conflict named** ([§20e](../CLAUDE.md): a lane's recommendation is architectural input, never implementation authority).
+
 ### B-431 · 🟠 The workflow registry's task lists are four days stale, and a workflow reads complete because its remaining rows are not in it
 
 | | |
