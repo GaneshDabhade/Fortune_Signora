@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `1f38069`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `e93fb81`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,23 +12,23 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `1f38069`, 2026-08-11.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `e93fb81`, 2026-08-11.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`1f38069`** — the certification record, one commit past the certified `a75b665` |
-| **Release candidate** | **3 commits, fast-forwarded.** ✅ **Fourth consecutive clean hand-over from Lane A.** ⚠️ **Certified on the third launch — the first two were killed with the parent process, not failed** |
-| **Certification** | ✅ [`a75b665a108e`](certification/reports/a75b665a108e.md) · migration head **`0048`** · protocol **v2** · profile **`documentation+frontend`** |
+| **`main`** | **`e93fb81`** — the certification record, one commit past the certified `7874db3` |
+| **Release candidate** | **3 commits, and they are QE's own.** ⚡ **A gate change certified through the lifecycle rather than around it** — the rule QE broke on itself one cycle earlier |
+| **Certification** | ✅ [`7874db388221`](certification/reports/7874db388221.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** (17 gates) · ✅ **first attempt** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **0 blocking** |
-| **Customer value this cycle** | ⚡ **Signora says what it can and cannot research, measured rather than promised** — and where the ask has no shape to take, it says so instead of producing something. ⚡ **One edit law now serves two callers**, so a correction behaves the same wherever it is made |
-| ⛔ **QE's own defects this cycle** | **Two, and both are the same failure to check what already exists.** ⛔ **QE filed [B-178](docs/BUGS.md) claiming Chromium cannot launch here — it launches**, and `environment.ts` has solved it since it was written. **QE fire-tested under a throwaway config that bypassed the repository's own `browserEnvironment()`, then blamed the workstation.** ⛔ **And QE fast-forwarded its own uncertified commit onto `main`** — caught by `--audit-main`, unwound before publication |
+| **Customer value this cycle** | ⛔ **None, and that is correct.** **This cycle is QE's own instruments**: a gate that now sees what rode in with a claim, and the first responsive validation the repository has ever had. **Lane A's product work is next and already ff-able** |
+| ✅ **QE's own defects this cycle** | **None.** ⚡ **And the cycle's finding came from Lane A, about QE's gate**: [B-238](docs/BUGS.md), reported against itself with the breach as the evidence. **QE had framed it as a lane's process breach and queued a ruling request; Lane A reframed it as a guard defect, which it is** — the third row after [B-161](docs/BUGS.md) and [B-220](docs/BUGS.md), both QE's and both still open |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ✅ **Certification named 12 gates and executed 6; QE measured three more by hand.** `vitest` **2751 across 144 files** · `eslint` ✅ · `tsc` ✅. ⚡ **The `CERTIFY_EXIT=` marker is what made two killed runs legible**: no marker and an empty log is unambiguously an abort, where a truncated log ending in `working tree clean` reads exactly like a run still going.
+> ✅ **Certification named 17 gates and executed 6; QE measured three more by hand.** `vitest` **2751 across 144 files** · `eslint` ✅ · `tsc` ✅. ⚡ **The guard's four regressions build real git repositories and move a branch the way a push moves it** — a stubbed `git` would have proven the function reads a dict, and the defect was never in the function.
 
-**Repository health:** **4406 backend tests** · ⚠️ **95.04% coverage** ✅ *(floor 95 — **4 basis points of headroom**)* · **2751 frontend tests** across **144 files** *(+7 tests, +1 file)* · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **204s** · ⚡ **Playwright journeys: QE CAN run them — 169 tests list, and [B-178](docs/BUGS.md)'s claim to the contrary was QE's own harness error.** **[B-156](docs/BUGS.md) remains open and undiagnosed** · **disaster recovery from cycle 197 still current** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4410 backend tests** *(+4)* · ⚠️ **95.04% coverage** ✅ *(floor 95 — **4 basis points of headroom**)* · **2751 frontend tests** across **144 files** · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **276s** · ⚡ **16 layout invariants across four breakpoints now exist and list — NOT YET RUN against the product, and not counted as coverage** · **[B-156](docs/BUGS.md) remains open and undiagnosed** · **disaster recovery from cycle 197 still current** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
 > ⚠️ **Two figures above are corrected rather than updated.** The dashboard has carried **54 ADRs** and **147 numbered architecture documents**; the repository holds **53** and **145**, and `git ls-tree` returns the same pair at `cea60d41`, `57d6bc85` and `HEAD` — **so they did not change this cycle, they were transcribed.** The ADR count included `adr/README.md`. **A measured figure that never moves is the one to re-measure** (§20e: *metrics are measured, never transcribed*).
 
@@ -1025,6 +1025,46 @@ Found 5 errors in 1 file (checked 854 source files)
 | **Architecture** | Migration head `0046` **reversible** · **DR nothing lost** · smoke 24 stages in **168s** · **+1 document** (500) |
 | **Register** | **168 rows, 60 unresolved, 0 blocking** |
 | **Promotion** | `promoted == certified` ✓ · [B-168](docs/BUGS.md) ✓ · [B-164](docs/BUGS.md) ran **before** the push ✓ |
+
+---
+
+## 1d · Release summary — 2026-08-11, cycle 200
+
+**Derived from the promoted commit `e93fb81`, certified at `7874db3`.** **Three commits, all QE's own instruments, certified first attempt. No customer-facing change, and that is the correct shape for this one.**
+
+### ⚡ The cycle's finding came from Lane A, about QE's gate
+
+**[B-238](docs/BUGS.md): a lane pushed a clean claim to `integration` and 1,148 lines of unvalidated implementation arrived underneath it.** ⛔ **`--audit-claims` passed the claim correctly** — it inspected the paths *inside* the commit and never asked what else came with the push.
+
+> **A push moves a branch, not a commit.**
+
+⚠️ **QE had framed this as a lane's process breach and queued a ruling request with the product owner** — *force-correct the ref, or treat it as a candidate?* ⛔ **Lane A reframed it as a guard defect, which it is, and reported it against itself with the breach as the evidence.** ✅ **No ruling was needed and nothing was force-corrected.**
+
+**It is the third row describing one defect.** [B-161](docs/BUGS.md) is QE's own earlier diagnosis and [B-220](docs/BUGS.md) named the blind spot; **both are still open, and QE was about to make it a fourth conversation instead of a fix.**
+
+### ✅ The fix, and the part that took the real work
+
+**`_claim_stowaways`: a claim is a legitimate arrival on `integration` only when its parent was already there.** The check is Lane A's, unchanged in substance.
+
+⚡ **Four regressions that build real git repositories and move a branch the way a push moves it.** ⛔ **A stubbed `git` would have proven the function reads a dict — and the defect was never in the function, it was in which object the guard asked about.** Only a real branch movement distinguishes those.
+
+**Breach · clean · mixed · claim-riding-a-claim.** ⚡ **The mixed case is the one that decides the gate is usable**: two claims, one pushed properly and one carrying a slice, and it must name exactly the second.
+
+✅ **Fire-tested**: disabling detection fails **exactly the two detection tests**; both negative cases still pass. ⛔ **The failure mode worth more than the one it catches is a guard that fires on correct behaviour — that guard gets switched off, and then it protects nothing.**
+
+### ⚠️ It reports rather than refuses, and Lane A said why better than QE did
+
+**QE's reason:** the condition is historical the moment it is detected — the commits are on the shared ref and the lane cannot unwind them without a force-push it may not perform. **A gate that fails on something nobody present can fix teaches people to skip the gate.**
+
+⚡ **Lane A's reason is better and is recorded as the direction:** *"The refusal you'd want doesn't exist yet: it belongs at the moment of the push, in the lane, before the ref moves — not at certification, after."* **The reporting guard is the right instrument in the wrong position; the real fix is a local pre-push check, which [§20c-2](CLAUDE.md) permits.** ⛔ **Not built this cycle, and named rather than implied.**
+
+### ✅ Responsive validation exists — and has not run
+
+**16 layout invariants across four breakpoints** — `phone` 640 · `smalllaptop` 1024 · `laptop` 1280 · `desktop` 1600, the product's own from `tailwind.config.ts`. They assert geometry from a real engine: overflow, document scroll, **shell-region overlap** *(an `expect(toBeVisible)` passes while a button sits under a sidebar)*, navigation reachable, crushed text.
+
+⛔ **They list; they have not been run against the product, and nothing here counts them as coverage.** ⚠️ **The objective is not *"Playwright runs at four widths"* — it is that the finalized responsive contract is exercised where the design changes behaviour**, and that remains ahead.
+
+**The previous state, measured:** one global 1280×900 viewport, **4 of 25 specs setting their own, 3 asserting geometry.**
 
 ---
 
