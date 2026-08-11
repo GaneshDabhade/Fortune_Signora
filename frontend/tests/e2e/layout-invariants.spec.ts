@@ -331,19 +331,55 @@ async function expectShellRegionsDoNotOverlap(page: Page): Promise<void> {
  * this page, not which shape the design chose at this width.
  */
 async function expectNavigationReachable(page: Page): Promise<void> {
-  const candidates = [
-    page.getByRole('navigation'),
-    page.getByRole('button', { name: /menu|navigation|open menu/i }),
-  ];
+  // ⛔ **This matched on WORDS and not on capability, and it passed with the
+  // primary navigation deleted.** The old predicate accepted any control named
+  // `/menu|navigation|open menu/`, and at 1280 that is satisfied by **"Collapse
+  // navigation"** and **"Account menu"** — measured, both visible, **neither
+  // of which navigates anywhere.**
+  //
+  // ⚡ **Criterion 6 of B-428, failed by QE's own check**: it passed by asking
+  // something *broader* than the design requires. **A `display: none` on the
+  // rail left it green.**
+  //
+  // **The property is a link a customer can follow, or a control that opens
+  // one.** `Collapse` and `Account menu` do neither, so they are named out.
+  // ⛔ **The PRIMARY landmark by name, not any `role="navigation"`.** Two
+  // tightenings were needed and each was forced by a measurement:
+  //
+  // **First** the predicate matched control NAMES — `/menu|navigation/` — and
+  // at 1280 that is satisfied by **"Collapse navigation"** and **"Account
+  // menu"**, neither of which navigates anywhere.
+  //
+  // **Then** it matched any navigation LANDMARK, and with the rail deleted the
+  // page still offered two: **"Whose work"** and **"How the list is
+  // arranged"** — content filters inside `main`. **A filter is not a way out
+  // of the page.**
+  //
+  // ⚡ **Both were criterion 6 of [B-428](../../../docs/BUGS.md) failing inside
+  // the check written to satisfy it**: passing by asking something broader than
+  // the design requires. **A `display: none` on the rail left it green twice.**
+  const primary = page.getByRole('navigation', { name: /^Primary$/i });
+  const opener = page.getByRole('button', { name: /^(open navigation|open menu|main menu)$/i });
 
-  const reachable: string[] = [];
-  for (const candidate of candidates) {
-    const box = await boxOf(candidate);
-    if (box && box.width > 0 && box.height > 0) reachable.push('found');
+  let reachable = 0;
+  for (const candidate of [primary, opener]) {
+    const count = await candidate.count();
+    for (let index = 0; index < count; index += 1) {
+      const element = candidate.nth(index);
+      if (!(await element.isVisible())) continue;
+      const box = await element.boundingBox();
+      if (box && box.width > 0 && box.height > 0) reachable += 1;
+    }
+  }
+
+  // A navigation landmark with no links in it is furniture, not navigation.
+  if (reachable > 0 && (await primary.count())) {
+    const links = await primary.first().getByRole('link').count();
+    expect(links, 'the navigation landmark contains no links — it cannot take anybody anywhere').toBeGreaterThan(0);
   }
 
   expect(
-    reachable.length,
+    reachable,
     'no visible navigation and no control that opens one — the product has no way out of this page at this width',
   ).toBeGreaterThan(0);
 }

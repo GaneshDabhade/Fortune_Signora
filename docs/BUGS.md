@@ -90,6 +90,58 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-183 · 🔴 The shipped `.env.example` gave the development runtime a `BYPASSRLS` superuser, and tenancy was off for every Playwright journey ever run
+
+| | |
+|---|---|
+| **Module** | **Repository-wide** — `backend/.env.example` · `frontend/playwright.config.ts` |
+| **Current assignee** | **Lane C** holds the fix *(already written)*; **QE** owns the verification and the historical-evidence classification |
+| **Severity** | 🔴 — **DEVELOPMENT ENVIRONMENT TENANCY BYPASS / SECURITY CONFIGURATION DEFECT.** ⛔ **Not a production exposure** — see the classification. ⛔ **And not a harmless configuration tidy-up either** |
+| **Status** | 🔵 **`OPEN`** — ⚠️ **QE's verification is complete; the row closes when the fix is promoted.** ⛔ **QE does not close it on the file change alone** |
+| **Found** | **2026-08-11 by Lane A**, seeing one customer's organization name in another customer's browser. **Diagnosed by Lane C. Verified end-to-end by QE**, on the product owner's ten questions |
+
+> ⚠️ **Filed by QE because no row existed for it on any branch.** Lane C referenced it as *B-243*; **that id is not allocated in any register**, so this row carries QE's own block rather than inventing one. **If Lane C's row appears, merge into the earlier id and keep both evidence sets.**
+
+### **The chain, each link measured rather than reported**
+
+| Q | Answer | Evidence |
+|---|---|---|
+| **1 · runtime identity** | ⛔ **`signora` is `SUPERUSER` *and* `BYPASSRLS`** | `pg_roles`: `signora\|t\|t` · `signora_app\|f\|f` |
+| **2 · migration identity** | ✅ Owner, correctly | `Makefile:144`, `:172` |
+| **3 · can the example cause it?** | ⛔ **Yes** — shipped `signora:signora` as `SIGNORA_DATABASE_URL`, with the correct `signora_app` line **commented out four lines below** | `.env.example:35` vs `:39` |
+| **4 · Makefile explicit?** | ✅ **Yes** — migrations never depended on the file | `Makefile:172` |
+| **5 · does Playwright start a runtime?** | ⛔ **No `webServer` declared** | `playwright.config.ts:42` |
+| **6 · could journeys run RLS-disabled?** | ⛔ **Yes, and did.** `backend/.env` on the QE workstation names `signora` | measured |
+| **8 · reproducible?** | ⛔ **Yes.** Same query, same DB, same foreign `app.workspace_id` — **owner sees 1 row, `signora_app` sees 0** | direct `psql` |
+| **9 · does the fix prevent it?** | ✅ **Yes** — names `signora_app` | `lane-c-sync:.env.example:31` |
+| **10 · regression** | ✅ **Fire-tested both directions in a disposable database — 2 failed pre-fix, 2 passed post-fix** | `TestTheShippedConfigurationNamesARuntimeCredential` |
+
+> ⚡ **`FORCE ROW LEVEL SECURITY` is enabled on the tenant tables and cannot help**, because a `BYPASSRLS` role is exempt unconditionally. **The strongest tenancy control in the schema was irrelevant to the identity the runtime was told to use.**
+
+### **Classification — neither overstated nor understated**
+
+| | |
+|---|---|
+| ⛔ **Development runtime** | **privileged identity → RLS bypassed → cross-tenant access CONFIRMED** |
+| ✅ **Supported production runtime** | **`signora_app` → RLS enforced → unaffected.** `docker-compose.prod.yml` gives migrate the owner at `:105` and **api, worker and relay `signora_app`** at `:123`, `:148`, `:171` |
+
+### ⛔ **Historical evidence — what this does and does not invalidate**
+
+| Class | What | Why |
+|---|---|---|
+| ✅ **Valid** | pytest · Security Invariants · `make certify` | The harness sets `SIGNORA_TEST_APP_DATABASE_URL=signora_app` **independently of `.env`** |
+| ✅ **Valid but limited** | layout invariants · `tsc` · `eslint` · vitest | **Geometry, types and component behaviour do not depend on RLS** |
+| ⛔ **INVALID for tenancy/security assertions** | **Every Playwright journey ever run** — including QE's own runs on 2026-08-11 | No `webServer`; the runtime was a dev server on the owner credential |
+| ⚠️ **Requires rerun** | **`permissions.member.spec.ts`** first, then any journey asserting *"a member cannot see X"* | Those are exactly the claims the bypass would have granted |
+
+> ⛔ **No green Playwright result may be cited as proof of tenant isolation** until it has been rerun against a runtime using `signora_app`. ⚡ **Nothing else is invalidated** — the defect disables RLS and changes neither layout, types nor component behaviour.
+
+> ⚠️ **QE ran its own journeys on this configuration today and says so rather than leaving it to be discovered.** The API serving the 32 layout invariants and the authentication setup was started by QE with `signora:signora`.
+
+**The regression stays permanently**, and asserts the property rather than the prose: ⛔ **the application runtime must never be configured with the privileged migration identity.** **It needs no database, deliberately** — the defect was in a committed file, so the check must fail on a checkout with no Postgres.
+
+---
+
 ### B-181 · `production-readiness.py` has reported inbound rate limiting green twice, for two different wrong reasons
 
 | | |
@@ -3506,6 +3558,36 @@ def _load_state_check() -> ModuleType:
 | **Current assignee** | **QE** — 📁 `playwright.config.ts` decides what certification means, and [§20e](../CLAUDE.md) makes a gate QE's |
 | **Severity** | 🔴 — ⛔ **an entire verification class is absent, not weak** |
 
+> ## **Two acceptance criteria, one row. A may never be offered as evidence for B**
+>
+> **Ruled by the product owner 2026-08-11, after Lane C verified and rejected.**
+>
+> ### ✅ **A · Responsive test capability — SATISFIED**
+>
+> **Five browser projects across the design's four bands, `390×844` included · both axes · real browser geometry · no class-string assertion anywhere · representative fire-tests proving the assertions can fail.**
+>
+> ⚠️ **Known limitation, recorded against A rather than reopening it: 4 of 7 checks are not fire-tested** — document-scroll, crushed-text and two others. **Three are**: shell-overlap (fails under `phone:pb-0`), below-the-fold (fails naming 12 elements), navigation-reachable (fails with the rail hidden, **after two tightenings**).
+>
+> ⛔ **A is test infrastructure. It says nothing about whether the product matches the design.**
+>
+> ### ⛔ **B · Responsive design compliance — OPEN. Lane A's, not QE's**
+>
+> | Design requirement | Expected | Implementation | Evidence | Sev | Task |
+> |---|---|---|---|---|---|
+> | **Rail per band** | 232 expanded / 56 collapsed | ⛔ `deviceClassFor` returns **two** classes, not four; at 1024–1279 width comes from a **remembered preference** | `rail.ts:168` | **P1** | [TASK-1473](BACKLOG.md) |
+> | **Panel per band** | 360 · 300 · 28px tab rail · absent | ✅ **COMPLIANT** — a correct four-band map | `utility-panel.ts:47` | — | — |
+> | **Search focus width** | `rest 224 → focused 320`, widening ≥1600 | ⛔ **Unbuilt** — only `.rest` consumed; `focusWidensAbove` has **0 references** | `top-bar.ts:70` · `top-bar.tsx:176` | **P2** | [TASK-1474](BACKLOG.md) |
+> | **Status label asymmetry** | green hides <1280; amber/red always | ⛔ **Unbuilt** — `statusLabelVisible` **invoked 0 times** | `top-bar.ts:81` | **P2** | [TASK-1474](BACKLOG.md) |
+> | **Filter opacity** | `.35` below 1024 | ⛔ **Not implemented** | design band table | **P2** | ⚠️ **UNCOVERED — no task** |
+>
+> ⛔ **QE did not infer a requirement the design does not state.** **The band table's `railW` percentages are diagram proportions**; the only pixel rail values the design states are **232/56**. ⚠️ **Whether 1024–1279 must be collapsed is genuinely ambiguous in the document — Lane C resolves that interpretation before Lane A implements a specific behaviour.**
+>
+> ### **What QE validates after Lane A lands**
+>
+> **Per-band rail and panel geometry · the 1023 · 1279 · 1599 boundaries · search focus · status label · filter opacity · transition behaviour.** ⛔ **Two-sided, every one**: good implementation passes, deliberately broken implementation fails. ⚡ **And the selector must name the intended element** — this row's own navigation check passed twice on the wrong thing.
+>
+> ---
+>
 > ## ⛔ **QE promoted three cycles with this row open, and that is a breach**
 >
 > **§20e: *`integration` never fast-forwards to `main` with an open 🔴 bug.*** ⛔ **Cycles 201, 202 and 203 promoted while this was `OPEN`.** ⚠️ **`state-check.py` reported it on every one** — *"BUGS.md carries 1 unresolved 🔴 (B-428)"* — **and QE read past the advisory while grepping for `ok` lines.**
