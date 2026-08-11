@@ -3574,11 +3574,21 @@ def _load_state_check() -> ModuleType:
 >
 > | Design requirement | Expected | Implementation | Evidence | Sev | Task |
 > |---|---|---|---|---|---|
-> | **Rail per band** | 232 expanded / 56 collapsed | ⛔ `deviceClassFor` returns **two** classes, not four; at 1024–1279 width comes from a **remembered preference** | `rail.ts:168` | **P1** | [TASK-1473](BACKLOG.md) |
+> | **Rail per band** | 232 expanded / 56 collapsed | ⚠️ **NOT a confirmed defect — see below.** `deviceClassFor` returns two classes and reads a persisted preference at 1024–1279 | `rail.ts:168` | ⚠️ **AMBIGUOUS** | [TASK-1473](BACKLOG.md) |
 > | **Panel per band** | 360 · 300 · 28px tab rail · absent | ✅ **COMPLIANT** — a correct four-band map | `utility-panel.ts:47` | — | — |
 > | **Search focus width** | `rest 224 → focused 320`, widening ≥1600 | ⛔ **Unbuilt** — only `.rest` consumed; `focusWidensAbove` has **0 references** | `top-bar.ts:70` · `top-bar.tsx:176` | **P2** | [TASK-1474](BACKLOG.md) |
 > | **Status label asymmetry** | green hides <1280; amber/red always | ⛔ **Unbuilt** — `statusLabelVisible` **invoked 0 times** | `top-bar.ts:81` | **P2** | [TASK-1474](BACKLOG.md) |
 > | **Filter opacity** | `.35` below 1024 | ⛔ **Not implemented** | design band table | **P2** | ⚠️ **UNCOVERED — no task** |
+>
+> ## ⚠️ **Correction, 2026-08-11: the rail row is not a defect QE can assert**
+>
+> **QE first reported this as P1 on the reasoning that the design shows four bands and `deviceClassFor` has two.** ⛔ **Searching the design for a collapse rule rather than stopping at the band table produces the opposite reading**:
+>
+> 📁 **App Shell §02: *"Collapse state persists per user."*** ⚡ **A persisted preference is exactly what `deviceClassFor` implements**, so the implementation may be correct and QE's finding wrong.
+>
+> ⚠️ **The genuine ambiguity, stated once and not resolved by QE:** **the prose makes collapse a user preference; the band table gives the rail a narrower proportion at 1024–1279 than above it.** ⛔ **Whether the small-laptop band OVERRIDES a user who has expanded the rail is not stated anywhere QE can find.**
+>
+> ⛔ **This is a design-authority question, not an implementation one.** **Lane C resolves it; Lane A implements whatever it resolves to; QE asserts it afterwards.** ⚡ **[TASK-1473](BACKLOG.md) must not instruct an implementation until then** — its premise is *"the design gives it 56"*, and **the design says that about the collapsed state, not about the band.**
 >
 > ⛔ **QE did not infer a requirement the design does not state.** **The band table's `railW` percentages are diagram proportions**; the only pixel rail values the design states are **232/56**. ⚠️ **Whether 1024–1279 must be collapsed is genuinely ambiguous in the document — Lane C resolves that interpretation before Lane A implements a specific behaviour.**
 >
