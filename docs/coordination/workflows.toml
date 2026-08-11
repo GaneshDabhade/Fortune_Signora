@@ -85,7 +85,7 @@
 [meta]
 authority   = "docs/design-snapshot/screens/"
 ruling      = "D-160"
-updated     = 2026-08-07
+updated     = 2026-08-11
 active_rule = "exactly one workflow may be `active`; reaching `on_main` releases the next — D-169"
 release_rule = "⚡ AMENDED 2026-08-08. ONE trigger, not two: the lane's own `IN VALIDATION` releases the next row, within a workflow AND between workflows. D-169 set the between-workflow trigger to `on_main`, and applied literally that made a lane idle a full QE cycle every time it finished a workflow — the exact waiting D-169 exists to remove, reappearing at the boundary. Safe because D-161 ④ and D-162 ④ require conformance findings to be fixed in the foundation, so they propagate to anything built meanwhile. The audit still runs on `main` before any review request; it no longer gates the next workflow. `approved` is a CHECKPOINT recorded after the fact, never a prerequisite. The pixel-level conformance audit remains mandatory before any review is requested, and is now the only gate."
 
@@ -311,14 +311,14 @@ owner  = "Lane A"
 name   = "Account 360"
 state  = "decomposed"
 design = "Fortune Signora Account 360.dc.html"
-tasks  = ["TASK-1415", "TASK-1411"]
+tasks       = ["TASK-1415", "TASK-1411", "TASK-417"]
 owner  = "Lane A"
 
 [workflow.16]
 name   = "Global Search"
 state  = "planned"
 design = "Fortune Signora Global Search.dc.html"
-tasks  = ["TASK-481"]
+tasks       = ["TASK-481", "TASK-301", "TASK-460"]
 owner  = "Lane A"
 
 [workflow.17]
@@ -348,14 +348,14 @@ unblocked = "⚡ D-167 §3, 2026-08-07 — charting ruled: visx (ADR-0407). ONE 
 name   = "Opportunity Intelligence"
 state  = "planned"
 design = "Fortune Signora Opportunity Intelligence.dc.html"
-tasks  = ["TASK-441"]
+tasks       = ["TASK-441", "TASK-1469"]
 owner  = "Lane A"
 
 [workflow.21]
 name   = "Signal Center"
 state  = "planned"
 design = "Fortune Signora Signal Center.dc.html"
-tasks  = ["TASK-439", "TASK-1427"]
+tasks       = ["TASK-439", "TASK-1427", "TASK-1468"]
 owner  = "Lane A"
 
 [workflow.22]
