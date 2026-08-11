@@ -1827,3 +1827,50 @@ return refreshing > 0 && firstLoads === 0;
 ✅ **Re-run in isolation against a clean workspace: `36 passed · 5 failed`.** ⚡ **And every one of those five reproduces on the tree with this slice stashed** — including `visual.spec.ts`'s cumulative layout shift, **`0.4505` without the change and `0.4527` with it**, against a `0.1` budget.
 
 > ⛔ **The suite cannot currently pass end to end in one run, whatever a lane changes.** ⚠️ **A lane cannot read its own gate without first knowing which failures are the environment's** — 📁 [§2](../../CLAUDE.md), *a guard nobody trusts is documentation pretending to be code* — **and this slice's two browser assertions ran at [78] and [79], before the poisoning, and passed.**
+
+---
+
+## Home is a slot, and the slot now has a caller — [TASK-1405](../BACKLOG.md)
+
+📁 **Authenticated Entry §04**, against the snapshot ([D-138](../DECISION_REGISTER.md)):
+
+> ***"Every authenticated person lands on `/w/:workspace/home`. What renders there is resolved from their role, and the resolution is a composition of cards from a shared catalogue — not a separate screen with its own layout, navigation or breadcrumb."***
+
+### 🔴 Two halves on `main`, correct and unreachable
+
+✅ **`resolveComposition` shipped 2026-08-09 and `cardsFor` with [TASK-1406](../BACKLOG.md)** — ⛔ **`git grep resolveComposition` returned ZERO callers.** ⚡ **This slice is the caller**, and the shape is one this lane keeps meeting: [TASK-1460](../BACKLOG.md)'s column primitives and [C-291](../LANE_COORDINATION.md)'s Saved View store are the same thing — **a correct, tested mechanism nobody had wired.**
+
+> 🔴 **The lesson worth keeping: a slice that ships a mechanism and no caller has shipped half a feature, and the half it shipped is the half nobody can see.** ⚠️ **`library-reachability` catches this for `components/ui` and catches nothing in `lib/`** — which is why three of them have now happened there.
+
+### ⛔ What the route did before, and why replacing it costs something
+
+📁 **[TASK-1438](../BACKLOG.md) made the path `export { default } from '../../../page'`** — the attention list — **so eight of the entry engine's twenty-four rules stopped answering 404, including rule 24, the default.**
+
+🔴 **So the most common landing destination has gone from a ranked working list to a designed empty state**, because **`REGISTRY` is empty and no module publishes a card.** ⚡ **The row sanctioned exactly this** — *"an empty Home is a designed state, not a failure"* — ⚠️ **and it is still a screen a customer would find less useful than the one before it.** 📁 **[C-295](../LANE_COORDINATION.md) carries it to the product owner, with the observation that three of `activation`'s five cards are already built as §18's checklist.**
+
+⛔ **The hybrid was refused**: falling back to the attention list when a composition has no cards **would be a second answer to what Home shows** — 📁 [D-229A](../DECISION_REGISTER.md), and TASK-1438's own warning about *"a third answer."*
+
+### ⚡ The seam the contract does not carry
+
+📁 **`CardContract` publishes `id`, `title`, `module`, `requires` — and nothing that renders.** ⛔ **So *"a composition of cards"* had no way to reach a card's content.**
+
+✅ **The renderer map is Home's**, which is where the design puts the boundary — *"Home owns the composition; the module owns the card's content."* ⛔ **A `component` field on the contract was rejected**: the contract's own comment warns that *"a contract carrying layout, width or position would be the module deciding something Home owns"*, **and a node handed over by a module is one step from that.**
+
+### 🔴 Every session resolves to Activation, and that is honest
+
+⚡ **`primaryRole` is `null` on every session the platform can produce** — the design resolves from *"the person's primary role"* and `Membership.role` is `owner | member`. ✅ **So the resolver's fallback is universal**, and **Activation is the only composition honest about knowing nothing**: it asks *how do I begin?*, which is true of a person the platform cannot describe.
+
+⛔ **Nothing in the route branches on a role**, because the decision is the resolver's and a second copy would drift.
+
+### ⚠️ Two guards this slice tripped, both correctly
+
+| | |
+|---|---|
+| **`route-states`** | ⚡ **The route gained queries, so §13 owes it a `loading.tsx`.** ⛔ **It owed none before** — it re-exported `/` and inherited that route's |
+| **`library-reachability`** | 🔴 **It counts an identifier in a COMMENT as a caller.** ⚠️ **Writing `` `Columns` `` in a doc-comment marked an orphan reachable** — **the same trap [TASK-1461](../BACKLOG.md) hit with `MobileNavigation`, and the same fix: name the thing, never spell the identifier** |
+
+### 🔴 A fire-test that found this lane's own Decorative Logic
+
+⛔ **The renderer filter could not fail.** ⚡ **`cardsFor` already returns nothing from an empty registry**, so *"no cards render"* asserted somebody else's guarantee and **removing the filter changed nothing.** ✅ **Fixed by testing the SEAM rather than the outcome**: the registry is stubbed with a real contract, and **a registered card with no renderer must be skipped rather than drawn as an empty title.** **Now removing the filter turns it red.**
+
+> 📁 **[§2](../../CLAUDE.md): *a guard that cannot fail is not protection.*** ⚠️ **Found by fire-testing, which is the only thing that finds it** — the test passed, the code was reasonable, and the assertion was measuring the wrong layer.

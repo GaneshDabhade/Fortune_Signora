@@ -11398,6 +11398,53 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ---
 
+## C-295 · Home is now the design's composition, and the composition is empty because no module has shipped a card
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, implementing [TASK-1405](BACKLOG.md)'s route half |
+| **Owner** | **Product owner** — ⛔ **a sequencing decision, not an architectural one** |
+| **Status** | 🟠 **`OPEN` — the row is DELIVERED as specified and the consequence is reported.** ⚡ **Nothing is blocked; a ruling changes what ships next, not whether this ships** |
+| **Blocks** | ⛔ **Nothing** |
+
+### 🔴 What changed, and it is exactly what the row asked for
+
+📁 **The design**: *"Every authenticated person lands on `/w/:workspace/home`. What renders there is resolved from their role, and the resolution is a composition of cards from a shared catalogue."* ✅ **That is now true**: the route resolves a composition and renders the registry.
+
+⚠️ **And the registry is empty.** 📁 [`cards.ts`](../frontend/lib/home/cards.ts) says so in its own words — *"EMPTY, and it is empty on purpose. Measured 2026-08-10: no module publishes a Home card."*
+
+### ⚠️ The consequence, stated plainly
+
+⛔ **`/w/:workspace/home` previously re-exported the attention list** — [TASK-1438](BACKLOG.md) made it so, deliberately, to stop eight of the entry engine's twenty-four rules returning 404, **including rule 24, the default and most common outcome.**
+
+🔴 **So the most common landing destination in the product has gone from *a seller's ranked working list* to *a designed empty state*.** ⚡ **The row anticipated this and sanctioned it** — *"an empty Home is a designed state, not a failure"* — **and it is still a screen a customer would find less useful than the one before it.**
+
+⛔ **The alternative was worse and was refused**: falling back to the attention list when a composition has no cards **would be a second answer to what Home shows**, which is the hybrid [D-229A](DECISION_REGISTER.md) forbids and which [TASK-1438](BACKLOG.md)'s own comment warned against — *"inventing a composition here would be a third answer."*
+
+### ✅ The cheapest way out, and three fifths of it is already built
+
+⚡ **`activation` is the composition every session resolves to today** — `primaryRole` is `null` on every session the platform can produce, so the resolver's fallback is universal. 📁 **Its catalogue entries are:**
+
+| Card | State |
+|---|---|
+| `connect-a-crm` | ✅ **Built** — §18's checklist step 1, [TASK-1463](BACKLOG.md) |
+| `invite-the-team` | ✅ **Built** — §18's checklist step 3 |
+| `connect-calls` | ✅ **Built** — §18's checklist step 2 |
+| `what-signora-will-do` | ⛔ Not built |
+| `sample-of-one-real-account` | ⛔ Not built |
+
+🔴 **Three of the five already exist as working, tested UI** — reading live connection and roster state — **and they are one component rather than three cards.** ⚡ **Splitting them into three registered cards would make Home useful immediately and would reuse rather than rebuild** ([L-1](../ENGINEERING_LAWS.md)).
+
+⛔ **This lane did NOT do it inside this row.** ⚠️ **[TASK-1463](BACKLOG.md) is with QE and unvalidated**, and reworking a slice under validation to serve a different row is how two slices become one unreviewable change. **It is a row, and the product owner decides whether it is the next one.**
+
+### 🔴 The other half, which is a real gap rather than a sequencing choice
+
+⛔ **`CardContract` publishes `id`, `title`, `module` and `requires` — and nothing that renders.** ⚡ **So *"a composition of cards"* had no seam from a card to its content**, and this row added one: **a renderer map owned by Home**, which is where the design's own boundary puts it — 📁 *"Home owns the composition; the module owns the card's content."*
+
+⚠️ **The alternative — a `component` field on the contract — was rejected deliberately**: 📁 the contract's own comment says *"a contract carrying layout, width or position would be the module deciding something Home owns."* **A node handed over by a module is one step from that.**
+
+**⇒ The question for the product owner is only which cards ship first.** ✅ **The mechanism is complete and proven by its own test**: a registered card with no renderer is skipped rather than drawn as an empty title.
+
 ## C-294 · A P0 row was handed to this lane as implementation-ready and its own row says BLOCKED
 
 | | |

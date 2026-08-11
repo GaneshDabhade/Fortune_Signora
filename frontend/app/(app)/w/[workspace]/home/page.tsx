@@ -1,38 +1,32 @@
 /**
- * **`/w/:workspace/home`** — [TASK-1438](../../../../../../docs/BACKLOG.md),
- * the route the entry engine already returns.
+ * **`/w/:workspace/home`** — the entry engine's landing route, and from
+ * [TASK-1405](../../../../../../docs/BACKLOG.md) it renders **Home's
+ * composition** rather than standing in for it.
  *
- * ## 🔴 Eight of the engine's twenty-four rules stop returning 404 here
+ * ## 🔴 What changed, and why the previous line was right when it was written
  *
- * 📁 [`lib/entry/rules.ts`](../../../../../lib/entry/rules.ts):52 has named
- * this path since [TASK-1400](../../../../../../docs/BACKLOG.md) — *"the one
- * authenticated landing route"* — and **nothing served it.** ⚡
- * [500](../../../../../../docs/architecture/500-authenticated-entry-reconciliation.md)
- * §3 requested every destination the engine can return and **eighteen came
- * back 404**; this one route answers **rules 11 · 12 · 14 · 19 · 20 · 21 · 22
- * · 24**, ⛔ **including 24, the default and most common outcome.**
+ * 📁 **[TASK-1438](../../../../../../docs/BACKLOG.md) made this
+ * `export { default } from '../../../page'`** so eight of the engine's
+ * twenty-four rules — ⛔ **including 24, the default and most common outcome** —
+ * stopped returning 404. ✅ **That was correct**, and its own comment named what
+ * would replace it: *"Home's COMPOSITION is TASK-1405's resolver and TASK-1406's
+ * card registry, both of which are on `main` and waiting for a catalogue."*
  *
- * ## ⛔ It does NOT adopt the entry engine
+ * ⚡ **They are no longer waiting.** 📁 [`home.tsx`](./home.tsx) is the caller
+ * both were written for, and `resolveComposition` had **zero** callers until it.
+ *
+ * ## ⛔ It still does not adopt the entry engine
  *
  * 📁 **[D-205](../../../../../../docs/DECISION_REGISTER.md) stands and
  * [TASK-1401](../../../../../../docs/BACKLOG.md) stays `BLOCKED`.** ⚡ **This
- * row creates ONE destination the engine already names.** ⛔ Wiring
- * `resolveEntry` here would be this row taking that one's scope, and eleven
- * of the engine's other destinations still render nothing.
+ * route renders a destination; it does not decide who arrives at it.**
  *
- * ## ⚡ It renders what `/` renders, and that is the whole change
- *
- * 📁 The row is explicit: *"`/w/:workspace/home` renders what `/` renders
- * today… nothing else moves."* ⛔ **So this is not a new screen.** **Home's
- * COMPOSITION is [TASK-1405](../../../../../../docs/BACKLOG.md)'s resolver and
- * [TASK-1406](../../../../../../docs/BACKLOG.md)'s card registry**, both of
- * which are on `main` and waiting for a catalogue — **inventing a composition
- * here would be a third answer to what Home shows.**
- *
- * 🔴 **The workspace is read from the segment by the provider, not here** —
- * and it is validated against the API's membership list exactly as the stored
- * id always was. 📁 *"The stored id is a hint, never a grant."* ⚡ **A URL
- * segment is exactly as untrusted**, so a member of nothing typing another
- * workspace's id lands where a non-member lands.
+ * 🔴 **The workspace is still read from the segment by the provider and
+ * validated against the API's membership list** — 📁 *"the stored id is a hint,
+ * never a grant"*, and **a URL segment is exactly as untrusted.**
  */
-export { default } from '../../../page';
+import { Home } from './home';
+
+export default function HomePage() {
+  return <Home />;
+}

@@ -613,6 +613,40 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-251 · `eslint` is red on `integration`, and the gate that would have caught it does not run
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`frontend/tests/e2e/layout-invariants.spec.ts:31`](../frontend/tests/e2e/layout-invariants.spec.ts) |
+| **Current assignee** | Joined from [`modules.toml`](coordination/modules.toml) — ⛔ **not named here** ([C-213](#c-213)) |
+| **Severity** | 🟠 — ⛔ **a Blocking Quality Defect by [§20e](../CLAUDE.md)'s own list**: *"a failing type check"*, and `eslint` is one of the four gates §20e names at the lane→QE boundary. ⚡ **Every lane's next slice inherits a red gate it did not cause** |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed here.** **The file is not this lane's and this slice is Home's route** ([§20e](../CLAUDE.md), *finding a defect outside your assignment is an obligation to report it*) |
+| **Found** | **2026-08-11, by Lane A**, running its own gates on the rebased branch for [TASK-1405](BACKLOG.md) |
+| **Commit found** | **`c7624568`** — ⚠️ **already on `integration`**, and reproduced there directly rather than inferred |
+
+**Steps.** `cd frontend && npx eslint tests/e2e/layout-invariants.spec.ts`, on `origin/integration` with no lane changes applied.
+
+**Actual.**
+
+```
+31:16  error  'boxOf' is defined but never used  @typescript-eslint/no-unused-vars
+✖ 1 problem (1 error, 0 warnings)
+```
+
+#### ✅ Established as pre-existing rather than asserted
+
+⚡ **`git diff origin/integration...HEAD -- layout-invariants.spec.ts` is empty** for the branch that found it, **and the file was checked out from `origin/integration` and linted on its own** — ⛔ **the error is the integration branch's, not a lane's.**
+
+#### 🔴 Why it reached `integration` at all, and this is the part worth acting on
+
+⚠️ **QE has already filed that `make certify` does not run `eslint`.** ⛔ **So the repository's certification gate cannot see this class of defect**, and the only thing standing between a lint error and `integration` is a lane remembering to run it by hand — 📁 which is exactly the *"guard kept by discipline"* [§20e](../CLAUDE.md) says should be kept by a machine instead.
+
+⚡ **This row is the evidence that the gap is not theoretical**: **a commit reached `integration` with `eslint` red**, and three lanes will now run their own gates and see a failure none of them caused.
+
+#### ✅ The fix is one line; the finding is the gate
+
+⛔ **Deleting the unused helper is trivial and is not the point.** 📁 **The repair worth making is that `make certify` runs `eslint`**, which is QE's and already reported — **this row exists so the cost is recorded against a real occurrence rather than a prediction.**
+
 ### B-250 · The Playground seeder ignores `SIGNORA_DATABASE_URL` and silently seeds the shared demo database
 
 | | |
