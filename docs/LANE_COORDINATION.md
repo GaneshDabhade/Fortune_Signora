@@ -9895,6 +9895,34 @@ rules parsed: 24   ·   distinct reason codes: 24
 ---
 
 ## C-1419 · The decision briefs — the whole Product Owner queue
+> ## ⚡ **RE-MEASURED 2026-08-11 by status field, not by Owner cell. The queue is THREE, and only one blocks a row.**
+>
+> ⛔ **This office reported eleven blockers to the product owner on 2026-08-10. A cheap status-field pass eliminated eight of them in one command.**
+>
+> | | Item | Status field, verbatim |
+> |---|---|---|
+> | ✅ | **C-303** | **`ANSWERED` 2026-08-02** — the ICP stays in Commercial Profile; the aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md) |
+> | ✅ | **C-005** | **`ANSWERED` 2026-08-02** — ownership settled; only *sequencing* remains |
+> | ✅ | **C-027** | **`ANSWERED` 2026-08-02** — four decisions taken; [ADR-0040](architecture/adr/0040-notifications.md) proposed |
+> | ✅ | **C-302** | **`DEFERRED`** — [D-139](DECISION_REGISTER.md) ⑤: ***"Continue holding this until ADR-0040. No further Product Owner time required."*** |
+> | ✅ | **C-334** | **`OPERATIONAL`** — [D-139](DECISION_REGISTER.md) ②: ***"This is no longer a Product Owner decision."*** |
+> | ✅ | **C-245** | **`REVIEW NOTE — not a queue item`**, [D-232](DECISION_REGISTER.md) §6. **Backend verified safe: every invitation endpoint is workspace-scoped and no decline capability exists** |
+> | ✅ | **C-322 · C-417 · C-335** | **`RULED` / chain discharged** — [D-111](DECISION_REGISTER.md), 2026-08-06 |
+> | ⏸️ | **C-307** | **`OPEN` — PARKED, CORRECTLY**, [D-232](DECISION_REGISTER.md) §7. **`Blocks` is empty** |
+>
+> ### 🔴 **The three that are genuinely active**
+>
+> | Item | Blocks | Needs |
+> |---|---|---|
+> | **C-331** | **Three rows** — [TASK-003](BACKLOG.md), [TASK-202](BACKLOG.md), [C-222](#c-222) | ⚡ **An evaluation run this workstation cannot perform** — a *resourcing* act, not a ruling |
+> | **C-223** | ⚡ **Only the detection half of Epic D phase 1** — declaration, API and screen are shipped | A boundary ruling |
+> | **C-306** | ⛔ **Nothing** — `Blocks` is empty; frontend half only, and Lane B can build the backend now | Rebuild-or-keep |
+> | **C-1405** | [TASK-1421](BACKLOG.md) | ✅ **Commission the Workspace Chooser design** — the one confirmed decision |
+>
+> ⚠️ **Two of the three I ranked P0 were wrong.** **C-302 carries *"No further Product Owner time required"* and I recommended a ruling on it. C-307 is parked and blocks nothing, and I called it *"one answer fixes the class."***
+>
+> ⛔ **The failure was procedural, not analytical: I read the `Owner` cell and not the `Status` cell.** ✅ **The funnel that prevents it — status → blocking → repository → brief — is now the required order, cheapest gate first.**
+
 
 > ⚠️ **FIVE, not four. Corrected 2026-08-10 before it was reported.** ⛔ **[C-338](#c-338) surfaced on the re-measurement and is genuine: it blocks [TASK-003](BACKLOG.md), which a lane holds `IN PROGRESS` with no code written.** ⚡ **It shares its subject with [C-331](#c-331) and could be ruled together — but it is a distinct question and is not folded in.**
 
