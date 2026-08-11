@@ -333,7 +333,26 @@ export default function AccountBriefPage() {
           ⛔ **It lists every section, including the seven nothing can fill** —
           a map that hides the empty rooms is one nobody can trust. */}
       {score ? (
-        <OnThisPage className="phone:flex-row phone:flex-wrap phone:items-center phone:gap-1" />
+        <OnThisPage
+          // ⚡ **What this page actually renders**, in the design's order.
+          // ⛔ **`score`, `signals` and `activity` are the supplied sections
+          // that have a section here**; the seven absent ones all carry an id.
+          // ⚠️ **`activity` only when the utility panel is not carrying it**,
+          // which is why `history.carrying` decides it.
+          anchored={[
+            'score',
+            'health',
+            'intent',
+            'signals',
+            'org-chart',
+            'relationships',
+            'tech-stack',
+            'market',
+            ...(history.carrying ? [] : ['activity']),
+            'meetings',
+          ]}
+          className="phone:flex-row phone:flex-wrap phone:items-center phone:gap-1"
+        />
       ) : null}
 
       {score ? (
@@ -450,7 +469,9 @@ export default function AccountBriefPage() {
             <DecisionHistory opportunity={opportunity} viewerId={viewerId} people={people} />
           ) : null}
 
-          <section className="flex flex-col gap-3">
+          {/* ⚡ **`id="score"`** — the design calls this section *Account
+              score*, and the rail links to it by that id. */}
+          <section id="score" className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-content">What contributed</h2>
             <Card>
               <CardBody className="py-1">
@@ -526,7 +547,8 @@ export default function AccountBriefPage() {
               The endpoint has shipped since M3B and reached no screen —
               the same shape as [C-024](../../../../docs/LANE_COORDINATION.md),
               which is what wave 1 exists to close. */}
-          <section className="flex flex-col gap-3">
+          {/* ⚡ **`id="signals"`** — the design's *Signals timeline*. */}
+          <section id="signals" className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-content">What changed</h2>
             <ObservationList
               observations={observations.data}
@@ -558,8 +580,11 @@ export default function AccountBriefPage() {
               ⚡ **So `carrying` decides the PLACEMENT of one component over one
               data source**, rather than there being two copies to keep in
               step. */}
+          {/* ⚡ **`id="activity"`** — the design's *Recent activity*. ⚠️ Only
+              anchored when the utility panel is NOT carrying it, which is why
+              the rail's `anchored` list asks the same question. */}
           {history.carrying ? null : (
-            <section className="flex flex-col gap-3">
+            <section id="activity" className="flex flex-col gap-3">
               <h2 className="text-sm font-semibold text-content">What has happened</h2>
               {historyFeed}
             </section>

@@ -61,7 +61,21 @@ describe('⛔ a section nothing can fill still says what it would show', () => {
 });
 
 describe('📁 the "On this page" rail maps the WHOLE record', () => {
-  it('lists every section, supplied or not', () => {
+  it('🔴 links ONLY to sections this page actually renders', () => {
+    /**
+     * ⚠️ **Found in a headed review, and it is the defect this component
+     * exists to prevent, one level up.** ⛔ **The first version linked every
+     * section by id while only the ABSENT ones carried one** — so *Account
+     * score* and *Summary* were links to nowhere.
+     */
+    render(<OnThisPage anchored={['score', 'meetings']} />);
+
+    const rail = screen.getByRole('navigation', { name: 'On this page' });
+    expect(within(rail).getAllByRole('link')).toHaveLength(2);
+    expect(within(rail).queryByRole('link', { name: 'Summary' })).toBeNull();
+  });
+
+  it('lists every section it is given, supplied or not', () => {
     /**
      * ⛔ **A rail that hid what cannot be filled would be a map with rooms
      * missing.** 📁 The same reasoning [`rail.ts`](../../lib/shell/rail.ts)
@@ -69,7 +83,7 @@ describe('📁 the "On this page" rail maps the WHOLE record', () => {
      * person the feature does not exist, so they ask for the wrong thing or
      * ask nobody."*
      */
-    render(<OnThisPage />);
+    render(<OnThisPage anchored={ACCOUNT_SECTIONS.map((s) => s.id)} />);
 
     const rail = screen.getByRole('navigation', { name: 'On this page' });
     for (const section of ACCOUNT_SECTIONS) {
@@ -78,7 +92,7 @@ describe('📁 the "On this page" rail maps the WHOLE record', () => {
   });
 
   it('⚡ dims what cannot be filled rather than hiding it', () => {
-    render(<OnThisPage />);
+    render(<OnThisPage anchored={ACCOUNT_SECTIONS.map((s) => s.id)} />);
 
     const rail = screen.getByRole('navigation', { name: 'On this page' });
     const dimmed = within(rail).getByRole('link', { name: 'Buying intent' });
@@ -88,7 +102,7 @@ describe('📁 the "On this page" rail maps the WHOLE record', () => {
   });
 
   it('every entry points at the section it names', () => {
-    render(<OnThisPage />);
+    render(<OnThisPage anchored={ACCOUNT_SECTIONS.map((s) => s.id)} />);
 
     const rail = screen.getByRole('navigation', { name: 'On this page' });
     for (const section of ACCOUNT_SECTIONS) {
@@ -100,7 +114,7 @@ describe('📁 the "On this page" rail maps the WHOLE record', () => {
   });
 
   it('⚠️ vacuity guard — the rail is not empty', () => {
-    render(<OnThisPage />);
+    render(<OnThisPage anchored={ACCOUNT_SECTIONS.map((s) => s.id)} />);
 
     expect(
       within(screen.getByRole('navigation', { name: 'On this page' })).getAllByRole('link').length,

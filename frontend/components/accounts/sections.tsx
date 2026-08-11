@@ -35,8 +35,28 @@ import { onThisPage, type AccountSection } from '@/lib/accounts/sections';
  * navigation destination: *"a hidden destination teaches a person the feature
  * does not exist, so they ask for the wrong thing or ask nobody."*
  */
-export function OnThisPage({ className }: { className?: string }) {
-  const sections = onThisPage();
+export function OnThisPage({
+  anchored,
+  className,
+}: {
+  /**
+   * 🔴 **The ids this page actually renders**, and the rail links to nothing
+   * else.
+   *
+   * ⚠️ **Found in a headed review**: the first version linked every section by
+   * id while only the ABSENT ones carried one — ⛔ **so *Account score* and
+   * *Summary* were links to nowhere**, which is precisely the defect this
+   * component was written to prevent, one level up.
+   *
+   * ⚡ **`supplied` means a READ exists, not that this page renders it.** 📁
+   * Three sections — *Open opportunities*, *Contacts & decision makers*,
+   * *Competitors* — have reads and no section on this page yet, **so they are
+   * not in the rail and that is named as a limitation rather than hidden.**
+   */
+  anchored: readonly string[];
+  className?: string;
+}) {
+  const sections = onThisPage().filter((section) => anchored.includes(section.id));
 
   return (
     <nav aria-label="On this page" className={cn('flex flex-col gap-1', className)}>

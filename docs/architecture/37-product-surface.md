@@ -1330,3 +1330,31 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ### ⏸️ Named as remaining
 
 ⛔ **Insights and Notes carry the panel's own empty state and no content**, which is what the row asked for: *"tab stubs only if the design's own empty state is used; never invented copy."* **They gain content when a module publishes into them.**
+
+---
+
+## TASK-1415 · Account 360 — measured before it was built *(2026-08-11)*
+
+🔴 **The row claims every section is *"a composition of intelligence the platform ALREADY produces"*.** ⚠️ **That is half true, and building on the claim would have invented the other half.**
+
+✅ **Measured against the three modules that publish reads** — `hooks.ts`, `hooks/commercial.ts`, `hooks/timeline.ts` — **eight of the design's fifteen sections have one and seven do not**: customer health · buying intent · the organisation chart · the relationship graph · the technology stack · market signals · meetings.
+
+### ⛔ The seven are RENDERED, not omitted
+
+📁 **[§20c](../../CLAUDE.md)**: *"screens without a shipped module behind them ship a designed empty state"* — ⛔ **and an omission is not one.** ⚠️ **A page that silently left them out would be indistinguishable from a page with a bug**, and a rep who has seen the design would read a missing section as a broken screen.
+
+🔴 **An absent section is NOT an empty one**, and 📁 [P-A](../DOMAIN_DISCOVERY_REGISTER.md) is the reason: **empty means *this account has none*; absent means *Signora cannot answer at all*.** ⚠️ **A rep who reads the first when the second is true concludes their account is quiet** — a commercial decision made on a false reading. ⛔ **And never *"coming soon"*** — the rail already paid for that at M12.3.
+
+### ⚠️ Three defects of mine, and two were found by looking rather than by testing
+
+| | |
+|---|---|
+| **Platform vocabulary in customer copy** | ⛔ Three absence sentences said *"workspace"*. 📁 [ADR-0034](adr/0034-ubiquitous-language.md): a customer says **Organization**. **Caught by my own test** |
+| **The reads live in THREE modules and I checked one** | ⚠️ `useBuyingCommittee`, `useCompetitors` and `useAccountTimeline` are not in `hooks.ts`. ⛔ **Two files' worth of claims went unverified** until the test named them |
+| 🔴 **The rail linked to nothing** | ⚠️ **Found in a headed review.** **Only the ABSENT sections carried an id**, so *Account score* and *Summary* were links to nowhere — ⛔ **precisely the defect the component was written to prevent, one level up.** ✅ **The rail now takes the ids the page actually renders and links to nothing else** |
+
+### ⏸️ Named as remaining, not implied
+
+⚠️ **`supplied` means a READ exists — not that this page renders it.** ⛔ **Three sections have reads and no section here yet**: *Open opportunities*, *Contacts & decision makers*, *Competitors*. **They are not in the rail**, because a link to nothing is the defect above.
+
+⛔ **The seven absent sections render as a block after the existing content rather than interleaved in the design's order.** ⚡ **Interleaving needs the page restructured around the section list**, which is the larger Account 360 rebuild rather than this increment — **stated here so the next assignee does not read the current order as the design's.**
