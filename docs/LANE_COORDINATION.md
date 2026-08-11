@@ -4123,6 +4123,60 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 
 ---
 
+## C-1423 · ADR-0408 §1 states something untrue of the repository, and its §20a exemption may have no subject
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-11, verifying [C-287](#c-287)'s premise on Lane A's measurement (`096b9a1c`, their branch) |
+| **Owner** | 🔴 **Product owner** — ⛔ **an accepted ADR carries a false factual premise, and a [§20a](../CLAUDE.md) exemption was granted on it. Neither is a lane's to correct** |
+| **Status** | 🔵 **`READY FOR PRODUCT DECISION`** — ⚡ **options and a recommendation below; nothing further to investigate** |
+| **Blocks** | ⛔ **Nothing.** ✅ **[TASK-1430](BACKLOG.md) is already `BLOCKED` on [C-287](#c-287) and stays there.** ⚠️ **Lane A spent no implementation time — this was the verification the directive gated on** |
+
+### ✅ Verified independently by this office, not relayed
+
+📁 **Every claim below was re-measured on `lane-c-sync` before being brought here.**
+
+| | Claim | Measured |
+|---|---|---|
+| ✅ | **The installed Better Auth is not the declared one** | `package.json` declares **`^1.1.0`**; `node_modules/better-auth/package.json` reports **`1.6.25`**. ⚡ **This is why the first search found nothing — it read the 1.1-era layout** |
+| ✅ | **Better Auth ships a rate limiter** | **`dist/api/rate-limiter/index.mjs` exists** |
+| ✅ | **It is already enabled in this product** | 📁 **`frontend/lib/auth/server.ts`:147 — `rateLimit: { enabled: true }`**, set deliberately because the vendor defaults it to production-only |
+| ✅ | **And its refusal already renders** | `app/(auth)/signin/throttled.tsx`, built against a real `429` |
+| 🔴 | **Storage resolves to in-process memory** | 📁 **`create-context.mjs`:174 — `storage: options.rateLimit?.storage \|\| (options.secondaryStorage ? "secondary-storage" : "memory")`.** ✅ **`server.ts` configures NEITHER — `grep` returns 0 for `storage:`, `secondaryStorage` and `customRules`** |
+
+### 🔴 So [ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) §1 is false
+
+📁 **It reads: *"nothing stands between a credential-stuffing script and Better Auth."*** ⛔ **Something does, in every mode, and this product already renders its refusal.**
+
+⚠️ **[§2](../CLAUDE.md) is explicit that the repository must not assert something untrue of itself, and an ADR is the strongest place that rule binds** — the ADR is the reason the [§20a](../CLAUDE.md) platform-freeze exemption was granted.
+
+### ⚡ The real gap is smaller than the ADR describes, and it is configuration
+
+| | |
+|---|---|
+| 🔴 **In-process counters** | **`"memory"` gives an attacker *n* × the budget across *n* replicas and loosens silently as you scale** — ⛔ **precisely what [ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) §9 rejects** |
+| ⚠️ **No `customRules`** | **Password-reset request and verification-resend get the DEFAULT policy**, not the tighter one the ADR itself calls *"arguably worse"* — **they make Signora send mail on an attacker's command, needing no credential** |
+
+### The options
+
+| | | |
+|---|---|---|
+| **A** ✅ **RECOMMENDED** | **Correct §1, keep the ADR, re-scope its subject** | ⚡ **The ADR's *conclusion* survives — Signora needs a Redis-backed limiter with per-route policy.** ⛔ **Its *mechanism* does not: an ASGI middleware in `signora_platform/api/` can never see `/signin` or `/register`, which live in Next.js permanently** ([§13](../CLAUDE.md), [ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md)). ✅ **Two policies, as [C-287](#c-287) recommends: the vendor's facility configured with `secondaryStorage` + `customRules` for authentication, and a re-scoped Python middleware whose row says *the business API*.** ⚡ **[§9 and §13](../CLAUDE.md): authentication is bought, never built** |
+| **B** | **Correct §1 and withdraw the §20a exemption entirely** | ⛔ **Leaves the business API unguarded and discards a conclusion that is still right** |
+| **C** | **Build the ASGI middleware as written** | 🔴 **The outcome Lane A refused, and correctly.** ⚡ **It would guard sixteen routers that already require a verified JWT, satisfy the ADR and the exemption, and flip `production-readiness.py` to ✅ while `/signin` still had memory-backed counters.** ⛔ **The gap plus a green light — strictly worse than the gap** |
+
+### ⚠️ A second finding, and it is about the probe rather than the product
+
+📁 **[D-213](DECISION_REGISTER.md) records `production-readiness.py` matching `rate.?limit\|throttl` and reporting green on **38 outbound files** — vendor calls, the opposite concern.** ⛔ **The correction to inbound-only then searched `backend/`.** 🔴 **Authentication does not live in `backend/` and permanently cannot** ([§13](../CLAUDE.md)). ⚡ **Wrong direction, then wrong tier, both times confidently green.** ✅ **Whoever fixes the probe should assert against `frontend/lib/auth/`, and the assertion that discriminates is `storage`, not `enabled`**
+
+### ⛔ The minimum decision
+
+> **Correct ADR-0408 §1, and rule whether its §20a exemption re-scopes to the business API (A) or is withdrawn (B).**
+
+⚡ **Nothing is blocked either way.** ✅ **Under A the configuration half needs no new dependency — `redis>=5.2` is already present, `require_redis_url()` exists, and Better Auth's `secondaryStorage` is the vendor's own seam**
+
+---
+
 ## C-306 · The Opportunities & Signals experience already exists, and Lane A owns half of it
 > ## ✅ **ANSWERED 2026-08-11 — Lane C, by design-first reconciliation. The question was *rebuild or keep*, and the two halves answer differently.**
 >
