@@ -11353,3 +11353,45 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 ⚠️ **Seven destinations are declared today** and this lane has verified only the one it fixed: `/account/deleted` · `/account/suspended` · **`/auth/locked` ✅** · `/auth/step-up` · `/workspaces/none` · and the two `WORKSPACES` constants. ⛔ **This lane did not check the other six**, because **finding a defect outside the row it holds is an obligation to report, never a licence to fix** ([§20e](../CLAUDE.md)) — **and six more screens is a commissioning decision, not a slice.**
 
 > ⚡ **[TASK-1423](BACKLOG.md) is already the row for the missing gate screens and is `BLOCKED` on [C-1405](#c-1405) for exactly this reason** — their designs do not exist. **This item is not asking for those screens. It is asking for the check that says which ones are missing**, so the next one is found by a gate rather than by a lane reading a file.
+
+---
+
+## C-291 · The Saved View store has no frontend consumer, so Signals would be its first — not its second
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, doing [TASK-1468](BACKLOG.md)'s reuse audit — ⛔ **before writing a line, which is what the row instructed** |
+| **Owner** | **Lane C** — 📁 **a scope premise on a row this office prepared**, not a defect and not an architectural blocker |
+| **Status** | 🟡 **`OPEN` — NOT BLOCKING.** ✅ **Surfaces ② ③ ⑦ are unaffected and proceed** |
+| **Blocks** | ⚠️ **Nothing outright.** ⛔ **It re-sizes ① from *reuse* to *first caller*, which is a different piece of work** |
+
+### 🔴 The measurement
+
+📁 **[TASK-1468](BACKLOG.md)'s reuse cell**: ***"[TASK-452](BACKLOG.md) shipped the Saved View store… Signals is another consumer of that same store — ⛔ not a new saved-view mechanism."***
+
+✅ **The instruction is right and this lane will follow it.** ⛔ **The premise behind *another* is not.**
+
+| | |
+|---|---|
+| **The endpoint** | ✅ **Exists** — `GET /workspaces/{id}/saved-views`, `workspace_tenancy` |
+| **`lib/views/working-list.ts`** | ✅ **Exists** — builds a declaration, and carries the three refusals |
+| **A frontend fetch of it** | ⛔ **NONE.** `grep -rn "saved-views"` over `frontend/**` returns **zero**; so does `SavedView` |
+| **A type, a hook, a query key** | ⛔ **None of the three** |
+
+> 🔴 **So the store is shipped, tested, and reachable by nothing.** ⚡ **This is the same pattern this repository has now recorded nine times** — the entry engine, the narrowing law, the top-bar slot set, the command palette, `confidence.tsx`, `drawer.tsx`, the rail's own law, the twelve-column axis, and this. ⛔ **The law shipping first is not the defect; the surface never arriving is.**
+
+### ⚠️ Why the distinction changes the slice rather than only the wording
+
+📁 **[455 §4](architecture/455-context-definitions-r02-r03.md)**: ***"a contract proven by one real caller before six adopt it."*** ⚡ **The FIRST caller pays for proving the contract** — the types, the hooks, the query keys, the persistence path, the failure states, and the first honest answer to *what does a saved view do when the store refuses it*.
+
+⛔ **A row that describes that as *reuse* under-sizes it**, and a lane reading only the reuse cell would plan for an afternoon and find a slice.
+
+⚠️ **`working-list.ts` is the other half of the same finding**: it builds declarations **nothing stores and nothing reads back.** 📁 Its own docstring says *"a saved view outlives the screen that wrote it"* — ⛔ **and today none outlives anything, because none is written.**
+
+### ✅ What is asked
+
+**Confirm the sizing, and say which row carries the store's first frontend caller** — ⚡ **this one, or its own.**
+
+⛔ **This lane is not asking to be released from ①.** **It is asking that the row say what ① is**, so the next lane reading it is not told *reuse* about work that is *first caller*.
+
+> ✅ **Meanwhile ② ③ ⑦ proceed**, and they are genuinely queue-local: filtering by `signal_type`, bulk selection, and the counts header — **none of them touches the store.**
