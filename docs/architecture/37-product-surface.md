@@ -1429,3 +1429,35 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ⚠️ **[C-285](../LANE_COORDINATION.md) — three designs publish a shortcut table and they disagree.** 📁 **App Shell, Help Center and User Profile each declare `shortcutGroups`**, and **three chords carry two meanings between them**: *Ask Signora* is `⌘⇧A` or `⌘⏎` · *Switch workspace* is `⌘⇧W` or `⌘⇧K` · *Edit cell* is `E` or `⏎`. ⛔ **Two of those are the same chord meaning two different things** — `⌘⏎` is *Open in panel* in App Shell, and `⏎` is *Open record*. ✅ **This file follows App Shell**, because the reference is a shell surface and App Shell is the one design whose subject is the shell — ⛔ **a reading, never a ruling.**
 
 ⚠️ **[C-286](../LANE_COORDINATION.md) — the design's card is three columns and the shared `Dialog` is 448px.** 📁 **`components/ui` is 🔴 in the Change Budget** and ten other dialogs read that width, so 📁 [§20c](../../CLAUDE.md)'s *"never restyle a shared component for one page's benefit"* decides it. ✅ **The CONTENT is identical** — the same eighteen, the same three groups, the same order — **and the design specifies a spec-page card rather than the shape of the overlay `?` opens.**
+
+## TASK-1458 · `Shortcuts` joins the rail — an entry that opens rather than goes *(2026-08-11)*
+
+📁 **The design's `railUtility` names three: `Settings` · `Shortcuts` · `Docs & support`.** ⛔ **The rail shipped two**, and `navigation.tsx` said why in its own comment: *"`Shortcuts` still has none and stays absent rather than rendered as a dead end"* — 📁 [C-269](../LANE_COORDINATION.md)'s rule, applied correctly.
+
+✅ **[TASK-1445](BACKLOG.md) built the surface, so the reason expired.** ⚡ **The entry arrives because the destination now exists, not because anybody grew tired of the gap.**
+
+### 🔴 It opens; it does not go — and the type says so
+
+📁 **The design gives it `meta: '?'` and gives the other two an empty string.** ⚡ **That is not decoration: it says this entry is the thing the `?` key opens.** ⛔ **A `/shortcuts` route beside the overlay would be two representations of one truth** ([§2](../../CLAUDE.md)) — **and they would diverge the first time somebody edited one.**
+
+✅ **So `RailEntry` became a union**: `RailItem` carries an `href`, `RailAction` carries `opens`. ⛔ **A rail entry with neither cannot be written**, which is [§2](../../CLAUDE.md)'s preference for a violation that is *unrepresentable* over one that is merely discouraged. ⚠️ **The alternative — an optional `href` — makes the dead entry ordinary code that happens to be wrong**, which is exactly the shape C-269 refuses.
+
+⚡ **The state lifted to a provider**, so the key and the rail drive one dialog: 📁 the same split [`utility-panel.tsx`](../../frontend/components/shell/utility-panel.tsx) drew after [B-234](../BUGS.md) — **state is the provider's, placement is the shell's.**
+
+### ⛔ Two consumers had to be told apart
+
+📁 **`RAIL_DESTINATIONS` feeds the command palette's *Navigate* group AND the phone bar**, and **both render anchors.** ✅ **It now publishes links only.**
+
+🔴 **Which means `Shortcuts` is absent from the phone bar, and that is a decision rather than a side effect.** ⛔ **A keyboard-shortcut reference on a device with no keyboard is a control that cannot help anybody**, and the phone bar is the most space-constrained surface in the product. ✅ **`?` and the rail entry remain on every viewport that has a keyboard.**
+
+### ⚠️ The assertion this row had to write before it could pass
+
+📁 **[TASK-1439](BACKLOG.md) required that *"the rendered entries and their order are asserted against the design's list"*, and for the UTILITY group nothing asserted it.** ⛔ **`rail.test.ts` exercises `railViolations` against synthetic fixtures and never reads the real group** — **so `Shortcuts` could have been added, misspelled or ordered wrongly without a single test moving.**
+
+⚡ **Found by adding the entry and watching 2782 tests stay green.** ✅ **[`rail-utilities.test.tsx`](../../frontend/tests/components/rail-utilities.test.tsx) closes it, and it is fire-tested**: removing the entry turns three of its five red.
+
+### ♿ The `?` glyph is not the only affordance
+
+📁 **The row requires it explicitly.** ✅ **The entry is a labelled `<button>` reachable by Tab**, with `aria-haspopup="dialog"`; ⛔ **the `?` is `aria-hidden`**, because a question mark read aloud inside a label is noise rather than information. ⛔ **A `<button>` and never an anchor** — it goes nowhere, and **a screen reader announcing a link that never changes the page is the control lying about itself.**
+
+⛔ **Without the provider above it the entry is OMITTED, not rendered dead** — 📁 C-269 again, and a rail mounted in a test or a story would otherwise show a button that silently does nothing.

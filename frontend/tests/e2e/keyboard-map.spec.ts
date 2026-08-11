@@ -84,6 +84,40 @@ test.describe('finding out what the keyboard does', () => {
   });
 });
 
+test.describe('the rail is the second door onto the same surface', () => {
+  /**
+   * 📁 **[TASK-1458](../../../docs/BACKLOG.md)** — the design gives the rail's
+   * `Shortcuts` entry `meta: '?'`. ⛔ **So it must open the SAME overlay the key
+   * does**, and this is the assertion that stops a second surface appearing.
+   */
+  test('the rail opens the reference the ? key opens', async ({ page }) => {
+    await page.goto('/');
+    const rail = page.getByRole('navigation', { name: 'Primary' });
+
+    await rail.getByRole('button', { name: 'Shortcuts' }).click();
+
+    const reference = page.getByRole('dialog');
+    await expect(reference).toBeVisible();
+    await expect(reference.getByText('Keyboard shortcuts')).toBeVisible();
+    await expect(reference.getByText('Command palette', { exact: true })).toBeVisible();
+  });
+
+  test('and there is only ever one of it', async ({ page }) => {
+    await page.goto('/');
+    await page.keyboard.press('?');
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    await page.getByRole('navigation', { name: 'Primary' })
+      .getByRole('button', { name: 'Shortcuts' })
+      .click();
+
+    // ⛔ **One dialog, not two** — a rail that opened its own copy would be
+    // two representations of one truth (§2).
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+  });
+});
+
 test.describe("the map's claims survive being pressed", () => {
   /**
    * 🔴 **The row's central assertion.** 📁 The map lists `⌘K` under `Surfaces`

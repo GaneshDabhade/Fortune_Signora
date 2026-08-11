@@ -5,12 +5,16 @@ import {
   BookOpen,
   Briefcase,
   Home,
+  // 📁 The design's `navIcon('key')` for `Shortcuts`.
+  KeyRound,
   LineChart,
   Lock,
   Radio,
   Settings as SettingsIcon,
 } from 'lucide-react';
 import Link from 'next/link';
+
+import { useShortcutsReference } from '@/components/shell/shortcuts-reference';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
@@ -96,9 +100,46 @@ import {
  * Dimming an item is a courtesy; the server refuses the request either way.
  */
 
-interface RailItem extends RailDestination {
-  href: string;
+interface RailEntryBase extends RailDestination {
   icon: typeof SettingsIcon;
+  /**
+   * 📁 **The design's right-aligned meta glyph** — `railUtility` gives
+   * `Shortcuts` `meta: '?'` and the other two an empty string.
+   */
+  meta?: string;
+}
+
+/** ⚡ An entry that goes somewhere. */
+interface RailItem extends RailEntryBase {
+  href: string;
+}
+
+/**
+ * ⚡ **An entry that opens something instead of going somewhere** —
+ * [TASK-1458](../../../docs/BACKLOG.md).
+ *
+ * 🔴 **`Shortcuts` is the first, and it is why this type exists.** 📁 The design
+ * gives it `meta: '?'` — ⛔ **which says it is the thing the `?` key opens, not
+ * a destination.** ⚠️ **A `/shortcuts` route beside the overlay would be two
+ * representations of one truth** ([§2](../../../CLAUDE.md)) and they would
+ * diverge the first time somebody edited one.
+ */
+interface RailAction extends RailEntryBase {
+  opens: 'shortcuts';
+}
+
+/**
+ * ⛔ **A union, so a rail entry with NEITHER a route nor an action cannot be
+ * written.** 📁 [§2](../../../CLAUDE.md): *"prefer a violation that is
+ * unrepresentable over one that is merely discouraged."* ⚡ **The alternative —
+ * an optional `href` — makes the dead entry ordinary code that happens to be
+ * wrong**, which is exactly the shape [C-269](../../../docs/LANE_COORDINATION.md)
+ * refuses.
+ */
+type RailEntry = RailItem | RailAction;
+
+function goesSomewhere(entry: RailEntry): entry is RailItem {
+  return 'href' in entry;
 }
 
 /**
@@ -150,18 +191,26 @@ const DESTINATIONS: readonly RailItem[] = [
  * uninterrupted at the top."*
  *
  * 📁 **The design names three: Settings, Shortcuts, Docs & support.**
- * ✅ **Two have a route now** — [TASK-1420](../../../docs/BACKLOG.md) built
- * `/help`, which is the destination [C-269](../../../docs/LANE_COORDINATION.md)
- * recorded as missing. ⛔ **`Shortcuts` still has none and stays absent rather
- * than rendered as a dead end.**
+ * ✅ **All three are here now** — [TASK-1458](../../../docs/BACKLOG.md).
+ *
+ * ⚡ **`Shortcuts` was absent for a good reason and the reason expired.** 📁 This
+ * comment used to read *"`Shortcuts` still has none and stays absent rather than
+ * rendered as a dead end"*, and [C-269](../../../docs/LANE_COORDINATION.md) is
+ * why. ⛔ **[TASK-1445](../../../docs/BACKLOG.md) built the surface**, so the
+ * entry has somewhere to go — ✅ **and it arrives because the destination now
+ * exists, not because anybody grew tired of the gap.**
  */
-const UTILITIES: readonly RailItem[] = [
+const UTILITIES: readonly RailEntry[] = [
   { id: 'settings', label: 'Settings', href: '/settings', icon: SettingsIcon, depth: 1 },
   // ✅ **`Docs & support` gains its route** — [TASK-1420](../../../docs/BACKLOG.md).
   // ⛔ **It was absent for the reason [C-269](../../../docs/LANE_COORDINATION.md)
   // gave: no help, docs or support route existed.** ⚡ **The route exists now, so
   // the entry does** — and `reachability` refuses a route with no entrance, which
   // is how this arrived rather than being remembered.
+  // ✅ **`Shortcuts`** — [TASK-1458](../../../docs/BACKLOG.md).
+  // ⛔ **It OPENS rather than navigates**, which is what `meta: '?'` means in
+  // the design: it is the thing the `?` key opens, reached a second way.
+  { id: 'shortcuts', label: 'Shortcuts', opens: 'shortcuts', meta: '?', icon: KeyRound, depth: 1 },
   { id: 'help', label: 'Docs & support', href: '/help', icon: BookOpen, depth: 1 },
 ];
 
@@ -178,7 +227,24 @@ const GRANTED_BY: Readonly<Record<Capability, string>> = {
  * rather than against a fixture — 📁 `railViolations` is the check and this is
  * what it checks.
  */
-export const RAIL_DESTINATIONS = [...DESTINATIONS, ...UTILITIES];
+/**
+ * ⚡ **Every rail entry that GOES somewhere** — read by the command palette's
+ * *Navigate* group and by the phone bar.
+ *
+ * ⛔ **Links only, and both consumers need that for the same reason**: each
+ * renders an anchor, and 📁 [TASK-1458](../../../docs/BACKLOG.md) added an entry
+ * that opens an overlay instead. ⚠️ **An action leaking in here would arrive as
+ * a nav item with no destination** — the defect the `RailEntry` union exists to
+ * prevent, one consumer over.
+ *
+ * 🔴 **So `Shortcuts` is absent from the phone bar, and that is a decision
+ * rather than a side effect.** ⛔ **A keyboard-shortcut reference on a device
+ * with no keyboard is a control that cannot help anybody**, and the phone bar is
+ * the most space-constrained surface in the product — 📁 five slots for what the
+ * design gives eleven. ✅ **`?` and the rail entry both remain on every viewport
+ * that has a keyboard.**
+ */
+export const RAIL_DESTINATIONS = [...DESTINATIONS, ...UTILITIES.filter(goesSomewhere)];
 
 /**
  * 🔴 **`[workspace]` filled from the active workspace, for EVERY renderer** —
@@ -209,6 +275,82 @@ export function resolved(
     if (workspaceId === null) return [];
     return [{ ...item, href: workspaceHome(workspaceId) }];
   });
+}
+
+/**
+ * ⚡ **The geometry every rail entry shares**, extracted on its second caller —
+ * [TASK-1458](../../../docs/BACKLOG.md)'s action button.
+ *
+ * ⛔ **Extracted rather than copied.** 📁 The values are the design's, and two
+ * copies would let the rail's link and its action drift apart by one padding
+ * token — **a difference nobody would call a bug and everybody would see.**
+ */
+function railShape(depth: number, collapsed: boolean): string {
+  return cn(
+    // 📁 *"Item 32px tall, 8px radius, 10px icon-to-label gap."* ⛔ The values
+    // are the design's; `gap-2.5` is 10px and `rounded-md` is the 8px token.
+    'flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm transition-colors',
+    // 📁 *"Second level indents to 30px and never nests further."*
+    depth === 2 && !collapsed && 'pl-[30px]',
+    collapsed && 'justify-center px-0',
+    // 📁 *"Focus: 1px brand border plus a 3px tint halo — never the browser
+    // ring."* ⛔ `outline-none` alone would be an accessibility defect; this
+    // replaces the ring rather than removing it.
+    'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent',
+    'focus-visible:ring-offset-[3px] focus-visible:ring-offset-accent-subtle',
+  );
+}
+
+/**
+ * ⚡ **A rail entry that opens an overlay** — [TASK-1458](../../../docs/BACKLOG.md).
+ *
+ * ⛔ **A `<button>`, and the distinction is not cosmetic**: 📁 it goes nowhere,
+ * so an anchor would be the *control that lies about itself*
+ * [§2](../../../CLAUDE.md) names — **and a screen reader would announce a link
+ * that never changes the page.**
+ *
+ * ♿ **The `?` meta is NOT the only affordance**, which the row requires
+ * explicitly: **the entry is a labelled button reachable by Tab**, and the glyph
+ * is `aria-hidden` because *"?"* read aloud in the middle of a label is noise.
+ *
+ * ⛔ **Renders nothing when no provider is above it.** ⚠️ **A rail mounted
+ * without the shell — a test, a story — would otherwise show an entry that does
+ * nothing**, which is precisely the dead end
+ * [C-269](../../../docs/LANE_COORDINATION.md) refuses.
+ */
+function RailAction({ item, collapsed }: { item: RailAction; collapsed: boolean }) {
+  const reference = useShortcutsReference();
+  const Icon = item.icon;
+
+  if (reference === null) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={reference.open}
+      aria-label={item.label}
+      aria-haspopup="dialog"
+      className={cn(
+        railShape(item.depth, collapsed),
+        'w-full text-content-muted hover:bg-surface-sunken hover:text-content',
+      )}
+    >
+      <Icon className="h-4 w-4 shrink-0 text-content-subtle" aria-hidden />
+      {collapsed ? null : (
+        <>
+          <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
+          {/* 📁 **The design's `meta` slot** — `railUtility` gives this entry
+              `'?'`. ⛔ **`aria-hidden`**: it is a reminder of the key, and read
+              aloud inside the label it is noise rather than information. */}
+          {item.meta === undefined ? null : (
+            <span aria-hidden className="shrink-0 font-mono text-2xs text-content-subtle">
+              {item.meta}
+            </span>
+          )}
+        </>
+      )}
+    </button>
+  );
 }
 
 function RailLink({
@@ -260,19 +402,7 @@ function RailLink({
     </>
   );
 
-  const shape = cn(
-    // 📁 *"Item 32px tall, 8px radius, 10px icon-to-label gap."* ⛔ The values
-    // are the design's; `gap-2.5` is 10px and `rounded-md` is the 8px token.
-    'flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm transition-colors',
-    // 📁 *"Second level indents to 30px and never nests further."*
-    item.depth === 2 && !collapsed && 'pl-[30px]',
-    collapsed && 'justify-center px-0',
-    // 📁 *"Focus: 1px brand border plus a 3px tint halo — never the browser
-    // ring."* ⛔ `outline-none` alone would be an accessibility defect; this
-    // replaces the ring rather than removing it.
-    'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent',
-    'focus-visible:ring-offset-[3px] focus-visible:ring-offset-accent-subtle',
-  );
+  const shape = railShape(item.depth, collapsed);
 
   if (restricted) {
     /**
@@ -374,9 +504,14 @@ export function Navigation({
       <div className="flex-1" />
 
       <div className="flex flex-col gap-0.5 border-t border-border pt-2">
-        {visibleDestinations(UTILITIES).map((item) => (
-          <RailLink key={item.id} item={item as RailItem} role={role} collapsed={collapsed} />
-        ))}
+        {visibleDestinations(UTILITIES).map((item) => {
+          const entry = item as RailEntry;
+          return goesSomewhere(entry) ? (
+            <RailLink key={entry.id} item={entry} role={role} collapsed={collapsed} />
+          ) : (
+            <RailAction key={entry.id} item={entry} collapsed={collapsed} />
+          );
+        })}
       </div>
     </nav>
   );

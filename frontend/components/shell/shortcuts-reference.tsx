@@ -1,6 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 
 import { Dialog } from '@/components/ui/dialog';
 import { cn } from '@/lib/design/cn';
@@ -32,7 +40,37 @@ import {
  * [`shortcuts.ts`](../../lib/shell/shortcuts.ts) counts them rather than
  * anybody writing the number down.
  */
-export function ShortcutsReference() {
+/**
+ * ⚡ **The overlay's open state, lifted so it has TWO doors and ONE surface.**
+ *
+ * 📁 **The design gives the rail entry `meta: '?'`** — ⛔ **which literally says
+ * *this is the thing `?` opens*.** ⚠️ **So the rail must drive the same dialog
+ * the key does**, and the alternative — a `/shortcuts` route beside the overlay
+ * — would be **two representations of one truth** ([§2](../../../CLAUDE.md)),
+ * diverging the first time somebody edited one.
+ *
+ * ⛔ **Lifted to a context rather than held in the rail**, because the rail is
+ * one of the doors and not the owner. 📁 The same split
+ * [`utility-panel.tsx`](utility-panel.tsx) already draws after
+ * [B-234](../../../docs/BUGS.md): **state is the provider's, placement is the
+ * shell's.**
+ */
+const ShortcutsContext = createContext<{ open: () => void } | null>(null);
+
+/**
+ * ⚡ **What a rail entry, a menu item or any other door calls.**
+ *
+ * ⛔ **Returns `null` outside the provider rather than throwing** — 📁 the rail
+ * renders in tests and stories that mount no shell, and **a navigation that
+ * crashes because an overlay is absent is a worse failure than a button that
+ * does nothing.** ✅ **The caller decides**, and `navigation.tsx` omits the
+ * entry entirely rather than rendering a dead one.
+ */
+export function useShortcutsReference(): { open: () => void } | null {
+  return useContext(ShortcutsContext);
+}
+
+export function ShortcutsReference({ children }: { children?: ReactNode }) {
   const [open, setOpen] = useState(false);
   // ⚡ **Resolved on mount, never during render.** ⛔ The server has no
   // keyboard, so asking there and answering here is a hydration mismatch.
@@ -66,8 +104,12 @@ export function ShortcutsReference() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const controls = useMemo(() => ({ open: () => setOpen(true) }), []);
+
   return (
-    <Dialog
+    <ShortcutsContext.Provider value={controls}>
+      {children}
+      <Dialog
       open={open}
       onClose={() => setOpen(false)}
       title="Keyboard shortcuts"
@@ -106,7 +148,8 @@ export function ShortcutsReference() {
           </div>
         ))}
       </div>
-    </Dialog>
+      </Dialog>
+    </ShortcutsContext.Provider>
   );
 }
 

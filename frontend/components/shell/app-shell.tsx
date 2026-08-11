@@ -91,6 +91,15 @@ export function AppShell({
   const pathname = usePathname();
 
   return (
+    /* 📁 **[TASK-1445](../../../docs/BACKLOG.md) — *"`?` opens the reference
+       from anywhere."*** ⚡ **Mounted at the shell for the literal reason the
+       design gives**: *anywhere* is a property of the shell, and a reference
+       owned by one screen is reachable from one screen.
+
+       ⚠️ **It WRAPS rather than sits beside, from [TASK-1458](../../../docs/BACKLOG.md)**:
+       📁 the design gives the rail's `Shortcuts` entry `meta: '?'`, so the rail
+       is a second door onto the SAME overlay — ⛔ **and a sibling could not be
+       opened by the rail without a second copy of the surface.** */
     /* 📁 **The vertical order is fixed and non-negotiable**: banners, then the
        top bar, then everything else. ⚡ **The banner region sits ABOVE the
        frame's columns** because it spans them — a banner inside the content
@@ -103,6 +112,7 @@ export function AppShell({
        📁 *"remembers its open state per module"*, and a per-ROUTE memory would
        forget the moment somebody opened a different account. */
     <UtilityPanelProvider userId={userId ?? null} module={moduleOf(pathname)}>
+    <ShortcutsReference>
     <div className="relative flex min-h-screen flex-col">
       {/* 📁 **Rule 2.4.1**, and first in the DOM because a skip link somebody
           has already tabbed past is not a skip link. */}
@@ -233,13 +243,6 @@ export function AppShell({
           📁 the design refuses a corner bubble by name, *"a persistent circle
           in the corner is a consumer pattern and it covers data."* */}
       <Copilot />
-      {/* 📁 **[TASK-1445](../../../docs/BACKLOG.md) — *"`?` opens the reference
-          from anywhere."*** ⚡ **Mounted at the shell for the literal reason the
-          design gives**: *anywhere* is a property of the shell, and a reference
-          owned by one screen is reachable from one screen. ⛔ **It renders
-          nothing until the key is pressed.** */}
-      <ShortcutsReference />
-
       {/* **Outside the column, because it is fixed to the viewport.** Its own
           boundary for the same reason the sidebar has one: a failure here must
           not take the page with it, and on a phone this is the only navigation
@@ -248,6 +251,7 @@ export function AppShell({
         <MobileNavigation role={role} />
       </RegionBoundary>
     </div>
+    </ShortcutsReference>
     </UtilityPanelProvider>
   );
 }
