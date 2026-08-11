@@ -5,6 +5,7 @@ import { Sparkles } from 'lucide-react';
 
 import { Drawer } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
+import { useWorkspaceLabel } from '@/lib/shell/workspace-label';
 
 /**
  * **Ask Signora — the assistant entry and its panel** —
@@ -60,6 +61,18 @@ export const ASK_SIGNORA_KEY = { key: 'a', meta: true, shift: true } as const;
 
 export function Copilot({ scope }: { scope?: string }) {
   const [open, setOpen] = useState(false);
+  /**
+   * 📁 **§19 — *"search, notifications and the assistant all carry the
+   * workspace name in their header"*** ([TASK-1463](../../../docs/BACKLOG.md)).
+   *
+   * ⚡ **The caller's `scope` wins.** 📁 §12 gives the assistant a scope of its
+   * own — *"Scoped to EMEA enterprise · Q3 · 2 filters"* — and that is a
+   * NARROWER statement than the workspace. ⛔ **Replacing it with the workspace
+   * name would widen what the panel claims to be answering within**, which is
+   * the direction [`scope.ts`](../../lib/shell/scope.ts) refuses by name.
+   */
+  const workspaceLabel = useWorkspaceLabel();
+  const scopeLine = scope ?? workspaceLabel;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -101,7 +114,7 @@ export function Copilot({ scope }: { scope?: string }) {
         // 📁 *"states that scope above the input"* — ⛔ **and when there is no
         // scope the line is absent rather than saying *everything*, which
         // would be a claim about what the assistant can see.**
-        {...(scope === undefined ? {} : { scope })}
+        {...(scopeLine === undefined ? {} : { scope: scopeLine })}
       >
         <div className="flex flex-col gap-3">
           {/**

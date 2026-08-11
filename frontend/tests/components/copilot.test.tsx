@@ -1,6 +1,22 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+/**
+ * ⚡ **§19 made the assistant read the workspace context** —
+ * [TASK-1463](../../../docs/BACKLOG.md), *"the assistant carries the workspace
+ * name in its header"*. ⛔ **Stubbed to ONE workspace here**, which is §19's own
+ * *do not label* case — **so every assertion below still describes the panel
+ * this suite was written about.** ⚡ **The labelling itself is
+ * `workspace-label.test.tsx`'s**, where both sides of the condition are
+ * exercised.
+ */
+vi.mock('@/lib/state/workspace-provider', () => ({
+  useWorkspaceContext: () => ({
+    workspaces: [{ id: 'w1', name: 'Northwind', role: 'owner' }],
+    activeWorkspace: { id: 'w1', name: 'Northwind', role: 'owner' },
+  }),
+}));
 
 import { Copilot } from '@/components/shell/copilot';
 

@@ -1729,3 +1729,101 @@ C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filte
 ✅ **The fix is to await the ELEMENT rather than the network**, and it is now a named helper in the spec so the next journey inherits it rather than rediscovering it.
 
 > 🔴 **The general form: a skip whose condition is measured rather than configured is a guard, and a guard needs the state it measures to have settled.** ⚡ **`networkidle` is a claim about the transport; `toBeVisible` is a claim about the screen.**
+
+---
+
+## The three App Shell sections the shell did not implement — [TASK-1463](../BACKLOG.md)
+
+📁 **App Shell §16 tier three · §18 · §19**, against `docs/design-snapshot/screens/Fortune Signora App Shell.dc.html` ([D-138](../DECISION_REGISTER.md)).
+
+### 🔴 §16 · the tier is defined by what is already readable
+
+📁 ***"Three tiers, chosen by what is actually unknown… In-place refreshes show a 2px bar under the top bar and dim stale figures to 60%; they never cover data that is already readable."***
+
+⛔ **A *something is fetching* boolean is the wrong signal**, and getting this wrong is not cosmetic: **cold boot and route change SKELETON the content region** because there is nothing to read yet, and **an in-place refresh must not**, because there is. ⚡ **Replacing readable figures with a skeleton is [P-A](../DOMAIN_DISCOVERY_REGISTER.md) in the other direction — a screen that had the answer and chose to stop showing it.**
+
+**So [`useIsRefreshing`](../../frontend/lib/shell/refreshing.ts) is *"every in-flight fetch is replacing data the reader can already see"***, derived from the query cache:
+
+```ts
+refreshing = useIsFetching({ predicate: q => q.state.data !== undefined });
+firstLoads = useIsFetching({ predicate: q => q.state.data === undefined });
+return refreshing > 0 && firstLoads === 0;
+```
+
+⚡ **A single first load anywhere turns it off, deliberately** — that is the tier boundary. 📁 **Derived rather than tracked** ([§2](../../CLAUDE.md), *the least powerful author*): **a `refreshing` flag in React state would be a second copy of what the cache already knows**, wrong in exactly the moments that matter — a fetch that errors, a query that unmounts mid-flight, two regions refreshing at once.
+
+**🔴 The 2px strip is always in the document; only the bar inside it comes and goes.** ⚠️ **A conditionally rendered 2px node pushes every screen down two pixels on every refetch** — 📁 *"No overlay, no spinner, no layout shift"* — **and that failure reads as a rendering glitch rather than as a bug, so nobody files it.**
+
+### 🔴 §19 · the condition is half the rule, and it is the half that gets dropped
+
+📁 ***"labelled with the workspace it belongs to whenever more than one is available to the user."***
+
+⛔ **A single-workspace reader must NOT see the label.** ⚡ **They have no ambiguity to resolve**, and a chip naming their only organization is noise on every surface it appears on. ⚠️ **`workspaces` is already published by `useWorkspaceContext`, so the condition is a fact rather than an estimate** — [`useWorkspaceLabel`](../../frontend/lib/shell/workspace-label.ts) is one rule with two callers, because two copies drift and the drift is invisible: one surface labelled and the other not reads as a rendering bug.
+
+⛔ **A caller's own scope wins.** 📁 §12 gives the assistant *"Scoped to EMEA enterprise · Q3 · 2 filters"* — **narrower than the workspace** — and overwriting it would **widen** what the panel claims to be answering within, the direction [`scope.ts`](../../frontend/lib/shell/scope.ts) refuses by name.
+
+⚠️ **The row's premise was wrong in this lane's favour and is corrected**: it says *"neither `shell-palette.tsx` nor `copilot.tsx` reads `activeWorkspace`"*. **The palette has read it since it shipped** — to scope the search. **What was missing was saying so on screen.**
+
+⛔ **Notifications cannot be labelled because there is no notification surface** — 📁 [C-275](../LANE_COORDINATION.md), and the top bar's slot 4 already records the absence. **Filters are [TASK-1432](../BACKLOG.md)'s.**
+
+### 🔴 §18 · live counts are what make it not a wizard
+
+📁 ***"the full shell with real navigation, not a stripped-down wizard… a three-step activation checklist with live counts."***
+
+⛔ **A wizard remembers which page you are on; [`activation.tsx`](../../frontend/components/shell/activation.tsx) remembers nothing.** **Every step's state is read from the workspace** — so it is correct for somebody who connected their CRM last week on another machine, correct after a disconnection, and correct for the second person to join. 📁 **A stored `activation_step` would be a second copy of a fact the connections already carry** ([§2](../../CLAUDE.md)), **and the two would disagree the first time a connection broke.**
+
+⚠️ **The platform's `onboarding` module is NOT this.** **It is the sign-up questionnaire** — industry, company size, goals — **and the design refuses a wizard by name.** ⛔ **Reusing it would have made §18 the thing it says it is not.**
+
+**⚡ `working`, never `connections.length`.** 📁 The type says why in its own words: *"at least one connection Signora can currently use — **not merely present**."* ⛔ **A step ticked by a broken connection tells somebody they have finished setting up a product that cannot see their data.**
+
+#### ⛔ Four figures the design prints that this does not
+
+| Figure | Why |
+|---|---|
+| ***"8,412 accounts imported"*** | ⛔ **The browse read publishes no total** — [C-289](../LANE_COORDINATION.md), the same absence [TASK-440](../BACKLOG.md) found |
+| ***"field mapping confirmed"*** | ⛔ **No mapping exists.** `Connection` publishes `state`, `health`, `attention` |
+| ***"Roles, regions and quota"*** | ⛔ **Territories and quota are not built.** `Membership.role` is `owner \| member` |
+| ***"about twelve minutes"*** | ⛔ **Nothing measures it.** A promise about how long setup takes is a claim the product cannot keep |
+
+**🔴 And the people count is exact only when the page is the whole set.** 📁 `CursorPage` publishes `items`, `next_cursor`, `has_more` — **and no total** — so *"2 people"* while `has_more` is true is the same invention as the imported-account count; **it just looks like arithmetic.**
+
+⛔ **The design's *"Ask a question →"* row is not built**: [`Copilot`](../../frontend/components/shell/copilot.tsx) states that it cannot answer yet, so the control would open a panel that refuses. ⚡ **A door leading to a refusal is worse than no door on the screen where somebody is deciding whether this product works.**
+
+#### ⚠️ Where it mounts, and the refusal it had to re-examine
+
+**The empty-workspace branch of `/`** — the `declared === false` state. ⛔ **That screen previously refused a call to action and NAMED its reason**: *"the guided first run is [C-007](../LANE_COORDINATION.md) and is deliberately not scheduled."*
+
+✅ **Checked rather than assumed away, and it does not apply.** 📁 **C-007 is a flow that ends by asking a customer which companies to watch**, blocked because `target_accounts_changed` has no consumer. ⛔ **The checklist asks for none of that**: three steps, two connections and an invitation, **each linking to a Settings screen that already ships**, and **nothing here declares a target account.** ⚡ **The one control C-007 reserves is still not offered.**
+
+### 🔴 A journey that permanently moves shared state breaks the ones after it
+
+⚠️ **§18 and §19 both needed a condition the demo environment does not have** — an empty workspace, and a reader with more than one. ⛔ **The first version of this journey asserted against whatever happened to exist, and BOTH assertions passed by never running**: the demo workspace has declared targets, and the demo owner holds one organization. **That is the false-skip class this lane had already shipped twice.**
+
+✅ **So the journey creates the condition the way a customer creates it** — the `New organization` control that ships on Settings ([§20e](../../CLAUDE.md), *test data enters the way a customer's data enters*).
+
+> 🔴 **And then it puts the reader back.** **Creating an organization SWITCHES to it, and the choice is remembered per browser** — so a journey ending inside a throwaway organization leaves **every later spec** resolving to a workspace with no data. ⚠️ **Measured, not theorised: three accumulated during this slice's development and later specs began reading a workspace whose every request answers `404`.**
+
+⛔ **This defect already has a row, and it is worth reading before writing any journey that creates anything**: 📁 **[B-229](../BUGS.md)** — *"one journey creates a workspace and never restores the previous one, so every account-backed journey after it fails"* — **`organization-setup.spec.ts:21` builds `` `E2E Org ${Date.now()}` `` with no `afterEach` and no restore, and the measured cost was 23 failures in one run.** ⚡ **The same shape, found independently one slice later**, which is the argument for the rule rather than for the fix: **a journey may create whatever it needs and must leave the environment as it found it.**
+
+⛔ **It also creates ONE organization rather than three.** **Four tests each creating their own left three behind per run, in a shared lane database.**
+
+### 🔴 [B-243](../BUGS.md) — the finding that had nothing to do with this slice
+
+⚠️ **The journey failed for a reason that was not the journey's.** 📁 **`backend/.env.example` configures the API as the database OWNER**, which has `rolbypassrls = t` — ⛔ **so Row-Level Security was inert on every request, and `GET /workspaces` returned another customer's organization.**
+
+**The endpoint's own comment states the dependency it lost:** *"No user filter appears here by design: the workspace table's RLS policy already restricts rows."* ⚡ **The query is right, the policy is right, and the credential removes both.**
+
+> ⛔ **Every Playwright journey this lane has ever run executed with RLS disabled.** **No journey in a lane environment has exercised tenancy at all** — a workspace-crossing defect could not have failed one. **That is worth more than the fix.**
+
+### 🔴 The journey gate, and what it actually proved
+
+**Full headed suite, `__all__` selected, freshly seeded: `277 passed · 31 failed · 6 skipped` in 36.7 minutes.** ⛔ **None of the 31 is this slice's**, and that is measured rather than argued:
+
+| | |
+|---|---|
+| **7 failures before [7/314]** | ⚡ **Shell- and auth-coupling defects**, each with a row: [B-244](../BUGS.md) · [B-246](../BUGS.md) · [B-247](../BUGS.md) · [B-248](../BUGS.md) · [B-249](../BUGS.md), plus two documented at [`BUGS.md`](../BUGS.md) line 1170 before today |
+| **24 failures after it** | 🔴 **[B-229](../BUGS.md)/[B-245](../BUGS.md)** — `organization-setup.spec.ts` created `E2E Org` and it became the newest workspace |
+
+✅ **Re-run in isolation against a clean workspace: `36 passed · 5 failed`.** ⚡ **And every one of those five reproduces on the tree with this slice stashed** — including `visual.spec.ts`'s cumulative layout shift, **`0.4505` without the change and `0.4527` with it**, against a `0.1` budget.
+
+> ⛔ **The suite cannot currently pass end to end in one run, whatever a lane changes.** ⚠️ **A lane cannot read its own gate without first knowing which failures are the environment's** — 📁 [§2](../../CLAUDE.md), *a guard nobody trusts is documentation pretending to be code* — **and this slice's two browser assertions ran at [78] and [79], before the poisoning, and passed.**

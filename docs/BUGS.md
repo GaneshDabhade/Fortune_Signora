@@ -613,6 +613,342 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-249 · Journeys assert App Shell surfaces that App Shell rows moved, and none was updated with the change
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`profile-journey.spec.ts:47`](../frontend/tests/e2e/profile-journey.spec.ts) · [`organization-setup.spec.ts:74`](../frontend/tests/e2e/organization-setup.spec.ts) |
+| **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **the product is right in every instance.** ⚡ **It is 🟠 because it is four scenarios at once and the cause is a class, not four accidents** |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed here.** **Found running [TASK-1463](BACKLOG.md)'s journey gate; that row is three App Shell sections and these are four other screens** |
+| **Found** | **2026-08-11, by Lane A**, in the full headed run the change selected (`__all__`) |
+| **Commit found** | **`5cdae81a`** — ⚠️ **both specs untouched by that branch** |
+
+#### 🔴 Two instances here, and two already have rows
+
+| Journey | Asserts | The shell actually |
+|---|---|---|
+| **`profile-journey` — *reachable from the shell*** | `getByRole('link', { name: /@/ })` on `/` | ⛔ **The address lives inside the account menu, and [`account-menu.tsx:148`](../frontend/components/shell/account-menu.tsx) gates its contents on `open`.** ⚡ **[TASK-1440](BACKLOG.md) moved it there** — *"the theme toggle and Sign out left this file for the account menu"* |
+| **`organization-setup` — *no control the platform cannot answer*** | `page.getByRole('combobox')` has count `0` | ⛔ **[`AccountSearch`](../frontend/components/intelligence/account-search.tsx) carries `role="combobox"` and lives in the TOP BAR**, so a page-wide query catches the shell's own search on **every** screen |
+| **[B-247](#b-247)** | *What has happened* on the brief | The utility panel took it at ≥1024 |
+| **[B-248](#b-248)** | one `<dialog>` per page | The shell now mounts a second |
+
+#### ⚡ The class, which is worth more than any of the four
+
+> 🔴 **A journey that names a shell surface is coupled to the shell, and the App Shell rows do not run the journeys that name it.**
+
+⚠️ **All four broke on App Shell work promoted within the last two days** — [TASK-1440](BACKLOG.md), [TASK-1433](BACKLOG.md), [TASK-1458](BACKLOG.md) — **and every one of those rows passed its own gate.** ⛔ **The journey map in [`certification-guard.py`](../infra/certification-guard.py) is not at fault either**: `frontend/components/shell/` selects `__all__`, **so these journeys WERE selected.** ⚡ **They were selected and they were not green, and the cycle promoted anyway.**
+
+**⇒ The gap is not selection. It is that a red journey with an unexplained cause has been accumulating**, and 📁 [§2](../CLAUDE.md)'s consequence is exact: **a guard nobody trusts is documentation pretending to be code.**
+
+#### ✅ The repairs, each small and each a behaviour change rather than a locator swap
+
+**`profile-journey`** — **open the account menu, then follow the link.** ⛔ **Not `getByRole('link', …).first()` somewhere else**: the journey's claim is *"reachable from the shell, which is how anybody finds it"*, **and the honest version of that now includes the menu.**
+
+**`organization-setup`** — **scope the query to `main`.** ⚡ **The assertion means *this SCREEN offers no control the platform cannot answer*, and the shell's search is neither this screen's nor unanswerable.**
+
+### B-248 · A focus-trap guard assumes the page holds exactly one `<dialog>`, and the shell now mounts a second
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tests/e2e/interaction-boundaries.spec.ts:80`](../frontend/tests/e2e/interaction-boundaries.spec.ts) |
+| **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟡 — ⛔ **the focus trap is intact and the product is not implicated.** ⚡ **The guard reports a leak that is not there** |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed here** ([TASK-1463](BACKLOG.md) is three App Shell sections). ⚠️ **Reported by the lane that caused it**, which is the point of the row |
+| **Found** | **2026-08-11, by Lane A**, in the full headed run [TASK-1463](BACKLOG.md) selected (`__all__`) |
+| **Commit found** | **`5cdae81a`** — ⚠️ **the cause is [TASK-1458](BACKLOG.md), promoted earlier today, and this lane's own** |
+
+**Steps.** `npx playwright test tests/e2e/interaction-boundaries.spec.ts -g "cannot walk out of a dialog"`.
+
+**Actual.** ⛔ **Ten reported escapes in twenty tabs, every one of them the dialog's OWN close control:**
+
+```
+after 2 tabs: BUTTON "✕"
+after 4 tabs: BUTTON "✕"
+…
+```
+
+#### 🔴 The mechanism, and it is one word in the helper
+
+```ts
+const dialog = document.querySelector('dialog');
+if (dialog?.contains(active)) return null;
+```
+
+⛔ **`querySelector` returns the FIRST `<dialog>` in document order, not the one that is open.**
+
+⚡ **[`Dialog`](../frontend/components/ui/dialog.tsx) always renders its `<dialog>` element** — `open` drives `showModal()`, it does not gate the markup — **so a mounted-but-closed dialog is in the DOM the whole time.** 🔴 **[TASK-1458](BACKLOG.md) mounted [`ShortcutsReference`](../frontend/components/shell/shortcuts-reference.tsx) at the shell**, so **every authenticated page now carries one before any dialog a screen opens.**
+
+**⇒ The helper measures containment against the wrong dialog, and every tab inside the right one reads as an escape.**
+
+#### ✅ The product is fine, and that is checkable rather than asserted
+
+⚡ **The trap is the platform's**: `showModal()` inerts everything outside the top layer, and 📁 [`drawer.tsx`](../frontend/components/ui/drawer.tsx) records the same fact — *"`Dialog` uses `<dialog>.showModal()` — the platform inerts the rest."* ⛔ **Focus never left the evidence dialog; only the guard thought so.**
+
+#### ⚡ The repair is `closest`, not `querySelector`
+
+```ts
+if (active.closest('dialog')) return null;
+```
+
+✅ **It asks the question the test actually means** — *is the focused element inside **a** dialog?* — ⛔ **rather than *is it inside the first one that happens to be in the document?*** ⚠️ **And it cannot rot again the next time the shell mounts something**, which is the property worth having: **the current form would break again on the second shell-level dialog, and [C-286](LANE_COORDINATION.md) already contemplates one.**
+
+#### 🔴 What this says about the guard, and it is the general lesson
+
+📁 **[§2](../CLAUDE.md): a guard that cannot fail is documentation pretending to be code.** ⚠️ **This is the third variety found today** — [B-244](#b-244) a guard that cannot pass, [B-246](#b-246) a guard that fails somebody else's test, **and now a guard that fails for a reason unrelated to the property it protects.** ⛔ **All three are worse than no guard**, because each one trains a lane to read past a red gate.
+
+### B-247 · The utility panel took the account's history and a journey still looks for it on the page
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tests/e2e/daily-usage.spec.ts:143`](../frontend/tests/e2e/daily-usage.spec.ts) |
+| **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **the product is right and the journey is stale**, but it is 🟠 rather than 🟡 because **it is fresh**: [TASK-1433](BACKLOG.md) was promoted **today**, and this is the gate reporting a change that landed hours ago |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed here.** Found running [TASK-1463](BACKLOG.md)'s journey gate; **that row is three App Shell sections and this is the account brief** |
+| **Found** | **2026-08-11, by Lane A**, in the full headed run the change selected (`__all__`) |
+| **Commit found** | **`5cdae81a`** — ⚠️ **untouched by that branch**: `git diff origin/integration...HEAD -- daily-usage.spec.ts` is empty |
+
+**Steps.** `npx playwright test tests/e2e/daily-usage.spec.ts -g "carries a history of what has happened"`, at any viewport ≥ 1024.
+
+**Expected**, per the assertion: an `h2` reading *What has happened* on the account brief.
+
+**Actual.** ⛔ **No such heading exists on the page.** ✅ **The score renders**, so the brief itself is healthy — `brief.waitForScore()` passes on the line before.
+
+#### ✅ The product is right, and it says so in its own comment
+
+📁 [`app/(app)/accounts/[accountId]/page.tsx`](../frontend/app/\(app\)/accounts/[accountId]/page.tsx):
+
+```ts
+// 📁 §13's Activity tab — ⛔ the panel takes it only where the panel
+// exists; below 1024 `carrying` is false and the section above renders.
+const history = useUtilityPanel('Activity', historyFeed);
+```
+
+⚡ **So the history is exactly where the design puts it** — 📁 §13's Activity tab — **and the page-level section survives only below 1024**, which is the band with no panel. ⛔ **The journey runs above that band and asserts the section.**
+
+#### ⚠️ Why this one matters more than a stale locator
+
+🔴 **The change that moved it was promoted TODAY**, and the journey that guards it was not moved with it. ⚡ **That is the [§12](../CLAUDE.md) rotation problem in executable form**: *"a lane that has never seen this module continues the work"* — **and what it inherits here is a red gate whose cause is three files away.**
+
+⛔ **It is also the second stale journey assertion found in one run** — see [B-244](#b-244), where the assertion would have sent a customer to a screen that verifies nothing. **Neither was caught when the change shipped**, which is a fact about when journeys are run rather than about either row.
+
+#### ✅ The repair, and it is a behaviour change in the test rather than a locator swap
+
+**The journey must open the Activity tab and assert the history there**, because *"the account carries a history of what has happened"* is still exactly the right thing to prove — ⛔ **the surface moved, the guarantee did not.** ⚠️ **Asserting the below-1024 fallback instead would be testing the band the design treats as the exception.**
+
+### B-246 · A journey races two outcomes and the loser rejects into the next test
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tests/e2e/confidence.spec.ts:53`](../frontend/tests/e2e/confidence.spec.ts) |
+| **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟡 — ⛔ **the product is not implicated.** ⚠️ **The test fails on its own plumbing**, and 📁 [§19](../CLAUDE.md) makes a lane run its journeys before pushing, so a permanently red scenario trains a lane to read past the gate |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed here.** **Found running [TASK-1463](BACKLOG.md)'s journey gate; that row is three App Shell sections and this is a session-expiry journey** |
+| **Found** | **2026-08-11, by Lane A**, in the full headed run the change selected (`__all__`) |
+| **Commit found** | **`5cdae81a`** — ⚠️ **untouched by that branch**: `git diff origin/integration...HEAD -- confidence.spec.ts` is empty |
+
+**Steps.** `npx playwright test tests/e2e/confidence.spec.ts -g "does not silently swallow"`.
+
+**Actual.**
+
+```
+TimeoutError: page.waitForURL: Timeout 20000ms exceeded.
+  > 53 |  const signedOut = page.waitForURL(/\/signin/, { timeout: 20_000 }).then(…)
+```
+
+#### 🔴 The test is right about the product and wrong about promises
+
+✅ **The intent is good, and worth keeping**: *"Either outcome is defensible; disappearing is not."* **The product may refuse and say so, or bounce to sign-in** — so the scenario races the two:
+
+```ts
+const signedOut = page.waitForURL(/\/signin/, { timeout: 20_000 }).then(() => 'sign-in');
+const stillHere = expect(business.dialog).toBeVisible({ timeout: 20_000 }).then(() => 'dialog');
+const outcome = await Promise.race([signedOut, stillHere]);
+```
+
+⛔ **`Promise.race` settles on the FIRST outcome and abandons the other — it does not cancel it.** ⚡ **When the dialog wins, `waitForURL` goes on waiting and rejects twenty seconds later**, with nothing attached to catch it. **The assertion passed and the test fails anyway.**
+
+#### ⚠️ This lane has met this exact class before, in a different disguise
+
+📁 **[TASK-440](BACKLOG.md) shipped and then fixed the same shape**: *"a rejected query = an unhandled rejection failing tests whose assertions passed"* — **there it was react-query, here it is Playwright.** 🔴 **The general form is worth more than either instance:**
+
+> ⛔ **A promise that nobody awaits still settles.** ⚡ **Any construction that abandons one branch — `race`, a fire-and-forget `then`, a mutation nobody reads — must attach a handler to the branch it abandons**, or the failure surfaces somewhere with no relationship to the code that caused it.
+
+#### ✅ The suggested repair, and it keeps the scenario's intent intact
+
+**Give the abandoned branch somewhere to land**, so the race still answers *which outcome happened* and neither branch can fail a test it has already stopped deciding:
+
+```ts
+const signedOut = page.waitForURL(/\/signin/, { timeout: 20_000 })
+  .then(() => 'sign-in' as const)
+  .catch(() => 'never' as const);
+```
+
+⛔ **Not by widening the timeout**, which only moves the rejection into a later test — **and that is the version of this bug that is genuinely hard to find**, because the failure is then reported against a scenario that did nothing wrong.
+
+### B-245 · A journey cannot create an organization and leave the environment as it found it, because the default workspace is the newest one and nothing can delete it
+
+| | |
+|---|---|
+| **Module** | **`workspace_tenancy`** *(the newest-first default)* · **`product_surface`** *(the resolution in [`workspace-provider.tsx`](../frontend/lib/state/workspace-provider.tsx))*. ⛔ **Not the journey that hit it** |
+| **Current assignee** | **The current assignee of `workspace_tenancy`** — joined from [`modules.toml`](coordination/modules.toml), ⛔ **not named here** ([C-213](#c-213)) |
+| **Severity** | 🟠 — ⛔ **wrong behaviour a customer would hit, and a suite-wide test hazard.** ⚡ **It is [B-229](#b-229) one generation on, and B-229's repair does not cover it** |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed: the repair is a product decision about which organization a person lands in**, and that is not a lane's to take inside a feature slice ([§20e](../CLAUDE.md)) |
+| **Found** | **2026-08-11, by Lane A**, building [TASK-1463](BACKLOG.md) §18 — **by doing it, and then by measuring what it cost** |
+| **Commit found** | **`5cdae81a`** |
+
+**Steps.** Sign in as the owner. Create an organization through the shipped `New organization` control on Settings. Open the product in a **fresh browser profile**.
+
+**Expected.** The reader lands where they last were, or in an organization that holds their work.
+
+**Actual.** ⛔ **They land in the newly created, empty organization** — and **there is no way to leave it behind permanently**, because nothing in the product deletes an organization.
+
+#### 🔴 The mechanism, measured
+
+**① The list is newest-first.** 📁 [`repositories.py:81`](../backend/modules/workspace_tenancy/infrastructure/repositories.py) — *"Apply **newest-first** keyset ordering"* — and `list_visible` uses it unmodified.
+
+**② The default is `workspaces[0]`.** 📁 [`workspace-provider.tsx`](../frontend/lib/state/workspace-provider.tsx): with no stored id and no `/w/:workspace` segment, the resolution falls to `first.id`.
+
+**③ Nothing deletes one.** ⚡ **`useDeleteWorkspace` does not exist**, no route offers it, and `WorkspaceStanding` publishes `'deleted'` with nothing in the product able to produce it.
+
+**⇒ Every created organization becomes the default for every browser that has no stored choice, permanently.**
+
+#### ⚠️ Why [B-229](#b-229)'s repair is not enough, and this is the point of a second row
+
+📁 **B-229's finding**: *"one journey creates a workspace and never restores the previous one"* — ✅ **and the repair it implies is to restore the choice.** ⛔ **A fresh context has no choice to restore.** ⚡ **So a journey can be perfectly well-behaved — this lane's was, and switched back explicitly — and still leave every later context landing in the wrong place.**
+
+**Measured cost, in one session:** ⛔ **six organizations accumulated, and the suite's account-backed journeys began failing two projects later on `main a[href^="/accounts/"]` not found** — the attention list of an empty organization. **The same shape B-229 recorded at 23 failures.**
+
+#### ⚡ The customer question underneath it, which is the real one
+
+⛔ **This is not only a test hazard.** **A salesperson who creates a second organization to try something out is put into it on every new device, ahead of the one holding their book of business.** ⚠️ **Whether the default should be *newest*, *most recently used*, *the one with data*, or *explicitly chosen at creation* is a product decision** — 📁 and the design's §19 ③ says only that switching *"keeps the equivalent route when it exists, and lands on Home when it does not"*, **which is about switching rather than about defaulting.**
+
+#### 🔴 Observed live, in a run this lane did not cause
+
+⚠️ **The full headed suite was re-run on a freshly seeded environment**, and 📁 **[B-229](#b-229)'s own spec reproduced the whole mechanism unaided:**
+
+```
+E2E Org 1786475006314 | 2026-08-11 19:03:28   <- organization-setup.spec.ts
+Playground            | 2026-08-11 18:45:47   <- the seeded data
+```
+
+⛔ **`organization-setup.spec.ts` ran at [7/314] and created a workspace that became the newest.** ⚡ **Every spec alphabetically after it — `perception`, and everything past `p` — then resolved to an organization with no accounts**, and failed on `main a[href^="/accounts/"]` not found.
+
+🔴 **This is the confirmation that the two rows are one defect at two depths.** **B-229 names the spec; this row names why fixing the spec is not enough** — ⛔ **the run that produced the trace above happened AFTER the environment was reseeded and with no organization left behind by this lane.**
+
+⚠️ **And it means the suite cannot currently pass end to end in one run**, whatever a lane changes: **the poisoning is alphabetical and unconditional.**
+
+#### ✅ What this lane did instead, so nothing waits on the ruling
+
+⛔ **[TASK-1463](BACKLOG.md)'s journey no longer creates an organization.** ⚡ **§18 and §19's labelled side are asserted in component tests**, where an unactivated workspace and a multi-organization reader can both be constructed — **and the browser asserts §16, which needs computed CSS and cannot be faked.** ⚠️ **The absence is recorded in the spec rather than left for somebody to discover.**
+
+### B-244 · A journey asserts a verification link that would send the customer to a screen which cannot verify anything
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tests/e2e/auth-journey.spec.ts:470`](../frontend/tests/e2e/auth-journey.spec.ts) |
+| **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟡 — ⛔ **the test is wrong and the product is right**, so nothing a customer touches is broken. ⚠️ **It is not 🟢 because it fails the journey gate on every run**, and 📁 [§19](../CLAUDE.md) requires a lane to run its journeys before pushing — **a gate that reports a defect that is not one teaches a lane to read past it** |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **deliberately NOT fixed here.** **Found running [TASK-1463](BACKLOG.md)'s journey gate, and it is not that slice's**: the row is three App Shell sections and this is the authentication tier. ✅ **Reported with the diagnosis complete so whoever takes it does not repeat it** |
+| **Found** | **2026-08-11, by Lane A**, running the full headed suite the change selected (`__all__`) |
+| **Commit found** | **`5cdae81a`** — ⚠️ **untouched by that branch**: `git diff origin/integration...HEAD -- auth-journey.spec.ts` is empty, and the spec was last written by [TASK-499](BACKLOG.md) at `b565c19e` |
+
+**Steps.** `SIGNORA_AUTH_EMAIL_TRANSPORT=mailbox`, then `npx playwright test tests/e2e/auth-journey.spec.ts -g "lands a real, openable link"`.
+
+**Expected**, per the assertion: the mailbox entry's link matches `/verify\?token=/`.
+
+**Actual.**
+
+```
+Received: http://localhost:3300/api/auth/verify-email?token=eyJhbGciOiJIUzI1NiJ9…
+```
+
+#### ✅ Which side is wrong, established by reading both rather than by guessing
+
+⚡ **The product is right.** 📁 **[`app/(auth)/verify/page.tsx`](../frontend/app/(auth)/verify/page.tsx) reads `searchParams: { email?: string }` and nothing else** — ⛔ **it is the *"we have sent you a link"* screen and it consumes no token.**
+
+🔴 **So if the assertion were satisfied, the email would carry a customer to a screen that cannot verify them.** ⚡ **The shipped link is Better Auth's own route, which verifies the token and then lands them in the product** — 📁 exactly what [`lib/auth/server.ts`](../frontend/lib/auth/server.ts) intends: *"Straight into the product after verifying. The alternative is asking somebody to type a password they set ninety seconds ago."*
+
+⚠️ **The test's own comment already knew this** — *"the token is Better Auth's own"* — **and then asserted a shape Better Auth does not emit.** ⛔ **`/api/auth/verify-email?token=` does not contain `verify?token=`**, and the regex requires it literally.
+
+#### ⚡ Why this is worth a row rather than a quiet edit
+
+📁 **[§2](../CLAUDE.md): *a guard that cannot fail is documentation pretending to be code.*** ⛔ **This is the opposite failure — a guard that cannot pass** — and it is the more expensive one, because **a red gate that is always red stops being read.**
+
+⚠️ **And the correct repair is not obviously *"loosen the regex"*.** **The assertion the journey actually wants is *the link is real and openable*, which is the row's own stated ask** — ✅ **so the honest fix asserts that the link RESOLVES**, by following it, rather than pattern-matching a URL whose shape belongs to a dependency. ⛔ **A regex over a vendor's URL is a test of Better Auth's routing, not of Signora's.**
+
+### B-243 · 🔴 `backend/.env.example` runs the API as the database owner, so Row-Level Security is bypassed on every request
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`backend/.env.example`](../backend/.env.example) line 35. ⛔ **Not `workspace_tenancy`**: the RLS policies and the query are both correct, and the credential is what disarms them |
+| **Current assignee** | **Lane C** — current assignee of `platform_foundation` in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🔴 — ⛔ **a cross-tenant read, reproduced.** ⚡ **The repository's own words for this exact condition** ([§8](../CLAUDE.md)): *"A service connected as the owner is exempt from Row-Level Security on every table it touches, **which silently voids the entire tenancy model no matter how correct the policies are**."* ⚠️ **And [`RUNNING.md`](RUNNING.md) line 388 already says the right thing** — *"Note the database user: `signora_app`, **never the owner**"* — **so the repository contradicts itself, and the copy a developer actually runs is the wrong one** |
+| **Status** | ✅ **`FIXED` — Lane C, 2026-08-11, at `ee4e34c3`**, on the poll this row was reported to them. ⚠️ **QE verifies and closes.** ⚡ **Their fix is WIDER than the repair suggested below, and the difference is worth reading**: they also found **`alembic.ini` carrying a claim `env.py` had already corrected in July**, and **a third owner credential sitting unread in the Makefile's E2E block**. 🔴 **They also declined to apply the suggested patch as written, correctly** — 📁 `migrations/env.py:57` reads the same `SIGNORA_DATABASE_URL`, **so flipping it is safe only because `Makefile:172` passes `OWNER_DATABASE_URL` explicitly, which they verified before changing anything.** ⛔ **Was `OPEN`** — deliberately NOT fixed by this lane; `backend/.env.example` is Platform Foundation and not this lane's ([§20e](../CLAUDE.md), *finding a defect outside your assignment is an obligation to report it, never permission to fix it*). ✅ **This lane's OWN `backend/.env` is corrected**, which is its environment and its to hold |
+| **Found** | **2026-08-11, by Lane A**, implementing [TASK-1463](BACKLOG.md) — ⚡ **by a journey failing for a reason that had nothing to do with the slice** |
+| **Commit found** | **`ed36dd0c`** — ⚠️ **the defect is far older; `.env.example` has carried this line for as long as it has existed** |
+
+**Steps.** Configure a lane from `backend/.env.example`, as its own comment intends. Start the API. Sign in as **any** persona. Read `GET /workspaces`.
+
+**Expected.** The list holds only workspaces that caller is a member of. 📁 The endpoint's own docstring: *"Scoped by RLS to the caller's own memberships — **there is no way to ask about another user's workspaces**."*
+
+**Actual.** ⛔ **It holds every workspace in the database.**
+
+#### 🔴 The evidence, measured rather than argued
+
+```
+$ psql -c "select rolname, rolsuper, rolbypassrls from pg_roles where rolname like 'signora%'"
+ signora        | t | t        <- what .env.example configures
+ signora_app    | f | f        <- what RUNNING.md line 388 prescribes
+ signora_auth   | f | f
+ signora_relay  | f | f
+```
+
+**`rolbypassrls = t`.** ⚡ **Every RLS policy in the schema is inert for that connection**, and `list_visible` is the case that shows it, because 📁 its own comment states the dependency out loud:
+
+> *"No user filter appears here by design: the workspace table's RLS policy already restricts rows to workspaces the session's `app.user_id` is a member of."*
+
+⚡ **The query is right. The policy is right. The credential removes both.**
+
+#### ⚠️ What a customer sees, and it is how this was found
+
+**Signed in as `marcus.hale`, who is a member of exactly one workspace:**
+
+```
+404 GET /api/proxy/workspaces/4f0decdf-…/onboarding
+404 GET /api/proxy/workspaces/4f0decdf-…/members
+404 GET /api/proxy/workspaces/4f0decdf-…/accounts
+404 GET /api/proxy/workspaces/4f0decdf-…/signal-catalog
+```
+
+**`4f0decdf` belongs to `dana.reyes`, and Marcus has no membership in it.** ⚡ **The list handed him another user's organization; every other endpoint then correctly refused it** — 📁 [§7](../CLAUDE.md), *a caller who is not a member of the workspace they name gets `404`, never `403`* — **and the shell settled on a workspace whose every read fails.**
+
+⛔ **So the visible symptom is a broken screen, and the actual defect is that the name of another customer's organization was rendered in this customer's browser.**
+
+#### ✅ Proved by removing the cause, not by reading the code
+
+**One change — `signora` → `signora_app` in this lane's `backend/.env`** — and the two personas that could not sign in both do. **Nothing else was touched.**
+
+#### 🔴 What this means for every journey run in this lane
+
+⚠️ **Every Playwright journey this lane has ever run executed with RLS disabled.** ⛔ **No journey in this repository's lane environments has exercised tenancy at all** — a workspace-crossing defect could not have failed one of them. ⚡ **That is worth more than the fix**: it is a standing gap in what the journey suite is able to prove, and it belongs to QE's view of coverage rather than to this row.
+
+#### ⛔ Why the severity is 🔴 and not 🟠
+
+**It is configuration rather than code, and the effect is the one the Security Invariants exist to prevent.** 📁 §8 makes the separation of migration and runtime credentials *"a permanent engineering rule, not a deployment preference"*, and names this exact consequence. ⚠️ **The example file is the artifact every new lane and every new developer copies**, so the blast radius is *every* environment configured the documented way.
+
+#### ✅ The suggested repair, and it is one line
+
+**`backend/.env.example` line 35 becomes the runtime identity [`RUNNING.md`](RUNNING.md) already prescribes:**
+
+```
+SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora
+```
+
+⚠️ **Migrations are unaffected and must not be changed with it**: the `Makefile` already passes `OWNER_DATABASE_URL` explicitly for `alembic upgrade`, which is 📁 §8's *"schema migrations execute only under the migration identity"*. ⛔ **The two identities are meant to differ, and today they do not.**
+
+⚡ **Worth considering with the fix, and not this lane's to decide**: a Security Invariant asserting that the configured runtime connection has `rolbypassrls = false`. **A guard that cannot fail is documentation pretending to be code** ([§2](../CLAUDE.md)) — and today the rule lives only in prose, in the file that disagrees with it.
+
 ### B-242 · The entry engine has routed locked accounts to a route that does not exist, since it shipped
 
 | | |

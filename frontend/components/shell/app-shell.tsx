@@ -17,6 +17,7 @@ import { Container, ShellBanners, type ShellBanner } from '@/components/ui';
 import { cn } from '@/lib/design/cn';
 import type { Crumb } from '@/lib/shell/breadcrumb';
 import { RAIL_WIDTH } from '@/lib/shell/rail';
+import { useIsRefreshing } from '@/lib/shell/refreshing';
 import { useRailCollapse } from '@/lib/shell/use-rail-collapse';
 import type { WorkspaceRole } from '@/lib/state/permissions';
 
@@ -135,6 +136,10 @@ export function AppShell({
    * draws for its own two doors.**
    */
   const [navOpen, setNavOpen] = useState(false);
+  // 📁 **§16 tier three.** ⚡ **Read at the shell because the bar is under the
+  // top bar and the dim is over the whole content region** — both are frame
+  // decisions, and neither is any single module's to make.
+  const refreshing = useIsRefreshing();
   const compact = rail.device === 'compact';
   const closeNav = useCallback(() => setNavOpen(false), []);
 
@@ -346,6 +351,31 @@ export function AppShell({
           navigationOpen={navOpen}
         />
 
+        {/* 🔴 **§16's third loading tier** — [TASK-1463](../../../docs/BACKLOG.md).
+            📁 *"In-place refreshes show a 2px bar under the top bar and dim
+            stale figures to 60%; they never cover data that is already
+            readable."*
+
+            ⛔ **Under the top bar, in flow, and 2px** — 📁 *"No overlay, no
+            spinner, no layout shift."* ⚡ **The strip occupies its 2px whether
+            or not a refresh is running**, so the content below never moves; the
+            bar inside it is what appears. **A conditionally rendered 2px node
+            would shift every screen by two pixels on every refetch**, which is
+            the one thing the design rules out by name. */}
+        <div className="h-[2px] shrink-0 overflow-hidden bg-surface-sunken">
+          {refreshing ? (
+            <div
+              role="progressbar"
+              aria-label="Refreshing"
+              data-testid="refresh-bar"
+              className={cn(
+                'h-full w-1/3 bg-accent',
+                'animate-pulse motion-reduce:animate-none',
+              )}
+            />
+          ) : null}
+        </div>
+
         {/* The main region is the one place a failure is acceptable to
             isolate: the frame around it stays usable.
 
@@ -369,7 +399,18 @@ export function AppShell({
           // monitor, so every screen constrained itself instead. ⚡ **`min-w-0`
           // stays and is right** — it is what lets a wide table shrink rather
           // than push the rail off the frame.
-          className="min-w-0 flex-1 outline-none"
+          // 🔴 **§16's other half** — 📁 *"dim stale figures to 60% … existing
+          // figures stay readable at 60% until replaced."* ⛔ **`opacity`
+          // rather than a colour or an overlay**: it costs no layout, it dims
+          // the figures rather than covering them, and **the text underneath is
+          // still selectable and still read by a screen reader** — which is
+          // what *"never cover data that is already readable"* asks for.
+          data-refreshing={refreshing ? 'true' : undefined}
+          className={cn(
+            'min-w-0 flex-1 outline-none',
+            'transition-opacity duration-150 motion-reduce:transition-none',
+            refreshing && 'opacity-60',
+          )}
         >
           {/* 📁 *"12-column grid, 24px gutters, 1600px content maximum"* —
               Design System v2's `inherited` block. ⚡ **The shell is the ONE

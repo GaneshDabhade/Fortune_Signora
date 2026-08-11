@@ -11398,6 +11398,40 @@ C-268  ──▶  TASK-1438  ──▶  8 of the 24 entry rules stop returning 4
 
 ---
 
+## C-293 · App Shell §18 says a destination that needs data is "marked" and never says what the mark is
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-11, building [TASK-1463](BACKLOG.md) §18 |
+| **Owner** | **Product owner**, via **Lane C** — ⛔ **a design question, not an implementation one** |
+| **Status** | 🟡 **`OPEN` — NOT BLOCKING.** ✅ **The rest of §18 ships**: the three-step checklist with live counts is delivered |
+| **Blocks** | ⛔ **Nothing today.** ⚠️ **It leaves half of one design section unimplemented, stated rather than silently dropped** |
+
+### 📁 What the design says, in full
+
+> ***"A brand-new workspace shows the full shell with real navigation, not a stripped-down wizard: **destinations that need data are visible but marked**, so the user learns the product's shape while they set it up."***
+
+### 🔴 The measurement
+
+⚡ **That sentence is the only occurrence in the document.** **Measured across the whole App Shell design**: the word *marked* appears twice, once here and once about notifications (*"Agent and AI notifications are **marked** with the intelligence hue"*, §11 — a different subject with a stated mechanism).
+
+⛔ **§18 gives no mechanism.** **There is no rail-entry state in the design's own data** — the navigation entries carry `label`, `icon` and `meta`, and nothing else. ⚠️ **§03 defines the rail's states and *needs data* is not among them.**
+
+### ⛔ Two decisions a lane would have to take, and neither is a lane's
+
+| | |
+|---|---|
+| **What the mark IS** | A dot · a dimmed label · a tooltip · a count of zero · a badge. ⚡ **Each says something different to a customer** — a dim reads as *disabled*, a dot reads as *new*, and the design system has no token that means *not yet* |
+| **WHICH destinations qualify** | ⛔ **There is no published notion of *needs data*.** **Signals, Accounts and Reports plainly do; Settings and Help plainly do not** — **and the boundary is a product judgement, not something derivable from a contract.** ⚠️ **A lane deciding it would encode a product decision inside a feature slice**, which is 📁 [§20e](../CLAUDE.md)'s *"'I could just add it' is how an architectural blocker becomes a silent design decision"* |
+
+### ✅ What shipped instead, so the section is not silently half-done
+
+📁 **The rest of §18 is implemented as written** — `components/shell/activation.tsx`, three steps, live counts, on the workspace's own connections and roster. ⛔ **The rail is untouched**, and this row is why.
+
+### ⚡ What would settle it
+
+**One sentence in the design naming the mark, and one naming the rule.** ⚠️ **Not a lane's proposal to make** — but the cheapest form of the answer is likely *"a destination whose module has no data yet carries a dot"*, with the *needs data* set enumerated rather than derived, exactly as [`rail.ts`](../frontend/lib/shell/rail.ts) enumerates the destinations themselves.
+
 ## C-292 · The Signal Center's counts header draws three numbers and the queue publishes one
 
 | | |

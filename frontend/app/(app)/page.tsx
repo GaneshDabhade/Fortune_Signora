@@ -17,6 +17,7 @@ import {
   ScoreMovement,
 } from '@/components/intelligence/attention';
 import { DecidedAccounts } from '@/components/intelligence/decided';
+import { ActivationChecklist } from '@/components/shell/activation';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NeedsIdentity } from '@/components/intelligence/needs-identity';
 import { NothingRaises, TriageStrip } from '@/components/intelligence/triage';
@@ -659,12 +660,43 @@ function Quiet({
   }
 
   if (declared === false) {
+    /**
+     * 🔴 **§18's content region** — [TASK-1463](../../../docs/BACKLOG.md).
+     *
+     * > 📁 ***"A brand-new workspace shows the full shell with real navigation…
+     * > The content region holds a three-step activation checklist with live
+     * > counts."***
+     *
+     * ⚠️ **This screen previously refused a call to action, and the refusal
+     * named its reason**: *"the guided first run is
+     * [C-007](../../../docs/LANE_COORDINATION.md) and is deliberately not
+     * scheduled, and a call to action here would answer part of it by
+     * accident."* ⛔ **That reason is checked rather than assumed away.**
+     *
+     * ✅ **It does not apply, and the difference is the whole of why.** 📁
+     * C-007 is a *flow that ends by asking a customer which companies to
+     * watch*, blocked because `target_accounts_changed` has no consumer.
+     * ⛔ **The checklist asks for none of that**: its three steps are a
+     * connection, a connection and an invitation, **each linking to a Settings
+     * screen that already ships**, and **nothing here declares a target
+     * account.** ⚡ **So the one control C-007 reserves is still not offered**
+     * — which is the same line the old comment drew, in a place the design has
+     * since filled.
+     *
+     * ✅ **The original sentence is KEPT beneath it, not replaced.** It answers
+     * a different question — *why is THIS list empty* — and deleting it would
+     * lose the distinction between an empty result and an empty input that
+     * this branch exists to draw.
+     */
     return (
-      <EmptyState
-        icon={LineChart}
-        title="Signora does not know which companies to watch yet"
-        description="Your accounts appear here once you tell Signora which companies matter to you. Until then there is nothing for it to look at — this list is empty because it has not been asked, not because it found nothing."
-      />
+      <div className="flex flex-col gap-8">
+        <ActivationChecklist />
+        <EmptyState
+          icon={LineChart}
+          title="Signora does not know which companies to watch yet"
+          description="Your accounts appear here once you tell Signora which companies matter to you. Until then there is nothing for it to look at — this list is empty because it has not been asked, not because it found nothing."
+        />
+      </div>
     );
   }
 

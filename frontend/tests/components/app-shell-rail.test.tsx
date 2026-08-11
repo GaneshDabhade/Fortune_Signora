@@ -9,7 +9,7 @@
  * typed.
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -30,6 +30,11 @@ vi.mock('@/components/shell/account-menu', () => ({ AccountMenu: () => null }));
 // workspace context and the search hook, and **this suite is about the rail** —
 // `shell-palette` has its own tests.
 vi.mock('@/components/shell/shell-palette', () => ({ ShellPalette: () => null }));
+// ⚡ **§19 gave the assistant the workspace context too** —
+// [TASK-1463](../../../docs/BACKLOG.md). ⛔ **Stubbed for the same reason as the
+// palette above**: it now reads `useWorkspaceContext`, **this suite is about the
+// rail**, and `tests/components/copilot.test.tsx` renders it for real.
+vi.mock('@/components/shell/copilot', () => ({ Copilot: () => null }));
 
 import { AppShell } from '@/components/shell/app-shell';
 import { RAIL_WIDTH, collapseKey } from '@/lib/shell/rail';
@@ -249,5 +254,67 @@ describe('🔴 B-234 · the shell publishes each landmark exactly once', () => {
     const { container } = shell();
 
     expect(rail(container)).not.toBeNull();
+  });
+});
+
+/**
+ * **§16's third loading tier, in the frame** — [TASK-1463](../../../docs/BACKLOG.md).
+ *
+ * ⚡ **The tier boundary itself is `refresh-tier.test.tsx`'s**, over the hook.
+ * **These are the two things only the assembled shell can get wrong**: where
+ * the bar sits, and whether the strip that holds it moves the page.
+ */
+describe('🔴 §16 · an in-place refresh is announced without covering anything', () => {
+  function shellWith(client: QueryClient) {
+    return render(
+      <QueryClientProvider client={client}>
+        <AppShell role="owner" userId="u1" email="v@example.com" signOut={<span />}>
+          <p>A figure the reader can already see</p>
+        </AppShell>
+      </QueryClientProvider>,
+    );
+  }
+
+  it('⛔ nothing is dimmed and no bar is drawn on a settled screen', () => {
+    shellWith(new QueryClient());
+
+    expect(screen.queryByTestId('refresh-bar')).not.toBeInTheDocument();
+    expect(screen.getByRole('main')).not.toHaveAttribute('data-refreshing');
+  });
+
+  it('✅ the bar appears and the content dims while readable data is replaced', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(['warm'], 'readable');
+    let settle: () => void = () => {};
+    void client.fetchQuery({
+      queryKey: ['warm'],
+      queryFn: () => new Promise<string>((resolve) => (settle = () => resolve('newer'))),
+      staleTime: 0,
+    });
+
+    shellWith(client);
+
+    await waitFor(() => expect(screen.getByTestId('refresh-bar')).toBeInTheDocument());
+    expect(screen.getByRole('main')).toHaveAttribute('data-refreshing', 'true');
+    // ⛔ **Never an overlay** — 📁 *"No overlay, no spinner, no layout shift."*
+    expect(screen.getByText('A figure the reader can already see')).toBeVisible();
+
+    settle();
+    await waitFor(() => expect(screen.queryByTestId('refresh-bar')).not.toBeInTheDocument());
+  });
+
+  /**
+   * 🔴 **The strip is always in the document, and only the bar inside it comes
+   * and goes.**
+   *
+   * ⚠️ **A conditionally rendered 2px node would push every screen down by two
+   * pixels on every refetch** — 📁 *"no layout shift"* is the one thing the
+   * design rules out by name for this tier, and it is the failure that would
+   * look like a rendering glitch rather than a bug.
+   */
+  it('⛔ the 2px strip exists whether or not a refresh is running', () => {
+    const { container } = shellWith(new QueryClient());
+
+    expect(container.querySelector('.h-\\[2px\\]')).not.toBeNull();
   });
 });

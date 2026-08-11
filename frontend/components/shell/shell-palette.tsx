@@ -7,6 +7,7 @@ import { CommandPalette, type CommandItem } from '@/components/ui';
 import { useAccountSearch } from '@/lib/query/hooks/search';
 import { RAIL_DESTINATIONS } from '@/components/shell/navigation';
 import { can, guardFor, type Capability, type WorkspaceRole } from '@/lib/state/permissions';
+import { useWorkspaceLabel } from '@/lib/shell/workspace-label';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -42,6 +43,12 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
   const router = useRouter();
   const { activeWorkspace } = useWorkspaceContext();
+  // 📁 **§19 — the workspace name, and only when the reader has more than
+  // one** ([TASK-1463](../../../docs/BACKLOG.md)). ⚡ **The palette already
+  // scopes the SEARCH to `activeWorkspace`; this is what makes that scope
+  // visible** — 📁 *"ambiguity here is what causes the wrong customer to be
+  // discussed."*
+  const workspaceLabel = useWorkspaceLabel();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
 
@@ -119,6 +126,7 @@ export function ShellPalette({ role }: { role: WorkspaceRole | null }) {
       items={items}
       query={query}
       onQueryChange={setQuery}
+      {...(workspaceLabel === undefined ? {} : { scope: workspaceLabel })}
       /**
        * 🔴 **[TASK-481](../../../docs/BACKLOG.md) — the real status, so an
        * empty list means what it says.**

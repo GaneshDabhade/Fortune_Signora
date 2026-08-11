@@ -49,6 +49,26 @@ export interface CommandPaletteProps {
    * ([§20c](../../../CLAUDE.md)).
    */
   status?: SearchStatus;
+  /**
+   * 🔴 **Which workspace this search belongs to** — §19, and
+   * [TASK-1463](../../../docs/BACKLOG.md).
+   *
+   * > 📁 ***"search, notifications and the assistant all carry the workspace
+   * > name in their header. Ambiguity here is what causes the wrong customer to
+   * > be discussed."***
+   *
+   * ⚡ **The same name and the same shape as
+   * [`Drawer`](./drawer.tsx)'s `scope`**, deliberately — 📁 [§4](../../../CLAUDE.md):
+   * the shell already has a word for *what this surface is answering within*,
+   * and a second one would make two components describe one idea.
+   *
+   * ⛔ **Optional, and absent means absent.** ⚡ **The palette does not decide
+   * when to label** — 📁 §19's condition is *"whenever more than one is
+   * available to the user"*, which is a fact about the reader rather than
+   * about the palette, and it lives in
+   * [`useWorkspaceLabel`](../../lib/shell/workspace-label.ts).
+   */
+  scope?: string;
 }
 
 /**
@@ -94,6 +114,7 @@ export function CommandPalette({
   onSelect,
   placeholder = 'Search or ask…',
   status = 'ready',
+  scope,
 }: CommandPaletteProps) {
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -182,6 +203,19 @@ export function CommandPalette({
           'bg-surface text-content shadow-lg',
         )}
       >
+        {/* 📁 **§19 — above the input, because the reader must know whose data
+            they are about to search BEFORE they type it**, not after they read
+            a result and wonder which company it belongs to. ⛔ **Rendered only
+            when the caller supplies it**; the condition is not the palette's. */}
+        {scope === undefined ? null : (
+          <p
+            data-testid="palette-scope"
+            className="border-b border-border px-4 pb-2 pt-3 text-xs text-content-subtle"
+          >
+            Searching {scope}
+          </p>
+        )}
+
         <input
           ref={inputRef}
           value={query}
