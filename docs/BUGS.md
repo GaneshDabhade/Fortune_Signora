@@ -123,14 +123,14 @@ _grep_count(ref, "…rate.?limit|throttl…", "backend/apps/*.py")
 
 ---
 
-### B-179 · The Team screen never settles: `scrollHeight` keeps changing for 3 seconds at 1024 and 1280
+### B-179 · ⛔ **WITHDRAWN — NOT REPRODUCED.** QE reported the Team screen as never settling; it settles, and QE cannot explain the original measurement
 
 | | |
 |---|---|
 | **Module** | `product_surface` — `frontend/app/(app)/settings/team` |
 | **Current assignee** | **Lane A** — current assignee of `product_surface` in [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🟠 — ⛔ **A screen that re-renders continuously burns battery, fights the scroll position, and makes every measurement of it unreliable.** **Not 🔴: the content is correct and reachable** |
-| **Status** | 🟡 **`OPEN` — NOT REPRODUCED by Lane A**, 2026-08-11, at `1ea732d3`. ⛔ **Not closed**: it is QE's finding, this lane cannot set `VERIFIED`, and *"I could not reproduce it"* is a measurement rather than a fix. ⚠️ **Returned to QE with the method below, for a re-run against this branch.** **Was:** 🔵 `OPEN` — found by QE by the first real run of the responsive matrix |
+| **Status** | ⛔ **`WITHDRAWN` — QE, 2026-08-11, on Lane A's challenge.** ⚡ **Lane A declined to accept the fix credit and asked for a re-test instead, which is the reason this row is right rather than closed** |
 | **Commit found** | `9c5ff83f` |
 
 **Steps.** At **1024px** or **1280px**, open `/settings/team`, wait for `networkidle`, then scroll to the bottom repeatedly and watch `document.documentElement.scrollHeight`.
@@ -139,34 +139,28 @@ _grep_count(ref, "…rate.?limit|throttl…", "backend/apps/*.py")
 
 **Actual.** ⛔ **`scrollHeight` changes on every one of 20 attempts across 3 seconds and never repeats.** The layout invariant refuses to judge clearance and reports *"the page never settled at its bottom"* — **deliberately, rather than measuring a page that is still moving.**
 
-> ⚡ **It does not reproduce at 640px or 1600px**, which is the most useful part of the report: **something in the two middle breakpoints re-renders in a loop.** A responsive container measuring itself and reflowing is the usual cause of exactly this shape.
+> ## ⛔ **WITHDRAWN, and QE cannot say what it measured**
+>
+> **Lane A challenged this rather than taking the credit for fixing it**, and was right on every point. ⚡ **Their `142854bc` changed no production code — only `docs/BUGS.md`** — so a row calling it a repair was wrong on its face.
+>
+> **Their evidence, which QE re-ran rather than accepted:**
+> **`ResizeObserver`, `getBoundingClientRect` and `offsetHeight` appear ZERO times** across `frontend/app`, `frontend/components` and `frontend/lib`. ⛔ **Nothing in the product measures itself, so the container-reflow hypothesis QE stated had no code behind it.** The three distinct heights are the load sequence `900 → 1315 → 1648` — **monotonic, and they stop.**
+>
+> **What QE then measured, on the commit the row was filed against:**
+>
+> | | |
+> |---|---|
+> | `f5927458` — Lane A's candidate | **26/26 pass** |
+> | **`071f6a5e` — the commit B-179 was FOUND at**, two runs | ⛔ **4/4 pass. It does not reproduce.** |
+> | `071f6a5e` with `.next` deleted — a cold dev server | ⛔ **4/4 pass. The cold-compilation hypothesis is wrong too** |
+>
+> ⛔ **So QE cannot reproduce it, cannot explain it, and will not leave a row asserting a product defect on that basis.** **The original three failures were consistent at the time and are not consistent with anything since** — which makes the defect QE's evidence capture, not the Team screen.
+>
+> ⚠️ **The lesson is the one QE has been applying to guards all week and did not apply to a finding: consistent is not reproducible.** **Three runs in one session is a sample, not a repro** — and the missing step was re-running it on the same commit before filing, exactly as [B-180](#b-180) was only found by mutating three times.
+>
+> ✅ **If it ever reappears, Lane A's numbers are the baseline**: 20 samples at 150ms, 640/1024/1280/1600, settled by ~450ms at every width.
 >
 > ⚠️ **QE's first hand-probe of this screen said it was clean, and the probe was wrong** — it measured before the member list rendered. **The suite was right and the manual check was not**, which is worth recording because the instinct is the other way round.
-
-### ⚠️ Lane A could not reproduce it, and the measurement is published rather than the conclusion
-
-**Measured at `1ea732d3` on 2026-08-11, by the module's current assignee, using QE's own steps** — 📁 *"scroll to the bottom repeatedly and watch `document.documentElement.scrollHeight`"* — **20 samples at 150ms, which is the reported *20 attempts across 3 seconds* exactly.**
-
-| Width | Distinct heights | Last eight samples |
-|---|---|---|
-| **640** | 3 | `1669` ×8 |
-| **1024** | 3 | `1648` ×8 |
-| **1280** | 3 | `1648` ×8 |
-| **1600** | 2 | `1648` ×8 |
-
-✅ **The page settles by roughly 450ms at every width and never moves again** — **including the two breakpoints the row names.** ⚡ **The three distinct values are the load sequence** — `900` → `1315` → `1648` — **which is the member list arriving, exactly as QE's own note about the failed hand-probe describes.** ⛔ **They are not a loop; they are monotonic and they stop.**
-
-### 🔴 And the stated hypothesis has no code behind it
-
-📁 **QE's reading was *"a responsive container measuring itself and reflowing is the usual cause of exactly this shape"*, and it is the right instinct.** ⚠️ **But it is not what this codebase does**: ⛔ **`ResizeObserver` appears **zero** times in `frontend/app`, `frontend/components` and `frontend/lib`, and so do `getBoundingClientRect` and `offsetHeight`.** ✅ **Nothing in the product measures itself**, so there is no container that could produce the loop.
-
-> ⚡ **This is offered as evidence, not as a verdict.** ⛔ **Two readings remain open and this lane cannot choose between them**: **① something on `lane-a-product-surface` fixed it** — the branch changes `main`'s padding and deletes a `fixed` element, both of which affect `scrollHeight` — **or ② the instability is in the harness rather than in the page.**
->
-> ⚠️ **The second is worth stating plainly because it happened once already today**: 📁 [B-180](#b-180) — **a guard in the same new matrix that could not fail at any width on any page**, found by mutating the product three times. **A first run of a new instrument that disagrees with a direct measurement is as likely to be the instrument.**
-
-### ⚡ What QE is asked for, and it is one command
-
-**Re-run the responsive matrix against `1ea732d3`.** ✅ **If it still reports the loop, the difference is in the measurement, and the numbers above are the input for finding it** — ⛔ **and this lane takes it back the moment there is a reproduction on a commit it can build.**
 
 ---
 
