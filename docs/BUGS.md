@@ -3553,6 +3553,51 @@ def _load_state_check() -> ModuleType:
 
 📁 **Design System v2 ships `2xl: "1920px"`. `tailwind.config.ts` defines four screens and stops at 1600.** ⚡ **Small, real, and separate from everything above.**
 
+#### ⚖️ THE ROW IS TWO REQUIREMENTS — product owner, 2026-08-11
+
+> **B-428 is retained as one row with TWO acceptance criteria, because they share one cause and splitting the id would lose that.** ⛔ **They are never satisfied by the same evidence.**
+
+| | **A · RESPONSIVE BEHAVIOUR VALIDATION** | **B · RESPONSIVE DESIGN COMPLIANCE** |
+|---|---|---|
+| **Asks** | *Can the suite see layout at all?* | *Does the product follow the design's geometry?* |
+| **Owner** | **QE** — it is a test instrument | **Lane A** — it is product surface |
+| **Verified by** | QE's evidence, reviewed here | **Lane C independently**, against the design |
+| **Status** | ✅ **PASS — accepted 2026-08-11** | ⛔ **OPEN** |
+
+✅ **A is accepted on the evidence below**: five projects across the design's four bands including 390×844 · both axes · real geometry from a real engine · **no class-string assertion anywhere** · three checks fire-tested to failure. ⚠️ **Four checks remain unproven and that is recorded against A as a known limitation, not as a failure** — it does not reopen A and it does not satisfy B.
+
+⛔ **A IS NOT EVIDENCE FOR B AND MAY NEVER BE OFFERED AS SUCH.** ⚡ **The whole finding is that *"nothing overflows"* and *"it matches the design"* are different claims** — an implementation honouring none of the declared widths passes all 32 of A's assertions.
+
+#### 📐 CRITERION B — THE DESIGN-COMPLIANCE GAP, MEASURED
+
+📁 **Authority: [`Fortune Signora App Shell.dc.html`](../design-snapshot/screens/), `breakpoints[]`. Nothing below is inferred from how a responsive layout normally behaves.**
+
+| # | Design requirement (design's words) | Expected | Current implementation | Evidence | Sev | Lane |
+|---|---|---|---|---|---|---|
+| **1** | *"Rail 232px"* @ ≥1280 | **232px** | ✅ **Compliant** | `app-shell.tsx:230` applies `RAIL_WIDTH.expanded` | — | — |
+| **2** | ***"Rail collapses to 56px icons with tooltips"*** @ **1024–1279** | **56px, automatic at the band** | 🔴 **NOT COMPLIANT — 232px unless the user collapsed it** | 📁 **`lib/shell/rail.ts:168` — `deviceClassFor` returns only `compact` (<1024) or `regular` (≥1024). There is no small-laptop band.** ⛔ `app-shell.tsx:230` keys the width off `rail.collapsed`, a **remembered user preference** | **P0** | **A** |
+| **3** | *"Rail becomes a sheet from a top-bar button"* @ <1024 | Sheet | ✅ **Compliant** | `app-shell.tsx:138` `compact`, `:232` `data-sheet-open` | — | — |
+| **4** | *"utility panel 360px"* @ ≥1600 · *"panel 300px"* @ 1280–1599 | **360 / 300** | ✅ **Compliant** | `lib/shell/utility-panel.ts:47` `PANEL_WIDTH` per band; `utility-panel.tsx:230` `PANEL_WIDTH[bandFor(width)]` | — | — |
+| **5** | *"Utility panel closes to a 28px tab rail"* @ 1024–1279 | Tab rail | ✅ **Compliant** | `utility-panel.ts:77` `if (band === 'smallLaptop') return 'tab-rail'` | — | — |
+| **6** | ***"Search widens to 320px on focus"*** @ ≥1600 | **224 → 320 on focus** | 🔴 **NOT WIRED** | 📁 **`lib/shell/top-bar.ts:70` declares `{ rest: 224, focused: 320, focusWidensAbove: 1600 }` — the design's three numbers.** ⛔ **`top-bar.tsx:176` applies `rest` only; `focused` and `focusWidensAbove` are referenced by nothing in `components/` or `app/`** | **P1** | **A** |
+| **7** | ***"Green pill hides its label at <1280px; amber and red always show it"*** | **Asymmetric by tone** | 🔴 **NOT WIRED** | 📁 **`lib/shell/top-bar.ts:81` `statusLabelVisible` implements it exactly.** ⛔ **Called by nothing — `top-bar.tsx:201` says so itself** | **P1** | **A** |
+| **8** | *"Filter strip stays; chips scroll horizontally"* @ 1024–1279 · *"collapses to one 'Scope' button with a count"* @ <1024 · `filterOpacity .35` | Strip + Scope button | ⚪ **SURFACE DOES NOT EXIST** | 📁 **[TASK-1432](BACKLOG.md) is `SEQUENCED` and correctly so — nothing reads `lib/shell/scope.ts`** | — | **A, when 1432 frees** |
+| **9** | *"Tables become row cards; pinned columns become the card head"* @ <1024 | Row cards | ⚠️ **NOT AUDITED** | ⛔ **Per-screen, not shell. Out of this row's scope and stated rather than silently omitted** | — | — |
+| **10** | *"Below 640px: review, approve, comment and ask only"* | Reduced capability | ⚠️ **NOT AUDITED** | ⛔ **A capability rule, not geometry. Same reason** | — | — |
+| **11** | *"Tables may show optional columns"* @ ≥1600 | — | ⚪ **PERMISSIVE** | ⛔ ***"may"*** — **not a requirement, and asserting it would invent one** | — | — |
+
+##### ⚡ Why row 2 is P0 and the others are not
+
+📁 **The panel does exactly what the rail fails to do.** ⚡ **`PANEL_WIDTH[bandFor(width)]` is a four-band map read from the viewport; `RAIL_WIDTH` is a two-value pair read from a stored preference.** ⛔ **Two adjacent components in one shell, one band-driven and correct, one preference-driven and non-compliant** — and the second is the one every screen renders.
+
+🔴 **The customer-visible consequence: on a 1024–1279 laptop a person who has never touched the collapse control sees a 232px rail where the design gives 56px of icons, taking 176px from a content region that band already constrains most.**
+
+##### ⛔ What criterion B requires to close
+
+**① [TASK-1473](BACKLOG.md) and [TASK-1474](BACKLOG.md) implemented and promoted.** **② The responsive matrix extended to ASSERT rows 1–7 as geometry** — ⛔ **not merely to keep passing.** **③ Upper edges 1023 · 1279 · 1599 present.** **④ Lane C verifies against the design independently of QE.**
+
+⛔ **Row 8 does not gate B** — its surface is legitimately unbuilt and [TASK-1432](BACKLOG.md) holds it. ⚡ **It joins B when that row frees.**
+
 #### 🔵 INDEPENDENT VERIFICATION — Lane C, 2026-08-11, on the product owner's routing
 
 > ## ⛔ **VERDICT: `OPEN`. The remediation does not close this row.**

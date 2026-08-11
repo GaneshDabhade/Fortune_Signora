@@ -1382,6 +1382,44 @@
 | **Definition of Done** | **A cold boot shows the complete frame and an empty content region** · **certified · `main`** |
 | ⚠️ **Runtime status** | ✅ **RUNTIME EVIDENCE OBTAINED** — the product owner's screenshot of `localhost:3300`, corroborated in source at `workspace-switcher.tsx`:185–188 |
 
+### TASK-1473 · The rail is 232px on a small laptop and the design gives it 56
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **DESIGN NON-COMPLIANCE — [B-428](BUGS.md) criterion B, row 2** |
+| **Epic** | **Common Platform Foundation** — App Shell |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-11, on the product owner's decomposition of [B-428](BUGS.md).** ⛔ **Nothing blocks it: the constant, the band map and the storage all exist** |
+| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/), `breakpoints[]`, Small laptop 1024–1279: *"Rail collapses to 56px icons with tooltips."*** |
+| 🔴 **The defect, measured** | 📁 **`lib/shell/rail.ts:168` — `deviceClassFor` returns `compact` below 1024 and `regular` above it, and has NO small-laptop band.** ⛔ **`app-shell.tsx:230` therefore keys the rail's width off `rail.collapsed`, a REMEMBERED USER PREFERENCE.** 🔴 **On a 1024–1279 laptop a person who has never touched the collapse control sees 232px where the design gives 56** — ⚡ **176px taken from the content region of the band that already constrains it most** |
+| ⚡ **The shape of the fix is already in the file next door** | 📁 **`lib/shell/utility-panel.ts:47` publishes `PANEL_WIDTH` as a FOUR-BAND map and `utility-panel.tsx:230` reads `PANEL_WIDTH[bandFor(width)]`.** ✅ **That is band-driven and compliant.** ⛔ **The rail is the same problem solved the other way, and `bandFor` already exists** |
+| ⚠️ **The preference does not disappear** | 🔴 **Read this before deleting anything.** 📁 **`collapseKey(userId, device)` stores the preference PER DEVICE CLASS**, so a person legitimately has more than one. ⚡ **At 1024–1279 the design states the collapsed state rather than offering it** — ⛔ **so the band decides, and the stored preference for `regular` must not silently become the small-laptop answer.** ⚠️ **Whether the control is hidden or merely inert at that band is an implementation choice this row does not take** |
+| ⛔ **What it must NOT do** | ⛔ **Do not change `RAIL_WIDTH`** — 232 and 56 are the design's and correct. ⛔ **Do not touch the `<1024` sheet** — it is compliant ([B-428](BUGS.md) row 3). ⛔ **Do not widen scope to the filter strip** — that is [TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope) |
+| **Change Budget** | 🟢 **`lib/shell/rail.ts`** · 🟢 **`components/shell/app-shell.tsx`** · 🟢 their tests |
+| **Playwright coverage** | 🔴 **The assertion must FAIL if the rail is 232px at 1279 and if it is 56px at 1280.** ⛔ **Both directions — a one-sided check passes on a rail that is always collapsed.** ⚡ **`boundingBox().width`, never a class string** |
+| ♿ **Accessibility** | 📁 **The design says *"56px icons WITH TOOLTIPS"*** — ⛔ **a collapsed item must keep an accessible name.** ✅ **`navigation.tsx:499` already records that rule; verify it holds when the band collapses the rail rather than the user** |
+| **Definition of Done** | **Rail is 56px at 1024–1279 with no stored preference · 232px at ≥1280 · sheet below 1024 · both Playwright directions asserted · certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **SOURCE VERIFIED** — measured from `rail.ts` and `app-shell.tsx`; not observed rendered |
+
+### TASK-1474 · Two top-bar rules the design states, the contract implements, and nothing calls
+
+| | |
+|---|---|
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **DESIGN NON-COMPLIANCE — [B-428](BUGS.md) criterion B, rows 6 and 7** |
+| **Epic** | **Common Platform Foundation** — App Shell |
+| **Module** | **`product_surface` — Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-11.** ⚡ **One row for two rules because they are one file, one band vocabulary and one test surface** — ⛔ **splitting them would buy nothing and cost a second rebase of `top-bar.tsx`** |
+| **Design authority** | 📁 **App Shell `topBarSpecs`: *"Search … Widens to 320px on focus at ≥1600px"*** · 📁 ***"System status … Green pill hides its label at <1280px; amber and red always show it"*** |
+| ✅ **The cheap half is already done, correctly** | 📁 **`lib/shell/top-bar.ts:70` — `SEARCH_WIDTH = { rest: 224, focused: 320, focusWidensAbove: 1600 }`, the design's three numbers exactly.** 📁 **`:81` — `statusLabelVisible(tone, width) => tone === 'healthy' ? width >= 1280 : true`, the design's asymmetry exactly.** ⛔ **Neither is a guess and neither is to be rewritten** |
+| 🔴 **The gap** | ⛔ **`top-bar.tsx:176` applies `SEARCH_WIDTH.rest` only — `focused` and `focusWidensAbove` are referenced by nothing in `components/` or `app/`.** ⛔ **`statusLabelVisible` is called by nothing, and `top-bar.tsx:201` says so: *"stays uncalled until there is a source."*** ⚡ **These are UNBUILT, not untested** — 🔴 **which is why [B-428](BUGS.md) does not ask QE to assert them yet** |
+| ⚠️ **The status rule needs a source, and that is the real work** | 📁 **The component's own note is correct: a tone must come from somewhere before an asymmetry by tone means anything.** ⚠️ **If no health source exists, IMPLEMENT THE RULE AGAINST THE TONE THE COMPONENT ALREADY RENDERS and say so** — ⛔ **do not invent a health check, and do not open a coordination item for one before checking whether `OfflineStatus` already carries a tone** |
+| ⛔ **What it must NOT do** | ⛔ **Do not change either constant.** ⛔ **Do not add a breakpoint vocabulary** — `tailwind.config.ts` already names the four bands. ⛔ **Do not make search widen below 1600** — 📁 the design scopes it to Desktop alone |
+| **Change Budget** | 🟢 **`components/shell/top-bar.tsx`** · 🟢 its tests · 🟠 **`lib/shell/top-bar.ts` only if a signature must change** |
+| **Playwright coverage** | 🔴 **Search: width is 224 unfocused at 1600, 320 focused at 1600, and STILL 224 focused at 1599.** ⛔ **The third is the one that catches an off-by-one.** 🔴 **Status: a healthy pill has no label at 1279 and has one at 1280; an amber or red pill has one at BOTH** |
+| ♿ **Accessibility** | 🔴 **A hidden label is visual only** — ⛔ **the pill keeps its accessible name at every width.** ⚡ **A green pill that goes silent to a screen reader below 1280 is a regression the design does not ask for** |
+| **Definition of Done** | **Both rules honoured at their stated boundaries · all six Playwright assertions above · accessible name preserved · certified · `main`** |
+| ⚠️ **Runtime status** | ⛔ **SOURCE VERIFIED** — grep across `components/` and `app/`; not observed rendered |
+
 ### TASK-1472 · ⛔ WITHDRAWN — a duplicate of [TASK-1464](#task-1464--migrate-the-nine-screens-off-max-w-3xl-onto-the-designs-grid)
 
 | | |
