@@ -90,17 +90,27 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
-### B-178 · Chromium cannot launch on the QE workstation — `libnspr4.so` is missing, and this is [B-156](#b-156)'s actual cause
+### B-178 · ⛔ **WITHDRAWN — the premise was false.** QE reported Chromium unlaunchable; it launches, and the repository had already solved this
 
 | | |
 |---|---|
 | **Module** | QE workstation — Playwright browser runtime |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 — ⛔ **Every Playwright journey is unrunnable by QE**, so `--journeys` selects specs that never execute. **Not 🔴: no product code is wrong, and the lanes can run them** |
-| **Status** | 🔵 **`OPEN` — diagnosed by QE**, 2026-08-11, while fire-testing the new layout invariants |
+| **Status** | ⛔ **`WITHDRAWN` — QE, 2026-08-11, within the hour.** **The row is kept rather than deleted**: a false claim about the present is corrected, and the correction is the useful part |
 | **Commit found** | `dbe793a7` |
 
-> ⚡ **[B-156](#b-156) has said "Playwright journeys NOT MEASURED BY QE" for many cycles without a cause.** **This is the cause, and it is one missing shared library rather than anything about the suite.**
+> ⛔ **WITHDRAWN, and the withdrawal is the useful part.**
+>
+> ✅ **`~/.cache/ms-playwright-deps/lib/libnspr4.so` exists**, and [`environment.ts`](../frontend/tests/e2e/fixtures/environment.ts) has a `browserEnvironment()` that puts exactly that directory on `LD_LIBRARY_PATH` — **wired into `launchOptions.env` in `playwright.config.ts`, with a comment recording that the suite *"could not launch a browser at all"* in a terminal without it.** **Somebody hit this before QE and solved it.**
+>
+> ✅ **Verified:** `LD_LIBRARY_PATH=…/ms-playwright-deps/lib chrome --headless --dump-dom about:blank` returns a DOM · `playwright test --list --project=owner` lists **169 tests**.
+>
+> ⛔ **QE fire-tested its new layout invariants under a throwaway config written from scratch, which had no `launchOptions.env`.** **So the failure was QE's own harness, and the diagnosis blamed the workstation.**
+>
+> ⚠️ **Same shape as the fabricated SHA one cycle earlier, and worth naming as a pattern: QE diagnosed a failure without first checking whether the repository had already solved it.** ⚡ **[L-1](../ENGINEERING_LAWS.md)'s reuse audit is a rule QE cites at lanes and did not apply to its own tooling.**
+>
+> ⛔ **[B-156](#b-156) therefore still has no diagnosed cause, and this row must never be cited as one.**
 
 **Steps.**
 
