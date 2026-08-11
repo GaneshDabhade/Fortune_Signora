@@ -16,17 +16,17 @@ task_count     = 72
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1405", "TASK-1462", "TASK-1465", "TASK-1466", "TASK-202"]
 assigned_total     = 58
-claimable          = 13
+claimable          = 12
 claimable_now      = 5
-awaiting_sync      = 8
+awaiting_sync      = 7
 in_flight          = 17
 actionable         = 4
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 28
+blocked            = 29
 lane_utilization   = 3.4
-idle_prediction_days   = 1.9
+idle_prediction_days   = 1.7
 dependency_wait_days   = 0.1
 blocked_duration_days  = 0.1
 critical_path_max      = 3
@@ -532,18 +532,18 @@ on_integration = false
 
 [[task]]
 id            = "TASK-1473"
-title         = "The rail is 232px on a small laptop and the design gives it 56"
-state         = "ASSIGNED"
-declared      = "READY"
+title         = "⛔ BLOCKED ON A DESIGN RULING — the rail at 1024–1279, and whether a band overrides a perso"
+state         = "BLOCKED"
+declared      = "BLOCKED"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
+estimated_ready = "— awaiting a product/design ruling. NOT `READY`.** 🔴 **This row previo"
+waiting_for    = "— awaiting a product/design ruling. NOT `READY`.** 🔴 **This row previously said `READY` and asserted the implementation was wrong. QE challenged the p"
+blocked_days   = 0.1
 on_integration = false
 
 [[task]]

@@ -1382,24 +1382,22 @@
 | **Definition of Done** | **A cold boot shows the complete frame and an empty content region** · **certified · `main`** |
 | ⚠️ **Runtime status** | ✅ **RUNTIME EVIDENCE OBTAINED** — the product owner's screenshot of `localhost:3300`, corroborated in source at `workspace-switcher.tsx`:185–188 |
 
-### TASK-1473 · The rail is 232px on a small laptop and the design gives it 56
+### TASK-1473 · ⛔ BLOCKED ON A DESIGN RULING — the rail at 1024–1279, and whether a band overrides a person
 
 | | |
 |---|---|
-| **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🔴 **DESIGN NON-COMPLIANCE — [B-428](BUGS.md) criterion B, row 2** |
+| **Classification** ([D-208](DECISION_REGISTER.md) §4) | ⚠️ **DESIGN AMBIGUITY — not a defect.** ⛔ **Reclassified from *"design non-compliance"* 2026-08-11** |
 | **Epic** | **Common Platform Foundation** — App Shell |
 | **Module** | **`product_surface` — Lane A** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-11, on the product owner's decomposition of [B-428](BUGS.md).** ⛔ **Nothing blocks it: the constant, the band map and the storage all exist** |
-| **Design authority** | 📁 **[`Fortune Signora App Shell.dc.html`](design-snapshot/screens/), `breakpoints[]`, Small laptop 1024–1279: *"Rail collapses to 56px icons with tooltips."*** |
-| 🔴 **The defect, measured** | 📁 **`lib/shell/rail.ts:168` — `deviceClassFor` returns `compact` below 1024 and `regular` above it, and has NO small-laptop band.** ⛔ **`app-shell.tsx:230` therefore keys the rail's width off `rail.collapsed`, a REMEMBERED USER PREFERENCE.** 🔴 **On a 1024–1279 laptop a person who has never touched the collapse control sees 232px where the design gives 56** — ⚡ **176px taken from the content region of the band that already constrains it most** |
-| ⚡ **The shape of the fix is already in the file next door** | 📁 **`lib/shell/utility-panel.ts:47` publishes `PANEL_WIDTH` as a FOUR-BAND map and `utility-panel.tsx:230` reads `PANEL_WIDTH[bandFor(width)]`.** ✅ **That is band-driven and compliant.** ⛔ **The rail is the same problem solved the other way, and `bandFor` already exists** |
-| ⚠️ **The preference does not disappear** | 🔴 **Read this before deleting anything.** 📁 **`collapseKey(userId, device)` stores the preference PER DEVICE CLASS**, so a person legitimately has more than one. ⚡ **At 1024–1279 the design states the collapsed state rather than offering it** — ⛔ **so the band decides, and the stored preference for `regular` must not silently become the small-laptop answer.** ⚠️ **Whether the control is hidden or merely inert at that band is an implementation choice this row does not take** |
-| ⛔ **What it must NOT do** | ⛔ **Do not change `RAIL_WIDTH`** — 232 and 56 are the design's and correct. ⛔ **Do not touch the `<1024` sheet** — it is compliant ([B-428](BUGS.md) row 3). ⛔ **Do not widen scope to the filter strip** — that is [TASK-1432](#task-1432--the-filter-strip-behind-the-first-module-that-reads-scope) |
-| **Change Budget** | 🟢 **`lib/shell/rail.ts`** · 🟢 **`components/shell/app-shell.tsx`** · 🟢 their tests |
-| **Playwright coverage** | 🔴 **The assertion must FAIL if the rail is 232px at 1279 and if it is 56px at 1280.** ⛔ **Both directions — a one-sided check passes on a rail that is always collapsed.** ⚡ **`boundingBox().width`, never a class string** |
-| ♿ **Accessibility** | 📁 **The design says *"56px icons WITH TOOLTIPS"*** — ⛔ **a collapsed item must keep an accessible name.** ✅ **`navigation.tsx:499` already records that rule; verify it holds when the band collapses the rail rather than the user** |
-| **Definition of Done** | **Rail is 56px at 1024–1279 with no stored preference · 232px at ≥1280 · sheet below 1024 · both Playwright directions asserted · certified · `main`** |
-| ⚠️ **Runtime status** | ⛔ **SOURCE VERIFIED** — measured from `rail.ts` and `app-shell.tsx`; not observed rendered |
+| **Status** | ⛔ **`BLOCKED` — awaiting a product/design ruling. NOT `READY`.** 🔴 **This row previously said `READY` and asserted the implementation was wrong. QE challenged the premise and QE was right** |
+| 🔴 **What this office got wrong, in its own words** | ⛔ **The row read *"the design gives it 56"* and treated `deviceClassFor`'s persisted preference as an oversight.** ⚡ **The design names that persistence explicitly and twice** — 📁 **Rail spec: *"Collapse state persists per user."*** 📁 **Keyboard: *"`[` toggles collapse; the state persists per user, PER DEVICE CLASS."*** ✅ **So `collapseKey(userId, device)` implements a stated design requirement rather than inventing one.** 🔴 **This office inferred a defect and would have had Lane A build to that inference — the exact failure it flags in others** |
+| ⚖️ **The genuine ambiguity, and it is small** | 📁 **Small laptop 1024–1279: *"Rail collapses to 56px icons with tooltips."*** 📁 **Rail component: size *"232px / 56px"*, *"Collapse state persists per user."*** ⚠️ **Two readings, both defensible: ① the BAND collapses the rail, and persistence governs only ≥1280 · ② *"collapses to 56px"* names the geometry OF the collapsed state, and the user's per-device preference decides when it applies.** ⛔ **The design states neither, and nothing elsewhere in it resolves the conflict** |
+| ⚡ **Why reading ② is not obviously wrong** | 📁 **The band lines elsewhere DO read as state claims** — *"both open"* at Desktop. ⛔ **But `232px / 56px` is given as the Rail's SIZE PAIR in the component spec, which is geometry rather than trigger** — ⚡ **and *"per device class"* would be doing no work at all under reading ①, because a band-forced state needs no stored preference** |
+| ⛔ **What must NOT happen** | ⛔ **Lane A must not implement either reading.** ⛔ **This office must not pick one and call it a decomposition.** ⚡ **The decision is one sentence and belongs to the design authority** ([§21](../CLAUDE.md): implement the design, never invent it) |
+| ✅ **What is already known and survives either ruling** | 📁 **`RAIL_WIDTH = { expanded: 232, collapsed: 56 }` is correct.** 📁 **The `<1024` sheet is correct.** 📁 **`bandFor` exists if reading ① wins.** ⚡ **Under reading ② there is NO WORK AT ALL and this row closes** |
+| **Change Budget** | 🟢 **`lib/shell/rail.ts`** · 🟢 **`components/shell/app-shell.tsx`** · 🟢 their tests — ⛔ **only once the ruling lands** |
+| **Playwright coverage** | ⚡ **Written after the ruling, and two-sided either way** — under ① the assertion must fail at 232px@1279 *and* at 56px@1280 |
+| ⚠️ **Runtime status** | ⛔ **NOT VERIFIED** — no runtime was reachable |
 
 ### TASK-1474 · Two top-bar rules the design states, the contract implements, and nothing calls
 

@@ -3600,7 +3600,7 @@ def _load_state_check() -> ModuleType:
 | # | Design requirement (design's words) | Expected | Current implementation | Evidence | Sev | Lane |
 |---|---|---|---|---|---|---|
 | **1** | *"Rail 232px"* @ ≥1280 | **232px** | ✅ **Compliant** | `app-shell.tsx:230` applies `RAIL_WIDTH.expanded` | — | — |
-| **2** | ***"Rail collapses to 56px icons with tooltips"*** @ **1024–1279** | **56px, automatic at the band** | 🔴 **NOT COMPLIANT — 232px unless the user collapsed it** | 📁 **`lib/shell/rail.ts:168` — `deviceClassFor` returns only `compact` (<1024) or `regular` (≥1024). There is no small-laptop band.** ⛔ `app-shell.tsx:230` keys the width off `rail.collapsed`, a **remembered user preference** | **P0** | **A** |
+| **2** | ***"Rail collapses to 56px icons"*** @ **1024–1279** vs ***"Collapse state persists per user, per device class"*** | ⚖️ **UNDECIDED** | ⚠️ **AMBIGUOUS — withdrawn as a defect 2026-08-11** | 🔴 **This office called it P0 non-compliance and QE challenged the premise, correctly.** 📁 **The design names the persistence twice — the Rail spec and the Keyboard spec — so `collapseKey(userId, device)` implements a STATED requirement.** ⚡ **Two defensible readings and the design resolves neither.** ⛔ **[TASK-1473](BACKLOG.md) reclassified `BLOCKED` on a design ruling** | **⚖️** | **A, after the ruling** |
 | **3** | *"Rail becomes a sheet from a top-bar button"* @ <1024 | Sheet | ✅ **Compliant** | `app-shell.tsx:138` `compact`, `:232` `data-sheet-open` | — | — |
 | **4** | *"utility panel 360px"* @ ≥1600 · *"panel 300px"* @ 1280–1599 | **360 / 300** | ✅ **Compliant** | `lib/shell/utility-panel.ts:47` `PANEL_WIDTH` per band; `utility-panel.tsx:230` `PANEL_WIDTH[bandFor(width)]` | — | — |
 | **5** | *"Utility panel closes to a 28px tab rail"* @ 1024–1279 | Tab rail | ✅ **Compliant** | `utility-panel.ts:77` `if (band === 'smallLaptop') return 'tab-rail'` | — | — |
@@ -3611,7 +3611,11 @@ def _load_state_check() -> ModuleType:
 | **10** | *"Below 640px: review, approve, comment and ask only"* | Reduced capability | ⚠️ **NOT AUDITED** | ⛔ **A capability rule, not geometry. Same reason** | — | — |
 | **11** | *"Tables may show optional columns"* @ ≥1600 | — | ⚪ **PERMISSIVE** | ⛔ ***"may"*** — **not a requirement, and asserting it would invent one** | — | — |
 
-##### ⚡ Why row 2 is P0 and the others are not
+##### ⚠️ Why row 2 was called P0, and why that was wrong
+
+🔴 **Withdrawn 2026-08-11.** ⛔ **The argument below stands as the dated record of what this office believed and is NOT rewritten** ([§2](../CLAUDE.md)) — ⚡ **but its premise fell: the design states the per-device persistence explicitly, so the rail is not doing something the design forbids. The panel/rail contrast is real and is no longer evidence of a defect.**
+
+##### The withdrawn argument, as written
 
 📁 **The panel does exactly what the rail fails to do.** ⚡ **`PANEL_WIDTH[bandFor(width)]` is a four-band map read from the viewport; `RAIL_WIDTH` is a two-value pair read from a stored preference.** ⛔ **Two adjacent components in one shell, one band-driven and correct, one preference-driven and non-compliant** — and the second is the one every screen renders.
 
