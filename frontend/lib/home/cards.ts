@@ -187,7 +187,31 @@ export const COMPOSITION_CARDS: Readonly<Record<Composition, readonly CardId[]>>
  * does not reserve space for a future feature, it takes space from the one the
  * customer is using today."*
  */
-export const REGISTRY: readonly CardContract[] = [];
+export const REGISTRY: readonly CardContract[] = [
+  /**
+   * 🔴 **The first card any module has contributed** —
+   * [TASK-1425](../../../docs/BACKLOG.md). ⚡ **Until this entry, `REGISTRY`
+   * was `[]`**, so `cardsFor` returned nothing and every visit to Home fell
+   * through to *"Signora has nothing to put on your home yet"* — **the
+   * measurement this row was sequenced on.**
+   *
+   * 📁 **The design's own registry entry**: *"Pipeline health · `card.pipeline`
+   * · EX · **Coverage, stage distribution, movement**"*.
+   *
+   * ⚠️ **`requires` is `null` and that is not laxity.** 📁 The contract's own
+   * rule: *"presentational only… Casbin on the server is the authorization
+   * decision."* ⛔ **The read is workspace-scoped and authorized server-side**,
+   * and a client-side capability gate here would be the false-claim class
+   * [B-253](../../../docs/BUGS.md) is open about.
+   */
+  {
+    id: 'pipeline-health',
+    // 📁 The design's own words, not a paraphrase — the contract requires it.
+    title: 'Pipeline health',
+    module: 'opportunity_engine',
+    requires: null,
+  },
+];
 
 /**
  * **A composition, resolved: filtered by what this person may use, ordered by

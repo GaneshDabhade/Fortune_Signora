@@ -61,22 +61,53 @@ describe('📁 the catalogue is the design\'s, and it is closed', () => {
   });
 });
 
-describe('⚠️ the registry is empty, and the emptiness is asserted rather than assumed', () => {
-  it('⛔ no module contributes a card yet', () => {
-    /**
-     * 🔴 **This test states today's truth so the day it changes is loud** — the
-     * device `route-map.test.ts` uses for the absent `/w/` tree. **When the
-     * first module ships a card this fails, and whoever lands it updates the
-     * count deliberately.**
-     */
-    expect(REGISTRY).toEqual([]);
+describe('✅ the registry is no longer empty, and the day it changed was made loud on purpose', () => {
+  /**
+   * 🔴 **This block asserted `REGISTRY` was `[]`**, with its own note: *"this
+   * test states today's truth so the day it changes is loud — when the first
+   * module ships a card this fails, and whoever lands it updates the count
+   * deliberately."*
+   *
+   * ✅ **[TASK-1425](../../../docs/BACKLOG.md) is that day**, and the
+   * assertion did exactly its job: it went red the moment `pipeline-health`
+   * was contributed. ⚡ **The device worked, so it is replaced by the rule it
+   * was standing in for rather than deleted.**
+   */
+  it('🔴 the first contributed card is Pipeline health', () => {
+    expect(REGISTRY.map((card) => card.id)).toContain('pipeline-health');
   });
 
-  it('✅ so every composition resolves to nothing, and does so without throwing', () => {
+  it('⛔ every contributed card names a module and the design’s own title', () => {
+    // ⚡ **The contract's rule, not a style check** — *"the design's own words
+    // for it. Never a module's paraphrase."*
+    for (const card of REGISTRY) {
+      expect(card.module.length).toBeGreaterThan(2);
+      expect(card.title.length).toBeGreaterThan(2);
+    }
+  });
+
+  it('⚠️ and a contributed card reaches at least one composition', () => {
+    // ⛔ **A card in the registry that no composition shows is a module that
+    // shipped something nobody will ever see.**
+    const reachable = COMPOSITIONS.flatMap((c) => cardsFor(c, 'owner').map((card) => card.id));
+    for (const card of REGISTRY) {
+      expect(reachable, `${card.id} reaches no composition`).toContain(card.id);
+    }
+  });
+
+  it('✅ every composition still resolves without throwing, for every role', () => {
+    // ⚠️ **This asserted every composition resolved to NOTHING.** ⛔ That was a
+    // statement about the registry rather than about `cardsFor`, and it stopped
+    // being true by design. ✅ **What it was really guarding is that resolution
+    // never throws and never leaks a card into a composition that does not name
+    // it** — asserted directly now.
     for (const composition of COMPOSITIONS) {
-      expect(cardsFor(composition, 'owner')).toEqual([]);
-      expect(cardsFor(composition, 'member')).toEqual([]);
-      expect(cardsFor(composition, null)).toEqual([]);
+      for (const role of ['owner', 'member', null] as const) {
+        const placed = cardsFor(composition, role).map((card) => card.id);
+        for (const id of placed) {
+          expect(COMPOSITION_CARDS[composition]).toContain(id);
+        }
+      }
     }
   });
 });

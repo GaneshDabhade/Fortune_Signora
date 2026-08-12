@@ -27,6 +27,7 @@ import type {
   IcpSegmentSummary,
   ProductCatalog,
   PublishProductCatalog,
+  PipelineHealth,
   TargetAccountList,
 } from '@/lib/api/types';
 import { queryKeys } from '@/lib/query/keys';
@@ -340,5 +341,24 @@ export function useDeclareCompetitors(workspaceId: string | null) {
     onSuccess: (declared) => {
       client.setQueryData(queryKeys.competitors(workspaceId ?? ''), declared);
     },
+  });
+}
+
+/**
+ * 📁 **`card.pipeline` — *"Coverage, stage distribution, movement"*** —
+ * [TASK-1425](../../../../docs/BACKLOG.md).
+ *
+ * ⚡ **The read is already on `main`** ([TASK-438](../../../../docs/BACKLOG.md),
+ * `ff013012`) and **this row builds no backend**, which its own *"what it must
+ * NOT do"* cell requires.
+ */
+export function usePipelineHealth(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.pipelineHealth(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<PipelineHealth>(`/workspaces/${workspaceId}/pipeline-health`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
   });
 }

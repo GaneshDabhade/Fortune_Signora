@@ -18,6 +18,9 @@ export const queryKeys = {
 
   workspace: (workspaceId: string) => ['workspace', workspaceId] as const,
 
+  /** ⚡ **Home's executive card** — [TASK-1425](../../../docs/BACKLOG.md). */
+  pipelineHealth: (workspaceId: string) => ['pipeline-health', workspaceId] as const,
+
   members: (workspaceId: string) => ['workspace', workspaceId, 'members'] as const,
   organizationHistory: (workspaceId: string) =>
     ['workspace', workspaceId, 'history'] as const,

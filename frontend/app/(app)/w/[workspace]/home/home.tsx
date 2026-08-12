@@ -5,6 +5,7 @@ import { Home as HomeIcon } from 'lucide-react';
 import type { ReactElement } from 'react';
 
 import { EmptyState, PageHeader } from '@/components/ui';
+import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { cardsFor, type CardContract } from '@/lib/home/cards';
 import {
@@ -97,7 +98,17 @@ import type { WorkspaceRole } from '@/lib/state/permissions';
  * placeholder [TASK-1433](../../../../../../docs/BACKLOG.md) refused.
  */
 const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => ReactElement>>> =
-  Object.freeze({});
+  /**
+   * 🔴 **This was `Object.freeze({})`** — [TASK-1425](../../../../../../docs/BACKLOG.md).
+   * ⚡ **With both it and `REGISTRY` empty, `cardsFor` returned nothing and
+   * every visit fell through to the empty state**, which is the measurement
+   * this row was sequenced on.
+   *
+   * ⛔ **A card appears here only when it can be RENDERED**, which is why the
+   * filter below exists: 📁 the catalogue is deliberately written ahead of the
+   * cards, and a registered card with no renderer must not draw a hole.
+   */
+  Object.freeze({ 'pipeline-health': PipelineHealthCard });
 
 export function Home() {
   const { activeWorkspace, isLoading, error } = useWorkspaceContext();

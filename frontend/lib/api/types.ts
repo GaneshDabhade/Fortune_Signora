@@ -1138,3 +1138,62 @@ export type ResolveOutcome =
   | { kind: 'assigned'; to: string }
   | { kind: 'snoozed'; until: string }
   | { kind: 'dismissed'; reason: string };
+
+/**
+ * **Pipeline health — the executive composition's one card, in one response.**
+ *
+ * 📁 [TASK-1425](../../../docs/BACKLOG.md), against
+ * `Fortune Signora Home.dc.html`'s registry entry **`card.pipeline` —
+ * *"Coverage, stage distribution, movement"***. ⚡ **The read is
+ * [TASK-438](../../../docs/BACKLOG.md)'s and is already on `main`**:
+ * `GET /workspaces/{id}/pipeline-health`. ⛔ **Nothing new is built behind it.**
+ *
+ * ⚠️ **The design's *coverage* has no source and is not modelled here.**
+ * Coverage is pipeline against a target, and **nothing in this product holds a
+ * target** — a computed zero would read as *"you have no coverage"*, which is
+ * a different claim and a false one. **The same refusal the backend already
+ * makes about ICP coverage, one layer up.**
+ */
+export interface StageConversion {
+  from_stage: Stage;
+  to_stage: Stage;
+  entered: number;
+  advanced: number;
+  rate: number;
+}
+
+export interface StageAgeing {
+  stage: Stage;
+  open_count: number;
+  median_days: number;
+  oldest_days: number;
+}
+
+export interface OwnerLoad {
+  owner_id: string;
+  open_count: number;
+  won: number;
+  lost: number;
+}
+
+export interface PipelineMovement {
+  opportunity_id: string;
+  account_id: string;
+  stage: Stage;
+  previous_stage: Stage;
+  owner_id: string;
+  actor_id: string;
+  reason: string;
+  occurred_at: string;
+}
+
+export interface PipelineHealth {
+  conversions: StageConversion[];
+  ageing: StageAgeing[];
+  owners: OwnerLoad[];
+  movements: PipelineMovement[];
+  /** ⚡ **Echoed by the API so a card can say *"since 1 August"* without
+   * remembering what it asked for.** 📁 The design: *"every empty card names
+   * what was checked and when."* */
+  movements_since: string;
+}
