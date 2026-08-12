@@ -202,27 +202,29 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ⛔ **Four journeys in [`account-360-states.spec.ts`](../frontend/tests/e2e/account-360-states.spec.ts) are written, correct and cannot be run green here.** ⚡ **They are committed rather than withheld** — 📁 **[§2](../CLAUDE.md): a journey deleted because the environment could not run it is evidence the next lane has to author again.** ⛔ **This lane will not report them as passing**, and [TASK-1476](BACKLOG.md) is not handed to QE on their strength.
 
-#### ✅ Measured against the database, 2026-08-12 — and it narrows the hypothesis sharply
+#### 🔴 CORRECTED 2026-08-12, against this row's own previous measurement
 
-⚡ **The obvious second explanation was *"the seeded data is not there"*. ⛔ It is there.**
+⛔ **The paragraph that stood here said *"`ac05261b` belongs to the current workspace and HAS A SCORE, and the page rendered it as unscored anyway."* That was wrong, and the page was telling the truth.**
 
-| Measured in `signora_lane_a` | |
+⚠️ **How it was got wrong, because the shape is this repository's recurring one.** ✅ I counted **16 entities and 16 scores in the workspace** and concluded the two sets coincided. ⛔ **They do not.** 📁 **The scope of the operation was not the scope of the question** — *scores in this workspace* is not *a score for this account*, and one query answers only the first. ⚡ **Same family as [B-252](#b-252), [B-254](#b-254), [B-259](#b-259) and [B-194](#b-194)** — committed by the lane that has been naming it.
+
+✅ **Measured per entity, which is the question that was actually being asked:**
+
+| Of the 16 entities in the Playground workspace | |
 |---|---|
-| **Entities in the Playground workspace `deeecc11-…`** | **16** |
-| **Buying scores in that workspace** | 🔴 **16 — every one of them** |
-| **Entities in OTHER workspaces** | ⚠️ **6,376** |
+| **Named AND scored** | ✅ **11** |
+| **Scored, not named** | 1 |
+| ⛔ **Neither — including `ac05261b`** | **4** |
 
-🔴 **So *"no account renders its sections"* is not a data-absence problem.** ⛔ **Every account in the current workspace has a score**, and the page told a reader *"Nothing has scored this account yet"* about one of them:
+🔴 **So the record page was correct on every count.** `ac05261b` has **0 buying scores** and **1 identity binding with no `legal_name`**: *"no source has named this account yet"* and *"Nothing has scored this account yet"* are **both true of it**, and this row previously called truthful output a defect.
 
-- **`ac05261b…` — measured `workspace_id = deeecc11-…`, the CURRENT workspace** — ⛔ **and the record page rendered it as *"no source has named this account yet"* and *"Nothing has scored this account yet"*.**
+#### ⚠️ What that leaves, and part of it may be this lane's TEST rather than the product
 
-⚡ **That is the finding.** **The read path returns nothing for an account that demonstrably has both a name claim and a score**, which is a different defect from anything about seeding.
+⚡ **The data is good — eleven real, named, scored accounts.** ⛔ **So the journey's failure is no longer explained by absent data**, and the honest remaining question is **why a walk of the first twelve rows of `/accounts` reached none of the eleven.**
 
-#### ⚠️ What the 6,376 are, and what they are NOT evidence of
+⚠️ **Two candidates, and the first is this lane's own instrument**: ① **the helper clicks `row.getByRole('link').first()`, which assumes the first link in a row is the company** — ⛔ **an assumption never checked against the shipped table**; ② the list's ordering surfaces the unnamed minority first. ✅ **Neither is an authorization defect**, which is what this row originally suspected.
 
-📁 **[B-010](#b-010--re-seeding-the-playground-orphans-every-narration-silently)'s residue, confirmed at scale**: *"seeding clears the same five tables [B-008](#b-008) describes and leaves every derived generation behind — the Playground is a haystack containing the demo."* ⚡ **6,376 entities across previous workspaces for a twelve-account demo.**
-
-⛔ **They are NOT evidence of a tenancy leak, and the distinction matters enough to state.** ⚠️ **One account this journey opened — `16a95857…` — belongs to workspace `eabc4906-…`, not the current one.** ✅ **But that was a DIFFERENT RUN, before the reseed, when the nav itself showed `/w/eabc4906-…/home`** — **the session was in that workspace at the time.** ⛔ **Nothing here shows one workspace's accounts appearing inside another within a single session**, and 🔴 **a tenancy claim made on evidence this thin would be worse than no claim at all.**
+🔴 **The *"Settings — restricted. Requires an owner."* symptom is untouched by all of this and remains genuinely unexplained** — 📁 `dana.reyes@northwind.example` is `owner` in `membership` for this workspace, measured. ⚡ **That, and only that, is what still deserves the auth tier's attention.**
 
 #### ⛔ The cheap cause was tried and is ruled out
 
