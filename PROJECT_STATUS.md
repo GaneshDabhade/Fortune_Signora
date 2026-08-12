@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `98b9055b`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `0f9c7f90`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,28 +12,28 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `98b9055b`, 2026-08-12.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `0f9c7f90`, 2026-08-12.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`98b9055b`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 214** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
-| **Release candidate** | ✅ **None — [`TASK-1475`](docs/BACKLOG.md) is on `integration` and claimable.** `integration` is one commit ahead of `main`, the cycle 214 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
-| **Certification** | ✅ [`98b9055b87d8`](certification/reports/98b9055b87d8.md) · migration head **`0048`** · profile **`platform`** · ✅ **first attempt, no aborts** |
-| **Cycle 214 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages** · scenario **190 assertions** |
-| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3065 across 170 files** · **Disaster Recovery passed** against the restarted production stack. **A lane's figure is a claim; QE publishes a measurement** |
+| **`main`** | **`0f9c7f90`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 215** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
+| **Release candidate** | ✅ **None.** `integration` is one commit ahead of `main`, the cycle 215 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
+| **Certification** | ✅ [`0f9c7f9070fb`](certification/reports/0f9c7f9070fb.md) · migration head **`0048`** · profile **`documentation+frontend`** · ✅ **first attempt, no aborts** |
+| **Cycle 215 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages** · scenario **190 assertions** |
+| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3092 across 172 files** · **Disaster Recovery passed** against the restarted production stack. **A lane's figure is a claim; QE publishes a measurement** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
 | ⛔ **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1631 commits — 187 certified targets, 1444 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Blocking Quality Defects** | ✅ **None** |
-| **Customer value this cycle** | ⛔ **None directly** — ⚡ **but it ends a four-cycle idle**: [`TASK-1475`](docs/BACKLOG.md), the Companies package, is now claimable. **The next customer-visible change depends on this cycle having run** |
-| ⚡ **Why this cycle ran at all** | **[§20e](CLAUDE.md)'s synchronization rule, not the accumulation one.** `lane-c-sync` is **docs-only**, so on its own it would have parked — **and it carried the only claimable package for a lane idle four cycles.** ⛔ **§20e says which rule wins: *"synchronizing that work becomes the highest repository priority, above further preparation, above every planning activity."*** ✅ **Applied as the rule, not as an exception** |
+| **Customer value this cycle** | ✅ **A seller can work their whole book from one screen** — scan it as a table or as cards, choose which facts are shown, narrow it by name, source, kind or how recently anything was heard, page through it, and take what is on screen away as a file ([`TASK-1475`](docs/BACKLOG.md)). ⚡ **The first customer-visible slice in several cycles, and the one the four-cycle idle was blocking** |
+| ⚡ **What QE hunted, because the lane asked** | **The screen carries TWO absences — *the book is empty* and *the narrowing excluded everything* — and Lane A asked QE to find them collapsed.** ✅ **Fire-tested rather than read**: collapsing the filtered title turns **1 red**, and removing the `isError` branch so a failed read falls through turns **3 red**. ⛔ **[P-A](docs/DOMAIN_DISCOVERY_REGISTER.md) is guarded here, not asserted** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ✅ **The four-cycle idle is over, and the mechanism that ended it was two lanes reporting a condition QE could not see.** 📁 **[`TASK-1475`](docs/BACKLOG.md) was `READY` on `lane-c-sync` and absent from `integration`** — Lane A verified the absence and refused to claim from a Product Office branch; Lane C reported it against its own queue. ⛔ **QE reads only `integration`, which is precisely the blind spot the rule covers.** ⚡ **One exchange rather than a fifth cycle.**
+> ✅ **The handoff-coverage line built last cycle got its first live test, and it behaved.** ⚡ **50 of 121 promoted tasks had no `Slice-Handoff` when it shipped; after this promotion it reads 50 of 124.** ⛔ **The numerator held while the denominator rose** — **a slice that ships with its link does not move it**, which is exactly what a baseline is supposed to do.
 
-> ⚠️ **One judgement QE made and is stating rather than burying.** **Lane C rebased once on request, then QE's own Closeout moved `integration` two commits and stranded them again.** ✅ **QE performed the second rebase itself rather than handing back drift it had created** — **nine commits, no conflicts, so no judgement about another lane's register was made**, which is the purpose §20e's rule protects. ⛔ **Had it conflicted it would have gone back.**
+> ⚠️ **`Load more` was replaced rather than kept, and that is the standard being applied rather than a preference.** 📁 **The two are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable. ✅ **`Previous`/`Next` over the existing keyset cursor, with a page number and NO denominator** — **keyset cannot know how many pages exist without reading them, and a total would be fabricated.**
 
-**Repository health:** **4419 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **3065 frontend tests** across **170 files** · **403 Security Invariants** · mypy strict over **867 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **207s** · **disaster recovery re-run this cycle and passing** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4419 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **3092 frontend tests** across **172 files** · **403 Security Invariants** · mypy strict over **867 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **207s** · **disaster recovery re-run this cycle and passing** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
 > ⚠️ **Coverage headroom is 3 basis points and shrinking** — it was 4 last cycle. **Not a defect and not yet a finding**; recorded because a floor met by three hundredths of a percent is met by whichever test ran last.
 
@@ -45,19 +45,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | The design doc catch-up · **[B-258](docs/BUGS.md)** · `TASK-1428` corrected | **M-I** | ⚡ **[`TASK-1475`](docs/BACKLOG.md) — Companies as one implementation package**, plus eight register corrections | **Cycle 214** |
-| **Execution phase** | ✅ **Unblocked** — its four-cycle idle ends here | ⚠️ **No session** | **Governing** · **bounded-session** | **Certified · Promoted · Closed out** |
-| **Branch** | ✅ **Level with `main`** | **stale pointer** — content already promoted, ✅ measured | ✅ **Promoted this cycle** | **1 ahead** — the cycle 214 record |
-| **Validation status** | — | — | ✅ **Promoted this cycle** | — |
-| **Blocked?** | ✅ **No** | ⚠️ **Unknown** | **No** | **No** |
-| **Waiting on QE?** | ✅ **No** | — | No | — |
-| **Next executable work** | ⚡ **`TASK-1475`, claimable now** | — | Its own coordination items | ⚡ **Cycle 215 — whatever Lane A pushes** |
+| **Last promoted** | ✅ **[`TASK-1475`](docs/BACKLOG.md) — Companies becomes a workspace**, and **[B-258](docs/BUGS.md) closes with it** | **M-I** | `TASK-1475`'s package plus eight register corrections | **Cycle 215** |
+| **Execution phase** | ✅ **Building** — idle ended, claimed and delivered in one cycle | ⚠️ **No session** | **Governing** · **bounded-session** | **Certified · Promoted · Closed out** |
+| **Branch** | ✅ **Level with `main`** | **stale pointer** — content promoted, measured | **stale pointer** — content promoted | **1 ahead** — the cycle 215 record |
+| **Validation status** | ✅ **Promoted this cycle** | — | — | — |
+| **Blocked?** | **No** | ⚠️ **Unknown** | **No** | **No** |
+| **Waiting on QE?** | No | — | No | — |
+| **Next executable work** | ⚡ **Its queue** — and [C-300](docs/LANE_COORDINATION.md) now gates the columns this screen cannot show | — | Its own coordination items | ⚡ **Cycle 216** — nothing waiting |
 
-> ✅ **Four cycles of idle, ended in one exchange, because two lanes reported a condition rather than waiting to be asked.** ⛔ **QE could not see it: `TASK-1475` was `READY` on a Product Office branch and QE reads only `integration`.** ⚡ **That blind spot is exactly what §20e's synchronization rule exists to cover, and this is the first time it has been invoked.**
+> ✅ **Claimed the hour it reached `integration`, implemented, and handed over in the same cycle.** ⚡ **That is what the four idle cycles were costing**, and it is the argument for the synchronization rule made in one data point rather than in prose.
 
-> ⚠️ **Lane B remains a stale pointer and was nearly a false alarm.** Its branch holds 505 lines in `backend/modules/people/`; **Lane A checked before reporting it stranded and found the content already on `integration` under a different SHA.** ✅ **A negative result reported deliberately.**
+> ⛔ **A column exists only where a field does.** `ColumnSpec.read` takes a `ListedAccount`, **so a column for a field that does not exist has nowhere to return a value from** — and the design's other five columns, board view, grouping, sorting, smart filters and the AI rows are all absent for the same reason. ⚡ **Every one of them groups or ranks by a field [C-300](docs/LANE_COORDINATION.md) has not yet decided the source of, and nothing about them was invented meanwhile.**
 
-> **One lane, nine commits, first attempt, no aborts.**
+> **One lane, three commits, first attempt, no aborts.**
 
 ---
 
@@ -105,6 +105,53 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-12, cycle 215
+
+**Promoted `0f9c7f90` from `aa1e8da9`.** Three commits, all Lane A. **First attempt, no aborts.**
+
+### ✅ What a customer can do that they could not before
+
+**A seller can work their whole book from one screen.** Scan it as a table or as cards · choose which facts are shown · narrow it by name, source, kind or how recently anything was heard · page through it · **take what is on screen away as a file.**
+
+⚡ **The first customer-visible slice in several cycles — and the one the four-cycle idle was blocking.** **Claimed the hour `TASK-1475` reached `integration`, implemented, and handed over in the same cycle.**
+
+### ⚡ What QE hunted, because the lane asked it to
+
+**The screen carries two absences that must never collapse**: *the book is empty* and *the narrowing excluded everything*. ✅ **Fire-tested rather than read.**
+
+| Reverted | Result |
+|---|---|
+| The filtered-to-nothing title → *"No companies yet"* | ⛔ **1 red**, and the test's name is the property: *"an over-narrow filter says so, and does not say 'no companies yet'"* |
+| The `isError` branch removed, so a failed read falls through | ⛔ **3 red**, including *"it does NOT say 'no companies yet'"* |
+
+📁 **[P-A](docs/DOMAIN_DISCOVERY_REGISTER.md) is guarded here rather than asserted**, and the branch order is right: **error, then loading, then the empty book, then the narrowing.**
+
+✅ **The count was checked too**, because it is the other thing a keyset pager gets wrong: **`shown of loaded`, never a denominator it was not told.**
+
+### ✅ The instrument built last cycle got its first live test
+
+**50 of 121 promoted tasks had no `Slice-Handoff` when the coverage line shipped. After this promotion it reads 50 of 124.** ⚡ **The numerator held while the denominator rose** — **a slice that ships with its link does not move it**, which is what a baseline is for. **[B-258](docs/BUGS.md) closes with the slice, exactly as its row said it would.**
+
+### ⛔ What is deliberately absent, and why
+
+**A column exists only where a field does.** `ColumnSpec.read` takes a `ListedAccount`, **so a column for a field that does not exist has nowhere to return a value from.** **The design's other five columns, board view, grouping, sorting, smart filters and the AI rows are all absent for the same reason** — every one groups or ranks by a field whose source [C-300](docs/LANE_COORDINATION.md) has not decided. ✅ **Nothing about them was invented meanwhile.**
+
+**And `Load more` was replaced, not kept** — the standard forbids preserving old UI because it exists, and the two are different products.
+
+### Migrations · ADRs · architecture
+
+**None.** Head unchanged at `0048`.
+
+### Remaining blockers — five, all the product owner's
+
+⛔ **[C-300](docs/LANE_COORDINATION.md)** — new, and the widest: **one decision spanning this table, `TASK-1469` and [C-297](docs/LANE_COORDINATION.md).** ⛔ **[C-298](docs/LANE_COORDINATION.md) · [C-299](docs/LANE_COORDINATION.md) · [C-1424](docs/LANE_COORDINATION.md) · [C-106](docs/LANE_COORDINATION.md).**
+
+### Recommended next work
+
+⚡ **Nothing waits on QE.** **The decisions above are what bound the next screen, not implementation capacity.**
 
 ---
 

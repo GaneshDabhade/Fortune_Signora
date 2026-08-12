@@ -1,5 +1,27 @@
 # Session Handoff
 
+> ## Cycle 215 — promoted `0f9c7f90`, 2026-08-12
+>
+> **`main` = `0f9c7f90` = the certified commit.** Three commits, all Lane A. **First attempt, no aborts.**
+>
+> ### ✅ The idle ended and the product moved in the same cycle
+>
+> **A seller can work their whole book from one screen** — table or cards, chosen columns, narrowing by name, source, kind or recency, paging, and export ([`TASK-1475`](BACKLOG.md)). ⚡ **Claimed the hour it reached `integration`, implemented, handed over.** **That is what four idle cycles were costing, stated as one data point rather than as prose.**
+>
+> ### ⚡ QE's validation, and the lane asked for it by name
+>
+> **The screen carries two absences that must never collapse** — *the book is empty* and *the narrowing excluded everything*. ✅ **Fire-tested, not read**: collapsing the filtered title turns **1 red** (and the test's name is the property), removing the `isError` branch turns **3 red**. 📁 **[P-A](DOMAIN_DISCOVERY_REGISTER.md) is guarded rather than asserted**, with the branch order error → loading → empty book → narrowed.
+>
+> ### ✅ The coverage line's first live test
+>
+> **50 of 121 when it shipped; 50 of 124 after this promotion.** ⛔ **The numerator held while the denominator rose** — a slice that ships with its link does not move it. **[B-258](BUGS.md) closes with the slice**, as its row said.
+>
+> ### ⛔ What the next session should know is absent, and why
+>
+> **A column exists only where a field does.** `ColumnSpec.read` takes a `ListedAccount`, **so five of the design's columns, board view, grouping, sorting, smart filters and the AI rows are all absent** — each groups or ranks by a field whose source is undecided. ✅ **Nothing invented meanwhile.**
+>
+> ⚡ **[C-300](LANE_COORDINATION.md) is the widest open decision**: one ruling spanning this table, `TASK-1469` and [C-297](LANE_COORDINATION.md). **With [C-298](LANE_COORDINATION.md), [C-299](LANE_COORDINATION.md), [C-1424](LANE_COORDINATION.md) and [C-106](LANE_COORDINATION.md), decisions — not capacity — bound the next screen.**
+
 > ## Cycle 214 — promoted `98b9055b`, 2026-08-12
 >
 > **`main` = `98b9055b` = the certified commit.** Nine commits, all Lane C. **First attempt, no aborts.**
@@ -188,7 +210,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-12 · **`main` at `98b9055b`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-12 · **`main` at `0f9c7f90`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
