@@ -573,6 +573,9 @@ export default function AccountBriefPage() {
             id="research"
             research={research ?? null}
             isError={researchError !== null && !neverResearched}
+            {...(correlationOf(researchError) === undefined
+              ? {}
+              : { correlationId: correlationOf(researchError)! })}
             onRequest={() => requestResearch.mutate()}
             isRequesting={requestResearch.isPending}
           />
@@ -741,10 +744,19 @@ export default function AccountBriefPage() {
               anchored when the utility panel is NOT carrying it, which is why
               the rail's `anchored` list asks the same question. */}
           {history.carrying ? null : (
-            <section id="activity" className="flex flex-col gap-3">
-              <h2 className="text-sm font-semibold text-content">What has happened</h2>
+            <AccountSectionShell
+              id="activity"
+              heading="What has happened"
+              // ⚠️ **No severity is claimed for a recorded event.** ⛔ Whether
+              // something that happened is bad is a judgement, and the
+              // timeline records rather than judges — so the header states a
+              // count and no status, which `none` exists for.
+              severities={[]}
+              viewerId={viewerId}
+              kind={accountKind}
+            >
               {historyFeed}
-            </section>
+            </AccountSectionShell>
           )}
 
           {/* **Where the argument ends.** Every line above is Signora's

@@ -69,6 +69,25 @@ export function CompetitorContext({
   }
 
   /**
+   * ⚡ **No loading skeleton here, and it is a decision rather than an
+   * omission** — [TASK-1476](../../../docs/BACKLOG.md).
+   *
+   * 📁 The design's loading rule is *"header, title and counts paint **from
+   * cache**; only the body skeletons."* ⚡ **This declaration is
+   * WORKSPACE-scoped and identical on every account**, so after the first read
+   * of a session it is cached and there is no in-flight state to paint.
+   *
+   * ⛔ **And on that first read a skeleton would be worse than nothing**,
+   * because this section legitimately renders NOTHING for a workspace that has
+   * declared no competitors — **so the skeleton would resolve to an absence,
+   * having told the reader something was coming.** ⚠️ Summary's answer is the
+   * opposite and correctly so: it always resolves to content, an answer or an
+   * error, **so it can promise a body it will always deliver.**
+   *
+   * ⚠️ **Raised for the product owner rather than settled here** — 📁 the
+   * design does not say what a section that may not exist should do while it
+   * is being fetched, and this lane picked the option that cannot mislead.
+   *
    * **Version 0 means nothing has been declared** — which the type documents
    * as different from a customer who declared an empty list. Either way there
    * is nothing to show, and a section explaining its own absence on every

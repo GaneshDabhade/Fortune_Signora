@@ -66,8 +66,11 @@ export function ResearchPanel({
    * owns the section map and passes the id it publishes.
    */
   id,
+  /** 📁 *"…then retry plus a correlation ID"* — [TASK-1476](../../../docs/BACKLOG.md). */
+  correlationId,
 }: {
   id?: string;
+  correlationId?: string;
   research: AccountResearch | null;
   onRequest: () => void;
   isRequesting: boolean;
@@ -99,7 +102,7 @@ export function ResearchPanel({
 
       <div className="flex flex-col gap-3 rounded-md border border-border bg-surface-raised px-4 py-3.5">
         {isError ? (
-          <Unavailable />
+          <Unavailable {...(correlationId === undefined ? {} : { correlationId })} />
         ) : research === null ? (
           <Invitation />
         ) : (
@@ -140,8 +143,14 @@ export function ResearchPanel({
  * (§2), and it says nothing about whether research exists — because when this
  * renders, Signora does not know.
  */
-function Unavailable() {
-  return <StatedAbsence subject="the research for this account" reassurance="Nothing has changed about the account" />;
+function Unavailable({ correlationId }: { correlationId?: string }) {
+  return (
+    <StatedAbsence
+      subject="the research for this account"
+      reassurance="Nothing has changed about the account"
+      {...(correlationId === undefined ? {} : { correlationId })}
+    />
+  );
 }
 
 function Invitation() {
