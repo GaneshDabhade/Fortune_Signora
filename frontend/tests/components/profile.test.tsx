@@ -360,3 +360,37 @@ describe('screen 04 · consent must read as consent', () => {
     expect(screen.queryByText(/risk flags/i)).toBeNull();
   });
 });
+
+
+/**
+ * 🔴 **[B-255](../../../docs/BUGS.md) — `Save` said nothing at all.**
+ *
+ * ⛔ **`save` returned early when there was no workspace and left the status at
+ * `idle`**, so somebody pressed the button, watched it not even spin, and got
+ * neither a confirmation nor a refusal.
+ *
+ * ⚡ **Found while diagnosing a journey failure that turned out to be
+ * [B-245](../../../docs/BUGS.md)'s environment poisoning** — the journey was
+ * right, the environment was wrong, **and this was underneath it.**
+ */
+describe('🔴 the profile with no organization behind it', () => {
+  it('🔴 says why it cannot save, rather than nothing', async () => {
+    vi.resetModules();
+    vi.doMock('@/lib/state/workspace-provider', () => ({
+      useWorkspaceContext: () => ({ activeWorkspace: null }),
+    }));
+    const { ProfilePanel: Panel } = await import('@/app/(app)/profile/profile-panel');
+
+    render(<Panel name={null} email="dana@northwind.test" />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    const refusal = await screen.findByRole('alert');
+    expect(refusal).toHaveTextContent(/not in one yet/i);
+    // ⛔ **And NOT the connection sentence** — nothing failed and nothing is
+    // worth retrying, so telling somebody to check a working connection would
+    // send them to look at the wrong thing.
+    expect(refusal.textContent).not.toMatch(/connection/i);
+    vi.doUnmock('@/lib/state/workspace-provider');
+  });
+});

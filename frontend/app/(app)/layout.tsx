@@ -34,5 +34,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const session = await auth().api.getSession({ headers: await headers() });
   if (!session?.user) redirect('/signin');
 
-  return <AuthenticatedShell email={session.user.email}>{children}</AuthenticatedShell>;
+  /**
+   * **B-429.** `session.user.name` was in scope on this line and was not
+   * passed, and the menu three files away then explained its own absence as a
+   * platform limitation. Registration requires a full name, so the platform
+   * does publish one — the shell's composition was dropping it.
+   */
+  return (
+    <AuthenticatedShell email={session.user.email} name={session.user.name ?? null}>
+      {children}
+    </AuthenticatedShell>
+  );
 }

@@ -37,7 +37,16 @@ export function ProfilePanel({ name, email }: { name: string | null; email: stri
   const [, setPrefs] = useState<Preferences | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [pronouns, setPronouns] = useState('');
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  /**
+   * ⚡ **`unavailable` is a fourth member rather than a flag beside `error`**
+   * — 📁 [B-255](../../../../docs/BUGS.md). **The two refusals need different
+   * sentences**: one is *try again*, the other is *there is nothing to save
+   * against*, ⛔ **and telling somebody to check their connection when their
+   * connection is fine is a false instruction** ([§2](../../../../CLAUDE.md)).
+   */
+  const [status, setStatus] = useState<
+    'idle' | 'saving' | 'saved' | 'error' | 'unavailable'
+  >('idle');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -86,7 +95,25 @@ export function ProfilePanel({ name, email }: { name: string | null; email: stri
   }, [workspaceId]);
 
   const save = async () => {
-    if (workspaceId === null) return;
+    /**
+     * 🔴 **[B-255](../../../../docs/BUGS.md): this returned and said nothing.**
+     *
+     * ⛔ **The status stayed `idle`**, so somebody with no workspace pressed
+     * `Save`, watched the button not even spin, and got neither a confirmation
+     * nor a refusal. ⚡ **That is the [§2](../../../../CLAUDE.md) rule this
+     * lane has applied three times this week — *a control that silently does
+     * nothing is worse than one that is absent*** — **and it was sitting in a
+     * guard clause.**
+     *
+     * ✅ **It is an error rather than a hidden button**: preferences are a
+     * person's own, so the panel is right to render, and the honest thing is
+     * to say the write cannot be made rather than to remove the way to make
+     * it.
+     */
+    if (workspaceId === null) {
+      setStatus('unavailable');
+      return;
+    }
     setStatus('saving');
     try {
       // ⚡ **Only the two fields this panel owns are sent.** The server
@@ -196,6 +223,16 @@ export function ProfilePanel({ name, email }: { name: string | null; email: stri
         {status === 'error' ? (
           <p role="alert" className="text-sm text-danger">
             That did not save. Check your connection and try again.
+          </p>
+        ) : null}
+        {/* ⛔ **A different refusal needs a different sentence** — 📁
+            [B-255](../../../../docs/BUGS.md). **Nothing failed and nothing is
+            worth retrying**: there is no organization for the preference to
+            belong to, and saying *check your connection* would send somebody
+            to look at a thing that is working. */}
+        {status === 'unavailable' ? (
+          <p role="alert" className="text-sm text-danger">
+            These settings belong to an organization, and you are not in one yet.
           </p>
         ) : null}
       </div>

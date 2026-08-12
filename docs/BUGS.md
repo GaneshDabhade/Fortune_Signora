@@ -879,6 +879,43 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-255 · `Save` on the profile returns without saving and without saying so, when there is no organization
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/app/(app)/profile/profile-panel.tsx`](../frontend/app/\(app\)/profile/profile-panel.tsx):88 |
+| **Current assignee** | **Lane A** — `product_surface` is this lane's in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟡 — ⛔ **nothing is lost and nothing is corrupted.** ⚡ **It is not 🟢 because the customer is given no information at all**, which is the state this repository has refused by name three times this week |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-12**, in the change that found it. ⚠️ **QE verifies and closes** |
+| **Found** | **2026-08-12, by Lane A**, while diagnosing a `profile-journey` failure that turned out to be [B-245](#b-245)'s environment poisoning — ⚡ **the journey was right, the environment was wrong, and this was underneath it** |
+| **Commit found** | **`82e8d43b`** |
+
+**Steps.** Sign in with no organization, open `/profile`, type a display name, press `Save`.
+
+**Expected.** Either a confirmation or a refusal.
+
+**Actual.** ⛔ **Nothing.** The button does not spin, no `Saved` appears, no error appears. 📁 The guard clause reads:
+
+```ts
+if (workspaceId === null) return;   // status stays 'idle'
+```
+
+#### 🔴 It is a rule this lane keeps quoting, sitting in a guard clause
+
+📁 **[§2](../CLAUDE.md), and this lane has applied it three times this week** — [TASK-1470](BACKLOG.md)'s rail entry, [TASK-1458](BACKLOG.md)'s shortcuts door, [`Copilot`](../frontend/components/shell/copilot.tsx)'s provider:
+
+> ⛔ **A control that silently does nothing is worse than one that is absent.**
+
+⚡ **Every one of those was about not RENDERING a dead control.** ⚠️ **This is the same defect one layer in** — the control renders, is pressed, and the handler declines without a word.
+
+#### ✅ The repair, and why it is not the existing error state
+
+⛔ **`error` already says *"That did not save. Check your connection and try again."*** ⚡ **Both halves of that would be false here**: nothing failed, and the connection is fine — 📁 **a false instruction is the [P-A](DOMAIN_DISCOVERY_REGISTER.md) family's other direction**, the same distinction [TASK-1411](BACKLOG.md) drew between an absent confidence and a failed read.
+
+✅ **So `unavailable` is a FOURTH member of the status union rather than a flag beside `error`** — **two refusals, two sentences** — and the panel says *"These settings belong to an organization, and you are not in one yet."*
+
+⛔ **The panel still renders and the button still exists**: preferences are a person's own, so removing the way to make the write would be a worse answer than explaining why it cannot be made.
+
 ### B-254 · A guard says *imports* and checks *mentions*, so a doc-comment fails it and a real import in a comment would pass
 
 | | |
@@ -4802,7 +4839,7 @@ def _load_state_check() -> ModuleType:
 | **Module** | `product_surface` — [`frontend/components/shell/account-menu.tsx`](../frontend/components/shell/account-menu.tsx) · [`frontend/app/(app)/layout.tsx`](../frontend/app/(app)/layout.tsx):37 |
 | **Current assignee** | **Lane A** — `product_surface` is this lane's in [`modules.toml`](coordination/modules.toml) |
 | **Severity** | 🟠 — **a stated design requirement is absent from a shipped screen** |
-| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-10, from the global-UX reconciliation |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-12.** ⚠️ **QE verifies and closes.** ✅ **`session.user.name` is threaded from [`layout.tsx`](../frontend/app/\(app\)/layout.tsx) through `AuthenticatedShell` → `AppShell` → `TopBar` → `AccountMenu`**, and the menu states all four facts. 🔴 **The false comment was REMOVED with the fix**, which the row asked for by name: ⛔ **it read as a considered design decision and that is how it survived review and promotion.** ✅ **The half of it that was RIGHT is kept and is now tested**: ⛔ **a name is never derived from the address**, and a session carrying none renders the email alone. ⚡ **`name: string | null` is REQUIRED on every prop in the chain, not optional** — 📁 **an optional prop is exactly how this happened**: a caller omitted it silently and nothing asked. **Six test call sites had to answer it, which is the type doing the work** ([§2](../CLAUDE.md)). ✅ **The avatar now takes its initials from the name** — 📁 the design draws *"MR"* for *Marta Reinhardt*, **which an address cannot produce.** ✅ **Fire-tested both ways**: dropping the name turns one red, sourcing the initials from the address turns another. **3057 frontend / 168 files · 6 profile journeys watched headed.** ⚠️ **The prior state, kept rather than rewritten** ([§2](../CLAUDE.md)): 🔵 **`OPEN` — Lane C**, 2026-08-10, from the global-UX reconciliation |
 | **Commit found** | [TASK-1440](BACKLOG.md), `PROMOTED` |
 
 #### 📁 The design requirement

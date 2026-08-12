@@ -54,7 +54,7 @@ function shell() {
       <AppShell
         role="owner"
         userId="u1"
-        email="viewer@example.com"
+        email="viewer@example.com" name={null}
         signOut={<button type="button">Sign out</button>}
       >
         <p>Content</p>

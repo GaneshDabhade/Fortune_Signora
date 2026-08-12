@@ -38,7 +38,7 @@ vi.mock('@/lib/state/workspace-provider', () => ({
 function shell() {
   return render(
     <QueryClientProvider client={new QueryClient()}>
-      <AppShell role="owner" email="a@b.com" signOut={null}>
+      <AppShell role="owner" email="a@b.com" name={null} signOut={null}>
         <p>Content</p>
       </AppShell>
     </QueryClientProvider>,

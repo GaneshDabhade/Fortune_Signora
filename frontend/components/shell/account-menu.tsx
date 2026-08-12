@@ -77,6 +77,14 @@ const ITEMS: readonly { label: string; href: string | null }[] = [
 export interface AccountMenuProps {
   /** 📁 *"Always states name, email, role and workspace."* */
   email: string;
+  /**
+   * 🔴 **[B-429](../../../docs/BUGS.md) — the fourth fact.**
+   *
+   * ⛔ **`null` is a real answer and is rendered as absence**, never as a name
+   * derived from the address. ⚡ **Registration requires a full name**, so a
+   * session created through the product always carries one.
+   */
+  name: string | null;
   role: WorkspaceRole | null;
   /**
    * ⚡ **The sign-out control, passed in rather than built here.**
@@ -89,7 +97,7 @@ export interface AccountMenuProps {
   signOut: ReactNode;
 }
 
-export function AccountMenu({ email, role, signOut }: AccountMenuProps) {
+export function AccountMenu({ email, name, role, signOut }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const { activeWorkspace } = useWorkspaceContext();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -142,7 +150,10 @@ export function AccountMenu({ email, role, signOut }: AccountMenuProps) {
             slot. ✅ **`decorative` because the button already carries the
             accessible name** — announcing the initials and then the address
             would read the same person twice. */}
-        <Avatar name={email} decorative />
+        {/* ⚡ **The initials come from the NAME when there is one** — 📁 the
+            design draws *"MR"* for *Marta Reinhardt*, which an address cannot
+            produce. ⛔ **The address is the fallback, not the source.** */}
+        <Avatar name={name ?? email} decorative />
       </button>
 
       {open ? (
@@ -153,12 +164,30 @@ export function AccountMenu({ email, role, signOut }: AccountMenuProps) {
           className="absolute right-0 top-[calc(100%+8px)] z-20 w-[280px] rounded-md border border-border bg-surface shadow-lg"
         >
           {/* 📁 *"Always states name, email, role and workspace."*
-              ⛔ **Name is not stated, because the platform does not publish
-              one** — the session carries an email and nothing else. ⚡ Inventing
-              a display name from the local part would be the shell asserting a
-              fact about a person it does not have. */}
+              🔴 **[B-429](../../../docs/BUGS.md): the name is stated now, and
+              the comment that used to sit here was a false claim.** It read
+              *"the platform does not publish one"* — ⛔ **and registration
+              REQUIRES a full name**, so it always had. 📁
+              [`layout.tsx`](../../app/\(app\)/layout.tsx) had
+              `session.user.name` in scope and was not passing it, one line
+              before the shell that needed it.
+
+              ✅ **The half of that comment which was right is kept**: a name is
+              never derived from the address. ⛔ **When the session carries
+              none, the email stands alone**, exactly as it did before. */}
           <div className="border-b border-border px-3 py-3">
-            <p className="truncate text-sm font-medium text-content" title={email}>
+            {name === null ? null : (
+              <p className="truncate text-sm font-medium text-content" title={name}>
+                {name}
+              </p>
+            )}
+            <p
+              className={cn(
+                'truncate text-sm',
+                name === null ? 'font-medium text-content' : 'text-content-muted',
+              )}
+              title={email}
+            >
               {email}
             </p>
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">

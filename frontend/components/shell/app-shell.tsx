@@ -36,6 +36,8 @@ export interface AppShellProps {
    * outside `components/shell/**`.
    */
   email: string;
+  /** 📁 §11 *"Always states name, email, role and workspace."* — [B-429](../../../docs/BUGS.md). ⛔ `null` when the session carries none. */
+  name: string | null;
   /**
    * ⚡ **Required for the rail's collapse to be remembered** —
    * [TASK-1408](../../../docs/BACKLOG.md), 📁 *"the state persists per user,
@@ -118,6 +120,7 @@ export function AppShell({
   banners = [],
   inSandbox = false,
   breadcrumb = [],
+  name,
 }: AppShellProps) {
   // 📁 **Rule: the rail collapses to 56px and the state is remembered.**
   // ⛔ The shell owns the frame's own state; it still owns no navigation
@@ -349,6 +352,7 @@ export function AppShell({
           breadcrumb={breadcrumb}
           role={role}
           email={email}
+          name={name}
           signOut={signOut}
           // 📁 **[TASK-1461](../../../docs/BACKLOG.md)** — *"Rail becomes a
           // sheet from a top-bar button."* ⛔ **The button had never existed**,

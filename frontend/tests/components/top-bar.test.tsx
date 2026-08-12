@@ -40,7 +40,7 @@ function bar(role: 'owner' | 'member' | null = 'owner') {
           <TopBar
             breadcrumb={[]}
             role={role}
-            email="marta@northwind.example"
+            email="marta@northwind.example" name={null}
             signOut={<button type="button">Sign out</button>}
           />
         </WorkspaceProvider>

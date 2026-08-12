@@ -32,7 +32,7 @@ function at(width: number) {
 
 function bar() {
   return render(
-    <TopBar breadcrumb={[]} role="owner" email="v@example.com" signOut={<span />} />,
+    <TopBar breadcrumb={[]} role="owner" email="v@example.com" name={null} signOut={<span />} />,
   );
 }
 

@@ -43,9 +43,20 @@ import { WorkspaceProvider, useWorkspaceContext } from '@/lib/state/workspace-pr
  */
 export function AuthenticatedShell({
   email,
+  name,
   children,
 }: {
   email: string;
+  /**
+   * 🔴 **[B-429](../../../docs/BUGS.md)** — 📁 App Shell §11: *"Always states
+   * name, email, role and workspace."*
+   *
+   * ⛔ **`null` is a real answer and is not filled in.** ⚡ **Registration
+   * requires a full name**, so this is populated for every account created
+   * through the product — **but a session that genuinely carries none must say
+   * so by absence**, never by a name derived from the address.
+   */
+  name: string | null;
   children: ReactNode;
 }) {
   return (
@@ -53,12 +64,22 @@ export function AuthenticatedShell({
       {/* **Inside the provider, deliberately.** A role is a fact about a person
           *in a workspace*, so it cannot be resolved above the thing that knows
           which workspace is active. */}
-      <ShellForViewer email={email}>{children}</ShellForViewer>
+      <ShellForViewer email={email} name={name}>
+        {children}
+      </ShellForViewer>
     </WorkspaceProvider>
   );
 }
 
-function ShellForViewer({ email, children }: { email: string; children: ReactNode }) {
+function ShellForViewer({
+  email,
+  name,
+  children,
+}: {
+  email: string;
+  name: string | null;
+  children: ReactNode;
+}) {
   const pathname = usePathname();
   const {
     workspaces,
@@ -114,6 +135,7 @@ function ShellForViewer({ email, children }: { email: string; children: ReactNod
       // crossing this boundary inside the `signOut` node; the account menu's
       // identity block needs it as a value, not as markup.
       email={email}
+      name={name}
       signOut={<SignOutButton email={email} />}
     >
       {/* ⚡ **Onboarding's only entrance** — TASK-469. It renders nothing

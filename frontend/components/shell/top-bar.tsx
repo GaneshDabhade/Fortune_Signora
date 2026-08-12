@@ -74,6 +74,12 @@ export interface TopBarProps {
   breadcrumb: readonly Crumb[];
   role: WorkspaceRole | null;
   email: string;
+  /**
+   * 🔴 **[B-429](../../../docs/BUGS.md)** — 📁 §11: *"Always states name,
+   * email, role and workspace."* ⛔ **Passed through rather than derived**:
+   * the top bar states nothing about a person it was not told.
+   */
+  name: string | null;
   signOut: ReactNode;
   /**
    * 📁 **The `<1024` sheet trigger** — [TASK-1461](../../../docs/BACKLOG.md),
@@ -96,6 +102,7 @@ export function TopBar({
   breadcrumb,
   role,
   email,
+  name,
   signOut,
   onOpenNavigation,
   navigationOpen = false,
@@ -304,7 +311,7 @@ export function TopBar({
       </Link>
 
       <div data-slot="account" className="shrink-0">
-        <AccountMenu email={email} role={role} signOut={signOut} />
+        <AccountMenu email={email} name={name} role={role} signOut={signOut} />
       </div>
     </header>
   );
