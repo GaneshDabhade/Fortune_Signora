@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `9c7e052e`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `b4c99250`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,26 +12,26 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `9c7e052e`, 2026-08-12.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `b4c99250`, 2026-08-12.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`9c7e052e`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 209** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
-| **Release candidate** | **None. `integration` is one commit ahead of `main`** — the cycle 209 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
-| **Certification** | ✅ [`9c7e052ec329`](certification/reports/9c7e052ec329.md) · migration head **`0048`** · profile **`platform`** · ⚠️ **second attempt — the first was a real failure, [B-189](docs/BUGS.md), not an abort** |
-| **Cycle 209 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages, 194s** · scenario **190 assertions** |
-| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3053 across 167 files** · **Disaster Recovery passed** against the restarted production stack · **migration reversibility** base ↔ `0048` under the owner identity. **A lane's figure is a claim; QE publishes a measurement** |
+| **`main`** | **`b4c99250`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 210** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
+| **Release candidate** | **None. `integration` is one commit ahead of `main`** — the cycle 210 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
+| **Certification** | ✅ [`b4c99250aa40`](certification/reports/b4c99250aa40.md) · migration head **`0048`** · profile **`platform`** · ✅ **first attempt, no aborts** |
+| **Cycle 210 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages, 207s** · scenario **190 assertions** |
+| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3062 across 169 files** · **Disaster Recovery passed** against the restarted production stack. **A lane's figure is a claim; QE publishes a measurement** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
-| ⛔ **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1604 commits — 185 certified targets, 1417 inside a certified snapshot, 2 Closeout. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
+| ⛔ **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1631 commits — 187 certified targets, 1444 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Blocking Quality Defects** | ✅ **None.** ⚡ **Two were opened and closed inside this cycle** — [B-189](docs/BUGS.md) and [B-254](docs/BUGS.md) |
-| **Customer value this cycle** | ✅ **Four things a person can see.** **The account menu states its fourth fact** — a customer's own name, which the platform had all along ([B-429](docs/BUGS.md)). **`Save` on the profile now answers** instead of declining in silence ([B-255](docs/BUGS.md)). **Bulk session revocation** — sign every other device out at once (TASK-470). **The search field says *Search Signora***, not *Search Fortune Signora* (TASK-1466, [C-1422](docs/LANE_COORDINATION.md)) |
-| ⛔ **QE's own defect this cycle** | **One, and a lane found it.** [B-254](docs/BUGS.md) — **a guard named `test_no_production_package_imports_certification` checked `if "certification" in path.read_text()`.** ⚡ **The name was a false claim about what the code did**, so a doc-comment failed a clean tree and Lane A had to spell the package name in two halves to describe the defect at all. **Third instance of one class in two days** — [B-162](docs/BUGS.md) narrowed a text scan until it stopped firing, [B-252](docs/BUGS.md) counted an identifier in a comment as a caller. ✅ **It parses now** |
+| **Blocking Quality Defects** | ✅ **None** |
+| **Customer value this cycle** | ⚡ **The product stops promising screens it does not have** ([B-256](docs/BUGS.md)). **Onboarding told whoever picked the FIRST goal on the screen — *Forecast accurately* — that *"Signora will open on Forecast, the Executive Dashboard"*.** ⛔ **Neither exists, and `forecast` is refused as domain law by two modules in writing.** ✅ **A goal now names only destinations a customer can reach, and says nothing when there are none** |
+| ⛔ **What validation found that the gates did not** | **[B-191](docs/BUGS.md) — [B-256](docs/BUGS.md)'s fix is right and its proof is not.** ⚡ **Measured rather than reasoned**: reverting the two component lines while leaving the helper intact leaves **169 files and 3062 tests green**, with the screen once again promising Forecast. 📁 **The guard imports `reachable` and calls it directly; nothing renders `GoalsForm`.** ⛔ **[B-252](docs/BUGS.md)'s class one file along, and the same lane named it this week** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ⛔ **The cycle's most useful finding was not a feature.** [B-189](docs/BUGS.md): **the repository certified at 09:34 and at 10:44 and could not at 12:17, on a backend tree `git diff` reports as identical.** An invitation fixture's seven-day window expired against a clock the test never declared. ⚡ **And the repair went a layer deeper than the diagnosis** — the double was applying an expiry filter the real repository does not apply, so an expired offer was answered *"there is no invitation"* rather than *"this invitation has expired"*. **QE found a test that broke on a date; Lane A found a customer being told the wrong thing.**
+> ⛔ **The product was promising a capability two modules decline in writing, and QE verified that rather than accepting it.** 📁 `buying_score_engine/domain/events.py`: *"No probability, no likelihood, no prediction… it does not forecast a purchase"*, and `opportunity_engine`'s router says it again independently. ✅ **The routes were checked too** — `/signals`, `/accounts`, `/reports` and `/settings/team` exist; `forecast`, `executive-dashboard`, `opportunity-intelligence`, `account-360` and `research` have no page on any branch. ⚡ **A `Record<string, string>` could not express *named and unreachable*, so an absent screen was indistinguishable from a shipped one** — and the file's own honest guard, *"an unknown identifier is titled rather than dropped"*, made the promise **stronger**.
 
-**Repository health:** **4419 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **3053 frontend tests** across **167 files** · **403 Security Invariants** · mypy strict over **867 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **194s** · **disaster recovery re-run this cycle and passing** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4419 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **3062 frontend tests** across **169 files** · **403 Security Invariants** · mypy strict over **867 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **207s** · **disaster recovery re-run this cycle and passing** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
 > ⚠️ **Coverage headroom is 3 basis points and shrinking** — it was 4 last cycle. **Not a defect and not yet a finding**; recorded because a floor met by three hundredths of a percent is met by whichever test ran last.
 
@@ -43,19 +43,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | ⚡ **TASK-470 milestone 3** — sign every other device out at once · **TASK-1466** — *Search Signora* · **[B-219](docs/BUGS.md)** — a build no longer destroys the dev server · **six journey defects** | **M-I** — who has held a role at a company, and who left | ⚡ **The Decision Index, and the context architecture behind it** | **Cycle 209** |
-| **Execution phase** | **Building** | ⚠️ **No session** — 795 behind `main`, last moved 5 days ago | **Governing** · ⚠️ **bounded-session only, by its own report** | **Certified · Promoted · Closed out** |
-| **Branch** | **1 ahead, 9 behind** — [B-429](docs/BUGS.md) and [B-255](docs/BUGS.md), landed after the snapshot | **2 ahead, 795 behind** — one commit already on `main` by patch-id, one stale `TASK-468` claim | **8 ahead, 17 behind** — 7 arrived by cherry-pick, `3ec1f392` is next cycle's | Level with `main` |
+| **Last promoted** | ⚡ **[B-256](docs/BUGS.md)** — onboarding stops promising screens that do not exist · **[B-429](docs/BUGS.md)/[B-255](docs/BUGS.md)** — a fact the shell dropped and a refusal it never spoke | **M-I** — who has held a role at a company, and who left | ⚡ **Three register repairs, one of which corrected QE** | **Cycle 210** |
+| **Execution phase** | **Building** | ⚠️ **No session** — 804 behind `main`, last moved 5 days ago | **Governing** · **bounded-session** | **Certified · Promoted · Closed out** |
+| **Branch** | ✅ **Level with `main`** — everything it has built is promoted | **2 ahead, 804 behind** | **3 ahead, 7 behind** — arrived by cherry-pick, will drop out on rebase | **1 ahead** — the cycle 210 record |
 | **Validation status** | ✅ **Promoted this cycle** | — | ✅ **Promoted this cycle** | — |
 | **Blocked?** | **No** | ⚠️ **Unknown — no session to ask** | **No** | **No** |
 | **Waiting on QE?** | No | — | No | — |
-| **Next executable work** | ⚡ **Its queue has nothing startable** — it cleared eight defects this cycle *because* of that, which is Startup step 4 working | — | ⚡ **Its own 13 blocking coordination items** | ⚡ **Cycle 210** — Lane A's 1, Lane C's 1 |
+| **Next executable work** | ⛔ **Nothing startable, second cycle running** — ⚡ **it spent this one measuring what [`TASK-1469`](docs/BACKLOG.md)'s own row asks for, and the answer is that the row does not free** | — | ⚡ **Lane A's queue depth, recorded by Lane C as its next bounded objective** | ⚡ **Cycle 211** — nothing waiting |
 
-> ⛔ **Lane A cleared eight defects in one cycle with an empty queue, and that is a finding rather than a triumph.** **Six of them were journeys asserting App Shell surfaces that App Shell rows had moved** ([B-249](docs/BUGS.md)) — **promoted within two days, and none of those rows ran the journeys that name the shell.** ⚡ **The class is worth more than any row in it**, and Lane A said so themselves.
+> ⛔ **Lane A has had nothing startable for two consecutive cycles**, and both times it produced real value anyway — eight defects last cycle, [B-256](docs/BUGS.md) and a blocked-row measurement this one. ⚠️ **That is Startup step 4 working twice, and it is not a queue.** ⚡ **`state-check` reports 3 claimable rows against a floor of 10 and 17 prepared against a floor of 20** ([D-187](docs/DECISION_REGISTER.md)). **Lane C has recorded it as its next objective.**
 
-> ⚠️ **`Lane B` has not moved in five days and no session answers for it.** **Recorded as an observation, not a defect** — a lane's presence is not QE's to schedule (§20e, *nobody assigns; lanes pull*). **Its one unpromoted claim is `TASK-468`, which [`BACKLOG.md`](docs/BACKLOG.md) now records against Lane A** — ⛔ **two records of one claim, and the stale one is on an abandoned branch where nobody will read it.**
+> ⛔ **And [`TASK-1469`](docs/BACKLOG.md)'s parallelisable step named the wrong lane.** It says the `opportunity_engine` measurement is *"what Lane B can do NOW"*; ⚡ **`opportunity_engine` is Lane A's in [`modules.toml`](docs/coordination/modules.toml)**. **A task addressed to a lane that does not own the module is a task nobody starts** — the [C-213](docs/LANE_COORDINATION.md) class in a different field. **Found by Lane A doing it anyway.**
 
-> **Three lanes, seventeen commits, second attempt** — and the first attempt was a real failure rather than an abort. ⚡ **The distinction matters**: an abort says nothing about the commit, and [B-189](docs/BUGS.md) said something true about it.
+> **Three lanes, seven commits, first attempt, no aborts.**
 
 ---
 
@@ -103,6 +103,44 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-12, cycle 210
+
+**Promoted `b4c99250` from `ffa25f1c`.** Seven commits: **Lane A ×3 · Lane C ×3 · QE ×1.** First attempt, no aborts.
+
+### What a customer can see that they could not yesterday
+
+| | |
+|---|---|
+| ⛔ **The product stops promising screens it does not have** | Onboarding told whoever picked the **first** goal on the screen — *Forecast accurately* — that *"Signora will open on Forecast, the Executive Dashboard."* **Neither exists.** A goal now names only what a customer can reach, and says nothing when there is nothing ([B-256](docs/BUGS.md)) |
+| **Their own name in the account menu** | It was in the session all along, behind a comment that was reasoned and wrong ([B-429](docs/BUGS.md)) |
+| **`Save` on the profile answers** | It returned early with no workspace and left no spinner, no confirmation and no refusal ([B-255](docs/BUGS.md)) |
+
+### ⚡ The finding underneath B-256, and QE verified it rather than accepting it
+
+**`forecast` is not merely unbuilt — it is refused as domain law.** 📁 `buying_score_engine/domain/events.py`: *"No probability, no likelihood, no prediction… it does not forecast a purchase"*, and `opportunity_engine`'s router states it again independently. ⛔ **The product was promising a capability two modules decline in writing.**
+
+**The shape is the transferable part.** A `Record<string, string>` answered *what is this called* and could not express *named and unreachable* — so an absent screen was indistinguishable from a shipped one, **and the file's own honest guard — *"an unknown identifier is titled rather than dropped"* — made the promise stronger.**
+
+### Defects closed, and one opened against a fix's proof
+
+**[B-256](docs/BUGS.md)** · **[B-429](docs/BUGS.md)** · **[B-255](docs/BUGS.md)** · **[B-190](docs/BUGS.md)** *(QE's own — two abbreviations of one commit read as two commits)* · **[B-254](docs/BUGS.md)**'s workaround removed.
+
+⛔ **[B-191](docs/BUGS.md) opened.** **B-256's fix is right and its proof is not**: reverting the two component lines while leaving the helper intact leaves **169 files and 3062 tests green**, with the screen promising Forecast again. **Measured, not reasoned.** ⚡ **[B-252](docs/BUGS.md)'s class one file along** — a proof that cannot fail when the thing it protects is removed.
+
+### Migrations · ADRs · architecture
+
+**None.** Head unchanged at `0048`.
+
+### Remaining blockers — three, all the product owner's
+
+⛔ **[C-106](docs/LANE_COORDINATION.md)** — [B-428](docs/BUGS.md)-B's severity, unruled since cycle 205. ⛔ **[C-1424](docs/LANE_COORDINATION.md)** — [B-253](docs/BUGS.md), an owner shown their own destinations locked on every cold boot. ⚡ **[C-297](docs/LANE_COORDINATION.md)** — new: *honest is not the same as good.* A customer who picks *Forecast accurately* now sees their selection register and nothing else, **having just told Signora what they came for.** **What that step should say instead is a product decision.**
+
+### Recommended next work
+
+⚠️ **Lane A is level with `main` and has had nothing startable for two cycles.** **Queue depth is the binding constraint, not implementation capacity** — and Lane C has recorded it as its next objective.
 
 ---
 

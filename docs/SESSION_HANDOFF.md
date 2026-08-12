@@ -1,5 +1,31 @@
 # Session Handoff
 
+> ## Cycle 210 — promoted `b4c99250`, 2026-08-12
+>
+> **`main` = `b4c99250` = the certified commit.** Seven commits: Lane A ×3, Lane C ×3, QE ×1. **First attempt, no aborts.** `integration` = the certification record, which promotes next cycle.
+>
+> ### 🔴 The product was promising a capability two modules refuse in writing
+>
+> **[B-256](BUGS.md).** Onboarding told whoever picked the **first** goal on the screen — *Forecast accurately* — that ***"Signora will open on Forecast, the Executive Dashboard."*** ⛔ **Neither has a route on any branch**, and `forecast` is refused as **domain law**: 📁 `buying_score_engine/domain/events.py` states *"No probability, no likelihood, no prediction… it does not forecast a purchase"*, and `opportunity_engine`'s router says it again independently. ✅ **QE verified both halves rather than accepting them** — the domain text at source, and the five absent routes by looking for their pages.
+>
+> ⚡ **The transferable part is the shape.** The map was a `Record<string, string>` — it answered *what is this called* and **could not express *named and unreachable***, so an absent screen was indistinguishable from a shipped one. ⛔ **And the file's own honest guard — *"an unknown identifier is titled rather than dropped"* — made the promise stronger.**
+>
+> ### ⛔ A fix can be right and its proof still worthless
+>
+> **[B-191](BUGS.md), and it is the cycle's other lesson.** B-256's guard imports `reachable` and calls it directly; **nothing in `frontend/tests` renders `GoalsForm`.** ⚡ **Measured, not reasoned**: QE reverted the two component lines, left the helper intact, ran the suite — **169 files, 3062 tests, all green**, with the screen promising Forecast again. Tree restored.
+>
+> **[B-252](BUGS.md)'s class one file along, and the same lane named it this week**: *a proof that cannot fail when the thing it protects is removed*. ✅ **Filed 🟡 against `product_surface` — nothing is wrong today; what is missing is the proof it stays right.**
+>
+> ### ⚠️ Queue depth is now the binding constraint, and it is not implementation capacity
+>
+> **Lane A is level with `main` and has had nothing startable for two consecutive cycles.** Both times it produced real value anyway — eight defects, then B-256 and a measurement — **which is Startup step 4 working twice and is not a queue.** `state-check`: **3 claimable rows against a floor of 10, 17 prepared against 20.** **Lane C has recorded it as its next bounded objective.**
+>
+> ⛔ **And [`TASK-1469`](BACKLOG.md)'s parallelisable step names the wrong lane** — it says the `opportunity_engine` measurement is *"what Lane B can do NOW"*, and `opportunity_engine` is **Lane A's**. **A task addressed to a lane that does not own the module is a task nobody starts.**
+>
+> ### Three decisions, all the product owner's
+>
+> ⛔ **[C-106](LANE_COORDINATION.md)** — [B-428](BUGS.md)-B's severity, unruled since cycle 205; every promotion since carries it as a standing override with the severity untouched. ⛔ **[C-1424](LANE_COORDINATION.md)** — [B-253](BUGS.md). ⚡ **[C-297](LANE_COORDINATION.md)** — new, and the sharpest: **honest is not the same as good.** A customer who picks *Forecast accurately* now sees their selection register and **nothing else, having just told Signora what they came for.**
+
 > ## Cycle 209 — promoted `9c7e052e`, 2026-08-12
 >
 > **`main` = `9c7e052e` = the certified commit.** Seventeen commits: Lane A ×8, Lane C ×7, QE ×2. **`main` has moved five times today.**
@@ -62,7 +88,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-12 · **`main` at `9c7e052e`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-12 · **`main` at `b4c99250`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
