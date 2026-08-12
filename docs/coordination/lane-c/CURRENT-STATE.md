@@ -70,6 +70,25 @@
 - **C-289 and C-292 name owners that route to nobody.** Routing, not a decision.
 - **3 workflows genuinely thin** — Settings, AI Research, Help Center. **Mode C, one per session.**
 
+## 🔴 Next bounded objective — why Lane A's queue ran dry
+
+**Reported by QE at Repository Ready, cycle 209.** ⛔ **Not investigated — it is not maintenance.**
+
+| | |
+|---|---|
+| **Claimable** | **3** against a floor of 10 |
+| **Prepared** | **17** against a floor of 20 ([D-187](../../DECISION_REGISTER.md)) |
+| **Live cost** | ⚠️ **Lane A spent the whole cycle on eight assigned defects because its queue had nothing startable.** Correct under Startup step 4, and it cleared real red — **but it is not a queue** |
+
+📁 **[§20e](../../../CLAUDE.md) makes a lane running dry a finding, and names the causes to check: synchronization delay · governance dependency · ownership ambiguity · an architectural decision · an external dependency · a missing product decision · sequencing · repository health.** ⛔ ***"Product Office had other work"* is never the reason a lane was idle.**
+
+⚡ **Known input, not the answer:** 13 of the 25 blocking coordination items are this office's own ([DECISION-INDEX.md](DECISION-INDEX.md)), and several gate Lane A rows directly.
+
+## Also open, recorded not fixed
+
+- **C-289 · C-292** — owners that route to nobody. **Reported twice by QE.**
+- **B-250** — the Playground seeder ignores `SIGNORA_DATABASE_URL`. ⚠️ **Second instance: `backend/tests/conftest.py:52` defaults the test database to the shared one; two pytest runs raced it and produced 239 failures that looked like real defects.** **Assigned to Lane C, `OPEN`, a bounded slice of its own.**
+
 ## Bounded objectives
 
 **Current — complete:** establish this operating-context architecture.
