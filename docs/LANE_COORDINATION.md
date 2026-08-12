@@ -513,6 +513,103 @@ databaseUrl: required(
 
 ---
 
+## C-299 · Which organization a person lands in, when they have more than one and have chosen none
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`OPEN`** — Lane A, 2026-08-12 |
+| **Raised by** | **Lane A**, routing [B-245](BUGS.md) — ⛔ **filed 2026-08-11 and carried to nobody until now.** ⚠️ **See the note at the foot of [C-298](#c-298--which-environments-may-write-a-credential-to-a-log-and-the-auth-tier-and-the-registry-do-not-agree-what-an-environment-is-called): this is the second unrouted decision from this lane in four days, and the pattern is the finding** |
+| **Owner** | **Product owner** |
+| **Blocks** | ⛔ **No task row.** ⚡ **It costs the journey suite continuously** — 📁 [B-245](BUGS.md) records six organizations accumulating in one session and the account-backed journeys failing two projects later |
+
+### ① The mechanism, and all three parts are measured
+
+📁 **The list is newest-first** ([`repositories.py`](../backend/modules/workspace_tenancy/infrastructure/repositories.py):81) · 📁 **the default is `workspaces[0]`** ([`workspace-provider.tsx`](../frontend/lib/state/workspace-provider.tsx)) · ⛔ **nothing deletes an organization** — `useDeleteWorkspace` does not exist and no route offers one.
+
+⇒ **Every organization anybody creates becomes the default for every browser with no stored choice, permanently.**
+
+### ② ⚠️ It is not only a test hazard, and that is why it is here
+
+🔴 **A salesperson who creates a second organization to try something out is put into it on every new device**, ahead of the one holding their book of business. ⛔ **They did not choose it; it was merely the most recent thing they made.**
+
+📁 **The design does not answer this.** §19 ③ says switching *"keeps the equivalent route when it exists, and lands on Home when it does not"* — ⚡ **which is about SWITCHING and not about DEFAULTING.**
+
+### ③ The four candidates, and what each costs
+
+| | | |
+|---|---|---|
+| **A** | **Newest** *(today)* | ⛔ **The one behaviour nobody chose** — it is an artefact of a keyset order |
+| **B** ▶ | **Most recently used**, falling back to oldest | ✅ **Matches what a person means by *my* organization** · ⛔ **needs a per-person last-used record** — 📁 **`last_used_workspace` already exists in `workspace_tenancy`**, so this is cheaper than it sounds |
+| **C** | **The one with data** | ⛔ **Signora choosing on the customer's behalf from a heuristic**, and wrong the day somebody starts a real second organization |
+| **D** | **Explicit at creation** — *"make this my default?"* | ✅ **Honest** · ⛔ **a question at the worst moment**, and it leaves the no-answer case unresolved anyway |
+
+### ④ ⚡ Recommendation: **B**, and the reason is that the mechanism already exists
+
+📁 **[`last_used_workspace`](../backend/modules/workspace_tenancy/) is built and this lane implemented it.** ⛔ **Nothing consumes it for the DEFAULT**, only for the stored choice — ⚡ **so B is wiring an existing fact to a decision that is currently made by an ordering.**
+
+⚠️ **It does not fix the test hazard on its own.** **A fresh browser context has no last-used record either**, so the fallback still decides — ✅ **and *oldest* is the safe fallback rather than *newest*, because the oldest organization is the one somebody has had longest.**
+
+### ⑤ ⛔ What this lane will not do
+
+**Pick one and ship it.** 📁 [§20e](../CLAUDE.md): *"I could just add it" is how a product decision becomes a line in a feature slice.* ⚡ **The repair is small in every option, which is exactly why it needs saying out loud rather than deciding in passing.**
+
+---
+
+## C-298 · Which environments may write a credential to a log, and the auth tier and the registry do not agree what an environment is called
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`OPEN`** — Lane A, 2026-08-12 |
+| **Raised by** | **Lane A**, routing [B-223](BUGS.md) — ⛔ **filed 2026-08-09, implementing [TASK-473](BACKLOG.md), and carried to nobody for three days** |
+| **Owner** | **Product owner** — ⚡ **a security decision, not a list a lane extends** |
+| **Blocks** | ⛔ **Nothing today.** ⚠️ **It is LATENT**: nothing sets `SIGNORA_ENVIRONMENT` for the frontend, so every clone works — **and it fires the first time anybody configures the variable to the name their own registry gives them** |
+
+### ① The disagreement, and the intersection is empty
+
+```
+infra/environments.py  → review · lane-qe · lane-a · lane-b · lane-c · lane-d · lane-e · demo
+lib/auth/config.ts     → local · test · development
+```
+
+⛔ **Not one of the registry's eight names appears in the auth tier's three, and not one of the three is a registry row.**
+
+⚠️ **So a lane that exports `SIGNORA_ENVIRONMENT=lane-a` — the name the registry gives it, and what `--exports` emits — is classified deployed**, `resolveEmailTransport()` refuses the console and mailbox transports, **and the auth tier will not start, with a diagnostic calling a developer's laptop a deployed environment.**
+
+### ② 🔴 Why the obvious fix is the wrong one
+
+⚡ **Widening the allowlist to the registry's development names is a weakened guard, however it is dressed.**
+
+📁 **The guard exists because the console transport writes verification and password-reset links to stdout** — *"a credential sitting in a log file"* — **and the mailbox keeps a history of them.** ⛔ **Every name added is an environment in which a credential may be written to a log**, and 🔴 **`review` and `demo` both serve people who are not the person who started the process.**
+
+> **The question is not *which names are missing*. It is *which environments may write a credential to stdout*.** 📁 **[TASK-473](BACKLOG.md)'s own Change Budget says *"no weakened guard"* by name.**
+
+### ③ Two repairs, and the second is the safe direction
+
+| | | |
+|---|---|---|
+| **①** | **Make the registry authoritative for both** — the auth tier asks it rather than keeping a parallel list | ✅ 📁 [§2](../CLAUDE.md), *truth has exactly one authoritative representation* · ⛔ **crosses a tier boundary**: a Node process cannot import a Python registry, so it needs a published form — **a design decision** |
+| **②** ▶ | **Invert the list** — name the environments where a credential in a log is ACCEPTABLE | ✅ **A NEW environment is then deployed-by-default rather than development-by-default**, which is the direction that fails safe · ⛔ **a behaviour change to a security guard**, which is 🔴 |
+
+### ④ ✅ What is already true, and it is why this is not urgent
+
+📁 **[TASK-473](BACKLOG.md) recorded the wrong behaviour as a PASSING ASSERTION** rather than as a comment:
+
+```ts
+expect(withEnvironment('lane-a', authMode)).toBe('production');
+```
+
+⚡ **That test is written to FAIL on the day somebody repairs this**, which is the point: **a comment describing a defect is indistinguishable from a comment describing a design**, and this one cannot be mistaken for either.
+
+### ⑤ ⚠️ The finding that is worth more than either row
+
+🔴 **This is the second defect this lane has filed, declined to fix for a correct reason, and then failed to route** — 📁 **the first was [B-219](BUGS.md)**, whose own row says it: *"This lane filed the bug on 2026-08-09 and did not file the coordination item, so nothing carried it to anyone who could rule — a defect whose fix a lane may not make, with no `C-` row, can sit indefinitely."*
+
+⛔ **B-223 was filed the same day, for the same reason, and sat for three.** ⚠️ **[B-245](BUGS.md) is a third** — routed as [C-299](#c-299--which-organization-a-person-lands-in-when-they-have-more-than-one-and-have-chosen-none) alongside this.
+
+> ⚡ **Declining to fix something is only half the duty.** **A lane that stops correctly and says why has still dropped it, unless it also hands it to somebody who can act** — and **`BUGS.md` is read by the lane that owns the module, which is precisely the lane that already decided it may not act.**
+
+---
+
 ## C-297 · A customer tells Signora what they came for, and for three of six answers the product has nothing to say
 
 | | |

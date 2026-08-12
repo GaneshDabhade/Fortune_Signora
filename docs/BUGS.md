@@ -1504,7 +1504,7 @@ const signedOut = page.waitForURL(/\/signin/, { timeout: 20_000 })
 | **Module** | **`workspace_tenancy`** *(the newest-first default)* · **`product_surface`** *(the resolution in [`workspace-provider.tsx`](../frontend/lib/state/workspace-provider.tsx))*. ⛔ **Not the journey that hit it** |
 | **Current assignee** | **The current assignee of `workspace_tenancy`** — joined from [`modules.toml`](coordination/modules.toml), ⛔ **not named here** ([C-213](#c-213)) |
 | **Severity** | 🟠 — ⛔ **wrong behaviour a customer would hit, and a suite-wide test hazard.** ⚡ **It is [B-229](#b-229) one generation on, and B-229's repair does not cover it** |
-| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed: the repair is a product decision about which organization a person lands in**, and that is not a lane's to take inside a feature slice ([§20e](../CLAUDE.md)) |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **not fixed: the repair is a product decision about which organization a person lands in**, and that is not a lane's to take inside a feature slice ([§20e](../CLAUDE.md)) ⚠️ **ROUTED 2026-08-12 as [C-299](LANE_COORDINATION.md)** — ⛔ **filed 2026-08-11 and carried to nobody until now.** ⚡ **Third instance of the same class; see [C-298](LANE_COORDINATION.md) ⑤.** |
 | **Found** | **2026-08-11, by Lane A**, building [TASK-1463](BACKLOG.md) §18 — **by doing it, and then by measuring what it cost** |
 | **Commit found** | **`5cdae81a`** |
 
@@ -2218,7 +2218,7 @@ docker exec signora-v2-postgres-1 psql -U signora -d signora_lane_a \
 | **Module** | **`product_surface`** — [`frontend/lib/auth/config.ts`](../frontend/lib/auth/config.ts), `isDeployed()` · measured against [`infra/environments.py`](../infra/environments.py), which is `platform_foundation`'s |
 | **Current assignee** | **Joined from [`modules.toml`](coordination/modules.toml)** — ⛔ **not written here** ([C-213](LANE_COORDINATION.md)) |
 | **Severity** | 🟡 — ⚡ **latent, not live.** ⛔ **Nothing sets `SIGNORA_ENVIRONMENT` for the frontend today**, so `environmentName()` returns `local` and every clone works. ⚠️ **It fires the first time anybody configures the variable to the name their own registry gives them** |
-| **Status** | **`OPEN`** — **found by Lane A, 2026-08-09, implementing [TASK-473](BACKLOG.md).** ⛔ **Deliberately not fixed — see below; the repair is a security decision, not a typo** |
+| **Status** | **`OPEN`** — **found by Lane A, 2026-08-09, implementing [TASK-473](BACKLOG.md).** ⛔ **Deliberately not fixed — see below; the repair is a security decision, not a typo** ⚠️ **ROUTED 2026-08-12 as [C-298](LANE_COORDINATION.md)** — ⛔ **filed 2026-08-09 and carried to nobody for three days.** 🔴 **Second instance of the class [B-219](#b-219) records about itself**: *a defect whose fix a lane may not make, with no `C-` row, can sit indefinitely.* |
 | **Found** | 2026-08-09 by Lane A, ⚡ **by having to compute the authentication mode and discovering the two sources disagree about what an environment is called** |
 
 **Steps to reproduce.** On `origin/integration`:
