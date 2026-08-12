@@ -1,5 +1,21 @@
 # Session Handoff
 
+> ## Cycle 216 — promoted `c3964e6c`, 2026-08-12
+>
+> **`main` = `c3964e6c` = the certified commit.** Fourteen commits, all registers and coordination. **First attempt, no aborts.** ⛔ **No customer-visible change.**
+>
+> ### ⚡ A synchronization cycle, and the second time the rule has been invoked
+>
+> **[`TASK-1476`](BACKLOG.md) and [`TASK-1477`](BACKLOG.md) were `READY` on `lane-c-sync` and absent from `integration`** while Lane A was idle and correctly refusing to claim from a Product Office branch. ✅ **Verified by SET, not count** — a count of Status cells containing `READY` reads every row that merely narrates having been READY. **The candidate was docs-only, so accumulation would have held it; §20e says which rule wins.**
+>
+> ### ⚠️ What is deliberately NOT in this promotion
+>
+> **`TASK-1478`, `D-229` and `ADR-0409` arrived on `lane-c-sync` after the snapshot was pinned.** ⛔ **They belong to the next cycle by construction** — re-pinning would have meant re-measuring against a different tree. **Nothing is lost.**
+>
+> ### 🔴 Open against QE
+>
+> **[B-194](BUGS.md)** — Closeout ran `state-check` piped into a grep for one expected line, and **a duplicate `C-300` was promoted while the tool was reporting it.** ✅ **Correction held since: the findings are read in full, and greps come afterwards to confirm.**
+
 > ## Cycle 215 — promoted `0f9c7f90`, 2026-08-12
 >
 > **`main` = `0f9c7f90` = the certified commit.** Three commits, all Lane A. **First attempt, no aborts.**
@@ -210,7 +226,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-12 · **`main` at `0f9c7f90`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-12 · **`main` at `c3964e6c`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
