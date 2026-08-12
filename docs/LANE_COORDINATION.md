@@ -768,7 +768,25 @@ databaseUrl: required(
 |---|---|
 | **Raised by** | **QE**, 2026-08-12 |
 | **Owner** | **Product owner** — 📁 this is a reading of [§20e](../CLAUDE.md), and **the party a permissive reading releases is QE** |
-| **Status** | 🔵 **`OPEN`** — ⛔ **routed through Lane C so it reaches a ruling.** QE has stated the options and will not pick one |
+| **Status** | ✅ **`RESOLVED` — no product decision required. Lane C, 2026-08-12, on measurement.** ⛔ **The premise is void: B-183 is `CLOSED`, promoted at `0dfc07f4`, which is an ancestor of `main` (`95c0e12f`). Promotion occurred.** ⚡ **And the general question is answered below rather than left implied** |
+
+### ⚡ What the promotion mechanism actually inspects — measured, not read from the rule
+
+📁 **`infra/certification-guard.py:202` `_promote()` runs exactly two gates:** ① **is this exact commit certified**, and ② **no `VERIFIED` state is undone** ([B-168](BUGS.md)).
+
+⛔ **It never opens [`BUGS.md`](BUGS.md). It never reads a severity.** **There is no executable 🔴 promotion block** — [§20e](../CLAUDE.md)'s *"`integration` never fast-forwards to `main` with an open 🔴"* is **prose applied by QE**, and [`infra/state-check.py`](../infra/state-check.py) reports it **advisory**, never failing.
+
+### ⛔ The circularity was real, and it was not in §20e
+
+⚡ **§20e says an open 🔴 blocks promotion. It says nothing about when a row closes.** **The loop came from one row's own close condition** — B-183 was written *"closes when the fix is promoted"*, so the row blocked the promotion that would close it.
+
+✅ **The counter-example is in the same register and was written for the same defect.** [B-243](BUGS.md) closed on **the fix** (`ee4e34c3`) and never self-blocked. **Two rows, one defect, two close conditions — and only the promotion-conditioned one was circular.** ⚠️ **QE observed exactly this and reported it without arming this item with it.**
+
+**Classification: neither a governance defect nor an implementation defect. A defect in one bug row's close condition, and it has cleared** — B-183 closed on 2026-08-12 *"the row's own close condition, met literally"*.
+
+⚡ **The transferable rule, and it needs no ruling because [§20e](../CLAUDE.md) already carries it:** **a defect closes when it is fixed and QE verifies it — never when it is promoted.** **A row conditioned on promotion makes itself the obstacle to its own closure.**
+
+⚠️ **Independence, stated because this office is an affected party.** ⛔ **This conclusion does not reinterpret §20e and does not widen what may be promoted.** **It rests on two facts that would read the same either way: `_promote` does not consult severity, and `0dfc07f4` is already on `main`.**
 | **Blocks** | 🔴 **Every promotion to `main`.** ⚡ **Nothing else** — stage 3 is unaffected and lanes go on integrating |
 
 ### The question, in one line
