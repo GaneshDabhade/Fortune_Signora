@@ -1692,6 +1692,18 @@ role={resolved ? role : null}
 
 ⚡ **This lane's recommendation, offered as input rather than authority** ([§20e](../CLAUDE.md)): **optimistic.** 📁 **§20c already says the client check is a courtesy and never the enforcement**, so being briefly generous costs a refusal the server was always going to give — **while being briefly restrictive tells an owner they are not an owner.**
 
+#### ⛔ The *"shape"* half was examined for shipping ahead of the ruling, and it cannot ship either — Lane A, 2026-08-12
+
+⚡ **This row says the repair's SHAPE is the same under both options, so this lane asked whether the threading could land now and leave only the policy to the ruling.** ⛔ **It cannot, and the reason is a rule this lane has been enforcing on itself.**
+
+📁 **`roleKnown` would have to travel `authenticated-shell` → `AppShell` → `Navigation` → `RailLink`, and NOTHING WOULD READ IT** — ⛔ `restricted` must keep computing exactly as it does today, or the behaviour has changed and the decision has been made inside a slice. ⚡ **A parameter threaded through four components that no branch consumes is the unreachable-primitive class**, 📁 **and this lane has now found it six times** — [TASK-1405](BACKLOG.md)'s resolver · [TASK-1460](BACKLOG.md)'s column primitives · [TASK-1474](BACKLOG.md)'s `statusLabelVisible` · `Drawer` · the Better Auth client plugins · **and [TASK-1416](BACKLOG.md), where this lane refused to build a contract into `components/ui` for exactly this reason.**
+
+✅ **So the row is blocked WHOLE on [C-1424](LANE_COORDINATION.md), not blocked in part**, and **the repair really is one change once it is ruled** rather than one change plus a landing it could have had early.
+
+#### 🔴 This is the surviving symptom of [B-262](#b-262), and the two rows are one thing
+
+⚠️ **[B-262](#b-262) reported *"Settings — restricted. Requires an owner."* against a person the `membership` table calls `owner`, measured twice, and suspected the auth tier.** ✅ **It is this row** — 📁 the role has not ARRIVED, and `null` is read as *has no role*. ⛔ **Nothing is wrong with the membership, the token or the API**, and 🔴 **B-262's account-data half is separately withdrawn as this lane's own test defect.**
+
 #### ✅ Whatever is chosen, the shape of the fix is the same
 
 **Thread the distinction rather than collapsing it**: the shell already knows `resolved`, so pass *role* and *whether the role is known* separately — **exactly as [TASK-1471](BACKLOG.md) now does for the workspace** — and let the rail decide once, in one place, rather than inferring it from a `null` that means two things.
