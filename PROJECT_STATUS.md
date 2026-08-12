@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `02775de5`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `77daace8`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,26 +12,26 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `02775de5`, 2026-08-12.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `77daace8`, 2026-08-12.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`02775de5`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 212** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
-| **Release candidate** | **None. `integration` is one commit ahead of `main`** — the cycle 212 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
-| **Certification** | ✅ [`02775de5b7fe`](certification/reports/02775de5b7fe.md) · migration head **`0048`** · profile **`platform`** · ⚠️ **second attempt — the first was KILLED and wrote no record.** 📁 **An abort, distinguished from a verdict by the manifest still naming `96f2343475fa` afterwards** |
-| **Cycle 212 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages, 203s** · scenario **190 assertions** |
+| **`main`** | **`77daace8`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 213** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
+| **Release candidate** | 🔴 **`lane-c-sync` carries [`TASK-1475`](docs/BACKLOG.md), and it is the highest repository priority** — see below. `integration` is one commit ahead of `main`, the cycle 213 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
+| **Certification** | ✅ [`77daace860b6`](certification/reports/77daace860b6.md) · migration head **`0048`** · profile **`platform`** · ⚠️ **second attempt, and QE stopped the first itself** — 39 seconds in, rather than promote an instrument whose number nobody could act on |
+| **Cycle 213 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages** · scenario **190 assertions** |
 | **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3065 across 170 files** · **Disaster Recovery passed** against the restarted production stack. **A lane's figure is a claim; QE publishes a measurement** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
 | ⛔ **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1631 commits — 187 certified targets, 1444 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Blocking Quality Defects** | ✅ **None** |
-| **Customer value this cycle** | ⛔ **None, and that is correct** — ⚡ **the cycle is [B-257](docs/BUGS.md) and two decisions routed to the product owner.** **A false comment removed and three items put in front of somebody who can rule on them is the work**, and neither shows on a screen |
-| ⚡ **What QE verified** | ✅ **[B-191](docs/BUGS.md) is now `VERIFIED` on BOTH instances, in both directions** — the journey passes with the fix and fails with `name={null}`, *Expected substring: "Dana Reyes"*. ✅ **[B-257](docs/BUGS.md)'s premise checked at source before accepting a 🟠**: `config.ts:140/151/157` do default to `3000`/`3000`/`8000`, and [`RUNNING.md:311`](docs/RUNNING.md) does reserve those *"to no lane"* — **so an unset variable aims a lane's auth tier at the product owner's demo stack** |
+| **Customer value this cycle** | ⛔ **None** — ⚡ **the cycle is a design doc catching up, a stale board state corrected, and QE's own instrument gaining a measurement it did not have.** **Nothing here shows on a screen** |
+| ⛔ **What QE got wrong, and who caught it** | **[B-193](docs/BUGS.md) concluded that no structured task→commit link existed and that inventing one would change how work is recorded.** ⚡ **Lane A corrected it: §20e mandates a `Slice-Handoff` whose `Milestone` field names the `TASK-nnn`, and 325 commits on `main` carry one.** ⛔ **An error of fact, corrected in the row rather than adjusted** — and the real reason the check stays unbuilt is now measured instead: **48 of 121 promoted tasks have no handoff**, including the one that produced the finding |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> 🔴 **Three setup failures, one appearance, and the root is one decision nobody has taken.** ⛔ **A missing Better Auth schema, an unset `SIGNORA_APP_URL`, and missing demo accounts all present as *a sign-in that submits and never navigates*** — QE hit all three in one session. ⚡ **The comment defending the defaults claimed *"a URL pointing at the wrong port fails loudly and immediately"*, and QE's own measurement disproves it**: `Invalid origin` → `403`, silent. ⚠️ **The honest repair needs the auth tier to know whether it is a first clone or a lane, and `environmentName()` returns `local` for every lane** — 📁 **which is [C-298](docs/LANE_COORDINATION.md), and why Lane A corrected the comment and deliberately left the values.**
+> 🔴 **A lane has been idle for four cycles on work that was already written, and QE could not see it.** 📁 **[`TASK-1475`](docs/BACKLOG.md) — the Companies package, the first row under the new package model — is `READY` on `lane-c-sync` and absent from `integration`.** ✅ **Measured both ways.** ⛔ **Lane A refuses to claim it and is right to**: executable work comes from `integration` and nowhere else. ⚡ **§20e names this exact condition — *"synchronizing that work becomes the highest repository priority, above further preparation, above every planning activity"*** — **and the rule was applied rather than an exception made.** ⚠️ **It was invisible to QE because QE only ever reads `integration`; both lanes reported it rather than waiting to be asked.**
 
-> ⚠️ **`ruff check modules/` reports 85 errors on the promoted commit, and `ruff` is not a certification gate** ([B-211](docs/BUGS.md)). **Reported because a green certification must not read as *the backend is lint-clean*.** ✅ **Re-measured rather than carried: the row's figure was 238.**
+> ⚠️ **QE's own claim about empty `public/` contracts was wrong and is corrected before anything was scheduled on it.** ⛔ **`people` and `integrations` publish real contracts** — 3 and 17 names — **and QE had counted sibling files rather than reading `__init__.py`, which is where `__all__` lives.** ✅ **`timeline` remains the single instance**, and 📁 **`ai_research_engine` is the precedent for its repair**: an equally empty contract whose `__init__.py` is a docstring saying *"deliberately empty until something outside this module needs it."*
 
 **Repository health:** **4419 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **3065 frontend tests** across **170 files** · **403 Security Invariants** · mypy strict over **867 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **207s** · **disaster recovery re-run this cycle and passing** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
@@ -45,19 +45,21 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | ⚡ **[B-257](docs/BUGS.md)** — three auth defaults aim at human review, and the comment defending them was false · **[C-298](docs/LANE_COORDINATION.md)/[C-299](docs/LANE_COORDINATION.md)** routed | **M-I** — who has held a role at a company, and who left | — | **Cycle 212** |
-| **Execution phase** | ⛔ **Startup step 4 EXHAUSTED** — every defect in its modules is terminal | ⚠️ **No session** — last moved 5 days ago | **Governing** · **bounded-session** | **Certified · Promoted · Closed out** |
-| **Branch** | ✅ **Level with `main`** | **behind, 2 ahead** — one already on `main` by patch-id, one stale claim | **behind, 3 ahead** — cherry-picked, drops out on rebase | **1 ahead** — the cycle 212 record |
-| **Validation status** | ✅ **Promoted this cycle** | — | — | — |
-| **Blocked?** | 🔴 **YES — on rulings, not on work** | ⚠️ **Unknown** | **No** | **No** |
-| **Waiting on QE?** | No | — | No | — |
-| **Next executable work** | ⛔ **None.** 📁 Its queue is `["TASK-466", "TASK-1416", "TASK-202"]` — **two blocked ([C-1427](docs/LANE_COORDINATION.md)), one Lane B's** | — | Its own coordination items | ⚡ **Cycle 213** — nothing waiting |
+| **Last promoted** | ⚡ **The design doc catches up with a cycle and a half** · **[B-258](docs/BUGS.md)** filed against itself · `TASK-1428` corrected | **M-I** | — | **Cycle 213** |
+| **Execution phase** | 🔴 **FOURTH consecutive idle cycle** — Startup step 4 exhausted | ⚠️ **No session** | **Governing** · **bounded-session** | **Certified · Promoted · Closed out** |
+| **Branch** | ✅ **Level with `main`** | **stale pointer** — content already on `integration` under another SHA, ✅ **measured, nothing stranded** | 🔴 **9 ahead, rebased and waiting** — **carries [`TASK-1475`](docs/BACKLOG.md)** | **1 ahead** — the cycle 213 record |
+| **Validation status** | ✅ **Promoted this cycle** | — | ⏳ **Next cycle, on the synchronization rule** | — |
+| **Blocked?** | 🔴 **YES — on a branch it may not claim from** | ⚠️ **Unknown** | **No** | **No** |
+| **Waiting on QE?** | 🔴 **Yes — this is QE's to move** | — | **Yes** | — |
+| **Next executable work** | ⚡ **`TASK-1475`, the moment it reaches `integration`** | — | Its own coordination items | ⚡ **Cycle 214 — `lane-c-sync`, immediately** |
 
-> 🔴 **Lane A has now had nothing startable for THREE cycles, and the defect supply that carried the first two is spent.** ⚡ **Its own words: *"Startup step 4 is exhausted rather than thin… I would rather say that plainly than keep widening what counts as work."*** ⛔ **Every open defect in its modules is terminal** — fixed and with QE, routed and awaiting a ruling, blocked on an unruled governance amendment, or parked by ruling.
+> 🔴 **This is the most expensive state the repository can be in, and §20e says so**: a lane idle on work that has already been written costs twice — once in the idle lane, and once in the preparation ageing while it waits. ⚡ **Four cycles.**
 
-> ⚡ **And it named the unblock order, smallest first: [C-298](docs/LANE_COORDINATION.md) → [C-299](docs/LANE_COORDINATION.md) → [C-1424](docs/LANE_COORDINATION.md).** **C-298 buys [B-223](docs/BUGS.md) and [B-257](docs/BUGS.md) at once and is the root of two of the three setup steps QE hit.** **C-299's recommendation wires `last_used_workspace`, which already exists.** ⛔ **None is large. All three are decisions rather than implementations.**
+> ✅ **Both lanes behaved correctly throughout and neither waited to be asked.** **Lane A verified `TASK-1475`'s absence and refused to claim from a Product Office branch. Lane C reported the condition against its own queue.** ⛔ **QE could not see it, because QE reads only `integration`** — which is the blind spot the rule exists to cover.
 
-> **Two lanes, four commits, second attempt — the first was killed and wrote no record.**
+> ⚠️ **And Lane B was nearly a false alarm.** Its branch holds 505 lines of executable work in `backend/modules/people/`; **Lane A checked before reporting it stranded and found the content already on `integration` under a different SHA.** ✅ **A negative result reported deliberately, because *"there is no Lane B"* invites exactly that alarm.**
+
+> **Two lanes, five commits, second attempt — and QE stopped the first itself.**
 
 ---
 
@@ -105,6 +107,46 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-12, cycle 213
+
+**Promoted `77daace8` from `7ffba690`.** Five commits: **Lane A ×3 · QE ×2.** ⚠️ **Second attempt, and QE stopped the first itself.**
+
+### ⛔ No customer-visible change
+
+**A design doc catching up, a stale board state corrected, and QE's own instrument gaining a measurement it did not have.**
+
+### 🔴 The finding is not in the code — a lane has been idle four cycles on work already written
+
+📁 **[`TASK-1475`](docs/BACKLOG.md) is `READY` on `lane-c-sync` and absent from `integration`.** ✅ **Measured both ways.** ⛔ **Lane A refuses to claim from a Product Office branch and is right to.** ⚡ **§20e names this exact condition and calls synchronizing it the highest repository priority** — **applied as the rule, not as an exception.** **Cycle 214 takes it.**
+
+⚠️ **It was invisible to QE because QE reads only `integration`.** ✅ **Both lanes reported it rather than waiting to be asked.**
+
+### ⛔ What QE got wrong this cycle, twice
+
+**[B-193](docs/BUGS.md) concluded no structured task→commit link existed.** ⚡ **Lane A corrected it: §20e mandates a `Slice-Handoff` whose `Milestone` names the `TASK-nnn`, and 325 commits carry one.** **An error of fact, corrected in the row rather than adjusted** — and **the real reason the check stays unbuilt is now measured: 48 of 121 promoted tasks have no handoff**, including the one that produced the finding. ✅ **[B-258](docs/BUGS.md) is Lane A's, filed against itself before QE noticed.**
+
+**And QE reported `people` and `integrations` as empty `public/` contracts.** ⛔ **They publish 3 and 17 names.** ⚠️ **QE counted sibling files instead of reading `__init__.py`, which is where `__all__` lives.** ✅ **`timeline` is the single instance, and `ai_research_engine` is the precedent for its repair** — an equally empty contract whose file is a docstring explaining why.
+
+### ✅ What QE built, and what it stopped
+
+**A handoff-coverage line in [`state-check.py`](infra/state-check.py)**, fire-tested four ways: it fires on the real state, is silent when covered, **reports everything if the scan itself breaks rather than going quiet**, and does not count an unpromoted task. ⚡ **It reports a BASELINE** — a promoted commit message is immutable, so the count can only be held, and **a rise is a slice that shipped without its link.**
+
+⛔ **QE stopped its own certification 39 seconds in** rather than promote an instrument whose number nobody could act on.
+
+### Migrations · ADRs · architecture
+
+**None.** Head unchanged at `0048`.
+
+### Remaining blockers — five, all the product owner's
+
+⛔ **[C-106](docs/LANE_COORDINATION.md)** · **[C-297](docs/LANE_COORDINATION.md)** · **[C-298](docs/LANE_COORDINATION.md)** · **[C-299](docs/LANE_COORDINATION.md)** · **[C-1424](docs/LANE_COORDINATION.md)**.
+
+### Recommended next work
+
+🔴 **Cycle 214, immediately: `lane-c-sync`, carrying `TASK-1475`.** ⚡ **Nothing else is queued ahead of it.**
 
 ---
 

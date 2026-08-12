@@ -1,5 +1,31 @@
 # Session Handoff
 
+> ## Cycle 213 — promoted `77daace8`, 2026-08-12
+>
+> **`main` = `77daace8` = the certified commit.** Five commits, Lane A ×3 and QE ×2. ⚠️ **Second attempt, and QE stopped the first itself** — 39 seconds in, rather than promote an instrument whose number nobody could act on.
+>
+> ### 🔴 Read this first: a lane is idle on work that already exists
+>
+> 📁 **[`TASK-1475`](BACKLOG.md) is `READY` on `lane-c-sync` and absent from `integration`** — measured both ways. ⛔ **Lane A is on its fourth consecutive idle cycle and refuses to claim from a Product Office branch, correctly.**
+>
+> ⚡ **§20e names this condition and calls synchronizing it the highest repository priority, above further preparation and every planning activity.** ✅ **Applied as the rule rather than as an exception**, and **cycle 214 takes `lane-c-sync` first.**
+>
+> ⚠️ **It was invisible to QE, because QE reads only `integration`.** ✅ **Both lanes reported it without being asked** — which is the only reason it surfaced at all.
+>
+> ### ⛔ QE was wrong twice this cycle, and both are corrected in place
+>
+> **[B-193](BUGS.md)** concluded no structured task→commit link existed and that inventing one would change how work is recorded. ⚡ **Lane A corrected it: §20e mandates a `Slice-Handoff` whose `Milestone` field names the `TASK-nnn`, and 325 commits on `main` carry one.** **An error of fact.** ✅ **The real reason the held-row check stays unbuilt is now measured: 48 of 121 promoted tasks have no handoff, including the one that produced the finding** — a check keyed on it would be silent exactly where it is needed.
+>
+> **And QE reported `people` and `integrations` as empty `public/` contracts.** ⛔ **They publish 3 and 17 names.** ⚠️ **QE counted sibling files rather than reading `__init__.py`, which is where `__all__` lives.** ✅ **`timeline` is the single instance** — and 📁 **`ai_research_engine` is the model for its repair**: an equally empty contract whose file is a docstring saying *"deliberately empty until something outside this module needs it."* **Lane A plans that docstring; the wording already exists.**
+>
+> ### ✅ What is new in the instrument
+>
+> **A handoff-coverage line in [`state-check.py`](../infra/state-check.py)**, fire-tested four ways — including that **it reports everything if its own scan breaks, rather than going quiet.** ⚡ **It is a BASELINE, not a target**: a promoted commit message is immutable, so **the count can only be held, and a rise is a slice that shipped without its link.**
+>
+> ### The decision queue is unchanged, and it is still the whole constraint
+>
+> ⛔ **[C-106](LANE_COORDINATION.md) · [C-297](LANE_COORDINATION.md) · [C-298](LANE_COORDINATION.md) · [C-299](LANE_COORDINATION.md) · [C-1424](LANE_COORDINATION.md).**
+
 > ## Cycle 212 — promoted `02775de5`, 2026-08-12
 >
 > **`main` = `02775de5` = the certified commit.** Four commits, Lane A ×3 and QE ×1. ⚠️ **Second attempt — the first certification was killed and wrote no record**, which is how it was told apart from a verdict: the manifest still named `96f2343475fa` afterwards. **The manifest is the durable record; a log is not.**
@@ -140,7 +166,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-12 · **`main` at `02775de5`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-12 · **`main` at `77daace8`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
