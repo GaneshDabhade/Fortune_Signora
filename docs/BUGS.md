@@ -90,6 +90,81 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-185 · 🟠 `--dry-run` rewrites the generated coordination source, and I diagnosed a defect from my own output because of it
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — [`infra/coordination.py`](../infra/coordination.py), argument handling |
+| **Current assignee** | **Lane C** *(Platform Foundation, [D-022](DECISION_REGISTER.md))* |
+| **Severity** | 🟠 — ⛔ **a flag whose name and help both promise not to write, writes.** ⚡ **The artifact it rewrites is the one [§20e](../CLAUDE.md) says *"is generated and never edited"* and that every lane polls** |
+| **Status** | 🔵 **`OPEN`** — found 2026-08-12 by QE |
+| **Found** | **2026-08-12, by QE**, by being bitten by it mid-diagnosis |
+| **Commit found** | **`dd04a2fa`** |
+
+**Steps.**
+
+```
+sha256sum docs/coordination/coordination.toml      # before
+python3 infra/coordination.py --dry-run
+sha256sum docs/coordination/coordination.toml      # after
+```
+
+**Expected.** Identical. The flag's own help is *"with `--publish`: validate only"*, and `--check` beside it is documented as read-only.
+
+**Actual.** ⛔ **The hashes differ. The file is regenerated and written.** `--dry-run` is only consulted *inside* the publish path; run on its own it falls through to the regenerate-and-write branch, so **the guard word has no effect on the code path a reader would expect it to guard.**
+
+### Why the row is 🟠 rather than 🟡, and it is not the wasted keystroke
+
+⚠️ **QE ran `--dry-run` expecting a report, then read the file, then reasoned about a staleness defect from what it found there** — **including a `generated_from` stamp that was QE's own regeneration, not Lane C's commit.** The committed value is `f50851c`; the value read was `dd04a2f`.
+
+⛔ **A whole diagnosis was drafted on that, and it was wrong.** It was caught only because `git checkout` refused to switch branches over an unexpected modification. ⚡ **The safety here came from git, not from care** — and the next reader may not be switching branches.
+
+> **This is [B-151](#b-151)'s class from the inside: reasoning from something transcribed rather than measured** — except the thing transcribed was **produced by the diagnostic tool itself.** **A read-only-looking command that mutates its subject makes every observation after it untrustworthy**, and nothing in the output says so.
+
+### The repair
+
+✅ **`--dry-run` and `--check` both exit before any write.** ⛔ **And a `--dry-run` that is meaningful only in combination with `--publish` should say so by refusing on its own**, rather than silently doing the most destructive thing available (`CLAUDE.md`: *prefer operations that refuse unsafe states over ones that silently recover from them*).
+
+---
+
+### B-186 · 🟡 The republish is not the last commit of its batch, so it is stale before it is pushed
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — the planning-cycle republish step, [`infra/coordination.py`](../infra/coordination.py) |
+| **Current assignee** | **Lane C** *(Platform Foundation, [D-022](DECISION_REGISTER.md))* |
+| **Severity** | 🟡 — **advisory noise.** ⛔ **And that is [B-145](#b-145)'s own severity and its own argument**: *"it degrades the one instrument every lane is now told to poll"* |
+| **Status** | 🔵 **`OPEN`** — found 2026-08-12 by QE, re-running `--check` after taking Lane C's branch |
+| **Found** | ⚡ **Found because Lane C asked to be checked rather than believed** — *"confirm it yourself after you take the branch rather than on my word."* **They were not wrong; their run was green when they made it** |
+| **Commit found** | **`dd04a2fa`** |
+
+**Steps.** `python3 infra/coordination.py --check` on `integration` at `dd04a2fa`.
+
+**Expected.** `coordination: current — 72 task(s)`.
+
+**Actual.** Exit 1 — *"the published source does not match what the generator emits today."*
+
+### The cause, measured rather than theorised
+
+**The republish is `9f1143db`. Three commits land after it** — `c383d342`, `3dca1471`, `dd04a2fa` — **and each edits `BACKLOG.md` or `LANE_COORDINATION.md`, which are exactly the registers the generator projects from.**
+
+**So the file is a correct projection of the tree three commits ago.** The committed stamp `f50851c` is honest about that; the content simply describes an earlier repository.
+
+| Field | Committed | Regenerated |
+|---|---|---|
+| `awaiting_qe_transition` | `0` | `21` |
+| `lane_utilization` | `4.2` | `0.0` |
+
+⛔ **These are planning facts, not clock artifacts** — which is what distinguishes this from [B-145](#b-145), where the drift was `datetime.now()` and no fact had changed.
+
+### The repair is ordering, not code
+
+✅ **Regenerate as the *final* act of a planning batch, after every register edit in it.** ⚡ **The generator is a projection: any commit that edits a source after the projection invalidates it, by construction.**
+
+> ⚠️ **A theory QE drafted and is discarding rather than filing.** `_baseline()` reads `origin/integration`'s commit timestamp, and QE moves that ref on every integration — so it *looked* like the same hidden-input defect one step along (`now()` → `HEAD` → `origin/integration`). ⛔ **It does not hold here: the two commits are 79 seconds apart and the metric is in days.** **It is recorded because it is worth checking the day a drift appears with no register edit behind it** — but it is **not** what happened, and filing it as the cause would have been the [B-179](#b-179) mistake again.
+
+---
+
 ### B-184 · 🟠 `--audit-claims` refuses on two commits that are on `main`, so the check can never pass again
 
 | | |
