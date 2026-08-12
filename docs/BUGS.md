@@ -4116,7 +4116,7 @@ def _load_state_check() -> ModuleType:
 
 ---
 
-### B-425 · 🔴 Lane A's queue answered "may I claim this?" twice, and named four blockers no tool could see
+### B-425 · Lane A's queue answered "may I claim this?" twice, and named four blockers no tool could see
 
 | | |
 |---|---|
@@ -4566,7 +4566,7 @@ def _load_state_check() -> ModuleType:
 
 📁 **[§2](../CLAUDE.md): *a comment justifying absent behaviour is a false claim sitting in the codebase*.** ⚡ **The comment will outlive the fix unless it is removed with it** — and it currently reads as a considered design decision, which is how it survived review and promotion.
 
-### B-427 · 🔴 A lane notice truncates silently, so the author believes it was delivered
+### B-427 · A lane notice truncates silently, so the author believes it was delivered
 
 | | |
 |---|---|
