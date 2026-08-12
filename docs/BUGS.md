@@ -90,6 +90,51 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-193 · 🟡 Nothing reports a board row still held whose work is already on `main`, and QE tried twice to close the gap and could not
+
+| | |
+|---|---|
+| **Module** | **QE gates** — [`infra/state-check.py`](../infra/state-check.py) |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — ⛔ **nothing shipped is wrong.** ⚠️ **A held row whose work has shipped says a lane is still building something that is done**, and every other lane reads it |
+| **Status** | 🔵 **`OPEN` — and deliberately NOT fixed.** ⛔ **Two attempts, both abandoned, and the reasons are below** |
+| **Found** | **2026-08-12, by Lane A, against itself** |
+| **Commit found** | **`fe6d9139`** |
+
+**Steps.** [`TASK-1428`](BACKLOG.md)'s implementation reached `main` at **`a512642`, 2026-08-09**. **Its board row read `CLAIMED` until 2026-08-12** — three days.
+
+**Expected.** Something says so.
+
+**Actual.** ⛔ **Nothing does.** Check 3 catches a `COMPLETE` row that was not removed; **nothing asks the opposite question.**
+
+### ⚡ Why the gap exists, and it is a consequence of a rule that is right
+
+📁 **`IN VALIDATION` is the lane's to set and QE may not set it** ([§20e](../CLAUDE.md), *execution ownership ends at `IN VALIDATION`*). ✅ **That is correct** — QE does not own a lane's execution state. ⛔ **And it means a state nobody may set for you is a state that can be forgotten silently.**
+
+> ⚡ **Lane A named the gap and offered itself as the evidence rather than proposing the check.** **QE built one anyway, and this row is the account of why it does not ship.**
+
+### ⛔ Attempt 1 — matched any status token in the row
+
+**Reported `TASK-1428`, whose row had just been corrected**, because the row narrates *"was `CLAIMED`"* beside its current `IN VALIDATION`. 📁 **The rule was already written 1500 lines above the edit** — *"the FIRST state token in the cell, never any token in it"* — **and QE ignored its own tool's documented lesson.**
+
+### ⛔ Attempt 2 — asked whether the newest commit naming the task touched code
+
+**Went silent on its own reproduction.** `TASK-1428`'s newest mention edits `workflows.toml`; the implementation is four commits older. ⚠️ **A guard that cannot fail on the defect it was written for is Decorative Logic** ([§2](../CLAUDE.md)) — **and it took a fire test to see it, not a reading.**
+
+### 🔴 Attempt 3 — scanned every naming commit, and that is where it stopped
+
+✅ **It fires on the reproduction.** ⛔ **And it names the wrong commit.** For `TASK-1428` it reported **`3e800752`** — *"D-215 — C-255, C-256, C-257 are one defect"* — which qualified **only because it touched `infra/state-check.py`**, this very file, while mentioning the task in its body.
+
+> ⛔ **A commit message cannot answer *was this task implemented*.** **Governance commits legitimately name many task ids while touching code**, so the grep confuses *mentions* with *implements* — and **a check that names the wrong commit is worse than no check, because it teaches people to distrust the tool.**
+
+### ⛔ And the register comparison is blind to it
+
+**The obvious alternative — board says held, backlog says moved on — would not have caught this case.** 📁 **[`BACKLOG.md`](BACKLOG.md) also read `CLAIMED` for those three days.** ⚡ **The same lane sets both, and it forgot both**, which is the failure mode rather than an accident.
+
+> ✅ **So the row stays open with the attempts recorded, and `state-check.py` is unchanged.** ⚠️ **What a real fix needs is a link from a task to its implementing commit that is not a prose mention** — and inventing one is a change to how work is recorded, not a check.
+
+---
+
 ### B-192 · 🟡 Three setup steps are documented as CURES in the troubleshooting table and not as PREREQUISITES in the sequence, so a lane meets each only after sign-in has already failed
 
 | | |
