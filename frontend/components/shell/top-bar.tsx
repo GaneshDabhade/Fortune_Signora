@@ -200,10 +200,20 @@ export function TopBar({
           ✅ **`AccountSearch` is not decoration** — it finds accounts today,
           which is why it stays rather than being swapped for a palette opener
           that would open nothing. */}
-      {/* 📁 **`search` landmark, labelled "Search Fortune Signora"** —
+      {/* 📁 **`search` landmark, labelled "Search Signora"** —
           [TASK-1444](../../../docs/BACKLOG.md), App Shell `landmarks`. ⛔ **The
           slot published no landmark at all**, so a screen-reader user could not
-          jump to search the way they can jump to navigation. */}
+          jump to search the way they can jump to navigation.
+
+          ⚠️ **`Signora`, not `Fortune Signora`** — [TASK-1466](../../../docs/BACKLOG.md),
+          on the product owner's ruling at [C-1422](../../../docs/LANE_COORDINATION.md):
+          ***"the application is already inside Signora; the newer brand rule
+          explicitly says the in-product product name is `Signora`; the
+          finalized design copy is therefore superseded for this specific
+          wording."*** 📁 **App Shell §21 `landmarks` still reads *"Search
+          Fortune Signora"*, and it is NOT edited** — ⛔ [D-138](../../../docs/DECISION_REGISTER.md):
+          **a snapshot is refreshed, never edited**, and the discrepancy is
+          recorded on C-1422 for the next refresh. */}
       {/* 🔴 **§07's focus rule, which the contract has always held and nothing
           called** — [TASK-1474](../../../docs/BACKLOG.md). 📁 *"Search — opens
           the palette on click or ⌘K. **Widens to 320px on focus at ≥1600px**."*
@@ -216,7 +226,7 @@ export function TopBar({
       <div
         data-slot="search"
         role="search"
-        aria-label="Search Fortune Signora"
+        aria-label="Search Signora"
         data-widened={widened ? 'true' : undefined}
         onFocus={() => setSearchFocused(true)}
         onBlur={() => setSearchFocused(false)}

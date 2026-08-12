@@ -107,10 +107,20 @@ describe('📁 landmarks — the names a screen reader chooses between', () => {
   });
 
   it('✅ the search slot publishes a `search` landmark', () => {
-    // 📁 *"The top-bar field, labelled 'Search Fortune Signora'."* ⛔ It
-    // published none, so search could not be jumped to the way navigation can.
+    // 📁 The design's `landmarks` asks for a labelled search region. ⛔ **It
+    // published none**, so search could not be jumped to the way navigation can.
+    //
+    // ⚠️ **The label is `Search Signora`, not `Search Fortune Signora`** —
+    // [TASK-1466](../../../docs/BACKLOG.md), on the ruling at
+    // [C-1422](../../../docs/LANE_COORDINATION.md). 🔴 **This assertion is why
+    // the row exists in the shape it does**: it pinned the old string, so a
+    // rename that left it green would have renamed nothing.
     shell();
-    expect(screen.getByRole('search', { name: 'Search Fortune Signora' })).toBeInTheDocument();
+    expect(screen.getByRole('search', { name: 'Search Signora' })).toBeInTheDocument();
+    // ⛔ **And the old label is gone rather than merely un-asserted.**
+    expect(
+      screen.queryByRole('search', { name: 'Search Fortune Signora' }),
+    ).not.toBeInTheDocument();
   });
 
   it('⛔ exactly ONE banner landmark, not two', () => {
