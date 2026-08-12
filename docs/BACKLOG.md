@@ -116,6 +116,44 @@
 
 > ⚡ **Lane A owns decomposition.** ⛔ **It may not invent product behaviour, UX absent from the design, business rules, permissions or roles.** **Where the design is ambiguous, that is a `C-` item and a ruling — never an interpretation** ([§21](../CLAUDE.md)).
 
+### TASK-1476 · Account 360 — complete the module against the finalized design
+
+| | |
+|---|---|
+| **Type** | ⚡ **Implementation Package.** ⛔ **Lane C states WHAT; Lane A owns decomposition, sequencing and end-to-end implementation** |
+| **Owner** | **Lane A** — `product_surface`, joined from [`modules.toml`](coordination/modules.toml) |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-12** |
+| **Design authority** | 📁 **[`Fortune Signora Account 360.dc.html`](design-snapshot/screens/)** — **110 KB, the largest screen in the snapshot.** ⛔ **The design is the authority; the shipped page is not.** ⚠️ **Where they disagree the design wins, and superseded implementation is removed rather than hidden** |
+
+**Current implementation — ✅ all three prior rows are `PROMOTED`. Preserve compliant work; do not rebuild it.**
+
+- **[TASK-1415](#task-1415)** — the record page a rep works
+- **[TASK-417](#task-417)** — ⚡ **its own words: *"all ten **buildable** sections"*.** **That adjective names this package's subject**
+- **[TASK-1411](#task-1411)** — the AI attribution primitive: one confidence, one source list
+
+> ⛔ **THE GAP IS NOT ENUMERATED HERE, DELIBERATELY.** 📁 **The package model ratified 2026-08-12: *"if forty things are missing from a module, do not create forty coordination tasks."*** ⚡ **Lane A audits the design against the shipped page and determines the remainder during decomposition — that is the HOW, and it is Lane A's.**
+
+**Required outcome.** ⚡ **A seller opens an account and finds everything the approved design puts there** — every section, in the design's geometry, with its loading, empty, error and permission states.
+
+**Dependencies — two, and both are exclusions rather than blockers:**
+
+| | |
+|---|---|
+| ⛔ **[C-1430](LANE_COORDINATION.md)** | **If the design draws *Open ACV*, *Renewal* or a commercial stage on this page, those are excluded.** 📁 `crm.py`:100 refuses them — **no canonical attribute** |
+| ⛔ **[C-266](LANE_COORDINATION.md)** | **Whatever it covers of the AI attribution data half stays excluded until ruled** |
+
+**⛔ DO NOT INVENT:** a commercial attribute · a confidence figure with no source · a role beyond `OWNER`/`MEMBER` ([C-1429](LANE_COORDINATION.md)) · any behaviour the design does not state. ⚡ **An ambiguous design is a `C-` item and a ruling, never an interpretation** ([§21](../CLAUDE.md)).
+
+**Done when** — [§19](../CLAUDE.md)'s gates bind unchanged, plus:
+
+- **Every design section implemented**, with **loading · empty · error · permission** states — ⚠️ **[P-A](DOMAIN_DISCOVERY_REGISTER.md): a failed read must never render as an empty result**
+- **Design geometry followed** — grid, spacing, type, tokens, radius, responsive bands. ⛔ **No literal colours** ([§20c](../CLAUDE.md))
+- **Non-compliant legacy replaced, not hidden**
+- **Tests updated and added** — ⛔ **design behaviour asserted, never mere DOM presence**
+- **The customer journey written *and run*** ([D-113](DECISION_REGISTER.md)), **watched headed** ([D-134](DECISION_REGISTER.md))
+
+**Lane A reports at handover:** design sections implemented · implementation replaced · new implementation · known limitations · runtime verified · remaining blockers.
+
 ### TASK-434 · An account can be asked whether it matches a criterion, and only one thing answers
 
 | | |
