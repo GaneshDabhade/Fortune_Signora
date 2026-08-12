@@ -166,6 +166,12 @@
 |---|---|
 | ⛔ **[C-1430](LANE_COORDINATION.md)** | **If the design draws *Open ACV*, *Renewal* or a commercial stage on this page, those are excluded.** 📁 `crm.py`:100 refuses them — **no canonical attribute** |
 | ⛔ **[C-266](LANE_COORDINATION.md)** | **Whatever it covers of the AI attribution data half stays excluded until ruled** |
+| ⛔ **[C-210](LANE_COORDINATION.md)** | ⚡ **ADDED 2026-08-12, found by Lane A auditing the design before claiming.** **Eight sections turn on whether Signora holds records a rep *authors* — notes, tasks, files, custom fields.** 📁 **Measured: thirty-five write endpoints across every module and not one accepts customer-authored record content.** ⚠️ **Emails and Meetings are deliberately NOT in this exclusion — they are a *read* of a customer's own system and [`integrations`](../backend/modules/integrations/) already owns that boundary, with `Capability.CRM_RECORDS` built** |
+| ⛔ **[C-1425](LANE_COORDINATION.md)** | ⚡ **ADDED 2026-08-12 — this office's omission, reported by Lane A.** **The header's *Owner* and *CSM* are the same absent concepts C-1425 covers**, and I excluded them from [TASK-1475](#task-1475) and not from this row. **Same item, different screen** |
+
+> ⚡ **The package stays claimable and that is the point of naming exclusions rather than holding a module.** 📁 **Lane A measured it: nineteen of the design's twenty-seven sections are unaffected** — summary, score and drivers, health, signals timeline, research, opportunities, contacts, technology, competitors, market signals, recent activity, risk indicators, recommendations, and the reasoning ladder with its evidence — ⚡ **plus the six-state matrix the design applies to every section, which is the largest piece of unbuilt, unblocked work in the package.**
+>
+> ⚠️ **[C-210](LANE_COORDINATION.md) also carries a fourth thing that is NOT a role and must not be folded into [C-1429](LANE_COORDINATION.md):** 📁 the design's *"field-level permissions apply; read-only fields show a lock on hover"* is a **per-field grant**, and **Casbin's resource/action model does not express one.** ⛔ **Adjacent to the role exclusion, and a different question.**
 
 **⛔ DO NOT INVENT:** a commercial attribute · a confidence figure with no source · a role beyond `OWNER`/`MEMBER` ([C-1429](LANE_COORDINATION.md)) · any behaviour the design does not state. ⚡ **An ambiguous design is a `C-` item and a ruling, never an interpretation** ([§21](../CLAUDE.md)).
 
