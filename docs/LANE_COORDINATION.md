@@ -579,6 +579,14 @@ databaseUrl: required(
 | **Owner** | **Product owner** |
 | **Blocks** | ⛔ **No task row.** ⚡ **It costs the journey suite continuously** — 📁 [B-245](BUGS.md) records six organizations accumulating in one session and the account-backed journeys failing two projects later |
 
+> ⚡ **CLASSIFIED 2026-08-12, Lane C: this is not an independent decision. It is the *default-selection rule* of a screen that has not been drawn** — 📁 **[C-1405](#c-1405) priority ⑤, the Workspace Chooser**, which the Entry Coverage Review calls ***"the single largest hole… no document draws it."***
+>
+> ⛔ **Ruling this separately would set a default for a chooser whose behaviour is undecided**, and the two would then have to agree by accident. **The default is the chooser's quietest rule, not a rule beside it.**
+>
+> ⚠️ **But the harm is live now and does not wait for the design** — ⑵ below is a salesperson put into a throwaway organization on every new device. 📁 **[B-245](BUGS.md) is the defect; this row is the missing rule.** ✅ **Both stay open: the defect can be repaired against *any* rule, and repairing it does not decide which rule is right.**
+>
+> ➡️ **So: linked to [C-1405](#c-1405) ⑤, not escalated separately.** **One fewer independent decision, and the same ruling answers both.**
+
 ### ① The mechanism, and all three parts are measured
 
 📁 **The list is newest-first** ([`repositories.py`](../backend/modules/workspace_tenancy/infrastructure/repositories.py):81) · 📁 **the default is `workspaces[0]`** ([`workspace-provider.tsx`](../frontend/lib/state/workspace-provider.tsx)) · ⛔ **nothing deletes an organization** — `useDeleteWorkspace` does not exist and no route offers one.
@@ -1001,6 +1009,18 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 | **Raised by** | **Lane A**, measuring the row before claiming it — ⛔ **not after starting it** |
 | **Owner** | **Product owner** — ⚡ **which operation the first consumer performs is product scope, and the row's Change Budget contains no module that could hold one** |
 | **Blocks** | **[TASK-466](BACKLOG.md) only.** ✅ **Lane A is NOT idle** — [TASK-1414](BACKLOG.md), the next entry in the queue, was claimed in the same turn ([§20e](../CLAUDE.md), *Continuous execution*) |
+
+> ⚡ **CLASSIFIED 2026-08-12, Lane C: a genuine product decision, and ⛔ it must NOT be merged with [C-1430](#c-1430).**
+>
+> **They look like one question — *does Signora model account attributes it was not given?* — and they are two, because the least-powerful-author rule ([§2](../CLAUDE.md)) separates them.**
+>
+> | | **This row: owner · tag · segment** | **[C-1430](#c-1430): Open ACV · Renewal · stage** |
+> |---|---|---|
+> | **Who authors it** | ✅ **The customer.** Workspace-authored organisation of their own book | ⛔ **The provider.** Facts a CRM already holds |
+> | **Route if owned** | **A domain that models them** — the row's Change Budget names none | 📁 **An RFC extending `ClaimAttribute`**, which `crm.py` names |
+> | **Failure if wrong** | A customer's own labels are unrepresentable | ⛔ **Signora invents a commercial vocabulary from someone else's data** |
+>
+> ⚠️ **Merging them would let one ruling settle both, and the cheap answer to one is the expensive answer to the other.** ⛔ **Two rulings, and this office recommends nothing on this one** — *which* operation the Action Batch's first consumer performs is scope, and proposing it would be inventing the product.
 
 ### ① What the row asks for, in its own words
 
