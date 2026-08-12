@@ -90,6 +90,20 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ✅ **On resuming, read [CURRENT-STATE.md](CURRENT-STATE.md) and treat any inherited narrative as untrusted.** ⚠️ **It reflects what was believed then** — this session inherited three stale blocker attributions from one, and corrected all three against the rows.
 
+## 5c · Before writing a check, ask what it would report on a real problem
+
+**Recorded 2026-08-12 at QE's suggestion, from an exchange where a guard was the obvious answer and the wrong one.** ⛔ **Not a rule. The sentence a future session will need when it is tempted.**
+
+> **Adding a check would let the contradiction persist behind a green output.**
+
+📁 **[§2](../../../CLAUDE.md) already covers the guard that *cannot* fail.** ⚠️ **This is the other half: a guard that can fail, does fire correctly, and is still wrong** — because it answers a narrower question than the reader believes.
+
+**The worked case:** `--audit-claims` reported *"0 claims awaiting promotion"* on a ref carrying **ten unvalidated commits**. ✅ **The check was correct** — it audits commits whose subject begins `Claim `. ⛔ **B-182 and B-184 are the same family**, which QE named as *"correct about a fact and wrong about whether the fact was a problem."*
+
+⚡ **And the deeper reason a third one would have been worse than none: the condition had an owner.** **Lane A said the slice was not ready; it was on the ref QE certifies from. One of those statements was wrong and only Lane A could say which.** ⛔ **A check cannot resolve a contradiction between two people's claims — it can only make the repository look like it has.**
+
+**The test before building one: *if this check goes green, what will the reader stop asking?*** ⚠️ **If the answer is the actual question, the check is the problem.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
