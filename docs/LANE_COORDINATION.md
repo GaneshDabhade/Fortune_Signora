@@ -513,6 +513,72 @@ databaseUrl: required(
 
 ---
 
+## C-210 · [TASK-1476](BACKLOG.md) — does Signora STORE what a rep writes, or only observe? Eight of Account 360's sections turn on it
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`OPEN`** — Lane A, 2026-08-12 |
+| **Raised by** | **Lane A**, auditing the design against the shipped page **before claiming** — 📁 **Lane C asked for exactly this**: *"if you hit a third thing the design draws and the platform cannot express, raise it before claiming — the way [C-209](#c-209) worked and [TASK-466](BACKLOG.md) did not."* |
+| **Owner** | **Product owner** |
+| **Blocks** | ⛔ **Not the package.** ⚡ **Nineteen of the design's twenty-seven sections are unaffected**, and TASK-1476 stays claimable — this names the boundary so the remainder is not discovered mid-implementation |
+
+### ① The question, in one line
+
+📁 **The design's own subtitle: *"Flagship record page — everything a rep needs without opening the CRM."***
+
+> 🔴 **Does Signora hold records a rep AUTHORS — notes, tasks, files, emails, meetings, custom fields — or does it observe, reason and explain over records that live elsewhere?**
+
+### ② Measured, not assumed
+
+⛔ **Thirty-five write endpoints across every module, and not one accepts customer-authored record content.**
+
+```
+accounts · action-batches · buying-committee · competitors · connections · focus
+icp · invitations · members · membership · onboarding · opportunities
+ownership · preferences · products · saved-views · signals · target-accounts
+```
+
+⚡ **Every one is configuration, membership, or a workflow decision.** ⛔ **No note, no task, no file, no email, no meeting, no custom field** — and **no domain model for any of them** in any module.
+
+### ③ The eight sections that turn on it
+
+| Section | Why it turns on this |
+|---|---|
+| **Notes** | 📁 *"rich text, @mentions, slash commands"* — **authored content with a store** |
+| **Tasks** | 📁 *"＋ Add"*, a tick, a due date — **authored, mutable, assignable** |
+| **Files** | 📁 *"Upload"* — **object storage and a per-account binding** |
+| **Custom fields** | 📁 *"12 · editable in place · synced both ways"* — ⛔ **plus *"field-level permissions apply; read-only fields show a lock"***, which is a per-field grant Casbin's resource/action model does not express |
+| **Emails** | 📁 *"38 threads · 2 unanswered"* — **a mailbox read, and threading** |
+| **Meetings** | 📁 *"11 held · 1 upcoming"* — **a calendar read** |
+| **Organisation chart** | 📁 *"Inferred from email, calendar and public sources"* — ⚡ **depends on the two above** |
+| **Relationship graph** | 📁 *"who knows whom, and how strongly"* — **same dependency** |
+
+### ④ ⚠️ Two of these are a different question from the other six, and conflating them would be a mistake
+
+⛔ **Emails and Meetings are a READ of a customer's own system**, and 📁 **`integrations` already owns that boundary** — the inbound source port exists and `Capability.CRM_RECORDS` is built. ⚡ **They are an integration scope question, not a *does Signora become a record store* question.**
+
+✅ **Notes, Tasks, Files and Custom fields are the real subject**: **Signora would be the system of record for something a customer creates**, with everything that follows — retention, export, permissions, audit, and the [§2](../CLAUDE.md) immutability rules about what may be edited.
+
+### ⑤ Options, and the consequence of each
+
+| | | |
+|---|---|---|
+| **A** | **Signora observes; it does not host** — the eight sections are permanently out, and Account 360 links to the CRM for them | ✅ **Keeps the product's boundary sharp and matches every module built so far** · ⛔ **contradicts the design's own subtitle**, and a rep does open the CRM |
+| **B** ▶ | **Signora hosts what it can reason ABOUT** — notes and tasks, because they are evidence and follow-through; ⛔ **not files, emails or custom fields** | ✅ **The smallest store that makes the page defensible**, and both feed the timeline the product already has · ⛔ **a new bounded context and a real product commitment** |
+| **C** | **Signora hosts all of it** — the CRM-replacement reading of the subtitle | ⛔ **A different product**, and it is [§20d](../CLAUDE.md)'s build-ahead in its largest form |
+
+⚡ **Recommendation: B, and it is architectural input rather than authority.** 📁 **A note and a task are already the shape of things this product reasons over** — the timeline projects events, and a follow-through is an event. ⛔ **A file store and a custom-field engine are neither.**
+
+### ⑥ ⛔ What this lane will NOT do meanwhile
+
+**Invent any of it.** 📁 The product owner: *"do not invent unresolved product/domain concepts."* ⚠️ **And a designed empty state is not automatically the answer either** — 📁 [C-297](#c-297) is the worked example: *"honest is not the same as good"*, and eight empty sections on a flagship page is a different judgement from one.
+
+### ⑦ ✅ What is unaffected and claimable today
+
+**Nineteen sections**, and the ones that matter most are among them: **the AI summary, the score and its drivers, customer health, the signals timeline, research, opportunities, contacts, technology stack, competitors, market signals, recent activity, risk indicators, recommendations, the AI reasoning ladder and its evidence** — 📁 **plus the six-state matrix the design applies to every section**, which is the largest single piece of unbuilt, unblocked work in the package.
+
+---
+
 ## C-209 · [TASK-1475](BACKLOG.md)'s row facts have no source, and its pager cannot be built over its own endpoint
 
 | | |
