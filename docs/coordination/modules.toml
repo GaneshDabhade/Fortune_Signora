@@ -402,8 +402,8 @@ paths = ["frontend/"]
 
 [platform_foundation]
 context = "Environment framework, repository tooling, developer commands"
-current_owner = "Lane C"
-future_owner = "Lane C"
+current_owner = "Lane A"
+future_owner = "Lane A"
 transition = "settled"
 implementation = 60
 basis = "Environment Framework phases 1-2 built; the demo profile and make doctor are IN VALIDATION"
@@ -484,8 +484,8 @@ note = "not a production module — Lane C may never touch backend/modules/ (CLA
 # row would have cost more than the gap it closes.**
 [apps]
 context = "Composition roots — apps/api/ and apps/worker/. Where modules are wired, never where behaviour lives"
-current_owner = "Lane C"
-future_owner = "Lane C"
+current_owner = "Lane A"
+future_owner = "Lane A"
 transition = "settled"
 implementation = 70
 basis = "API and worker composition roots built; WorkerRuntime lacks the provider registry (C-021, ADR-0404 capability 3)"
