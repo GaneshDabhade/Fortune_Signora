@@ -282,7 +282,28 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 lane         = "Lane A"
-updated      = 2026-08-11
+updated      = 2026-08-12
+
+# ⚡ RE-MEASURED 2026-08-12 **over `99d4c2b9`** — Lane A's nine and QE's one,
+#    not over yesterday's base. **9 claimable**, and the number moved for two
+#    reasons pulling opposite ways: TASK-470 released after `multiSession()`
+#    was found already wired at `lib/auth/server.ts:130`, and TASK-206,
+#    TASK-1459 and TASK-1472 withdrawn as duplicates.
+#
+# ⚠️ THE FLOOR IS 10 (D-183) AND THIS IS 9. The gap is one row, named rather
+#    than papered over: **TASK-1421's blocker set is exactly {C-1405}**, whose
+#    ruling is prepared and with the product owner. It is the only row that
+#    reaches 10 without inventing one.
+#
+# ⛔ TASK-1432 was re-checked today rather than assumed, because `state-check`
+#    flags it as parked behind a predecessor already handed over — the C-426
+#    shape, where nothing re-asks the question. **It is still correctly
+#    parked**: `grep -rn "shell/scope"` across `frontend/` returns its own
+#    unit test and two comments, and no module. Four chips would narrow
+#    nothing.
+#
+# ⚡ The floor is not met by relaxing what `READY` means. A tenth row a lane
+#    cannot finish costs more than a ninth it can.
 
 # ⚡  11 claimable, and 5 claimable TODAY — measured 2026-08-11, not carried
 #    forward. `backlog` below holds exactly those 5, and it is generated.

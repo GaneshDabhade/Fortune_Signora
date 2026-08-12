@@ -513,6 +513,46 @@ databaseUrl: required(
 
 ---
 
+## C-1424 · [B-253](BUGS.md) — an unresolved read renders as a denied permission, and which wrong state is less harmful is a product decision
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-12. **Investigation complete; the recommendation below rests on a rule that already exists** |
+| **Raised by** | **QE**, from Lane A's handover of [TASK-1471](BACKLOG.md) |
+| **Owner** | **Product owner** |
+| **Blocks** | **[B-253](BUGS.md) only.** ⚡ **No task row is waiting on it and no lane is idle** — this is 🟠 REVIEW SOON, not 🔴 |
+
+### ① The defect, in one line
+
+📁 [`authenticated-shell.tsx`](../frontend/app/\(app\)/authenticated-shell.tsx) passes `role={resolved ? role : null}`, and `null` means both *"has no role"* and *"has not arrived yet."* ⛔ **The rail can only read it as the first**, so `navigation.tsx:537` computes `restricted` and renders a locked `<button>` — **on every cold boot an owner is briefly told they need somebody else's permission to open their own product.**
+
+### ② Why it is not Lane A's to settle, and Lane A was right to stop
+
+✅ **Lane A fixed the identical conflation for the *workspace* in TASK-1471 and deliberately left the role half**, saying so rather than picking one quietly. ⚡ **That is [§20e](../CLAUDE.md)'s architectural-blocker test applied correctly: the repair is small, and nobody has decided which wrong state is less harmful.** *"I could just add it"* is how a product decision becomes a line in a feature slice.
+
+### ③ The two repairs
+
+| | | |
+|---|---|---|
+| **A** | **Pending, like Home** — guarded rows render in a resolving state until the role lands | ⛔ **Several rail rows visibly settle on every cold boot**, on the most-looked-at surface in the product |
+| **B** ▶ | **Optimistic** — render as an ordinary link until the role is known | ⛔ **A member briefly sees a destination that will refuse them** |
+
+### ④ Recommendation: **B**, and it is not a preference
+
+📁 **[§20c](../CLAUDE.md) already rules on what this control is**: *"Keep client-side permission checks presentational. Casbin on the server is the authorization decision; hiding a control the caller cannot use is a courtesy, never enforcement, and must never be the only check."*
+
+⚡ **A courtesy that fires on data it does not have is not a courtesy — it is a false claim about entitlement**, and B is the option that stops the product asserting one. ⛔ **A is the safer-looking option and asserts nothing false either**, which is why this is a decision rather than a correction: **it costs motion on the rail on every single boot to avoid a state that is already survivable.**
+
+⚡ **This is [P-A](DOMAIN_DISCOVERY_REGISTER.md) one level up** — *a failed read must never render as an empty result* becomes **an unresolved read must never render as a denied permission.** QE named that generalisation and it is the right one.
+
+### ⚠️ One check decides B's cost, and it is not yet made
+
+⛔ **B is only cheap if the refusal a member lands on is designed.** 📁 **[D-205](DECISION_REGISTER.md) records eleven terminal reason codes rendering nothing**, and if a guarded route is among them, B trades a false lock for a blank screen — **which is the [P-A](DOMAIN_DISCOVERY_REGISTER.md) defect it is meant to avoid.**
+
+✅ **This office will verify it before the row is released to Lane A, whichever way the ruling goes.** ⛔ **It is named here rather than assumed, because assuming it is what would make B the wrong recommendation quietly.**
+
+---
+
 ## C-107 · The 🔴 promotion block reads a row's status, and the defect it names is already fixed in the candidate
 
 | | |
