@@ -18,6 +18,8 @@ import {
 } from '@/components/intelligence/contributions';
 import { useUtilityPanel } from '@/components/shell/utility-panel';
 import { AbsentSection, OnThisPage } from '@/components/accounts/sections';
+import { AccountSectionShell } from '@/components/accounts/section';
+import { contributionSeverities } from '@/lib/accounts/section-state';
 import { absent } from '@/lib/accounts/sections';
 import { CompetitorContext } from '@/components/intelligence/competitors';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
@@ -138,6 +140,14 @@ export default function AccountBriefPage() {
   // Casbin on the server is that, and always.
   const { data: session } = useSession();
   const viewerId = session?.user.id ?? null;
+  // ⛔ **The account TYPE is not published to this page, so nothing is
+  // guessed.** 📁 `useAccounts` returns `AccountAttention` and
+  // `useAccountIdentities` returns `AccountIdentity`; **neither carries
+  // `kind`**, and only the Companies list's `ListedAccount` does. ⚡ **A
+  // collapse preference keyed under a guessed type is one a rep cannot get
+  // back**, so `null` means *persist nothing* rather than *persist wrongly* —
+  // [B-261](../../../../docs/BUGS.md).
+  const accountKind: string | null = null;
 
   const { data: score, isLoading, error } = useAccountScore(workspaceId, accountId);
   const { data: opportunity, error: opportunityError } = useAccountOpportunity(
@@ -541,14 +551,24 @@ export default function AccountBriefPage() {
 
           {/* ⚡ **`id="score"`** — the design calls this section *Account
               score*, and the rail links to it by that id. */}
-          <section id="score" className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-content">What contributed</h2>
+          <AccountSectionShell
+            id="score"
+            heading="What contributed"
+            // ⚡ **A contribution's own direction is its severity** — ⛔ nothing
+            // is invented: the ledger already says whether a contribution
+            // pushed the score up or down, and the header folds those.
+            severities={contributionSeverities(score?.contributions)}
+            viewerId={viewerId}
+            kind={accountKind}
+            isLoading={isLoading}
+            lastKnownCount={score?.contributions?.length ?? null}
+          >
             <Card>
               <CardBody className="py-1">
                 <ContributionList score={score} onOpenEvidence={evidence.open} />
               </CardBody>
             </Card>
-          </section>
+          </AccountSectionShell>
 
           {/* **What has actually happened, under what we think about it.**
               [C-024](../../../../docs/LANE_COORDINATION.md): Timeline's
@@ -618,14 +638,25 @@ export default function AccountBriefPage() {
               the same shape as [C-024](../../../../docs/LANE_COORDINATION.md),
               which is what wave 1 exists to close. */}
           {/* ⚡ **`id="signals"`** — the design's *Signals timeline*. */}
-          <section id="signals" className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-content">What changed</h2>
+          <AccountSectionShell
+            id="signals"
+            heading="What changed"
+            // ⚠️ **No severity is claimed for an observation.** ⛔ An
+            // observation is a reading, and whether a reading is bad is
+            // `buying_score_engine`'s judgement rather than this screen's — so
+            // the header states the COUNT and no status, which `none` is for.
+            severities={(observations.data ?? []).map(() => 'none' as const)}
+            viewerId={viewerId}
+            kind={accountKind}
+            isLoading={observations.isLoading}
+            lastKnownCount={observations.data?.length ?? null}
+          >
             <ObservationList
               observations={observations.data}
               isLoading={observations.isLoading}
               isError={observations.isError}
             />
-          </section>
+          </AccountSectionShell>
 
           {/* 🔴 **The seven sections the design draws and nothing can fill** —
               [TASK-1415](../../../../docs/BACKLOG.md).

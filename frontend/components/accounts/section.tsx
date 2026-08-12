@@ -1,0 +1,200 @@
+/**
+ * **A section of Account 360, in every state the design gives it** —
+ * [TASK-1476](../../../docs/BACKLOG.md), against 📁
+ * `Fortune Signora Account 360.dc.html` §*States*.
+ *
+ * ⚡ **The rules live in
+ * [`lib/accounts/section-state.ts`](../../lib/accounts/section-state.ts) and
+ * this file obeys them.** ⛔ **Nothing about worst-status folding, the
+ * persistence key or the skeleton row count is decided here** — a rule
+ * duplicated between a law file and a component is a rule that will disagree
+ * with itself ([§2](../../../CLAUDE.md)).
+ *
+ * ## ⛔ What this deliberately does not build
+ *
+ * 🔴 **The design's *Expanded* state — *"widens to the full content region with
+ * filters, grouping and export"*.** ⚠️ **Filters, grouping and export are per
+ * section and each needs a field to act on**, and 📁 the fields most sections
+ * would group by are [C-210](../../../docs/LANE_COORDINATION.md)'s and
+ * [C-1425](../../../docs/LANE_COORDINATION.md)'s. ⛔ **A control that widens a
+ * region and offers three affordances that do nothing is the false-affordance
+ * class** — **so the URL contract is built and the widened view is not, and
+ * that is stated rather than hidden.** ✅ **What an anchor DOES do is open a
+ * collapsed section**, which is the half of the rule that has a subject.
+ */
+
+'use client';
+
+import { ChevronDown } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
+
+import { cn } from '@/lib/design/cn';
+import {
+  collapseKey,
+  collapsedHeader,
+  expansionFromAnchor,
+  skeletonRows,
+  type SectionSeverity,
+} from '@/lib/accounts/section-state';
+import { ACCOUNT_SECTIONS } from '@/lib/accounts/sections';
+import { SkeletonText } from '@/components/ui';
+
+/** ⚡ **The header's status dot** — 📁 tokens only, never a literal colour
+ * ([§20c](../../../CLAUDE.md)). */
+const SEVERITY_DOT: Record<SectionSeverity, string> = {
+  none: 'bg-border-strong',
+  good: 'bg-success',
+  watch: 'bg-warning',
+  risk: 'bg-danger',
+};
+
+const SEVERITY_LABEL: Record<SectionSeverity, string> = {
+  none: '',
+  good: 'nothing of concern',
+  watch: 'worth watching',
+  risk: 'a risk',
+};
+
+export function AccountSectionShell({
+  id,
+  heading,
+  /**
+   * 🔴 **One severity per item, in the section's own order.** ⚡ The header
+   * folds them — 📁 *"the header keeps the count and the worst status, so
+   * collapsing cannot hide a risk."*
+   */
+  severities,
+  /** ⚠️ **Whose preference this is.** `null` while the session is unknown, and
+   * then nothing is persisted rather than persisted under a wrong owner. */
+  viewerId,
+  /**
+   * 📁 **The account TYPE, never the record** — the design's own words.
+   *
+   * ⛔ **`null` when the type is not known**, and then NOTHING is persisted.
+   * ⚠️ **This page does not know it today**: `useAccounts` returns
+   * `AccountAttention` and `useAccountIdentities` returns `AccountIdentity`,
+   * and **neither publishes `kind`** — only the Companies list's
+   * `ListedAccount` does. ⚡ **Storing under a guessed type would put a rep's
+   * preference somewhere they cannot get it back from**, and adding a whole
+   * list read to key a collapse toggle is disproportionate. **The gap is
+   * recorded rather than papered over** —
+   * [B-261](../../../docs/BUGS.md).
+   */
+  kind,
+  isLoading,
+  lastKnownCount,
+  children,
+}: {
+  id: string;
+  heading: string;
+  severities: readonly SectionSeverity[];
+  viewerId: string | null;
+  kind: string | null;
+  isLoading?: boolean;
+  lastKnownCount?: number | null;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
+  const header = collapsedHeader(severities);
+
+  const key = viewerId === null || kind === null ? null : collapseKey(viewerId, kind, id);
+
+  // ⚠️ **Read after mount, never during render.** ⛔ `localStorage` is not
+  // available on the server, and a value read during render would make the
+  // first client paint disagree with the server's.
+  useEffect(() => {
+    if (key === null) return;
+    setOpen(window.localStorage.getItem(key) !== 'collapsed');
+  }, [key]);
+
+  // 📁 ***"Anchor links from the page nav auto-expand the target section."***
+  // ⚡ **Both on arrival and on a later click**, because a rail link to the
+  // section a reader is already on changes the hash and nothing else.
+  useEffect(() => {
+    const openIfTargeted = () => {
+      if (expansionFromAnchor(window.location.hash, ACCOUNT_SECTIONS) === id) setOpen(true);
+    };
+    openIfTargeted();
+    window.addEventListener('hashchange', openIfTargeted);
+    return () => window.removeEventListener('hashchange', openIfTargeted);
+  }, [id]);
+
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    // ⛔ **Written under the type's key and never the record's.** ⚡ The key is
+    // the law's; this component cannot construct another shape.
+    if (key !== null) window.localStorage.setItem(key, next ? 'open' : 'collapsed');
+  };
+
+  return (
+    <section
+      id={id}
+      // 📁 ***"Every section is a labelled region with a heading, reachable by
+      // landmark navigation"*** — and that holds in EVERY state, collapsed
+      // included.
+      aria-labelledby={`${id}-heading`}
+      className="flex flex-col gap-3"
+    >
+      <div className="flex items-center gap-2">
+        {/* 🔴 **The heading is an `h2` and the button lives INSIDE it** — the
+            standard disclosure pattern, and it is a correction rather than a
+            preference. ⛔ **The first version made the heading a `span` inside
+            the button**, which removed every section from the document outline
+            — 📁 the design's *"every section is a labelled region WITH A
+            HEADING, reachable by landmark navigation"* stops being true, and a
+            screen-reader user loses the ability to jump between sections.
+            ⚠️ **Caught by an existing TASK-417 assertion** that asks for the
+            heading by role, **not by a new test** — which is the assertion
+            doing exactly what it was written for. */}
+        <h2 id={`${id}-heading`} className="text-sm font-semibold text-content">
+          <button
+            type="button"
+            onClick={toggle}
+            aria-expanded={open}
+            aria-controls={`${id}-body`}
+            className={cn(
+              'flex items-center gap-1.5 rounded text-left',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+              'focus-visible:outline-accent',
+            )}
+          >
+            <ChevronDown
+              aria-hidden
+              className={cn('h-3.5 w-3.5 transition-transform', open ? '' : '-rotate-90')}
+            />
+            {heading}
+          </button>
+        </h2>
+
+        {/* 🔴 **The count and the worst status, and they stay while collapsed.**
+            ⛔ **This is the design's safety rule, not a decoration**: a section
+            folded to its heading alone can hide a risk, and that is the one
+            outcome collapsing must never produce. */}
+        <span className="flex items-center gap-1.5 text-2xs text-content-subtle">
+          <span>{header.count}</span>
+          {header.worst === 'none' ? null : (
+            <>
+              <span aria-hidden className={cn('h-1.5 w-1.5 rounded-full', SEVERITY_DOT[header.worst])} />
+              <span className="sr-only">{SEVERITY_LABEL[header.worst]}</span>
+            </>
+          )}
+        </span>
+      </div>
+
+      <div id={`${id}-body`} hidden={!open}>
+        {isLoading ? (
+          // 📁 ***"Skeleton row count matches the expected result so the page
+          // height is stable."*** ⚡ The count is the law's, not a literal.
+          <div className="flex flex-col gap-2" aria-hidden>
+            {Array.from({ length: skeletonRows(lastKnownCount ?? null) }, (_, row) => (
+              <SkeletonText key={row} />
+            ))}
+          </div>
+        ) : (
+          children
+        )}
+      </div>
+    </section>
+  );
+}

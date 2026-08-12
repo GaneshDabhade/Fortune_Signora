@@ -275,3 +275,27 @@ export function resolveState(read: {
   if (read.count === 0) return 'empty';
   return 'ready';
 }
+
+/**
+ * ⚡ **A contribution's severity, derived from a field the domain already
+ * publishes and from nothing else.**
+ *
+ * ⛔ **`dissenting` is the ONLY thing mapped**, and it is mapped to `watch`
+ * rather than `risk`. 📁 The Contribution Ledger records it as *signals reading
+ * the same evidence differently* — **which is a reason to look, not a verdict**
+ * — and `ai_reasoning_engine` carries the same concept as
+ * `support.contested`. ✅ **The page already renders a `ContestedNote` for it**,
+ * so the concept is this screen's, not a new one.
+ *
+ * ⛔ **`points`, `posture` and `relevance` are deliberately NOT mapped.** ⚡ A
+ * low-scoring contribution is not a risk, and calling one a risk would be this
+ * file inventing a judgement `buying_score_engine` owns and does not make.
+ *
+ * ⚠️ **Structural rather than typed on `ScoreContribution`**, so this law file
+ * imports no API type and cannot drift with one.
+ */
+export function contributionSeverities(
+  contributions: readonly { readonly dissenting: boolean }[] | undefined,
+): readonly SectionSeverity[] {
+  return (contributions ?? []).map((c) => (c.dissenting ? 'watch' : 'none'));
+}

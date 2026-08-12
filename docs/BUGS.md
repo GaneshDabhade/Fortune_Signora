@@ -125,6 +125,42 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-261 · Account 360 cannot key a preference per account type, because nothing tells it what type the account is
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — ⚡ **assignee joined from [`modules.toml`](coordination/modules.toml)**: `current_owner = "Lane A"` |
+| **Current assignee** | **Lane A** — ⚡ **found by this lane implementing [TASK-1476](BACKLOG.md), and filed rather than worked around** |
+| **Severity** | 🟡 — ⛔ **nothing renders wrongly.** ⚠️ **One design rule cannot be satisfied**, and the section states so in code rather than pretending |
+| **Status** | 🔵 **`OPEN`** — ✅ **the shipped behaviour is the safe half**: a preference is **not stored** rather than stored under a guess |
+| **Found** | **2026-08-12, by Lane A** |
+
+#### 📁 The rule
+
+> 📁 **`Fortune Signora Account 360.dc.html` §*States*, Collapsed:** ***"State persists per user and per account TYPE, not per record."***
+
+⚡ **The emphasis is the design's own point.** ⛔ **Keying by `accountId` is the obvious implementation and the one the rule forbids**: a rep who collapses *Technology stack* has decided they do not care about technology stacks **on companies**, not that they do not care about it **on Acme**. **Keyed per record, the preference is re-made on every account opened, which is the same as having none.**
+
+#### ⛔ What this page can actually see
+
+| Read | Returns | Carries `kind`? |
+|---|---|---|
+| `useAccounts` | `AccountAttention` | ⛔ **No** |
+| `useAccountIdentities` | `AccountIdentity` | ⛔ **No** |
+| `useAccountsList` *(Companies)* | **`ListedAccount`** | ✅ **Yes — `kind: EntityKind`** |
+
+⚡ **The type exists and is published — to a different screen.** ⛔ **Account 360 reads neither of the two reads that carry it**, and adding a whole list read to key a collapse toggle is disproportionate to the thing it keys.
+
+#### ✅ What shipped instead, and why it is the right half
+
+**`AccountSectionShell` takes `kind: string | null`, and `null` means *persist nothing*.** ⛔ **Not *persist under a default*.** ⚡ **A preference stored under a guessed type is one a rep cannot get back** — they collapse a section, return, and find it open, with a stale key left in their browser under a type that was never theirs. **No preference is an honest state; a wrong one is not.**
+
+🔴 **Two tests pin it** and one pins the fix's shape for whoever closes this: **an unknown type writes nothing**, **an unknown viewer writes nothing**, and **a known pair writes exactly one key containing the type and no record id.**
+
+#### ⚠️ The cheap fix, named so it is not re-derived
+
+**Either read publishes `kind`.** ✅ **`AccountIdentity` is the natural home** — this page already reads it for the account it is on, so the type would arrive with the name and cost no request. ⛔ **That is `provider_platform`'s response shape and is 🟠**, so it is stated here rather than taken inside a frontend slice.
+
 ### B-260 · `reasoning@2`'s worked example does not fix protocol-2 grounding, and the prompt-side hypothesis is now spent
 
 | | |
