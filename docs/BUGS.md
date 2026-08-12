@@ -242,9 +242,25 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 🔴 **Two tests pin it** and one pins the fix's shape for whoever closes this: **an unknown type writes nothing**, **an unknown viewer writes nothing**, and **a known pair writes exactly one key containing the type and no record id.**
 
-#### ⚠️ The cheap fix, named so it is not re-derived
+#### 🔴 The fix is this lane's, and it is NOT a field — corrected 2026-08-12 after reading the module
 
-**Either read publishes `kind`.** ✅ **`AccountIdentity` is the natural home** — this page already reads it for the account it is on, so the type would arrive with the name and cost no request. ⛔ **That is `provider_platform`'s response shape and is 🟠**, so it is stated here rather than taken inside a frontend slice.
+⚠️ **This row first said *"`AccountIdentity` is the natural home… that is `provider_platform`'s response shape"*. ⛔ **Both halves were wrong** and the correction changes what the next implementer does.
+
+**① The module is [`knowledge_graph`](../backend/modules/knowledge_graph/), not `provider_platform`** — 📁 `interface/router.py` publishes `/workspaces/{id}/account-identities`. ✅ **[`modules.toml`](coordination/modules.toml) assigns it to Lane A, `settled`** — **so this is this lane's to fix end to end and needs no other lane.**
+
+**② `AccountIdentity` refuses new fields BY DOCTRINE, and the doctrine is written into the type.** 📁 `application/queries.py`:
+
+> **"What is deliberately absent, and why — each would be a field a caller could read and not act on… Anything about industry, headcount or domain. Real, claimed, and *not identity*. A read model that grew every firmographic attribute would become the entity record `Entity` refuses to be."**
+
+⚡ **And the module already decided where `kind` goes.** 📁 `ListedAccount` puts it **beside** the identity, not inside — *"one account on a browse page: **who it is, and what kind of thing**"* — and `SearchResultResponse` wraps the same way, with its own sentence for why: ⛔ *"a field that is null wherever it is not a search is a field in the wrong schema."*
+
+🔴 **So the shape this module has chosen is `identity + kind, side by side`, twice, deliberately.** ⛔ **Adding `kind` INSIDE `AccountIdentityResponse` would contradict that** — ⚠️ **and it would put a second representation of `kind` beside `ListedAccountResponse`'s**, which is [§2](../CLAUDE.md)'s duplicated-truth defect: *"remove one rather than synchronising both."*
+
+#### ⚠️ What the fix actually costs, stated so nobody starts it thinking it is small
+
+**Following the module's own shape means `/account-identities` returns a WRAPPER rather than `list[AccountIdentityResponse]`** — ⛔ **a response-shape change on an endpoint three surfaces already read.** ⚡ **`last_observed_at` is the precedent for the alternative**: it was *"weighed against that last rule and admitted"*, with an argument in the type — **so admitting `kind` is available, and it is an argument to make rather than an edit to perform.**
+
+> ⛔ **NOT taken in [TASK-1476](BACKLOG.md), deliberately.** 📁 The row is `IN VALIDATION` and **reworking a slice QE is validating is the churn this repository names**; ⚡ **and an API-shape decision inside a module with a written doctrine about that exact schema is not a thing to do quickly to unblock a collapse toggle.** ✅ **The shipped behaviour is safe meanwhile — no preference is stored, which is honest.**
 
 ### B-260 · `reasoning@2`'s worked example does not fix protocol-2 grounding, and the prompt-side hypothesis is now spent
 
