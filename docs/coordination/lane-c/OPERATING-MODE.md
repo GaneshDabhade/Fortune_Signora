@@ -69,6 +69,27 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⛔ **Never load by default:** every ADR · every design document · every audit · `PRODUCT_OFFICE.md` in full (**158 KB**) · `SESSION_HANDOFF.md` (**107 KB**, and it is QE's) · `BACKLOG.md` in full (**189 rows**). **Open a section when the objective requires that section.**
 
+## 5a · Output budget — ⚠️ the constraint that actually binds
+
+**Added 2026-08-12, same day as this file, after a session exhausted context having loaded almost nothing.** ⛔ **§5's loading rules were not the binding constraint. Lane C's own output was.**
+
+> **Everything Lane C writes, it then carries.** A 700-word peer message costs context twice — once to compose, once for the rest of the session.
+
+| | Budget |
+|---|---|
+| **Peer message (QE, Lane A)** | ⛔ **Under 150 words.** State the finding, name the evidence, stop. **Agreement needs one line, not a paragraph explaining why you agree** |
+| **Report to the product owner** | **One screen.** The [Standard Lane Report](../../../CLAUDE.md) block plus the decision. ⛔ **Detail goes in the register and is linked** |
+| **Commit message** | ✅ **Unbudgeted.** This is where reasoning belongs — it is written once, carried never, and travels with the change forever |
+| **Reading** | ⛔ **Extract the field, not the section.** `grep` the `Status` line; do not read 3,000 characters to find it |
+
+⚡ **The asymmetry is the whole rule: the repository is free to write to and expensive to talk about.** ⛔ **A finding explained in chat and not committed is a finding that dies with the session.**
+
+## 5b · Handoff and resumption
+
+⛔ **A conversation summary is not a handoff.** A summary narrates what happened; **it arrives as thousands of words of history and reconstructs nothing the repository could not have answered.**
+
+✅ **On resuming, read [CURRENT-STATE.md](CURRENT-STATE.md) and treat any inherited narrative as untrusted.** ⚠️ **It reflects what was believed then** — this session inherited three stale blocker attributions from one, and corrected all three against the rows.
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
