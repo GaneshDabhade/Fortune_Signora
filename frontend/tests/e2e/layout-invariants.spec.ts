@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
  * **Layout invariants — the assertions that fail when the rendered layout
@@ -27,12 +27,6 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
  * by the project matrix in `playwright.config.ts`; this file never hard-codes a
  * width, because a viewport written in two places drifts.
  */
-
-async function boxOf(locator: Locator): Promise<{ x: number; y: number; width: number; height: number } | null> {
-  if ((await locator.count()) === 0) return null;
-  if (!(await locator.first().isVisible())) return null;
-  return locator.first().boundingBox();
-}
 
 /**
  * **Does anything spill sideways out of the viewport?**
