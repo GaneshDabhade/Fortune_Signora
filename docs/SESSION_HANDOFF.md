@@ -1,5 +1,34 @@
 # Session Handoff
 
+> ## Cycle 217 — promoted `e158dd04`, 2026-08-12
+>
+> **`main` = `e158dd04` = the certified commit.** Ten commits. **First attempt, no aborts.**
+>
+> ### ✅ `TASK-1476` — Account 360, validated on its DECLARED scope
+>
+> ⚠️ **The four journeys are recorded as written-and-not-passing and [B-261](BUGS.md)/[B-262](BUGS.md) as declared limitations** — **neither promoted to a defect QE discovered nor absorbed into compliance.** 📁 The `PROMOTED` row says so.
+>
+> **Two invariants fire-tested rather than read**, both from the scope the lane declared:
+>
+> | Mutation | Result |
+> |---|---|
+> | `worstSeverity` inverted, so a collapsed section reports its **best** member | ⛔ **4 red — including at the rendered header**, so the guard reaches the screen, not only the helper (B-191's lesson) |
+> | `collapseKey` keyed by the **record** instead of the account type | ⛔ **Does not compile.** The signature takes `userId, kind, sectionId` — **the forbidden implementation is unrepresentable**, which is stronger than a test |
+>
+> ### ⚡ The stranded synchronization work landed with it
+>
+> **`ADR-0409` `RATIFIED`, the `C-210` and `C-1430` rulings that read `OPEN` on `integration`, the five commissioned designs with hashes, and four rows released.**
+>
+> ### 🔴 The route finding, and it is Lane A's own row
+>
+> **Ten executable `TASK-1476` commits reached `integration` without QE** — [B-238](BUGS.md)'s second instance, recorded by Lane A against itself. ⛔ **`--audit-claims` reported *0 claims awaiting promotion* the whole time and was not wrong**: it audits subjects beginning `Claim `. ✅ **`--audit-main` was clean throughout — the `main` guarantee never depended on the route.**
+>
+> ⚡ **Lane C's framing is the one to keep: this was a state contradiction with an owner, not a route defect** — *"a check cannot resolve a contradiction between two people's claims; it can only make the repository look like it has."* **No guard was added.**
+>
+> ### ⚠️ Open and not QE's
+>
+> **[B-263](BUGS.md)** — `C-210` names two questions, and the one without a heading is invisible to a heading-based scan. **Lane A has stopped allocating coordination ids: `C-200`–`C-299` are exhausted and [BUGS.md](BUGS.md)'s own table says Lane A's block is the product owner's to allocate.** ⛔ **That is a ruling, not a QE fix.**
+
 > ## Cycle 216 — promoted `c3964e6c`, 2026-08-12
 >
 > **`main` = `c3964e6c` = the certified commit.** Fourteen commits, all registers and coordination. **First attempt, no aborts.** ⛔ **No customer-visible change.**
@@ -226,7 +255,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-12 · **`main` at `c3964e6c`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-12 · **`main` at `e158dd04`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
