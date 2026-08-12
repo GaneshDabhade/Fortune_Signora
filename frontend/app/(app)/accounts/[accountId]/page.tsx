@@ -178,12 +178,31 @@ export default function AccountBriefPage() {
   // both render as absence, and absence here is an invitation to start a run
   // that may already exist.
   const neverResearched = researchError instanceof ApiError && researchError.status === 404;
+
+  /**
+   * 🔴 **Which anchored sections actually RENDER**, and this is a correction to
+   * this lane's own previous change — [TASK-1476](../../../../docs/BACKLOG.md).
+   *
+   * ⛔ **Giving a component an `id` does not make a region appear.**
+   * `CompetitorContext` returns `null` when nothing is declared, and
+   * `NarrativeBlock` returns `null` while its read is in flight — ⚡ **so the
+   * rail gained two entries that can point at nothing.** 📁 **That is exactly
+   * the defect `OnThisPage`'s own docstring records** — *"`Account score` and
+   * `Summary` were links to nowhere"* — **reintroduced by the change that
+   * closed it, one section over.**
+   *
+   * ✅ **The rail's contract is *"the ids this page ACTUALLY renders"***, so the
+   * page answers that question rather than assuming it.
+   */
+  const rendersSummary = narration !== undefined || notNarrated;
   const requestResearch = useRequestResearch(workspaceId, accountId);
   // Paged rather than fetched whole: an account worked for a year has a long
   // history, and the brief must not wait on all of it to render the rest.
   const timeline = useAccountTimeline(workspaceId, accountId);
   const observations = useAccountObservations(workspaceId, accountId);
   const competitors = useCompetitors(workspaceId);
+  const rendersCompetitors =
+    competitors.isError || (competitors.data?.competitors.length ?? 0) > 0;
   // **Workspace declarations, not account facts** — the same list on every
   // brief, which is why both read a workspace-scoped query and neither takes
   // an `accountId`. Stage 2 of [C-008](../../../../docs/LANE_COORDINATION.md).
@@ -419,7 +438,7 @@ export default function AccountBriefPage() {
             // this page all along and carried no `id`**, so the rail could not
             // link to them and its docstring recorded that as a limitation.
             // ✅ **The limitation is closed rather than restated.**
-            'summary',
+            ...(rendersSummary ? ['summary'] : []),
             'score',
             'health',
             'intent',
@@ -430,8 +449,11 @@ export default function AccountBriefPage() {
             // the treatment §20c requires and the one every other unfillable
             // section already gets.
             'contacts',
+            // ⚡ **`research` is unconditional** — `ResearchPanel` always
+            // renders its section, because the invitation to start research is
+            // itself the content when there is none.
             'research',
-            'competitors',
+            ...(rendersCompetitors ? ['competitors'] : []),
             'org-chart',
             'relationships',
             'tech-stack',
@@ -634,12 +656,19 @@ export default function AccountBriefPage() {
               about being a whole section of a screen. ⚠️ **This closes half of
               the limitation the rail's own docstring names** — *"three
               sections have reads and no section on this page yet"*. */}
-          <section id="competitors" aria-label="Competitors">
-            <CompetitorContext
-              competitors={competitors.data}
-              isError={competitors.isError}
-            />
-          </section>
+          {/* ⛔ **No empty region.** ⚡ The wrapper renders only when the
+              component will put something inside it — **an anchored `section`
+              containing nothing is a rail entry that scrolls a reader to
+              blank space**, which is the same defect as a link to a missing
+              id and harder to notice. */}
+          {rendersCompetitors ? (
+            <section id="competitors" aria-label="Competitors">
+              <CompetitorContext
+                competitors={competitors.data}
+                isError={competitors.isError}
+              />
+            </section>
+          ) : null}
 
           {/* **Between the ledger and the record of events** (TASK-417, wave 1
               of the approved Account 360). The contribution list above says

@@ -59,3 +59,29 @@ describe('⛔ a section the rail anchors carries the id in every state', () => {
     expect(container.querySelector('#research')).toBeNull();
   });
 });
+
+describe('🔴 a component that renders nothing must not leave an anchored region', () => {
+  /**
+   * ⛔ **The defect this lane introduced and then found by reading** —
+   * [TASK-1476](../../../docs/BACKLOG.md). ⚡ **Giving a component an `id` does
+   * not make a region appear.** `CompetitorContext` returns `null` when
+   * nothing is declared and `NarrativeBlock` returns `null` while its read is
+   * in flight, **so a rail entry for either can scroll a reader to blank
+   * space** — 📁 the same class as *"links to nowhere"*, and harder to notice
+   * because the link resolves.
+   */
+  it('Summary renders NOTHING while its read is in flight', () => {
+    const { container } = render(<NarrativeBlock id="summary" narration={undefined} />);
+    // ⚡ **So the page must not advertise `summary` in the rail yet** — which is
+    // what `rendersSummary` decides.
+    expect(container.querySelector('#summary')).toBeNull();
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('⚠️ and the not-narrated answer IS content, so it does render', () => {
+    // ⛔ **The two must not be conflated**: *in flight* is not *nobody has
+    // written one*, and only the second is an answer.
+    const { container } = render(<NarrativeBlock id="summary" narration={undefined} notNarrated />);
+    expect(container.querySelector('#summary')).not.toBeNull();
+  });
+});
