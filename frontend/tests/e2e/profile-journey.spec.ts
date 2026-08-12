@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { OWNER } from './fixtures/personas';
+
 /**
  * **Workflow 9 · User Profile** — [TASK-470](../../../docs/BACKLOG.md)
  * milestone 1.
@@ -59,6 +61,35 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
     await page.getByRole('link', { name: /@/ }).click();
 
     await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
+  });
+
+  /**
+   * 🔴 **[B-191](../../../docs/BUGS.md), repairing [B-429](../../../docs/BUGS.md)'s
+   * proof** — 📁 App Shell §11: *"Always states name, email, role and
+   * workspace."*
+   *
+   * ⛔ **The component test was not a guard.** It rendered `AccountMenu` with a
+   * name the test supplied, **so it proved the component displays what it is
+   * given — and that was never the defect.** QE reverted `layout.tsx` to
+   * `name={null}`, the exact line the original defect dropped, **and the whole
+   * suite stayed green.**
+   *
+   * ⚡ **The seam that failed is a server component reading a session**, which
+   * no component test can reach. ✅ **A browser can**: this signs in as a real
+   * person and reads what the menu actually shows, **through `layout.tsx`, the
+   * real session and the whole shell chain.**
+   */
+  test('@journey the account menu states the name the session carries', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByRole('button', { name: /^Account menu for / }).click();
+    const menu = page.getByRole('menu', { name: 'Account' });
+
+    // 🔴 **The assertion `name={null}` fails.**
+    await expect(menu).toContainText(OWNER.name);
+    // ✅ **And the other three facts, so a regression in one is not read as a
+    // regression in the block.**
+    await expect(menu).toContainText(OWNER.email);
   });
 
   test('🔴 nothing on this screen is locked against a sync that does not exist', async ({
