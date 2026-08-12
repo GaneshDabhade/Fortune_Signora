@@ -513,6 +513,63 @@ databaseUrl: required(
 
 ---
 
+## C-300 · [TASK-1475](BACKLOG.md)'s row facts have no source, and its pager cannot be built over its own endpoint
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`OPEN`** — Lane A, 2026-08-12 |
+| **Raised by** | **Lane A**, under the product owner's **end-to-end module model** ruled today: 📁 *"If you discover a genuine Product/Architecture decision: **STOP THAT SCOPE and raise it.** Do not invent product behaviour to keep moving."* |
+| **Owner** | **Product owner** *(the RFC in ②)* · **Lane C** *(the package's scope lines)* |
+| **Blocks** | ⛔ **Nothing yet — [TASK-1475](BACKLOG.md) is not on `integration`.** ⚡ **Raised BEFORE it lands so the row can be corrected rather than claimed and then narrowed**, which is what happened to [TASK-466](BACKLOG.md) and [TASK-1416](BACKLOG.md) |
+
+### ① The package says nothing in scope waits on a contract. Three things do
+
+📁 **[TASK-1475](BACKLOG.md) includes *"the row facts the design draws"*** and records *"capability verified before writing"* for six reads. ✅ **Those six do exist.** ⛔ **The row facts are a different question and five of the design's eight have no source.**
+
+| The design's column | Source |
+|---|---|
+| **Company** | ✅ `AccountIdentity.name`, on the list contract |
+| **Signora score** | ⚠️ **Exists** — `buying_score_engine`, 0–100 — ⛔ **but on `/accounts` (attention), not on `/accounts-list`.** A join, not an absence |
+| **Segment** · **Owner** · **Tags** | ⛔ **Excluded already by [C-1425](#c-1425), and the package excludes them** |
+| **Open ACV** | 🔴 **No canonical attribute, and extending it needs an RFC** |
+| **Renewal** | 🔴 **Same** |
+
+### ② 🔴 ACV and Renewal are not unbuilt — they are refused in writing
+
+📁 **[`provider_normalization/infrastructure/mappers/crm.py`](../backend/modules/provider_normalization/infrastructure/mappers/crm.py):99**
+
+> ***"Nothing commercial.** Is this already a customer, **contract value**, **renewal date**, opportunity stage — the facts that make a CRM worth connecting for Epic D — have **no canonical attribute**, and `ClaimAttribute` says an RFC extends it. Inventing one here would put a vocabulary decision inside a translation file, which is the quietest place in the codebase to make one."*
+
+⚡ **So this is the same shape as [C-297](#c-297)**: 📁 `buying_score_engine` refuses probability *"in writing"* and the product promised Forecast anyway. ⛔ **Here the design draws two commercial columns the canonical language declines to carry**, and **a table is a quieter place to invent a vocabulary than a translation file, not a louder one.**
+
+> 🔴 **This is one decision, not two rows.** **Whether Signora holds commercial facts about an account — value, renewal, stage — is upstream of this table, of [TASK-1469](BACKLOG.md)'s deal record, and of [C-297](#c-297)'s Forecast.** ⚠️ **Three surfaces have now asked for it independently.**
+
+### ③ ⛔ The design's pager and the endpoint's pagination are incompatible
+
+📁 **The design draws** `Rows 1–8 of 312 · Previous · 1 · 2 · 3 · Next` — **numbered pages and a total.**
+
+📁 **[`knowledge_graph`'s endpoint is keyset, deliberately, and says why](../backend/modules/knowledge_graph/interface/router.py):**
+
+> ***"Keyset pagination, never offset.** The graph is written continuously… an offset page would **skip or repeat rows** between two requests and a customer paging the list would silently miss accounts."*
+
+⛔ **A numbered pager needs offset, and a total needs a count the contract does not return.** ⚡ **Building the design's pager over this endpoint means either breaking a rule the endpoint states, or adding a count and an offset mode — a contract change, not a screen.**
+
+✅ **What IS buildable today**: **`Previous` / `Next` over the cursor**, which is honest and is what the contract supports. ⛔ **Numbers and a total are the decision.**
+
+### ④ ✅ What this lane can build the moment the row lands, unchanged
+
+⚡ **Named so the item reads as a narrowing rather than a refusal**: **card view · density · column configuration over the fields that exist · filters over `name`, `source`, `kind` and freshness · `Previous`/`Next` paging · export of what is on screen.** ✅ **None of those waits on anything.**
+
+⛔ **Import is not among them**: it is a write path that creates companies, and **`New company` is excluded by the package itself** — importing them is the same capability with a different door.
+
+### ⑤ ⚠️ Why this is raised now rather than on claiming
+
+📁 **The end-to-end model says *"start implementation as soon as the package reaches your queue and its prerequisites are satisfied."*** ⚡ **These are the prerequisites, and they are checkable today** — **so checking them now is what makes step 6 immediate when it lands**, rather than a claim followed by a narrowing.
+
+⚠️ **[TASK-466](BACKLOG.md) and [TASK-1416](BACKLOG.md) were both claimed-shaped and unstartable, and both were found so after they were `READY`.** ⛔ **This is the same measurement performed one step earlier.**
+
+---
+
 ## C-299 · Which organization a person lands in, when they have more than one and have chosen none
 
 | | |
