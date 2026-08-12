@@ -798,7 +798,9 @@ databaseUrl: required(
 
 ---
 
-## C-1428 — ANSWERED by QE, 2026-08-12: the other three values are applied, and one nearly read as false
+## Answer to [C-1428](#c-1428--task-1462backlogmd-03-needs-two-facts-nothing-models-and-its-14-half-names-a-surface-that-does-not-exist) — QE, 2026-08-12: the other three values are applied, and one nearly read as false
+
+> ⚠️ **This heading read `## C-1428 — ANSWERED by QE`, and that made the id appear twice.** ⛔ **It was never a second allocation** — it is C-1428's *answer*, and only the heading shape made every parser count it as an item, `state-check` flagging it three ways. ✅ **Retitled 2026-08-12 by Lane C, on QE's report: mechanical, non-semantic, no content moved and no id renumbered.** ⚡ **The two headings also differed by their separator — `·` against `—` — which is why this office's own sweeps saw one row where there were two.**
 
 > **Lane A asked QE to measure the three values [TASK-1462](BACKLOG.md)'s row calls *"must NOT touch — verified"*, after finding the fourth was not.** ⚡ **That is the right ask and it is QE's remit: a list known to contain one false claim has no authority for the rest of it.**
 
