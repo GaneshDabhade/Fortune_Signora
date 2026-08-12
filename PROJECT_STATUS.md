@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `96f23434`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `02775de5`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,24 +12,26 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `96f23434`, 2026-08-12.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `02775de5`, 2026-08-12.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`96f23434`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 211** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
-| **Release candidate** | **None. `integration` is one commit ahead of `main`** — the cycle 211 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
-| **Certification** | ✅ [`96f2343475fa`](certification/reports/96f2343475fa.md) · migration head **`0048`** · profile **`platform`** · ✅ **first attempt, no aborts** |
-| **Cycle 211 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages** · scenario **190 assertions** |
+| **`main`** | **`02775de5`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 212** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
+| **Release candidate** | **None. `integration` is one commit ahead of `main`** — the cycle 212 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
+| **Certification** | ✅ [`02775de5b7fe`](certification/reports/02775de5b7fe.md) · migration head **`0048`** · profile **`platform`** · ⚠️ **second attempt — the first was KILLED and wrote no record.** 📁 **An abort, distinguished from a verdict by the manifest still naming `96f2343475fa` afterwards** |
+| **Cycle 212 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages, 203s** · scenario **190 assertions** |
 | **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3065 across 170 files** · **Disaster Recovery passed** against the restarted production stack. **A lane's figure is a claim; QE publishes a measurement** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
 | ⛔ **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1631 commits — 187 certified targets, 1444 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Blocking Quality Defects** | ✅ **None** |
-| **Customer value this cycle** | ⛔ **None, and that is correct** — ⚡ **the whole cycle is [B-191](docs/BUGS.md)'s repair: two proofs that did not fire now do.** **A cycle that ships no feature and makes two guarantees real is a cycle that did its job** |
-| ⚠️ **What QE verified, and what it did not** | ✅ **[B-256](docs/BUGS.md)'s repair is verified BY MEASUREMENT** — the identical revert that left **3062 green last cycle** now turns **three red**. ⛔ **[B-429](docs/BUGS.md)'s repair is a journey and QE did NOT execute it**: its shape is right, its behaviour is unverified, and **reading a guard is not testing it — which is [B-191](docs/BUGS.md)'s own point.** 📁 **Stopped by [B-192](docs/BUGS.md), QE's own: [`RUNNING.md`](docs/RUNNING.md) documents no step that creates the Better Auth schema** |
+| **Customer value this cycle** | ⛔ **None, and that is correct** — ⚡ **the cycle is [B-257](docs/BUGS.md) and two decisions routed to the product owner.** **A false comment removed and three items put in front of somebody who can rule on them is the work**, and neither shows on a screen |
+| ⚡ **What QE verified** | ✅ **[B-191](docs/BUGS.md) is now `VERIFIED` on BOTH instances, in both directions** — the journey passes with the fix and fails with `name={null}`, *Expected substring: "Dana Reyes"*. ✅ **[B-257](docs/BUGS.md)'s premise checked at source before accepting a 🟠**: `config.ts:140/151/157` do default to `3000`/`3000`/`8000`, and [`RUNNING.md:311`](docs/RUNNING.md) does reserve those *"to no lane"* — **so an unset variable aims a lane's auth tier at the product owner's demo stack** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ⚡ **The cycle's whole subject is that two guarantees became real, and QE proved one of them and says so about the other.** ✅ **[B-256](docs/BUGS.md): the identical revert QE ran last cycle — the two component lines, `reachable` left intact — turned `169 files · 3062 tests` green then and turns **three red** now.** ⛔ **[B-429](docs/BUGS.md): the journey asserts the right seam and QE has not run it.** 📁 **[B-192](docs/BUGS.md) is why, and it is QE's own defect** — [`RUNNING.md`](docs/RUNNING.md) documents compose, three URLs, `alembic`, `uvicorn` and `npm run dev`, **and nothing that creates the Better Auth schema.** ⚠️ **Measured on a freshly-migrated lane database: 59 tables, and not one of `user`, `session`, `account`, `verification`** — so sign-in submits and never navigates, and **the first thing that breaks names the wrong subsystem**, which is [B-219](docs/BUGS.md)'s three-day lesson.
+> 🔴 **Three setup failures, one appearance, and the root is one decision nobody has taken.** ⛔ **A missing Better Auth schema, an unset `SIGNORA_APP_URL`, and missing demo accounts all present as *a sign-in that submits and never navigates*** — QE hit all three in one session. ⚡ **The comment defending the defaults claimed *"a URL pointing at the wrong port fails loudly and immediately"*, and QE's own measurement disproves it**: `Invalid origin` → `403`, silent. ⚠️ **The honest repair needs the auth tier to know whether it is a first clone or a lane, and `environmentName()` returns `local` for every lane** — 📁 **which is [C-298](docs/LANE_COORDINATION.md), and why Lane A corrected the comment and deliberately left the values.**
+
+> ⚠️ **`ruff check modules/` reports 85 errors on the promoted commit, and `ruff` is not a certification gate** ([B-211](docs/BUGS.md)). **Reported because a green certification must not read as *the backend is lint-clean*.** ✅ **Re-measured rather than carried: the row's figure was 238.**
 
 **Repository health:** **4419 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **3065 frontend tests** across **170 files** · **403 Security Invariants** · mypy strict over **867 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **207s** · **disaster recovery re-run this cycle and passing** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
@@ -43,19 +45,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | ⚡ **[B-256](docs/BUGS.md)** — onboarding stops promising screens that do not exist · **[B-429](docs/BUGS.md)/[B-255](docs/BUGS.md)** — a fact the shell dropped and a refusal it never spoke | **M-I** — who has held a role at a company, and who left | ⚡ **Three register repairs, one of which corrected QE** | **Cycle 210** |
-| **Execution phase** | **Building** | ⚠️ **No session** — 804 behind `main`, last moved 5 days ago | **Governing** · **bounded-session** | **Certified · Promoted · Closed out** |
-| **Branch** | ✅ **Level with `main`** — everything it has built is promoted | **2 ahead, 804 behind** | **3 ahead, 7 behind** — arrived by cherry-pick, will drop out on rebase | **1 ahead** — the cycle 210 record |
-| **Validation status** | ✅ **Promoted this cycle** | — | ✅ **Promoted this cycle** | — |
-| **Blocked?** | **No** | ⚠️ **Unknown — no session to ask** | **No** | **No** |
+| **Last promoted** | ⚡ **[B-257](docs/BUGS.md)** — three auth defaults aim at human review, and the comment defending them was false · **[C-298](docs/LANE_COORDINATION.md)/[C-299](docs/LANE_COORDINATION.md)** routed | **M-I** — who has held a role at a company, and who left | — | **Cycle 212** |
+| **Execution phase** | ⛔ **Startup step 4 EXHAUSTED** — every defect in its modules is terminal | ⚠️ **No session** — last moved 5 days ago | **Governing** · **bounded-session** | **Certified · Promoted · Closed out** |
+| **Branch** | ✅ **Level with `main`** | **behind, 2 ahead** — one already on `main` by patch-id, one stale claim | **behind, 3 ahead** — cherry-picked, drops out on rebase | **1 ahead** — the cycle 212 record |
+| **Validation status** | ✅ **Promoted this cycle** | — | — | — |
+| **Blocked?** | 🔴 **YES — on rulings, not on work** | ⚠️ **Unknown** | **No** | **No** |
 | **Waiting on QE?** | No | — | No | — |
-| **Next executable work** | ⛔ **Nothing startable, second cycle running** — ⚡ **it spent this one measuring what [`TASK-1469`](docs/BACKLOG.md)'s own row asks for, and the answer is that the row does not free** | — | ⚡ **Lane A's queue depth, recorded by Lane C as its next bounded objective** | ⚡ **Cycle 211** — nothing waiting |
+| **Next executable work** | ⛔ **None.** 📁 Its queue is `["TASK-466", "TASK-1416", "TASK-202"]` — **two blocked ([C-1427](docs/LANE_COORDINATION.md)), one Lane B's** | — | Its own coordination items | ⚡ **Cycle 213** — nothing waiting |
 
-> ⛔ **Lane A has had nothing startable for two consecutive cycles**, and both times it produced real value anyway — eight defects last cycle, [B-256](docs/BUGS.md) and a blocked-row measurement this one. ⚠️ **That is Startup step 4 working twice, and it is not a queue.** ⚡ **`state-check` reports 3 claimable rows against a floor of 10 and 17 prepared against a floor of 20** ([D-187](docs/DECISION_REGISTER.md)). **Lane C has recorded it as its next objective.**
+> 🔴 **Lane A has now had nothing startable for THREE cycles, and the defect supply that carried the first two is spent.** ⚡ **Its own words: *"Startup step 4 is exhausted rather than thin… I would rather say that plainly than keep widening what counts as work."*** ⛔ **Every open defect in its modules is terminal** — fixed and with QE, routed and awaiting a ruling, blocked on an unruled governance amendment, or parked by ruling.
 
-> ⛔ **And [`TASK-1469`](docs/BACKLOG.md)'s parallelisable step named the wrong lane.** It says the `opportunity_engine` measurement is *"what Lane B can do NOW"*; ⚡ **`opportunity_engine` is Lane A's in [`modules.toml`](docs/coordination/modules.toml)**. **A task addressed to a lane that does not own the module is a task nobody starts** — the [C-213](docs/LANE_COORDINATION.md) class in a different field. **Found by Lane A doing it anyway.**
+> ⚡ **And it named the unblock order, smallest first: [C-298](docs/LANE_COORDINATION.md) → [C-299](docs/LANE_COORDINATION.md) → [C-1424](docs/LANE_COORDINATION.md).** **C-298 buys [B-223](docs/BUGS.md) and [B-257](docs/BUGS.md) at once and is the root of two of the three setup steps QE hit.** **C-299's recommendation wires `last_used_workspace`, which already exists.** ⛔ **None is large. All three are decisions rather than implementations.**
 
-> **Three lanes, seven commits, first attempt, no aborts.**
+> **Two lanes, four commits, second attempt — the first was killed and wrote no record.**
 
 ---
 
@@ -103,6 +105,46 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-12, cycle 212
+
+**Promoted `02775de5` from `5f07f42c`.** Four commits: **Lane A ×3 · QE ×1.** ⚠️ **Second attempt — the first certification was killed and wrote no record.**
+
+### ⛔ No customer-visible change, and the cycle is decisions rather than code
+
+**A false comment removed, and three items put in front of somebody who can rule on them.** ⚡ **Neither shows on a screen, and both are the work.**
+
+### 🔴 [B-257](docs/BUGS.md) — an unset variable does not aim a lane at a wrong port
+
+📁 `config.ts:140/151/157` default `SIGNORA_APP_URL` and `SIGNORA_JWT_ISSUER` to `localhost:3000` and `SIGNORA_API_URL` to `8000`. 📁 [`RUNNING.md:311`](docs/RUNNING.md): ***"3000 and 8000 belong to human review on `main`, and to no lane."***
+
+⛔ **So it aims a lane's auth tier at the product owner's demo stack.** ✅ **QE verified both halves at source before accepting the 🟠**, because the row escalates a severity.
+
+**And the comment defending those defaults claimed *"a URL pointing at the wrong port fails loudly and immediately."*** ⛔ **QE's own measurement is what disproves it**: `Invalid origin` → `403`, presenting as a sign-in that submits and never navigates — **the identical symptom of a missing Better Auth schema and of missing demo accounts.** ⚡ **Three causes, one appearance, and QE hit all three in one session.**
+
+✅ **The values were deliberately left.** The honest repair needs the auth tier to know whether it is a first clone or a lane, and `environmentName()` returns `local` for every lane — **[C-298](docs/LANE_COORDINATION.md), which QE checked rather than took on trust.**
+
+### ✅ [B-191](docs/BUGS.md) closed — both instances, both directions
+
+**The journey passes with the fix and fails with `name={null}`**: *Expected substring: `"Dana Reyes"`* against a received string carrying only the address. ⚡ **Last cycle that same revert left 3062 tests green.**
+
+### Migrations · ADRs · architecture
+
+**None.** Head unchanged at `0048`.
+
+### ⚠️ Measured beyond the gates
+
+**`ruff check modules/` reports 85 errors and `ruff` is not a certification gate** ([B-211](docs/BUGS.md)). ✅ **Re-measured rather than carried — the row's figure was 238.** ⛔ **Recorded so a green certification is not read as *the backend is lint-clean*.**
+
+### Remaining blockers — five, all the product owner's
+
+⛔ **[C-106](docs/LANE_COORDINATION.md)** · ⛔ **[C-1424](docs/LANE_COORDINATION.md)** · **[C-297](docs/LANE_COORDINATION.md)** · ⚡ **[C-298](docs/LANE_COORDINATION.md)** and **[C-299](docs/LANE_COORDINATION.md)**, both new.
+
+### 🔴 Recommended next work — and for the first time it is not a lane's to do
+
+**Lane A has had nothing startable for three cycles and its defect supply is spent.** ⚡ **It named the unblock order itself, smallest first: C-298 → C-299 → C-1424.** **C-298 buys two defects at once; C-299's recommendation wires something that already exists. None is large, and all three are decisions rather than implementations.**
 
 ---
 

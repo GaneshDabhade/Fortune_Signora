@@ -1,5 +1,35 @@
 # Session Handoff
 
+> ## Cycle 212 — promoted `02775de5`, 2026-08-12
+>
+> **`main` = `02775de5` = the certified commit.** Four commits, Lane A ×3 and QE ×1. ⚠️ **Second attempt — the first certification was killed and wrote no record**, which is how it was told apart from a verdict: the manifest still named `96f2343475fa` afterwards. **The manifest is the durable record; a log is not.**
+>
+> ### 🔴 Three setup failures, one appearance, and one undecided root
+>
+> **[B-257](BUGS.md).** 📁 `config.ts:140/151/157` default `SIGNORA_APP_URL` and `SIGNORA_JWT_ISSUER` to `localhost:3000` and `SIGNORA_API_URL` to `8000`, and 📁 [`RUNNING.md:311`](RUNNING.md) reserves those ***"to no lane."*** ⛔ **An unset variable does not aim a lane at a wrong port — it aims its auth tier at the product owner's demo stack.**
+>
+> **The comment defending them claimed *"a URL pointing at the wrong port fails loudly and immediately."*** ⛔ **QE's own measurement disproves it**: `Invalid origin` → `403`, a sign-in that submits and never navigates — **identical to a missing Better Auth schema and to missing demo accounts.** ⚡ **Three causes, one appearance, and QE hit all three in one session assembling a lane environment.**
+>
+> ✅ **The values were left deliberately.** `environmentName()` returns `local` for every lane, so **the auth tier cannot tell a first clone from a lane** — 📁 **[C-298](LANE_COORDINATION.md)**, and QE checked that rather than taking it on trust.
+>
+> ### ✅ [B-191](BUGS.md) is closed, both instances, both directions
+>
+> The journey **passes with the fix and fails with `name={null}`** — *Expected substring: `"Dana Reyes"`*. ⚡ **Last cycle the same revert left 3062 tests green.**
+>
+> ### 🔴 The repository's binding constraint is now a decision queue, not capacity
+>
+> ⛔ **Lane A has had nothing startable for three cycles**, and **the defect supply that carried the first two is spent.** ⚡ **Its own words: *"Startup step 4 is exhausted rather than thin… I would rather say that plainly than keep widening what counts as work."***
+>
+> **Every open defect in its modules is terminal** — fixed and with QE, routed and awaiting a ruling, blocked on an unruled governance amendment ([C-101](LANE_COORDINATION.md)), or parked by ruling.
+>
+> ⚡ **The unblock order is the lane's own, smallest first: [C-298](LANE_COORDINATION.md) → [C-299](LANE_COORDINATION.md) → [C-1424](LANE_COORDINATION.md).** **C-298 buys [B-223](BUGS.md) and [B-257](BUGS.md) together; C-299's recommendation wires `last_used_workspace`, which already exists.** ⛔ **None is large, and all are decisions rather than implementations.**
+>
+> ### ⚠️ Two measurements that are not gates
+>
+> **`ruff check modules/` → 85 errors**, and `ruff` is not a certification gate ([B-211](BUGS.md)). ✅ **Re-measured rather than carried; the row's figure was 238.** ⛔ **A green certification must not be read as *the backend is lint-clean*.**
+>
+> **[B-192](BUGS.md) is open and blocked on [B-105](BUGS.md)**, both QE's: a setup prerequisite added today would refuse when a lane ran it.
+
 > ## Cycle 211 — promoted `96f23434`, 2026-08-12
 >
 > **`main` = `96f23434` = the certified commit.** Two commits, Lane A ×1 and QE ×1. **First attempt, no aborts.** ⛔ **No customer-visible change, and that is the point** — the whole cycle is [B-191](BUGS.md)'s repair.
@@ -110,7 +140,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-12 · **`main` at `96f23434`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-12 · **`main` at `02775de5`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
