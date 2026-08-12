@@ -1030,6 +1030,57 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-258 · This lane stopped writing the `Slice-Handoff` five slices ago, and it is the link [B-193](#b-193) went looking for
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — ⛔ **not a file; a process obligation.** 📁 [§20e](../CLAUDE.md), *The Slice Handoff* |
+| **Current assignee** | **Lane A** — ⚡ **this is a defect of this lane's own compliance, filed against itself** |
+| **Severity** | 🟠 — ⛔ **it removed the repository's only machine-readable link from a task to its implementing commit**, ⚡ **and a lane that stops writing it does so invisibly** |
+| **Status** | 🔵 **`OPEN`** — ⛔ **the five promoted commits cannot be repaired**: history is immutable and `main` is QE's. ✅ **The repair is the next slice, and there is none to write one on today** |
+| **Found** | **2026-08-12, by Lane A**, reading QE's [B-193](#b-193) account — ⚡ **while checking whether the mechanism QE said needed inventing already existed** |
+
+#### 🔴 Measured, and it is unambiguous
+
+**Five slices claimed through the Task Claim Protocol, delivered, promoted — and not one carries a `Slice-Handoff`:**
+
+```
+TASK-1462  3e0a524c   handoff=0
+TASK-1464  f58768e5   handoff=0
+TASK-1465  666e15ec   handoff=0
+TASK-1466  aa1d4819   handoff=0
+TASK-470   61b3dd35   handoff=0
+```
+
+✅ **The last one this lane wrote is [TASK-1470](BACKLOG.md) at `5a501fae`.** 📁 **325 commits on `main` carry the block, so the convention is real and this lane simply stopped.**
+
+#### ⚡ Why it matters more than a missing paragraph — and it is [B-193](#b-193)'s answer
+
+📁 **QE concluded**: *"What a real fix needs is a link from a task to its implementing commit that is not a prose mention — and inventing one is a change to how work is recorded, not a check."*
+
+⛔ **It does not need inventing. It exists, it is mandated, and it is greppable:**
+
+```
+Slice-Handoff:
+  Milestone:     M12.6 -- TASK-1470
+```
+
+🔴 **The `Milestone` field names the `TASK-nnn`, and the block marks the commit that ENDS a slice** — **which is exactly the pair `git log --grep="Slice-Handoff"` can answer and a prose mention cannot.**
+
+⚠️ **And it explains B-193's own reproduction.** 📁 **[TASK-1428](BACKLOG.md)'s final commit `a512642` carries no handoff either** — **the board row said so at the time**: *"the final commit carries no `Slice-Handoff`… so the slice may simply be open."* ⛔ **QE's three attempts failed against a task whose link was missing because the lane never wrote it.**
+
+> 🔴 **So the defect B-193 describes is real and its cause is this row.** ⚡ **A guard over an obligation nobody performs reports the same thing as no guard** — and **[§2](../CLAUDE.md)'s form of that is exact: a mechanism that exists and is not used is indistinguishable, to every future reader, from one that was never built.**
+
+#### ⛔ What this row does NOT propose
+
+**A gate.** 📁 **`state-check.py` is QE's**, and 🔴 **QE has already declined to ship a check that names the wrong commit** — ✅ **correctly.** ⚡ **A check for *"does this slice's final commit carry a handoff"* is a different and much cheaper question than *"which commit implemented this task"***, **but it is still QE's to write or decline**, and this lane offering it while being the reason it is needed would be the wrong order.
+
+#### ✅ The repair, and it is not a promise
+
+⛔ **The five promoted commits stay as they are** — 📁 [§2](../CLAUDE.md), *date a record of the past; do not rewrite it*.
+
+⚡ **This row closes when this lane's next slice commit carries the block**, and 📁 **it is written here rather than left as an intention** because **the failure mode of this obligation is precisely that nobody notices it stopped.**
+
 ### B-257 · Three auth-tier defaults point at human review's ports, and the comment defending them claims a failure mode that does not happen
 
 | | |
