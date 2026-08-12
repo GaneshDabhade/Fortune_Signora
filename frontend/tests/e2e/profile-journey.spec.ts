@@ -40,10 +40,22 @@ test.describe('Workflow 9 · a person makes Signora theirs', () => {
   test('the profile is reachable from the shell, which is how anybody finds it', async ({
     page,
   }) => {
-    // The design puts this in the App Shell's utility rail — Workflow 13, not
-    // built — so the link lives where the identity already is.
+    /**
+     * 🔴 **[B-249](../../../docs/BUGS.md): the address MOVED into the account
+     * menu** — 📁 [TASK-1440](../../../docs/BACKLOG.md) — **and
+     * [`account-menu.tsx`](../../components/shell/account-menu.tsx) gates its
+     * contents on `open`.** ⛔ **So a link matching `/@/` is not on the page
+     * until the menu is opened.**
+     *
+     * ✅ **The claim is unchanged and it is still the right claim** — *reachable
+     * from the shell, which is how anybody finds it* — ⚡ **and the honest
+     * version of that now includes opening the menu.** ⛔ **Not
+     * `getByRole('link', …).first()` somewhere else**, which would prove a link
+     * exists rather than that a person can reach their profile.
+     */
     await page.goto('/');
 
+    await page.getByRole('button', { name: /^Account menu for / }).click();
     await page.getByRole('link', { name: /@/ }).click();
 
     await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();

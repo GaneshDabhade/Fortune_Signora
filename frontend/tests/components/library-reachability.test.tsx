@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 import { SHELL_REGIONS } from '@/lib/shell/constitution';
 
+import { withoutComments } from '../support/source';
+
 /**
  * **A component nobody imports fails the suite** —
  * [TASK-1451](../../../docs/BACKLOG.md).
@@ -114,7 +116,21 @@ function corpusOutsideTheLibrary(): string {
       }
       if (!/\.tsx?$/.test(entry.name)) continue;
       if (path.startsWith(UI)) continue;
-      chunks.push(readFileSync(path, 'utf8'));
+      /**
+       * 🔴 **[B-252](../../../docs/BUGS.md): comments are stripped, because a
+       * caller imports and prose does not.**
+       *
+       * ⛔ **This walked raw source**, so a doc-comment mentioning a component
+       * by name satisfied the orphan check — **and it cost two slices**:
+       * `MobileNavigation` and `Columns` were both reported reachable by
+       * sentences describing them.
+       *
+       * ⚠️ **The walker is string-aware and is NOT a second implementation** —
+       * 📁 [`withoutComments`](../support/source.ts) was written for
+       * `shortcut-registry` after that suite found the same false positive, and
+       * [B-162](../../../docs/BUGS.md) is what gave it its shape.
+       */
+      chunks.push(withoutComments(readFileSync(path, 'utf8')));
     }
   };
   for (const root of ROOTS) walk(join(process.cwd(), root));
@@ -148,6 +164,61 @@ describe('🔴 every component in the library is reachable, or scheduled', () =>
       orphans,
       'these components are complete and no customer can reach them — give them a caller, or list them with the row that will',
     ).toEqual([]);
+  });
+
+  /**
+   * 🔴 **[B-252](../../../docs/BUGS.md)'s own proof, and the row demanded it**:
+   * 📁 *"add a fixture with a commented identifier and no import, and prove it
+   * reports an orphan."*
+   *
+   * ⚠️ **[B-162](../../../docs/BUGS.md)'s lesson is why this exists**:
+   * *"narrowing a guard is only safe if you measure what STOPS firing."*
+   * ⛔ **The suite going green after the change proves nothing on its own** —
+   * it would also be green if the strip had done nothing.
+   */
+  /**
+   * 🔴 **The assertion that actually guards the WALK**, rather than the helper.
+   *
+   * ⚠️ **Written after the first version of this fix fire-tested GREEN**:
+   * reverting the strip left the two helper tests below passing, because they
+   * exercise `withoutComments` directly and never touch the corpus. ⛔ **That
+   * is Decorative Logic** ([§2](../../../CLAUDE.md)) — **a proof that cannot
+   * fail when the thing it protects is removed.**
+   */
+  it('🔴 the corpus itself carries no comments', () => {
+    expect(CORPUS.length).toBeGreaterThan(10_000);
+    // ⛔ **Turns red the moment the walk stops stripping.**
+    expect(CORPUS).not.toContain('/**');
+  });
+
+  it('🔴 a name that appears only in a comment is NOT a caller', () => {
+    const prose = `
+      /**
+       * ⚡ The utility panel wants a Sparkline, and TASK-1450 built it.
+       */
+      // A Sparkline would go here once the Deals screen exists.
+      export function Nothing() {
+        return null;
+      }
+    `;
+
+    expect(/\bSparkline\b/.test(prose)).toBe(true);
+    // ⛔ **The assertion the old walker failed.**
+    expect(/\bSparkline\b/.test(withoutComments(prose))).toBe(false);
+  });
+
+  /**
+   * ✅ **The other direction, because a strip that removes too much is the
+   * failure [B-162](../../../docs/BUGS.md) actually was.**
+   */
+  it('✅ and a real import still counts', () => {
+    const caller = `
+      // Sparkline is drawn below.
+      import { Sparkline } from '@/components/ui';
+      export const Chart = () => <Sparkline />;
+    `;
+
+    expect(/\bSparkline\b/.test(withoutComments(caller))).toBe(true);
   });
 
   it('⛔ every allowlisted orphan names a REAL row, so the list cannot become a silencer', () => {

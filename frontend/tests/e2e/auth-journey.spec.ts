@@ -184,6 +184,19 @@ test.describe('signing in', () => {
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.waitForURL((url) => url.pathname === '/');
 
+    /**
+     * 🔴 **[B-249](../../../docs/BUGS.md), third and fourth instances.** ⛔ **The
+     * row named two journeys and there were four**: `Sign out` moved into the
+     * account menu with the address, in the same change
+     * ([TASK-1440](../../../docs/BACKLOG.md)), and
+     * [`account-menu.tsx`](../../components/shell/account-menu.tsx) gates its
+     * contents on `open`.
+     *
+     * ⚡ **Recorded rather than quietly fixed**: the row's own point is that the
+     * cause is a CLASS, not an accident — **and a class whose census was short
+     * by two is worth saying out loud.**
+     */
+    await page.getByRole('button', { name: /^Account menu for / }).click();
     await page.getByRole('button', { name: 'Sign out' }).click();
     await page.waitForURL(/\/signin/, { timeout: 20_000 });
 
@@ -467,6 +480,17 @@ test.describe('the development mailbox', () => {
 
     // ⚡ **The link is real and openable** — that is the row's whole ask, and
     // the token is Better Auth's own.
-    await expect(entry.getByRole('link')).toHaveAttribute('href', /verify\?token=/);
+    //
+    // 🔴 **[B-244](../../../docs/BUGS.md): this asserted `/verify?token=`, which
+    // is the *"we have sent you a link"* screen** — 📁
+    // [`app/(auth)/verify/page.tsx`](../../app/\(auth\)/verify/page.tsx) reads
+    // `email` and consumes no token. ⛔ **Had the assertion been satisfied, the
+    // email would have carried the customer to a screen that cannot verify
+    // them.** ✅ **Better Auth's own route is what ships**, which verifies and
+    // then lands them in the product.
+    await expect(entry.getByRole('link')).toHaveAttribute(
+      'href',
+      /\/api\/auth\/verify-email\?token=/,
+    );
   });
 });

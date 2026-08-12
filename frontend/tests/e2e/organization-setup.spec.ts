@@ -71,7 +71,15 @@ test.describe('a customer sets up an organization', () => {
     // A region selector or a colour picker here would be mock business data
     // (§20c) — and worse than absent, because an administrator would use it
     // and believe the choice took effect.
-    await expect(page.getByRole('combobox')).toHaveCount(0);
+    //
+    // 🔴 **[B-249](../../../docs/BUGS.md): scoped to `main`, because the page
+    // is not the screen.** 📁
+    // [`AccountSearch`](../../components/intelligence/account-search.tsx)
+    // carries `role="combobox"` and lives in the TOP BAR, **so a page-wide
+    // query catches the shell's own search on every screen.** ⚡ **The assertion
+    // means *this SCREEN offers no control the platform cannot answer*, and the
+    // shell's search is neither this screen's nor unanswerable.**
+    await expect(page.getByRole('main').getByRole('combobox')).toHaveCount(0);
   });
 
   test('never shows the customer the platform word', async ({ page }) => {

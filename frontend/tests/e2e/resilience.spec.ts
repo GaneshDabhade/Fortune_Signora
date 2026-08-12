@@ -102,6 +102,19 @@ test.describe('signing out', () => {
     await second.goto('/');
     await expect(second.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
 
+    /**
+     * 🔴 **[B-249](../../../docs/BUGS.md), third and fourth instances.** ⛔ **The
+     * row named two journeys and there were four**: `Sign out` moved into the
+     * account menu with the address, in the same change
+     * ([TASK-1440](../../../docs/BACKLOG.md)), and
+     * [`account-menu.tsx`](../../components/shell/account-menu.tsx) gates its
+     * contents on `open`.
+     *
+     * ⚡ **Recorded rather than quietly fixed**: the row's own point is that the
+     * cause is a CLASS, not an accident — **and a class whose census was short
+     * by two is worth saying out loud.**
+     */
+    await page.getByRole('button', { name: /^Account menu for / }).click();
     await page.getByRole('button', { name: 'Sign out' }).click();
     await page.waitForURL(/\/signin/, { timeout: 20_000 });
 

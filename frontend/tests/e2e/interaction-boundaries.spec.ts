@@ -75,8 +75,15 @@ async function focusReachesNothingBehind(
     const landed = await page.evaluate(() => {
       const active = document.activeElement;
       if (!active || active === document.body) return null;
-      const dialog = document.querySelector('dialog');
-      if (dialog?.contains(active)) return null;
+      // 🔴 **[B-248](../../../docs/BUGS.md): this asked whether focus was
+      // inside `document.querySelector('dialog')` — THE FIRST dialog in the
+      // document.** ⛔ **The shell now mounts a second**, so focus legitimately
+      // held by the evidence dialog was reported as an escape.
+      //
+      // ✅ **`closest` asks the question the test actually means** — *is the
+      // focused element inside **a** dialog?* — ⚠️ **and it cannot rot again
+      // the next time the shell mounts one.**
+      if (active.closest('dialog')) return null;
       return `${active.tagName} "${(active.textContent ?? '').trim().slice(0, 30)}"`;
     });
     if (landed) escaped.push(`after ${step + 1} tabs: ${landed}`);

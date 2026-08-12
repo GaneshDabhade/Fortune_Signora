@@ -140,14 +140,36 @@ test.describe('from the list to the account', () => {
     await attention.openFirstAccount();
     await brief.waitForScore();
 
-    await expect(brief.whatHasHappened).toBeVisible();
+    /**
+     * 🔴 **[B-247](../../../docs/BUGS.md): the history MOVED and this journey
+     * kept looking on the page.** 📁 [TASK-1433](../../../docs/BACKLOG.md) gave
+     * it to the utility panel's Activity tab — *"the panel takes it only where
+     * the panel exists; below 1024 the section above renders"* — **and this
+     * journey runs above that band.**
+     *
+     * ⛔ **The claim is unchanged**: *the account carries a history of what has
+     * happened.* ✅ **Only where to look for it changed**, so the journey opens
+     * the tab rather than asserting a heading the design moved.
+     */
+    const panel = page.getByRole('complementary');
+    /**
+     * ⚠️ **Idempotent, because the panel's open state is a STORED preference.**
+     * ⛔ **An unconditional `Meta+.` would CLOSE it whenever an earlier journey
+     * left it open** — 📁 the toggle is the design's own shortcut, and a test
+     * that assumes a starting state is a test whose result depends on what ran
+     * before it.
+     */
+    if ((await panel.getAttribute('data-state')) !== 'open') {
+      await page.keyboard.press('Meta+.');
+    }
+    await expect(panel).toHaveAttribute('data-state', 'open');
+    await panel.getByRole('tab', { name: 'Activity' }).click();
+    await expect(panel).toHaveAttribute('aria-label', 'Activity panel');
+
     // **B-302.** The Playground composed nine pipeline stages and never the
-    // Timeline projection, so this section was empty on all twelve accounts in
+    // Timeline projection, so this history was empty on all twelve accounts in
     // the only environment used for product review.
-    const section = page
-      .locator('section')
-      .filter({ has: page.getByRole('heading', { name: 'What has happened' }) });
-    await expect(section.getByText(/Nothing has been recorded/i)).toHaveCount(0);
+    await expect(panel.getByText(/Nothing has been recorded/i)).toHaveCount(0);
   });
 
   test('@journey the brief offers somewhere to go next', async ({

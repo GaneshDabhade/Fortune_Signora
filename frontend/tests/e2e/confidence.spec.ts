@@ -50,11 +50,29 @@ test.describe('the session ends while somebody is working', () => {
     // **Either outcome is defensible; disappearing is not.** The product may
     // refuse and say so, or it may bounce to sign-in. What it must never do is
     // close the dialog as though the work was saved.
-    const signedOut = page.waitForURL(/\/signin/, { timeout: 20_000 }).then(() => 'sign-in');
+    //
+    // 🔴 **[B-246](../../../docs/BUGS.md): the loser of this race used to
+    // REJECT.** ⛔ **`Promise.race` settles on the winner and leaves the other
+    // promise running** — so the abandoned branch threw its timeout into
+    // whichever test happened to be running twenty seconds later, **and the
+    // failure was reported against a scenario that did nothing wrong.**
+    //
+    // ✅ **Both branches now resolve.** ⛔ **Not a wider timeout**, which only
+    // moves the rejection further down the file.
+    const signedOut = page
+      .waitForURL(/\/signin/, { timeout: 20_000 })
+      .then(() => 'sign-in' as const)
+      .catch(() => 'never' as const);
     const stillHere = expect(business.dialog)
       .toBeVisible({ timeout: 20_000 })
-      .then(() => 'dialog');
+      .then(() => 'dialog' as const)
+      .catch(() => 'never' as const);
     const outcome = await Promise.race([signedOut, stillHere]);
+
+    // ⚡ **`never` is not an outcome the product may produce** — it means the
+    // dialog closed as though the work was saved, which is the one thing this
+    // scenario exists to refuse.
+    expect(outcome).not.toBe('never');
 
     test.info().annotations.push({
       type: 'session-expiry-outcome',
