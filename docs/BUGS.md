@@ -4410,6 +4410,41 @@ def _load_state_check() -> ModuleType:
 >
 > ⛔ **This office is not taking that decision, and the reason is that it is the office asking to be unblocked.** 📁 **A split that happens to release my own queue is indistinguishable from weakening a requirement to unblock promotion, whatever the reasoning** — **so it goes to the product owner with the conflict named** ([§20e](../CLAUDE.md): a lane's recommendation is architectural input, never implementation authority).
 
+### B-432 · 🟠 The coordination register has more resolution vocabulary than any reader knows, and a sweep that knows two words reports a queue twice its size
+
+| | |
+|---|---|
+| **Module** | **Repository-wide** — [`LANE_COORDINATION.md`](LANE_COORDINATION.md) · [`infra/state-check.py`](../infra/state-check.py) · any tool that counts open items |
+| **Current assignee** | **Lane C** — the register's triage is this office's |
+| **Severity** | 🟠 — ⛔ **wrong behaviour a reader acts on**: it decides how large the product owner's queue appears |
+| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-12, on correcting its own report |
+| **Found** | **By a figure disagreeing with itself twice in one day** |
+
+#### 🔴 The measurement, isolated one variable at a time
+
+| Sweep | PO items reading live |
+|---|---|
+| `Status` cell only, terminal = `CLOSED` · `READY FOR IMPLEMENTATION` | **63** |
+| **+ also read the `State` cell** | ⛔ **63 — no change whatsoever** |
+| **+ full terminal vocabulary instead** | ✅ **33** |
+| Both | ✅ **29** |
+
+⚡ **The dominant cause is the VOCABULARY, not the schema.** 📁 **The register resolves items with at least nine words — `CLOSED` · `RULED` · `READY FOR IMPLEMENTATION` · `REVIEW LATER` · `DEFERRED` · `RESOLVED` · `ANSWERED` · `WITHDRAWN` · `SUPERSEDED` — and a reader knowing two of them reports 63 where 29 are live.**
+
+⛔ **The `State`-versus-`Status` schema gap accounts for 4 items and, on its own, for NONE** — it only helps once the vocabulary is complete, because the items carrying a `State` cell hold `RULED` and `REVIEW LATER`, which the short list misses anyway.
+
+#### ⚠️ This office reported the wrong cause, twice, before measuring it
+
+🔴 **On 2026-08-11 it told the product owner and QE that *"81 PO-owned items carry their ruling in a `State` cell and I counted every one as unanswered."*** ⛔ **That is false.** ✅ **81 is the number RESOLVED by any means; the schema hid 4 of them.** ⚡ **QE was additionally told to re-check its own figures *"for the same reason"* — pointing a second lane at the wrong cause.**
+
+📁 **The 29 was right both times. The explanation was not**, and an explanation is what another lane acts on.
+
+#### ✅ What a fix looks like
+
+⚡ **Publish the terminal vocabulary once, where a tool can read it** — ⛔ **not in prose, and not re-derived by each reader.** 📁 **`state-check.py` already names the five ownership/state SCHEMAS in its own warning text; the resolution VALUES have no such list.**
+
+⚠️ **Adding a word to the register without adding it there makes every counter wrong silently** — 🔴 **which is what happened, and the register gains vocabulary naturally as the product owner rules in their own words.**
+
 ### B-431 · 🟠 The workflow registry's task lists are four days stale, and a workflow reads complete because its remaining rows are not in it
 
 | | |
