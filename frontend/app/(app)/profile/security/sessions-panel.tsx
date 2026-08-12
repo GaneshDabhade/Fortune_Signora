@@ -7,6 +7,7 @@ import {
   Badge,
   Button,
   Card,
+  Dialog,
   CardBody,
   CardHeader,
   CardTitle,
@@ -85,12 +86,37 @@ export interface SessionsRead {
   readonly failed: boolean;
   readonly revoking: string | null;
   readonly revoke: (token: string) => Promise<void>;
+  /**
+   * 🔴 **Bulk revocation** — [TASK-470](../../../../../docs/BACKLOG.md)
+   * milestone 3. 📁 **Both approved designs draw it and neither half of the
+   * repository had it**: the Security Center's §05 *"Revoke 2 selected"* and
+   * *"Sign out everywhere"*, and the User Profile's `05` sessions panel.
+   *
+   * ⚡ **Selection is held as TOKENS rather than as rows**, the shape
+   * [`signal-queue.tsx`](../../signals/signal-queue.tsx) already uses for the
+   * same reason: **a re-read replaces every object, and a selection of stale
+   * objects acts on sessions that have already gone.**
+   */
+  readonly selected: ReadonlySet<string>;
+  readonly toggleSelected: (token: string) => void;
+  readonly clearSelection: () => void;
+  readonly revokeSelected: () => Promise<void>;
+  /**
+   * 📁 ***"Signing out everywhere ends every session except this one, within
+   * 60 seconds."*** ⛔ **`includeThisOne` is the design's own second half** —
+   * *"Choosing to include it is possible, and warns that you will land on the
+   * sign-in screen."*
+   */
+  readonly signOutEverywhere: (includeThisOne: boolean) => Promise<void>;
+  readonly bulkBusy: boolean;
 }
 
 export function useSessions(): SessionsRead {
   const [sessions, setSessions] = useState<readonly SessionRow[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [revoking, setRevoking] = useState<string | null>(null);
+  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const load = useCallback(async () => {
     const result = await authClient.listSessions();
@@ -126,7 +152,92 @@ export function useSessions(): SessionsRead {
     [load],
   );
 
-  return { sessions, failed, revoking, revoke };
+  /**
+   * ⛔ **A selection is cleared whenever the list is re-read**, because every
+   * token in it may already be gone. ⚡ **The same rule the signal queue keeps**
+   * — *"a selection that survives is a selection whose action bar lies about
+   * what it will act on."*
+   */
+  const reload = useCallback(async () => {
+    setSelected(new Set());
+    await load();
+  }, [load]);
+
+  const toggleSelected = useCallback((token: string) => {
+    setSelected((was) => {
+      const next = new Set(was);
+      if (!next.delete(token)) next.add(token);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelected(new Set()), []);
+
+  /**
+   * ⚠️ **Sequential, not concurrent, and not one call.**
+   *
+   * ⛔ **Better Auth publishes no *revoke these N* route** — `/revoke-session`
+   * takes one token, `/revoke-sessions` takes none and ends them all.
+   * ⚡ **So a selection is n calls**, and they run **in order** rather than in
+   * parallel: 📁 the panel's own rule is that the list is re-read rather than
+   * spliced, and n concurrent revocations racing one re-read is how a screen
+   * ends up showing a session that is already dead.
+   *
+   * 🔴 **A failure stops the loop and the list is re-read anyway.** ⛔ **The
+   * ones that succeeded really are revoked**, and carrying on would report a
+   * partial result as a whole one.
+   */
+  const revokeSelected = useCallback(async () => {
+    setBulkBusy(true);
+    for (const token of selected) {
+      const result = await authClient.revokeSession({ token });
+      if (result.error) {
+        setFailed(true);
+        break;
+      }
+    }
+    setBulkBusy(false);
+    await reload();
+  }, [selected, reload]);
+
+  const signOutEverywhere = useCallback(
+    async (includeThisOne: boolean) => {
+      setBulkBusy(true);
+      const result = includeThisOne
+        ? await authClient.revokeSessions()
+        : await authClient.revokeOtherSessions();
+      setBulkBusy(false);
+      if (result.error) {
+        setFailed(true);
+        return;
+      }
+      /**
+       * ⛔ **Including this one ends the session reading the page**, so the
+       * only honest next screen is the sign-in one. ⚡ **A full navigation
+       * rather than a router push** — the client-side cache belongs to a
+       * session that no longer exists.
+       */
+      if (includeThisOne) {
+        window.location.href = '/signin';
+        return;
+      }
+      await reload();
+    },
+    [reload],
+  );
+
+  return {
+    sessions,
+    failed,
+    revoking,
+    revoke,
+    selected,
+    toggleSelected,
+    clearSelection,
+    revokeSelected,
+    signOutEverywhere,
+    bulkBusy,
+  };
 }
 
 export interface SessionsPanelProps extends SessionsRead {
@@ -140,7 +251,31 @@ export function SessionsPanel({
   failed,
   revoking,
   revoke,
+  selected,
+  toggleSelected,
+  clearSelection,
+  revokeSelected,
+  signOutEverywhere,
+  bulkBusy,
 }: SessionsPanelProps) {
+  /**
+   * 🔴 **The design's second half, and it is a confirm rather than a button.**
+   *
+   * 📁 ***"Choosing to include it is possible, and warns that you will land on
+   * the sign-in screen."*** ⛔ **A control that signs somebody out of the
+   * screen they are looking at may not be one click**, and the warning is the
+   * whole reason the design mentions it.
+   */
+  const [confirming, setConfirming] = useState(false);
+
+  /**
+   * ⚡ **Only sessions that are not this one can be selected**, so the count in
+   * the bar is the count that will be revoked. ⛔ **A *select all* that
+   * silently excluded a row would make the number a guess.**
+   */
+  const revocable = (sessions ?? []).filter((s) => s.token !== currentToken);
+  const allSelected = revocable.length > 0 && revocable.every((s) => selected.has(s.token));
+
   return (
     <Card>
       <CardHeader>
@@ -158,9 +293,82 @@ export function SessionsPanel({
         ) : sessions === null ? (
           <SkeletonText lines={3} />
         ) : (
-          <Table>
+          <>
+            {/**
+              * 🔴 **The bulk bar** — 📁 the Security Center's §05 draws
+              * ***"Revoke 2 selected"*** and ***"Sign out everywhere"*** side by
+              * side, and neither existed.
+              *
+              * ⚡ **It is always present rather than appearing on selection**,
+              * because *"Sign out everywhere"* needs no selection — ⛔ **and a
+              * bar that materialises would move the table under the pointer at
+              * the moment somebody is aiming at a revoke control.**
+              */}
+            <div
+              data-testid="sessions-bulk-bar"
+              className="mb-3 flex flex-wrap items-center gap-2 border-b border-border pb-3"
+            >
+              <span className="text-sm text-content-muted">
+                {selected.size === 0
+                  ? `${revocable.length} other ${revocable.length === 1 ? 'session' : 'sessions'}`
+                  : `${selected.size} selected`}
+              </span>
+              {selected.size > 0 ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    loading={bulkBusy}
+                    onClick={() => void revokeSelected()}
+                  >
+                    Revoke {selected.size} selected
+                  </Button>
+                  <Button variant="ghost" onClick={clearSelection}>
+                    Clear selection
+                  </Button>
+                </>
+              ) : null}
+              {/**
+                * ⛔ **Disabled when there is nothing to sign out of**, rather
+                * than hidden: 📁 the control is part of the design's anatomy
+                * and its absence would read as a missing capability.
+                */}
+              <Button
+                variant="ghost"
+                className="ml-auto"
+                loading={bulkBusy}
+                disabled={revocable.length === 0}
+                onClick={() => void signOutEverywhere(false)}
+              >
+                Sign out everywhere
+              </Button>
+            </div>
+
+            <Table>
             <THead>
               <TR>
+                <TH>
+                  {/**
+                    * ♿ **A real `<input type="checkbox">`** — the same choice
+                    * [`signal-queue.tsx`](../../signals/signal-queue.tsx) made,
+                    * and for the same reason: a styled `div` loses the
+                    * indeterminate state and the keyboard.
+                    */}
+                  <input
+                    type="checkbox"
+                    aria-label="Select every other session"
+                    checked={allSelected}
+                    disabled={revocable.length === 0}
+                    onChange={() => {
+                      if (allSelected) {
+                        clearSelection();
+                        return;
+                      }
+                      revocable.forEach((session) => {
+                        if (!selected.has(session.token)) toggleSelected(session.token);
+                      });
+                    }}
+                  />
+                </TH>
                 <TH>Client</TH>
                 <TH>IP address</TH>
                 <TH>Signed in</TH>
@@ -173,6 +381,19 @@ export function SessionsPanel({
                 const isThisOne = session.token === currentToken;
                 return (
                   <TR key={session.token}>
+                    <TD>
+                      {/* ⛔ **This session is never selectable** — 📁 *"your own
+                          session is never revoked silently"*, and a checkbox
+                          that cannot be ticked is worse than none. */}
+                      {isThisOne ? null : (
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${clientOf(session.userAgent)} session`}
+                          checked={selected.has(session.token)}
+                          onChange={() => toggleSelected(session.token)}
+                        />
+                      )}
+                    </TD>
                     <TD>
                       <span className="text-content">{clientOf(session.userAgent)}</span>
                       {isThisOne ? (
@@ -209,7 +430,8 @@ export function SessionsPanel({
                 );
               })}
             </TBody>
-          </Table>
+            </Table>
+          </>
         )}
 
         <p className="mt-4 text-sm leading-6 text-content-muted">
@@ -218,6 +440,59 @@ export function SessionsPanel({
           and it does not change your password. Each of those is a separate control, and
           pretending otherwise gives false comfort.
         </p>
+
+        {/**
+          * 📁 ***"Signing out everywhere ends every session except this one…
+          * Choosing to include it is possible, and warns that you will land on
+          * the sign-in screen."***
+          *
+          * ⛔ **A link rather than a second primary button.** ⚡ **The design
+          * makes this the deliberate path, not the obvious one** — it is the
+          * only control on the page that ends the session reading it.
+          */}
+        <button
+          type="button"
+          className="mt-2 text-sm text-content-muted underline underline-offset-2 hover:text-content"
+          onClick={() => setConfirming(true)}
+        >
+          Sign out of this one too
+        </button>
+
+        <Dialog
+          open={confirming}
+          onClose={() => setConfirming(false)}
+          title="Sign out everywhere, including here"
+          description="Every session ends, including the one you are using. You will land on the sign-in screen and will need to sign in again."
+          footer={
+            <>
+              <Button variant="ghost" onClick={() => setConfirming(false)}>
+                Cancel
+              </Button>
+              {/**
+                * ⛔ **Not *"Sign out everywhere"* again.** ⚡ **The bar already
+                * has a button by that name and this one does something
+                * different** — it ends the session reading the page — **so two
+                * controls sharing an accessible name is the ambiguity a
+                * screen-reader user cannot resolve.** 📁 Found by the test
+                * refusing to choose between them.
+                */}
+              <Button
+                loading={bulkBusy}
+                onClick={() => {
+                  setConfirming(false);
+                  void signOutEverywhere(true);
+                }}
+              >
+                Sign out, including here
+              </Button>
+            </>
+          }
+        >
+          <p className="text-sm leading-6 text-content-muted">
+            Your identity provider may still hold a session of its own. Signora cannot end
+            that one, and does not imply otherwise.
+          </p>
+        </Dialog>
       </CardBody>
     </Card>
   );

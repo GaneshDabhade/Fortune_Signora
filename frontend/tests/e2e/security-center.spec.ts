@@ -147,6 +147,60 @@ test.describe('workflow 23 · the Security Center', () => {
   });
 
   /**
+   * 🔴 **Sign out everywhere, proven from all three sides** —
+   * [TASK-470](../../../docs/BACKLOG.md) milestone 3.
+   *
+   * 📁 ***"Signing out everywhere ends every session except this one."***
+   * ⛔ **A list that empties proves the screen re-rendered.** ✅ **What is
+   * proven here is the sentence itself**: the other two browsers are turned
+   * away, **and the one that pressed the button is still signed in.**
+   *
+   * ⚡ **The second half is the one that fails if `/revoke-sessions` is called
+   * instead of `/revoke-other-sessions`** — and a browser is the only place
+   * that difference is visible as a customer experiences it.
+   */
+  test('@journey signing out everywhere ends the others and leaves this one alive', async ({
+    page,
+    browser,
+  }) => {
+    const person = newcomer();
+    await registerAndVerify(page, person);
+    await signIn(page, person);
+
+    const second = await browser.newContext();
+    const secondPage = await second.newPage();
+    await signIn(secondPage, person);
+
+    const third = await browser.newContext();
+    const thirdPage = await third.newPage();
+    await signIn(thirdPage, person);
+
+    await page.goto('/profile/security');
+    const table = page.getByRole('table');
+    await expect(table.getByRole('row')).toHaveCount(4);
+
+    const bar = page.getByTestId('sessions-bulk-bar');
+    await expect(bar).toContainText('2 other sessions');
+    await bar.getByRole('button', { name: 'Sign out everywhere' }).click();
+
+    // ⚡ **Only this session is left**, header plus one row.
+    await expect(table.getByRole('row')).toHaveCount(2);
+
+    // 🔴 **Both others are refused.**
+    await secondPage.goto('/profile/security');
+    await expect(secondPage).toHaveURL(/\/signin/, { timeout: 20_000 });
+    await thirdPage.goto('/profile/security');
+    await expect(thirdPage).toHaveURL(/\/signin/, { timeout: 20_000 });
+
+    // ✅ **And this one still works** — the half a list assertion cannot show.
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Where you are signed in' })).toBeVisible();
+
+    await second.close();
+    await third.close();
+  });
+
+  /**
    * 🔴 **Enrolment end to end, with the codes proven to appear exactly once.**
    *
    * ⚡ **Exactly once is asserted by leaving and coming back**, which is the

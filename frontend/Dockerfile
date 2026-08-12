@@ -46,8 +46,19 @@ ENV NODE_ENV=production \
 
 # The standalone output carries only the node_modules actually imported —
 # no build toolchain, no dev dependencies.
-COPY --from=builder --chown=node:node /app/.next/standalone ./
-COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+#
+# B-219 / TASK-1465 moved the build's output to `.next-build/` so a build can
+# no longer overwrite a running dev server's `.next/`. These paths move with
+# it, on both sides of the copy: the standalone bundle contains its own
+# `.next-build/` directory, and `server.js` resolves static assets under the
+# distDir it was built with. Copying to `.next/static` would leave the server
+# looking in a directory nothing wrote — a production image that starts and
+# serves no CSS.
+#
+# Caught by QE reading the interaction rather than by the build failing: the
+# builder stage succeeds either way, and only the copy is wrong.
+COPY --from=builder --chown=node:node /app/.next-build/standalone ./
+COPY --from=builder --chown=node:node /app/.next-build/static ./.next-build/static
 COPY --from=builder --chown=node:node /app/public ./public
 
 USER node
