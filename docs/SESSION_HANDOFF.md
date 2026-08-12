@@ -1,5 +1,33 @@
 # Session Handoff
 
+> ## Cycle 209 — promoted `9c7e052e`, 2026-08-12
+>
+> **`main` = `9c7e052e` = the certified commit.** Seventeen commits: Lane A ×8, Lane C ×7, QE ×2. **`main` has moved five times today.**
+>
+> ⛔ **Every promotion since cycle 205 carries [B-428](BUGS.md) 🔴 `OPEN` on the product owner's standing override.** **Not a resolution**; severity untouched. **[C-106](LANE_COORDINATION.md) is still unruled and is now the only place the question lives** — ✅ **[C-107](LANE_COORDINATION.md) is `RESOLVED`** (Lane C, on measurement: `_promote()` runs two gates and never opens `BUGS.md`, so there is no executable 🔴 block and the rule is prose QE applies). ⚡ **That resolution *sharpens* C-106 rather than reducing it: there is now no code to defer to.**
+>
+> ⚠️ **[B-253](BUGS.md) and [C-1424](LANE_COORDINATION.md) are unchanged and still the one open item with a live customer cost** — an owner shown their own destinations locked on every cold boot, and a one-line repair waiting on a ruling about which wrong state is less harmful.
+>
+> ### 🔴 The finding worth carrying forward: a green suite can go red on a date
+>
+> **[B-189](BUGS.md). The repository certified at 09:34 and 10:44 and could not at 12:17, on a backend tree `git diff` reports as identical.** A test declared `NOW = 2026-08-05 12:00 UTC`, built a fixture expiring seven days later, and its fake compared that against `datetime.now(UTC)`. **At noon the window closed.**
+>
+> ⚡ **Lane A's repair went a layer deeper than QE's diagnosis.** The fake was applying an expiry filter `SqlInvitationRepository.find_live` does not apply, so an expired offer was answered *"there is no invitation"* instead of *"this invitation has expired"* — **the sentence reserved for a revoked or never-issued offer, given to somebody who only needed a new link.** ✅ **QE found a test that broke on a date; Lane A found a customer being told the wrong thing.**
+>
+> ✅ **A module guard now refuses any file in `workspace_tenancy` that declares a fixed moment and then reads the real clock.** ⚠️ **The repository-wide sweep found one instance and is a grep** — it cannot see a fixture whose expiry is computed rather than written.
+>
+> ### ⛔ Third instance in two days of a guard that reads source as text
+>
+> **[B-254](BUGS.md), QE's own, raised by Lane A.** `test_no_production_package_imports_certification` checked `if "certification" in path.read_text()`. **The name was a false claim about what the code did**, so prose failed a clean tree and Lane A had to spell the package name in two halves to describe the defect. ✅ **It parses now.** ⚡ **After [B-162](BUGS.md) (narrowed until it stopped firing) and [B-252](BUGS.md) (an identifier in a comment counted as a caller), the pattern is established: a text scan over source will eventually be satisfied by prose or defeated by it.**
+>
+> ### ✅ The `distDir` interaction QE flagged is disproven at runtime
+>
+> **[B-219](BUGS.md) moved the build output, so the production image's static-asset paths moved with it.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `200`, 40 589 bytes.** ⛔ **A prediction is not a finding until it is measured either way.**
+>
+> ⚠️ **A DR failure that was QE's own procedure, recorded because the wrong diagnosis was plausible.** `make dr` reported *"API did not become ready within 90s"*; **`dr` requires the production stack already up and QE had not run `make up`.** Memory was genuinely tight at the time — a `next-server` holding 6.9 GB — **and that fact was true and irrelevant.**
+>
+> ⚠️ **Migration reversibility truncated the shared `signora` database**, which is the Human Review stack's. **Reseeded at Closeout; noted because it is [B-250](BUGS.md)'s neighbourhood** — the default target of the test configuration is the environment every lane and the review stack share.
+
 > ## Cycle 208 — promoted `0ffe15f3`, 2026-08-12
 >
 > **`main` = `0ffe15f3` = the certified commit.** Cycles 206–208 all promoted; **`main` has moved four times today.**
@@ -34,7 +62,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-10 · **`main` at `3f498b7`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-12 · **`main` at `9c7e052e`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 

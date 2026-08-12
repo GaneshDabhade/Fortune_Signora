@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `0ffe15f3`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `9c7e052e`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,28 +12,28 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `0ffe15f3`, 2026-08-12.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `9c7e052e`, 2026-08-12.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`0ffe15f3`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 208** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
-| **Release candidate** | **1 commit, and it is QE's own** — the responsive matrix gains a vertical axis and a real handset viewport, both exposed by Lane A's [B-241](docs/BUGS.md). ⏳ **Neither lane was fast-forwardable**: Lane A 19 ahead / 21 behind, Lane C 5 / 23 |
-| **Certification** | ✅ [`b580e3819113`](certification/reports/b580e3819113.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** · ⚠️ **third attempt — two aborts, neither a property of the commit** |
-| **Cycle 206 gates** | `pytest` **4414 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **866** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages, 142s** · scenario **190 assertions** |
-| **Measured beyond the record** | ⚡ **The planner named two gates certification does not capture** — `eslint` **clean repository-wide**, frontend suite **3025 across 164 files**. **QE ran both; a lane's figure is a claim and QE publishes a measurement** |
-| ⛔ **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1582 commits, none outside a certified snapshot** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
+| **`main`** | **`9c7e052e`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 209** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
+| **Release candidate** | **None. `integration` is one commit ahead of `main`** — the cycle 209 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
+| **Certification** | ✅ [`9c7e052ec329`](certification/reports/9c7e052ec329.md) · migration head **`0048`** · profile **`platform`** · ⚠️ **second attempt — the first was a real failure, [B-189](docs/BUGS.md), not an abort** |
+| **Cycle 209 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages, 194s** · scenario **190 assertions** |
+| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3053 across 167 files** · **Disaster Recovery passed** against the restarted production stack · **migration reversibility** base ↔ `0048` under the owner identity. **A lane's figure is a claim; QE publishes a measurement** |
+| ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
+| ⛔ **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1604 commits — 185 certified targets, 1417 inside a certified snapshot, 2 Closeout. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
-| **Blocking Quality Defects** | ✅ **None.** **0 blocking** |
-| **Customer value this cycle** | ⛔ **None, and that is correct** — this is an instrument slice. ⚡ **What it buys: the product is now measured at `390×844`, a real handset, which no viewport in this repository had ever exercised** — `phone: 640px` is a min-width, so a handset gets the unprefixed styles and nothing tested them |
-| ⛔ **QE's own defects this cycle** | **Two, both in the new check, both found by running it.** ⛔ **It opened the navigation sheet and left it open**, so the *overlap* assertion after it failed on a correct layout — **a check breaking the check after it, where the error names the wrong assertion entirely.** ⛔ **And a closed sheet measures nothing**: below 1024 the rail is `invisible`, so the check **passed cleanly on a tree with the defect deliberately reintroduced** |
+| **Blocking Quality Defects** | ✅ **None.** ⚡ **Two were opened and closed inside this cycle** — [B-189](docs/BUGS.md) and [B-254](docs/BUGS.md) |
+| **Customer value this cycle** | ✅ **Four things a person can see.** **The account menu states its fourth fact** — a customer's own name, which the platform had all along ([B-429](docs/BUGS.md)). **`Save` on the profile now answers** instead of declining in silence ([B-255](docs/BUGS.md)). **Bulk session revocation** — sign every other device out at once (TASK-470). **The search field says *Search Signora***, not *Search Fortune Signora* (TASK-1466, [C-1422](docs/LANE_COORDINATION.md)) |
+| ⛔ **QE's own defect this cycle** | **One, and a lane found it.** [B-254](docs/BUGS.md) — **a guard named `test_no_production_package_imports_certification` checked `if "certification" in path.read_text()`.** ⚡ **The name was a false claim about what the code did**, so a doc-comment failed a clean tree and Lane A had to spell the package name in two halves to describe the defect at all. **Third instance of one class in two days** — [B-162](docs/BUGS.md) narrowed a text scan until it stopped firing, [B-252](docs/BUGS.md) counted an identifier in a comment as a caller. ✅ **It parses now** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ✅ **Certification named 17 gates and executed 6; QE measured three more by hand.** `vitest` **2838 across 151 files** · `eslint` **0 across 460** · **32/32 layout invariants at five breakpoints.** ⚠️ **The new check is proven against a forced 1200px overflow and NOT against [B-241](docs/BUGS.md) itself**, which could not be reproduced — **stated rather than implied, because *it would have caught it* is the claim [B-179](docs/BUGS.md) taught QE not to make.**
+> ⛔ **The cycle's most useful finding was not a feature.** [B-189](docs/BUGS.md): **the repository certified at 09:34 and at 10:44 and could not at 12:17, on a backend tree `git diff` reports as identical.** An invitation fixture's seven-day window expired against a clock the test never declared. ⚡ **And the repair went a layer deeper than the diagnosis** — the double was applying an expiry filter the real repository does not apply, so an expired offer was answered *"there is no invitation"* rather than *"this invitation has expired"*. **QE found a test that broke on a date; Lane A found a customer being told the wrong thing.**
 
-**Repository health:** **4410 backend tests** · ⚠️ **95.04% coverage** ✅ *(floor 95 — **4 basis points of headroom**)* · **2838 frontend tests** across **151 files** · **401 Security Invariants** · mypy strict over **866 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **148s** · ⚡ **32 layout invariants pass at 390/640/1024/1280/1600, on both axes** · **disaster recovery from cycle 197 still current** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4419 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **3053 frontend tests** across **167 files** · **403 Security Invariants** · mypy strict over **867 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **194s** · **disaster recovery re-run this cycle and passing** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
-> ⚠️ **Two figures above are corrected rather than updated.** The dashboard has carried **54 ADRs** and **147 numbered architecture documents**; the repository holds **53** and **145**, and `git ls-tree` returns the same pair at `cea60d41`, `57d6bc85` and `HEAD` — **so they did not change this cycle, they were transcribed.** The ADR count included `adr/README.md`. **A measured figure that never moves is the one to re-measure** (§20e: *metrics are measured, never transcribed*).
+> ⚠️ **Coverage headroom is 3 basis points and shrinking** — it was 4 last cycle. **Not a defect and not yet a finding**; recorded because a floor met by three hundredths of a percent is met by whichever test ran last.
 
 ---
 
@@ -43,19 +43,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | **TASK-451** — a saved view a colleague can open | ⚡ **M-I** — who has held a role at a company, and who left | ⚡ **Workflow 1 at 12 of 12 design elements** | **Cycle 113** |
-| **Execution phase** | **Building** | **Building** | **Governing** | **Certified · Promoted · Closed out** |
-| **Branch** | Level with `main` | Level with `main` | Level with `main` | Level with `main` |
-| **Validation status** | — | — | ✅ **Promoted this cycle** | — |
-| **Blocked?** | **No** | **No** | **No** | **No** |
-| **Waiting on QE?** | No | No | No | — |
-| **Next executable work** | ⚡ **`TASK-485`** — released this cycle | — | Stewardship | ⚡ **[D-167](docs/DECISION_REGISTER.md) — impact-aware certification** |
+| **Last promoted** | ⚡ **TASK-470 milestone 3** — sign every other device out at once · **TASK-1466** — *Search Signora* · **[B-219](docs/BUGS.md)** — a build no longer destroys the dev server · **six journey defects** | **M-I** — who has held a role at a company, and who left | ⚡ **The Decision Index, and the context architecture behind it** | **Cycle 209** |
+| **Execution phase** | **Building** | ⚠️ **No session** — 795 behind `main`, last moved 5 days ago | **Governing** · ⚠️ **bounded-session only, by its own report** | **Certified · Promoted · Closed out** |
+| **Branch** | **1 ahead, 9 behind** — [B-429](docs/BUGS.md) and [B-255](docs/BUGS.md), landed after the snapshot | **2 ahead, 795 behind** — one commit already on `main` by patch-id, one stale `TASK-468` claim | **8 ahead, 17 behind** — 7 arrived by cherry-pick, `3ec1f392` is next cycle's | Level with `main` |
+| **Validation status** | ✅ **Promoted this cycle** | — | ✅ **Promoted this cycle** | — |
+| **Blocked?** | **No** | ⚠️ **Unknown — no session to ask** | **No** | **No** |
+| **Waiting on QE?** | No | — | No | — |
+| **Next executable work** | ⚡ **Its queue has nothing startable** — it cleared eight defects this cycle *because* of that, which is Startup step 4 working | — | ⚡ **Its own 13 blocking coordination items** | ⚡ **Cycle 210** — Lane A's 1, Lane C's 1 |
 
-> **Declarations that had existed since M5 finally have consumers.** `signal_engine` and `buying_score_engine` were declaring subscriptions nothing acted on — **the declaration was true, and no gate could tell the difference**, which is [B-131](docs/BUGS.md)'s shape one layer down.
->
-> ⚠️ **`reasoning@2` ships unreleased, and QE checked rather than assumed.** Zero evaluations, so under [ADR-0028](docs/architecture/adr/0028-model-runtime-by-environment.md) it is usable with nothing. **That is what a new version looks like, not a regression** — and `prompt-evaluation` stays in the shortfall until a real model measures `@1` or `@2` on this hardware.
->
-> **Three lanes, six commits, first attempt, no aborts.**
+> ⛔ **Lane A cleared eight defects in one cycle with an empty queue, and that is a finding rather than a triumph.** **Six of them were journeys asserting App Shell surfaces that App Shell rows had moved** ([B-249](docs/BUGS.md)) — **promoted within two days, and none of those rows ran the journeys that name the shell.** ⚡ **The class is worth more than any row in it**, and Lane A said so themselves.
+
+> ⚠️ **`Lane B` has not moved in five days and no session answers for it.** **Recorded as an observation, not a defect** — a lane's presence is not QE's to schedule (§20e, *nobody assigns; lanes pull*). **Its one unpromoted claim is `TASK-468`, which [`BACKLOG.md`](docs/BACKLOG.md) now records against Lane A** — ⛔ **two records of one claim, and the stale one is on an abandoned branch where nobody will read it.**
+
+> **Three lanes, seventeen commits, second attempt** — and the first attempt was a real failure rather than an abort. ⚡ **The distinction matters**: an abort says nothing about the commit, and [B-189](docs/BUGS.md) said something true about it.
 
 ---
 
@@ -103,6 +103,37 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-12, cycle 209
+
+**Promoted `9c7e052e` from `95c0e12f`.** Seventeen commits: **Lane A ×8 · Lane C ×7 · QE ×2.**
+
+### What a customer can see that they could not yesterday
+
+| | |
+|---|---|
+| **Their own name in the account menu** | It was always in the session; a comment said the platform did not publish one, and the comment was reasoned and wrong ([B-429](docs/BUGS.md)) |
+| **`Save` on the profile answers** | It returned early with no workspace and left no spinner, no confirmation and no refusal — *a control that silently does nothing is worse than one that is absent* ([B-255](docs/BUGS.md)) |
+| **Sign every other device out at once** | Selectively, or all of them, and warned before ending the session being read (TASK-470 milestone 3) |
+| **The search field says *Search Signora*** | The application is already inside Signora (TASK-1466, on the ruling at [C-1422](docs/LANE_COORDINATION.md)) |
+
+### Defects closed
+
+**[B-189](docs/BUGS.md)** 🟠 — an invitation fixture expired against the wall clock; **the repair also fixed which sentence a customer is shown.** **[B-254](docs/BUGS.md)** 🟠 — a QE guard that said *imports* and checked *mentions*. **[B-219](docs/BUGS.md)** — a production build no longer destroys the running dev server, and the production image's asset paths moved with it. **[B-244](docs/BUGS.md) · [B-246](docs/BUGS.md) · [B-247](docs/BUGS.md) · [B-248](docs/BUGS.md) · [B-249](docs/BUGS.md) · [B-252](docs/BUGS.md)** — the journey suite's accumulated red, cleared by the lane that had deferred all six.
+
+### Migrations · ADRs · architecture
+
+**None.** Migration head unchanged at `0048`; no ADR accepted; no architecture document changed. ⚡ **A cycle can be large and change no architecture, and this one is.**
+
+### Remaining blockers
+
+⛔ **[C-106](docs/LANE_COORDINATION.md)** — [B-428](docs/BUGS.md)-B's severity, unruled since cycle 205. **Every promotion since carries it as the product owner's standing override, severity untouched.** ⛔ **[C-1424](docs/LANE_COORDINATION.md)** — [B-253](docs/BUGS.md), **the one open item with a live customer cost**: an owner shown their own destinations locked on every cold boot.
+
+### Recommended next work
+
+**Cycle 210's input already exists** — Lane A's [B-429](docs/BUGS.md)/[B-255](docs/BUGS.md) and Lane C's `3ec1f392`, both landed after this cycle's snapshot. ⚠️ **Lane A reports its queue has nothing startable**, which is why it spent this cycle on assigned defects; **that is Startup step 4 working, and it is not a substitute for a queue.**
 
 ---
 
