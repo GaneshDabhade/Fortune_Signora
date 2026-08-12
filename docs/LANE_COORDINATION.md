@@ -929,7 +929,8 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 |---|---|
 | **Status** | ⚠️ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-12 |
 | **Owner** | **Product owner** — ⛔ **which orderings a seller gets is product scope** |
-| **Blocks** | ⛔ **The retirement of the legacy `/` Attention surface only.** ✅ **Nothing else — [TASK-1425](BACKLOG.md) is claimed and proceeds** |
+| **Blocks** | ⛔ **The retirement of the legacy `/` Attention surface, and nothing else.** ✅ **Confirmed by inspection 2026-08-12, not asserted: neither [TASK-1424](BACKLOG.md) nor [TASK-1425](BACKLOG.md) mentions `Unassigned`, `By urgency` or `By stage`** — **the separation the product owner asked for already exists by construction and needed no refinement** |
+| ⚡ **NOT A HOME BLOCKER** | **Product owner, 2026-08-12: *"C-1432 is a product decision, NOT a blanket Home implementation blocker."*** ✅ **Everything the Home design specifies is implementable now** — the canonical route · the composition and card registry · *ranked by what it costs to ignore* · the card catalogue · the six states · responsive · a11y · activation ordering · **U-04's interim ranking instruction · U-05's *reorder and remove only***. ⛔ **Only the three legacy controls wait on this ruling** |
 
 ### The question, and it is three-way rather than two
 
