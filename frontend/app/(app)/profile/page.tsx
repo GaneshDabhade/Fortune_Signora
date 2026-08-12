@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { headers } from 'next/headers';
 
 import { auth } from '@/lib/auth/server';
@@ -37,6 +38,32 @@ export default async function ProfilePage() {
       <LocalePanel />
       <AppearancePanel />
       <AiPanel />
+
+      {/**
+       * 🔴 **The Security Center's entrance** —
+       * [TASK-1414](../../../../docs/BACKLOG.md).
+       *
+       * ⛔ **`make reachability` reports *No entrance at all* for a route no
+       * screen links to**, and it is the gate [C-229](../../../../docs/LANE_COORDINATION.md)
+       * failed on. ✅ **So the door ships with the room.**
+       *
+       * ⚡ **Here rather than in the account menu**: 📁 the design fixes that
+       * menu at six items and *Security* is not one of them, and
+       * [`account-menu.tsx`](../../../components/shell/account-menu.tsx)
+       * already renders three of the six as absent rather than inventing
+       * destinations. **This page is the one that is already about your own
+       * account.**
+       */}
+      <Link
+        className="rounded-lg border border-border bg-surface p-5 hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        href="/profile/security"
+      >
+        <span className="block text-base font-semibold text-content">Security</span>
+        <span className="mt-1 block text-sm text-content-muted">
+          Your password, your second factors, and every session signed in as you — including
+          the ones you can end.
+        </span>
+      </Link>
     </div>
   );
 }

@@ -15,8 +15,45 @@
  */
 
 import { createAuthClient } from 'better-auth/react';
+import { multiSessionClient, twoFactorClient } from 'better-auth/client/plugins';
 
-export const authClient = createAuthClient();
+/**
+ * 🔴 **The server registered two plugins and the browser could not call
+ * either** — [TASK-1414](../../../docs/BACKLOG.md).
+ *
+ * 📁 [`server.ts`](server.ts) has carried `twoFactor()` and `multiSession()`
+ * since [TASK-493](../../../docs/BACKLOG.md). ⛔ **Better Auth's client is
+ * built from its own plugin list, not from the server's** — so
+ * `authClient.twoFactor` and `authClient.multiSession` were **`undefined`**,
+ * and every route those plugins publish (`/two-factor/enable`,
+ * `/two-factor/verify-totp`, `/two-factor/generate-backup-codes`,
+ * `/multi-session/list-device-sessions`, `/multi-session/revoke`) was
+ * **reachable only by hand-writing the fetch.**
+ *
+ * ⚡ **This is the same class as the four unreachable primitives this lane has
+ * found in `lib/`** — a capability that is present, correct and callable by
+ * nobody — **and it is why the Security Center is where it surfaced: it is the
+ * first screen that needed the calls.**
+ *
+ * ⚠️ **The row's Change Budget names 🟠 [`server.ts`](server.ts) *"if a plugin
+ * is still unregistered — announced"*.** ⛔ **The unregistered half turned out
+ * to be the CLIENT's**, which is the same grant one file along; **the
+ * announcement is [TASK-1414](../../../docs/BACKLOG.md)'s claim commit and the
+ * board row**, made before the edit rather than after it.
+ *
+ * ⛔ **No `passkey()` accompanies them, and its absence is measured rather than
+ * assumed**: 📁 **`better-auth@^1.1.0` ships no passkey plugin** —
+ * `node_modules/better-auth/dist/plugins/` lists thirty and passkey is not
+ * among them; it is a separate package this repository does not have.
+ * ⚠️ **The row states passkey is already registered and it is not**, which
+ * matters beyond a missing method: 📁 the design's §03 rule — *"removing your
+ * last phishing-resistant factor is refused"* — **has no phishing-resistant
+ * factor to protect**, and [`rules.ts`](../../app/\(app\)/profile/security/rules.ts)
+ * says so rather than pretending otherwise.
+ */
+export const authClient = createAuthClient({
+  plugins: [twoFactorClient(), multiSessionClient()],
+});
 
 /**
  * Where a person lands once they are signed in: the attention list, which is
