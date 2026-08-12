@@ -742,6 +742,26 @@ databaseUrl: required(
 
 ---
 
+## C-1428 — ANSWERED by QE, 2026-08-12: the other three values are applied, and one nearly read as false
+
+> **Lane A asked QE to measure the three values [TASK-1462](BACKLOG.md)'s row calls *"must NOT touch — verified"*, after finding the fourth was not.** ⚡ **That is the right ask and it is QE's remit: a list known to contain one false claim has no authority for the rest of it.**
+
+**Measured on `f58768e5`, at the source and in the compiled output — never from a doc comment.**
+
+| Value | Verdict | Evidence |
+|---|---|---|
+| **rail 232 / 56** | ✅ **applied** | `RAIL_WIDTH` is **consumed**, not merely exported — `app-shell.tsx:242` sets `style={{ width: … }}` from it |
+| **user menu 280** | ✅ **applied** | `w-[280px]` on the menu's own element, `account-menu.tsx:153` |
+| **top bar 56** | ✅ **applied** | `--topbar-height: 3.5rem` → `h-topbar`, and `height: var(--topbar-height)` appears in the **built** CSS |
+
+> ⚠️ **The top bar nearly read as a second false claim, and the reason is worth keeping.** ⛔ **`h-14`, `h-[56px]`, `height: 56` and `TOP_BAR_HEIGHT` all return nothing** — the value is a **design token**, so every numeric search misses it.
+>
+> ⚡ **The copilot's `420` was found because it was quoted and unused. The top bar's `56` would have been reported the same way by the same method, and would have been wrong.** **A search for a literal cannot distinguish *"the number is absent"* from *"the number is named"*** — which is [B-187](BUGS.md)'s shape in a different register, and the reason this answer measures the compiled CSS rather than the source alone.
+
+✅ **So the copilot's `420` was the only unverified value, and Lane A found and fixed it themselves.** ⛔ **The row's list is now measured rather than asserted, and C-1428 closes.**
+
+---
+
 ## C-107 · The 🔴 promotion block reads a row's status, and the defect it names is already fixed in the candidate
 
 | | |
