@@ -24,6 +24,11 @@ __pycache__/
 # Node / frontend
 node_modules/
 .next/
+# B-219 / TASK-1465 — `next build` writes here so it cannot overwrite the dev
+# server's `.next/`. Ignored for the same reason `.next/` is, and named
+# explicitly rather than by a `.next*` glob: a glob would also swallow
+# `next-env.d.ts` if it were ever renamed, and this directory is one thing.
+.next-build/
 *.tsbuildinfo
 next-env.d.ts
 

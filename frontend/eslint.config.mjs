@@ -18,6 +18,13 @@ export default tseslint.config(
       'next-env.d.ts',
 
       '.next/**',
+      // 📁 **[TASK-1465](../docs/BACKLOG.md) / [B-219](../docs/BUGS.md)** —
+      // `next build` writes here so it cannot overwrite the dev server's
+      // `.next/`. ⛔ **It is build output and must be ignored for exactly the
+      // reason `.next/` is**: without this line the first build after the
+      // change put **17,916 lint errors** in front of the gate, none of them
+      // anybody's code.
+      '.next-build/**',
       'node_modules/**',
       'coverage/**',
       'test-results/**',
