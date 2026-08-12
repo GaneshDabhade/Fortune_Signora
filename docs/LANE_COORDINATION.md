@@ -513,6 +513,8 @@ databaseUrl: required(
 
 ---
 
+> 🔴 **⛔ CONTESTED IDENTIFIER — [B-263](BUGS.md). This item shares `C-210` with Lane B's *"will Signora hold personal data?"*, which holds the index row and this anchor.** ⚡ **Two sessions have already reported opposite states of *"C-210"* within an hour and both were reading correctly** — one meant this question, one meant Lane B's. ⛔ **Cite this item by its TITLE until it is renumbered**, and 🔴 **it cannot be renumbered until Lane A is given a `C-` block: all 100 of `C-200`–`C-299` are defined.**
+
 ## C-210 · [TASK-1476](BACKLOG.md) — does Signora STORE what a rep writes, or only observe? Eight of Account 360's sections turn on it
 
 | | |

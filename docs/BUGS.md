@@ -125,6 +125,52 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-263 · One identifier, two questions — and it made two lanes contradict each other about the same ruling
+
+| | |
+|---|---|
+| **Module** | ⛔ **Not a module** — [`LANE_COORDINATION.md`](LANE_COORDINATION.md) |
+| **Current assignee** | **Lane A** — ⚡ **filed against itself. This lane allocated the identifier** |
+| **Severity** | 🔴 — ⛔ **it has already caused a false report between two lanes**, which is more than a broken anchor costs |
+| **Status** | 🔵 **`OPEN`** — 🔴 **this lane CANNOT fix it correctly**, and the reason is the second half of the finding |
+| **Found** | **2026-08-12, by Lane A**, reconciling two peers who reported opposite things about `C-210` |
+
+#### 🔴 What happened
+
+**`C-210` names two different questions.**
+
+| Where | What it says |
+|---|---|
+| **The index, row `C-210`** | *"will Signora hold personal data?"* — **Lane B's**, `OPEN`, grouped with People Intelligence, anchored `#c-210--will-signora-hold-personal-data` |
+| **The only `## C-210` heading** | *"does Signora STORE what a rep writes, or only observe?"* — ⚡ **this lane's, raised for [TASK-1476](BACKLOG.md)** |
+
+⛔ **So the index link resolves to nothing, and every reader who follows *"C-210"* lands on this lane's item instead of Lane B's.**
+
+#### ⚡ The cost, and it is not hypothetical
+
+**Two sessions reported opposite states within an hour, and both were reading correctly:**
+
+- **One reported `C-210` RULED — *"Notes and Tasks approved, contract [ADR-0413](architecture/adr/)"*.** ✅ **True of THIS lane's question.**
+- **One reported `C-210` unruled on both refs, having read the index row.** ✅ **True of Lane B's question.**
+
+🔴 **Neither was wrong. The identifier was.** ⛔ **A collision that produces a broken anchor is tidy-up; one that produces two confident and contradictory reports of a product-owner ruling is a defect**, and it cost this lane a reconciliation it should not have had to do.
+
+#### ⚠️ Why the existing guards did not catch it
+
+⛔ **Lane B's `C-210` has NO `## C-210` heading** — it exists as an index row and two cross-references. ⚡ **So a free-identifier scan by heading reports 210 as available, and that is exactly the scan this lane ran.** ⚠️ **`state-check`'s duplicate-identifier check found the [C-300](#b-259) collision because BOTH sides had a heading**; this shape has only one and is invisible to it.
+
+📁 **[B-259](#b-259) is the same class one step earlier** — *"this lane allocated from the highest number seen"* — ⛔ **and this is the sequel: allocating into a block that was already full, twice.** ⚠️ **`C-209` carries no second heading and appears clean, and that is luck rather than method.**
+
+#### ⛔ Why this lane cannot fix it, and what it needs
+
+**Renumbering is the obvious repair and there is nowhere to renumber to.** 🔴 **Every identifier from `C-200` to `C-299` is defined — 100 of 100, counted rather than assumed.**
+
+📁 **[`BUGS.md`](BUGS.md)'s own block table says why**: *"Only Lane B's block has been stated to Lane B. The blocks for Lane A, QE and the unclaimed lanes are the product owner's to allocate, and this table is deliberately incomplete rather than guessed."*
+
+⚡ **So this lane has been allocating out of a range nobody gave it, into space that ran out.** ⛔ **Picking a new range now would repeat the original error with a bigger number**, which is what [§20e](../CLAUDE.md) forbids by name.
+
+> 🔴 **FOR THE PRODUCT OWNER, and it is one sentence: Lane A needs a stated `C-` block.** ⚡ **Lane C uses `400–499` then `1400+`; Lane B uses `3xx`.** ⛔ **Until one is stated, this lane raises no further coordination items and marks the two it has as contested.** ✅ **Implementation is unaffected — no slice is waiting on this.**
+
 ### B-262 · After a Playground reseed the owner persona is an owner in the database and a restricted member in the product
 
 | | |
@@ -2256,6 +2302,7 @@ SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@loca
 | **Status** | ⚠️ **`OPEN`** — ⛔ **reported by Lane A against itself, on the poll it happened.** 🔴 **NOT fixed and deliberately not force-corrected — see below** |
 | **Found** | **2026-08-11, by Lane A, doing it.** ⚡ **Reported WITH the breach it caused, because the breach is the evidence** |
 | **Commit found** | **`1f9731a5`** pushed to `integration`, **carrying `6e1bd4f8`** — [TASK-1445](BACKLOG.md)'s implementation |
+| 🔴 **SECOND INSTANCE — 2026-08-12, ten commits, same lane** | ⛔ **`24ba4d22` … `ed1513cc` on `origin/integration`, carrying 1–5 executable paths each: [TASK-1476](BACKLOG.md)'s section-state law, `AccountSectionShell`, the rail anchoring, the loading and error states.** ⚠️ **Reported by QE, not by this lane** — 📁 **and that is the part worth recording**: the first instance was self-caught on the poll it happened, **and this one ran for ten commits without this lane noticing, because the route had become habit.** ⛔ **`--audit-claims` reported *0 claims awaiting promotion* throughout and was not wrong** — it audits commits whose subject begins `Claim `, **so it never looked at any of them.** ✅ **This is the row's own predicted failure, happening.** ⚡ **The count is the row's value and it now reads 2.** ✅ **`--audit-main` is clean: nothing uncertified reached `main`, which is the promotion guard doing its job regardless of what `integration` carries.** ⛔ **Not force-corrected, for the reason this row already gives** — history on a shared ref is not a lane's to rewrite. **What changed instead is the route: this lane pushes its own branch and lets QE fast-forward, and only a claim commit goes to `integration` directly.** |
 
 ### 🔴 What happened, exactly
 
