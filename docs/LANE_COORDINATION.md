@@ -653,7 +653,7 @@ ownership · preferences · products · saved-views · signals · target-account
 
 | | |
 |---|---|
-| **Status** | ⚠️ **`OPEN`** — Lane A, 2026-08-12 |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-12.** ⚡ **The Workspace Chooser design says so in its own header: *"C-299 folded in"*.** 📁 **The default-selection rule now lives where it belongs — in the chooser's specification, not beside it.** ⚠️ **[B-245](BUGS.md) stays OPEN**: the defect is repairable against the ruled design, and it is a defect rather than a question |
 | **Raised by** | **Lane A**, routing [B-245](BUGS.md) — ⛔ **filed 2026-08-11 and carried to nobody until now.** ⚠️ **See the note at the foot of [C-298](#c-298--which-environments-may-write-a-credential-to-a-log-and-the-auth-tier-and-the-registry-do-not-agree-what-an-environment-is-called): this is the second unrouted decision from this lane in four days, and the pattern is the finding** |
 | **Owner** | **Product owner** |
 | **Blocks** | ⛔ **No task row.** ⚡ **It costs the journey suite continuously** — 📁 [B-245](BUGS.md) records six organizations accumulating in one session and the account-backed journeys failing two projects later |
@@ -10554,7 +10554,7 @@ rules parsed: 24   ·   distinct reason codes: 24
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-09, reviewing `Fortune Signora Entry Coverage Review` under [D-206](DECISION_REGISTER.md) |
 | **Owner** | ⛔ **Product Owner** — **commissioning a design document is not this office's** ([§21](../CLAUDE.md): implement the design, never invent it) |
-| **Status** | ✅ **`READY FOR IMPLEMENTATION` — RULED, product owner, 2026-08-12.** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-12, on delivery.** ⚡ **All five commissioned designs are in the snapshot** — `Home` · `Session Continuity` · `Workspace Chooser` · `Workspace Lifecycle` · `Security Gates`, hashes in [MANIFEST.md](design-snapshot/MANIFEST.md). ⛔ **The commissioning ruling is discharged; nothing further is asked of the product owner** |
 | **Blocks** | ⏸️ **[TASK-1421](BACKLOG.md)** and ⏸️ **[TASK-1423](BACKLOG.md)** — **both released `READY` by this office earlier today and now correctly `BLOCKED`** |
 
 ✅ **This office reviewed the document adversarially and ADOPTS it.** ⚡ **Its architecture is sound, its four-document recommendation is better than the eleven the brief implied, and two of its governance rules — *"cards declare, Home arranges"* and *"compositions are configuration"* — are exactly what [TASK-1405](BACKLOG.md) and [TASK-1406](BACKLOG.md) already assume.**
