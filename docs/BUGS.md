@@ -131,7 +131,36 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 **The obvious alternative — board says held, backlog says moved on — would not have caught this case.** 📁 **[`BACKLOG.md`](BACKLOG.md) also read `CLAIMED` for those three days.** ⚡ **The same lane sets both, and it forgot both**, which is the failure mode rather than an accident.
 
-> ✅ **So the row stays open with the attempts recorded, and `state-check.py` is unchanged.** ⚠️ **What a real fix needs is a link from a task to its implementing commit that is not a prose mention** — and inventing one is a change to how work is recorded, not a check.
+### ⚠️ CORRECTED same day, by Lane A — the link exists and QE said it did not
+
+⛔ **This row concluded: *"what a real fix needs is a link from a task to its implementing commit that is not a prose mention — and inventing one is a change to how work is recorded, not a check."*** **That was wrong.**
+
+📁 **[§20e](../CLAUDE.md) already mandates it**, and it is structured rather than prose:
+
+```
+Slice-Handoff:
+  Milestone:     M12.6 -- TASK-1470
+```
+
+✅ **Measured: 325 commits on `main` carry the block**, and the `Milestone` field names the `TASK-nnn`. ⚡ **That is exactly the pair all three attempts were reaching for**, and it is why ③ could only find a governance commit — a body scan sees mentions, and the handoff is a field.
+
+### 🔴 So the reason not to build the held-row check has changed, and the new one is measured
+
+⛔ **The link is missing for 48 of 121 promoted tasks — 40%** — **including [`TASK-1428`](BACKLOG.md), the row that produced this finding.** 📁 `a512642` carries no handoff, which is why every attempt failed against it.
+
+> ⚡ **A check keyed on handoffs would be silent precisely where it is needed.** **That is the guard-that-cannot-fail shape** ([§2](../CLAUDE.md)), and it is a better reason to decline than the one this row first gave.
+
+✅ **What QE built instead is the coverage line**, in [`state-check.py`](../infra/state-check.py): **one advisory naming how many promoted tasks have no handoff.** ⛔ **One line, not one finding per task** — 48 findings on a first run is how a check teaches people to scroll past it.
+
+**Fire-tested four ways**: it fires on the real state · **is silent when every promoted task is covered** · **reports ALL of them if the scan itself breaks**, rather than going quiet · and does not count a task nobody promoted.
+
+⚠️ **And it reports a BASELINE rather than a target, which the first version did not say.** 📁 **A promoted commit message is immutable**, so the 48 can never gain a handoff — [B-258](#b-258) states the same constraint: *"the five promoted commits cannot be repaired; the repair is the next slice."* ⛔ **A number that cannot reach zero is one people stop reading**, so the line says what movement means: **the count can only be held, and a rise is a slice that shipped without its link.**
+
+> ⚡ **Caught before the check was certified, not after** — QE stopped a running certification 39 seconds in rather than promote an instrument whose number nobody could act on.
+
+⚠️ **The held-row check stays unbuilt, and this row stays open.** ✅ **It becomes viable when [B-258](#b-258) closes the coverage** — which is Lane A's, and which they filed against themselves before QE noticed.
+
+> ⛔ **QE's original conclusion was an error of fact, not of judgement, and it is corrected here rather than adjusted.** 📁 **The mechanism was not missing; it had stopped being fed** — *"a mechanism that exists and is not used is indistinguishable, to every future reader, from one that was never built."*
 
 ---
 

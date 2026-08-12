@@ -1670,6 +1670,51 @@ def main() -> int:
             "it still holds work that has shipped."
         )
 
+    # 3b — the Slice Handoff is the repository's task→commit link, and it is
+    # only as good as the fraction of slices that wrote one.
+    #
+    # **B-193 concluded that no such link existed and that inventing one would
+    # be a change to how work is recorded. That was wrong, and Lane A corrected
+    # it**: §20e mandates a `Slice-Handoff` block whose `Milestone` field names
+    # the `TASK-nnn`, 325 commits on `main` carry it, and it is structured
+    # rather than a prose mention — which is exactly what B-193's three attempts
+    # were reaching for.
+    #
+    # ⛔ **So the reason not to build the held-row check is no longer that the
+    # link is missing. It is that the link is missing for 39% of promoted
+    # tasks** — including `TASK-1428`, the row that produced the finding. **A
+    # check keyed on handoffs would be silent precisely where it was needed**,
+    # which is the guard-that-cannot-fail shape (§2).
+    #
+    # This line reports the coverage instead. It cannot be silently wrong: it
+    # compares two things the repository already holds, and it makes B-258
+    # countable rather than anecdotal. **One line, not one finding per task** —
+    # 47 findings on the first run is how a check teaches people to scroll past
+    # it.
+    promoted = [task for task, state in _backlog_states(backlog).items() if state == "PROMOTED"]
+    if promoted:
+        handoffs = _git("log", "main", "--grep=Slice-Handoff", "--format=%b")
+        named = set(re.findall(r"Milestone:.*?(TASK-\d+)", handoffs))
+        orphaned = sorted(set(promoted) - named)
+        if orphaned:
+            # ⛔ **Reported as a baseline, never as something to drive to zero.**
+            # A promoted commit's message is immutable, so the 48 that shipped
+            # without a handoff can never gain one — and **a number that cannot
+            # reach zero is one people stop reading** unless the line says what
+            # movement means. B-258 names the same constraint: *"the five
+            # promoted commits cannot be repaired; the repair is the next
+            # slice."*
+            findings.append(
+                f"{len(orphaned)} of {len(promoted)} promoted task(s) have no `Slice-Handoff` "
+                f"naming them, most recently {', '.join(orphaned[-3:])}. §20e requires one on "
+                "the last commit of every slice, and it is the only structured link from a task "
+                "to the commit that delivered it (B-258). This is a BASELINE, not a target: a "
+                "promoted commit message is immutable, so the count can only be held — a rise "
+                "is a slice that shipped without its link, and that is the signal to read."
+            )
+        else:
+            notes.append(f"Every one of {len(promoted)} promoted task(s) carries a Slice Handoff.")
+
     # 4 — the one blocking rule.
     #
     # This check used to ask whether "🔴" appeared anywhere above the Verified
