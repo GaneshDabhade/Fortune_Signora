@@ -90,6 +90,51 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-188 · 🟠 `smoke` discarded the build's output, so a transient Docker hiccup was indistinguishable from a broken tree
+
+| | |
+|---|---|
+| **Module** | **QE gates** — [`infra/smoke.sh`](../infra/smoke.sh), stage *1. Build* |
+| **Current assignee** | **QE** — ⚡ **[§20e](../CLAUDE.md): a defect in a gate that stops QE certifying is QE's to fix** |
+| **Severity** | 🟠 — ⛔ **it does not make a bad tree pass.** ⚡ **It makes a failure unreadable**, which costs a cycle every time and invites the worst possible response: *re-run it and see* |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-12.** ⚠️ **Not `VERIFIED`: QE found it and QE fixed it** |
+| **Found** | **2026-08-12, cycle 207**, by a certification that reported `NOT CERTIFIED` and gave no way to tell why |
+| **Commit found** | **`3e0a524c`** |
+
+**Steps.** `make certify` when the Docker daemon is still stabilising.
+
+**Actual.**
+
+```
+gate 'smoke' failed: 2 stages in 11s, slowest 1. Build 11s
+  1. Build
+    ✗ production images failed to build
+```
+
+⛔ **And nothing else.** The line was:
+
+```sh
+$COMPOSE build >/dev/null 2>&1 || fail "production images failed to build"
+```
+
+### Why this is worse than it looks
+
+**Eleven seconds is too fast for a compile failure**, so the shape of the number was the only clue that this was an abort rather than a verdict. ⚡ **QE had to re-run the build by hand to learn the tree was fine — all five images, exit 0, on the same commit.**
+
+> ⛔ **That is precisely the work a gate exists to save.** **A failure that cannot be read teaches one response — *run it again and see* — and that is how a real defect gets re-run until it passes by luck.**
+
+⚠️ **[B-140](#b-140) is the same defect in a different stage**, and its title is the general form: *a failing gate reported its verdict and discarded its evidence.* **Filing this one separately rather than reopening B-140**, because the fix is per-site and the pattern needs a second data point to be worth generalising.
+
+### The fix, and the two sites deliberately left alone
+
+✅ **The build's output is captured to a temp log; on failure the last 40 lines are printed and the full path named.** **A passing build stays silent** — the evidence costs nothing when nothing is wrong.
+
+⛔ **`$COMPOSE up -d --wait` and the teardown still discard theirs**, and that is not an oversight: **the first already names its remedy** (*"see: `$COMPOSE logs`"*) and the second cannot block a verdict. **A sweep here would be change without a defect behind it.**
+
+**Fire-tested both ways:** a failing build prints *"couldn't find env file"*; a passing one prints only its tick and exits 0.
+
+---
+
 ### B-187 · 🟡 `state-check` could not see an eight-character SHA, so it reported the dashboard stale on the cycle it was refreshed
 
 | | |

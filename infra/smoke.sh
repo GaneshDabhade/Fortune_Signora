@@ -80,6 +80,7 @@ cleanup() {
   fi
   exit $code
 }
+SMOKE_BUILD_LOG="$(mktemp -t smoke-build-XXXXXX.log)"
 trap cleanup EXIT
 
 http_code() { curl -s -o /dev/null -w '%{http_code}' "$@" || true; }
@@ -138,7 +139,20 @@ pass "previous stack removed"
 
 stage "1. Build"
 
-$COMPOSE build >/dev/null 2>&1 || fail "production images failed to build"
+# ⛔ **The output is KEPT, and B-188 is what discarding it cost.** This read
+# `>/dev/null 2>&1`, so a failure printed *"production images failed to build"*
+# and nothing else — **and a transient Docker hiccup is then indistinguishable
+# from a genuine compile error.** ⚡ QE had to re-run the build by hand to learn
+# that the tree was fine, which is the one thing a gate exists to save you.
+#
+# ⚠️ **[B-140](../docs/BUGS.md) is the same defect in a different stage** — *a
+# failing gate reported its verdict and discarded its evidence.*
+if ! $COMPOSE build >"$SMOKE_BUILD_LOG" 2>&1; then
+  printf '\n  \033[31m--- last 40 lines of the build ---\033[0m\n'
+  tail -40 "$SMOKE_BUILD_LOG" | sed 's/^/    /'
+  printf '\n'
+  fail "production images failed to build (full log: $SMOKE_BUILD_LOG)"
+fi
 pass "API, worker, relay, and frontend images built"
 
 # ============================================================== 2. Startup
