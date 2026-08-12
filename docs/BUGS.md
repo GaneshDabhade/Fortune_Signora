@@ -90,6 +90,39 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-192 · 🟡 `RUNNING.md` documents everything a lane needs to start except the Better Auth schema, so a correctly-followed setup fails at sign-in and reads as a product defect
+
+| | |
+|---|---|
+| **Module** | **QE's own documentation** — [`docs/RUNNING.md`](RUNNING.md), *Running a lane* |
+| **Current assignee** | **QE** — ⚡ **[`RUNNING.md`](RUNNING.md) is QE's** ([§20e](../CLAUDE.md), shared files) |
+| **Severity** | 🟡 — ⛔ **nothing shipped is wrong.** ⚠️ **A lane setting up from the documented steps loses the time it takes to work out that the missing thing is a schema nobody mentioned** |
+| **Status** | 🔵 **`OPEN`** — ⛔ **filed rather than fixed**, because the fix is a documented command and QE has not yet found the one this repository actually uses |
+| **Found** | **2026-08-12, cycle 211**, assembling a lane environment to execute [B-429](#b-429)'s journey |
+| **Commit found** | **`96f23434`** |
+
+**Steps.** Follow [`RUNNING.md` § Running a lane](RUNNING.md#running-a-lane) exactly: compose up, the three exported URLs, `alembic upgrade head`, `uvicorn`, `npm run dev`. Then run any journey.
+
+**Expected.** Sign-in.
+
+**Actual.** ⛔ **`page.waitForURL: Timeout 20000ms exceeded`** — the form submits and never navigates.
+
+### 🔴 Why, and why it names the wrong subsystem
+
+📁 **Alembic manages the Python tier only.** **Better Auth owns `user`, `session`, `account` and `verification` and creates them itself** ([ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md): Better Auth is the sole Authentication Authority and the Python tier only verifies).
+
+**Measured on a freshly-migrated lane database:** ⛔ **59 tables, and not one of the four.** The only matches for *account* are `connected_account` and `target_account_list`, which are the Python tier's.
+
+⚠️ **So the first thing that breaks is a Playwright sign-in**, and 📁 [B-219](#b-219) is the precedent for how expensive that is: *"the first thing that breaks names the wrong subsystem, which is why this sat open for three days."*
+
+### ⛔ What QE could not finish, stated rather than implied
+
+**[B-429](#b-429)'s repair is a journey and QE did not execute it.** ✅ **The journey asserts the right seam** — `menu` contains `OWNER.name`, read through `layout.tsx`, the real session and the whole shell chain, which is exactly what [B-191](#b-191) asked for. ⛔ **But QE has verified its shape, not its behaviour**, and [B-191](#b-191) is the row that exists because reading a guard is not testing it.
+
+> ⚠️ **`npx @better-auth/cli migrate --config lib/auth/server.ts` answers *"No configuration file found"***, so **the correct command is not obvious and is not written down** — which is the defect.
+
+---
+
 ### B-191 · 🟡 Two fixes this cycle are guarded at the component that RECEIVES a value and not at the seam that SUPPLIES it, and the defect was in the seam both times
 
 | | |
