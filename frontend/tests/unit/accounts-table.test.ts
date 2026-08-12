@@ -3,7 +3,7 @@
  *
  * 🔴 **Every assertion here is about a boundary the design draws and the
  * contract cannot serve**, or about one it can. ⛔ **The five columns with no
- * source are not tested as absent by omission** — [C-300](../../../docs/LANE_COORDINATION.md)
+ * source are not tested as absent by omission** — [C-209](../../../docs/LANE_COORDINATION.md)
  * is the decision, and a test that asserted their absence would have to be
  * deleted when it is ruled rather than extended.
  */

@@ -62,7 +62,7 @@ export function AccountsToolbar({
       <div className="flex flex-wrap items-center gap-2">
         {/* 📁 *"Table · Cards · Board"* — ⛔ **Board is absent**: it groups by a
             column, and every groupable column the design names is
-            [C-300](../../../../docs/LANE_COORDINATION.md)'s. **A third tab that
+            [C-209](../../../../docs/LANE_COORDINATION.md)'s. **A third tab that
             grouped by `kind` would be the design's word on a different idea.** */}
         <div role="group" aria-label="View" className="flex rounded-md bg-surface-sunken p-0.5">
           {(['table', 'cards'] as const).map((value) => (
@@ -101,7 +101,7 @@ export function AccountsToolbar({
 
       {/* 📁 *"Filters · Add condition"* — ⛔ **only over fields the contract
           publishes.** 📁 The design's *"Renewal within 90 days"* and *"Score
-          below 50"* are both [C-300](../../../../docs/LANE_COORDINATION.md)'s. */}
+          below 50"* are both [C-209](../../../../docs/LANE_COORDINATION.md)'s. */}
       <div className="flex flex-wrap items-end gap-2" role="group" aria-label="Filters">
         <label className="flex flex-col gap-1 text-xs text-content-muted">
           Name contains

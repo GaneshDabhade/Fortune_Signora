@@ -2159,8 +2159,8 @@ if (workspaceId === null) return [];   // absent  AND  not-yet-arrived
 | **Pagination** | ⚠️ `Load more`, accumulating | 🔴 **REPLACED** by `Previous`/`Next` |
 | **Export** | ⛔ Absent | ✅ **Built** — exactly what is on screen |
 | **Import · New company · New segment** | ⛔ Absent | ⛔ **Still absent, deliberately** |
-| **Owner · Segment · Tags · Open ACV · Renewal · Score** | ⛔ Absent | ⏸️ **[C-300](../LANE_COORDINATION.md) / [C-1425](../LANE_COORDINATION.md)** |
-| **Board view · grouping · sorting · smart filters · AI rows** | ⛔ Absent | ⏸️ **Every one groups or ranks by a C-300 field** |
+| **Owner · Segment · Tags · Open ACV · Renewal · Score** | ⛔ Absent | ⏸️ **[C-209](../LANE_COORDINATION.md) / [C-1425](../LANE_COORDINATION.md)** |
+| **Board view · grouping · sorting · smart filters · AI rows** | ⛔ Absent | ⏸️ **Every one groups or ranks by a C-209 field** |
 
 ### ⛔ `Load more` was replaced rather than kept, and that is the standard applied
 

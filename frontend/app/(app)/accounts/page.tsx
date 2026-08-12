@@ -143,7 +143,7 @@ export default function CompaniesPage() {
                 that silently draws four of nine columns reads as a broken
                 table; one that says what it does not have yet reads as an
                 honest one. 📁 **Score, owner, value, renewal, segment and tags
-                are [C-300](../../../../docs/LANE_COORDINATION.md) and
+                are [C-209](../../../../docs/LANE_COORDINATION.md) and
                 [C-1425](../../../../docs/LANE_COORDINATION.md)**, not
                 omissions. */}
             <span className="text-content-muted">

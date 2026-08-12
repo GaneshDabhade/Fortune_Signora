@@ -513,7 +513,7 @@ databaseUrl: required(
 
 ---
 
-## C-300 · [TASK-1475](BACKLOG.md)'s row facts have no source, and its pager cannot be built over its own endpoint
+## C-209 · [TASK-1475](BACKLOG.md)'s row facts have no source, and its pager cannot be built over its own endpoint
 
 | | |
 |---|---|
@@ -569,6 +569,17 @@ databaseUrl: required(
 ⚠️ **[TASK-466](BACKLOG.md) and [TASK-1416](BACKLOG.md) were both claimed-shaped and unstartable, and both were found so after they were `READY`.** ⛔ **This is the same measurement performed one step earlier.**
 
 ---
+
+### ⚠️ Renumbered from `C-300`, and the scheme was not at fault
+
+⛔ **`C-300` was already allocated** — 📁 *"Provider Platform owns the half of the inbound path Lane B may not build"* — **and it is in LANE B's block**, not a legacy range. 📁 [§20e](../CLAUDE.md): **Lane A allocates from `200`+, Lane B from `300`+.**
+
+🔴 **This lane took the number after the highest it had used**, which is the one method the rule forbids by name: ***"Identifiers are allocated from a block, never from the highest number seen."*** ⚡ **The block was never full** — **209–216 were free the whole time**, and `209` is where this belongs.
+
+⛔ **Nothing detected it**, and `state-check` is right not to: **218 `C-` ids, none duplicated**, because this item was never on `integration` under any id. ⚠️ **The collision was with a row that already existed, not between two live ones.**
+
+✅ **Lane C published links to the wrong item and corrected them at `e1845e9b`; the renumber is this lane's** — 📁 **a lane allocates its own ids, and this one allocated badly.**
+
 
 ## C-299 · Which organization a person lands in, when they have more than one and have chosen none
 

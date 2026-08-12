@@ -10,7 +10,7 @@
  * Renewal are refused in writing** by
  * [`crm.py`](../../../backend/modules/provider_normalization/infrastructure/mappers/crm.py):
  * *"contract value, renewal date… have no canonical attribute, and
- * `ClaimAttribute` says an RFC extends it."* 📁 **[C-300](../../../docs/LANE_COORDINATION.md)
+ * `ClaimAttribute` says an RFC extends it."* 📁 **[C-209](../../../docs/LANE_COORDINATION.md)
  * is that decision and this file does not pre-empt it.**
  *
  * ⚡ **So a column is defined only where a field exists**, and the type makes
@@ -84,7 +84,7 @@ export const ROW_PADDING: Record<Density, string> = {
  * 🔴 **Filters over fields that exist, and nothing else.**
  *
  * 📁 The design's chips read *"Renewal within 90 days"*, *"Score below 50"* —
- * ⛔ **both are C-300's.** ⚡ **What can be asked of this contract is who the
+ * ⛔ **both are C-209's.** ⚡ **What can be asked of this contract is who the
  * account is, where it came from, what kind it is, and how fresh it is.**
  */
 export interface Filters {

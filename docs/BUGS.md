@@ -5469,7 +5469,7 @@ def _load_state_check() -> ModuleType:
 
 > ## ⚠️ **It is NOT one lane's omission, and that is why it is a register defect rather than a correction to somebody.**
 
-📁 **The 31 span every allocation block** — `C-015`, `C-100`–`C-103`, `C-204`, `C-236`, `C-267`–`C-275`, `C-300`, `C-326`–`C-336`, `C-414`–`C-428`. ⚡ **Written by QE, by feature lanes and by this office alike**, which makes it a drift in the register's own convention rather than a habit of anybody's.
+📁 **The 31 span every allocation block** — `C-015`, `C-100`–`C-103`, `C-204`, `C-236`, `C-267`–`C-275`, `C-209`, `C-326`–`C-336`, `C-414`–`C-428`. ⚡ **Written by QE, by feature lanes and by this office alike**, which makes it a drift in the register's own convention rather than a habit of anybody's.
 
 ⛔ **Not fixed wholesale in this pass, deliberately.** ✅ **The eight repaired are the live block a lane reads today; the remaining 23 are mostly `CLOSED` items whose absence costs a reader nothing urgent.** 📁 **[D-228](DECISION_REGISTER.md) §5 — do not spend cycles optimizing without evidence of a real problem — and the evidence here supports repairing what is live, not sweeping the file.**
 
