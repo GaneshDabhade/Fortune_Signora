@@ -90,6 +90,61 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-189 · 🟠 An invitation fixture expired against the real clock at 12:00 UTC today, so an unchanged tree certified twice this morning and cannot certify this afternoon
+
+| | |
+|---|---|
+| **Module** | **`workspace_tenancy`** — [`backend/modules/workspace_tenancy/tests/test_accept_invitation.py`](../backend/modules/workspace_tenancy/tests/test_accept_invitation.py) |
+| **Current assignee** | **Lane A** — [`modules.toml`](coordination/modules.toml), `current_owner = "Lane A"`, transition settled 2026-08-05 |
+| **Severity** | 🟠 — ⛔ **no customer ever sees this**: the fake is a test double and the production `Invitation.state(at=…)` is correct. ⚡ **But it is a Blocking Quality Defect** ([§20e](../CLAUDE.md)): a failing test, so **no commit can certify and every lane's finished work is held** |
+| **Status** | 🔵 **`OPEN`** — ⛔ **not QE's to fix.** QE may write a test in any module's suite and may not change that module's code |
+| **Found** | **2026-08-12, cycle 209**, by a certification that failed on a backend tree **byte-identical to one certified 93 minutes earlier** |
+| **Commit found** | **`74a06e07`** — and the backend is unchanged from **`0ffe15f3`**, which certified |
+
+⛔ **This is not a flake, and re-running will not clear it.** ✅ **It reproduces in 0.05 s with no database.**
+
+**Steps.** `cd backend && uv run pytest modules/workspace_tenancy/tests/test_accept_invitation.py` — at any moment after **2026-08-12 12:00:00 UTC**.
+
+**Expected.** 5 tests pass, as they did at 09:34 and 10:44 UTC today.
+
+**Actual.** 5 fail with `InvitationNotFoundError: There is no invitation to this organization for your address.`
+
+### ⚡ The evidence, and it is the same tree three times
+
+📁 **From [`certification/manifest.json`](../certification/manifest.json). `git diff 0ffe15f3...74a06e07 -- backend/` is empty.**
+
+| Certified at | Commit | `pytest` |
+|---|---|---|
+| **09:34:01 UTC** | `3e0a524c` | ✅ **4414 passed** |
+| **10:44:43 UTC** | `0ffe15f3` | ✅ **4414 passed** |
+| **12:17:55 UTC** | `74a06e07` | ⛔ **4409 passed, 5 failed** |
+
+### 🔴 The cause — two clocks in one test, and only one of them is declared
+
+```python
+NOW = datetime(2026, 8, 5, 12, 0, tzinfo=UTC)          # :40  the declared clock
+"expires_at": NOW + timedelta(days=7),                  # :140 → 2026-08-12 12:00 UTC
+and i.state(at=datetime.now(UTC)) is InvitationState.PENDING   # :81  the REAL clock
+```
+
+⚡ **The fixture's offer expires at exactly 2026-08-12 12:00 UTC. The fake's `find_live` compares it against the wall clock.** ⛔ **The moment the machine passed noon, every pending invitation in the file became expired, `find_live` returned `None`, and acceptance answered *there is no invitation*.**
+
+> ⚠️ **`state(at=…)` is right, and the production caller is right to pass the real clock.** 🔴 **The defect is that the double ignores the clock its own test declared** — 📁 **a hidden input** ([§2](../CLAUDE.md)): *"an input that influences behaviour without being part of the declared contract… makes the same declared inputs produce different results, which defeats replay and regression testing."*
+
+**⛔ It was written seven days ago, and seven days is the fixture's own window.** ✅ **The suite was green for every one of them.**
+
+### ✅ The sweep, and its bound
+
+**Every backend test file carrying a fixed `datetime(20xx, …)` literal was checked for a real-clock read in the same file.** 📁 **Five files mix the two; four are safe** — `test_claim_domain.py`, `test_api_accounts.py` and `test_pagination.py` use `datetime.now()` **as data** (`observed_at`, a cursor position), and `test_opportunity_pipeline.py` compares at **now + 3650 days**.
+
+⛔ **`test_accept_invitation.py:81` is the only place a real clock decides whether a fixed fixture has expired.** ⚠️ **The sweep is a grep over `backend/**/*.py` under a `tests/` path and finds nothing outside it; it cannot see a fixture whose expiry is computed rather than written.**
+
+### 📁 What a fix has to prove
+
+⚡ **Whatever the repair — the fake taking the clock the use case is given, or the test injecting `NOW` — the row closes on a proof that fails when the clock moves**, not on a green run today. ⛔ **A run tomorrow is green either way: the window has already passed, so a fixture rewritten to `NOW + 7 days` from a *new* `NOW` buys another seven days of silence rather than a fix.**
+
+---
+
 ### B-188 · 🟠 `smoke` discarded the build's output, so a transient Docker hiccup was indistinguishable from a broken tree
 
 | | |
