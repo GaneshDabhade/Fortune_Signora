@@ -66,7 +66,21 @@
       "version": 2,
       "owner": "AI Reasoning Engine",
       "fingerprint": "b0dc023fae5b7c810c9e4728db540219da675d182236f38cd71a22c280dc0ee3",
-      "evaluations": []
+      "evaluations": [
+        {
+          "model": "granite3.3:2b",
+          "dataset": "explanation_narration",
+          "dataset_version": 1,
+          "rubric_version": 1,
+          "evaluated_on": "2026-08-12",
+          "sample_size": 2,
+          "grounding_failures": 2,
+          "schema_failures": 0,
+          "coverage": 0.0,
+          "rendering_protocol_version": 2,
+          "retries": 0
+        }
+      ]
     }
   ]
 }

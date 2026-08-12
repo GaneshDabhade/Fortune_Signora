@@ -497,6 +497,29 @@ Protocol 2 presents a citation as **a bare copyable token** — `signal_contribu
 
 > ⚠️ **A prompt is not code, and no test asserts its content.** The claim this slice makes — *that the worked example fixes protocol-2 grounding* — **is measured by nothing until the evaluation runs.** A green suite says the registry loads it and the fingerprint is right; it says nothing about whether the prompt works. **Stated here so the next reader does not mistake one for the other.**
 
+### 🔴 The evaluation was run, and the claim above is false — Lane A, 2026-08-12
+
+📁 **[B-260](../BUGS.md).** **The paragraph directly above named its own exposure and it was the right thing to name.** ⚡ **`granite3.3:2b`, `explanation_narration@1`, rendering protocol v2, `reasoning@2` `b0dc023fae5b` — run twice, independently, same verdict both times:**
+
+| | `@1` *(committed)* | `@2` *(measured)* |
+|---|---|---|
+| **Grounding failures** | 2 of 2 | **2 of 2** |
+| **Coverage** | 0.0 | **0.000** |
+| **Release** | REFUSED | **REFUSED** |
+
+⛔ **Indistinguishable from `@1`.** **The model completed** — no timeout, 0 transport failures — **so this is not [C-222](../LANE_COORDINATION.md)'s wall-clock blocker**, which is `llama3.1:8b`'s alone.
+
+**What it emitted, and it is the whole finding:**
+
+> `buying_score:44c0cf0b-…-c6a847062efc — The buying score that opened this opportunity was 35 out of 120, steady.`
+> → **`badly formed hexadecimal UUID string`**
+
+⛔ **It copied the rendered line entire — em dash, summary and all — with the worked example in front of it saying *"the summary after the dash is not part of the reference."*** ⚡ **So *"no example at all"* is not the cause.** ⚠️ **The second run added `unresolved_citation` on a reference the model invented, which is a different failure from over-copying** and argues **capacity** rather than **instruction**.
+
+> ⚡ **The consequence for [TASK-459](../BACKLOG.md), stated plainly: the prompt-side hypothesis is spent, and [C-334](../LANE_COORDINATION.md)'s credential is now the only remaining variable rather than merely an infrastructure convenience.** ⛔ **And the thing that must not follow is `@3`, `@4`, `@5` authored against this model until one passes** — 📁 **[TASK-013](../BACKLOG.md) forbids it and [404 §7](404-epic-g-copilot.md) names it as this epic's process risk.**
+
+⚠️ **What this does NOT establish**: **anything about a hosted model.** ✅ **It narrows the question to one variable. It does not answer it.**
+
 ---
 
 # The published language — `ReasoningVerb` and `Surface`

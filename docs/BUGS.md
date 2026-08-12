@@ -125,6 +125,65 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-260 · `reasoning@2`'s worked example does not fix protocol-2 grounding, and the prompt-side hypothesis is now spent
+
+| | |
+|---|---|
+| **Module** | **`ai_reasoning_engine`** — ⚡ **assignee joined from [`modules.toml`](coordination/modules.toml)**: `current_owner = "Lane A"`, `transition = "settled"` |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — ⛔ **it invalidates a stated cause, not a shipped behaviour.** ⚡ **Nothing regressed: `reasoning@2` was never released and nothing requests it.** 🔴 **What it changes is what [TASK-459](BACKLOG.md) is expected to deliver when [C-334](LANE_COORDINATION.md)'s credential arrives** |
+| **Status** | ⏸️ **`OPEN` — not this lane's to fix, and the reason is a ruling rather than capacity.** 📁 **[D-121](DECISION_REGISTER.md) ① sequences it *"create `@2` → hosted evaluation → promotion if it passes"*, and [TASK-013](BACKLOG.md) forbids tuning a prompt until it passes.** ⛔ **So `reasoning@3` is not a thing this lane authors on its own finding** |
+| **Found** | **2026-08-12, by Lane A**, running the evaluation that [29](architecture/29-ai-reasoning-engine.md) says in writing nobody had run |
+| **Reproduced** | ✅ **Twice, independently, same verdict** — the second run recorded in the manifest |
+
+#### 🔴 What the repository believed, and it is written down
+
+📁 **[29 §*The cause, and the precedent that already solved it*](architecture/29-ai-reasoning-engine.md)**:
+
+> **"`reasoning@1` … contains no transformation instruction … What it has is **no example at all**, and both `@2` prompts added one. A 2B model given a copy instruction and no specimen of what to copy is being asked to infer the form, and under protocol 2 it inferred wrongly on every case."**
+
+⚡ **And 29 flags its own exposure, which is what made this worth running**:
+
+> ⚠️ **"A prompt is not code, and no test asserts its content. The claim this slice makes — *that the worked example fixes protocol-2 grounding* — is measured by nothing until the evaluation runs."**
+
+#### ⛔ Measured
+
+**`granite3.3:2b` · `explanation_narration@1` · rendering protocol v2 · `reasoning@2` `b0dc023fae5b`**
+
+| | `reasoning@1` *(committed manifest)* | `reasoning@2` *(this run)* |
+|---|---|---|
+| **Grounding failures** | **2 of 2** | **2 of 2** |
+| **Schema failures** | 0 | 0 |
+| **Coverage** | **0.0** | **0.000** |
+| **Release** | REFUSED | **REFUSED** |
+
+⛔ **Indistinguishable.** ⚡ **And the model is the one that matters**: `granite3.3:2b` **completes** under protocol 2 — no timeout, 0 transport failures — so ⛔ **this is not [C-222](LANE_COORDINATION.md)'s wall-clock blocker, which is `llama3.1:8b`'s alone.**
+
+#### 🔴 Why the stated cause is disproved
+
+⛔ **`@2` HAS the worked example, in the exact protocol-2 form, and says the quiet part explicitly** — 📁 `reasoning@2.md` rule 3:
+
+> *"Copy the reference character for character … A fact shown as `business_event:2f7c9a10-… — Hired a VP of Engineering` is cited as `business_event:2f7c9a10-…` — **the summary after the dash is not part of the reference.**"*
+
+⛔ **The model copied the whole rendered line anyway**, em dash and summary included:
+
+> `buying_score:44c0cf0b-fe43-5ad1-97cc-c6a847062efc — The buying score that opened this opportunity was 35 out of 120, steady.`
+> → **`badly formed hexadecimal UUID string`**
+
+⚡ **So *"it had no specimen of what to copy"* cannot be the cause: it had one, and it was ignored.** ⚠️ **The second run added a second failure mode the first did not show** — `unresolved_citation` on `opportunity:c4b397d4-…`, **a reference the model invented** — which is a different defect from over-copying and **argues capacity rather than instruction.**
+
+#### ✅ What this is worth, and it is the point of filing it
+
+⚡ **[C-334](LANE_COORDINATION.md) is now the ONLY remaining hypothesis, and that is a stronger reason to provision it than the one on record.** 📁 The register says the credential removes an infrastructure blocker. ⛔ **After this run it is also the last untried variable**: **prompt-side has been tried twice and failed twice on a model that completes**, so **a larger model is what is left.**
+
+⛔ **What must NOT happen, and [TASK-013](BACKLOG.md) already forbids it in writing**: authoring `@3`, `@4` and `@5` against `granite3.3:2b` until one passes. ⚡ **That is tuning to the measurement**, and 404 §7 names it as the process risk of this exact epic.
+
+⚠️ **One thing this run does NOT establish**, stated so nobody reads it as more than it is: **it says nothing about how a hosted model behaves.** ✅ **It narrows the question to one variable; it does not answer it.**
+
+#### 📁 Recorded as a refusal, never as a release
+
+**The manifest gains a fifth evaluation and `reasoning@2` remains unreleased** — `is_released` **derives** from a passing evaluation rather than declaring one, so a recorded failure cannot grant anything. ⚡ **M9.5 Step A is this module's own precedent** — *"the refusals become repository evidence"* — and a measurement kept only in a report is a measurement the next reader has to take again.
+
 ### B-193 · 🟡 Nothing reports a board row still held whose work is already on `main`, and QE tried twice to close the gap and could not
 
 | | |
