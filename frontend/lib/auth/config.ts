@@ -98,11 +98,35 @@ function required(name: string): string {
 }
 
 /**
- * A value whose default is harmless and helps a first clone run.
+ * A value whose default helps a first clone run.
  *
- * **Named separately so the distinction is visible at the call site.** A URL
- * pointing at the wrong port fails loudly and immediately; a database pointing
- * at the wrong schema fails silently and permanently.
+ * **Named separately so the distinction is visible at the call site.**
+ *
+ * ## 🔴 B-257 — this said the default *"fails loudly and immediately"*, and it does not
+ *
+ * ⛔ **Measured on a lane at 3200**, by QE, in the session that found it:
+ *
+ * ```
+ * [Better Auth]: Invalid origin: http://localhost:3200   → 403
+ * symptom: waitForURL: Timeout 20000ms exceeded
+ * ```
+ *
+ * ⚡ **It fails as a sign-in that submits and never navigates** — 📁 **the
+ * identical symptom of a missing Better Auth schema and of missing demo
+ * accounts.** **Three causes, one appearance**, and QE hit all three in one
+ * session.
+ *
+ * ⚠️ **And the defaults below are not merely *a wrong port*.** 📁
+ * [`RUNNING.md`](../../../docs/RUNNING.md): *"3000 and 8000 belong to human
+ * review on `main`, and to no lane."* ⛔ **An unset variable aims a lane's auth
+ * tier at the one environment every lane is told to stay off.**
+ *
+ * 🔴 **The values are unchanged here on purpose.** **The honest repair needs
+ * this tier to know which environment it is in** — a default for a first
+ * clone, an error for a lane — **and it cannot**: 📁
+ * [B-223](../../../docs/BUGS.md) / [C-298](../../../docs/LANE_COORDINATION.md),
+ * where the auth tier's environment names and the registry's share an empty
+ * intersection. **One root, two rows.**
  */
 function developmentDefault(name: string, fallback: string): string {
   return process.env[name] ?? fallback;

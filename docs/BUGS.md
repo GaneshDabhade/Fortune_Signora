@@ -1001,6 +1001,58 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-257 · Three auth-tier defaults point at human review's ports, and the comment defending them claims a failure mode that does not happen
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/lib/auth/config.ts`](../frontend/lib/auth/config.ts):107, 140, 151, 157 |
+| **Current assignee** | **Lane A** — `product_surface` is this lane's in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **an unset variable sends a lane's auth tier at the ONE environment no lane may touch**, ⚡ **and the symptom is indistinguishable from two other setup failures** |
+| **Status** | ⚠️ **`OPEN`** — ⛔ **the correction to the false comment is shipped; the DEFAULTS are not changed here.** 📁 **The repair depends on [C-298](LANE_COORDINATION.md)** — see ④ |
+| **Found** | **2026-08-12** — ⚡ **by QE, hitting it**, and by Lane A reading the file QE named. **Neither alone would have had it**: QE had the symptom and this lane had the rule about the ports |
+| **Commit found** | **`1fdb2aee`** |
+
+#### 🔴 The three defaults
+
+```ts
+baseUrl:    developmentDefault('SIGNORA_APP_URL',    'http://localhost:3000')
+jwtIssuer:  developmentDefault('SIGNORA_JWT_ISSUER', 'http://localhost:3000')
+apiBaseUrl: developmentDefault('SIGNORA_API_URL',    'http://localhost:8000')
+```
+
+📁 **[`RUNNING.md`](RUNNING.md):311** — ***"3000 and 8000 belong to human review on `main`, and to no lane."***
+
+⛔ **So an unset variable does not point at *a wrong port*. It points at the product owner's demo stack** — **the one environment the allocation table reserves and every lane is told to stay off.**
+
+#### 🔴 The comment is a false claim, and that is the part that cost time
+
+📁 **`developmentDefault`'s own docstring:**
+
+> *"A value whose default is harmless and helps a first clone run… **A URL pointing at the wrong port fails loudly and immediately**; a database pointing at the wrong schema fails silently and permanently."*
+
+⛔ **Measured by QE, on a lane at 3200:**
+
+```
+[Better Auth]: Invalid origin: http://localhost:3200   → 403
+symptom: waitForURL: Timeout 20000ms exceeded
+```
+
+⚠️ **It does not fail loudly.** ⚡ **It fails as a sign-in that submits and never navigates** — 📁 **the identical symptom of a missing Better Auth schema and of missing demo accounts**, which QE hit in the same session. **Three causes, one appearance.**
+
+> 🔴 **[§2](../CLAUDE.md): the comment justifying the default is the reason nobody questioned it**, and it is exactly the shape [B-429](#b-429) had — **a considered-sounding sentence defending behaviour whose premise nobody had measured.**
+
+#### ✅ What is fixed here
+
+**The docstring is corrected to say what actually happens**, with the measurement in it. ⛔ **Nothing else** — see below.
+
+#### ⚠️ ④ Why the defaults are NOT changed in this row
+
+⚡ **The honest fix needs the auth tier to know which environment it is in**, so that an unset URL is a *default* for a first clone and an *error* for a lane. 🔴 **It cannot**: 📁 **[B-223](#b-223) / [C-298](LANE_COORDINATION.md) — the auth tier's environment names and the registry's share an empty intersection**, so `environmentName()` returns `local` for every lane and cannot distinguish the two cases.
+
+⛔ **Making them `required()` unconditionally would break the thing `developmentDefault` exists to permit** — 📁 a first clone, and a `next build` that prerenders pages reading this struct.
+
+> ✅ **So this is one root with two rows.** **[C-298](LANE_COORDINATION.md) is the decision; this is the second consequence of it**, and it is recorded so the ruling is known to buy both.
+
 ### B-256 · Onboarding tells a customer where Signora will open, and for three of the six goals it is not true
 
 | | |
