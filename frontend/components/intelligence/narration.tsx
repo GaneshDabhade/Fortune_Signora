@@ -4,7 +4,8 @@ import { useState } from 'react';
 
 import { formatDay } from '@/components/intelligence/dates';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
-import { AttributionStrip, Badge, Dialog } from '@/components/ui';
+import { AttributionStrip, Badge, Dialog, SkeletonText } from '@/components/ui';
+import { skeletonRows } from '@/lib/accounts/section-state';
 import type { AccountNarration, EvidenceFact } from '@/lib/api/types';
 
 /**
@@ -77,8 +78,47 @@ export function NarrativeBlock({
 
   if (narration === undefined) {
     if (notNarrated) return <Aside id={id}>{NOT_WRITTEN}</Aside>;
-    if (isError) return <StatedAbsence subject="the explanation for this account" reassurance="Nothing has changed about the account" />;
-    return null;
+    // ⛔ **The error state keeps the section and its id.** ⚠️ It used to return
+    // a bare `StatedAbsence`, so the rail's *Summary* entry pointed at nothing
+    // **exactly when a reader was trying to find out what had gone wrong** —
+    // 📁 [TASK-1476](../../../docs/BACKLOG.md), and the third branch of this
+    // component to lose the anchor.
+    if (isError) {
+      return (
+        <section id={id} className="flex flex-col gap-3">
+          <h2 className="text-sm font-semibold text-content">In plain language</h2>
+          <StatedAbsence
+            subject="the explanation for this account"
+            reassurance="Nothing has changed about the account"
+          />
+        </section>
+      );
+    }
+
+    /**
+     * 📁 ***"Header, title and counts paint from cache; only the body
+     * skeletons."***
+     *
+     * ⛔ **This returned `null`**, so the whole section appeared when the read
+     * landed and **everything below it moved down the page** — ⚡ which is the
+     * jump the design's stable-height rule exists to prevent, and it happened
+     * on the section a reader looks at first.
+     *
+     * ⚠️ **Three rows, and the number is the law's** — 📁
+     * [`skeletonRows`](../../lib/accounts/section-state.ts): a narration is
+     * prose rather than a list, **so nothing knows a previous count** and the
+     * first-visit default is the honest answer for every visit.
+     */
+    return (
+      <section id={id} className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold text-content">In plain language</h2>
+        <div className="flex flex-col gap-2 rounded-md border border-border bg-surface-raised px-4 py-3.5" aria-hidden>
+          {Array.from({ length: skeletonRows(null) }, (_, row) => (
+            <SkeletonText key={row} />
+          ))}
+        </div>
+      </section>
+    );
   }
 
   const facts = new Map(narration.facts.map((fact) => [fact.token, fact]));

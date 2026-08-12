@@ -278,9 +278,22 @@ describe('three states that used to be one blank space — B-010', () => {
   it('says neither while the answer is still being fetched', () => {
     // Announcing "nothing has been written" during the first paint is a
     // confident wrong answer to an account that has an explanation.
+    //
+    // ⚠️ **This asserted `toBeEmptyDOMElement` until TASK-1476, and the
+    // assertion encoded an IMPLEMENTATION rather than B-010's rule.** ⛔ The
+    // rule is *says neither* — it never required blankness, and blankness had
+    // its own cost: the whole section appeared when the read landed and
+    // everything below it moved down the page. 📁 The design says *"header,
+    // title and counts paint from cache; only the body skeletons."*
+    //
+    // ✅ **A skeleton says neither, and says so more honestly than nothing
+    // does** — nothing is also what a section with no data looks like.
     const { container } = render(<NarrativeBlock narration={undefined} />);
 
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByText(/has not written one/)).toBeNull();
+    expect(screen.queryByText(/could not load the explanation/)).toBeNull();
+    // ⛔ **And no narration content is invented meanwhile.**
+    expect(container.querySelectorAll('li')).toHaveLength(0);
   });
 
   it('reads as an answer rather than as a fault', () => {

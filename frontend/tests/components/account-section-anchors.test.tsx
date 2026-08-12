@@ -70,12 +70,25 @@ describe('🔴 a component that renders nothing must not leave an anchored regio
    * space** — 📁 the same class as *"links to nowhere"*, and harder to notice
    * because the link resolves.
    */
-  it('Summary renders NOTHING while its read is in flight', () => {
+  /**
+   * ✅ **Superseded by the fix rather than deleted.** ⚠️ Summary used to render
+   * `null` while in flight, so the page had to withhold its rail entry. 📁 The
+   * design says *"header, title and counts paint from cache; only the body
+   * skeletons"* — ⛔ **so returning nothing was the defect, not the reason for
+   * a predicate**, and the section is unconditional now.
+   */
+  it('🔴 Summary KEEPS its region while its read is in flight, and skeletons the body', () => {
     const { container } = render(<NarrativeBlock id="summary" narration={undefined} />);
-    // ⚡ **So the page must not advertise `summary` in the rail yet** — which is
-    // what `rendersSummary` decides.
-    expect(container.querySelector('#summary')).toBeNull();
-    expect(container.innerHTML).toBe('');
+    expect(container.querySelector('#summary')?.tagName).toBe('SECTION');
+    // ⛔ **The heading paints; only the body is a skeleton.**
+    expect(container.querySelector('#summary')?.textContent).toContain('In plain language');
+  });
+
+  it('⛔ and the error state keeps it too, which is when a reader most needs it', () => {
+    const { container } = render(
+      <NarrativeBlock id="summary" narration={undefined} isError />,
+    );
+    expect(container.querySelector('#summary')?.tagName).toBe('SECTION');
   });
 
   it('⚠️ and the not-narrated answer IS content, so it does render', () => {

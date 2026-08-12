@@ -311,9 +311,14 @@ describe('the brief tells three narration states apart — B-010, TASK-004', () 
   });
 
   it('says neither while the answer is still in flight', () => {
+    // ⚠️ **This asserted the heading was ABSENT until TASK-1476.** ⛔ B-010's
+    // rule is *says neither*, and the heading said neither — 📁 the design
+    // paints the header and skeletons only the body, so the absent heading was
+    // the page jump rather than the guard.
     render(withQuery(<AccountBriefPage />));
 
-    expect(screen.queryByRole('heading', { name: 'In plain language' })).toBeNull();
+    expect(screen.queryByText(/has not written one/)).toBeNull();
+    expect(screen.queryByText(/could not load the explanation/)).toBeNull();
   });
 });
 

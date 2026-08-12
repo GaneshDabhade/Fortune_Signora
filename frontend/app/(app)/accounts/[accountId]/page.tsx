@@ -194,7 +194,6 @@ export default function AccountBriefPage() {
    * ✅ **The rail's contract is *"the ids this page ACTUALLY renders"***, so the
    * page answers that question rather than assuming it.
    */
-  const rendersSummary = narration !== undefined || notNarrated;
   const requestResearch = useRequestResearch(workspaceId, accountId);
   // Paged rather than fetched whole: an account worked for a year has a long
   // history, and the brief must not wait on all of it to render the rest.
@@ -438,7 +437,11 @@ export default function AccountBriefPage() {
             // this page all along and carried no `id`**, so the rail could not
             // link to them and its docstring recorded that as a limitation.
             // ✅ **The limitation is closed rather than restated.**
-            ...(rendersSummary ? ['summary'] : []),
+            // ⚡ **`summary` is unconditional now.** 📁 *"Header, title and
+            // counts paint from cache; only the body skeletons"* — **the
+            // section renders in all four of its states**, so the rail entry
+            // is stable and nothing below it moves when the read lands.
+            'summary',
             'score',
             'health',
             'intent',
