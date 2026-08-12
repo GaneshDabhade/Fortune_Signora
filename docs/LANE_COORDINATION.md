@@ -740,6 +740,7 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 | **Status** | ⚠️ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-12, on the product owner's instruction |
 | **Owner** | **Product owner** |
 | **Relationship** | ⛔ **This is the *brief* for [C-300](#c-300), raised by Lane A. It is not a second decision** — C-300 is the item; this is the preparation §20e asks this office for. **Merge into C-300 when Lane A's branch lands** |
+| ✅ **Accepted** | **Product owner, 2026-08-12: this is the correct bounded brief and the evidence is sufficient.** ⛔ **No further investigation is authorised, and this office is not to design the RFC** — **field names, schema, API shape and mechanism are all outside the ruling.** ⚡ **The ruling determines one thing: whether Signora owns the capability. The RFC then proceeds through normal governance** |
 | **Consolidates** | ⚡ **[C-300](#c-300) · [TASK-1469](BACKLOG.md) · [C-297](#c-297).** **One ruling, three surfaces** |
 
 ### ① The exact question
@@ -790,7 +791,7 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 | | |
 |---|---|
-| **Status** | ✅ **`RESOLVED` — no product decision required.** Lane C, 2026-08-12, on measurement. ⛔ **Design conformance is this office's to determine** |
+| **Status** | ✅ **`CLOSED` — design-compatible. Product owner, 2026-08-12, accepting the measurement.** ⛔ **Not to be reopened absent new evidence contradicting the four findings below** |
 | **Owner** | — |
 | **Blocks** | ✅ **Nothing.** **Lane A implements `Previous`/`Next`** |
 
