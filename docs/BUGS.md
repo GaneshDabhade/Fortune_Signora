@@ -90,6 +90,41 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-194 · 🟡 QE grepped its own advisory for the one line it expected, and promoted a duplicate identifier the same tool was reporting
+
+| | |
+|---|---|
+| **Module** | **QE's Closeout practice** — not a file. 📁 [§20e](../CLAUDE.md), *Repository State Validation* |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — ⛔ **nothing shipped is wrong**: the duplicate is a register defect that resolves when the renumber lands, and no lane is idle on it. ⚠️ **What is wrong is that a working instrument reported it and QE did not read the report** |
+| **Status** | 🔵 **`OPEN`** — ⛔ **the fix is procedural, and stating it is not the same as having done it** |
+| **Found** | **2026-08-12, by Lane C**, while rebasing — **one cycle after QE promoted it** |
+| **Commit found** | **`0f9c7f90`**, cycle 215 |
+
+**Steps.** Cycle 215's Closeout ran `python3 infra/state-check.py` — 📁 **the step §20e requires** — as:
+
+```
+python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
+```
+
+**Expected.** The advisory's findings are read.
+
+**Actual.** ⛔ **One line of them was read. The rest, including *"C- identifiers are allocated twice: C-300"*, went to `/dev/null` by construction.**
+
+### 🔴 What was promoted while the tool was saying so
+
+**`main` carries two `C-300` rows**: 📁 `LANE_COORDINATION.md:516` (Lane A's, arrived in cycle 215) and `:6748` (the original, Provider Platform's). ⚡ **§20e's blocks make a cross-lane collision unrepresentable — this was a lane allocating from the highest number seen rather than from its own block**, which is the one failure mode the scheme cannot prevent.
+
+✅ **Lane A had already renumbered to `C-209` at `301307e2` before this row was written**, so it resolves on ordinary integration. ⛔ **That is luck about timing, not a property of the process.**
+
+### ⚠️ The defect is the shape of the command, not the diligence
+
+**QE was checking the one number it had built the cycle before**, and the grep encoded that expectation. 📁 **The tool worked. The reading did not** — and **a filtered advisory is indistinguishable from a clean one**, which is the same class as [B-188](#b-188): *"it does not make a bad tree pass; it makes a failure unreadable."*
+
+> ⛔ **A check whose output is narrowed at the moment it matters has been run and not consulted.** ⚡ **The correction is that Closeout reads `state-check`'s findings** — every line — **and greps only to confirm a specific one afterwards.** ⚠️ **Recorded as open because a practice stated is not a practice held**, and the next cycle is the evidence.
+
+---
+
 ### B-193 · 🟡 Nothing reports a board row still held whose work is already on `main`, and QE tried twice to close the gap and could not
 
 | | |
