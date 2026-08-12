@@ -116,6 +116,42 @@
 
 > ⚡ **Lane A owns decomposition.** ⛔ **It may not invent product behaviour, UX absent from the design, business rules, permissions or roles.** **Where the design is ambiguous, that is a `C-` item and a ruling — never an interpretation** ([§21](../CLAUDE.md)).
 
+### TASK-1478 · Standing implementation scope — every Lane A module, sequenced by Lane A
+
+| | |
+|---|---|
+| **Type** | ⚡ **Standing Implementation Programme.** ⛔ **Not a task. It does not complete; it is the authority under which Lane A picks its own next module** |
+| **Owner** | **Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-12, on [D-229](DECISION_REGISTER.md)** |
+| **Authority** | ✅ **[D-229](DECISION_REGISTER.md), product owner, 2026-08-12:** ⛔ ***"Assign all of them for Lane A for the implementation and let Lane A decide the priorities."*** |
+
+**Scope: the remaining implementation of every module [`modules.toml`](coordination/modules.toml) assigns to Lane A** — nineteen, each against its finalized design and the architecture already ratified for it.
+
+| | Module |
+|---|---|
+| 🔴 **Largest gap** | **`product_surface`** — 📁 **26 approved screens, 0 implemented against the approved design** |
+| **Not built** | `action_batch` |
+| **Built, no consumer** | `people` |
+| **Partial** | `integrations` · `ai_research_engine` · `signal_engine` · `timeline` · `business_event_engine` · `buying_score_engine` · `sales_engagement` · `ai_reasoning_engine` · `provider_normalization` · `knowledge_graph` · `workspace_tenancy` · `ai_platform` · `commercial_profile` · `observation_engine` · `provider_platform` · `opportunity_engine` |
+
+⛔ **`platform_foundation` and `apps` are NOT in this programme.** They are Lane C's under [D-022](DECISION_REGISTER.md), and [D-229](DECISION_REGISTER.md) ⑤ deliberately did not move them — **a module transfer needs its own ruling.**
+
+### What Lane A now owns that it did not
+
+✅ **The order.** ⚡ **Lane A picks the next module and the next slice inside it, and does not wait for this office to say which.** 📁 **[§20e](../CLAUDE.md)'s own diagnosis of why: *"a queue with one author has one author's throughput, however many lanes consume it."***
+
+### ⛔ What this does NOT change
+
+- ⛔ **Scope is still the design's.** **Lane A chooses what to build next; never what the product does** ([D-229](DECISION_REGISTER.md) ③).
+- ⛔ **No blocked scope unblocks.** **[C-210](LANE_COORDINATION.md) · [C-1425](LANE_COORDINATION.md) · [C-1429](LANE_COORDINATION.md) · [C-1430](LANE_COORDINATION.md) · [C-266](LANE_COORDINATION.md) are untouched.** ⚡ **Assigning a module does not make an absent capability present**, and building past one is the defect these items exist to prevent.
+- ⛔ **The existing packages stand and are not superseded** — [TASK-1475](#task-1475) Companies · [TASK-1476](#task-1476) Account 360 · [TASK-1477](#task-1477) commercial facts. **They are worked examples of the shape, not a queue Lane A must exhaust first.**
+- ⛔ **Do not invent behaviour.** ⚡ **An ambiguous design is a `C-` item and a ruling** ([§21](../CLAUDE.md)) — **the practice that made TASK-1475 finishable and TASK-466 not.**
+- ✅ **Every gate in [§19](../CLAUDE.md) binds unchanged**, and QE certifies exactly as before.
+
+### The method, which is already proven
+
+📁 **Lane A's own audit of Account 360 is the pattern:** ⚡ **read the finalized design · measure the shipped implementation against it · classify each section as compliant, buildable, or sourceless · raise what has no source BEFORE claiming.** ⛔ **That order is what this programme depends on** — a module assigned is not a module buildable, and the audit is where the difference shows.
+
 ### TASK-1477 · Commercial account facts — the vocabulary, its mappers, and the three surfaces that consume it
 
 | | |
