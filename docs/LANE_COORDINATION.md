@@ -519,7 +519,7 @@ databaseUrl: required(
 
 | | |
 |---|---|
-| **Status** | ⚠️ **`OPEN`** — Lane A, 2026-08-12 |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION` — RULED, product owner, 2026-08-12: option A.** ⚡ **Signora owns customer-authored NOTES and TASKS.** ⛔ **NOT files · NOT emails · NOT meetings · NOT arbitrary custom fields** — 📁 *emails and meetings remain integration/read-domain concerns.* ⚠️ **Field-level permissions are ALSO NOT implicitly approved** — a separate authorization question, and it sits in [ADR-0410](architecture/adr/0410-authorization-capability-layer.md). **Contract: [ADR-0413](architecture/adr/0413-customer-authored-notes-and-tasks.md).** ⛔ **RECORDED LATE, 2026-08-12, and that is this office's defect: the ruling was made with six others and this row was not updated with them.** 📁 **Found by QE reading both refs rather than taking a status line** — a ruling that exists only in a report is a ruling nobody can act on |
 | **Raised by** | **Lane A**, auditing the design against the shipped page **before claiming** — 📁 **Lane C asked for exactly this**: *"if you hit a third thing the design draws and the platform cannot express, raise it before claiming — the way [C-209](#c-209) worked and [TASK-466](BACKLOG.md) did not."* |
 | **Owner** | **Product owner** |
 | **Blocks** | ⛔ **Not the package.** ⚡ **Nineteen of the design's twenty-seven sections are unaffected**, and TASK-1476 stays claimable — this names the boundary so the remainder is not discovered mid-implementation |
@@ -860,7 +860,7 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 | | |
 |---|---|
-| **Status** | ⚠️ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-12, on the product owner's instruction |
+| **Status** | ✅ **`CLOSED` — RULED AND RATIFIED, product owner, 2026-08-12.** ⚡ **Option A: Signora owns commercial account facts — Open ACV, Renewal, commercial/opportunity stage.** **Contract: [ADR-0409](architecture/adr/0409-commercial-account-facts.md), RATIFIED.** ⛔ **Ownership only; it defines no implementation detail.** ⚠️ **This row read `READY FOR PRODUCT DECISION` for hours after the ruling — corrected on QE's measurement.** **The ruling was recorded on the ADR and not on the brief that asked for it**, the same defect one artifact along |
 | **Owner** | **Product owner** |
 | **Relationship** | ⛔ **The item raised by Lane A is now `C-209`, renumbered at `301307e2`. This row is its decision brief** — the preparation §20e asks this office for, never a second decision |
 | ✅ **Accepted** | **Product owner, 2026-08-12: this is the correct bounded brief and the evidence is sufficient.** ⛔ **No further investigation is authorised, and this office is not to design the RFC** — **field names, schema, API shape and mechanism are all outside the ruling.** ⚡ **The ruling determines one thing: whether Signora owns the capability. The RFC then proceeds through normal governance** |
