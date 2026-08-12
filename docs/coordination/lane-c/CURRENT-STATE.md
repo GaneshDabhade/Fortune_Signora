@@ -81,6 +81,26 @@
 > **Output:** design gap → existing-task search → update or one new Lane A task.
 > ⛔ **Out of scope:** other shell sections · workflow decomposition · the PO queue · unrelated architecture.
 
+## Handoff — C-107 / C-106 bounded investigation
+
+**Objective:** C-107 + C-106, the promotion gate. **C-107 complete and persisted. C-106 NOT STARTED.**
+
+| | |
+|---|---|
+| **C-107** | ✅ **`RESOLVED` — no product decision required.** Full evidence in its [register row](../../LANE_COORDINATION.md) |
+| **C-106** | ⛔ **Not investigated.** Stopped on the context budget before starting, rather than producing a shallow answer |
+
+**Confirmed:** `main` = `95c0e12f`; `0dfc07f4` is an ancestor; **B-183 `CLOSED`**; `_promote()` at [`certification-guard.py:202`](../../../infra/certification-guard.py) runs two gates and reads no severity; **exactly one 🔴 remains — B-428.**
+
+**Not confirmed:** ⛔ **anything about B-428's criterion A or B.** No claim is made about its severity.
+
+**Examined:** `CLAUDE.md` §20e · C-107 row · `certification-guard.py` `_promote` · `state-check.py` · B-183 / B-243 status fields · `main` ancestry.
+**Deliberately not examined:** B-428 · C-106 · every other queue item.
+
+**Exact next action:** ▶ **Read B-428's row. Establish separately what criterion A required and what remains verified, and what criterion B's design-compliance work leaves *unimplemented* versus merely *unverified*. Then determine whether [`CLAUDE.md`](../../../CLAUDE.md) defines how a partially-satisfied defect is classified — ⛔ and if it does not, say `NO GOVERNANCE BASIS FOUND` and stop.** ⚠️ **This office is an affected party: *promotion is blocked* is never a reason to reduce a severity.**
+
+⛔ **OUT OF SCOPE — deferred:** C-1405 · C-1425 · C-1428 · C-287 · C-331 · C-334 · the remaining 22 items.
+
 ## Handoff — 2026-08-12
 
 **Completed:** this operating-context architecture, three files under `docs/coordination/lane-c/`.
