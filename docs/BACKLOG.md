@@ -116,6 +116,55 @@
 
 > ⚡ **Lane A owns decomposition.** ⛔ **It may not invent product behaviour, UX absent from the design, business rules, permissions or roles.** **Where the design is ambiguous, that is a `C-` item and a ruling — never an interpretation** ([§21](../CLAUDE.md)).
 
+### TASK-1480 · Replace the demonstration dataset — content only, mechanism untouched
+
+| | |
+|---|---|
+| **Type** | ⚡ **Implementation Package.** ⛔ **Lane A owns decomposition and implementation; QE owns verification** |
+| **Owner** | **Lane A** — `platform_foundation` ([`modules.toml`](coordination/modules.toml), since [D-230](DECISION_REGISTER.md)) |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-12, product owner directive** |
+| **Authority** | **Product owner, 2026-08-12.** 📁 [`20-provider-simulation.md`](architecture/20-provider-simulation.md) governs the mechanism, **which does not change** |
+
+**Outcome.** ⚡ **A demonstration environment that reads like one customer's real book of business** — so the product can be shown, its populated and empty states exercised, and its prioritisation defended.
+
+### ⛔ Content only
+
+**The mechanism is not in scope and must not move:** the seeder, `signora_platform/simulation/**` code, the generators, the schema, the migrations, the seeding flow. ⛔ **No new field, no new capability, no schema change.** 📁 **Test data still enters the way a customer's data enters** ([§20e](../CLAUDE.md)).
+
+### The three current sources — all retired
+
+| File | Holds | Retire |
+|---|---|---|
+| `simulation/datasets/baseline@1.json` | ⛔ **`acme-corp`, `globex`** — the exact anti-pattern named | ✅ Replace |
+| `simulation/datasets/playground@1.json` | 12 Microsoft-fiction names — Northwind, Contoso, Fabrikam, Litware… | ✅ Replace |
+| `simulation/datasets/playground@2.json` | 12 **real** companies — Snowflake, NVIDIA, Stripe, Databricks… | ⚠️ **See the blocker below** |
+
+⛔ **`grep -rn "playground@1\|baseline@1\|playground@2"` must return no active seeding path for a retired dataset when this is done.** ⚡ **Each carries a `content_hash`; a new dataset is a new version, never an edit** — the versioning is the mechanism and it stays.
+
+### What an entity actually carries
+
+📁 **Measured: `name · domain · country · industry · founded · employees · revenue_band · stage · contact_titles`.** ⚡ **Everything else — signals, scores, evidence, timeline — is GENERATED from these by `simulation/generators/`.**
+
+⛔ **So the dataset cannot "seed a signal" directly, and must not try.** ✅ **The demo scenarios are produced by choosing firmographics and stages the generators turn into the right story** — which is why the six below are described as outcomes, not as records.
+
+### Six scenarios, emerging from the data rather than flagged
+
+**Hot account · Stale account · Emerging opportunity · Multi-stakeholder · Low-evidence · Healthy/normal.** ⚠️ **If a scenario cannot be produced from the fields above, say so in the Slice Handoff rather than adding a field.**
+
+### Coverage the dataset must support
+
+**Populated · multiple · single · filtered · no matching results · limited evidence · varied recency · varied industry, size, country and stage · enough spread that counts, rankings and comparisons are meaningful.** ⛔ **Do not fabricate volume for charts** — 📁 [§2](../CLAUDE.md): *if realistic data is hard to generate, improve the simulation; never weaken the product to make data easy.*
+
+### Consistency, verified before handover
+
+**Every reference valid · workspace ownership correct · tenant isolation preserved · dates chronological · contacts on the right companies · no orphans · no accidental duplicates · scores consistent with their source.**
+
+### Done when
+
+✅ **One dataset seeds** · ⛔ **no active path seeds a retired one** · **the six scenarios are demonstrable without explaining the architecture** ([§2](../CLAUDE.md)) · **`make smoke` green** · **the Playground reseed produces a working owner persona** — ⚠️ **[B-262](BUGS.md) says it does not today, and this package must not be validated against that defect.**
+
+**QE verifies:** the old dataset is gone, the new one seeds, the scenarios hold, nothing regressed.
+
 ### TASK-1479 · The four ratified contracts — implement each, end to end
 
 | | |
