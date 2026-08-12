@@ -600,7 +600,17 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ⚡ **That test is written to FAIL on the day somebody repairs this**, which is the point: **a comment describing a defect is indistinguishable from a comment describing a design**, and this one cannot be mistaken for either.
 
-### ⑤ ⚠️ The finding that is worth more than either row
+### ⑤ ⚠️ The ruling buys a second row, and it was not visible when this was raised
+
+🔴 **[B-257](BUGS.md), found the day after this item was written**: 📁 **three defaults in the SAME file point at human review's ports** — `SIGNORA_APP_URL` and `SIGNORA_JWT_ISSUER` at `3000`, `SIGNORA_API_URL` at `8000`.
+
+⛔ **An unset variable does not aim a lane at *a wrong port*. It aims it at the product owner's demo stack** — 📁 [`RUNNING.md`](RUNNING.md):311, *"3000 and 8000 belong to human review on `main`, and to no lane."*
+
+⚡ **The honest repair is the same missing capability this item is about**: **a default for a first clone and an error for a lane** requires the auth tier to know which it is — ⛔ **and `environmentName()` returns `local` for every lane, which is precisely the disagreement above.**
+
+> ✅ **So the ruling here buys both rows.** ⚠️ **Recorded before the decision rather than discovered after it**, so the cost of each option is known to include B-257.
+
+### ⑥ ⚠️ The finding that is worth more than either row
 
 🔴 **This is the second defect this lane has filed, declined to fix for a correct reason, and then failed to route** — 📁 **the first was [B-219](BUGS.md)**, whose own row says it: *"This lane filed the bug on 2026-08-09 and did not file the coordination item, so nothing carried it to anyone who could rule — a defect whose fix a lane may not make, with no `C-` row, can sit indefinitely."*
 
