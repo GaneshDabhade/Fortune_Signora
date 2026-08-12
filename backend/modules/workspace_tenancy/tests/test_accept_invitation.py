@@ -28,7 +28,6 @@ from modules.workspace_tenancy.domain.entities import Membership, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import (
     Invitation,
     InvitationNotPendingError,
-    InvitationState,
     normalize_email,
 )
 from modules.workspace_tenancy.tests.fakes import (
@@ -71,14 +70,38 @@ class FakeInvitationRepository:
         """**Implemented rather than stubbed**, even though acceptance never
         calls it. A double that satisfies only the methods one test happens to
         use is not standing in for the port — it is standing in for this
-        file's idea of the port, and `mypy --strict` refuses the difference."""
+        file's idea of the port, and `mypy --strict` refuses the difference.
+
+        **B-189. This filtered on ``state(at=datetime.now(UTC))`` and was wrong
+        twice over.**
+
+        It read the wall clock while the file declares ``NOW`` — the hidden
+        input `CLAUDE.md` §2 names, and the exact thing ``state``'s own
+        docstring refuses by giving ``at`` no default. Seven days after the
+        fixture was written, its offers expired against the real clock and five
+        tests went red on a backend tree that had not changed.
+
+        **And it filtered on something the real repository does not filter on.**
+        ``SqlInvitationRepository.find_live`` matches the partial unique index —
+        ``accepted_at IS NULL AND revoked_at IS NULL`` — and says nothing about
+        expiry. Expiry is decided one layer up, by ``require_pending(now)``, on
+        the clock the use case is handed.
+
+        **That difference is not cosmetic: it changes what a customer is
+        told.** An expired offer must reach the use case so it can answer
+        *"this invitation has expired"* — the one refusal that tells a person
+        what to do next. Filtering it out here produced *"there is no
+        invitation to this organization for your address"*, which is the
+        sentence reserved for a revoked or never-issued offer.
+        """
         return next(
             (
                 i
                 for i in self.invitations
                 if i.workspace_id == workspace_id
                 and normalize_email(i.invited_email) == normalize_email(email)
-                and i.state(at=datetime.now(UTC)) is InvitationState.PENDING
+                and i.accepted_at is None
+                and i.revoked_at is None
             ),
             None,
         )
@@ -358,6 +381,76 @@ class TestASettledOfferCannotBeUsedAgain:
             await use_case.execute(
                 _input(workspace_id),
                 now=NOW + timedelta(days=8),
+                correlation_id=uuid4(),
+            )
+
+    async def test_the_wall_clock_decides_nothing(
+        self,
+        use_case: AcceptInvitationUseCase,
+        workspaces: FakeWorkspaceRepository,
+        invitations: FakeInvitationRepository,
+    ) -> None:
+        """**B-189's proof, and it has to fail when the clock moves.**
+
+        Rewriting the fixture window would buy another seven days of silence
+        and be green either way. This one cannot be: the offer expires in the
+        year 2000 — permanently in the past for any real clock — and is
+        accepted at a ``now`` before that.
+
+        **If anything in this file reads the wall clock, the invitation is
+        expired, ``find_live`` returns ``None``, and this goes red.** It stays a
+        proof on every future date, which is the property the seven-day window
+        never had.
+        """
+        long_ago = datetime(2000, 1, 1, 12, 0, tzinfo=UTC)
+        workspace_id = await _workspace(workspaces)
+        await invitations.add(
+            _invitation(
+                workspace_id,
+                created_at=long_ago - timedelta(days=1),
+                expires_at=long_ago + timedelta(days=7),
+            )
+        )
+
+        await use_case.execute(_input(workspace_id), now=long_ago, correlation_id=uuid4())
+
+        assert len(invitations.settled) == 1
+
+    async def test_an_expired_offer_still_reaches_the_use_case(
+        self,
+        use_case: AcceptInvitationUseCase,
+        workspaces: FakeWorkspaceRepository,
+        invitations: FakeInvitationRepository,
+    ) -> None:
+        """**The other half of B-189, and it is about what a person is told.**
+
+        ``find_live`` must hand an expired offer to the use case so acceptance
+        can answer *"this invitation has expired"*. A repository that filtered
+        expiry out would produce *"there is no invitation to this organization
+        for your address"* — the sentence reserved for revoked or never-issued
+        offers — and the person would have no idea to ask for a new one.
+
+        **Clock-independent, deliberately**: both moments are in the year 2000,
+        so this asserts the boundary rather than today's date.
+        """
+        long_ago = datetime(2000, 1, 1, 12, 0, tzinfo=UTC)
+        workspace_id = await _workspace(workspaces)
+        await invitations.add(
+            _invitation(
+                workspace_id,
+                created_at=long_ago - timedelta(days=1),
+                expires_at=long_ago,
+            )
+        )
+
+        assert (
+            await invitations.find_live(workspace_id, INVITED)
+        ) is not None, "an expired offer must still be found; expiry is not this port's decision"
+
+        with pytest.raises(InvitationNotPendingError):
+            await use_case.execute(
+                _input(workspace_id),
+                now=long_ago + timedelta(days=1),
                 correlation_id=uuid4(),
             )
 
