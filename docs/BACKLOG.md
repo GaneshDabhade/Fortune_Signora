@@ -116,6 +116,34 @@
 
 > ⚡ **Lane A owns decomposition.** ⛔ **It may not invent product behaviour, UX absent from the design, business rules, permissions or roles.** **Where the design is ambiguous, that is a `C-` item and a ruling — never an interpretation** ([§21](../CLAUDE.md)).
 
+### TASK-1479 · The four ratified contracts — implement each, end to end
+
+| | |
+|---|---|
+| **Type** | ⚡ **Implementation Package.** ⛔ **Lane A owns decomposition, sequencing and end-to-end delivery** |
+| **Owner** | **Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-12** |
+| **Authority** | ✅ **Four ADRs ratified by the product owner, 2026-08-12** |
+
+| Contract | Releases |
+|---|---|
+| **[ADR-0410](architecture/adr/0410-authorization-capability-layer.md)** — a capability layer above `WorkspaceRole` | **Settings** *Roles & permissions* · **Team Management** `Admin`/`Analyst`/*Effective permissions* |
+| **[ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md)** — Owner/CSM, Tags, Segments | ⚡ **[TASK-466](#task-466) — the Action Batch finally has a real operation to apply** · Companies *Owner*/*New segment* · Account 360 *Owner*/*CSM* |
+| **[ADR-0413](architecture/adr/0413-customer-authored-notes-and-tasks.md)** — Notes and Tasks | **Account 360's Notes and Tasks sections** |
+| **[ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md)** — machine-readable environment, secret-safe logging | **The logging/environment contract across both tiers** |
+
+⛔ **NOT decomposed here.** ⚡ **Four contracts, four natural slices, and Lane A sequences them.**
+
+⛔ **Each ADR's §7 names what it deliberately did not decide** — capability names, role sets, schema, API shape, the environment vocabulary, task state names. ✅ **Those are Lane A's to propose in the Slice Handoff, and they become part of the ratified contract.**
+
+⚠️ **Three boundaries that are the rulings\' own and must not be widened:**
+
+- ⛔ **[ADR-0413](architecture/adr/0413-customer-authored-notes-and-tasks.md): Notes and Tasks ONLY.** **Not files, emails, meetings or custom fields** — the ruling named four exclusions deliberately, and the model accommodating them is not a reason.
+- ⛔ **Field-level permissions are NOT approved.** They belong to [ADR-0410](architecture/adr/0410-authorization-capability-layer.md) and are **explicitly unresolved**.
+- ⛔ **[ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md) must not merge with [ADR-0409](architecture/adr/0409-commercial-account-facts.md).** **Customer-authored metadata and provider-derived commercial facts are separate by ruling.**
+
+**Done when** — [§19](../CLAUDE.md)'s gates, plus: **every new table workspace-owned with forced RLS and registered in `tenancy_policy.py` in the same change** · **a Security Invariant for the capability layer and for secret-safe logging, fire-tested** · **the customer journeys written, run and watched headed**.
+
 ### TASK-1478 · Standing implementation scope — every Lane A module, sequenced by Lane A
 
 | | |
