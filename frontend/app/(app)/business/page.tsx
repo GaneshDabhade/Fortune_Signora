@@ -17,6 +17,7 @@ import {
 import { useViewerRole } from '@/lib/query/hooks/team';
 import { can } from '@/lib/state/permissions';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+import { ReadingColumn } from '../reading-column';
 
 /**
  * *"What does my company sell, and who buys it?"* — **the question a seller
@@ -90,7 +91,7 @@ export default function BusinessPage() {
     targets.data !== undefined;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <ReadingColumn>
       {/* ⚡ **The shared header** — [TASK-1446](../../../../docs/BACKLOG.md).
           ⛔ **This screen used to author its own**, which is the class
           [498](../../../../docs/architecture/498-common-platform-audit.md)
@@ -141,6 +142,6 @@ export default function BusinessPage() {
           authoringHref={authoring}
         />
       ) : null}
-    </div>
+    </ReadingColumn>
   );
 }

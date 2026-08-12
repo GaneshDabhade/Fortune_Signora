@@ -18,6 +18,7 @@ import { useToast } from '@/components/ui/toast';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { useCreateWorkspace } from '@/lib/query/hooks';
 import { ApiError } from '@/lib/api/client';
+import { ReadingColumn } from '../../reading-column';
 
 /**
  * Organization setup — the admin landing page.
@@ -107,7 +108,7 @@ export default function OrganizationSetupPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <ReadingColumn>
       <header>
         <h1 className="text-xl font-semibold text-content">Organization setup</h1>
         <p className="mt-1 text-sm text-content-muted">
@@ -288,6 +289,6 @@ export default function OrganizationSetupPage() {
         will do and what it cannot do yet.
         <Palette aria-hidden className="ml-1.5 inline h-3.5 w-3.5" />
       </p>
-    </div>
+    </ReadingColumn>
   );
 }

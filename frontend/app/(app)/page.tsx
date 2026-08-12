@@ -43,6 +43,7 @@ import {
 import { STANDING_WORDS, standingFrom, withStanding } from '@/lib/state/standing';
 import { raisedFrom, raises, triage } from '@/lib/state/triage';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+import { ReadingColumn } from './reading-column';
 
 /**
  * The morning workspace — *"which accounts should I work on today?"*
@@ -180,7 +181,7 @@ export default function AttentionPage() {
   );
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6">
+    <ReadingColumn>
       {/* ⚡ **The shared header** — [TASK-1446](../../../docs/BACKLOG.md).
           ⛔ **The subtitle survives verbatim and its reasoning with it**: it
           describes what is on the screen, not what the screen is for. Filtered
@@ -387,7 +388,7 @@ export default function AttentionPage() {
         viewerId={viewerId}
         people={owners}
       />
-    </div>
+    </ReadingColumn>
   );
 }
 

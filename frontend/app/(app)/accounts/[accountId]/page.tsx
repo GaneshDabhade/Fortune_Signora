@@ -64,6 +64,7 @@ import { useAccountTimeline } from '@/lib/query/hooks/timeline';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { scopeFrom } from '@/lib/state/owner-scope';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+import { ReadingColumn } from '../../reading-column';
 
 /**
  * The account brief — *"why this account?"*
@@ -264,7 +265,7 @@ export default function AccountBriefPage() {
    */
   if (forbidden) {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col gap-6">
+      <ReadingColumn>
         <SystemState
           scope="page"
           state="403"
@@ -285,12 +286,12 @@ export default function AccountBriefPage() {
             </Link>
           }
         />
-      </div>
+      </ReadingColumn>
     );
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <ReadingColumn>
       <BackToList />
 
       {/* **The name gets the width it needs before the score takes any.** A
@@ -673,7 +674,7 @@ export default function AccountBriefPage() {
         accounts={ranked}
         identities={rankedIdentities}
       />
-    </div>
+    </ReadingColumn>
   );
 }
 

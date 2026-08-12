@@ -15,6 +15,7 @@ import {
   useIntegrations,
 } from '@/lib/query/hooks/integrations';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+import { ReadingColumn } from '../../reading-column';
 
 /**
  * The Connection Center.
@@ -59,7 +60,7 @@ export default function ConnectionsPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <ReadingColumn>
       <header className="flex flex-col gap-1">
         <h1 className="text-lg font-medium text-content">Connections</h1>
         <p className="text-sm text-content-muted">
@@ -104,6 +105,6 @@ export default function ConnectionsPage() {
           onClose={close}
         />
       ) : null}
-    </div>
+    </ReadingColumn>
   );
 }

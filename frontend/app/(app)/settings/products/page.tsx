@@ -19,6 +19,7 @@ import {
   useTargetAccounts,
 } from '@/lib/query/hooks/commercial';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+import { ReadingColumn } from '../../reading-column';
 
 /**
  * What this organization sells.
@@ -48,7 +49,7 @@ export default function ProductsPage() {
   const competitors = useCompetitors(activeWorkspace?.id ?? null);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <ReadingColumn>
       <header>
         <h1 className="text-xl font-semibold text-content">Your business</h1>
         <p className="mt-1 text-sm text-content-muted">
@@ -136,7 +137,7 @@ export default function ProductsPage() {
           workspaceId={activeWorkspace?.id ?? null}
         />
       ) : null}
-    </div>
+    </ReadingColumn>
   );
 }
 

@@ -51,6 +51,7 @@ import {
 } from '@/lib/query/hooks/team';
 import { useSession } from '@/lib/auth/client';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+import { ReadingColumn } from '../../reading-column';
 
 /**
  * Your team — **an administrator's workspace, not a table of users.**
@@ -179,7 +180,7 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <ReadingColumn>
       <header className="flex flex-col gap-3 phone:flex-row phone:items-start phone:justify-between phone:gap-4">
         <div>
           <h1 className="text-xl font-semibold text-content">Your team</h1>
@@ -666,7 +667,7 @@ export default function TeamPage() {
           </ul>
         </div>
       </Dialog>
-    </div>
+    </ReadingColumn>
   );
 }
 

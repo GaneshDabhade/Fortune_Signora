@@ -24,6 +24,7 @@ import {
 import { ApiError } from '@/lib/api/client';
 import { useCreateWorkspace } from '@/lib/query/hooks';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+import { ReadingColumn } from '../reading-column';
 
 /**
  * Organization settings — **and the index of everything an administrator can
@@ -111,7 +112,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <ReadingColumn>
       <header className="flex flex-col gap-3 phone:flex-row phone:items-start phone:justify-between phone:gap-4">
         <div>
           <h1 className="text-xl font-semibold text-content">Settings</h1>
@@ -283,6 +284,6 @@ export default function SettingsPage() {
           autoFocus
         />
       </Dialog>
-    </div>
+    </ReadingColumn>
   );
 }

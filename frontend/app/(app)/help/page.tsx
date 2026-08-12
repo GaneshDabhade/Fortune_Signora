@@ -11,6 +11,7 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import type { Connection } from '@/lib/api/types';
 
 import { answerFor, answerableSubjects } from './answer';
+import { ReadingColumn } from '../reading-column';
 
 /**
  * **Help & support** — [TASK-1420](../../../../docs/BACKLOG.md), against 📁
@@ -81,7 +82,7 @@ export default function HelpPage() {
   if (activeWorkspace === null) return <NoWorkspace />;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <ReadingColumn>
       <PageHeader
         title="Help & support"
         description="Ask about this organization and Signora answers from what it can actually see."
@@ -168,6 +169,6 @@ export default function HelpPage() {
           )}
         </CardBody>
       </Card>
-    </div>
+    </ReadingColumn>
   );
 }
