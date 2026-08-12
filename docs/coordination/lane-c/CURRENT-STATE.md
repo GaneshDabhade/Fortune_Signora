@@ -72,6 +72,25 @@
 
 ## ⚙ Pipeline feeder — checkpoint *(current)*
 
+**Model changed 2026-08-12, product owner: Lane C hands Lane A coherent END-TO-END PACKAGES, not decomposed tasks.** ⛔ **Lane C owns the WHAT; Lane A owns decomposition, sequencing and implementation.**
+
+| | |
+|---|---|
+| **Last module** | **Executive Dashboard** — ⛔ **BLOCKED, and by a decision already with the product owner** |
+| **Package created** | ⛔ **None.** ⚡ **Correctly — §7 holds a package only for a genuine unresolved product decision, and this is one** |
+| **Next module** | ▶ **System States** |
+| **Do not re-audit** | **Settings · Team Management · AI Research · Help Center · CRM Integrations · Companies · Executive Dashboard** |
+
+**What exists:** ✅ **[TASK-438](../../BACKLOG.md) `PROMOTED`** — the five sections needing nothing new. ✅ **[TASK-1405](../../BACKLOG.md) `IN VALIDATION`** — `/w/:workspace/home` resolves a composition and renders it, so **the slot exists**.
+
+**What is blocked:** ⏸️ **[TASK-1424](../../BACKLOG.md) and [TASK-1425](../../BACKLOG.md)** — *the Executive Dashboard becomes Home's executive composition*, and *First run and Activation*.
+
+⛔ **The blocker is [C-1405](../../LANE_COORDINATION.md) priority ④ — *Home (expand Executive Dashboard)*.** 📁 **Rule 24 is the most-travelled path and three of its four outcomes are undrawn.** ⚡ **This is not a decomposition gap a package would absorb: the design does not exist, so packaging it would be handing Lane A a brief to invent the product** — which [§12](../../../CLAUDE.md) of the new model forbids in the same breath as granting the decomposition authority.
+
+⚠️ **The slot being built is what makes it worth stating plainly.** **`TASK-1405` delivered the composition mechanism, so the only thing missing is what the composition should say** — and that is the product owner's, not Lane A's.
+
+## ⚙ Pipeline feeder — checkpoint *(superseded — CRM Integrations)*
+
 **Resume from `Next workflow`. ⛔ Do not restart earlier in the order.**
 
 | | |
