@@ -733,6 +733,81 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ---
 
+## C-1430 · Decision brief for [C-300](#c-300) — does Signora hold commercial facts about an account?
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-12, on the product owner's instruction |
+| **Owner** | **Product owner** |
+| **Relationship** | ⛔ **This is the *brief* for [C-300](#c-300), raised by Lane A. It is not a second decision** — C-300 is the item; this is the preparation §20e asks this office for. **Merge into C-300 when Lane A's branch lands** |
+| **Consolidates** | ⚡ **[C-300](#c-300) · [TASK-1469](BACKLOG.md) · [C-297](#c-297).** **One ruling, three surfaces** |
+
+### ① The exact question
+
+> **Does Signora hold commercial facts about an account — *Open ACV*, *Renewal date*, *opportunity / commercial stage* — as first-class canonical attributes?**
+
+⛔ **Not *"how should they be modelled"*.** **Only whether they are in the product's vocabulary at all.**
+
+### ② Design evidence requiring them
+
+📁 **`Fortune Signora Companies.dc.html`** draws **Open ACV** and **Renewal** as account-table columns. 📁 **TASK-1469's deal record** and 📁 **[C-297](#c-297)'s Forecast** each require the same concept independently.
+
+### ③ Existing domain evidence — the platform refuses them, in writing
+
+📁 **[`provider_normalization/infrastructure/mappers/crm.py`](../backend/modules/provider_normalization/infrastructure/mappers/crm.py):100**
+
+> *"**Nothing commercial.** Is this already a customer, **contract value**, **renewal date**, **opportunity stage** — the facts that make a CRM worth connecting for Epic D — have **no canonical attribute**, and `ClaimAttribute` says an RFC extends it. **Inventing one here would put a vocabulary decision inside a translation file, which is the quietest place in the codebase to make one.**"*
+
+⚡ **This is not an omission. It is a refusal with a stated reason and a named route — an RFC extending `ClaimAttribute`.** ✅ **The architecture already says who may answer: not a translation file, not a table, not a lane.**
+
+📁 **[C-297](#c-297) records the same shape one module along** — `buying_score_engine` refuses the probability concept in writing, and the product promised Forecast anyway.
+
+### ④ Consequences
+
+| | **A — Signora owns commercial account facts** | **B — it does not** |
+|---|---|---|
+| **Route** | **An RFC extending `ClaimAttribute`**, which the refusal names. ⛔ **Not a lane's change** | ⛔ **None needed** |
+| **Reaches** | `provider_normalization` · `knowledge_graph` · every CRM adapter · the account table · TASK-1469 · C-297 | — |
+| **Product** | ✅ **The account table matches its design. Forecast and the deal record become possible** | ⛔ **Three approved surfaces are permanently narrower than drawn, and the designs need correcting upstream** |
+| **Risk** | ⚠️ **A commercial vocabulary is a CRM's hardest surface to normalise** — stage names differ per tenant, ACV is currency-and-period bound | ⚠️ **Signora reads a CRM and cannot say what a deal is worth**, which is the question a seller asks first |
+
+### ⑤ Recommendation — **A**, and the reason is not the design
+
+⚡ **Three independent surfaces asked for the same concept without coordinating.** 📁 **That is the repository's own test for whether something belongs in the vocabulary** — [P-C](DOMAIN_DISCOVERY_REGISTER.md): *an event exists when a consumer appears*. **Three consumers have appeared.**
+
+⛔ **This office recommends *that* the concept is owned. It does not propose the model** — the refusal names an RFC, and [§21](../CLAUDE.md) forbids inventing architecture in a brief. **Ruling A commissions that RFC; it does not decide its content.**
+
+⚠️ **B is a legitimate answer and would be cheaper today.** **Its cost is that three approved designs must then be corrected upstream** — ⛔ **and leaving them drawn while the platform refuses them is the one option that is not available**, because it is the state that produced C-300 and C-297.
+
+### ⑥ Exact scope affected
+
+**Blocked until ruled:** *Open ACV* and *Renewal* columns in [TASK-1475](BACKLOG.md) · [TASK-1469](BACKLOG.md)'s deal record · [C-297](#c-297)'s Forecast.
+✅ **Not blocked:** ⚡ **everything else in TASK-1475** — see the row.
+
+---
+
+## C-1431 · Pagination — the design does not require numbered pages, and `Previous`/`Next` is design-compatible
+
+| | |
+|---|---|
+| **Status** | ✅ **`RESOLVED` — no product decision required.** Lane C, 2026-08-12, on measurement. ⛔ **Design conformance is this office's to determine** |
+| **Owner** | — |
+| **Blocks** | ✅ **Nothing.** **Lane A implements `Previous`/`Next`** |
+
+**Measured in `Fortune Signora Companies.dc.html`:** ⛔ **the word *"pagination"* appears ZERO times.** *"paging"* appears **once**, *"of 312"* **twice**, *"virtualis"* **once**.
+
+⚡ **The numbered pager exists only in the rendered mock** — `Rows 1–8 of 312 · virtualised beyond 100 · Previous · 1 · 2 · 3 · Next` — **beside a rendering technique, never as a stated rule.** 📁 **The design's own stated rules are Grouping · Sorting · Selection · Bulk actions · Tags · Smart filters · Pinned columns · AI in the table. Pagination is not among them.**
+
+📁 **The one normative sentence touching paging is the *Selection* rule:** *"Survives scrolling, filtering and paging: the count is always of records, never of rows on screen."* ✅ **That constrains selection, not the pager's form, and it is satisfiable under `Previous`/`Next`.**
+
+⛔ **Drawn in a mock is not required by the design authority**, and 📁 [`knowledge_graph/interface/router.py`](../backend/modules/knowledge_graph/interface/router.py):114 is keyset **by deliberate choice**: *"an offset page would skip or repeat rows… a customer paging the list would silently miss accounts."*
+
+⚡ **So the two do not actually conflict.** **A numbered pager would require abandoning a guarantee the contract makes on purpose, to satisfy a rule the design never states.**
+
+> ⚠️ **Lane A measured this first and explicitly did not conclude it** — *"whether drawn in the mock rises to required by the design authority is the determination the product owner left with you."* ✅ **That is the right line and this office made the call.**
+
+---
+
 ## C-1429 · The approved designs assume four roles and the domain represents two — found twice, in two workflows, by two capability checks
 
 | | |
