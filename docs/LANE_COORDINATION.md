@@ -923,6 +923,48 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ---
 
+## C-1432 · Three orderings for one worklist — which survives the Attention migration?
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-12 |
+| **Owner** | **Product owner** — ⛔ **which orderings a seller gets is product scope** |
+| **Blocks** | ⛔ **The retirement of the legacy `/` Attention surface only.** ✅ **Nothing else — [TASK-1425](BACKLOG.md) is claimed and proceeds** |
+
+### The question, and it is three-way rather than two
+
+**The legacy `/` offers two orderings the finalized Home design does not name. The design specifies a third that no code implements.**
+
+| | Where | Today |
+|---|---|---|
+| **`By urgency`** | ⛔ Legacy `/` only | Client regroup, **deliberately no round trip** — 📁 *"a round trip could return a differently-ordered list mid-triage"* |
+| **`By stage`** | ⛔ Legacy `/` only | Same mechanism |
+| ⚡ **"what it costs to ignore"** | ✅ **`Fortune Signora Home.dc.html`** | ⛔ **Nothing implements it** |
+
+**Plus `All / Mine / Unassigned`** — ⚡ **server-side narrowing via `?owner=` into `useAccounts`, not a client filter.** ⛔ **No equivalent in the card contract.**
+
+### Measured, not inferred
+
+📁 **Lane A scanned all 106,819 bytes of the Home design:** `"Unassigned"` **0** · `"urgency"` **0** · `"By stage"` **0** · `"All /"` **0** · `"Mine"` **2**, ⚡ **and neither is a control** — one is `activity.mine`, a data dependency of the *Pick up where you left off* card; the other sits inside the design's own open question U-05.
+
+⛔ **So the design does not silently supersede these. It is silent about them, which is different.**
+
+### What is being asked
+
+> **Do `By urgency` and `By stage` survive alongside the design's *"what it costs to ignore"*, or does that ordering replace them?**
+> **Does `All / Mine / Unassigned` survive, given it is server-side narrowing the card contract does not express?**
+
+⛔ **No recommendation.** ⚡ **This office ruled on design *conformance* for the pager ([C-1431](#c-1431)) because the design was silent in a way that resolved itself. Here it is silent in a way that does not** — **three orderings is a product choice about how a seller works, and choosing it would be inventing the product** ([§21](../CLAUDE.md)).
+
+### ⚠️ The design carries its own open questions, and says so
+
+📁 **U-04 — *attention ranking model ownership*, owner Architecture:** whether the ranking is computed by the signals service or composed client-side, which ***"determines whether the order is stable across a refresh"***. ✅ **Its interim instruction is explicit and unblocking: assume the service returns a ranked list; if it does not, seed the order deterministically so a refresh does not reshuffle.** ⛔ **Not blocking, and not this item.**
+📁 **U-05 — *Customisation scope*.**
+
+⚡ **So the composition authority is authoritative AND incomplete, and it declares both.** **That is a better basis than an authority which is silently incomplete.**
+
+---
+
 ## C-1431 · Pagination — the design does not require numbered pages, and `Previous`/`Next` is design-compatible
 
 | | |
