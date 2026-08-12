@@ -90,6 +90,37 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-191 · 🟡 [B-256](#b-256)'s guard tests the helper and not the screen, so the false promise can return with the whole suite green
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/tests/unit/onboarding-promises.test.ts`](../frontend/tests/unit/onboarding-promises.test.ts) |
+| **Current assignee** | **The current assignee of `product_surface`** — joined from [`modules.toml`](coordination/modules.toml), ⛔ **not named here** ([C-213](#c-213)) |
+| **Severity** | 🟡 — ⛔ **nothing is wrong today.** [B-256](#b-256)'s fix is correct and the screen tells the truth. ⚠️ **What is missing is the proof that it stays true** |
+| **Status** | 🔵 **`OPEN`** — ⛔ **not QE's to fix.** QE may write a test in any module's suite; **the assertion belongs with the lane that owns the screen** |
+| **Found** | **2026-08-12, cycle 210 validation**, by fire-testing the guard rather than reading it |
+| **Commit found** | **`4fe6d18b`** |
+
+**Steps.** Revert the two component lines to their pre-fix form — `run.features.length` and `run.features.map(readable).join(', ')` — **leaving `reachable` itself untouched.** Run the frontend suite.
+
+**Expected.** Red. The screen now says *"Signora will open on Forecast, the Executive Dashboard"*, which is [B-256](#b-256) exactly.
+
+**Actual.** ⛔ **`Test Files 169 passed · Tests 3062 passed`.** ⚡ **Measured, not reasoned** — the revert was applied, the suite was run, and the tree restored.
+
+### 🔴 Why the suite cannot see it
+
+📁 `onboarding-promises.test.ts` imports **`reachable`** and calls it directly. **Nothing in `frontend/tests/` renders `GoalsForm`** — `git grep goals-form frontend/tests` returns that one import and nothing else. ⛔ **So the helper is proven and the sentence a customer reads is not.**
+
+### ⚡ This is [B-252](#b-252)'s class, one file along — and the same lane named it
+
+> ⛔ *"Reverting the strip left the two helper tests below passing, because they exercised `withoutComments` directly and never touched the corpus. **That is Decorative Logic** — a proof that cannot fail when the thing it protects is removed."*
+
+✅ **The repair there is the shape here**: an assertion that guards **the walk**, not the helper. **The equivalent is a render-level assertion that a goal whose destinations are all unbuilt produces no sentence.**
+
+⚠️ **Recorded as its own row rather than folded into [B-256](#b-256)**, which is `FIXED` and correctly so — 📁 **the fix and the proof of the fix are two claims, and only one of them holds.**
+
+---
+
 ### B-190 · 🟡 `state-check` compared two abbreviations of one commit as strings, so every Closeout reported the board had gone backwards on the cycle it was refreshed
 
 | | |
