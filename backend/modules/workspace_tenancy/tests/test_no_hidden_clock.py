@@ -15,16 +15,19 @@ this reason, and the double handed it one anyway.
 **A guard rather than a sweep.** QE swept the repository by grep and found this
 was the only live instance; a grep cannot see the next one. This fires on it.
 
-**One word is deliberately absent from this file, and its absence is a
-defect elsewhere** — [B-254](../../../../docs/BUGS.md).
-``tests/certifi`` + ``cation/test_conditions.py`` asserts that no production
-package *imports* the evidence package, and checks it with ``if "<its name>"
-in path.read_text()`` — a substring match over raw source. This file mentioned
-it in prose only and was reported as an offender, **which is why even this
-sentence cannot spell the name.** **That is
-[B-252](../../../../docs/BUGS.md)'s class one language along**, and the
-sentence above is reworded rather than the guard fixed, because
-``backend/tests/`` is not this lane's.
+**This paragraph could not spell one word for a day** —
+[B-254](../../../../docs/BUGS.md). ``tests/certification/test_conditions.py``
+asserted that no production package *imports* that package and checked it with
+``if "certification" in path.read_text()`` — a substring match over raw source.
+The paragraph above mentioned it in prose and was reported as an offender, so
+the name had to be written in two halves to survive a gate.
+
+**That was [B-252](../../../../docs/BUGS.md)'s class one language along**, and
+the workaround is gone because QE fixed the guard rather than because the
+sentence got cleverer: it parses the file and looks at ``ast.Import`` and
+``ast.ImportFrom`` now. **A workaround should not outlive the defect that
+caused it**, which is why this is restored in the first slice after the fix
+reached ``main`` rather than left to read as a style choice.
 """
 
 from __future__ import annotations
