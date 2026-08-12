@@ -513,6 +513,40 @@ databaseUrl: required(
 
 ---
 
+## C-1427 · The top two rows of Lane A's queue each wait on a capability nobody has scheduled, and the pattern is worth more than either row
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`OPEN` — Lane A, 2026-08-12** |
+| **Owner** | **Product owner** *(what gets scheduled)* · **Lane C** *(whether the two rows should be re-sequenced)* |
+| **Blocks** | ⛔ **Nothing.** ✅ **Lane A took [TASK-1414](BACKLOG.md), shipped it, and claimed [TASK-1462](BACKLOG.md) in the same day** |
+
+### ① The two rows, and what each one is missing
+
+| Row | What it needs | What exists |
+|---|---|---|
+| **[TASK-466](BACKLOG.md)** · Companies bulk | **An operation to apply and an inverse to reverse** | ⛔ **No module models an account owner, an account tag or a segment.** [ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) forbids `action_batch` from performing one, and the row's Change Budget names no business module — **[C-1425](#c-1425--task-466backlogmd-is-the-action-batchs-first-consumer-and-no-domain-implements-an-operation-for-it-to-apply)** |
+| **[TASK-1416](BACKLOG.md)** · Drill-down | **A figure in a report** | ⛔ **[TASK-1417](BACKLOG.md) shipped a designed empty state** — its own status cell says so. 📁 [`reports-screen.tsx`](../frontend/app/\(app\)/reports/reports-screen.tsx) renders `EmptyState` and a chart-type list; **not one number on it comes from a query** |
+
+⚡ **Neither row is wrong and neither needs a rewrite.** ⛔ **Both are correctly written against a design, and both are waiting on something the roadmap has not scheduled** — **a first business operation, and a query engine.**
+
+### ② The salvage both rows offered, and why it was refused twice
+
+**Each row contains a tempting piece with no backend dependency**: 📁 TASK-466's *"the SAME data table [TASK-471](BACKLOG.md) needs — whichever lands first owns it"*, and TASK-1416's *"one contract — a figure knows its query"* into 🟢 `components/ui`.
+
+⛔ **Both were refused, and for the same reason**: ⚠️ **this lane has now found FIVE capabilities that are present, correct and callable by nobody** — 📁 [TASK-1405](BACKLOG.md)'s `resolveComposition`, [TASK-1460](BACKLOG.md)'s column primitives, [TASK-1474](BACKLOG.md)'s `statusLabelVisible`, `Drawer`, and (2026-08-12) **the Better Auth client plugins, where the server registered two and the browser could call neither.**
+
+🔴 **A sixth would be the first one this lane created on purpose**, which is a different thing from finding one.
+
+### ③ What is actually being asked
+
+⛔ **Nothing about priority** — 📁 that is the product owner's and this lane re-derived none of it. **Two questions, both cheap:**
+
+1. **Is there a first business operation worth scheduling?** ⚡ **[C-1425](#c-1425--task-466backlogmd-is-the-action-batchs-first-consumer-and-no-domain-implements-an-operation-for-it-to-apply) names one that already exists** — the signal resolution, whose inverse is designed in its own words — **as input, never as a re-scope.**
+2. **Should these two rows sit at the top of a queue they cannot be taken from?** ⚠️ **A queue whose head is unstartable is read as *the lane is blocked*, and this lane is not** — ✅ **four buildable rows sit below them and the first is claimed.**
+
+---
+
 ## C-1426 · The Security Center's Security Invariant cannot be met for session revocation, and the honest repair is not to add a challenge
 
 | | |
