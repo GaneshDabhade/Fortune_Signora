@@ -1590,7 +1590,7 @@ It compares what the governance documents *say* against what git, the migrations
 |---|---|---|---|---|
 | **Historic** — allocated before this rule | `001`–`099` | `001`–`099` | `001`–`099` | `0001`–`0099` |
 | **QE** | `100`+ | `100`+ | — *(QE writes nothing in the backlog)* | `0100`+ |
-| **Lane A** | `200`+ | `200`+ | `200`+ | `0200`+ |
+| **Lane A** | `200`+ | `200`–`299`, **then `1500`+** | `200`+ | `0200`+ |
 | **Lane B** | `300`+ | `300`+ | `300`+ | `0300`+ |
 | **Lane C** *(Product Office)* | `400`–`499`, **then `1400`+** | `400`–`499`, **then `1400`+** | `400`–`499`, **then `1400`+** | `0400`–`0499`, **then `1400`+** |
 | **Lane D** | `500`+ | `500`+ | `500`+ | `0500`+ |
@@ -1614,6 +1614,18 @@ It compares what the governance documents *say* against what git, the migrations
 > ⛔ **Nothing is renumbered and nothing migrates.** **`TASK-400`–`499` keep their ids, their references and their history**; the second range is additive, exactly as §8 required. **The rule is unchanged: a lane allocates only from its own block, and Lane C now has two.**
 >
 > ⚠️ **This is the second edit Lane C has made to this file, and like the first it was *directed rather than drafted*** ([D-170](docs/DECISION_REGISTER.md) §2 was the other). **`CLAUDE.md` remains the product owner's.**
+
+> ⚡ **Lane A gained `C-1500`+ on 2026-08-12, on the product owner's explicit ruling and instruction.**
+>
+> **`C-200`–`C-299` is exhausted — all 100 defined, counted by Lane A rather than assumed.** ⛔ **It had produced two collisions: [B-259](docs/BUGS.md), and `C-210`, where Lane B's *"will Signora hold personal data?"* and Lane A's *"does Signora STORE what a rep writes"* both held the id.** ⚠️ **This office ruled one and QE read the other within the hour, and neither reading was wrong.**
+>
+> ⛔ **Nothing is renumbered but the one contested item.** **`C-210` stays Lane B's canonical row; Lane A's moved to [C-1500](docs/LANE_COORDINATION.md), with the old location pointing at the new one so history stays traceable.** ✅ **`C-1500`–`C-1599` verified unused before allocation.**
+>
+> ⚠️ **The check could not have caught it: Lane B's `C-210` has no heading, only an index row, so a free-identifier scan by heading reported `210` available** — 📁 **the scan Lane A ran before allocating. The tool endorsed the collision** ([B-263](docs/BUGS.md)).
+>
+> ⚡ **`1500`+ and not `1000`+ — it leaves `500`–`900` untouched for Lanes D and E and the product owner**, the same reasoning that gave Lane C `1400`+.
+>
+> ⚠️ **This is the third edit Lane C has made to this file and, like the first two, it was *directed rather than drafted*.** **`CLAUDE.md` remains the product owner's.**
 
 **Migrations are deliberately exempt**, and are the one identifier that must stay dense: Alembic's `down_revision` is a linear chain, so a gap is not a cosmetic oddity but a broken migration graph. **The existing practice is correct and stays** — a lane that finds its number taken renumbers on rebase and says so in the commit message, as Lane A did twice for `0026`. **The chain is the identity; the filename follows it.**
 

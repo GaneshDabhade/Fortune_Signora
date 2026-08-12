@@ -47,7 +47,9 @@
 
 #### C-210 — will Signora hold personal data? ⛔ **CONTESTED IDENTIFIER**
 
-> 🔴 **Two items carry `C-210`.** **This one is Lane B's and owns the anchor; the `## C-210` heading further down is Lane A's *"does Signora STORE what a rep writes"*.** ⛔ **The product owner's 2026-08-12 ruling applies to THAT one, not to this.** ⚠️ **This question is `OPEN` and unruled.** 📁 [B-263](BUGS.md).
+> ✅ **RESOLVED 2026-08-12 — this is now the ONLY `C-210` and it is Lane B's.** **Lane A's item moved to [C-1500](#c-1500--task-1476backlogmd--does-signora-store-what-a-rep-writes-or-only-observe-eight-of-account-360s-sections-turn-on-it)** on the product owner's allocation of `C-1500`+ to Lane A.
+>
+> ⛔ **This question is `OPEN` and unruled.** ⚠️ **The 2026-08-12 Notes-and-Tasks ruling was for `C-1500`, never for this** — 📁 **a reader who followed `C-210` before today landed here and could reasonably have believed otherwise.** 📁 [B-263](BUGS.md).
 
 > ⏸️ **`DEFERRED` — product owner, 2026-08-05.** *"Keep grouped with future People Intelligence work"*, alongside [C-203](#c-203) and the narrowed [C-221](#c-221).
 
@@ -515,9 +517,17 @@ databaseUrl: required(
 
 ---
 
-> 🔴 **⛔ CONTESTED IDENTIFIER — [B-263](BUGS.md). This item shares `C-210` with Lane B's *"will Signora hold personal data?"*, which holds the index row and this anchor.** ⚡ **Two sessions have already reported opposite states of *"C-210"* within an hour and both were reading correctly** — one meant this question, one meant Lane B's. ⛔ **Cite this item by its TITLE until it is renumbered**, and 🔴 **it cannot be renumbered until Lane A is given a `C-` block: all 100 of `C-200`–`C-299` are defined.**
+## C-1500 · [TASK-1476](BACKLOG.md) — does Signora STORE what a rep writes, or only observe? Eight of Account 360's sections turn on it
 
-## C-210 · [TASK-1476](BACKLOG.md) — does Signora STORE what a rep writes, or only observe? Eight of Account 360's sections turn on it
+> ✅ **RENUMBERED FROM `C-210` — product owner, 2026-08-12, allocating `C-1500`+ to Lane A.** ⛔ **`C-210` remains Lane B's canonical item** — *"will Signora hold personal data?"*, line 48, `OPEN` and unruled.
+>
+> ⚡ **The ruling recorded here was always for THIS question and is unchanged.** 📁 **Traceable from the old location, which now points here** — [B-263](BUGS.md) has the collision in full.
+>
+> ⚠️ **39 references to `C-210` exist across the registers, the design doc and implementation comments, and MANY of them mean this item.** ⛔ **Not swept from here: [B-259](BUGS.md) is what a per-file replace costs, and repointing content this office does not own is that defect again.** ✅ **Lane A repoints its own, as it did for `C-209`.**
+
+> ⚠️ **Lane A's own contested-identifier note, superseded by the renumber and kept because it is the record of what was believed before the ruling:**
+>
+> 🔴 **⛔ CONTESTED IDENTIFIER — [B-263](BUGS.md). This item shares `C-210` with Lane B's *"will Signora hold personal data?"*, which holds the index row and this anchor.** ⚡ **Two sessions have already reported opposite states of *"C-210"* within an hour and both were reading correctly** — one meant this question, one meant Lane B's. ⛔ **Cite this item by its TITLE until it is renumbered**, and 🔴 **it cannot be renumbered until Lane A is given a `C-` block: all 100 of `C-200`–`C-299` are defined.**
 
 | | |
 |---|---|
