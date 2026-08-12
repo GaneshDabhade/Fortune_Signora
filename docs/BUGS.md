@@ -90,11 +90,11 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
-### B-191 · 🟡 [B-256](#b-256)'s guard tests the helper and not the screen, so the false promise can return with the whole suite green
+### B-191 · 🟡 Two fixes this cycle are guarded at the component that RECEIVES a value and not at the seam that SUPPLIES it, and the defect was in the seam both times
 
 | | |
 |---|---|
-| **Module** | **`product_surface`** — [`frontend/tests/unit/onboarding-promises.test.ts`](../frontend/tests/unit/onboarding-promises.test.ts) |
+| **Module** | **`product_surface`** — [`onboarding-promises.test.ts`](../frontend/tests/unit/onboarding-promises.test.ts) and [`account-menu-name.test.tsx`](../frontend/tests/components/account-menu-name.test.tsx) |
 | **Current assignee** | **The current assignee of `product_surface`** — joined from [`modules.toml`](coordination/modules.toml), ⛔ **not named here** ([C-213](#c-213)) |
 | **Severity** | 🟡 — ⛔ **nothing is wrong today.** [B-256](#b-256)'s fix is correct and the screen tells the truth. ⚠️ **What is missing is the proof that it stays true** |
 | **Status** | 🔵 **`OPEN`** — ⛔ **not QE's to fix.** QE may write a test in any module's suite; **the assertion belongs with the lane that owns the screen** |
@@ -117,7 +117,23 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ✅ **The repair there is the shape here**: an assertion that guards **the walk**, not the helper. **The equivalent is a render-level assertion that a goal whose destinations are all unbuilt produces no sentence.**
 
-⚠️ **Recorded as its own row rather than folded into [B-256](#b-256)**, which is `FIXED` and correctly so — 📁 **the fix and the proof of the fix are two claims, and only one of them holds.**
+### 🔴 The second instance, found only because the first was tested
+
+**[B-429](#b-429) has the same gap.** 📁 `layout.tsx:44` passes `name={session.user.name ?? null}` — **the very line the original defect dropped.** ⛔ **Replace it with `name={null}` and the suite is `169 files · 3062 tests` green**, with the shell dropping the customer's name exactly as before.
+
+📁 `account-menu-name.test.tsx` **renders `AccountMenu` with a `name` the test supplies.** ✅ **It proves the component displays what it is given** — ⛔ **and that was never the defect. The defect was the layout not giving it.**
+
+⚠️ **No journey covers it either**: `profile-journey.spec.ts` fills a *Display name* field and never asserts the account menu shows it.
+
+### ✅ The counter-example is in the same branch, which makes this a shape rather than an accusation
+
+**[B-255](#b-255) was fire-tested identically and it holds.** Removing `setStatus('unavailable')` turns **`profile.test.tsx › says why it cannot save, rather than nothing`** red at once.
+
+⚡ **The difference is not care or effort — it is distance.** **B-255's defect and its guard live in the same component. B-256's and B-429's did not.**
+
+> ⛔ **The rule this produces: a guard belongs at the seam that failed, not at the component downstream of it.** ⚡ **`reachable` and `AccountMenu` are both correct, and both were correct before their fixes** — **what changed is one line in a layout and two in a form, and nothing asserts either.**
+
+⚠️ **One row, two instances**, on [B-249](#b-249)'s precedent that **a class whose census is short is worth correcting out loud.** ⛔ **[B-256](#b-256) and [B-429](#b-429) stay `FIXED`, correctly** — the fixes are right; **the proofs are this row's subject.**
 
 ---
 
