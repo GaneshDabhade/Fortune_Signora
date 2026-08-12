@@ -10,7 +10,7 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "6b5cec8"
-task_count     = 60
+task_count     = 61
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
@@ -949,6 +949,22 @@ on_integration = true
 [[task]]
 id            = "TASK-1476"
 title         = "Account 360 — complete the module against the finalized design"
+state         = "WAITING_ARCHITECTURE"
+declared      = "READY"
+lane          = "—"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
+
+[[task]]
+id            = "TASK-1477"
+title         = "Commercial account facts — the vocabulary, its mappers, and the three surfaces that consum"
 state         = "WAITING_ARCHITECTURE"
 declared      = "READY"
 lane          = "—"

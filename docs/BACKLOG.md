@@ -116,6 +116,31 @@
 
 > ⚡ **Lane A owns decomposition.** ⛔ **It may not invent product behaviour, UX absent from the design, business rules, permissions or roles.** **Where the design is ambiguous, that is a `C-` item and a ruling — never an interpretation** ([§21](../CLAUDE.md)).
 
+### TASK-1477 · Commercial account facts — the vocabulary, its mappers, and the three surfaces that consume it
+
+| | |
+|---|---|
+| **Type** | ⚡ **Implementation Package.** ⛔ **Lane C states WHAT; Lane A owns decomposition, sequencing and end-to-end implementation** |
+| **Owner** | **Lane A** — `provider_normalization` (vocabulary + mappers) and `product_surface` (the three consumers), both Lane A's in [`modules.toml`](coordination/modules.toml) |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-12** |
+| **Authority** | ✅ **[C-209 ruled A by the product owner, 2026-08-12](LANE_COORDINATION.md): *Signora owns commercial account facts.*** **Contract: [ADR-0409](architecture/adr/0409-commercial-account-facts.md)** |
+
+**Required outcome.** ⚡ **A seller sees what an account is worth, when it renews, and where it stands — on the Companies list, on the deal record, and in Forecast — and every one of them reads the same canonical fact.**
+
+**Scope, end to end:** the sixth `ClaimDomain` · the three attributes in the shapes [ADR-0409](architecture/adr/0409-commercial-account-facts.md) §3 names · `VOCABULARY_VERSION` → `2` · the CRM mappers · whatever storage, API and read path the consumers need · **the three consumers** — [TASK-1475](#task-1475)'s excluded columns, [TASK-1469](#task-1469), [C-297](LANE_COORDINATION.md)'s Forecast · tests · the journey.
+
+> ⛔ **NOT decomposed here.** 📁 The package model, 2026-08-12: *"if forty things are missing, do not create forty coordination tasks."* ⚡ **Lane A sequences it.**
+
+⛔ **DO NOT INVENT — and these are the ADR's own exclusions:**
+
+- ⚡ **The stage enum's members are Lane A's to propose**, from the design and the CRM adapters it can see. ⚠️ **[ADR-0409](architecture/adr/0409-commercial-account-facts.md) §3 deliberately does not name them** — this office has no mapper in front of it, and naming them would be the invention the ADR exists to avoid. **Propose them in the Slice Handoff; they become part of the ratified contract.**
+- ⛔ **No currency conversion.** Carry the currency ([ADR-0409](architecture/adr/0409-commercial-account-facts.md) §5).
+- ⛔ **No inferred, defaulted or zero-filled absence.** A missing ACV is missing.
+- ⛔ **`buying_score_engine`'s refusal of probability is untouched.** ⚠️ **Forecast consumes *stage*, not a probability** — [C-297](LANE_COORDINATION.md) is not overridden by this ruling.
+- ⛔ **No consumer parses a vendor stage name or branches on which CRM supplied a fact** ([§10](../CLAUDE.md), vendor neutrality).
+
+**Done when** — [§19](../CLAUDE.md)'s gates, plus: **all three consumers read the canonical form and none defines its own** · `crm.py`'s comment updated to cite [ADR-0409](architecture/adr/0409-commercial-account-facts.md) rather than deleted, because it records why the gap existed · migration reversible · **the journey written, run and watched headed**.
+
 ### TASK-1476 · Account 360 — complete the module against the finalized design
 
 | | |
