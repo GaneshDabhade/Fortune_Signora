@@ -2140,3 +2140,57 @@ if (workspaceId === null) return [];   // absent  AND  not-yet-arrived
 ⚠️ **Same shape as [B-429](../BUGS.md)**: a considered-sounding sentence defending behaviour whose premise nobody had measured.
 
 ⛔ **The VALUES are unchanged deliberately.** **The honest repair needs this tier to know whether it is a first clone or a lane** — ⚡ **and it cannot**: 📁 [B-223](../BUGS.md) / [C-298](../LANE_COORDINATION.md), where `environmentName()` returns `local` for every lane. **One root, two rows.**
+
+---
+
+## Companies becomes a workspace — [TASK-1475](../BACKLOG.md)
+
+📁 **`Fortune Signora Companies.dc.html`**, and the first row under the **end-to-end module model**: the package is the contract and this lane owns the decomposition.
+
+### 🔴 The design vs the implementation, section by section
+
+| The design | Before | Now |
+|---|---|---|
+| **Table view** | ✅ Three fixed columns | ✅ **Kept, and made configurable** — `EntityName` reused unchanged |
+| **Card view** | ⛔ Absent | ✅ **Built** — same rows, same filter result |
+| **Density** | ⛔ Absent | ✅ **Built**, in the profile's own vocabulary |
+| **Columns · N of M** | ⛔ Absent | ✅ **Built over the fields that exist** |
+| **Filters · Add condition** | ⛔ Absent | ✅ **Name · kind · source · freshness** |
+| **Pagination** | ⚠️ `Load more`, accumulating | 🔴 **REPLACED** by `Previous`/`Next` |
+| **Export** | ⛔ Absent | ✅ **Built** — exactly what is on screen |
+| **Import · New company · New segment** | ⛔ Absent | ⛔ **Still absent, deliberately** |
+| **Owner · Segment · Tags · Open ACV · Renewal · Score** | ⛔ Absent | ⏸️ **[C-300](../LANE_COORDINATION.md) / [C-1425](../LANE_COORDINATION.md)** |
+| **Board view · grouping · sorting · smart filters · AI rows** | ⛔ Absent | ⏸️ **Every one groups or ranks by a C-300 field** |
+
+### ⛔ `Load more` was replaced rather than kept, and that is the standard applied
+
+📁 **The end-to-end standard: *"do not preserve old UI just because it already exists."*** ⚡ **`Load more` and a pager are different products**: one accumulates the page under somebody scanning it and makes *"which page am I on"* unanswerable; the other replaces it, which is what the design draws.
+
+✅ **[C-1431](../LANE_COORDINATION.md) settled the form**: `Previous`/`Next` over the existing keyset cursor. ⛔ **Never numbered pages and never a total** — 📁 `accounts-list` is keyset *deliberately*, and its own words are why: *"an offset page would skip or repeat rows… a customer paging the list would silently miss accounts."*
+
+> ⚡ **The pager shows a page NUMBER and no denominator.** **Keyset cannot know how many pages exist without reading them**, and a count would be the fabricated total the row refuses.
+
+### 🔴 A column exists only where a field does
+
+⛔ **The design draws nine columns and the contract publishes five usable fields.** ⚡ **`ColumnSpec.read` takes a `ListedAccount`, so a column for a field that does not exist has nowhere to return a value from** — 📁 [§2](../../CLAUDE.md), *types should make incorrect architecture impossible*.
+
+⛔ **A column of `—` is worse than an absent column**: it says Signora looked and found nothing, when the truth is that nothing was ever asked.
+
+### ⚠️ Two absences that are different sentences, and the screen has both
+
+📁 **`No companies yet`** — the book is empty; connect a source.
+📁 **`No companies match these filters`** — the narrowing excluded them, **and it says the filter narrows what has been read rather than the book.**
+
+⚡ **The endpoint takes no filter parameters**, so a filter here narrows one page of 8,412. ⛔ **A control that looked like it searched the book while searching a page would be the quietest lie on the screen**, and the count beside it — *"1 of 3 loaded"* — is what keeps it honest.
+
+### ⛔ Never-observed is not stale, and the filter keeps them apart
+
+📁 **The contract's own distinction**: `last_observed_at` is *"not when Signora last looked."* ⚡ **So *older than 30 days* excludes an account nobody has ever reported on**, and *never observed* is its own condition. **Folding the two would let a staleness filter claim Signora had looked.**
+
+### 🔴 A test harness that swallowed the case it was written for
+
+⚠️ **The first fixture defaulted every field with `??`**, so an **explicit** `last_observed_at: null` — the whole subject of the never-observed tests — **was replaced by a fresh date.** ⛔ **One test failed and one passed for the wrong reason**, which is the more dangerous half. ✅ **Spread, not `??`.**
+
+### ✅ What a browser proved that jsdom could not
+
+📁 **The pager REPLACES the page** — the first page's rows are gone from the document, not scrolled past · **the card grid reflows**, measured as a narrower card at laptop than at phone · **compact density makes rows shorter**, measured as geometry rather than asserted from a class name.

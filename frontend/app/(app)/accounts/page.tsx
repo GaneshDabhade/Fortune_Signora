@@ -1,12 +1,14 @@
 'use client';
 
 import { Building2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import { EntityName } from '@/components/intelligence/entity-name';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import {
   Button,
+  Card,
   EmptyState,
   PageHeader,
   SkeletonText,
@@ -17,6 +19,20 @@ import {
   TR,
   Table,
 } from '@/components/ui';
+import { AccountsToolbar } from './toolbar';
+import {
+  DEFAULT_COLUMNS,
+  NO_FILTERS,
+  ROW_PADDING,
+  type ColumnId,
+  type Density,
+  type Filters,
+  applyFilters,
+  choicesFor,
+  toCsv,
+  visibleColumns,
+} from '@/lib/accounts/table';
+import { cn } from '@/lib/design/cn';
 import { useAccountsList } from '@/lib/query/hooks/accounts-list';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -64,14 +80,57 @@ export default function CompaniesPage() {
   const workspaceId = activeWorkspace?.id ?? null;
   const accounts = useAccountsList(workspaceId);
 
+  /**
+   * 🔴 **Previous / Next over the cursor, and it REPLACED *Load more*** —
+   * [TASK-1475](../../../../docs/BACKLOG.md), 📁
+   * [C-1431](../../../../docs/LANE_COORDINATION.md).
+   *
+   * ⛔ **Not numbered pages and not a total**, however the mock draws them: 📁
+   * the endpoint is keyset *deliberately* — *"an offset page would skip or
+   * repeat rows… a customer paging the list would silently miss accounts"* —
+   * **and a total is a count the contract does not return.**
+   *
+   * ⚡ **A page index over what `useInfiniteQuery` has already fetched.**
+   * `Next` shows the next page and fetches it only if it is not held; `Previous`
+   * never refetches. ⛔ **The old `Load more` accumulated pages into one list**,
+   * which is a different product: it grows the page under somebody scanning it
+   * and makes *"which page am I on"* unanswerable.
+   */
+  const [page, setPage] = useState(0);
+  const [mode, setMode] = useState<'table' | 'cards'>('table');
+  const [density, setDensity] = useState<Density>('comfortable');
+  const [columns, setColumns] = useState<readonly ColumnId[]>(DEFAULT_COLUMNS);
+  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+
+  const pages = accounts.data?.pages ?? [];
+  const current = pages[page]?.items ?? [];
+  const loadedAll = useMemo(() => pages.flatMap((p) => p.items), [pages]);
+  // ⚠️ **`new Date()` is read once per render rather than per row**, so every
+  // row on one screen is aged against one moment.
+  const shown = useMemo(() => applyFilters(current, filters, new Date()), [current, filters]);
+  const shownColumns = useMemo(() => visibleColumns(columns), [columns]);
+
   if (workspaceId === null) return <NoWorkspace />;
 
-  const rows = accounts.data?.pages.flatMap((page) => page.items) ?? [];
-  // ⛔ **Counted from what arrived, never claimed.** 📁 The design prints
-  // *"8,412 total · 312 in view"*, and **the total is not published by this
-  // read** — ⚠️ **printing one would be inventing the number a seller trusts
-  // most.** ✅ **So the header says how many have loaded**, which is true.
-  const loaded = rows.length;
+  const hasNext = page + 1 < pages.length || accounts.hasNextPage === true;
+
+  const goNext = () => {
+    if (page + 1 < pages.length) {
+      setPage(page + 1);
+      return;
+    }
+    void accounts.fetchNextPage().then(() => setPage((was) => was + 1));
+  };
+
+  const exportCsv = () => {
+    const csv = toCsv(shown, shownColumns);
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'companies.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <>
@@ -81,11 +140,15 @@ export default function CompaniesPage() {
           <>
             Every account you can see, in one surface.{' '}
             {/* ⚡ **The absent columns are named to the reader.** ⛔ A screen
-                that silently draws two of nine columns reads as a broken table;
-                one that says what it does not have yet reads as an honest one.
-                📁 The same choice `freshness.tsx` makes about *"last checked"*. */}
+                that silently draws four of nine columns reads as a broken
+                table; one that says what it does not have yet reads as an
+                honest one. 📁 **Score, owner, value, renewal, segment and tags
+                are [C-300](../../../../docs/LANE_COORDINATION.md) and
+                [C-1425](../../../../docs/LANE_COORDINATION.md)**, not
+                omissions. */}
             <span className="text-content-muted">
-              Score, owner, stage and value are not on this list yet — open an account to see them.
+              Score, owner, value and renewal are not on this list yet — open an account to see
+              what Signora holds.
             </span>
           </>
         }
@@ -104,75 +167,154 @@ export default function CompaniesPage() {
         />
       ) : accounts.isLoading ? (
         <SkeletonText lines={6} />
-      ) : rows.length === 0 ? (
+      ) : loadedAll.length === 0 ? (
         <EmptyState
           icon={Building2}
           title="No companies yet"
-          // ⛔ **Never *"coming soon"*, and never a blank.** ⚡ **It names the
-          // one thing that puts a company here**, so somebody who wants rows
-          // knows what produces them.
           description="Companies appear here as Signora resolves them from your connected sources. Connect a source and the first ones arrive with it."
         />
       ) : (
         <>
-          <Table>
-            <THead>
-              <TR>
-                <TH scope="col">Company</TH>
-                {/* 📁 **`kind` is read, never assumed.** The endpoint: *"the
-                    list answers for companies today and the graph knows more
-                    kinds than it can search."* */}
-                <TH scope="col">Kind</TH>
-                <TH scope="col">Sources</TH>
-              </TR>
-            </THead>
-            <TBody>
-              {rows.map((row) => (
-                <TR key={row.account.account_id}>
-                  <TD>
-                    {/* ✅ **Reused, not rebuilt** — `EntityName` already carries
-                        the name, the agreement state and the *no source has
-                        named it* fallback, and it is what the attention list
-                        and search both render. ⛔ **A second name renderer
-                        would be a second answer to *what is this called*.** */}
-                    <EntityName
-                      identity={row.account}
-                      fallbackId={row.account.account_id}
-                      href={`/accounts/${row.account.account_id}`}
-                    />
-                  </TD>
-                  <TD>{row.kind}</TD>
-                  {/* ⚡ **The denominator behind `agreement`**, which the
-                      contract publishes and the design's table does not draw —
-                      ✅ **shown because it is real**, where the six columns the
-                      design does draw are not. */}
-                  <TD>{row.account.source_count}</TD>
+          <AccountsToolbar
+            mode={mode}
+            onMode={setMode}
+            density={density}
+            onDensity={setDensity}
+            columns={columns}
+            onColumns={setColumns}
+            filters={filters}
+            onFilters={setFilters}
+            kinds={choicesFor(current, 'kind')}
+            sources={choicesFor(current, 'source')}
+            shown={shown.length}
+            loaded={current.length}
+            onExport={exportCsv}
+          />
+
+          {/* ⛔ **A filter that matches nothing is not an empty book.** ⚡ **The
+              two are different sentences and this screen has both**: the empty
+              state above says no company exists; this says the narrowing
+              excluded them all. */}
+          {shown.length === 0 ? (
+            <EmptyState
+              icon={Building2}
+              title="No companies match these filters"
+              description="Nothing on this page matches. Clear a condition, or move to the next page — filters narrow what has been read, not the whole book."
+            />
+          ) : mode === 'cards' ? (
+            <CardGrid rows={shown} density={density} />
+          ) : (
+            <Table>
+              <THead>
+                <TR>
+                  {shownColumns.map((column) => (
+                    <TH key={column.id} scope="col">
+                      {column.label}
+                    </TH>
+                  ))}
                 </TR>
-              ))}
-            </TBody>
-          </Table>
+              </THead>
+              <TBody>
+                {shown.map((row) => (
+                  <TR key={row.account.account_id}>
+                    {shownColumns.map((column) => (
+                      <TD key={column.id} className={ROW_PADDING[density]}>
+                        {column.id === 'company' ? (
+                          /* ✅ **Reused, not rebuilt** — `EntityName` carries the
+                             name, the agreement state and the *no source has
+                             named it* fallback, and it is what the attention
+                             list and search both render. */
+                          <EntityName
+                            identity={row.account}
+                            fallbackId={row.account.account_id}
+                            href={`/accounts/${row.account.account_id}`}
+                          />
+                        ) : (
+                          column.read(row)
+                        )}
+                      </TD>
+                    ))}
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          )}
 
-          <p className="mt-3 text-2xs text-content-subtle" data-testid="companies-count">
-            {loaded} loaded
-          </p>
-
-          {/* ⛔ **A button, not an infinite scroll.** ⚡ **The cursor is opaque
-              by contract and the page boundary is stable**; a scroll listener
-              would fetch on a viewport event the customer did not ask for, and
-              a seller scanning a book of 8,000 loses their place when the list
-              grows underneath them. */}
-          {accounts.hasNextPage ? (
+          <nav
+            aria-label="Pages"
+            data-testid="accounts-pager"
+            className="mt-4 flex items-center gap-3"
+          >
             <Button
               variant="secondary"
-              onClick={() => void accounts.fetchNextPage()}
-              disabled={accounts.isFetchingNextPage}
-              className="mt-4"
+              onClick={() => setPage((was) => Math.max(0, was - 1))}
+              disabled={page === 0}
             >
-              {accounts.isFetchingNextPage ? 'Loading…' : 'Load more'}
+              Previous
             </Button>
-          ) : null}
+            <Button
+              variant="secondary"
+              onClick={goNext}
+              disabled={!hasNext || accounts.isFetchingNextPage}
+            >
+              {accounts.isFetchingNextPage ? 'Loading…' : 'Next'}
+            </Button>
+            {/* ⛔ **A page number, never a page COUNT.** ⚡ **Keyset cannot know
+                how many pages exist without reading them**, and printing a
+                denominator would be the fabricated total
+                [C-1431](../../../../docs/LANE_COORDINATION.md) refuses. */}
+            <span className="text-2xs text-content-subtle">Page {page + 1}</span>
+          </nav>
         </>
       )}
     </>
+  );
+}
+
+/**
+ * 📁 **Card view** — *"same data, same filters, same selection — for scanning
+ * by account rather than by column."*
+ *
+ * ⚡ **The same rows and the same filter result**, which is what makes it a
+ * view rather than a second screen. ⛔ **It draws only fields that exist**, for
+ * the reason the table does.
+ */
+function CardGrid({
+  rows,
+  density,
+}: {
+  rows: readonly import('@/lib/api/types').ListedAccount[];
+  density: Density;
+}) {
+  return (
+    <ul
+      data-testid="accounts-cards"
+      className={cn(
+        'grid gap-3 smalllaptop:grid-cols-2 laptop:grid-cols-3',
+        density === 'compact' && 'gap-2',
+      )}
+    >
+      {rows.map((row) => (
+        <li key={row.account.account_id}>
+          <Card className={cn('h-full', density === 'compact' ? 'p-3' : 'p-4')}>
+            <EntityName
+              identity={row.account}
+              fallbackId={row.account.account_id}
+              href={`/accounts/${row.account.account_id}`}
+            />
+            <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-content-muted">
+              <div className="flex gap-1">
+                <dt>Kind</dt>
+                <dd className="text-content">{row.kind}</dd>
+              </div>
+              <div className="flex gap-1">
+                <dt>Sources</dt>
+                <dd className="text-content">{row.account.source_count}</dd>
+              </div>
+            </dl>
+          </Card>
+        </li>
+      ))}
+    </ul>
   );
 }

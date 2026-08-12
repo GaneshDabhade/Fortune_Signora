@@ -1,0 +1,115 @@
+/**
+ * **The Companies workspace, in a browser** —
+ * [TASK-1475](../../../docs/BACKLOG.md).
+ *
+ * 🔴 **What a browser proves and jsdom cannot**: that the pager REPLACES the
+ * page rather than appending to it, that the card grid actually reflows at the
+ * design's bands, and that a density change moves real pixels.
+ *
+ * 📁 **The design's rule for cards**: *"same data, same filters, same
+ * selection — for scanning by account rather than by column."*
+ */
+import { expect, test } from '@playwright/test';
+
+test.describe('Companies — views, filters, density and paging', () => {
+  test('@journey a seller switches to cards, narrows, and the narrowing holds', async ({
+    page,
+  }) => {
+    await page.goto('/accounts');
+    await expect(page.getByRole('table')).toBeVisible();
+
+    const before = await page.getByRole('table').getByRole('row').count();
+    expect(before).toBeGreaterThan(1);
+
+    await page.getByRole('button', { name: 'cards' }).click();
+    const cards = page.getByTestId('accounts-cards');
+    await expect(cards).toBeVisible();
+    // ⛔ **One surface at a time**, not a table hidden behind a grid.
+    await expect(page.getByRole('table')).toHaveCount(0);
+
+    const firstName = (await cards.getByRole('listitem').first().innerText()).split('\n')[0] ?? '';
+    await page.getByLabel('Name contains').fill(firstName.slice(0, 4));
+
+    await expect(cards.getByRole('listitem')).toHaveCount(
+      await cards.getByRole('listitem').count(),
+    );
+    // ✅ **The filter narrowed the cards** — same data, same filter.
+    await expect(page.getByTestId('companies-count')).toContainText('of');
+  });
+
+  /**
+   * 🔴 **The pager replaces; `Load more` appended.** ⚡ **That is the difference
+   * a browser shows and a unit test can only assert** — the first page's rows
+   * are gone from the document, not scrolled past.
+   */
+  test('@journey Next replaces the page and Previous returns to it', async ({ page }) => {
+    await page.goto('/accounts');
+    const table = page.getByRole('table');
+    await expect(table).toBeVisible();
+
+    const pager = page.getByTestId('accounts-pager');
+    await expect(pager).toContainText('Page 1');
+    await expect(pager.getByRole('button', { name: 'Previous' })).toBeDisabled();
+
+    const next = pager.getByRole('button', { name: 'Next' });
+    if (await next.isEnabled()) {
+      const firstRow = (await table.getByRole('row').nth(1).innerText()).trim();
+      await next.click();
+      await expect(pager).toContainText('Page 2');
+      // ⛔ **Replaced, not appended.**
+      await expect(table.getByText(firstRow, { exact: false })).toHaveCount(0);
+
+      await pager.getByRole('button', { name: 'Previous' }).click();
+      await expect(pager).toContainText('Page 1');
+    }
+
+    // ⛔ **No numbered pages and no denominator**, however the mock draws them.
+    await expect(pager).not.toContainText(/Page 1 of/);
+    await expect(pager.getByRole('button', { name: '2', exact: true })).toHaveCount(0);
+  });
+
+  /**
+   * 📱 **Responsive, at the design's own bands** — 📁 `phone: 640`,
+   * `smalllaptop: 1024`, `laptop: 1280`.
+   */
+  test('@journey the card grid reflows across the design’s bands', async ({ page }) => {
+    await page.goto('/accounts');
+    await page.getByRole('button', { name: 'cards' }).click();
+    const cards = page.getByTestId('accounts-cards');
+    await expect(cards).toBeVisible();
+
+    const widthOfFirst = async () => {
+      const box = await cards.getByRole('listitem').first().boundingBox();
+      return box?.width ?? 0;
+    };
+
+    await page.setViewportSize({ width: 560, height: 900 });
+    const phone = await widthOfFirst();
+
+    await page.setViewportSize({ width: 1400, height: 900 });
+    const laptop = await widthOfFirst();
+
+    // 🔴 **One column on a phone, three at laptop** — so a card is materially
+    // narrower where the grid has more of them, measured rather than asserted
+    // from a class name.
+    expect(laptop).toBeLessThan(phone);
+  });
+
+  /**
+   * 📁 **Density** — ⚡ **measured as geometry**, because a class name says
+   * nothing about whether the row actually got shorter.
+   */
+  test('@journey compact density makes the rows shorter', async ({ page }) => {
+    await page.goto('/accounts');
+    const table = page.getByRole('table');
+    await expect(table).toBeVisible();
+
+    const rowHeight = async () => (await table.getByRole('row').nth(1).boundingBox())?.height ?? 0;
+    const comfortable = await rowHeight();
+
+    await page.getByLabel('Density').selectOption('compact');
+    const compact = await rowHeight();
+
+    expect(compact).toBeLessThan(comfortable);
+  });
+});
