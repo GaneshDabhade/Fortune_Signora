@@ -90,6 +90,48 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-184 · 🟠 `--audit-claims` refuses on two commits that are on `main`, so the check can never pass again
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation / QE gates** — [`infra/certification-guard.py`](../infra/certification-guard.py), `--audit-claims` |
+| **Current assignee** | **QE** — ⚡ **[§20e](../CLAUDE.md) makes a gate QE's, and *"a gate that cannot run is not a gate"* is the same argument one step along: a gate that can never pass is not a gate either** |
+| **Severity** | 🟠 — ⛔ **it blocks nothing, and that is precisely the harm.** ⚡ **The check exits 1 on every invocation, so the only way to keep working is to learn to ignore it** — and **the run where it reports something real is indistinguishable from the 200 before it** |
+| **Status** | 🔵 **`OPEN`** — found 2026-08-12 during cycle 204's guard-check |
+| **Found** | **2026-08-12, by QE**, running `--audit-claims` before parking the certification record |
+| **Commit found** | **`99d4c2b9`** — ⚠️ **the defect is far older than the run that noticed it** |
+
+**Steps.** `python3 infra/certification-guard.py --audit-claims`.
+
+**Expected.** A report of claim commits that carried more than a claim **and can still be acted on**.
+
+**Actual.** `REFUSED`, naming two commits:
+
+| Commit | Date | Also changed | On `main`? |
+|---|---|---|---|
+| `9af1641` — *Claim TASK-004* | 2026-08-02 | `docs/LANE_COORDINATION.md` | ✅ **yes** |
+| `ee3a725` — *Claim TASK-458* | 2026-08-07 | `docs/LANE_COORDINATION.md` | ✅ **yes** |
+
+⛔ **Both are immutable and already promoted, so neither can ever be cleared.** ⚡ **The check therefore refuses on every future run**, whatever any lane does.
+
+> ## The message is the tell, and it is false about these two
+>
+> *"These reached `integration` without validation, certification or promotion. **Validate them before the next Certification Snapshot pins them.**"*
+>
+> ⛔ **They were pinned, certified and promoted weeks ago.** **The instruction cannot be followed**, which is [§2](../CLAUDE.md)'s *the repository must always tell the truth* — the gate asserts an action that does not exist.
+
+### What the repair is, and what it must not be
+
+⛔ **Not a suppression list.** A hard-coded pair of hashes is the *"a guard that cannot fail"* shape wearing the opposite coat — it would also silence a genuine future breach in those same files.
+
+✅ **Scope the audit to what is still actionable: commits not yet on `main`.** **A breach that has already been promoted is history**, and history is reported once and dated — never re-asserted as a live finding every run.
+
+⚡ **Report the historical two separately and without a non-zero exit**, so the count stays visible and the gate's verdict stops being a foregone conclusion.
+
+> ⚠️ **This is the same class as [B-182](#b-182)**, which QE also wrote: **the stowaway guard cried on the normal state one cycle after shipping.** ⛔ **Twice now a check of mine has been correct about a fact and wrong about whether that fact was a problem** — and both times **the cost was not a false alarm, it was teaching a reader to skip the output.**
+
+---
+
 ### B-183 · 🔴 The shipped `.env.example` gave the development runtime a `BYPASSRLS` superuser, and tenancy was off for every Playwright journey ever run
 
 > ⚡ **Absorbs [B-243](#b-243), which is the same defect and was filed first.** **Found by Lane A on 2026-08-11** implementing [TASK-1463](BACKLOG.md), by a journey failing for a reason unrelated to its slice; **fixed by Lane C at `ee4e34c3`**, wider than first proposed — `alembic.ini` and a third owner credential in the Makefile's E2E block as well as `.env.example`. ⛔ **QE created the duplicate and the full account is on [B-243](#b-243).**
