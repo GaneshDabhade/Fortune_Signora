@@ -263,7 +263,23 @@
 >
 > ⚡ **The six-state matrix remains the largest unblocked piece, and it is real work rather than polish**: loading, error, empty, collapsed and expanded across every shipped section, with rules the design states — *"row count matches the expected result so nothing jumps"* · *"a collapsed section still states its count and its worst status, so collapsing never hides a risk"* · *"expansion keeps the URL so the expanded view is shareable; Esc returns at the same scroll position."*
 >
-> ✅ **Contacts is buildable because [`people`](../backend/modules/people/) publishes `AffiliationReader.at_company(...)`** — ⚠️ **but it has no `interface/` layer and is not mounted, so it needs an endpoint. 🟠 in the Change Budget, `people` is Lane A's, announce it.**
+> ⛔ **CORRECTED 2026-08-12 by Lane A, against its own earlier figure — for the second time on this row, and both times before anybody sized against it.** **Contacts & decision makers is NOT buildable, and the *one genuinely buildable* count is ZERO.**
+>
+> ⚡ **The audit found `AffiliationReader.at_company(...)`, saw a read returning people at a company, and stopped without opening the design's contact ROW.** 📁 **That row is name · role (Champion / Blocker / Economic buyer) · relationship · engagement — and the platform holds none of the four:**
+>
+> | | |
+> |---|---|
+> | **name** | ⛔ `person` has no name column. 📁 **[C-221](LANE_COORDINATION.md) is `people`'s specification, not a limitation.** Whether a provider could supply one is gated on **[TASK-429](#task-429)**, which this office's own row calls a commercial decision |
+> | **role** | ⛔ **A judgement**, and `people/public` refuses judgements **by AST test** — *no score, no rank, no priority, no `is_key_contact`*. Which seat a title fills is **[C-018](LANE_COORDINATION.md)**'s |
+> | **relationship · engagement** | ⛔ **Interaction history nothing records** — the **[C-210](LANE_COORDINATION.md)** family |
+>
+> ⚡ **What `AffiliationReader` actually gives is a title, a seniority band and a period held, anonymous.** ⛔ **That is a different section the design does not draw, and shipping it under this heading would be inventing one.**
+>
+> ✅ **NO NEW `C-` ITEM, deliberately, and Lane A is right.** **Every half is already owned — TASK-429, C-018, C-210.** 📁 **[D-111](DECISION_REGISTER.md) ④ asks that missing work be represented by an owned task, and it is.**
+>
+> 🔴 **AND THE TRAP WAS ALREADY IN THE TREE.** 📁 `lib/accounts/sections.ts` **marked `contacts` supplied and sourced it from `useBuyingCommittee`** — ⛔ **`commercial_profile`'s *"who decides about what this workspace SELLS"*: the ICP's committee, declared once and identical on every account.** ⚠️ **Under the heading *Contacts & decision makers* it told a rep that this company has those six people.** ✅ **Fixed in this slice: `contacts` is `absent`, states what Signora cannot see, and joins the rail — which it could never anchor while claiming to be supplied. Two guards, fire-tested red first, and the second pins `contacts` absent while nothing supplies a name — ⚡ which makes TASK-429's trigger checkable rather than remembered.**
+>
+> ➡️ **So the unblocked set is the six-state matrix across the twelve compliant sections, and nothing else.**
 >
 > ⛔ **A trap in that section, named by Lane A and worth keeping**: `GET /buying-committee` exists and is `commercial_profile`'s, but its own summary is *"who decides about what this workspace **sells**"* — **the ICP's committee, not this account's contacts.** ⚡ **Same words, different subject.**
 >
