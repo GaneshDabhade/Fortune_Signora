@@ -1111,7 +1111,7 @@ error: Your local changes to the following files would be overwritten by merge:
 | **Module** | **`product_surface`** — ⛔ **not a file; a process obligation.** 📁 [§20e](../CLAUDE.md), *The Slice Handoff* |
 | **Current assignee** | **Lane A** — ⚡ **this is a defect of this lane's own compliance, filed against itself** |
 | **Severity** | 🟠 — ⛔ **it removed the repository's only machine-readable link from a task to its implementing commit**, ⚡ **and a lane that stops writing it does so invisibly** |
-| **Status** | 🔵 **`OPEN`** — ⛔ **the five promoted commits cannot be repaired**: history is immutable and `main` is QE's. ✅ **The repair is the next slice, and there is none to write one on today** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-12.** ⚠️ **QE verifies and closes.** ✅ **[TASK-1475](BACKLOG.md)'s slice commit carries the block**, which is how this row said it would close — ⛔ **not by a promise and not by a sweep.** ⛔ **The five promoted commits stay as they are** ([§2](../CLAUDE.md) — *date a record of the past; do not rewrite it*). ⚠️ **The prior state, kept rather than rewritten**: 🔵 **`OPEN`** — ⛔ **the five promoted commits cannot be repaired**: history is immutable and `main` is QE's. ✅ **The repair is the next slice, and there is none to write one on today** |
 | **Found** | **2026-08-12, by Lane A**, reading QE's [B-193](#b-193) account — ⚡ **while checking whether the mechanism QE said needed inventing already existed** |
 
 #### 🔴 Measured, and it is unambiguous
