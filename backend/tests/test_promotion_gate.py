@@ -420,3 +420,92 @@ class TestAClaimPushCannotSmuggleASlice:
         self._push(root, "lane", "integration")
         guard = self._guard_on(monkeypatch, root)
         assert guard._claim_stowaways(guard._claim_commits("main..integration")) == []
+
+
+class TestAPromotedBreachIsHistoryNotAFinding:
+    """`--audit-claims` refused on commits nobody could ever fix — [B-184].
+
+    ⛔ **It audited `main..integration` *and* `RULE_RATIFIED_AT..main`, and
+    refused on both.** The second range is immutable: those commits were
+    promoted inside a certified snapshot and **no action by any lane will ever
+    clear them.** So the check exited 1 on every invocation, for as long as the
+    repository exists, and its own message told the reader to *"validate them
+    before the next Certification Snapshot pins them"* — about commits pinned
+    weeks earlier.
+
+    ⚡ **The harm was never the false alarm.** It is that the only way to keep
+    working was to skip the output, and then the run reporting a real breach
+    looks exactly like the two hundred before it. **A gate that cannot pass is
+    not a gate** (`CLAUDE.md` §2).
+
+    ## Two-sided, because either half alone would be worthless
+
+    **A check that never refuses is the defect this file exists to catch**, so
+    it is not enough to prove the historical case passes. The second test puts
+    the identical breach on `integration` and requires a refusal.
+
+    ⛔ **Deliberately not a list of forgiven hashes**, which would silence a
+    genuine future breach in the same files — the guard-that-cannot-fail shape
+    wearing the opposite coat. **The question is *can this still be fixed*, and
+    `main` answers it.**
+    """
+
+    @staticmethod
+    def _repo_with(tmp_path: Path, branch: str) -> Path:
+        """A repository whose only claim carried a document it may not carry.
+
+        `branch` decides whether that claim is history (`main`) or still
+        actionable (`integration`) — **the same breach, and the only variable
+        is whether anybody can act on it.**
+        """
+        helper = TestAClaimPushCannotSmuggleASlice
+        root = helper._repo(tmp_path)
+        helper._run(root, "checkout", "-q", branch)
+        helper._run(root, "checkout", "-q", "-b", "lane")
+        target = root / "docs"
+        target.mkdir(parents=True, exist_ok=True)
+        (target / "BACKLOG.md").write_text("TASK-9 CLAIMED\n")
+        (target / "LANE_COORDINATION.md").write_text("C-9 opened\n")
+        helper._run(root, "add", "docs/BACKLOG.md", "docs/LANE_COORDINATION.md")
+        helper._run(root, "commit", "-q", "-m", "Claim TASK-9 — carried a register too")
+        helper._push(root, "lane", branch)
+        return root
+
+    def _guard(self, monkeypatch: pytest.MonkeyPatch, root: Path) -> ModuleType:
+        loaded = _load_guard()
+        monkeypatch.setattr(loaded, "REPO_ROOT", root)
+        # The rule's start point is a real SHA in the live repository and means
+        # nothing in a temp one; the repository's first commit is its analogue.
+        base = TestAClaimPushCannotSmuggleASlice._run(
+            root, "rev-list", "--max-parents=0", "HEAD"
+        )
+        monkeypatch.setattr(loaded, "RULE_RATIFIED_AT", base)
+        return loaded
+
+    def test_a_breach_already_on_main_is_reported_without_refusing(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The case that made the gate useless: nothing anybody can do about it."""
+        root = self._repo_with(tmp_path, "main")
+        loaded = self._guard(monkeypatch, root)
+
+        assert loaded._audit_claims() == 0, (
+            "a claim breach that is already on `main` is immutable history. "
+            "Refusing on it makes the verdict a foregone conclusion."
+        )
+
+    def test_the_same_breach_awaiting_promotion_is_still_refused(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """⛔ **The half that matters.** Scoping must not become forgiving.
+
+        **Identical commit, identical offending path** — the only difference is
+        that this one has not been promoted, so it can still be unpicked.
+        """
+        root = self._repo_with(tmp_path, "integration")
+        loaded = self._guard(monkeypatch, root)
+
+        assert loaded._audit_claims() == 1, (
+            "an unpromoted claim carrying more than a claim must still refuse — "
+            "otherwise scoping the audit has simply switched it off."
+        )

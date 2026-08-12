@@ -827,6 +827,36 @@ def _audit_planning() -> int:
     return 1
 
 
+def _validated_floor() -> str:
+    """The newest point QE has already vouched for — a certified commit, else `main`.
+
+    ⚡ **Certification is QE's validation marker and it is recorded**, so a
+    commit that is an ancestor of a certified SHA has been through the gates
+    even when promotion is blocked and it has not reached `main`.
+
+    ⛔ **`main` alone was the wrong floor** and it degraded exactly when the
+    repository most needed the check: **the longer promotion is held, the
+    further `integration` runs ahead, and the more legitimate arrivals read as
+    smuggled.** ([B-184](../docs/BUGS.md).)
+
+    **Falls back to `main`** when nothing is certified, which is the old
+    behaviour and the conservative direction — it over-reports rather than
+    under-reports.
+    """
+    newest = "main"
+    for run in _runs():
+        commit = str(run.get("commit") or "")
+        if not commit or not _satisfied(run)[0]:
+            continue
+        # Only a certified commit that `integration` actually contains is a
+        # floor; a certification of some other line says nothing here.
+        if not _is_ancestor(commit, "integration"):
+            continue
+        if newest == "main" or _is_ancestor(newest, commit):
+            newest = commit
+    return newest
+
+
 def _claim_stowaways(claims: list[str]) -> list[tuple[str, str, list[tuple[str, str]]]]:
     """Implementation commits that reached `integration` riding a claim push.
 
@@ -862,10 +892,19 @@ def _claim_stowaways(claims: list[str]) -> list[tuple[str, str, list[tuple[str, 
         parents = _git("rev-list", "--parents", "-n", "1", claim).split()[1:]
         riders: list[tuple[str, str]] = []
         for parent in parents:
-            # Everything between `main` and the claim's parent that is not
+            # ⛔ **`_validated_floor()`, not `main`** — [B-184](../docs/BUGS.md).
+            # The docstring above says *"its parent was already there"*, meaning
+            # on `integration`; measuring from `main` only answers that while
+            # `main` is current. **Promotion had been blocked for days, so
+            # `integration` ran 20+ commits ahead and every legitimately
+            # fast-forwarded commit read as a stowaway** — including QE's own.
+            #
+            # ⚠️ **The promotion gate was manufacturing false positives in the
+            # check that guards promotion**, and the rate grew with the block.
+            # Everything between the floor and the claim's parent that is not
             # itself a claim. On a healthy claim push this range is empty,
             # because the parent *is* what `integration` already pointed at.
-            for commit in _git("rev-list", f"main..{parent}").splitlines():
+            for commit in _git("rev-list", f"{_validated_floor()}..{parent}").splitlines():
                 if not commit:
                     continue
                 subject = _git("log", "-1", "--format=%s", commit)
@@ -900,26 +939,56 @@ def _claim_stowaways(claims: list[str]) -> list[tuple[str, str, list[tuple[str, 
 def _audit_claims() -> int:
     """Every claim commit on `integration` touches the registers and nothing else."""
     _scope_note()
-    commits = _claim_commits("main..integration") + _claim_commits(
-        f"{RULE_RATIFIED_AT}..main"
-    )
+    # ⛔ **Two ranges, and only one of them can still be acted on** —
+    # [B-184](../docs/BUGS.md). A claim already on `main` is immutable and was
+    # promoted inside a certified snapshot; **nothing any lane does will ever
+    # clear it.** Refusing on it made this check exit 1 on every invocation
+    # for as long as the repository exists.
+    #
+    # ⚡ **The harm was never the false alarm.** It is that the only way to
+    # keep working was to skip the output — and then the run that reports a
+    # real breach looks exactly like the two hundred before it. A gate that
+    # cannot pass is not a gate (`CLAUDE.md` §2).
+    #
+    # ⛔ **Deliberately not a list of forgiven hashes.** That would silence a
+    # genuine future breach in the same files, which is the
+    # guard-that-cannot-fail shape wearing the opposite coat. **The question is
+    # *can this still be fixed*, and `main` answers it.**
+    pending = _claim_commits("main..integration")
+    historical = _claim_commits(f"{RULE_RATIFIED_AT}..main")
+    commits = pending + historical
     if not commits:
         print("audit — no claim commits to check.")
         return 0
 
-    violations: list[tuple[str, str, list[str]]] = []
+    def _offences(shas: list[str]) -> list[tuple[str, str, list[str]]]:
+        found: list[tuple[str, str, list[str]]] = []
+        for commit in shas:
+            changed = [
+                line
+                for line in _git("show", "--name-only", "--format=", commit).splitlines()
+                if line
+            ]
+            offending = [path for path in changed if path not in CLAIM_PATHS]
+            if offending:
+                found.append(
+                    (commit[:7], _git("log", "-1", "--format=%s", commit), offending)
+                )
+        return found
+
+    violations = _offences(pending)
+    settled = _offences(historical)
+    # ⚠️ **Scoped to `pending` for the same reason, and it is the biggest half
+    # of the noise** — this reported 131 of 166 claims, 79%, almost all of them
+    # promoted months ago and unfixable. **A finding nobody can act on is not a
+    # finding**, and 131 lines above the real ones is how a reader learns to
+    # scroll past the whole report (B-184).
     skips: list[tuple[str, str, str, list[str]]] = []
-    for commit in commits:
-        changed = [
-            line
-            for line in _git("show", "--name-only", "--format=", commit).splitlines()
-            if line
-        ]
-        offending = [path for path in changed if path not in CLAIM_PATHS]
-        if offending:
-            violations.append((commit[:7], _git("log", "-1", "--format=%s", commit), offending))
+    for commit in pending:
         skips.extend(_unexplained_skips(commit))
-    stowaways = _claim_stowaways(commits)
+    # Only a claim that has not yet been promoted can still be unpicked, so the
+    # stowaway report is scoped the same way and for the same reason.
+    stowaways = _claim_stowaways(pending)
 
     print(f"audit — {len(commits)} claim commit(s)\n")
     if skips:
@@ -946,15 +1015,31 @@ def _audit_claims() -> int:
             "  them — a snapshot assumes every commit here was fast-forwarded after\n"
             "  QE validated it (B-161, B-220, B-238).\n"
         )
+    if settled:
+        # **Reported once, dated, and never counted as a live finding.** These
+        # are on `main`: promoted inside a certified snapshot, immutable, and
+        # unfixable by anybody. Naming them keeps the count honest; refusing on
+        # them would make the verdict a foregone conclusion (B-184).
+        print(
+            f"  {len(settled)} historical claim(s) on `main` carried more than a claim.\n"
+            "  Immutable and already promoted — recorded, not actionable:\n"
+        )
+        for short, subject, offending in settled:
+            print(f"    · {short}  {subject[:56]}")
+            for path in offending[:3]:
+                print(f"        also changed {path}")
+        print()
+
     if not violations:
         print(
-            "  every one touches only ACTIVE_ASSIGNMENTS.md and BACKLOG.md.\n\n"
+            f"  {len(pending)} claim(s) awaiting promotion touch only "
+            "ACTIVE_ASSIGNMENTS.md and BACKLOG.md.\n\n"
             "A claim is the one thing a feature lane may push to `integration`, and\n"
-            "none of them carried anything else."
+            "none of the unpromoted ones carried anything else."
         )
         return 0
 
-    print(f"REFUSED — {len(violations)} claim commit(s) carried more than a claim:\n")
+    print(f"REFUSED — {len(violations)} unpromoted claim commit(s) carried more than a claim:\n")
     for short, subject, offending in violations:
         print(f"  · {short}  {subject}")
         for path in offending[:5]:
