@@ -1,5 +1,27 @@
 # Session Handoff
 
+> ## Cycle 211 — promoted `96f23434`, 2026-08-12
+>
+> **`main` = `96f23434` = the certified commit.** Two commits, Lane A ×1 and QE ×1. **First attempt, no aborts.** ⛔ **No customer-visible change, and that is the point** — the whole cycle is [B-191](BUGS.md)'s repair.
+>
+> ### ✅ Verified by measurement, and ⛔ one half that was not
+>
+> **[B-256](BUGS.md): verified.** The identical revert QE ran in cycle 210 — the two component lines, `reachable` untouched — **left 3062 tests green then and turns three red now.**
+>
+> **[B-429](BUGS.md): NOT executed.** ✅ The journey asserts the right seam — the account menu read through `layout.tsx`, a real session and the whole shell chain. ⛔ **QE verified its shape, not its behaviour**, and **reading a guard is not testing it, which is B-191's own point.** ⚠️ **Both halves are recorded because a partial verification reported as a whole one is exactly the defect B-191 is about.**
+>
+> ### 🔴 [B-192](BUGS.md) — QE's own runbook is missing the step that would have let it finish
+>
+> [`RUNNING.md`](RUNNING.md)'s *Running a lane* documents compose, three exported URLs, `alembic upgrade head`, `uvicorn` and `npm run dev`. ⛔ **It documents nothing that creates the Better Auth schema.** 📁 **Alembic manages the Python tier only; Better Auth owns `user`, `session`, `account` and `verification` and creates them itself** ([ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md)).
+>
+> ⚠️ **Measured on a freshly-migrated lane database: 59 tables, and not one of the four.** **Sign-in submits and never navigates** — so **the first thing that breaks names the wrong subsystem**, which is [B-219](BUGS.md)'s three-day lesson repeating in a different place.
+>
+> ⛔ **Filed rather than fixed.** `npx @better-auth/cli migrate --config lib/auth/server.ts` answers *"No configuration file found"*, **so the correct command is not obvious and guessing at it would be inventing a documented step rather than recording one.**
+>
+> ### ⚠️ The constraint has not moved
+>
+> **Queue depth, not implementation capacity.** ⚡ **Lane A put it plainly: *"the supply of my own past mistakes is not infinite and is a poor substitute for scheduled work."*** **Three product-owner decisions remain open and unchanged — [C-106](LANE_COORDINATION.md), [C-1424](LANE_COORDINATION.md), [C-297](LANE_COORDINATION.md).**
+
 > ## Cycle 210 — promoted `b4c99250`, 2026-08-12
 >
 > **`main` = `b4c99250` = the certified commit.** Seven commits: Lane A ×3, Lane C ×3, QE ×1. **First attempt, no aborts.** `integration` = the certification record, which promotes next cycle.
@@ -88,7 +110,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-12 · **`main` at `b4c99250`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-12 · **`main` at `96f23434`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 

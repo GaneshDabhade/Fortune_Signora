@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-12, `b4c99250`
+## Current — as of 2026-08-12, `96f23434`
+
+> ⚡ **Cycle 211 Closeout. Nothing to remove** — [B-191](BUGS.md) was Lane A repairing its own proofs inside its own module, and no board row was opened for it.
+>
+> ⚠️ **[B-192](BUGS.md) opened, and it is QE's** — [`RUNNING.md`](RUNNING.md) documents no step that creates the Better Auth schema, which is what stopped QE executing [B-429](BUGS.md)'s journey.
+>
+> ✅ **What deliberately stays**: `TASK-1430` and `TASK-489` are 🟠 `BLOCKED` with claims released; `TASK-1428` and `TASK-1431` are `CLAIMED` and unpromoted.
+>
+> ⛔ **QE reconciles this board; it does not fill it.**
 
 > ⚡ **Cycle 210 Closeout. 2 promoted assignments removed** — `B-256` and `B-429` *(with `B-255`)*. ⛔ **No lane may remain assigned to work that has reached `main`** ([§20e](../CLAUDE.md)).
 >

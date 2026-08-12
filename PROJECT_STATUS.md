@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `b4c99250`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `96f23434`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,26 +12,26 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `b4c99250`, 2026-08-12.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `96f23434`, 2026-08-12.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`b4c99250`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 210** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
-| **Release candidate** | **None. `integration` is one commit ahead of `main`** — the cycle 210 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
-| **Certification** | ✅ [`b4c99250aa40`](certification/reports/b4c99250aa40.md) · migration head **`0048`** · profile **`platform`** · ✅ **first attempt, no aborts** |
-| **Cycle 210 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages, 207s** · scenario **190 assertions** |
-| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3062 across 169 files** · **Disaster Recovery passed** against the restarted production stack. **A lane's figure is a claim; QE publishes a measurement** |
+| **`main`** | **`96f23434`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 211** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
+| **Release candidate** | **None. `integration` is one commit ahead of `main`** — the cycle 211 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
+| **Certification** | ✅ [`96f2343475fa`](certification/reports/96f2343475fa.md) · migration head **`0048`** · profile **`platform`** · ✅ **first attempt, no aborts** |
+| **Cycle 211 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages** · scenario **190 assertions** |
+| **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3065 across 170 files** · **Disaster Recovery passed** against the restarted production stack. **A lane's figure is a claim; QE publishes a measurement** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
 | ⛔ **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1631 commits — 187 certified targets, 1444 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Blocking Quality Defects** | ✅ **None** |
-| **Customer value this cycle** | ⚡ **The product stops promising screens it does not have** ([B-256](docs/BUGS.md)). **Onboarding told whoever picked the FIRST goal on the screen — *Forecast accurately* — that *"Signora will open on Forecast, the Executive Dashboard"*.** ⛔ **Neither exists, and `forecast` is refused as domain law by two modules in writing.** ✅ **A goal now names only destinations a customer can reach, and says nothing when there are none** |
-| ⛔ **What validation found that the gates did not** | **[B-191](docs/BUGS.md) — [B-256](docs/BUGS.md)'s fix is right and its proof is not.** ⚡ **Measured rather than reasoned**: reverting the two component lines while leaving the helper intact leaves **169 files and 3062 tests green**, with the screen once again promising Forecast. 📁 **The guard imports `reachable` and calls it directly; nothing renders `GoalsForm`.** ⛔ **[B-252](docs/BUGS.md)'s class one file along, and the same lane named it this week** |
+| **Customer value this cycle** | ⛔ **None, and that is correct** — ⚡ **the whole cycle is [B-191](docs/BUGS.md)'s repair: two proofs that did not fire now do.** **A cycle that ships no feature and makes two guarantees real is a cycle that did its job** |
+| ⚠️ **What QE verified, and what it did not** | ✅ **[B-256](docs/BUGS.md)'s repair is verified BY MEASUREMENT** — the identical revert that left **3062 green last cycle** now turns **three red**. ⛔ **[B-429](docs/BUGS.md)'s repair is a journey and QE did NOT execute it**: its shape is right, its behaviour is unverified, and **reading a guard is not testing it — which is [B-191](docs/BUGS.md)'s own point.** 📁 **Stopped by [B-192](docs/BUGS.md), QE's own: [`RUNNING.md`](docs/RUNNING.md) documents no step that creates the Better Auth schema** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> ⛔ **The product was promising a capability two modules decline in writing, and QE verified that rather than accepting it.** 📁 `buying_score_engine/domain/events.py`: *"No probability, no likelihood, no prediction… it does not forecast a purchase"*, and `opportunity_engine`'s router says it again independently. ✅ **The routes were checked too** — `/signals`, `/accounts`, `/reports` and `/settings/team` exist; `forecast`, `executive-dashboard`, `opportunity-intelligence`, `account-360` and `research` have no page on any branch. ⚡ **A `Record<string, string>` could not express *named and unreachable*, so an absent screen was indistinguishable from a shipped one** — and the file's own honest guard, *"an unknown identifier is titled rather than dropped"*, made the promise **stronger**.
+> ⚡ **The cycle's whole subject is that two guarantees became real, and QE proved one of them and says so about the other.** ✅ **[B-256](docs/BUGS.md): the identical revert QE ran last cycle — the two component lines, `reachable` left intact — turned `169 files · 3062 tests` green then and turns **three red** now.** ⛔ **[B-429](docs/BUGS.md): the journey asserts the right seam and QE has not run it.** 📁 **[B-192](docs/BUGS.md) is why, and it is QE's own defect** — [`RUNNING.md`](docs/RUNNING.md) documents compose, three URLs, `alembic`, `uvicorn` and `npm run dev`, **and nothing that creates the Better Auth schema.** ⚠️ **Measured on a freshly-migrated lane database: 59 tables, and not one of `user`, `session`, `account`, `verification`** — so sign-in submits and never navigates, and **the first thing that breaks names the wrong subsystem**, which is [B-219](docs/BUGS.md)'s three-day lesson.
 
-**Repository health:** **4419 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **3062 frontend tests** across **169 files** · **403 Security Invariants** · mypy strict over **867 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **207s** · **disaster recovery re-run this cycle and passing** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
+**Repository health:** **4419 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **3065 frontend tests** across **170 files** · **403 Security Invariants** · mypy strict over **867 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **207s** · **disaster recovery re-run this cycle and passing** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
 > ⚠️ **Coverage headroom is 3 basis points and shrinking** — it was 4 last cycle. **Not a defect and not yet a finding**; recorded because a floor met by three hundredths of a percent is met by whichever test ran last.
 
@@ -103,6 +103,40 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-12, cycle 211
+
+**Promoted `96f23434` from `d3a1f5af`.** Two commits: **Lane A ×1 · QE ×1.** First attempt, no aborts.
+
+### ⛔ No customer-visible change, and that is the cycle's point
+
+**Both commits are [B-191](docs/BUGS.md)'s repair: two proofs that did not fire now do.** ⚡ **A cycle that ships no feature and makes two guarantees real is a cycle that did its job.**
+
+### ✅ What QE verified by measurement
+
+**[B-256](docs/BUGS.md).** The identical revert QE ran last cycle — the two component lines, `reachable` untouched — **left `169 files · 3062 tests` green then, and turns three red now.** 📁 `onboarding-goals-promise.test.tsx` renders `GoalsForm` and reads what a customer would.
+
+⚡ **The lane's own account of writing it is the argument for the rule, made concretely**: its first assertion was `queryByText(/Forecast/)` and failed at once, because *"Forecast accurately"* is still one of the six goals and must be. **A helper test could not have caught that, because a helper does not know what else is on the screen.**
+
+### ⛔ What QE did not verify, stated rather than implied
+
+**[B-429](docs/BUGS.md)'s repair is a journey and QE did not execute it.** ✅ **Its shape is right** — the account menu is asserted through `layout.tsx`, a real session and the whole shell chain, which is the seam [B-191](docs/BUGS.md) asked for. ⛔ **Its behaviour is unverified, and reading a guard is not testing it — which is B-191's own point.**
+
+**[B-192](docs/BUGS.md) is why, and it is QE's own.** [`RUNNING.md`](docs/RUNNING.md)'s *Running a lane* documents compose, three exported URLs, `alembic upgrade head`, `uvicorn` and `npm run dev` — **and no step that creates the Better Auth schema.** ⚠️ **59 tables on a freshly-migrated lane database and not one of `user`, `session`, `account`, `verification`**, so sign-in submits and never navigates. **Filed rather than fixed: the correct command is not obvious, and guessing would be inventing a documented step rather than recording one.**
+
+### Migrations · ADRs · architecture
+
+**None.** Head unchanged at `0048`.
+
+### Remaining blockers — three, all the product owner's
+
+⛔ **[C-106](docs/LANE_COORDINATION.md)** · ⛔ **[C-1424](docs/LANE_COORDINATION.md)** · ⚡ **[C-297](docs/LANE_COORDINATION.md)**. Unchanged from cycle 210.
+
+### Recommended next work
+
+⚠️ **Queue depth remains the binding constraint.** ⚡ **And the lane said the quiet part itself: *"the supply of my own past mistakes is not infinite and is a poor substitute for scheduled work."***
 
 ---
 
