@@ -218,7 +218,26 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 🔴 **So the record page was correct on every count.** `ac05261b` has **0 buying scores** and **1 identity binding with no `legal_name`**: *"no source has named this account yet"* and *"Nothing has scored this account yet"* are **both true of it**, and this row previously called truthful output a defect.
 
-#### ⚠️ What that leaves, and part of it may be this lane's TEST rather than the product
+#### ✅ RESOLVED IN LARGE PART — and it was this lane's TEST, 2026-08-12
+
+🔴 **The four journeys now pass. 6 of 6 green, run headed against the seeded Playground.** ⚡ **This row's original claim — *"four journeys are written, correct and cannot be run green here"* — was wrong about *correct*.**
+
+⛔ **The cause was a race this lane had already fixed one line earlier and left one line later.** 📁 The helper counted `#score` the instant the click resolved; **`count()` returns 0 while the read is in flight**, so every account looked unscored and **the helper blamed the data** — throwing *"seed the Playground"* at a workspace holding **eleven named, scored accounts**. ✅ **It now waits for EITHER answer** — the section, or the page's own *"Nothing has scored this account yet"* — **so a genuinely unscored account moves the loop on instead of timing out.**
+
+⚠️ **Two further defects, both in this lane's own instrument and both worth naming:**
+
+| | |
+|---|---|
+| **The outline assertion counted EVERY `h2`** and expected the total unchanged | ⛔ **A collapsible body carries its own heading, which correctly leaves the accessibility tree when hidden.** 📁 The design's rule is about **section** headings, **so the assertion enforced something the design does not say** |
+| **`getByRole('heading', { name: 'What changed' })` matched TWO elements** | ⛔ The section's heading and the body's *"What changed, and who says so"*. ⚡ **A selector that matches two things asserts neither** — `exact: true` |
+
+#### ⚠️ WHAT SURVIVES, and it is one thing rather than the row's original claim
+
+🔴 **`Settings — restricted. Requires an owner.` rendered for `dana.reyes@northwind.example`, who IS `owner` in `membership` for this workspace — measured, twice.** ⛔ **Nothing above explains it**, and it is the only part of this row that still deserves the auth tier.
+
+⚠️ **The account-data half of this row is withdrawn**: the data was good, the page was truthful, and the instrument was wrong.
+
+#### ⚠️ The original reading, kept rather than rewritten ([§2](../CLAUDE.md))
 
 ⚡ **The data is good — eleven real, named, scored accounts.** ⛔ **So the journey's failure is no longer explained by absent data**, and the honest remaining question is **why a walk of the first twelve rows of `/accounts` reached none of the eleven.**
 

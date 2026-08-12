@@ -47,8 +47,25 @@ async function openScoredAccount(page: import('@playwright/test').Page) {
     await page.getByRole('table').getByRole('row').nth(row).getByRole('link').first().click();
     await expect(page).toHaveURL(/\/accounts\/[0-9a-f-]{8,}/);
 
-    // ⚡ **The score section is the tell** — it is the first section the design
-    // draws and the one every other state assertion hangs off.
+    // 🔴 **Wait for the record page to ANSWER before judging it.** ⚠️ The
+    // previous line counted `#score` the instant the click resolved — **the
+    // same race this helper had already been fixed for one line above, left
+    // in place one line below.** ⛔ `count()` returns 0 while the read is in
+    // flight, **so every account looked unscored and the helper blamed the
+    // data**: it threw *"seed the Playground"* against a workspace holding
+    // eleven named, scored accounts.
+    //
+    // ✅ **The wait is for either answer** — the section, or the page's own
+    // *"Nothing has scored this account yet"* — **so an account that genuinely
+    // has no score moves the loop on rather than timing out.**
+    await Promise.race([
+      page.locator('#score').waitFor({ timeout: 15_000 }).catch(() => undefined),
+      page
+        .getByText('Nothing has scored this account yet')
+        .waitFor({ timeout: 15_000 })
+        .catch(() => undefined),
+    ]);
+
     if (await page.locator('#score').count()) return;
   }
 
@@ -121,15 +138,39 @@ test.describe('Account 360 — a section changes state and stays honest', () => 
   test('@journey the section outline survives a collapse', async ({ page }) => {
     await openScoredAccount(page);
 
-    const headings = page.getByRole('heading', { level: 2 });
-    const before = await headings.count();
-    expect(before).toBeGreaterThan(1);
+    // ⚠️ **The assertion is about SECTION headings, and the first version was
+    // not.** ⛔ It counted every `h2` on the page and expected the total to be
+    // unchanged — **and one of the collapsible bodies contains an `h2` of its
+    // own**, which correctly leaves the accessibility tree when the body is
+    // hidden. 📁 The design's rule is *"every SECTION is a labelled region with
+    // a heading"*, so a content heading inside a shut body disappearing is the
+    // feature rather than the defect. ✅ **Scoped to the rule it is enforcing.**
+    const sections = ['What contributed', 'What changed'];
 
-    await page.getByRole('button', { name: 'What contributed' }).click();
-    await page.getByRole('button', { name: 'What changed' }).click();
+    for (const name of sections) {
+      // ⚡ **`exact`, and it matters** — the Signals body carries its own
+      // `h2` *"What changed, and who says so"*, **which is the very heading
+      // that leaves the outline when the body is hidden.** ⛔ A loose match
+      // resolves to both and cannot tell the section from its content.
+      await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+    }
 
-    // ⛔ **Two sections shut and the outline is unchanged.**
-    await expect(headings).toHaveCount(before);
+    for (const name of sections) {
+      await page.getByRole('button', { name }).click();
+      await expect(page.getByRole('button', { name })).toHaveAttribute('aria-expanded', 'false');
+    }
+
+    // ⛔ **Two sections shut, and both are still in the outline.** ⚡ This is
+    // the regression that shipped once: the heading was a `span` inside the
+    // toggle, so collapsing removed the section from landmark navigation
+    // entirely.
+    for (const name of sections) {
+      // ⚡ **`exact`, and it matters** — the Signals body carries its own
+      // `h2` *"What changed, and who says so"*, **which is the very heading
+      // that leaves the outline when the body is hidden.** ⛔ A loose match
+      // resolves to both and cannot tell the section from its content.
+      await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+    }
   });
 
   /**
