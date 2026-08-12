@@ -66,6 +66,45 @@
 
 > **Seven tasks became claimable on 2026-08-03**, when [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) resolved the decisions they were waiting on. **They are placed at the top because they have waited longest**, not because they are larger.
 
+### TASK-1475 · Companies — implement the finalized design, beyond the list
+
+| | |
+|---|---|
+| **Type** | ⚡ **Implementation Package** — **the first written under the package model.** ⛔ **Lane C states WHAT; Lane A owns HOW, decomposition and sequencing** |
+| **Owner** | **Lane A** — `product_surface`, joined from [`modules.toml`](coordination/modules.toml) |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-12.** **Lane A can begin without a product decision** |
+| **Design authority** | 📁 **[`Fortune Signora Companies.dc.html`](design-snapshot/screens/)** — ⛔ **the design is the authority. The current screen is not.** ⚠️ **Where the shipped list and the design disagree, the design wins and the legacy is removed rather than hidden** |
+| **Existing work — reuse, do not rebuild** | ✅ **[TASK-440](#task-440--companies--the-account-list-a-seller-actually-works) is `PROMOTED`** on `main` at `9c7e052e` — **the account list a seller works.** ⛔ **Do not rebuild it** |
+
+**Remaining scope — the design's surfaces the list does not yet carry:**
+
+- **Card view**, and the **Density** control
+- **Column configuration**
+- **Filters**, and **pagination** (*Previous* / *Next*)
+- **Export**, and **Import**
+- **The row's own facts the design draws** — *Open ACV* · *Renewal* · *Avg score* · *Recommended next step* · *Evidence* · *Draft intro* · *Open full record*
+
+⛔ **EXCLUDED from this package, and the exclusion is the load-bearing part:** **`Owner` · `New segment` · `New company`.** 📁 **[C-1425](LANE_COORDINATION.md) — no module models an account owner, a tag or a segment, and *which module should* is an open product decision.** ⚡ **A frontend slice for a concept the domain cannot express is a row that cannot finish** — the same wall as [C-1429](LANE_COORDINATION.md), and the reason this package is scoped rather than whole.
+
+| | |
+|---|---|
+| **Dependencies** | ⛔ **None for the scope above.** The account reads already exist — `target_accounts`, `account_observations`, `account_approach`, `account_decision_package`, `account_validation`, `account_narration` |
+| **Product decisions** | ⛔ **NONE for this scope.** **C-1425 governs only the excluded three** |
+| **Architecture decisions** | ⛔ **NONE** |
+
+**Package Definition of Done** — [§19](../CLAUDE.md)'s gates bind unchanged, and these are the package's own:
+
+- **Every listed surface implemented to the design**, with its **loading · empty · error · permission** states — ⚠️ **[P-A](DOMAIN_DISCOVERY_REGISTER.md): a failed read must never render as an empty result**
+- **Design geometry followed** — grid, spacing, type, tokens, radius, responsive bands. ⛔ **No literal colours** ([§20c](../CLAUDE.md))
+- **Legacy superseded by the design is removed, not hidden**
+- **Existing architecture reused**; new introduced only where necessary; ⛔ **no unapproved dependency**
+- **Tests updated and added** — ⛔ **design behaviour asserted, never mere DOM presence**
+- **The customer journey written *and run*** ([D-113](DECISION_REGISTER.md)), **watched headed** ([D-134](DECISION_REGISTER.md))
+
+**Lane A reports at handover:** design sections implemented · implementation replaced · new implementation · known limitations · runtime verified · remaining blockers.
+
+> ⚡ **Lane A owns decomposition.** ⛔ **It may not invent product behaviour, UX absent from the design, business rules, permissions or roles.** **Where the design is ambiguous, that is a `C-` item and a ruling — never an interpretation** ([§21](../CLAUDE.md)).
+
 ### TASK-434 · An account can be asked whether it matches a criterion, and only one thing answers
 
 | | |
