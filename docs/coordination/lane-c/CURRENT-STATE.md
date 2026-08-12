@@ -1,0 +1,81 @@
+# Lane C — Current State
+
+**Small by design. It points at authoritative sources and duplicates none of them.**
+⛔ **Not a backlog. Not a queue. Not a decision register.**
+
+**Last written: 2026-08-12, cycle 204.**
+
+## Repository position
+
+| | |
+|---|---|
+| **`main`** | `4f680315` — ⛔ **not promoted this cycle.** B-183 and B-428 open; [§20e](../../../CLAUDE.md) bars the fast-forward |
+| **`integration`** | `f50851cb` |
+| **Certified** | ✅ **Cycle 204 at `99d4c2b9`** — 4412 tests · 95.03% coverage · 403 Security Invariants · smoke green |
+| **`lane-c-sync`** | See `git log`. ⚠️ **Never transcribed here — a SHA in prose goes stale in one commit** |
+
+## Open product-owner decisions
+
+⛔ **Three. Each has a prepared recommendation and needs one word.** Full analysis in [`LANE_COORDINATION.md`](../../LANE_COORDINATION.md).
+
+| | Recommendation | Releases |
+|---|---|---|
+| **C-1405** | Commission the Workspace Chooser design first | **TASK-1421** → Lane A reaches its floor of 10 |
+| **C-338** | **Option A** — the R11-06 trigger has not fired | TASK-003 → `WAITING` |
+| **C-1424** | **Option B** — optimistic, on [§20c](../../../CLAUDE.md) | B-253 |
+
+⚠️ **Everything else visible in the register is routing, not a decision.** The queue was measured at **29 live items, not 60** — the difference was five ownership/state schemas, one of which a single-schema sweep cannot see.
+
+## Lanes
+
+| | |
+|---|---|
+| **Lane A** | Product surface. **9 claimable against a floor of 10.** The tenth is TASK-1421, gated on C-1405 alone. Source: [`queues/lane-a.toml`](../queues/lane-a.toml) |
+| **Lane B** | See [`modules.toml`](../modules.toml). ⛔ **Never recorded here — assignment moves and a copy goes stale** ([C-213](../../LANE_COORDINATION.md)) |
+| **QE** | Cycle 204 certified, not promoted. Holding on B-183 / B-428 |
+| **Lane C** | ✅ **This restructure.** Next bounded objective below |
+
+## Do not re-investigate
+
+⛔ **Settled. Re-open only if the source, design, ruling or implementation changed, or new evidence contradicts it.** Authority is named; **nothing is re-recorded here.**
+
+| Item | Settled | Authority |
+|---|---|---|
+| **C-338** | Options prepared; product owner instructed *"do not investigate this again"* | `LANE_COORDINATION.md` |
+| **TASK-1432's blocker** | `grep -rn "shell/scope"` → own unit test + 2 comments, **no module**. Correctly `SEQUENCED` | `queues/lane-a.toml` |
+| **TASK-470's blocker** | `multiSession()` wired at `lib/auth/server.ts:130`. Released | `BACKLOG.md` |
+| **PO queue size** | **29 live, not 60** | [B-432](../../BUGS.md) |
+| **B-183 tenancy chain** | Fixed; certified at `99d4c2b9`. B-243 superseded by B-183 | [`BUGS.md`](../../BUGS.md) |
+| **Heading-vs-cell severity** | Swept all 487 rows; **zero** disagreements | [`BUGS.md`](../../BUGS.md) |
+| **Workflow mapping by title** | ⛔ **Forbidden.** *"research"* contains *"search"* | [OPERATING-MODE.md](OPERATING-MODE.md) §6 |
+| **B-428-A fire-tests** | ⛔ **Not evidence for B-428-B.** C-106 still needs its ruling | [`BUGS.md`](../../BUGS.md) |
+
+## Known stale / unresolved — recorded, not swept
+
+⚠️ **Each is real and none is in scope until a bounded session takes it.**
+
+- **B-184** — `--audit-claims` refuses on every invocation, naming two immutable `main` commits. ⛔ **The repair is not a hash suppression list.** QE's, filed not fixed.
+- **`timeline` publishes an empty `public/`** — a boundary nothing can cross ([§5](../../../CLAUDE.md)). Becomes [C-428](../../LANE_COORDINATION.md)'s defect the moment a row is released assuming it publishes something.
+- **4 tasks resolve to no lane** — TASK-300, TASK-900, TASK-901, TASK-1413. Unexamined.
+- **C-289 and C-292 name owners that route to nobody.** Routing, not a decision.
+- **3 workflows genuinely thin** — Settings, AI Research, Help Center. **Mode C, one per session.**
+
+## Bounded objectives
+
+**Current — complete:** establish this operating-context architecture.
+
+**Next — one, and only one:**
+
+> **MODE B · Design audit — Application Shell, one section.**
+> **Scope:** that section and the components it governs. **Sources:** `App Shell.dc.html` (named section), those components, existing `BACKLOG` rows.
+> **Output:** design gap → existing-task search → update or one new Lane A task.
+> ⛔ **Out of scope:** other shell sections · workflow decomposition · the PO queue · unrelated architecture.
+
+## Handoff — 2026-08-12
+
+**Completed:** this operating-context architecture, three files under `docs/coordination/lane-c/`.
+**Decisions made:** none — ⛔ **this session created navigation, not governance.**
+**Tasks created/updated:** none.
+**Explicitly not investigated:** C-295 · C-287 · C-223 · C-107 · C-106 · TASK-1473 · C-1401 · the Application Shell audit · the three thin workflows.
+**Why:** ⛔ **the bounded objective was the restructure, and [OPERATING-MODE.md](OPERATING-MODE.md) §4 forbids expanding past it.**
+**Exact next action:** ▶ **Verify `origin/main` is still `4f680315`. If it is, promotion remains barred by B-183 and B-428 — and B-183's fix is already certified at `99d4c2b9`, so establish whether the row closes on the artifact rather than on promotion.** ⛔ **That is [C-107](../../LANE_COORDINATION.md)'s subject, and the product owner has ruled which reading may not be reached for: do not choose an interpretation because it reopens promotion.**
