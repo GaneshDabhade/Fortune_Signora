@@ -90,6 +90,48 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-190 · 🟡 `state-check` compared two abbreviations of one commit as strings, so every Closeout reported the board had gone backwards on the cycle it was refreshed
+
+| | |
+|---|---|
+| **Module** | **QE gates** — [`infra/state-check.py`](../infra/state-check.py), rule 5g, the execution board's header |
+| **Current assignee** | **QE** — ⚡ **[§20e](../CLAUDE.md): a defect in a gate that stops QE certifying is QE's to fix** |
+| **Severity** | 🟡 — ⛔ **it does not make a bad state pass.** ⚠️ **It fires on a correct one**, and a warning that appears every cycle regardless is one people learn to scroll past — **which costs the check its whole value** |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-12.** ⚠️ **Not `VERIFIED`: QE found it and QE fixed it** |
+| **Found** | **2026-08-12, cycle 209 Closeout**, by the advisory run that is supposed to confirm the Closeout |
+| **Commit found** | **`9c7e052e`** |
+
+**Steps.** Run `python3 infra/state-check.py` after a Closeout where `ACTIVE_ASSIGNMENTS.md` is dated at the 8-character SHA and `PROJECT_STATUS.md` names the 12-character one — **which is what this repository writes.**
+
+**Expected.** *"reachable from HEAD"*.
+
+**Actual.** *"The board has gone backwards — the B-100 signature, where a rebase keeps a lane's side of a shared table."*
+
+### 🔴 The cause
+
+```python
+elif status_named and _is_ancestor(named, status_named) and named != status_named:
+```
+
+⚡ **`_is_ancestor` is true — a commit is its own ancestor — and `9c7e052e != 9c7e052ec329` as text.** ⛔ **So the check accused the board of reverting seven cycles whenever the two files wrote the same commit at the two lengths the repository actually uses.**
+
+### ⚠️ [B-187](#b-187)'s class, one comparison along
+
+**That one could not see an eight-character SHA. This one saw two and called them two commits.** 📁 **Both are the same mistake: treating an abbreviation as a value rather than as a reference to resolve.**
+
+✅ **Fixed by resolving both through `git rev-parse` and comparing what comes back.**
+
+### ✅ Fire-tested in both directions, because narrowing is only safe if you measure what stops firing ([B-162](#b-162))
+
+| | |
+|---|---|
+| Same commit, 8 vs 12 characters | ✅ **`True`** — the false positive is gone |
+| Same commit, 7 vs full | ✅ **`True`** |
+| **Two genuinely different commits** | ⛔ **`False`** — **the B-100 case still fires** |
+| A garbage ref | ⛔ **`False`** — an unresolvable ref is not equal to anything |
+
+---
+
 ### B-189 · 🟠 An invitation fixture expired against the real clock at 12:00 UTC today, so an unchanged tree certified twice this morning and cannot certify this afternoon
 
 | | |

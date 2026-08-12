@@ -60,6 +60,23 @@ def _migration_head() -> str | None:
     return heads[-1] if heads else None
 
 
+def _same_commit(left: str, right: str) -> bool:
+    """**Two abbreviations of one commit are one commit.**
+
+    B-190. The board-header check compared SHA *strings*, so `9c7e052e` and
+    `9c7e052ec329` — the same commit, written at the two lengths this
+    repository actually uses — read as different, and every Closeout reported
+    the board had *"gone backwards"* on the cycle it was refreshed.
+
+    **B-187's class, one comparison along.** That one could not see an
+    eight-character SHA; this one saw two and called them two commits. A
+    warning that fires on a correct state is one people learn to scroll past,
+    which is the whole value of the check.
+    """
+    resolved = {_git("rev-parse", ref) for ref in (left, right)}
+    return len(resolved) == 1 and "" not in resolved
+
+
 def _is_ancestor(candidate: str, descendant: str) -> bool:
     return (
         subprocess.run(
@@ -1986,7 +2003,11 @@ def main() -> int:
                 f"ACTIVE_ASSIGNMENTS.md is dated at `{named}`, which is not reachable "
                 f"from HEAD. The execution board describes a repository this one is not."
             )
-        elif status_named and _is_ancestor(named, status_named) and named != status_named:
+        elif (
+            status_named
+            and _is_ancestor(named, status_named)
+            and not _same_commit(named, status_named)
+        ):
             findings.append(
                 f"ACTIVE_ASSIGNMENTS.md is dated at `{named}` but PROJECT_STATUS.md names "
                 f"`{status_named}`, which is newer. The board has gone backwards — the "
