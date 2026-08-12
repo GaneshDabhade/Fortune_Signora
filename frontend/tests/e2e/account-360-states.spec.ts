@@ -1,0 +1,154 @@
+/**
+ * **Account 360's section states, in a browser** —
+ * [TASK-1476](../../../docs/BACKLOG.md), against 📁
+ * `Fortune Signora Account 360.dc.html` §*States*.
+ *
+ * 🔴 **What a browser proves and jsdom cannot.** ⚡ Three of the design's rules
+ * are about **what a reader can still see and still reach** after a section
+ * changes state, and each one is geometry or navigation rather than markup:
+ *
+ * - *"Header keeps the count and the worst status, so collapsing cannot hide a
+ *   risk"* — **the header must still be ON SCREEN**, not merely in the DOM.
+ * - *"Anchor links from the page nav auto-expand the target section"* — **a
+ *   real click on a real `href="#…"`**, which is a navigation jsdom does not
+ *   perform.
+ * - *"Every section is a labelled region with a heading, reachable by landmark
+ *   navigation"* — **and it must survive the collapse.**
+ */
+import { expect, test } from '@playwright/test';
+
+/**
+ * ⚡ **Open an account that HAS something to have a state about.**
+ *
+ * ⛔ **Not simply the first row.** ⚠️ **The first account in the list is
+ * routinely one nothing has scored** — the page then renders *"Nothing has
+ * scored this account yet"* and **no section exists at all**, which is a
+ * correct screen and the wrong subject for this journey. 📁 **This is
+ * [B-245](../../../docs/BUGS.md)'s shape**: a journey that assumed the first
+ * row was representative.
+ *
+ * ✅ **So it walks the list until a record page renders its sections**, and
+ * **fails loudly if none does** rather than skipping — ⛔ a silent skip is a
+ * journey that reports green having asserted nothing.
+ */
+async function openScoredAccount(page: import('@playwright/test').Page) {
+  await page.goto('/accounts');
+  // ⛔ **Wait for the table before counting it.** ⚠️ The first version counted
+  // rows immediately and got zero — **the loop then never ran and the helper
+  // threw its own "seed the Playground" message about a list that was merely
+  // still loading.** ⚡ A diagnostic that blames the data for a race is worse
+  // than no diagnostic.
+  await expect(page.getByRole('table')).toBeVisible();
+  const rows = page.getByRole('table').getByRole('row');
+  const count = await rows.count();
+
+  for (let row = 1; row < Math.min(count, 12); row += 1) {
+    await page.goto('/accounts');
+    await page.getByRole('table').getByRole('row').nth(row).getByRole('link').first().click();
+    await expect(page).toHaveURL(/\/accounts\/[0-9a-f-]{8,}/);
+
+    // ⚡ **The score section is the tell** — it is the first section the design
+    // draws and the one every other state assertion hangs off.
+    if (await page.locator('#score').count()) return;
+  }
+
+  throw new Error(
+    'No account in the first twelve rows renders its sections. Seed the Playground before running this journey.',
+  );
+}
+
+test.describe('Account 360 — a section changes state and stays honest', () => {
+  /**
+   * 🔴 **The design's safety rule, and the reason it is a journey rather than a
+   * unit test.** ⛔ A header that is in the DOM behind a collapsed body is not
+   * a header a rep can read — **`toBeVisible` is the assertion that means what
+   * the rule means.**
+   */
+  test('@journey collapsing a section never hides its count', async ({ page }) => {
+    await openScoredAccount(page);
+
+    const heading = page.getByRole('heading', { name: 'What contributed' });
+    await expect(heading).toBeVisible();
+
+    const toggle = page.getByRole('button', { name: 'What contributed' });
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+    // ⚡ **The count beside the heading, read BEFORE the collapse** so the
+    // assertion compares the same number rather than trusting it re-renders.
+    const summary = page.locator('#score').locator('span').filter({ hasText: /^\d+$/ }).first();
+    const before = (await summary.innerText()).trim();
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    // ⛔ **Still on screen with the body shut.** 📁 *"Collapsing cannot hide a
+    // risk."*
+    await expect(heading).toBeVisible();
+    await expect(summary).toBeVisible();
+    await expect(summary).toHaveText(before);
+  });
+
+  /**
+   * 📁 ***"Anchor links from the page nav auto-expand the target section."***
+   *
+   * ⚡ **A real click on a real anchor**, which is the whole point: the rail
+   * does not know about expansion and must not have to.
+   */
+  test('@journey a rail link opens the section it points at', async ({ page }) => {
+    await openScoredAccount(page);
+
+    const toggle = page.getByRole('button', { name: 'What contributed' });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    // ⚡ **The rail's own link**, not a synthesised hash change.
+    await page.getByRole('navigation', { name: 'On this page' })
+      .getByRole('link', { name: 'Account score' })
+      .click();
+
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  /**
+   * 📁 ***"Every section is a labelled region with a heading, reachable by
+   * landmark navigation"*** — ⛔ **and *in every state* is part of the
+   * sentence.**
+   *
+   * 🔴 **This is the regression that shipped and was caught**: the first
+   * version made the heading a `span` inside the toggle, and every section
+   * left the document outline.
+   */
+  test('@journey the section outline survives a collapse', async ({ page }) => {
+    await openScoredAccount(page);
+
+    const headings = page.getByRole('heading', { level: 2 });
+    const before = await headings.count();
+    expect(before).toBeGreaterThan(1);
+
+    await page.getByRole('button', { name: 'What contributed' }).click();
+    await page.getByRole('button', { name: 'What changed' }).click();
+
+    // ⛔ **Two sections shut and the outline is unchanged.**
+    await expect(headings).toHaveCount(before);
+  });
+
+  /**
+   * 🔴 **Contacts & decision makers states what Signora cannot see** —
+   * ⚠️ **and this is the section this lane wrongly called buildable.** ⛔ It
+   * must render as an absence with a sentence, **never as an empty list and
+   * never as the workspace's ICP committee.**
+   */
+  test('@journey Contacts says what is missing rather than showing the wrong people', async ({
+    page,
+  }) => {
+    await openScoredAccount(page);
+
+    const contacts = page.locator('#contacts');
+    await expect(contacts).toBeVisible();
+    await expect(contacts.getByRole('heading', { name: 'Contacts & decision makers' })).toBeVisible();
+
+    // 📁 The absence sentence, not a roster and not "coming soon".
+    await expect(contacts).toContainText('not who holds it');
+    await expect(contacts).not.toContainText('coming soon');
+  });
+});

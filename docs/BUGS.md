@@ -125,6 +125,45 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-262 · After a Playground reseed the owner persona is an owner in the database and a restricted member in the product
+
+| | |
+|---|---|
+| **Module** | ⛔ **Not a module — the local runtime.** ⚠️ **Not filed against the seeder either**, because the seeder's own output is correct and the database agrees with it |
+| **Current assignee** | ⚠️ **Unowned pending triage.** 📁 **Touches [`tests/playground/seed`](../backend/tests/playground/seed) *(QE's, [B-250](#b-250))*, the auth tier and the API's identity read** — ⛔ **this lane will not guess which and will not assign another lane's row** |
+| **Severity** | 🔴 — ⛔ **it blocks every headed journey on this workstation**, which is [D-134](DECISION_REGISTER.md)'s gate and therefore every lane's handover |
+| **Status** | 🔵 **`OPEN`** — 🔴 **blocking [TASK-1476](BACKLOG.md)'s journey evidence** |
+| **Found** | **2026-08-12, by Lane A**, running [TASK-1476](BACKLOG.md)'s journey headed as [D-134](DECISION_REGISTER.md) requires |
+
+#### ⛔ What was measured, in the order it was measured
+
+| Checked | Result |
+|---|---|
+| **Seeder ran** | ✅ *"12 accounts through the real pipeline · 47 signed-in user(s) enrolled"*, workspace `deeecc11-…` |
+| **The workspace exists, with members** | ✅ `select … from workspace left join membership` → **`Playground`, 48 members** |
+| **The OWNER persona's membership** | ✅ **`deeecc11-… \| owner`** — 📁 `infra/demo-users.json` declares `dana.reyes@northwind.example` as the `owner`, **and the database agrees** |
+| **The app's own nav, signed in as her** | ✅ Points at the right workspace — `/w/deeecc11-…/home` |
+| 🔴 **What the product says about her** | ⛔ ***"Settings — restricted. Requires an owner."*** |
+| 🔴 **Every account she opens** | ⛔ ***"— no source has named this account yet"*** · *"No evidence collected yet"* · *"Nothing has scored this account yet"* · *"No longer on your list"* |
+
+#### ⚠️ Ruled out, so the next reader does not repeat it
+
+- ⛔ **Not the auth schema.** `npm run auth:migrate` reports *"auth schema 'auth' is already up to date"*. ⚠️ **`auth` holds `account`, `session`, `twoFactor`, `user`, `verification` and no organization tables** — ✅ **and that is correct here**: workspaces and memberships are the *app* tier's `workspace` and `membership`, not Better Auth's plugin tables. **Checked because their absence looks alarming and is not the defect.**
+- ⛔ **Not a stale session.** The nav renders the NEW workspace id, so the sign-in happened after the reseed.
+- ⛔ **Not this slice.** The same screens read the same way before [TASK-1476](BACKLOG.md)'s changes, and **two of the six Playwright projects pass** — the failures are all *"no account renders its sections"*, never an assertion about a section.
+
+#### 🔴 What it costs, stated plainly
+
+⛔ **Four journeys in [`account-360-states.spec.ts`](../frontend/tests/e2e/account-360-states.spec.ts) are written, correct and cannot be run green here.** ⚡ **They are committed rather than withheld** — 📁 **[§2](../CLAUDE.md): a journey deleted because the environment could not run it is evidence the next lane has to author again.** ⛔ **This lane will not report them as passing**, and [TASK-1476](BACKLOG.md) is not handed to QE on their strength.
+
+#### ⛔ The cheap cause was tried and is ruled out
+
+⚡ **The obvious explanation was that the API serving `:8300` had been running since 16:41 while the reseed replaced the workspace at 19:50** — a long-lived process holding a workspace-scoped cache produces exactly this picture. ✅ **So it was restarted against `signora_lane_a` and the suite re-run.**
+
+🔴 **Identical result: the same four journeys fail with the same *"no account renders its sections"*, and the same two pass.** ⛔ **Naming a cause and not testing it is how a plausible diagnosis becomes the recorded one** ([B-189](#b-189) cost exactly that), **so it is written down as REFUTED rather than left as a suggestion.**
+
+⚠️ **What remains, and it is one hypothesis rather than two:** **the identity and authorization path resolves this member's role and this workspace's accounts from something the reseed did not update** — ⛔ **and *"Settings — restricted. Requires an owner."* rendered for a person the `membership` table calls `owner` is the sharpest single symptom to start from.** ✅ **A reader with the auth tier in front of them will get further than a frontend lane guessing.**
+
 ### B-261 · Account 360 cannot key a preference per account type, because nothing tells it what type the account is
 
 | | |
