@@ -221,10 +221,10 @@ context = "A person, and an affiliation with an end"
 current_owner = "Lane A"
 future_owner = "Lane A"
 transition = "settled"
-implementation = 0
-basis = "Not built. The directory does not exist yet — this row exists so it is claimable the moment TASK-427 is READY, rather than after"
-last_work = "none — no lane-attributable work exists"
-next_milestone = "TASK-427 — M-D, the People domain"
+implementation = 1
+basis = "BUILT and on integration. 21 Python files across domain, application, infrastructure and public, plus backend/tests/people. Landed as TASK-427 at a1cc8a34 — 'a person, and an affiliation that closes rather than being overwritten' — with affiliation_reader.py and composition.py in infrastructure. ⛔ CORRECTED 2026-08-12: this field read 'Not built. The directory does not exist yet' and implementation = 0, against a module that had shipped. Reported by Lane A, verified here with git ls-tree against origin/integration rather than taken on the report. A registry asserting that a built module does not exist is the C-213 class one field along — a row every lane reads and believes, describing a repository that has moved."
+last_work = "TASK-427, promoted — a1cc8a34"
+next_milestone = "none scheduled. ⚠️ public/ publishes only __init__.py, so the module is built and its contract is not yet crossable (§5) — the C-428 shape QE flagged on timeline. Not blocking today; it becomes a defect the moment a row is released assuming people publishes something"
 paired_with = "knowledge_graph"
 note = """
 ⚡ ASSIGNED BY THE PRODUCT OWNER, 2026-08-06 (D-103). Module ownership is

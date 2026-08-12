@@ -991,7 +991,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 0.3
+blocked_days   = 0.0
 on_integration = false
 
 [[task]]
