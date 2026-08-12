@@ -513,6 +513,62 @@ databaseUrl: required(
 
 ---
 
+## C-297 · A customer tells Signora what they came for, and for three of six answers the product has nothing to say
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`OPEN`** — Lane A, 2026-08-12 |
+| **Raised by** | **Lane A**, measuring `opportunity_engine`'s read surface for [TASK-1469](BACKLOG.md) — ⚡ **that row's own *"what can be done now, in parallel"*** |
+| **Owner** | **Product owner** *(what the step should say)* · **Lane C** *(whether the goal→feature map should shrink)* |
+| **Blocks** | ⛔ **Nothing.** ✅ **[B-256](BUGS.md)'s false statement is already removed** — this is about what replaces it |
+
+### ① What was wrong is fixed; what is left is a decision
+
+📁 **Onboarding screen `06` asked for up to two goals and then said, in the product's own words:** ***"Signora will open on Forecast, the Executive Dashboard."***
+
+⛔ **Neither exists**, and 📁 **`FORECAST_ACCURATELY` is the first of the six options.** ✅ **[B-256](BUGS.md) removed the promise**: only destinations with a route are named, and a goal with none produces no sentence.
+
+### ② ⚠️ Honest is not the same as good, and that is the whole item
+
+🔴 **A customer who picks *"Forecast accurately"* now sees their selection register and nothing else.** ⚡ **They have just told Signora what they came for, and the product says nothing about it** — **which is true, and is a worse experience than the false sentence in one specific way: it gives them no information at all.**
+
+⛔ **This lane will not invent the replacement.** 📁 [§20e](../CLAUDE.md): *"I could just add it" is how a product decision becomes a line in a feature slice.*
+
+### ③ The three options, and the trade of each
+
+| | | |
+|---|---|---|
+| **A** | **Say what is coming** — *"Forecast is not built yet; you will see it here when it is."* | ⛔ **A roadmap promise in the product**, and 📁 **`forecast` is refused as DOMAIN LAW rather than merely unbuilt** — see ④ |
+| **B** ▶ | **Narrow the six goals to what Signora does** — remove or reword `FORECAST_ACCURATELY` | ⛔ **The six are a designed vocabulary** — 📁 *"users can't rank features they haven't used, but they know what is going wrong"* — **and removing the one a seller feels most is a real product loss** |
+| **C** | **Keep the goal, drop the *"will open on"* claim entirely** — record the goal, promise no destination | ✅ **Cheapest and already half-shipped** · ⛔ **the step then visibly does nothing, which is the feature menu the design replaced** |
+
+### ④ 🔴 One fact that decides more than it looks
+
+📁 **`forecast` is not an unbuilt screen — it is a capability the owning module DECLINES to have.** [`buying_score_engine/domain/events.py`](../backend/modules/buying_score_engine/domain/events.py):
+
+> ***"No probability, no likelihood, no prediction. A buying score prioritizes commercial attention; it does not forecast a purchase."***
+
+📁 **`opportunity_engine`'s router says it again independently**: *"No forecast, no probability, no deal value. Not an omission."*
+
+⚡ **So option A would promise something two modules have refused in writing**, and **[TASK-1469](BACKLOG.md) — whose whole subject is *AI win probability vs rep forecast* — is asking for the same capability from the same modules.** ⛔ **Whether Signora forecasts at all is one product decision, and it is upstream of both.**
+
+### ⑤ What this lane measured, and it is the answer TASK-1469 was waiting for
+
+📁 **[TASK-1469](BACKLOG.md) says it frees when a Deals destination exists *"and `opportunity_engine`'s read surface has been measured against this screen's needs."*** ✅ **Measured, against the design's four reads:**
+
+| The design needs | `opportunity_engine` publishes |
+|---|---|
+| **AI win probability** | ⛔ **Nothing — refused by name** |
+| **Forecast gap** *(`Commit 90%` vs `34%`, `−23 pts`)* | ⛔ **Nothing. There is no rep forecast anywhere in the repository** |
+| **Deal health, five dimensions** | ⛔ **Nothing** |
+| **Contribution set** | ⚠️ **`ContributionList` exists and is about the BUYING SCORE on an ACCOUNT** — 📁 **different subject, different aggregate**, exactly as the row warns |
+
+⛔ **So TASK-1469 does NOT free when a Deals route appears.** ⚡ **Its subject has no source and no owner**, and the row's *"⑤ it frees when a Deals destination exists and that measurement is done"* **is now measured and the answer is no.** ✅ **Reported rather than acted on** — 📁 the row's fitness is Lane C's and its priority is the product owner's.
+
+> ⚠️ **The row also says this measurement is *"what Lane B can do NOW"*.** ⛔ **`opportunity_engine` is LANE A's** in [`modules.toml`](coordination/modules.toml) — **so the sentence names the wrong lane**, which is why nobody had done it.
+
+---
+
 ## C-1428 · [TASK-1462](BACKLOG.md) §03 needs two facts nothing models, and its §14 half names a surface that does not exist
 
 | | |

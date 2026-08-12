@@ -125,11 +125,19 @@ export function GoalsForm() {
             server-side and shown so the step visibly does something — a
             selection whose effect is invisible is the feature menu the design
             replaced, wearing different clothes. */}
-        {run !== null && run.features.length > 0 ? (
+        {/* 🔴 **[B-256](../../../../docs/BUGS.md): only destinations that
+            EXIST are named.** ⛔ **This said *"Signora will open on Forecast,
+            the Executive Dashboard"* to whoever picked the first goal**, and
+            neither has a route. ⚡ **When a goal's features are all unbuilt the
+            sentence is absent** rather than shortened to nothing — 📁 the same
+            rule [`StatedAbsence`](../../../components/feedback/stated-absence.tsx)
+            keeps: **say something true or say nothing, never something
+            hopeful.** */}
+        {run !== null && reachable(run.features).length > 0 ? (
           <p className="text-sm text-content-muted">
             Signora will open on{' '}
             <span className="font-medium text-content">
-              {run.features.map(readable).join(', ')}
+              {reachable(run.features).join(', ')}
             </span>
             .
           </p>
@@ -151,22 +159,46 @@ export function GoalsForm() {
  * ⚠️ **The server returns identifiers and a customer never reads one**
  * ([ADR-0034](../../../../docs/architecture/adr/0034-ubiquitous-language.md):
  * *the translation lives at the frontend edge and never travels inward*).
- * ⛔ **An unknown identifier is titled rather than dropped** — a feature going
- * missing from this sentence because the map was not updated is worse than
- * one appearing in slightly plain English.
+ *
+ * 🔴 **[B-256](../../../../docs/BUGS.md): the name is not enough — a
+ * destination has to EXIST.** ⛔ **Five of these ten had no route**, and the
+ * sentence said *"Signora will open on Forecast, the Executive Dashboard"* to
+ * anybody who picked the first goal on the screen. **Neither exists.**
+ *
+ * ⚡ **So the map answers *where*, not *what it is called***, and `null` is a
+ * real answer rather than a missing entry. ⛔ **A `Record<string, string>`
+ * could not express *"this is named and unreachable"***, which is why the
+ * absent ones were indistinguishable from the shipped ones.
  */
-function readable(feature: string): string {
-  const named: Record<string, string> = {
-    forecast: 'Forecast',
-    executive_dashboard: 'the Executive Dashboard',
-    signals: 'Signals',
-    opportunity_intelligence: 'Opportunity Intelligence',
-    account_360: 'Account 360',
-    team_management: 'your team',
-    ai_copilot: 'the Copilot',
-    companies: 'Companies',
-    ai_research: 'Research',
-    reports: 'Reports',
-  };
-  return named[feature] ?? feature.replaceAll('_', ' ');
+const DESTINATIONS: Record<string, { readonly label: string; readonly href: string | null }> = {
+  // ✅ Shipped, and reachable from the rail.
+  signals: { label: 'Signals', href: '/signals' },
+  companies: { label: 'Companies', href: '/accounts' },
+  reports: { label: 'Reports', href: '/reports' },
+  team_management: { label: 'your team', href: '/settings/team' },
+  // ⚡ **The Copilot is a room that says it cannot answer yet**
+  // ([TASK-482](../../../../docs/BACKLOG.md)) — ✅ **it exists and is honest**,
+  // which is a destination, not a promise.
+  ai_copilot: { label: 'the Copilot', href: null },
+  // ⛔ **No route, on any branch.** 📁 `forecast` is refused as domain law —
+  // `buying_score_engine` states *"no probability, no likelihood, no
+  // prediction… it does not forecast a purchase"* — and the other three are
+  // unbuilt screens with their own rows.
+  forecast: { label: 'Forecast', href: null },
+  executive_dashboard: { label: 'the Executive Dashboard', href: null },
+  opportunity_intelligence: { label: 'Opportunity Intelligence', href: null },
+  account_360: { label: 'Account 360', href: null },
+  ai_research: { label: 'Research', href: null },
+};
+
+/**
+ * ⛔ **An unknown identifier is titled rather than dropped** — a feature going
+ * missing because the map was not updated is worse than one appearing in
+ * slightly plain English. ⚠️ **But an identifier this file has never heard of
+ * is not evidence that a screen exists**, so it is named and not promised.
+ */
+export function reachable(features: readonly string[]): string[] {
+  return features
+    .filter((feature) => DESTINATIONS[feature]?.href != null)
+    .map((feature) => DESTINATIONS[feature]?.label ?? feature.replaceAll('_', ' '));
 }

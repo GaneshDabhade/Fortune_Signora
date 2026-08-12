@@ -879,6 +879,47 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-256 · Onboarding tells a customer where Signora will open, and for three of the six goals it is not true
+
+| | |
+|---|---|
+| **Module** | **`product_surface`** — [`frontend/app/(onboarding)/onboarding/goals-form.tsx`](../frontend/app/\(onboarding\)/onboarding/goals-form.tsx):128 · ⚠️ **the mapping is `workspace_tenancy`'s** — [`domain/onboarding.py`](../backend/modules/workspace_tenancy/domain/onboarding.py):152 |
+| **Current assignee** | **Lane A** — **both modules are this lane's** in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 — ⛔ **a false statement to a customer, in the first two minutes of using the product**, ⚡ **about the thing they just told Signora they came for** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-12**, the naming half. ⚠️ **QE verifies and closes.** ⛔ **What the step should say INSTEAD when a goal has nothing is a product question — [C-297](LANE_COORDINATION.md)** |
+| **Found** | **2026-08-12, by Lane A**, measuring `opportunity_engine`'s read surface for [TASK-1469](BACKLOG.md) — ⚡ **the row's own *"what can be done now, in parallel"*** |
+| **Commit found** | **`10161af5`** |
+
+#### 🔴 What a customer is told
+
+📁 **Screen `06` asks for up to two goals. The step then says, in the product's own words:**
+
+> ***"Signora will open on Forecast, the Executive Dashboard."***
+
+⛔ **Neither exists.** ⚡ **And `FORECAST_ACCURATELY` is the FIRST of the six options on the screen.**
+
+#### ✅ Measured, not assumed — all ten promised features
+
+| Promised | Reality |
+|---|---|
+| **Signals** · **Companies** · **Reports** · **your team** | ✅ **Ship, and are reachable from the rail** |
+| **the Copilot** | ⚠️ **A drawer that STATES it cannot answer yet** ([TASK-482](BACKLOG.md)) — ✅ **honest, and a real surface** — ⛔ **but not a destination the product *opens on*** |
+| **Forecast** · **the Executive Dashboard** · **Opportunity Intelligence** · **Account 360** · **Research** | ⛔ **No route, on any branch** |
+
+🔴 **`forecast` is not merely unbuilt — it is refused as domain law.** 📁 [`buying_score_engine/domain/events.py`](../backend/modules/buying_score_engine/domain/events.py): ***"No probability, no likelihood, no prediction. A buying score prioritizes commercial attention; it does not forecast a purchase."*** ⚡ **So the product promises a capability the owning module declines to have**, and 📁 `opportunity_engine`'s router says the same thing again in its own words.
+
+#### ⚡ Why a `Record<string, string>` was the wrong shape
+
+⛔ **The old map answered *what is this called*, and the missing question was *where does it go*.** ⚠️ **A name map cannot express *"named and unreachable"***, so an absent screen was indistinguishable from a shipped one — **and the honest guard the file already carried** (*"an unknown identifier is titled rather than dropped"*) **made the promise stronger rather than weaker.**
+
+✅ **The map now answers *where*, and `null` is a real answer** ([§2](../CLAUDE.md) — *types should make incorrect architecture impossible*).
+
+#### ✅ The fix, and the half that is deliberately NOT fixed here
+
+✅ **Only destinations with a route are named**, and **when a goal has none the sentence is absent** rather than shortened to nothing — 📁 the rule [`StatedAbsence`](../frontend/components/feedback/stated-absence.tsx) keeps: **say something true or say nothing, never something hopeful.**
+
+⛔ **What the step should say instead is a product decision and is raised, not taken** — 📁 **[C-297](LANE_COORDINATION.md)**. ⚠️ **A customer who picks *"Forecast accurately"* now sees the selection register and no promise**, which is honest and is not the same as good: **they told Signora what they came for and the product has nothing to say about it.**
+
 ### B-255 · `Save` on the profile returns without saving and without saying so, when there is no organization
 
 | | |
