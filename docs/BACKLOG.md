@@ -169,7 +169,23 @@
 | ⛔ **[C-210](LANE_COORDINATION.md)** | ⚡ **ADDED 2026-08-12, found by Lane A auditing the design before claiming.** **Eight sections turn on whether Signora holds records a rep *authors* — notes, tasks, files, custom fields.** 📁 **Measured: thirty-five write endpoints across every module and not one accepts customer-authored record content.** ⚠️ **Emails and Meetings are deliberately NOT in this exclusion — they are a *read* of a customer's own system and [`integrations`](../backend/modules/integrations/) already owns that boundary, with `Capability.CRM_RECORDS` built** |
 | ⛔ **[C-1425](LANE_COORDINATION.md)** | ⚡ **ADDED 2026-08-12 — this office's omission, reported by Lane A.** **The header's *Owner* and *CSM* are the same absent concepts C-1425 covers**, and I excluded them from [TASK-1475](#task-1475) and not from this row. **Same item, different screen** |
 
-> ⚡ **The package stays claimable and that is the point of naming exclusions rather than holding a module.** 📁 **Lane A measured it: nineteen of the design's twenty-seven sections are unaffected** — summary, score and drivers, health, signals timeline, research, opportunities, contacts, technology, competitors, market signals, recent activity, risk indicators, recommendations, and the reasoning ladder with its evidence — ⚡ **plus the six-state matrix the design applies to every section, which is the largest piece of unbuilt, unblocked work in the package.**
+> ⛔ **THE PACKAGE SHAPE, corrected 2026-08-12 by Lane A against its own earlier figure.** ⚠️ **It first read *"nineteen of twenty-seven unaffected by C-210"* — true, and the wrong measure: *unaffected* is not *buildable*, and a number that reads as capacity gets sized against.**
+>
+> | | Sections |
+> |---|---|
+> | ✅ **Built and compliant — preserve, do not rebuild** | **12** |
+> | ⛔ **Blocked on [C-210](LANE_COORDINATION.md)** | **8** |
+> | ⛔ **Blocked on [C-1430](LANE_COORDINATION.md)** | **1** — *Integrations & billing*; billing is a commercial fact |
+> | ⚠️ **No source, and none is C-210's** | **4** — Customer health · Buying intent · Market signals · Recommendations |
+> | ✅ **Genuinely buildable** | **1** — *Contacts & decision makers* |
+>
+> ⚡ **The six-state matrix remains the largest unblocked piece, and it is real work rather than polish**: loading, error, empty, collapsed and expanded across every shipped section, with rules the design states — *"row count matches the expected result so nothing jumps"* · *"a collapsed section still states its count and its worst status, so collapsing never hides a risk"* · *"expansion keeps the URL so the expanded view is shareable; Esc returns at the same scroll position."*
+>
+> ✅ **Contacts is buildable because [`people`](../backend/modules/people/) publishes `AffiliationReader.at_company(...)`** — ⚠️ **but it has no `interface/` layer and is not mounted, so it needs an endpoint. 🟠 in the Change Budget, `people` is Lane A's, announce it.**
+>
+> ⛔ **A trap in that section, named by Lane A and worth keeping**: `GET /buying-committee` exists and is `commercial_profile`'s, but its own summary is *"who decides about what this workspace **sells**"* — **the ICP's committee, not this account's contacts.** ⚡ **Same words, different subject.**
+>
+> ⚠️ **The four sourceless sections are NOT raised as an item.** **Three are *the platform does not compute this yet*, which is roadmap rather than a decision**; the fourth — Market signals — is a read `business_event_engine` could grow, since it publishes `GET /business-events/{event_id}` and no account-scoped read.
 >
 > ⚠️ **[C-210](LANE_COORDINATION.md) also carries a fourth thing that is NOT a role and must not be folded into [C-1429](LANE_COORDINATION.md):** 📁 the design's *"field-level permissions apply; read-only fields show a lock on hover"* is a **per-field grant**, and **Casbin's resource/action model does not express one.** ⛔ **Adjacent to the role exclusion, and a different question.**
 
