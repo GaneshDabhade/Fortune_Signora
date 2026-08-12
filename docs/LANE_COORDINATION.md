@@ -701,9 +701,17 @@ ownership · preferences · products · saved-views · signals · target-account
 
 ## C-298 · Which environments may write a credential to a log, and the auth tier and the registry do not agree what an environment is called
 
+> ✅ **RULING: credentials and secrets are NEVER written to logs in production or any customer-facing environment.**
+>
+> ⛔ ***"The implementation must NOT rely on developers remembering which environment they are in. The environment must be explicit and machine-readable."*** ⚡ **That is [§2](../CLAUDE.md) applied to logging — a guard kept by memory is documentation pretending to be code.**
+>
+> **`SIGNORA_ENVIRONMENT` defined consistently across runtime · production enforces redaction · credential values never emitted · diagnostic logging safe by default · frontend and backend semantics consistent.** ⛔ **No second environment taxonomy.**
+>
+> ➡️ **Contract: [ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md).**
+
 | | |
 |---|---|
-| **Status** | ⚠️ **`OPEN`** — Lane A, 2026-08-12 |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION` — RULED, product owner, 2026-08-12.** |
 | **Raised by** | **Lane A**, routing [B-223](BUGS.md) — ⛔ **filed 2026-08-09, implementing [TASK-473](BACKLOG.md), and carried to nobody for three days** |
 | **Owner** | **Product owner** — ⚡ **a security decision, not a list a lane extends** |
 | **Blocks** | ⛔ **Nothing today.** ⚠️ **It is LATENT**: nothing sets `SIGNORA_ENVIRONMENT` for the frontend, so every clone works — **and it fires the first time anybody configures the variable to the name their own registry gives them** |
@@ -766,9 +774,15 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ## C-297 · A customer tells Signora what they came for, and for three of six answers the product has nothing to say
 
+> ✅ **RULING: Forecast is based on COMMERCIAL STAGE, never probability.**
+>
+> ⛔ ***"The product must NOT fabricate a probability/percentage when the underlying platform does not own that concept."*** ⚡ **Forecast communicates the current stage and its meaning.** ✅ **`buying_score_engine`'s refusal stands and is vindicated rather than overridden.**
+>
+> 📁 **[ADR-0409](architecture/adr/0409-commercial-account-facts.md) is the source of truth for the vocabulary Forecast consumes.**
+
 | | |
 |---|---|
-| **Status** | ⚠️ **`OPEN`** — Lane A, 2026-08-12 |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION` — RULED, product owner, 2026-08-12.** |
 | **Raised by** | **Lane A**, measuring `opportunity_engine`'s read surface for [TASK-1469](BACKLOG.md) — ⚡ **that row's own *"what can be done now, in parallel"*** |
 | **Owner** | **Product owner** *(what the step should say)* · **Lane C** *(whether the goal→feature map should shrink)* |
 | **Blocks** | ⛔ **Nothing.** ✅ **[B-256](BUGS.md)'s false statement is already removed** — this is about what replaces it |
@@ -920,11 +934,19 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ## C-1429 · The approved designs assume four roles and the domain represents two — found twice, in two workflows, by two capability checks
 
+> ✅ **RULING: a capability/permission layer ABOVE `WorkspaceRole`. ⛔ Do NOT widen the enum.**
+>
+> 📁 ***"`WorkspaceRole` represents tenancy membership… Admin / Analyst / Effective permissions represent authorization capabilities, which is a different concern."***
+>
+> **`OWNER` and `MEMBER` stay the membership model.** ⛔ **No UI-only role with no authorization semantics.** ✅ **Casbin remains the implementation authority**, and **migration and backward compatibility must be addressed by the contract.**
+>
+> ➡️ **Contract: [ADR-0410](architecture/adr/0410-authorization-capability-layer.md). Then Settings and Team Management release to Lane A.**
+
 | | |
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-12, feeding Lane A's pipeline. ⚡ **Not sought — hit twice while running Gate E on unrelated workflows** |
 | **Owner** | **Product owner** — ⛔ **a role model is product scope, and widening one is neither a lane's nor this office's** |
-| **Status** | 🟠 **`OPEN`** |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION` — RULED, product owner, 2026-08-12.** |
 | **Blocks** | ⚠️ **Every remaining slice of Settings and Team Management that touches a role.** ⛔ **Nothing currently claimed, and no lane is idle *on this*** |
 
 ### The evidence, and it is two lines
@@ -1082,9 +1104,17 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ## C-1425 · [TASK-466](BACKLOG.md) is the Action Batch's first consumer, and no domain implements an operation for it to apply
 
+> ✅ **RULING: Signora owns Account Owner/CSM, Tags and Segments as CUSTOMER-ORGANIZED account metadata.**
+>
+> ⛔ **Explicitly NOT merged with [C-209](#c-209)/[ADR-0409](architecture/adr/0409-commercial-account-facts.md)** — 📁 *"customer-authored organizational concepts, distinct from provider/CRM commercial facts."* ⚡ **The separation this office recommended is the one ruled.**
+>
+> **One contract, reused by Companies · Account 360 · Action Batch/[TASK-466](BACKLOG.md) · every approved surface.** ⛔ ***"Do NOT build fake Action Batch actions before the underlying capability exists."***
+>
+> ➡️ **Contract: [ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md).**
+
 | | |
 |---|---|
-| **Status** | ⚠️ **`OPEN` — Lane A, 2026-08-12, on selecting from the TOP of its own queue** ([`queues/lane-a.toml`](coordination/queues/lane-a.toml)) |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION` — RULED, product owner, 2026-08-12.** |
 | **Raised by** | **Lane A**, measuring the row before claiming it — ⛔ **not after starting it** |
 | **Owner** | **Product owner** — ⚡ **which operation the first consumer performs is product scope, and the row's Change Budget contains no module that could hold one** |
 | **Blocks** | **[TASK-466](BACKLOG.md) only.** ✅ **Lane A is NOT idle** — [TASK-1414](BACKLOG.md), the next entry in the queue, was claimed in the same turn ([§20e](../CLAUDE.md), *Continuous execution*) |
@@ -1284,11 +1314,13 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ## C-106 · [B-428](BUGS.md)'s second criterion is 🔴, and only the product owner may move it
 
+> ✅ **RULING: criterion A `VERIFIED`; criterion B design compliance stays `OPEN` at 🟠.** ⛔ **The promotion gate no longer closes on the design-compliance half alone.** ⚠️ ***"Do not use this ruling to hide or close the remaining implementation gaps. Lane A still has to implement them."*** ✅ **Applied to [B-428](BUGS.md); `state-check` now reports no unresolved 🔴.**
+
 | | |
 |---|---|
 | **Raised by** | **QE**, 2026-08-12 |
 | **Owner** | **Product owner** — ⛔ **severity is not QE's to set**, and the standing instruction was explicit: *"Do NOT weaken B-428 merely to reopen promotion"* |
-| **Status** | 🔵 **`OPEN`** |
+| **Status** | ✅ **`CLOSED` — RULED, product owner, 2026-08-12.** |
 | **Blocks** | 🔴 **Promotion to `main`, jointly with [C-107](#c-107)** |
 
 **[B-428](BUGS.md) is one row with two acceptance criteria, ruled that way by the product owner on 2026-08-11 after Lane C verified and rejected.**
@@ -10512,11 +10544,17 @@ rules parsed: 24   ·   distinct reason codes: 24
 
 ## C-1405 · 🔴 The Entry Coverage Review recommends four documents, and three of them block work already released
 
+> ✅ **RULING: commission all five, in order — ① Session Continuity ② Home ③ Workspace Chooser ④ Security Gates ⑤ Workspace Lifecycle.**
+>
+> ⛔ ***"DO NOT serially block all implementation on these documents. Only work that genuinely depends on a missing design remains blocked."***
+>
+> ⚡ **[C-299](#c-299) is FOLDED IN and is no longer an independent decision.** **The Workspace Chooser must define: initial selection · default selection · multiple-workspace behaviour · no-selection behaviour · switching · persistence · loading · empty · failure · responsive · authenticated entry.**
+
 | | |
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-09, reviewing `Fortune Signora Entry Coverage Review` under [D-206](DECISION_REGISTER.md) |
 | **Owner** | ⛔ **Product Owner** — **commissioning a design document is not this office's** ([§21](../CLAUDE.md): implement the design, never invent it) |
-| **Status** | 🔴 **`OPEN`** |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION` — RULED, product owner, 2026-08-12.** |
 | **Blocks** | ⏸️ **[TASK-1421](BACKLOG.md)** and ⏸️ **[TASK-1423](BACKLOG.md)** — **both released `READY` by this office earlier today and now correctly `BLOCKED`** |
 
 ✅ **This office reviewed the document adversarially and ADOPTS it.** ⚡ **Its architecture is sound, its four-document recommendation is better than the eleven the brief implied, and two of its governance rules — *"cards declare, Home arranges"* and *"compositions are configuration"* — are exactly what [TASK-1405](BACKLOG.md) and [TASK-1406](BACKLOG.md) already assume.**

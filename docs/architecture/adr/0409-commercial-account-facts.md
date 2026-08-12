@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | ⚠️ **DRAFT — Lane C, 2026-08-12.** ⛔ **Ratification is the product owner's** ([§20e](../../../CLAUDE.md)) |
+| **Status** | ✅ **RATIFIED — product owner, 2026-08-12.** ⛔ **Ownership only; it defines no implementation detail.** ⚡ **The canonical vocabulary must exist before Lane A invents fields or mappings, and the SAME model serves Companies, [TASK-1469](../../BACKLOG.md) and Forecast — ⛔ no screen-specific commercial model** |
 | **Decision** | ✅ **Ruled by the product owner, 2026-08-12, as C-209 option A: *Signora owns commercial account facts — Open ACV, Renewal, and commercial/opportunity stage.*** |
 | **Scope** | ⛔ **The ruling is OWNERSHIP ONLY.** **This ADR is the minimum contract that makes it implementable, and nothing more** |
 | **Supersedes** | Nothing. **It extends the closed vocabulary by the route that vocabulary names** |

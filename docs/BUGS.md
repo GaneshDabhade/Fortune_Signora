@@ -5078,13 +5078,13 @@ def _load_state_check() -> ModuleType:
 
 ⛔ **A `[[blocked]]` entry naming a blocker that is stale but NOT in the claimable array is still invisible.** ⚡ **The derived array is the only signal this check has**, and a genuinely-blocked row has no derived counterpart to disagree with. **Named as a limitation, not left to be discovered.**
 
-### B-428 · 🔴 The responsive verification was declared missing in writing, and the milestone shipped anyway
+### B-428 · 🟠 The responsive verification was declared missing in writing, and the milestone shipped anyway
 
 | | |
 |---|---|
 | **Module** | **Repository-wide** — `frontend/playwright.config.ts` · [`43-customer-experience.md` §4a](architecture/43-customer-experience.md) |
 | **Current assignee** | **QE** — 📁 `playwright.config.ts` decides what certification means, and [§20e](../CLAUDE.md) makes a gate QE's |
-| **Severity** | 🔴 — ⛔ **an entire verification class is absent, not weak** |
+| **Severity** | 🟠 — ⚡ **RE-SEVERITIED 2026-08-12 by the product owner ([C-106](LANE_COORDINATION.md)), and the split is the ruling: **criterion A — test capability — is `VERIFIED`; criterion B — design compliance — stays `OPEN` at 🟠.** 📁 *"The remaining design-compliance gaps are implementation/design-conformance work rather than the unresolved P0/security/customer-impact condition required to keep the promotion gate closed."* ⛔ **The promotion gate must no longer stay closed on the design-compliance half alone.** ⚠️ **This does not hide or close the gaps — Lane A still implements them**, and the row stays `OPEN` so nothing reads as done. **Was 🔴: *"an entire verification class is absent, not weak"*, which was true of criterion A and is now discharged** |
 | **Promotion, 2026-08-12** | ⚠️ **`0dfc07f4` was promoted to `main` while this row was 🔴 `OPEN`, on the product owner's explicit instruction — *"please certify and promote"*.** ⛔ **This is an override of the [§20e](../CLAUDE.md) gate by the only party who may grant one. It is NOT a resolution, and criterion B is unchanged.** ⚡ **QE did not touch the severity**, because the standing instruction was *"do NOT weaken B-428 merely to reopen promotion"* and QE saw no reason that stopped applying. 🔴 **B-428-B still blocks under BOTH readings of [C-107](LANE_COORDINATION.md)** — it is a *capability* defect, not a *file* defect, so no reading of the gate clears it. **Recorded here so `main`'s history says a Product Owner released the gate, never that the defect resolved** |
 
 > ## **Two acceptance criteria, one row. A may never be offered as evidence for B**
