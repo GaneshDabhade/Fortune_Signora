@@ -70,6 +70,31 @@
 - **C-289 and C-292 name owners that route to nobody.** Routing, not a decision.
 - **3 workflows genuinely thin** — Settings, AI Research, Help Center. **Mode C, one per session.**
 
+## ⛔ Pipeline refill attempt 1 — 0 tasks created, and the reason matters
+
+**2026-08-12, Mode C, bounded to 5 candidates. Settings was the strongest candidate area and produced none.**
+
+**Why Settings:** it carries an approved design (`Fortune Signora Settings.dc.html`, 52 KB) and **exactly one task row** — [TASK-1412](../../BACKLOG.md), `PROMOTED`, covering workspace identity, users, roles and the audit-log door.
+
+**Four remaining surfaces in the design. All four fail Gate E — no backing capability.**
+
+| Surface | Evidence |
+|---|---|
+| **API keys** *(Create key)* | ⛔ **No `public/` contract** anywhere in `backend/modules/` |
+| **Webhooks** *(New webhook)* | ⛔ **No `public/` contract** |
+| **Feature flags** | ⛔ **No `public/` contract** |
+| **Roles & permissions** *(New role)* | ⛔ **`WorkspaceRole` is a `StrEnum` of exactly `OWNER` and `MEMBER`** — [`workspace_tenancy/domain/entities.py:32`](../../../backend/modules/workspace_tenancy/domain/entities.py). **A custom role is unrepresentable** |
+
+### ⚡ This sharpens the previous finding rather than repeating it
+
+**Last session concluded Lane A's pipeline was *unwritten*. That is true and incomplete.** ⛔ **The approved design's remaining surfaces largely outrun the platform's capability** — the same shape as [C-1425](../../LANE_COORDINATION.md), where TASK-466 is the Action Batch's first consumer and no domain implements an operation for it to apply.
+
+⚠️ **So authoring more rows would not have helped.** **A task for a surface with no backing capability is a row Lane A cannot finish** — and creating one to move a count toward 20 is precisely what [D-187](../../DECISION_REGISTER.md)'s floor must not be met with.
+
+⛔ **No coordination item raised yet** — one belongs here, but raising it properly needs the same care C-1425 got, and this session stopped on its context budget first.
+
+**Exact next search area:** ▶ **Team Management · CRM Integrations · Companies — each has an approved design and exactly one task row.** ⚡ **Run Gate E FIRST on each, before reading any design section: `grep -rl <capability> backend/modules/*/public/`.** **That check cost four commands here and would have saved the design read.**
+
 ## ✅ ANSWERED — why Lane A's queue ran dry
 
 **Investigated 2026-08-12, Mode E. Measured across all 146 rows in Lane A's 19 modules.**
