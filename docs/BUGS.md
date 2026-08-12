@@ -202,6 +202,28 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ⛔ **Four journeys in [`account-360-states.spec.ts`](../frontend/tests/e2e/account-360-states.spec.ts) are written, correct and cannot be run green here.** ⚡ **They are committed rather than withheld** — 📁 **[§2](../CLAUDE.md): a journey deleted because the environment could not run it is evidence the next lane has to author again.** ⛔ **This lane will not report them as passing**, and [TASK-1476](BACKLOG.md) is not handed to QE on their strength.
 
+#### ✅ Measured against the database, 2026-08-12 — and it narrows the hypothesis sharply
+
+⚡ **The obvious second explanation was *"the seeded data is not there"*. ⛔ It is there.**
+
+| Measured in `signora_lane_a` | |
+|---|---|
+| **Entities in the Playground workspace `deeecc11-…`** | **16** |
+| **Buying scores in that workspace** | 🔴 **16 — every one of them** |
+| **Entities in OTHER workspaces** | ⚠️ **6,376** |
+
+🔴 **So *"no account renders its sections"* is not a data-absence problem.** ⛔ **Every account in the current workspace has a score**, and the page told a reader *"Nothing has scored this account yet"* about one of them:
+
+- **`ac05261b…` — measured `workspace_id = deeecc11-…`, the CURRENT workspace** — ⛔ **and the record page rendered it as *"no source has named this account yet"* and *"Nothing has scored this account yet"*.**
+
+⚡ **That is the finding.** **The read path returns nothing for an account that demonstrably has both a name claim and a score**, which is a different defect from anything about seeding.
+
+#### ⚠️ What the 6,376 are, and what they are NOT evidence of
+
+📁 **[B-010](#b-010--re-seeding-the-playground-orphans-every-narration-silently)'s residue, confirmed at scale**: *"seeding clears the same five tables [B-008](#b-008) describes and leaves every derived generation behind — the Playground is a haystack containing the demo."* ⚡ **6,376 entities across previous workspaces for a twelve-account demo.**
+
+⛔ **They are NOT evidence of a tenancy leak, and the distinction matters enough to state.** ⚠️ **One account this journey opened — `16a95857…` — belongs to workspace `eabc4906-…`, not the current one.** ✅ **But that was a DIFFERENT RUN, before the reseed, when the nav itself showed `/w/eabc4906-…/home`** — **the session was in that workspace at the time.** ⛔ **Nothing here shows one workspace's accounts appearing inside another within a single session**, and 🔴 **a tenancy claim made on evidence this thin would be worse than no claim at all.**
+
 #### ⛔ The cheap cause was tried and is ruled out
 
 ⚡ **The obvious explanation was that the API serving `:8300` had been running since 16:41 while the reseed replaced the workspace at 19:50** — a long-lived process holding a workspace-scoped cache produces exactly this picture. ✅ **So it was restarted against `signora_lane_a` and the suite re-run.**
