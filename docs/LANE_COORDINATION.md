@@ -513,6 +513,56 @@ databaseUrl: required(
 
 ---
 
+## C-1426 · The Security Center's Security Invariant cannot be met for session revocation, and the honest repair is not to add a challenge
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`OPEN` — Lane A, 2026-08-12, found building [TASK-1414](BACKLOG.md)** |
+| **Owner** | **QE** *(the invariant is the row's and QE validates it)* · **product owner** *(if the answer is to change what the product offers)* |
+| **Blocks** | ⛔ **Nothing.** ✅ **[TASK-1414](BACKLOG.md) shipped**, with the gap stated in the component and asserted in a test |
+
+### ① The invariant, and the one control it cannot cover
+
+📁 **The row's Testing metadata**: 🔴 ***"every destructive control on this page passes through [TASK-1410](BACKLOG.md)'s challenge — and the challenge is enforced server-side."***
+
+✅ **Two of the three destructive controls meet it, by the framework rather than by a screen:**
+
+| Control | What enforces the fresh factor |
+|---|---|
+| **Change password** | Better Auth's `changePassword` **takes the current password** |
+| **Remove a second factor** | `twoFactor.disable` **takes the password** |
+| 🔴 **Revoke a session** | ⛔ **Nothing.** `/revoke-session` uses **`sensitiveSessionMiddleware`**, which requires a **valid** session — **not a fresh one** |
+
+### ② Why a `StepUpDialog` was not simply rendered in front of it
+
+📁 **[TASK-1410](BACKLOG.md)'s own row names this as the failure**: *"a dialog that guards the dialog guards nothing."* ⛔ **A challenge the server does not check is a screen a caller skips**, and shipping one would make the invariant read as met while nothing enforced it — **which is worse than the gap, because it stops anybody looking.**
+
+### ③ Why enforcing it server-side is the WRONG repair, and this is the part worth ruling on
+
+⚠️ **It is buildable**: a `hooks.before` in [`lib/auth/server.ts`](../frontend/lib/auth/server.ts) could refuse `/revoke-session` on a stale session, and that file is inside the row's Change Budget. ⛔ **It should not be built.**
+
+| | |
+|---|---|
+| ⛔ **There is no re-verification capability** | **Better Auth publishes no *prove it is you again* endpoint.** ⚡ **A person past the 10-minute window could only refresh their freshness by signing in again** |
+| ⛔ **An SSO account has no password to re-enter** | **So for those accounts the challenge is unperformable, not merely inconvenient** |
+| 🔴 **The design guarantees the opposite** | 📁 §08: ***"Session revocation still works — it is enforced by Signora — and that distinction is stated so you know what you can still do while under attack."*** |
+
+⚡ **The consequence is the whole item**: **the one control that must survive an attack would become the first to fail**, on the page whose stated job is *"let someone who thinks they have been compromised understand what happened and stop it, in under a minute, while frightened."*
+
+### ④ What shipped, and what is asked for
+
+✅ **Revocation ships unchallenged, and [`sessions-panel.tsx`](../frontend/app/\(app\)/profile/security/sessions-panel.tsx) states all of the above in the component** — ⛔ **the gap is not hidden in a commit message.**
+
+**One of three, and it is not this lane's to pick:**
+
+1. **Accept it** — record the invariant as *two of three, by the vendor*, and note that revocation is deliberately the unchallenged one.
+2. **Narrow the invariant** to controls the framework challenges, and say so in the row.
+3. **Add a re-verification capability** — a real one, server-enforced, that an SSO account can also satisfy. ⚠️ **That is a workflow, not a line**, and it would need its own row.
+
+⛔ **This lane recommends ① or ②** and did not act on either, because **changing what a Security Invariant means is not an implementation decision.**
+
+---
+
 ## C-1425 · [TASK-466](BACKLOG.md) is the Action Batch's first consumer, and no domain implements an operation for it to apply
 
 | | |
