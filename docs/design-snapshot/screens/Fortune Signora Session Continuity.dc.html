@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes scShimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes scSpin { to { transform: rotate(360deg); } }
+  @keyframes scPulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em;padding:0 40px 120px">
+
+  <header style="max-width:1360px;margin:0 auto;padding:56px 0 36px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);font-size:11.5px;font-weight:600">Canonical · new document</span>
+      <span style="font-size:11.5px;color:var(--ink-3)">Implementation authority for Lane A · design system v2.0, unchanged</span>
+      <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};box-shadow:{{ lightShadow }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};box-shadow:{{ darkShadow }}" onClick="{{ setDark }}">Dark</span>
+      </span>
+    </div>
+    <h1 style="font-size:44px;line-height:1.06;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:22ch">Session Continuity</h1>
+    <p style="font-size:17px;line-height:1.6;max-width:82ch;margin:18px 0 0;color:var(--ink-2);text-wrap:pretty">What survives an interruption, and what the person sees while it is being restored. Five shipped documents promise preservation in passing — drafts through a 500, filters and scroll through entry, view state in the URL, an offline queue in the profile — and none defines the model. This document defines it once. It owns restoration; it does not own routing, which remains with Authenticated Entry.</p>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:34px;max-width:1120px">
+      <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="5">
+        <div style="padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="font-size:23px;font-weight:700;letter-spacing:-0.026em;line-height:1;font-variant-numeric:tabular-nums">{{ s.v }}</div>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:6px;line-height:1.45">{{ s.l }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </header>
+
+  <section data-screen-label="01 Purpose scope" style="max-width:1360px;margin:0 auto">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">01 · Purpose, scope &amp; non-goals</div>
+    <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);padding:24px 26px">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Purpose</h2>
+        <p style="font-size:13.5px;line-height:1.65;color:var(--ink-2);margin:10px 0 0">Make continuity deterministic. Given a boot condition, the person and the implementation must be able to state — before it happens — which frame renders, what is restored, what is discarded, and what the screen says. Non-determinism here is not a polish defect: a draft that survives sometimes is worse than one that never survives, because people stop trusting the product with unsaved work.</p>
+        <div style="margin-top:16px;padding:15px 16px;border-radius:12px;background:var(--brand-tint);border:1px solid var(--brand-line)">
+          <div style="font-size:12.5px;font-weight:600">The one-line contract</div>
+          <div style="font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.55">Signora never silently loses typed input, and never silently claims to have kept it. Anything preserved is labelled with when it was captured; anything discarded is named at the moment of discard.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0;margin-top:16px">
+          <sc-for list="{{ purposeFacts }}" as="f" hint-placeholder-count="5">
+            <div style="display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+              <span style="color:var(--ink-2);line-height:1.45">{{ f.k }}</span>
+              <span style="text-align:right;font-weight:600;white-space:nowrap;font-family:{{ f.mono }}">{{ f.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">In scope</div>
+        <sc-for list="{{ inScope }}" as="s" hint-placeholder-count="9">
+          <div style="display:flex;gap:10px;padding:10px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:flex-start">
+            <span style="width:14px;height:14px;flex:none;margin-top:3px;border-radius:4px;background:var(--pos);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">✓</span>
+            <span style="color:var(--ink-2);line-height:1.5">{{ s }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Explicit non-goals</div>
+        <sc-for list="{{ nonGoals }}" as="s" hint-placeholder-count="8">
+          <div style="display:flex;gap:10px;padding:10px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:flex-start">
+            <span style="width:14px;height:14px;flex:none;margin-top:3px;border-radius:4px;background:var(--risk);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">✕</span>
+            <span style="color:var(--ink-2);line-height:1.5">{{ s }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="02 Preservation model" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">02 · The preservation model</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Four tiers. Everything preservable belongs to exactly one.</h2>
+        <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0;max-width:88ch">The tier decides the medium, the lifetime, whether it crosses devices, and whether it is restored automatically or offered. A new preservable thing is assigned a tier in review; if it does not fit one, that is a finding against this document rather than a licence to add a fifth medium.</p>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:1080px">
+          <div style="display:grid;grid-template-columns:126px 1fr 128px 108px 92px 1fr;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Tier</div><div>What</div><div>Medium</div><div>Lifetime</div><div>Devices</div><div>Restore behaviour</div>
+          </div>
+          <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:126px 1fr 128px 108px 92px 1fr;gap:14px;padding:15px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="width:9px;height:9px;flex:none;border-radius:3px;background:{{ t.color }}"></span>
+                  <span style="font-weight:600">{{ t.t }}</span>
+                </div>
+                <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4);margin-top:4px">{{ t.code }}</div>
+              </div>
+              <div style="color:var(--ink-2);line-height:1.55">{{ t.what }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-2);line-height:1.5">{{ t.medium }}</div>
+              <div style="color:var(--ink-2);font-variant-numeric:tabular-nums">{{ t.life }}</div>
+              <div style="color:var(--ink-2)">{{ t.devices }}</div>
+              <div style="line-height:1.55">{{ t.restore }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px;padding:20px 26px">
+        <sc-for list="{{ modelLaws }}" as="l" hint-placeholder-count="5">
+          <div style="padding:15px 16px;border-radius:12px;background:var(--sunken)">
+            <div style="font-size:12.5px;font-weight:600">{{ l.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ l.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="03 Frame policy" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">03 · Frame policy — “the frame is never blank”</div>
+    <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--line-soft)">
+          <h3 style="font-size:17px;font-weight:600;letter-spacing:-0.016em;margin:0">Four render phases</h3>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">Each phase names what paints, what waits, what is skeletonised, and what stays interactive. Phase 0 requires no network call, which is what makes the shell-first promise implementable rather than aspirational.</p>
+        </div>
+        <sc-for list="{{ phases }}" as="p" hint-placeholder-count="4">
+          <div style="padding:17px 24px;border-bottom:1px solid var(--line-soft)">
+            <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap">
+              <span style="width:24px;height:24px;flex:none;border-radius:7px;background:{{ p.markBg }};color:{{ p.markFg }};display:grid;place-items:center;font-size:10.5px;font-weight:700">{{ p.n }}</span>
+              <span style="font-size:13.5px;font-weight:600">{{ p.t }}</span>
+              <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);flex:none">{{ p.budget }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:76px 1fr;gap:10px;row-gap:6px;margin-top:10px;font-size:12px">
+              <sc-for list="{{ p.rows }}" as="r" hint-placeholder-count="4">
+                <div style="display:contents">
+                  <span style="font-weight:600;color:var(--ink-3)">{{ r.k }}</span>
+                  <span style="color:var(--ink-2);line-height:1.5">{{ r.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <div style="padding:16px 24px;font-size:11.5px;color:var(--ink-3);line-height:1.5">If phase 1 has not resolved by 3,000ms the shell holds and a single inline strip appears in the content area — never a full-screen spinner, and never a blank frame. The rail, top bar and workspace name stay interactive throughout.</div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--line-soft)">
+          <span style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Phase 1 rendered — 1440 × 900</span>
+          <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4);flex:none">shell real · content skeleton</span>
+        </div>
+        <div style="padding:18px 20px">
+          <div style="border-radius:12px;border:1px solid var(--line-soft);overflow:hidden;background:var(--surface)">
+            <div style="display:flex;align-items:center;gap:11px;row-gap:8px;flex-wrap:wrap;padding:0 14px;height:46px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+              <span style="display:flex;align-items:center;gap:8px;flex:none">
+                <span style="width:21px;height:21px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">NG</span>
+                <span style="font-size:12px;font-weight:600">Northwind Global</span>
+              </span>
+              <span style="display:flex;align-items:center;gap:7px;height:26px;padding:0 10px;border-radius:7px;background:var(--sunken);color:var(--ink-3);font-size:11.5px;flex:1;min-width:120px;max-width:200px">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="flex:none"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+                Search
+              </span>
+              <span style="margin-left:auto;display:flex;align-items:center;gap:7px;flex:none">
+                <span style="height:24px;padding:0 9px;border-radius:7px;background:var(--ai-tint);color:var(--ai-ink);font-size:10.5px;font-weight:600;display:grid;place-items:center">Ask</span>
+                <span style="width:24px;height:24px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:9px;font-weight:600">AD</span>
+              </span>
+            </div>
+            <div style="display:grid;grid-template-columns:132px 1fr;min-height:230px">
+              <div style="background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 9px">
+                <sc-for list="{{ frameRail }}" as="r" hint-placeholder-count="7">
+                  <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;background:{{ r.bg }};font-size:11.5px;font-weight:{{ r.weight }};color:{{ r.color }};margin-bottom:2px">
+                    <span style="width:5px;height:5px;flex:none;border-radius:2px;background:{{ r.dot }}"></span>
+                    <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.t }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="padding:16px;background:var(--bg)">
+                <div style="height:16px;width:38%;border-radius:6px;background:var(--line-soft)"></div>
+                <div style="display:flex;flex-direction:column;gap:9px;margin-top:14px">
+                  <sc-for list="{{ frameSkeleton }}" as="s" hint-placeholder-count="4">
+                    <div style="height:{{ s.h }};width:{{ s.w }};border-radius:8px;background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:scShimmer 1.4s ease-in-out infinite"></div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px">
+            <sc-for list="{{ frameRules }}" as="f" hint-placeholder-count="4">
+              <div style="padding:13px 14px;border-radius:12px;background:var(--sunken)">
+                <div style="font-size:12px;font-weight:600">{{ f.t }}</div>
+                <div style="font-size:11.5px;color:var(--ink-2);margin-top:5px;line-height:1.5">{{ f.b }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="04 State machine" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">04 · State machine &amp; screen inventory</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:flex;align-items:flex-start;gap:16px;row-gap:12px;flex-wrap:wrap;padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <div style="flex:1;min-width:300px">
+          <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Eighteen flows, twelve screens, nine states</h2>
+          <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0;max-width:84ch">The machine has nine states and no cycles that do not pass through a designed screen. Every transition is triggered by an event with a name; nothing transitions on a timer except the two marked. Screen IDs are stable and referenced by the acceptance criteria.</p>
+        </div>
+        <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--sunken);font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-2);flex:none">BOOT → RESTORING → READY | GATED | CHOOSING | FAILED</span>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:1140px">
+          <div style="display:grid;grid-template-columns:112px 1fr 148px 1fr 128px;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>State</div><div>Entry condition</div><div>Screen ID</div><div>What the person sees</div><div>Exits to</div>
+          </div>
+          <sc-for list="{{ machine }}" as="m" hint-placeholder-count="9">
+            <div style="display:grid;grid-template-columns:112px 1fr 148px 1fr 128px;gap:14px;padding:14px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start;background:{{ m.bg }}">
+              <div>
+                <div style="font-family:ui-monospace,monospace;font-size:11px;font-weight:600;color:{{ m.color }}">{{ m.state }}</div>
+                <div style="font-size:10.5px;color:var(--ink-4);margin-top:3px">{{ m.kind }}</div>
+              </div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ m.entry }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-2);line-height:1.5">{{ m.screen }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ m.sees }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-3);line-height:1.5">{{ m.exits }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="05 Screens A" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">05 · SC-04 &amp; SC-05 — session expired, two screens</div>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start">
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">SC-04 · expired-inline</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--warn-tint);color:var(--warn)">Warm — a frame was already painted</span>
+          <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4);flex:none">1440 × 900</span>
+        </div>
+        <div style="padding:18px 20px">
+          <div style="border-radius:12px;border:1px solid var(--line-soft);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:11px;padding:0 14px;height:44px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+              <span style="width:20px;height:20px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8px;font-weight:700;flex:none">NG</span>
+              <span style="font-size:11.5px;font-weight:600;flex:none">Northwind Global</span>
+              <span style="font-size:11.5px;color:var(--ink-3);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Accounts / Vantage Logistics</span>
+              <span style="margin-left:auto;width:22px;height:22px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:600;flex:none">AD</span>
+            </div>
+            <div style="display:grid;grid-template-columns:120px 1fr">
+              <div style="background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:11px 8px;opacity:.45">
+                <sc-for list="{{ dimRail }}" as="r" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:7px;padding:5px 7px;font-size:11px;color:var(--ink-2);margin-bottom:1px">
+                    <span style="width:4px;height:4px;flex:none;border-radius:2px;background:var(--ink-4)"></span>{{ r }}
+                  </div>
+                </sc-for>
+              </div>
+              <div style="padding:16px;background:var(--bg);position:relative">
+                <div style="opacity:.32">
+                  <div style="font-size:16px;font-weight:700;letter-spacing:-0.02em">Vantage Logistics</div>
+                  <div style="height:11px;width:64%;border-radius:5px;background:var(--line-soft);margin-top:11px"></div>
+                  <div style="height:11px;width:48%;border-radius:5px;background:var(--line-soft);margin-top:8px"></div>
+                  <div style="height:44px;border-radius:9px;background:var(--sunken);margin-top:14px"></div>
+                </div>
+                <div style="margin-top:14px;padding:16px 17px;border-radius:12px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e3)">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <span style="width:24px;height:24px;flex:none;border-radius:7px;background:var(--warn-tint);color:var(--warn);display:grid;place-items:center">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 4.5V8l2.5 1.5"></path></svg>
+                    </span>
+                    <span style="font-size:14.5px;font-weight:600">Your session ended</span>
+                    <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);flex:none">After 8 hours · Northwind policy</span>
+                  </div>
+                  <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:10px 0 0;max-width:64ch">Sign in again to carry on. <span style="font-weight:600;color:var(--ink)">Your note on this account was saved 2 minutes ago</span> and will be offered back when you return. You stay on this page — nothing is being navigated away from.</p>
+                  <div style="display:flex;align-items:center;gap:9px;row-gap:9px;flex-wrap:wrap;margin-top:15px">
+                    <span style="display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:8px;background:var(--brand);color:#fff;font-size:13px;font-weight:600;box-shadow:var(--e1)">Sign in with Okta</span>
+                    <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:600">Copy my note first</span>
+                    <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);flex:none">Draft kept 7 days</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:0 20px;margin-top:16px">
+            <sc-for list="{{ sc04Spec }}" as="s" hint-placeholder-count="10">
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                <span style="color:var(--ink-3);flex:none">{{ s.k }}</span>
+                <span style="text-align:right;line-height:1.45">{{ s.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">SC-05 · expired-cold</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--sunken);color:var(--ink-3)">Cold — no frame was painted</span>
+        </div>
+        <div style="padding:18px 20px">
+          <div style="border-radius:12px;background:var(--bg);border:1px solid var(--line-soft);padding:28px 22px;min-height:250px;display:flex;flex-direction:column;justify-content:center">
+            <div style="display:flex;align-items:center;gap:9px">
+              <span style="width:22px;height:22px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">FS</span>
+              <span style="font-size:12.5px;font-weight:600">Fortune Signora</span>
+            </div>
+            <div style="margin-top:20px;padding:20px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2)">
+              <div style="font-size:17px;font-weight:600;letter-spacing:-0.018em">Sign in to continue</div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">Your session has ended. You were opening <span style="font-family:ui-monospace,monospace;font-size:11.5px">Vantage Logistics</span> — we will take you there once you are back.</p>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:15px">
+                <span style="display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:8px;background:var(--brand);color:#fff;font-size:13px;font-weight:600">Sign in with Okta</span>
+                <span style="display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--line);font-size:13px;font-weight:600">Use another method</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:13px;border-top:1px solid var(--line-soft)">
+                <span style="width:14px;height:14px;flex:none;border-radius:4px;background:var(--pos);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">2</span>
+                <span style="font-size:11.5px;color:var(--ink-2);line-height:1.45">2 drafts are being kept for you</span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:16px;padding:14px 15px;border-radius:12px;background:var(--sunken)">
+            <div style="font-size:12px;font-weight:600">Why two screens rather than one</div>
+            <div style="font-size:11.5px;color:var(--ink-2);margin-top:6px;line-height:1.55">SC-04 keeps the shell because destroying a painted, trusted frame to show a sign-in prompt reads as data loss. SC-05 has no shell to keep and must not fake one — a cached rail behind a sign-in card implies access that does not exist. The choice is made on one boolean: has phase 1 ever completed in this tab.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="06 Screens B" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">06 · SC-03, SC-06, SC-07 — restored, workspace unavailable, partial</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--pos-line);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">SC-03 · restored</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--pos-tint);color:var(--pos)">Tier 3 offer</span>
+        </div>
+        <div style="padding:18px 20px">
+          <div style="border-radius:12px;border:1px solid var(--line-soft);overflow:hidden;background:var(--bg)">
+            <div style="padding:14px">
+              <div style="display:flex;align-items:flex-start;gap:11px;row-gap:10px;flex-wrap:wrap;padding:13px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e1)">
+                <span style="width:20px;height:20px;flex:none;margin-top:1px;border-radius:6px;background:var(--warn-tint);color:var(--warn);display:grid;place-items:center">
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 2.5h8v11l-4-2.5-4 2.5z"></path></svg>
+                </span>
+                <div style="flex:1;min-width:180px">
+                  <div style="font-size:12.5px;font-weight:600">You have an unsaved note on this account</div>
+                  <div style="font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.5">Captured 14 minutes ago, before your session ended. 340 characters.</div>
+                </div>
+                <span style="display:flex;gap:7px;flex:none">
+                  <span style="display:inline-flex;align-items:center;height:29px;padding:0 11px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">Restore it</span>
+                  <span style="display:inline-flex;align-items:center;height:29px;padding:0 11px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600">Compare</span>
+                  <span style="display:inline-flex;align-items:center;height:29px;padding:0 11px;border-radius:8px;font-size:12px;font-weight:600;color:var(--risk)">Discard</span>
+                </span>
+              </div>
+              <div style="margin-top:11px;opacity:.55">
+                <div style="height:13px;width:52%;border-radius:5px;background:var(--line-soft)"></div>
+                <div style="height:11px;width:78%;border-radius:5px;background:var(--line-soft);margin-top:9px"></div>
+                <div style="height:11px;width:66%;border-radius:5px;background:var(--line-soft);margin-top:7px"></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0;margin-top:14px">
+            <sc-for list="{{ sc03Spec }}" as="s" hint-placeholder-count="7">
+              <div style="display:grid;grid-template-columns:104px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                <span style="color:var(--ink-3)">{{ s.k }}</span>
+                <span style="line-height:1.5">{{ s.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">SC-06 · workspace-unavailable</span>
+            <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--warn-tint);color:var(--warn)">Shell kept, rail disabled</span>
+          </div>
+          <div style="padding:18px 20px">
+            <div style="padding:20px 18px;border-radius:12px;background:var(--bg);border:1px solid var(--line-soft)">
+              <span style="width:30px;height:30px;border-radius:9px;background:var(--warn-tint);color:var(--warn);display:grid;place-items:center">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 2.5h5v5h-5zM8.5 2.5h5v5h-5zM2.5 8.5h5v5h-5z"></path></svg>
+              </span>
+              <div style="font-size:15.5px;font-weight:600;letter-spacing:-0.014em;margin-top:12px">Meridian Freight is archived</div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0;max-width:56ch">Archived on 2 August by K. Bruun. You were signed in to it when your session ended, so we have kept you here rather than moving you silently. Your other three workspaces are unaffected.</p>
+              <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:13px">
+                <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600">Go to Northwind Global</span>
+                <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12.5px;font-weight:600">All workspaces</span>
+              </div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:11px;line-height:1.5">Read-only access to Meridian Freight is still available, including exports.</div>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:13px;line-height:1.5">The shell stays so the switcher works — a workspace problem must never strand someone who has other workspaces. Rail items are non-interactive at 45% opacity, not removed, so the frame does not collapse.</div>
+          </div>
+        </div>
+
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">SC-07 · partial</span>
+            <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--warn-tint);color:var(--warn)">Degraded, usable</span>
+          </div>
+          <div style="padding:18px 20px">
+            <div style="display:flex;align-items:flex-start;gap:11px;row-gap:10px;flex-wrap:wrap;padding:13px 14px;border-radius:10px;background:var(--warn-tint);border:1px solid var(--warn-line)">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--warn)" stroke-width="1.7" stroke-linecap="round" style="flex:none;margin-top:2px"><path d="M8 2.5 14 13H2L8 2.5ZM8 6.5v3M8 11h.01"></path></svg>
+              <div style="flex:1;min-width:190px">
+                <div style="font-size:12.5px;font-weight:600">Your filters were restored; your scroll position was not</div>
+                <div style="font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.5">This tab was reopened from a previous browser session, which discards position. You are at the top of 312 rows with all four filters applied.</div>
+              </div>
+              <span style="display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:11.5px;font-weight:600;flex:none">Dismiss</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0;margin-top:14px">
+              <sc-for list="{{ partialCases }}" as="p" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:88px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                  <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:{{ p.color }};font-weight:600">{{ p.tier }}</span>
+                  <span style="color:var(--ink-2);line-height:1.5">{{ p.b }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.5">One strip per boot, never one per lost tier. If two tiers fail, the strip names both in one sentence.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="07 Screens C" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">07 · SC-08 &amp; SC-09 — boot failure and cross-tab conflict</div>
+    <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--risk-line);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">SC-08 · boot-failed</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--risk-tint);color:var(--risk)">Never the sign-in form</span>
+        </div>
+        <div style="padding:18px 20px">
+          <div style="padding:22px 20px;border-radius:12px;background:var(--bg);border:1px solid var(--line-soft)">
+            <span style="width:30px;height:30px;border-radius:9px;background:var(--risk-tint);color:var(--risk);display:grid;place-items:center">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M8 5v3.5M8 11h.01"></path></svg>
+            </span>
+            <div style="font-size:15.5px;font-weight:600;letter-spacing:-0.014em;margin-top:12px">We could not load your workspace</div>
+            <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0;max-width:56ch">You are signed in — this is not an authentication problem, and you do not need to sign in again. The workspace service did not respond. Retried three times over 12 seconds.</p>
+            <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:13px">
+              <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600">Try again</span>
+              <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12.5px;font-weight:600">Copy identifier</span>
+              <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--ink-2)">Status page</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;row-gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:13px;border-top:1px solid var(--line-soft);font-size:11.5px;color:var(--ink-3)">
+              <span style="font-family:ui-monospace,monospace">req_4a71-2f0c</span>
+              <span>Reason · <span style="font-family:ui-monospace,monospace">ENGINE_ERROR</span></span>
+              <span style="margin-left:auto">2 drafts kept</span>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:13px;line-height:1.5">"You are signed in" is the load-bearing sentence. Without it, a boot failure is indistinguishable from an expiry, and people re-authenticate pointlessly — then report that sign-in is broken.</div>
+        </div>
+      </div>
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">SC-09 · tab-conflict</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--risk-tint);color:var(--risk)">The only modal in this document</span>
+        </div>
+        <div style="padding:18px 20px">
+          <div style="border-radius:12px;background:var(--sunken);padding:28px 24px;display:grid;place-items:center">
+            <div style="width:100%;max-width:400px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);padding:22px">
+              <div style="width:32px;height:32px;border-radius:10px;background:var(--warn-tint);color:var(--warn);display:grid;place-items:center">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 3.5h11v9h-11zM2.5 6.5h11"></path></svg>
+              </div>
+              <div style="font-size:16.5px;font-weight:600;letter-spacing:-0.016em;margin-top:13px">You signed out in another tab</div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">This tab still has an unsaved note on Vantage Logistics, captured 40 seconds ago. Choose what happens to it before this tab signs out too.</p>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+                <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600">Keep it for 7 days and sign out</span>
+                <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Copy the text to my clipboard first</span>
+                <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--risk);color:var(--risk);font-size:12.5px;font-weight:600">Discard it and sign out</span>
+              </div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:12px;line-height:1.45">No default is applied. This dialog has no dismiss and no timeout — the only routes out are the three above.</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0;margin-top:14px">
+            <sc-for list="{{ tabCases }}" as="t" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:158px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                <span style="font-weight:600;line-height:1.4">{{ t.k }}</span>
+                <span style="color:var(--ink-2);line-height:1.5">{{ t.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="08 Flows" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">08 · The eighteen required flows</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="overflow-x:auto">
+        <div style="min-width:1180px">
+          <div style="display:grid;grid-template-columns:36px 158px 1fr 116px 1fr 122px;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>#</div><div>Flow</div><div>Behaviour, exactly</div><div>Screen</div><div>Copy shown</div><div>Restores</div>
+          </div>
+          <sc-for list="{{ flows }}" as="f" hint-placeholder-count="18">
+            <div style="display:grid;grid-template-columns:36px 158px 1fr 116px 1fr 122px;gap:14px;padding:13px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div style="font-variant-numeric:tabular-nums;color:var(--ink-4);font-weight:600">{{ f.n }}</div>
+              <div style="font-weight:600;line-height:1.4">{{ f.t }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ f.b }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-2);line-height:1.5">{{ f.screen }}</div>
+              <div style="color:var(--ink-2);line-height:1.5;font-style:italic">{{ f.copy }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-3);line-height:1.5">{{ f.tiers }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="09 Responsive" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">09 · Six viewports, designed not scaled</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="overflow-x:auto">
+        <div style="min-width:1160px">
+          <div style="display:grid;grid-template-columns:108px 128px 1fr 1fr 1fr;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Viewport</div><div>Shell</div><div>Expiry treatment</div><div>Tier 3 offer</div><div>Conflict &amp; deep link</div>
+          </div>
+          <sc-for list="{{ viewports }}" as="v" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:108px 128px 1fr 1fr 1fr;gap:14px;padding:14px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div>
+                <div style="font-family:ui-monospace,monospace;font-size:11px;font-weight:600">{{ v.size }}</div>
+                <div style="font-size:10.5px;color:var(--ink-4);margin-top:3px">{{ v.name }}</div>
+              </div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.shell }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.expiry }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.offer }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.other }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;padding:20px 26px">
+        <sc-for list="{{ responsiveLaws }}" as="r" hint-placeholder-count="4">
+          <div style="padding:15px 16px;border-radius:12px;background:var(--sunken)">
+            <div style="font-size:12.5px;font-weight:600">{{ r.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ r.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="10 Interaction" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">10 · Interaction, keyboard, accessibility &amp; copy</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Interaction &amp; keyboard</div>
+        <sc-for list="{{ interaction }}" as="i" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:1fr 92px;gap:12px;padding:10px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+            <div>
+              <div style="font-weight:600">{{ i.t }}</div>
+              <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ i.b }}</div>
+            </div>
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);text-align:right;line-height:1.5">{{ i.key }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">WCAG 2.2 AA</div>
+        <sc-for list="{{ a11y }}" as="a" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:52px 1fr;gap:12px;padding:11px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+            <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ a.sc }}</span>
+            <span style="color:var(--ink-2);line-height:1.55">{{ a.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Copy — verbatim strings</div>
+        <sc-for list="{{ copy }}" as="c" hint-placeholder-count="10">
+          <div style="padding:11px 20px;border-bottom:1px solid var(--line-soft)">
+            <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ c.id }}</div>
+            <div style="font-size:12.5px;margin-top:4px;line-height:1.5">“{{ c.t }}”</div>
+          </div>
+        </sc-for>
+        <div style="padding:13px 20px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Banned strings: “Oops”, “Something went wrong”, “Session timeout”, “Please try again later”, “Unsaved changes” without a timestamp. Every message names the cause or the time.</div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="11 Contract" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">11 · Implementation contract, decisions &amp; authority</div>
+
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Implementation contract — Lane A checklist</h2>
+        <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:7px 0 0">Twenty items. Each is independently verifiable and phrased so that a reviewer can mark it done or not done without interpreting intent.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:0 26px;padding:8px 26px 20px">
+        <sc-for list="{{ contract }}" as="c" hint-placeholder-count="20">
+          <div style="display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--line-soft);align-items:flex-start">
+            <span style="width:18px;height:18px;flex:none;margin-top:2px;border-radius:5px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ c.n }}</span>
+            <span style="font-size:12.5px;line-height:1.55">{{ c.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:14px;margin-top:14px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Design decisions</div>
+        <sc-for list="{{ decisions }}" as="d" hint-placeholder-count="12">
+          <div style="display:grid;grid-template-columns:44px 1fr;gap:12px;padding:12px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);font-weight:600">{{ d.id }}</span>
+            <div>
+              <div style="font-weight:600;line-height:1.4">{{ d.t }}</div>
+              <div style="font-size:12px;color:var(--ink-2);margin-top:4px;line-height:1.5">{{ d.b }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e2);overflow:hidden">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft)">
+            <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--warn)">Unresolved — needs a product or architecture answer</div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">Five genuine open questions. None is a design preference; each needs an owner outside design.</div>
+          </div>
+          <sc-for list="{{ unresolved }}" as="u" hint-placeholder-count="5">
+            <div style="padding:13px 22px;border-bottom:1px solid var(--line-soft)">
+              <div style="display:flex;align-items:center;gap:9px;row-gap:6px;flex-wrap:wrap">
+                <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--warn);font-weight:600">{{ u.id }}</span>
+                <span style="font-size:12.5px;font-weight:600">{{ u.t }}</span>
+                <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--sunken);color:var(--ink-3);white-space:nowrap;flex:none">{{ u.owner }}</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.5">{{ u.b }}</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">Interim: {{ u.interim }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Existing authority &amp; dependencies</div>
+          <sc-for list="{{ authority }}" as="a" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:1fr 118px;gap:12px;padding:11px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div>
+                <div style="font-weight:600">{{ a.doc }}</div>
+                <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ a.what }}</div>
+              </div>
+              <span style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ a.tagBg }};color:{{ a.tagFg }};text-align:center;white-space:nowrap">{{ a.rel }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:22px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Components &amp; tokens used</div>
+          <p style="font-size:12px;line-height:1.55;color:var(--ink-2);margin:9px 0 0">No new component and no new token. Two existing components gain a documented variant, both listed below.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
+            <sc-for list="{{ components }}" as="c" hint-placeholder-count="12">
+              <span style="display:inline-flex;align-items:center;height:25px;padding:0 9px;border-radius:6px;border:1px solid {{ c.border }};background:{{ c.bg }};font-size:11px;font-family:ui-monospace,monospace;color:{{ c.color }};white-space:nowrap">{{ c.t }}</span>
+            </sc-for>
+          </div>
+          <div style="font-size:11px;color:var(--ink-3);margin-top:11px;line-height:1.5">Tinted entries are the two documented variants: the inline banner at <span style="font-family:ui-monospace,monospace">--e3</span> over dimmed content, and the offer strip with a three-action cluster.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:16px 26px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Acceptance criteria — testable, one per row</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:0 26px;padding:8px 26px 20px">
+        <sc-for list="{{ acceptance }}" as="a" hint-placeholder-count="14">
+          <div style="display:grid;grid-template-columns:64px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);font-weight:600">{{ a.id }}</span>
+            <span style="line-height:1.55">{{ a.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:26px;row-gap:14px;flex-wrap:wrap;padding:18px 26px;border-top:1px solid var(--line-soft)">
+        <sc-for list="{{ colophon }}" as="c" hint-placeholder-count="4">
+          <div>
+            <div style="font-size:11px;color:var(--ink-3)">{{ c.k }}</div>
+            <div style="font-size:13px;font-weight:600;margin-top:2px">{{ c.v }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0', '--pos-line': '#c9e6da',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4', '--warn-line': '#efdcc0',
+      '--risk': '#a83329', '--risk-tint': '#fcefed', '--risk-line': '#f2d5d1',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f', '--pos-line': '#1d4433',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113', '--warn-line': '#453520',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17', '--risk-line': '#4a2a25',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      lightShadow: dark ? 'none' : 'var(--e1)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+      darkShadow: dark ? 'var(--e1)' : 'none',
+
+      heroStats: [
+        { v: '18', l: 'Flows specified, each with one screen' },
+        { v: '4', l: 'Preservation tiers, one medium each' },
+        { v: '400ms', l: 'Shell paint budget, no network call' },
+        { v: '6', l: 'Viewports designed, not scaled' },
+        { v: '0', l: 'Full-screen spinners permitted' },
+      ],
+
+      purposeFacts: [
+        { k: 'Document status', v: 'Canonical', mono: 'inherit' },
+        { k: 'Owns', v: 'Restoration', mono: 'inherit' },
+        { k: 'Does not own', v: 'Routing', mono: 'inherit' },
+        { k: 'Storage key prefix', v: 'sig.cont.v1.', mono: 'ui-monospace,monospace' },
+        { k: 'Cross-tab channel', v: 'sig-session', mono: 'ui-monospace,monospace' },
+      ],
+
+      inScope: [
+        'Cold boot, refresh, and return after inactivity',
+        'Session expiry, invalidation and re-authentication return',
+        'Workspace context restoration and its failure modes',
+        'Deep-link intent capture, survival and multi-hop return',
+        'Draft, filter, scroll, selection and search restoration',
+        'AI thread resumption and its staleness rule',
+        'Cross-tab session state and conflict resolution',
+        'Sign-out, including sign-out in another tab',
+        'Restoration failure, partial restoration and recovery',
+      ],
+
+      nonGoals: [
+        'Routing decisions — owned by Authenticated Entry',
+        'The step-up challenge UI — owned by Security Gates',
+        'Sign-in, registration and lockout — owned by Authentication',
+        'Offline editing beyond the existing queue in User Profile',
+        'Real-time collaborative editing or presence',
+        'Server-side session policy, TTLs or token rotation',
+        'Restoring anything a person did not create — no synthetic state',
+        'Cross-account restoration; continuity is per identity per device',
+      ],
+
+      tiers: [
+        {
+          t: 'View state', code: 'TIER 1 · view', color: 'var(--pos)',
+          what: 'Route, filters, sort, column set, pagination, expanded rows, selected tab. Everything needed to reproduce what was on screen.',
+          medium: 'URL query + hash', life: 'Permanent', devices: 'Shareable',
+          restore: 'Automatic and silent. No notice, because the URL is the state — restoring it is not an event.',
+        },
+        {
+          t: 'Ephemeral position', code: 'TIER 2 · pos', color: 'var(--brand)',
+          what: 'Scroll offset, row selection, focused cell, panel widths, drawer open state, sidebar collapse.',
+          medium: 'sessionStorage', life: 'Tab lifetime', devices: 'This tab',
+          restore: 'Automatic and silent on refresh. Discarded on a new tab — a fresh tab is a fresh view, deliberately.',
+        },
+        {
+          t: 'Unsaved input', code: 'TIER 3 · draft', color: 'var(--warn)',
+          what: 'Note bodies, inline cell edits, form fields, filter builders mid-construction, AI prompts typed but not sent.',
+          medium: 'IndexedDB + server on blur', life: '7 days', devices: 'All devices',
+          restore: 'Never automatic. Always offered, with a capture timestamp and a discard action. Applying is a decision the person makes.',
+        },
+        {
+          t: 'Work context', code: 'TIER 4 · ctx', color: 'var(--ai)',
+          what: 'Active AI thread, in-flight agent run reference, last search query, last workspace, recently viewed records.',
+          medium: 'Server, per identity', life: '30 days', devices: 'All devices',
+          restore: 'Offered where it changes what the screen shows; silent where it only informs a list (recents).',
+        },
+      ],
+
+      modelLaws: [
+        { t: 'One tier per thing', b: 'A preservable item lives in exactly one tier. Anything stored in two media will diverge, and the divergence surfaces as a draft that reappears after being discarded.' },
+        { t: 'Tier 3 is never applied silently', b: 'Restoring typed text without asking overwrites what the person may have deliberately abandoned. The offer costs one strip; the silent restore costs trust once and permanently.' },
+        { t: 'Capture time is always shown', b: 'Every offered draft states when it was captured, to the minute. “Saved 14 minutes ago” lets someone judge whether it is worth keeping; “unsaved changes” does not.' },
+        { t: 'Discard is explicit and final', b: 'Discarding a draft removes it from IndexedDB and the server immediately, and says so. There is no hidden undo — a recoverable discard is a draft that keeps coming back.' },
+        { t: 'Nothing synthetic', b: 'If a tier has no record, the screen renders empty rather than reconstructing a plausible state. Fabricated continuity is worse than none, because it cannot be distinguished from real.' },
+      ],
+
+      phases: [
+        {
+          n: '0', t: 'Static frame', budget: '≤ 120ms', markBg: 'var(--ink)', markFg: 'var(--surface)',
+          rows: [
+            { k: 'Paints', v: 'Rail geometry with icon placeholders, top-bar geometry, page background, and the last-known workspace name and colour read from localStorage.' },
+            { k: 'Waits', v: 'Nothing. Phase 0 makes no network call and is served from the app shell cache.' },
+            { k: 'Skeleton', v: 'Rail labels only, as 11px-tall blocks at the correct positions.' },
+            { k: 'Interactive', v: 'Nothing yet — but the frame is visibly the product, not a blank page.' },
+          ],
+        },
+        {
+          n: '1', t: 'Session resolved', budget: '≤ 400ms', markBg: 'var(--brand)', markFg: '#fff',
+          rows: [
+            { k: 'Paints', v: 'Real rail labels and counts, real workspace name, avatar, search field, assistant entry, breadcrumb.' },
+            { k: 'Waits', v: 'Content region only.' },
+            { k: 'Skeleton', v: 'Content region, in the exact layout of the destination — card footprints for Home, row heights for a table.' },
+            { k: 'Interactive', v: 'Rail, search, ⌘K, workspace switcher, avatar menu, help. All of them, fully.' },
+          ],
+        },
+        {
+          n: '2', t: 'Content resolved', budget: '≤ 1200ms p75', markBg: 'var(--pos)', markFg: '#fff',
+          rows: [
+            { k: 'Paints', v: 'Destination content, card by card, each cross-fading in place from its own skeleton.' },
+            { k: 'Waits', v: 'Nothing blocking. A slow card holds its own skeleton and does not delay siblings.' },
+            { k: 'Skeleton', v: 'Only the cards still outstanding.' },
+            { k: 'Interactive', v: 'Everything painted is fully interactive; nothing is disabled while a neighbour loads.' },
+          ],
+        },
+        {
+          n: '3', t: 'Continuity applied', budget: 'after phase 2', markBg: 'var(--warn)', markFg: '#fff',
+          rows: [
+            { k: 'Paints', v: 'Tier 1 and 2 applied silently. Tier 3 and 4 offers appear as strips, at most one visible at a time, stacked in the content region.' },
+            { k: 'Waits', v: 'Nothing. Offers never block interaction with the restored screen.' },
+            { k: 'Skeleton', v: 'None. Phase 3 has no loading state — if a tier has not resolved by now it is dropped and logged.' },
+            { k: 'Interactive', v: 'Everything. The offer strip is dismissible and focusable but never focus-trapping.' },
+          ],
+        },
+      ],
+
+      frameRail: [
+        ['Home', true], ['Accounts', false], ['Deals', false], ['Signals', false],
+        ['Conversations', false], ['Research', false], ['Reports', false],
+      ].map(([t, active]) => ({
+        t,
+        bg: active ? 'var(--brand-tint)' : 'transparent',
+        weight: active ? 600 : 400,
+        color: active ? 'var(--brand-ink)' : 'var(--ink-2)',
+        dot: active ? 'var(--brand)' : 'var(--ink-4)',
+      })),
+
+      frameSkeleton: [
+        { h: '54px', w: '100%' }, { h: '34px', w: '82%' }, { h: '34px', w: '68%' }, { h: '34px', w: '76%' },
+      ],
+
+      frameRules: [
+        { t: 'Never a full-screen spinner', b: 'At no phase, in no flow, for no duration. A centred spinner on a blank page is indistinguishable from a failed boot.' },
+        { t: 'Skeletons match the destination', b: 'Not a generic three-bar placeholder. Home skeletons card footprints; a table skeletons 44px rows. Nothing reflows when data lands.' },
+        { t: 'The rail never re-renders', b: 'Once phase 1 paints, the rail is stable through content load, workspace switch and continuity application. Its persistence is what makes the app feel instant.' },
+        { t: 'Stale is labelled, not hidden', b: 'If the workspace name comes from cache and the session has not confirmed it, it renders at normal weight with a 1.5px underline and a tooltip reading “from your last visit”.' },
+      ],
+
+      machine: [
+        {
+          state: 'BOOT', kind: 'transient', color: 'var(--ink-2)', bg: 'transparent',
+          entry: 'Document load, from any origin: typed URL, bookmark, deep link, refresh, or restored browser tab.',
+          screen: 'SC-01 · frame-static',
+          sees: 'Phase 0 frame. Rail geometry, top-bar geometry, cached workspace name. No message, no spinner.',
+          exits: 'RESTORING',
+        },
+        {
+          state: 'RESTORING', kind: 'transient', color: 'var(--brand-ink)', bg: 'transparent',
+          entry: 'Phase 0 painted; session and workspace resolution in flight.',
+          screen: 'SC-02 · frame-loading',
+          sees: 'Phase 1 frame with content skeleton. After 3s, one inline strip: “Still loading your workspace.”',
+          exits: 'READY · GATED · CHOOSING · FAILED',
+        },
+        {
+          state: 'READY', kind: 'terminal', color: 'var(--pos)', bg: 'var(--pos-tint)',
+          entry: 'Session valid, workspace resolved and healthy, destination rendered.',
+          screen: 'SC-03 · restored',
+          sees: 'The destination. Tier 1 and 2 silently applied; tier 3 and 4 offers as strips if any exist.',
+          exits: '— (steady state)',
+        },
+        {
+          state: 'GATED', kind: 'blocking', color: 'var(--warn)', bg: 'var(--warn-tint)',
+          entry: 'Session expired, invalidated, or step-up required by workspace policy.',
+          screen: 'SC-04 · expired-inline · SC-05 · expired-cold',
+          sees: 'If a frame was already painted: an in-place strip over the content, shell intact. If cold: a centred card on the ground with the shell absent.',
+          exits: 'RESTORING (on success) · UNAUTH',
+        },
+        {
+          state: 'CHOOSING', kind: 'blocking', color: 'var(--brand-ink)', bg: 'transparent',
+          entry: 'Session valid, workspace ambiguous or unavailable. Entry rules 9, 13, 14.',
+          screen: 'SC-06 · workspace-unavailable',
+          sees: 'Shell retained with the rail disabled; the content region names the problem and lists other memberships.',
+          exits: 'RESTORING · Workspace Chooser',
+        },
+        {
+          state: 'PARTIAL', kind: 'degraded', color: 'var(--warn)', bg: 'var(--warn-tint)',
+          entry: 'Session and workspace resolved; one or more continuity tiers failed to load.',
+          screen: 'SC-07 · partial',
+          sees: 'The destination, fully usable, plus one strip naming exactly which tier was lost and what that means.',
+          exits: 'READY (on retry) · READY (on dismiss)',
+        },
+        {
+          state: 'FAILED', kind: 'terminal', color: 'var(--risk)', bg: 'var(--risk-tint)',
+          entry: 'Session resolution itself failed — network, service, or an unhandled throw in the resolver.',
+          screen: 'SC-08 · boot-failed',
+          sees: 'Shell frame retained, content region carries the failure, the correlation ID and one retry. Never the sign-in form.',
+          exits: 'RESTORING (retry) · support',
+        },
+        {
+          state: 'CONFLICT', kind: 'blocking', color: 'var(--risk)', bg: 'var(--risk-tint)',
+          entry: 'Another tab signed out, signed in as a different identity, or switched workspace, and this tab holds unsaved work.',
+          screen: 'SC-09 · tab-conflict',
+          sees: 'A modal — the only modal in this document — naming what happened in the other tab and what will happen to the work here.',
+          exits: 'UNAUTH · RESTORING',
+        },
+        {
+          state: 'UNAUTH', kind: 'terminal', color: 'var(--ink-3)', bg: 'transparent',
+          entry: 'No session, or session ended deliberately by sign-out.',
+          screen: 'SC-10 · signed-out',
+          sees: 'Authentication owns this screen. Continuity contributes only the retained intent and the count of preserved drafts.',
+          exits: 'Authentication',
+        },
+      ],
+
+      dimRail: ['Home', 'Accounts', 'Deals', 'Signals', 'Conversations', 'Research'],
+
+      sc04Spec: [
+        { k: 'Entry condition', v: '401 on any request, or the session clock reaching zero, while phase 1 has completed in this tab' },
+        { k: 'Frame', v: 'Shell fully retained and interactive; content dimmed to 32% and made inert' },
+        { k: 'Banner', v: 'Inline in the content region, --e3, 12px radius, warn border' },
+        { k: 'Primary action', v: 'Sign in with <IdP name> — re-authenticates in a popup, not a redirect' },
+        { k: 'Secondary', v: 'Copy my note first — writes the draft to the clipboard' },
+        { k: 'Destination', v: 'The same route, same scroll, same filters. No navigation occurs' },
+        { k: 'On success', v: 'Banner fades 120ms, content un-dims 160ms, tier 3 offer appears if a draft exists' },
+        { k: 'On failure ×3', v: 'Becomes SC-05, because the popup route has stopped working' },
+        { k: 'Timeout', v: 'None. The banner persists indefinitely and cannot be dismissed' },
+        { k: 'Announcement', v: 'aria-live assertive, once: SC-COPY-01' },
+      ],
+
+      sc03Spec: [
+        { k: 'Position', v: 'First child of the content region, above the page heading, in flow — never fixed, never overlaying' },
+        { k: 'Footprint', v: 'Full content width, 10px radius, --e1, min-height 58px' },
+        { k: 'Actions', v: 'Restore it (primary) · Compare (secondary) · Discard (destructive text)' },
+        { k: 'Compare', v: 'Opens a two-column diff dialog: saved record left, draft right, changed lines marked' },
+        { k: 'Discard', v: 'Removes from IndexedDB and server immediately; the strip is replaced by a 1.5s confirmation, then gone' },
+        { k: 'Ignoring it', v: 'The strip persists for the session. It is not dismissible without choosing — but it never blocks' },
+        { k: 'Multiple drafts', v: 'One strip, "3 unsaved items on this workspace", expanding to a list. Never three strips' },
+      ],
+
+      partialCases: [
+        { tier: 'TIER 1', color: 'var(--pos)', b: 'Cannot fail — it is the URL. If the URL is malformed the router owns it, not this document.' },
+        { tier: 'TIER 2', color: 'var(--brand-ink)', b: 'Lost on a reopened browser session by design. Strip states it, dismissible, one line.' },
+        { tier: 'TIER 3', color: 'var(--warn)', b: 'If IndexedDB read fails, the server copy is attempted. If both fail, the strip says drafts could not be read and offers a retry — it never says there were none.' },
+        { tier: 'TIER 4', color: 'var(--ai)', b: 'AI thread or recents unavailable: the assistant opens empty with a line reading "earlier threads could not be loaded". No fabricated history.' },
+        { tier: 'Two or more', color: 'var(--ink-2)', b: 'One strip naming both losses in a single sentence. Never one strip per tier — stacking makes a degraded boot look broken.' },
+      ],
+
+      tabCases: [
+        { k: 'Sign-out elsewhere, no draft', v: 'This tab transitions to UNAUTH silently within 2s. No modal, because there is nothing to decide.' },
+        { k: 'Sign-out elsewhere, draft held', v: 'SC-09 modal. Three explicit choices, no default, no dismiss, no timeout.' },
+        { k: 'Different identity signs in', v: 'SC-09 variant. Drafts are held against the previous identity and are not visible to the new one. Stated in the modal.' },
+        { k: 'Workspace switched elsewhere', v: 'No effect. Workspace is per tab, not per session — two tabs in two workspaces is a supported state.' },
+        { k: 'Session refreshed elsewhere', v: 'This tab adopts the new expiry silently. A refresh is good news and needs no interface.' },
+        { k: 'Channel unavailable', v: 'If BroadcastChannel is blocked, fall back to a storage-event listener. If both fail, this tab discovers the sign-out on its next 401 and shows SC-04.' },
+      ],
+
+      flows: [
+        ['01', 'Cold boot', 'Phase 0 paints from the app-shell cache with no network call, then phases 1–3 run in order.', 'SC-01 → SC-03', 'None. A successful boot is silent.', 'T1 T2 T3 T4'],
+        ['02', 'Authenticated cold boot', 'Session cookie present and valid. Workspace resolved from URL, else last-used from localStorage.', 'SC-01 → SC-03', 'None, unless a draft exists.', 'T1 T2 T3 T4'],
+        ['03', 'Unauthenticated cold boot', 'No session. Phase 0 is skipped entirely — no cached shell is shown to an unauthenticated visitor.', 'SC-05', 'SC-COPY-02', 'Intent only'],
+        ['04', 'Session restoration', 'Valid session, tab reopened. Tier 1 from URL, tier 2 dropped, tier 3 and 4 offered.', 'SC-03 + SC-07', 'SC-COPY-06', 'T1 T3 T4'],
+        ['05', 'Session expired', 'Warm: banner in place, shell kept, content inert. Cold: centred card, no shell.', 'SC-04 / SC-05', 'SC-COPY-01', 'All held'],
+        ['06', 'Session invalidated', 'Password change, admin revocation or role change forcing rotation. Same as expiry, different sentence — it names the cause.', 'SC-04', 'SC-COPY-03', 'All held'],
+        ['07', 'Workspace restoration', 'Workspace read from URL first, then localStorage last-used. Confirmation strip for 4s per Entry rule 12.', 'SC-03', 'SC-COPY-07', 'T1 T2 T3 T4'],
+        ['08', 'Workspace unavailable', 'Archived, suspended, deleted or not a member. Shell kept, rail inert at 45%, other memberships offered.', 'SC-06', 'SC-COPY-08', 'T3 held for later'],
+        ['09', 'Multiple workspaces', 'No picker. Last-used wins. Drafts are workspace-scoped and only those for the entered workspace are offered.', 'SC-03', 'SC-COPY-07', 'Scoped to workspace'],
+        ['10', 'No workspace selected', 'Defers to Entry rule 13. This document contributes only the held-draft count shown on the chooser.', 'Chooser', 'SC-COPY-09', 'T3 count only'],
+        ['11', 'Deep-link restoration', 'Intent captured before any redirect, stored in sessionStorage, cleared on arrival. Single-use.', 'SC-01 → target', 'SC-COPY-04 while resolving', 'T1 from link'],
+        ['12', 'Return after login', 'Intent replayed once, then cleared. If the destination is now forbidden or gone, Entry rules 7 and 8 apply and intent is still cleared.', 'target / 403 / 404', 'SC-COPY-05', 'T3 T4'],
+        ['13', 'Return after re-auth', 'Popup closes, no navigation, no reload. Content un-dims and the tier 3 offer appears.', 'SC-04 → SC-03', 'SC-COPY-10', 'All'],
+        ['14', 'Logout', 'Deliberate. Tier 1 and 2 discarded, tier 3 kept 7 days and the count stated, tier 4 kept 30 days. If a draft is unsaved, the same three choices as SC-09 are offered first.', 'SC-10', 'SC-COPY-11', 'T3 T4 kept'],
+        ['15', 'Cross-tab conflict', 'BroadcastChannel "sig-session". Modal only when this tab holds a draft; otherwise a silent transition within 2s.', 'SC-09', 'SC-COPY-12', 'Person decides'],
+        ['16', 'Network failure', 'Three retries at 1s, 3s, 8s with jitter. Shell holds throughout. Then SC-08 with the correlation ID.', 'SC-02 → SC-08', 'SC-COPY-13', 'Nothing lost'],
+        ['17', 'Partial restoration', 'Session and workspace fine, one or more tiers failed. Destination is fully usable; one strip names what was lost.', 'SC-07', 'SC-COPY-14', 'Those that resolved'],
+        ['18', 'Loading behaviour', 'Four phases with the budgets in section 3. Destination-shaped skeletons. No full-screen spinner in any flow.', 'SC-01, SC-02', 'After 3s only: SC-COPY-15', 'n/a'],
+      ].map(([n, t, b, screen, copy, tiers]) => ({ n, t, b, screen, copy, tiers })),
+
+      viewports: [
+        {
+          size: '390 × 844', name: 'Phone',
+          shell: 'Bottom bar of 5 persists at 56px; top bar 52px with workspace name only. No rail.',
+          expiry: 'Bottom sheet, 60% height, drag-dismiss disabled. Actions stacked full-width at 44px. Content above stays visible and dimmed.',
+          offer: 'Sticky strip directly under the top bar, 2 lines max, actions collapse to “Restore” plus a ⋯ menu holding Compare and Discard.',
+          other: 'Conflict is a full-screen sheet, not a modal. Deep link resolves with a 3px top progress bar rather than a strip.',
+        },
+        {
+          size: '768 × 1024', name: 'Tablet portrait',
+          shell: 'Icon rail at 56px, labels on tap-hold. Top bar 56px, search collapses to an icon.',
+          expiry: 'Centred card at 480px over dimmed content. Shell fully retained and interactive.',
+          offer: 'Full-width strip in flow, all three actions visible, wrapping to a second line under 640px of content width.',
+          other: 'Conflict modal at 440px. SC-06 lists memberships in one column.',
+        },
+        {
+          size: '1024 × 768', name: 'Tablet landscape',
+          shell: 'Icon rail at 56px. Top bar 56px with search field restored at 180px.',
+          expiry: 'Inline banner in the content region, matching desktop. No centring, because the content column is wide enough.',
+          offer: 'Standard strip. Compare dialog becomes a single column with the diff stacked rather than side by side.',
+          other: 'Conflict modal at 440px. Height is the constraint here — the banner never exceeds 168px so content stays visible.',
+        },
+        {
+          size: '1280 × 800', name: 'Laptop',
+          shell: 'Full rail at 212px with labels. Top bar 56px complete.',
+          expiry: 'Inline banner, content region max 640px wide, left-aligned to the content column.',
+          offer: 'Standard strip, three actions inline, right-aligned cluster.',
+          other: 'Conflict modal 400px. Deep-link strip inline above the heading.',
+        },
+        {
+          size: '1440 × 900', name: 'Desktop — reference',
+          shell: 'Full rail 212px, content to 1360px. The canonical layout every screen above is drawn at.',
+          expiry: 'Inline banner, 640px, at the top of the content region.',
+          offer: 'Standard strip, full content width.',
+          other: 'Conflict modal 400px, centred. All specs in this document assume this viewport unless stated.',
+        },
+        {
+          size: '1600 × 900', name: 'Wide',
+          shell: 'Rail 212px unchanged — it does not grow. Content capped at 1360px with the surplus as margin.',
+          expiry: 'Banner stays 640px and does not stretch. A 1400px-wide sentence is unreadable.',
+          offer: 'Strip capped at 1360px with the content column, matching every other card.',
+          other: 'Modal 400px. Nothing in this document scales past its 1440 dimensions; the extra width is whitespace.',
+        },
+      ],
+
+      responsiveLaws: [
+        { t: 'Mobile is a sheet, desktop is a banner', b: 'A centred modal on a 390px viewport covers the content that proves the person did not lose their work. The sheet leaves the top 40% visible for exactly that reason.' },
+        { t: 'The bottom bar is the mobile shell', b: '“The frame is never blank” means the bottom bar and top bar paint in phase 0 on mobile too, from cache, with the workspace name. Mobile does not get a spinner either.' },
+        { t: 'Nothing stretches past 1440', b: 'The banner stays 640px and the content column 1360px. Wide viewports gain margin, not line length.' },
+        { t: 'Height is a real constraint at 1024 × 768', b: 'The banner is capped at 168px there so the dimmed content behind it remains visible. Every screen in this document is checked at 768px height, not only at width.' },
+      ],
+
+      interaction: [
+        { t: 'Re-authenticate', b: 'Focus moves to the primary action when the banner appears. Enter activates it.', key: '⏎' },
+        { t: 'Dismiss a partial-restore strip', b: 'Escape dismisses SC-07 only. It never dismisses SC-04 or SC-09, which have no dismiss.', key: 'Esc' },
+        { t: 'Restore a draft', b: 'Focusable in tab order after the page heading. Applying moves focus into the restored field, at the end of the text.', key: 'Tab, ⏎' },
+        { t: 'Discard a draft', b: 'Requires a second confirming press within 3s; the label changes to “Confirm discard” between them. No modal.', key: '⏎ ×2' },
+        { t: 'Compare drafts', b: 'Opens the diff dialog. Escape closes it and returns focus to the Compare button.', key: 'C' },
+        { t: 'Copy draft text', b: 'Available on SC-04, SC-09 and the offer strip. Confirms with a 1.5s inline tick, never a toast.', key: '⌘C on focus' },
+        { t: 'Retry a failed boot', b: 'Re-issues the resolution request. It never reloads the document — a reload discards tier 2 and any clipboard state.', key: '⏎' },
+        { t: 'Copy the correlation ID', b: 'On SC-08. Copies the ID alone, not the surrounding sentence.', key: '⌘⇧C' },
+        { t: 'Cross-tab conflict', b: 'The modal traps focus. Tab cycles the three actions only; there is no fourth focusable element.', key: 'Tab' },
+        { t: 'Draft capture cadence', b: 'On blur, on route change, on visibility change, and every 20s while the field is dirty. Never on keystroke.', key: 'automatic' },
+      ],
+
+      a11y: [
+        { sc: '1.3.1', t: 'Every restoration screen is a region with an accessible name. The offer strip is a complementary landmark, not an alert region — it is not urgent.' },
+        { sc: '1.4.3', t: 'Dimmed content at 32% is inert and aria-hidden, so its contrast is exempt. Every foreground string clears 4.5:1 in both themes.' },
+        { sc: '2.1.1', t: 'Restore, Compare, Discard, Copy, Retry and all three conflict actions are keyboard-operable in visual order.' },
+        { sc: '2.1.2', t: 'SC-09 is the only focus trap in the document. SC-04 does not trap: the shell remains reachable so the switcher and help still work.' },
+        { sc: '2.2.1', t: 'No session-expiry countdown is displayed and no state auto-dismisses. Where a 20-hour policy exists, a warning appears at 5 minutes and can be extended without losing context.' },
+        { sc: '2.2.6', t: 'Before any timed session end, the person is told what is preserved and for how long. This is the criterion the whole document exists to satisfy.' },
+        { sc: '2.4.3', t: 'Focus order after restoration is: banner heading, primary action, then the restored field. Never the search box.' },
+        { sc: '2.3.3', t: 'Under prefers-reduced-motion, shimmer becomes a static tint, the un-dim is instant, and the confirmation tick appears without scaling.' },
+        { sc: '3.2.2', t: 'Restoring a draft changes field content only. It never navigates, submits or moves the person off the page.' },
+        { sc: '4.1.3', t: 'SC-04 announces assertively once. SC-03, SC-07 and SC-08 announce politely. Skeleton-to-content transitions announce nothing.' },
+      ],
+
+      copy: [
+        { id: 'SC-COPY-01', t: 'Your session ended. Sign in again to carry on — your work on this page was saved 2 minutes ago.' },
+        { id: 'SC-COPY-02', t: 'Sign in to continue. You were opening Vantage Logistics — we will take you there once you are back.' },
+        { id: 'SC-COPY-03', t: 'Your session was ended because your password changed. Sign in again with your new credentials.' },
+        { id: 'SC-COPY-04', t: 'Taking you to Vantage Logistics.' },
+        { id: 'SC-COPY-05', t: 'Welcome back. Here is the account you were opening.' },
+        { id: 'SC-COPY-06', t: 'You have an unsaved note on this account, captured 14 minutes ago.' },
+        { id: 'SC-COPY-07', t: 'You are in Northwind Global — your last workspace.' },
+        { id: 'SC-COPY-08', t: 'Meridian Freight is archived. Read-only access, including exports, is still available.' },
+        { id: 'SC-COPY-09', t: '2 drafts are being kept for you.' },
+        { id: 'SC-COPY-10', t: 'You are signed back in. Nothing was lost — your note is below, saved 2 minutes before your session ended.' },
+        { id: 'SC-COPY-11', t: 'Signed out. 2 drafts will be kept for 7 days.' },
+        { id: 'SC-COPY-12', t: 'You signed out in another tab. Choose what happens to your unsaved note.' },
+        { id: 'SC-COPY-13', t: 'We could not load your workspace. You are signed in — this is not an authentication problem.' },
+        { id: 'SC-COPY-14', t: 'Your filters were restored; your scroll position was not.' },
+        { id: 'SC-COPY-15', t: 'Still loading your workspace.' },
+      ],
+
+      contract: [
+        'Phase 0 renders with zero network requests, from the app-shell cache, within 120ms of document load.',
+        'The last-known workspace name and colour are written to localStorage on every successful boot, under sig.cont.v1.ws.',
+        'No code path renders a full-viewport spinner or a blank frame. Grep for one before merge.',
+        'Every skeleton matches its destination footprint: card heights for Home, 44px rows for tables.',
+        'Once phase 1 paints, the rail component does not re-render through content load, workspace switch or continuity application.',
+        'Tier 1 state is serialised into the URL on every change, debounced 300ms, using replaceState not pushState.',
+        'Tier 2 state is written to sessionStorage on scroll-end and selection change; never read from a different tab.',
+        'Tier 3 drafts are written to IndexedDB on blur, route change, visibility change and every 20s while dirty — never per keystroke.',
+        'Tier 3 drafts sync to the server on blur and carry a captureTime ISO timestamp used verbatim in the offer copy.',
+        'Tier 3 is never applied without an explicit action. There is no configuration flag that changes this.',
+        'Discard deletes from IndexedDB and the server in one call and does not queue an undo.',
+        'Deep-link intent is captured before the first redirect, stored in sessionStorage, replayed once, then deleted.',
+        'Intent is deleted after replay even when the destination returns 403 or 404.',
+        'Re-authentication from SC-04 uses a popup. No code path navigates the tab away from a painted frame.',
+        'A BroadcastChannel named sig-session carries signout, signin and refresh events, with a storage-event fallback.',
+        'SC-09 appears only when this tab holds an unsaved draft; otherwise the tab transitions within 2s with no interface.',
+        'Boot resolution retries three times at 1s, 3s and 8s with jitter, then stops permanently and renders SC-08.',
+        'SC-08 includes the correlation ID from the failed request and never renders a sign-in control.',
+        'Exactly one continuity strip is visible at a time. Two failed tiers produce one strip naming both.',
+        'Every string in the copy table is used verbatim. No message is composed at runtime from fragments.',
+      ].map((t, i) => ({ n: i + 1, t })),
+
+      decisions: [
+        { id: 'D-01', t: 'Four tiers, one medium each', b: 'URL, sessionStorage, IndexedDB-plus-server, server. Anything in two media diverges, and divergence surfaces as a discarded draft reappearing.' },
+        { id: 'D-02', t: 'Tier 3 is offered, never applied', b: 'Silently restoring typed text overwrites what someone may have deliberately abandoned. The offer costs a strip; the silent restore costs trust permanently.' },
+        { id: 'D-03', t: 'Two expiry screens, not one', b: 'Warm keeps the shell because destroying a painted frame reads as data loss. Cold must not fake a shell, because a cached rail implies access that does not exist.' },
+        { id: 'D-04', t: 'Re-auth is a popup', b: 'A redirect from a painted frame loses tier 2 and any clipboard state, and returns the person to a page that has to rebuild itself. The popup keeps the tab alive.' },
+        { id: 'D-05', t: 'Tier 2 dies with the tab', b: 'Scroll position from three days ago is noise. Restoring it in a fresh tab is uncanny rather than helpful.' },
+        { id: 'D-06', t: 'Capture time always shown', b: '“Saved 14 minutes ago” lets someone judge whether a draft is worth keeping. “Unsaved changes” does not, and is a banned string.' },
+        { id: 'D-07', t: 'Discard is final', b: 'A recoverable discard is a draft that keeps coming back. The second-press confirmation is the safety, not a hidden undo.' },
+        { id: 'D-08', t: 'One modal in the whole document', b: 'SC-09 only, because it is the only state where the person must decide before anything else can happen. Everything else is inline.' },
+        { id: 'D-09', t: 'Workspace is per tab', b: 'Two tabs in two workspaces is supported and common for anyone with several memberships. A switch elsewhere does not touch this tab.' },
+        { id: 'D-10', t: 'Retry never reloads', b: 'Reloading to recover discards tier 2 and re-runs phase 0 for no benefit. Retry re-issues the failed request only.' },
+        { id: 'D-11', t: 'No expiry countdown', b: 'A visible timer creates anxiety and invites people to work faster rather than save. A 5-minute warning with an extend action is the humane form.' },
+        { id: 'D-12', t: 'One strip at a time', b: 'Stacked degradation notices make a working boot look broken. Two failures are described in one sentence.' },
+      ],
+
+      unresolved: [
+        { id: 'U-01', t: 'Draft retention window', owner: 'Legal + Security', b: 'This document assumes 7 days for tier 3 and 30 for tier 4. Unsaved drafts may contain customer-identifying text, so retention may be constrained by the DPA and by regional policy.', interim: 'implement 7 and 30 as configuration values, not constants.' },
+        { id: 'U-02', t: 'Server-side draft storage', owner: 'Architecture', b: 'Cross-device restoration requires drafts on the server. Whether that is acceptable for workspaces with customer-managed encryption keys is not a design decision.', interim: 'ship device-local IndexedDB only; the copy in this document already avoids promising cross-device.' },
+        { id: 'U-03', t: 'Session TTL and policy source', owner: 'Security + Platform', b: 'SC-04 states “after 8 hours · Northwind policy”. Whether TTL is per workspace, per IdP or global determines whether that sentence can name a source at all.', interim: 'render the sentence without a duration if the policy source is unavailable.' },
+        { id: 'U-04', t: 'AI thread staleness threshold', owner: 'Product', b: 'Tier 4 resumes an AI thread, but a thread whose underlying data has changed may produce a misleading continuation. The threshold at which a thread must be restarted rather than resumed is a product judgement.', interim: '24 hours, and the thread header states when it was last active.' },
+        { id: 'U-05', t: 'Behaviour under customer-managed key revocation', owner: 'Security', b: 'If a workspace revokes its key mid-session, held drafts become unreadable. Whether the person is told they existed is a compliance question, not a design one.', interim: 'treat as tier-3 read failure and use the “could not be read” copy, which does not assert a count.' },
+      ],
+
+      authority: [
+        { doc: 'Authenticated Entry', what: 'Owns all routing. This document is invoked by rules 4, 5, 6 and 22 and never makes a routing decision.', rel: 'Depends on', tone: 'brand' },
+        { doc: 'Application Shell', what: 'Owns the frame, the rail and the “frame is never blank” principle this document implements in four phases.', rel: 'Depends on', tone: 'brand' },
+        { doc: 'Design System v2.0', what: 'Every token, component, motion curve and contrast pair. No new component, no new token.', rel: 'Depends on', tone: 'brand' },
+        { doc: 'System States', what: 'Owns 403, 404, 500, maintenance and offline. This document links to them and does not redraw them.', rel: 'Depends on', tone: 'brand' },
+        { doc: 'Authentication', what: 'Owns sign-in, lockout and SC-10. This document supplies the retained intent and the held-draft count only.', rel: 'Depends on', tone: 'brand' },
+        { doc: 'Security Gates', what: 'Owns the step-up challenge itself. It depends on this document for what survives the interruption.', rel: 'Depended on by', tone: 'warn' },
+        { doc: 'Companies', what: 'Its URL-serialised view state is the tier 1 reference implementation. Its promise is now specified here.', rel: 'Supersedes', tone: 'risk' },
+        { doc: 'User Profile', what: 'Its offline queue is a tier 3 special case. The “waiting to save” copy there is consistent with this model and stands.', rel: 'Aligns', tone: 'pos' },
+      ].map(a => ({
+        doc: a.doc, what: a.what, rel: a.rel,
+        tagBg: a.tone === 'brand' ? 'var(--brand-tint)' : (a.tone === 'warn' ? 'var(--warn-tint)' : (a.tone === 'risk' ? 'var(--risk-tint)' : 'var(--pos-tint)')),
+        tagFg: a.tone === 'brand' ? 'var(--brand-ink)' : (a.tone === 'warn' ? 'var(--warn)' : (a.tone === 'risk' ? 'var(--risk)' : 'var(--pos)')),
+      })),
+
+      components: [
+        { t: 'Shell / Rail', v: false }, { t: 'Shell / TopBar', v: false },
+        { t: 'InlineBanner --e3', v: true }, { t: 'OfferStrip 3-action', v: true },
+        { t: 'Dialog --e4', v: false }, { t: 'Sheet (mobile)', v: false },
+        { t: 'Skeleton block', v: false }, { t: 'Button primary/secondary/destructive', v: false },
+        { t: 'Tag', v: false }, { t: 'DiffView', v: false },
+        { t: 'ProgressBar 3px', v: false }, { t: 'InlineTick 1.5s', v: false },
+      ].map(c => ({
+        t: c.t,
+        border: c.v ? 'var(--brand-line)' : 'var(--line-soft)',
+        bg: c.v ? 'var(--brand-tint)' : 'transparent',
+        color: c.v ? 'var(--brand-ink)' : 'var(--ink-2)',
+      })),
+
+      acceptance: [
+        { id: 'AC-01', t: 'From a cold cached load, the rail and top-bar geometry are visible in a screenshot taken at 120ms.' },
+        { id: 'AC-02', t: 'Throttle the session endpoint to 5s: the shell stays interactive, the content skeletons, and the 3s strip appears exactly once.' },
+        { id: 'AC-03', t: 'Type a note, force a 401: SC-04 appears, the shell is still clickable, and the note text is present in IndexedDB.' },
+        { id: 'AC-04', t: 'Complete re-authentication from SC-04: the URL is unchanged, scroll is unchanged, and the tier 3 offer appears.' },
+        { id: 'AC-05', t: 'Open a deep link while signed out, authenticate: the destination loads and sessionStorage no longer holds the intent.' },
+        { id: 'AC-06', t: 'Same as AC-05 but with a destination the person cannot access: the 403 renders and the intent is still cleared.' },
+        { id: 'AC-07', t: 'Reload with filters applied: all filters return from the URL and scroll returns to the top with SC-07 shown.' },
+        { id: 'AC-08', t: 'Open a second tab, sign out in the first while the second holds a draft: SC-09 appears within 2s in the second tab.' },
+        { id: 'AC-09', t: 'Same as AC-08 with no draft in the second tab: no modal appears and it reaches UNAUTH within 2s.' },
+        { id: 'AC-10', t: 'Two tabs in two different workspaces: switching workspace in one produces no change in the other.' },
+        { id: 'AC-11', t: 'Block the workspace endpoint entirely: exactly three retries occur, then SC-08 renders with a correlation ID and no sign-in control.' },
+        { id: 'AC-12', t: 'Corrupt the IndexedDB store: SC-07 states drafts could not be read and does not assert that there were none.' },
+        { id: 'AC-13', t: 'Discard a draft, reload: the draft is absent from IndexedDB, absent from the server, and no offer strip appears.' },
+        { id: 'AC-14', t: 'At 390 × 844 with an expired session: a bottom sheet appears, the bottom bar remains visible, and every action is at least 44px tall.' },
+      ],
+
+      colophon: [
+        { k: 'Document', v: 'Session Continuity · canonical' },
+        { k: 'Screens', v: '10 (SC-01 … SC-10)' },
+        { k: 'Flows', v: '18 of 18' },
+        { k: 'New tokens', v: 'None' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

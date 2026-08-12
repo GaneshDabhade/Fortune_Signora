@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes sgShimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes sgSpin { to { transform: rotate(360deg); } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em;padding:0 40px 120px">
+
+  <header style="max-width:1360px;margin:0 auto;padding:56px 0 36px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);font-size:11.5px;font-weight:600">Canonical · gate taxonomy authority</span>
+      <span style="font-size:11.5px;color:var(--ink-3)">Design system v2.0, unchanged · no backend property weakened</span>
+      <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};box-shadow:{{ lightShadow }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};box-shadow:{{ darkShadow }}" onClick="{{ setDark }}">Dark</span>
+      </span>
+    </div>
+    <h1 style="font-size:44px;line-height:1.06;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:20ch">Security Gates</h1>
+    <p style="font-size:17px;line-height:1.6;max-width:82ch;margin:18px 0 0;color:var(--ink-2);text-wrap:pretty">Sixteen states where Signora prevents, restricts, challenges or explains access. This document is the taxonomy and the disclosure authority for all sixteen; it draws only the five that no approved document already draws. The eleven that exist elsewhere are inventoried, disclosure-audited and cross-referenced — redrawing them would create a second version of a screen that is already correct.</p>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:34px;max-width:1120px">
+      <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="5">
+        <div style="padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid {{ s.border }};box-shadow:var(--e1)">
+          <div style="font-size:23px;font-weight:700;letter-spacing:-0.026em;line-height:1;font-variant-numeric:tabular-nums;color:{{ s.color }}">{{ s.v }}</div>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:6px;line-height:1.45">{{ s.l }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </header>
+
+  <section data-screen-label="01 Principles" style="max-width:1360px;margin:0 auto">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">01 · Security principles &amp; disclosure rules</div>
+    <div style="display:grid;grid-template-columns:1.05fr 1fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--risk-line);box-shadow:var(--e2);padding:24px 26px">
+        <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--risk)" stroke-width="1.6" stroke-linecap="round" style="flex:none"><path d="M8 1.5 3 3.5v4c0 3 2.2 5.4 5 6.5 2.8-1.1 5-3.5 5-6.5v-4L8 1.5Z"></path></svg>
+          <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">The governing rule</h2>
+        </div>
+        <p style="font-size:14.5px;line-height:1.65;margin:12px 0 0;max-width:66ch"><span style="font-weight:600">The interface never weakens a backend security property to produce a more helpful screen.</span> Where the data model deliberately withholds a fact, the gate withholds it too — even when that makes the message less satisfying, and even when a support ticket would be shorter if we said more.</p>
+        <p style="font-size:13.5px;line-height:1.65;color:var(--ink-2);margin:12px 0 0;max-width:74ch">The corollary matters as much: where the backend does <span style="font-style:italic">not</span> withhold a fact, hiding it is not security, it is discourtesy. A person removed from a workspace they used yesterday already knows it existed. Telling them the date and the actor discloses nothing they could not infer, and saves a support conversation.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:18px">
+          <sc-for list="{{ principles }}" as="p" hint-placeholder-count="6">
+            <div style="padding:15px 16px;border-radius:12px;background:{{ p.bg }};border:1px solid {{ p.border }}">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="width:18px;height:18px;flex:none;border-radius:5px;background:{{ p.markBg }};color:#fff;display:grid;place-items:center;font-size:9.5px;font-weight:700">{{ p.mark }}</span>
+                <div style="font-size:12.5px;font-weight:600">{{ p.t }}</div>
+              </div>
+              <div style="font-size:12px;color:var(--ink-2);margin-top:7px;line-height:1.55">{{ p.b }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--line-soft)">
+          <h3 style="font-size:17px;font-weight:600;letter-spacing:-0.016em;margin:0">Disclosure classification</h3>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">Every fact a gate might mention falls into one of four classes. The class is a property of the fact, not of the screen, so the same fact is treated identically in every gate.</p>
+        </div>
+        <sc-for list="{{ disclosure }}" as="d" hint-placeholder-count="4">
+          <div style="padding:15px 22px;border-bottom:1px solid var(--line-soft)">
+            <div style="display:flex;align-items:center;gap:9px;row-gap:6px;flex-wrap:wrap">
+              <span style="width:9px;height:9px;flex:none;border-radius:3px;background:{{ d.color }}"></span>
+              <span style="font-size:13px;font-weight:600">{{ d.t }}</span>
+              <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4);flex:none">{{ d.code }}</span>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ d.b }}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px">
+              <sc-for list="{{ d.examples }}" as="e" hint-placeholder-count="3">
+                <span style="display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:5px;background:var(--sunken);font-size:11px;color:var(--ink-2);white-space:nowrap">{{ e }}</span>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <div style="padding:14px 22px;font-size:11.5px;color:var(--ink-3);line-height:1.5">A fact\u2019s class is decided once, in this table, and Lane A reads it from here. A gate that needs a class ruling it cannot find raises it rather than choosing.</div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="02 Taxonomy" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">02 · Gate taxonomy — where each of the sixteen lives</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:flex;align-items:flex-start;gap:16px;row-gap:12px;flex-wrap:wrap;padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <div style="flex:1;min-width:300px">
+          <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Four kinds of gate, and one owner each</h2>
+          <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0;max-width:84ch">Prevent, restrict, challenge, explain. The kind determines the scope of the screen and whether the shell survives, which is why it is worth naming before the states are listed. Eleven states are owned by documents that already draw them; five are owned here.</p>
+        </div>
+        <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;flex:none">
+          <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="4">
+            <span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:8px;background:{{ k.bg }};color:{{ k.fg }};font-size:11.5px;font-weight:600;white-space:nowrap">{{ k.t }}</span>
+          </sc-for>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:1200px">
+          <div style="display:grid;grid-template-columns:34px 168px 96px 1fr 152px 1fr 96px;gap:13px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>#</div><div>State</div><div>Kind</div><div>Trigger</div><div>Owner document</div><div>Screen</div><div>Status</div>
+          </div>
+          <sc-for list="{{ taxonomy }}" as="t" hint-placeholder-count="16">
+            <div style="display:grid;grid-template-columns:34px 168px 96px 1fr 152px 1fr 96px;gap:13px;padding:12px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start;background:{{ t.bg }}">
+              <div style="font-variant-numeric:tabular-nums;color:var(--ink-4);font-weight:600">{{ t.n }}</div>
+              <div>
+                <div style="font-weight:600;line-height:1.4">{{ t.t }}</div>
+                <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4);margin-top:3px">{{ t.id }}</div>
+              </div>
+              <div><span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ t.kindBg }};color:{{ t.kindFg }};white-space:nowrap">{{ t.kind }}</span></div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ t.trigger }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ t.owner }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ t.screen }}</div>
+              <div><span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ t.stBg }};color:{{ t.stFg }};white-space:nowrap">{{ t.status }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;padding:20px 26px">
+        <sc-for list="{{ taxonomyLaws }}" as="l" hint-placeholder-count="4">
+          <div style="padding:15px 16px;border-radius:12px;background:{{ l.bg }};border:1px solid {{ l.border }}">
+            <div style="font-size:12.5px;font-weight:600">{{ l.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ l.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="03 Matrix" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">03 · State matrix — the four questions per gate</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:18px 26px;border-bottom:1px solid var(--line-soft)">
+        <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:0;max-width:88ch">Every gate answers the same four questions in the same order. The third column is the one that makes this a security document rather than an error-message inventory: it states what must be absent, so a reviewer can check for leakage rather than only for helpfulness.</p>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:1240px">
+          <div style="display:grid;grid-template-columns:150px 1fr 1fr 1fr 1fr;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Gate</div><div>What the user sees</div><div>What the user does</div><div>Must not disclose</div><div>What happens next</div>
+          </div>
+          <sc-for list="{{ matrix }}" as="m" hint-placeholder-count="16">
+            <div style="display:grid;grid-template-columns:150px 1fr 1fr 1fr 1fr;gap:14px;padding:14px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div>
+                <div style="font-weight:600;line-height:1.4">{{ m.t }}</div>
+                <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4);margin-top:3px">{{ m.id }}</div>
+              </div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ m.sees }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ m.does }}</div>
+              <div style="color:var(--risk);line-height:1.5">{{ m.omits }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ m.next }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="04 SG-01" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">04 · SG-01 — the indistinguishable invitation gate</div>
+    <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">SG-01 · gates 08 and 09</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--risk-tint);color:var(--risk)">One screen, two causes</span>
+        </div>
+        <div style="padding:22px;background:var(--bg)">
+          <div style="display:flex;align-items:center;gap:9px">
+            <span style="width:22px;height:22px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">FS</span>
+            <span style="font-size:12.5px;font-weight:600">Fortune Signora</span>
+          </div>
+          <div style="margin-top:18px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:22px">
+            <span style="width:32px;height:32px;border-radius:10px;background:var(--sunken);color:var(--ink-3);display:grid;place-items:center">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 4h12v8H2zM2 4l6 4.5L14 4"></path></svg>
+            </span>
+            <div style="font-size:18px;font-weight:600;letter-spacing:-0.018em;margin-top:13px">This invitation link cannot be used</div>
+            <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">If you already have a Signora account, sign in and the workspace will appear if you have been added to it. Otherwise, ask the person who invited you to send a new invitation.</p>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+              <span style="display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:8px;background:var(--brand);color:#fff;font-size:13px;font-weight:600">Sign in</span>
+              <span style="display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--line);font-size:13px;font-weight:600">Go to signora.com</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:13px;border-top:1px solid var(--line-soft);font-size:11px;color:var(--ink-3)">
+              <span style="font-family:ui-monospace,monospace">req_8d40-1c7b</span>
+              <span style="margin-left:auto">Quote this to support</span>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">No organisation name, no inviter, no address, no cause. The screen is identical whether the token never existed, was already consumed, expired outside its grace window, or is valid for a different identity.</div>
+        </div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--risk-line);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--line-soft)">
+          <h3 style="font-size:17px;font-weight:600;letter-spacing:-0.016em;margin:0">Why this screen is deliberately unhelpful</h3>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">The invitation endpoint takes an unauthenticated token from anyone on the internet. Any variation in its response — wording, latency, status code, page size — turns it into an oracle for testing whether an address belongs to a Signora customer.</p>
+        </div>
+        <sc-for list="{{ sg01Rules }}" as="r" hint-placeholder-count="7">
+          <div style="display:grid;grid-template-columns:126px 1fr;gap:14px;padding:11px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+            <span style="font-weight:600;line-height:1.4">{{ r.k }}</span>
+            <span style="color:var(--ink-2);line-height:1.5">{{ r.v }}</span>
+          </div>
+        </sc-for>
+        <div style="padding:15px 22px;background:var(--risk-tint);border-top:1px solid var(--risk-line)">
+          <div style="font-size:12px;font-weight:600">The one exception, and its condition</div>
+          <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">A token that is valid, unconsumed and addressed to the currently signed-in identity is not a gate at all — it is an acceptance, owned by Team Management. SG-01 is reached only when that test fails, and it never explains which part failed.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="05 SG-02 03" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">05 · SG-02 &amp; SG-03 — the challenge gates</div>
+    <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">SG-02 · step-up in place</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--brand-tint);color:var(--brand-ink)">Shell intact · action pending</span>
+          <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4);flex:none">1440 × 900</span>
+        </div>
+        <div style="padding:20px;background:var(--bg)">
+          <div style="border-radius:12px;border:1px solid var(--line-soft);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:11px;padding:0 14px;height:42px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+              <span style="width:20px;height:20px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8px;font-weight:700;flex:none">NG</span>
+              <span style="font-size:11.5px;font-weight:600;flex:none">Northwind Global</span>
+              <span style="font-size:11.5px;color:var(--ink-3);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Settings / API keys</span>
+              <span style="margin-left:auto;width:22px;height:22px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:600;flex:none">AD</span>
+            </div>
+            <div style="display:grid;grid-template-columns:112px 1fr">
+              <div style="background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:11px 8px;opacity:.5">
+                <sc-for list="{{ dimRail }}" as="r" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:7px;padding:5px 7px;font-size:11px;color:var(--ink-2)">
+                    <span style="width:4px;height:4px;flex:none;border-radius:2px;background:var(--ink-4)"></span>{{ r }}
+                  </div>
+                </sc-for>
+              </div>
+              <div style="padding:16px;background:var(--bg)">
+                <div style="opacity:.3">
+                  <div style="font-size:15px;font-weight:700;letter-spacing:-0.02em">API keys</div>
+                  <div style="height:11px;width:58%;border-radius:5px;background:var(--line-soft);margin-top:10px"></div>
+                  <div style="height:34px;border-radius:8px;background:var(--sunken);margin-top:12px"></div>
+                </div>
+                <div style="margin-top:14px;padding:17px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e3)">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <span style="width:24px;height:24px;flex:none;border-radius:7px;background:var(--brand-tint);color:var(--brand-ink);display:grid;place-items:center">
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2M3.5 7h9v6h-9z"></path></svg>
+                    </span>
+                    <span style="font-size:14.5px;font-weight:600">Confirm it is you</span>
+                    <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);flex:none">Required by Northwind policy</span>
+                  </div>
+                  <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:10px 0 0;max-width:60ch">Revoking an API key cannot be undone and will stop any integration using it. Enter the 6-digit code from your authenticator to continue. <span style="font-weight:600;color:var(--ink)">Nothing has been revoked yet.</span></p>
+                  <div style="display:flex;gap:7px;margin-top:14px;flex-wrap:wrap">
+                    <sc-for list="{{ otpBoxes }}" as="o" hint-placeholder-count="6">
+                      <span style="width:36px;height:42px;border-radius:8px;border:1px solid {{ o.border }};box-shadow:{{ o.shadow }};background:var(--surface);display:grid;place-items:center;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums">{{ o.v }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;row-gap:9px;flex-wrap:wrap;margin-top:15px">
+                    <span style="display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:8px;background:var(--brand);color:#fff;font-size:13px;font-weight:600;box-shadow:var(--e1)">Confirm and revoke</span>
+                    <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:13px;font-weight:600">Cancel</span>
+                    <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);flex:none">Valid for 5 minutes</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:0 20px;margin-top:16px">
+            <sc-for list="{{ sg02Spec }}" as="s" hint-placeholder-count="10">
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                <span style="color:var(--ink-3);flex:none">{{ s.k }}</span>
+                <span style="text-align:right;line-height:1.45">{{ s.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">SG-03 · IdP re-assertion</span>
+            <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--sunken);color:var(--ink-3);flex:none">Popup, not redirect</span>
+          </div>
+          <div style="padding:20px">
+            <div style="padding:18px 17px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="width:26px;height:26px;flex:none;border-radius:8px;background:var(--sunken);border:1px solid var(--line-soft);display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--ink-2)">SSO</span>
+                <span style="font-size:14px;font-weight:600">Northwind needs to confirm your sign-in</span>
+              </div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">Your organisation requires a fresh sign-in before changes to security settings. This opens Okta in a new window; this page and everything on it stays exactly as it is.</p>
+              <div style="display:flex;align-items:center;gap:9px;row-gap:8px;flex-wrap:wrap;margin-top:13px">
+                <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600">Continue with Okta</span>
+                <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Cancel</span>
+              </div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.5">If the window does not open, a link is shown instead. Signora never assumes a popup succeeded.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0;margin-top:14px">
+              <sc-for list="{{ sg03Spec }}" as="s" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:98px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                  <span style="font-weight:600;color:var(--ink-3)">{{ s.k }}</span>
+                  <span style="color:var(--ink-2);line-height:1.5">{{ s.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e2);padding:20px 22px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--warn)">Challenge failure — what must not happen</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+            <sc-for list="{{ challengeFail }}" as="c" hint-placeholder-count="5">
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <span style="width:15px;height:15px;flex:none;margin-top:2px;border-radius:4px;background:{{ c.bg }};color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">{{ c.mark }}</span>
+                <div>
+                  <div style="font-size:12.5px;font-weight:600">{{ c.t }}</div>
+                  <div style="font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ c.b }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="06 SG-04 05" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">06 · SG-04 &amp; SG-05 — fail closed, and the deliberate catch-all</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:9px;padding:12px 18px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10px;font-weight:600;color:var(--ink-2)">SG-04 · config unavailable</span>
+          <span style="margin-left:auto;font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--warn-tint);color:var(--warn);flex:none">Fails closed</span>
+        </div>
+        <div style="padding:18px">
+          <div style="padding:18px 17px;border-radius:12px;background:var(--warn-tint);border:1px solid var(--warn-line)">
+            <span style="width:28px;height:28px;border-radius:8px;background:var(--surface);color:var(--warn);display:grid;place-items:center">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8 2.5 14 13H2L8 2.5ZM8 6.5v3M8 11h.01"></path></svg>
+            </span>
+            <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em;margin-top:11px">We cannot check this right now</div>
+            <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">A security check needed for this action is unavailable. Signora is refusing rather than allowing it — when a policy cannot be read, the safe answer is no.</p>
+            <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:12px">
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">Try again</span>
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600">Status page</span>
+            </div>
+            <div style="font-size:11px;color:var(--ink-3);margin-top:11px;line-height:1.45">req_1f93-06ba · everything else on this page continues to work</div>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:13px;line-height:1.5">Naming the failure as a refusal rather than a fault is the whole point. “Something went wrong” invites a retry loop; “we are refusing” tells the person the product is behaving correctly.</div>
+        </div>
+      </div>
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:9px;padding:12px 18px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10px;font-weight:600;color:var(--ink-2)">SG-05 · generic failure</span>
+          <span style="margin-left:auto;font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--sunken);color:var(--ink-3);flex:none">Rare by design</span>
+        </div>
+        <div style="padding:18px">
+          <div style="padding:18px 17px;border-radius:12px;background:var(--sunken);border:1px solid var(--line-soft)">
+            <span style="width:28px;height:28px;border-radius:8px;background:var(--surface);color:var(--ink-3);display:grid;place-items:center">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2M3.5 7h9v6h-9z"></path></svg>
+            </span>
+            <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em;margin-top:11px">Access could not be granted</div>
+            <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Quote the identifier below to support and they will be able to see what happened.</p>
+            <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:12px">
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">Copy identifier</span>
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600">Contact support</span>
+            </div>
+            <div style="font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-3);margin-top:11px">req_c057-33e1</div>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:13px;line-height:1.5">Its emptiness is the specification. Any gate that can classify itself must not reach SG-05; every arrival here is logged as a classification defect and reviewed weekly.</div>
+        </div>
+      </div>
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Gate loading &amp; retry</div>
+        <div style="padding:18px 20px">
+          <div style="padding:14px 15px;border-radius:12px;background:var(--sunken)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="width:14px;height:14px;flex:none;border-radius:999px;border:2px solid var(--line);border-top-color:var(--brand);animation:sgSpin .9s linear infinite"></span>
+              <span style="font-size:12.5px;color:var(--ink-2)">Checking your access…</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+              <sc-for list="{{ gateSkeleton }}" as="s" hint-placeholder-count="3">
+                <div style="height:9px;width:{{ s }};border-radius:5px;background:linear-gradient(90deg,var(--surface) 25%,var(--line-soft) 50%,var(--surface) 75%);background-size:200% 100%;animation:sgShimmer 1.4s ease-in-out infinite"></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0;margin-top:14px">
+            <sc-for list="{{ gateLoading }}" as="l" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:86px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                <span style="font-weight:600;color:var(--ink-3)">{{ l.k }}</span>
+                <span style="color:var(--ink-2);line-height:1.5">{{ l.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="07 Responsive" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">07 · Responsive, accessibility &amp; copy</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="overflow-x:auto">
+        <div style="min-width:1140px">
+          <div style="display:grid;grid-template-columns:104px 1fr 1fr 1fr;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Viewport</div><div>Challenge gates · SG-02, SG-03</div><div>Explain gates · SG-01, SG-04, SG-05</div><div>Prevent &amp; restrict gates</div>
+          </div>
+          <sc-for list="{{ viewports }}" as="v" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:104px 1fr 1fr 1fr;gap:14px;padding:14px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div>
+                <div style="font-family:ui-monospace,monospace;font-size:11px;font-weight:600">{{ v.size }}</div>
+                <div style="font-size:10.5px;color:var(--ink-4);margin-top:3px">{{ v.name }}</div>
+              </div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.challenge }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.explain }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.prevent }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px;margin-top:14px">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">WCAG 2.2 AA</div>
+        <sc-for list="{{ a11y }}" as="a" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:52px 1fr;gap:12px;padding:11px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+            <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ a.sc }}</span>
+            <span style="color:var(--ink-2);line-height:1.55">{{ a.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Copy — verbatim</div>
+        <sc-for list="{{ copy }}" as="c" hint-placeholder-count="10">
+          <div style="padding:11px 20px;border-bottom:1px solid var(--line-soft)">
+            <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ c.id }}</div>
+            <div style="font-size:12.5px;margin-top:4px;line-height:1.5">“{{ c.t }}”</div>
+          </div>
+        </sc-for>
+        <div style="padding:13px 20px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Banned in every gate: “invalid credentials”, “user not found”, “incorrect code”, “no such workspace”, “unauthorized” alone, and any sentence naming a fact classified DISC_NEVER.</div>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft)">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--warn)">Implementation dependencies</div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">Not invented as shipped capability. Each has an interim that degrades safely.</div>
+        </div>
+        <sc-for list="{{ dependencies }}" as="d" hint-placeholder-count="4">
+          <div style="padding:13px 20px;border-bottom:1px solid var(--line-soft)">
+            <div style="display:flex;align-items:center;gap:9px;row-gap:6px;flex-wrap:wrap">
+              <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--warn);font-weight:600">{{ d.id }}</span>
+              <span style="font-size:12.5px;font-weight:600">{{ d.t }}</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--sunken);color:var(--ink-3);white-space:nowrap;flex:none">{{ d.owner }}</span>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.5">{{ d.b }}</div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">Interim: {{ d.interim }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="08 Contract" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">08 · Contract, non-goals &amp; acceptance</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Implementation contract — Lane A checklist</h2>
+        <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:7px 0 0">Twenty items. Items 1 to 6 are security assertions and should be covered by tests that fail the build, not by review.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:0 26px;padding:8px 26px 20px">
+        <sc-for list="{{ contract }}" as="c" hint-placeholder-count="20">
+          <div style="display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--line-soft);align-items:flex-start">
+            <span style="width:18px;height:18px;flex:none;margin-top:2px;border-radius:5px;border:1.5px solid {{ c.border }};background:{{ c.bg }};display:grid;place-items:center;font-size:9px;font-weight:700;color:{{ c.color }};font-variant-numeric:tabular-nums">{{ c.n }}</span>
+            <span style="font-size:12.5px;line-height:1.55">{{ c.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Acceptance criteria</div>
+        <sc-for list="{{ acceptance }}" as="a" hint-placeholder-count="12">
+          <div style="display:grid;grid-template-columns:62px 1fr;gap:12px;padding:10px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);font-weight:600">{{ a.id }}</span>
+            <span style="line-height:1.55">{{ a.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Explicit non-goals</div>
+          <sc-for list="{{ nonGoals }}" as="s" hint-placeholder-count="9">
+            <div style="display:flex;gap:10px;padding:10px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:flex-start">
+              <span style="width:14px;height:14px;flex:none;margin-top:3px;border-radius:4px;background:var(--risk);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">✕</span>
+              <span style="color:var(--ink-2);line-height:1.5">{{ s }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:22px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Dependencies &amp; components</div>
+          <p style="font-size:12px;line-height:1.55;color:var(--ink-2);margin:9px 0 0">Depends on Authentication (sign-in, lockout, invitation-expired), Session Continuity (expiry, conflict, what survives a challenge), Workspace Chooser (WS-C, WS-B, WS-D), System States (403, 404, account lifecycle), Security Center (factor enrolment), Application Shell (frame), Help Center (diagnostics). No new component, no new token.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
+            <sc-for list="{{ components }}" as="c" hint-placeholder-count="10">
+              <span style="display:inline-flex;align-items:center;height:25px;padding:0 9px;border-radius:6px;border:1px solid var(--line-soft);background:var(--sunken);font-size:11px;font-family:ui-monospace,monospace;color:var(--ink-2);white-space:nowrap">{{ c }}</span>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:24px;row-gap:12px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft)">
+            <sc-for list="{{ colophon }}" as="c" hint-placeholder-count="4">
+              <div>
+                <div style="font-size:11px;color:var(--ink-3)">{{ c.k }}</div>
+                <div style="font-size:13px;font-weight:600;margin-top:2px">{{ c.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0', '--pos-line': '#c9e6da',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4', '--warn-line': '#efdcc0',
+      '--risk': '#a83329', '--risk-tint': '#fcefed', '--risk-line': '#f2d5d1',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f', '--pos-line': '#1d4433',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113', '--warn-line': '#453520',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17', '--risk-line': '#4a2a25',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      lightShadow: dark ? 'none' : 'var(--e1)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+      darkShadow: dark ? 'var(--e1)' : 'none',
+
+      heroStats: [
+        { v: '16', l: 'States classified and disclosure-audited', color: 'var(--ink)', border: 'var(--line-soft)' },
+        { v: '5', l: 'Drawn here — nothing else draws them', color: 'var(--brand-ink)', border: 'var(--brand-line)' },
+        { v: '11', l: 'Owned elsewhere, cross-referenced only', color: 'var(--pos)', border: 'var(--pos-line)' },
+        { v: '3', l: 'Implementation dependencies, not invented', color: 'var(--warn)', border: 'var(--line-soft)' },
+        { v: '0', l: 'Backend properties weakened', color: 'var(--pos)', border: 'var(--pos-line)' },
+      ],
+
+      principles: [
+        { mark: '1', t: 'Existence is the first secret', b: 'A gate never confirms that a person, workspace, organisation or invitation exists unless the viewer already had a relationship with it. This is what prevents enumeration by trying slugs or addresses.', markBg: 'var(--risk)', bg: 'var(--risk-tint)', border: 'var(--risk-line)' },
+        { mark: '2', t: 'Prior access changes the calculus', b: 'Someone who was a member yesterday already knows the workspace exists. Naming the date and the actor of their removal discloses nothing new and prevents a support ticket.', markBg: 'var(--pos)', bg: 'var(--pos-tint)', border: 'var(--pos-line)' },
+        { mark: '3', t: 'Identical responses for distinguishable failures', b: 'Where two causes must not be distinguishable — an invitation that never existed versus one addressed to someone else — the gate renders one screen, with one message, in the same time.', markBg: 'var(--risk)', bg: 'var(--risk-tint)', border: 'var(--risk-line)' },
+        { mark: '4', t: 'Never hint at the shape of a credential', b: 'No gate states which factor failed, how many attempts remain beyond a policy-approved count, or whether an address is registered.', markBg: 'var(--risk)', bg: 'var(--risk-tint)', border: 'var(--risk-line)' },
+        { mark: '5', t: 'Name the resolver, never the data', b: 'A permission gate names the missing role and who can grant it. It never names, counts, previews or blurs the withheld content.', markBg: 'var(--brand)', bg: 'var(--brand-tint)', border: 'var(--brand-line)' },
+        { mark: '6', t: 'A correlation ID is always safe', b: 'Every gate carries one. It is the mechanism by which support can see what the person cannot, which is what allows the screen to say less.', markBg: 'var(--brand)', bg: 'var(--brand-tint)', border: 'var(--brand-line)' },
+      ],
+
+      disclosure: [
+        {
+          t: 'Class A — never disclosed', code: 'DISC_NEVER', color: 'var(--risk)',
+          b: 'Withheld by the backend as a deliberate property. The interface must not reveal it even indirectly, through wording, timing, response size or the presence of an action.',
+          examples: ['Whether an email is registered', 'Whether a workspace slug exists', 'Which authentication factor failed', 'Whether an invitation was reassigned'],
+        },
+        {
+          t: 'Class B — disclosed only to a prior party', code: 'DISC_PRIOR', color: 'var(--warn)',
+          b: 'Facts the viewer already possessed through a relationship that has since ended. Disclosing them adds no information and materially reduces confusion.',
+          examples: ['A workspace they were a member of', 'The date their membership ended', 'The actor who ended it', 'A role they used to hold'],
+        },
+        {
+          t: 'Class C — disclosed to the subject', code: 'DISC_SELF', color: 'var(--brand)',
+          b: 'Facts about the viewer\u2019s own account and session. Freely stated to them, never to anyone else, and never in a shared or logged surface.',
+          examples: ['Their own session expiry', 'Their own device list', 'Their own lock status', 'Their own current roles'],
+        },
+        {
+          t: 'Class D — always disclosed', code: 'DISC_OPEN', color: 'var(--pos)',
+          b: 'Facts that carry no tenancy information and make every gate more usable. Omitting them is not security; it is an unhelpful screen with no compensating benefit.',
+          examples: ['The correlation ID', 'The name of the missing role', 'The support route', 'Whether this is a policy or a fault'],
+        },
+      ],
+
+      kinds: [
+        { t: 'Prevent — no session', bg: 'var(--risk-tint)', fg: 'var(--risk)' },
+        { t: 'Restrict — session, no rights', bg: 'var(--warn-tint)', fg: 'var(--warn)' },
+        { t: 'Challenge — prove again', bg: 'var(--brand-tint)', fg: 'var(--brand-ink)' },
+        { t: 'Explain — state a boundary', bg: 'var(--sunken)', fg: 'var(--ink-2)' },
+      ],
+
+      taxonomy: [
+        ['01', 'Unauthenticated access', 'gate.unauth', 'Prevent', 'Any request with no valid session, cold.', 'Authentication', 'Sign-in screen. Intent retained by Session Continuity.', 'Exists', 'pos', 'risk'],
+        ['02', 'Session expired', 'gate.expired', 'Prevent', 'Session clock reaches zero, or a 401 on a painted frame.', 'Session Continuity', 'SC-04 warm banner · SC-05 cold card.', 'Exists', 'pos', 'risk'],
+        ['03', 'Account locked', 'gate.locked', 'Prevent', 'Failed-attempt threshold reached at the IdP or locally.', 'Authentication', 'Locked screen with unlock timing.', 'Exists', 'pos', 'risk'],
+        ['04', 'Account disabled', 'gate.disabled', 'Prevent', 'Administrator or Signora has disabled the identity.', 'System States', 'Account lifecycle section (to add per its U-list).', 'Partial', 'warn', 'risk'],
+        ['05', 'Workspace access denied', 'gate.wsdenied', 'Restrict', 'URL names a workspace the person is not a member of.', 'Workspace Chooser', 'WS-C · never the generic 403.', 'Exists', 'pos', 'warn'],
+        ['06', 'Membership revoked', 'gate.revoked', 'Restrict', 'Membership ends while the person is signed in.', 'Workspace Chooser', 'WS-C, plus the mid-session variant.', 'Exists', 'pos', 'warn'],
+        ['07', 'Invitation expired', 'gate.inviteexp', 'Explain', 'Invitation token is past its validity window.', 'Authentication', 'Expired-invitation screen with a resend request.', 'Exists', 'pos', ''],
+        ['08', 'Invitation invalid', 'gate.inviteinv', 'Explain', 'Token is malformed, consumed, or was never issued.', 'This document', 'SG-01 · single indistinguishable screen.', 'Drawn here', 'brand', ''],
+        ['09', 'Invitation mismatch', 'gate.invitemis', 'Explain', 'Token is valid but addressed to a different identity.', 'This document', 'SG-01 · the same screen as 08, deliberately.', 'Drawn here', 'brand', ''],
+        ['10', 'Permission denied', 'gate.perm', 'Restrict', 'Role lacks a capability inside a workspace they can see.', 'System States', '403 page · plus the in-place variant on Home.', 'Exists', 'pos', 'warn'],
+        ['11', 'Unauthorized deep link', 'gate.deeplink', 'Restrict', 'Intent resolves to an object the person cannot read.', 'System States', '403 via Entry rule 7.', 'Exists', 'pos', 'warn'],
+        ['12', 'Missing workspace context', 'gate.nocontext', 'Explain', 'Valid session, no resolvable workspace.', 'Workspace Chooser', 'WS-B chooser · WS-D no workspace.', 'Exists', 'pos', ''],
+        ['13', 'Re-authentication required', 'gate.stepup', 'Challenge', 'A security-sensitive action, or workspace policy demanding step-up.', 'This document', 'SG-02 step-up · SG-03 IdP re-assertion.', 'Drawn here', 'brand', 'brand'],
+        ['14', 'Session conflict', 'gate.conflict', 'Prevent', 'Another tab signed out or signed in as another identity.', 'Session Continuity', 'SC-09 modal.', 'Exists', 'pos', 'risk'],
+        ['15', 'Security config unavailable', 'gate.confdown', 'Explain', 'Policy or MFA service cannot be reached to evaluate a gate.', 'This document', 'SG-04 · fail closed, say so.', 'Drawn here', 'brand', ''],
+        ['16', 'Generic security failure', 'gate.generic', 'Explain', 'A gate cannot classify its own failure.', 'This document', 'SG-05 · the deliberate catch-all.', 'Drawn here', 'brand', ''],
+      ].map(([n, t, id, kind, trigger, owner, screen, status, stTone, kindTone]) => ({
+        n, t, id, kind, trigger, owner, screen, status,
+        kindBg: kindTone ? (kindTone === 'brand' ? 'var(--brand-tint)' : 'var(--' + kindTone + '-tint)') : 'var(--sunken)',
+        kindFg: kindTone ? (kindTone === 'brand' ? 'var(--brand-ink)' : 'var(--' + kindTone + ')') : 'var(--ink-2)',
+        stBg: stTone === 'pos' ? 'var(--pos-tint)' : (stTone === 'warn' ? 'var(--warn-tint)' : 'var(--brand-tint)'),
+        stFg: stTone === 'pos' ? 'var(--pos)' : (stTone === 'warn' ? 'var(--warn)' : 'var(--brand-ink)'),
+        bg: status === 'Drawn here' ? 'var(--brand-tint)' : 'transparent',
+      })),
+
+      taxonomyLaws: [
+        { t: 'Eleven states are not redrawn', b: 'They are owned by approved documents that already draw them correctly. This document classifies them, audits their disclosure and cross-references them. A second drawing of a correct screen is a liability, not a deliverable.', bg: 'var(--pos-tint)', border: 'var(--pos-line)' },
+        { t: 'Kind determines scope, not severity', b: 'Prevent gates destroy or forbid the shell; restrict gates keep it; challenge gates overlay it without navigating; explain gates sit inside it. The kind is the first thing an implementer needs and the last thing usually written down.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'Gates 08 and 09 share one screen on purpose', b: 'An invitation that never existed and one addressed to someone else must be indistinguishable, including in response time. Two screens here would turn the invitation endpoint into an address oracle.', bg: 'var(--risk-tint)', border: 'var(--risk-line)' },
+        { t: 'Three implementation dependencies, not inventions', b: 'Step-up scope, device-trust signals and policy-source resolution do not exist as shipped capability. They are recorded in section 8 with interim behaviour rather than specified as though they were available.', bg: 'var(--warn-tint)', border: 'var(--warn-line)' },
+      ],
+
+      matrix: [
+        {
+          t: 'Unauthenticated', id: 'gate.unauth',
+          sees: 'The sign-in screen, with one line naming the destination they were trying to reach if it is a Class B fact.',
+          does: 'Authenticates. Intent is replayed once on success.',
+          omits: 'Whether their address is registered. Whether the destination exists. Any workspace name they have never been a member of.',
+          next: 'Entry rule 6 replays intent, or rules 11–14 resolve a workspace.',
+        },
+        {
+          t: 'Session expired', id: 'gate.expired',
+          sees: 'Warm: a banner over dimmed content, shell intact. Cold: a centred card, no shell. Their own preserved-draft count.',
+          does: 'Re-authenticates in a popup. Route, scroll and drafts survive.',
+          omits: 'Nothing further — expiry facts about their own session are Class C and stated plainly, including the policy duration where its source is known.',
+          next: 'Returns to the same route. SC-COPY-10 confirms nothing was lost.',
+        },
+        {
+          t: 'Account locked', id: 'gate.locked',
+          sees: 'That the account is locked, the unlock time if policy permits, and the self-service route.',
+          does: 'Waits, or uses the unlock route, or contacts their administrator.',
+          omits: 'Which factor failed. Remaining attempts beyond a policy-approved count. Whether the lock came from Signora or the IdP, unless the IdP owns the unlock.',
+          next: 'Unlock returns to the sign-in screen with intent retained.',
+        },
+        {
+          t: 'Account disabled', id: 'gate.disabled',
+          sees: 'That access has been withdrawn, who withdrew it — Signora or their organisation — and the support route.',
+          does: 'Contacts the named party. No self-service path exists and none is implied.',
+          omits: 'The reason, unless their administrator recorded one for release. Whether data is retained or deleted. Any workspace membership state.',
+          next: 'Terminal. No route into the product from this screen.',
+        },
+        {
+          t: 'Workspace denied', id: 'gate.wsdenied',
+          sees: 'For a workspace they were in: the name, the date access ended, the actor. For one they never had: the 404, which reveals nothing.',
+          does: 'Enters another workspace, or requests access where the org is discoverable.',
+          omits: 'For a never-member: whether the workspace exists at all, its name, its size, or that anyone is in it.',
+          next: 'WS-C offers their other memberships; the 404 offers navigation.',
+        },
+        {
+          t: 'Membership revoked', id: 'gate.revoked',
+          sees: 'A notice naming what changed and by whom. In-flight work is saved where possible and its fate stated.',
+          does: 'Moves to another workspace, or reaches WS-D if that was their only one.',
+          omits: 'Why they were removed. Who remains in the workspace. Any content they can no longer read.',
+          next: 'Selection rules re-run; the screen never becomes a bare 403.',
+        },
+        {
+          t: 'Invitation expired', id: 'gate.inviteexp',
+          sees: 'That the invitation is no longer valid and that a new one can be requested. The requesting action does not confirm a recipient.',
+          does: 'Requests a new invitation, which is delivered out of band if the address is valid.',
+          omits: 'The inviting organisation, unless the token proves the person was its intended recipient. The inviter\u2019s name. Whether a resend was actually sent.',
+          next: 'A confirmation that a request was recorded — never that an email was sent.',
+        },
+        {
+          t: 'Invitation invalid', id: 'gate.inviteinv',
+          sees: 'SG-01. One sentence: this invitation link cannot be used. No cause, no organisation, no address.',
+          does: 'Signs in if they already have an account, or asks the person who invited them.',
+          omits: 'Whether the token ever existed, was consumed, or belongs to another identity. Constant response time enforced.',
+          next: 'Sign-in, or nothing. This gate is deliberately a dead end with two ordinary exits.',
+        },
+        {
+          t: 'Invitation mismatch', id: 'gate.invitemis',
+          sees: 'SG-01, byte-identical to gate 08 — including the correlation ID format and the response latency.',
+          does: 'The same two exits. Signing in as the correct identity resolves it silently.',
+          omits: 'That a mismatch is what happened. The identity the invitation was for. That the token is valid at all.',
+          next: 'If they sign in as the invited identity, acceptance proceeds normally with no reference to this gate.',
+        },
+        {
+          t: 'Permission denied', id: 'gate.perm',
+          sees: 'The missing role by name, and the people who can grant it. Full page for a route; in-place panel for a control.',
+          does: 'Requests access. The request carries what they attempted and from where.',
+          omits: 'The withheld data in any form — no count, no preview, no blur, no aggregate. Nothing about who else has the role beyond named approvers.',
+          next: 'An answer either way. A request that disappears silently is the failure mode this exists to prevent.',
+        },
+        {
+          t: 'Unauthorized deep link', id: 'gate.deeplink',
+          sees: 'The 403 for that object, naming the role required to read objects of that type.',
+          does: 'Requests access, or navigates to what they can see.',
+          omits: 'Whether the specific object exists. Its name, owner, workspace or type beyond what the URL already stated.',
+          next: 'Intent is cleared after the 403 renders, so a refresh does not retry it.',
+        },
+        {
+          t: 'Missing context', id: 'gate.nocontext',
+          sees: 'The chooser, or WS-D with the variant matched to how their account was created.',
+          does: 'Chooses, creates where permitted, or waits for provisioning.',
+          omits: 'For SSO identities: any workspace their organisation holds that they are not assigned to. Creation is suppressed rather than shown failing.',
+          next: 'Selection rules resolve, or polling admits them when provisioning completes.',
+        },
+        {
+          t: 'Re-authentication', id: 'gate.stepup',
+          sees: 'SG-02 in place over the current screen, naming the action being protected and the factor required.',
+          does: 'Completes the challenge. The action then proceeds without being re-entered.',
+          omits: 'Which enrolled factors exist beyond the one being requested. Any hint about the credential itself. Attempt counts beyond policy.',
+          next: 'The original action executes. Failure returns to SG-02 with the action still pending, never discarded.',
+        },
+        {
+          t: 'Session conflict', id: 'gate.conflict',
+          sees: 'SC-09. What happened in the other tab, and the fate of unsaved work here.',
+          does: 'Chooses keep, copy or discard. No default is applied.',
+          omits: 'Which other tab, which device, or any identity detail of the person who signed in — even when it is themselves.',
+          next: 'Sign-out completes, or the new session is adopted.',
+        },
+        {
+          t: 'Config unavailable', id: 'gate.confdown',
+          sees: 'SG-04. That a security check cannot be completed right now, and that Signora is therefore refusing rather than permitting.',
+          does: 'Retries, or waits. The protected action is not available in the meantime.',
+          omits: 'Which policy service failed. What the policy would have said. Any suggestion that proceeding is possible.',
+          next: 'Retry re-evaluates. It never falls open, and the screen says that in plain words.',
+        },
+        {
+          t: 'Generic failure', id: 'gate.generic',
+          sees: 'SG-05. That access could not be granted, and a correlation ID. Nothing else, deliberately.',
+          does: 'Retries once, then contacts support with the ID.',
+          omits: 'Everything. This gate exists precisely for the case where the system cannot safely say more, and its emptiness is the specification.',
+          next: 'Support resolves it from the ID. The screen is designed to be rare and unhelpful by intent.',
+        },
+      ],
+
+      sg01Rules: [
+        { k: 'Response body', v: 'Byte-identical across all four causes: never issued, already consumed, expired beyond grace, addressed to another identity.' },
+        { k: 'Status code', v: 'Identical. A distinct code for “consumed” would be as revealing as distinct copy.' },
+        { k: 'Latency', v: 'Padded to a fixed floor so a database miss cannot be distinguished from a mismatch by timing.' },
+        { k: 'Correlation ID', v: 'Always present, always the same format. Support resolves the real cause from it; the page never carries it.' },
+        { k: 'Actions', v: 'Exactly two, always the same two. A conditional third action would itself signal which cause applied.' },
+        { k: 'Logging', v: 'The real cause is logged server-side with the ID. This is the mechanism that lets the screen say nothing.' },
+        { k: 'Rate limiting', v: 'Applied per source, because a screen that reveals nothing per attempt can still reveal something across ten thousand.' },
+      ],
+
+      otpBoxes: [
+        { v: '4', border: 'var(--line)', shadow: 'none' },
+        { v: '9', border: 'var(--line)', shadow: 'none' },
+        { v: '2', border: 'var(--line)', shadow: 'none' },
+        { v: '', border: 'var(--brand)', shadow: '0 0 0 3px var(--brand-tint)' },
+        { v: '', border: 'var(--line)', shadow: 'none' },
+        { v: '', border: 'var(--line)', shadow: 'none' },
+      ],
+
+      dimRail: ['Home', 'Accounts', 'Deals', 'Reports', 'Settings'],
+
+      sg02Spec: [
+        { k: 'Trigger', v: 'A sensitive action, or workspace step-up policy' },
+        { k: 'Scope', v: 'In place. Never navigates, never reloads' },
+        { k: 'Shell', v: 'Fully retained and interactive' },
+        { k: 'Content', v: 'Dimmed to 30%, inert, aria-hidden' },
+        { k: 'Names', v: 'The action and its consequence, before it happens' },
+        { k: 'Pending action', v: 'Held, never executed, never discarded on failure' },
+        { k: 'Factor shown', v: 'One only — the policy-required factor' },
+        { k: 'Validity', v: '5 minutes, then the challenge is reissued' },
+        { k: 'Cancel', v: 'Abandons the action and says so. Nothing partial occurs' },
+        { k: 'Announcement', v: 'Assertive once, naming the action, not the factor' },
+      ],
+
+      sg03Spec: [
+        { k: 'Mechanism', v: 'Popup. A redirect would destroy the painted frame and any tier 2 state, per Session Continuity.' },
+        { k: 'Popup blocked', v: 'A link is rendered in its place. Signora never assumes the window opened.' },
+        { k: 'Return', v: 'The popup closes, the page un-dims, the held action executes. No navigation occurs in the tab.' },
+        { k: 'Timeout', v: 'If no assertion arrives in 3 minutes, SG-03 reappears with the action still pending.' },
+        { k: 'IdP failure', v: 'SG-04, not SG-03 again — an unreachable IdP is a config-unavailable condition, and repeating the same screen implies the person did something wrong.' },
+        { k: 'Discloses', v: 'The IdP name only, which the person already knows because they signed in with it.' },
+      ],
+
+      challengeFail: [
+        { mark: '✕', t: 'Never discard the pending action', b: 'A failed challenge returns to SG-02 with the action still held. Losing a revoke request the person deliberately made teaches them to distrust the confirmation.', bg: 'var(--risk)' },
+        { mark: '✕', t: 'Never name the factor that failed', b: '“Incorrect code” is acceptable; “that code has expired but your backup codes are still valid” enumerates enrolment.', bg: 'var(--risk)' },
+        { mark: '✕', t: 'Never show remaining attempts beyond policy', b: 'A visible countdown to lockout is a countdown an attacker can read as easily as a person.', bg: 'var(--risk)' },
+        { mark: '✕', t: 'Never fall open on challenge failure', b: 'If the challenge cannot be completed, the action does not happen. There is no path where a failed gate permits what it was protecting.', bg: 'var(--risk)' },
+        { mark: '✓', t: 'Always keep the shell reachable', b: 'SG-02 does not trap focus. A person who cannot complete a challenge must still be able to reach help, switch workspace, or sign out.', bg: 'var(--pos)' },
+      ],
+
+      gateSkeleton: ['84%', '62%', '48%'],
+
+      gateLoading: [
+        { k: 'Under 300ms', v: 'Nothing is shown. The gate resolves before a person perceives a wait.' },
+        { k: '0.3–2s', v: 'An inline strip in the content region, shell intact. Never a full-screen block.' },
+        { k: 'Over 2s', v: '“Checking your access…” with the named step. A gate that appears stuck reads as a gate that has failed.' },
+        { k: 'Over 10s', v: 'SG-04. A policy check that cannot complete is a refusal, not a longer wait.' },
+        { k: 'Retry', v: 'Three attempts at 1s, 3s, 8s. Never automatic for a challenge — a challenge is retried by a person, never by code.' },
+        { k: 'Optimism', v: 'None. No gate ever renders content optimistically while its check is in flight.' },
+      ],
+
+      viewports: [
+        {
+          size: '390 × 844', name: 'Phone',
+          challenge: 'Bottom sheet at 70% height, non-dismissible by drag. OTP boxes 44 × 52px, six across at 6px gaps. The named action stays visible above the sheet.',
+          explain: 'Full-bleed at 16px padding, glyph and heading top-aligned rather than centred. Primary action full width at 44px, pinned above the fold.',
+          prevent: 'Owned elsewhere. SC-04 is a bottom sheet; the sign-in screen is full-bleed with the bottom bar absent.',
+        },
+        {
+          size: '768 × 1024', name: 'Tablet portrait',
+          challenge: 'Centred card at 460px over dimmed content, shell retained. Touch targets 44px, so OTP boxes are 44 × 52px.',
+          explain: 'Centred column at 480px. Actions stack when the card is under 400px wide.',
+          prevent: 'Shell-retaining gates keep the icon rail; sign-in remains a centred card.',
+        },
+        {
+          size: '1024 × 768', name: 'Tablet landscape',
+          challenge: 'In-place panel in the content region, matching desktop. Capped at 300px tall so the dimmed action behind it stays visible — height is the constraint here.',
+          explain: 'Column 480px, vertically centred with a 32px minimum top margin.',
+          prevent: 'As desktop, with the icon rail.',
+        },
+        {
+          size: '1280 × 800', name: 'Laptop',
+          challenge: 'In-place panel, 560px, left-aligned to the content column. OTP boxes 36 × 42px.',
+          explain: 'Column 520px in the content region.',
+          prevent: 'Full rail retained where the gate permits a shell.',
+        },
+        {
+          size: '1440 × 900', name: 'Desktop — reference',
+          challenge: 'The canonical geometry. SG-02 at 560px, SG-03 at 440px.',
+          explain: 'Column 520px, card at --e2.',
+          prevent: 'As drawn in the owning documents.',
+        },
+        {
+          size: '1600 × 900', name: 'Wide',
+          challenge: 'Unchanged. A wider challenge panel puts the OTP field further from the action it protects.',
+          explain: 'Unchanged at 520px. Surplus width is margin.',
+          prevent: 'Unchanged. Nothing in this document scales past its 1440 dimensions.',
+        },
+      ],
+
+      a11y: [
+        { sc: '1.3.1', t: 'Every gate is a region with an accessible name describing the boundary, not the failure. SG-02 is a dialog with aria-modal="false" — it is a challenge, not a modal.' },
+        { sc: '1.4.3', t: 'Dimmed content at 30% is inert and aria-hidden, so exempt. Every foreground string clears 4.5:1 in both themes; warn on tint measures 5.1:1.' },
+        { sc: '2.1.1', t: 'OTP entry, paste, cancel, retry and every recovery route are keyboard-operable. Paste fills all six boxes and moves focus to the primary action.' },
+        { sc: '2.1.2', t: 'SG-02 does not trap focus: the shell must stay reachable so someone who cannot complete a challenge can still reach help or sign out.' },
+        { sc: '2.2.1', t: 'The 5-minute challenge validity is not shown as a live countdown. On expiry the challenge is reissued with the action still pending and no work lost.' },
+        { sc: '2.4.3', t: 'Focus moves to the gate heading, then to the first input. On cancel it returns to the control that triggered the action.' },
+        { sc: '3.3.1', t: 'A failed challenge announces politely and describes the action, never the factor. The error sits adjacent to the input in text, not in a toast.' },
+        { sc: '3.3.7', t: 'A reissued challenge never re-asks for anything already provided. The protected action and its parameters are preserved verbatim.' },
+        { sc: '4.1.3', t: 'Prevent gates announce assertively once. Restrict and explain gates announce politely. Challenge gates announce assertively, naming the action being protected.' },
+        { sc: '2.3.3', t: 'Under prefers-reduced-motion the dim is instant, the spinner becomes a text status, and no gate animates in.' },
+      ],
+
+      copy: [
+        { id: 'SG-COPY-01', t: 'This invitation link cannot be used.' },
+        { id: 'SG-COPY-02', t: 'If you already have a Signora account, sign in and the workspace will appear if you have been added to it.' },
+        { id: 'SG-COPY-03', t: 'Confirm it is you. Revoking an API key cannot be undone and will stop any integration using it. Nothing has been revoked yet.' },
+        { id: 'SG-COPY-04', t: 'Northwind needs to confirm your sign-in. This opens Okta in a new window; this page stays exactly as it is.' },
+        { id: 'SG-COPY-05', t: 'That code was not accepted. Nothing has been revoked.' },
+        { id: 'SG-COPY-06', t: 'We cannot check this right now. A security check needed for this action is unavailable, so Signora is refusing rather than allowing it.' },
+        { id: 'SG-COPY-07', t: 'Access could not be granted. Quote the identifier below to support.' },
+        { id: 'SG-COPY-08', t: 'Checking your access…' },
+        { id: 'SG-COPY-09', t: 'This action was cancelled. Nothing was changed.' },
+        { id: 'SG-COPY-10', t: 'Access has been withdrawn by your organisation. Contact your Signora administrator.' },
+      ],
+
+      dependencies: [
+        { id: 'D-01', t: 'Step-up scope and trigger list', owner: 'Security', b: 'Which actions require step-up is a security policy decision, not a design one. This document specifies the gate; it does not enumerate the protected actions beyond the API-key example used to draw it.', interim: 'protect key revocation, role changes, SSO configuration and data export. Treat the list as configuration, not as constants in the client.' },
+        { id: 'D-02', t: 'Device-trust signal', owner: 'Architecture', b: 'SG-02 could be skipped for a recognised device, but no device-trust signal exists today. This document does not specify a skip path that cannot be implemented.', interim: 'challenge every time. When a signal exists, the skip is a rule addition, not a screen change.' },
+        { id: 'D-03', t: 'Policy source resolution', owner: 'Security + Platform', b: 'SG-02 says “required by Northwind policy”. Whether the policy source is the workspace, the IdP or a global default determines whether that clause can name anything at all.', interim: 'omit the clause when the source is unresolvable. Never guess an attribution.' },
+        { id: 'D-04', t: 'Account-disabled messaging authority', owner: 'Legal', b: 'Gate 04 states who withdrew access. Whether a reason may be surfaced, and whether retention may be mentioned, is a legal question that varies by region.', interim: 'name the withdrawing party and the support route only. No reason, no retention statement.' },
+      ],
+
+      contract: [
+        ['Gates 08 and 09 return byte-identical bodies, identical status codes and latency padded to a fixed floor. Assert with a test that diffs both responses.', true],
+        ['No gate response contains a fact classified DISC_NEVER. A build-time lint checks gate copy against the class table.', true],
+        ['No gate names, counts, previews or blurs withheld content. A permission gate renders no aggregate of the data it withholds.', true],
+        ['A challenge failure never executes the protected action, and never falls open on any error path including timeout and service failure.', true],
+        ['A failed challenge preserves the pending action verbatim. No parameter is re-requested from the person.', true],
+        ['No gate states which authentication factor failed or how many attempts remain beyond a policy-approved count.', true],
+        ['Every gate carries a correlation ID matching the server log entry that holds the real cause.', false],
+        ['SG-02 renders in place. No code path navigates or reloads the tab to raise a challenge.', false],
+        ['SG-03 uses a popup and renders a link fallback when the popup is blocked.', false],
+        ['SG-02 does not trap focus. The shell remains reachable throughout.', false],
+        ['An unreachable policy or IdP service renders SG-04, never a repeat of SG-02.', false],
+        ['SG-04 states a refusal rather than a fault, using SG-COPY-06 verbatim.', false],
+        ['A gate resolving in under 300ms shows no loading indicator; over 10s renders SG-04.', false],
+        ['Challenges are never retried automatically. Retry is a person\u2019s action only.', false],
+        ['Every arrival at SG-05 is logged as a classification defect with the originating gate.', false],
+        ['The eleven states owned elsewhere are implemented from their owning document. This document contributes only their disclosure audit.', false],
+        ['Gate 04 names the withdrawing party and the support route, and no reason, pending D-04.', false],
+        ['Every string is used verbatim from the copy table. No gate message is composed from fragments at runtime.', false],
+        ['At 390 × 844, challenge gates are bottom sheets with 44px targets and the protected action visible above them.', false],
+        ['No gate introduces a component or token outside the approved v2 set.', false],
+      ].map(([t, sec], i) => ({
+        n: i + 1, t,
+        border: sec ? 'var(--risk)' : 'var(--line)',
+        bg: sec ? 'var(--risk-tint)' : 'transparent',
+        color: sec ? 'var(--risk)' : 'var(--ink-4)',
+      })),
+
+      acceptance: [
+        { id: 'AC-S01', t: 'Request an invitation URL with a never-issued token and one addressed to another identity: both responses are byte-identical and within 50ms of each other.' },
+        { id: 'AC-S02', t: 'Request an invitation URL for a consumed token: the response contains no organisation name, no inviter and no address.' },
+        { id: 'AC-S03', t: 'Trigger a step-up on API-key revocation: the URL does not change, the shell stays interactive, and the key is not revoked before the code is accepted.' },
+        { id: 'AC-S04', t: 'Enter an incorrect step-up code: SG-02 reappears with the pending action intact and the message names no factor.' },
+        { id: 'AC-S05', t: 'Kill the MFA service mid-challenge: SG-04 renders, the action does not execute, and no path permits it.' },
+        { id: 'AC-S06', t: 'Block popups and trigger SG-03: a link fallback renders and the tab does not navigate.' },
+        { id: 'AC-S07', t: 'During SG-02, tab through the page: the workspace switcher, help and sign-out are all reachable.' },
+        { id: 'AC-S08', t: 'Request a workspace URL for a never-member: the response body contains no workspace name.' },
+        { id: 'AC-S09', t: 'Request a workspace URL for a former member: the response names the workspace, the end date and the actor.' },
+        { id: 'AC-S10', t: 'A permission-denied gate response contains no count, name or aggregate of the withheld records.' },
+        { id: 'AC-S11', t: 'Force a gate to fail classification: SG-05 renders with a correlation ID and a defect entry is logged naming the originating gate.' },
+        { id: 'AC-S12', t: 'At 390 × 844 with a step-up raised: a bottom sheet renders, targets are 44px, and the protected action remains visible above it.' },
+      ],
+
+      nonGoals: [
+        'Security settings and factor enrolment — owned by Security Center',
+        'Sign-in, registration and lockout screens — owned by Authentication',
+        'The expiry and conflict screens — owned by Session Continuity',
+        'Workspace lifecycle states — owned by Workspace Lifecycle States',
+        'The generic 403 and 404 — owned by System States',
+        'Audit-log presentation and admin security reporting',
+        'Any threat-detection or anomaly-warning surface, which does not exist as capability',
+        'Enumerating which actions require step-up — a security policy decision, recorded as D-01',
+        'Any gate that would let a person self-serve past a boundary the backend enforces',
+      ],
+
+      components: [
+        'InlineBanner --e3', 'Sheet (mobile)', 'PageShell austere', 'Card --e2 16px',
+        'OTPInput 6-box', 'Button primary/secondary', 'Tag', 'Spinner inline',
+        'Skeleton block', 'Strip inline',
+      ],
+
+      colophon: [
+        { k: 'Document', v: 'Security Gates · canonical' },
+        { k: 'States classified', v: '16' },
+        { k: 'Screens drawn', v: '5 · SG-01…SG-05' },
+        { k: 'Dependencies', v: '4 · D-01…D-04' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

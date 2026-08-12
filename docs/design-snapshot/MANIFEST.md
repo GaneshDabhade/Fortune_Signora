@@ -96,6 +96,25 @@
 
 ---
 
+
+## ⚡ REFRESH — 2026-08-12, the five commissioned designs
+
+**Explicit refresh instruction from the product owner** ([D-138](../DECISION_REGISTER.md): *a refresh is a deliberate act and a new baseline*). ✅ **Retrieved with `DesignSync` · `get_file`, one call per path, from project `1d043179-1ee9-4c9f-b59e-592e04297cad`.**
+
+| File | Bytes | SHA-256 (16) | Self-declared authority |
+|---|---|---|---|
+| `screens/Fortune Signora Home.dc.html` | 107,199 | `804f3e7fa425a93b` | **Canonical · composition authority** |
+| `screens/Fortune Signora Session Continuity.dc.html` | 105,855 | `f1628136143dc9fd` | **Canonical · new document** |
+| `screens/Fortune Signora Workspace Chooser.dc.html` | 96,924 | `8299204ff3ed556a` | **Canonical · blocking contract** — 📁 *"C-299 folded in"* |
+| `screens/Fortune Signora Workspace Lifecycle.dc.html` | 96,616 | `3f0d1480ae244cc2` | **Canonical · state authority** — 📁 *"resolves Chooser U-01"* |
+| `screens/Fortune Signora Security Gates.dc.html` | 87,125 | `02429d199e810f55` | **Canonical · gate taxonomy authority** — 📁 *"no backend property weakened"* |
+
+⚡ **These are the five [C-1405](../LANE_COORDINATION.md) commissioned.** **Screen count 29 → 34; snapshot files 31 → 36.**
+
+⛔ **Nothing else was refreshed.** **The other 29 screens are untouched and their hashes above stand** — a refresh of five is not a re-baseline of the set.
+
+⚠️ **Byte-identical, not summarised** ([D-137](../DECISION_REGISTER.md)). **The hashes are the identity; the upstream project still exposes no version.**
+
 ## Contents
 
 | File | Bytes | SHA-256 |

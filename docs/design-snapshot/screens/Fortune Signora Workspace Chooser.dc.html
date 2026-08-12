@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes wcShimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes wcSpin { to { transform: rotate(360deg); } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em;padding:0 40px 120px">
+
+  <header style="max-width:1360px;margin:0 auto;padding:56px 0 36px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);font-size:11.5px;font-weight:600">Canonical · blocking contract</span>
+      <span style="font-size:11.5px;color:var(--ink-3)">C-299 folded in · design system v2.0, unchanged</span>
+      <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};box-shadow:{{ lightShadow }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};box-shadow:{{ darkShadow }}" onClick="{{ setDark }}">Dark</span>
+      </span>
+    </div>
+    <h1 style="font-size:44px;line-height:1.06;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:22ch">Workspace Chooser</h1>
+    <p style="font-size:17px;line-height:1.6;max-width:82ch;margin:18px 0 0;color:var(--ink-2);text-wrap:pretty">How Signora decides which workspace a person is in, and the two surfaces where that decision becomes visible. The chooser is deliberately the least-used of them: eight ordered selection rules resolve the great majority of entries without asking, and the chooser exists for the residue where the system genuinely cannot decide. Two surfaces, not one — the shell switcher for a person who already has context, and the standalone chooser for a person who has none.</p>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:34px;max-width:1120px">
+      <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="5">
+        <div style="padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="font-size:23px;font-weight:700;letter-spacing:-0.026em;line-height:1;font-variant-numeric:tabular-nums">{{ s.v }}</div>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:6px;line-height:1.45">{{ s.l }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </header>
+
+  <section data-screen-label="01 Reconciliation" style="max-width:1360px;margin:0 auto">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">01 · Reconciliation pass</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:22px 26px;border-bottom:1px solid var(--line-soft)">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">No Workspace Chooser document existed. Four Entry rules dead-ended here.</h2>
+        <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0;max-width:88ch">Ten sources were checked. Entry rules 9, 10, 13 and 14 all route to <span style="font-family:ui-monospace,monospace;font-size:12.5px">/workspaces</span> and nothing drew it; the Coverage Review classified this as “D · major new document” at priority 5 and named NO_WORKSPACE as a section of it rather than a separate file. This document is that work. One conflict was found and is recorded, not resolved.</p>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:1020px">
+          <div style="display:grid;grid-template-columns:186px 1fr 1fr 116px;gap:16px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Source checked</div><div>What it said</div><div>How this document reconciles</div><div>Result</div>
+          </div>
+          <sc-for list="{{ reconciliation }}" as="r" hint-placeholder-count="10">
+            <div style="display:grid;grid-template-columns:186px 1fr 1fr 116px;gap:16px;padding:13px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div style="font-weight:600;line-height:1.4">{{ r.src }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ r.said }}</div>
+              <div style="line-height:1.5">{{ r.fix }}</div>
+              <div><span style="display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ r.tagBg }};color:{{ r.tagFg }};white-space:nowrap">{{ r.tag }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px;padding:20px 26px">
+        <sc-for list="{{ reconLaws }}" as="l" hint-placeholder-count="4">
+          <div style="padding:15px 16px;border-radius:12px;background:{{ l.bg }};border:1px solid {{ l.border }}">
+            <div style="font-size:12.5px;font-weight:600">{{ l.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ l.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="02 Rules" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">02 · Canonical selection rules — the deterministic core</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:flex;align-items:flex-start;gap:16px;row-gap:12px;flex-wrap:wrap;padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <div style="flex:1;min-width:300px">
+          <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Eight rules, ordered, first match wins</h2>
+          <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0;max-width:84ch">Nothing about selection is implicit. Given a membership list, a URL and stored state, both the person and the implementation can predict the outcome before it happens. The function is pure: it reads state that is already loaded and makes no network call, so it can be unit-tested exhaustively across the eight branches.</p>
+        </div>
+        <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--sunken);font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-2);flex:none">selectWorkspace(url, memberships, prefs) → { wsId | CHOOSER | NONE, reason }</span>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:1140px">
+          <div style="display:grid;grid-template-columns:36px 1fr 1fr 128px 128px;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>#</div><div>Condition</div><div>Why it sits here</div><div>Outcome</div><div>Reason code</div>
+          </div>
+          <sc-for list="{{ rules }}" as="r" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:36px 1fr 1fr 128px 128px;gap:14px;padding:14px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start;background:{{ r.bg }}">
+              <div style="font-variant-numeric:tabular-nums;color:var(--ink-4);font-weight:600">{{ r.n }}</div>
+              <div style="line-height:1.5;font-weight:600">{{ r.cond }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ r.why }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:{{ r.color }};font-weight:600;line-height:1.5">{{ r.out }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-3);line-height:1.5;word-break:break-all">{{ r.code }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;padding:20px 26px">
+        <sc-for list="{{ ruleLaws }}" as="l" hint-placeholder-count="6">
+          <div style="padding:15px 16px;border-radius:12px;background:{{ l.bg }};border:1px solid {{ l.border }}">
+            <div style="font-size:12.5px;font-weight:600">{{ l.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ l.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="03 Persistence" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">03 · Persistence &amp; two surfaces</div>
+    <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--line-soft)">
+          <h3 style="font-size:17px;font-weight:600;letter-spacing:-0.016em;margin:0">What is stored, where, and for how long</h3>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">Three separate things are often conflated: the pinned default, the last-used workspace, and the workspace the current tab is in. They have different scopes and different lifetimes, and treating them as one is the source of the “it keeps opening the wrong workspace” complaint.</p>
+        </div>
+        <sc-for list="{{ persistence }}" as="p" hint-placeholder-count="4">
+          <div style="padding:15px 22px;border-bottom:1px solid var(--line-soft)">
+            <div style="display:flex;align-items:center;gap:9px;row-gap:6px;flex-wrap:wrap">
+              <span style="width:9px;height:9px;flex:none;border-radius:3px;background:{{ p.color }}"></span>
+              <span style="font-size:13px;font-weight:600">{{ p.t }}</span>
+              <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4);flex:none">{{ p.scope }}</span>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ p.b }}</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0 16px;margin-top:9px">
+              <sc-for list="{{ p.facts }}" as="f" hint-placeholder-count="3">
+                <div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:11.5px;border-bottom:1px solid var(--line-soft)">
+                  <span style="color:var(--ink-3)">{{ f.k }}</span>
+                  <span style="font-weight:600;font-family:{{ f.mono }};white-space:nowrap">{{ f.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <div style="padding:14px 22px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Recency is per device, deliberately. A phone and a laptop may sit in different workspaces without one overwriting the other, which is the normal case for anyone who checks Signora on the way to work.</div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--line-soft)">
+          <h3 style="font-size:17px;font-weight:600;letter-spacing:-0.016em;margin:0">Two surfaces, one selection engine</h3>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">The shell switcher and the standalone chooser are different components because their preconditions differ. Conflating them produces a popover with no anchor, or a full page for a person who only wanted to change context.</p>
+        </div>
+        <div style="overflow-x:auto">
+          <div style="min-width:660px">
+            <div style="display:grid;grid-template-columns:150px 1fr 1fr;gap:14px;padding:10px 22px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+              <div>Aspect</div><div>WS-A · shell switcher</div><div>WS-B · standalone chooser</div>
+            </div>
+            <sc-for list="{{ surfaces }}" as="s" hint-placeholder-count="10">
+              <div style="display:grid;grid-template-columns:150px 1fr 1fr;gap:14px;padding:11px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+                <div style="font-weight:600">{{ s.k }}</div>
+                <div style="color:var(--ink-2);line-height:1.5">{{ s.a }}</div>
+                <div style="color:var(--ink-2);line-height:1.5">{{ s.b }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="padding:15px 22px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Both call <span style="font-family:ui-monospace,monospace;font-size:11px">selectWorkspace</span> and both render the same membership row component. Only the container, the chrome and the escape behaviour differ — which is why this is one document and not two.</div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="04 Screens" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">04 · WS-A &amp; WS-B rendered</div>
+    <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:16px;align-items:start">
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">WS-A · shell switcher</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--brand-tint);color:var(--brand-ink)">Popover · 320px · --e3</span>
+        </div>
+        <div style="padding:20px;background:var(--bg)">
+          <div style="display:flex;align-items:center;gap:11px;padding:0 12px;height:44px;border-radius:10px;background:var(--bg-rail);border:1px solid var(--line-soft)">
+            <span style="width:22px;height:22px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700;flex:none">NG</span>
+            <div style="min-width:0;flex:1">
+              <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Northwind Global</div>
+              <div style="font-size:10px;color:var(--ink-3)">Enterprise · EMEA</div>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--brand)" stroke-width="1.6" style="flex:none"><path d="M5 6.5 8 9.5l3-3"></path></svg>
+          </div>
+          <div style="width:100%;max-width:320px;margin-top:8px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e3);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line-soft)">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--ink-4)" stroke-width="1.6" style="flex:none"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+              <span style="font-size:12px;color:var(--ink-3)">Filter workspaces…</span>
+              <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:9.5px;padding:1px 5px;border-radius:4px;background:var(--sunken);color:var(--ink-3);flex:none">⌘⇧K</span>
+            </div>
+            <sc-for list="{{ switcherGroups }}" as="g" hint-placeholder-count="3">
+              <div style="border-bottom:1px solid var(--line-soft);padding:7px 0">
+                <div style="font-size:9.5px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4);padding:3px 12px 5px">{{ g.label }}</div>
+                <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:10px;padding:7px 12px;background:{{ r.bg }};opacity:{{ r.opacity }}">
+                    <span style="width:22px;height:22px;flex:none;border-radius:6px;background:{{ r.avBg }};color:{{ r.avFg }};display:grid;place-items:center;font-size:8.5px;font-weight:700">{{ r.abbr }}</span>
+                    <div style="min-width:0;flex:1">
+                      <div style="font-size:12px;font-weight:{{ r.weight }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.t }}</div>
+                      <div style="font-size:10px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.meta }}</div>
+                    </div>
+                    <span style="font-size:9.5px;font-weight:600;color:{{ r.stateColor }};flex:none;white-space:nowrap">{{ r.state }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <div style="display:flex;align-items:center;gap:9px;padding:9px 12px">
+              <span style="width:18px;height:18px;flex:none;border-radius:5px;border:1px dashed var(--line);color:var(--ink-3);display:grid;place-items:center;font-size:10px">+</span>
+              <span style="font-size:12px;font-weight:600">Create a workspace</span>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">Long names truncate with an ellipsis at the row and carry the full name in the accessible name and the title attribute. Rows never wrap to two lines — a variable-height list breaks arrow-key prediction.</div>
+        </div>
+      </div>
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">WS-B · standalone chooser</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--sunken);color:var(--ink-3)">Rule 7 · no shell exists yet</span>
+          <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4);flex:none">520px column</span>
+        </div>
+        <div style="padding:22px;background:var(--bg)">
+          <div style="display:flex;align-items:center;gap:9px">
+            <span style="width:22px;height:22px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">FS</span>
+            <span style="font-size:12.5px;font-weight:600">Fortune Signora</span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex:none">
+              <span style="font-size:11.5px;color:var(--ink-3)">a.duval@northwind.com</span>
+              <span style="width:22px;height:22px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:600">AD</span>
+            </span>
+          </div>
+          <div style="margin-top:18px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+            <div style="padding:20px 22px 16px">
+              <h3 style="font-size:20px;font-weight:700;letter-spacing:-0.022em;margin:0">Choose a workspace</h3>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:7px 0 0">You are a member of four. Signora will remember this choice on this device, so you will not be asked again.</p>
+              <div style="display:flex;align-items:center;gap:9px;height:36px;padding:0 11px;margin-top:14px;border-radius:8px;border:1px solid var(--brand);box-shadow:0 0 0 3px var(--brand-tint)">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--brand)" stroke-width="1.6" style="flex:none"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+                <span style="font-size:13px;color:var(--ink-3)">Search four workspaces</span>
+                <span style="width:1.5px;height:15px;background:var(--brand);flex:none"></span>
+              </div>
+            </div>
+            <sc-for list="{{ chooserGroups }}" as="g" hint-placeholder-count="3">
+              <div style="border-top:1px solid var(--line-soft)">
+                <div style="display:flex;align-items:center;gap:9px;padding:10px 22px 6px">
+                  <span style="font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-4)">{{ g.label }}</span>
+                  <span style="margin-left:auto;font-size:10.5px;color:var(--ink-4);flex:none">{{ g.count }}</span>
+                </div>
+                <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:12px;row-gap:9px;flex-wrap:wrap;padding:11px 22px;border-top:1px solid var(--line-soft);background:{{ r.bg }};opacity:{{ r.opacity }}">
+                    <span style="width:30px;height:30px;flex:none;border-radius:8px;background:{{ r.avBg }};color:{{ r.avFg }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ r.abbr }}</span>
+                    <div style="min-width:130px;flex:1">
+                      <div style="display:flex;align-items:center;gap:8px;row-gap:5px;flex-wrap:wrap">
+                        <span style="font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.t }}</span>
+                        <span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ r.tagBg }};color:{{ r.tagFg }};white-space:nowrap">{{ r.tag }}</span>
+                      </div>
+                      <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">{{ r.meta }}</div>
+                    </div>
+                    <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:{{ r.actionBg }};color:{{ r.actionFg }};border:1px solid {{ r.actionBorder }};font-size:12px;font-weight:600;flex:none">{{ r.action }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:14px 22px;border-top:1px solid var(--line-soft);background:var(--sunken)">
+              <span style="font-size:12px;color:var(--ink-2);line-height:1.5;flex:1;min-width:200px">Expecting a workspace that is not here? Ask an administrator to invite you.</span>
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600;flex:none">Create a workspace</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;row-gap:8px;flex-wrap:wrap;margin-top:14px;font-size:10.5px;color:var(--ink-4)">
+            <span>↑↓ move</span><span>↵ enter workspace</span><span>Type to filter</span><span>Esc clears the filter</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:14px">
+      <sc-for list="{{ rowRules }}" as="r" hint-placeholder-count="4">
+        <div style="padding:18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="font-size:13px;font-weight:600">{{ r.t }}</div>
+          <p style="font-size:12.5px;line-height:1.55;color:var(--ink-2);margin:7px 0 0">{{ r.b }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section data-screen-label="05 States" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">05 · WS-C, WS-E, WS-F — denied, switch failure, loading</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+      <sc-for list="{{ stateScreens }}" as="s" hint-placeholder-count="4">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid {{ s.outer }};box-shadow:var(--e2);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:9px;row-gap:7px;flex-wrap:wrap;padding:12px 18px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+            <span style="font-family:ui-monospace,monospace;font-size:10px;font-weight:600;color:var(--ink-2)">{{ s.id }}</span>
+            <span style="margin-left:auto;font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ s.tagBg }};color:{{ s.tagFg }};white-space:nowrap;flex:none">{{ s.tag }}</span>
+          </div>
+          <div style="padding:18px">
+            <div style="padding:18px 17px;border-radius:12px;background:{{ s.cardBg }};border:1px {{ s.stroke }} {{ s.cardBorder }}">
+              <span style="width:28px;height:28px;border-radius:8px;background:{{ s.iconBg }};color:{{ s.iconFg }};display:grid;place-items:center;font-size:12px;font-weight:700">{{ s.icon }}</span>
+              <div style="font-size:14.5px;font-weight:600;letter-spacing:-0.014em;margin-top:11px">{{ s.t }}</div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">{{ s.b }}</p>
+              <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:12px">
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">{{ s.primary }}</span>
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600">{{ s.secondary }}</span>
+              </div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:11px;line-height:1.45">{{ s.meta }}</div>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:13px;line-height:1.5">{{ s.rule }}</div>
+          </div>
+        </div>
+      </sc-for>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:9px;padding:12px 18px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10px;font-weight:600;color:var(--ink-2)">WS-F · loading</span>
+          <span style="margin-left:auto;font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--sunken);color:var(--ink-3);flex:none">Shell persists</span>
+        </div>
+        <div style="padding:18px">
+          <div style="border-radius:12px;border:1px solid var(--line-soft);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:0 12px;height:40px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+              <span style="width:19px;height:19px;border-radius:5px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:7.5px;font-weight:700;flex:none">AR</span>
+              <span style="font-size:11.5px;font-weight:600">Ashgrove Retail</span>
+              <span style="width:12px;height:12px;flex:none;border-radius:999px;border:2px solid var(--line);border-top-color:var(--brand);animation:wcSpin .9s linear infinite;margin-left:6px"></span>
+              <span style="margin-left:auto;font-size:10.5px;color:var(--ink-3);flex:none">Switching…</span>
+            </div>
+            <div style="display:grid;grid-template-columns:44px 1fr;min-height:130px">
+              <div style="background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:9px 0;display:flex;flex-direction:column;align-items:center;gap:6px">
+                <sc-for list="{{ ghosts }}" as="g" hint-placeholder-count="5">
+                  <span style="width:16px;height:16px;border-radius:5px;background:var(--sunken)"></span>
+                </sc-for>
+              </div>
+              <div style="padding:13px;background:var(--bg);display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ switchSkeleton }}" as="s" hint-placeholder-count="3">
+                  <div style="height:{{ s.h }};width:{{ s.w }};border-radius:8px;background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:wcShimmer 1.4s ease-in-out infinite"></div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0;margin-top:14px">
+            <sc-for list="{{ switchLoading }}" as="l" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:92px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                <span style="font-weight:600;color:var(--ink-3)">{{ l.k }}</span>
+                <span style="color:var(--ink-2);line-height:1.5">{{ l.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="06 No workspace" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">06 · WS-D — no workspace, five arrivals</div>
+    <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">WS-D · SSO variant</span>
+          <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--warn-tint);color:var(--warn);flex:none">Creation suppressed</span>
+        </div>
+        <div style="padding:22px;background:var(--bg)">
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:22px">
+            <span style="width:32px;height:32px;border-radius:10px;background:var(--warn-tint);color:var(--warn);display:grid;place-items:center">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 4.5V8l2.5 1.5"></path></svg>
+            </span>
+            <div style="font-size:18px;font-weight:600;letter-spacing:-0.018em;margin-top:13px">You are signed in, but not in a workspace yet</div>
+            <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">Northwind's directory has not yet assigned you to one. This usually completes within a few minutes of your first sign-in. Signora will let you in as soon as it does.</p>
+            <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:15px">
+              <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600">Check again</span>
+              <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Email your IT team</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:13px;padding-top:12px;border-top:1px solid var(--line-soft);line-height:1.5">Creating a workspace is not offered here. Your account is managed by Northwind, and a workspace you created yourself would sit outside their administration.</div>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5">The suppression is the point. Offering “create a workspace” to an SSO identity whose group mapping has not run produces a shadow tenant and splits the company in two — the single most damaging outcome available on this screen.</div>
+        </div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--line-soft)">
+          <h3 style="font-size:17px;font-weight:600;letter-spacing:-0.016em;margin:0">One layout, five copy variants</h3>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">Selected by account provenance, which the identity service already returns. Same card, same footprint; the heading, the body and the available actions differ.</p>
+        </div>
+        <div style="overflow-x:auto">
+          <div style="min-width:700px">
+            <div style="display:grid;grid-template-columns:148px 1fr 118px 108px;gap:14px;padding:10px 22px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+              <div>Arrival</div><div>What it says</div><div>Primary</div><div>Create?</div>
+            </div>
+            <sc-for list="{{ noWorkspace }}" as="n" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:148px 1fr 118px 108px;gap:14px;padding:13px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+                <div>
+                  <div style="font-weight:600;line-height:1.4">{{ n.t }}</div>
+                  <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4);margin-top:3px">{{ n.code }}</div>
+                </div>
+                <div style="color:var(--ink-2);line-height:1.5">{{ n.b }}</div>
+                <div style="color:var(--ink-2);line-height:1.5">{{ n.primary }}</div>
+                <div><span style="display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ n.tagBg }};color:{{ n.tagFg }};white-space:nowrap">{{ n.create }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="padding:15px 22px;font-size:11.5px;color:var(--ink-3);line-height:1.5">“Check again” re-queries memberships without reloading the document, so a person waiting on provisioning can sit on this page and be let in the moment it lands. It polls at 15s while the tab is visible, and stops when it is not.</div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="07 Flows" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">07 · Eighteen flows &amp; the switch contract</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="overflow-x:auto">
+        <div style="min-width:1180px">
+          <div style="display:grid;grid-template-columns:34px 168px 1fr 116px 1fr 108px;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>#</div><div>Flow</div><div>Behaviour, exactly</div><div>Surface</div><div>Copy shown</div><div>Rule</div>
+          </div>
+          <sc-for list="{{ flows }}" as="f" hint-placeholder-count="18">
+            <div style="display:grid;grid-template-columns:34px 168px 1fr 116px 1fr 108px;gap:14px;padding:13px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div style="font-variant-numeric:tabular-nums;color:var(--ink-4);font-weight:600">{{ f.n }}</div>
+              <div style="font-weight:600;line-height:1.4">{{ f.t }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ f.b }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-2);line-height:1.5">{{ f.surface }}</div>
+              <div style="color:var(--ink-2);line-height:1.5;font-style:italic">{{ f.copy }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);line-height:1.5">{{ f.rule }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;padding:20px 26px">
+        <sc-for list="{{ switchContract }}" as="s" hint-placeholder-count="6">
+          <div style="padding:15px 16px;border-radius:12px;background:var(--sunken)">
+            <div style="font-size:12.5px;font-weight:600">{{ s.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ s.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="08 Responsive a11y" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">08 · Responsive, keyboard &amp; accessibility</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="overflow-x:auto">
+        <div style="min-width:1140px">
+          <div style="display:grid;grid-template-columns:104px 1fr 1fr 1fr;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Viewport</div><div>WS-A switcher</div><div>WS-B chooser</div><div>Long names &amp; many workspaces</div>
+          </div>
+          <sc-for list="{{ viewports }}" as="v" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:104px 1fr 1fr 1fr;gap:14px;padding:14px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div>
+                <div style="font-family:ui-monospace,monospace;font-size:11px;font-weight:600">{{ v.size }}</div>
+                <div style="font-size:10.5px;color:var(--ink-4);margin-top:3px">{{ v.name }}</div>
+              </div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.a }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.b }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.scale }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px;margin-top:14px">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Keyboard &amp; focus</div>
+        <sc-for list="{{ keyboard }}" as="k" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:1fr 86px;gap:12px;padding:10px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+            <div>
+              <div style="font-weight:600">{{ k.t }}</div>
+              <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ k.b }}</div>
+            </div>
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);text-align:right;line-height:1.5">{{ k.key }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">WCAG 2.2 AA &amp; semantics</div>
+        <sc-for list="{{ a11y }}" as="a" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:52px 1fr;gap:12px;padding:11px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+            <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ a.sc }}</span>
+            <span style="color:var(--ink-2);line-height:1.55">{{ a.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Copy — verbatim</div>
+        <sc-for list="{{ copy }}" as="c" hint-placeholder-count="12">
+          <div style="padding:11px 20px;border-bottom:1px solid var(--line-soft)">
+            <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ c.id }}</div>
+            <div style="font-size:12.5px;margin-top:4px;line-height:1.5">“{{ c.t }}”</div>
+          </div>
+        </sc-for>
+        <div style="padding:13px 20px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Banned: “Select a tenant”, “Organisation”, “No workspaces found”, “Access denied” alone, and any message that names a workspace the person cannot see.</div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="09 Contract" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">09 · Contract, components, unresolved</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Implementation contract — Lane A checklist</h2>
+        <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:7px 0 0">Twenty items, each independently verifiable.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:0 26px;padding:8px 26px 20px">
+        <sc-for list="{{ contract }}" as="c" hint-placeholder-count="20">
+          <div style="display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--line-soft);align-items:flex-start">
+            <span style="width:18px;height:18px;flex:none;margin-top:2px;border-radius:5px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ c.n }}</span>
+            <span style="font-size:12.5px;line-height:1.55">{{ c.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft)">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--warn)">Unresolved — PO or Architecture</div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">Five items. U-01 is the document conflict from the reconciliation pass.</div>
+        </div>
+        <sc-for list="{{ unresolved }}" as="u" hint-placeholder-count="5">
+          <div style="padding:13px 22px;border-bottom:1px solid var(--line-soft)">
+            <div style="display:flex;align-items:center;gap:9px;row-gap:6px;flex-wrap:wrap">
+              <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:{{ u.color }};font-weight:600">{{ u.id }}</span>
+              <span style="font-size:12.5px;font-weight:600">{{ u.t }}</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--sunken);color:var(--ink-3);white-space:nowrap;flex:none">{{ u.owner }}</span>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.5">{{ u.b }}</div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">Interim: {{ u.interim }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Acceptance criteria</div>
+          <sc-for list="{{ acceptance }}" as="a" hint-placeholder-count="12">
+            <div style="display:grid;grid-template-columns:64px 1fr;gap:12px;padding:10px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);font-weight:600">{{ a.id }}</span>
+              <span style="line-height:1.55">{{ a.t }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:22px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Components, tokens &amp; dependencies</div>
+          <p style="font-size:12px;line-height:1.55;color:var(--ink-2);margin:9px 0 0">Every element is an approved v2 component. No new component, no new token.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
+            <sc-for list="{{ components }}" as="c" hint-placeholder-count="12">
+              <span style="display:inline-flex;align-items:center;height:25px;padding:0 9px;border-radius:6px;border:1px solid var(--line-soft);background:var(--sunken);font-size:11px;font-family:ui-monospace,monospace;color:var(--ink-2);white-space:nowrap">{{ c }}</span>
+            </sc-for>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.5">Depends on: Authenticated Entry (routing), Application Shell (WS-A chrome), Session Continuity (switch and per-tab rules), Home (guaranteed render after switch), Team Management (invitations), Workspace Setup (creation), System States (404), User Profile (pin preference row).</div>
+          <div style="display:flex;gap:24px;row-gap:12px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft)">
+            <sc-for list="{{ colophon }}" as="c" hint-placeholder-count="4">
+              <div>
+                <div style="font-size:11px;color:var(--ink-3)">{{ c.k }}</div>
+                <div style="font-size:13px;font-weight:600;margin-top:2px">{{ c.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0', '--pos-line': '#c9e6da',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4', '--warn-line': '#efdcc0',
+      '--risk': '#a83329', '--risk-tint': '#fcefed', '--risk-line': '#f2d5d1',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f', '--pos-line': '#1d4433',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113', '--warn-line': '#453520',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17', '--risk-line': '#4a2a25',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      lightShadow: dark ? 'none' : 'var(--e1)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+      darkShadow: dark ? 'var(--e1)' : 'none',
+
+      heroStats: [
+        { v: '8', l: 'Selection rules, ordered, deterministic' },
+        { v: '2', l: 'Surfaces: shell switcher, standalone chooser' },
+        { v: '18', l: 'Flows specified' },
+        { v: '3', l: 'Stored values, deliberately separate' },
+        { v: '0', l: 'New components or tokens' },
+      ],
+
+      reconciliation: [
+        { src: 'Authenticated Entry', said: 'Rules 9, 10, 13, 14 route to /workspaces. Rule 12 uses last-used with a 4-second confirmation strip. Never a picker on the happy path.', fix: 'Adopted whole. The eight selection rules in section 2 are the expansion of Entry rules 6, 9–14; they add no routing decision and contradict none.', tag: 'Aligned', tone: 'pos' },
+        { src: 'Entry Coverage Review', said: 'Classified this as “D · major new document”, priority 5, and directed that NO_WORKSPACE become a section of it rather than a separate file.', fix: 'This is that document. No workspace is section 6, sharing the same chrome and the same row component.', tag: 'Executed', tone: 'pos' },
+        { src: 'Application Shell', said: 'Specifies a workspace switcher in the top bar: avatar, name, tier line, chevron.', fix: 'Retained exactly as specified and designated WS-A. This document adds its list behaviour — search, pinning, unavailable states — and changes none of its chrome.', tag: 'Extended', tone: 'brand' },
+        { src: 'Session Continuity', said: 'Workspace is per tab, not per session. A switch in one tab does not affect another. Unsaved work blocks a switch with a choice.', fix: 'Adopted verbatim as the switching contract in section 7. This document defines no storage of its own for drafts.', tag: 'Inherited', tone: 'pos' },
+        { src: 'Home', said: 'Home always renders because a composition always resolves, so the shell fallback after a switch always succeeds.', fix: 'Relied upon. Rule 8 and the switch contract both assume Home cannot fail to render; that assumption is now sourced rather than implied.', tag: 'Inherited', tone: 'pos' },
+        { src: 'Workspace Setup', said: 'Owns creation, branding, URL slug, domain verification and the creation-success screen.', fix: 'Conflict. It specifies a creation-success screen that lands somewhere unspecified, while this document routes creation through selection rule 1. Recorded as U-01.', tag: 'Conflict', tone: 'risk' },
+        { src: 'Team Management', said: 'Owns invitations and acceptance, including the signed-in variant added by the Coverage Review.', fix: 'Acceptance stays there. This document specifies only what the switcher and chooser show for a pending invitation and after acceptance.', tag: 'Aligned', tone: 'pos' },
+        { src: 'Authentication', said: 'Owns sign-in, SSO, lockout and the invitation-login path.', fix: 'The chooser is never rendered to an unauthenticated identity. Rule 0 is implicit: no session means Authentication owns the screen.', tag: 'Aligned', tone: 'pos' },
+        { src: 'User Profile', said: 'Has a start-page preference row and lists sessions per device.', fix: 'The pinned default workspace is added as a sibling row there, specified in section 3. Its absence is why rule 3 currently has no data source — see U-02.', tag: 'Extends', tone: 'warn' },
+        { src: 'System States', said: 'Owns 403, 404 and the generic patterns. Workspace lifecycle states were moved to a separate proposed document.', fix: 'An invalid workspace URL returns its 404; a revoked membership does not. Section 5 explains why the membership case must not use a bare 403.', tag: 'Aligned', tone: 'pos' },
+      ].map(r => ({
+        src: r.src, said: r.said, fix: r.fix, tag: r.tag,
+        tagBg: r.tone === 'pos' ? 'var(--pos-tint)' : (r.tone === 'brand' ? 'var(--brand-tint)' : (r.tone === 'warn' ? 'var(--warn-tint)' : 'var(--risk-tint)')),
+        tagFg: r.tone === 'pos' ? 'var(--pos)' : (r.tone === 'brand' ? 'var(--brand-ink)' : (r.tone === 'warn' ? 'var(--warn)' : 'var(--risk)')),
+      })),
+
+      reconLaws: [
+        { t: 'One conflict found, recorded not resolved', b: 'Workspace Setup specifies a creation-success screen with an unspecified exit. This document routes creation through rule 1. Changing an approved document is not a design decision — see U-01.', bg: 'var(--risk-tint)', border: 'var(--risk-line)' },
+        { t: 'The shell switcher is not redesigned', b: 'Its chrome is exactly as the App Shell specifies. This document adds list behaviour inside it and nothing else — no new anchor, no new geometry, no second navigation.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'No new backend capability assumed', b: 'Every value read by the eight rules exists today except the pinned default, which is recorded as U-02 with an interim that degrades cleanly to rule 4.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'No new component, no new token', b: 'Row, popover, page shell, tag, input, button and skeleton are all approved v2 components. The inventory in section 9 names each one.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+      ],
+
+      rules: [
+        {
+          n: '1', cond: 'The URL names a workspace and the person is an active member of it', why: 'A deep link, a bookmark, a shared report, or a redirect from workspace creation. An explicit request always beats any stored preference — this is the rule that makes links work.',
+          out: 'that workspace', code: 'WS_FROM_URL', color: 'var(--pos)', bg: 'var(--pos-tint)',
+        },
+        {
+          n: '2', cond: 'The URL names a workspace and the person is not a member, or it does not exist', why: 'Two different failures needing two different screens: a workspace they have lost access to, versus a slug that never existed. Distinguished before any fallback is attempted.',
+          out: 'WS-C or 404', code: 'WS_URL_DENIED · WS_URL_UNKNOWN', color: 'var(--risk)', bg: 'transparent',
+        },
+        {
+          n: '3', cond: 'No workspace in the URL, and a pinned default exists and is healthy', why: 'An explicit standing preference set by the person. It outranks recency because someone who pinned a workspace has told us where they want to land.',
+          out: 'pinned workspace', code: 'WS_PINNED', color: 'var(--pos)', bg: 'transparent',
+        },
+        {
+          n: '4', cond: 'No pin, and a last-used workspace exists on this device and is healthy', why: 'The most common path for anyone with several memberships. Confirmed by the 4-second strip per Entry rule 12 rather than by a question.',
+          out: 'last used', code: 'WS_LAST_USED', color: 'var(--pos)', bg: 'var(--pos-tint)',
+        },
+        {
+          n: '5', cond: 'A pin or last-used exists but that workspace is unhealthy or membership is gone', why: 'Falling through silently is disorienting. The next healthy membership is entered and the skip is stated in one sentence — never guessed at by the person.',
+          out: 'next healthy + notice', code: 'WS_FELL_THROUGH', color: 'var(--warn)', bg: 'transparent',
+        },
+        {
+          n: '6', cond: 'Exactly one active membership', why: 'Nothing to choose. No picker, no confirmation, no strip. The switcher still exists in the header but offers creation rather than a list.',
+          out: 'that workspace', code: 'WS_SOLE', color: 'var(--pos)', bg: 'var(--pos-tint)',
+        },
+        {
+          n: '7', cond: 'Two or more active memberships and no pin, no last-used', why: 'The system genuinely cannot decide. This is a first login with multiple memberships, and almost nothing else. The chooser is mandatory here and only here.',
+          out: 'WS-B chooser', code: 'WS_AMBIGUOUS', color: 'var(--brand-ink)', bg: 'transparent',
+        },
+        {
+          n: '8', cond: 'No active memberships at all', why: 'Five different arrivals reach this, with different available actions. Section 6 selects the copy variant from account provenance.',
+          out: 'WS-D no workspace', code: 'WS_NONE', color: 'var(--ink-3)', bg: 'transparent',
+        },
+      ],
+
+      ruleLaws: [
+        { t: 'Automatic routing is the default', b: 'Rules 1, 3, 4, 5 and 6 all route without asking — six of eight outcomes. The chooser is mandatory in exactly one case, rule 7, and offered voluntarily from the switcher at any time.', bg: 'var(--pos-tint)', border: 'var(--pos-line)' },
+        { t: 'The chooser is never an interstitial', b: 'It is not shown “to confirm” a workspace the rules already resolved. A confirmation screen between authentication and work taxes every login to serve a minority of them.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'Health is evaluated before selection', b: 'A workspace is healthy when membership is active and its state is active or read-only. Suspended, archived, deleted and outage states are unhealthy and cannot be auto-selected by rules 3, 4 or 6.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'Read-only is selectable', b: 'An archived workspace can be entered — data and exports still matter. It is unhealthy for the purposes of automatic fall-through but a person may always choose it explicitly from the list.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'Guests never reach the chooser', b: 'A guest with access to specific shared objects and no membership resolves to the object, per Entry gate 5. A guest has no Home and no workspace list.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'Every outcome carries a reason code', b: 'Written to the session and included in the support diagnostics bundle, matching the Entry convention. “Why did it open that workspace” is answerable without reproducing the login.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+      ],
+
+      persistence: [
+        {
+          t: 'Pinned default', scope: 'server · per identity', color: 'var(--brand)',
+          b: 'An explicit standing choice, set from the switcher or from User Profile. Survives every device and every sign-out. Outranks recency. Cleared automatically if membership ends.',
+          facts: [
+            { k: 'Key', v: 'prefs.defaultWorkspace', mono: 'ui-monospace,monospace' },
+            { k: 'Lifetime', v: 'Until changed', mono: 'inherit' },
+            { k: 'Rule', v: '3', mono: 'inherit' },
+          ],
+        },
+        {
+          t: 'Last used', scope: 'localStorage · per device', color: 'var(--pos)',
+          b: 'Written on every successful entry and on every switch. Per device by design, so a phone and a laptop may sit in different workspaces without contention.',
+          facts: [
+            { k: 'Key', v: 'sig.ws.lastUsed', mono: 'ui-monospace,monospace' },
+            { k: 'Lifetime', v: '90 days', mono: 'inherit' },
+            { k: 'Rule', v: '4', mono: 'inherit' },
+          ],
+        },
+        {
+          t: 'Active workspace', scope: 'URL · per tab', color: 'var(--ai)',
+          b: 'The workspace this tab is in, carried in the path. Two tabs in two workspaces is a supported and common state; nothing synchronises them.',
+          facts: [
+            { k: 'Source', v: '/w/:workspace/…', mono: 'ui-monospace,monospace' },
+            { k: 'Lifetime', v: 'Tab', mono: 'inherit' },
+            { k: 'Rule', v: '1', mono: 'inherit' },
+          ],
+        },
+        {
+          t: 'Pinned list order', scope: 'server · per identity', color: 'var(--warn)',
+          b: 'Up to five workspaces pinned to the top of both surfaces, in a person-defined order. Affects display only — it never influences selection, which is what keeps rules 3 and 4 unambiguous.',
+          facts: [
+            { k: 'Key', v: 'prefs.pinnedWorkspaces', mono: 'ui-monospace,monospace' },
+            { k: 'Maximum', v: '5', mono: 'inherit' },
+            { k: 'Rule', v: 'none', mono: 'inherit' },
+          ],
+        },
+      ],
+
+      surfaces: [
+        { k: 'Precondition', a: 'A workspace context already exists. The shell is painted and interactive.', b: 'No workspace context. No rail, no search, no assistant — none of them can be scoped.' },
+        { k: 'Container', a: 'Popover anchored to the header control, 320px wide, --e3, 12px radius.', b: 'Full page on the ground, centred column 520px, --e2 card at 16px radius.' },
+        { k: 'Reached by', a: 'Clicking the header control, or ⌘⇧K from anywhere.', b: 'Rule 7 or rule 8 during entry, or /workspaces typed directly.' },
+        { k: 'Chrome', a: 'Inherits the whole shell. Nothing is hidden or disabled.', b: 'Product mark and account menu only. Deliberately austere.' },
+        { k: 'Escape', a: 'Closes and returns focus to the trigger. The current workspace is unchanged.', b: 'Nothing to escape to. Escape clears the search field; there is no dismiss.' },
+        { k: 'Search', a: 'Appears when membership count exceeds 8. Filters as you type.', b: 'Appears when membership count exceeds 6, and is autofocused on load.' },
+        { k: 'Rows shown', a: 'Pinned first, then recent 5, then all, scrolling at 400px.', b: 'All memberships, grouped: available, then pending invitations, then unavailable.' },
+        { k: 'Creation', a: 'A footer action, always present, subject to permission.', b: 'A footer action, suppressed entirely for SSO-provisioned identities — see section 6.' },
+        { k: 'Selecting', a: 'Switch contract in section 7: unsaved-work check, then route preservation.', b: 'Enters the workspace and lands per Entry. No unsaved work can exist yet.' },
+        { k: 'Mobile', a: 'Becomes a bottom sheet, full width, 60% height.', b: 'Unchanged in structure; the column goes full-bleed at 16px padding.' },
+      ],
+
+      switcherGroups: [
+        {
+          label: 'Pinned', rows: [
+            { abbr: 'NG', t: 'Northwind Global', meta: 'Account Executive · 147 members', state: 'Current', tone: 'pos', sel: true },
+          ],
+        },
+        {
+          label: 'Recent', rows: [
+            { abbr: 'AR', t: 'Ashgrove Retail', meta: 'Analyst · yesterday', state: '', tone: '', sel: false },
+            { abbr: 'HL', t: 'Halden Laboratories Group', meta: 'Analyst · 3 days ago', state: '', tone: '', sel: false },
+          ],
+        },
+        {
+          label: 'Unavailable', rows: [
+            { abbr: 'MF', t: 'Meridian Freight', meta: 'Admin · archived 2 Aug', state: 'Read-only', tone: 'warn', sel: false, dim: true },
+          ],
+        },
+      ].map(g => ({
+        label: g.label,
+        rows: g.rows.map(r => ({
+          abbr: r.abbr, t: r.t, meta: r.meta, state: r.state,
+          bg: r.sel ? 'var(--brand-tint)' : 'transparent',
+          weight: r.sel ? 600 : 400,
+          avBg: r.sel ? 'var(--brand)' : 'var(--sunken)',
+          avFg: r.sel ? '#fff' : 'var(--ink-2)',
+          stateColor: r.tone ? 'var(--' + r.tone + ')' : 'var(--ink-3)',
+          opacity: r.dim ? '0.62' : '1',
+        })),
+      })),
+
+      chooserGroups: [
+        {
+          label: 'Available', count: '3', rows: [
+            { abbr: 'NG', t: 'Northwind Global', tag: 'Account Executive', meta: '147 members · Enterprise', action: 'Enter', tone: '', sel: true },
+            { abbr: 'AR', t: 'Ashgrove Retail', tag: 'Analyst', meta: '31 members · Growth', action: 'Enter', tone: '', sel: false },
+            { abbr: 'MF', t: 'Meridian Freight', tag: 'Read-only', meta: 'Archived 2 Aug · exports available', action: 'Enter', tone: 'warn', sel: false },
+          ],
+        },
+        {
+          label: 'Pending invitation', count: '1', rows: [
+            { abbr: 'VL', t: 'Vantage Logistics', tag: 'Invited', meta: 'From M. Reinhardt · expires in 5 days', action: 'Accept', tone: 'brand', sel: false, primary: true },
+          ],
+        },
+        {
+          label: 'No longer available', count: '1', rows: [
+            { abbr: 'CH', t: 'Corrigan Health', tag: 'Access removed', meta: 'Removed 6 Aug by K. Bruun', action: 'Request', tone: 'risk', sel: false, dim: true },
+          ],
+        },
+      ].map(g => ({
+        label: g.label, count: g.count,
+        rows: g.rows.map(r => ({
+          abbr: r.abbr, t: r.t, tag: r.tag, meta: r.meta, action: r.action,
+          bg: r.sel ? 'var(--brand-tint)' : 'transparent',
+          avBg: r.sel ? 'var(--brand)' : 'var(--sunken)',
+          avFg: r.sel ? '#fff' : 'var(--ink-2)',
+          tagBg: r.tone ? (r.tone === 'brand' ? 'var(--brand-tint)' : 'var(--' + r.tone + '-tint)') : 'var(--sunken)',
+          tagFg: r.tone ? (r.tone === 'brand' ? 'var(--brand-ink)' : 'var(--' + r.tone + ')') : 'var(--ink-3)',
+          actionBg: r.primary || r.sel ? 'var(--brand)' : 'var(--surface)',
+          actionFg: r.primary || r.sel ? '#fff' : 'var(--ink)',
+          actionBorder: r.primary || r.sel ? 'var(--brand)' : 'var(--line)',
+          opacity: r.dim ? '0.72' : '1',
+        })),
+      })),
+
+      rowRules: [
+        { t: 'Unavailable rows are listed, never hidden', b: 'An archived or revoked workspace disappearing from the list reads as data loss. It is shown at reduced emphasis with its state and the date, and it is not keyboard-skippable — a person needs to be able to read why.' },
+        { t: 'Long names truncate, rows never grow', b: 'One line, ellipsis, full name in the accessible name and the title attribute. A list of variable-height rows makes arrow-key travel unpredictable, which is worse than a truncated name.' },
+        { t: 'Pinning affects display only', b: 'Up to five pins reorder both surfaces and influence no selection rule. Keeping display order and selection logic separate is what makes rules 3 and 4 unambiguous.' },
+        { t: 'Search appears by count, not always', b: 'At 8 rows in the switcher and 6 in the chooser. Below that a filter field is a control asking to be used for no reason; above it, scrolling is the wrong interaction.' },
+      ],
+
+      stateScreens: [
+        {
+          id: 'WS-C · membership revoked', tag: 'Not a 403', outer: 'var(--warn-line)', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)',
+          cardBg: 'var(--warn-tint)', cardBorder: 'var(--warn-line)', stroke: 'solid',
+          icon: '!', iconBg: 'var(--surface)', iconFg: 'var(--warn)',
+          t: 'You no longer have access to Corrigan Health',
+          b: 'Your membership was removed on 6 August by K. Bruun. You had access yesterday, so a bare “forbidden” would be misleading — this states what changed and when.',
+          primary: 'Go to Northwind Global', secondary: 'Request access',
+          meta: 'Rule 2 · WS_URL_DENIED · your other three workspaces are unaffected',
+          rule: 'Deliberately not the generic 403. The generic screen is correct for an object inside a workspace; for a workspace a person has lost, the date and the actor are the useful facts.',
+        },
+        {
+          id: 'WS-C2 · unknown workspace', tag: '404 from System States', outer: 'var(--line-soft)', tagBg: 'var(--sunken)', tagFg: 'var(--ink-3)',
+          cardBg: 'var(--sunken)', cardBorder: 'var(--line-soft)', stroke: 'solid',
+          icon: '?', iconBg: 'var(--surface)', iconFg: 'var(--ink-3)',
+          t: 'That workspace does not exist',
+          b: 'The address /w/northwynd matched nothing. It may have been renamed, or the link may be mistyped. Signora does not say whether a workspace of that name exists elsewhere.',
+          primary: 'Go to Northwind Global', secondary: 'All workspaces',
+          meta: 'Rule 2 · WS_URL_UNKNOWN · System States 404 pattern',
+          rule: 'Never confirms or denies the existence of a workspace the person is not in. That would let anyone enumerate tenants by trying slugs.',
+        },
+        {
+          id: 'WS-E · switch failure', tag: 'Origin preserved', outer: 'var(--risk-line)', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)',
+          cardBg: 'var(--risk-tint)', cardBorder: 'var(--risk-line)', stroke: 'solid',
+          icon: '✕', iconBg: 'var(--surface)', iconFg: 'var(--risk)',
+          t: 'Could not switch to Ashgrove Retail',
+          b: 'The workspace service did not respond after three attempts. You are still in Northwind Global and nothing has changed here — no data was lost and no navigation occurred.',
+          primary: 'Try again', secondary: 'Copy identifier',
+          meta: 'req_5b22-71ac · WS_SWITCH_FAILED',
+          rule: 'A failed switch returns to the origin workspace, not to the chooser. Stranding someone between two workspaces after a network blip is the failure mode this rule exists to prevent.',
+        },
+        {
+          id: 'WS-G · unsaved work blocks switch', tag: 'From Session Continuity', outer: 'var(--line-soft)', tagBg: 'var(--brand-tint)', tagFg: 'var(--brand-ink)',
+          cardBg: 'var(--surface)', cardBorder: 'var(--line)', stroke: 'solid',
+          icon: '⌇', iconBg: 'var(--brand-tint)', iconFg: 'var(--brand-ink)',
+          t: 'You have an unsaved note here',
+          b: 'Switching to Ashgrove Retail leaves this workspace. Your note on Vantage Logistics was captured 40 seconds ago and will be kept for 7 days either way.',
+          primary: 'Keep it and switch', secondary: 'Stay here',
+          meta: 'Tier 3 per Session Continuity · no default is applied',
+          rule: 'The switch contract defers entirely to Session Continuity for the draft model. This document specifies only that the check happens before the route change, never after.',
+        },
+      ],
+
+      ghosts: [1, 2, 3, 4, 5],
+
+      switchSkeleton: [
+        { h: '16px', w: '44%' }, { h: '38px', w: '100%' }, { h: '38px', w: '76%' },
+      ],
+
+      switchLoading: [
+        { k: 'Shell', v: 'Persists entirely. The rail does not re-render; only the workspace identity in the header changes, immediately and optimistically.' },
+        { k: 'Header', v: 'Shows the destination name with an inline spinner from the moment the row is activated. The person sees where they are going before it arrives.' },
+        { k: 'Content', v: 'Skeletons at the destination route\'s footprints. If the route is not available in the destination, Home\'s skeleton is used because Home is the fallback.' },
+        { k: 'Budget', v: '≤ 800ms p75 to first content. Beyond 3s an inline strip reads “Still switching to Ashgrove Retail.”' },
+        { k: 'Failure', v: 'After three retries, WS-E. The header reverts to the origin workspace at the same moment the error appears — the two must not disagree even for a frame.' },
+      ],
+
+      noWorkspace: [
+        {
+          t: 'Self-serve signup', code: 'NONE_SELFSERVE',
+          b: 'Signed up directly and has not created or joined anything. Creation is the expected path and is the primary action.',
+          primary: 'Create a workspace', create: 'Offered', tone: 'pos',
+        },
+        {
+          t: 'Invited, not yet sent', code: 'NONE_AWAITING_INVITE',
+          b: 'An administrator has begun adding them but the invitation has not arrived. Names who is expected to send it, so the person knows whom to chase.',
+          primary: 'Email K. Bruun', create: 'Secondary', tone: 'warn',
+        },
+        {
+          t: 'SSO, no group mapping', code: 'NONE_SSO_PENDING',
+          b: 'The rendered screen opposite. Directory provisioning has not completed. Polls every 15 seconds while visible.',
+          primary: 'Check again', create: 'Suppressed', tone: 'risk',
+        },
+        {
+          t: 'Enterprise pre-provisioned', code: 'NONE_PREPROVISION',
+          b: 'The account exists ahead of a go-live date. States the date rather than implying something is broken.',
+          primary: 'Notify me at go-live', create: 'Suppressed', tone: 'risk',
+        },
+        {
+          t: 'Removed from their only one', code: 'NONE_REMOVED',
+          b: 'Had exactly one membership and lost it. Names the workspace, the date and the actor — they were in it this morning.',
+          primary: 'Request access', create: 'Secondary', tone: 'warn',
+        },
+      ].map(n => ({
+        t: n.t, code: n.code, b: n.b, primary: n.primary, create: n.create,
+        tagBg: n.tone === 'pos' ? 'var(--pos-tint)' : (n.tone === 'warn' ? 'var(--warn-tint)' : 'var(--risk-tint)'),
+        tagFg: n.tone === 'pos' ? 'var(--pos)' : (n.tone === 'warn' ? 'var(--warn)' : 'var(--risk)'),
+      })),
+
+      flows: [
+        ['01', 'Single workspace', 'Entered directly. No chooser, no confirmation strip. The header control still exists and offers creation instead of a list.', '—', 'None', 'Rule 6'],
+        ['02', 'Multiple workspaces', 'Pin, then last-used. The 4-second confirmation strip states which and why. Never a picker.', '—', 'WC-COPY-01', 'Rules 3, 4'],
+        ['03', 'No workspace', 'WS-D, with the copy variant chosen by account provenance. Creation suppressed for SSO-provisioned identities.', 'WS-D', 'WC-COPY-02…06', 'Rule 8'],
+        ['04', 'Persisted workspace', 'A pin outranks recency. If both exist and disagree, the pin wins and no notice is shown — the person set it deliberately.', '—', 'WC-COPY-01', 'Rule 3'],
+        ['05', 'Persisted unavailable', 'Falls through to the next healthy membership in recency order, with a one-sentence notice naming the skipped workspace and its state.', '—', 'WC-COPY-07', 'Rule 5'],
+        ['06', 'New user', 'First login with several memberships is the one mandatory chooser. With one membership, rule 6 applies and no chooser is shown.', 'WS-B', 'WC-COPY-08', 'Rule 7'],
+        ['07', 'Workspace creation', 'Creation completes, the new workspace ID is put in the URL, and rule 1 selects it. Creation never chooses a destination itself.', '—', 'WC-COPY-09', 'Rule 1'],
+        ['08', 'Invitation acceptance', 'Owned by Team Management. On success the new workspace ID is in the URL and rule 1 selects it. Signed-in acceptance never navigates the current tab.', '—', 'WC-COPY-10', 'Rule 1'],
+        ['09', 'Workspace switching', 'Unsaved-work check, then route preservation if the destination has the route and the person has access there; otherwise Home.', 'WS-A', 'WC-COPY-11 if blocked', '—'],
+        ['10', 'Switch loading', 'Shell persists, header shows the destination with a spinner, content skeletons. 800ms p75; a strip after 3s.', 'WS-F', 'WC-COPY-12 after 3s', '—'],
+        ['11', 'Switch failure', 'Three retries, then WS-E. Returns to the origin workspace, never to the chooser. Header and content revert in the same frame.', 'WS-E', 'WC-COPY-13', '—'],
+        ['12', 'Context restoration', 'Per Session Continuity: workspace from URL first, then last-used. Restoration never re-asks a question the URL already answers.', '—', 'WC-COPY-01', 'Rules 1, 4'],
+        ['13', 'Deep link needing context', 'The workspace in the path becomes active. Intent is honoured ahead of any stored preference — this is why rule 1 is first.', '—', 'None', 'Rule 1'],
+        ['14', 'Invalid workspace URL', 'System States 404. Never confirms whether a workspace of that name exists, which would allow tenant enumeration.', 'WS-C2', 'WC-COPY-14', 'Rule 2'],
+        ['15', 'Deleted workspace', 'Within retention, the lifecycle screen with the purge date. After purge, absent from every list and the 404 applies.', 'lifecycle / WS-C2', 'Lifecycle doc', 'Rule 2'],
+        ['16', 'Revoked membership', 'WS-C, naming the date and the actor. Not the generic 403 — they had access yesterday and that fact is what needs explaining.', 'WS-C', 'WC-COPY-15', 'Rule 2'],
+        ['17', 'Chooser from the shell', 'The switcher popover, WS-A. Voluntary, dismissible, current workspace unchanged on escape.', 'WS-A', 'None', '—'],
+        ['18', 'Chooser on entry', 'WS-B, standalone, no shell. Reached only by rule 7 or rule 8, or by typing /workspaces.', 'WS-B', 'WC-COPY-08', 'Rules 7, 8'],
+      ].map(([n, t, b, surface, copy, rule]) => ({ n, t, b, surface, copy, rule })),
+
+      switchContract: [
+        { t: 'Check unsaved work first', b: 'Before the route changes, not after. Session Continuity owns the dialog and the three choices; this document owns only the ordering.' },
+        { t: 'Preserve the route where possible', b: 'If the destination has the same route type and the person has access there, keep it. Otherwise Home, which always renders.' },
+        { t: 'Write last-used immediately', b: 'On activation, not on arrival. A switch that fails still records intent, so a retry after a reload lands where the person was going.' },
+        { t: 'Header leads, content follows', b: 'The destination name appears the moment the row is activated. Optimistic, and reverted in the same frame as any failure so the two never disagree.' },
+        { t: 'Never strand between workspaces', b: 'A failed switch returns to the origin. The chooser is not a recovery surface for a network blip.' },
+        { t: 'Other tabs are untouched', b: 'Workspace is per tab, per Session Continuity. Two tabs in two workspaces is a supported state, not a bug to be reconciled.' },
+      ],
+
+      viewports: [
+        {
+          size: '390 × 844', name: 'Phone',
+          a: 'Bottom sheet, full width, 60% height, drag-dismiss enabled. Rows 56px with 44px touch targets. Trigger is the workspace name in the 52px top bar.',
+          b: 'Full-bleed column at 16px padding. Search autofocus suppressed — an on-screen keyboard covering the list is worse than scrolling.',
+          scale: 'Names truncate at roughly 24 characters. Above 12 memberships the sheet scrolls; group headers stick.',
+        },
+        {
+          size: '768 × 1024', name: 'Tablet portrait',
+          a: 'Popover at 320px anchored to the header control, as desktop. Touch targets raised to 44px, so rows are 48px.',
+          b: 'Centred column at 520px. Search appears above 6 memberships and is autofocused.',
+          scale: 'Two-line meta is permitted here; the name still stays on one line.',
+        },
+        {
+          size: '1024 × 768', name: 'Tablet landscape',
+          a: 'Popover 320px. Scroll begins at 340px of list height so the popover never exceeds the viewport at this height.',
+          b: 'Column 520px, vertically centred with a 32px minimum top margin. Above 8 memberships the list scrolls inside the card rather than the page.',
+          scale: 'Height is the constraint: group headers stick inside the scrolling list.',
+        },
+        {
+          size: '1280 × 800', name: 'Laptop',
+          a: 'Popover 320px, list scrolls at 400px. Pinned, recent 5, then all.',
+          b: 'Column 520px. Reference behaviour.',
+          scale: 'Names truncate at roughly 34 characters in the popover, 46 in the chooser.',
+        },
+        {
+          size: '1440 × 900', name: 'Desktop — reference',
+          a: 'The canonical geometry every measurement above is relative to.',
+          b: 'Column 520px, centred, card at --e2.',
+          scale: 'Same truncation as 1280. The popover does not widen with the viewport.',
+        },
+        {
+          size: '1600 × 900', name: 'Wide',
+          a: 'Unchanged at 320px. A wider popover would put the list further from its trigger for no benefit.',
+          b: 'Unchanged at 520px. Surplus width is margin.',
+          scale: 'Identical. Nothing in this document scales past its 1440 dimensions.',
+        },
+      ],
+
+      keyboard: [
+        { t: 'Open the switcher', b: 'From anywhere in the shell. Focus moves into the filter field if present, otherwise onto the current workspace row.', key: '⌘⇧K' },
+        { t: 'Move through rows', b: 'Wraps at both ends. Unavailable rows are included in the sequence so their reason can be read.', key: '↑ ↓' },
+        { t: 'Enter a workspace', b: 'Activates the focused row. On the pending-invitation row, activates Accept instead.', key: '⏎' },
+        { t: 'Filter', b: 'Typing any printable character focuses the filter and inserts it. Matches on name and on slug.', key: 'a–z' },
+        { t: 'Clear the filter', b: 'In WS-A, Escape clears a non-empty filter, then closes on a second press. In WS-B it only clears — there is nothing to close to.', key: 'Esc' },
+        { t: 'Close the switcher', b: 'Returns focus to the header trigger. The active workspace is unchanged.', key: 'Esc' },
+        { t: 'Pin or unpin', b: 'On the focused row. Announced as “pinned” or “unpinned” with the new position.', key: 'P' },
+        { t: 'Create a workspace', b: 'The last tab stop in both surfaces, and skipped entirely when suppressed rather than rendered disabled.', key: 'Tab to end' },
+        { t: 'Jump to the current workspace', b: 'In WS-A only. Returns focus to the row for the active workspace from anywhere in the list.', key: 'Home' },
+        { t: 'Focus trap', b: 'WS-A traps focus while open, as a menu. WS-B does not trap — it is a page, and the account menu must stay reachable.', key: 'Tab' },
+      ],
+
+      a11y: [
+        { sc: '1.3.1', t: 'WS-A is a listbox with role="listbox" and rows as role="option"; group headers are role="presentation" with aria-owns. WS-B is a main landmark with an h1 and each group an h2.' },
+        { sc: '4.1.2', t: 'The active workspace row carries aria-selected="true" and aria-current="true". The trigger carries aria-expanded and aria-haspopup="listbox".' },
+        { sc: '1.4.1', t: 'The selected row uses the brand tint, a 600-weight name and the word “Current”. Colour alone never marks selection.' },
+        { sc: '1.4.3', t: 'Reduced-emphasis unavailable rows sit at 62% opacity in WS-A and 72% in WS-B, both measured to clear 4.5:1 against the surface in each theme.' },
+        { sc: '2.1.2', t: 'WS-A traps focus as a menu and closes on Escape. WS-B does not trap, because the account menu and sign-out must remain reachable from a page with no other route out.' },
+        { sc: '2.4.3', t: 'WS-A returns focus to its trigger on close, always. WS-B places focus on the h1 on load, not the search field, so the list is announced before the control.' },
+        { sc: '2.4.7', t: 'The focused row carries the 2px brand ring at 2px offset inside the scroll container, and scrolls into view without using scrollIntoView on the page.' },
+        { sc: '2.5.8', t: 'Rows are 48px on touch and 40px on pointer; the pin affordance has a 24px target with 8px separation from the row action.' },
+        { sc: '4.1.3', t: 'Switch start announces politely with the destination name. Completion announces once with the workspace and the landing route. Failure announces assertively.' },
+        { sc: '3.3.1', t: 'A revoked or unknown workspace states the cause in text on the page, not in a toast, and names the date and actor where known.' },
+      ],
+
+      copy: [
+        { id: 'WC-COPY-01', t: 'You are in Northwind Global — your last workspace.' },
+        { id: 'WC-COPY-02', t: 'You are signed in, but not in a workspace yet. Create one to begin.' },
+        { id: 'WC-COPY-03', t: 'An invitation to Northwind Global has not arrived yet. K. Bruun is expected to send it.' },
+        { id: 'WC-COPY-04', t: 'Northwind’s directory has not yet assigned you to a workspace. This usually completes within a few minutes.' },
+        { id: 'WC-COPY-05', t: 'Your workspace opens on 1 September. We will email you when it is ready.' },
+        { id: 'WC-COPY-06', t: 'You were removed from Corrigan Health on 6 August and have no other workspaces.' },
+        { id: 'WC-COPY-07', t: 'Meridian Freight is archived, so we have opened Northwind Global instead.' },
+        { id: 'WC-COPY-08', t: 'Choose a workspace. Signora will remember this choice on this device.' },
+        { id: 'WC-COPY-09', t: 'Vantage Logistics is ready. You are its owner.' },
+        { id: 'WC-COPY-10', t: 'You have joined Vantage Logistics.' },
+        { id: 'WC-COPY-11', t: 'You have an unsaved note here. It will be kept for 7 days either way.' },
+        { id: 'WC-COPY-12', t: 'Still switching to Ashgrove Retail.' },
+        { id: 'WC-COPY-13', t: 'Could not switch to Ashgrove Retail. You are still in Northwind Global and nothing has changed here.' },
+        { id: 'WC-COPY-14', t: 'That workspace does not exist. It may have been renamed, or the link may be mistyped.' },
+        { id: 'WC-COPY-15', t: 'You no longer have access to Corrigan Health. Your membership was removed on 6 August by K. Bruun.' },
+      ],
+
+      contract: [
+        'selectWorkspace(url, memberships, prefs) is pure, ordered exactly as section 2, and makes no network call. Eight branches, eight fixtures.',
+        'Every outcome writes a reason code to the session and to the diagnostics bundle, matching the Entry convention.',
+        'Rule 1 precedes every stored preference. A URL naming a workspace the person belongs to is always honoured.',
+        'Rule 2 distinguishes denied from unknown before any fallback is attempted, and never reveals whether an unknown slug exists.',
+        'Health is evaluated before rules 3, 4 and 6 select. Suspended, deleted and outage states are never auto-selected.',
+        'An archived workspace is selectable by explicit choice and never by automatic fall-through.',
+        'Rule 5 renders the fall-through notice naming the skipped workspace and its state. Silent fall-through is a defect.',
+        'The chooser is rendered as a mandatory step only under rule 7. No other path may render it as an interstitial.',
+        'Pinned default lives on the server per identity; last-used in localStorage per device; active workspace in the URL per tab. Three values, never merged.',
+        'Pinned list order affects display only and is not read by any selection rule.',
+        'Last-used is written on activation of a switch, before the route change, so a failed switch still records intent.',
+        'A failed switch returns to the origin workspace. No code path lands on the chooser after a switch failure.',
+        'The header workspace identity and the content workspace never disagree, including during failure revert — assert in the same commit.',
+        'The unsaved-work check runs before the route change, delegating to Session Continuity for the dialog.',
+        'A switch never affects another tab. No BroadcastChannel message is sent for workspace change.',
+        'Unavailable memberships and pending invitations are rendered in both surfaces, at reduced emphasis, never filtered out.',
+        'Search appears above 8 rows in WS-A and above 6 in WS-B, and matches on name and slug.',
+        'Creation is suppressed — not disabled — for SSO-provisioned identities, and is absent from the tab order when suppressed.',
+        'WS-A traps focus and returns it to the trigger on close. WS-B does not trap focus.',
+        'Every string is used verbatim from the copy table. No message is composed from fragments at runtime.',
+      ].map((t, i) => ({ n: i + 1, t })),
+
+      unresolved: [
+        { id: 'U-01', t: 'Workspace Setup specifies its own creation-success destination', owner: 'Product Owner', color: 'var(--risk)', b: 'The approved Workspace Setup document includes a creation-success screen whose exit is unspecified, while this document routes creation through selection rule 1. Two approved documents with a claim on the same transition. Changing an approved document is not a design decision.', interim: 'implement rule 1 — creation puts the new workspace ID in the URL and selection resolves it. Proposed resolution: Workspace Setup keeps the success screen and cross-references rule 1 rather than naming a destination.' },
+        { id: 'U-02', t: 'The pinned default has no backend field today', owner: 'Architecture', color: 'var(--warn)', b: 'Rule 3 reads prefs.defaultWorkspace, which does not exist. This document does not invent it as shipped capability — it specifies the rule and the interim.', interim: 'ship rules 1, 2, 4–8 only. Rule 3 is a no-op until the field exists, and selection degrades cleanly to last-used with no behavioural surprise.' },
+        { id: 'U-03', t: 'Last-used retention across sign-out', owner: 'Security', color: 'var(--warn)', b: 'sig.ws.lastUsed persists in localStorage after sign-out, which lets the next person on a shared device see a workspace name on the sign-in screen. Whether that is acceptable is a security judgement.', interim: 'retain, since Session Continuity already shows the intended destination on the cold sign-in screen. If security objects, clear on explicit sign-out and keep it through expiry.' },
+        { id: 'U-04', t: 'Pin limit of five', owner: 'Product Owner', color: 'var(--warn)', b: 'Five is asserted here on the basis that the switcher list stays scannable. There is no data on how many workspaces agency and consultancy accounts actually hold.', interim: 'implement 5 as a configuration value, not a constant.' },
+        { id: 'U-05', t: 'Provisioning poll interval and ceiling', owner: 'Architecture', color: 'var(--warn)', b: 'WS-D polls memberships every 15 seconds while visible. Whether that load is acceptable at enterprise onboarding scale, and whether it should stop after a ceiling, needs a platform answer.', interim: '15s while visible, stopping after 20 attempts with a manual “Check again” remaining.' },
+      ],
+
+      acceptance: [
+        { id: 'AC-W01', t: 'A URL naming a workspace the person belongs to is entered even when a different workspace is pinned and a third is last-used.' },
+        { id: 'AC-W02', t: 'A URL naming a workspace they were removed from renders WS-C with the removal date and actor, not the generic 403.' },
+        { id: 'AC-W03', t: 'A URL naming a non-existent slug renders the 404 and the response body contains no workspace name.' },
+        { id: 'AC-W04', t: 'With one membership, no chooser and no confirmation strip is rendered, and the header control offers creation rather than a list.' },
+        { id: 'AC-W05', t: 'With four memberships and a last-used value, entry goes straight to that workspace and the strip shows for 4 seconds.' },
+        { id: 'AC-W06', t: 'With four memberships and no pin or last-used, WS-B renders and is the only route forward.' },
+        { id: 'AC-W07', t: 'Archive the last-used workspace: entry lands on the next healthy membership and WC-COPY-07 is shown.' },
+        { id: 'AC-W08', t: 'An SSO-provisioned identity with no memberships sees WS-D with no create action anywhere in the DOM or the tab order.' },
+        { id: 'AC-W09', t: 'Block the workspace endpoint during a switch: three retries occur, WS-E renders, and the header shows the origin workspace.' },
+        { id: 'AC-W10', t: 'Switch with an unsaved draft present: the Session Continuity choice appears before the URL changes.' },
+        { id: 'AC-W11', t: 'Switch in one tab: a second tab in another workspace is unaffected and receives no message.' },
+        { id: 'AC-W12', t: 'At 390 × 844 the switcher is a bottom sheet with 44px targets, and WS-B does not autofocus the search field.' },
+      ],
+
+      components: [
+        'Shell/TopBarControl', 'Popover --e3', 'Sheet (mobile)', 'PageShell austere',
+        'Card --e2 16px', 'MembershipRow', 'Tag', 'Input 8px', 'Button primary/secondary',
+        'Skeleton block', 'Spinner inline', 'GroupHeader', 'Strip inline',
+      ],
+
+      colophon: [
+        { k: 'Document', v: 'Workspace Chooser · canonical' },
+        { k: 'Selection rules', v: '8' },
+        { k: 'Flows', v: '18 of 18' },
+        { k: 'Conflicts recorded', v: '1 · U-01' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

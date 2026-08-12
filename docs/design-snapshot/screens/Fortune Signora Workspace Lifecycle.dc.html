@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes wlShimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes wlSpin { to { transform: rotate(360deg); } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em;padding:0 40px 120px">
+
+  <header style="max-width:1360px;margin:0 auto;padding:56px 0 36px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);font-size:11.5px;font-weight:600">Canonical · state authority</span>
+      <span style="font-size:11.5px;color:var(--ink-3)">Design system v2.0, unchanged · resolves Chooser U-01</span>
+      <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};box-shadow:{{ lightShadow }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};box-shadow:{{ darkShadow }}" onClick="{{ setDark }}">Dark</span>
+      </span>
+    </div>
+    <h1 style="font-size:44px;line-height:1.06;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:22ch">Workspace Lifecycle</h1>
+    <p style="font-size:17px;line-height:1.6;max-width:82ch;margin:18px 0 0;color:var(--ink-2);text-wrap:pretty">What state a workspace is in, how it moves between states, and what every state looks like to the people inside it. Seven states, twelve transitions, one read-only mechanic reused four ways. The Chooser decides which workspace you enter; this document decides what you find when you get there.</p>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:34px;max-width:1120px">
+      <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="5">
+        <div style="padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid {{ s.border }};box-shadow:var(--e1)">
+          <div style="font-size:23px;font-weight:700;letter-spacing:-0.026em;line-height:1;font-variant-numeric:tabular-nums;color:{{ s.color }}">{{ s.v }}</div>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:6px;line-height:1.45">{{ s.l }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </header>
+
+  <section data-screen-label="01 Boundaries" style="max-width:1360px;margin:0 auto">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">01 · Reconciliation &amp; boundaries</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:22px 26px;border-bottom:1px solid var(--line-soft)">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Four documents had a partial claim on workspace state. This one consolidates it and resolves the recorded conflict.</h2>
+        <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0;max-width:88ch">Archive was mentioned in Workspace Setup without being drawn, suspension lived in Billing as dunning, deletion sat half-specified in System States, and the Chooser recorded U-01 because creation-success had two claimants. The states are consolidated here because they share one mechanic — a read-only shell with a persistent banner — differing only in cause, audience and what remains permitted.</p>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:1040px">
+          <div style="display:grid;grid-template-columns:176px 1fr 1fr 112px;gap:16px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Source</div><div>What it held</div><div>Resolution</div><div>Result</div>
+          </div>
+          <sc-for list="{{ reconciliation }}" as="r" hint-placeholder-count="11">
+            <div style="display:grid;grid-template-columns:176px 1fr 1fr 112px;gap:16px;padding:13px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div style="font-weight:600;line-height:1.4">{{ r.src }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ r.said }}</div>
+              <div style="line-height:1.5">{{ r.fix }}</div>
+              <div><span style="display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ r.tagBg }};color:{{ r.tagFg }};white-space:nowrap">{{ r.tag }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;padding:20px 26px">
+        <sc-for list="{{ boundaries }}" as="b" hint-placeholder-count="5">
+          <div style="padding:15px 16px;border-radius:12px;background:{{ b.bg }};border:1px solid {{ b.border }}">
+            <div style="font-size:12.5px;font-weight:600">{{ b.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ b.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="02 State machine" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">02 · Lifecycle model — seven states</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:flex;align-items:flex-start;gap:16px;row-gap:12px;flex-wrap:wrap;padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <div style="flex:1;min-width:300px">
+          <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Every workspace is in exactly one state at any moment</h2>
+          <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0;max-width:84ch">The state is a server-held enumeration, never derived on the client. Setup completeness is a separate axis — a workspace can be ACTIVE with no integrations connected, which is why activation is a Home composition and not a lifecycle state.</p>
+        </div>
+        <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--sunken);font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-2);flex:none">workspace.state ∈ { PROVISIONING, ACTIVE, SUSPENDED, ARCHIVED, DELETING, PURGED, FAILED }</span>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:1200px">
+          <div style="display:grid;grid-template-columns:148px 88px 1fr 118px 1fr 132px;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>State</div><div>Access</div><div>What members can do</div><div>Banner</div><div>Cause</div><div>Selectable?</div>
+          </div>
+          <sc-for list="{{ states }}" as="s" hint-placeholder-count="7">
+            <div style="display:grid;grid-template-columns:148px 88px 1fr 118px 1fr 132px;gap:14px;padding:14px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start;background:{{ s.bg }}">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="width:9px;height:9px;flex:none;border-radius:3px;background:{{ s.color }}"></span>
+                  <span style="font-family:ui-monospace,monospace;font-size:11px;font-weight:600;color:{{ s.color }}">{{ s.id }}</span>
+                </div>
+                <div style="font-size:11px;color:var(--ink-4);margin-top:4px">{{ s.t }}</div>
+              </div>
+              <div><span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:{{ s.accessBg }};color:{{ s.accessFg }};white-space:nowrap">{{ s.access }}</span></div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ s.can }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ s.banner }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ s.cause }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ s.selectable }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="overflow-x:auto;border-top:1px solid var(--line-soft)">
+        <div style="min-width:1120px">
+          <div style="display:grid;grid-template-columns:34px 108px 108px 1fr 148px 1fr;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>#</div><div>From</div><div>To</div><div>Trigger</div><div>Required permission</div><div>Reversible?</div>
+          </div>
+          <sc-for list="{{ transitions }}" as="t" hint-placeholder-count="12">
+            <div style="display:grid;grid-template-columns:34px 108px 108px 1fr 148px 1fr;gap:14px;padding:12px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div style="font-variant-numeric:tabular-nums;color:var(--ink-4);font-weight:600">{{ t.n }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-2)">{{ t.from }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:{{ t.toColor }};font-weight:600">{{ t.to }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ t.trigger }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ t.perm }}</div>
+              <div style="line-height:1.5;color:{{ t.revColor }}">{{ t.rev }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(265px,1fr));gap:14px;padding:20px 26px">
+        <sc-for list="{{ machineLaws }}" as="l" hint-placeholder-count="5">
+          <div style="padding:15px 16px;border-radius:12px;background:{{ l.bg }};border:1px solid {{ l.border }}">
+            <div style="font-size:12.5px;font-weight:600">{{ l.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ l.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="03 Creation" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">03 · WL-01 … WL-04 — creation, provisioning, success, failure</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">WL-02 · provisioning</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--brand-tint);color:var(--brand-ink)">Determinate, never a spinner</span>
+        </div>
+        <div style="padding:22px;background:var(--bg)">
+          <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:22px">
+            <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap">
+              <span style="width:34px;height:34px;flex:none;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700">VL</span>
+              <div style="min-width:0">
+                <div style="font-size:16px;font-weight:600;letter-spacing:-0.016em">Creating Vantage Logistics</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">signora.com/w/vantage-logistics</div>
+              </div>
+              <span style="margin-left:auto;width:15px;height:15px;flex:none;border-radius:999px;border:2px solid var(--line);border-top-color:var(--brand);animation:wlSpin .9s linear infinite"></span>
+            </div>
+            <div style="height:6px;border-radius:999px;background:var(--sunken);margin-top:16px;overflow:hidden">
+              <span style="display:block;width:64%;height:100%;border-radius:999px;background:var(--brand)"></span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:14px">
+              <sc-for list="{{ provisionSteps }}" as="p" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="width:18px;height:18px;flex:none;border-radius:999px;background:{{ p.markBg }};border:1.5px solid {{ p.markBorder }};color:{{ p.markFg }};display:grid;place-items:center;font-size:8.5px;font-weight:700">{{ p.mark }}</span>
+                  <span style="font-size:12.5px;font-weight:{{ p.weight }};color:{{ p.color }}">{{ p.t }}</span>
+                  <span style="margin-left:auto;font-size:11px;color:var(--ink-4);font-variant-numeric:tabular-nums;flex:none">{{ p.time }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft);line-height:1.5">You can leave this page. We will email you when it is ready, usually within a minute.</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0;margin-top:14px">
+            <sc-for list="{{ provisionSpec }}" as="s" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:94px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                <span style="font-weight:600;color:var(--ink-3)">{{ s.k }}</span>
+                <span style="color:var(--ink-2);line-height:1.5">{{ s.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--pos-line);box-shadow:var(--e2);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">WL-03 · creation success</span>
+            <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--pos-tint);color:var(--pos);flex:none">Resolves U-01</span>
+          </div>
+          <div style="padding:20px">
+            <div style="padding:18px 17px;border-radius:12px;background:var(--pos-tint);border:1px solid var(--pos-line)">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="width:26px;height:26px;flex:none;border-radius:8px;background:var(--pos);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700">✓</span>
+                <span style="font-size:15px;font-weight:600;letter-spacing:-0.014em">Vantage Logistics is ready</span>
+              </div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">You are its owner. Connect a CRM to give Signora something to work from — that is the next step, and it takes about ten minutes.</p>
+              <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:12px">
+                <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600">Go to the workspace</span>
+                <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12.5px;font-weight:600">Invite people first</span>
+              </div>
+            </div>
+            <div style="margin-top:14px;padding:14px 15px;border-radius:12px;background:var(--sunken)">
+              <div style="font-size:12px;font-weight:600">How U-01 is resolved</div>
+              <div style="font-size:11.5px;color:var(--ink-2);margin-top:6px;line-height:1.55">This screen is a confirmation, not a router. Both actions put the new workspace ID in the URL and let Chooser selection rule 1 resolve it. Workspace Setup keeps its creation form and cross-references this screen; it names no destination of its own. The conflict recorded as Chooser U-01 is closed by that division.</div>
+            </div>
+          </div>
+        </div>
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--risk-line);box-shadow:var(--e2);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">WL-04 · creation failure</span>
+            <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--risk-tint);color:var(--risk);flex:none">FAILED, not half-made</span>
+          </div>
+          <div style="padding:20px">
+            <div style="padding:18px 17px;border-radius:12px;background:var(--risk-tint);border:1px solid var(--risk-line)">
+              <span style="width:26px;height:26px;border-radius:8px;background:var(--surface);color:var(--risk);display:grid;place-items:center">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M8 5v3.5M8 11h.01"></path></svg>
+              </span>
+              <div style="font-size:15px;font-weight:600;letter-spacing:-0.014em;margin-top:11px">Vantage Logistics could not be created</div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Provisioning failed at the data-region step. Nothing partial exists — the name and address are free to use again, and you have not been charged.</p>
+              <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:12px">
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">Try again</span>
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600">Copy identifier</span>
+              </div>
+              <div style="font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-3);margin-top:11px">req_9e04-b3f7</div>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:13px;line-height:1.5">FAILED is a real state, not an absence. A workspace that half-provisioned is reaped server-side within 15 minutes and its slug released — otherwise a retry collides with the wreckage of the first attempt.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="04 Readonly" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">04 · WL-06 &amp; WL-07 — the read-only shell, twice</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 22px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+        <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">WL-06 · suspended (shown) · WL-07 · archived (same mechanic)</span>
+        <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4);flex:none">1440 × 900</span>
+      </div>
+      <div style="padding:22px;background:var(--bg)">
+        <div style="border-radius:12px;border:1px solid var(--line-soft);overflow:hidden;background:var(--surface)">
+          <div style="display:flex;align-items:center;gap:11px;row-gap:8px;flex-wrap:wrap;padding:0 14px;height:44px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+            <span style="width:21px;height:21px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8px;font-weight:700;flex:none">NG</span>
+            <span style="font-size:12px;font-weight:600;flex:none">Northwind Global</span>
+            <span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--risk-tint);color:var(--risk);flex:none">Read-only</span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:7px;flex:none">
+              <span style="height:24px;padding:0 9px;border-radius:7px;background:var(--sunken);color:var(--ink-3);font-size:10.5px;display:grid;place-items:center">Search</span>
+              <span style="width:24px;height:24px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:600">AD</span>
+            </span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:13px;row-gap:11px;flex-wrap:wrap;padding:15px 18px;background:var(--risk-tint);border-bottom:1px solid var(--risk-line)">
+            <span style="width:24px;height:24px;flex:none;margin-top:1px;border-radius:7px;background:var(--risk);color:#fff;display:grid;place-items:center">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2.5 14 13H2L8 2.5ZM8 6.5v3M8 11h.01"></path></svg>
+            </span>
+            <div style="flex:1;min-width:250px">
+              <div style="font-size:14px;font-weight:600">This workspace is read-only — payment could not be taken</div>
+              <div style="font-size:12.5px;color:var(--ink-2);margin-top:5px;line-height:1.55">Suspended on 11 August after three failed attempts on the card ending 4412. Everyone can read and export; nobody can change anything, send anything, or run an agent. K. Bruun and M. Reinhardt can restore it by updating payment.</div>
+            </div>
+            <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;flex:none">Update payment</span>
+          </div>
+          <div style="display:grid;grid-template-columns:132px 1fr">
+            <div style="background:var(--bg-rail);border-right:1px solid var(--line-soft);padding:12px 9px">
+              <sc-for list="{{ roRail }}" as="r" hint-placeholder-count="7">
+                <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;font-size:11.5px;color:{{ r.color }};opacity:{{ r.opacity }};margin-bottom:2px;background:{{ r.bg }}">
+                  <span style="width:5px;height:5px;flex:none;border-radius:2px;background:{{ r.dot }}"></span>
+                  <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.t }}</span>
+                  <span style="margin-left:auto;flex:none;color:var(--ink-4)">{{ r.lock }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding:16px;background:var(--bg)">
+              <div style="display:flex;align-items:center;gap:12px;row-gap:9px;flex-wrap:wrap">
+                <div style="min-width:180px;flex:1">
+                  <div style="font-size:17px;font-weight:700;letter-spacing:-0.02em">Enterprise accounts</div>
+                  <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px">312 of 8,412 · data as of 11 August, 06:00</div>
+                </div>
+                <span style="display:flex;gap:7px;flex-wrap:wrap;flex:none">
+                  <span style="display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:11.5px;font-weight:600">Export</span>
+                  <span style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:8px;border:1px solid var(--line-soft);background:var(--sunken);font-size:11.5px;font-weight:600;color:var(--ink-4)">
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4.5 7V5a3.5 3.5 0 0 1 7 0v2M3.5 7h9v6h-9z"></path></svg>
+                    New account
+                  </span>
+                </span>
+              </div>
+              <div style="margin-top:13px;border-radius:10px;border:1px solid var(--line-soft);overflow:hidden">
+                <div style="display:grid;grid-template-columns:1fr 96px 84px;gap:12px;padding:8px 13px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+                  <div>Account</div><div>Stage</div><div style="text-align:right">Score</div>
+                </div>
+                <sc-for list="{{ roRows }}" as="r" hint-placeholder-count="3">
+                  <div style="display:grid;grid-template-columns:1fr 96px 84px;gap:12px;padding:9px 13px;border-bottom:1px solid var(--line-soft);font-size:12px;align-items:center">
+                    <span style="font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.a }}</span>
+                    <span style="color:var(--ink-2)">{{ r.s }}</span>
+                    <span style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">{{ r.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:10px;line-height:1.5">Rows are readable and sortable. Inline editing, bulk actions and the AI assistant are disabled with the reason on hover — never absent, and never failing silently on click.</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px;margin-top:16px">
+          <sc-for list="{{ roRules }}" as="r" hint-placeholder-count="6">
+            <div style="padding:15px 16px;border-radius:12px;background:var(--sunken)">
+              <div style="font-size:12.5px;font-weight:600">{{ r.t }}</div>
+              <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ r.b }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:16px;overflow-x:auto">
+          <div style="min-width:900px">
+            <div style="display:grid;grid-template-columns:158px 1fr 1fr 1fr;gap:14px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+              <div>Audience</div><div>Suspended says</div><div>Archived says</div><div>Deleting says</div>
+            </div>
+            <sc-for list="{{ audiences }}" as="a" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:158px 1fr 1fr 1fr;gap:14px;padding:13px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+                <div style="font-weight:600;line-height:1.4">{{ a.who }}</div>
+                <div style="color:var(--ink-2);line-height:1.5">{{ a.susp }}</div>
+                <div style="color:var(--ink-2);line-height:1.5">{{ a.arch }}</div>
+                <div style="color:var(--ink-2);line-height:1.5">{{ a.del }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="05 Destructive" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">05 · WL-09 … WL-11 — the destructive flow</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--risk-line);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">WL-09 · deletion confirmation</span>
+          <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--risk-tint);color:var(--risk)">Typed name + step-up</span>
+        </div>
+        <div style="padding:22px;background:var(--sunken)">
+          <div style="width:100%;max-width:440px;margin:0 auto;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e4);padding:22px">
+            <span style="width:32px;height:32px;border-radius:10px;background:var(--risk-tint);color:var(--risk);display:grid;place-items:center">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3.5 5h9l-.7 8.5h-7.6zM6 5V3h4v2M2.5 5h11"></path></svg>
+            </span>
+            <div style="font-size:17px;font-weight:600;letter-spacing:-0.018em;margin-top:13px">Delete Meridian Freight?</div>
+            <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">Exactly what happens:</p>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:10px">
+              <sc-for list="{{ consequences }}" as="c" hint-placeholder-count="5">
+                <div style="display:flex;gap:9px;align-items:flex-start">
+                  <span style="width:14px;height:14px;flex:none;margin-top:3px;border-radius:4px;background:{{ c.bg }};color:#fff;display:grid;place-items:center;font-size:8px;font-weight:700">{{ c.mark }}</span>
+                  <span style="font-size:12px;line-height:1.5;color:var(--ink-2)">{{ c.t }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:15px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:6px">Type <span style="font-family:ui-monospace,monospace;font-size:11.5px;padding:1px 5px;border-radius:4px;background:var(--sunken)">Meridian Freight</span> to confirm</div>
+              <div style="display:flex;align-items:center;height:36px;padding:0 11px;border-radius:8px;border:1px solid var(--brand);box-shadow:0 0 0 3px var(--brand-tint);font-size:13px">Meridian Frei<span style="width:1.5px;height:15px;background:var(--brand);margin-left:1px"></span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:15px">
+              <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border-radius:8px;background:var(--risk);color:#fff;font-size:12.5px;font-weight:600;opacity:.42">Delete this workspace</span>
+              <span style="display:inline-flex;align-items:center;height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Keep it — archive instead</span>
+            </div>
+            <div style="font-size:11px;color:var(--ink-3);margin-top:12px;line-height:1.45">You will be asked to confirm your identity before this takes effect. Nothing happens until then.</div>
+          </div>
+        </div>
+        <div style="padding:18px 20px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Confirmation rules</div>
+          <div style="display:flex;flex-direction:column;gap:0;margin-top:11px">
+            <sc-for list="{{ confirmRules }}" as="c" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:112px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                <span style="font-weight:600;color:var(--ink-3);line-height:1.4">{{ c.k }}</span>
+                <span style="color:var(--ink-2);line-height:1.5">{{ c.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--risk-line);box-shadow:var(--e2);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">WL-08 · DELETING, member view</span>
+            <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--risk-tint);color:var(--risk);flex:none">Owner sees a restore action</span>
+          </div>
+          <div style="padding:20px">
+            <div style="padding:18px 17px;border-radius:12px;background:var(--risk-tint);border:1px solid var(--risk-line)">
+              <span style="width:28px;height:28px;border-radius:8px;background:var(--surface);color:var(--risk);display:grid;place-items:center">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 4.5V8l2.5 1.5"></path></svg>
+              </span>
+              <div style="font-size:15px;font-weight:600;letter-spacing:-0.014em;margin-top:11px">Meridian Freight is scheduled for deletion</div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">Deleted by K. Bruun on 13 August. Data is retained until <span style="font-weight:600;color:var(--ink)">12 September</span>, after which it cannot be recovered. Owners can still export or restore it.</p>
+              <div style="display:flex;gap:8px;row-gap:8px;flex-wrap:wrap;margin-top:12px">
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">Restore it</span>
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600">Export everything</span>
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;font-size:12px;font-weight:600;color:var(--ink-2)">Your other workspaces</span>
+              </div>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:13px;line-height:1.5">The purge date is a date, never “30 days”. A relative window read on day 29 is indistinguishable from one read on day 1, and this is the last screen where that ambiguity is affordable.</div>
+          </div>
+        </div>
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e2);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">WL-11 · destructive-action failure</span>
+            <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--warn-tint);color:var(--warn);flex:none">No partial state</span>
+          </div>
+          <div style="padding:20px">
+            <div style="padding:17px 16px;border-radius:12px;background:var(--warn-tint);border:1px solid var(--warn-line)">
+              <div style="font-size:14px;font-weight:600">Meridian Freight was not deleted</div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0">The request failed partway. The workspace is <span style="font-weight:600;color:var(--ink)">still active and unchanged</span> — no data was removed and no member lost access. Nothing is in an intermediate state.</p>
+              <div style="display:flex;align-items:center;gap:9px;row-gap:8px;flex-wrap:wrap;margin-top:12px">
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--brand);color:#fff;font-size:12px;font-weight:600">Try again</span>
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600">Contact support</span>
+                <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-3);flex:none">req_7a13-4c88</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0;margin-top:13px">
+              <sc-for list="{{ failRules }}" as="f" hint-placeholder-count="4">
+                <div style="display:grid;grid-template-columns:104px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                  <span style="font-weight:600;color:var(--ink-3)">{{ f.k }}</span>
+                  <span style="color:var(--ink-2);line-height:1.5">{{ f.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="06 Edge cases" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">06 · Edge cases, permissions &amp; mid-session transitions</div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:start">
+      <div style="min-width:0;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--line-soft)">
+          <h3 style="font-size:17px;font-weight:600;letter-spacing:-0.016em;margin:0">Nine edge cases the lifecycle must survive</h3>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">Each is a real sequence with a defined outcome, not a caveat. The first two are the ones that break implementations.</p>
+        </div>
+        <sc-for list="{{ edgeCases }}" as="e" hint-placeholder-count="9">
+          <div style="display:flex;flex-wrap:wrap;gap:8px 16px;padding:13px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:flex-start">
+            <div style="width:172px;min-width:0;flex:none">
+              <div style="font-weight:600;line-height:1.4">{{ e.t }}</div>
+              <span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ e.tagBg }};color:{{ e.tagFg }};margin-top:5px;white-space:nowrap">{{ e.tag }}</span>
+            </div>
+            <div style="flex:1 1 220px;min-width:0;color:var(--ink-2);line-height:1.55">{{ e.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="min-width:0;display:flex;flex-direction:column;gap:16px">
+        <div style="min-width:0;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Permissions per action</div>
+          <div style="overflow-x:auto">
+            <div style="min-width:520px">
+              <div style="display:grid;grid-template-columns:1fr 88px 88px 88px 88px;gap:10px;padding:9px 22px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+                <div>Action</div><div>Owner</div><div>Admin</div><div>Billing</div><div>Member</div>
+              </div>
+              <sc-for list="{{ permissions }}" as="p" hint-placeholder-count="8">
+                <div style="display:grid;grid-template-columns:1fr 88px 88px 88px 88px;gap:10px;padding:10px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;align-items:center">
+                  <span style="line-height:1.4">{{ p.t }}</span>
+                  <sc-for list="{{ p.cells }}" as="c" hint-placeholder-count="4">
+                    <span style="font-size:11px;font-weight:600;color:{{ c.color }}">{{ c.v }}</span>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="padding:14px 22px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Where a person lacks the permission, the control is disabled with the reason and the approvers named, per the Security Gates permission pattern. It is never hidden.</div>
+        </div>
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);padding:20px 22px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--brand-ink)">Transition while someone is working</div>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:10px 0 0">The interface never silently becomes something else. A state change reaching an open tab follows one sequence, in this order, every time.</p>
+          <div style="display:flex;flex-direction:column;gap:9px;margin-top:13px">
+            <sc-for list="{{ midSession }}" as="m" hint-placeholder-count="5">
+              <div style="display:flex;gap:11px;align-items:flex-start">
+                <span style="width:19px;height:19px;flex:none;margin-top:1px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);display:grid;place-items:center;font-size:9.5px;font-weight:700;font-variant-numeric:tabular-nums">{{ m.n }}</span>
+                <div>
+                  <div style="font-size:12.5px;font-weight:600">{{ m.t }}</div>
+                  <div style="font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ m.b }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="07 Responsive" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">07 · Responsive, accessibility &amp; copy</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="overflow-x:auto">
+        <div style="min-width:1140px">
+          <div style="display:grid;grid-template-columns:104px 1fr 1fr 1fr;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Viewport</div><div>Read-only banner</div><div>Destructive confirmation</div><div>Provisioning &amp; full-page states</div>
+          </div>
+          <sc-for list="{{ viewports }}" as="v" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:104px 1fr 1fr 1fr;gap:14px;padding:14px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div>
+                <div style="font-family:ui-monospace,monospace;font-size:11px;font-weight:600">{{ v.size }}</div>
+                <div style="font-size:10.5px;color:var(--ink-4);margin-top:3px">{{ v.name }}</div>
+              </div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.banner }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.destructive }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ v.page }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px;margin-top:14px">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">WCAG 2.2 AA &amp; keyboard</div>
+        <sc-for list="{{ a11y }}" as="a" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:52px 1fr;gap:12px;padding:11px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+            <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ a.sc }}</span>
+            <span style="color:var(--ink-2);line-height:1.55">{{ a.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Copy — verbatim</div>
+        <sc-for list="{{ copy }}" as="c" hint-placeholder-count="12">
+          <div style="padding:11px 20px;border-bottom:1px solid var(--line-soft)">
+            <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ c.id }}</div>
+            <div style="font-size:12.5px;margin-top:4px;line-height:1.5">“{{ c.t }}”</div>
+          </div>
+        </sc-for>
+        <div style="padding:13px 20px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Banned: “Are you sure?”, “This action cannot be undone” where it can, “permanently delete” for a reversible state, “30 days” without a date, and any confirmation whose button label does not name the act.</div>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft)">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--warn)">Unresolved decisions</div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">Five items. Three are capabilities this document deliberately did not invent.</div>
+        </div>
+        <sc-for list="{{ unresolved }}" as="u" hint-placeholder-count="5">
+          <div style="padding:13px 20px;border-bottom:1px solid var(--line-soft)">
+            <div style="display:flex;align-items:center;gap:9px;row-gap:6px;flex-wrap:wrap">
+              <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:{{ u.color }};font-weight:600">{{ u.id }}</span>
+              <span style="font-size:12.5px;font-weight:600">{{ u.t }}</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--sunken);color:var(--ink-3);white-space:nowrap;flex:none">{{ u.owner }}</span>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.5">{{ u.b }}</div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">Interim: {{ u.interim }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="08 Contract" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">08 · Contract, non-goals &amp; acceptance</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Implementation contract — Lane A checklist</h2>
+        <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:7px 0 0">Twenty-two items. Items marked in red are data-integrity assertions and should be covered by tests that fail the build.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:0 26px;padding:8px 26px 20px">
+        <sc-for list="{{ contract }}" as="c" hint-placeholder-count="22">
+          <div style="display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--line-soft);align-items:flex-start">
+            <span style="width:18px;height:18px;flex:none;margin-top:2px;border-radius:5px;border:1.5px solid {{ c.border }};background:{{ c.bg }};display:grid;place-items:center;font-size:9px;font-weight:700;color:{{ c.color }};font-variant-numeric:tabular-nums">{{ c.n }}</span>
+            <span style="font-size:12.5px;line-height:1.55">{{ c.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Acceptance criteria</div>
+        <sc-for list="{{ acceptance }}" as="a" hint-placeholder-count="14">
+          <div style="display:grid;grid-template-columns:64px 1fr;gap:12px;padding:10px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);font-weight:600">{{ a.id }}</span>
+            <span style="line-height:1.55">{{ a.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Explicit non-goals</div>
+          <sc-for list="{{ nonGoals }}" as="s" hint-placeholder-count="10">
+            <div style="display:flex;gap:10px;padding:10px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:flex-start">
+              <span style="width:14px;height:14px;flex:none;margin-top:3px;border-radius:4px;background:var(--risk);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">✕</span>
+              <span style="color:var(--ink-2);line-height:1.5">{{ s }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:22px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Components &amp; module relationships</div>
+          <p style="font-size:12px;line-height:1.55;color:var(--ink-2);margin:9px 0 0">Account 360, Companies and Reports each read <span style="font-family:ui-monospace,monospace;font-size:11px">workspace.state</span> and disable their write affordances from it. None implements its own read-only logic; all three inherit the disabled-control treatment specified here.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px">
+            <sc-for list="{{ components }}" as="c" hint-placeholder-count="12">
+              <span style="display:inline-flex;align-items:center;height:25px;padding:0 9px;border-radius:6px;border:1px solid var(--line-soft);background:var(--sunken);font-size:11px;font-family:ui-monospace,monospace;color:var(--ink-2);white-space:nowrap">{{ c }}</span>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:24px;row-gap:12px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft)">
+            <sc-for list="{{ colophon }}" as="c" hint-placeholder-count="4">
+              <div>
+                <div style="font-size:11px;color:var(--ink-3)">{{ c.k }}</div>
+                <div style="font-size:13px;font-weight:600;margin-top:2px">{{ c.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0', '--pos-line': '#c9e6da',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4', '--warn-line': '#efdcc0',
+      '--risk': '#a83329', '--risk-tint': '#fcefed', '--risk-line': '#f2d5d1',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f', '--pos-line': '#1d4433',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113', '--warn-line': '#453520',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17', '--risk-line': '#4a2a25',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      lightShadow: dark ? 'none' : 'var(--e1)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+      darkShadow: dark ? 'var(--e1)' : 'none',
+
+      heroStats: [
+        { v: '7', l: 'States, server-held, never derived', color: 'var(--ink)', border: 'var(--line-soft)' },
+        { v: '12', l: 'Transitions with named permissions', color: 'var(--ink)', border: 'var(--line-soft)' },
+        { v: '1', l: 'Read-only mechanic, reused four ways', color: 'var(--brand-ink)', border: 'var(--brand-line)' },
+        { v: '1', l: 'Conflict closed — Chooser U-01', color: 'var(--pos)', border: 'var(--pos-line)' },
+        { v: '3', l: 'Capabilities marked dependency, not invented', color: 'var(--warn)', border: 'var(--line-soft)' },
+      ],
+
+      reconciliation: [
+        { src: 'Workspace Chooser', said: 'Eight selection rules. Health is a precondition of automatic selection. Archived is selectable by explicit choice only. Recorded U-01 on creation-success ownership.', fix: 'Adopted whole, and U-01 is closed: WL-03 is a confirmation that routes through rule 1 rather than choosing a destination. This document defines health; the Chooser reads it.', tag: 'Resolves', tone: 'pos' },
+        { src: 'Workspace Setup', said: 'Owns the creation form, branding, slug, domain verification, and mentioned archiving without drawing it. Its success screen had an unspecified exit.', fix: 'Keeps the form and every setting. Archive is drawn here. Its success screen becomes a cross-reference to WL-03.', tag: 'Divided', tone: 'brand' },
+        { src: 'Billing', said: 'Owns dunning, invoices, payment methods and the recovery route after failed payment.', fix: 'Keeps all of it. This document draws the suspended shell and links to Billing for payment; Billing never draws the shell.', tag: 'Divided', tone: 'brand' },
+        { src: 'System States', said: 'Half-specified workspace deletion, and owns 403, 404 and the generic patterns.', fix: 'Deletion moves here in full. System States keeps the 404 that a purged slug returns, and cross-references this document.', tag: 'Absorbs', tone: 'brand' },
+        { src: 'Session Continuity', said: 'Workspace is per tab. Unsaved work blocks a switch. Tier 3 drafts survive 7 days independent of workspace state.', fix: 'A state transition mid-session never discards a draft. Section 5 specifies the export offer before a workspace becomes read-only; the storage model is theirs.', tag: 'Inherited', tone: 'pos' },
+        { src: 'Team Management', said: 'Owns invitations, member management, role assignment, removal, deactivation and ownership transfer.', fix: 'Membership and ownership changes stay there entirely. This document specifies only the lifecycle consequence — a workspace cannot enter DELETING with no owner.', tag: 'Aligned', tone: 'pos' },
+        { src: 'Settings', said: 'Owns workspace configuration, SSO, SCIM, API keys, audit and feature flags.', fix: 'The destructive actions live at the foot of Settings but are specified here. Settings renders them; this document defines the confirmation and consequence.', tag: 'Divided', tone: 'brand' },
+        { src: 'Authenticated Entry', said: 'Rules 15, 16, 17 route to suspended, archived and deleted screens.', fix: 'Those three screens are WL-06, WL-07 and WL-08 here. Entry decides that you land on them; this document decides what they say.', tag: 'Aligned', tone: 'pos' },
+        { src: 'Security Gates', said: 'Gate 13 requires step-up for security-sensitive actions; D-01 lists candidate actions.', fix: 'Deletion and archive both require step-up per SG-02. This document adds them to the D-01 candidate list rather than specifying the challenge.', tag: 'Extends', tone: 'warn' },
+        { src: 'Application Shell', said: 'Owns the frame, the rail and the banner slot above the content region.', fix: 'Every lifecycle banner occupies that existing slot. No new chrome, no second banner system, no shell variant.', tag: 'Inherited', tone: 'pos' },
+        { src: 'Home', said: 'Activation is a composition, not a lifecycle state. Home always renders.', fix: 'Confirmed and relied upon. Setup completeness is a separate axis from lifecycle state — an ACTIVE workspace with no integrations is normal, not a lifecycle condition.', tag: 'Aligned', tone: 'pos' },
+      ].map(r => ({
+        src: r.src, said: r.said, fix: r.fix, tag: r.tag,
+        tagBg: r.tone === 'pos' ? 'var(--pos-tint)' : (r.tone === 'brand' ? 'var(--brand-tint)' : 'var(--warn-tint)'),
+        tagFg: r.tone === 'pos' ? 'var(--pos)' : (r.tone === 'brand' ? 'var(--brand-ink)' : 'var(--warn)'),
+      })),
+
+      boundaries: [
+        { t: 'Chooser decides selection', b: 'Which workspace you enter, and whether you are asked. It reads health from this document and never defines it.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'This document decides state', b: 'What state a workspace is in, how it moves, and what each state looks like from inside. It never decides which workspace you enter.', bg: 'var(--brand-tint)', border: 'var(--brand-line)' },
+        { t: 'Session documents decide session', b: 'Expiry, drafts, cross-tab conflict. A lifecycle transition never invents session behaviour; it defers to Session Continuity.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'Authorization decides permission', b: 'Settings and Team Management own the role model. This document names the permission each transition requires and defines none of them.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'Setup completeness is not a state', b: 'An ACTIVE workspace with no CRM connected is normal. Activation is a Home composition, per that document. Conflating the two would make an unconnected workspace look broken.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+      ],
+
+      states: [
+        {
+          id: 'PROVISIONING', t: 'Being created', color: 'var(--brand)', bg: 'transparent',
+          access: 'Owner only', accessBg: 'var(--brand-tint)', accessFg: 'var(--brand-ink)',
+          can: 'Watch progress. Nothing else exists yet — no members, no settings, no data.',
+          banner: 'WL-02 page', cause: 'Creation submitted.',
+          selectable: 'No. Not in any list until ACTIVE.',
+        },
+        {
+          id: 'ACTIVE', t: 'Normal operation', color: 'var(--pos)', bg: 'var(--pos-tint)',
+          access: 'Full', accessBg: 'var(--pos-tint)', accessFg: 'var(--pos)',
+          can: 'Everything their role permits. This is the only state with no banner.',
+          banner: 'None', cause: 'Provisioning completed, or restored from ARCHIVED.',
+          selectable: 'Yes, by every rule.',
+        },
+        {
+          id: 'SUSPENDED', t: 'Billing hold', color: 'var(--risk)', bg: 'var(--risk-tint)',
+          access: 'Read-only', accessBg: 'var(--risk-tint)', accessFg: 'var(--risk)',
+          can: 'Read everything, export everything. No writes, no sends, no agent runs.',
+          banner: 'Persistent, no dismiss', cause: 'Payment failed past the dunning window, or a Signora policy action.',
+          selectable: 'Explicit choice only. Never auto-selected.',
+        },
+        {
+          id: 'ARCHIVED', t: 'Deliberately retired', color: 'var(--warn)', bg: 'var(--warn-tint)',
+          access: 'Read-only', accessBg: 'var(--warn-tint)', accessFg: 'var(--warn)',
+          can: 'Read and export. Identical mechanic to SUSPENDED, different cause and different resolver.',
+          banner: 'Persistent, no dismiss', cause: 'An owner archived it deliberately.',
+          selectable: 'Explicit choice only. Listed with its state.',
+        },
+        {
+          id: 'DELETING', t: 'In the retention window', color: 'var(--risk)', bg: 'var(--risk-tint)',
+          access: 'Owner only', accessBg: 'var(--risk-tint)', accessFg: 'var(--risk)',
+          can: 'Export, and restore. Members cannot enter — they see WL-08 with the purge date.',
+          banner: 'WL-08 page', cause: 'An owner confirmed deletion.',
+          selectable: 'Owners only, to export or restore.',
+        },
+        {
+          id: 'PURGED', t: 'Gone', color: 'var(--ink-3)', bg: 'transparent',
+          access: 'None', accessBg: 'var(--sunken)', accessFg: 'var(--ink-3)',
+          can: 'Nothing. The workspace is absent from every list and its slug returns the System States 404.',
+          banner: 'n/a', cause: 'The retention window elapsed.',
+          selectable: 'No. Terminal.',
+        },
+        {
+          id: 'FAILED', t: 'Provisioning failed', color: 'var(--risk)', bg: 'transparent',
+          access: 'Owner only', accessBg: 'var(--risk-tint)', accessFg: 'var(--risk)',
+          can: 'Read the failure and retry. A real state, not an absence — reaped within 15 minutes.',
+          banner: 'WL-04 page', cause: 'Provisioning did not complete.',
+          selectable: 'No. Never enters any list.',
+        },
+      ],
+
+      transitions: [
+        ['01', '—', 'PROVISIONING', 'A person submits the creation form in Workspace Setup.', 'Any identity not SSO-provisioned', 'n/a', 'brand', 'ink-2'],
+        ['02', 'PROVISIONING', 'ACTIVE', 'All provisioning steps complete. Owner is notified in-app and by email.', 'System', 'n/a', 'pos', 'ink-2'],
+        ['03', 'PROVISIONING', 'FAILED', 'Any provisioning step fails after its retries.', 'System', 'Yes — retry creates a new attempt', 'risk', 'pos'],
+        ['04', 'FAILED', 'PURGED', 'Reaped 15 minutes after failure. The slug is released.', 'System', 'No', 'ink-3', 'risk'],
+        ['05', 'ACTIVE', 'SUSPENDED', 'Dunning window elapses, per Billing.', 'System, or Signora policy', 'Yes — payment restores it', 'risk', 'pos'],
+        ['06', 'SUSPENDED', 'ACTIVE', 'Payment succeeds. Held agent runs and writes do not replay automatically.', 'Billing admin', 'n/a', 'pos', 'ink-2'],
+        ['07', 'ACTIVE', 'ARCHIVED', 'An owner archives it. Step-up challenge required per SG-02.', 'Workspace owner', 'Yes — restore is one action', 'warn', 'pos'],
+        ['08', 'ARCHIVED', 'ACTIVE', 'An owner restores it. No data was ever removed, so nothing is rebuilt.', 'Workspace owner', 'n/a', 'pos', 'ink-2'],
+        ['09', 'ACTIVE', 'DELETING', 'An owner confirms deletion by typing the workspace name. Step-up required.', 'Workspace owner', 'Yes — during the window only', 'risk', 'warn'],
+        ['10', 'ARCHIVED', 'DELETING', 'Same confirmation. The common path — archive first, delete later.', 'Workspace owner', 'Yes — during the window only', 'risk', 'warn'],
+        ['11', 'DELETING', 'ACTIVE', 'An owner restores it before the window elapses. Never returns to ARCHIVED — restoring means resuming work.', 'Workspace owner', 'n/a', 'pos', 'ink-2'],
+        ['12', 'DELETING', 'PURGED', 'The retention window elapses. Irreversible, and the only truly irreversible transition.', 'System', 'No', 'ink-3', 'risk'],
+      ].map(([n, from, to, trigger, perm, rev, toTone, revTone]) => ({
+        n, from, to, trigger, perm, rev,
+        toColor: toTone === 'pos' ? 'var(--pos)' : (toTone === 'warn' ? 'var(--warn)' : (toTone === 'risk' ? 'var(--risk)' : (toTone === 'brand' ? 'var(--brand-ink)' : 'var(--ink-3)'))),
+        revColor: revTone === 'pos' ? 'var(--pos)' : (revTone === 'warn' ? 'var(--warn)' : (revTone === 'risk' ? 'var(--risk)' : 'var(--ink-2)')),
+      })),
+
+      machineLaws: [
+        { t: 'One read-only mechanic, four uses', b: 'SUSPENDED, ARCHIVED, DELETING and a region outage all render the same inert shell with the same disabled-control treatment. Only the banner copy, the resolver and the permitted exports differ. Four implementations of this would drift within two quarters.', bg: 'var(--brand-tint)', border: 'var(--brand-line)' },
+        { t: 'Only one transition is irreversible', b: 'DELETING → PURGED. Every other transition can be undone by someone with the right permission, and each screen says which. Overstating irreversibility makes people distrust the one warning that matters.', bg: 'var(--risk-tint)', border: 'var(--risk-line)' },
+        { t: 'Exports never stop', b: 'In every state where a person can read, they can export. Withholding export from a suspended workspace is a hostage tactic, not a product decision.', bg: 'var(--pos-tint)', border: 'var(--pos-line)' },
+        { t: 'Restore from DELETING goes to ACTIVE', b: 'Never back to ARCHIVED. Someone rescuing a workspace from deletion wants to resume work, not return it to a shelf.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'State is never inferred on the client', b: 'It is a server enumeration on the workspace record. A client that guesses state from a 403 will guess wrong during a transition and disable the wrong controls.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+      ],
+
+      provisionSteps: [
+        { t: 'Reserved the address', mark: '✓', done: true, time: '0.3s' },
+        { t: 'Created the workspace record', mark: '✓', done: true, time: '0.8s' },
+        { t: 'Allocating data region — EU Frankfurt', mark: '', done: false, active: true, time: '4s' },
+        { t: 'Applying your organisation defaults', mark: '', done: false, time: '—' },
+      ].map(p => ({
+        t: p.t, time: p.time,
+        mark: p.done ? '✓' : '',
+        markBg: p.done ? 'var(--pos)' : 'transparent',
+        markBorder: p.done ? 'var(--pos)' : (p.active ? 'var(--brand)' : 'var(--line)'),
+        markFg: p.done ? '#fff' : 'var(--ink-3)',
+        weight: p.active ? 600 : 400,
+        color: p.done || p.active ? 'var(--ink)' : 'var(--ink-3)',
+      })),
+
+      provisionSpec: [
+        { k: 'Progress', v: 'Determinate, driven by real completed steps. Never a spinner and never a fake animated bar — provisioning has known stages and they are named.' },
+        { k: 'Leaving', v: 'Permitted and stated. Provisioning continues server-side and the owner is notified in-app and by email.' },
+        { k: 'Budget', v: '≤ 60s p95. Beyond 120s the page states that it is taking longer than usual and offers to email instead.' },
+        { k: 'Slug', v: 'Reserved at step one, so a second attempt with the same name cannot race the first.' },
+        { k: 'Failure', v: 'WL-04. The slug is released within 15 minutes and no partial workspace remains selectable.' },
+        { k: 'Concurrency', v: 'One provisioning workspace per identity at a time. A second submission is refused with the reason, not queued silently.' },
+      ],
+
+      roRail: [
+        ['Home', false], ['Accounts', false], ['Deals', false], ['Signals', false],
+        ['Research', true], ['Workflows', true], ['Settings', false],
+      ].map(([t, locked]) => ({
+        t,
+        lock: locked ? '\u2013' : '',
+        color: locked ? 'var(--ink-4)' : 'var(--ink-2)',
+        opacity: locked ? '0.5' : '1',
+        bg: 'transparent',
+        dot: locked ? 'var(--ink-4)' : 'var(--ink-3)',
+      })),
+
+      roRows: [
+        { a: 'Vantage Logistics', s: 'Negotiation', v: '38' },
+        { a: 'Corrigan Health', s: 'Negotiation', v: '82' },
+        { a: 'Norvell Energy', s: 'Closed won', v: '91' },
+      ],
+
+      roRules: [
+        { t: 'Disabled, never hidden', b: 'Write controls stay in place at 45% opacity with the reason on hover and in the accessible name. A control that vanishes makes people think the feature was removed from their plan.' },
+        { t: 'Reads are untouched', b: 'Tables sort, filters apply, records open, charts render. Nothing about reading is degraded — degrading reads would punish the wrong behaviour.' },
+        { t: 'Exports always work', b: 'In every read-only state. Withholding a customer\u2019s own data during a billing dispute is a hostage tactic and is forbidden here explicitly.' },
+        { t: 'Agents and schedules pause', b: 'They do not fail and do not queue. Runs are suspended and resume only when someone restores the workspace — never automatically replaying a month of missed runs.' },
+        { t: 'The AI assistant is unavailable', b: 'It generates content, which is a write. The entry point stays visible with the reason, consistent with every other disabled control.' },
+        { t: 'One banner, never dismissible', b: 'Occupying the shell\u2019s existing banner slot. Dismissible would leave someone confused by controls failing for no visible reason.' },
+      ],
+
+      audiences: [
+        {
+          who: 'Owner',
+          susp: 'Names the failed card, the attempt count and the date. Primary action is Update payment, which goes to Billing.',
+          arch: 'Names when they archived it and offers Restore as the primary action, with no confirmation — restoring is not destructive.',
+          del: 'The purge date, Restore, and Export everything. The only audience that can restore.',
+        },
+        {
+          who: 'Admin (non-billing)',
+          susp: 'Names the two billing admins by name. No payment route is offered — offering one that fails is worse than none.',
+          arch: 'Names the owner who archived it. Can request restoration; cannot restore.',
+          del: 'The purge date and Export everything. Restore is absent, and the owner is named.',
+        },
+        {
+          who: 'Member',
+          susp: '“Read-only — your administrators have been notified.” No billing detail: card and invoice facts are not member-visible.',
+          arch: 'That it is archived, and that reading and exporting still work. Names the owner to ask.',
+          del: 'The purge date and Export everything, so they can take their own work before it goes.',
+        },
+      ],
+
+      consequences: [
+        { mark: '\u2713', bg: 'var(--pos)', t: 'For 30 days, until 12 September, everything is recoverable by an owner.' },
+        { mark: '\u2713', bg: 'var(--pos)', t: 'Exports keep working for every member during those 30 days.' },
+        { mark: '\u2715', bg: 'var(--risk)', t: '34 members lose access to this workspace immediately, including you.' },
+        { mark: '\u2715', bg: 'var(--risk)', t: '4 integrations disconnect immediately. Salesforce data in Salesforce is untouched.' },
+        { mark: '\u2715', bg: 'var(--risk)', t: 'After 12 September, 8,412 accounts and 96 call transcripts cannot be recovered by anyone, including Signora support.' },
+      ],
+
+      confirmRules: [
+        { k: 'Typed name', v: 'The workspace name, exactly, case-insensitive, whitespace trimmed. The primary action stays disabled until it matches — this is the only disabled-until-valid control in the product.' },
+        { k: 'Button label', v: 'Names the act: “Delete this workspace”. Never “Confirm”, never “OK”, never “Yes”.' },
+        { k: 'Cancel label', v: 'Names the alternative: “Keep it — archive instead”. Offering the lesser action at the moment of hesitation is the point.' },
+        { k: 'Consequences', v: 'Enumerated with real counts from this workspace, split into what is recoverable and what is not. No prose paragraph.' },
+        { k: 'Step-up', v: 'Required after confirmation, per Security Gates SG-02. Nothing happens until identity is re-proved.' },
+        { k: 'Irreversibility', v: 'Stated only about the purge, with its date. Claiming the whole action is irreversible when 30 days of recovery exist would be false.' },
+        { k: 'Escape', v: 'Closes the dialog and changes nothing. There is no partial commit and no draft deletion state.' },
+        { k: 'Owner count', v: 'A workspace cannot be deleted while it has no owner, and Team Management prevents removing the last one. The dialog states the owner is you.' },
+      ],
+
+      failRules: [
+        { k: 'Atomicity', v: 'The transition either completes or does not occur. There is no partial deletion, and no member loses access on a failed attempt.' },
+        { k: 'Idempotency', v: 'Retry carries the same idempotency key, so a request that actually succeeded but failed to respond does not delete twice or double-charge the audit log.' },
+        { k: 'Audit', v: 'The failed attempt is recorded with the actor, the timestamp and the reason. A destructive attempt is auditable whether or not it succeeded.' },
+        { k: 'No auto-retry', v: 'Destructive actions are never retried by code. A person retries, deliberately, and re-confirms if the step-up window has lapsed.' },
+      ],
+
+      edgeCases: [
+        { t: 'Their only workspace is deleted', tag: 'Critical', b: 'On purge, the person has no memberships and reaches Chooser WS-D with the NONE_REMOVED variant, naming the workspace and the date. During the retention window they still reach WL-08 and can export.', tone: 'risk' },
+        { t: 'Last owner leaves', tag: 'Critical', b: 'Prevented by Team Management, which refuses to remove the final owner without transfer. This document only asserts the invariant: no workspace may exist in ACTIVE, ARCHIVED or DELETING with zero owners.', tone: 'risk' },
+        { t: 'Suspended and archived at once', tag: 'Precedence', b: 'Not possible — states are exclusive. If billing fails on an ARCHIVED workspace it stays ARCHIVED, because it is already read-only and a suspension would change nothing a person can see.', tone: 'warn' },
+        { t: 'Deleted while a member is mid-edit', tag: 'Session', b: 'Their draft is preserved for 7 days per Session Continuity and remains readable, though it can no longer be applied. The banner states that plainly rather than discarding it silently.', tone: 'warn' },
+        { t: 'Restored while someone sits on WL-08', tag: 'Live', b: 'The open tab reloads its state, the banner disappears, and a strip states the workspace was restored and by whom. It never silently becomes usable.', tone: 'warn' },
+        { t: 'Deletion of a workspace with a running agent', tag: 'Jobs', b: 'Runs are cancelled at transition, not left orphaned. The confirmation dialog names the count of in-flight runs that will be cancelled.', tone: 'warn' },
+        { t: 'Slug reuse after purge', tag: 'Naming', b: 'The slug is released and may be claimed by anyone. Old deep links return the System States 404 rather than resolving into a different customer\u2019s workspace.', tone: 'warn' },
+        { t: 'SSO-provisioned identity creating a workspace', tag: 'Blocked', b: 'Suppressed at the Chooser, per its section 6, and refused server-side. A shadow tenant outside the organisation\u2019s administration is the failure this prevents.', tone: '' },
+        { t: 'Two owners act simultaneously', tag: 'Race', b: 'First write wins; the second receives the current state and a message naming who acted and when. The second owner is never told their action succeeded when it did not apply.', tone: '' },
+      ].map(e => ({
+        t: e.t, tag: e.tag, b: e.b,
+        tagBg: e.tone ? 'var(--' + e.tone + '-tint)' : 'var(--sunken)',
+        tagFg: e.tone ? 'var(--' + e.tone + ')' : 'var(--ink-3)',
+      })),
+
+      permissions: [
+        ['Create a workspace', ['—', '—', '—', '—'], 'note'],
+        ['Archive', ['Yes', 'No', 'No', 'No'], ''],
+        ['Restore from archive', ['Yes', 'No', 'No', 'No'], ''],
+        ['Delete', ['Yes', 'No', 'No', 'No'], ''],
+        ['Restore from deleting', ['Yes', 'No', 'No', 'No'], ''],
+        ['Update payment', ['Yes', 'No', 'Yes', 'No'], ''],
+        ['Export during read-only', ['Yes', 'Yes', 'Yes', 'Yes'], ''],
+        ['See the purge date', ['Yes', 'Yes', 'Yes', 'Yes'], ''],
+      ].map(([t, cells, note]) => ({
+        t: note === 'note' ? 'Create a workspace — any identity, unless SSO-provisioned' : t,
+        cells: cells.map(v => ({
+          v,
+          color: v === 'Yes' ? 'var(--pos)' : (v === 'No' ? 'var(--ink-4)' : 'var(--ink-4)'),
+        })),
+      })),
+
+      midSession: [
+        { n: '1', t: 'The state change arrives', b: 'By server push, or on the next request. Nothing is polled for this — a transition is rare and pushed.' },
+        { n: '2', t: 'Unsaved work is offered as an export', b: 'Before any control becomes inert. Anything typed can be copied out, per Session Continuity tier 3.' },
+        { n: '3', t: 'The banner appears', b: 'In the shell\u2019s banner slot, naming the new state, the cause, the actor and the resolver.' },
+        { n: '4', t: 'Write controls become inert in place', b: 'Disabled, not removed. The layout does not shift and the person is not scrolled.' },
+        { n: '5', t: 'Nothing navigates', b: 'They stay on the record they were reading. A transition that redirects loses their place for no benefit.' },
+      ],
+
+      viewports: [
+        {
+          size: '390 × 844', name: 'Phone',
+          banner: 'Full-width under the 52px top bar, two lines maximum, action beneath at 44px. Never covers the bottom bar and never overlays content.',
+          destructive: 'Full-screen sheet. Consequences are a scrolling list; the typed-name field and both actions are pinned at the foot above the keyboard.',
+          page: 'Full-bleed at 16px padding. Provisioning steps stack; the progress bar is full width and the leave-page note sits directly beneath it.',
+        },
+        {
+          size: '768 × 1024', name: 'Tablet portrait',
+          banner: 'Full-width, single line at this width, action inline at the end.',
+          destructive: 'Centred dialog at 440px. Consequence list in one column, 44px targets.',
+          page: 'Centred column at 520px.',
+        },
+        {
+          size: '1024 × 768', name: 'Tablet landscape',
+          banner: 'Full-width, capped at 96px tall so the content beneath stays visible — height is the constraint here.',
+          destructive: 'Dialog 440px, consequence list capped at 220px with internal scroll so both actions stay on screen.',
+          page: 'Column 520px, vertically centred with a 32px minimum top margin.',
+        },
+        {
+          size: '1280 × 800', name: 'Laptop',
+          banner: 'Full-width in the content region, text capped at 640px so the sentence stays readable.',
+          destructive: 'Dialog 440px, centred, --e4.',
+          page: 'Column 520px.',
+        },
+        {
+          size: '1440 × 900', name: 'Desktop — reference',
+          banner: 'The canonical geometry. Text 640px, action right-aligned.',
+          destructive: 'Dialog 440px. Every measurement above is relative to this.',
+          page: 'Column 520px, card at --e2.',
+        },
+        {
+          size: '1600 × 900', name: 'Wide',
+          banner: 'Unchanged. The banner spans the content column, capped at 1360px; the sentence stays at 640px.',
+          destructive: 'Unchanged at 440px. A wider destructive dialog reads as less serious, not more.',
+          page: 'Unchanged. Surplus width is margin.',
+        },
+      ],
+
+      a11y: [
+        { sc: '1.3.1', t: 'Each lifecycle banner is a region with an accessible name naming the state. Full-page states are a single main with an h1 naming the workspace and its state.' },
+        { sc: '1.4.1', t: 'Read-only is carried by the banner text, the “Read-only” tag in the header and the disabled controls — never by colour alone.' },
+        { sc: '1.4.3', t: 'Disabled controls at 45% opacity retain a 3:1 border against the surface and keep their label at 4.5:1, so a disabled control is still readable.' },
+        { sc: '2.1.1', t: 'The typed-name field, both dialog actions, export and restore are keyboard-operable. Escape cancels and changes nothing.' },
+        { sc: '2.1.2', t: 'The destructive dialog traps focus and cycles only its own controls. Read-only banners never trap focus.' },
+        { sc: '2.2.1', t: 'No lifecycle screen has a countdown. The purge date is a date; a live timer to data loss would be cruel and unhelpful.' },
+        { sc: '2.4.3', t: 'On transition, focus does not move — the person keeps their place. Opening the destructive dialog moves focus to its heading; closing returns it to the trigger.' },
+        { sc: '3.3.1', t: 'The disabled reason is in each control\u2019s accessible name, not only in a tooltip, so it is available without hover.' },
+        { sc: '3.3.4', t: 'Deletion requires the typed name plus a step-up challenge — two independent confirmations for the one irreversible path in the product.' },
+        { sc: '4.1.3', t: 'A state transition announces assertively once, naming the new state and what changed. Provisioning progress announces at each completed step, politely.' },
+      ],
+
+      copy: [
+        { id: 'WL-COPY-01', t: 'Creating Vantage Logistics. You can leave this page — we will email you when it is ready.' },
+        { id: 'WL-COPY-02', t: 'Vantage Logistics is ready. You are its owner.' },
+        { id: 'WL-COPY-03', t: 'Vantage Logistics could not be created. Nothing partial exists — the name and address are free to use again.' },
+        { id: 'WL-COPY-04', t: 'This workspace is read-only — payment could not be taken.' },
+        { id: 'WL-COPY-05', t: 'Read-only — your administrators have been notified.' },
+        { id: 'WL-COPY-06', t: 'This workspace is archived. Reading and exporting still work.' },
+        { id: 'WL-COPY-07', t: 'Meridian Freight is scheduled for deletion. Data is retained until 12 September, after which it cannot be recovered.' },
+        { id: 'WL-COPY-08', t: 'Delete Meridian Freight?' },
+        { id: 'WL-COPY-09', t: 'Type Meridian Freight to confirm' },
+        { id: 'WL-COPY-10', t: 'Keep it — archive instead' },
+        { id: 'WL-COPY-11', t: 'Meridian Freight was not deleted. The workspace is still active and unchanged.' },
+        { id: 'WL-COPY-12', t: 'Meridian Freight was restored by K. Bruun. Everything works again.' },
+      ],
+
+      unresolved: [
+        { id: 'U-01', t: 'Retention window length', owner: 'Legal + Product', color: 'var(--risk)', b: 'This document uses 30 days for DELETING → PURGED, which the shipped documents assert nowhere. It is the single most consequential number here and it is not a design decision.', interim: 'implement as a configuration value with 30 days as the default, and render the resulting date rather than the duration.' },
+        { id: 'U-02', t: 'Whether restore-from-deleting exists at all', owner: 'Architecture', color: 'var(--risk)', b: 'The brief warns against inventing recovery. No approved document establishes that a soft-delete window exists. WL-08 and transition 11 assume it; if the backend hard-deletes, both must be removed and the confirmation copy rewritten to say so.', interim: 'do not build WL-08\u2019s Restore action until the backend model is confirmed. Everything else in this document stands either way.' },
+        { id: 'U-03', t: 'Agent-run resumption after restore', owner: 'Product', color: 'var(--warn)', b: 'Runs pause during read-only states. Whether a restored workspace replays missed scheduled runs, skips them, or asks, is a product judgement with real cost implications.', interim: 'skip missed runs and state the count in the restore confirmation. Never replay a month of runs silently.' },
+        { id: 'U-04', t: 'Export scope during DELETING', owner: 'Legal', color: 'var(--warn)', b: 'Members can export during the retention window. Whether that should survive a deletion initiated for compliance reasons, rather than by choice, is a legal question.', interim: 'permit member export in all read-only states. If legal objects, restrict to owners in DELETING only.' },
+        { id: 'U-05', t: 'Suspension of an already-archived workspace', owner: 'Product', color: 'var(--warn)', b: 'This document keeps it ARCHIVED on the reasoning that both are read-only and a suspension would change nothing visible. Billing may need the distinction for dunning state.', interim: 'stay ARCHIVED and record the billing condition separately, so Billing can act without a visible state change.' },
+      ],
+
+      contract: [
+        ['workspace.state is a server enumeration on the workspace record. No client code infers state from a 403, a 404 or a failed write.', true],
+        ['A lifecycle transition is atomic. No partial deletion, archive or suspension is observable at any point.', true],
+        ['Destructive transitions carry an idempotency key. A retried request that already succeeded does not apply twice.', true],
+        ['No workspace exists in ACTIVE, ARCHIVED or DELETING with zero owners. Assert as a database constraint, not a check in the client.', true],
+        ['Export endpoints remain available in every read-only state, for every role that can read.', true],
+        ['Deletion requires the typed workspace name AND a step-up challenge. Neither alone commits the action.', true],
+        ['Destructive actions are never retried automatically by any code path.', true],
+        ['One read-only shell implementation, parameterised by state. Four separate implementations is a contract violation.', false],
+        ['Write controls in a read-only state are disabled with the reason in the accessible name, never removed from the DOM.', false],
+        ['Agent runs and schedules are cancelled or paused at transition, never left orphaned or queued to replay.', false],
+        ['The purge date renders as an absolute date. No screen shows “30 days” or a countdown.', false],
+        ['The destructive dialog\u2019s primary label names the act; its cancel label names the lesser alternative.', false],
+        ['Consequence lists use real counts from the workspace being deleted, split into recoverable and not.', false],
+        ['Banners occupy the App Shell\u2019s existing banner slot and reduce the scroll area rather than overlaying content.', false],
+        ['Read-only banners are not dismissible. No configuration flag makes them dismissible.', false],
+        ['A mid-session transition offers export before any control becomes inert, and never navigates the tab.', false],
+        ['Provisioning progress is determinate and driven by completed steps. No indeterminate bar or spinner is used.', false],
+        ['A FAILED workspace is reaped within 15 minutes and its slug released. It never appears in any membership list.', false],
+        ['A purged slug returns the System States 404 and never resolves to a different workspace.', false],
+        ['Account 360, Companies and Reports read workspace.state and inherit this document\u2019s disabled treatment rather than implementing their own.', false],
+        ['Every string is used verbatim from the copy table. No confirmation message is composed from fragments at runtime.', false],
+        ['No new component and no new token is introduced. The banner slot, dialog and disabled treatment are all approved v2.', false],
+      ].map(([t, sec], i) => ({
+        n: i + 1, t,
+        border: sec ? 'var(--risk)' : 'var(--line)',
+        bg: sec ? 'var(--risk-tint)' : 'transparent',
+        color: sec ? 'var(--risk)' : 'var(--ink-4)',
+      })),
+
+      acceptance: [
+        { id: 'AC-L01', t: 'Submit creation: WL-02 shows named steps with a determinate bar; leaving the page and returning shows the same progress.' },
+        { id: 'AC-L02', t: 'Force provisioning to fail: WL-04 renders, and the slug is available again within 15 minutes.' },
+        { id: 'AC-L03', t: 'Complete creation and press either action: the URL contains the new workspace ID and Chooser rule 1 resolves it.' },
+        { id: 'AC-L04', t: 'Set a workspace to SUSPENDED: every write control is present, disabled, and carries the reason in its accessible name.' },
+        { id: 'AC-L05', t: 'In SUSPENDED, run an export: it succeeds for a member as well as an owner.' },
+        { id: 'AC-L06', t: 'In SUSPENDED, confirm no agent run executes and none is queued for replay.' },
+        { id: 'AC-L07', t: 'View SUSPENDED as owner, non-billing admin and member: three different bodies, and no card or invoice detail in the member view.' },
+        { id: 'AC-L08', t: 'Open the deletion dialog: the primary action is disabled until the typed name matches exactly.' },
+        { id: 'AC-L09', t: 'Confirm deletion: a step-up challenge is raised, and the workspace remains ACTIVE until it is completed.' },
+        { id: 'AC-L10', t: 'Fail a deletion request mid-flight: the workspace is unchanged, no member has lost access, and the attempt is in the audit log.' },
+        { id: 'AC-L11', t: 'Enter DELETING: the purge date renders as a date, and the string “30 days” appears nowhere in the DOM.' },
+        { id: 'AC-L12', t: 'Restore from DELETING: the resulting state is ACTIVE, never ARCHIVED.' },
+        { id: 'AC-L13', t: 'Transition a workspace while a second tab has an unsaved note: the export offer appears before controls become inert, and the tab does not navigate.' },
+        { id: 'AC-L14', t: 'At 390 × 844, the deletion confirmation is a full-screen sheet with both actions reachable above the keyboard.' },
+      ],
+
+      nonGoals: [
+        'Which workspace a person enters — owned by Workspace Chooser',
+        'The creation form, branding, slug and domain verification — owned by Workspace Setup',
+        'Dunning, invoices and payment methods — owned by Billing',
+        'Member management, roles, removal and ownership transfer — owned by Team Management',
+        'The step-up challenge itself — owned by Security Gates',
+        'Draft and view-state preservation — owned by Session Continuity',
+        'The generic 403 and 404 — owned by System States',
+        'Workspace merging, splitting or migration between regions',
+        'Bulk lifecycle operations across several workspaces at once',
+        'Any recovery capability beyond the retention window, which is recorded as U-02 rather than designed',
+      ],
+
+      components: [
+        'Shell/BannerSlot', 'Card --e2 16px', 'Dialog --e4', 'Sheet (mobile)',
+        'PageShell austere', 'ProgressBar determinate', 'StepMark', 'Button primary/secondary/destructive',
+        'Input 8px', 'Tag', 'DisabledControl', 'Strip inline',
+      ],
+
+      colophon: [
+        { k: 'Document', v: 'Workspace Lifecycle · canonical' },
+        { k: 'States', v: '7' },
+        { k: 'Transitions', v: '12' },
+        { k: 'Closes', v: 'Chooser U-01' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

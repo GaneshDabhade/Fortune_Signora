@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/styles.css">
+<script src="_ds/modernist-c798a756-9b5d-4587-a7bc-6f61a447ebab/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+  @keyframes hmShimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes hmSpin { to { transform: rotate(360deg); } }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+</style>
+</helmet>
+<div style="{{ tokens }}">
+<div style="background:var(--bg);color:var(--ink);min-height:100vh;font-family:var(--font-body);font-size:14px;line-height:1.6;letter-spacing:-0.003em;padding:0 40px 120px">
+
+  <header style="max-width:1360px;margin:0 auto;padding:56px 0 36px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;background:var(--brand-tint);color:var(--brand-ink);font-size:11.5px;font-weight:600">Canonical · composition authority</span>
+      <span style="font-size:11.5px;color:var(--ink-3)">Implementation authority for Lane A · design system v2.0, unchanged</span>
+      <span style="margin-left:auto;display:inline-flex;padding:3px;gap:3px;border-radius:10px;background:var(--sunken);border:1px solid var(--line-soft)">
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ lightBg }};color:{{ lightFg }};box-shadow:{{ lightShadow }}" onClick="{{ setLight }}">Light</span>
+        <span style="padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;background:{{ darkBg }};color:{{ darkFg }};box-shadow:{{ darkShadow }}" onClick="{{ setDark }}">Dark</span>
+      </span>
+    </div>
+    <h1 style="font-size:44px;line-height:1.06;letter-spacing:-0.032em;font-weight:700;margin:24px 0 0;max-width:20ch">Home</h1>
+    <p style="font-size:17px;line-height:1.6;max-width:82ch;margin:18px 0 0;color:var(--ink-2);text-wrap:pretty">One route, four compositions, fourteen states. Home is the destination for every authenticated entry that is not a deep link, and its job is to answer one question in under five seconds: what should I do now. This document owns which cards appear, in what order, and what each renders when its data is absent, partial, forbidden or broken. It does not own routing, the shell, or any card's internal screens.</p>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:34px;max-width:1120px">
+      <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="5">
+        <div style="padding:16px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <div style="font-size:23px;font-weight:700;letter-spacing:-0.026em;line-height:1;font-variant-numeric:tabular-nums">{{ s.v }}</div>
+          <div style="font-size:12px;color:var(--ink-3);margin-top:6px;line-height:1.45">{{ s.l }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </header>
+
+  <section data-screen-label="01 Reconciliation" style="max-width:1360px;margin:0 auto">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">01 · Reconciliation pass</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:22px 26px;border-bottom:1px solid var(--line-soft)">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">No Home document existed. This one becomes canonical; the Executive Dashboard becomes its first chapter.</h2>
+        <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0;max-width:88ch">Nine sources were checked before writing. The Entry specification asserts four compositions of one route; the Coverage Review classified Home as “B · expand existing” and named the Executive Dashboard document as the thing to expand. This document performs that expansion. The Executive Dashboard is not superseded as a design — its layout is unchanged and authoritative — but it is superseded as the <span style="font-weight:600;color:var(--ink)">composition authority</span>, which now lives here.</p>
+      </div>
+      <div style="overflow-x:auto">
+        <div style="min-width:1020px">
+          <div style="display:grid;grid-template-columns:190px 1fr 1fr 118px;gap:16px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Source checked</div><div>What it said</div><div>How this document reconciles</div><div>Result</div>
+          </div>
+          <sc-for list="{{ reconciliation }}" as="r" hint-placeholder-count="9">
+            <div style="display:grid;grid-template-columns:190px 1fr 1fr 118px;gap:16px;padding:13px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div style="font-weight:600;line-height:1.4">{{ r.src }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ r.said }}</div>
+              <div style="line-height:1.5">{{ r.fix }}</div>
+              <div><span style="display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;background:{{ r.tagBg }};color:{{ r.tagFg }};white-space:nowrap">{{ r.tag }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px;padding:20px 26px">
+        <sc-for list="{{ reconLaws }}" as="l" hint-placeholder-count="4">
+          <div style="padding:15px 16px;border-radius:12px;background:{{ l.bg }};border:1px solid {{ l.border }}">
+            <div style="font-size:12.5px;font-weight:600">{{ l.t }}</div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ l.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="02 Purpose" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">02 · Purpose, hierarchy &amp; non-goals</div>
+    <div style="display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:14px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:24px 26px">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Purpose</h2>
+        <p style="font-size:13.5px;line-height:1.65;color:var(--ink-2);margin:10px 0 0">Home tells a person what to do next, using the workspace's own data, with a reason attached to every item. It is not a report, not a dashboard for its own sake, and not a menu. If a person would routinely click straight past Home to reach real work, Home has failed — and the correct response is to fix the composition, not to redirect them somewhere else.</p>
+        <div style="margin-top:16px;padding:15px 16px;border-radius:12px;background:var(--brand-tint);border:1px solid var(--brand-line)">
+          <div style="font-size:12.5px;font-weight:600">The five-second test</div>
+          <div style="font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.55">Within five seconds of Home painting, a person must be able to name the one thing they should do first. Every card either contributes to that answer or does not belong in the composition.</div>
+        </div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin:18px 0 9px">Information hierarchy — fixed order</div>
+        <sc-for list="{{ hierarchy }}" as="h" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:26px 1fr;gap:11px;padding:9px 0;border-bottom:1px solid var(--line-soft);align-items:start">
+            <span style="width:20px;height:20px;border-radius:6px;background:var(--sunken);color:var(--ink-2);display:grid;place-items:center;font-size:9.5px;font-weight:700;font-variant-numeric:tabular-nums">{{ h.n }}</span>
+            <div>
+              <div style="font-size:12.5px;font-weight:600">{{ h.t }}</div>
+              <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ h.b }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Entry points</div>
+        <sc-for list="{{ entryPoints }}" as="e" hint-placeholder-count="8">
+          <div style="padding:11px 20px;border-bottom:1px solid var(--line-soft)">
+            <div style="display:flex;align-items:center;gap:9px;row-gap:5px;flex-wrap:wrap">
+              <span style="font-size:12.5px;font-weight:600">{{ e.t }}</span>
+              <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4);flex:none">{{ e.src }}</span>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.5">{{ e.b }}</div>
+          </div>
+        </sc-for>
+        <div style="padding:13px 20px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Every entry point resolves to <span style="font-family:ui-monospace,monospace;font-size:11px">/w/:workspace/home</span>. There is no second Home route and no per-composition route.</div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Explicit non-goals</div>
+        <sc-for list="{{ nonGoals }}" as="s" hint-placeholder-count="9">
+          <div style="display:flex;gap:10px;padding:10px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:flex-start">
+            <span style="width:14px;height:14px;flex:none;margin-top:3px;border-radius:4px;background:var(--risk);color:#fff;display:grid;place-items:center;font-size:8.5px;font-weight:700">✕</span>
+            <span style="color:var(--ink-2);line-height:1.5">{{ s }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="03 No hybrid" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">03 · The prohibition — Home never becomes another surface</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--risk-line);box-shadow:var(--e2);padding:24px 26px">
+      <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--risk)" stroke-width="1.7" stroke-linecap="round" style="flex:none"><circle cx="8" cy="8" r="6"></circle><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"></path></svg>
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Home must never fall back to a different product surface because it has no data</h2>
+      </div>
+      <p style="font-size:13.5px;line-height:1.65;color:var(--ink-2);margin:11px 0 0;max-width:88ch">An empty Home that redirects to the Attention list, the account table, or any other surface produces an alternate Home that no document describes, no test covers, and no person can predict. A designed empty state is strictly preferable. The rule is absolute and applies to every composition and every state in this document: <span style="font-weight:600;color:var(--ink)">Home always renders Home</span>.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:18px">
+        <sc-for list="{{ prohibition }}" as="p" hint-placeholder-count="4">
+          <div style="padding:16px 17px;border-radius:12px;background:{{ p.bg }};border:1px solid {{ p.border }}">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:18px;height:18px;flex:none;border-radius:5px;background:{{ p.markBg }};color:#fff;display:grid;place-items:center;font-size:9.5px;font-weight:700">{{ p.mark }}</span>
+              <div style="font-size:12.5px;font-weight:600">{{ p.t }}</div>
+            </div>
+            <div style="font-size:12px;color:var(--ink-2);margin-top:7px;line-height:1.55">{{ p.b }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:16px;padding:16px 18px;border-radius:12px;background:var(--sunken)">
+        <div style="font-size:12.5px;font-weight:600">“No data” and “no results” are different states with different copy</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:12px">
+          <sc-for list="{{ dataVsResults }}" as="d" hint-placeholder-count="2">
+            <div style="padding:14px 15px;border-radius:10px;background:var(--surface);border:1px solid {{ d.border }}">
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:{{ d.color }};font-weight:600">{{ d.code }}</div>
+              <div style="font-size:13px;font-weight:600;margin-top:6px">{{ d.t }}</div>
+              <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55">{{ d.b }}</div>
+              <div style="font-size:12px;margin-top:9px;padding:9px 11px;border-radius:8px;background:var(--sunken);line-height:1.5;font-style:italic">“{{ d.copy }}”</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:8px;line-height:1.5">Test · {{ d.test }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="04 Compositions" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">04 · Composition resolution &amp; card registry</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:flex;align-items:flex-start;gap:16px;row-gap:12px;flex-wrap:wrap;padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <div style="flex:1;min-width:300px">
+          <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Resolution is a pure function of three inputs</h2>
+          <p style="font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:8px 0 0;max-width:84ch">Activation state, then a stored preference, then the primary role. Evaluated in that order, first match wins, no network call inside the decision. Activation comes first because a workspace with no connected source cannot render a data composition regardless of who is looking at it.</p>
+        </div>
+        <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:var(--sunken);font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-2);flex:none">resolveComposition(activation, pref, role) → CompositionId</span>
+      </div>
+      <sc-for list="{{ resolution }}" as="r" hint-placeholder-count="5">
+        <div style="display:grid;grid-template-columns:36px 1fr 1fr 168px;gap:16px;padding:13px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+          <div style="font-variant-numeric:tabular-nums;color:var(--ink-4);font-weight:600">{{ r.n }}</div>
+          <div style="line-height:1.5"><span style="font-weight:600">{{ r.cond }}</span></div>
+          <div style="color:var(--ink-2);line-height:1.5">{{ r.note }}</div>
+          <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:{{ r.color }};font-weight:600;line-height:1.5">{{ r.result }}</div>
+        </div>
+      </sc-for>
+      <div style="overflow-x:auto;border-top:1px solid var(--line-soft)">
+        <div style="min-width:1160px">
+          <div style="display:grid;grid-template-columns:172px 118px 1fr 108px 132px 1fr;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>Card</div><div>Composition</div><div>Purpose</div><div>Footprint</div><div>Data dependency</div><div>Primary action</div>
+          </div>
+          <sc-for list="{{ registry }}" as="c" hint-placeholder-count="16">
+            <div style="display:grid;grid-template-columns:172px 118px 1fr 108px 132px 1fr;gap:14px;padding:12px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <div>
+                <div style="font-weight:600;line-height:1.4">{{ c.t }}</div>
+                <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4);margin-top:3px">{{ c.id }}</div>
+              </div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <sc-for list="{{ c.comps }}" as="k" hint-placeholder-count="2">
+                  <span style="display:inline-flex;align-items:center;height:19px;padding:0 6px;border-radius:5px;background:var(--sunken);font-size:10px;font-weight:600;color:var(--ink-2);white-space:nowrap">{{ k }}</span>
+                </sc-for>
+              </div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ c.purpose }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-2);line-height:1.5">{{ c.size }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-3);line-height:1.5">{{ c.dep }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ c.action }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="05 Activation" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">05 · Activation model &amp; rendered composition</div>
+    <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:16px;align-items:start">
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 20px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">HM-02 · activation, partially complete</span>
+          <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4);flex:none">1440 × 900 · content region</span>
+        </div>
+        <div style="padding:20px">
+          <div style="border-radius:12px;background:var(--bg);border:1px solid var(--line-soft);padding:20px 18px">
+            <div style="display:flex;align-items:flex-end;gap:14px;row-gap:10px;flex-wrap:wrap">
+              <div style="min-width:220px;flex:1">
+                <h3 style="font-size:24px;font-weight:700;letter-spacing:-0.026em;margin:0">Northwind Global is nearly ready</h3>
+                <div style="font-size:13px;color:var(--ink-2);margin-top:6px">Step 2 of 3 · about 12 minutes left</div>
+              </div>
+              <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:600;flex:none">Home · Activation</span>
+            </div>
+            <div style="height:6px;border-radius:999px;background:var(--sunken);margin-top:16px;overflow:hidden">
+              <span style="display:block;width:33%;height:100%;border-radius:999px;background:var(--brand)"></span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+              <sc-for list="{{ activationCards }}" as="a" hint-placeholder-count="3">
+                <div style="display:flex;align-items:flex-start;gap:13px;row-gap:11px;flex-wrap:wrap;padding:15px 16px;border-radius:12px;border:1px solid {{ a.border }};background:{{ a.bg }}">
+                  <span style="width:24px;height:24px;flex:none;margin-top:1px;border-radius:999px;background:{{ a.markBg }};border:1.5px solid {{ a.markBorder }};color:{{ a.markFg }};display:grid;place-items:center;font-size:10px;font-weight:700">{{ a.mark }}</span>
+                  <div style="flex:1;min-width:200px">
+                    <div style="display:flex;align-items:center;gap:9px;row-gap:6px;flex-wrap:wrap">
+                      <span style="font-size:13.5px;font-weight:600">{{ a.t }}</span>
+                      <span style="font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ a.tagBg }};color:{{ a.tagFg }};white-space:nowrap">{{ a.tag }}</span>
+                    </div>
+                    <div style="font-size:12.5px;color:var(--ink-2);margin-top:5px;line-height:1.55">{{ a.b }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">{{ a.meta }}</div>
+                  </div>
+                  <span style="display:flex;gap:7px;flex:none">
+                    <span style="display:inline-flex;align-items:center;height:31px;padding:0 12px;border-radius:8px;background:{{ a.actionBg }};color:{{ a.actionFg }};border:1px solid {{ a.actionBorder }};font-size:12.5px;font-weight:600">{{ a.action }}</span>
+                    <span style="display:inline-flex;align-items:center;height:31px;padding:0 11px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--ink-3)">{{ a.secondary }}</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;row-gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft)">
+              <span style="font-size:12px;color:var(--ink-2);line-height:1.5;flex:1;min-width:240px"><span style="font-weight:600;color:var(--ink)">What Signora will do with this.</span> Once calls are connected, it scores every open deal against your own closed-won history and tells you which are slipping and why.</span>
+              <span style="font-size:12px;font-weight:600;color:var(--brand-ink);flex:none">See an example</span>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:14px;line-height:1.5"><span style="font-weight:600;color:var(--ink)">“What Signora will do” is a footer line, not a card.</span> As a card it competed with the three steps for attention and was routinely skipped. As one sentence attached to the incomplete step, it answers the only question that matters at that moment — why bother with step three.</div>
+        </div>
+      </div>
+
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--line-soft)">
+          <h3 style="font-size:17px;font-weight:600;letter-spacing:-0.016em;margin:0">Activation card rules</h3>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:6px 0 0">The registry is server-driven so a new source can be added without shipping Home. Order is by declared priority, not by array position.</p>
+        </div>
+        <sc-for list="{{ activationRules }}" as="r" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:118px 1fr;gap:14px;padding:11px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+            <span style="font-weight:600;line-height:1.4">{{ r.k }}</span>
+            <span style="color:var(--ink-2);line-height:1.5">{{ r.v }}</span>
+          </div>
+        </sc-for>
+        <div style="padding:15px 22px;font-size:11.5px;color:var(--ink-3);line-height:1.5">If the registry returns zero cards — state 12 — Home renders the no-data state with a single line reading “Setup steps could not be loaded” and a retry. It never renders an empty progress bar at 0 of 0.</div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="06 Seller" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">06 · HM-01 — seller composition, fully activated with data</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:13px 22px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+        <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">HM-01 · seller · state 06 business-data</span>
+        <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--pos-tint);color:var(--pos)">The most common screen in the product</span>
+        <span style="margin-left:auto;font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-4);flex:none">content region only · shell omitted</span>
+      </div>
+      <div style="padding:22px;background:var(--bg)">
+
+        <div style="display:flex;align-items:center;gap:11px;row-gap:9px;flex-wrap:wrap;padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1)">
+          <span style="width:8px;height:8px;flex:none;border-radius:999px;background:var(--pos)"></span>
+          <span style="font-size:12.5px;line-height:1.5">You are in <span style="font-weight:600">Northwind Global</span> · your last workspace</span>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:12px;flex:none">
+            <span style="font-size:12px;font-weight:600;color:var(--brand-ink)">Switch workspace</span>
+            <span style="font-size:12px;color:var(--ink-4)">✕</span>
+          </span>
+        </div>
+
+        <div style="display:flex;align-items:flex-end;gap:14px;row-gap:10px;flex-wrap:wrap;margin-top:20px">
+          <div style="min-width:250px;flex:1">
+            <h2 style="font-size:27px;font-weight:700;letter-spacing:-0.028em;margin:0">Good morning, Aurélie</h2>
+            <div style="font-size:13px;color:var(--ink-2);margin-top:6px">Thursday 13 August · 3 things need you today · 2 meetings</div>
+          </div>
+          <span style="display:flex;align-items:center;gap:8px;flex:none">
+            <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:12.5px;font-weight:600">Home · Seller view</span>
+            <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:12.5px;font-weight:600">Customise</span>
+          </span>
+        </div>
+
+        <div style="margin-top:18px;border-radius:14px;background:var(--surface);border:1px solid var(--ai-line);box-shadow:var(--e1);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;row-gap:8px;flex-wrap:wrap;padding:14px 20px;background:var(--ai-tint);border-bottom:1px solid var(--ai-line)">
+            <span style="width:22px;height:22px;flex:none;border-radius:7px;background:var(--ai);display:grid;place-items:center">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v2.5M8 11.5V14M2 8h2.5M11.5 8H14M4 4l1.8 1.8M10.2 10.2 12 12"></path></svg>
+            </span>
+            <span style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ai-ink)">Your briefing</span>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);flex:none">Generated 07:00 · 6 sources · confidence 4/5</span>
+          </div>
+          <div style="padding:18px 20px">
+            <p style="font-size:15px;line-height:1.65;margin:0;max-width:80ch">Since Tuesday, <span style="font-weight:600">two of your eleven deals slipped</span> — both within a week of pricing review, both citing procurement<a href="#" style="color:var(--ai-ink);text-decoration:none;font-weight:600;font-size:11px;vertical-align:super;padding:0 1px">1</a>. Corrigan Health went quiet after their champion changed role<a href="#" style="color:var(--ai-ink);text-decoration:none;font-weight:600;font-size:11px;vertical-align:super;padding:0 1px">2</a>. Against that, Norvell Energy opened your pricing page four times yesterday<a href="#" style="color:var(--ai-ink);text-decoration:none;font-weight:600;font-size:11px;vertical-align:super;padding:0 1px">3</a>, which in 412 comparable deals preceded a close within nineteen days.</p>
+            <div style="display:flex;align-items:center;gap:10px;row-gap:9px;flex-wrap:wrap;margin-top:15px;padding-top:14px;border-top:1px solid var(--line-soft)">
+              <span style="display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:8px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:600;box-shadow:var(--e1)">Start with Corrigan Health</span>
+              <span style="display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;font-weight:600">Show evidence</span>
+              <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);flex:none">Not useful? Tell Signora why</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.45fr 1fr;gap:14px;margin-top:14px;align-items:start">
+          <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:15px 18px;border-bottom:1px solid var(--line-soft)">
+              <span style="font-size:15px;font-weight:600;letter-spacing:-0.014em">Needs you today</span>
+              <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:var(--sunken);color:var(--ink-3)">3</span>
+              <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);flex:none">Ranked by what it costs to ignore</span>
+            </div>
+            <sc-for list="{{ needsYou }}" as="n" hint-placeholder-count="3">
+              <div style="display:flex;align-items:flex-start;gap:13px;row-gap:11px;flex-wrap:wrap;padding:15px 18px;border-bottom:1px solid var(--line-soft);border-left:2px solid {{ n.edge }}">
+                <div style="flex:1;min-width:210px">
+                  <div style="display:flex;align-items:center;gap:9px;row-gap:6px;flex-wrap:wrap">
+                    <span style="font-size:13.5px;font-weight:600">{{ n.account }}</span>
+                    <span style="font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:5px;background:{{ n.tagBg }};color:{{ n.tagFg }};white-space:nowrap">{{ n.tag }}</span>
+                    <span style="font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums">{{ n.value }}</span>
+                  </div>
+                  <div style="font-size:12.5px;color:var(--ink-2);margin-top:5px;line-height:1.55">{{ n.why }}</div>
+                </div>
+                <span style="display:inline-flex;align-items:center;height:31px;padding:0 12px;border-radius:8px;background:{{ n.actionBg }};color:{{ n.actionFg }};border:1px solid {{ n.actionBorder }};font-size:12.5px;font-weight:600;flex:none">{{ n.action }}</span>
+              </div>
+            </sc-for>
+            <div style="padding:13px 18px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Maximum five items. A sixth becomes “See all 8 in Signals” — Home is a starting point, not a queue.</div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--line-soft)">
+                <span style="font-size:14px;font-weight:600">Today</span>
+                <span style="margin-left:auto;font-size:11.5px;color:var(--ink-3);flex:none">2 meetings</span>
+              </div>
+              <sc-for list="{{ meetings }}" as="m" hint-placeholder-count="2">
+                <div style="padding:13px 18px;border-bottom:1px solid var(--line-soft)">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;flex:none">{{ m.time }}</span>
+                    <span style="font-size:12.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.t }}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--ink-2);margin-top:4px;line-height:1.5">{{ m.b }}</div>
+                  <div style="font-size:12px;font-weight:600;color:var(--ai-ink);margin-top:6px">{{ m.action }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+              <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft);font-size:14px;font-weight:600">Signora worked overnight</div>
+              <sc-for list="{{ aiWork }}" as="a" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:11px;row-gap:8px;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid var(--line-soft)">
+                  <span style="width:7px;height:7px;flex:none;border-radius:999px;background:{{ a.dot }}"></span>
+                  <div style="min-width:140px;flex:1">
+                    <div style="font-size:12.5px;font-weight:600;line-height:1.4">{{ a.t }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">{{ a.meta }}</div>
+                  </div>
+                  <span style="font-size:12px;font-weight:600;color:{{ a.actionColor }};flex:none">{{ a.action }}</span>
+                </div>
+              </sc-for>
+              <div style="padding:12px 18px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Nothing here was sent or written. Agent output waits for a person.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="07 States" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">07 · The fourteen states</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+      <div style="overflow-x:auto">
+        <div style="min-width:1220px">
+          <div style="display:grid;grid-template-columns:34px 172px 1fr 128px 1fr 118px;gap:14px;padding:11px 26px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <div>#</div><div>State</div><div>Entry condition — exactly</div><div>Composition</div><div>Renders</div><div>Copy ID</div>
+          </div>
+          <sc-for list="{{ states }}" as="s" hint-placeholder-count="14">
+            <div style="display:grid;grid-template-columns:34px 172px 1fr 128px 1fr 118px;gap:14px;padding:13px 26px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start;background:{{ s.bg }}">
+              <div style="font-variant-numeric:tabular-nums;color:var(--ink-4);font-weight:600">{{ s.n }}</div>
+              <div>
+                <div style="font-weight:600;line-height:1.4">{{ s.t }}</div>
+                <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4);margin-top:3px">{{ s.id }}</div>
+              </div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ s.entry }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-2);line-height:1.5">{{ s.comp }}</div>
+              <div style="color:var(--ink-2);line-height:1.5">{{ s.renders }}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--brand-ink);line-height:1.5">{{ s.copy }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="08 Degraded" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">08 · Card-level degradation — rendered</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+      <sc-for list="{{ degraded }}" as="d" hint-placeholder-count="6">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:9px;row-gap:7px;flex-wrap:wrap;padding:12px 18px;background:var(--bg-rail);border-bottom:1px solid var(--line-soft)">
+            <span style="font-family:ui-monospace,monospace;font-size:10px;font-weight:600;color:var(--ink-2)">{{ d.id }}</span>
+            <span style="margin-left:auto;font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:{{ d.tagBg }};color:{{ d.tagFg }};white-space:nowrap;flex:none">{{ d.tag }}</span>
+          </div>
+          <div style="padding:18px">
+            <div style="padding:16px 17px;border-radius:12px;background:{{ d.cardBg }};border:1px {{ d.cardStroke }} {{ d.cardBorder }}">
+              <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                <span style="width:22px;height:22px;flex:none;border-radius:7px;background:{{ d.iconBg }};color:{{ d.iconFg }};display:grid;place-items:center;font-size:11px;font-weight:700">{{ d.icon }}</span>
+                <span style="font-size:13.5px;font-weight:600">{{ d.t }}</span>
+              </div>
+              <p style="font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:9px 0 0">{{ d.b }}</p>
+              <div style="display:flex;align-items:center;gap:9px;row-gap:8px;flex-wrap:wrap;margin-top:12px">
+                <span style="display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:8px;background:{{ d.actionBg }};color:{{ d.actionFg }};border:1px solid {{ d.actionBorder }};font-size:12px;font-weight:600">{{ d.action }}</span>
+                <span style="font-size:11.5px;color:var(--ink-3);line-height:1.45;flex:1;min-width:120px">{{ d.meta }}</span>
+              </div>
+            </div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:13px;line-height:1.5">{{ d.rule }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section data-screen-label="09 Loading" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">09 · Loading &amp; responsive</div>
+    <div style="display:grid;grid-template-columns:1fr 1.35fr;gap:16px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--line-soft)">
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;font-weight:600;color:var(--ink-2)">HM-07 · loading</span>
+          <div style="font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.55">Shell phase 2 per Session Continuity. The greeting and scope line render immediately from session data; only cards skeleton, each at its declared footprint.</div>
+        </div>
+        <div style="padding:18px 20px">
+          <div style="padding:16px;border-radius:12px;background:var(--bg);border:1px solid var(--line-soft)">
+            <div style="font-size:20px;font-weight:700;letter-spacing:-0.024em">Good morning, Aurélie</div>
+            <div style="height:10px;width:44%;border-radius:5px;background:var(--line-soft);margin-top:9px"></div>
+            <div style="display:flex;flex-direction:column;gap:11px;margin-top:16px">
+              <sc-for list="{{ skeleton }}" as="s" hint-placeholder-count="4">
+                <div style="height:{{ s.h }};width:{{ s.w }};border-radius:11px;background:linear-gradient(90deg,var(--sunken) 25%,var(--line-soft) 50%,var(--sunken) 75%);background-size:200% 100%;animation:hmShimmer 1.4s ease-in-out infinite"></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0;margin-top:14px">
+            <sc-for list="{{ loadingRules }}" as="l" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:96px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12px">
+                <span style="font-weight:600;color:var(--ink-3)">{{ l.k }}</span>
+                <span style="color:var(--ink-2);line-height:1.5">{{ l.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Six viewports — grid and priority, not scaling</div>
+        <div style="overflow-x:auto">
+          <div style="min-width:800px">
+            <div style="display:grid;grid-template-columns:104px 138px 1fr 1fr;gap:14px;padding:10px 22px;background:var(--sunken);border-bottom:1px solid var(--line-soft);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+              <div>Viewport</div><div>Grid</div><div>Order &amp; cuts</div><div>Card behaviour</div>
+            </div>
+            <sc-for list="{{ viewports }}" as="v" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:104px 138px 1fr 1fr;gap:14px;padding:13px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+                <div>
+                  <div style="font-family:ui-monospace,monospace;font-size:11px;font-weight:600">{{ v.size }}</div>
+                  <div style="font-size:10.5px;color:var(--ink-4);margin-top:3px">{{ v.name }}</div>
+                </div>
+                <div style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink-2);line-height:1.5">{{ v.grid }}</div>
+                <div style="color:var(--ink-2);line-height:1.5">{{ v.order }}</div>
+                <div style="color:var(--ink-2);line-height:1.5">{{ v.cards }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;padding:18px 22px">
+          <sc-for list="{{ responsiveLaws }}" as="r" hint-placeholder-count="3">
+            <div style="padding:14px 15px;border-radius:12px;background:var(--sunken)">
+              <div style="font-size:12px;font-weight:600">{{ r.t }}</div>
+              <div style="font-size:11.5px;color:var(--ink-2);margin-top:5px;line-height:1.55">{{ r.b }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="10 Specs" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">10 · Keyboard, accessibility, copy &amp; components</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px">
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Keyboard &amp; navigation</div>
+        <sc-for list="{{ keyboard }}" as="k" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:1fr 86px;gap:12px;padding:10px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+            <div>
+              <div style="font-weight:600">{{ k.t }}</div>
+              <div style="font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.5">{{ k.b }}</div>
+            </div>
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);text-align:right;line-height:1.5">{{ k.key }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">WCAG 2.2 AA</div>
+        <sc-for list="{{ a11y }}" as="a" hint-placeholder-count="9">
+          <div style="display:grid;grid-template-columns:52px 1fr;gap:12px;padding:11px 20px;border-bottom:1px solid var(--line-soft);font-size:12.5px">
+            <span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--brand-ink)">{{ a.sc }}</span>
+            <span style="color:var(--ink-2);line-height:1.55">{{ a.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Copy — verbatim</div>
+        <sc-for list="{{ copy }}" as="c" hint-placeholder-count="12">
+          <div style="padding:11px 20px;border-bottom:1px solid var(--line-soft)">
+            <div style="font-family:ui-monospace,monospace;font-size:10px;color:var(--ink-4)">{{ c.id }}</div>
+            <div style="font-size:12.5px;margin-top:4px;line-height:1.5">“{{ c.t }}”</div>
+          </div>
+        </sc-for>
+        <div style="padding:13px 20px;font-size:11.5px;color:var(--ink-3);line-height:1.5">Banned on Home: “Welcome back!”, “No data available”, “Get started”, “You're all caught up!”, any exclamation mark, and any empty state that does not name what was checked.</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);padding:22px 26px">
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Component inventory &amp; tokens</div>
+        <div style="font-size:12.5px;color:var(--ink-2)">Every element is an approved v2 component. Nothing new, nothing restyled.</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:14px">
+        <sc-for list="{{ components }}" as="c" hint-placeholder-count="16">
+          <span style="display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:6px;border:1px solid var(--line-soft);background:var(--sunken);font-size:11px;font-family:ui-monospace,monospace;color:var(--ink-2);white-space:nowrap">{{ c }}</span>
+        </sc-for>
+      </div>
+      <div style="font-size:11.5px;color:var(--ink-3);margin-top:12px;line-height:1.5">Tokens: <span style="font-family:ui-monospace,monospace">--surface --bg --sunken --line-soft --line --ink --ink-2 --ink-3 --ink-4 --brand --brand-tint --brand-line --ai --ai-tint --ai-line --ai-ink --pos --warn --risk (+tints) --e1 --e2 --r-lg --r-xl</span>. No token is added.</div>
+    </div>
+  </section>
+
+  <section data-screen-label="11 Contract" style="max-width:1360px;margin:0 auto;padding-top:52px">
+    <div style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">11 · Contract, decisions &amp; unresolved</div>
+    <div style="border-radius:16px;background:var(--surface);border:1px solid var(--brand-line);box-shadow:var(--e2);overflow:hidden">
+      <div style="padding:20px 26px;border-bottom:1px solid var(--line-soft)">
+        <h2 style="font-size:19px;font-weight:700;letter-spacing:-0.02em;margin:0">Implementation contract — Lane A checklist</h2>
+        <p style="font-size:13px;line-height:1.6;color:var(--ink-2);margin:7px 0 0">Twenty-two items, each independently verifiable without interpreting intent.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:0 26px;padding:8px 26px 20px">
+        <sc-for list="{{ contract }}" as="c" hint-placeholder-count="22">
+          <div style="display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--line-soft);align-items:flex-start">
+            <span style="width:18px;height:18px;flex:none;margin-top:2px;border-radius:5px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--ink-4);font-variant-numeric:tabular-nums">{{ c.n }}</span>
+            <span style="font-size:12.5px;line-height:1.55">{{ c.t }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-top:14px;align-items:start">
+      <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+        <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Product decisions made by this document</div>
+        <sc-for list="{{ decisions }}" as="d" hint-placeholder-count="12">
+          <div style="display:grid;grid-template-columns:44px 1fr;gap:12px;padding:12px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+            <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);font-weight:600">{{ d.id }}</span>
+            <div>
+              <div style="font-weight:600;line-height:1.4">{{ d.t }}</div>
+              <div style="font-size:12px;color:var(--ink-2);margin-top:4px;line-height:1.5">{{ d.b }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--warn-line);box-shadow:var(--e2);overflow:hidden">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft)">
+            <div style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--warn)">Unresolved — Product Owner or Architecture</div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">Six items. U-01 is the document conflict found in the reconciliation pass and is recorded rather than silently resolved.</div>
+          </div>
+          <sc-for list="{{ unresolved }}" as="u" hint-placeholder-count="6">
+            <div style="padding:13px 22px;border-bottom:1px solid var(--line-soft)">
+              <div style="display:flex;align-items:center;gap:9px;row-gap:6px;flex-wrap:wrap">
+                <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:{{ u.color }};font-weight:600">{{ u.id }}</span>
+                <span style="font-size:12.5px;font-weight:600">{{ u.t }}</span>
+                <span style="margin-left:auto;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--sunken);color:var(--ink-3);white-space:nowrap;flex:none">{{ u.owner }}</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.5">{{ u.b }}</div>
+              <div style="font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.5">Interim: {{ u.interim }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-radius:16px;background:var(--surface);border:1px solid var(--line-soft);box-shadow:var(--e2);overflow:hidden">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--line-soft);font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-3)">Acceptance criteria</div>
+          <sc-for list="{{ acceptance }}" as="a" hint-placeholder-count="12">
+            <div style="display:grid;grid-template-columns:60px 1fr;gap:12px;padding:10px 22px;border-bottom:1px solid var(--line-soft);font-size:12.5px;align-items:start">
+              <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:var(--brand-ink);font-weight:600">{{ a.id }}</span>
+              <span style="line-height:1.55">{{ a.t }}</span>
+            </div>
+          </sc-for>
+          <div style="display:flex;gap:24px;row-gap:12px;flex-wrap:wrap;padding:16px 22px">
+            <sc-for list="{{ colophon }}" as="c" hint-placeholder-count="4">
+              <div>
+                <div style="font-size:11px;color:var(--ink-3)">{{ c.k }}</div>
+                <div style="font-size:13px;font-weight:600;margin-top:2px">{{ c.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const R = React.createElement;
+
+class Component extends DCLogic {
+  state = { theme: null };
+  get theme() { return this.state.theme || this.props.theme || 'light'; }
+  componentDidMount() { this.paint(); }
+  componentDidUpdate() { this.paint(); }
+  paint() { document.body.style.background = this.theme === 'dark' ? '#0d1418' : '#faf8f6'; }
+
+  tokens() {
+    const dark = this.theme === 'dark';
+    const base = { '--font-body': '"Archivo", system-ui, sans-serif', '--ease': 'cubic-bezier(.32,.72,0,1)' };
+    if (!dark) return Object.assign(base, {
+      '--bg': '#faf8f6', '--bg-rail': '#fdfcfb', '--surface': '#ffffff', '--sunken': '#f4f1ed',
+      '--line-soft': '#eae5df', '--line': '#ded7cf',
+      '--ink': '#211f1d', '--ink-2': '#5c554e', '--ink-3': '#857d75', '--ink-4': '#a39a91',
+      '--brand': '#134e76', '--brand-ink': '#134e76', '--brand-tint': '#e6f1f8', '--brand-line': '#c8ddee',
+      '--ai': '#4b5ec4', '--ai-ink': '#3b49a0', '--ai-tint': '#f0f1fc', '--ai-line': '#dcdefa',
+      '--pos': '#1f7a5c', '--pos-tint': '#e8f5f0', '--pos-line': '#c9e6da',
+      '--warn': '#a5691f', '--warn-tint': '#fbf2e4', '--warn-line': '#efdcc0',
+      '--risk': '#a83329', '--risk-tint': '#fcefed', '--risk-line': '#f2d5d1',
+      '--e1': '0 1px 2px rgba(33,31,29,.04), 0 1px 3px rgba(33,31,29,.05)',
+      '--e2': '0 1px 2px rgba(33,31,29,.04), 0 4px 12px -2px rgba(33,31,29,.07)',
+      '--e3': '0 2px 5px -1px rgba(33,31,29,.05), 0 12px 28px -6px rgba(33,31,29,.12)',
+      '--e4': '0 4px 10px -2px rgba(33,31,29,.07), 0 28px 60px -14px rgba(33,31,29,.20)',
+    });
+    return Object.assign(base, {
+      '--bg': '#0d1418', '--bg-rail': '#101a1f', '--surface': '#152027', '--sunken': '#1b272f',
+      '--line-soft': '#243239', '--line': '#2f3f48',
+      '--ink': '#eaf0f3', '--ink-2': '#a8b6be', '--ink-3': '#84939c', '--ink-4': '#65737c',
+      '--brand': '#4fa3d1', '--brand-ink': '#9ccfe8', '--brand-tint': '#14303e', '--brand-line': '#1e4658',
+      '--ai': '#8f9ae8', '--ai-ink': '#b3bbf2', '--ai-tint': '#1a1f38', '--ai-line': '#2b3159',
+      '--pos': '#4fae87', '--pos-tint': '#13291f', '--pos-line': '#1d4433',
+      '--warn': '#d3a05a', '--warn-tint': '#2b2113', '--warn-line': '#453520',
+      '--risk': '#e08074', '--risk-tint': '#2e1a17', '--risk-line': '#4a2a25',
+      '--e1': '0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.30)',
+      '--e2': '0 1px 3px rgba(0,0,0,.40), 0 6px 16px -3px rgba(0,0,0,.45)',
+      '--e3': '0 3px 8px -2px rgba(0,0,0,.45), 0 16px 34px -8px rgba(0,0,0,.55)',
+      '--e4': '0 6px 14px -3px rgba(0,0,0,.5), 0 32px 68px -16px rgba(0,0,0,.65)',
+    });
+  }
+
+  renderVals() {
+    const dark = this.theme === 'dark';
+    return {
+      tokens: this.tokens(),
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBg: dark ? 'transparent' : 'var(--surface)',
+      lightFg: dark ? 'var(--ink-3)' : 'var(--ink)',
+      lightShadow: dark ? 'none' : 'var(--e1)',
+      darkBg: dark ? 'var(--surface)' : 'transparent',
+      darkFg: dark ? 'var(--ink)' : 'var(--ink-3)',
+      darkShadow: dark ? 'var(--e1)' : 'none',
+
+      heroStats: [
+        { v: '14', l: 'States, each with one rendering' },
+        { v: '4', l: 'Compositions, one route' },
+        { v: '16', l: 'Cards in the registry' },
+        { v: '0', l: 'Fallbacks to another surface' },
+        { v: '0', l: 'New components or tokens' },
+      ],
+
+      reconciliation: [
+        { src: 'Authenticated Entry', said: 'Home is one route with four role-resolved compositions; the Executive Dashboard is one of them. Rules 11, 12, 19, 20, 21, 24 all terminate here.', fix: 'Adopted verbatim. This document specifies what those rules render and adds nothing about routing.', tag: 'Aligned', tone: 'pos' },
+        { src: 'Entry Coverage Review', said: 'Classified Home as “B · expand existing”, priority 4, and named the Executive Dashboard document as the thing to expand rather than fork.', fix: 'This is that expansion. Executive Dashboard remains the design of composition one; composition authority moves here.', tag: 'Executed', tone: 'pos' },
+        { src: 'Executive Dashboard', said: 'A complete executive surface, with breadcrumb “Home → Executive Dashboard” and its own route.', fix: 'Layout preserved unchanged. Breadcrumb and route corrections are listed in section 11 as required edits, not redesigns.', tag: 'Preserved', tone: 'brand' },
+        { src: 'Application Shell', said: 'Owns rail, top bar, search, palette, notifications, assistant, banners. “The frame is never blank.”', fix: 'No second shell. Home occupies the content region only and inherits every shell affordance. Its skeletons are phase 2 of the shell contract.', tag: 'Inherited', tone: 'pos' },
+        { src: 'Session Continuity', said: 'Four preservation tiers; phase 3 applies continuity after content resolves; tier 3 is offered, never applied.', fix: 'Home hosts the offer strip at the top of the content region, above the greeting, per that document. Home defines no storage of its own.', tag: 'Inherited', tone: 'pos' },
+        { src: 'System States', said: 'Owns the empty-workspace activation sequence, plus 403, 404, 500 and the skeleton tiers.', fix: 'Conflict. Both documents draw activation. Resolution proposed in section 11; recorded as unresolved U-01 because it changes another approved document.', tag: 'Conflict', tone: 'risk' },
+        { src: 'CRM Integrations', said: 'Owns connection wizards, sync health, and the mid-incident states for Salesforce and others.', fix: 'Activation and health cards link into it and never restate a connection step. Home shows state; Integrations owns the flow.', tag: 'Aligned', tone: 'pos' },
+        { src: 'AI Copilot', said: 'Owns the briefing pattern, citations, confidence pips and the assistant drawer.', fix: 'The briefing card is that pattern at card scale. No new AI treatment; the reserved indigo is used exactly as specified there.', tag: 'Inherited', tone: 'pos' },
+        { src: 'Existing implementation', said: 'Ships Connect CRM, Connect calls, Invite team and a “what Signora will do” panel on Home.', fix: 'Three cards are retained and specified. “What Signora will do” is retained but demoted — it is not a card; it is a footer line on the activation composition. Rationale in section 6.', tag: 'Partly kept', tone: 'warn' },
+      ].map(r => ({
+        src: r.src, said: r.said, fix: r.fix, tag: r.tag,
+        tagBg: r.tone === 'pos' ? 'var(--pos-tint)' : (r.tone === 'brand' ? 'var(--brand-tint)' : (r.tone === 'warn' ? 'var(--warn-tint)' : 'var(--risk-tint)')),
+        tagFg: r.tone === 'pos' ? 'var(--pos)' : (r.tone === 'brand' ? 'var(--brand-ink)' : (r.tone === 'warn' ? 'var(--warn)' : 'var(--risk)')),
+      })),
+
+      reconLaws: [
+        { t: 'One conflict found, not resolved silently', b: 'System States and this document both draw the activation sequence. The proposed resolution is recorded as U-01 for a Product Owner, because deleting a section from an approved document is not a design decision.', bg: 'var(--risk-tint)', border: 'var(--risk-line)' },
+        { t: 'Existing implementation is not authority', b: 'Three shipped activation cards survive because the model justifies them, not because they exist. “What Signora will do” is demoted on the same basis.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'No new component, no new token', b: 'Every element in this document is an approved v2 component. The component inventory in section 10 names each one and its source.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+        { t: 'No new backend capability assumed', b: 'Every card names a data dependency that already exists. Two cards that would need new endpoints were left out and are listed in the non-goals.', bg: 'var(--sunken)', border: 'var(--line-soft)' },
+      ],
+
+      hierarchy: [
+        { n: '1', t: 'Continuity offer, if any', b: 'Owned by Session Continuity, hosted here. Above everything because it concerns work the person already did.' },
+        { n: '2', t: 'Workspace confirmation strip, if any', b: 'Four seconds after a resolved entry, per Entry rule 12. Absent on the second entry of the day.' },
+        { n: '3', t: 'Greeting and scope line', b: 'Name, date, and a count of what needs attention. The count is the smallest useful summary and replaces a metrics row.' },
+        { n: '4', t: 'The answer', b: 'One card that states what to do first: the briefing on data compositions, step one on activation.' },
+        { n: '5', t: 'The work', b: 'The ordered list — attention items, health items, or activation steps. Never more than five visible without a link.' },
+        { n: '6', t: 'Context', b: 'Meetings, agent output, recents. Useful, never urgent, and always below the fold at 900px height.' },
+      ],
+
+      entryPoints: [
+        { t: 'Authenticated entry, default', src: 'Entry rule 24', b: 'The most travelled path in the product. Composition resolved, no interstitial.' },
+        { t: 'Sole or last-used workspace', src: 'Entry rules 11, 12', b: 'Identical rendering; the confirmation strip differs.' },
+        { t: 'Empty workspace', src: 'Entry rule 19', b: 'Resolves to the activation composition. Same route, same shell.' },
+        { t: 'First login', src: 'Entry rule 20', b: 'Adds the first-run overlay over whichever composition resolved.' },
+        { t: 'Role changed', src: 'Entry rule 21', b: 'Adds a notice; the composition itself does not change mid-session.' },
+        { t: 'Invitation accepted', src: 'Entry rule 22', b: 'New workspace becomes active; welcome strip replaces the confirmation strip.' },
+        { t: 'Rail item “Home”', src: 'App Shell', b: 'One rail item, selected for any /home route regardless of composition.' },
+        { t: 'Workspace switch with no equivalent route', src: 'App Shell', b: 'The documented fallback. Home always renders, so the fallback always succeeds.' },
+      ],
+
+      nonGoals: [
+        'Routing — owned by Authenticated Entry',
+        'Rail, top bar, search, palette, assistant — owned by Application Shell',
+        'Draft and view-state storage — owned by Session Continuity',
+        'Connection wizards and sync configuration — owned by CRM Integrations',
+        'Any card\'s own module screens — owned by that module',
+        'Configurable dashboards or a widget marketplace',
+        'Cross-workspace aggregation — a card shows one workspace only',
+        'A forecast-attainment card and a team-leaderboard card: both would need endpoints that do not exist',
+        'Sample or synthetic data to make an empty Home look populated',
+      ],
+
+      prohibition: [
+        { mark: '✕', t: 'No redirect on empty', b: 'Home with no data renders the no-data state. It does not navigate to Attention, Accounts, Signals or anything else.', markBg: 'var(--risk)', bg: 'var(--risk-tint)', border: 'var(--risk-line)' },
+        { mark: '✕', t: 'No composition substitution', b: 'A seller with no attention items does not silently receive the operations composition. Composition is resolved once, by rule, not by what happens to have data.', markBg: 'var(--risk)', bg: 'var(--risk-tint)', border: 'var(--risk-line)' },
+        { mark: '✓', t: 'Cards degrade individually', b: 'Each card renders its own empty, error or forbidden state inside its own footprint. The composition never changes shape because one card has nothing.', markBg: 'var(--pos)', bg: 'var(--pos-tint)', border: 'var(--pos-line)' },
+        { mark: '✓', t: 'Emptiness is legible', b: 'Every empty card names what was checked and when. “Nothing to do” is only credible if the system says what it looked at.', markBg: 'var(--pos)', bg: 'var(--pos-tint)', border: 'var(--pos-line)' },
+      ],
+
+      dataVsResults: [
+        {
+          code: 'STATE 05 · no-business-data', color: 'var(--warn)', border: 'var(--warn-line)',
+          t: 'Signora has no data',
+          b: 'Integrations are connected and syncing, but the workspace contains nothing to reason about yet — a first sync that returned zero records, or a genuinely new CRM instance. This is a setup condition, not a quiet day.',
+          copy: 'Salesforce is connected and synced 4 minutes ago, but it returned no open opportunities. Signora needs records to work from.',
+          test: 'sync succeeded AND record count is zero.',
+        },
+        {
+          code: 'STATE 06b · no-results', color: 'var(--pos)', border: 'var(--pos-line)',
+          t: 'Signora has data, this surface has none',
+          b: 'The workspace has records and Signora has evaluated them. Today, nothing crosses the threshold for attention. This is a success state and must read as one.',
+          copy: 'Nothing needs you this morning. Signora checked 41 accounts and 11 open deals at 07:00.',
+          test: 'record count is greater than zero AND attention count is zero.',
+        },
+      ],
+
+      resolution: [
+        { n: '1', cond: 'No integration has ever completed a sync', note: 'Precedes role entirely. A CRO looking at an empty workspace needs the same three connection steps as anyone else.', result: 'ACTIVATION', color: 'var(--warn)' },
+        { n: '2', cond: 'Person has set a start-page preference of a specific composition', note: 'Per Entry rule 23 and the User Profile preference row. Honoured over role.', result: 'preference', color: 'var(--brand-ink)' },
+        { n: '3', cond: 'Primary role is CRO, CEO, VP or Sales Director', note: 'The Executive Dashboard document is the design for this composition, unchanged.', result: 'EXECUTIVE', color: 'var(--brand-ink)' },
+        { n: '4', cond: 'Primary role is RevOps, workspace admin or integration admin', note: 'Machinery rather than revenue. Data-quality and agent-run health.', result: 'OPERATIONS', color: 'var(--brand-ink)' },
+        { n: '5', cond: 'Anything else — AE, AM, CSM, analyst, guest with membership', note: 'The default and the most common outcome. A person with two roles gets the narrower one and may switch once, remembered.', result: 'SELLER', color: 'var(--pos)' },
+      ],
+
+      registry: [
+        ['Daily briefing', 'card.briefing', ['SE', 'EX'], 'The answer to “what changed and what should I do first”, cited and dated.', 'full × auto', 'ai.briefing.v1', 'Start with the named account'],
+        ['Needs you today', 'card.attention', ['SE'], 'Up to five ordered items, each with a reason and a cost of ignoring it.', '1.45fr × auto', 'signals + deals', 'Open the first item'],
+        ['Today', 'card.meetings', ['SE'], 'Meetings on this workspace\'s accounts, with prep state.', '1fr × auto', 'calendar.events', 'Read the prep brief'],
+        ['Signora worked overnight', 'card.agentqueue', ['SE', 'OP'], 'Agent output awaiting a person. Nothing here has been sent or written.', '1fr × auto', 'agents.runs', 'Review the drafts'],
+        ['Pick up where you left off', 'card.recents', ['SE', 'OP', 'EX'], 'Last five records touched. Context, never urgent.', '1fr × 160px', 'activity.mine', 'Open the record'],
+        ['AI executive summary', 'card.execsummary', ['EX'], 'Period-bounded narrative of the quarter, with evidence.', 'full × auto', 'ai.execsummary', 'Show evidence'],
+        ['Forecast vs plan', 'card.forecast', ['EX'], 'Committed against plan, with the basis and delta.', '1.4fr × 320px', 'forecast.committed', 'Drill into the quarter'],
+        ['Pipeline health', 'card.pipeline', ['EX'], 'Coverage, stage distribution, movement.', '1fr × 320px', 'pipeline.summary', 'Open the pipeline'],
+        ['Top risks', 'card.risks', ['EX'], 'Ranked risks with the population each was derived from.', '1fr × auto', 'signals.risk', 'Open the 3 deals'],
+        ['Top opportunities', 'card.opps', ['EX'], 'Ranked positive signals with their window.', '1fr × auto', 'signals.opportunity', 'Open the deal'],
+        ['Integration health', 'card.inthealth', ['OP', 'EX'], 'Per-connection state, including held write queues.', '1.2fr × auto', 'integrations.health', 'Open the integration'],
+        ['Agent runs', 'card.agentruns', ['OP'], 'Scheduled and triggered runs, failures first.', '1fr × auto', 'agents.runs', 'Open the run'],
+        ['Data quality', 'card.dataquality', ['OP'], 'Missing owners, stale stages, unmapped fields.', '1fr × auto', 'quality.summary', 'Fix the largest issue'],
+        ['Pending requests', 'card.requests', ['OP'], 'Access and permission requests awaiting this person.', '1fr × auto', 'access.requests', 'Review the request'],
+        ['Connect a source', 'card.activation.*', ['AC'], 'The three activation steps. Ordered, dependent, non-dismissible.', 'full × auto', 'integrations.state', 'Connect'],
+        ['Invite the team', 'card.activation.invite', ['AC'], 'Signora scores relationships; a workspace of one measures little.', 'full × auto', 'members.count', 'Invite'],
+      ].map(([t, id, comps, purpose, size, dep, action]) => ({ t, id, comps, purpose, size, dep, action })),
+
+      activationCards: [
+        {
+          mark: '✓', t: 'Connect a CRM', tag: 'Complete', b: 'Salesforce connected. 8,412 accounts and 11 open opportunities read. Nothing has been written.',
+          meta: 'Completed 11 Aug by K. Bruun · first sync finished in 6 minutes',
+          border: 'var(--line-soft)', bg: 'transparent',
+          markBg: 'var(--pos)', markBorder: 'var(--pos)', markFg: '#fff',
+          tagBg: 'var(--pos-tint)', tagFg: 'var(--pos)',
+          action: 'Review mapping', secondary: '',
+          actionBg: 'var(--surface)', actionFg: 'var(--ink)', actionBorder: 'var(--line)',
+        },
+        {
+          mark: '2', t: 'Connect calls and calendar', tag: 'Do this next', b: 'This is where the intelligence comes from. Without call data, Signora scores deals on CRM fields alone and cannot tell you why one is slipping.',
+          meta: 'Zoom, Teams or Google Meet · about 4 minutes · needs admin consent',
+          border: 'var(--brand-line)', bg: 'var(--brand-tint)',
+          markBg: 'var(--brand)', markBorder: 'var(--brand)', markFg: '#fff',
+          tagBg: 'var(--brand-tint)', tagFg: 'var(--brand-ink)',
+          action: 'Connect', secondary: 'Why this matters',
+          actionBg: 'var(--brand)', actionFg: '#fff', actionBorder: 'var(--brand)',
+        },
+        {
+          mark: '3', t: 'Invite the team', tag: 'Optional', b: 'Signora scores relationships, so a workspace with one person in it measures very little. Four colleagues are already discoverable on your domain.',
+          meta: 'Not blocking · you can do this at any time from Team Management',
+          border: 'var(--line-soft)', bg: 'transparent',
+          markBg: 'transparent', markBorder: 'var(--line)', markFg: 'var(--ink-3)',
+          tagBg: 'var(--sunken)', tagFg: 'var(--ink-3)',
+          action: 'Invite 4 people', secondary: 'Skip for now',
+          actionBg: 'var(--surface)', actionFg: 'var(--ink)', actionBorder: 'var(--line)',
+        },
+      ],
+
+      activationRules: [
+        { k: 'Ordering', v: 'By the registry\'s declared priority integer, ascending. Ties broken by registry order. Never by completion state — a completed card holds its position rather than moving to the bottom, so the list does not reshuffle under the cursor.' },
+        { k: 'Priority', v: 'CRM 100, calls 200, invite 300. Lower is earlier. A new source declares its own integer; Home does not know the set in advance.' },
+        { k: 'Completion', v: 'Derived from the source of truth, never stored on Home. CRM complete means one sync has finished with a non-error status; calls complete means one transcript has been ingested; invite complete means members count is greater than one.' },
+        { k: 'Completed behaviour', v: 'Card stays in place, collapses to a single line with a ✓, keeps a secondary action into the owning module, and loses its primary. It never disappears — vanishing steps make people doubt they did them.' },
+        { k: 'Dependencies', v: 'Calls declares a soft dependency on CRM: it renders before CRM completes but its primary action is disabled with the reason “connect a CRM first, so calls can be matched to accounts”. Invite has none.' },
+        { k: 'CTA', v: 'Exactly one primary per card, opening the owning module\'s flow. Home never embeds a connection wizard or an OAuth step.' },
+        { k: 'Secondary', v: 'At most one, and it is never a duplicate route to the same flow. “Why this matters” opens documentation; “Skip for now” applies only to non-blocking cards.' },
+        { k: 'Dismissibility', v: 'Blocking cards — CRM and calls — cannot be dismissed. Non-blocking cards can be skipped, which hides them for 30 days per person and is reversible from the progress line.' },
+        { k: 'Persistence', v: 'Skip state is per person, on the server, for 30 days. Completion state is per workspace and derived. Nothing about activation lives in localStorage.' },
+        { k: 'Progress', v: 'Counts blocking cards only. “Step 2 of 3” with an optional card present reads “Step 2 of 2 · 1 optional”. The estimate comes from measured p50 completion time, not a guess.' },
+      ],
+
+      needsYou: [
+        {
+          account: 'Corrigan Health', tag: 'Champion left', value: '$2.11M',
+          why: 'Your champion moved to procurement on 4 August and nobody has been re-engaged. In 412 comparable deals this pattern cost 23 days when left a week. Day nine.',
+          edge: 'var(--risk)', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)',
+          action: 'See the committee', actionBg: 'var(--brand)', actionFg: '#fff', actionBorder: 'var(--brand)',
+        },
+        {
+          account: 'Vantage Logistics', tag: 'Second slip', value: '$1.24M',
+          why: 'Close date moved twice in 30 days, both after pricing review. Procurement is still uncontacted. Signora has drafted the introduction and is waiting for you.',
+          edge: 'var(--warn)', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)',
+          action: 'Review the draft', actionBg: 'var(--surface)', actionFg: 'var(--ink)', actionBorder: 'var(--line)',
+        },
+        {
+          account: 'Norvell Energy', tag: 'Buying now', value: '$1.68M',
+          why: 'Four visits to pricing yesterday and a security questionnaire returned. Strongest positive signal on your book this week; the window is roughly nineteen days.',
+          edge: 'var(--pos)', tagBg: 'var(--pos-tint)', tagFg: 'var(--pos)',
+          action: 'Open the deal', actionBg: 'var(--surface)', actionFg: 'var(--ink)', actionBorder: 'var(--line)',
+        },
+      ],
+
+      meetings: [
+        { time: '10:30', t: 'Halden Systems — technical review', b: '4 attendees · 2 new to the deal, both from security', action: 'Read the prep brief →' },
+        { time: '15:00', t: 'Ashgrove Retail — quarterly check-in', b: 'No agenda set · last call was 11 weeks ago', action: 'Draft an agenda →' },
+      ],
+
+      aiWork: [
+        { t: '2 emails drafted', meta: 'Vantage, Corrigan · awaiting approval', action: 'Review', actionColor: 'var(--ai-ink)', dot: 'var(--ai)' },
+        { t: 'Renewal sweep completed', meta: '312 accounts scored at 04:00', action: 'Results', actionColor: 'var(--brand-ink)', dot: 'var(--pos)' },
+        { t: 'Research on Norvell finished', meta: 'You requested it Tuesday · 9 sources', action: 'Open', actionColor: 'var(--brand-ink)', dot: 'var(--pos)' },
+      ],
+
+      states: [
+        ['01', 'First-time workspace', 'state.firstworkspace', 'No integration has ever attempted a sync AND members count is 1.', 'ACTIVATION', 'Three activation cards, none complete, progress at 0 of 2. Greeting reads “Let us get Northwind Global connected”.', 'HM-COPY-01', ''],
+        ['02', 'Activation in progress', 'state.activating', 'A sync is running and none has yet completed.', 'ACTIVATION', 'CRM card shows a determinate progress bar with the record count so far. Other cards unchanged. The bar is real progress, never a fake animation.', 'HM-COPY-02', ''],
+        ['03', 'Partially activated', 'state.partial', 'At least one blocking card complete, at least one incomplete.', 'ACTIVATION', 'HM-02 as rendered above. Completed cards collapsed in place; the next incomplete card carries the “what Signora will do” footer.', 'HM-COPY-03', 'var(--brand-tint)'],
+        ['04', 'Fully activated', 'state.activated', 'All blocking cards complete.', 'role-resolved', 'Composition switches to SELLER, OPERATIONS or EXECUTIVE on the next render. A one-time strip states that setup is finished and what changed.', 'HM-COPY-04', ''],
+        ['05', 'No meaningful business data', 'state.nodata', 'Sync succeeded AND record count is zero. Distinct from state 06b.', 'role-resolved', 'Composition renders with every card in its no-data state, plus one strip naming which source returned nothing and when. Not the activation composition — setup is complete.', 'HM-COPY-05', 'var(--warn-tint)'],
+        ['06', 'Business data available', 'state.data', 'Record count greater than zero AND at least one card has content.', 'role-resolved', 'HM-01 as rendered above. The normal case.', '—', 'var(--pos-tint)'],
+        ['06b', 'Data present, surface empty', 'state.noresults', 'Record count greater than zero AND attention count is zero. A success state.', 'role-resolved', 'Briefing renders normally. The attention card states what was checked and when, and offers pipeline review. Never mistaken for a failure.', 'HM-COPY-06', 'var(--pos-tint)'],
+        ['07', 'Loading', 'state.loading', 'Composition resolved; one or more card queries in flight.', 'role-resolved', 'HM-07. Greeting real, cards skeletonised at declared footprints. No full-screen spinner.', '—', ''],
+        ['08', 'Error', 'state.error', 'One or more card queries failed after their retries.', 'role-resolved', 'Failed cards render their own error inside their own footprint with a correlation ID. The composition never collapses. If every card fails, the page states that and offers one retry for all.', 'HM-COPY-07', 'var(--risk-tint)'],
+        ['09', 'Permission-limited', 'state.forbidden', 'The person\'s role excludes a card in their composition — e.g. an analyst in the operations composition without access-request rights.', 'role-resolved', 'The card is replaced in place by a same-footprint panel naming the missing permission and the approvers. Never hidden — hiding it makes people think the capability is absent.', 'HM-COPY-08', 'var(--warn-tint)'],
+        ['10', 'Integration disconnected', 'state.disconnected', 'A previously connected source now has a revoked or expired token.', 'role-resolved', 'A persistent strip above the greeting naming the source and the date it stopped. Cards fed by it show their data with a “last updated” stamp, marked stale. No card silently shows old numbers as current.', 'HM-COPY-09', 'var(--risk-tint)'],
+        ['11', 'Integration degraded', 'state.degraded', 'Source connected but syncing late, or writes held.', 'role-resolved', 'A dismissible strip stating the lag in plain time — “Salesforce is about 6 hours behind”. Cards remain fully usable; affected figures carry the same lag note.', 'HM-COPY-10', 'var(--warn-tint)'],
+        ['12', 'Empty activation registry', 'state.noregistry', 'The activation registry returned zero cards — a configuration or service fault.', 'ACTIVATION', 'The no-data state with one line reading “Setup steps could not be loaded” and a retry. Never a progress bar at 0 of 0, and never an empty activation composition.', 'HM-COPY-11', 'var(--risk-tint)'],
+        ['13', 'Returning user', 'state.returning', 'Second or later entry on the same calendar day in this workspace.', 'role-resolved', 'Identical to state 06 with the workspace confirmation strip suppressed. Home does not congratulate people for returning.', '—', ''],
+        ['14', 'Returning with outstanding activation', 'state.returningpartial', 'Fully activated for blocking cards, but a non-blocking card was skipped and its 30 days have elapsed.', 'role-resolved', 'Normal composition plus one low-emphasis line at the foot: “Calls are still not connected. Signora is scoring on CRM fields alone.” Dismissible for another 30 days.', 'HM-COPY-12', ''],
+      ].map(([n, t, id, entry, comp, renders, copy, bg]) => ({ n, t, id, entry, comp, renders, copy, bg })),
+
+      degraded: [
+        {
+          id: 'state 06b · no-results', tag: 'Success', tagBg: 'var(--pos-tint)', tagFg: 'var(--pos)',
+          cardBg: 'var(--sunken)', cardBorder: 'var(--line-soft)', cardStroke: 'solid',
+          icon: '✓', iconBg: 'var(--pos-tint)', iconFg: 'var(--pos)',
+          t: 'Nothing needs you this morning',
+          b: 'No slipped deals, no unanswered signals, nothing waiting on approval. Signora checked 41 accounts and 11 open deals at 07:00.',
+          action: 'Review your pipeline', actionBg: 'var(--brand)', actionFg: '#fff', actionBorder: 'var(--brand)',
+          meta: 'Next check at 13:00',
+          rule: 'Names what was checked and when. “Nothing to do” is only credible with a scope and a timestamp attached.',
+        },
+        {
+          id: 'state 05 · no-business-data', tag: 'Setup', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)',
+          cardBg: 'var(--warn-tint)', cardBorder: 'var(--warn-line)', cardStroke: 'solid',
+          icon: '!', iconBg: 'var(--surface)', iconFg: 'var(--warn)',
+          t: 'Salesforce returned no open opportunities',
+          b: 'Connected and synced 4 minutes ago, but the workspace contains no records to reason about. Signora needs open deals or accounts to work from.',
+          action: 'Check what is synced', actionBg: 'var(--surface)', actionFg: 'var(--ink)', actionBorder: 'var(--line)',
+          meta: 'Most often a filter on the connected user',
+          rule: 'Distinct from 06b in copy, tint and action. Conflating them sends someone to review a pipeline that does not exist.',
+        },
+        {
+          id: 'state 08 · card error', tag: 'Error', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)',
+          cardBg: 'var(--surface)', cardBorder: 'var(--line)', cardStroke: 'dashed',
+          icon: '✕', iconBg: 'var(--risk-tint)', iconFg: 'var(--risk)',
+          t: 'Your briefing could not be generated',
+          b: 'The intelligence service did not respond. Everything else on this page is current as of 4 minutes ago.',
+          action: 'Retry', actionBg: 'var(--surface)', actionFg: 'var(--ink)', actionBorder: 'var(--line)',
+          meta: 'req_7c14-9de2',
+          rule: 'Inside the card\'s own footprint, dashed border so it is distinguishable from content. The layout does not move and no sibling is affected.',
+        },
+        {
+          id: 'state 09 · permission-limited', tag: 'Forbidden', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)',
+          cardBg: 'var(--sunken)', cardBorder: 'var(--line-soft)', cardStroke: 'solid',
+          icon: '⌁', iconBg: 'var(--surface)', iconFg: 'var(--ink-3)',
+          t: 'Pending requests needs the Access admin permission',
+          b: 'Your Analyst role covers pipeline and activity, not access approvals. The card exists and is not hidden from you.',
+          action: 'Request access', actionBg: 'var(--surface)', actionFg: 'var(--ink)', actionBorder: 'var(--line)',
+          meta: 'Approvers: J. Okafor, M. Reinhardt',
+          rule: 'Same footprint as the card it replaces, so the grid is stable. Names the permission and the approvers, never the withheld data.',
+        },
+        {
+          id: 'state 10 · disconnected', tag: 'Stale', tagBg: 'var(--risk-tint)', tagFg: 'var(--risk)',
+          cardBg: 'var(--risk-tint)', cardBorder: 'var(--risk-line)', cardStroke: 'solid',
+          icon: '!', iconBg: 'var(--surface)', iconFg: 'var(--risk)',
+          t: 'Salesforce disconnected on 11 August',
+          b: 'Its token was revoked. Figures below are from the last successful sync, two days ago, and are marked as such throughout.',
+          action: 'Reconnect', actionBg: 'var(--brand)', actionFg: '#fff', actionBorder: 'var(--brand)',
+          meta: 'Admins: K. Bruun',
+          rule: 'A strip above the greeting, not dismissible, plus a stale stamp on every figure the source feeds. Old numbers are never shown as current.',
+        },
+        {
+          id: 'state 11 · degraded', tag: 'Lagging', tagBg: 'var(--warn-tint)', tagFg: 'var(--warn)',
+          cardBg: 'var(--warn-tint)', cardBorder: 'var(--warn-line)', cardStroke: 'solid',
+          icon: '~', iconBg: 'var(--surface)', iconFg: 'var(--warn)',
+          t: 'Salesforce is about 6 hours behind',
+          b: 'Metering is delayed in EU Frankfurt. Everything works; figures reflect data up to 03:20 this morning.',
+          action: 'Dismiss', actionBg: 'var(--surface)', actionFg: 'var(--ink)', actionBorder: 'var(--line)',
+          meta: 'Follow the incident on the status page',
+          rule: 'Dismissible, because the product is fully usable. Lag stated in plain time, never as a percentage or a health score.',
+        },
+      ],
+
+      skeleton: [
+        { h: '82px', w: '100%' }, { h: '52px', w: '100%' }, { h: '52px', w: '100%' }, { h: '52px', w: '78%' },
+      ],
+
+      loadingRules: [
+        { k: 'Greeting', v: 'Real immediately, from session data. Never skeletonised — the name and date need no query.' },
+        { k: 'Scope count', v: 'Skeletonised as a 10px bar until the attention query returns. Never shown as 0 while loading.' },
+        { k: 'Footprints', v: 'Each skeleton uses the card\'s declared height from the registry, so nothing reflows when data lands.' },
+        { k: 'Independence', v: 'One slow card holds its own skeleton. No card waits for a sibling, and none is disabled while a neighbour loads.' },
+        { k: 'Under 300ms', v: 'No skeleton at all. A placeholder shown and removed inside 300ms reads as a flicker.' },
+        { k: 'Over 8 seconds', v: 'The card converts to its error state with a retry. Skeletons do not shimmer indefinitely.' },
+      ],
+
+      viewports: [
+        {
+          size: '390 × 844', name: 'Phone', grid: '1 col · 16px gutter',
+          order: 'Briefing, then three attention items, then a link to the rest. Meetings, agent queue and recents are below the fold and not cut.',
+          cards: 'Attention items become full-width rows with the action as a 44px full-width button beneath the reason. Executive charts drop to a single sparkline plus figure.',
+        },
+        {
+          size: '768 × 1024', name: 'Tablet portrait', grid: '1 col · 20px gutter · max 720px',
+          order: 'Full order retained; nothing is cut. Vertical space is plentiful here, so the two-column split is dropped rather than compressed.',
+          cards: 'Attention actions sit inline at the row end until 640px of card width, then wrap beneath.',
+        },
+        {
+          size: '1024 × 768', name: 'Tablet landscape', grid: '2 col · 1.4fr / 1fr',
+          order: 'Two columns return. Height is the constraint: the briefing is clamped to four lines with a “more” affordance so the first attention item stays above the fold.',
+          cards: 'Executive charts reduce to 240px height. Meetings show two rows maximum.',
+        },
+        {
+          size: '1280 × 800', name: 'Laptop', grid: '2 col · 1.45fr / 1fr · 14px gap',
+          order: 'Full order. Briefing clamped to five lines at this height.',
+          cards: 'Reference behaviour. Charts 280px.',
+        },
+        {
+          size: '1440 × 900', name: 'Desktop — reference', grid: '2 col · 1.45fr / 1fr · content 1360px',
+          order: 'The canonical layout. Everything in this document is drawn at this size unless stated.',
+          cards: 'Charts 320px. Attention shows up to five items.',
+        },
+        {
+          size: '1600 × 900', name: 'Wide', grid: 'Same 2 col · content capped 1360px',
+          order: 'Identical to 1440. Surplus width becomes margin, not a third column.',
+          cards: 'Unchanged. A third column was rejected: it pushes the answer off the reading axis and creates a layout that exists at one width only.',
+        },
+      ],
+
+      responsiveLaws: [
+        { t: 'Priority order, not scaling', b: 'Each breakpoint declares an order and a cut list. Cards are never shrunk below their legible minimum; they are moved or replaced by a link.' },
+        { t: 'Height is a first-class constraint', b: '1024 × 768 and 1280 × 800 clamp the briefing so the first attention item is above the fold. Home is checked at height, not only at width.' },
+        { t: 'No third column ever', b: 'At 1600px the content stays capped at 1360px. A three-column Home works at exactly one viewport and fails on either side of it.' },
+      ],
+
+      keyboard: [
+        { t: 'Enter Home', b: 'Focus lands on the h1, not the search field. Announced once with workspace, composition and attention count.', key: 'on load' },
+        { t: 'Jump to the first action', b: 'The primary action of the answer card is the first tab stop after the heading.', key: 'Tab' },
+        { t: 'Move between cards', b: 'Each card is a tab group. Tab enters, Tab exits at the last control; arrows do not move between cards.', key: 'Tab' },
+        { t: 'Open the focused item', b: 'Activates the row\'s primary action, not a detail overlay.', key: '⏎' },
+        { t: 'Switch composition', b: 'From the composition control in the page header. Two roles only; single-role people do not see it.', key: 'V' },
+        { t: 'Customise', b: 'Opens the card-order panel as a drawer. Escape closes and returns focus to the trigger.', key: '⌘⇧H' },
+        { t: 'Dismiss a strip', b: 'Applies to degraded and returning-activation strips only. Disconnected and continuity strips have no dismiss.', key: 'Esc' },
+        { t: 'Skip to content', b: 'Provided by the shell; lands on the Home h1.', key: 'Tab from top' },
+      ],
+
+      a11y: [
+        { sc: '1.3.1', t: 'Home is one <main> with an h1 naming the workspace. Each card is a <section> with its own h2 in DOM order matching visual order at every breakpoint.' },
+        { sc: '1.4.1', t: 'Attention severity uses the left rule, the tag word and the tint together. Removing colour leaves the tag and the order intact.' },
+        { sc: '1.4.3', t: 'Briefing text on the AI tint measures 6.9:1. Every tag pairs a 600-weight label with a tint clearing 4.5:1, verified per composition per theme in CI.' },
+        { sc: '1.4.10', t: 'At 320px CSS width with 400% zoom, Home reflows to one column with no horizontal scroll and no clipped action.' },
+        { sc: '2.4.3', t: 'Focus order is heading, answer card action, then cards in visual order. Strips are focusable in place and never jump the order.' },
+        { sc: '2.4.11', t: 'Strips reduce the scroll area rather than overlaying it, so a focused element is never behind sticky chrome.' },
+        { sc: '2.5.8', t: 'Every action is at least 24 × 24px with 8px separation; on mobile every primary action is 44px tall.' },
+        { sc: '3.2.3', t: 'Card order within a composition is stable across visits. Completed activation cards hold position rather than reordering.' },
+        { sc: '4.1.3', t: 'Entry announces once: workspace, composition, attention count. Individual card arrivals announce nothing — a screen-reader user hears one sentence, not six.' },
+      ],
+
+      copy: [
+        { id: 'HM-COPY-01', t: 'Let us get Northwind Global connected. Two steps, about 15 minutes.' },
+        { id: 'HM-COPY-02', t: 'Reading your Salesforce — 3,204 of about 8,400 accounts so far.' },
+        { id: 'HM-COPY-03', t: 'Northwind Global is nearly ready. Step 2 of 2 · about 12 minutes left.' },
+        { id: 'HM-COPY-04', t: 'Setup is complete. Home now shows your accounts, deals and signals.' },
+        { id: 'HM-COPY-05', t: 'Salesforce is connected and synced 4 minutes ago, but it returned no open opportunities. Signora needs records to work from.' },
+        { id: 'HM-COPY-06', t: 'Nothing needs you this morning. Signora checked 41 accounts and 11 open deals at 07:00.' },
+        { id: 'HM-COPY-07', t: 'Your briefing could not be generated. Everything else on this page is current as of 4 minutes ago.' },
+        { id: 'HM-COPY-08', t: 'Pending requests needs the Access admin permission. Approvers: J. Okafor, M. Reinhardt.' },
+        { id: 'HM-COPY-09', t: 'Salesforce disconnected on 11 August. Figures below are from the last successful sync, two days ago.' },
+        { id: 'HM-COPY-10', t: 'Salesforce is about 6 hours behind. Figures reflect data up to 03:20 this morning.' },
+        { id: 'HM-COPY-11', t: 'Setup steps could not be loaded.' },
+        { id: 'HM-COPY-12', t: 'Calls are still not connected. Signora is scoring on CRM fields alone.' },
+      ],
+
+      components: [
+        'Shell/ContentRegion', 'Card 12px --e1', 'Card 14px --e1', 'Strip inline', 'Tag',
+        'Button primary/secondary/ghost', 'ProgressBar determinate', 'StepMark', 'Skeleton block',
+        'Timeline row', 'CitationRef', 'ConfidencePips', 'Sparkline', 'Segmented control',
+        'Avatar', 'DrawerPanel',
+      ],
+
+      contract: [
+        'Home resolves at exactly one route, /w/:workspace/home. No composition has its own path.',
+        'resolveComposition(activation, pref, role) is pure, ordered as in section 4, and contains no network call.',
+        'No code path navigates away from Home because a card has no data. Grep for redirects in the Home module before merge.',
+        'state.nodata and state.noresults are separate branches with separate copy IDs. A single shared empty component is a contract violation.',
+        'The activation registry is fetched from the server; card order comes from its priority integer, not from array position.',
+        'Completed activation cards collapse in place and retain their position; none is removed from the DOM.',
+        'The calls card renders before CRM completes, with its primary disabled and the dependency reason shown as text.',
+        'Skip is persisted server-side per person for 30 days. No activation state is written to localStorage.',
+        'Progress counts blocking cards only; optional cards are reported separately in the same line.',
+        'An empty registry renders state.noregistry, never a 0-of-0 progress bar.',
+        'The greeting and date render before any card query resolves and are never skeletonised.',
+        'Each card skeleton uses the height declared in the registry for that card.',
+        'A card query failing after retries renders that card\'s error inside its own footprint with the correlation ID; siblings are unaffected.',
+        'A card query exceeding 8s converts to the error state. No skeleton shimmers indefinitely.',
+        'A forbidden card renders a same-footprint panel naming the permission and approvers. It is never removed from the grid.',
+        'When a source is disconnected, every figure it feeds carries a last-updated stamp. No stale figure renders unmarked.',
+        'The attention card renders at most five items; a sixth is replaced by a single link to Signals.',
+        'Every string is used verbatim from the copy table. No message is assembled from fragments at runtime.',
+        'Focus after entry is on the h1. One aria-live announcement per entry, never one per card.',
+        'At 320px CSS width and 400% zoom, Home has no horizontal scroll and no clipped control.',
+        'Content is capped at 1360px at every viewport above it. No third column exists in any breakpoint.',
+        'The Executive composition renders the Executive Dashboard layout unchanged; this document adds no visual change to it.',
+      ].map((t, i) => ({ n: i + 1, t })),
+
+      decisions: [
+        { id: 'P-01', t: 'Activation precedes role', b: 'A CRO looking at an unconnected workspace gets the same three steps as anyone else. Rendering an empty executive dashboard to an executive is the worst first impression available.' },
+        { id: 'P-02', t: '“No data” and “no results” are separate states', b: 'Different cause, different copy, different tint, different action. Conflating them sends someone to review a pipeline that does not exist, or implies a setup problem on a quiet Tuesday.' },
+        { id: 'P-03', t: 'Home never falls back to another surface', b: 'A designed empty state, always. An undocumented alternate Home cannot be tested, predicted or supported.' },
+        { id: 'P-04', t: '“What Signora will do” is a footer line, not a card', b: 'As a card it competed with the steps and was skipped. Attached to the incomplete step it answers the only live question: why bother with step three.' },
+        { id: 'P-05', t: 'Completed activation cards stay in place', b: 'They collapse rather than disappear. A step that vanishes makes people doubt they completed it, and reordering shifts the list under the cursor.' },
+        { id: 'P-06', t: 'Calls is blocking; invite is not', b: 'Signora\'s differentiating output depends on call data. Invitations improve accuracy but the product works for one person, so invite is skippable and calls is not.' },
+        { id: 'P-07', t: 'Attention shows five items maximum', b: 'Home is a starting point, not a queue. A sixth item becomes a link to Signals, which is the surface designed for triage.' },
+        { id: 'P-08', t: 'Every attention item carries a reason', b: 'And a cost of ignoring it. A ranked list with no stated reason is a list people learn to scroll past within a fortnight.' },
+        { id: 'P-09', t: 'No metrics row on the seller composition', b: 'Four figures a seller cannot act on displace the item they can. The scope line carries the only count that matters: how many things need them.' },
+        { id: 'P-10', t: 'Stale is always labelled', b: 'A disconnected source does not blank its cards; it stamps them. Hiding a stale figure loses information, and showing it unmarked is a lie.' },
+        { id: 'P-11', t: 'Forbidden cards stay visible', b: 'Named permission, named approvers, same footprint. Hidden capability is the most common cause of “the product does not do X” when it does.' },
+        { id: 'P-12', t: 'No third column at wide viewports', b: 'It works at exactly one width. Surplus space becomes margin so the reading axis is identical from 1280 to 1600.' },
+      ],
+
+      unresolved: [
+        { id: 'U-01', t: 'System States also draws the activation sequence', owner: 'Product Owner', color: 'var(--risk)', b: 'The approved System States document draws the empty-workspace activation sequence, and this document specifies it as a Home composition. Two approved documents describing one surface. Deleting a section from an approved document is not a design decision, so the conflict is recorded rather than resolved.', interim: 'implement from this document; leave System States untouched until a Product Owner rules. Proposed resolution — System States keeps the empty-workspace pattern as a cross-reference and stops drawing the cards.' },
+        { id: 'U-02', t: 'Composition switching persistence', owner: 'Product Owner', color: 'var(--warn)', b: 'Entry rule 23 and User Profile allow a start-page preference. Whether a dual-role person switching composition sets that preference permanently or only for the session is undecided.', interim: 'switching persists for the session; the profile preference is the only permanent setting.' },
+        { id: 'U-03', t: 'Skip window length', owner: 'Product Owner', color: 'var(--warn)', b: 'This document assumes 30 days for a skipped non-blocking activation card. There is no data yet on whether that is too aggressive for smaller workspaces.', interim: 'implement 30 days as a configuration value, not a constant.' },
+        { id: 'U-04', t: 'Attention ranking model ownership', owner: 'Architecture', color: 'var(--warn)', b: 'Home renders items ordered by “what it costs to ignore”. Whether that ranking is computed by the signals service or composed client-side from separate signal and deal queries determines whether the order is stable across a refresh.', interim: 'assume the service returns a ranked list; if it does not, the order must be seeded deterministically so a refresh does not reshuffle.' },
+        { id: 'U-05', t: 'Customisation scope', owner: 'Product Owner', color: 'var(--warn)', b: 'The Customise control is specified as card removal and reordering within a composition. Whether people may add a card from another composition — a seller adding the forecast card — is not decided.', interim: 'reorder and remove only. Adding cross-composition cards is out of scope for the first implementation.' },
+        { id: 'U-06', t: 'Briefing generation time and timezone', owner: 'Architecture', color: 'var(--warn)', b: 'Copy states “generated 07:00”. Whether generation is per person in their profile timezone or per workspace in the workspace timezone changes what a person in Singapore sees at 09:00 local.', interim: 'per person in profile timezone; the card states the time in that timezone.' },
+      ],
+
+      acceptance: [
+        { id: 'AC-H01', t: 'A workspace with no sync history renders the activation composition for a CRO account, not the executive dashboard.' },
+        { id: 'AC-H02', t: 'With CRM complete and calls incomplete, the calls card is the only one with an enabled primary and it carries the footer line.' },
+        { id: 'AC-H03', t: 'Complete the last blocking card: the next render is the role composition, with the setup-complete strip shown exactly once.' },
+        { id: 'AC-H04', t: 'Force a sync that returns zero records: HM-COPY-05 renders and HM-COPY-06 does not appear anywhere in the DOM.' },
+        { id: 'AC-H05', t: 'With records present and no attention items: HM-COPY-06 renders and HM-COPY-05 does not appear anywhere in the DOM.' },
+        { id: 'AC-H06', t: 'Fail the briefing endpoint only: the briefing card shows its error with a correlation ID and every other card renders normally with no layout shift.' },
+        { id: 'AC-H07', t: 'Fail every card endpoint: the page states it and offers one retry. No redirect occurs and the URL is unchanged.' },
+        { id: 'AC-H08', t: 'Revoke the Salesforce token: the disconnected strip appears above the greeting and every affected figure carries a last-updated stamp.' },
+        { id: 'AC-H09', t: 'Return the activation registry as an empty array: HM-COPY-11 renders and no progress bar is present.' },
+        { id: 'AC-H10', t: 'Sign in twice on the same day: the workspace confirmation strip appears on the first entry and not the second.' },
+        { id: 'AC-H11', t: 'An analyst in the operations composition sees the forbidden panel for Pending requests at the same footprint as the card it replaces.' },
+        { id: 'AC-H12', t: 'At 390 × 844, the briefing and three attention items are present, every primary action is at least 44px tall, and there is no horizontal scroll.' },
+      ],
+
+      colophon: [
+        { k: 'Document', v: 'Home · canonical' },
+        { k: 'States', v: '14 (+ 06b)' },
+        { k: 'Compositions', v: '4' },
+        { k: 'Conflicts recorded', v: '1 · U-01' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
