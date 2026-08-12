@@ -824,6 +824,7 @@ databaseUrl: required(
 |---|---|
 | **Raised by** | **QE**, 2026-08-12 |
 | **Owner** | **Product owner** — 📁 this is a reading of [§20e](../CLAUDE.md), and **the party a permissive reading releases is QE** |
+| **Blocks** | ✅ **Nothing.** ⛔ **This read *"Every promotion to `main`"* and is no longer true — promotion occurred at `0dfc07f4`.** ⚠️ **The stale row also sat orphaned below the prose after this office's own edit, where a reader scanning for the blocker would meet it *after* the conclusion voiding it. Flagged by QE, corrected here** |
 | **Status** | ✅ **`RESOLVED` — no product decision required. Lane C, 2026-08-12, on measurement.** ⛔ **The premise is void: B-183 is `CLOSED`, promoted at `0dfc07f4`, which is an ancestor of `main` (`95c0e12f`). Promotion occurred.** ⚡ **And the general question is answered below rather than left implied** |
 
 ### ⚡ What the promotion mechanism actually inspects — measured, not read from the rule
@@ -843,7 +844,8 @@ databaseUrl: required(
 ⚡ **The transferable rule, and it needs no ruling because [§20e](../CLAUDE.md) already carries it:** **a defect closes when it is fixed and QE verifies it — never when it is promoted.** **A row conditioned on promotion makes itself the obstacle to its own closure.**
 
 ⚠️ **Independence, stated because this office is an affected party.** ⛔ **This conclusion does not reinterpret §20e and does not widen what may be promoted.** **It rests on two facts that would read the same either way: `_promote` does not consult severity, and `0dfc07f4` is already on `main`.**
-| **Blocks** | 🔴 **Every promotion to `main`.** ⚡ **Nothing else** — stage 3 is unaffected and lanes go on integrating |
+
+⚠️ **What this does NOT reduce — QE's caveat, 2026-08-12, and it is right.** ⛔ **Resolving the *mechanism* leaves the *judgement* with the product owner, per defect.** ⚡ **For B-183 that was moot because the row closed. For B-428's second criterion it is the whole question, and [C-106](#c-106--b-428bugsmds-second-criterion-is--and-only-the-product-owner-may-move-it) is where it lands.** **C-107 closing sharpens C-106 rather than easing it — there is now no code to defer to.**
 
 ### The question, in one line
 
