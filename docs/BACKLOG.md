@@ -137,7 +137,25 @@
 |---|---|---|
 | `simulation/datasets/baseline@1.json` | ⛔ **`acme-corp`, `globex`** — the exact anti-pattern named | ✅ Replace |
 | `simulation/datasets/playground@1.json` | 12 Microsoft-fiction names — Northwind, Contoso, Fabrikam, Litware… | ✅ Replace |
-| `simulation/datasets/playground@2.json` | 12 **real** companies — Snowflake, NVIDIA, Stripe, Databricks… | ⚠️ **See the blocker below** |
+| `simulation/datasets/playground@2.json` | 12 **real** companies — Snowflake, NVIDIA, Stripe, Databricks… | ✅ **Replace — see the naming ruling** |
+
+### ✅ NAMING RULING — fictional, engineered for believability
+
+**Product owner delegated this to Lane C, 2026-08-12. Decided here, with the reasoning, because a delegated decision recorded as a preference is not traceable.**
+
+⛔ **Real company names are retired.** 📁 `playground@2`'s own header argued for them — *"real names are used because a demonstration of a revenue intelligence product…"* — **and that argument loses to three things:**
+
+**① The product asserts things ABOUT companies.** ⚡ **It renders *worth verifying*, *ranked on ageing evidence*, a buying score, a declining-engagement signal.** ⛔ **Attached to a real name that is a fabricated commercial claim about a real business**, and 📁 [§2](../CLAUDE.md) — *the repository must always tell the truth* — does not stop at code.
+
+**② The disclaimer does not travel with the pixel.** ⚠️ **It lives in a JSON `_comment` nobody rendering a screen ever sees.** **Screenshots of this data are already circulating between the product owner and three lanes**, and they go into decks, defect reports and sales conversations. ⛔ **A screen claiming a named real company is stale and worth chasing is a business problem the moment it leaves the room.**
+
+**③ It is avoidable at almost no cost.** ⚡ **Recognisability is not what makes a demo land — plausibility is.** **A viewer believes *"Northfield Data Systems, 1,400 people, Series D, Dublin"* exactly as readily**, provided the firmographics are right.
+
+⛔ **AND NOT `playground@1`'s SET EITHER.** **Contoso, Fabrikam, Northwind and Litware are Microsoft's teaching fixtures** and read as obviously synthetic to the technical buyer this product is demonstrated to. ⚠️ **They fail the same test from the other direction.**
+
+✅ **What to build instead:** **invented names that could be a real B2B SaaS or infrastructure company** — a plausible domain, an industry that exists, headcount and revenue band that agree with each other and with the stage, and a country distribution that looks like a real book. ⛔ **No `Acme`, no `Test`, no `Company N`, no `example.com`.**
+
+⚠️ **If a fictional name collides with a real company, change it.** ⚡ **The point is a name nobody has to disclaim.**
 
 ⛔ **`grep -rn "playground@1\|baseline@1\|playground@2"` must return no active seeding path for a retired dataset when this is done.** ⚡ **Each carries a `content_hash`; a new dataset is a new version, never an edit** — the versioning is the mechanism and it stays.
 
