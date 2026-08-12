@@ -2109,7 +2109,7 @@
 | **Classification** ([D-208](DECISION_REGISTER.md) §4) | 🟣 **IMPLEMENTED INCORRECTLY — one string** |
 | **Epic** | **Common Platform Foundation** |
 | **Module** | **`product_surface` — Lane A** |
-| **Status** | ✅ **`READY` — Lane C, 2026-08-11, on the product owner's ruling of [C-1422](LANE_COORDINATION.md): *"Brand rule wins."*** |
+| **Status** | 🔵 **`CLAIMED` — Lane A, 2026-08-12, by the Task Claim Protocol.** ⛔ **Two lines and one test, and the row says so** — ⚠️ **the discipline here is NOT sweeping**: 📁 **79 occurrences of the full brand exist and most are correct.** ⚠️ **The prior state, kept verbatim rather than rewritten** ([§2](../CLAUDE.md)): ✅ **`READY` — Lane C, 2026-08-11, on the product owner's ruling of [C-1422](LANE_COORDINATION.md): *"Brand rule wins."*** |
 | 🔴 **The change, and it is the whole change** | 📁 **`frontend/components/shell/top-bar.tsx`:113 and :120** — **`Search Fortune Signora` → `Search Signora`** |
 | ✅ **The test that must move with it** | 📁 **`frontend/tests/components/shell-a11y.test.tsx`:113** asserts `getByRole('search', { name: 'Search Fortune Signora' })`. ⛔ **A rename that leaves the test passing on the old string has renamed nothing** |
 | ⚡ **The ruling, in the product owner's words** | ***"the application is already inside Signora; the newer brand rule explicitly says the in-product product name is `Signora`; the finalized design copy is therefore superseded for this specific wording."*** |
