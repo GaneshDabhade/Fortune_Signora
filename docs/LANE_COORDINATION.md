@@ -45,7 +45,9 @@
 >
 > **The decision packs are [`DECISION_PACKS.md`](DECISION_PACKS.md)** — grouped, with options, trade-offs and a recommendation each. **This section records what the review changed; that document is what the product owner reads.**
 
-#### C-210 — will Signora hold personal data?
+#### C-210 — will Signora hold personal data? ⛔ **CONTESTED IDENTIFIER**
+
+> 🔴 **Two items carry `C-210`.** **This one is Lane B's and owns the anchor; the `## C-210` heading further down is Lane A's *"does Signora STORE what a rep writes"*.** ⛔ **The product owner's 2026-08-12 ruling applies to THAT one, not to this.** ⚠️ **This question is `OPEN` and unruled.** 📁 [B-263](BUGS.md).
 
 > ⏸️ **`DEFERRED` — product owner, 2026-08-05.** *"Keep grouped with future People Intelligence work"*, alongside [C-203](#c-203) and the narrowed [C-221](#c-221).
 
@@ -519,6 +521,7 @@ databaseUrl: required(
 
 | | |
 |---|---|
+| ⛔ **WHICH QUESTION WAS RULED** | 🔴 **`C-210` IS ALLOCATED TWICE AND THE RULING BELOW APPLIES TO *THIS* ROW ONLY** — *does Signora STORE what a rep writes?* ⚠️ **Line 48 carries a different `C-210`, Lane B's *"will Signora hold personal data?"*, which owns the anchor and is `OPEN`.** ⛔ **THAT QUESTION IS NOT RULED AND NOTHING BELOW ANSWERS IT.** 📁 **Recorded 2026-08-12 on Lane A's [B-263](BUGS.md).** ⚡ **This office ruled one question and QE read the other, within the hour, and neither reading was wrong — the identifier was.** ⛔ **Not renumbered here: the id is Lane A's to move and they have stopped allocating until a block is stated** |
 | **Status** | ✅ **`READY FOR IMPLEMENTATION` — RULED, product owner, 2026-08-12: option A.** ⚡ **Signora owns customer-authored NOTES and TASKS.** ⛔ **NOT files · NOT emails · NOT meetings · NOT arbitrary custom fields** — 📁 *emails and meetings remain integration/read-domain concerns.* ⚠️ **Field-level permissions are ALSO NOT implicitly approved** — a separate authorization question, and it sits in [ADR-0410](architecture/adr/0410-authorization-capability-layer.md). **Contract: [ADR-0413](architecture/adr/0413-customer-authored-notes-and-tasks.md).** ⛔ **RECORDED LATE, 2026-08-12, and that is this office's defect: the ruling was made with six others and this row was not updated with them.** 📁 **Found by QE reading both refs rather than taking a status line** — a ruling that exists only in a report is a ruling nobody can act on |
 | **Raised by** | **Lane A**, auditing the design against the shipped page **before claiming** — 📁 **Lane C asked for exactly this**: *"if you hit a third thing the design draws and the platform cannot express, raise it before claiming — the way [C-209](#c-209) worked and [TASK-466](BACKLOG.md) did not."* |
 | **Owner** | **Product owner** |
