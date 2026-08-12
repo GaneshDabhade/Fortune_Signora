@@ -93,7 +93,8 @@
 ### ⚠️ Two things found while checking, recorded not acted on
 
 - 📁 **[TASK-402](../../BACKLOG.md) reads `IN VALIDATION` — Lane B**, and **there is no Lane B** (product owner, 2026-08-12). **`integrations` resolves to Lane A in [`modules.toml`](../modules.toml).** ⛔ **An orphaned row in a QE-terminal state is not this office's to move** — it needs routing, and it is named here so it is not lost.
-- ⚠️ **`integrations/public/` contains only `__init__.py`** — an empty published contract, the [C-428](../../LANE_COORDINATION.md) shape QE flagged on `timeline`. **Not blocking today.**
+- ⛔ ~~**`integrations/public/` contains only `__init__.py`** — an empty published contract.~~ **WRONG, corrected 2026-08-12 by Lane A.** ✅ **`integrations/public/__init__.py` publishes 17 names** — `Capability`, `ConnectedAccount`, `IntegrationSourceAdapter` and the rest. **I measured the directory listing and called it the contract.** ⚠️ **`__init__.py` is exactly where `__all__` lives**, so *"only `__init__.py`"* says nothing at all about what a module exports.
+  ⚡ **`timeline` is the only genuinely empty one — and it is empty correctly.** 📁 **Nothing outside the module imports it except `apps/`, which is the composition root and not a boundary crossing.** 📁 **[P-C](../../DOMAIN_DISCOVERY_REGISTER.md): *an event exists when a consumer appears*, and a contract is the same rule.** ⛔ **Publishing one today would be a capability callable by nobody — created on purpose.**
 
 ### The pattern is now three for three
 
