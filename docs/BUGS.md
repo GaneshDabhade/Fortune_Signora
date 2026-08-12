@@ -90,6 +90,47 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-187 · 🟡 `state-check` could not see an eight-character SHA, so it reported the dashboard stale on the cycle it was refreshed
+
+| | |
+|---|---|
+| **Module** | **QE gates** — [`infra/state-check.py`](../infra/state-check.py), `_newest_named_commit` |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — **advisory noise.** ⛔ **And the harm is the usual one: the report it produced was *false*, on the one cycle a reader most needs to trust it** |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-12.** ⚠️ **Not `VERIFIED`: QE found it and QE fixed it** ([§20e](../CLAUDE.md)) |
+| **Found** | **2026-08-12, during cycle 205's Closeout**, by the dashboard refusing to go green after it had been correctly refreshed |
+| **Commit found** | **`2d996eab`** |
+
+**Steps.** Refresh `PROJECT_STATUS.md` to name a promoted commit written as **eight** hex characters, then `python3 infra/state-check.py`.
+
+**Expected.** `ok PROJECT_STATUS.md names <that commit>`.
+
+**Actual.** ⛔ *"names `a792be6`, which predates the latest certification"* — **a commit from a dated appendix 1,000 lines further down.**
+
+### The matcher was exactly seven
+
+```python
+re.findall(r"\b[0-9a-f]{7}\b", text)
+```
+
+⚡ **`0dfc07f4` is eight characters, so `\b…{7}\b` cannot match it** — there is no word boundary seven characters in. **The dashboard's own current commit was invisible to the check**, which then fell back to the newest seven-character token anywhere in the file and found one in a **historical appendix**.
+
+> ⛔ **Three fixes were available and two of them were wrong.**
+>
+> **① Shorten the dashboard's SHAs to seven** — bending the document to suit the parser.
+> **② Edit the appendix** — ⛔ **it is a record of what was true then, and [§2](../CLAUDE.md) forbids rewriting one to match now.**
+> **③ Widen the matcher to `{7,12}`.** ✅ **The tool was the thing that was wrong.**
+>
+> ⚡ **A check must never make a document lie in order to satisfy it**, and options ① and ② are both that.
+
+### Fire-tested both ways
+
+**Reverted to `{7}` → the false positive returns.** **Restored to `{7,12}` → `ok`, naming `0dfc07f48a1a`.** ⛔ **A green check is not evidence until something has made it red** ([B-180](#b-180)).
+
+> ⚠️ **This is the third instrument of QE's own to fail this cycle**, after [B-184](#b-184) and [B-185](#b-185). ⚡ **All three were correct about a fact and wrong about what the fact meant** — and in every case the cost was a reader learning to skip the output rather than a wrong decision taken.
+
+---
+
 ### B-185 · 🟠 `--dry-run` rewrites the generated coordination source, and I diagnosed a defect from my own output because of it
 
 | | |

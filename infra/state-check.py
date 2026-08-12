@@ -74,12 +74,25 @@ def _is_ancestor(candidate: str, descendant: str) -> bool:
 def _newest_named_commit(text: str, head: str) -> str | None:
     """The newest commit named in `text` that is reachable from `head`.
 
-    Scans for bare 7-hex tokens rather than a fixed phrase, because the dashboard
+    Scans for bare 7-to-12-hex tokens rather than a fixed phrase, because the dashboard
     names commits in prose as often as in a table, and a check that only reads one
     cell is a check that a small edit silently disables.
+
+    ⛔ **It matched EXACTLY seven for a long time, and B-187 is what that cost.**
+    `PROJECT_STATUS.md` named the freshly promoted `0dfc07f4` — **eight**
+    characters — so `\b[0-9a-f]{7}\b` could not see it at all, fell back to
+    the newest seven-character token anywhere in the file, and found one in a
+    **dated appendix**. It then reported the dashboard as stale **on the very
+    cycle it had just been refreshed.**
+
+    ⚡ **The tool was the thing to fix.** The alternative was shortening the
+    dashboard's SHAs to suit the parser, or editing the appendix — and an
+    appendix is a record of what was true then, which `CLAUDE.md` §2 forbids
+    rewriting to match now. **A check must not make a document lie to satisfy
+    it.**
     """
     newest: str | None = None
-    for token in dict.fromkeys(re.findall(r"\b[0-9a-f]{7}\b", text)):
+    for token in dict.fromkeys(re.findall(r"\b[0-9a-f]{7,12}\b", text)):
         if not _is_ancestor(token, head):
             continue
         if newest is None or _is_ancestor(newest, token):
