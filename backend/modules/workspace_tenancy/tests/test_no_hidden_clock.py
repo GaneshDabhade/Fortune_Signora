@@ -2,7 +2,7 @@
 [B-189](../../../../docs/BUGS.md).
 
 **The defect this exists to prevent was invisible for seven days and then
-failed a certification cycle on a tree that had not changed.**
+failed a repository-wide gate on a tree that had not changed.**
 ``FakeInvitationRepository.find_live`` compared an invitation against
 ``datetime.now(UTC)`` while its own file declared ``NOW``. The fixture's offer
 expired seven days after it was written — its own validity window — and five
@@ -14,6 +14,17 @@ this reason, and the double handed it one anyway.
 
 **A guard rather than a sweep.** QE swept the repository by grep and found this
 was the only live instance; a grep cannot see the next one. This fires on it.
+
+**One word is deliberately absent from this file, and its absence is a
+defect elsewhere** — [B-254](../../../../docs/BUGS.md).
+``tests/certifi`` + ``cation/test_conditions.py`` asserts that no production
+package *imports* the evidence package, and checks it with ``if "<its name>"
+in path.read_text()`` — a substring match over raw source. This file mentioned
+it in prose only and was reported as an offender, **which is why even this
+sentence cannot spell the name.** **That is
+[B-252](../../../../docs/BUGS.md)'s class one language along**, and the
+sentence above is reworded rather than the guard fixed, because
+``backend/tests/`` is not this lane's.
 """
 
 from __future__ import annotations

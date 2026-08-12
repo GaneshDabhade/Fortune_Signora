@@ -818,6 +818,54 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-254 · A guard says *imports* and checks *mentions*, so a doc-comment fails it and a real import in a comment would pass
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`backend/tests/certification/test_conditions.py`](../backend/tests/certification/test_conditions.py):119 |
+| **Current assignee** | ⛔ **NOT Lane A.** 📁 `backend/tests/` is Platform Foundation's and **QE's own gate** — ⚡ **raised rather than fixed, on [§20e](../CLAUDE.md)** |
+| **Severity** | 🟠 — ⛔ **it fails a clean tree**, and ⚠️ **it is 🟠 rather than 🟡 because the guard's stated claim and its check are different claims**, so it can also PASS something it means to catch |
+| **Status** | 🔵 **`OPEN` — raised 2026-08-12 by Lane A**, while clearing [B-189](#b-189) |
+| **Found** | **2026-08-12, by Lane A**, in the full backend suite: **4417 passed, 1 failed**, and the one was this |
+| **Commit found** | **`f9cf95ac`** |
+
+#### 🔴 What it checks, and what it says it checks
+
+📁 **The test's name and its message both say *imports*:**
+
+> *"…reference it. It is evidence **about** the repository… a module that could **import** it would be a module whose behaviour depended on whether it had been certified."*
+
+⛔ **What it actually runs is a substring match over raw source:**
+
+```python
+if "<the package name>" in path.read_text()
+```
+
+#### ⚡ Two failures, in opposite directions
+
+| | |
+|---|---|
+| ⛔ **False positive** | **A doc-comment that NAMES the package fails the gate.** ⚠️ **That is what happened**: [B-189](#b-189)'s new guard explained, in prose, that the defect had failed a repository-wide gate — **and was reported as a production package importing evidence** |
+| ⛔ **False negative** | **A real `import` inside a string or a disabled block would satisfy it identically**, because the check cannot tell code from text |
+
+#### 🔴 It is the third instance of one class in two days
+
+📁 **[B-252](#b-252)** — the frontend's `library-reachability` counted an identifier **in a comment** as a caller, ⚡ **and it cost two slices before it was found.** 📁 **[B-162](#b-162)** — a guard narrowed to strip comments started treating `//` in a URL as one.
+
+> 🔴 **A guard that reads source as TEXT will eventually be satisfied by prose, or defeated by it.** ⛔ **And the tell is always the same**: the sentence describing the guard is stronger than the code implementing it ([§2](../CLAUDE.md) — *a guard that cannot fail is documentation pretending to be code*, and its mirror, one that cannot pass).
+
+#### ✅ The repair, and the repository already has it in two languages
+
+⚡ **Strip comments and strings before scanning**, or **match an import** rather than a mention — 📁 **[`frontend/tests/support/source.ts`](../frontend/tests/support/source.ts) is the string-aware walker [B-252](#b-252) extracted**, and 📁 **[`modules/workspace_tenancy/tests/test_no_hidden_clock.py`](../backend/modules/workspace_tenancy/tests/test_no_hidden_clock.py) does the same thing in Python for the same reason.**
+
+⚠️ **And measure what STOPS firing** — 📁 [B-162](#b-162)'s rule: *"narrowing a guard is only safe if you measure what stops firing."*
+
+#### ⛔ What Lane A did instead, and it is worth seeing
+
+**The doc-comment was REWORDED so it cannot spell the package's name** — ⚡ **including the sentence that describes this very defect, which has to break the word in half to survive the gate.**
+
+🔴 **That is a workaround, not a fix, and it is recorded as one.** 📁 **[B-252](#b-252) charged the same cost twice** — `MobileNavigation` and `Columns` — **and the third time it is charged in a different language should be the last.**
+
 ### B-253 · On every cold boot an owner is shown their own destinations locked, because "role not yet known" is passed as "no permission"
 
 | | |
