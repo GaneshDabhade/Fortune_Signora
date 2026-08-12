@@ -70,6 +70,28 @@
 - **C-289 and C-292 name owners that route to nobody.** Routing, not a decision.
 - **3 workflows genuinely thin** — Settings, AI Research, Help Center. **Mode C, one per session.**
 
+## ⚙ Pipeline feeder — checkpoint
+
+**Resume from `Next workflow`. ⛔ Do not restart at Team Management.**
+
+| | |
+|---|---|
+| **Last workflow inspected** | **Team Management** — ⛔ **blocked, not exhausted** |
+| **Candidates evaluated** | **3** *(the per-execution limit)* |
+| **Tasks created** | ⛔ **None** |
+| **Next workflow** | ▶ **CRM Integrations** |
+| **Do not re-audit** | **Settings · Team Management · AI Research · Help Center** |
+
+**The three candidates:**
+
+| | Verdict |
+|---|---|
+| **Roles — `Admin` · `Analyst` · *Effective permissions*** | ⛔ **BLOCKED — [C-1429](../../LANE_COORDINATION.md).** `WorkspaceRole` is a two-member `StrEnum` |
+| **Bulk invite from CSV** | ⛔ **BLOCKED.** `InviteMemberRequest` takes **one** email. **A bulk surface over a single-email endpoint is an implementation-approach decision, not approved scope** |
+| **Invitation *Copy link*** | ⚠️ **UNRESOLVED.** `InvitationResponse`'s fields were not read to the end — **stopped on the candidate limit, not on a conclusion.** ⚡ **Cheapest first check next time** |
+
+✅ **Capability is NOT the problem in Team Management generally** — `workspace_tenancy` exposes ten endpoints, and `lib/query/hooks/team.ts` already calls resend, revoke and role. **[TASK-471](../../BACKLOG.md) covered more than its status line suggests.** ⛔ **Only the role-model slices are walled.**
+
 ## ⛔ Pipeline refill attempt 1 — 0 tasks created, and the reason matters
 
 **2026-08-12, Mode C, bounded to 5 candidates. Settings was the strongest candidate area and produced none.**

@@ -676,6 +676,37 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ---
 
+## C-1429 · The approved designs assume four roles and the domain represents two — found twice, in two workflows, by two capability checks
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-12, feeding Lane A's pipeline. ⚡ **Not sought — hit twice while running Gate E on unrelated workflows** |
+| **Owner** | **Product owner** — ⛔ **a role model is product scope, and widening one is neither a lane's nor this office's** |
+| **Status** | 🟠 **`OPEN`** |
+| **Blocks** | ⚠️ **Every remaining slice of Settings and Team Management that touches a role.** ⛔ **Nothing currently claimed, and no lane is idle *on this*** |
+
+### The evidence, and it is two lines
+
+📁 **[`workspace_tenancy/domain/entities.py:32`](../backend/modules/workspace_tenancy/domain/entities.py)** — `WorkspaceRole` is a `StrEnum` of exactly **`OWNER`** and **`MEMBER`**.
+
+📁 **`Fortune Signora Team Management.dc.html`** draws **`Admin`**, **`Analyst`**, ***Change to Analyst***, ***Effective permissions*** and ***A Member will be able to***. 📁 **`Fortune Signora Settings.dc.html`** draws ***Roles & permissions*** with ***New role***.
+
+⚡ **So this is not unbuilt UI. It is unrepresentable UI** — and that distinction is the reason no Lane A row was created for either.
+
+### Why it is raised rather than absorbed
+
+⛔ **A frontend task for a role the domain cannot express is a row Lane A cannot finish**, and creating one to move the [D-187](DECISION_REGISTER.md) count toward 20 is precisely what that floor must not be met with.
+
+⚠️ **It is the [C-1425](#c-1425--task-466backlogmd-is-the-action-batchs-first-consumer-and-no-domain-implements-an-operation-for-it-to-apply) shape at the level of a shared primitive rather than one operation** — and unlike C-1425 it gates **two** workflows, which is why it is worth one item instead of two rejections in a checkpoint.
+
+### What is *not* being asked
+
+⛔ **No recommendation on the role model, deliberately.** **The options — widen the enum · add a capability layer beside it · narrow the designs — differ in tenancy, authorization and migration consequences that this office has not assessed**, and a preference stated without that work would be the guess [§21](../CLAUDE.md) forbids.
+
+✅ **What is being asked is only whether the gap is scheduled.** ⚡ **Until it is, both workflows' role slices stay unwritten, and that is the correct state rather than a stalled one.**
+
+---
+
 ## C-1428 · [TASK-1462](BACKLOG.md) §03 needs two facts nothing models, and its §14 half names a surface that does not exist
 
 | | |
