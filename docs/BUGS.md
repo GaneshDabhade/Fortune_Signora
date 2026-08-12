@@ -90,36 +90,46 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
-### B-192 · 🟡 `RUNNING.md` documents everything a lane needs to start except the Better Auth schema, so a correctly-followed setup fails at sign-in and reads as a product defect
+### B-192 · 🟡 Three setup steps are documented as CURES in the troubleshooting table and not as PREREQUISITES in the sequence, so a lane meets each only after sign-in has already failed
 
 | | |
 |---|---|
 | **Module** | **QE's own documentation** — [`docs/RUNNING.md`](RUNNING.md), *Running a lane* |
 | **Current assignee** | **QE** — ⚡ **[`RUNNING.md`](RUNNING.md) is QE's** ([§20e](../CLAUDE.md), shared files) |
-| **Severity** | 🟡 — ⛔ **nothing shipped is wrong.** ⚠️ **A lane setting up from the documented steps loses the time it takes to work out that the missing thing is a schema nobody mentioned** |
-| **Status** | 🔵 **`OPEN`** — ⛔ **filed rather than fixed**, because the fix is a documented command and QE has not yet found the one this repository actually uses |
+| **Severity** | 🟡 — ⛔ **nothing shipped is wrong.** ⚠️ **A lane loses the time it takes to discover that three separate missing steps each present as one broken sign-in** |
+| **Status** | 🔵 **`OPEN`** — ⛔ **blocked on [B-105](#b-105), which is QE's and open.** See *What the fix has to decide* below |
 | **Found** | **2026-08-12, cycle 211**, assembling a lane environment to execute [B-429](#b-429)'s journey |
 | **Commit found** | **`96f23434`** |
 
-**Steps.** Follow [`RUNNING.md` § Running a lane](RUNNING.md#running-a-lane) exactly: compose up, the three exported URLs, `alembic upgrade head`, `uvicorn`, `npm run dev`. Then run any journey.
+> ⚠️ **CORRECTED 2026-08-12, same day, by Lane A — and the correction makes the row narrower and worse.**
+>
+> ⛔ **This row first claimed *"`RUNNING.md` documents no step that creates the Better Auth schema."* That was wrong.** 📁 **It is documented in three places** — [`RUNNING.md:367`](RUNNING.md) in the **troubleshooting** table, [`SESSION_HANDOFF.md:140`](SESSION_HANDOFF.md), and [`Makefile:173`](../Makefile) inside `make demo` / `make review`.
+>
+> ✅ **The real defect is the one Lane A named: *the step is written down as a cure and not as a prerequisite.*** **A lane following *Running a lane* top to bottom never meets it, and finds it only after sign-in has failed** — 📁 **the same shape as [B-219](#b-219): the documentation is fine if you already know what broke.**
+>
+> ⛔ **QE filed a row on a premise it had not checked against the document's own troubleshooting section**, which is the [B-185](#b-185) class — *diagnosing from one's own output*. **The header, the premise and the title are corrected here rather than the row being quietly adjusted.**
 
-**Expected.** Sign-in.
+### 🔴 Three steps, and QE hit all three in order
 
-**Actual.** ⛔ **`page.waitForURL: Timeout 20000ms exceeded`** — the form submits and never navigates.
+**Measured. Each one presents as the identical symptom** — `page.waitForURL: Timeout 20000ms exceeded`, the form submitting and never navigating.
 
-### 🔴 Why, and why it names the wrong subsystem
+| # | Missing | What the server actually said |
+|---|---|---|
+| **①** | **The Better Auth schema** | *(nothing — the request simply failed)*. 📁 `cd frontend && npm run auth:migrate` → **`creating: user, session, account, verification, twoFactor`** |
+| **②** | **`SIGNORA_APP_URL` matching the port** | ⛔ **`[Better Auth]: Invalid origin: http://localhost:3200`**, `POST /api/auth/sign-in/email 403`. 📁 `config.ts:140` defaults `baseUrl` to `http://localhost:3000`, so **every lane but the one on 3000 is a wrong origin** |
+| **③** | **The demo accounts** | ⛔ **`401`.** 📁 `npm run demo:users` creates them **through the real sign-up and verification flow** — the approved door ([§20e](../CLAUDE.md), *test data enters the way a customer's data enters*) |
 
-📁 **Alembic manages the Python tier only.** **Better Auth owns `user`, `session`, `account` and `verification` and creates them itself** ([ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md): Better Auth is the sole Authentication Authority and the Python tier only verifies).
+⚠️ **Only ① is in the troubleshooting table. ② and ③ are in neither the sequence nor the table.**
 
-**Measured on a freshly-migrated lane database:** ⛔ **59 tables, and not one of the four.** The only matches for *account* are `connected_account` and `target_account_list`, which are the Python tier's.
+### ⛔ What the fix has to decide, and why it is not a one-line edit
 
-⚠️ **So the first thing that breaks is a Playwright sign-in**, and 📁 [B-219](#b-219) is the precedent for how expensive that is: *"the first thing that breaks names the wrong subsystem, which is why this sat open for three days."*
+📁 **[B-105](#b-105) is open and is QE's**: *"nothing loads `frontend/.env.local` for the two `tsx` setup scripts, so `npm run auth:migrate` refuses to start."* **It is why `make review` loads the file itself and `make demo` fails on a clean workstation.**
 
-### ⛔ What QE could not finish, stated rather than implied
+> ⛔ **So a prerequisite added to the sequence today would refuse when a lane ran it**, which is the defect this row is about, one generation on. ✅ **Either the step carries its variables inline, or [B-105](#b-105) is fixed first** — and that choice is the fix, not the wording.
 
-**[B-429](#b-429)'s repair is a journey and QE did not execute it.** ✅ **The journey asserts the right seam** — `menu` contains `OWNER.name`, read through `layout.tsx`, the real session and the whole shell chain, which is exactly what [B-191](#b-191) asked for. ⛔ **But QE has verified its shape, not its behaviour**, and [B-191](#b-191) is the row that exists because reading a guard is not testing it.
+### ✅ What this bought, which is the reason the row is worth its length
 
-> ⚠️ **`npx @better-auth/cli migrate --config lib/auth/server.ts` answers *"No configuration file found"***, so **the correct command is not obvious and is not written down** — which is the defect.
+**[B-429](#b-429)'s journey was executed once the three steps were done, in both directions**, and the result is in [B-191](#b-191).
 
 ---
 
@@ -130,7 +140,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | **`product_surface`** — [`onboarding-promises.test.ts`](../frontend/tests/unit/onboarding-promises.test.ts) and [`account-menu-name.test.tsx`](../frontend/tests/components/account-menu-name.test.tsx) |
 | **Current assignee** | **The current assignee of `product_surface`** — joined from [`modules.toml`](coordination/modules.toml), ⛔ **not named here** ([C-213](#c-213)) |
 | **Severity** | 🟡 — ⛔ **nothing is wrong today.** [B-256](#b-256)'s fix is correct and the screen tells the truth. ⚠️ **What is missing is the proof that it stays true** |
-| **Status** | 🔵 **`OPEN`** — ⛔ **not QE's to fix.** QE may write a test in any module's suite; **the assertion belongs with the lane that owns the screen** |
+| **Status** | ✅ **`VERIFIED` — QE, 2026-08-12.** ⛔ **Both instances measured in both directions, and the second only after [B-192](#b-192) was cleared** — see *The verification* below |
 | **Found** | **2026-08-12, cycle 210 validation**, by fire-testing the guard rather than reading it |
 | **Commit found** | **`4fe6d18b`** |
 
@@ -165,6 +175,25 @@ Such a row names the code, records **Current assignee: none — not assignable**
 ⚡ **The difference is not care or effort — it is distance.** **B-255's defect and its guard live in the same component. B-256's and B-429's did not.**
 
 > ⛔ **The rule this produces: a guard belongs at the seam that failed, not at the component downstream of it.** ⚡ **`reachable` and `AccountMenu` are both correct, and both were correct before their fixes** — **what changed is one line in a layout and two in a form, and nothing asserts either.**
+
+### ✅ The verification, and it is a measurement in both directions
+
+**Lane A repaired both at `60c54729`. QE ran the identical reverts it had used to find them.**
+
+| | With the fix | With the defect reintroduced |
+|---|---|---|
+| **[B-256](#b-256)** — the two component lines, `reachable` untouched | ✅ green | ⛔ **3 red** in `onboarding-goals-promise.test.tsx`, which **renders `GoalsForm`** |
+| **[B-429](#b-429)** — `name={null}` in `layout.tsx:44` | ✅ **journey passes** | ⛔ **journey fails**: `Expected substring: "Dana Reyes"` · `Received: "dana.reyes@northwind.example…"` |
+
+⚡ **Last cycle both of those reverts left `169 files · 3062 tests` green.**
+
+⛔ **The B-429 half took clearing [B-192](#b-192) first** — the Better Auth schema, `SIGNORA_APP_URL`, and the demo accounts, each of which presents as the same broken sign-in. ✅ **QE reported this row as half-verified rather than letting a green record imply otherwise**, which is what the row itself is about.
+
+### ⚡ The rule gained a second half in use, and it is Lane A's
+
+> **The rule does not only relocate a guard — sometimes it tells you the cheap kind is unavailable.**
+
+📁 **B-429's seam is a server component reading a session, so no component test can reach it: the choice was a journey or nothing.** ⚠️ **Worth stating, because *"write it at the seam"* reads like *"write a different unit test"* and sometimes it is not.**
 
 ⚠️ **One row, two instances**, on [B-249](#b-249)'s precedent that **a class whose census is short is worth correcting out loud.** ⛔ **[B-256](#b-256) and [B-429](#b-429) stay `FIXED`, correctly** — the fixes are right; **the proofs are this row's subject.**
 
