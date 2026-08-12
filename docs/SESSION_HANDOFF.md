@@ -1,5 +1,17 @@
 # Session Handoff
 
+> ## Cycle 208 — promoted `0ffe15f3`, 2026-08-12
+>
+> **`main` = `0ffe15f3` = the certified commit.** Cycles 206–208 all promoted; **`main` has moved four times today.**
+>
+> ⛔ **Every promotion since cycle 205 carries [B-428](BUGS.md) 🔴 `OPEN` on the product owner's standing override.** **Not a resolution**; severity untouched. **[C-106](LANE_COORDINATION.md) and [C-107](LANE_COORDINATION.md) are still unruled.**
+>
+> ⚠️ **[B-253](BUGS.md) fails three journeys on `main` right now** — `rail-assistant.spec.ts`, *"Settings — restricted"*, against an **owner**. **[C-1424](LANE_COORDINATION.md) holds a one-line repair and needs a product ruling** on which wrong state is less harmful. **This is the one open item with a live customer cost.**
+>
+> **QE gate defects fixed today, all found by running QE's own instruments:** [B-184](BUGS.md) the claim audit could never pass · [B-187](BUGS.md) `state-check` could not see an 8-character SHA · [B-188](BUGS.md) `smoke` discarded the evidence for its own verdict. ⚡ **All three were correct about a fact and wrong about what the fact meant.**
+>
+> ⚠️ **The WSL Docker environment does not keep the dev stack alive between runs.** Three certifications aborted at `release-preflight` on a dead database. ⛔ **A workstation condition, not a repository defect** ([B-011](BUGS.md)). **Certify is now launched chained** — `up -d --wait` → preflight → `make certify`, each gated on the previous exit code.
+
 > ## Cycle 205 — promoted `0dfc07f4`, 2026-08-12
 >
 > **`main` = `0dfc07f4` = the certified commit.** `integration` = `f860ec1f` (the certification record, which promotes next cycle).
