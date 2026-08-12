@@ -177,7 +177,25 @@
 > | ⛔ **Blocked on [C-210](LANE_COORDINATION.md)** | **8** |
 > | ⛔ **Blocked on [C-1430](LANE_COORDINATION.md)** | **1** — *Integrations & billing*; billing is a commercial fact |
 > | ⚠️ **No source, and none is C-210's** | **4** — Customer health · Buying intent · Market signals · Recommendations |
-> | ✅ **Genuinely buildable** | **1** — *Contacts & decision makers* |
+> | ⛔ ~~✅ **Genuinely buildable** — **1** — *Contacts & decision makers*~~ | 🔴 **WRONG, corrected by Lane A on claiming — see below** |
+>
+> 🔴 **THE ONE SECTION THIS LANE CALLED BUILDABLE IS NOT BUILDABLE, and the correction is its own** — **Lane A, 2026-08-12, on the first hour of implementation.**
+>
+> ⚠️ **What the earlier audit did**: it found `people` publishes `AffiliationReader.at_company(...)`, saw a read that returns people at a company, and stopped. ⛔ **It never opened the design's contact ROW.** 📁 **The row is `name` · `role` *(Champion · Blocker · Economic buyer · Technical buyer)* · `relationship` *("Was champion · 21 Jul")* · `engagement` *("34% · 3 touches · 24 days")*.**
+>
+> | The design draws | The platform holds |
+> |---|---|
+> | **`name`** — *Peter Sørensen* | ⛔ **Nothing.** `person` has **no name column**; [C-221](LANE_COORDINATION.md) is `people`'s *specification*, not a limitation; whether a provider could supply one is ❓1 of [ADR-0400](architecture/adr/0400-person-as-an-entity.md), **gated on [TASK-429](#task-429) — a commercial decision** |
+> | **`role`** — *Champion / Blocker* | ⛔ **A judgement**, and `people/public` **refuses judgements by AST test** — *"no score, no rank, no priority, no `is_key_contact`"*. Which seat a title fills is [C-018](LANE_COORDINATION.md)'s |
+> | **`relationship` · `engagement`** | ⛔ **Interaction history nothing records** — the [C-210](LANE_COORDINATION.md) family |
+>
+> ⚡ **What `AffiliationReader` actually gives is a title, a seniority band and the period held, anonymous.** ⛔ **That is a DIFFERENT SECTION the design does not draw, and shipping it under this heading is inventing one** ([§21](../CLAUDE.md)).
+>
+> ⛔ **No new `C-` item, deliberately**: **every half is already owned** — [TASK-429](#task-429) for the name, [C-018](LANE_COORDINATION.md) for the seat, [C-210](LANE_COORDINATION.md) for the rest. 📁 **[D-111](DECISION_REGISTER.md) ④ asks that missing work be represented by an owned task, and it is.**
+>
+> ✅ **A REAL DEFECT CAME OUT OF IT AND IS FIXED IN THIS SLICE.** 🔴 [`lib/accounts/sections.ts`](../frontend/lib/accounts/sections.ts) marked `contacts` **`supplied`, sourced from `useBuyingCommittee`**, hedged as *"partially"*. ⛔ **That read is `commercial_profile`'s *"who decides about what this workspace SELLS"* — the ICP's committee, declared once and IDENTICAL ON EVERY ACCOUNT.** ⚡ **The trap named in this row before the claim, found live in the repository's own measurement.** ✅ **`contacts` is `absent` now, states what Signora cannot see, and joins the rail** — which it could never anchor while it claimed to be supplied. ⛔ **Two guards, both fire-tested against the real defect**: no section may source `useBuyingCommittee`, and `contacts` stays `absent` while nothing supplies a name — 📁 **the second is [TASK-429](#task-429)'s trigger made checkable rather than remembered.**
+>
+> ✅ **So the unblocked set is the six-state matrix, and nothing else.**
 >
 > ⚡ **The six-state matrix remains the largest unblocked piece, and it is real work rather than polish**: loading, error, empty, collapsed and expanded across every shipped section, with rules the design states — *"row count matches the expected result so nothing jumps"* · *"a collapsed section still states its count and its worst status, so collapsing never hides a risk"* · *"expansion keeps the URL so the expanded view is shareable; Esc returns at the same scroll position."*
 >

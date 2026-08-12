@@ -126,11 +126,34 @@ export const ACCOUNT_SECTIONS: readonly AccountSection[] = [
   {
     id: 'contacts',
     label: 'Contacts & decision makers',
-    supply: 'supplied',
-    // ⚠️ **Partially.** The buying committee is a workspace-level DECLARATION
-    // rather than this account's known people — the design's *"24 known"* has
-    // no source. The section renders what exists and says what it is.
-    source: 'useBuyingCommittee (hooks/commercial) — the declared committee',
+    // 🔴 **Corrected from `supplied` — [TASK-1476](../../../docs/BACKLOG.md),
+    // 2026-08-12.** ⚠️ **The old cell hedged with *"partially"* and named
+    // `useBuyingCommittee` as the source, and that read is a DIFFERENT
+    // QUESTION.** 📁 Its own summary is *"who decides about what this
+    // workspace **sells**"* — `commercial_profile`'s ICP committee, **the
+    // same answer on every account in the workspace.** ⛔ **Rendering it under
+    // this heading would tell a rep that Acme has these six people.** ⚡ **Same
+    // words, different subject**, and `supplied` is the claim that cost the
+    // rail an entry it could never anchor.
+    supply: 'absent',
+    // ⚠️ **`people` is the near miss, and naming it is the point.**
+    // `AffiliationReader.at_company(...)` is published and would give **a
+    // title, a seniority band and the period held** — ⛔ **and no name, ever**:
+    // [C-221](../../../docs/LANE_COORDINATION.md) is that module's
+    // specification rather than a limitation, the `person` table has no name
+    // column, and whether a provider could even supply one is ❓1 of
+    // [ADR-0400](../../../docs/architecture/adr/0400-person-as-an-entity.md),
+    // gated on [TASK-429](../../../docs/BACKLOG.md) — **a commercial decision,
+    // not an engineering one.** ⛔ **The design's row is `name` · `role`
+    // *(Champion / Blocker / Economic buyer)* · `relationship` ·
+    // `engagement %`**: the second is a judgement `people/public` refuses by
+    // AST test, the third and fourth need interaction history nothing records.
+    // ⚡ **An anonymous title list is not this section** — it is a different one
+    // the design does not draw, and inventing it is what [§21](../../../CLAUDE.md) forbids.
+    source:
+      'people publishes AffiliationReader.at_company (title, seniority, interval) but never a name — C-221, TASK-429; the design needs name, buying role, relationship and engagement, and no read supplies any of the four',
+    absence:
+      'Signora records that a role was held at this company and for how long, but not who holds it. Named contacts, their part in the decision and how warm each relationship is are not something Signora can see yet.',
   },
   {
     id: 'org-chart',

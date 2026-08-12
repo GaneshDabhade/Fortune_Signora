@@ -48,6 +48,51 @@ describe("🔴 every supplied section names a read that EXISTS", () => {
   });
 });
 
+describe('🔴 a workspace-wide declaration is never an account fact', () => {
+  /**
+   * 📁 **[TASK-1476](../../../docs/BACKLOG.md), 2026-08-12.** ⛔ **`contacts`
+   * was marked `supplied` and sourced from `useBuyingCommittee`**, hedged in a
+   * comment as *"partially"*.
+   *
+   * ⚡ **It is a different question with the same words.** `GET
+   * /buying-committee` is `commercial_profile`'s and its own summary is *"who
+   * decides about what this workspace **sells**"* — **the ICP's committee,
+   * declared once and identical on every account.** 🔴 **Under the heading
+   * *Contacts & decision makers* it tells a rep that THIS company has those
+   * people.**
+   *
+   * ⚠️ **The guard is at the seam that failed** ([B-191](../../../docs/BUGS.md)):
+   * the defect was a workspace-scoped read claimed as an account-scoped one,
+   * **so the assertion is about the source and not about the rendering.**
+   */
+  it('⛔ no section claims the ICP buying committee as this account’s people', () => {
+    for (const section of ACCOUNT_SECTIONS) {
+      expect(
+        section.source,
+        `${section.id} sources a workspace-wide declaration as an account fact`,
+      ).not.toContain('useBuyingCommittee');
+    }
+  });
+
+  it('🔴 and Contacts stays absent while nothing supplies a name', () => {
+    /**
+     * ⛔ **Not a stylistic pin.** 📁 `people` has no name column, [C-221]
+     * is its specification rather than a limitation, and whether a provider
+     * could supply one is ❓1 of ADR-0400, gated on **TASK-429 — a commercial
+     * decision.** ⚡ **The day that lands, this test is the thing that says
+     * the section may change**, which is what a trigger looks like when it is
+     * checkable rather than remembered.
+     */
+    const contacts = ACCOUNT_SECTIONS.find((s) => s.id === 'contacts');
+    expect(contacts?.supply).toBe('absent');
+    // ⚡ **The near miss is named in the source**, so the next reader does not
+    // re-derive that `people` exists and stops there — which is the mistake
+    // this correction is fixing.
+    expect(contacts?.source).toContain('people');
+    expect(contacts?.source).toContain('never a name');
+  });
+});
+
 describe('⛔ an absent section says what Signora cannot answer', () => {
   it('every absent section carries an absence sentence', () => {
     // 📁 §20c: a screen with no module behind it ships a DESIGNED empty state.

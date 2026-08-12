@@ -408,6 +408,12 @@ export default function AccountBriefPage() {
             'health',
             'intent',
             'signals',
+            // 🔴 **`contacts` joins the rail — TASK-1476.** ⚠️ It was
+            // classified `supplied` and had no section here, so the rail could
+            // never anchor it. **It is `absent` now and states why**, which is
+            // the treatment §20c requires and the one every other unfillable
+            // section already gets.
+            'contacts',
             'org-chart',
             'relationships',
             'tech-stack',
