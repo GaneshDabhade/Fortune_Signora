@@ -743,15 +743,23 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 >
 > ⛔ **Not renumbered by this office.** **Lane A allocates from its own block and the correction is theirs**; this row is corrected because the wrong link was mine to publish. **Reported to Lane A.**
 >
-> 📁 **[§20e](../CLAUDE.md) allocates by block precisely so this is unrepresentable *across* lanes.** ⚠️ **It stays representable against the historic `001`–`099` and legacy ranges, which is where `C-300` came from** — recorded as evidence, not as a proposal.
+> 🔴 **AND MY DIAGNOSIS WAS WRONG — corrected 2026-08-12 by Lane A, within the hour.** ⛔ **I wrote that the collision was *"against the historic `001`–`099` and legacy ranges"* and recorded it as evidence about the scheme. **`C-300` is in LANE B's block.** 📁 **[§20e](../CLAUDE.md) gives Lane A `200`+ and Lane B `300`+.**
+>
+> ⚡ **So the scheme did not fail and there is no evidence here about it.** **The blocks made a cross-lane collision unrepresentable, and this was a lane stepping outside its own** — by the one method the rule names: 📁 ***"identifiers are allocated from a block, never from the highest number seen."*** **Lane A read its highest used id and added one.** ✅ **`209`–`216` were free throughout, which is why the renumber needed no escalation.**
+>
+> ⚠️ **Recording it as evidence about the scheme would have recorded the wrong lesson** — and it is the lesson a future session would have acted on. **Lane A caught that, not a checker.**
+>
+> ✅ **Renumbered to [C-209](#c-209) by Lane A at `301307e2`** — seventeen references repointed; the genuine `C-300` and the architecture documents citing it untouched.
+>
+> ⚠️ **One thing that is worth keeping and is not about the scheme: nothing detected this, and `state-check` is right not to.** **218 `C-` ids, none duplicated — true, because the item had never reached `integration` under any id.** ⛔ **No checker reading `integration` can see a number a lane is holding on its branch.**
 
 | | |
 |---|---|
 | **Status** | ⚠️ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-12, on the product owner's instruction |
 | **Owner** | **Product owner** |
-| **Relationship** | ⛔ **This is the *brief* for **this row (C-1430)**, raised by Lane A. It is not a second decision** — C-300 is the item; this is the preparation §20e asks this office for. **Merge into C-300 when Lane A's branch lands** |
+| **Relationship** | ⛔ **The item raised by Lane A is now [C-209](#c-209), renumbered at `301307e2`. This row is its decision brief** — the preparation §20e asks this office for, never a second decision |
 | ✅ **Accepted** | **Product owner, 2026-08-12: this is the correct bounded brief and the evidence is sufficient.** ⛔ **No further investigation is authorised, and this office is not to design the RFC** — **field names, schema, API shape and mechanism are all outside the ruling.** ⚡ **The ruling determines one thing: whether Signora owns the capability. The RFC then proceeds through normal governance** |
-| **Consolidates** | ⚡ ****this row (C-1430)** · [TASK-1469](BACKLOG.md) · [C-297](#c-297).** **One ruling, three surfaces** |
+| **Consolidates** | ⚡ **[C-209](#c-209) · [TASK-1469](BACKLOG.md) · [C-297](#c-297).** **One ruling, three surfaces** |
 
 ### ① The exact question
 
