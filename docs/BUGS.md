@@ -4111,6 +4111,14 @@ def _load_state_check() -> ModuleType:
 >
 > ⚠️ **Known limitation, recorded against A rather than reopening it: 4 of 7 checks are not fire-tested** — document-scroll, crushed-text and two others. **Three are**: shell-overlap (fails under `phone:pb-0`), below-the-fold (fails naming 12 elements), navigation-reachable (fails with the rail hidden, **after two tightenings**).
 >
+> ✅ **DISCHARGED 2026-08-12 — 7 of 7 are now fire-tested**, by `frontend/tests/e2e/layout-invariants-firetest.spec.ts`. **The seven checks moved to `tests/e2e/fixtures/layout-invariants.ts` so the fire-test runs the *same implementation* the matrix runs** — ⛔ **a fire-test against a copied check proves the copy works**, which is [B-238](#b-238)'s shape.
+>
+> ⚡ **Two-sided on every check, which is the product owner's standard**: the good product passes, the deliberately broken page fails. **And the harness was itself fire-tested** — neutering one mutation (`width:10px` → `400px`) turned the run **red**, so `expectCheckToFail` is not vacuous either. **9 passed / 26.7s; `tsc` and `eslint` clean.**
+>
+> ⛔ **This discharges a limitation on A. It does not touch B, and it is not offered as evidence for B** — the row's own rule. **Proving a check *can* fire says nothing about whether the implementation honours the declared widths.**
+>
+> ⚠️ **The two records of this limitation disagreed with each other** — this line named *navigation-reachable* as the third proven check and the line below named *route-exists*. **Neither was reconciled for a week.** Both are now moot, and the disagreement is left visible rather than tidied, because it is the reason the count was never trustworthy.
+>
 > ⛔ **A is test infrastructure. It says nothing about whether the product matches the design.**
 >
 > ### ⛔ **B · Responsive design compliance — OPEN. Lane A's, not QE's**
@@ -4152,6 +4160,8 @@ def _load_state_check() -> ModuleType:
 > ## ✅ **What QE built, and the four gaps QE is disclosing rather than leaving to be found**
 >
 > **`frontend/tests/e2e/layout-invariants.spec.ts` + five viewport projects** — `390×844` · `640×900` · `1024×800` · `1280×900` · `1600×1000`. **32/32 on `5a9743a7`.** Seven checks, all reading geometry from a real engine; **none asserts a class string or DOM presence.**
+>
+> ✅ **7 of 7 fire-tested as of 2026-08-12** — `layout-invariants-firetest.spec.ts`, against the shared implementation in `fixtures/layout-invariants.ts`. **The sentence below is the record of what was true then and is left standing.**
 >
 > ⛔ **Only three of seven are fire-tested.** *shell-region overlap* (fails with `phone:pb-0`), *nothing fixed below the fold* (fails naming 12 elements under a forced 1200px overflow), *route-exists* (caught `/accounts`, which does not exist). **Horizontal overflow, document scroll, navigation reachable and crushed text have never been made to fail.**
 >
@@ -4221,7 +4231,7 @@ def _load_state_check() -> ModuleType:
 | **Verified by** | QE's evidence, reviewed here | **Lane C independently**, against the design |
 | **Status** | ✅ **PASS — accepted 2026-08-11** | ⛔ **OPEN** |
 
-✅ **A is accepted on the evidence below**: five projects across the design's four bands including 390×844 · both axes · real geometry from a real engine · **no class-string assertion anywhere** · three checks fire-tested to failure. ⚠️ **Four checks remain unproven and that is recorded against A as a known limitation, not as a failure** — it does not reopen A and it does not satisfy B.
+✅ **A is accepted on the evidence below**: five projects across the design's four bands including 390×844 · both axes · real geometry from a real engine · **no class-string assertion anywhere** · three checks fire-tested to failure. ⚠️ **Four checks remain unproven and that is recorded against A as a known limitation, not as a failure** — it does not reopen A and it does not satisfy B. ✅ **Discharged 2026-08-12: all seven are now proven capable of failing, and the harness was itself fire-tested.** ⛔ **B is unchanged — A still may never be offered as evidence for it.**
 
 ⛔ **A IS NOT EVIDENCE FOR B AND MAY NEVER BE OFFERED AS SUCH.** ⚡ **The whole finding is that *"nothing overflows"* and *"it matches the design"* are different claims** — an implementation honouring none of the declared widths passes all 32 of A's assertions.
 
