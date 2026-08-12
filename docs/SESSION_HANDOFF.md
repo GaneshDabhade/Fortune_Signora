@@ -1,5 +1,27 @@
 # Session Handoff
 
+> ## Cycle 214 — promoted `98b9055b`, 2026-08-12
+>
+> **`main` = `98b9055b` = the certified commit.** Nine commits, all Lane C. **First attempt, no aborts.**
+>
+> ### ✅ A four-cycle idle ended, and that is the whole cycle
+>
+> 📁 **[`TASK-1475`](BACKLOG.md) is on `integration` and claimable.** ⛔ **It had been `READY` on `lane-c-sync` and absent from `integration` while Lane A sat idle for four consecutive cycles**, correctly refusing to claim from a Product Office branch.
+>
+> ### ⚡ The rule that made it happen, and it had never been invoked before
+>
+> **`lane-c-sync` is docs-only, so the accumulation rule would have parked it a fourth time.** 📁 **§20e: *"whenever an implementation lane has been idle for more than one reporting cycle because `READY` work exists only outside `integration`, synchronizing that work becomes the highest repository priority — above further preparation, above new initiatives, above every planning activity."*** ✅ **Applied as the rule, not as an exception.**
+>
+> ⛔ **QE could not see the condition: it reads `integration` and nothing else.** ⚡ **Lane A verified the absence and Lane C reported it against its own queue** — **neither waited to be asked, and that turned a fifth idle cycle into one exchange.**
+>
+> ### ⚠️ One judgement worth knowing about
+>
+> **Lane C rebased once on request; then QE's own Closeout moved `integration` two commits and stranded them again.** ✅ **QE performed the second rebase itself rather than handing back drift it had created.** **Nine commits, no conflicts — so no judgement about another lane's register was made**, which is what the rule protects. ⛔ **Had it conflicted it would have gone back.**
+>
+> ### What the next session should expect
+>
+> ⚡ **Lane A claiming `TASK-1475`.** **Nothing is queued ahead of it and nothing waits on QE.** ⛔ **The five product-owner decisions are unchanged and remain the only other constraint** — [C-106](LANE_COORDINATION.md), [C-297](LANE_COORDINATION.md), [C-298](LANE_COORDINATION.md), [C-299](LANE_COORDINATION.md), [C-1424](LANE_COORDINATION.md).
+
 > ## Cycle 213 — promoted `77daace8`, 2026-08-12
 >
 > **`main` = `77daace8` = the certified commit.** Five commits, Lane A ×3 and QE ×2. ⚠️ **Second attempt, and QE stopped the first itself** — 39 seconds in, rather than promote an instrument whose number nobody could act on.
@@ -166,7 +188,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-12 · **`main` at `77daace8`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-12 · **`main` at `98b9055b`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 

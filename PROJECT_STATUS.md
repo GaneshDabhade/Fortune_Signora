@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `77daace8`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `98b9055b`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,26 +12,26 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `77daace8`, 2026-08-12.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `98b9055b`, 2026-08-12.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`77daace8`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 213** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
-| **Release candidate** | 🔴 **`lane-c-sync` carries [`TASK-1475`](docs/BACKLOG.md), and it is the highest repository priority** — see below. `integration` is one commit ahead of `main`, the cycle 213 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
-| **Certification** | ✅ [`77daace860b6`](certification/reports/77daace860b6.md) · migration head **`0048`** · profile **`platform`** · ⚠️ **second attempt, and QE stopped the first itself** — 39 seconds in, rather than promote an instrument whose number nobody could act on |
-| **Cycle 213 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages** · scenario **190 assertions** |
+| **`main`** | **`98b9055b`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 214** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
+| **Release candidate** | ✅ **None — [`TASK-1475`](docs/BACKLOG.md) is on `integration` and claimable.** `integration` is one commit ahead of `main`, the cycle 214 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
+| **Certification** | ✅ [`98b9055b87d8`](certification/reports/98b9055b87d8.md) · migration head **`0048`** · profile **`platform`** · ✅ **first attempt, no aborts** |
+| **Cycle 214 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages** · scenario **190 assertions** |
 | **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3065 across 170 files** · **Disaster Recovery passed** against the restarted production stack. **A lane's figure is a claim; QE publishes a measurement** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
 | ⛔ **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1631 commits — 187 certified targets, 1444 inside a certified snapshot. None outside one** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Blocking Quality Defects** | ✅ **None** |
-| **Customer value this cycle** | ⛔ **None** — ⚡ **the cycle is a design doc catching up, a stale board state corrected, and QE's own instrument gaining a measurement it did not have.** **Nothing here shows on a screen** |
-| ⛔ **What QE got wrong, and who caught it** | **[B-193](docs/BUGS.md) concluded that no structured task→commit link existed and that inventing one would change how work is recorded.** ⚡ **Lane A corrected it: §20e mandates a `Slice-Handoff` whose `Milestone` field names the `TASK-nnn`, and 325 commits on `main` carry one.** ⛔ **An error of fact, corrected in the row rather than adjusted** — and the real reason the check stays unbuilt is now measured instead: **48 of 121 promoted tasks have no handoff**, including the one that produced the finding |
+| **Customer value this cycle** | ⛔ **None directly** — ⚡ **but it ends a four-cycle idle**: [`TASK-1475`](docs/BACKLOG.md), the Companies package, is now claimable. **The next customer-visible change depends on this cycle having run** |
+| ⚡ **Why this cycle ran at all** | **[§20e](CLAUDE.md)'s synchronization rule, not the accumulation one.** `lane-c-sync` is **docs-only**, so on its own it would have parked — **and it carried the only claimable package for a lane idle four cycles.** ⛔ **§20e says which rule wins: *"synchronizing that work becomes the highest repository priority, above further preparation, above every planning activity."*** ✅ **Applied as the rule, not as an exception** |
 | **Overall progress** | **~85%** by engineering effort — an estimate, and marked as one |
 
-> 🔴 **A lane has been idle for four cycles on work that was already written, and QE could not see it.** 📁 **[`TASK-1475`](docs/BACKLOG.md) — the Companies package, the first row under the new package model — is `READY` on `lane-c-sync` and absent from `integration`.** ✅ **Measured both ways.** ⛔ **Lane A refuses to claim it and is right to**: executable work comes from `integration` and nowhere else. ⚡ **§20e names this exact condition — *"synchronizing that work becomes the highest repository priority, above further preparation, above every planning activity"*** — **and the rule was applied rather than an exception made.** ⚠️ **It was invisible to QE because QE only ever reads `integration`; both lanes reported it rather than waiting to be asked.**
+> ✅ **The four-cycle idle is over, and the mechanism that ended it was two lanes reporting a condition QE could not see.** 📁 **[`TASK-1475`](docs/BACKLOG.md) was `READY` on `lane-c-sync` and absent from `integration`** — Lane A verified the absence and refused to claim from a Product Office branch; Lane C reported it against its own queue. ⛔ **QE reads only `integration`, which is precisely the blind spot the rule covers.** ⚡ **One exchange rather than a fifth cycle.**
 
-> ⚠️ **QE's own claim about empty `public/` contracts was wrong and is corrected before anything was scheduled on it.** ⛔ **`people` and `integrations` publish real contracts** — 3 and 17 names — **and QE had counted sibling files rather than reading `__init__.py`, which is where `__all__` lives.** ✅ **`timeline` remains the single instance**, and 📁 **`ai_research_engine` is the precedent for its repair**: an equally empty contract whose `__init__.py` is a docstring saying *"deliberately empty until something outside this module needs it."*
+> ⚠️ **One judgement QE made and is stating rather than burying.** **Lane C rebased once on request, then QE's own Closeout moved `integration` two commits and stranded them again.** ✅ **QE performed the second rebase itself rather than handing back drift it had created** — **nine commits, no conflicts, so no judgement about another lane's register was made**, which is the purpose §20e's rule protects. ⛔ **Had it conflicted it would have gone back.**
 
 **Repository health:** **4419 backend tests** · ⚠️ **95.03% coverage** ✅ *(floor 95 — **3 basis points of headroom**)* · **3065 frontend tests** across **170 files** · **403 Security Invariants** · mypy strict over **867 files** · **49 migrations**, `0000`–`0048` · **37 import-linter contracts**, 0 broken · `tsc --noEmit` clean · eslint clean · smoke 24 stages in **207s** · **disaster recovery re-run this cycle and passing** · **18 module directories** · **53 ADRs** · **145 numbered architecture documents**.
 
@@ -45,21 +45,19 @@
 
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Last promoted** | ⚡ **The design doc catches up with a cycle and a half** · **[B-258](docs/BUGS.md)** filed against itself · `TASK-1428` corrected | **M-I** | — | **Cycle 213** |
-| **Execution phase** | 🔴 **FOURTH consecutive idle cycle** — Startup step 4 exhausted | ⚠️ **No session** | **Governing** · **bounded-session** | **Certified · Promoted · Closed out** |
-| **Branch** | ✅ **Level with `main`** | **stale pointer** — content already on `integration` under another SHA, ✅ **measured, nothing stranded** | 🔴 **9 ahead, rebased and waiting** — **carries [`TASK-1475`](docs/BACKLOG.md)** | **1 ahead** — the cycle 213 record |
-| **Validation status** | ✅ **Promoted this cycle** | — | ⏳ **Next cycle, on the synchronization rule** | — |
-| **Blocked?** | 🔴 **YES — on a branch it may not claim from** | ⚠️ **Unknown** | **No** | **No** |
-| **Waiting on QE?** | 🔴 **Yes — this is QE's to move** | — | **Yes** | — |
-| **Next executable work** | ⚡ **`TASK-1475`, the moment it reaches `integration`** | — | Its own coordination items | ⚡ **Cycle 214 — `lane-c-sync`, immediately** |
+| **Last promoted** | The design doc catch-up · **[B-258](docs/BUGS.md)** · `TASK-1428` corrected | **M-I** | ⚡ **[`TASK-1475`](docs/BACKLOG.md) — Companies as one implementation package**, plus eight register corrections | **Cycle 214** |
+| **Execution phase** | ✅ **Unblocked** — its four-cycle idle ends here | ⚠️ **No session** | **Governing** · **bounded-session** | **Certified · Promoted · Closed out** |
+| **Branch** | ✅ **Level with `main`** | **stale pointer** — content already promoted, ✅ measured | ✅ **Promoted this cycle** | **1 ahead** — the cycle 214 record |
+| **Validation status** | — | — | ✅ **Promoted this cycle** | — |
+| **Blocked?** | ✅ **No** | ⚠️ **Unknown** | **No** | **No** |
+| **Waiting on QE?** | ✅ **No** | — | No | — |
+| **Next executable work** | ⚡ **`TASK-1475`, claimable now** | — | Its own coordination items | ⚡ **Cycle 215 — whatever Lane A pushes** |
 
-> 🔴 **This is the most expensive state the repository can be in, and §20e says so**: a lane idle on work that has already been written costs twice — once in the idle lane, and once in the preparation ageing while it waits. ⚡ **Four cycles.**
+> ✅ **Four cycles of idle, ended in one exchange, because two lanes reported a condition rather than waiting to be asked.** ⛔ **QE could not see it: `TASK-1475` was `READY` on a Product Office branch and QE reads only `integration`.** ⚡ **That blind spot is exactly what §20e's synchronization rule exists to cover, and this is the first time it has been invoked.**
 
-> ✅ **Both lanes behaved correctly throughout and neither waited to be asked.** **Lane A verified `TASK-1475`'s absence and refused to claim from a Product Office branch. Lane C reported the condition against its own queue.** ⛔ **QE could not see it, because QE reads only `integration`** — which is the blind spot the rule exists to cover.
+> ⚠️ **Lane B remains a stale pointer and was nearly a false alarm.** Its branch holds 505 lines in `backend/modules/people/`; **Lane A checked before reporting it stranded and found the content already on `integration` under a different SHA.** ✅ **A negative result reported deliberately.**
 
-> ⚠️ **And Lane B was nearly a false alarm.** Its branch holds 505 lines of executable work in `backend/modules/people/`; **Lane A checked before reporting it stranded and found the content already on `integration` under a different SHA.** ✅ **A negative result reported deliberately, because *"there is no Lane B"* invites exactly that alarm.**
-
-> **Two lanes, five commits, second attempt — and QE stopped the first itself.**
+> **One lane, nine commits, first attempt, no aborts.**
 
 ---
 
@@ -107,6 +105,46 @@
 | **28 others** | various | mixed | — | See the register |
 
 **37 items · 5 closed.** ⚠️ **Four items have now waited five cycles or more, and every one of them needs the same person.** [C-024](docs/LANE_COORDINATION.md) is the sharpest: Timeline's backend was proven live this cycle by `runtime-composition`, so **ten lines of routing separate a working capability from a customer.**
+
+---
+
+## 1d · Release summary — 2026-08-12, cycle 214
+
+**Promoted `98b9055b` from `b5fe4b41`.** Nine commits, all Lane C. **First attempt, no aborts.**
+
+### ✅ What this cycle bought: a lane can work again
+
+📁 **[`TASK-1475`](docs/BACKLOG.md) — Companies as one implementation package — is on `integration` and claimable.** ⛔ **It had been `READY` on `lane-c-sync` and absent from `integration` while Lane A sat idle for four consecutive cycles**, correctly refusing to claim from a Product Office branch.
+
+### ⚡ Why the cycle ran at all, and it is a rule rather than a favour
+
+**`lane-c-sync` is docs-only.** ⛔ **Under the accumulation rule it would have parked again**, which is what had already happened three times. 📁 **§20e resolves the conflict explicitly: *"whenever an implementation lane has been idle for more than one reporting cycle because `READY` work exists only outside `integration`, synchronizing that work becomes the highest repository priority — above further preparation, above new initiatives, above every planning activity."***
+
+✅ **Applied as the rule, not as an exception**, and this is the first time it has been invoked.
+
+### ⛔ QE could not see it, and says so
+
+**QE reads `integration` and nothing else.** ⚡ **Lane A verified the row's absence and refused to claim; Lane C reported the condition against its own queue.** **Neither waited to be asked, and that turned a fifth idle cycle into one exchange.**
+
+### ⚠️ One judgement, stated rather than buried
+
+**Lane C rebased once on request. Then QE's own Closeout moved `integration` two commits and stranded them again.** ✅ **QE performed the second rebase itself rather than handing back drift it had created** — **nine commits, no conflicts, so no judgement about another lane's register was made**, which is what §20e's rule protects. ⛔ **Had it conflicted it would have gone back.**
+
+### Also promoted, and each a correction of a claim
+
+**`[people]` said the module did not exist** — it shipped at `a1cc8a34`. **"Three empty contracts" was wrong on two of three**, measured. **The Executive Dashboard is blocked on a missing design, not on decomposition.** **[C-1429](docs/LANE_COORDINATION.md): the designs assume four roles and the domain represents two.**
+
+### Migrations · ADRs · architecture
+
+**None.** Head unchanged at `0048`.
+
+### Remaining blockers — five, all the product owner's
+
+⛔ **[C-106](docs/LANE_COORDINATION.md) · [C-297](docs/LANE_COORDINATION.md) · [C-298](docs/LANE_COORDINATION.md) · [C-299](docs/LANE_COORDINATION.md) · [C-1424](docs/LANE_COORDINATION.md).**
+
+### Recommended next work
+
+⚡ **`TASK-1475`, by Lane A, now.** **Nothing is queued ahead of it and nothing waits on QE.**
 
 ---
 

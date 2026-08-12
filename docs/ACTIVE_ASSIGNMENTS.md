@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-12, `77daace8`
+## Current — as of 2026-08-12, `98b9055b`
+
+> ✅ **Cycle 214 Closeout. Nothing to remove** — Lane C's nine commits opened no board row.
+>
+> ⚡ **Lane A's four-cycle idle ends here**: [`TASK-1475`](BACKLOG.md) is on `integration` and claimable. **Its next row is its own to write, when it claims.**
+>
+> ✅ **What deliberately stays**: `TASK-1430` and `TASK-489` are 🟠 `BLOCKED` with claims released; `TASK-1431` is `CLAIMED` and unpromoted.
+>
+> ⛔ **QE reconciles this board; it does not fill it.**
 
 > ⚡ **Cycle 213 Closeout. `TASK-1428` removed** — three days after its implementation reached `main`, which is [B-193](BUGS.md)'s subject and Lane A's own finding against itself.
 >
