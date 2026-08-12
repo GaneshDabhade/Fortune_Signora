@@ -70,7 +70,46 @@
 - **C-289 and C-292 name owners that route to nobody.** Routing, not a decision.
 - **3 workflows genuinely thin** — Settings, AI Research, Help Center. **Mode C, one per session.**
 
-## 🔴 Next bounded objective — why Lane A's queue ran dry
+## ✅ ANSWERED — why Lane A's queue ran dry
+
+**Investigated 2026-08-12, Mode E. Measured across all 146 rows in Lane A's 19 modules.**
+
+```
+ 97  PROMOTED          ← the pipeline is drained, not jammed
+ 13  SEQUENCED
+ 12  IN VALIDATION
+ 10  BLOCKED
+  2  READY             ← 2 of 146
+```
+
+### ⚡ The finding: two causes, and the larger one is not friction
+
+**① Prepared scope is exhausted.** ⛔ **97 of 146 rows are already `PROMOTED` and only 2 are `READY`.** **Lane A has built nearly everything ever prepared for it.** ⚠️ **This is not a blocked queue — it is an empty one**, and no amount of unblocking produces rows that were never written. 📁 **[D-187](../../DECISION_REGISTER.md)'s prepared floor is 20 and the count is 17.**
+
+**② Of the 23 rows that *are* held, decisions hold ~10.** **The single largest is [C-1405](../../LANE_COORDINATION.md) at three** — TASK-1401, TASK-1421, TASK-1423. Then C-287 · C-338 · C-279 *(two rows)* · TASK-1473 · TASK-429.
+
+⚠️ **A further ~11 are sequenced behind a predecessor, and several of those predecessors are themselves decision-held** — TASK-1419 sits behind TASK-466, which is held by C-1425. **So the decision count understates the reach.**
+
+### Against §20e's eight candidates
+
+| Candidate | Verdict |
+|---|---|
+| **Missing product decision** | ✅ **Yes — ~10 rows, C-1405 largest at three** |
+| **Governance dependency** | ✅ **Yes, one** — C-1410, Design Authority |
+| **Sequencing** | ✅ **Yes — ~11**, though partly downstream of the decisions above |
+| **Synchronization delay** | ⛔ **No.** `integration` is current and this office's work is promoted |
+| **Ownership ambiguity** | ⛔ **No.** All 19 modules resolve to Lane A |
+| **Architectural decision** | ⚠️ **One** — TASK-422 on ADR-B |
+| **External dependency** | ⚠️ **Two** — TASK-459's credential, TASK-429's provider contract |
+| **Repository health** | ⛔ **No** |
+
+### ⛔ The part that is this office's, stated plainly
+
+📁 **[§20e](../../../CLAUDE.md): *"Product Office had other work" is never the reason a lane was idle.*** ⚠️ **Cause ① is authorship, and authorship is Lane C's.** **The decisions are the visible half and the empty half is mine** — 2 `READY` rows out of 146 is not a queue that got blocked, it is a queue that was not refilled.
+
+**Next bounded objective: refill Lane A's prepared pipeline to the D-187 floor**, from already-approved scope only — ⛔ **never new scope, never a reordering** (§20e).
+
+## Superseded — the condition as first reported
 
 **Reported by QE at Repository Ready, cycle 209.** ⛔ **Not investigated — it is not maintenance.**
 
