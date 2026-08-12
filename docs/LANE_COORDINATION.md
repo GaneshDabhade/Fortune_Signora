@@ -513,6 +513,64 @@ databaseUrl: required(
 
 ---
 
+## C-1425 · [TASK-466](BACKLOG.md) is the Action Batch's first consumer, and no domain implements an operation for it to apply
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`OPEN` — Lane A, 2026-08-12, on selecting from the TOP of its own queue** ([`queues/lane-a.toml`](coordination/queues/lane-a.toml)) |
+| **Raised by** | **Lane A**, measuring the row before claiming it — ⛔ **not after starting it** |
+| **Owner** | **Product owner** — ⚡ **which operation the first consumer performs is product scope, and the row's Change Budget contains no module that could hold one** |
+| **Blocks** | **[TASK-466](BACKLOG.md) only.** ✅ **Lane A is NOT idle** — [TASK-1414](BACKLOG.md), the next entry in the queue, was claimed in the same turn ([§20e](../CLAUDE.md), *Continuous execution*) |
+
+### ① What the row asks for, in its own words
+
+📁 **Definition of Done**: ***"A seller selects several companies, sees exactly what will happen, applies it, and is told the truth about when it finished · the confirm states the COUNT and the ACTION in the customer's words · reversal is offered only where the window genuinely allows it."***
+
+⚡ **Two of those four are pure Product Surface and this lane can build them today** — the selection, and the confirm that names a count. ⛔ **The other two name an *operation*: something that is applied, and something that is taken back.**
+
+### ② What exists, measured rather than assumed
+
+| | |
+|---|---|
+| ✅ **The lifecycle context is real and complete** | 📁 [`application/batches.py`](../backend/modules/action_batch/application/batches.py) implements **`propose` · `approve` · `reject` · `withdraw` · `request_application` · `apply` · `reverse`** |
+| ⛔ **Its HTTP surface publishes exactly two of them** | 📁 [`interface/router.py`](../backend/modules/action_batch/interface/router.py) — **`POST …/action-batches/{id}/apply`** and **`GET …/action-batches/{id}`**. ⚠️ **No propose, no approve, no reverse endpoint exists**, so a screen cannot create a batch, cannot approve one, and cannot take one back |
+| 🔴 **The design's bulk bar draws six actions, and NONE of them has an implementation** | 📁 *Assign owner · Add tag · Add to segment · Create tasks · Export 41 · ✦ Draft outreach.* ⛔ **No module models an account owner, an account tag or a segment** — the `tags=` hits across `backend/modules/**/router.py` are **FastAPI route metadata**, and `owner_id` belongs to **an opportunity**, never to a company |
+| ⛔ **The contract the screen already reads publishes two fields** | 📁 `ListedAccount` is **`account: AccountIdentity`** and **`kind`**. **Nothing mutable is on it** |
+
+### ③ Why this is not a gap this lane may close inside the row
+
+📁 **The context's own public contract states the boundary, and [ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) ratifies it**:
+
+> ***"This context owns lifecycle. The consuming domain owns interpreting the action, performing the operation, validating business rules, executing the change, and implementing the inverse."***
+
+⛔ **So `action_batch` may not perform any of the six**, and 📁 **the row's Change Budget is 🟢 `frontend/app/(app)/**` · `modules/action_batch/**` · 🟠 a shared data table · 🔴 *nothing*** — **it names no business module at all.** ⚡ **The row was sized as though the operation existed**; it is the one input the six-slice chain never had, and **[455 §5](architecture/455-context-definitions-r02-r03.md) says so itself** — *"the module that owns an operation is the only thing that knows how to perform or undo it."*
+
+### ④ Why the shared data table is NOT shipped as a down-payment
+
+⚠️ **The obvious salvage is the half with no backend dependency** — 📁 the row's own *"the SAME data table [TASK-471](BACKLOG.md) needs, and whichever lands first owns it"*, which **workflows 14, 20, 21 and 22 all inherit.**
+
+⛔ **Refused, and for the reason this lane has refused three times already**: a bulk bar whose six buttons cannot do anything is **the false-affordance class** — a customer selects eleven companies, presses *Add tag*, and learns the product is unreliable rather than unfinished ([§20c](../CLAUDE.md), and the same argument [`copilot.tsx`](../frontend/components/shell/copilot.tsx) makes about an input box that accepts a question nothing will answer).
+
+### ⑤ Input, never authority — and the cheapest unblock is probably not Companies
+
+⚡ **The first consumer does not have to be this screen, and one candidate already has both halves the Companies bulk bar lacks:**
+
+| | |
+|---|---|
+| ✅ **The operation exists and is reachable** | 📁 **`POST /workspaces/{id}/signals/{signal_id}/resolution`** — *"Record what you decided about this signal"* |
+| ✅ **Its inverse is already designed, in the endpoint's own words** | 📁 ***"Changing your mind creates another one naming the one it replaces; nothing is deleted: every resolution is auditable"*** — ⚡ **which is precisely a reversal within a window, expressed as an append** |
+| ✅ **The list already renders with bulk selection** | 📁 **[TASK-1468](BACKLOG.md) shipped the Signal Center's selection and count**, so the surface half is built and would not be built twice |
+
+⛔ **This lane is not proposing a re-scope and has not acted on it** — **where TASK-466 sits and what it covers is the product owner's** ([§20e](../CLAUDE.md), *fitness only, never priority*). ⚠️ **It is recorded because the alternative is a row that waits on a business capability nobody has scheduled**, and **naming a cheaper first consumer is worth more than reporting the blocker alone.**
+
+### ⑥ What would close this item
+
+1. **A ruling on which operation the first consumer performs** — one of the design's six, or the signal resolution above.
+2. **That operation existing in the module that owns it**, with its inverse — ⛔ **not in `action_batch`, and not in the Product Surface.**
+3. **`propose`, `approve` and `reverse` reaching the HTTP surface.** ✅ **That third one IS inside this row's budget and is this lane's to build** — it is held only because an endpoint with no operation behind it is the same defect one layer down.
+
+---
+
 ## C-1424 · [B-253](BUGS.md) — an unresolved read renders as a denied permission, and which wrong state is less harmful is a product decision
 
 | | |
