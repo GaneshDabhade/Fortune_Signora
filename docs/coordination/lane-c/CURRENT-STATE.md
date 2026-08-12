@@ -70,7 +70,36 @@
 - **C-289 and C-292 name owners that route to nobody.** Routing, not a decision.
 - **3 workflows genuinely thin** — Settings, AI Research, Help Center. **Mode C, one per session.**
 
-## ⚙ Pipeline feeder — checkpoint
+## ⚙ Pipeline feeder — checkpoint *(current)*
+
+**Resume from `Next workflow`. ⛔ Do not restart earlier in the order.**
+
+| | |
+|---|---|
+| **Last workflow inspected** | **CRM Integrations** — ⛔ **blocked on capability** |
+| **Candidates evaluated** | **3** *(the limit)* |
+| **Tasks created** | ⛔ **None** |
+| **Next workflow** | ▶ **Companies** |
+| **Do not re-audit** | **Settings · Team Management · AI Research · Help Center · CRM Integrations** |
+
+| Candidate | Verdict |
+|---|---|
+| **Objects & sync status** *(Last sync · Records · Fields)* | ⛔ **BLOCKED.** `integrations/interface/schemas.py` publishes five models — `Connection` · `System` · `Disconnect` · `Credential` · `Connect` — **and none carries a sync state or an object list** |
+| **Errors / Logs** *(*"Grouped by cause, not by record"*)* | ⛔ **BLOCKED.** **No error or log record exists on the wire** |
+| **Connection health · Run diagnostics** | ✅ **ALREADY COVERED.** `check_connection` at [`router.py:196`](../../../backend/modules/integrations/interface/router.py), called from `frontend/lib/query/hooks/integrations.ts`. ⛔ **No task created — this is the duplicate gate working** |
+
+✅ **The connect/disconnect/list wiring is complete end to end** — all four endpoints already have hooks. ⛔ **What the design adds beyond it is observability of a sync that nothing yet reports.**
+
+### ⚠️ Two things found while checking, recorded not acted on
+
+- 📁 **[TASK-402](../../BACKLOG.md) reads `IN VALIDATION` — Lane B**, and **there is no Lane B** (product owner, 2026-08-12). **`integrations` resolves to Lane A in [`modules.toml`](../modules.toml).** ⛔ **An orphaned row in a QE-terminal state is not this office's to move** — it needs routing, and it is named here so it is not lost.
+- ⚠️ **`integrations/public/` contains only `__init__.py`** — an empty published contract, the [C-428](../../LANE_COORDINATION.md) shape QE flagged on `timeline`. **Not blocking today.**
+
+### The pattern is now three for three
+
+**Settings · Team Management · CRM Integrations — in each, the approved design specifies surfaces the platform does not yet report.** ⚡ **[C-1429](../../LANE_COORDINATION.md) captures the role instance; this is the same *class* against a different primitive and is deliberately not folded into it.** ⛔ **One item per primitive, or the register becomes a theme rather than a dependency.**
+
+## ⚙ Pipeline feeder — checkpoint *(superseded — Team Management)*
 
 **Resume from `Next workflow`. ⛔ Do not restart at Team Management.**
 
