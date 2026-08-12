@@ -19,8 +19,32 @@ vi.mock('@/lib/query/hooks/search', () => ({
   useAccountSearch: () => ({ data: undefined, isFetching: false, isError: false }),
 }));
 
-import { Copilot } from '@/components/shell/copilot';
+import { Copilot, useCopilot } from '@/components/shell/copilot';
 import { ShellPalette } from '@/components/shell/shell-palette';
+
+/**
+ * ⚡ **The assistant's entry moved to the rail** —
+ * [TASK-1470](../../../docs/BACKLOG.md), §12 door `01`. ⛔ **`Copilot` now
+ * publishes the room**, so a test that needs the panel opens it through the
+ * provider rather than through a button this component no longer renders.
+ */
+function OpenIt() {
+  const copilot = useCopilot();
+  return (
+    <button type="button" onClick={() => copilot?.open()}>
+      open the assistant
+    </button>
+  );
+}
+
+async function openAssistant(scope?: string) {
+  render(
+    <Copilot {...(scope === undefined ? {} : { scope })}>
+      <OpenIt />
+    </Copilot>,
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'open the assistant' }));
+}
 
 function workspaces(n: number) {
   const all = Array.from({ length: n }, (_, i) => ({
@@ -36,9 +60,7 @@ beforeEach(() => context.mockReset());
 describe('🔴 the assistant', () => {
   it('✅ carries the workspace name when the reader has more than one', async () => {
     workspaces(2);
-    render(<Copilot />);
-
-    await userEvent.click(screen.getByRole('button', { name: /Ask Signora/ }));
+    await openAssistant();
 
     expect(screen.getByText('Northwind Global')).toBeInTheDocument();
   });
@@ -52,9 +74,7 @@ describe('🔴 the assistant', () => {
    */
   it('⛔ and says nothing about it when they have only one', async () => {
     workspaces(1);
-    render(<Copilot />);
-
-    await userEvent.click(screen.getByRole('button', { name: /Ask Signora/ }));
+    await openAssistant();
 
     expect(screen.queryByText('Northwind Global')).not.toBeInTheDocument();
   });
@@ -69,9 +89,7 @@ describe('🔴 the assistant', () => {
    */
   it('🔴 never widens a scope the caller already narrowed', async () => {
     workspaces(3);
-    render(<Copilot scope="Scoped to EMEA enterprise" />);
-
-    await userEvent.click(screen.getByRole('button', { name: /Ask Signora/ }));
+    await openAssistant('Scoped to EMEA enterprise');
 
     expect(screen.getByText('Scoped to EMEA enterprise')).toBeInTheDocument();
     expect(screen.queryByText('Northwind Global')).not.toBeInTheDocument();

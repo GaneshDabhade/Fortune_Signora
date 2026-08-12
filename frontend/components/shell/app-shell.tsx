@@ -192,6 +192,13 @@ export function AppShell({
        forget the moment somebody opened a different account. */
     <UtilityPanelProvider userId={userId ?? null} module={moduleOf(pathname)}>
     <ShortcutsReference>
+    {/* 🔴 **The assistant's state lifts to a provider** —
+        [TASK-1470](../../../docs/BACKLOG.md). 📁 §12 is *"four doors, one
+        room"*, and the rail is one of them — ⛔ **so the rail's entry and the
+        keyboard both open the SAME drawer.** ⚡ **The same shape
+        `ShortcutsReference` already uses**, and for the same reason: a second
+        `useState` would be a second answer to *is it open*. */}
+    <Copilot>
     <div className="relative flex min-h-screen flex-col">
       {/* 📁 **Rule 2.4.1**, and first in the DOM because a skip link somebody
           has already tabbed past is not a skip link. */}
@@ -454,13 +461,13 @@ export function AppShell({
           ⛔ **Mounted beside the palette rather than floating over the content**:
           📁 the design refuses a corner bubble by name, *"a persistent circle
           in the corner is a consumer pattern and it covers data."* */}
-      <Copilot />
       {/* ✅ **The phone's bottom navigation used to be mounted here and is
           deleted** — [TASK-1461](../../../docs/BACKLOG.md). ⛔ **It was a second
           `nav[aria-label="Primary"]`, mounted at EVERY width and hidden by CSS
           at most of them.** ⚡ **The rail above is now the only navigation there
           is**, at every band, and it keeps the boundary this node had. */}
     </div>
+    </Copilot>
     </ShortcutsReference>
     </UtilityPanelProvider>
   );

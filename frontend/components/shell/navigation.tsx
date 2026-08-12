@@ -12,9 +12,12 @@ import {
   Lock,
   Radio,
   Settings as SettingsIcon,
+  // 📁 The design's assistant glyph, and the same one `Copilot` already uses.
+  Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
 
+import { useCopilot } from '@/components/shell/copilot';
 import { useShortcutsReference } from '@/components/shell/shortcuts-reference';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -126,7 +129,7 @@ interface RailItem extends RailEntryBase {
  * diverge the first time somebody edited one.
  */
 interface RailAction extends RailEntryBase {
-  opens: 'shortcuts';
+  opens: 'shortcuts' | 'assistant';
 }
 
 /**
@@ -245,6 +248,21 @@ const DESTINATIONS: readonly RailItem[] = [
  * exists, not because anybody grew tired of the gap.**
  */
 const UTILITIES: readonly RailEntry[] = [
+  /**
+   * 🔴 **FIRST in the pinned group, above the utilities** —
+   * [TASK-1470](../../../docs/BACKLOG.md).
+   *
+   * 📁 **The design's rail puts `Ask Signora` immediately after the divider and
+   * BEFORE `railUtility`**, in the intelligence tint. ⛔ **It sat below them**,
+   * mounted outside the rail entirely — **which is ordering, not absence, and
+   * is why a test that only checks it exists passes against the defect.**
+   *
+   * ⚠️ **`meta` is the shortcut this product actually binds.** 📁 The design's
+   * rail row shows `⌘K`, **which is the PALETTE's key** — §15's shortcut table
+   * gives the assistant `⌘⇧A`, and [TASK-1458](../../../docs/BACKLOG.md) built
+   * it. ⛔ **Printing `⌘K` here would teach a key that opens something else.**
+   */
+  { id: 'assistant', label: 'Ask Signora', opens: 'assistant', meta: '⌘⇧A', icon: Sparkles, depth: 1 },
   { id: 'settings', label: 'Settings', href: '/settings', icon: SettingsIcon, depth: 1 },
   // ✅ **`Docs & support` gains its route** — [TASK-1420](../../../docs/BACKLOG.md).
   // ⛔ **It was absent for the reason [C-269](../../../docs/LANE_COORDINATION.md)
@@ -445,22 +463,47 @@ function RailPendingRow({ item, collapsed }: { item: RailPending; collapsed: boo
 
 function RailAction({ item, collapsed }: { item: RailAction; collapsed: boolean }) {
   const reference = useShortcutsReference();
+  const copilot = useCopilot();
   const Icon = item.icon;
 
-  if (reference === null) return null;
+  /**
+   * ⚡ **Both providers are read unconditionally**, because hooks are — ⛔ **and
+   * the SELECTION is the branch**, which is what the union's `opens` exists to
+   * make total. 📁 [§2](../../../CLAUDE.md): *types should make incorrect
+   * architecture impossible* — **a third door gains a third case here and the
+   * compiler names the file.**
+   */
+  const controls = item.opens === 'assistant' ? copilot : reference;
+
+  // ⛔ **No provider means no door**, never a control that silently does
+  // nothing — 📁 the rule `Copilot` and `ShortcutsReference` both already keep.
+  if (controls === null) return null;
+
+  /**
+   * 📁 **The design tints the assistant row and nothing else in the group** —
+   * `var(--ai-ink)` on `var(--ai-tint)`. ⚡ **The token, never a literal**
+   * ([§20c](../../../CLAUDE.md)).
+   */
+  const assistant = item.opens === 'assistant';
 
   return (
     <button
       type="button"
-      onClick={reference.open}
+      onClick={controls.open}
       aria-label={item.label}
       aria-haspopup="dialog"
       className={cn(
         railShape(item.depth, collapsed),
-        'w-full text-content-muted hover:bg-surface-sunken hover:text-content',
+        'w-full',
+        assistant
+          ? 'bg-ai-subtle text-ai hover:bg-ai-subtle/80'
+          : 'text-content-muted hover:bg-surface-sunken hover:text-content',
       )}
     >
-      <Icon className="h-4 w-4 shrink-0 text-content-subtle" aria-hidden />
+      <Icon
+        className={cn('h-4 w-4 shrink-0', assistant ? 'text-ai' : 'text-content-subtle')}
+        aria-hidden
+      />
       {collapsed ? null : (
         <>
           <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>

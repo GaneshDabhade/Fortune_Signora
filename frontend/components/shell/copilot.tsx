@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { Drawer } from '@/components/ui';
-import { cn } from '@/lib/design/cn';
 import { useWorkspaceLabel } from '@/lib/shell/workspace-label';
 
 /**
@@ -59,8 +57,32 @@ import { useWorkspaceLabel } from '@/lib/shell/workspace-label';
 /** 📁 The design's own binding, from §15's shortcut table: *Ask Signora ⌘⇧A*. */
 export const ASK_SIGNORA_KEY = { key: 'a', meta: true, shift: true } as const;
 
-export function Copilot({ scope }: { scope?: string }) {
+/**
+ * 🔴 **One room, more than one door** — [TASK-1470](../../../docs/BACKLOG.md).
+ *
+ * 📁 §12 is called *"Four doors, one room"*, and the rail is one of them: **the
+ * design puts `Ask Signora` as the FIRST item of the rail's pinned bottom
+ * group**, above Settings, Shortcuts and Docs.
+ *
+ * ⚡ **So the open state lifts to a provider**, exactly as
+ * [`ShortcutsReference`](shortcuts-reference.tsx) did for the same reason in
+ * [TASK-1458](../../../docs/BACKLOG.md) — ⛔ **a second `useState` in the rail
+ * would be a second answer to *is the assistant open*** ([§2](../../../CLAUDE.md)),
+ * **and the two would disagree the first time one of them closed it.**
+ *
+ * ⛔ **`null` outside the provider, never a no-op `open`.** ⚡ **A control that
+ * silently does nothing is worse than one that is absent**, so a caller with no
+ * provider renders no door.
+ */
+const CopilotContext = createContext<{ open: () => void } | null>(null);
+
+export function useCopilot(): { open: () => void } | null {
+  return useContext(CopilotContext);
+}
+
+export function Copilot({ scope, children }: { scope?: string; children?: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const controls = useMemo(() => ({ open: () => setOpen(true) }), []);
   /**
    * 📁 **§19 — *"search, notifications and the assistant all carry the
    * workspace name in their header"*** ([TASK-1463](../../../docs/BACKLOG.md)).
@@ -88,24 +110,8 @@ export function Copilot({ scope }: { scope?: string }) {
   }, []);
 
   return (
-    <>
-      {/* ⛔ **Not a floating bubble.** 📁 The design refuses one by name — *"a
-          persistent circle in the corner is a consumer pattern and it covers
-          data."* ⚡ **This is a control in the flow of the shell's utilities.** */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        className={cn(
-          'inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm',
-          'text-content-muted transition-colors hover:bg-surface-sunken hover:text-content',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
-        )}
-      >
-        <Sparkles aria-hidden className="h-4 w-4 text-ai" />
-        Ask Signora
-      </button>
+    <CopilotContext.Provider value={controls}>
+      {children}
 
       <Drawer
         open={open}
@@ -140,6 +146,6 @@ export function Copilot({ scope }: { scope?: string }) {
           </p>
         </div>
       </Drawer>
-    </>
+    </CopilotContext.Provider>
   );
 }

@@ -1952,3 +1952,41 @@ if (workspaceId === null) return [];   // absent  AND  not-yet-arrived
 ⛔ **Not fixed here, because the repair is a product decision rather than a mechanism**: *pending* is visually heavy on the most-looked-at surface in the product; *optimistic* briefly offers a member a door that will refuse them. ⚡ **The current behaviour is the third option and the worst of the three — it makes the false claim in the direction that accuses the customer.** ✅ **Recommended as input rather than authority: optimistic**, because 📁 [§20c](../../CLAUDE.md) already says the client check *"is a courtesy, never enforcement."*
 
 > ⚡ **The journey allows two counts and would fail on a third.** ⛔ **A test written to today's whole behaviour would have to be edited when B-253 is fixed** — **so it asserts the property this row owns and names the one it does not.**
+
+---
+
+## `Ask Signora` moves into the rail's pinned group — [TASK-1470](../BACKLOG.md)
+
+📁 **The design's rail, after the divider**: `Ask Signora` in the intelligence tint, **then** `railUtility` — Settings, Shortcuts, Docs & support. ⛔ **It sat below them, mounted outside the rail entirely.**
+
+### 🔴 Ordering, not absence — which decides how it is tested
+
+⚠️ **The row's own warning is the design of the test**: *"a test that only checks `Ask Signora` exists passes against the current defect."* ⚡ **The entry existed the whole time**, so *"it is in the document"* was TRUE while the design was violated.
+
+✅ **So every assertion is about POSITION** — the pinned group's names in document order, and containment inside `nav[aria-label="Primary"]`. **Fire-tested: moving the entry back below the utilities turns two red.**
+
+> ⚠️ **This lane has shipped the weaker test before.** 📁 [TASK-1458](../BACKLOG.md) found the utility group **unasserted** — **2782 tests stayed green while an entry was missing**, because nothing checked the group at all.
+
+### ⚡ One room, more than one door
+
+📁 §12 is *"four doors, one room"*, and the rail is one of them — **so the open state lifted to a provider**, exactly as [TASK-1458](../BACKLOG.md) did for `ShortcutsReference` and for the same reason: ⛔ **a second `useState` in the rail would be a second answer to *is the assistant open***, and the two would disagree the first time one closed it.
+
+**`RailAction.opens` widened from `'shortcuts'` to `'shortcuts' | 'assistant'`**, so the branch is a **selection over a closed union** rather than a condition — 📁 [§2](../../CLAUDE.md), *types should make incorrect architecture impossible*: **a third door gains a third case and the compiler names the file.**
+
+⛔ **No room means no door.** ⚡ **`useCopilot` returns `null` outside the provider and the rail renders nothing** — never a control that silently does nothing, which is the rule both providers already keep.
+
+### ⚠️ The design shows `⌘K` on that row and this ships `⌘⇧A`
+
+📁 **The rail's assistant row carries `⌘K` in the design — which is the PALETTE's key.** 📁 **§15's shortcut table gives the assistant `⌘⇧A`**, and [TASK-1458](../BACKLOG.md) built that binding. ⛔ **Printing `⌘K` here would teach a key that opens something else**, so the rail shows the shortcut the product actually binds and the discrepancy is recorded rather than resolved silently.
+
+### ⛔ What moving an entry cost, and it is worth knowing
+
+**Three test files changed, and none of them because the assertion was wrong.** ⚡ **`Copilot` stopped rendering a button and started wrapping the shell**, so:
+
+| | |
+|---|---|
+| **`app-shell-rail`** | Its stub returned `null` — ⛔ **which now erases the entire frame.** The stub renders `children` |
+| **`copilot`** | Its assertions are about **the room** and are unchanged in substance; **the door they clicked moved**, so they open through the provider |
+| **`workspace-label`** | §19's scope line is the panel's, reached the same way |
+
+> ⚡ **A component that gains a provider gains every test that mounts it**, and a stub written as `() => null` is the one that fails loudest — **which is the good outcome.** ⛔ **A stub that had rendered `children` all along would have hidden the change entirely.**

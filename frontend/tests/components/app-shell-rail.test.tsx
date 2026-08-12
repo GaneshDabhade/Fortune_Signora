@@ -8,6 +8,7 @@
  * does, and whether the width is the design's rather than a literal somebody
  * typed.
  */
+import type React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -34,7 +35,14 @@ vi.mock('@/components/shell/shell-palette', () => ({ ShellPalette: () => null })
 // [TASK-1463](../../../docs/BACKLOG.md). ⛔ **Stubbed for the same reason as the
 // palette above**: it now reads `useWorkspaceContext`, **this suite is about the
 // rail**, and `tests/components/copilot.test.tsx` renders it for real.
-vi.mock('@/components/shell/copilot', () => ({ Copilot: () => null }));
+vi.mock('@/components/shell/copilot', () => ({
+  // ⚡ **It WRAPS the shell now** — [TASK-1470](../../../docs/BACKLOG.md) lifted
+  // the assistant's open state to a provider so the rail can be one of §12's
+  // four doors. ⛔ **A stub returning `null` erases the whole frame**, which is
+  // what this suite measures.
+  Copilot: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  useCopilot: () => ({ open: () => {} }),
+}));
 
 import { AppShell } from '@/components/shell/app-shell';
 import { RAIL_WIDTH, collapseKey } from '@/lib/shell/rail';
