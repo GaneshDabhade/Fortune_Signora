@@ -733,15 +733,25 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ---
 
-## C-1430 · Decision brief for [C-300](#c-300) — does Signora hold commercial facts about an account?
+## C-1430 · Does Signora hold commercial facts about an account? — ⚠️ **and `C-300` is a duplicate allocation**
+
+> 🔴 **CORRECTED 2026-08-12, before the ruling. This row was titled *"Decision brief for C-300"* and every reference in it pointed at `#c-300`.**
+>
+> ⛔ **`C-300` is already allocated, to *"Provider Platform owns the half of the inbound path Lane B may not build"* at line 6767 — an unrelated item that has been in the register since before this question existed.** ⚡ **There is exactly one `C-300` and it is not the commercial-facts item**, so every link here resolved to the wrong subject and a reader following one would have found a Provider Platform dependency.
+>
+> ✅ **So `C-1430` is the item, not a brief attached to one.** ⚠️ **Lane A raised the commercial-facts question as *"C-300"* and it is not on `integration` under any id — the collision is with an existing row rather than between two live ones, which is why nothing flagged it.**
+>
+> ⛔ **Not renumbered by this office.** **Lane A allocates from its own block and the correction is theirs**; this row is corrected because the wrong link was mine to publish. **Reported to Lane A.**
+>
+> 📁 **[§20e](../CLAUDE.md) allocates by block precisely so this is unrepresentable *across* lanes.** ⚠️ **It stays representable against the historic `001`–`099` and legacy ranges, which is where `C-300` came from** — recorded as evidence, not as a proposal.
 
 | | |
 |---|---|
 | **Status** | ⚠️ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-12, on the product owner's instruction |
 | **Owner** | **Product owner** |
-| **Relationship** | ⛔ **This is the *brief* for [C-300](#c-300), raised by Lane A. It is not a second decision** — C-300 is the item; this is the preparation §20e asks this office for. **Merge into C-300 when Lane A's branch lands** |
+| **Relationship** | ⛔ **This is the *brief* for **this row (C-1430)**, raised by Lane A. It is not a second decision** — C-300 is the item; this is the preparation §20e asks this office for. **Merge into C-300 when Lane A's branch lands** |
 | ✅ **Accepted** | **Product owner, 2026-08-12: this is the correct bounded brief and the evidence is sufficient.** ⛔ **No further investigation is authorised, and this office is not to design the RFC** — **field names, schema, API shape and mechanism are all outside the ruling.** ⚡ **The ruling determines one thing: whether Signora owns the capability. The RFC then proceeds through normal governance** |
-| **Consolidates** | ⚡ **[C-300](#c-300) · [TASK-1469](BACKLOG.md) · [C-297](#c-297).** **One ruling, three surfaces** |
+| **Consolidates** | ⚡ ****this row (C-1430)** · [TASK-1469](BACKLOG.md) · [C-297](#c-297).** **One ruling, three surfaces** |
 
 ### ① The exact question
 
