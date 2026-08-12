@@ -64,6 +64,14 @@ export function NarrativeBlock({
    * page owns the map and passes the id it uses.
    */
   id,
+  /**
+   * 📁 ***"…then retry plus a correlation ID."*** ⚡ **The API already returns
+   * one on every failure and no section passed it** —
+   * [TASK-1476](../../../docs/BACKLOG.md). ⛔ **A reader who reports *"it
+   * failed"* with no reference makes the failure unfindable in a log that
+   * already recorded it.**
+   */
+  correlationId,
 }: {
   /** Undefined while in flight, and while either flag below is set. */
   narration: AccountNarration | undefined;
@@ -71,6 +79,7 @@ export function NarrativeBlock({
    * **A real answer, not a failure**, and worded so a reader can tell. */
   notNarrated?: boolean;
   id?: string;
+  correlationId?: string;
   /** The request failed for any other reason. */
   isError?: boolean;
 }) {
@@ -90,6 +99,7 @@ export function NarrativeBlock({
           <StatedAbsence
             subject="the explanation for this account"
             reassurance="Nothing has changed about the account"
+            {...(correlationId === undefined ? {} : { correlationId })}
           />
         </section>
       );

@@ -19,7 +19,7 @@ import {
 import { useUtilityPanel } from '@/components/shell/utility-panel';
 import { AbsentSection, OnThisPage } from '@/components/accounts/sections';
 import { AccountSectionShell } from '@/components/accounts/section';
-import { contributionSeverities } from '@/lib/accounts/section-state';
+import { contributionSeverities, correlationOf } from '@/lib/accounts/section-state';
 import { absent } from '@/lib/accounts/sections';
 import { CompetitorContext } from '@/components/intelligence/competitors';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
@@ -531,6 +531,9 @@ export default function AccountBriefPage() {
             narration={narration}
             notNarrated={notNarrated}
             isError={narrationError !== null && !notNarrated}
+            {...(correlationOf(narrationError) === undefined
+              ? {}
+              : { correlationId: correlationOf(narrationError)! })}
           />
 
           {score.contested ? <ContestedNote /> : null}
@@ -669,6 +672,9 @@ export default function AccountBriefPage() {
               <CompetitorContext
                 competitors={competitors.data}
                 isError={competitors.isError}
+                {...(correlationOf(competitors.error) === undefined
+                  ? {}
+                  : { correlationId: correlationOf(competitors.error)! })}
               />
             </section>
           ) : null}

@@ -41,7 +41,10 @@ import type { DeclaredCompetitors } from '@/lib/api/types';
 export function CompetitorContext({
   competitors,
   isError = false,
+  /** 📁 *"…then retry plus a correlation ID"* — [TASK-1476](../../../docs/BACKLOG.md). */
+  correlationId,
 }: {
+  correlationId?: string;
   competitors: DeclaredCompetitors | undefined;
   /** **Absence and failure are two different facts** ([C-226](../../../docs/LANE_COORDINATION.md)).
    * Added in TASK-903, which put a second declaration on this page and found
@@ -58,6 +61,7 @@ export function CompetitorContext({
           <StatedAbsence
             subject="who your organization competes against"
             reassurance="Nothing your organization has declared has been lost"
+            {...(correlationId === undefined ? {} : { correlationId })}
           />
         </CardBody>
       </Card>

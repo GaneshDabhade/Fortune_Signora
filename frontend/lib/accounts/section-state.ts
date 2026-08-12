@@ -28,6 +28,7 @@
  * docstring records why the two must never merge.
  */
 
+import { ApiError } from '@/lib/api/client';
 import type { AccountSection } from './sections';
 
 /**
@@ -298,4 +299,27 @@ export function contributionSeverities(
   contributions: readonly { readonly dissenting: boolean }[] | undefined,
 ): readonly SectionSeverity[] {
   return (contributions ?? []).map((c) => (c.dissenting ? 'watch' : 'none'));
+}
+
+/**
+ * 📁 ***"States what is missing versus what is still trustworthy, then retry
+ * plus a correlation ID."***
+ *
+ * ⚡ **The correlation id already exists and no section on this page passed
+ * it**: `ApiError.correlationId` is populated from the API's `correlation_id`
+ * on every failure, and [`StatedAbsence`](../../components/feedback/stated-absence.tsx)
+ * has accepted one all along. ⛔ **Half a rule built is the shape that reads as
+ * done** — a reader who reports *"it failed"* with no reference makes the
+ * failure unfindable in a log that already recorded it.
+ *
+ * 🔴 **An empty string is NOT a correlation id, and this is the guard.**
+ * ⚠️ `client.ts` constructs `ApiError` with `correlation_id: ''` when the
+ * *token* request fails — **before any API call is made, so there is no
+ * correlated request to find.** ⛔ Passed through, that renders a reference
+ * label with nothing after it, **which tells a reader to quote something that
+ * does not exist.**
+ */
+export function correlationOf(error: unknown): string | undefined {
+  if (!(error instanceof ApiError)) return undefined;
+  return error.correlationId === '' ? undefined : error.correlationId;
 }

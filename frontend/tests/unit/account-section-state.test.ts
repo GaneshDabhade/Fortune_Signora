@@ -21,9 +21,11 @@ import {
   resolveState,
   skeletonRows,
   withExpanded,
+  correlationOf,
   worstSeverity,
 } from '@/lib/accounts/section-state';
 import { isLegal } from '@/lib/system-states/ladder';
+import { ApiError } from '@/lib/api/client';
 
 describe('🔴 collapsing cannot hide a risk', () => {
   /** 📁 *"Header keeps the count and the worst status."* */
@@ -177,5 +179,45 @@ describe('📁 "always scoped to the smallest failing section" is already law', 
     expect(isLegal('region', 'region-error')).toBe(true);
     expect(isLegal('region', '500')).toBe(false);
     expect(isLegal('region', 'skeleton')).toBe(true);
+  });
+});
+
+describe('📁 "…then retry plus a correlation ID"', () => {
+  /**
+   * ⚡ **The id existed on every failure and no section passed it** —
+   * [TASK-1476](../../../docs/BACKLOG.md). ⛔ **Half a rule built is the shape
+   * that reads as done.**
+   */
+  it('an API failure yields its correlation id', () => {
+    const failure = new ApiError(503, {
+      code: 'upstream_unavailable',
+      message: 'no',
+      correlation_id: 'abc-123',
+    });
+    expect(correlationOf(failure)).toBe('abc-123');
+  });
+
+  /**
+   * 🔴 **The guard, and it has a real source.** ⚠️ `client.ts` constructs an
+   * `ApiError` with `correlation_id: ''` when the TOKEN request fails —
+   * **before any API call is made, so there is no correlated request to
+   * find.** ⛔ Passed through, a reader is told to quote a reference that does
+   * not exist.
+   */
+  it('⛔ but an empty string is not an id', () => {
+    const beforeAnyCall = new ApiError(401, {
+      code: 'token_unavailable',
+      message: 'no',
+      correlation_id: '',
+    });
+    expect(correlationOf(beforeAnyCall)).toBeUndefined();
+  });
+
+  it('⚠️ and anything that is not an API failure has none', () => {
+    // ⛔ A network drop, a thrown string, a React error — none of them was
+    // recorded by a server, so none of them has a reference to quote.
+    expect(correlationOf(new Error('offline'))).toBeUndefined();
+    expect(correlationOf(null)).toBeUndefined();
+    expect(correlationOf(undefined)).toBeUndefined();
   });
 });
