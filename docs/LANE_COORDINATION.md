@@ -513,6 +513,88 @@ databaseUrl: required(
 
 ---
 
+## C-107 · The 🔴 promotion block reads a row's status, and the defect it names is already fixed in the candidate
+
+| | |
+|---|---|
+| **Raised by** | **QE**, 2026-08-12 |
+| **Owner** | **Product owner** — 📁 this is a reading of [§20e](../CLAUDE.md), and **the party a permissive reading releases is QE** |
+| **Status** | 🔵 **`OPEN`** — ⛔ **routed through Lane C so it reaches a ruling.** QE has stated the options and will not pick one |
+| **Blocks** | 🔴 **Every promotion to `main`.** ⚡ **Nothing else** — stage 3 is unaffected and lanes go on integrating |
+
+### The question, in one line
+
+> **Does *"`integration` never fast-forwards to `main` with an open 🔴 bug"* evaluate the defect's presence in the candidate tree, or the row's status in [`BUGS.md`](BUGS.md)?**
+
+### Why it is not academic
+
+**[B-183](BUGS.md) is the worked example, and QE built the trap itself.**
+
+| | |
+|---|---|
+| **The defect** | `backend/.env.example` shipped a `BYPASSRLS` superuser as the development runtime identity |
+| **On `main` (`4f680315`)** | ⛔ **`:35` carries it.** The defect is live in the promoted tree |
+| **On the candidate** | ✅ **`:31` names `signora_app`.** The defect is **absent** |
+| **The row** | 🔴 `OPEN` — because **QE wrote *"closes when the fix is promoted"***, on the product owner's own instruction that `FIXED` ≠ `PROMOTED` |
+
+⛔ **So the fix cannot ship, and the row cannot close, and each is the other's reason.**
+
+> ⚠️ **QE states plainly that it created this.** The *"`OPEN` until promoted"* wording was correct about **not claiming credit for an unshipped fix** and did not consider that the same words would **hold the fix hostage.** ⛔ **A rule that prevents a security fix from reaching `main` is not the rule working.**
+
+### The two readings, and what each costs
+
+| | **① The candidate tree** | **② The row's status** |
+|---|---|---|
+| **The gate asks** | *Is the 🔴 defect present in the commit being promoted?* | *Is any 🔴 row `OPEN` in the register?* |
+| **B-183 today** | ✅ **Absent — promote.** The tenancy fix ships | ⛔ **`OPEN` — blocked.** The fix stays off `main` |
+| **What it protects** | **Ships fixes.** The gate measures the artifact, which is what `main` actually receives | **Ships nothing unreviewed.** The register is a human judgement the tree cannot express |
+| **What it costs** | 🔴 **A 🔴 whose defect is not *in a file* — a missing capability, a wrong behaviour — becomes invisible to the gate.** [B-428](BUGS.md) is exactly that shape | 🔴 **Any 🔴 written as *"closes on promotion"* is unclosable by construction**, and QE has now written one |
+| **Who it releases** | ⚠️ **QE** — QE decides what "present in the tree" means, per defect | **Nobody** — the register is the check |
+
+### What QE recommends, and it is deliberately the narrow one
+
+✅ **Neither reading as a general rule. A ruling on B-183 alone**, and a follow-up that makes the trap unrepresentable rather than adjudicated case by case:
+
+> **A 🔴 row may not use *"closes when promoted"* as its close condition.** ⚡ **Split it the way [B-428](BUGS.md) was split** — one criterion for *the fix is correct and merged*, a second for *it reached `main`* — **and let the promotion gate read the first.**
+
+⛔ **QE will not adopt that itself.** 📁 It changes what a gate means, and [§20e](../CLAUDE.md) puts that with the product owner.
+
+> ⚡ **One precedent, reported rather than relied on:** [B-428](BUGS.md)'s own row records that **cycles 201, 202 and 203 promoted while it was `OPEN`**, and `state-check.py` said so on every one. ⛔ **That is not authority for reading ①** — it is QE having read past an advisory three times, and it is why this item exists instead of a fourth.
+
+---
+
+## C-106 · [B-428](BUGS.md)'s second criterion is 🔴, and only the product owner may move it
+
+| | |
+|---|---|
+| **Raised by** | **QE**, 2026-08-12 |
+| **Owner** | **Product owner** — ⛔ **severity is not QE's to set**, and the standing instruction was explicit: *"Do NOT weaken B-428 merely to reopen promotion"* |
+| **Status** | 🔵 **`OPEN`** |
+| **Blocks** | 🔴 **Promotion to `main`, jointly with [C-107](#c-107)** |
+
+**[B-428](BUGS.md) is one row with two acceptance criteria, ruled that way by the product owner on 2026-08-11 after Lane C verified and rejected.**
+
+| | | |
+|---|---|---|
+| **A · Responsive test capability** | ✅ **SATISFIED** | The matrix runs five viewports — `handset` 390×844 · `phone` 640 · `smalllaptop` 1024 · `laptop` 1280 · `desktop` 1600 — from the product's own `tailwind.config.ts`, and the invariants read **measured geometry** rather than class strings |
+| **B · Design compliance** | 🔴 **OPEN** | ⛔ **A suite proving nothing overflows still passes on an implementation that honours none of the declared widths.** The question *"why does a visibly non-responsive implementation pass green tests?"* is **restated by A, not answered** |
+
+### The decision
+
+> **Does criterion B stay 🔴, or become 🟠?**
+
+⚠️ **QE has no view on which is right and will not offer one** — 📁 it is the lane that benefits from the answer, which is the whole reason severity sits with the product owner.
+
+**What QE can state as fact, because it is measurable:**
+
+- ⛔ **B is a *capability* defect, not a *file* defect.** There is no line to point at, so **reading ① in [C-107](#c-107) would not clear it** — B blocks under either reading while it is 🔴.
+- ✅ **B is not blocking any lane's implementation.** Lane A and Lane C are building normally; **only stage 4 is closed.**
+- ⚡ **B's owner is QE**, because `playwright.config.ts` decides what certification means. **So QE is the lane that would do the work, and the lane asking for the severity that governs it.**
+
+> ⛔ **QE is not asking for 🟠.** It is asking for **a ruling either way**, because 🔴 held with no route to close is the condition [C-107](#c-107) describes, and two of them at once is why `main` has stood at `4f680315` since cycle 203.
+
+---
+
 ## C-105 · [D-200](DECISION_REGISTER.md) gives Lane A and Lane C each a half, and QE cannot write either
 
 | | |
