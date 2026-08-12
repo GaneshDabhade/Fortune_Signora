@@ -60,7 +60,14 @@ export function ResearchPanel({
   onRequest,
   isRequesting,
   isError = false,
+  /**
+   * ⚡ **The design's section id, so the *"On this page"* rail can anchor
+   * this** — [TASK-1476](../../../docs/BACKLOG.md). ⛔ **Optional**: the page
+   * owns the section map and passes the id it publishes.
+   */
+  id,
 }: {
+  id?: string;
   research: AccountResearch | null;
   onRequest: () => void;
   isRequesting: boolean;
@@ -79,7 +86,7 @@ export function ResearchPanel({
   const findings = new Map((artifact?.findings ?? []).map((f) => [f.ref, f]));
 
   return (
-    <section className="flex flex-col gap-3">
+    <section id={id} className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="text-sm font-semibold text-content">Deeper research</h2>
         <Ask

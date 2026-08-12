@@ -48,10 +48,22 @@ export function OnThisPage({
    * *Summary* were links to nowhere**, which is precisely the defect this
    * component was written to prevent, one level up.
    *
-   * ⚡ **`supplied` means a READ exists, not that this page renders it.** 📁
-   * Three sections — *Open opportunities*, *Contacts & decision makers*,
-   * *Competitors* — have reads and no section on this page yet, **so they are
-   * not in the rail and that is named as a limitation rather than hidden.**
+   * ⚡ **`supplied` means a READ exists, not that this page renders it.**
+   *
+   * ⚠️ **This said three sections were unanchored — *Open opportunities*,
+   * *Contacts & decision makers* and *Competitors*. ✅ Two are closed by
+   * [TASK-1476](../../../docs/BACKLOG.md)** and the third is corrected rather
+   * than merely ticked off:
+   *
+   * - **Competitors** now carries an `id` the page contributes, and
+   *   **Summary** and **Deeper research** carry one their own components
+   *   accept. ⛔ **They rendered here all along and simply had no anchor.**
+   * - **Contacts & decision makers** is `absent` now and anchored as one —
+   *   🔴 **it was never supplied**: its source was the workspace's ICP
+   *   committee, which is the same answer on every account.
+   * - ⛔ **Open opportunities is still unanchored, and honestly so**: the
+   *   opportunity is rendered in the record's header rather than as a section
+   *   of its own, **so there is no region for the rail to reach.**
    */
   anchored: readonly string[];
   className?: string;

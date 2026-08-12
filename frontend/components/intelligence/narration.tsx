@@ -56,19 +56,27 @@ export function NarrativeBlock({
   narration,
   notNarrated = false,
   isError = false,
+  /**
+   * ⚡ **The design's section id, so the *"On this page"* rail can anchor
+   * this** — [TASK-1476](../../../docs/BACKLOG.md). ⛔ **Optional, because a
+   * component does not get to assume it is a whole section of a screen**: the
+   * page owns the map and passes the id it uses.
+   */
+  id,
 }: {
   /** Undefined while in flight, and while either flag below is set. */
   narration: AccountNarration | undefined;
   /** Signora has never written one for this account — the request 404'd.
    * **A real answer, not a failure**, and worded so a reader can tell. */
   notNarrated?: boolean;
+  id?: string;
   /** The request failed for any other reason. */
   isError?: boolean;
 }) {
   const [open, setOpen] = useState<string[] | null>(null);
 
   if (narration === undefined) {
-    if (notNarrated) return <Aside>{NOT_WRITTEN}</Aside>;
+    if (notNarrated) return <Aside id={id}>{NOT_WRITTEN}</Aside>;
     if (isError) return <StatedAbsence subject="the explanation for this account" reassurance="Nothing has changed about the account" />;
     return null;
   }
@@ -82,7 +90,7 @@ export function NarrativeBlock({
   const stranded = !narration.evidence_unchanged && narration.facts.length === 0;
 
   return (
-    <section className="flex flex-col gap-3">
+    <section id={id} className="flex flex-col gap-3">
       <h2 className="text-sm font-semibold text-content">In plain language</h2>
 
       <div className="flex flex-col gap-3 rounded-md border border-border bg-surface-raised px-4 py-3.5">
@@ -177,9 +185,13 @@ const NOT_WRITTEN =
  * advertising a gap* — was about volume, and a muted sentence is the version
  * that survives it.
  */
-function Aside({ children }: { children: string }) {
+function Aside({ children, id }: { children: string; id?: string }) {
   return (
-    <section className="flex flex-col gap-3">
+    // ⚡ **The id belongs here too, and that is not incidental.** ⛔ This IS the
+    // Summary section when nothing has been narrated — **a rail anchor that
+    // worked only when the section had content would break exactly when a
+    // reader most needs to find out why it is empty.**
+    <section id={id} className="flex flex-col gap-3">
       <h2 className="text-sm font-semibold text-content">In plain language</h2>
       <p className="text-sm leading-6 text-content-muted">{children}</p>
     </section>

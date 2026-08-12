@@ -414,6 +414,12 @@ export default function AccountBriefPage() {
           // ⚠️ **`activity` only when the utility panel is not carrying it**,
           // which is why `history.carrying` decides it.
           anchored={[
+            // ⚡ **`summary`, `research` and `competitors` join the rail** —
+            // [TASK-1476](../../../../docs/BACKLOG.md). ⛔ **They rendered on
+            // this page all along and carried no `id`**, so the rail could not
+            // link to them and its docstring recorded that as a limitation.
+            // ✅ **The limitation is closed rather than restated.**
+            'summary',
             'score',
             'health',
             'intent',
@@ -424,6 +430,8 @@ export default function AccountBriefPage() {
             // the treatment §20c requires and the one every other unfillable
             // section already gets.
             'contacts',
+            'research',
+            'competitors',
             'org-chart',
             'relationships',
             'tech-stack',
@@ -494,6 +502,7 @@ export default function AccountBriefPage() {
               Rendered only when one exists — absence shows nothing at all,
               because a panel announcing a gap is worse than the gap. */}
           <NarrativeBlock
+            id="summary"
             narration={narration}
             notNarrated={notNarrated}
             isError={narrationError !== null && !notNarrated}
@@ -533,6 +542,7 @@ export default function AccountBriefPage() {
               they get for free. The ledger stays last because research's own
               findings point down into it. */}
           <ResearchPanel
+            id="research"
             research={research ?? null}
             isError={researchError !== null && !neverResearched}
             onRequest={() => requestResearch.mutate()}
@@ -618,10 +628,18 @@ export default function AccountBriefPage() {
             isError={catalog.isError || committee.isError}
           />
 
-          <CompetitorContext
-            competitors={competitors.data}
-            isError={competitors.isError}
-          />
+          {/* ⚡ **`id="competitors"`** — [TASK-1476](../../../../docs/BACKLOG.md).
+              ⛔ **The component renders no `section` of its own**, so the page
+              contributes one rather than the component growing an opinion
+              about being a whole section of a screen. ⚠️ **This closes half of
+              the limitation the rail's own docstring names** — *"three
+              sections have reads and no section on this page yet"*. */}
+          <section id="competitors" aria-label="Competitors">
+            <CompetitorContext
+              competitors={competitors.data}
+              isError={competitors.isError}
+            />
+          </section>
 
           {/* **Between the ledger and the record of events** (TASK-417, wave 1
               of the approved Account 360). The contribution list above says
