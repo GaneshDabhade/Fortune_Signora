@@ -8,6 +8,7 @@ assert that against the real repository rather than a fixture.
 
 from __future__ import annotations
 
+import ast
 import subprocess
 from pathlib import Path
 
@@ -25,6 +26,40 @@ from tests.certification.conditions import (
     tree_is_clean,
 )
 from tests.certification.record import CertificationError
+
+#: The package no production code may import. Written as a component rather
+#: than a dotted path so a relative import cannot slip past by spelling it
+#: differently — `from ..certification import x` resolves to the same package.
+EVIDENCE_PACKAGE = "certification"
+
+
+def imports_certification(source: str) -> bool:
+    """**Does this source import the evidence package — not mention it?**
+
+    B-254. The predicate this replaces was `"certification" in source`, which
+    answered a different question and answered it wrongly in the direction that
+    matters: prose failed the gate.
+
+    A `SyntaxError` is deliberately not caught. A production file that does not
+    parse is a larger problem than this check, and swallowing it here would let
+    an unparseable file report *no imports* — which is the reassuring answer.
+    """
+    tree = ast.parse(source)
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            if any(EVIDENCE_PACKAGE in alias.name.split(".") for alias in node.names):
+                return True
+        elif isinstance(node, ast.ImportFrom):
+            # `node.module` is None for `from . import x`; the names carry the
+            # package in that form, so both are checked.
+            module = node.module or ""
+            if EVIDENCE_PACKAGE in module.split("."):
+                return True
+            if any(alias.name == EVIDENCE_PACKAGE for alias in node.names):
+                return True
+
+    return False
 
 
 class TestEveryConditionIsReadFromTheRepository:
@@ -118,18 +153,62 @@ class TestCertificationIsEvidenceAndNeverADependency:
     """
 
     def test_no_production_package_imports_certification(self) -> None:
-        offenders = [
-            path.relative_to(BACKEND_ROOT)
+        """**B-254: this said *imports* and checked *mentions*.**
+
+        It was `if "certification" in path.read_text()` — a substring match over
+        raw source — so any comment, docstring or string carrying the word
+        failed the gate. Lane A hit it writing a doc-comment about B-189 and had
+        to spell the package name in two halves to describe the defect at all.
+
+        **The name was a false claim about what the code did**, which is the
+        tell `CLAUDE.md` §2 names: the sentence describing the guard was
+        stronger than the guard. **Third instance of one class in two days** —
+        B-162 narrowed a text scan until it stopped firing, B-252 counted an
+        identifier in a comment as a caller, and this counted prose as an
+        import.
+
+        **So it parses.** An import is a syntactic fact and `ast` is the thing
+        that knows it; a text scan over source can be satisfied by prose or
+        defeated by it, and no amount of tightening changes that.
+        """
+        scanned = [
+            path
             for package in ("modules", "signora_platform", "apps", "migrations")
             for path in (BACKEND_ROOT / package).rglob("*.py")
-            if "certification" in path.read_text()
         ]
 
+        # **The walk is asserted, not assumed.** `offenders == []` is also what
+        # a misspelt package name produces, and an empty corpus passes this test
+        # forever while checking nothing.
+        assert len(scanned) > 500, f"only {len(scanned)} file(s) scanned — the walk found nothing"
+
+        offenders = sorted(
+            str(path.relative_to(BACKEND_ROOT))
+            for path in scanned
+            if imports_certification(path.read_text())
+        )
+
         assert offenders == [], (
-            f"{offenders} reference certification. It is evidence *about* the repository, "
+            f"{offenders} import certification. It is evidence *about* the repository, "
             "produced after the fact; a module that could import it would be a module whose "
             "behaviour depended on whether it had been certified."
         )
+
+    def test_the_import_check_reads_imports_and_not_prose(self) -> None:
+        """**B-254's proof, and it is two-sided by construction.**
+
+        ⛔ The first assertion is the one the old check failed: this very file's
+        name appears in the string below, and naming something is not importing
+        it. ✅ The second is what a narrowed guard must keep catching — B-162's
+        lesson, that *narrowing is only safe if you measure what stops firing*.
+        """
+        assert not imports_certification('X = "tests.certification.conditions"')
+        assert not imports_certification("# from tests.certification import record")
+        assert not imports_certification('"""Explains tests.certification."""')
+
+        assert imports_certification("from tests.certification import record")
+        assert imports_certification("import tests.certification.conditions")
+        assert imports_certification("from tests.certification.record import X")
 
     def test_certification_ships_in_no_wheel(self) -> None:
         """It lives under `tests/` deliberately. A production image carrying the

@@ -97,7 +97,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | **`workspace_tenancy`** — [`backend/modules/workspace_tenancy/tests/test_accept_invitation.py`](../backend/modules/workspace_tenancy/tests/test_accept_invitation.py) |
 | **Current assignee** | **Lane A** — [`modules.toml`](coordination/modules.toml), `current_owner = "Lane A"`, transition settled 2026-08-05 |
 | **Severity** | 🟠 — ⛔ **no customer ever sees this**: the fake is a test double and the production `Invitation.state(at=…)` is correct. ⚡ **But it is a Blocking Quality Defect** ([§20e](../CLAUDE.md)): a failing test, so **no commit can certify and every lane's finished work is held** |
-| **Status** | 🔵 **`OPEN`** — ⛔ **not QE's to fix.** QE may write a test in any module's suite and may not change that module's code |
+| **Status** | ✅ **`VERIFIED` — QE, 2026-08-12.** ⛔ **Fixed by Lane A at `f9cf95ac`, and the repair goes a layer deeper than the clock**: the fake was applying a filter `SqlInvitationRepository.find_live` does not apply. ⚡ **Verified at the source** — the real query matches the partial unique index (`accepted_at IS NULL AND revoked_at IS NULL`) and says nothing about expiry, which is decided one layer up by `require_pending(now)`. ✅ **So an expired offer now reaches the use case and a person is told *this invitation has expired* rather than *there is no invitation***. ⚠️ **Lane A could not set this cell** — the row was on `lane-qe` and not on their base, and a second row for one defect is worse than none |
 | **Found** | **2026-08-12, cycle 209**, by a certification that failed on a backend tree **byte-identical to one certified 93 minutes earlier** |
 | **Commit found** | **`74a06e07`** — and the backend is unchanged from **`0ffe15f3`**, which certified |
 
@@ -132,6 +132,12 @@ and i.state(at=datetime.now(UTC)) is InvitationState.PENDING   # :81  the REAL c
 > ⚠️ **`state(at=…)` is right, and the production caller is right to pass the real clock.** 🔴 **The defect is that the double ignores the clock its own test declared** — 📁 **a hidden input** ([§2](../CLAUDE.md)): *"an input that influences behaviour without being part of the declared contract… makes the same declared inputs produce different results, which defeats replay and regression testing."*
 
 **⛔ It was written seven days ago, and seven days is the fixture's own window.** ✅ **The suite was green for every one of them.**
+
+### ✅ The proof Lane A built, and why it cannot go quiet on a date
+
+⛔ **Not a fresh fixture window** — that buys another seven days of silence and is green either way. ✅ **The offer expires in the year 2000**, permanently in the past for any real clock, and is accepted at a `now` before it. ⚡ **Fire-tested: restoring the wall-clock filter turns seven red** — the original five plus both new proofs.
+
+✅ **And a guard so the next one fires on a change rather than on a date**: `test_no_hidden_clock.py` refuses any file in the module that declares a fixed moment and then reads the real clock. **It strips comments and docstrings first** — 📁 [B-252](#b-252)'s lesson one language along — **and it is fire-tested by reintroducing the real defect.**
 
 ### ✅ The sweep, and its bound
 
@@ -880,7 +886,7 @@ error: Your local changes to the following files would be overwritten by merge:
 | **Module** | **`platform_foundation`** — [`backend/tests/certification/test_conditions.py`](../backend/tests/certification/test_conditions.py):119 |
 | **Current assignee** | ⛔ **NOT Lane A.** 📁 `backend/tests/` is Platform Foundation's and **QE's own gate** — ⚡ **raised rather than fixed, on [§20e](../CLAUDE.md)** |
 | **Severity** | 🟠 — ⛔ **it fails a clean tree**, and ⚠️ **it is 🟠 rather than 🟡 because the guard's stated claim and its check are different claims**, so it can also PASS something it means to catch |
-| **Status** | 🔵 **`OPEN` — raised 2026-08-12 by Lane A**, while clearing [B-189](#b-189) |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-12, at `932f312f`.** ⚠️ **Not `VERIFIED`: Lane A found it, QE fixed it, and QE does not verify its own work** — same handling as [B-188](#b-188) |
 | **Found** | **2026-08-12, by Lane A**, in the full backend suite: **4417 passed, 1 failed**, and the one was this |
 | **Commit found** | **`f9cf95ac`** |
 
