@@ -16,7 +16,7 @@
 
 | | |
 |---|---|
-| **`main`** | **`0dfc07f4`** — ⚡ **the certified commit itself**, `promoted == certified`, fast-forwarded from `4f68031` |
+| **`main`** | **`0dfc07f4`** — ⚡ **the certified commit itself**, `promoted == certified`, fast-forwarded from the previous head |
 | **Release candidate** | **1 commit, and it is QE's own** — the responsive matrix gains a vertical axis and a real handset viewport, both exposed by Lane A's [B-241](docs/BUGS.md). ⏳ **Neither lane was fast-forwardable**: Lane A 19 ahead / 21 behind, Lane C 5 / 23 |
 | **Certification** | ✅ [`0dfc07f48a1a`](certification/reports/0dfc07f48a1a.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** · ⚠️ **third attempt — two aborts, neither a property of the commit** |
 | **Cycle 205 gates** | `pytest` **4414 passed** · coverage **95.04%** · **403** security invariants · `mypy --strict` clean over **866** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages, 142s** · scenario **190 assertions** |
