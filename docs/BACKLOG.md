@@ -79,10 +79,21 @@
 **Remaining scope — the design's surfaces the list does not yet carry:**
 
 - **Card view**, and the **Density** control
-- **Column configuration**
-- **Filters**, and **pagination** (*Previous* / *Next*)
-- **Export**, and **Import**
-- **The row's own facts the design draws** — *Open ACV* · *Renewal* · *Avg score* · *Recommended next step* · *Evidence* · *Draft intro* · *Open full record*
+- **Column configuration**, over the fields that exist
+- **Filters** — name, source, kind, freshness
+- **Pagination — *Previous* / *Next* only.** ⛔ **NOT the design's numbered pages or its *"of 312"* total**
+- **Export of what is on screen**
+- **The row facts that have a source** — *Avg score* · *Recommended next step* · *Evidence* · *Draft intro* · *Open full record*
+
+> ⚠️ **NARROWED 2026-08-12, before any claim, on [C-300](LANE_COORDINATION.md) — raised by Lane A reading the design against the code rather than after claiming.** ⛔ **Three items were cut from the scope above and the reasons are not stylistic.**
+>
+> **⛔ *Open ACV* and *Renewal* — cut.** 📁 [`provider_normalization/infrastructure/mappers/crm.py`](../backend/modules/provider_normalization/infrastructure/mappers/crm.py):100 **refuses them in writing**: *"contract value, renewal date, opportunity stage… have **no canonical attribute**, and inventing one here would put a vocabulary decision inside a translation file, which is the quietest place in the codebase to make one."* ⚡ **A table is quieter still.**
+>
+> **⛔ *Import* — cut.** **It is a write path that creates companies, and `New company` is already excluded.** ⚡ **Same capability, different door** — Lane A's phrase, and it is exactly right.
+>
+> **⛔ Numbered pages and the total — cut.** 📁 [`knowledge_graph/interface/router.py`](../backend/modules/knowledge_graph/interface/router.py):114 — the list is **keyset by deliberate choice**: *"an offset page would skip or repeat rows… a customer paging the list would silently miss accounts."* **Numbers need offset and a total needs a count the contract does not return.** ⚡ ***Previous*/*Next* over the cursor is honest and buildable; the rest is a contract change.**
+>
+> ⚠️ **This office's own error, recorded rather than absorbed: I verified that the six account reads *exist* and inferred what they *carry*.** ⛔ **A contract that exists and a contract that returns the field you need are different findings** — the same class as measuring `public/` by its directory listing, two days running.
 
 ⛔ **EXCLUDED from this package, and the exclusion is the load-bearing part:** **`Owner` · `New segment` · `New company`.** 📁 **[C-1425](LANE_COORDINATION.md) — no module models an account owner, a tag or a segment, and *which module should* is an open product decision.** ⚡ **A frontend slice for a concept the domain cannot express is a row that cannot finish** — the same wall as [C-1429](LANE_COORDINATION.md), and the reason this package is scoped rather than whole.
 
