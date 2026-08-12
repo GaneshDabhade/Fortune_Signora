@@ -1990,3 +1990,153 @@ if (workspaceId === null) return [];   // absent  AND  not-yet-arrived
 | **`workspace-label`** | §19's scope line is the panel's, reached the same way |
 
 > ⚡ **A component that gains a provider gains every test that mounts it**, and a stub written as `() => null` is the one that fails loudest — **which is the good outcome.** ⛔ **A stub that had rendered `children` all along would have hidden the change entirely.**
+
+---
+
+## The App Shell's exact values, and one that was listed as verified — [TASK-1462](../BACKLOG.md)
+
+📁 **§09: *"640px, anchored at 14vh, modal elevation."*** ⛔ **The palette shipped at 576px anchored at 10vh** — `max-w-xl` and `pt-[10vh]`.
+
+### ⚡ Two wrong numbers, and both looked deliberate
+
+**576 is `max-w-xl`'s value**, so it read as a considered token choice rather than a number. **10vh is round**, so it read as intentional. ⚠️ **Neither is the design's**, and that is why the row demanded geometry: **the journey measures `boundingBox()` against a number the design states**, and a class name cannot be checked against a number at all.
+
+### 🔴 A value the row listed as *"must NOT touch — verified"* was not
+
+📁 **The row's own cell**: *"the rail (232/56), user menu (280), top bar (56) and **copilot (420)** all carry their specified values — verified."*
+
+⛔ **Measured in a browser at 1280, the assistant drawer was 1265px.** ⚡ **`copilot.tsx` quoted §12's *"non-modal 420px drawer"* in its own doc comment and passed no width**, and `Drawer` is `w-full` — **so the verification had been of the sentence rather than of the panel.**
+
+> 🔴 **Leaving a measured defect in place on the strength of a cell that says *verified* is the deference [§2](../../CLAUDE.md) exists to refuse.** ✅ **Fixed, and [C-1428](../LANE_COORDINATION.md) asked QE to measure the other three** — **all three hold**, and QE's own note is the better half: **`56` is a design TOKEN, so a search for the literal would have reported it absent exactly as the copilot's `420` was reported present. A search for a number cannot distinguish an applied token from a missing value.**
+
+### ⛔ §03 and §14 are dependencies, not gaps
+
+📁 **§03 wants the switcher trigger to state *plan* and *region*.** ⛔ **Neither exists**: `Workspace` is `id`/`name`/`created_at`/`updated_at`, and the only *region* in the repository is an **onboarding answer about where a customer sells** — 📁 a commercial answer, not a hosting fact, **and rendering it as one would be a wrong fact stated confidently.**
+
+📁 **§14's context drawer is *modal*, 480/640/800.** ⚡ **§12's assistant is *non-modal*, 420, and pushes content** — **`Drawer` is the second.** ⛔ **So `480` is not present either and the context drawer does not exist as a surface**: building it would be a modal panel with no caller.
+
+---
+
+## Nine screens leave `max-w-3xl` for the design's grid — [TASK-1464](../BACKLOG.md)
+
+⛔ **`git grep -c "max-w-3xl" -- frontend/app` now names `app/dev/**` only.**
+
+### ⚡ The width was copied, not chosen
+
+**All nine opened with the same line at 768px fixed.** ✅ **The replacement span is DERIVED rather than picked**: at 1280 the container's inner width is 1232; twelve tracks with eleven 24px gaps give 80.7px each; **span 8 is ≈813px against the old 768.** ⛔ **Nothing was widened to fill 1600.**
+
+### 🔴 A journey that agreed at one viewport and lied at the other
+
+⚠️ **The first version computed its expectation from the VIEWPORT and was wrong by 183px at 1280** — **the content region is not the viewport; the rail takes 232** — **and at 2400 the container's 1600 cap hid the error entirely.**
+
+> ⚡ **It agreed at one width and disagreed at the other, which is exactly what the row's two-viewport rule exists to catch.** ✅ **It derives from the measured container now.**
+
+### ✅ Two primitives left the reachability allowlist, and the guard is what noticed
+
+**`Columns` and `Column` gained their first consumers.** ⚠️ **Their allowlist entry named [TASK-206](../BACKLOG.md) — a row withdrawn as a duplicate** — **so it would have read as *scheduled* forever.**
+
+---
+
+## `Search Signora`, because the application is already inside Signora — [TASK-1466](../BACKLOG.md)
+
+📁 **[C-1422](../LANE_COORDINATION.md), ruled**: *"the in-product product name is `Signora`; the finalized design copy is superseded for this specific wording."*
+
+⛔ **Two lines and one test.** ⚠️ **The discipline is what was NOT changed**: **99 occurrences of the full brand remain in `frontend/`** and every one is a branding surface the rule permits — the sign-in masthead, the welcome title, the static outage pages.
+
+🔴 **The a11y test PINNED the old string**, so it moved with the rename and gained a second assertion that the old label is gone — ⚡ **a rename that leaves its test green has renamed nothing.**
+
+⛔ **The design still reads *"Search Fortune Signora"* in §21 and was NOT edited** — 📁 [D-138](../DECISION_REGISTER.md): **a snapshot is refreshed, never edited.** ✅ **The reason sits beside the label in the component**, so the next reader meets the reason rather than the discrepancy.
+
+---
+
+## Bulk session revocation — [TASK-470](../BACKLOG.md) milestone 3
+
+🔴 **The L-1 reuse audit narrowed this row before a line was written.** 📁 **Screen `05`'s sessions panel already shipped** in [TASK-1414](../BACKLOG.md), built against the **Security Center** design — **which draws the same surface and draws MORE of it.**
+
+> ⚡ **Two approved designs draw one panel.** ✅ **The repository correctly has one, built from the richer source** — ⛔ **and no second sessions list was built.**
+
+### 🔴 The slice turns on two endpoints
+
+📁 ***"Sign out everywhere leaves this one alive by default."*** ⚡ **That is `/revoke-other-sessions`, never `/revoke-sessions`** — ⛔ **and calling the wrong one signs the reader out of the screen they are on.** ✅ **Fire-tested: swapping them turns one red.**
+
+📁 **The design's second half ships too** — *"choosing to include it is possible, and warns that you will land on the sign-in screen"* — **as a confirm, never a second button.**
+
+### ⚠️ A test that found a real ambiguity rather than needing a better selector
+
+⛔ **The confirm was ALSO called *"Sign out everywhere"***, so the page held **two buttons with one accessible name doing different things**, and the one inside the dialog ends the session reading it. ✅ **The product was renamed, not the query.**
+
+### ✅ The journey proves the sentence from three sides
+
+**Both other browsers are turned away, and the browser that pressed the button is still signed in.** ⛔ **A list assertion cannot show the second half.**
+
+---
+
+## The account menu's fourth fact — [B-429](../BUGS.md)
+
+📁 **§11: *"Always states name, email, role and workspace."*** ⛔ **Three shipped, and the fourth was explained away:**
+
+> *"Name is not stated, because the platform does not publish one — the session carries an email and nothing else."*
+
+🔴 **The reasoning was sound and the premise was false.** **Registration requires a full name**, `profile/page.tsx` already read it from the same session, and 📁 **`layout.tsx` had `session.user.name` in scope on the line that dropped it.**
+
+⚡ **[§2](../../CLAUDE.md): a comment justifying absent behaviour is a false claim sitting in the codebase** — ⚠️ **and it read as a considered design decision, which is how it survived review and promotion.** ✅ **Removed WITH the fix.** ✅ **The half that was right is kept and tested**: a name is never derived from the address, and a session carrying none renders the email alone.
+
+⛔ **`name: string | null` is REQUIRED at every hop, not optional.** ⚡ **An optional prop is exactly how this happened** — a caller omitted it and nothing asked. **Six test call sites had to answer it, which is the type doing the work.**
+
+---
+
+## Two silences given sentences — [B-255](../BUGS.md) · [B-256](../BUGS.md)
+
+### ⛔ `Save` that refused without saying so
+
+**The profile's `save` returned early when there was no workspace and left the status `idle`** — **no spinner, no confirmation, no refusal.** ⚡ **That is *a control that silently does nothing is worse than one that is absent*, one layer in**: the control renders, is pressed, and the handler declines without a word.
+
+✅ **A FOURTH status member rather than a flag beside `error`**, because both halves of *"check your connection and try again"* would be false: **nothing failed and the connection is fine.**
+
+### 🔴 Onboarding promised five screens that do not exist
+
+📁 **Screen `06` said, in the product's own words: *"Signora will open on Forecast, the Executive Dashboard."*** ⛔ **Neither exists**, and **`FORECAST_ACCURATELY` is the FIRST of the six goals.**
+
+⚡ **`forecast` is not merely unbuilt — it is refused as DOMAIN LAW.** 📁 `buying_score_engine/domain/events.py`: *"No probability, no likelihood, no prediction. A buying score prioritizes commercial attention; it does not forecast a purchase."* 📁 **`opportunity_engine`'s router says it again independently.**
+
+> 🔴 **The product was promising a capability two modules decline in writing.**
+
+⛔ **The map was a `Record<string, string>`** — it answered *what is this called* and **could not express *named and unreachable***, so an absent screen was indistinguishable from a shipped one. ⚠️ **And the file's own honest guard — *"an unknown identifier is titled rather than dropped"* — made the promise STRONGER.** ✅ **It answers *where* now, and `null` is a real answer.**
+
+⛔ **What the step should say INSTEAD is a product decision** — 📁 [C-297](../LANE_COORDINATION.md). ⚠️ **Honest is not the same as good**: a customer who picks that goal now sees their selection register and nothing else.
+
+---
+
+## 🔴 A guard belongs at the seam that failed — [B-191](../BUGS.md)
+
+**QE fire-tested two of this lane's fixes and neither proof fired.**
+
+| | |
+|---|---|
+| **[B-256](../BUGS.md)** | ⛔ **Reverting the two component lines left `reachable` intact and 3062 tests green** — the test exercised a helper that was never the defect |
+| **[B-429](../BUGS.md)** | ⛔ **`name={null}` in `layout.tsx` — the exact line the defect dropped — and the suite stayed green.** The test rendered `AccountMenu` with a name the TEST supplied |
+| **[B-255](../BUGS.md)** | ✅ **Fires immediately** — and it is the counter-example that makes this a shape rather than an accusation |
+
+> ⚡ **The difference is DISTANCE, not care.** **B-255's defect and its guard live in the same component. The other two did not.**
+
+✅ **[B-256](../BUGS.md) is repaired by rendering the SCREEN**, and that test caught something a helper structurally could not: ⚠️ ***"Forecast accurately"* is still a goal a customer may pick and must be** — **the defect was never that the word appears.**
+
+✅ **[B-429](../BUGS.md) is repaired with a JOURNEY**, because the seam is a **server component reading a session** and no component test can reach it.
+
+> 🔴 **The rule has a second half worth stating: it does not only relocate a guard — sometimes it tells you the cheap kind is unavailable.** ⛔ ***"Write it at the seam"* reads like *"write a different unit test"***, and here it was a journey or nothing.
+
+---
+
+## Three auth defaults aim at human review — [B-257](../BUGS.md)
+
+📁 **`SIGNORA_APP_URL` and `SIGNORA_JWT_ISSUER` default to `localhost:3000`; `SIGNORA_API_URL` to `8000`.** 📁 **[`RUNNING.md`](../RUNNING.md):311 reserves both for human review, *"and to no lane."***
+
+⛔ **So an unset variable does not aim a lane at *a wrong port*. It aims a lane's auth tier at the product owner's demo stack.**
+
+### 🔴 The comment defending them claims a failure that does not happen
+
+📁 ***"A URL pointing at the wrong port fails loudly and immediately."*** ⛔ **Measured on a lane at 3200**: `Invalid origin` → `403`, **presenting as a sign-in that submits and never navigates** — ⚡ **the identical symptom of a missing Better Auth schema and of missing demo accounts. Three causes, one appearance.**
+
+⚠️ **Same shape as [B-429](../BUGS.md)**: a considered-sounding sentence defending behaviour whose premise nobody had measured.
+
+⛔ **The VALUES are unchanged deliberately.** **The honest repair needs this tier to know whether it is a first clone or a lane** — ⚡ **and it cannot**: 📁 [B-223](../BUGS.md) / [C-298](../LANE_COORDINATION.md), where `environmentName()` returns `local` for every lane. **One root, two rows.**
