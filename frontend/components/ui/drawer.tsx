@@ -14,6 +14,21 @@ export interface DrawerProps {
   scope?: string;
   children?: ReactNode;
   footer?: ReactNode;
+  /**
+   * 📁 **§12 — *"a non-modal **420px** drawer that pushes content"*.**
+   *
+   * ⛔ **Required-by-convention rather than optional-by-default is deliberate
+   * the other way**: this stays optional because **a caller with no width is a
+   * caller in a container that already has one**, and forcing a number would
+   * make the panel fight its own layout.
+   *
+   * ⚠️ **But the absence was the defect.** 🔴 **`copilot.tsx` quoted §12's
+   * 420px in prose and passed nothing**, so the assistant opened at whatever
+   * width the shell gave it — ⚡ **which is why the number now travels as a
+   * value from [`overlays.ts`](../../lib/shell/overlays.ts)** rather than
+   * living in a sentence.
+   */
+  width?: number;
 }
 
 /**
@@ -51,7 +66,7 @@ export interface DrawerProps {
  * be a design-system primitive taking a page-level decision. **Escape and the
  * close control are handled here, because both are the panel's own.**
  */
-export function Drawer({ open, onClose, title, scope, children, footer }: DrawerProps) {
+export function Drawer({ open, onClose, title, scope, children, footer, width }: DrawerProps) {
   const headingId = useId();
   const panel = useRef<HTMLDivElement>(null);
 
@@ -90,6 +105,9 @@ export function Drawer({ open, onClose, title, scope, children, footer }: Drawer
         'flex h-full w-full flex-col rounded-xl border border-border bg-surface',
         'text-content shadow-lg outline-none',
       )}
+      // ⛔ **A style, not a Tailwind arbitrary value** — the number belongs to
+      // the design's contract and a class would put it in a second place.
+      style={width === undefined ? undefined : { maxWidth: width }}
     >
       <header className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
         <div className="flex flex-col gap-1">

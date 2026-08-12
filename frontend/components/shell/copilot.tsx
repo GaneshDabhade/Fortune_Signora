@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { Drawer } from '@/components/ui';
+import { ASSISTANT_DRAWER_WIDTH } from '@/lib/shell/overlays';
 import { useWorkspaceLabel } from '@/lib/shell/workspace-label';
 
 /**
@@ -117,6 +118,16 @@ export function Copilot({ scope, children }: { scope?: string; children?: ReactN
         open={open}
         onClose={() => setOpen(false)}
         title="Ask Signora"
+        /**
+         * 📁 **§12 — *"a non-modal 420px drawer that pushes content"*.**
+         *
+         * 🔴 **This file QUOTED that sentence in its own header and set no
+         * width**, so the panel opened at whatever its parent happened to be —
+         * ⛔ **the number existed as prose and nowhere else.**
+         * ⚡ **[TASK-1462](../../../docs/BACKLOG.md) lists it among the values
+         * *"verified"* as correct; the verification was of the comment.**
+         */
+        width={ASSISTANT_DRAWER_WIDTH}
         // 📁 *"states that scope above the input"* — ⛔ **and when there is no
         // scope the line is absent rather than saying *everything*, which
         // would be a claim about what the assistant can see.**

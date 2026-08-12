@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/design/cn';
+import { PALETTE } from '@/lib/shell/overlays';
 
 export interface CommandItem {
   id: string;
@@ -188,7 +189,13 @@ export function CommandPalette({
   return (
     // The scrim §12 specifies — 24% ink, and explicitly no blur.
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-backdrop/25 p-4 pt-[10vh]"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-backdrop/25 p-4"
+      // 📁 **§09 — *"640px, anchored at 14vh"*.** ⛔ **Both numbers come from
+      // [`PALETTE`](../../lib/shell/overlays.ts) rather than from a class**:
+      // ⚠️ **this read `pt-[10vh]` and `max-w-xl`, which is 576px** — **two
+      // wrong values that both looked deliberate**, because one was a round
+      // number and the other was a name.
+      style={{ paddingTop: `${PALETTE.anchorPercent}vh` }}
       onClick={(event) => {
         if (event.currentTarget === event.target) onClose();
       }}
@@ -199,9 +206,10 @@ export function CommandPalette({
         aria-label={placeholder}
         // §12's shared plane, the same three terms as Drawer and Dialog.
         className={cn(
-          'flex w-full max-w-xl flex-col overflow-hidden rounded-xl border border-border',
+          'flex w-full flex-col overflow-hidden rounded-xl border border-border',
           'bg-surface text-content shadow-lg',
         )}
+        style={{ maxWidth: PALETTE.width }}
       >
         {/* 📁 **§19 — above the input, because the reader must know whose data
             they are about to search BEFORE they type it**, not after they read

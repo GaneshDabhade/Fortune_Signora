@@ -513,6 +513,53 @@ databaseUrl: required(
 
 ---
 
+## C-1428 · [TASK-1462](BACKLOG.md) §03 needs two facts nothing models, and its §14 half names a surface that does not exist
+
+| | |
+|---|---|
+| **Status** | ⚠️ **`OPEN` — Lane A, 2026-08-12, measuring the row's premises before writing code, which the row itself instructs** |
+| **Owner** | **Product owner** *(what a plan and a region ARE)* · **Lane C** *(the row's §14 premise)* |
+| **Blocks** | ⛔ **Two of the row's three halves.** ✅ **§09 shipped**, and one value the row listed as *verified* was measurably wrong and is fixed |
+
+### ① §03 — the trigger's plan and region have no source, and the row said to check
+
+📁 **The design**: *"The trigger states the workspace, its plan and its region."*
+📁 **The row's own instruction**: ⚠️ ***"Verify `plan` and `region` exist on the workspace contract first. If they do not, this half is a dependency on `workspace_tenancy` and is raised as a `C-` item, not invented client-side."***
+
+✅ **Verified, at every layer rather than at the one that was convenient:**
+
+| | |
+|---|---|
+| **Frontend contract** | `Workspace` is **`id` · `name` · `created_at` · `updated_at`** |
+| **HTTP contract** | `WorkspaceResponse` is **the same four** |
+| **The aggregate itself** | `Workspace` is those four plus `created_by` and `updated_by` |
+| ⚠️ **The one near-miss, and it is not the same thing** | `region` appears in [`domain/onboarding.py`](../backend/modules/workspace_tenancy/domain/onboarding.py) as an **`Answer[str]` to an onboarding question** — 📁 **where a customer SELLS**, not where their workspace is hosted. ⛔ **Rendering a commercial answer as a data region would be a wrong fact stated confidently** |
+
+🔴 **And `plan` has no source at all** — **no subscription, no tier, no entitlement, anywhere in the repository.** ⚡ **What a plan IS is a product decision before it is a field**, which is why this is here and not a backlog row.
+
+### ② §14 — the row conflates two surfaces the design separates by modality
+
+📁 **§12 · the assistant**: ***"a NON-MODAL 420px drawer that PUSHES CONTENT."***
+📁 **§14 · the context drawer**: ***"MODAL, right-hand, 480 / 640 / 800px… a header with the object name, a scrolling body, and a pinned footer."***
+
+⛔ **The row reads §14's three widths as belonging to [`Drawer`](../frontend/components/ui/drawer.tsx)** — *"480 is present; the largest cannot be selected."* ⚠️ **`Drawer` is §12's assistant panel**: its own header explains at length why it is **not** `Dialog` with different padding, **and non-modality is the reason.**
+
+🔴 **So `480` is not present either**, and **the context drawer does not exist as a surface.** ⚡ **Building it would be a new modal panel with no caller** — 📁 the class named in [C-1427](#c-1427--the-top-two-rows-of-lane-as-queue-each-wait-on-a-capability-nobody-has-scheduled-and-the-pattern-is-worth-more-than-either-row), refused twice already today.
+
+### ③ ⛔ One value the row listed as *verified* was wrong, and it is fixed
+
+📁 **The row's *"must NOT touch"* cell**: *"The rail (232/56), user menu (280), top bar (56) and **copilot (420)** all carry their specified values — **verified**."*
+
+🔴 **Measured in a browser at 1280: the assistant drawer was 1265px.** ⛔ **`copilot.tsx` quoted §12's *"non-modal 420px drawer"* in its own doc comment and passed no width**, and `Drawer` is `w-full` — **so the verification was of the sentence, not of the panel.**
+
+✅ **Fixed, because leaving a measured defect in place on the strength of a cell that says *verified* is the deference [§2](../CLAUDE.md) exists to refuse.** ⚠️ **Recorded here rather than quietly**, since it means the row's *"verified"* list is now known to be unverified and **the other three should be measured before anybody trusts them.**
+
+### ④ What shipped anyway
+
+✅ **§09 is delivered and asserted from geometry**: 📁 *"640px, anchored at 14vh."* ⛔ **It was 576px at 10vh** — `max-w-xl` and `pt-[10vh]`, **two wrong numbers that both looked deliberate**, one because it was a name and one because it was round.
+
+---
+
 ## C-1427 · The top two rows of Lane A's queue each wait on a capability nobody has scheduled, and the pattern is worth more than either row
 
 | | |
