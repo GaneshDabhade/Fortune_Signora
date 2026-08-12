@@ -1104,6 +1104,41 @@ error: Your local changes to the following files would be overwritten by merge:
 | 🔴 **Why no gate caught it** | ⛔ **A missing utility class is not a type error, a lint error or a failing assertion.** ⚡ **`tsc`, `eslint` and 2599 frontend tests all passed** — [§20e](../CLAUDE.md): *every defect that has mattered in this project was found by using the product, not by the suite* |
 | ⚠️ **The fix is Lane A's to choose, and there are two shapes** | **① Move `screens` under `extend` so the design's four ADD to the defaults** — ⛔ **but the design names four and [D-154](DECISION_REGISTER.md) says the design wins, so keeping `sm` alive may be the wrong answer.** **② Keep the override and REWRITE all 46 call sites to the design's names** — ✅ **which is what *the design is the implementation target* implies.** ⚡ **This office recommends ② and does not decide it** |
 
+### B-259 · A blanket find-and-replace renumbered three references that were not this lane's
+
+| | |
+|---|---|
+| **Module** | ⛔ **Not a module** — the registers. [`BACKLOG.md`](BACKLOG.md), [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md), [`BUGS.md`](BUGS.md) |
+| **Current assignee** | **Lane A** — ⚡ **filed against itself, and caught by its own audit rather than by a reader** |
+| **Severity** | 🟠 — ⛔ **three references pointed at the wrong coordination item**, ⚡ **and one of them was inside a dated record of what another row had found** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-12**, in the same change. ⚠️ **QE verifies and closes** |
+| **Found** | **2026-08-12, by Lane A**, auditing its own [C-209](LANE_COORDINATION.md) renumber before pushing it |
+| **Commit found** | **`301307e2`** |
+
+#### 🔴 What happened
+
+**Renumbering `C-300` → `C-209` was correct** ([C-209](LANE_COORDINATION.md) ⑤ — this lane had allocated outside its block). ⛔ **The method was a per-file replace**, and **three of those files legitimately contain the GENUINE `C-300`** — 📁 *"Provider Platform owns the half of the inbound path Lane B may not build"*.
+
+| Where | What it became | What it is |
+|---|---|---|
+| [`BACKLOG.md`](BACKLOG.md) · **TASK-402** | *"C-209 asks who builds them"* | ⛔ **Provider Platform's steps 3–5** |
+| [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) · **Lane B's row** | *"C-209 · owner product owner"* | ⛔ **The same dependency** |
+| [`BUGS.md`](BUGS.md) · **[B-416](#b-416)** | `C-267`–`C-275`, **`C-209`**, `C-326`–`C-336` | 🔴 **A dated enumeration of what B-416 measured** — ⛔ **and [§2](../CLAUDE.md) forbids rewriting one** |
+
+#### ⚡ The tell was in the data and the audit is what saw it
+
+**In B-416's list the substituted id sits out of ascending order**, between `C-275` and `C-326`. ✅ **An enumeration that is sorted everywhere except one entry is the shape of an edit, not of a record.**
+
+#### 🔴 It is this lane's own filed class, one surface along
+
+📁 **[B-252](#b-252)** counted an identifier in a comment as a caller · 📁 **[B-254](#b-254)** counted a mention as an import · ⚡ **and this replaced a token without asking whose it was.** **All three are a pattern applied to a file when the subject was a region of it.**
+
+> ⛔ **The renumber was scoped to *files this lane had written in*, which is not the same as *content this lane owns*.** ⚠️ **`BACKLOG.md` holds every lane's rows**, and that distinction is the whole defect.
+
+#### ✅ The repair, and how the audit was made to answer the right question
+
+**All three restored to `C-300`.** ⚡ **Then every remaining `C-209` was classified individually** rather than counted: **ten, all inside TASK-1475's row, the design doc's reconciliation table, or the implementation's own comments about absent columns.** ⛔ **A count would have said *fourteen changed* and proved nothing.**
+
 ### B-258 · This lane stopped writing the `Slice-Handoff` five slices ago, and it is the link [B-193](#b-193) went looking for
 
 | | |
@@ -5469,7 +5504,7 @@ def _load_state_check() -> ModuleType:
 
 > ## ⚠️ **It is NOT one lane's omission, and that is why it is a register defect rather than a correction to somebody.**
 
-📁 **The 31 span every allocation block** — `C-015`, `C-100`–`C-103`, `C-204`, `C-236`, `C-267`–`C-275`, `C-209`, `C-326`–`C-336`, `C-414`–`C-428`. ⚡ **Written by QE, by feature lanes and by this office alike**, which makes it a drift in the register's own convention rather than a habit of anybody's.
+📁 **The 31 span every allocation block** — `C-015`, `C-100`–`C-103`, `C-204`, `C-236`, `C-267`–`C-275`, `C-300`, `C-326`–`C-336`, `C-414`–`C-428`. ⚡ **Written by QE, by feature lanes and by this office alike**, which makes it a drift in the register's own convention rather than a habit of anybody's.
 
 ⛔ **Not fixed wholesale in this pass, deliberately.** ✅ **The eight repaired are the live block a lane reads today; the remaining 23 are mostly `CLOSED` items whose absence costs a reader nothing urgent.** 📁 **[D-228](DECISION_REGISTER.md) §5 — do not spend cycles optimizing without evidence of a real problem — and the evidence here supports repairing what is live, not sweeping the file.**
 
