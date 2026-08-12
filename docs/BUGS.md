@@ -92,6 +92,8 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ### B-183 · 🔴 The shipped `.env.example` gave the development runtime a `BYPASSRLS` superuser, and tenancy was off for every Playwright journey ever run
 
+> ⚡ **Absorbs [B-243](#b-243), which is the same defect and was filed first.** **Found by Lane A on 2026-08-11** implementing [TASK-1463](BACKLOG.md), by a journey failing for a reason unrelated to its slice; **fixed by Lane C at `ee4e34c3`**, wider than first proposed — `alembic.ini` and a third owner credential in the Makefile's E2E block as well as `.env.example`. ⛔ **QE created the duplicate and the full account is on [B-243](#b-243).**
+
 | | |
 |---|---|
 | **Module** | **Repository-wide** — `backend/.env.example` · `frontend/playwright.config.ts` |
@@ -1075,6 +1077,20 @@ Received: http://localhost:3300/api/auth/verify-email?token=eyJhbGciOiJIUzI1NiJ9
 ⚠️ **And the correct repair is not obviously *"loosen the regex"*.** **The assertion the journey actually wants is *the link is real and openable*, which is the row's own stated ask** — ✅ **so the honest fix asserts that the link RESOLVES**, by following it, rather than pattern-matching a URL whose shape belongs to a dependency. ⛔ **A regex over a vendor's URL is a test of Better Auth's routing, not of Signora's.**
 
 ### B-243 · 🔴 `backend/.env.example` runs the API as the database owner, so Row-Level Security is bypassed on every request
+
+> ## ⛔ SUPERSEDED BY [B-183](#b-183) — folded 2026-08-12 by QE, whose duplicate this was
+>
+> **This row and [B-183](#b-183) are one defect.** ⚡ **Lane A filed this one first**, from a journey failing for a reason that had nothing to do with its slice. **QE then verified the defect independently, found no `B-243` in the register it could see, concluded the id was unallocated, and filed [B-183](#b-183).** ⛔ **Lane A's row was on a branch QE had not yet integrated** — **QE checked the register it had, not the register that existed.**
+>
+> ⚠️ **The cost was not the second id. It was that one defect carried two close conditions**: this row `FIXED` on the fix, [B-183](#b-183) `OPEN` until promoted. **The register said one defect was simultaneously fixed and open**, which is §2's *duplicated truth becomes contradictory truth* in its two-day form.
+>
+> ✅ **[B-183](#b-183) survives, and not because it is better.** **This row is earlier.** ⛔ **But four source files now cite `B-183`** — `backend/.env.example`, `alembic.ini`, `Makefile`, `backend/tests/security_invariants/test_database.py` — **and renumbering them a second time buys tidiness with risk.** **Cost decided it; correctness was indifferent.**
+>
+> ⚡ **§20e's tiebreak does not govern and QE first applied it anyway, against itself.** That rule is *one id claimed twice*; **this is two ids for one defect, the inverse** — an [L-1](../ENGINEERING_LAWS.md) reuse-audit failure, whose resolution is exactly this: keep one, supersede the other, lose nothing. **Lane C caught the misapplication.**
+>
+> 📁 **Nothing here is deleted.** **Found by Lane A, 2026-08-11**, implementing [TASK-1463](BACKLOG.md); **fixed by Lane C at `ee4e34c3`**, wider than the repair first proposed — it also caught `alembic.ini` carrying a claim `env.py` corrected in July, and a third owner credential unread in the Makefile's E2E block. **That attribution and that scope are carried into [B-183](#b-183)**, which is the half that would otherwise have been lost.
+>
+> ⚠️ **The origin is Lane C's and they owned it**: `B-243` was written into four source files **from Lane A's 200-block by an office allocating in 400/1400**, and it collided with a real Lane A allocation **inside one day**. ⚡ **That is the block rule demonstrating precisely what it prevents.**
 
 | | |
 |---|---|
