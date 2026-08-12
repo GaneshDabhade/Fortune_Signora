@@ -20,7 +20,7 @@
 
 | | Recommendation | Releases |
 |---|---|---|
-| **C-1405** | Commission the Workspace Chooser design first | **TASK-1421** → Lane A reaches its floor of 10 |
+| **C-1405** | Commission the Workspace Chooser design first | ⚡ **TASK-1421 *and* TASK-1423** — **two rows, verified from both backlog rows 2026-08-12** |
 | **C-338** | **Option A** — the R11-06 trigger has not fired | TASK-003 → `WAITING` |
 | **C-1424** | **Option B** — optimistic, on [§20c](../../../CLAUDE.md) | B-253 |
 
@@ -31,7 +31,7 @@
 | | |
 |---|---|
 | **Lane A** | Product surface. **9 claimable against a floor of 10.** The tenth is TASK-1421, gated on C-1405 alone. Source: [`queues/lane-a.toml`](../queues/lane-a.toml) |
-| **Lane B** | See [`modules.toml`](../modules.toml). ⛔ **Never recorded here — assignment moves and a copy goes stale** ([C-213](../../LANE_COORDINATION.md)) |
+| **Lane B** | ⛔ **THERE IS NO LANE B — product owner, 2026-08-12.** **All implementation work is Lane A's.** `modules.toml` already reflects this: 19 modules Lane A, 2 Lane C, none Lane B. ⚡ **Lane C routes every implementation task to Lane A and proposes no second implementation lane** |
 | **QE** | Cycle 204 certified, not promoted. Holding on B-183 / B-428 |
 | **Lane C** | ✅ **This restructure.** Next bounded objective below |
 
@@ -49,6 +49,16 @@
 | **Heading-vs-cell severity** | Swept all 487 rows; **zero** disagreements | [`BUGS.md`](../../BUGS.md) |
 | **Workflow mapping by title** | ⛔ **Forbidden.** *"research"* contains *"search"* | [OPERATING-MODE.md](OPERATING-MODE.md) §6 |
 | **B-428-A fire-tests** | ⛔ **Not evidence for B-428-B.** C-106 still needs its ruling | [`BUGS.md`](../../BUGS.md) |
+
+## 🔴 Highest repository priority — Lane A's queue is exhausted
+
+**Reported by Lane A, 2026-08-12, at `99643282` — five slices pushed, all `IN VALIDATION`.**
+
+⛔ **`BACKLOG.md` reads `READY` for TASK-466 and TASK-1416. Lane A reports both unstartable, citing [C-1427](../../LANE_COORDINATION.md) — which exists only on Lane A's branch and is not on `integration`.**
+
+⚠️ **So this office cannot read the evidence and must not restate either row's status on a claim it has not seen.** ⛔ **Marking them `BLOCKED` on an unread item would be exactly the error being guarded against; leaving them advertised `READY` is [C-422](../../LANE_COORDINATION.md)'s shape.** ✅ **Both are flagged here instead, and the row states stand until C-1427 lands.**
+
+📁 **[§20e](../../../CLAUDE.md): *whenever an implementation lane has been idle because `READY` work exists only outside `integration`, synchronizing that work becomes the highest repository priority* — above further preparation and every planning activity.** ⚡ **The synchronization owed here is QE's integration of Lane A's branch, not a Product Office package.**
 
 ## Known stale / unresolved — recorded, not swept
 
