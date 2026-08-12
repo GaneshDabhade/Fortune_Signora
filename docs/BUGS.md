@@ -216,7 +216,7 @@ sha256sum docs/coordination/coordination.toml      # after
 | **Module** | **Repository-wide** — `backend/.env.example` · `frontend/playwright.config.ts` |
 | **Current assignee** | **Lane C** holds the fix *(already written)*; **QE** owns the verification and the historical-evidence classification |
 | **Severity** | 🔴 — **DEVELOPMENT ENVIRONMENT TENANCY BYPASS / SECURITY CONFIGURATION DEFECT.** ⛔ **Not a production exposure** — see the classification. ⛔ **And not a harmless configuration tidy-up either** |
-| **Status** | 🔵 **`OPEN`** — ⚠️ **QE's verification is complete; the row closes when the fix is promoted.** ⛔ **QE does not close it on the file change alone** |
+| **Status** | ✅ **`CLOSED` — 2026-08-12, promoted at `0dfc07f4`.** ⚡ **The row's own close condition, met literally**: *"closes when the fix is promoted"*, and it now is. ✅ **QE may close this one** — **Lane C wrote the fix and QE verified it**, so QE is not verifying its own work. ⛔ **`main`'s `.env.example` no longer names a `BYPASSRLS` superuser as the development runtime.** ⚠️ **This row is also [C-107](LANE_COORDINATION.md)'s worked example and the item stays OPEN**: it closed only because a promotion happened, and **the next 🔴 written with the same close condition will self-block exactly as this one did.** ⛔ **A promotion is not a ruling** |
 | **Found** | **2026-08-11 by Lane A**, seeing one customer's organization name in another customer's browser. **Diagnosed by Lane C. Verified end-to-end by QE**, on the product owner's ten questions |
 
 > ⚠️ **Filed by QE because no row existed for it on any branch.** Lane C referenced it as *B-243*; **that id is not allocated in any register**, so this row carries QE's own block rather than inventing one. **If Lane C's row appears, merge into the earlier id and keep both evidence sets.**
@@ -4233,6 +4233,7 @@ def _load_state_check() -> ModuleType:
 | **Module** | **Repository-wide** — `frontend/playwright.config.ts` · [`43-customer-experience.md` §4a](architecture/43-customer-experience.md) |
 | **Current assignee** | **QE** — 📁 `playwright.config.ts` decides what certification means, and [§20e](../CLAUDE.md) makes a gate QE's |
 | **Severity** | 🔴 — ⛔ **an entire verification class is absent, not weak** |
+| **Promotion, 2026-08-12** | ⚠️ **`0dfc07f4` was promoted to `main` while this row was 🔴 `OPEN`, on the product owner's explicit instruction — *"please certify and promote"*.** ⛔ **This is an override of the [§20e](../CLAUDE.md) gate by the only party who may grant one. It is NOT a resolution, and criterion B is unchanged.** ⚡ **QE did not touch the severity**, because the standing instruction was *"do NOT weaken B-428 merely to reopen promotion"* and QE saw no reason that stopped applying. 🔴 **B-428-B still blocks under BOTH readings of [C-107](LANE_COORDINATION.md)** — it is a *capability* defect, not a *file* defect, so no reading of the gate clears it. **Recorded here so `main`'s history says a Product Owner released the gate, never that the defect resolved** |
 
 > ## **Two acceptance criteria, one row. A may never be offered as evidence for B**
 >

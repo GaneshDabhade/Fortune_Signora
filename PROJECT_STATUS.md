@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `a792be6`, 2026-08-11.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `0dfc07f4`, 2026-08-12.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,13 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `a792be6`, 2026-08-11.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `0dfc07f4`, 2026-08-12.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`a792be6`** — the certification record, one commit past the certified `5a9743a` |
+| **`main`** | **`0dfc07f4`** — ⚡ **the certified commit itself**, `promoted == certified`, fast-forwarded from `4f68031` |
 | **Release candidate** | **1 commit, and it is QE's own** — the responsive matrix gains a vertical axis and a real handset viewport, both exposed by Lane A's [B-241](docs/BUGS.md). ⏳ **Neither lane was fast-forwardable**: Lane A 19 ahead / 21 behind, Lane C 5 / 23 |
-| **Certification** | ✅ [`5a9743a73b21`](certification/reports/5a9743a73b21.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** · ✅ **first attempt** |
+| **Certification** | ✅ [`0dfc07f48a1a`](certification/reports/0dfc07f48a1a.md) · migration head **`0048`** · protocol **v2** · profile **`platform`** · ⚠️ **third attempt — two aborts, neither a property of the commit** |
+| **Cycle 205 gates** | `pytest` **4414 passed** · coverage **95.04%** · **403** security invariants · `mypy --strict` clean over **866** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages, 142s** · scenario **190 assertions** |
+| **Measured beyond the record** | ⚡ **The planner named two gates certification does not capture** — `eslint` **clean repository-wide**, frontend suite **2920 across 159 files**. **QE ran both; a lane's figure is a claim and QE publishes a measurement** |
+| ⛔ **Promotion** | `promoted == certified` ✓ · `--audit-main`: **1582 commits, none outside a certified snapshot** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN`, on the product owner's explicit override** — **not a resolution, and the severity was not touched** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | ✅ **None.** **0 blocking** |

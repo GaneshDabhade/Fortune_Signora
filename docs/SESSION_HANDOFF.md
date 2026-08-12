@@ -1,5 +1,22 @@
 # Session Handoff
 
+> ## Cycle 205 — promoted `0dfc07f4`, 2026-08-12
+>
+> **`main` = `0dfc07f4` = the certified commit.** `integration` = `f860ec1f` (the certification record, which promotes next cycle).
+>
+> ⛔ **Promoted with [B-428](BUGS.md) 🔴 `OPEN`, on the product owner's explicit override.** **Not a resolution.** Criterion B is a *capability* defect and blocks under both readings of [C-107](LANE_COORDINATION.md); **QE did not touch the severity.**
+>
+> ✅ **[B-183](BUGS.md) is `CLOSED`** — its own condition, *"closes when the fix is promoted"*, met literally. ⚠️ **[C-107](LANE_COORDINATION.md) stays OPEN anyway**: it closed because a promotion happened, and **the next 🔴 written the same way will self-block identically. A promotion is not a ruling.**
+>
+> **Two decisions still with the product owner:** [C-106](LANE_COORDINATION.md) — B-428-B's severity. [C-107](LANE_COORDINATION.md) — does the 🔴 block read the candidate tree or the row's status.
+>
+> **QE gate defects fixed this cycle, all found against QE's own instruments:** [B-184](BUGS.md) — the claim audit refused on immutable history, so it could never pass; **the same range bug also made the skips report name 131 of 166 claims (now 5)**, and **`_claim_stowaways` measured from `main` while its docstring said `integration`** — ⚡ **so the promotion block was manufacturing false positives in the check that guards promotion, and the rate grew with the block.** Now measured from `_validated_floor()`.
+>
+> **Open and NOT QE's:** [B-185](BUGS.md) `--dry-run` writes the generated coordination source *(Lane C)* · [B-186](BUGS.md) the republish is not the last commit of its batch *(Lane C)* · [B-253](BUGS.md) 🟠 cold boot shows an owner their own destinations locked, raised as [C-1424](LANE_COORDINATION.md).
+>
+> ⚠️ **Two aborts preceded this certification and neither was a property of the commit** — a run killed with its process leaving no marker, and `release-preflight` refusing on a dead database. **The manifest is the durable record; a log is not.** QE reported a run as in flight that had already died, and only caught it by reading `certification/manifest.json`.
+
+
 > **This file answers one question: *"what should the next session know?"*** Current repository state · current certification state · active lanes · open blockers · pending work · repository recommendations.
 >
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
