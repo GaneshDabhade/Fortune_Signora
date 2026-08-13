@@ -60,11 +60,23 @@ describe('🔴 an action is offered only where one genuinely exists', () => {
    * cannot help is worse than no button** — it costs a click to learn the same
    * thing, and it implies the product thinks there is a way out.
    */
-  it('a locked account is offered the reset that unlocks it', () => {
-    expect(GATE_COPY.ACCOUNT_LOCKED.action).toEqual({
-      label: 'Reset your password',
-      href: '/forgot-password',
-    });
+  /**
+   * 🔴 **`ACCOUNT_LOCKED` is deliberately absent, and this test is the record
+   * of why.**
+   *
+   * ⚠️ **[TASK-1467](../../../docs/BACKLOG.md) already shipped `/auth/locked`**
+   * against `Authentication.dc.html` §11, **with copy this generic table could
+   * not match** — it says the lock *"unlocks on its own"* and that **nobody has
+   * been signed in**, which is 📁 *"the fear a lock actually creates"*.
+   * ⛔ **This lane overwrote that file while moving its own route into place**,
+   * and `account-locked.test.tsx` caught it.
+   *
+   * ✅ **A generic gate is a regression against a designed one**, so the reason
+   * stays out of this table — **and this assertion stops somebody adding it
+   * back for symmetry.**
+   */
+  it('⛔ ACCOUNT_LOCKED is NOT in this table — it has a designed screen already', () => {
+    expect(GATE_REASONS).not.toContain('ACCOUNT_LOCKED');
   });
 
   it('⛔ a deleted or suspended account is offered nothing, and the body says who can help', () => {
@@ -100,7 +112,7 @@ describe('⚠️ every action points at a route that exists', () => {
     // ⛔ **The defect this row exists to close, applied to itself**:
     // `resolveEntry` named eleven routes and none existed. ⚡ **A gate screen
     // whose own button 404s would be the same defect one layer in.**
-    const shipped = ['/forgot-password', '/workspaces', '/onboarding'];
+    const shipped = ['/workspaces', '/onboarding'];
 
     for (const reason of GATE_REASONS) {
       const action = GATE_COPY[reason as GateReason].action;

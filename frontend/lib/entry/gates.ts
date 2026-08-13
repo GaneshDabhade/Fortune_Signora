@@ -22,8 +22,19 @@
  *
  * ## ⚠️ Two of these states are currently unreachable, and they still ship
  *
- * ⛔ **`ACCOUNT_LOCKED` has no lockout capability** ([C-431](../../../docs/LANE_COORDINATION.md))
- * and **`STEPUP_REQUIRED`'s challenge is [TASK-1410](../../../docs/BACKLOG.md)'s.**
+ * ⛔ **`STEPUP_REQUIRED`'s challenge is [TASK-1410](../../../docs/BACKLOG.md)'s**,
+ * and the screen ships so that capability has somewhere to land.
+ *
+ * ## 🔴 `ACCOUNT_LOCKED` is NOT here, and the reason is a mistake worth recording
+ *
+ * ⚠️ **[TASK-1467](../../../docs/BACKLOG.md) already shipped `/auth/locked`**,
+ * against `Authentication.dc.html` §11, **with copy this table could not
+ * match**: it says the lock *"unlocks on its own"* and that **nobody has been
+ * signed in** — 📁 *"the fear a lock actually creates"*. ⛔ **This lane
+ * overwrote that file while moving its own route into place**, and
+ * `account-locked.test.tsx` caught it. ✅ **The shipped screen is restored and
+ * this table does not name the reason**, because **a generic gate is a
+ * regression against a designed one.**
  * ✅ **The screens exist so that the capability, when it arrives, has somewhere
  * to land** — 📁 and the alternative is the [C-1405](../../../docs/LANE_COORDINATION.md)
  * shape: a rule that resolves to a route nobody built.
@@ -35,7 +46,6 @@
 export const GATE_REASONS = [
   'ACCOUNT_DELETED',
   'ACCOUNT_SUSPENDED',
-  'ACCOUNT_LOCKED',
   'STEPUP_REQUIRED',
   'NO_WORKSPACE',
   'INTENT_NOT_MEMBER',
@@ -79,12 +89,6 @@ export const GATE_COPY: Readonly<Record<GateReason, GateCopy>> = {
     title: 'This account is suspended',
     body: 'Signora has suspended access to this account. Your organization’s data is untouched, and an administrator can tell you why and restore it.',
     action: null,
-  },
-  ACCOUNT_LOCKED: {
-    title: 'This account is locked',
-    body: 'Too many sign-in attempts failed, so Signora locked the account to protect it. Resetting your password unlocks it.',
-    // ✅ **A real route** — the reset flow ships, so this refusal has a way out.
-    action: { label: 'Reset your password', href: '/forgot-password' },
   },
   STEPUP_REQUIRED: {
     title: 'Confirm it is you',
