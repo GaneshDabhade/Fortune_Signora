@@ -1,5 +1,10 @@
 'use client';
 
+import { AccountTags, tagsFor } from '@/components/accounts/account-tags';
+import {
+  useAccountTagAssignments,
+  useAccountTags,
+} from '@/lib/query/hooks/account-tags';
 import { Building2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -109,6 +114,17 @@ export default function CompaniesPage() {
   // row on one screen is aged against one moment.
   const shown = useMemo(() => applyFilters(current, filters, new Date()), [current, filters]);
   const shownColumns = useMemo(() => visibleColumns(columns), [columns]);
+
+  // ⚡ **Only the rows on screen**, and only when the Tags column is on. 📁 A
+  // page of forty is one question; the next page is a different one, and the
+  // query key says so. ⛔ **Asking for tags nobody is looking at is a request
+  // whose answer is thrown away.**
+  const taggable = useMemo(
+    () => (columns.includes('tags') ? shown.map((r) => r.account.account_id) : []),
+    [columns, shown],
+  );
+  const vocabulary = useAccountTags(columns.includes('tags') ? workspaceId : null);
+  const assignments = useAccountTagAssignments(workspaceId, taggable);
 
   if (workspaceId === null) return <NoWorkspace />;
 
@@ -229,8 +245,21 @@ export default function CompaniesPage() {
                             fallbackId={row.account.account_id}
                             href={`/accounts/${row.account.account_id}`}
                           />
+                        ) : column.id === 'tags' ? (
+                          /* ⛔ **Joined, never read from the row.** A tag is
+                             `commercial_profile`'s and an account is
+                             `knowledge_graph`'s — the screen reads both and
+                             joins them rather than buying a cross-module
+                             dependency for a column (§5). */
+                          <AccountTags
+                            tags={tagsFor(
+                              row.account.account_id,
+                              assignments.data?.assignments,
+                              vocabulary.data?.tags,
+                            )}
+                          />
                         ) : (
-                          column.read(row)
+                          column.read?.(row)
                         )}
                       </TD>
                     ))}

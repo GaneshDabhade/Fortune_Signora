@@ -45,6 +45,16 @@ export const queryKeys = {
    */
   accountsList: (workspaceId: string) =>
     ['workspace', workspaceId, 'accounts-list'] as const,
+  /** 📁 [TASK-466](../../../docs/BACKLOG.md) — the workspace's tag vocabulary. */
+  accountTags: (workspaceId: string) =>
+    ['workspace', workspaceId, 'account-tags'] as const,
+  /**
+   * ⚡ **Keyed by the accounts asked about**, because the answer is only about
+   * them — a page of rows is a different question from the next page, and a
+   * shared key would serve one page's answer to the other.
+   */
+  accountTagAssignments: (workspaceId: string, accountIds: readonly string[]) =>
+    ['workspace', workspaceId, 'account-tag-assignments', [...accountIds].sort()] as const,
 
   accountScore: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'score'] as const,

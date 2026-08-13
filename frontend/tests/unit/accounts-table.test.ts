@@ -48,11 +48,28 @@ function account(over: Partial<ListedAccount['account']> = {}, kind = 'company')
 }
 
 describe('🔴 a column exists only where a field does', () => {
-  it('⛔ every column reads something the contract publishes', () => {
+  it('⛔ every column that reads the row reads something the contract publishes', () => {
     const row = account();
     for (const column of COLUMNS) {
-      expect(() => column.read(row)).not.toThrow();
+      if (column.read === undefined) continue;
+      expect(() => column.read!(row)).not.toThrow();
     }
+  });
+
+  /**
+   * ⚡ **The other direction, and it is what keeps `read` optional honest.**
+   *
+   * ⛔ **A column may omit `read` only where its value genuinely is not on the
+   * row.** 📁 `tags` is `commercial_profile`'s and an account is
+   * `knowledge_graph`'s — the screen joins them
+   * ([TASK-466](../../../docs/BACKLOG.md)). ⚠️ **Without this assertion,
+   * `read` becoming optional would let any future column skip the type's
+   * question instead of answering it.**
+   */
+  it('⛔ and exactly one column is joined rather than read', () => {
+    const joined = COLUMNS.filter((column) => column.read === undefined).map((c) => c.id);
+
+    expect(joined).toEqual(['tags']);
   });
 
   /**

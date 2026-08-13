@@ -22,7 +22,7 @@
  */
 import type { ListedAccount } from '@/lib/api/types';
 
-export type ColumnId = 'company' | 'kind' | 'sources' | 'agreement' | 'freshness';
+export type ColumnId = 'company' | 'kind' | 'sources' | 'agreement' | 'freshness' | 'tags';
 
 export interface ColumnSpec {
   readonly id: ColumnId;
@@ -32,7 +32,24 @@ export interface ColumnSpec {
    *  table of rows you cannot identify is not a narrower table, it is a broken
    *  one. */
   readonly pinned?: true;
-  readonly read: (row: ListedAccount) => string;
+  /**
+   * ⛔ **Absent where the value is not ON the row**, and `tags` is the first
+   * such column — [TASK-466](../../../docs/BACKLOG.md).
+   *
+   * ⚡ **The header comment above says a column exists only where a field
+   * exists, and that is still true**: a tag has a source, just not on
+   * `ListedAccount`. 📁 It is `commercial_profile`'s and an account is
+   * `knowledge_graph`'s, so **folding one into the other's response would be a
+   * cross-module dependency bought for a column**
+   * ([§5](../../../CLAUDE.md)). ✅ **The screen reads both and joins them,
+   * which is the boundary working rather than an omission.**
+   *
+   * ⚠️ **So `read` is optional rather than returning `''`.** A column that
+   * answered the empty string would say *"Signora looked and found nothing"*
+   * for an account that simply is not in this answer — 📁 the exact
+   * `—`-versus-absent distinction this file's header refuses.
+   */
+  readonly read?: (row: ListedAccount) => string;
 }
 
 /** ⚡ **Freshness in days, or `null` when no source has ever reported.** 📁 The
@@ -55,6 +72,10 @@ export const COLUMNS: readonly ColumnSpec[] = [
     label: 'Last observed',
     read: (r) => r.account.last_observed_at ?? 'Never',
   },
+  // ⚡ **Released by [C-1425](../../../docs/LANE_COORDINATION.md)**, which the
+  // header above records as one of the five columns with no source. **It has
+  // one now** — [ADR-0411](../../../docs/architecture/adr/0411-customer-organized-account-metadata.md).
+  { id: 'tags', label: 'Tags' },
 ];
 
 /** 📁 The design's `Columns · 9 of 42` control. ⛔ **The pinned column is always
@@ -175,7 +196,19 @@ export function toCsv(
 ): string {
   const escape = (value: string) =>
     /[",\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
-  const header = columns.map((column) => escape(column.label)).join(',');
-  const body = rows.map((row) => columns.map((column) => escape(column.read(row))).join(','));
+  // ⛔ **A column with no `read` is left OUT of the export, not exported
+  // empty.** ⚡ An `Tags` header over a column of blanks would say Signora
+  // looked and found nothing on every row — 📁 the `—`-versus-absent
+  // distinction this file's header refuses, arriving in a file somebody opens
+  // in a spreadsheet and believes.
+  //
+  // ⚠️ **Declared rather than silent**: [TASK-466](../../../docs/BACKLOG.md)
+  // records it, and the first row that needs tags in an export will need the
+  // joined read here too.
+  const exportable = columns.filter((column) => column.read !== undefined);
+  const header = exportable.map((column) => escape(column.label)).join(',');
+  const body = rows.map((row) =>
+    exportable.map((column) => escape(column.read!(row))).join(','),
+  );
   return [header, ...body].join('\n');
 }

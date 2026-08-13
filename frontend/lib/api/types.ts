@@ -1227,3 +1227,36 @@ export interface PersonPreferences {
    */
   invite_hidden: boolean;
 }
+
+/**
+ * 🔴 **One label a customer put on their own accounts** —
+ * [TASK-466](../../../docs/BACKLOG.md), against
+ * [ADR-0411](../../../docs/architecture/adr/0411-customer-organized-account-metadata.md).
+ *
+ * ⛔ **Not a `ClaimAttribute` and never one.** 📁 The ruling decides it by
+ * authorship: *"a claim records what a provider asserted; nobody asserted a
+ * customer's own tag."*
+ */
+export interface AccountTag {
+  id: string;
+  /** ⚡ **As the customer typed it**, never the folded form uniqueness uses. */
+  name: string;
+  /**
+   * 📁 The design's chip token. ⛔ **`ai` is not among the values the server
+   * will ever send** — that tone is reserved for what Signora inferred, and a
+   * human opinion wearing it is the one confusion the evidence model exists to
+   * prevent.
+   */
+  tone: 'risk' | 'warn' | 'pos' | 'neutral';
+}
+
+/**
+ * **Which labels each of the requested accounts wears.**
+ *
+ * ⛔ **An account with no tags is ABSENT rather than present-and-empty**, and
+ * the request named exactly which accounts were asked about — so *"we looked
+ * and found none"* is unambiguous without a key for it.
+ */
+export interface AccountTagAssignments {
+  assignments: Record<string, string[]>;
+}
