@@ -309,6 +309,42 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-266 · The two highest READY rows in the backlog were offered to no lane
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — `infra/coordination.py`, this lane's since [D-230](DECISION_REGISTER.md) |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — ⛔ **wrong behaviour a lane would hit**, and ⚠️ **silent**: the ref simply did not mention the rows, so every lane read a shorter queue than the backlog held |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-13**, with three regression tests. ⚠️ **QE verifies and closes** |
+| **Found** | **2026-08-13, by Lane A**, selecting its next task under the Task Claim Protocol — ⚡ **step 3b, where the queue and the backlog are compared, is what surfaced it** |
+
+#### 🔴 What happened
+
+📁 **`_lane_for` reads an explicit lane out of the `Module` cell, then a module key, then a trigger steward. It never reads the `Owner` cell.**
+
+⛔ **[TASK-1479](BACKLOG.md) and [TASK-1478](BACKLOG.md) name no module at all.** Both carry `| **Owner** | **Lane A** |`, both are `READY`, and **both resolved to `lane='—'` and classified as `WAITING ARCHITECTURE`** — so they appeared in no lane's `backlog` array.
+
+🔴 **They are the two highest `READY` rows in [`BACKLOG.md`](BACKLOG.md)**, and 📁 **[TASK-1478](BACKLOG.md) is the standing authority under which Lane A picks its own next module.** ⚠️ **It was invisible to Lane A.**
+
+#### ⚠️ The workaround was already in the tree, which is the tell
+
+📁 **[TASK-1477](BACKLOG.md) and [TASK-1480](BACKLOG.md) carry `Module` cells stamped *"added 2026-08-13"*** — **hand-patched onto rows so this function could see them.**
+
+⚡ **That is the same shape [B-423](#b-423) records for the queue arrays**: *"this office hand-fixed it four times before fixing the cause."* ⛔ **Four rows of six with an `Owner` cell had no `Module` cell; two of those were patched by hand and two were left invisible.**
+
+#### ✅ The fix, and where it sits in the precedence
+
+**An `Owner` cell naming a lane resolves the row — LAST, after the module-key scan.** 📁 **[`modules.toml`](coordination/modules.toml) stays the authoritative ownership registry** (§20e), so **a row that names a module is unaffected** and this does not become a second registry.
+
+⛔ **It is not the steward branch and must not become it.** 📁 [D-135](DECISION_REGISTER.md)'s steward is *an owner, never an executor*, and it is a **different cell**, labelled `Trigger steward`. ⚡ **An `Owner` cell on an implementation row is the row's own statement about who executes it** — [TASK-1479](BACKLOG.md) says so twice, its `Type` cell reading *"Lane A owns decomposition, sequencing and end-to-end delivery."*
+
+#### ✅ Measured before and after
+
+**`Lane A: 9 claimable` → `11 claimable`.** ⛔ **[TASK-412](BACKLOG.md) and [TASK-411](BACKLOG.md) are unchanged** — 412 resolves through its own `Module` cell and 411 keeps taking its steward when parked and none when startable, **which are the two protections this fix must not undo, and both are pinned.**
+
+⚡ **Three regression tests; the new one fires red with the branch removed and the two protections stay green** — which is what separates a fix from a widening.
+
 ### B-265 · A database behind the migration head fails 26 tests and never says so
 
 | | |

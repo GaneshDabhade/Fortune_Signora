@@ -281,6 +281,34 @@ def _lane_for(
     for phrase, key in _ALIASES.items():
         if phrase in module_cell.lower() and key in owners:
             return owners[key]
+    # ⚡ **An `Owner` cell naming a lane, for a row that names no module at
+    # all — B-266.** **Last before the steward, deliberately**: a row that
+    # names a module still resolves through
+    # [`modules.toml`](../docs/coordination/modules.toml), which §20e makes the
+    # authoritative ownership registry, so nothing that worked before changes.
+    #
+    # 🔴 **Measured, not foreseen.** `TASK-1479` and `TASK-1478` are the two
+    # highest `READY` rows in the backlog, both read
+    # ``| **Owner** | **Lane A** |``, and **both resolved to no lane** — so the
+    # published ref offered them to nobody while `BACKLOG.md` had them at the
+    # top of the queue. `TASK-1478` is the standing authority under which Lane
+    # A picks its own next module, and it was invisible to Lane A.
+    #
+    # ⚠️ **The workaround was already in the tree, which is the tell.**
+    # `TASK-1477` and `TASK-1480` carry Module cells stamped *"added
+    # 2026-08-13"* — **hand-patched onto rows so this function could see
+    # them**, exactly the shape B-423 records for the queue arrays: *"this
+    # office hand-fixed it four times before fixing the cause."*
+    #
+    # ⛔ **This is not the steward branch and must not become it.** D-135's
+    # steward is *an owner, never an executor*, and it is labelled
+    # `Trigger steward`. **An `Owner` cell on an implementation row is the
+    # row's own statement about who executes it** — `TASK-1479` says so twice,
+    # its Type cell reading *"Lane A owns decomposition, sequencing and
+    # end-to-end delivery."*
+    owner = re.search(r"\|\s*\*\*Owner\*\*\s*\|[^|]*?\*\*(Lane [ABC])\*\*", body)
+    if owner:
+        return owner.group(1)
     if declared in _STARTABLE:
         return None
     steward = re.search(r"Trigger steward\*\*\s*\|\s*\*\*(Lane [ABC])", body)

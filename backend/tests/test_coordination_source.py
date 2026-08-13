@@ -777,3 +777,39 @@ def test_a_lane_with_nothing_pending_gets_no_synchronization_clause() -> None:
     rows = [_row("TASK-1", state=coordination.ASSIGNED)]
 
     assert coordination.supply_line("Lane A", rows) == "Lane A: 1 claimable of 1 assigned"
+
+
+_OWNER_BODY = "| **Type** | **Implementation Package.** |\n| **Owner** | **Lane A** |\n"
+
+
+def test_a_row_that_names_its_owner_and_no_module_resolves_to_that_lane() -> None:
+    """🔴 **B-266.** `TASK-1479` and `TASK-1478` are the two highest `READY`
+    rows in the backlog, both read ``| **Owner** | **Lane A** |``, and **both
+    resolved to no lane** — so the published ref offered them to nobody while
+    `BACKLOG.md` had them at the top of the queue.
+
+    ⚠️ **`TASK-1478` is the standing authority under which Lane A picks its own
+    next module**, and it was invisible to Lane A.
+    """
+    assert coordination._lane_for("", _OWNER_BODY, {}, "READY") == "Lane A"
+
+
+def test_a_named_module_still_decides_over_an_owner_cell() -> None:
+    """⛔ **The Owner cell is a last resort, not a new precedence.**
+    [`modules.toml`](../../docs/coordination/modules.toml) is the authoritative
+    ownership registry (§20e), so a row that names a module must still resolve
+    through it — otherwise this fix quietly becomes a second registry.
+    """
+    body = "| **Owner** | **Lane A** |\n"
+
+    assert coordination._lane_for("`ai_platform`", body, {"ai_platform": "Lane B"}, "READY") == "Lane B"
+
+
+def test_a_startable_row_with_only_a_steward_still_takes_no_lane() -> None:
+    """✅ **The protection D-135 and TASK-412 bought, which this must not
+    undo.** A steward is *an owner, never an executor* — and it is a different
+    cell, labelled `Trigger steward`. **An `Owner` cell on an implementation
+    row is the row's own statement about who executes it.**
+    """
+    assert coordination._lane_for("", _STEWARD_BODY, {}, "READY") is None
+    assert coordination._lane_for("", _STEWARD_BODY, {}, "SEQUENCED") == "Lane C"
