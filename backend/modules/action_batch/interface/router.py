@@ -3,6 +3,20 @@
 **Two endpoints, and the pair is the row.** One accepts an application and
 answers immediately; the other says how far it got. **Neither performs the
 work**, and the first one's status code is the whole argument.
+
+⚠️ **Amended by [TASK-466](../../../../docs/BACKLOG.md), 2026-08-13, and the
+gap was named a cycle before it was closed.** 📁 That row's own cell:
+***"its HTTP surface publishes two endpoints of seven… there is no `propose`,
+`approve` or `reverse` route, so a screen cannot create a batch or take one
+back."***
+
+🔴 **Building the first consumer proved it.** A proposed batch could not be
+approved, so it could never apply, so nothing could be reversed — **and the
+*Add tag* control would have proposed work nobody could accept.** ✅ **`approve`
+and `reverse` are added here, on the module's own router**, which is where 📁
+[D-235](../../../../docs/DECISION_REGISTER.md) ① puts them: *"human approval
+stays a separate product boundary."* ⛔ **The published port stays `propose`
+and nothing else.**
 """
 
 from __future__ import annotations
@@ -96,3 +110,93 @@ async def read_batch(context: CurrentWorkspace, batch_id: UUID) -> ActionBatchPr
         )
 
     return ActionBatchProgressResponse.from_domain(batch)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/action-batches/{batch_id}/approve",
+    response_model=ActionBatchProgressResponse,
+    summary="Approve a proposed batch",
+)
+async def approve_batch(
+    context: CurrentWorkspace, batch_id: UUID
+) -> ActionBatchProgressResponse:
+    """*"Yes, do this."*
+
+    🔴 **The route [TASK-466](../../../../docs/BACKLOG.md) found missing while
+    building the first consumer**, and its own row named the gap a cycle
+    earlier: ⛔ ***"its HTTP surface publishes two endpoints of seven… there is
+    no `propose`, `approve` or `reverse` route, so a screen cannot create a
+    batch or take one back."***
+
+    ⚡ **This is where human approval lives**, and 📁
+    [D-235](../../../../docs/DECISION_REGISTER.md) ① is why it is here rather
+    than on the published port: *"human approval stays a separate product
+    boundary."* ⛔ **A consuming domain may propose and may never approve** —
+    *intelligence suggests; humans commit.*
+
+    ⛔ **Approving is not applying.** 📁 The module's own words: *"`APPROVED`
+    with no `applied_at` is a real state, not an inconsistency — approval and
+    application are two moments."* **The screen asks for the application
+    separately**, which is what keeps *"I agreed to this"* and *"it has
+    started"* two facts a customer can tell apart.
+
+    **`200`, not `201`** — nothing is created; a decision is recorded against
+    something that already existed.
+    """
+    context.authorize(Resource.ACTION_BATCH, Action.UPDATE)
+
+    batches = build_action_batches(context.session)
+    try:
+        approved = await batches.approve(
+            context.workspace_id, batch_id, actor_id=context.principal.user_id
+        )
+    except ActionBatchNotFound as missing:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(missing)) from missing
+    except ActionBatchError as refusal:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(refusal)) from refusal
+
+    return ActionBatchProgressResponse.from_domain(approved)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/action-batches/{batch_id}/reverse",
+    response_model=ActionBatchProgressResponse,
+    summary="Take an applied batch back, inside the window",
+)
+async def reverse_batch(
+    context: CurrentWorkspace, batch_id: UUID
+) -> ActionBatchProgressResponse:
+    """*"Undo what we did."*
+
+    🔴 **The half [TASK-466](../../../../docs/BACKLOG.md) calls a defect when it
+    is missing**: ⛔ ***"a batch that applies but cannot be reversed in the
+    window is a defect, not a limitation."***
+
+    ⚡ **The window is enforced by the domain, not by this handler.** 📁
+    `reversed_by` refuses a settled batch, which is what makes `has_settled`
+    load-bearing rather than descriptive — **and a second check here would be
+    behaviour existing twice** ([§2](../../../../CLAUDE.md)).
+
+    ⛔ **Nothing here performs the inverse.** The reversal is announced, and the
+    consuming domain that did the work undoes it — 📁
+    [ADR-0405](../../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md):
+    *the consuming domain owns performing the operation and implementing the
+    inverse.*
+
+    **`409` when the window has closed**, with the domain's own sentence — ⚠️
+    and *"reversal was never offered"* and *"the window has closed"* are
+    different refusals, which is why the domain answers rather than this file.
+    """
+    context.authorize(Resource.ACTION_BATCH, Action.UPDATE)
+
+    batches = build_action_batches(context.session)
+    try:
+        undone = await batches.reverse(
+            context.workspace_id, batch_id, actor_id=context.principal.user_id
+        )
+    except ActionBatchNotFound as missing:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(missing)) from missing
+    except ActionBatchError as refusal:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(refusal)) from refusal
+
+    return ActionBatchProgressResponse.from_domain(undone)

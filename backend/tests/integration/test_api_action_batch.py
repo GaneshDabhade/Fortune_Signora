@@ -341,3 +341,117 @@ class TestTheProposerPortAConsumingDomainUses:
             )
 
         assert len(await _outbox(admin_session_factory)) == before
+
+
+class TestTheLifecycleAScreenCanDrive:
+    """🔴 **The three routes a customer journey needs, and two were missing.**
+
+    📁 [TASK-466](../../../docs/BACKLOG.md)'s own cell named it a cycle before
+    it was closed: ⛔ *"there is no `propose`, `approve` or `reverse` route, so
+    a screen cannot create a batch or take one back."*
+
+    ⚡ **Building the first consumer proved it**: a proposed batch could not be
+    approved, so it could never apply, so nothing could be reversed.
+    """
+
+    async def test_a_proposed_batch_can_be_approved(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id = await _workspace(session_factory)
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            batch_id = await build_action_batch_proposer(session).propose(
+                workspace_id=workspace_id,
+                name="Tag 3 companies",
+                item_count=3,
+                proposed_by=user_id,
+                reversible_for=timedelta(hours=24),
+            )
+
+        response = await client.post(
+            f"/workspaces/{workspace_id}/action-batches/{batch_id}/approve",
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json()["state"] == "approved"
+        # ⛔ **Approved is not applied.** Two moments, and a screen that
+        # rendered them alike would tell somebody the work had started.
+        assert response.json()["applied_at"] is None
+
+    async def test_approving_twice_is_refused_rather_than_repeated(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id = await _workspace(session_factory)
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            batch_id = await build_action_batch_proposer(session).propose(
+                workspace_id=workspace_id,
+                name="Tag 3 companies",
+                item_count=3,
+                proposed_by=user_id,
+            )
+        await client.post(
+            f"/workspaces/{workspace_id}/action-batches/{batch_id}/approve",
+            headers=_auth(key_pair, user_id),
+        )
+
+        again = await client.post(
+            f"/workspaces/{workspace_id}/action-batches/{batch_id}/approve",
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert again.status_code == 409, again.text
+
+    async def test_a_batch_that_never_applied_cannot_be_reversed(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """⛔ **Nothing to take back.** ⚠️ *"Reversal was never offered"* and
+        *"the window has closed"* are different refusals, and the domain
+        answers rather than this handler."""
+        workspace_id, user_id = await _workspace(session_factory)
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            batch_id = await build_action_batch_proposer(session).propose(
+                workspace_id=workspace_id,
+                name="Tag 3 companies",
+                item_count=3,
+                proposed_by=user_id,
+                reversible_for=timedelta(hours=24),
+            )
+
+        response = await client.post(
+            f"/workspaces/{workspace_id}/action-batches/{batch_id}/reverse",
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 409, response.text
+
+    async def test_a_batch_in_another_workspace_is_not_found_rather_than_forbidden(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        # 📁 §7: *forbidden* confirms the id exists, which is a
+        # workspace-enumeration oracle.
+        workspace_id, user_id = await _workspace(session_factory)
+
+        response = await client.post(
+            f"/workspaces/{workspace_id}/action-batches/{uuid4()}/approve",
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 404, response.text
