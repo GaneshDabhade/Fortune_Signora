@@ -351,3 +351,36 @@ class AccountTagAssignmentModel(Base, WorkspaceScopedMixin):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=text("now()")
     )
+
+
+class AccountTagBatchModel(Base, WorkspaceScopedMixin, TimestampMixin):
+    """What one bulk tag batch asked for, and what it changed — migration `0052`.
+
+    ⚡ **The half the Action Batch deliberately does not hold.** 📁
+    `ActionBatchView` publishes *"`item_count` and not the items"*, so the
+    lifecycle module knows a batch covers forty-one things and nothing about
+    what they are.
+
+    ⛔ **`changed` is nullable and the null is load-bearing**: `None` means *not
+    yet applied*, `[]` means *applied and changed nothing* — which is a real
+    outcome when every selected account already carried the tag. **A reversal
+    reads `changed` and never `requested`.**
+
+    ⛔ **No `AuditMixin`.** That mixin carries `updated_by`, and the only write
+    after the insert is the applied-handler recording `changed` — **which is
+    the batch's own approver, already held by `action_batch`.** A second copy
+    here would be a fact with two representations (§2).
+    """
+
+    __tablename__ = "account_tag_batch"
+
+    #: ⛔ **The Action Batch's id, and not a local one.** A batch has one
+    #: identity, and minting a second here would make *"which batch is this?"*
+    #: a join rather than a fact.
+    batch_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    tag_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("account_tag.id", ondelete="CASCADE"), nullable=False
+    )
+    requested: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    changed: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
+    created_by: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)

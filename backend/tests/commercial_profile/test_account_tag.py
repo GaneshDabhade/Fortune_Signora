@@ -19,6 +19,7 @@ from modules.commercial_profile.domain.account_tag import (
     AccountTag,
     AccountTagError,
     TagApplication,
+    TagBatch,
     TagTone,
     TagVocabulary,
     apply_tag,
@@ -263,3 +264,77 @@ class TestTheReversalIsDerivedFromWhatChanged:
         )
 
         assert application.inverse() == (a,)
+
+
+class TestABatchRecordsWhatItAskedAndWhatItDid:
+    def test_a_batch_names_at_least_one_account(self) -> None:
+        with pytest.raises(AccountTagError):
+            TagBatch(batch_id=uuid4(), tag_id=uuid4(), requested=())
+
+    def test_before_it_runs_there_is_nothing_to_reverse(self) -> None:
+        """⛔ **`None` is not the same as empty**, and this is the first of the
+        two states a boolean could not tell apart."""
+        batch = TagBatch(batch_id=uuid4(), tag_id=uuid4(), requested=(uuid4(),))
+
+        assert batch.is_applied is False
+        assert batch.to_reverse() == ()
+
+    def test_applied_and_changed_nothing_is_a_different_state(self) -> None:
+        """⛔ **The second.** Every selected account already carried the tag, so
+        the batch ran and there is still nothing to undo — **and a caller that
+        treated *nothing to reverse* as *never applied* would offer the undo
+        control on a batch that had already finished.**"""
+        tag_id = uuid4()
+        already = uuid4()
+        batch = TagBatch(batch_id=uuid4(), tag_id=tag_id, requested=(already,))
+
+        ran = batch.with_application(
+            apply_tag(tag_id, accounts=(already,), already_tagged=frozenset({already}))
+        )
+
+        assert ran.is_applied is True
+        assert ran.to_reverse() == ()
+
+    def test_the_reversal_reads_changed_and_never_requested(self) -> None:
+        """🔴 **The defect this whole record exists to prevent**, at the type a
+        caller actually holds."""
+        tag_id = uuid4()
+        june = frozenset(uuid4() for _ in range(3))
+        now = tuple(uuid4() for _ in range(5))
+        batch = TagBatch(batch_id=uuid4(), tag_id=tag_id, requested=(*june, *now))
+
+        ran = batch.with_application(
+            apply_tag(tag_id, accounts=batch.requested, already_tagged=june)
+        )
+
+        assert set(ran.to_reverse()) == set(now)
+        assert not set(ran.to_reverse()) & june
+        # ⚡ **`requested` is kept and is NOT what a reversal reads.**
+        assert set(ran.requested) == june | set(now)
+
+    def test_a_batch_cannot_be_applied_twice(self) -> None:
+        """⛔ **The second application would overwrite the record a reversal
+        depends on**, so the customer's undo would operate on the wrong set."""
+        tag_id, account = uuid4(), uuid4()
+        batch = TagBatch(batch_id=uuid4(), tag_id=tag_id, requested=(account,))
+        ran = batch.with_application(
+            apply_tag(tag_id, accounts=(account,), already_tagged=frozenset())
+        )
+
+        with pytest.raises(AccountTagError):
+            ran.with_application(
+                apply_tag(tag_id, accounts=(account,), already_tagged=frozenset())
+            )
+
+    def test_a_batch_cannot_apply_a_different_tag_than_it_proposed(self) -> None:
+        # ⚡ **Unrepresentable rather than tested elsewhere**: an applied-handler
+        # that looked up the wrong row would otherwise write a coherent-looking
+        # record whose reversal untagged the wrong label.
+        account = uuid4()
+        with pytest.raises(AccountTagError):
+            TagBatch(
+                batch_id=uuid4(),
+                tag_id=uuid4(),
+                requested=(account,),
+                applied=apply_tag(uuid4(), accounts=(account,), already_tagged=frozenset()),
+            )

@@ -285,3 +285,68 @@ def apply_tag(
     return TagApplication(
         tag_id=tag_id, changed=tuple(changed), unchanged=tuple(unchanged)
     )
+
+
+@dataclass(frozen=True, slots=True)
+class TagBatch:
+    """One bulk *Add tag*, and where it stands.
+
+    🔴 **The record a consumer of the Action Batch is forced to keep.** 📁
+    `ActionBatchView` publishes *"`item_count` and not the items… what each
+    item *means* belongs to the domain that proposed it"* — **so the lifecycle
+    module knows a batch covers forty-one things and nothing about what they
+    are.** This is the other half.
+
+    ### ⛔ `applied` is `None` before it runs, and that is not the same as empty
+
+    ⚡ **Three states, and a boolean could only express two**:
+
+    | | |
+    |---|---|
+    | `applied is None` | **Not applied yet.** There is nothing to reverse |
+    | `applied.changed == ()` | **Applied, and changed nothing** — every selected
+      account already carried the tag. **Still not reversible**, for a different reason |
+    | `applied.changed != ()` | **Applied.** Reversal removes exactly those |
+
+    ⛔ **A reversal that read `requested` would strip a label somebody set in
+    June**, which is the defect [`TagApplication`](#) exists to prevent —
+    stated here again because this is the type a caller actually holds.
+    """
+
+    batch_id: UUID
+    tag_id: UUID
+    #: What the customer selected. **Kept for the confirmation and the record**,
+    #: never for the reversal.
+    requested: tuple[UUID, ...]
+    applied: TagApplication | None = None
+
+    def __post_init__(self) -> None:
+        if not self.requested:
+            raise AccountTagError("A batch has to name at least one account.")
+        if self.applied is not None and self.applied.tag_id != self.tag_id:
+            raise AccountTagError("A batch cannot apply a different tag than it proposed.")
+
+    @property
+    def is_applied(self) -> bool:
+        return self.applied is not None
+
+    def with_application(self, application: TagApplication) -> TagBatch:
+        """Record what running it actually did.
+
+        ⛔ **Once, and never again.** 📁 A batch applies at one moment
+        ([ADR-0405](../../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md)),
+        and a second application would overwrite the record a reversal depends
+        on — **so the customer's undo would operate on the wrong set.**
+        """
+        if self.applied is not None:
+            raise AccountTagError("That batch has already been applied.")
+        return TagBatch(
+            batch_id=self.batch_id,
+            tag_id=self.tag_id,
+            requested=self.requested,
+            applied=application,
+        )
+
+    def to_reverse(self) -> tuple[UUID, ...]:
+        """The accounts a reversal untags. **Empty until it has applied.**"""
+        return () if self.applied is None else self.applied.inverse()

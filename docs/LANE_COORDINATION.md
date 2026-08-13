@@ -517,6 +517,49 @@ databaseUrl: required(
 
 ---
 
+## C-1504 · [TASK-466](BACKLOG.md) — the Action Batch publishes no way to PROPOSE one, and its first consumer has to
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-13, reaching the wiring rather than predicting it — 📁 [§20e](../CLAUDE.md): *"ownership becomes obvious when implementation reaches a module"* |
+| **Owner** | **Product owner** — ⛔ **a new cross-module dependency is 🔴 in the Change Budget**, and this lane will not take one inside a feature slice |
+| **Blocks** | ⛔ **The *propose* step only.** ✅ **Everything else in the batch path proceeds** — see below, and nothing about it encodes an assumption |
+| **Status** | 🔵 **`OPEN`** |
+
+### 🔴 The gap, measured
+
+📁 **`action_batch/public/` publishes `ActionBatchReader`, `ActionBatchView` and `ApprovalState`** — and the port says why, in terms:
+
+> ⛔ ***"Read-only, and deliberately. Proposing, approving and reversing are slice 4's application layer; a port that could write before the domain exists would let a consumer commit to a lifecycle nobody has built."***
+
+⚡ **That reasoning was right when it was written and its premise has expired**: 📁 slices 4 and 5 shipped, [TASK-465](BACKLOG.md) is `PROMOTED`, **the domain exists.** ⚠️ **The docstring still says *"Nothing implements this yet, and that is the slice"*, which is stale** — recorded here rather than edited, because whether the port gains a write is the question rather than the answer.
+
+⛔ **So `commercial_profile` — [TASK-466](BACKLOG.md)'s first consumer, by the row's own title — cannot propose a batch through `public/`**, and 📁 [§5](../CLAUDE.md) forbids reaching deeper.
+
+### ✅ What is NOT blocked, and why it is not an assumption
+
+🔴 **A consumer must hold its own payload, and that is forced rather than chosen.** 📁 `ActionBatchView` publishes ***"`item_count` and not the items… what each item *means* belongs to the domain that proposed it"***. ⚡ **So `commercial_profile` stores which tag and which accounts, keyed by `batch_id`, however the batch comes to exist.**
+
+✅ **And the event route needs no dependency at all** — measured, not assumed: 📁 `apps/worker/subscriptions.py` hands every handler a generic **`EventEnvelope`**, so a consumer reads `payload` and imports nothing from the producer. **`ActionBatchApplied` and `ActionBatchReversed` are published whichever way the batch was proposed.**
+
+⚡ **Both halves are answer-independent, so this lane is building them** ([§20e](../CLAUDE.md): *a lane may proceed past an open item only where proceeding encodes no assumption about the answer*).
+
+### ⚠️ The options, with the trade-off each buys
+
+| | | |
+|---|---|---|
+| **① Publish a write port on `action_batch/public/`** | ✅ **One transaction**: the batch row and its payload commit together | ⛔ **A new cross-module edge**, `commercial_profile → action_batch.public`. 🔴 in the budget. ⚠️ Not forbidden by any import contract — `modules.action_batch` is absent from `commercial_profile`'s forbidden list, and the reverse edge stays forbidden, which is the direction that matters |
+| **② The client calls both endpoints** | ✅ **No new edge** | 🔴 **A batch with no payload becomes representable** — the first call succeeds, the second fails, and an `APPROVED` batch applies nothing. ⛔ **That is [ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md)'s *no partial state* broken by construction** |
+| **③ Propose by event** | ✅ **No synchronous edge** | ⛔ **The caller gets no `batch_id` back**, so the confirmation cannot name what it created, and *"applied"* has nothing to poll |
+
+### ✅ Recommended, and stated as input rather than authority
+
+**① — and the narrow version of it: `propose` alone, not approve or apply.** ⚡ **Approval is a human decision and belongs on a screen, not in a module's call stack**; what a consumer needs is the ability to *ask*. 📁 The port's own sentence permits exactly this reading — the objection was *"before the domain exists"*, and it now does.
+
+⛔ **Not decided here.** 📁 [§5](../CLAUDE.md) says a new cross-module dependency is *"proposed and approved as a graph change first"*, and ⚠️ **this lane owns both modules, which makes taking it quietly easy and is precisely why it is being raised instead.**
+
+---
+
 ## C-1503 · [TASK-466](BACKLOG.md) — *Segment* already means something in this repository, and [ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md) means something else by it
 
 | | |

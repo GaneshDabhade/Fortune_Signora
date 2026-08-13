@@ -245,6 +245,13 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # explicitly rather than reaching the tag's, so a policy here does not
         # depend on a join (§8, defense in depth).
         "account_tag_assignment",
+        # Commercial Profile (TASK-466), migration 0052. What one bulk batch
+        # asked for and what it changed — the half `ActionBatchView`
+        # deliberately does not publish, because "what each item means belongs
+        # to the domain that proposed it". **A leak here reads a company's
+        # private labelling decisions together with which accounts they were
+        # applied to**, which is more than either table says alone.
+        "account_tag_batch",
         # Timeline (M7 slice 1), migration 0026. **The first table that is a
         # projection**: every row is derived from an event whose source of
         # truth is another module's table, so losing it loses an index over
