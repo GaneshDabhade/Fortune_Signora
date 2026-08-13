@@ -943,7 +943,7 @@ promoted commit SHA  ==  certified commit SHA
 |---|---|---|
 | 1 | **Synchronize** | `git fetch origin && git checkout integration && git pull --ff-only` |
 | 2 | **Rebase** | `git checkout <lane-branch> && git rebase integration`. Resolve your own conflicts |
-| 3 | **Read your queue first** | **[`docs/coordination/queues/lane-<a\|b>.toml`](docs/coordination/queues/)** — `current`, then `next`, then `future`, **in that order.** It is written by Lane C, holds **every task you are eligible to start**, and its `blocked` array names the rest with each blocker's owner. **Ids only; execution state is still the backlog's** |
+| 3 | **Read your queue first** | **[`docs/coordination/queues/lane-<a\|b>.toml`](docs/coordination/queues/)** — its **`backlog`** array holds **every task you are eligible to start, in priority order**, and its **`blocked`** array names the rest with each blocker's owner. It is written by Lane C. **Ids only; execution state is still the backlog's** |
 | 3b | **Then read [`BACKLOG.md`](docs/BACKLOG.md)** | The whole `READY` section, in order. **The queue tells you which rows are yours; the row tells you what the work is.** If the two disagree, **the backlog wins on state and the queue wins on ownership** — and **report the disagreement**, because one of them is stale |
 | 4 | **Select** | The **highest** entry in your queue that is **not already claimed.** If your queue is empty or absent, fall back to the backlog: the highest `READY` task in a module [`modules.toml`](docs/coordination/modules.toml) assigns to you, with **no active assignee**, **no unmet dependency**, and **not already claimed** |
 | 5 | **Record the claim** | Update **only your own row** in [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md), naming the `TASK-nnn`, and mark the task `CLAIMED` in the backlog |
@@ -1028,11 +1028,11 @@ git fetch origin coordination
 git show origin/coordination:coordination.toml
 ```
 
-⛔ **A lane does not poll `lane-c-sync`, `lane-qe`, another lane's branch, or commit history to discover work.** ⚡ **It reads the row where `lane` is its own, takes `current`, and starts.**
+⛔ **A lane does not poll `lane-c-sync`, `lane-qe`, another lane's branch, or commit history to discover work.** ⚡ **It reads the row where `lane` is its own, takes the first entry in `backlog`, and starts.**
 
 | The source carries | |
 |---|---|
-| **`current` · `next` · `next_after_that`** | **A pipeline three deep, so there is no planning latency between slices** |
+| **`backlog`** | **One ordered array — every task the lane may start, in priority order, so there is no planning latency between slices** |
 | **`depends_on` · `unblocks` · `next_owner` · `critical_path` · `estimated_ready` · `waiting_for`** | **A dependency graph, walked rather than rediscovered** |
 | **utilization · idle prediction · dependency wait · blocked duration** | **Starvation as a measurement rather than a report** |
 
@@ -1043,6 +1043,16 @@ git show origin/coordination:coordination.toml
 > ⚠️ **If the coordination source disagrees with `BACKLOG.md`, the backlog wins and the disagreement is a defect to report** — the source is a projection, and a projection that has drifted is stale rather than authoritative. **`infra/state-check.py` reports it, and `infra/coordination.py --check` is what it runs.**
 
 **Product Office republishes the ref as part of every planning cycle** — ⛔ **not on a schedule and not by automation** (§20c-2). **A planning change that is not published has not been made.**
+
+> ⚠️ **Corrected 2026-08-13, product owner, ruling [C-1401](docs/LANE_COORDINATION.md). A consistency cleanup, not a process change.**
+>
+> 🔴 **This section and the Task Claim Protocol's step 3 instructed every lane to read `current`, then `next`, then `future` — three fields [D-199](docs/DECISION_REGISTER.md) had already deleted.** ✅ **Verified before editing: `grep -cE "^(current|next|future)\s*=" docs/coordination/queues/*.toml` returns `0` for both, and the published `coordination.toml` emits `backlog` alone.**
+>
+> ⛔ **So the constitution instructed a step that could not be performed, and §2 makes it outrank every document that disagreed with it.** ⚠️ **It blocked nothing only because lanes read [`BACKLOG.md`](docs/BACKLOG.md) instead — which step 3b tells them to do second.** ⛔ **No replacement pipeline model is introduced: one ordered array carries what three fields did.**
+>
+> 📁 **The dated measurement below in *Continuous execution* — *"both queue files named a current task"*, 2026-08-05 — is deliberately NOT edited.** ⚡ **It was true then, and §2 forbids rewriting a record of the past to match the present.**
+>
+> ⚠️ **This is the fourth edit Lane C has made to this file and, like the first three, it was *directed rather than drafted*.** **`CLAUDE.md` remains the product owner's.**
 
 ### Four classes of repository change, and planning corrections are one
 

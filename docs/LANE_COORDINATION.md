@@ -1322,7 +1322,9 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 | | |
 |---|---|
-| **Status** | ⚠️ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-12. **Investigation complete; the recommendation below rests on a rule that already exists** |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION` — RULED, product owner, 2026-08-13** ([D-234](DECISION_REGISTER.md)). ⛔ **No new authorization semantics, no new permission model, no navigation redesign.** ✅ **Three states, distinguished: `unresolved/loading` · `resolved with permission` · `resolved without permission`** — ⛔ **and an unresolved role must NOT render as an explicit denial.** ⚡ **[B-253](BUGS.md) is released to Lane A** |
+| ✅ **AND THE DESIGN ALREADY SPECIFIES ALL THREE — no product behaviour is invented** | 📁 **App Shell §16, Cold boot: *"Chrome paints from cached shell state; only the content region skeletons. **Workspace name and rail appear before data resolves**"*** and ***"the frame is never blank."*** ⛔ **So the rail renders as an ordinary rail while the role is unresolved — it does NOT skeleton and it does NOT lock.** 📁 **Rail States: *"Restricted destinations stay visible at 45% with a lock and explain on click"*** — ✅ **that is the `resolved without permission` appearance, and it is the ONLY state that shows a lock.**<br><br>⚡ **This retires the choice this office prepared.** ⛔ **Option A — a resolving state on the rail — is refused by the design, which says the rail appears before data resolves.** ✅ **The recommended B is what the design specifies, so it was never a preference** |
+| ✅ **The residual question I flagged is answered, and it is smaller than I thought** | ⚠️ **I wrote that B was only cheap *"if the refusal a member lands on is designed."*** ✅ **A restricted destination is not navigable in the design — it is a lock that explains on click, not a link** — **so the optimistic render applies only inside the unresolved window, and the server remains the enforcement.** ⛔ **NO unresolved design question remains**, and none is manufactured |
 | **Raised by** | **QE**, from Lane A's handover of [TASK-1471](BACKLOG.md) |
 | **Owner** | **Product owner** |
 | **Blocks** | **[B-253](BUGS.md) only.** ⚡ **No task row is waiting on it and no lane is idle** — this is 🟠 REVIEW SOON, not 🔴 |
@@ -5100,7 +5102,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 |---|---|
 | **Raised by** | **Lane C**, 2026-08-11, verifying [C-287](#c-287)'s premise on Lane A's measurement (`096b9a1c`, their branch) |
 | **Owner** | 🔴 **Product owner** — ⛔ **an accepted ADR carries a false factual premise, and a [§20a](../CLAUDE.md) exemption was granted on it. Neither is a lane's to correct** |
-| **Status** | 🔵 **`READY FOR PRODUCT DECISION`** — ⚡ **options and a recommendation below; nothing further to investigate** |
+| **Status** | ✅ **`CLOSED` — RULED **A**, product owner, 2026-08-13** ([D-234](DECISION_REGISTER.md)). ✅ **[ADR-0408](architecture/adr/0408-inbound-rate-limiting.md) §1 corrected in place, the conclusion preserved, the mechanism constrained to the tier that serves the route.** ⛔ **Explicitly NOT a platform-wide rate-limiting programme: no unrelated authentication redesigned, no route moved to satisfy the ADR, no speculative custom policy without an explicit requirement.** ⚡ **The remaining scope is `"memory"` → shared storage, plus per-route policy where a requirement calls for one** |
 | **Blocks** | ⛔ **Nothing.** ✅ **[TASK-1430](BACKLOG.md) is already `BLOCKED` on [C-287](#c-287) and stays there.** ⚠️ **Lane A spent no implementation time — this was the verification the directive gated on** |
 
 ### ✅ Verified independently by this office, not relayed

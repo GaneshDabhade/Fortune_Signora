@@ -25,7 +25,33 @@
 
 > ## ⚠️ **38 files rate-limit OUTBOUND traffic, and that is the opposite concern.**
 
-⛔ **A repository search for *"rate limit"* looks reassuring and is measuring the wrong direction.** ⚡ **Protecting HubSpot from Signora is not protecting Signora from the internet**, and the sign-in route is the one that matters: **nothing stands between a credential-stuffing script and Better Auth.**
+⛔ **A repository search for *"rate limit"* looks reassuring and is measuring the wrong direction.** ⚡ **Protecting HubSpot from Signora is not protecting Signora from the internet.**
+
+> ## 🔴 **CORRECTED 2026-08-13 — product owner, ruling [C-1423](../../LANE_COORDINATION.md). This section previously read *"nothing stands between a credential-stuffing script and Better Auth."* That was false when written.**
+
+✅ **Something does, in every mode, and this product already renders its refusal.** **Measured on `node_modules`, not on the vendor's documentation:**
+
+| | Measured |
+|---|---|
+| **Better Auth ships a limiter** | ✅ **`dist/api/rate-limiter/index.mjs`** |
+| **It is enabled here deliberately** | ✅ **`frontend/lib/auth/server.ts`:147 — `rateLimit: { enabled: true }`**, set because the vendor defaults it to production-only |
+| **Its refusal already renders** | ✅ **`app/(auth)/signin/throttled.tsx`, built against a real `429`** |
+| ⚠️ **Why the first search missed it** | **`package.json` declares `^1.1.0` and `node_modules` reports `1.6.25`** — the search read the 1.1-era layout |
+
+### ⚡ The actual remaining problem, and it is narrower than this ADR originally described
+
+| | |
+|---|---|
+| 🔴 **Counters are in-process** | 📁 **`create-context.mjs`:174 — storage falls back to `"memory"` when neither `rateLimit.storage` nor `secondaryStorage` is configured, and `server.ts` configures neither.** ⛔ **So *n* replicas give an attacker *n* × the budget, and the protection loosens silently as the product scales** — **exactly what §9 of this ADR rejects** |
+| ⚠️ **No per-route policy where the design needs one** | **Password-reset request and verification-resend take the default policy.** ⛔ **They make Signora send mail on an attacker's command with no credential** |
+
+### 🔴 And the mechanism this ADR proposed cannot protect the routes it names
+
+⛔ **An ASGI middleware in `signora_platform/api/` can never see `/signin` or `/register`.** 📁 **Those live in Next.js permanently** ([§13](../../../CLAUDE.md), [ADR-0026](0026-jwt-boundary-architecture.md)): **Better Auth is the sole Authentication Authority and the Python tier only verifies tokens.**
+
+> **So the conclusion survives and the mechanism is constrained: shared rate-limit storage, plus route-specific policy where a requirement calls for one — applied at the tier that actually serves the route.**
+>
+> ⛔ **This is NOT a platform-wide rate-limiting programme.** **No unrelated authentication is redesigned, no route moves to satisfy this document, and no speculative custom policy is created without an explicit requirement.**
 
 ---
 

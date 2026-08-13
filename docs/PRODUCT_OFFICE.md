@@ -58,7 +58,9 @@
 
 **Eight triggers. Any one of them starts preparation immediately — none waits for a lane to report it:**
 
-**declining `READY` work · a blocked *current* task · an empty `future` queue · stale planning · an outstanding Product Office review · an unresolved dependency · missing ownership · architectural work that can safely be prepared.**
+**declining `READY` work · a blocked task at the head of a lane's `backlog` · a short or empty `backlog` · stale planning · an outstanding Product Office review · an unresolved dependency · missing ownership · architectural work that can safely be prepared.**
+
+> ⚠️ **Reworded 2026-08-13 on [C-1401](LANE_COORDINATION.md)'s ruling, and only because it was a LIVE instruction citing deleted fields.** ⛔ **`current` and `future` were removed by [D-198](DECISION_REGISTER.md)/[D-199](DECISION_REGISTER.md); the queue publishes one ordered `backlog`.** ✅ **The eight triggers are unchanged — this renames what they read, not what they are.** 📁 **The dated records elsewhere in this document that mention those fields are deliberately left alone: they describe what was true when written.**
 
 ### ⚡ A dependency owned by this office is a highest-priority interrupt
 
