@@ -6,8 +6,18 @@ data category `signal_profile` opened and this module fills: a pipeline
 rebuild regenerates everything through buying scores and **must leave all of
 these untouched**.
 
-Each is immutable and versioned: a revision is a new row naming the one it
-supersedes, enforced by the absent `UPDATE` grant in its migration.
+Each **declaration** is immutable and versioned: a revision is a new row naming
+the one it supersedes, enforced by the absent `UPDATE` grant in its migration.
+
+⚠️ **Amended 2026-08-13 ([TASK-466](../../../../docs/BACKLOG.md)), because that
+sentence said *every table here* and stopped being true.** 📁
+[ADR-0411](../../../../docs/architecture/adr/0411-customer-organized-account-metadata.md)
+adds a second kind of customer authorship to this module: **a label, not a
+statement.** `AccountTagModel` carries an `UPDATE` grant and no version chain —
+⚡ **a customer renaming *At risk* to *Churn risk* is correcting their own
+filing, and versioning it would keep a history nobody would ever cite** while
+making a rename a write of four rows. **The two kinds are named here rather
+than left for a reader to infer from a grant.**
 """
 
 from __future__ import annotations
@@ -290,4 +300,54 @@ class DeclaredCompetitorsModel(DeclarationModel):
         PGUUID(as_uuid=True),
         ForeignKey("declared_competitors.id", ondelete="SET NULL"),
         nullable=True,
+    )
+
+
+class AccountTagModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """One label in a workspace's vocabulary — migration `0051`.
+
+    **Deliberately not a `DeclarationModel`**, for the reason the module
+    docstring now records: that base carries a `version` and this row has none.
+    A tag is a label a customer corrects, not a statement they publish.
+
+    ⚡ **Uniqueness is `(workspace_id, lower(name))` and lives in the index
+    rather than here**, because SQLAlchemy's `UniqueConstraint` cannot express
+    a functional index — 📁 the constraint is created in the migration and is
+    the only place two concurrent renames can be arbitrated.
+    """
+
+    __tablename__ = "account_tag"
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    name: Mapped[str] = mapped_column(String(40), nullable=False)
+    #: The design's chip token — `risk`, `warn`, `pos`, `neutral`. **Stored as
+    #: the token the stylesheet already uses**, so the screen renders it with
+    #: no mapping table between the two.
+    tone: Mapped[str] = mapped_column(String(8), nullable=False)
+
+
+class AccountTagAssignmentModel(Base, WorkspaceScopedMixin):
+    """Which account wears which tag — migration `0051`.
+
+    **A join row and nothing else.** Removing a tag from an account is a
+    `DELETE`, not a state column somebody has to remember to filter on — which
+    is what keeps *"the tags on these forty rows"* a single indexed read.
+
+    ⛔ **No `TimestampMixin`**: `updated_at` on a row that can never be updated
+    is a column that would only ever equal `created_at`, and §2 calls a field
+    with one possible value the decorative class.
+    """
+
+    __tablename__ = "account_tag_assignment"
+
+    tag_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("account_tag.id", ondelete="CASCADE"), primary_key=True
+    )
+    #: ⛔ **No foreign key**, and the omission is the module boundary: an
+    #: account is `knowledge_graph`'s entity, and a constraint across it would
+    #: make this module's schema depend on another module's (§5).
+    account_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    created_by: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
     )

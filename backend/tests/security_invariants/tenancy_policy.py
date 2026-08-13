@@ -234,6 +234,17 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # customer has**, and a leak here tells a competitor exactly who a
         # company believes it is losing to.
         "declared_competitors",
+        # Commercial Profile (TASK-466), migration 0051. A customer's own
+        # labels, ratified as ADR-0411. **A leak here reads a company's
+        # private opinion of its own accounts** — "Champion lost", "At risk",
+        # "M&A" — which is a sharper disclosure than any provider fact beside
+        # it, because nobody but the customer knows it.
+        "account_tag",
+        # Migration 0051. Which accounts wear which tag. **Tenant-owned in its
+        # own right and not by association**: it carries `workspace_id`
+        # explicitly rather than reaching the tag's, so a policy here does not
+        # depend on a join (§8, defense in depth).
+        "account_tag_assignment",
         # Timeline (M7 slice 1), migration 0026. **The first table that is a
         # projection**: every row is derived from an event whose source of
         # truth is another module's table, so losing it loses an index over
@@ -421,6 +432,14 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "icp_segment_version",
         "icp_segment_product",
         "icp_segment_state",
+        # Migration 0051. **An assignment is made or it is removed; there is
+        # no third thing to say about it**, so the join row carries no
+        # `UPDATE` grant. ⚠️ **`account_tag` itself is deliberately NOT here**
+        # — a rename is a correction to a customer's own label rather than a
+        # new published statement, and versioning it would keep a history
+        # nobody would cite while turning a rename into four writes. The two
+        # tables of one capability differ, and the migration says why.
+        "account_tag_assignment",
         # A request is written once and its progress is appended, exactly as
         # `opportunity`/`opportunity_state` are — which is the shape migration
         # 0018 committed to when it withheld UPDATE from `research_task`
