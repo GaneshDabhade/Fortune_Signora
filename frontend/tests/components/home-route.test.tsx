@@ -23,6 +23,14 @@ vi.mock('@/lib/home/cards', async () => {
   return { ...actual, cardsFor };
 });
 vi.mock('@/lib/auth/client', () => ({ useSession: () => ({ data: { user: { id: 'u1' } } }) }));
+// ⚡ **The first-run overlay reads a preference** — [TASK-1424]. ⛔ Mocked at the
+// same boundary this file already mocks the other reads at, **and returning
+// *dismissed* keeps these tests about the COMPOSITION**: an overlay in the
+// output would make every assertion below answer a question it was not asking.
+vi.mock('@/lib/query/hooks/preferences', () => ({
+  usePreferences: () => ({ data: { first_run_dismissed: true } }),
+  useDismissFirstRun: () => ({ mutate: () => {}, isPending: false }),
+}));
 
 import { Home } from '@/app/(app)/w/[workspace]/home/home';
 

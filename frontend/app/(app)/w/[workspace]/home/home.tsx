@@ -7,6 +7,7 @@ import type { ReactElement } from 'react';
 import { EmptyState, PageHeader } from '@/components/ui';
 import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
 import { ConnectCallsCard, ConnectCrmCard } from '@/components/home/activation-cards';
+import { FirstRunOverlay } from '@/components/home/first-run-overlay';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { cardsFor, type CardContract } from '@/lib/home/cards';
 import {
@@ -175,6 +176,13 @@ export function Home() {
 
   return (
     <div className="flex flex-col gap-6" data-testid="home" data-composition={composition}>
+      {/* 🔴 **Over whichever composition resolved, never instead of one** —
+          [TASK-1424](../../../../../../docs/BACKLOG.md). 📁 Rule 20: *"Home,
+          with the first-run overlay"*, and Home's own words: *"adds the
+          first-run overlay **over whichever composition resolved**."* ⛔ **It is
+          not a fifth composition**, and the cards below it are unchanged — a
+          new person's Home must be the same screen they come back to. */}
+      <FirstRunOverlay />
       {/* 📁 *"not a separate screen with its own layout, navigation or
           breadcrumb"* — ⛔ **so this states the composition and nothing more.**
           ⚡ The question is the design's own for each of the four. */}

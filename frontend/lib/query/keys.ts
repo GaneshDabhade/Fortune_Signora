@@ -21,6 +21,10 @@ export const queryKeys = {
   /** ⚡ **Home's executive card** — [TASK-1425](../../../docs/BACKLOG.md). */
   pipelineHealth: (workspaceId: string) => ['pipeline-health', workspaceId] as const,
 
+  /** ⚡ **Workspace-scoped, because `person_preferences` is keyed by
+   * `(workspace_id, user_id)`** — [TASK-1424](../../../docs/BACKLOG.md). */
+  preferences: (workspaceId: string) => ['preferences', workspaceId] as const,
+
   members: (workspaceId: string) => ['workspace', workspaceId, 'members'] as const,
   organizationHistory: (workspaceId: string) =>
     ['workspace', workspaceId, 'history'] as const,

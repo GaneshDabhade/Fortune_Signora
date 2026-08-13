@@ -1197,3 +1197,23 @@ export interface PipelineHealth {
    * what was checked and when."* */
   movements_since: string;
 }
+
+/**
+ * **One person's preferences in one workspace** — [TASK-1424](../../../docs/BACKLOG.md).
+ *
+ * ⚠️ **Only the fields this product actually reads are declared.** ⛔ The API
+ * publishes twelve more — theme, density, answer style — and **a type that
+ * mirrored an endpoint rather than a caller would make every unused field look
+ * like a capability somebody had built a screen for.** ⚡ They join this type
+ * when a screen reads them.
+ */
+export interface PersonPreferences {
+  /**
+   * 🔴 **Whether this person has closed the first-run overlay.**
+   *
+   * ⚡ **The fact, not the moment** — the server stores when, and a client that
+   * received a timestamp it did not need is a client that could display it
+   * wrongly.
+   */
+  first_run_dismissed: boolean;
+}

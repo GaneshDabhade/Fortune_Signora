@@ -1,0 +1,99 @@
+/**
+ * **The first-run overlay** — [TASK-1424](../../../docs/BACKLOG.md), against 📁
+ * `Fortune Signora Authenticated Entry.dc.html` rule 20 and
+ * `Fortune Signora Home.dc.html`.
+ *
+ * ## 🔴 It is an overlay, not a composition, and the row's title says otherwise
+ *
+ * 📁 **Rule 20, verbatim**: *"First login, workspace ready → **Home, with the
+ * first-run overlay**: one sentence on what this is, one on what to do,
+ * dismissible forever."* 📁 **And Home agrees**: *"Adds the first-run overlay
+ * **over whichever composition resolved**."*
+ *
+ * ⛔ **So this must never become a fifth composition.** ⚡ It renders above
+ * whatever rules 1–5 already resolved — executive, seller, operations or
+ * activation — **and the cards underneath stay exactly as they were.** A
+ * composition that replaced them would make a new person's Home a different
+ * screen from the one they return to, which is the opposite of what an
+ * orientation is for.
+ *
+ * ## ⛔ Two sentences, and the count is the specification
+ *
+ * 📁 ***"One sentence on what this is, one on what to do."*** ⚡ **Not a tour,
+ * not a checklist, not a modal that traps.** The activation cards are the
+ * checklist and they are already on the page; **a second one here would be two
+ * lists competing to be first.**
+ *
+ * ## ✅ Dismissal is server-side, and the design says so twice
+ *
+ * 📁 ***"Dismissible forever"***, and its sibling activation rule: *"nothing
+ * about activation lives in `localStorage`."* ⛔ **A dismissal in a browser is
+ * one a person loses when they change machine** — which turns *forever* into
+ * *until Tuesday*. ✅ **`POST …/preferences/first-run-dismissal` holds it**, and
+ * the moment is the server's.
+ */
+
+'use client';
+
+import { X } from 'lucide-react';
+
+import { useDismissFirstRun, usePreferences } from '@/lib/query/hooks/preferences';
+import { useWorkspaceContext } from '@/lib/state/workspace-provider';
+
+export function FirstRunOverlay() {
+  const { activeWorkspace } = useWorkspaceContext();
+  const workspaceId = activeWorkspace?.id ?? null;
+  const preferences = usePreferences(workspaceId);
+  const dismiss = useDismissFirstRun(workspaceId);
+
+  /**
+   * ⛔ **Absent until the answer is known, and this is P-A rather than a
+   * loading nicety.** 📁 *a failed read must never render as an empty result* —
+   * ⚡ **and an unread preference must never render as *not yet dismissed***,
+   * because that would show the overlay again to somebody who closed it, on
+   * every slow connection.
+   *
+   * ⚠️ **An error is also silence here, deliberately.** A failed read of a
+   * preference is not something to tell a customer about **on the first screen
+   * they have ever seen** — and the cost of being wrong is one missing
+   * greeting, not a missing capability.
+   */
+  if (preferences.data === undefined || preferences.data.first_run_dismissed) return null;
+
+  return (
+    <section
+      // ⚡ **A labelled region, not a dialog.** 📁 The design says *overlay*,
+      // and rule 20's own words are two sentences over the composition — ⛔ a
+      // `role="dialog"` would trap focus and make an orientation something a
+      // person has to escape.
+      aria-labelledby="first-run-heading"
+      className="flex items-start gap-4 rounded-lg border border-accent-subtle bg-accent-soft px-4 py-3.5"
+    >
+      <div className="flex flex-col gap-1">
+        <h2 id="first-run-heading" className="text-sm font-semibold text-content">
+          {/* 📁 **Sentence one — what this is.** */}
+          Signora reads what your systems already record and tells you which accounts need you.
+        </h2>
+        <p className="text-sm leading-6 text-content-muted">
+          {/* 📁 **Sentence two — what to do.** ⛔ It names the step below rather
+              than repeating it: the activation cards are the checklist. */}
+          Start by connecting a CRM below — everything on this page fills in from there.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => dismiss.mutate()}
+        // ⚠️ **Disabled while the write is in flight**, so a second click
+        // cannot start a second request. ⛔ The server is idempotent and would
+        // answer the same; this is about the control not lying about what it
+        // is doing.
+        disabled={dismiss.isPending}
+        aria-label="Dismiss"
+        className="ml-auto shrink-0 rounded p-1 text-content-subtle transition-colors hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed"
+      >
+        <X className="h-4 w-4" aria-hidden />
+      </button>
+    </section>
+  );
+}
