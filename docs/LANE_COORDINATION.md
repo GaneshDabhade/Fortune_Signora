@@ -517,6 +517,51 @@ databaseUrl: required(
 
 ---
 
+## C-1503 · [TASK-466](BACKLOG.md) — *Segment* already means something in this repository, and [ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md) means something else by it
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-13, measuring the module before writing into it — ⛔ **not after** |
+| **Owner** | **Product owner** — ⚡ **two ratified ADRs use one word for two concepts, and neither may be reinterpreted by a lane** |
+| **Blocks** | ⛔ **The *Segment* third of [TASK-466](BACKLOG.md) only.** ✅ **Tags are built and Owner/CSM is next — neither collides with anything** |
+| **Status** | 🔵 **`OPEN`** |
+
+### 🔴 Both sides, quoted
+
+📁 **[ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md) §3** — the ruling this row was released on:
+
+> **Segments** — ***"A named, saved grouping of accounts."*** *"Whether a segment is a stored list or a stored predicate is an implementation choice and is Lane A's — **but it is ONE choice, made once, not per screen**."*
+
+📁 **[ADR-0041](architecture/adr/0041-icp-aggregate.md), shipped, and `commercial_profile` already implements it** — tables `icp_segment`, `icp_segment_version`, `icp_segment_product`, `icp_segment_state`, all four registered in `tenancy_policy.py`:
+
+> ***"An ICP as a thing a customer can name, open, copy and retire."*** *"Mid-market fintech in the US, 100–1000 employees" is a complete description of a segment without naming anything sold.*
+
+⚡ **So the choice ADR-0411 says is Lane A's has already been made, by a ratified ADR: a segment is a stored PREDICATE.** ⛔ **And that makes the design's control unbuildable as drawn** — 📁 `Fortune Signora Companies` puts ***"Add to segment"*** in the bulk bar, **and you cannot add an account to a predicate.** You can only match it.
+
+### ⚠️ Why this is not a naming tidy-up
+
+🔴 **The two are different in the one way that matters: who decides membership.**
+
+| | **ADR-0041's segment** *(shipped)* | **ADR-0411's segment** *(ruled)* |
+|---|---|---|
+| **Membership** | ⚡ **Derived** — an account is in it because it matches criteria | ⚡ **Enumerated** — an account is in it because somebody put it there |
+| **Reversal** | ⛔ **Nothing to reverse** — change the criteria and the set changes | ✅ **A batch that added forty-one accounts can take them back** |
+| **What a bulk *Add to segment* means** | ⛔ **Nothing coherent** | ✅ **Exactly what the design draws** |
+
+⛔ **Building the second alongside the first is what [ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md) §2 forbids in terms** — *"if two screens model them separately they will disagree within a release"* — ⚠️ **and it is [§4](../CLAUDE.md)'s *never introduce a second definition of a concept a module already owns*, in a module this lane is inside.**
+
+### ✅ Recommended, and stated as input rather than authority
+
+**Rename the customer-facing half rather than the shipped aggregate.** ⚡ **`icp_segment` is cited by opportunities and carries four tables of versioned history**, so moving it is expensive and reaches surfaces this row does not touch. 📁 **The design's own bulk bar says *"Add to segment"* and its column header says *Segment*, showing `Enterprise` and `Mid-market`** — ⚠️ **which read as ICP names, not as saved lists**, so it is genuinely possible the design means the shipped concept and the bulk action is *"apply this ICP's criteria"*.
+
+⛔ **Not decided here, and the reason is that both readings are coherent**: one makes the design's control buildable and the other makes it a no-op. ⚡ **A lane picking between them would be choosing what a customer's *Segment* column means.**
+
+### ✅ What proceeds meanwhile, so this blocks one third rather than a row
+
+📁 **Tags are shipped in this slice** — no prior concept exists anywhere in `backend/modules/`, measured. ✅ **Account Owner/CSM is next and collides with nothing**; `opportunity_engine`'s `owner_id` is *who owns this deal*, a different subject on a different aggregate, and it is named here so nobody merges them later.
+
+---
+
 ## C-1502 · [TASK-1423](BACKLOG.md) — WL-08 renders a soft-delete window that no approved document says exists, and the design says so itself
 
 | | |
