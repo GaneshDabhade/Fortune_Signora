@@ -297,7 +297,7 @@
 |---|---|
 | ⛔ **[C-1430](LANE_COORDINATION.md)** | **If the design draws *Open ACV*, *Renewal* or a commercial stage on this page, those are excluded.** 📁 `crm.py`:100 refuses them — **no canonical attribute** |
 | ⛔ **[C-266](LANE_COORDINATION.md)** | **Whatever it covers of the AI attribution data half stays excluded until ruled** |
-| ⛔ **[C-210](LANE_COORDINATION.md)** | ⚡ **ADDED 2026-08-12, found by Lane A auditing the design before claiming.** **Eight sections turn on whether Signora holds records a rep *authors* — notes, tasks, files, custom fields.** 📁 **Measured: thirty-five write endpoints across every module and not one accepts customer-authored record content.** ⚠️ **Emails and Meetings are deliberately NOT in this exclusion — they are a *read* of a customer's own system and [`integrations`](../backend/modules/integrations/) already owns that boundary, with `Capability.CRM_RECORDS` built** |
+| ⛔ **[C-1500](LANE_COORDINATION.md)** | ⚡ **ADDED 2026-08-12, found by Lane A auditing the design before claiming.** **Eight sections turn on whether Signora holds records a rep *authors* — notes, tasks, files, custom fields.** 📁 **Measured: thirty-five write endpoints across every module and not one accepts customer-authored record content.** ⚠️ **Emails and Meetings are deliberately NOT in this exclusion — they are a *read* of a customer's own system and [`integrations`](../backend/modules/integrations/) already owns that boundary, with `Capability.CRM_RECORDS` built** |
 | ⛔ **[C-1425](LANE_COORDINATION.md)** | ⚡ **ADDED 2026-08-12 — this office's omission, reported by Lane A.** **The header's *Owner* and *CSM* are the same absent concepts C-1425 covers**, and I excluded them from [TASK-1475](#task-1475) and not from this row. **Same item, different screen** |
 
 > ⛔ **THE PACKAGE SHAPE, corrected 2026-08-12 by Lane A against its own earlier figure.** ⚠️ **It first read *"nineteen of twenty-seven unaffected by C-210"* — true, and the wrong measure: *unaffected* is not *buildable*, and a number that reads as capacity gets sized against.**
@@ -305,9 +305,9 @@
 > | | Sections |
 > |---|---|
 > | ✅ **Built and compliant — preserve, do not rebuild** | **12** |
-> | ⛔ **Blocked on [C-210](LANE_COORDINATION.md)** | **8** |
+> | ⛔ **Blocked on [C-1500](LANE_COORDINATION.md)** | **8** |
 > | ⛔ **Blocked on [C-1430](LANE_COORDINATION.md)** | **1** — *Integrations & billing*; billing is a commercial fact |
-> | ⚠️ **No source, and none is C-210's** | **4** — Customer health · Buying intent · Market signals · Recommendations |
+> | ⚠️ **No source, and none is C-1500's** | **4** — Customer health · Buying intent · Market signals · Recommendations |
 > | ⛔ ~~✅ **Genuinely buildable** — **1** — *Contacts & decision makers*~~ | 🔴 **WRONG, corrected by Lane A on claiming — see below** |
 >
 > 🔴 **THE ONE SECTION THIS LANE CALLED BUILDABLE IS NOT BUILDABLE, and the correction is its own** — **Lane A, 2026-08-12, on the first hour of implementation.**
@@ -318,11 +318,11 @@
 > |---|---|
 > | **`name`** — *Peter Sørensen* | ⛔ **Nothing.** `person` has **no name column**; [C-221](LANE_COORDINATION.md) is `people`'s *specification*, not a limitation; whether a provider could supply one is ❓1 of [ADR-0400](architecture/adr/0400-person-as-an-entity.md), **gated on [TASK-429](#task-429) — a commercial decision** |
 > | **`role`** — *Champion / Blocker* | ⛔ **A judgement**, and `people/public` **refuses judgements by AST test** — *"no score, no rank, no priority, no `is_key_contact`"*. Which seat a title fills is [C-018](LANE_COORDINATION.md)'s |
-> | **`relationship` · `engagement`** | ⛔ **Interaction history nothing records** — the [C-210](LANE_COORDINATION.md) family |
+> | **`relationship` · `engagement`** | ⛔ **Interaction history nothing records** — the [C-1500](LANE_COORDINATION.md) family |
 >
 > ⚡ **What `AffiliationReader` actually gives is a title, a seniority band and the period held, anonymous.** ⛔ **That is a DIFFERENT SECTION the design does not draw, and shipping it under this heading is inventing one** ([§21](../CLAUDE.md)).
 >
-> ⛔ **No new `C-` item, deliberately**: **every half is already owned** — [TASK-429](#task-429) for the name, [C-018](LANE_COORDINATION.md) for the seat, [C-210](LANE_COORDINATION.md) for the rest. 📁 **[D-111](DECISION_REGISTER.md) ④ asks that missing work be represented by an owned task, and it is.**
+> ⛔ **No new `C-` item, deliberately**: **every half is already owned** — [TASK-429](#task-429) for the name, [C-018](LANE_COORDINATION.md) for the seat, [C-1500](LANE_COORDINATION.md) for the rest. 📁 **[D-111](DECISION_REGISTER.md) ④ asks that missing work be represented by an owned task, and it is.**
 >
 > ✅ **A REAL DEFECT CAME OUT OF IT AND IS FIXED IN THIS SLICE.** 🔴 [`lib/accounts/sections.ts`](../frontend/lib/accounts/sections.ts) marked `contacts` **`supplied`, sourced from `useBuyingCommittee`**, hedged as *"partially"*. ⛔ **That read is `commercial_profile`'s *"who decides about what this workspace SELLS"* — the ICP's committee, declared once and IDENTICAL ON EVERY ACCOUNT.** ⚡ **The trap named in this row before the claim, found live in the repository's own measurement.** ✅ **`contacts` is `absent` now, states what Signora cannot see, and joins the rail** — which it could never anchor while it claimed to be supplied. ⛔ **Two guards, both fire-tested against the real defect**: no section may source `useBuyingCommittee`, and `contacts` stays `absent` while nothing supplies a name — 📁 **the second is [TASK-429](#task-429)'s trigger made checkable rather than remembered.**
 >
@@ -352,7 +352,7 @@
 >
 > ⚠️ **The four sourceless sections are NOT raised as an item.** **Three are *the platform does not compute this yet*, which is roadmap rather than a decision**; the fourth — Market signals — is a read `business_event_engine` could grow, since it publishes `GET /business-events/{event_id}` and no account-scoped read.
 >
-> ⚠️ **[C-210](LANE_COORDINATION.md) also carries a fourth thing that is NOT a role and must not be folded into [C-1429](LANE_COORDINATION.md):** 📁 the design's *"field-level permissions apply; read-only fields show a lock on hover"* is a **per-field grant**, and **Casbin's resource/action model does not express one.** ⛔ **Adjacent to the role exclusion, and a different question.**
+> ⚠️ **[C-1500](LANE_COORDINATION.md) also carries a fourth thing that is NOT a role and must not be folded into [C-1429](LANE_COORDINATION.md):** 📁 the design's *"field-level permissions apply; read-only fields show a lock on hover"* is a **per-field grant**, and **Casbin's resource/action model does not express one.** ⛔ **Adjacent to the role exclusion, and a different question.**
 
 **⛔ DO NOT INVENT:** a commercial attribute · a confidence figure with no source · a role beyond `OWNER`/`MEMBER` ([C-1429](LANE_COORDINATION.md)) · any behaviour the design does not state. ⚡ **An ambiguous design is a `C-` item and a ruling, never an interpretation** ([§21](../CLAUDE.md)).
 

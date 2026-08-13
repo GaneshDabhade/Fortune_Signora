@@ -226,6 +226,19 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 📁 **[B-259](#b-259) is the same class one step earlier** — *"this lane allocated from the highest number seen"* — ⛔ **and this is the sequel: allocating into a block that was already full, twice.** ⚠️ **`C-209` carries no second heading and appears clean, and that is luck rather than method.**
 
+#### ✅ THE REFERENCES ARE CLASSIFIED, AND MOST OF THEM CORRECTLY STAY — Lane A, 2026-08-13
+
+⚡ **`C-1500` reached `main`, so the sweep this row deferred is now possible.** ⛔ **It was done reference by reference and NOT by replace** — 📁 **[B-259](#b-259) is what a per-file replace costs**, and it damaged a dated enumeration inside another row's block.
+
+| | |
+|---|---|
+| ✅ **Repointed to `C-1500`** | **6** — TASK-1476's own dependency and analysis cells, **authored by this lane, live, and unambiguously about *does Signora store what a rep writes*** |
+| ✅ **Correctly `C-210` and left** | **Lane B's question throughout** — the heading, the index row, the People Intelligence groupings, `C-210 + C-203` in the decision queue and TASK-429's gate |
+| ⛔ **Left because rewriting them is the defect** | **Dated records and quotations**: [D-071](DECISION_REGISTER.md)'s fourteen-ruling enumeration · [D-229](DECISION_REGISTER.md)'s own blocked-scope list · QE's `PROMOTED` cell on [TASK-1476](BACKLOG.md) · this row's own account of the collision · **and this lane's earlier wording quoted back at it** |
+| ⚠️ **Left because they are another office's text** | **2 in [TASK-1476](BACKLOG.md)** — Lane C's added commentary. 📁 **Lane C's own instruction**: *"repointing content this office does not own is exactly B-259"*, **and it cuts both ways** |
+
+🔴 **Two of those left behind now point at the wrong item, and saying so is better than silently repointing somebody else's sentence.** ⛔ **[D-229](DECISION_REGISTER.md)'s blocked-scope list names `C-210` and means this lane's question** — ⚡ **a ruling is the product owner's text and not a lane's to edit**, so it is reported here instead. ✅ **The same is true of the two Lane C cells**, and **both are cheap for their owners to fix now that `C-1500` exists.**
+
 #### ⛔ Why this lane cannot fix it, and what it needs
 
 **Renumbering is the obvious repair and there is nowhere to renumber to.** 🔴 **Every identifier from `C-200` to `C-299` is defined — 100 of 100, counted rather than assumed.**
