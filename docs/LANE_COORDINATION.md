@@ -565,7 +565,7 @@ databaseUrl: required(
 | **Raised by** | **Lane A**, 2026-08-13, reaching the wiring rather than predicting it — 📁 [§20e](../CLAUDE.md): *"ownership becomes obvious when implementation reaches a module"* |
 | **Owner** | **Product owner** — ⛔ **a new cross-module dependency is 🔴 in the Change Budget**, and this lane will not take one inside a feature slice |
 | **Blocks** | ⛔ **The *propose* step only.** ✅ **Everything else in the batch path proceeds** — see below, and nothing about it encodes an assumption |
-| **Status** | 🔵 **`OPEN`** |
+| **Status** | ✅ **`CLOSED` — Lane A, 2026-08-13, on [D-235](DECISION_REGISTER.md) ① reaching `integration`.** ⚡ **Option ① approved, narrow, and the ruling is tighter than the raise**: `propose` creates the batch and its payload **atomically** · ⛔ does NOT approve · ⛔ does NOT apply · ⛔ **no batch-without-payload state representable** · ⛔ no event alternative · ⛔ no further writes without an explicit later requirement. 📁 **Human approval stays a product boundary, not a call in a stack.** ⚠️ **Closed only after `86f0133a` was an ancestor of `origin/integration`** — [§20e](../CLAUDE.md)'s five states: *ruled* and *actionable* are different days, and this lane held the row open through both. |
 
 ### 🔴 The gap, measured
 
@@ -608,7 +608,7 @@ databaseUrl: required(
 | **Raised by** | **Lane A**, 2026-08-13, measuring the module before writing into it — ⛔ **not after** |
 | **Owner** | **Product owner** — ⚡ **two ratified ADRs use one word for two concepts, and neither may be reinterpreted by a lane** |
 | **Blocks** | ⛔ **The *Segment* third of [TASK-466](BACKLOG.md) only.** ✅ **Tags are built and Owner/CSM is next — neither collides with anything** |
-| **Status** | 🔵 **`OPEN`** |
+| **Status** | ✅ **`CLOSED` — Lane A, 2026-08-13, on [D-235](DECISION_REGISTER.md) ②.** ⚡ **Option C, and it is a better answer than either this lane proposed.** ⛔ **Nothing is renamed and there is no terminology rewrite** — 📁 [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s existing distinction already carried it: **a customer says *ICP* for [ADR-0041](architecture/adr/0041-icp-aggregate.md)'s aggregate and *Segment* for [ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md)'s enumerated grouping**, and only the internal table name overlapped. ✅ **`icp_segment` stays internal; Companies, Account 360, the App Shell's `segment` scope and the Action Batch all carry the ADR-0411 meaning — so *"Add to segment"* is buildable as drawn.** ⚠️ **This lane framed it as *rename one of them* and both options were worse.** |
 
 ### 🔴 Both sides, quoted
 
@@ -653,7 +653,7 @@ databaseUrl: required(
 | **Raised by** | **Lane A**, 2026-08-13, ⚠️ **correcting its own row from the day before** — [TASK-1423](BACKLOG.md) declared WL-08 *"waiting on four facts `Membership` does not carry"* and **that was the wrong reason**, reached by reading the screen and not the document's §07 |
 | **Owner** | ⛔ **Two owners, and the design names both** — **Architecture** for U-02, **Legal + Product** for U-01 |
 | **Blocks** | ⛔ **WL-08 only — one of [TASK-1423](BACKLOG.md)'s eleven.** ✅ **Six are delivered; two more wait on [C-1501](#c-1501--task-1423--the-entry-engine-sends-a-suspended-workspace-to-a-page-and-the-design-gives-it-a-banner)** |
-| **Status** | 🔵 **`OPEN`** |
+| **Status** | ✅ **`CLOSED` — Lane A, 2026-08-13, on [D-235](DECISION_REGISTER.md) ③, and closed as ALREADY OWNED rather than as answered.** ⛔ **WL-08 stays blocked; the rest of [TASK-1423](BACKLOG.md) does not.** ⛔ **No 30-day window · no Restore · no `deleted_at` to satisfy a mock · no purge job · no scheduled deletion.** 🔴 **The substantive finding is not this lane's**: the question was already owned as 📁 [R-04](architecture/16-architecture-risks.md) and named unowned in terms by `ADR-0041:523` — *"workspace-level erasure remains the repository's unowned capability"* — **and [TASK-426](BACKLOG.md) already exists for it.** ⚠️ **This raise rediscovered something the repository had recorded nine documents away from the screen being built**, which is a finding about the register's reachability. ⛔ **And TASK-426's own trigger (c) — *migration 0050* — had fired unnoticed.** |
 
 ### 🔴 This is not a gap this lane found — it is a gap the design DECLARED, and the lane missed it
 

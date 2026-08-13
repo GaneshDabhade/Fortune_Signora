@@ -13,7 +13,12 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
-from modules.action_batch.public import ActionBatchReader, ActionBatchView, ApprovalState
+from modules.action_batch.public import (
+    ActionBatchProposer,
+    ActionBatchReader,
+    ActionBatchView,
+    ApprovalState,
+)
 
 APPLIED = datetime(2026, 8, 6, 12, 0, tzinfo=UTC)
 WINDOW = timedelta(hours=1)
@@ -113,12 +118,40 @@ class TestTheContractHoldsNoBusinessSemantics:
         assert "payload" not in ActionBatchView.__dataclass_fields__
 
     def test_the_reader_offers_no_way_to_write(self) -> None:
-        """Proposing, approving and reversing are slice 4. **A port that could
+        """Proposing, approving and reversing were slice 4. **A port that could
         write before the domain exists would let a consumer commit to a
-        lifecycle nobody has built.**"""
+        lifecycle nobody has built.**
+
+        ⚠️ **Still true of the READER after
+        [D-235](../../../docs/DECISION_REGISTER.md) ①**: *"what did I propose"*
+        and *"propose one"* are different questions, and a consumer needing
+        only the first is not handed the second.
+        """
         published = {name for name in dir(ActionBatchReader) if not name.startswith("_")}
 
         assert published == {"by_id", "proposed_by"}
+
+    def test_the_proposer_offers_propose_and_nothing_else(self) -> None:
+        """🔴 **The ruling made executable** —
+        [D-235](../../../docs/DECISION_REGISTER.md) ①, via
+        [C-1504](../../../docs/LANE_COORDINATION.md).
+
+        > ✅ ***"`action_batch/public/` may expose `propose` and nothing else…
+        > ⛔ does NOT approve · ⛔ does NOT apply · human approval stays a
+        > separate product boundary."***
+
+        ⛔ **This assertion is what stops `approve` arriving later because it
+        would be convenient.** ⚡ **Approval is a human decision on a screen,
+        not a call in a stack** — and a port that could approve would let a
+        domain commit on somebody's behalf, which is the one thing this whole
+        context exists to prevent.
+        """
+        published = {name for name in dir(ActionBatchProposer) if not name.startswith("_")}
+
+        assert published == {"propose"}
+        assert "approve" not in published
+        assert "apply" not in published
+        assert "reverse" not in published
 
 
 class TestItIsAContractAndNotAnImplementation:
@@ -139,6 +172,25 @@ class TestItIsAContractAndNotAnImplementation:
 
         reader: ActionBatchReader = Fake()
         assert reader is not None
+
+    def test_a_fake_satisfies_the_proposer(self) -> None:
+        """**`mypy --strict` accepting this is the assertion**, exactly as
+        above — a consuming domain must be able to stand a double in."""
+
+        class Fake:
+            async def propose(
+                self,
+                *,
+                workspace_id: UUID,
+                name: str,
+                item_count: int,
+                proposed_by: UUID,
+                reversible_for: timedelta | None = None,
+            ) -> UUID:
+                return uuid4()
+
+        proposer: ActionBatchProposer = Fake()
+        assert proposer is not None
 
     def test_the_context_exposes_nothing_and_publishes_only_its_two_events(self) -> None:
         """**No endpoint, no events** — P-C: an event exists when a consumer

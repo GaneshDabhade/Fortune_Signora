@@ -19,7 +19,6 @@ verified against fakes in `tests/action_batch/test_handler.py`.
 
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
-from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
@@ -29,7 +28,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from apps.api.main import create_app
 from modules.action_batch.application.batches import ActionBatches, ProposeBatch
-from modules.action_batch.infrastructure.composition import build_action_batches
+from modules.action_batch.infrastructure.composition import (
+    build_action_batch_proposer,
+    build_action_batches,
+)
 from modules.workspace_tenancy.application.use_cases import CreateWorkspaceInput
 from modules.workspace_tenancy.infrastructure.composition import build_use_cases
 from signora_platform.db import tenant_scoped_session, user_scoped_session
@@ -251,3 +253,91 @@ class TestTheProgressRead:
         )
 
         assert response.status_code == 404, response.text
+
+
+class TestTheProposerPortAConsumingDomainUses:
+    """🔴 **[D-235](../../../docs/DECISION_REGISTER.md) ① made executable.**
+
+    ⚡ **The helper above says *"there is no propose/approve endpoint yet
+    (slice 6 brings the consumer that needs one)"*.** ✅ **Slice 6 is
+    [TASK-466](../../../docs/BACKLOG.md) and this is that consumer's door** —
+    `propose`, and nothing else.
+    """
+
+    async def test_a_consumer_can_propose_and_gets_the_id_back(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """⚡ **The id is why an event-based propose was refused** — 📁
+        [C-1504](../../../docs/LANE_COORDINATION.md): *"the caller gets no
+        `batch_id` back, so the confirmation cannot name what it created."*"""
+        workspace_id, user_id = await _workspace(session_factory)
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            batch_id = await build_action_batch_proposer(session).propose(
+                workspace_id=workspace_id,
+                name="Tag 8 companies",
+                item_count=8,
+                proposed_by=user_id,
+                reversible_for=timedelta(hours=1),
+            )
+
+            view = await build_action_batches(session).current(workspace_id, batch_id)
+
+        assert view is not None
+        assert view.name == "Tag 8 companies"
+        assert view.item_count == 8
+
+    async def test_it_writes_on_the_caller_s_transaction(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """🔴 **Atomicity is the whole reason option ① was chosen over two
+        endpoints.**
+
+        ⛔ **A batch that exists with no payload is an approved action that
+        applies nothing** — 📁 ADR-0405's *no partial state*.
+        ⚡ **This proves the proposer joins the caller's
+        transaction rather than opening its own**: rolling back leaves no
+        batch, so a consumer whose payload write fails cannot strand one.
+        """
+        workspace_id, user_id = await _workspace(session_factory)
+
+        async with session_factory() as session:
+            await session.execute(text(f"SET LOCAL app.workspace_id = '{workspace_id}'"))
+            batch_id = await build_action_batch_proposer(session).propose(
+                workspace_id=workspace_id,
+                name="Tag 8 companies",
+                item_count=8,
+                proposed_by=user_id,
+            )
+            await session.rollback()
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            assert await build_action_batches(session).current(workspace_id, batch_id) is None
+
+    async def test_proposing_publishes_nothing(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """⛔ **A proposal is a question, and no domain outside this one acts on
+        a question** — the module's own words. ⚡ **So a consumer proposing does
+        not wake a worker**, and nothing downstream can mistake an unapproved
+        batch for work to do."""
+        workspace_id, user_id = await _workspace(session_factory)
+        before = len(await _outbox(admin_session_factory))
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            await build_action_batch_proposer(session).propose(
+                workspace_id=workspace_id,
+                name="Tag 8 companies",
+                item_count=8,
+                proposed_by=user_id,
+            )
+
+        assert len(await _outbox(admin_session_factory)) == before

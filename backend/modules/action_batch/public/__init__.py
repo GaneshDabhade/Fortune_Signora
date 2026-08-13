@@ -137,11 +137,26 @@ class ActionBatchView:
 class ActionBatchReader(Protocol):
     """Where a consuming module asks about the actions it proposed.
 
-    ⛔ **Read-only, and deliberately.** Proposing, approving and reversing are
+    ⛔ **Read-only, and deliberately.** Proposing, approving and reversing were
     slice 4's application layer; **a port that could write before the domain
     exists would let a consumer commit to a lifecycle nobody has built.**
 
-    ⚠️ **Nothing implements this yet, and that is the slice.**
+    ⚠️ **Amended 2026-08-13, [D-235](../../../../docs/DECISION_REGISTER.md) ①.**
+    **The reasoning above was right and its premise expired**: slices 4 and 5
+    shipped, [TASK-465](../../../../docs/BACKLOG.md) is promoted, the domain
+    exists. ✅ **One write is published — {@link ActionBatchProposer} — and it
+    is `propose` alone.** ⛔ **This reader stays read-only**, because *"what did
+    I propose"* and *"propose one"* are different questions and a consumer that
+    needs only the first should not be handed the second.
+
+    ⚠️ **The sentence *"nothing implements this yet, and that is the slice"* is
+    corrected rather than deleted** ([§2](../../../../CLAUDE.md)) — **and only
+    its second half was stale.** 🔴 **Measured, after a first draft of this
+    amendment claimed an adapter that does not exist**: `grep` finds
+    `ActionBatchReader` in this file and in `test_public_contract.py`, **and
+    nowhere else.** ⛔ **Still no implementation** — what changed is that the
+    slice it was waiting for has shipped, so the absence is now a *consumer*
+    that has not needed it rather than a domain that did not exist.
     """
 
     async def by_id(self, workspace_id: UUID, batch_id: UUID) -> ActionBatchView | None:
@@ -166,4 +181,68 @@ class ActionBatchReader(Protocol):
         ...
 
 
-__all__ = ["ActionBatchReader", "ActionBatchView", "ApprovalState"]
+class ActionBatchProposer(Protocol):
+    """**How a consuming domain asks for a batch. `propose`, and nothing else.**
+
+    📁 [D-235](../../../../docs/DECISION_REGISTER.md) ① is the ruling and it is
+    deliberately narrow:
+
+    > ✅ ***"`action_batch/public/` may expose `propose` and nothing else.
+    > `propose` creates the batch and its payload atomically · ⛔ does NOT
+    > approve · ⛔ does NOT apply · human approval stays a separate product
+    > boundary · ⛔ no batch-without-payload state is representable · ⛔ no
+    > further write operations without an explicit later requirement."***
+
+    ## ⛔ Why `approve` and `apply` are absent, and must stay absent
+
+    ⚡ **Approval is a human decision on a screen**, not a call in a stack. 📁
+    [ADR-0405](../../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md):
+    *intelligence suggests; humans commit* — **and a port that could approve
+    would let a domain commit on somebody's behalf**, which is the one thing
+    the whole context exists to prevent.
+
+    ⛔ **A consumer that finds itself wanting either has a product question**,
+    not a missing method.
+
+    ## 🔴 Atomicity is the caller's transaction, and it is the point
+
+    ⚠️ **`propose` writes on the session the caller is already in.** 📁 A batch
+    that exists with no payload is an `APPROVED` action that applies nothing —
+    **[ADR-0405](../../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md)'s
+    *no partial state*, broken by construction** — and two endpoints called in
+    sequence would make it representable. **One transaction makes it not.**
+    """
+
+    async def propose(
+        self,
+        *,
+        workspace_id: UUID,
+        name: str,
+        item_count: int,
+        proposed_by: UUID,
+        reversible_for: timedelta | None = None,
+    ) -> UUID:
+        """Create a batch and return its id.
+
+        ⚡ **Keyword-only, and the id comes back** — the consumer needs it to
+        key its own payload, and 📁 [C-1504](../../../../docs/LANE_COORDINATION.md)
+        records that this is why an event-based propose was refused: *"the
+        caller gets no `batch_id` back, so the confirmation cannot name what it
+        created."*
+
+        ⚠️ **`name` is the customer's own words**, because a history reads as a
+        record of decisions rather than a list of identifiers.
+
+        ⛔ **`reversible_for` of `None` says reversal was never offered**, which
+        is a different answer from a window that has closed — and the customer
+        is told them differently.
+        """
+        ...
+
+
+__all__ = [
+    "ActionBatchProposer",
+    "ActionBatchReader",
+    "ActionBatchView",
+    "ApprovalState",
+]
