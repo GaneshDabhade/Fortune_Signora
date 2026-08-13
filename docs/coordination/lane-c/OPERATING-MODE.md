@@ -115,6 +115,14 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⛔ **A green check leaves the reader confident and wrong**, ⚡ **and that — not fourteen cycles versus two — is what made QE's instance the worse of the two.**
 
+### ⚠️ And once it is built, reproduce against the real past tree — never a synthetic one
+
+**Added 2026-08-12 from QE's [B-195](../../BUGS.md) build, and it nearly went the other way.**
+
+⛔ **A synthetic revert of the three stale records did not reproduce the bug.** **It left the promoted SHA in `PROJECT_STATUS.md`'s release-summary appendix — a dated record, legitimately there — so an older rule fired first and masked the new predicate.** 🔴 **A red line would have appeared, the check would have looked proven, and the shipped predicate would have done nothing.**
+
+✅ **`git checkout <the stale cycle's commit> -- <the records>` fires; with the records current it is silent.** ⚡ **The generalisation is this office's own arriving from an unexpected direction: *read the artifact, not the report about it* — including when the artifact is a past state of the repository and the report is a reconstruction of it.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
