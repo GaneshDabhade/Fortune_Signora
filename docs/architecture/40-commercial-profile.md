@@ -23,8 +23,12 @@ Several small ones, each versioned independently — never one profile object. P
 | 4 | `CommercialFocus` | `commercial_focus` | `/workspaces/{id}/focus` | 4 ✅ |
 | 5 | `TargetAccountList` | `target_account_list` | `/workspaces/{id}/target-accounts` | 5 ✅ |
 | 6 | `DeclaredCompetitors` | `declared_competitors` | `/workspaces/{id}/competitors` | Epic D ✅ |
+| 7 | `AccountTag` · `TagVocabulary` | `account_tag`, `account_tag_assignment` | `/workspaces/{id}/account-tags` | TASK-466 ✅ |
+| 8 | `TagBatch` | `account_tag_batch` | `…/account-tags/{tag_id}/batches` | TASK-466 ✅ |
 
-Every one is **versioned, immutable and superseded**: a revision is a new row naming the one it replaces, the app role holds no `UPDATE` grant, and the repository offers no method the database would refuse. `DELETE` *is* granted — erasability is a property of the tenancy model, not a statement about what a row means.
+⚠️ **Aggregates 7 and 8 break the sentence below, and the break is the design.** 📁 [ADR-0411](adr/0411-customer-organized-account-metadata.md) adds a second kind of customer authorship to this module: **a label, not a statement.** See *TASK-466 — a customer's own labels* at the end of this document.
+
+Every **declaration** is **versioned, immutable and superseded**: a revision is a new row naming the one it replaces, the app role holds no `UPDATE` grant, and the repository offers no method the database would refuse. `DELETE` *is* granted — erasability is a property of the tenancy model, not a statement about what a row means.
 
 **Currency is `MAX(version)`, never `supersedes IS NULL`.** On an immutable table the *new* row names its predecessor, so a null `supersedes` marks the first version permanently. `uq_(workspace_id, version)` is therefore the concurrency control: two callers who both read version 3 both build version 4, and the second insert is refused by the constraint rather than silently winning.
 
@@ -524,3 +528,80 @@ Epic C's narrowed scope is **role-based intelligence** — C-221: *"do NOT expan
 > **That is a real design question and it is the whole of this module's piece.** It is recorded now rather than discovered mid-slice, and it is **not** answered here: the shape of a role's identity is architecture, and B-205 shows the surrounding documents do not yet agree on the epic it serves.
 
 **Nothing is blocked on it today.** `BuyingCommitteeRoleView` gaining an `id` is additive (§9), and no consumer asks for one yet.
+
+
+## TASK-466 — a customer's own labels, and the module's first non-declaration
+
+> **Status: as built, 2026-08-13.** [ADR-0411](adr/0411-customer-organized-account-metadata.md) ratifies the capability; [D-235](../DECISION_REGISTER.md) rules the three questions building it raised.
+
+### Why it is in this module at all
+
+**Decided by authorship, which is [ADR-0411](adr/0411-customer-organized-account-metadata.md)'s own rule:**
+
+> *"These are customer-authored organizational concepts, distinct from provider/CRM commercial facts… They therefore must NOT be merged with C-209 / ADR-0409."*
+
+The Knowledge Graph publishes *"identity and evidence, never a resolved value"* — everything in it traces to a provider. **Nobody asserted a customer's own tag.** `commercial_profile` is the only bounded context here whose author is the customer, so a label a seller puts on an account is the same *kind* of sentence as what they sell and who buys it.
+
+**Counter-evidence, recorded because a future reader will find it:** `target_accounts.py`'s docstring says *"who works an account is the Opportunity Engine's, and it already has an assignment model."* That file predates ADR-0411, the ADR decides by authorship, and the ruling wins. The note is stale rather than wrong.
+
+### A label is not a declaration, and the grants differ
+
+| | The six declarations | `account_tag` |
+|---|---|---|
+| **Shape** | A complete statement, versioned | A label, corrected in place |
+| **`UPDATE` grant** | ⛔ None — a revision is a new row | ✅ Granted, `USING` **and** `WITH CHECK` |
+| **Why** | Editing destroys the record of what was said | A rename is a correction to a customer's own filing, and versioning it would keep a history nobody would ever cite |
+
+`account_tag_assignment` carries no `UPDATE` grant and sits in `IMMUTABLE_TENANT_TABLES`: an assignment is made or removed, and there is no third thing to say about it.
+
+### Identity is not the name
+
+Without an id, renaming *At risk* to *Churn risk* is indistinguishable from deleting one label and creating another, and every account would silently lose it. **The same reasoning `target_accounts.py` records for its entries.**
+
+Uniqueness is `(workspace_id, lower(name))` as a functional index. **The domain folds with `casefold` and Postgres has none**, so the two agree on everything a customer types and the domain is the stricter — which is the safe direction: it refuses pairs the index would allow, never the reverse.
+
+### The tone is the customer's, and `ai` is unreachable
+
+The design draws four chip tones — `risk`, `warn`, `pos`, `neutral` — and a fifth, `ai`, reserved for what Signora inferred. **`TagTone` has four members and the frontend map is total over exactly those four**, so a human opinion cannot wear the platform's mark. Asserted in both tiers.
+
+### 🔴 The reversal rule, which is the hardest thing in this slice
+
+> **Reversing *Add tag* is NOT *remove the tag from those accounts*.**
+
+If three of forty-one selected companies were already tagged in June, taking the batch back must leave those three — **they were not this batch's doing**, and stripping them destroys a fact the customer authored and never asked to undo.
+
+So `TagApplication` records what **changed**, and `inverse()` may read nothing else. `account_tag_batch.changed` is **nullable and the null is load-bearing**:
+
+| | |
+|---|---|
+| `NULL` | Not applied yet. Nothing to reverse |
+| `[]` | Applied, and every selected account already had the tag. **Still nothing to reverse, for a different reason** |
+| `[…]` | Applied. Reversal removes exactly those |
+
+**A boolean expresses two of three**, and a caller reading *nothing to reverse* as *never applied* would offer undo on a finished batch.
+
+### How a batch travels, and what this module does not own
+
+```
+  screen ──propose──▶ commercial_profile ──propose──▶ action_batch
+                        (payload row)                  (the batch)
+                              ▲                              │
+                              │        action_batch.applied  │
+                              └──────────────────────────────┘
+```
+
+**`propose` is the only write `action_batch` publishes** ([D-235](../DECISION_REGISTER.md) ①) — approval is a human decision on a screen, and a consuming domain may never approve. Both writes happen on **one session**, which is what makes *no batch-without-payload* true rather than aspirational.
+
+**The work returns as an event.** `apps/worker/subscriptions.py` hands handlers a generic `EventEnvelope`, so **this module imports nothing from `action_batch`** except the published `propose` port. A batch this module did not propose is silent rather than an error — the Action Batch is a shared lifecycle.
+
+**The reversible window is `action_batch`'s to enforce**, not re-checked here: `has_settled` lives there, and a second implementation would let the two disagree about whether a customer may still undo something.
+
+### What is NOT built, and each has a reason
+
+| | |
+|---|---|
+| **`remove` on the tag port** | Written and cut. This row draws no delete control, and deleting a tag cascades every assignment — the first caller should arrive with a confirmation designed for it |
+| **Segments** | [D-235](../DECISION_REGISTER.md) ② settles the naming; the enumerated grouping itself is unbuilt |
+| **Owner / CSM** | [ADR-0411](adr/0411-customer-organized-account-metadata.md) ratifies it; not started |
+| **An approvals screen** | [C-1507](../LANE_COORDINATION.md) — the lifecycle is complete at the API and **no screen approves a batch** |
+| **The reversible window's number** | [C-1506](../LANE_COORDINATION.md) — 24 hours is the design's number for *imports*, and is an inference here |
