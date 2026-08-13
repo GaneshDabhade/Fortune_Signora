@@ -1966,11 +1966,19 @@ blocker = ["TASK-421"]
 owner   = "Lane A"
 note    = "Epic H — a workspace states which providers it allows"
 
-[[blocked]]
-task    = "TASK-430"
-blocker = ["see the backlog row"]
-owner   = "Lane A"
-note    = "M-U · The People experiences a customer opens"
+# TASK-430's [[blocked]] entry is removed. It was released to READY under
+# D-233 and is in `backlog`, so the file was answering "can I start this?"
+# both ways at once -- state-check: "lane-a: lists TASK-430 as both
+# executable and blocked".
+#
+# Its blocker read "see the backlog row", which is not a blocker: it is a
+# pointer to the place a reader would have looked anyway. An entry that
+# names no owner and no condition cannot be discharged, so nothing would
+# ever have removed it.
+#
+# Third contradiction of this shape in this file in one day -- two stale
+# [[blocked]] entries this morning, and this. All three said "blocked"
+# about a row that was free.
 
 
 
