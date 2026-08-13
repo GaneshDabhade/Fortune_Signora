@@ -87,8 +87,11 @@
 | **1** | `TASK-1475` | Lane A idle four cycles with work already written |
 | **2** | `TASK-1476` · `ADR-0409` · the `C-210` and `C-1430` rulings | Lane A declined `TASK-1477` because the ADR read `DRAFT` — **correctly** |
 | **3** | The `C-1500` block allocation | Lane A stopped allocating coordination ids entirely — **correctly** |
+| **4** | **[D-235](../../DECISION_REGISTER.md) — three rulings at once** *(2026-08-13)* | **Lane A measured `git show origin/integration:docs/DECISION_REGISTER.md \| grep -c D-235` → `0` and declined to act — correctly.** ⛔ **It is holding `C-1502`, `C-1503` and `C-1504` open rather than closing rows against a decision no lane can see** — ⚡ *"the same defect in the other direction"*, its words. **Not idle: it took unblocked frontend work.** 🔴 **But `propose` is the last thing between `TASK-466` and a customer pressing the control** |
 
 ⚡ **Each time the ruling existed. Each time `integration` said otherwise. Each time a lane behaved correctly on the information it was permitted to read.**
+
+⚠️ **Instance 4 is the first where the lane cited the five states back** — 📁 [§20e](../../../CLAUDE.md): *"a decision is authoritative when the product owner rules it; it is **actionable** when `integration` records it."* ✅ **That is the rule working, and it is also the measurement: the gap between those two days is now a thing lanes plan around rather than trip over.**
 
 ### ⚠️ The cost is not the delay
 
