@@ -290,8 +290,32 @@ class TestAProviderSuppliesAPersonIdentifier:
                 "email",
                 "first_seen",
                 "last_seen",
+                "reports_to",
             }
             assert contact["full_name"]
+
+    def test_the_org_chart_has_a_top_and_edges_of_both_confidences(self) -> None:
+        """📁 The design draws **an `inferred` edge beside a `confirmed` one**,
+        so the dataset has to be able to produce that picture rather than the
+        renderer having to fake it."""
+        contacts = self._contacts(4, "northfield")
+        edges = [c["reports_to"] for c in contacts if c["reports_to"]]
+        sources = {str(edge["source"]) for edge in edges}  # type: ignore[index]
+
+        assert sources == {"confirmed", "inferred"}
+        assert any(c["reports_to"] is None for c in contacts), "somebody has to be at the top"
+
+    def test_every_reporting_line_points_at_somebody_in_the_same_company(self) -> None:
+        """The dataset names a manager by `ref` and the opaque id is derived,
+        so the two sides of an edge cannot drift — this is what proves it."""
+        for key in load("playground", 4).entities:
+            contacts = self._contacts(4, key)
+            known = {c["person_id"] for c in contacts}
+
+            for contact in contacts:
+                edge = contact["reports_to"]
+                if edge:
+                    assert edge["person_id"] in known  # type: ignore[index]
 
     def test_the_person_id_is_the_same_in_every_process(self) -> None:
         """🔴 **Pinned to a literal, and that is the assertion.**

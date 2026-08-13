@@ -21,6 +21,8 @@ from modules.provider_normalization.domain.vocabulary import (
     ClaimAttribute,
     FundingValue,
     IntentSurgeValue,
+    OrgEdge,
+    OrgEdgeSource,
     PersonIdentityValue,
     TechnologyValue,
 )
@@ -567,3 +569,90 @@ class TestAProviderSuppliesAPersonIdentifier:
         ]
         assert len(identities) == 1
         assert len(outcome.rejections) == 1
+
+
+class TestTheOrgChartEdge:
+    """**TASK-429.** ⛔ **The one relationship fact a contact provider can
+    author**, and the reason is what it is *about*: an org chart is a fact
+    about the company, which a vendor observes. A stance is a fact about the
+    customer's deal, which it has never seen — [C-1509](../../../docs/LANE_COORDINATION.md).
+    """
+
+    @staticmethod
+    def _with(reports_to: object, person_id: str = "p2") -> NormalizationOutcome:
+        return _normalize(
+            "apollo",
+            {
+                "_fixture": "x",
+                "organization": {"id": "n", "website_url": "https://northfielddata.com"},
+                "contacts": [
+                    {
+                        "person_id": person_id,
+                        "full_name": "Cormac Dwyer",
+                        "title": "VP Data Platform",
+                        "seniority": "vp",
+                        "reports_to": reports_to,
+                    }
+                ],
+            },
+        )
+
+    @staticmethod
+    def _identity(outcome: NormalizationOutcome) -> PersonIdentityValue:
+        value = next(
+            c.value for c in outcome.claims if c.attribute is ClaimAttribute.PERSON_IDENTITY
+        )
+        assert isinstance(value, PersonIdentityValue)
+        return value
+
+    def test_a_confirmed_line_arrives_with_its_confidence(self) -> None:
+        outcome = self._with({"person_id": "p1", "source": "confirmed"})
+
+        assert self._identity(outcome).reports_to == OrgEdge(
+            manager_ref="p1", source=OrgEdgeSource.CONFIRMED
+        )
+
+    def test_an_inferred_line_is_not_quietly_promoted(self) -> None:
+        """🔴 **The misreading this field exists to prevent.** A seller planning
+        who to approach through whom is entitled to know which edges the
+        product is guessing at."""
+        outcome = self._with({"person_id": "p1", "source": "inferred"})
+
+        assert self._identity(outcome).reports_to == OrgEdge(
+            manager_ref="p1", source=OrgEdgeSource.INFERRED
+        )
+
+    def test_a_line_with_no_stated_confidence_is_refused_rather_than_defaulted(self) -> None:
+        """⛔ **Neither default is safe.** `confirmed` shows a guess as a fact;
+        `inferred` invents a hedge the vendor did not make."""
+        outcome = self._with({"person_id": "p1"})
+
+        assert not any(c.attribute is ClaimAttribute.PERSON_IDENTITY for c in outcome.claims)
+        assert any(
+            r.reason is RejectionReason.UNPARSEABLE_VALUE and "confidence" in r.detail
+            for r in outcome.rejections
+        )
+
+    def test_somebody_cannot_report_to_themselves(self) -> None:
+        """An org chart is walked, and a self-edge makes the walk
+        non-terminating in a renderer with no reason to defend against one."""
+        outcome = self._with({"person_id": "p2", "source": "confirmed"}, person_id="p2")
+
+        assert not any(c.attribute is ClaimAttribute.PERSON_IDENTITY for c in outcome.claims)
+        assert any("self-edge" in r.detail for r in outcome.rejections)
+
+    def test_a_manager_the_payload_did_not_return_is_carried_not_discarded(self) -> None:
+        """⚠️ **The distinction from the `company_domain` check, and it is the
+        point.** A roster naming another employer is **wrong**. A roster whose
+        manager was not returned is **incomplete** — and partial rosters are
+        the normal case for a real vendor, so discarding one would throw away
+        a fact the provider actually asserted."""
+        outcome = self._with({"person_id": "somebody-not-in-this-payload", "source": "confirmed"})
+
+        assert self._identity(outcome).reports_to is not None
+        assert not outcome.rejections
+
+    def test_the_person_at_the_top_has_no_edge_rather_than_an_empty_one(self) -> None:
+        outcome = self._with(None)
+
+        assert self._identity(outcome).reports_to is None

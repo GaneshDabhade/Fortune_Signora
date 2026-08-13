@@ -1,6 +1,6 @@
 {
   "_comment": "Signora's demonstration cast, WITH THE PEOPLE AT EACH COMPANY. Successor to playground@3, which is identical in every company, domain, country, industry, founding year, headcount, revenue band and stage — the only change is that each company's 'contact_titles' has become 'people', where every contact now has a NAME. EVERY PERSON HERE IS INVENTED, at a company that is also invented, and neither is intended to be or to resemble any real individual or business (TASK-429, TASK-1480). This is why the named cast could not land on playground@2: its twelve entities were REAL companies, and an invented individual with an invented stance attached to a real employer is a fabricated claim about a real business AND about a real person's employer. A new version rather than an edit because a published dataset is immutable — every recorded run cites a content hash, and mutating @3 would make TASK-1480's evidence describe a dataset that no longer exists.",
-  "content_hash": "b9e7d58a0000bcdc",
+  "content_hash": "b235afbac6f44914",
   "entities": {
     "northfield": {
       "name": "Northfield Data Systems",
@@ -26,7 +26,9 @@
           "title": "VP Data Platform",
           "seniority": "vp",
           "first_seen": "2022-09-19",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "cio",
+          "reports_to_source": "confirmed"
         },
         {
           "ref": "dir-eng",
@@ -34,7 +36,9 @@
           "title": "Director of Engineering",
           "seniority": "director",
           "first_seen": "2023-01-30",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "vp-data",
+          "reports_to_source": "confirmed"
         },
         {
           "ref": "proc",
@@ -42,7 +46,9 @@
           "title": "Head of Procurement",
           "seniority": "director",
           "first_seen": "2021-11-02",
-          "last_seen": "2026-05-12"
+          "last_seen": "2026-05-12",
+          "reports_to": "cio",
+          "reports_to_source": "inferred"
         },
         {
           "ref": "vp-sec",
@@ -50,7 +56,9 @@
           "title": "VP Information Security",
           "seniority": "vp",
           "first_seen": "2024-04-15",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "cio",
+          "reports_to_source": "confirmed"
         },
         {
           "ref": "dir-arch",
@@ -58,7 +66,9 @@
           "title": "Director of Architecture",
           "seniority": "director",
           "first_seen": "2022-02-07",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "vp-data",
+          "reports_to_source": "inferred"
         },
         {
           "ref": "fin",
@@ -74,7 +84,9 @@
           "title": "VP Platform Operations",
           "seniority": "vp",
           "first_seen": "2023-08-14",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "cio",
+          "reports_to_source": "confirmed"
         },
         {
           "ref": "dir-anal",
@@ -82,7 +94,9 @@
           "title": "Director of Analytics",
           "seniority": "director",
           "first_seen": "2025-02-03",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "vp-data",
+          "reports_to_source": "inferred"
         },
         {
           "ref": "mgr-plat",
@@ -90,7 +104,9 @@
           "title": "Platform Engineering Manager",
           "seniority": "manager",
           "first_seen": "2025-07-21",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "dir-eng",
+          "reports_to_source": "confirmed"
         }
       ]
     },
@@ -118,7 +134,9 @@
           "title": "VP Clinical Systems",
           "seniority": "vp",
           "first_seen": "2022-01-24",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "cto",
+          "reports_to_source": "confirmed"
         },
         {
           "ref": "dir-gov",
@@ -126,7 +144,9 @@
           "title": "Director of Data Governance",
           "seniority": "director",
           "first_seen": "2023-06-05",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "cto",
+          "reports_to_source": "inferred"
         },
         {
           "ref": "head-sec",
@@ -134,7 +154,9 @@
           "title": "Head of Security",
           "seniority": "director",
           "first_seen": "2021-09-27",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "cto",
+          "reports_to_source": "confirmed"
         },
         {
           "ref": "proc",
@@ -170,7 +192,9 @@
           "title": "VP Engineering",
           "seniority": "vp",
           "first_seen": "2021-07-12",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "cco",
+          "reports_to_source": "inferred"
         },
         {
           "ref": "head-data",
@@ -178,7 +202,9 @@
           "title": "Head of Data",
           "seniority": "director",
           "first_seen": "2023-03-20",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "vp-eng",
+          "reports_to_source": "confirmed"
         },
         {
           "ref": "dir-risk",
@@ -186,7 +212,9 @@
           "title": "Director of Risk",
           "seniority": "director",
           "first_seen": "2024-08-26",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "cco",
+          "reports_to_source": "confirmed"
         }
       ]
     },
@@ -214,7 +242,9 @@
           "title": "VP Manufacturing Systems",
           "seniority": "vp",
           "first_seen": "2020-10-19",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "head-digi",
+          "reports_to_source": "inferred"
         },
         {
           "ref": "it-dir",
@@ -222,7 +252,9 @@
           "title": "IT Director",
           "seniority": "director",
           "first_seen": "2022-05-30",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "head-digi",
+          "reports_to_source": "confirmed"
         }
       ]
     },
@@ -250,7 +282,9 @@
           "title": "Head of Platform",
           "seniority": "director",
           "first_seen": "2022-11-07",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "vp-data",
+          "reports_to_source": "confirmed"
         },
         {
           "ref": "fin-dir",
@@ -286,7 +320,9 @@
           "title": "VP Risk Engineering",
           "seniority": "vp",
           "first_seen": "2023-02-13",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "cpo",
+          "reports_to_source": "confirmed"
         }
       ]
     },
@@ -314,7 +350,9 @@
           "title": "Director of Operations",
           "seniority": "director",
           "first_seen": "2021-04-05",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "vp-it",
+          "reports_to_source": "inferred"
         }
       ]
     },
@@ -342,7 +380,9 @@
           "title": "Retail Operations Director",
           "seniority": "director",
           "first_seen": "2022-07-25",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "head-tech",
+          "reports_to_source": "inferred"
         }
       ]
     },
@@ -370,7 +410,9 @@
           "title": "Head of Developer Experience",
           "seniority": "director",
           "first_seen": "2023-09-11",
-          "last_seen": "2026-08-01"
+          "last_seen": "2026-08-01",
+          "reports_to": "vp-eng",
+          "reports_to_source": "confirmed"
         }
       ]
     },

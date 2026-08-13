@@ -26,6 +26,8 @@ from modules.provider_normalization.domain.vocabulary import (
     AcquisitionValue,
     ClaimAttribute,
     FundingValue,
+    OrgEdge,
+    OrgEdgeSource,
     PersonIdentityValue,
     RevenueBand,
     RoleChangeValue,
@@ -180,6 +182,11 @@ class ApolloMapper(ProviderMapper):
                 if problem:
                     yield problem
 
+            edge, bad_edge = _org_edge(contact.get("reports_to"), str(person_ref), index)
+            if bad_edge:
+                yield bad_edge
+                continue
+
             yield MappedClaim(
                 ClaimAttribute.PERSON_IDENTITY,
                 PersonIdentityValue(
@@ -193,9 +200,64 @@ class ApolloMapper(ProviderMapper):
                     seniority=str(contact.get("seniority", "unknown")),
                     first_seen=first_seen,
                     last_seen=last_seen,
+                    reports_to=edge,
                 ),
                 observed_at,
             )
+
+
+def _org_edge(
+    raw: Any, person_ref: str, index: int
+) -> tuple[OrgEdge | None, Rejection | None]:
+    """One reporting line, or a stated reason there is none.
+
+    ⚠️ **A manager the payload does not otherwise mention is CARRIED, not
+    rejected** — and the distinction from the `company_domain` check above is
+    the point. A roster naming another employer is **wrong**; a roster whose
+    manager was not returned is **incomplete**, and discarding it would throw
+    away a fact the provider actually asserted. **Partial rosters are the
+    normal case for a real vendor.**
+    """
+    if raw is None:
+        return None, None
+
+    if not isinstance(raw, dict):
+        return None, Rejection(
+            RejectionReason.UNPARSEABLE_VALUE,
+            f"contacts[{index}].reports_to must carry a manager and a source together",
+        )
+
+    manager_ref = raw.get("person_id")
+    if not manager_ref:
+        return None, Rejection(
+            RejectionReason.MISSING_REQUIRED_FIELD, f"contacts[{index}].reports_to.person_id"
+        )
+
+    # ⛔ **A one-person cycle, and the only edge that is unambiguously an
+    # error rather than a gap.** An org chart is walked; a self-edge makes the
+    # walk non-terminating, in a renderer that has no reason to defend itself
+    # against one.
+    if str(manager_ref) == person_ref:
+        return None, Rejection(
+            RejectionReason.UNPARSEABLE_VALUE,
+            f"contacts[{index}].reports_to.person_id is the contact themselves — "
+            "an org chart with a self-edge cannot be walked",
+        )
+
+    try:
+        source = OrgEdgeSource(str(raw.get("source", "")))
+    except ValueError:
+        # ⛔ **Never defaulted to `confirmed`.** A guessed edge presented as a
+        # confirmed one is the single misreading this field exists to prevent,
+        # and `inferred` as a default would be equally invented.
+        return None, Rejection(
+            RejectionReason.UNPARSEABLE_VALUE,
+            f"contacts[{index}].reports_to.source {raw.get('source')!r} is neither "
+            "'confirmed' nor 'inferred', and a reporting line with no stated "
+            "confidence must not be shown as either",
+        )
+
+    return OrgEdge(manager_ref=str(manager_ref), source=source), None
 
 
 class BuiltWithMapper(ProviderMapper):

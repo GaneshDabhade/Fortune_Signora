@@ -170,6 +170,38 @@ class RoleChangeValue:
     direction: RoleDirection
 
 
+class OrgEdgeSource(StrEnum):
+    """How sure the provider is that one person reports to another.
+
+    **The vendor's own hedge about its own data, carried and never
+    re-derived.** A contact provider confirms a reporting line where it has
+    seen one stated and infers it elsewhere from title and seniority — and
+    ⛔ **the distinction must survive to the screen**, because a seller
+    planning who to approach through whom is entitled to know which edges the
+    product is guessing at.
+    """
+
+    CONFIRMED = "confirmed"
+    INFERRED = "inferred"
+
+
+@dataclass(frozen=True, slots=True)
+class OrgEdge:
+    """Who somebody reports to, **and never one without the other.**
+
+    ⚡ **One field rather than two**, so *"a reporting line with no stated
+    confidence"* and *"a confidence attached to no line"* are both
+    **unrepresentable** rather than merely discouraged — [§2](../../../../CLAUDE.md),
+    *prefer a violation that cannot be constructed.* Two optional fields
+    beside each other would make an unsourced edge a runtime check somebody
+    eventually removes.
+    """
+
+    #: The manager's `person_ref`, in the same provider's namespace.
+    manager_ref: str
+    source: OrgEdgeSource
+
+
 @dataclass(frozen=True, slots=True)
 class PersonIdentityValue:
     """One person a contact provider says holds a role at this company.
@@ -208,6 +240,19 @@ class PersonIdentityValue:
     seniority: str
     first_seen: date | None = None
     last_seen: date | None = None
+    #: ⛔ **The one relationship fact a contact provider can legitimately
+    #: author**, and the reason is what it is *about*: an org chart is a fact
+    #: about the company, which a vendor observes, rather than a fact about
+    #: the customer's deal, which it cannot see. **`stance`,
+    #: `engagement_last_90d`, `relationship_strength` and `committee_role` are
+    #: the four that are NOT here** — [C-1509](../../../../docs/LANE_COORDINATION.md).
+    #:
+    #: ⚠️ **A reorg is not observable through this.** The occurrence key is
+    #: `person_ref` alone, so a changed reporting line deduplicates against the
+    #: original sighting exactly as a changed title does. **Stated rather than
+    #: left to be found**: making a reorg visible needs its own attribute, from
+    #: a provider that reports the *change* rather than the current state.
+    reports_to: OrgEdge | None = None
 
 
 @dataclass(frozen=True, slots=True)

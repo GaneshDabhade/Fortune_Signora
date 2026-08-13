@@ -56,6 +56,25 @@ def _email(full_name: str, domain: str) -> str:
     return f"{local}@{domain}"
 
 
+def _reports_to(company: str, person: Mapping[str, Any]) -> dict[str, str] | None:
+    """The person's reporting line, with the vendor's own confidence on it.
+
+    **Absent for whoever the roster puts at the top**, which is the honest
+    shape: a company's most senior person has no manager the vendor can see,
+    and an edge pointing at nothing would be worse than none.
+    """
+    manager = person.get("reports_to")
+    if not manager:
+        return None
+    return {
+        "person_id": _person_id(company, str(manager)),
+        # Defaulted nowhere else. A dataset entry that names a manager and no
+        # confidence is a dataset defect, and the mapper rejects it rather
+        # than showing a guess as a confirmed line.
+        "source": str(person.get("reports_to_source", "")),
+    }
+
+
 class ApolloFixtureGenerator(PayloadGenerator):
     """Company profile, contacts, headcount, industry, revenue band.
 
@@ -115,6 +134,14 @@ class ApolloFixtureGenerator(PayloadGenerator):
                     "email": _email(str(person.get("full_name", "")), domain),
                     "first_seen": person.get("first_seen"),
                     "last_seen": person.get("last_seen"),
+                    # **The org chart, and the only relationship fact a
+                    # contact vendor can author** — an org chart is a fact
+                    # about the company, which it observes; a stance is a fact
+                    # about the customer's deal, which it has never seen
+                    # (C-1509). The dataset names the manager by `ref`; the
+                    # opaque id is derived here so the two sides of an edge
+                    # cannot drift.
+                    "reports_to": _reports_to(event.subject, person),
                 }
                 for person in facts.get("people", [])
             ],

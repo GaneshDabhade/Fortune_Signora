@@ -517,6 +517,52 @@ databaseUrl: required(
 
 ---
 
+## C-1509 · [TASK-429](BACKLOG.md) — four of the six relationship facts cannot come from a contact provider
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-13, building the second half of [TASK-429](BACKLOG.md) |
+| **Owner** | **Product owner**, with **Lane C** — ⚡ **the mock contract is Lane C's, handed over rather than left to be invented, and this is a second gap in it** |
+| **Blocks** | ⛔ **The relationship half of [TASK-429](BACKLOG.md), and therefore the org chart and relationship views of [TASK-430](BACKLOG.md).** ✅ **The identity half shipped and is not affected; `reports_to` is being built now because it does not depend on the answer** |
+| **Status** | 🔵 **`OPEN`** |
+
+### 🔴 The contract, and who could actually author each field
+
+📁 **[TASK-429](BACKLOG.md)'s required mock contract puts all six on `Apollo`**: *"Per relationship the design draws: `committee_role` · `stance` with a citable source per stance · `engagement_last_90d` as a weekly series · `risk` with a severity · `reports_to` · `relationship_strength`."*
+
+⚡ **[§2](../CLAUDE.md)'s decision rule is *every field has the least powerful author capable of producing it correctly*, and applying it splits the six:**
+
+| Field | Author | |
+|---|---|---|
+| `person_id` · `full_name` · `title` · `seniority` · `email` · `first_seen` · `last_seen` | **Apollo** | ✅ **Shipped.** A contact provider's own product |
+| **`reports_to`** *(`confirmed` \| `inferred`)* | **Apollo** | ✅ **Being built.** ⚡ **An org chart is what a contact vendor sells, and `inferred` is the vendor's own hedge about its own data** |
+| **`engagement_last_90d`** | ⛔ **Not Apollo** | 🔴 **Meetings and emails between the CUSTOMER and this person.** **Signora's vendor has never seen them.** 📁 This is the customer's own CRM — the shape [`mappers/crm.py`](../backend/modules/provider_normalization/infrastructure/mappers/crm.py) already exists for: *"a system the customer owns and holds the credential for"* |
+| **`stance`** *(with a citable source)* | ⛔ **Not Apollo** | 🔴 **A judgement about a deal, and the citation makes it worse rather than better** — a vendor supplying *evidence* for a stance is a vendor deciding a customer's buying committee |
+| **`relationship_strength`** *(`strong` \| `damaged` \| `none`)* | ⛔ **Not Apollo** | 🔴 **The customer's own history**, and plausibly **derived** from engagement rather than supplied at all |
+| **`committee_role`** | ⛔ **Nobody yet** | 🔴 **Which seat a title fills is unowned.** 📁 `people/public/` states it: *"which seat does 'Head of Clinical Informatics' fill?"* is **[C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute)'s question with a different noun, and it belongs to whoever owns that mapping"* — **and no module has claimed it** |
+
+### ⛔ Why this is not a shape quibble
+
+⚡ **The fixture teaches the contract.** 📁 [`generators/base.py`](../backend/signora_platform/simulation/generators/base.py): *"replacing a fixture with a real payload is a **one-file change**"* — **which only holds while the fixture's shape is one a real payload could have.**
+
+🔴 **A real Apollo response does not contain a stance.** **So a fixture that emits one is not a development fixture; it is a design for a provider that does not exist**, and whoever swaps it discovers that four fields have no source — after everything downstream has been built on them.
+
+⚠️ **And it collides with what this lane wrote into the vocabulary one commit ago**, on the neighbouring committee model's own warning: ⛔ ***"No stance, no influence, no seat, no rank"*** on `PersonIdentityValue`, because 📁 `commercial_profile/domain/committee.py` records that *"a person is one plausible field away from becoming an influence model."*
+
+### ✅ What Lane A is doing meanwhile, so nothing waits
+
+**Building `reports_to` on Apollo**, which is unambiguous and which [TASK-430](BACKLOG.md)'s org chart needs. ⛔ **Not building the other four**, and not inventing a home for them.
+
+### 🔴 The options
+
+| | |
+|---|---|
+| **A** *(recommended)* | ⚡ **Split the contract by source.** **Apollo supplies identity + `reports_to`.** **A CRM fixture supplies `engagement_last_90d`** — `mappers/crm.py` and its provider already exist. **`stance` and `relationship_strength` are DERIVED from engagement**, in a module that owns judgement, never supplied. **`committee_role` waits on the seat mapping.** ⛔ **Cost: [TASK-430](BACKLOG.md)'s stance and committee views need the CRM slice first** |
+| **B** | **Emit all six from Apollo as the row specifies**, and accept that four fields have no real source. ⛔ **Cost: the one-file-change property is gone, and the four are discovered at vendor-swap time by somebody who did not choose this** |
+| **C** | **Emit all six, but from a fixture that is honestly named as a composite** — not `apollo`, a Signora-internal *"customer engagement"* source. ⚠️ **Honest about provenance and still invents a provider**, and 📁 [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) is the proposed ADR that would name the real one |
+
+⚡ **A is the only option under which each field's author is one that could produce it.** **B and C both ship a screen whose data has nowhere to come from.**
+
 ## C-1508 · Is `20-provider-simulation.md` a module design doc or system architecture?
 
 | | |

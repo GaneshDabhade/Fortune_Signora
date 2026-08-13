@@ -565,6 +565,12 @@ All three are fixed in the mappers, and each is faithful to the real vendor inde
 
 ⛔ **`hashlib`, never `hash()`.** Python's is seeded per process, so a provider identifier built on it would differ between two runs of one scenario. **The test that catches this is pinned to a literal value**, because a same-process comparison would pass just as happily against the defect.
 
+### The org chart, and the four fields that are deliberately absent
+
+**Each company's roster carries reporting lines** — 21 edges across the twelve, **8 of them `inferred`**, and **15 people the vendor sees no manager for**, which is honest rather than a gap: Finance does not report into IT, and an edge pointing at nothing would be worse than none. ⚡ **The design draws an `inferred` edge beside a `confirmed` one, so the dataset has to be able to produce that picture rather than the renderer faking it.**
+
+⛔ **`reports_to` is the ONLY relationship fact this fixture emits**, and the reason is what each fact is *about*. **An org chart is a fact about the company, which a contact vendor observes. A stance is a fact about the customer's deal, which it has never seen.** ⚠️ **`stance`, `engagement_last_90d`, `relationship_strength` and `committee_role` are therefore NOT here** — [C-1509](../LANE_COORDINATION.md), raised rather than emitted, because 📁 *"replacing a fixture with a real payload is a one-file change"* holds only while the fixture's shape is one a real payload could have.
+
 ### The fourth claim the simulator could describe and the pipeline could never produce
 
 **A fourth instance of the class the `playground@2` table above names**, found the same way and worth adding to it:
