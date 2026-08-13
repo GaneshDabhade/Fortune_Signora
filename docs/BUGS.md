@@ -5590,6 +5590,28 @@ def _load_state_check() -> ModuleType:
 >
 > ⛔ **This office is not taking that decision, and the reason is that it is the office asking to be unblocked.** 📁 **A split that happens to release my own queue is indistinguishable from weakening a requirement to unblock promotion, whatever the reasoning** — **so it goes to the product owner with the conflict named** ([§20e](../CLAUDE.md): a lane's recommendation is architectural input, never implementation authority).
 
+### B-433 · 🟠 A row naming two modules is counted claimable and then left out of the lane's queue, so it is executable and invisible at once
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — [`infra/coordination.py`](../infra/coordination.py) |
+| **Current assignee** | **Lane A** — `platform_foundation` moved to Lane A at [D-230](DECISION_REGISTER.md) |
+| **Severity** | 🟠 — ⛔ **the generator withholds executable work from the lane that owns it, while reporting the same row as available in its own summary.** ⚠️ **Not 🔴: `BACKLOG.md` still shows it and [`state-check`](../infra/state-check.py) reports it, so nothing is lost — but [§20e](../CLAUDE.md) step 3 sends a lane to its queue FIRST, and [D-234](DECISION_REGISTER.md) made that the constitution's wording** |
+| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-13, found on the sequenced-row sweep |
+| **Found** | **`0c79753f`**, releasing [TASK-1419](BACKLOG.md) |
+
+**Steps.** Release a `SEQUENCED` row whose `Module` cell names **two** modules — [TASK-1419](BACKLOG.md) reads **`action_batch` + `product_surface`**. Run `python3 infra/coordination.py`.
+
+**Expected.** The row appears in `queues/lane-a.toml`'s `backlog`, as a single-module row does.
+
+**Actual.** ⛔ **The summary counts it — *"Lane A: 10 claimable"* — and the emitted array holds 9 and does not name it.** 📁 **`state-check` then reports *"TASK-1419 is READY and appears in no lane queue"*, correctly.**
+
+⚡ **Isolated by comparison rather than inferred:** ✅ **[TASK-1477](BACKLOG.md), single-module, IS emitted** — and it was invisible for a different reason until its `Module` cell was added hours earlier. ⛔ **[TASK-1478](BACKLOG.md) and [TASK-1479](BACKLOG.md) have no `Module` cell and are also absent**, but those are umbrella rows and their absence is correct.
+
+⚠️ **Adding the id to the array by hand does not hold — the generator overwrites it on the next run**, which is the right behaviour for a generated file and is why this is a defect in the generator rather than a queue to repair.
+
+🔴 **Why it matters more than one row.** **This is the third distinct way in two days that a `READY` row has been executable and unreachable**: a stale `[[blocked]]` entry ([TASK-1421](BACKLOG.md), [TASK-1423](BACKLOG.md)), a missing `Module` cell ([TASK-1480](BACKLOG.md), [TASK-1477](BACKLOG.md)), and now a `Module` cell naming two. ⚡ **Each was found by `state-check` rather than by a lane going idle, which is the instrument working — but a lane that trusted its queue alone would have been short of work three times.**
+
 ### B-432 · 🟠 The coordination register has more resolution vocabulary than any reader knows, and a sweep that knows two words reports a queue twice its size
 
 | | |
