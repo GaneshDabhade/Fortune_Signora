@@ -9,7 +9,7 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "2b575bc"
+generated_from = "664b3f4"
 task_count     = 63
 
 [lane.Lane_A]
@@ -19,13 +19,13 @@ assigned_total     = 48
 claimable          = 9
 claimable_now      = 9
 awaiting_sync      = 0
-in_flight          = 17
-actionable         = 4
+in_flight          = 18
+actionable         = 5
 awaiting_qe_transition = 0
-blocked_on_integration = 1
+blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 22
-lane_utilization   = 3.4
+blocked            = 21
+lane_utilization   = 3.6
 idle_prediction_days   = 1.3
 dependency_wait_days   = 1.5
 blocked_duration_days  = 0.6
@@ -473,9 +473,9 @@ state         = "IN FLIGHT"
 declared      = "CLAIMED"
 lane          = "Lane A"
 depends_on     = []
-unblocks       = ["TASK-429"]
-next_owner     = ["Lane A"]
-next_lane      = "Lane A"
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
@@ -677,18 +677,18 @@ on_integration = true
 [[task]]
 id            = "TASK-429"
 title         = "M-E · A provider supplies a person identifier"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+state         = "IN FLIGHT"
+declared      = "CLAIMED"
 lane          = "Lane A"
-depends_on     = ["TASK-1480"]
+depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
-critical_path  = 1
-estimated_ready = "when TASK-1480 complete"
-waiting_for    = "behind [TASK-1480](#task-1480) — Lane A, 2026-08-13. Claim RELEASED, and no code was written.** 🔴 **The dependency is a naming ruling, not a technical"
+critical_path  = 0
+estimated_ready = "—"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-430"
@@ -991,7 +991,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
@@ -1007,7 +1007,7 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 0.0
+blocked_days   = 0.1
 on_integration = true
 
 [[task]]
