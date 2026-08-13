@@ -877,8 +877,8 @@ unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "** — **trigger: whichever comes first —** *(a)* the first customer con"
-waiting_for    = "** — **trigger: whichever comes first —** *(a)* the first customer contract naming a retention or erasure obligation, *(b)* the first workspace deleti"
+estimated_ready = "— AND TRIGGER *(c)* HAS FIRED. Recorded 2026-08-13** ([D-235](DECISION"
+waiting_for    = "— AND TRIGGER *(c)* HAS FIRED. Recorded 2026-08-13** ([D-235](DECISION_REGISTER.md) ③). 🔴 **`backend/migrations/versions/` on `integration` is at `005"
 blocked_days   = 0.4
 on_integration = true
 
