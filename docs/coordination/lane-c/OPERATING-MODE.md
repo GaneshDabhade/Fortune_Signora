@@ -123,6 +123,8 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ✅ **`git checkout <the stale cycle's commit> -- <the records>` fires; with the records current it is silent.** ⚡ **The generalisation is this office's own arriving from an unexpected direction: *read the artifact, not the report about it* — including when the artifact is a past state of the repository and the report is a reconstruction of it.**
 
+⚠️ **A third direction, 2026-08-13, and it is the one where being wrong was destructive rather than merely misleading.** ⛔ **QE ran its required patch-id survival check before a force-push and it printed *"everything survives"* — against a stale `origin/integration`, fetched afterwards.** 🔴 **True of the ref compared against, false of the repository, and eleven commits were one push away.** ⚡ **A stale ref is a report about the repository, not the repository.** ⛔ **A verification against a stale operand is not a weaker verification — it is a confident wrong answer guarding a destructive operation**, ✅ **which is the green-output half of the asymmetry above, one level up.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
