@@ -3,16 +3,19 @@
 **Small by design. It points at authoritative sources and duplicates none of them.**
 ⛔ **Not a backlog. Not a queue. Not a decision register.**
 
-**Last written: 2026-08-12, cycle 204.**
+**Last written: 2026-08-12, cycle 218.**
 
 ## Repository position
 
 | | |
 |---|---|
-| **`main`** | `4f680315` — ⛔ **not promoted this cycle.** B-183 and B-428 open; [§20e](../../../CLAUDE.md) bars the fast-forward |
-| **`integration`** | `f50851cb` |
-| **Certified** | ✅ **Cycle 204 at `99d4c2b9`** — 4412 tests · 95.03% coverage · 403 Security Invariants · smoke green |
-| **`lane-c-sync`** | See `git log`. ⚠️ **Never transcribed here — a SHA in prose goes stale in one commit** |
+| **`main`** | ✅ **`920b08a4`** — cycle 218 promoted. ⚡ **No unresolved 🔴; promotion is not blocked** |
+| **`integration`** | See `git rev-parse origin/integration`. ⚠️ **Not transcribed — a SHA in prose goes stale in one commit** |
+| **`lane-c-sync`** | Level with `integration` as of this writing |
+
+> ⛔ **This header read *"cycle 204"* and `main` = `4f680315` for fourteen cycles.** ⚠️ **The file whose purpose is to be the trusted entry point was the stalest thing in it** — 📁 the [C-213](../../LANE_COORDINATION.md) class, in this office's own record. **Corrected 2026-08-12.**
+>
+> ⚡ **The lesson is the one the rest of the file already teaches: a figure that must be updated by hand will not be.** ✅ **Everything below points at a source instead.**
 
 ## Open product-owner decisions
 
