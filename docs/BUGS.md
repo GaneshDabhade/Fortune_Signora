@@ -90,6 +90,41 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-195 · 🟡 The board-header check asks whether a named commit is REACHABLE, so a record two cycles stale passes green
+
+| | |
+|---|---|
+| **Module** | **QE gates** — [`infra/state-check.py`](../infra/state-check.py), rule 5g |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — ⛔ **it cannot make a bad tree pass.** ⚠️ **It reports `ok` on exactly the condition it exists to catch**, which is worse than silence because a reader stops asking |
+| **Status** | 🔵 **`OPEN`** — ⛔ **not fixed here**, and the reason is below |
+| **Found** | **2026-08-13**, by QE applying Lane C's own observation to itself after they found a 14-cycle-stale header in `CURRENT-STATE.md` |
+| **Commit found** | **`a6dd1eee`** |
+
+**Steps.** Leave `PROJECT_STATUS.md`, `SESSION_HANDOFF.md` and `ACTIVE_ASSIGNMENTS.md` naming an older promoted commit. Run `state-check`.
+
+**Expected.** It says the records are stale.
+
+**Actual.** ⛔ **`ok   ACTIVE_ASSIGNMENTS.md is dated at 'e158dd04', reachable from HEAD.`** — **measured, with the records two cycles behind.**
+
+### 🔴 The check asks a weaker question than its purpose
+
+📁 The predicate is `_is_ancestor(named, HEAD)`. ⚡ **Every previously promoted commit is an ancestor**, so the rule only fires on a record naming something **unreachable** — a commit that never merged. ⛔ **It cannot detect staleness at all**, which is the condition §20d cares about: *the dashboard must describe the promoted repository.*
+
+⚠️ **The file's own comment already concedes half of this** — *"the header is a proxy, not a proof; a reverted row still passes"* — **but a reader takes `ok` as *the board is current*, and that is the sentence it cannot support.**
+
+### ⛔ Why QE's own Closeout produced the instance
+
+**Cycle 218's Closeout touched `docs/BACKLOG.md` and nothing else.** 📁 `git show --stat` on it: **one file.** **The three records were left naming cycle 217** and the advisory said `ok`.
+
+> ⚡ **[B-190](#b-190) fixed the comparison in this same rule; this is the predicate.** **Same file, same neighbourhood, and the earlier fix is why the wrong answer was legible rather than noisy.**
+
+### ⚠️ Not fixed here, deliberately
+
+**The repair is small — compare against `main`'s tip rather than testing reachability.** ⛔ **QE has written three guards this week and abandoned two**, and Lane C's test applies: *if this check goes green, what will the reader stop asking?* ✅ **Here the answer is favourable — a reader should stop asking whether the board is current, and a tip comparison genuinely answers that.** **So this one is worth building; it is queued behind an executable delivery rather than declined.**
+
+---
+
 ### B-194 · 🟡 QE grepped its own advisory for the one line it expected, and promoted a duplicate identifier the same tool was reporting
 
 | | |
