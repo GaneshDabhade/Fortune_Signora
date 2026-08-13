@@ -70,6 +70,32 @@
 - **C-289 and C-292 name owners that route to nobody.** Routing, not a decision.
 - **3 workflows genuinely thin** — Settings, AI Research, Help Center. **Mode C, one per session.**
 
+## 📊 Standing measurement — planning corrections stranded off `integration`
+
+**Opened 2026-08-12 because [D-136](../../DECISION_REGISTER.md) asks for exactly this and not for a proposal:** 📁 *"If `Planning-Sync` items accumulate or repeatedly delay implementation, the response is evidence gathered over several cycles and a proposal built on it — never a governance change argued from one bad day."*
+
+⛔ **Three instances in one week. QE stopped calling it a synchronization event and started treating it as the standing shape of the planning flow.**
+
+| # | What was stranded | Cost |
+|---|---|---|
+| **1** | `TASK-1475` | Lane A idle four cycles with work already written |
+| **2** | `TASK-1476` · `ADR-0409` · the `C-210` and `C-1430` rulings | Lane A declined `TASK-1477` because the ADR read `DRAFT` — **correctly** |
+| **3** | The `C-1500` block allocation | Lane A stopped allocating coordination ids entirely — **correctly** |
+
+⚡ **Each time the ruling existed. Each time `integration` said otherwise. Each time a lane behaved correctly on the information it was permitted to read.**
+
+### ⚠️ The cost is not the delay
+
+📁 **QE's framing, and it is the sharper one: *a correct report reads as wrong*.** **QE reported B-263 as an open ruling; this office said it was ruled. Both were true from where each stood.** ⛔ **Second time in a week two lanes contradicted each other and neither was mistaken** — the first was `C-210`.
+
+⚡ **A delay is visible and self-correcting. Two correct reports that disagree are neither**, and they cost a round trip each time to discover that nobody was wrong.
+
+### ⛔ No proposal, deliberately
+
+**This office has not analysed the alternatives and the governance freeze binds.** ✅ **What D-136 asked for was evidence over several cycles; this is that evidence, and the decision whether it warrants anything is the product owner's.**
+
+⚠️ **Update this table rather than opening a second record.** **A fourth instance is data; a fourth register row is noise.**
+
 ## ⚙ Pipeline feeder — checkpoint *(current)*
 
 **Model changed 2026-08-12, product owner: Lane C hands Lane A coherent END-TO-END PACKAGES, not decomposed tasks.** ⛔ **Lane C owns the WHAT; Lane A owns decomposition, sequencing and implementation.**
