@@ -125,6 +125,22 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⚠️ **A third direction, 2026-08-13, and it is the one where being wrong was destructive rather than merely misleading.** ⛔ **QE ran its required patch-id survival check before a force-push and it printed *"everything survives"* — against a stale `origin/integration`, fetched afterwards.** 🔴 **True of the ref compared against, false of the repository, and eleven commits were one push away.** ⚡ **A stale ref is a report about the repository, not the repository.** ⛔ **A verification against a stale operand is not a weaker verification — it is a confident wrong answer guarding a destructive operation**, ✅ **which is the green-output half of the asymmetry above, one level up.**
 
+## 5d · After a rebase, re-derive the queue array. Never trust either hunk.
+
+**Recorded 2026-08-13 after it happened twice in two days, in the same file.** ⛔ **A recurrence worth writing down rather than re-diagnosing each time.**
+
+> **`queues/lane-a.toml`'s `backlog` array and the comment explaining it are separate hunks. A clean rebase can keep the comment and drop the array.**
+
+🔴 **Both times the file was left describing a change it no longer carried** — ⚠️ **which is worse than losing the change outright, because the comment is what the next reader believes.** ⚡ **It is the half-landing shape in a different medium: the thing that describes the change survives and the change does not.**
+
+⛔ **A `git rebase` reporting success is a report, not the artifact.** ✅ **Read the array back every time.**
+
+**And do not re-derive it by reading `BACKLOG.md` by hand.** 🔴 **A first-token match on a `Status` cell reported `TASK-466` and `TASK-1416` as `PROMOTED` when they were live** — **these rows carry claim and promotion history in ADDITIONAL table rows, so the first state token found is often a historical one.** ⛔ **Acting on it would have removed two claimable rows from the lane's queue.**
+
+✅ **`python3 infra/coordination.py` resolves the claimable set and names it. Use it.** ✅ **Then let `state-check` judge the result — *"queues X as executable; somebody holds it"* is the check that fires if held work was queued.**
+
+⛔ **No guard is proposed, and §5c's test is why:** **a reader would stop asking whether the array matched its comment, and only re-derivation actually answers that.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
