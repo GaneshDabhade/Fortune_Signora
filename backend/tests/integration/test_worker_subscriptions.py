@@ -22,11 +22,19 @@ import pytest
 
 from apps.worker import subscriptions
 from apps.worker.pools import POOLS
-from modules.timeline.domain.projection import PROJECTIONS
+from modules.action_batch.domain.events import APPLIED as ACTION_BATCH_APPLIED
+from modules.action_batch.domain.events import REVERSED as ACTION_BATCH_REVERSED
 from modules.buying_score_engine.interface.handlers import (
     CONSUMER_NAME as SCORE_CONSUMER,
 )
+from modules.commercial_profile.interface.tag_batch_handlers import (
+    APPLY_CONSUMER_NAME as TAG_BATCH_APPLY_CONSUMER,
+)
+from modules.commercial_profile.interface.tag_batch_handlers import (
+    REVERSE_CONSUMER_NAME as TAG_BATCH_REVERSE_CONSUMER,
+)
 from modules.signal_engine.interface.handlers import CONSUMER_NAME as SIGNAL_CONSUMER
+from modules.timeline.domain.projection import PROJECTIONS
 from modules.timeline.interface.handlers import CONSUMER_NAME as TIMELINE_CONSUMER
 from signora_platform.event_bus import registry
 
@@ -176,3 +184,55 @@ class TestBuyingScoreIsActuallySubscribed:
         assert signal is not None and score is not None
         assert signal.pool == score.pool == POOLS["intelligence"].name
 
+
+
+class TestTheTagBatchHandlersAreActuallySubscribed:
+    """🔴 **The regression this file exists for, arriving at a third module.**
+
+    📁 *"A projection rule with no subscription is a rule that never runs
+    outside a test."* ⚡ **Two use cases, two fakes, sixteen green assertions
+    — and none of it runs in production unless these two lines exist.**
+    """
+
+    def test_applying_a_batch_reaches_commercial_profile(self) -> None:
+        subscriptions.register()
+
+        assert (
+            registry.find(
+                consumer_name=TAG_BATCH_APPLY_CONSUMER, event_type=ACTION_BATCH_APPLIED
+            )
+            is not None
+        )
+
+    def test_reversing_a_batch_reaches_it_too(self) -> None:
+        """⛔ **The half that is normally missed.** 📁
+        [TASK-466](../../../docs/BACKLOG.md): *"a batch that applies but cannot
+        be reversed in the window is a defect, not a limitation"* — **and an
+        unsubscribed reversal is exactly that defect, invisible until somebody
+        presses undo.**"""
+        subscriptions.register()
+
+        assert (
+            registry.find(
+                consumer_name=TAG_BATCH_REVERSE_CONSUMER, event_type=ACTION_BATCH_REVERSED
+            )
+            is not None
+        )
+
+    def test_the_consumer_names_are_the_module_s_own(self) -> None:
+        # ⚡ **A permanent contract.** Renaming one resets the idempotency
+        # ledger, and every historical application would replay — re-tagging
+        # accounts a customer has already seen the outcome of.
+        assert TAG_BATCH_APPLY_CONSUMER.startswith("commercial_profile.")
+        assert TAG_BATCH_REVERSE_CONSUMER.startswith("commercial_profile.")
+
+    def test_registering_twice_is_safe(self) -> None:
+        subscriptions.register()
+        subscriptions.register()
+
+        assert (
+            registry.find(
+                consumer_name=TAG_BATCH_APPLY_CONSUMER, event_type=ACTION_BATCH_APPLIED
+            )
+            is not None
+        )

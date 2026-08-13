@@ -26,9 +26,15 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
-from modules.commercial_profile.domain.account_tag import AccountTag, TagTone
+from modules.commercial_profile.domain.account_tag import (
+    AccountTag,
+    TagBatch,
+    TagTone,
+    apply_tag,
+)
 from modules.commercial_profile.infrastructure.tag_repository import (
     SqlAccountTagRepository,
+    SqlTagBatchStore,
 )
 from tests.conftest import DEFAULT_APP_DATABASE_URL
 
@@ -202,3 +208,98 @@ class TestARenameIsAnUpdateInPlace:
         assert await repository.accounts_with(workspace, tag.id, among=(account,)) == frozenset(
             {account}
         )
+
+
+class TestTheBatchStore:
+    async def test_a_batch_round_trips_before_it_applies(
+        self, session: AsyncSession
+    ) -> None:
+        workspace, actor = uuid4(), uuid4()
+        await _scoped(session, workspace)
+        tags = SqlAccountTagRepository(session)
+        store = SqlTagBatchStore(session)
+        tag = _tag()
+        await tags.create(workspace, tag, actor_id=actor)
+        accounts = (uuid4(), uuid4(), uuid4())
+        batch = TagBatch(batch_id=uuid4(), tag_id=tag.id, requested=accounts)
+
+        await store.record(workspace, batch, actor_id=actor)
+
+        loaded = await store.get(workspace, batch.batch_id)
+        assert loaded is not None
+        assert loaded.requested == accounts
+        # ⛔ **`None`, not `[]`.** *Not applied yet* is a different fact from
+        # *applied and changed nothing*, and the column carries both.
+        assert loaded.applied is None
+        assert loaded.to_reverse() == ()
+
+    async def test_unchanged_is_derived_and_not_stored(
+        self, session: AsyncSession
+    ) -> None:
+        """⚡ **One column, two facts, no possibility of disagreement** (§2).
+
+        `unchanged` is everything requested that did not change. **A second
+        column would be a stored copy of a derivable fact**, and the two would
+        diverge the first time either was written alone.
+        """
+        workspace, actor = uuid4(), uuid4()
+        await _scoped(session, workspace)
+        tags = SqlAccountTagRepository(session)
+        store = SqlTagBatchStore(session)
+        tag = _tag()
+        await tags.create(workspace, tag, actor_id=actor)
+        june = tuple(uuid4() for _ in range(3))
+        now = tuple(uuid4() for _ in range(5))
+        batch = TagBatch(batch_id=uuid4(), tag_id=tag.id, requested=(*june, *now))
+        await store.record(workspace, batch, actor_id=actor)
+
+        await store.record_application(
+            workspace,
+            batch.batch_id,
+            apply_tag(tag.id, accounts=batch.requested, already_tagged=frozenset(june)),
+        )
+
+        loaded = await store.get(workspace, batch.batch_id)
+        assert loaded is not None and loaded.applied is not None
+        assert set(loaded.applied.changed) == set(now)
+        assert set(loaded.applied.unchanged) == set(june)
+        assert set(loaded.to_reverse()) == set(now)
+
+    async def test_a_batch_that_changed_nothing_reads_back_as_applied(
+        self, session: AsyncSession
+    ) -> None:
+        """⛔ **The state a boolean could not express.** Every selected account
+        already carried the tag: the batch ran, and there is still nothing to
+        undo — `[]` rather than `NULL`."""
+        workspace, actor = uuid4(), uuid4()
+        await _scoped(session, workspace)
+        tags = SqlAccountTagRepository(session)
+        store = SqlTagBatchStore(session)
+        tag = _tag()
+        await tags.create(workspace, tag, actor_id=actor)
+        already = (uuid4(),)
+        batch = TagBatch(batch_id=uuid4(), tag_id=tag.id, requested=already)
+        await store.record(workspace, batch, actor_id=actor)
+
+        await store.record_application(
+            workspace,
+            batch.batch_id,
+            apply_tag(tag.id, accounts=already, already_tagged=frozenset(already)),
+        )
+
+        loaded = await store.get(workspace, batch.batch_id)
+        assert loaded is not None
+        assert loaded.is_applied is True
+        assert loaded.to_reverse() == ()
+
+    async def test_a_batch_from_another_workspace_is_not_found(
+        self, session: AsyncSession
+    ) -> None:
+        """⛔ **`None`, and it is the ordinary case rather than an error.** The
+        Action Batch is a shared lifecycle; a handler receiving an event for a
+        batch this module did not propose has learned something true."""
+        mine, actor = uuid4(), uuid4()
+        await _scoped(session, mine)
+        store = SqlTagBatchStore(session)
+
+        assert await store.get(mine, uuid4()) is None

@@ -23,11 +23,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.commercial_profile.domain.account_tag import (
     AccountTag,
+    TagApplication,
+    TagBatch,
     TagTone,
     TagVocabulary,
 )
 from modules.commercial_profile.infrastructure.models import (
     AccountTagAssignmentModel,
+    AccountTagBatchModel,
     AccountTagModel,
 )
 
@@ -177,3 +180,95 @@ class SqlAccountTagRepository:
         for account_id, tag_id in rows:
             held.setdefault(account_id, []).append(tag_id)
         return {account_id: tuple(tag_ids) for account_id, tag_ids in held.items()}
+
+
+class SqlTagBatchStore:
+    """What one bulk *Add tag* asked for, and what it changed.
+
+    ⚡ **A store rather than a repository method**, because it answers a
+    different question from the rest of `SqlAccountTagRepository`: that one is
+    asked *"what labels exist and who wears them"*, and this one *"what did
+    batch `X` do"*. 📁 Same table family, different aggregate.
+    """
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def record(self, workspace_id: UUID, batch: TagBatch, *, actor_id: UUID) -> None:
+        self._session.add(
+            AccountTagBatchModel(
+                batch_id=batch.batch_id,
+                workspace_id=workspace_id,
+                tag_id=batch.tag_id,
+                requested=[str(account) for account in batch.requested],
+                changed=None
+                if batch.applied is None
+                else [str(account) for account in batch.applied.changed],
+                created_by=actor_id,
+            )
+        )
+        await self._session.flush()
+
+    async def get(self, workspace_id: UUID, batch_id: UUID) -> TagBatch | None:
+        """One batch, or `None`.
+
+        ⛔ **`None` rather than an exception**, on the terms every reader here
+        uses: **a handler that receives an event for a batch this module did
+        not propose has learned something true**, not failed. ⚡ The Action
+        Batch is a shared lifecycle and other domains will use it — **so *"not
+        mine"* is the ordinary case rather than an error.**
+        """
+        row = (
+            await self._session.execute(
+                select(AccountTagBatchModel).where(
+                    AccountTagBatchModel.workspace_id == workspace_id,
+                    AccountTagBatchModel.batch_id == batch_id,
+                )
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            return None
+        requested = tuple(UUID(value) for value in row.requested)
+        applied = (
+            None
+            if row.changed is None
+            else TagApplication(
+                tag_id=row.tag_id,
+                changed=tuple(UUID(value) for value in row.changed),
+                # ⚡ **Derived, never stored.** `unchanged` is everything asked
+                # for that did not change, and a second column would be a fact
+                # with two representations (§2) — able to disagree the first
+                # time either was written alone.
+                unchanged=tuple(
+                    account
+                    for account in requested
+                    if account not in {UUID(value) for value in row.changed}
+                ),
+            )
+        )
+        return TagBatch(
+            batch_id=row.batch_id,
+            tag_id=row.tag_id,
+            requested=requested,
+            applied=applied,
+        )
+
+    async def record_application(
+        self, workspace_id: UUID, batch_id: UUID, application: TagApplication
+    ) -> None:
+        """Write what running it actually did.
+
+        ⛔ **The only `UPDATE` this table ever takes.** Nothing else on the row
+        is edited — a batch rewriting what it *asked* for after the fact would
+        make the record uncitable.
+        """
+        row = (
+            await self._session.execute(
+                select(AccountTagBatchModel).where(
+                    AccountTagBatchModel.workspace_id == workspace_id,
+                    AccountTagBatchModel.batch_id == batch_id,
+                )
+            )
+        ).scalar_one()
+        row.changed = [str(account) for account in application.changed]
+        await self._session.flush()

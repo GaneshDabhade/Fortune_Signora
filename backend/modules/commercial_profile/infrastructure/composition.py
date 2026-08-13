@@ -21,9 +21,16 @@ from modules.commercial_profile.application.declare_target_accounts import (
 )
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.application.segment_queries import SegmentQueries
+from modules.commercial_profile.application.tag_use_cases import (
+    ApplyTagBatchUseCase,
+    ReverseTagBatchUseCase,
+)
+from modules.commercial_profile.infrastructure.catalog_reader import SqlProductCatalogReader
+from modules.commercial_profile.infrastructure.committee_reader import SqlBuyingCommitteeReader
 from modules.commercial_profile.infrastructure.competitor_reader import (
     SqlDeclaredCompetitorReader,
 )
+from modules.commercial_profile.infrastructure.icp_reader import SqlIcpReader
 from modules.commercial_profile.infrastructure.repository import (
     SqlBuyingCommitteeRepository,
     SqlCommercialFocusRepository,
@@ -32,10 +39,11 @@ from modules.commercial_profile.infrastructure.repository import (
     SqlProductCatalogRepository,
     SqlTargetAccountListRepository,
 )
-from modules.commercial_profile.infrastructure.catalog_reader import SqlProductCatalogReader
-from modules.commercial_profile.infrastructure.committee_reader import SqlBuyingCommitteeReader
-from modules.commercial_profile.infrastructure.icp_reader import SqlIcpReader
 from modules.commercial_profile.infrastructure.segment_repository import SqlSegmentReader
+from modules.commercial_profile.infrastructure.tag_repository import (
+    SqlAccountTagRepository,
+    SqlTagBatchStore,
+)
 from modules.commercial_profile.infrastructure.target_account_reader import (
     SqlTargetAccountReader,
 )
@@ -168,3 +176,21 @@ def build_icp_reader(session: AsyncSession) -> SqlIcpReader:
     ever reaching into the pipeline.
     """
     return SqlIcpReader(session)
+
+
+def build_apply_tag_batch(session: AsyncSession) -> ApplyTagBatchUseCase:
+    """The consuming domain performing a bulk *Add tag* — [TASK-466](../../../../docs/BACKLOG.md).
+
+    ⚡ **Two collaborators rather than one**, and the split is the boundary:
+    the labels and who wears them are one aggregate, and what a given batch
+    asked for is another.
+    """
+    return ApplyTagBatchUseCase(
+        tags=SqlAccountTagRepository(session), batches=SqlTagBatchStore(session)
+    )
+
+
+def build_reverse_tag_batch(session: AsyncSession) -> ReverseTagBatchUseCase:
+    return ReverseTagBatchUseCase(
+        tags=SqlAccountTagRepository(session), batches=SqlTagBatchStore(session)
+    )

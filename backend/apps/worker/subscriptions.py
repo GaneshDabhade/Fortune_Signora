@@ -29,6 +29,9 @@ import httpx
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from apps.worker.pools import AI_RESEARCH, DEFAULT, INTELLIGENCE, READ_MODEL
+from modules.action_batch.domain.events import (
+    APPLICATION_REQUESTED as ACTION_BATCH_APPLICATION_REQUESTED,
+)
 
 # **Two `build_provider_registry` functions exist and they are different
 # things.** `ai_platform`'s resolves a *model* to a vendor adapter;
@@ -37,7 +40,10 @@ from apps.worker.pools import AI_RESEARCH, DEFAULT, INTELLIGENCE, READ_MODEL
 # both are imported under explicit aliases here rather than one shadowing the
 # other by import order.
 from modules.action_batch.domain.events import (
-    APPLICATION_REQUESTED as ACTION_BATCH_APPLICATION_REQUESTED,
+    APPLIED as ACTION_BATCH_APPLIED,
+)
+from modules.action_batch.domain.events import (
+    REVERSED as ACTION_BATCH_REVERSED,
 )
 from modules.action_batch.infrastructure.composition import build_action_batches
 from modules.action_batch.interface.handlers import (
@@ -80,6 +86,20 @@ from modules.buying_score_engine.interface.handlers import (
 from modules.buying_score_engine.interface.handlers import compute_from_signal
 from modules.commercial_profile.infrastructure.competitor_reader import (
     SqlDeclaredCompetitorReader,
+)
+from modules.commercial_profile.infrastructure.composition import (
+    build_apply_tag_batch,
+    build_reverse_tag_batch,
+)
+from modules.commercial_profile.interface.tag_batch_handlers import (
+    APPLY_CONSUMER_NAME as TAG_BATCH_APPLY_CONSUMER,
+)
+from modules.commercial_profile.interface.tag_batch_handlers import (
+    REVERSE_CONSUMER_NAME as TAG_BATCH_REVERSE_CONSUMER,
+)
+from modules.commercial_profile.interface.tag_batch_handlers import (
+    apply_tag_batch,
+    reverse_tag_batch,
 )
 from modules.knowledge_graph.infrastructure.composition import (
     build_queries as build_graph_queries,
@@ -254,6 +274,26 @@ async def _apply_accepted_batch(envelope: EventEnvelope) -> None:
     )
 
 
+async def _apply_tag_batch(envelope: EventEnvelope) -> None:
+    current = runtime()
+
+    await apply_tag_batch(
+        envelope,
+        session_factory=current.session_factory,
+        apply=build_apply_tag_batch,
+    )
+
+
+async def _reverse_tag_batch(envelope: EventEnvelope) -> None:
+    current = runtime()
+
+    await reverse_tag_batch(
+        envelope,
+        session_factory=current.session_factory,
+        reverse=build_reverse_tag_batch,
+    )
+
+
 async def _run_requested_research(envelope: EventEnvelope) -> None:
     current = runtime()
 
@@ -416,6 +456,38 @@ def register() -> None:
         handler=_apply_accepted_batch,
         pool=DEFAULT.name,
     )
+
+    # **The consuming domain performs the work** — [TASK-466](../../../docs/BACKLOG.md),
+    # and `action_batch`'s own handler names this slice: *"the use case
+    # remains, and its caller is slice 6."*
+    #
+    # ⚡ **This is the composition root knowing both names, which is its job.**
+    # ⛔ **`commercial_profile` imports nothing from `action_batch`** — its
+    # handlers take a generic `EventEnvelope` and read `payload["batch_id"]`,
+    # so the producing module's types never cross the boundary (§5).
+    #
+    # ⛔ **`default`, on the same reasoning as the subscription above**:
+    # tagging a page of accounts is fast internal work with no model call and
+    # no provider, and inventing a pool for one consumer would be capacity
+    # nobody has measured a need for (§14).
+    if not registry.find(
+        consumer_name=TAG_BATCH_APPLY_CONSUMER, event_type=ACTION_BATCH_APPLIED
+    ):
+        registry.subscribe(
+            consumer_name=TAG_BATCH_APPLY_CONSUMER,
+            event_type=ACTION_BATCH_APPLIED,
+            handler=_apply_tag_batch,
+            pool=DEFAULT.name,
+        )
+    if not registry.find(
+        consumer_name=TAG_BATCH_REVERSE_CONSUMER, event_type=ACTION_BATCH_REVERSED
+    ):
+        registry.subscribe(
+            consumer_name=TAG_BATCH_REVERSE_CONSUMER,
+            event_type=ACTION_BATCH_REVERSED,
+            handler=_reverse_tag_batch,
+            pool=DEFAULT.name,
+        )
 
     # **Signal generation, TASK-901 slice 2 — the second module to consume
     # what it declares.** Two event types because the module's own handler

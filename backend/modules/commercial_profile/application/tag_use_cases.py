@@ -1,6 +1,6 @@
 """What a customer does with their own labels — [TASK-466](../../../../docs/BACKLOG.md).
 
-**Five use cases, and `ApplyTagUseCase` is the one this row exists for.**
+**Seven use cases, and `ApplyTagUseCase` is the one this row exists for.**
 
 ⚡ **The port is a Protocol declared here**, in the application layer that
 consumes it, rather than in `infrastructure/` — 📁 [§6](../../../../CLAUDE.md):
@@ -18,6 +18,7 @@ from modules.commercial_profile.domain.account_tag import (
     AccountTag,
     AccountTagError,
     TagApplication,
+    TagBatch,
     TagTone,
     TagVocabulary,
     apply_tag,
@@ -215,3 +216,88 @@ class TagsForAccountsUseCase:
         self, workspace_id: UUID, accounts: tuple[UUID, ...]
     ) -> dict[UUID, tuple[UUID, ...]]:
         return await self._tags.tags_for(workspace_id, accounts)
+
+
+class TagBatchStore(Protocol):
+    """Where a bulk batch's own payload lives.
+
+    🔴 **A consumer of the Action Batch is forced to have one.** 📁
+    `ActionBatchView` publishes *"`item_count` and not the items… what each
+    item *means* belongs to the domain that proposed it"* — so the lifecycle
+    module knows a batch covers forty-one things and nothing about what.
+    """
+
+    async def get(self, workspace_id: UUID, batch_id: UUID) -> TagBatch | None: ...
+
+    async def record_application(
+        self, workspace_id: UUID, batch_id: UUID, application: TagApplication
+    ) -> None: ...
+
+
+class ApplyTagBatchUseCase:
+    """Run a bulk *Add tag* because its Action Batch was applied.
+
+    ⚡ **Driven by an event, not by a request.** 📁 [§9](../../../../CLAUDE.md):
+    inter-module communication defaults to domain events, and the handler
+    reads a generic envelope — **this module imports nothing from
+    `action_batch`.**
+
+    ⛔ **A batch this module did not propose is not an error.** The Action
+    Batch is a shared lifecycle and other domains will use it, so *"not mine"*
+    is the ordinary case: **the handler returns and stays silent** rather than
+    raising into a retry loop that can never succeed.
+
+    ⚠️ **Idempotent on re-delivery, because it has to be.** 📁 [§9](../../../../CLAUDE.md):
+    *"event consumers must be idempotent on `event_id`"* — a second delivery
+    of *applied* must not tag anything again, and **must not overwrite the
+    record a reversal depends on.**
+    """
+
+    def __init__(self, *, tags: AccountTagRepository, batches: TagBatchStore) -> None:
+        self._tags = tags
+        self._batches = batches
+
+    async def execute(self, workspace_id: UUID, batch_id: UUID, *, actor_id: UUID) -> None:
+        batch = await self._batches.get(workspace_id, batch_id)
+        if batch is None or batch.is_applied:
+            # ⛔ **Both branches are ordinary.** `None` is somebody else's
+            # batch; `is_applied` is this event arriving twice.
+            return
+        application = await ApplyTagUseCase(tags=self._tags).execute(
+            ApplyTagInput(
+                workspace_id=workspace_id,
+                actor_id=actor_id,
+                tag_id=batch.tag_id,
+                accounts=batch.requested,
+            )
+        )
+        await self._batches.record_application(workspace_id, batch_id, application)
+
+
+class ReverseTagBatchUseCase:
+    """Take a bulk *Add tag* back because its Action Batch was reversed.
+
+    🔴 **It reads what the batch CHANGED and never what it requested.** 📁 If
+    three of the forty-one were tagged before the batch, taking it back must
+    leave those three — **they were not this batch's doing.**
+
+    ⚠️ **The window is `action_batch`'s to enforce, not this module's.** 📁
+    `has_settled` lives there and the aggregate refuses a late reversal, so a
+    second implementation of the window here would be *behaviour existing
+    twice* (§2) — **and the two would eventually disagree about whether a
+    customer may still undo something.**
+    """
+
+    def __init__(self, *, tags: AccountTagRepository, batches: TagBatchStore) -> None:
+        self._tags = tags
+        self._batches = batches
+
+    async def execute(self, workspace_id: UUID, batch_id: UUID) -> None:
+        batch = await self._batches.get(workspace_id, batch_id)
+        if batch is None or batch.applied is None:
+            # ⛔ **Not mine, or never applied.** A batch that never applied has
+            # nothing to undo, and reversing it must not reach `requested`.
+            return
+        await ReverseTagApplicationUseCase(tags=self._tags).execute(
+            workspace_id, batch.applied
+        )
