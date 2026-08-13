@@ -6,12 +6,15 @@
 import { describe, expect, it } from 'vitest';
 
 import type { IntegrationSystem } from '@/lib/api/types';
+import { COMPOSITION_CARDS } from '@/lib/home/cards';
 import {
+  ACTIVATION_PRIORITY,
   BLOCKING,
   activationOrder,
   activationProgress,
   hasWorkingCapability,
   primaryEnabled,
+  type ActivationCardId,
 } from '@/lib/home/activation';
 
 const NONE = {
@@ -109,5 +112,45 @@ describe('📁 progress counts blocking cards only', () => {
     expect(BLOCKING['connect-a-crm']).toBe(true);
     expect(BLOCKING['connect-calls']).toBe(true);
     expect(BLOCKING['invite-the-team']).toBe(false);
+  });
+});
+
+describe('🔴 the ordering rule is in force, not merely written', () => {
+  /**
+   * ⛔ **This is the guard that was missing, and its absence let a real defect
+   * ship** — [TASK-1424](../../../docs/BACKLOG.md).
+   *
+   * ⚠️ **`activationOrder` sorts by priority and NOTHING CALLED IT.** Home
+   * renders `cardsFor`'s output, which is `COMPOSITION_CARDS` order — and that
+   * array read `connect-a-crm, invite-the-team, connect-calls`, **so the
+   * optional step rendered ahead of a blocking one.** ⚡ **The rule was
+   * written, tested, and not in force**, which is the unreachable-primitive
+   * class turned inside out: not a helper with no caller, but a helper whose
+   * caller used something else.
+   *
+   * ✅ **So the assertion is on the array the PRODUCT reads**, with the law as
+   * the oracle.
+   */
+  it('the activation composition renders in declared priority order', () => {
+    const activation = COMPOSITION_CARDS.activation.filter(
+      (id): id is ActivationCardId => id in ACTIVATION_PRIORITY,
+    );
+
+    expect(activation).toEqual(activationOrder(activation));
+  });
+
+  it('⛔ and the optional card is never ahead of a blocking one', () => {
+    // 📁 *"CRM 100, calls 200, invite 300. Lower is earlier."* — the sentence
+    // this guard exists to keep true.
+    const activation = COMPOSITION_CARDS.activation.filter(
+      (id): id is ActivationCardId => id in ACTIVATION_PRIORITY,
+    );
+    const lastBlocking = activation.reduce(
+      (last, id, index) => (BLOCKING[id] ? index : last),
+      -1,
+    );
+    const firstOptional = activation.findIndex((id) => !BLOCKING[id]);
+
+    expect(firstOptional).toBeGreaterThan(lastBlocking);
   });
 });

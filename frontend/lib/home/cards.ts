@@ -166,9 +166,24 @@ export const COMPOSITION_CARDS: Readonly<Record<Composition, readonly CardId[]>>
       'seat-usage',
     ],
     activation: [
+      /**
+       * 🔴 **Corrected to the design's declared priority** —
+       * [TASK-1424](../../../docs/BACKLOG.md). ⛔ This read
+       * `connect-a-crm, invite-the-team, connect-calls`, **and the design says
+       * `CRM 100 · calls 200 · invite 300. Lower is earlier.`** ⚡ **So the
+       * optional step rendered ahead of a blocking one**, which inverts the
+       * whole point of an ordered activation list.
+       *
+       * ⚠️ **Found because the ordering law had no caller.** 📁
+       * [`activationOrder`](./activation.ts) sorts by priority and **nothing
+       * invoked it** — Home renders in this array's order — **so the rule was
+       * written, tested, and not in force.** ✅ **The guard is now on THIS
+       * array** (`home-activation.test.ts`), which is what the product
+       * actually reads.
+       */
       'connect-a-crm',
-      'invite-the-team',
       'connect-calls',
+      'invite-the-team',
       'what-signora-will-do',
       'sample-of-one-real-account',
     ],
