@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api/client';
 import type { AccountTag, AccountTagAssignments } from '@/lib/api/types';
@@ -49,6 +49,52 @@ export function useAccountTagAssignments(
       apiRequest<AccountTagAssignments>(
         `/workspaces/${workspaceId}/account-tags/assignments`,
         { method: 'POST', body: { accounts: [...accountIds] } },
+      ),
+  });
+}
+
+/**
+ * **Add a label to the vocabulary, or select the one that already has that
+ * name.**
+ *
+ * ⚡ **The server answers `200` either way and returns the tag** — 📁 which is
+ * what makes the design's *Add tag* safe to press twice, and why this hook has
+ * no *"already exists"* branch to get wrong.
+ */
+export function useCreateTag(workspaceId: string | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (tag: { name: string; tone: AccountTag['tone'] }) =>
+      apiRequest<AccountTag>(`/workspaces/${workspaceId}/account-tags`, {
+        method: 'POST',
+        body: tag,
+      }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.accountTags(workspaceId ?? '') });
+    },
+  });
+}
+
+/**
+ * 🔴 **Propose putting a label on several companies, as one named thing.**
+ *
+ * ⛔ **Nothing is tagged when this resolves.** 📁
+ * [ADR-0405](../../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md):
+ * *an action is approved before it is effective* — **so the screen must not
+ * show the chips yet**, and this hook deliberately does NOT invalidate the
+ * assignments query.
+ *
+ * ⚠️ **Invalidating here would be the defect**: the rows would refetch,
+ * unchanged, and a customer watching them would learn nothing — **or worse,
+ * a later refetch after somebody approves would look like a bug rather than
+ * the batch landing.**
+ */
+export function useProposeTagBatch(workspaceId: string | null) {
+  return useMutation({
+    mutationFn: (request: { tagId: string; accounts: readonly string[] }) =>
+      apiRequest<{ batch_id: string; item_count: number }>(
+        `/workspaces/${workspaceId}/account-tags/${request.tagId}/batches`,
+        { method: 'POST', body: { accounts: [...request.accounts] } },
       ),
   });
 }

@@ -21,13 +21,15 @@
  * | | |
  * |---|---|
  * | **Export** | ✅ **Shipped.** `toCsv` already builds the file the toolbar downloads |
- * | **Add tag** | ⚠️ **The capability exists and the PROPOSE step does not** — 📁 [C-1504](../../../docs/LANE_COORDINATION.md), ruled and **not yet on `integration`**. It arrives here the moment it is |
+ * | **Add tag** | ✅ **Shipped**, 📁 [D-235](../../../docs/DECISION_REGISTER.md) ① — it proposes a batch somebody approves, and ⛔ **tags nothing on its own** |
  * | **Assign owner** · **Add to segment** | ⚠️ **[ADR-0411](../../../docs/architecture/adr/0411-customer-organized-account-metadata.md) ratifies both and neither is built yet** |
  * | **Create tasks** · **✦ Draft outreach** | ⛔ **No capability anywhere in `backend/modules/`** — measured, not assumed |
  *
  * ✅ **Each absence is a line in this table rather than a greyed button**, so
  * the next lane reads why rather than rediscovering it.
  */
+import type { ReactNode } from 'react';
+
 import { Button } from '@/components/ui/button';
 
 export interface BulkBarProps {
@@ -49,6 +51,11 @@ export interface BulkBarProps {
    * *"the worst kind of wrong — silently plausible."*
    */
   readonly onExport?: () => void;
+  /**
+   * ⚡ **The *Add tag* control**, passed in rather than built here — the bar
+   * knows how many are selected and nothing about labels.
+   */
+  readonly addTag?: ReactNode;
 }
 
 export function BulkBar({
@@ -57,6 +64,7 @@ export function BulkBar({
   selectAllCount,
   onClear,
   onExport,
+  addTag,
 }: BulkBarProps) {
   if (count === 0) return null;
   return (
@@ -80,6 +88,8 @@ export function BulkBar({
           Select all {selectAllCount}
         </Button>
       ) : null}
+
+      {addTag}
 
       {onExport !== undefined ? (
         <Button variant="ghost" onClick={onExport}>

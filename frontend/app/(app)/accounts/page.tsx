@@ -2,6 +2,7 @@
 
 import type { ListedAccount } from '@/lib/api/types';
 import { AccountTags, tagsFor } from '@/components/accounts/account-tags';
+import { AddTagControl } from '@/components/accounts/add-tag-control';
 import { BulkBar } from '@/components/accounts/bulk-bar';
 import type { Selection } from '@/lib/accounts/selection';
 import {
@@ -18,6 +19,8 @@ import {
 import {
   useAccountTagAssignments,
   useAccountTags,
+  useCreateTag,
+  useProposeTagBatch,
 } from '@/lib/query/hooks/account-tags';
 import { Building2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -141,6 +144,8 @@ export default function CompaniesPage() {
   const assignments = useAccountTagAssignments(workspaceId, taggable);
 
   const [selection, setSelection] = useState<Selection>(NOTHING_SELECTED);
+  const createTag = useCreateTag(workspaceId);
+  const proposeBatch = useProposeTagBatch(workspaceId);
   const onScreen = useMemo(() => shown.map((r) => r.account.account_id), [shown]);
   /**
    * 🔴 **The design's *"Select all 312"* is NOT offered, and the reason is that
@@ -296,6 +301,28 @@ export default function CompaniesPage() {
               }
               onClear={() => setSelection(NOTHING_SELECTED)}
               onExport={exportSelection}
+              addTag={
+                <AddTagControl
+                  count={selectedCount(selection)}
+                  tags={vocabulary.data?.tags ?? []}
+                  /* ⛔ **`undefined` while the selection cannot be enumerated
+                     OR the vocabulary is unread.** The first is the same
+                     refusal Export makes; the second keeps an unread list from
+                     rendering as *"no tags"*. */
+                  onPropose={
+                    resolvedIds(selection) === null || vocabulary.data === undefined
+                      ? undefined
+                      : (tagId) => {
+                          proposeBatch.mutate(
+                            { tagId, accounts: resolvedIds(selection) ?? [] },
+                            { onSuccess: () => setSelection(NOTHING_SELECTED) },
+                          );
+                        }
+                  }
+                  onCreate={(name) => createTag.mutate({ name, tone: 'neutral' })}
+                  pending={proposeBatch.isPending || createTag.isPending}
+                />
+              }
             />
             <Table>
               <THead>
