@@ -522,19 +522,48 @@ function RailAction({ item, collapsed }: { item: RailAction; collapsed: boolean 
 }
 
 function RailLink({
+  roleKnown,
   item,
   role,
   collapsed,
 }: {
   item: RailItem;
   role: WorkspaceRole | null;
+  /**
+   * 🔴 **Whether the role has ARRIVED**, which `role: null` cannot say —
+   * [B-253](../../../docs/BUGS.md). ⛔ `null` meant both *has no role* and *has
+   * not come back yet*, **and the rail could only read it as the first**.
+   */
+  roleKnown: boolean;
   collapsed: boolean;
 }) {
   const pathname = usePathname();
   const [explaining, setExplaining] = useState(false);
 
   const guard = guardFor(item.href);
-  const restricted = guard !== undefined && !can(role, guard.requires as Capability);
+  /**
+   * 🔴 **An unresolved role renders an ORDINARY row, never a locked one** —
+   * [B-253](../../../docs/BUGS.md), released 2026-08-13, **and the design
+   * decides it rather than this lane**:
+   *
+   * 📁 **App Shell §16 *Cold boot***: *"workspace name and rail appear before
+   * data resolves."* ⚡ **So the rail is drawn before the role is known**, and
+   * a row that locked meanwhile would be asserting a permission answer nobody
+   * had yet.
+   *
+   * 📁 **Rail States**: *"restricted destinations stay visible at 45% with a
+   * lock and explain on click"* — ⛔ **the RESOLVED-DENIED appearance, and the
+   * only one that locks.**
+   *
+   * ⚠️ **What this cost while it was wrong**: an OWNER was told *"Settings —
+   * restricted. Requires an owner."* on every cold boot, reproducibly, on the
+   * most-looked-at surface in the product. ⛔ **A courtesy that fires on data
+   * it does not have is not a courtesy — it is a false claim about
+   * entitlement**, and [§20c](../../../CLAUDE.md) already said this check is
+   * *"presentational… never enforcement"*, so being briefly generous costs a
+   * refusal the server was always going to give.
+   */
+  const restricted = roleKnown && guard !== undefined && !can(role, guard.requires as Capability);
   const isActive = pathname === item.href;
   const Icon = item.icon;
 
@@ -644,10 +673,13 @@ function RailLink({
  * bottom — which is why this is a column with a spacer rather than one list.
  */
 export function Navigation({
+  roleKnown,
   role,
   collapsed = false,
 }: {
   role: WorkspaceRole | null;
+  /** 🔴 **Threaded rather than collapsed into `role`** — [B-253](../../../docs/BUGS.md). */
+  roleKnown: boolean;
   collapsed?: boolean;
 }) {
   const { activeWorkspace, workspaces, isLoading } = useWorkspaceContext();
@@ -679,7 +711,7 @@ export function Navigation({
         return isPendingEntry(entry) ? (
           <RailPendingRow key={entry.id} item={entry} collapsed={collapsed} />
         ) : goesSomewhere(entry) ? (
-          <RailLink key={entry.id} item={entry} role={role} collapsed={collapsed} />
+          <RailLink key={entry.id} item={entry} role={role} roleKnown={roleKnown} collapsed={collapsed} />
         ) : null;
       })}
 
@@ -695,7 +727,7 @@ export function Navigation({
           // segment**, so a pending entry cannot occur here — ⚡ **and the
           // exhaustive branch says so rather than casting it away.**
           if (goesSomewhere(entry)) {
-            return <RailLink key={entry.id} item={entry} role={role} collapsed={collapsed} />;
+            return <RailLink key={entry.id} item={entry} role={role} roleKnown={roleKnown} collapsed={collapsed} />;
           }
           return isPendingEntry(entry) ? null : (
             <RailAction key={entry.id} item={entry} collapsed={collapsed} />

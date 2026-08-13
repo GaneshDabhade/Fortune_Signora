@@ -38,7 +38,7 @@ const THE_DESIGNS_THREE = ['Settings', 'Shortcuts', 'Docs & support'];
 function railWithShell() {
   return render(
     <ShortcutsReference>
-      <Navigation role="owner" collapsed={false} />
+      <Navigation role="owner" roleKnown collapsed={false} />
     </ShortcutsReference>,
   );
 }
@@ -106,7 +106,7 @@ describe('without the shell above it', () => {
    * show a button that silently does nothing.**
    */
   it('omits Shortcuts rather than rendering a control that does nothing', () => {
-    render(<Navigation role="owner" collapsed={false} />);
+    render(<Navigation role="owner" roleKnown collapsed={false} />);
     expect(screen.queryByRole('button', { name: 'Shortcuts' })).toBeNull();
     // ⚡ And the other two are unaffected — the omission is scoped.
     expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument();

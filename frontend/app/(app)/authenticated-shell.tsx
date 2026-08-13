@@ -129,7 +129,13 @@ function ShellForViewer({
 
   return (
     <AppShell
-      role={resolved ? role : null}
+      // 🔴 **The distinction is threaded rather than collapsed** —
+      // [B-253](../../../docs/BUGS.md). ⛔ This passed `resolved ? role : null`,
+      // **and `null` meant both *has no role* and *has not arrived*** — the
+      // rail could only read it as the first, so an OWNER was told *"Settings —
+      // restricted. Requires an owner."* on every cold boot.
+      role={role}
+      roleKnown={resolved}
       userId={session?.user.id ?? null}
       // ⚡ **Named rather than buried** — TASK-1440. The address was already
       // crossing this boundary inside the `signOut` node; the account menu's

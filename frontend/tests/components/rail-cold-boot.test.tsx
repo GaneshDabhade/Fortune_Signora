@@ -48,12 +48,12 @@ beforeEach(() => workspace.mockReset());
 describe('🔴 the frame does not change shape while the workspace resolves', () => {
   it('🔴 the same number of destinations before and after the read lands', () => {
     inFlight();
-    const { unmount } = render(<Navigation role="owner" />);
+    const { unmount } = render(<Navigation role="owner" roleKnown />);
     const during = rows().length;
     unmount();
 
     settledWithWorkspace();
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
     const after = rows().length;
 
     // ⛔ **This is the assertion the defect failed.** ⚠️ **It was 7 then 8.**
@@ -63,7 +63,7 @@ describe('🔴 the frame does not change shape while the workspace resolves', ()
   it('✅ Home holds its place while the workspace is unknown', () => {
     inFlight();
 
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     const home = screen.getByLabelText('Home');
     expect(home).toHaveAttribute('data-pending', 'true');
@@ -83,7 +83,7 @@ describe('🔴 the frame does not change shape while the workspace resolves', ()
   it('⛔ and it is not a link, because there is nowhere to go yet', () => {
     inFlight();
 
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     const home = screen.getByLabelText('Home');
     expect(home.tagName).not.toBe('A');
@@ -93,7 +93,7 @@ describe('🔴 the frame does not change shape while the workspace resolves', ()
   it('✅ and becomes a real destination once the workspace is known', () => {
     settledWithWorkspace();
 
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute(
       'href',
@@ -114,7 +114,7 @@ describe('⛔ absent is still absent — the two are not collapsed back together
   it('🔴 a reader with no organization gets no Home entry at all', () => {
     settledWithNone();
 
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     expect(screen.queryByLabelText('Home')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Home' })).not.toBeInTheDocument();
@@ -128,5 +128,51 @@ describe('⛔ absent is still absent — the two are not collapsed back together
     expect(resolved(asAny, null, true)).toHaveLength(0);
     expect(resolved(asAny, null, false)).toHaveLength(1);
     expect(resolved(asAny, 'w1', true)).toHaveLength(1);
+  });
+});
+
+describe('🔴 B-253 — an unresolved role renders an ordinary row, never a locked one', () => {
+  /**
+   * ⛔ **An OWNER was told *"Settings — restricted. Requires an owner."* on
+   * every cold boot**, reproducibly, on the most-looked-at surface in the
+   * product — 📁 [B-253](../../../docs/BUGS.md).
+   *
+   * ⚡ **The cause was one conflation**: `authenticated-shell` passed
+   * `resolved ? role : null`, and **`null` meant both *has no role* and *has
+   * not arrived***, which the rail could only read as the first.
+   *
+   * ✅ **The design decides the repair rather than this lane**: 📁 App Shell
+   * §16 *Cold boot* — *"workspace name and rail appear before data
+   * resolves"* — **so the rail is drawn before the role is known**, and 📁 Rail
+   * States gives the lock to the RESOLVED-DENIED case only: *"restricted
+   * destinations stay visible at 45% with a lock and explain on click."*
+   */
+  it('⛔ nothing is locked while the role is still arriving', () => {
+    // ⚡ **The workspace has settled and the ROLE has not**, which is the exact
+    // frame the defect lived in: `destinations=7 pending=0` then `8 pending=0`.
+    settledWithWorkspace();
+    render(<Navigation role={null} roleKnown={false} />);
+
+    expect(screen.queryByText(/Requires an owner/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /restricted/i })).not.toBeInTheDocument();
+  });
+
+  it('✅ and a resolved denial still locks, which is the half that must not regress', () => {
+    settledWithWorkspace();
+    // ⚡ **The fix must not become *never lock*.** 📁 A restricted destination
+    // stays VISIBLE and explains on click — hiding it *"teaches a person the
+    // feature does not exist, so they ask for the wrong thing or ask nobody."*
+    render(<Navigation role="member" roleKnown />);
+
+    expect(screen.getByRole('button', { name: /restricted/i })).toBeInTheDocument();
+  });
+
+  it('✅ an owner is never told they are not one, resolved or not', () => {
+    settledWithWorkspace();
+    for (const known of [false, true]) {
+      const { unmount } = render(<Navigation role="owner" roleKnown={known} />);
+      expect(screen.queryByText(/Requires an owner/i)).not.toBeInTheDocument();
+      unmount();
+    }
   });
 });

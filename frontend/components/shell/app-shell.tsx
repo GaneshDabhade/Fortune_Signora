@@ -24,6 +24,8 @@ import type { WorkspaceRole } from '@/lib/state/permissions';
 export interface AppShellProps {
   children: ReactNode;
   role: WorkspaceRole | null;
+  /** 🔴 **Whether the role has ARRIVED** — [B-253](../../../docs/BUGS.md). */
+  roleKnown: boolean;
   signOut: ReactNode;
   /**
    * ⚡ **The signed-in address, for the account menu's identity block** —
@@ -114,6 +116,7 @@ export interface AppShellProps {
 export function AppShell({
   children,
   role,
+  roleKnown,
   signOut,
   email,
   userId = null,
@@ -322,7 +325,7 @@ export function AppShell({
             {/* ⚡ **The rail is told it is collapsed rather than measuring it** —
                 TASK-1439. The frame owns the collapse state (`useRailCollapse`);
                 a second reader would be a second answer to the same question. */}
-            <Navigation role={role} collapsed={!compact && rail.collapsed} />
+            <Navigation role={role} roleKnown={roleKnown} collapsed={!compact && rail.collapsed} />
           </RegionBoundary>
         </div>
       </div>

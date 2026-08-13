@@ -64,13 +64,13 @@ describe('🔴 position, not presence', () => {
    * **then** `railUtility` — Settings, Shortcuts, Docs & support.
    */
   it('🔴 the assistant is FIRST, above the utilities', () => {
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     expect(pinnedOrder()[0]).toBe('Ask Signora');
   });
 
   it('✅ and the design’s order holds for the whole group', () => {
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     expect(pinnedOrder()).toEqual([
       'Ask Signora',
@@ -88,7 +88,7 @@ describe('🔴 position, not presence', () => {
    * design was violated.** ✅ **Being inside the rail is the claim.**
    */
   it('🔴 it is inside the rail, not merely somewhere on the page', () => {
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     const entry = screen.getByRole('button', { name: 'Ask Signora' });
     expect(screen.getByRole('navigation', { name: 'Primary' })).toContainElement(entry);
@@ -97,7 +97,7 @@ describe('🔴 position, not presence', () => {
 
 describe('⚡ it opens the room rather than going somewhere', () => {
   it('✅ pressing it opens the assistant', async () => {
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Ask Signora' }));
 
@@ -108,7 +108,7 @@ describe('⚡ it opens the room rather than going somewhere', () => {
   });
 
   it('⛔ it is not a link, because there is no `/assistant` route', () => {
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     const entry = screen.getByRole('button', { name: 'Ask Signora' });
     expect(entry.tagName).toBe('BUTTON');
@@ -123,7 +123,7 @@ describe('⚡ it opens the room rather than going somewhere', () => {
   it('🔴 no entry at all when nothing can open it', () => {
     copilot.mockReturnValue(null);
 
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     expect(screen.queryByRole('button', { name: 'Ask Signora' })).not.toBeInTheDocument();
     // ✅ **And the rest of the group is unaffected** — one absent door does not
@@ -139,7 +139,7 @@ describe('📁 the design tints it, and only it', () => {
    * literals** ([§20c](../../../CLAUDE.md)).
    */
   it('✅ the assistant carries the intelligence tint and Settings does not', () => {
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
 
     expect(screen.getByRole('button', { name: 'Ask Signora' }).className).toContain('ai');
     expect(screen.getByRole('link', { name: 'Settings' }).className).not.toContain('ai');

@@ -52,7 +52,7 @@ function shell() {
   return render(
     <QueryClientProvider client={new QueryClient()}>
       <AppShell
-        role="owner"
+        role="owner" roleKnown
         userId="u1"
         email="viewer@example.com" name={null}
         signOut={<button type="button">Sign out</button>}

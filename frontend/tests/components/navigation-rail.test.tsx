@@ -80,7 +80,7 @@ describe('📁 D-225 §4 — currently reachable navigation is not removed', () 
      * [D-225](../../../docs/DECISION_REGISTER.md) ruled it**, so the
      * assertion is against a ruling rather than a preference.
      */
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
     const rail = screen.getByRole('navigation', { name: 'Primary' });
 
     expect(within(rail).getByRole('link', { name: 'Attention' })).toHaveAttribute('href', '/');
@@ -100,7 +100,7 @@ describe('📁 D-225 §4 — currently reachable navigation is not removed', () 
      * ⚠️ **Vacuity guard first** — if the rail rendered nothing at all, the
      * absence checks below would pass over an empty frame.
      */
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
     const rail = screen.getByRole('navigation', { name: 'Primary' });
     expect(within(rail).getAllByRole('link').length).toBeGreaterThan(2);
 
@@ -135,7 +135,7 @@ describe('🔴 Home, and the segment it is resolved from', () => {
      * a customer must never be handed that literal**: it is a 404 with a
      * plausible shape.
      */
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
     const home = screen.getByRole('link', { name: 'Home' });
     expect(home).toHaveAttribute('href', '/w/w1/home');
     expect(home.getAttribute('href')).not.toContain('[workspace]');
@@ -145,7 +145,7 @@ describe('🔴 Home, and the segment it is resolved from', () => {
     // ⚡ Half a path is worse than no entry: `/w//home` is a 404 that looks
     // like a link.
     activeWorkspace = null;
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
     expect(screen.queryByRole('link', { name: 'Home' })).toBeNull();
     // The rest of the rail is unaffected.
     expect(screen.getByRole('link', { name: 'Attention' })).toBeInTheDocument();
@@ -157,7 +157,7 @@ describe('🔴 Home, and the segment it is resolved from', () => {
     // `lib/entry/rules.ts` is the authority — *"the one authenticated landing
     // route"* — and this asserts the rail agrees with it.
     expect(workspaceHome('w1')).toBe('/w/w1/home');
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute(
       'href',
       workspaceHome('w1'),
@@ -173,7 +173,7 @@ describe('📁 restricted destinations stay visible', () => {
      * lock and explain on click."* ⚡ `rail.ts` rule ① already carried the
      * reasoning the component was contradicting.
      */
-    render(<Navigation role="member" />);
+    render(<Navigation role="member" roleKnown />);
     const rail = screen.getByRole('navigation', { name: 'Primary' });
 
     expect(within(rail).queryByRole('link', { name: 'Settings' })).toBeNull();
@@ -183,13 +183,13 @@ describe('📁 restricted destinations stay visible', () => {
   it('✅ and it explains on click, naming who can grant it', async () => {
     // 📁 The design's own reason: a person who is only refused *"asks for the
     // wrong thing or asks nobody."*
-    render(<Navigation role="member" />);
+    render(<Navigation role="member" roleKnown />);
     await userEvent.click(screen.getByLabelText(/Settings — restricted/));
     expect(screen.getByText(/available to an owner/i)).toBeInTheDocument();
   });
 
   it('✅ an owner gets it as an ordinary link', () => {
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
     const rail = screen.getByRole('navigation', { name: 'Primary' });
     expect(within(rail).getByRole('link', { name: 'Settings' })).toHaveAttribute(
       'href',
@@ -201,7 +201,7 @@ describe('📁 restricted destinations stay visible', () => {
     // 📁 `can(null, …)` is false by construction. ⚡ The rail still renders —
     // a frame that blanks while a membership loads is the defect
     // `authenticated-shell.tsx` documents at length.
-    render(<Navigation role={null} />);
+    render(<Navigation role={null} roleKnown />);
     const rail = screen.getByRole('navigation', { name: 'Primary' });
     expect(within(rail).queryByRole('link', { name: 'Settings' })).toBeNull();
     expect(within(rail).getByRole('link', { name: 'Attention' })).toBeInTheDocument();
@@ -213,7 +213,7 @@ describe('📁 the design\'s structure', () => {
     // 📁 *"Utilities and the assistant pin to the bottom above the fold"* —
     // *"utilities at the bottom keep the funnel order uninterrupted at the
     // top."* ⚡ Asserted as ORDER, which is the part a customer perceives.
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
     const rail = screen.getByRole('navigation', { name: 'Primary' });
     const labels = within(rail)
       .getAllByRole('link')
@@ -237,7 +237,7 @@ describe('📁 the design\'s structure', () => {
      * dropped**, and dropping it makes the collapsed rail unusable with a
      * screen reader while looking fine.
      */
-    render(<Navigation role="owner" collapsed />);
+    render(<Navigation role="owner" roleKnown collapsed />);
     const rail = screen.getByRole('navigation', { name: 'Primary' });
 
     const attention = within(rail).getByRole('link', { name: 'Attention' });
@@ -263,7 +263,7 @@ describe('📁 the design\'s structure', () => {
   it('✅ the active destination is marked for assistive technology', () => {
     // 📁 *"Active: brand tint, 600 label, brand icon."* ⛔ Colour alone never
     // carries it — `aria-current` is what a screen reader reads.
-    render(<Navigation role="owner" />);
+    render(<Navigation role="owner" roleKnown />);
     expect(screen.getByRole('link', { name: 'Attention' })).toHaveAttribute(
       'aria-current',
       'page',

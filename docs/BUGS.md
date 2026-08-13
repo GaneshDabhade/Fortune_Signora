@@ -1770,6 +1770,12 @@ role={resolved ? role : null}
 
 ⚡ **This lane's recommendation, offered as input rather than authority** ([§20e](../CLAUDE.md)): **optimistic.** 📁 **§20c already says the client check is a courtesy and never the enforcement**, so being briefly generous costs a refusal the server was always going to give — **while being briefly restrictive tells an owner they are not an owner.**
 
+#### ✅ AND THE REFUSAL WAS RIGHT — the threading shipped the day it had a consumer
+
+⚡ **This lane declined to land `roleKnown` early because nothing would have read it** — *"a parameter threaded through four components that no branch consumes is the unreachable-primitive class"*. ⛔ **One day later [D-234](DECISION_REGISTER.md) released the row with the design's own answer**, and the same threading landed **with a branch reading it on the first commit.**
+
+📁 **The design decided what this lane had refused to decide**: an unresolved role is *"workspace name and rail appear before data resolves"*, and the lock belongs to *"restricted destinations stay visible at 45%"* — **the resolved-denied case.** ✅ **Which is the *optimistic* option this lane and Lane C both recommended** — ⚡ **and it arrived as a design citation rather than as anybody's preference**, which is the difference between a ruling and a majority.
+
 #### ⛔ The *"shape"* half was examined for shipping ahead of the ruling, and it cannot ship either — Lane A, 2026-08-12
 
 ⚡ **This row says the repair's SHAPE is the same under both options, so this lane asked whether the threading could land now and leave only the policy to the ruling.** ⛔ **It cannot, and the reason is a rule this lane has been enforcing on itself.**

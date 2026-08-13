@@ -73,7 +73,7 @@ function shell(
   return render(
     <QueryClientProvider client={new QueryClient()}>
       <AppShell
-        role="owner"
+        role="owner" roleKnown
         userId={userId}
         email="viewer@example.com" name={null}
         signOut={<button type="button">Sign out</button>}
@@ -276,7 +276,7 @@ describe('🔴 §16 · an in-place refresh is announced without covering anythin
   function shellWith(client: QueryClient) {
     return render(
       <QueryClientProvider client={client}>
-        <AppShell role="owner" userId="u1" email="v@example.com" name={null} signOut={<span />}>
+        <AppShell role="owner" roleKnown userId="u1" email="v@example.com" name={null} signOut={<span />}>
           <p>A figure the reader can already see</p>
         </AppShell>
       </QueryClientProvider>,
