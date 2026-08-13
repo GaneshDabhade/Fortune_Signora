@@ -13,7 +13,7 @@ screen would draw.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 from typing import Literal
 from uuid import UUID
@@ -82,9 +82,26 @@ class ChangePreferencesUseCase:
         def pick[T](supplied: Maybe[T], existing: T) -> T:
             return existing if supplied is UNSET else supplied
 
-        updated = PersonPreferences(
-            workspace_id=current.workspace_id,
-            person_id=current.person_id,
+        # 🔴 **`replace` on the CURRENT value, never a rebuild** —
+        # [B-264](../../../../../docs/BUGS.md).
+        #
+        # ⛔ **This constructed a fresh `PersonPreferences` from thirteen named
+        # fields, and it did not name `last_entered_at`** — so **every profile
+        # edit reset it to `None`, which reads as *never entered***, and entry
+        # rule 12 sent a person who had changed their theme back to the
+        # workspace chooser.
+        #
+        # ⚡ **The defect is the SHAPE rather than the missing line.** A
+        # rebuild-everything use case silently drops any field added after it
+        # was written, and this one has now been extended twice —
+        # `last_entered_at` by [TASK-1422] and `first_run_dismissed_at` by
+        # [TASK-1424], which would have inherited the same bug and broken
+        # *"dismissible forever"* the first time somebody changed a setting.
+        #
+        # ✅ **`replace` carries every unmentioned field by construction**, so a
+        # fourteenth field is safe without anybody remembering this file.
+        updated = replace(
+            current,
             theme=pick(input_.theme, current.theme),
             density=pick(input_.density, current.density),
             time_format=pick(input_.time_format, current.time_format),

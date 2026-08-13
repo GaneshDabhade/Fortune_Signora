@@ -160,6 +160,36 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-264 · Changing any preference silently forgot which workspace you were last in
+
+| | |
+|---|---|
+| **Module** | **`workspace_tenancy`** — ⚡ **assignee joined from [`modules.toml`](coordination/modules.toml)**: Lane A |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — ⛔ **a customer-visible regression of a shipped feature**, and ⚠️ **silent**: nothing failed, nothing logged, and the person simply landed somewhere else |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-12**, in the same change. ⚠️ **QE verifies and closes** |
+| **Found** | **2026-08-12, by Lane A**, adding a column BESIDE the one it broke |
+
+#### 🔴 What happened
+
+📁 **[TASK-1422](BACKLOG.md) added `person_preferences.last_entered_at`** so entry rule 12 can send somebody back to the workspace they were working in. ⛔ **`ChangePreferencesUseCase.execute` constructed a fresh `PersonPreferences` from thirteen NAMED fields, and `last_entered_at` was not one of them.**
+
+⚡ **So every profile edit reset it to `None`, which reads as *never entered*** — 🔴 **a person who changed their theme was sent to the workspace chooser at their next sign-in.**
+
+#### ⚠️ The defect is the SHAPE, not the missing line
+
+⛔ **A rebuild-everything use case silently drops any field added after it was written.** ⚡ **This table has now been extended twice**: `last_entered_at` ([TASK-1422](BACKLOG.md)) and `first_run_dismissed_at` ([TASK-1424](BACKLOG.md)) — ⛔ **and the second would have inherited the identical bug**, breaking the design's ***"dismissible forever"*** the first time somebody changed a setting.
+
+✅ **Fixed with `replace(current, …)`**, which carries every unmentioned field **by construction** — 📁 **so a fourteenth field is safe without anybody remembering this file.** ⛔ **Naming the two missing fields would have fixed two instances and left the shape.**
+
+#### 🔴 Why 289 tests passed over it
+
+⚠️ **Every existing assertion checked the field it had just changed.** ⛔ **Nothing asserted what a change must NOT touch**, and that is the assertion this class needs.
+
+✅ **The new guard iterates the dataclass's OWN fields** rather than a list somebody maintains — ⚡ **which is the only version that catches the fourteenth field.** 📁 The same reasoning `tenancy_policy.py` uses about a table appearing in neither list: **you cannot enumerate your way to the thing you forgot to enumerate.**
+
+⚡ **Fire-tested**: restoring the original constructor turns it red while the other 289 stay green.
+
 ### B-263 · One identifier, two questions — and it made two lanes contradict each other about the same ruling
 
 | | |

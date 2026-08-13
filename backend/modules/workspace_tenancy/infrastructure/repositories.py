@@ -13,7 +13,6 @@ from sqlalchemy import Select, func, literal, select, tuple_, update
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
-from modules.workspace_tenancy.domain.security_event import SecurityEvent
 from modules.workspace_tenancy.domain.onboarding import (
     Answer,
     CompanySizeBand,
@@ -31,14 +30,15 @@ from modules.workspace_tenancy.domain.preferences import (
     TimeFormat,
 )
 from modules.workspace_tenancy.domain.saved_view import SavedView
+from modules.workspace_tenancy.domain.security_event import SecurityEvent
 from modules.workspace_tenancy.infrastructure.models import (
     InvitationModel,
     MembershipModel,
     MembershipRoleChangeModel,
-    SecurityEventModel,
     OnboardingRunModel,
     PersonPreferencesModel,
     SavedViewModel,
+    SecurityEventModel,
     WorkspaceModel,
 )
 from signora_platform.db import SqlAlchemyRepository
