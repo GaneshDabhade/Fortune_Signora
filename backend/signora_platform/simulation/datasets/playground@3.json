@@ -1,0 +1,180 @@
+{
+  "_comment": "Signora's demonstration cast. EVERY COMPANY HERE IS INVENTED, and so is every business event, signal, score and narrative attached to it. No company named here is intended to be, or to resemble, any real business; if a name is found to collide with one, change it (TASK-1480). This replaces playground@2, whose twelve entities were REAL companies. That dataset's own header argued for real names because 'a demonstration of a revenue intelligence product is illegible without companies a reviewer recognises', and TASK-1480's ruling retires the argument: the product asserts things ABOUT companies — worth verifying, ranked on ageing evidence, a declining-engagement signal — and attached to a real name that is a fabricated commercial claim about a real business. The disclaimer does not travel with the screenshot. Recognisability is not what makes a demo land; plausibility is.",
+  "content_hash": "15ef659ccb60f224",
+  "entities": {
+    "northfield": {
+      "name": "Northfield Data Systems",
+      "domain": "northfielddata.com",
+      "country": "IE",
+      "industry": "data infrastructure",
+      "founded": 2016,
+      "employees": 1400,
+      "revenue_band": "$50M-$250M",
+      "stage": "late_stage_venture",
+      "contact_titles": [
+        "Chief Information Officer",
+        "VP Data Platform",
+        "Director of Engineering",
+        "Head of Procurement"
+      ]
+    },
+    "porterfield": {
+      "name": "Porterfield Health Systems",
+      "domain": "porterfieldhealth.com",
+      "country": "US",
+      "industry": "healthcare software",
+      "founded": 2004,
+      "employees": 4200,
+      "revenue_band": "$250M-$1B",
+      "stage": "public",
+      "contact_titles": [
+        "Chief Technology Officer",
+        "VP Clinical Systems",
+        "Director of Data Governance",
+        "Head of Security",
+        "Procurement Lead"
+      ]
+    },
+    "veritalis": {
+      "name": "Veritalis Compliance",
+      "domain": "veritalis.io",
+      "country": "SG",
+      "industry": "regulatory technology",
+      "founded": 2018,
+      "employees": 480,
+      "revenue_band": "$10M-$50M",
+      "stage": "series_c",
+      "contact_titles": [
+        "Chief Compliance Officer",
+        "VP Engineering",
+        "Head of Data",
+        "Director of Risk"
+      ]
+    },
+    "brightmoor": {
+      "name": "Brightmoor Industrial",
+      "domain": "brightmoor-industrial.com",
+      "country": "DE",
+      "industry": "industrial IoT",
+      "founded": 1997,
+      "employees": 12000,
+      "revenue_band": "$1B+",
+      "stage": "private_equity",
+      "contact_titles": [
+        "Head of Digital Operations",
+        "VP Manufacturing Systems",
+        "IT Director"
+      ]
+    },
+    "calderwood": {
+      "name": "Calderwood Analytics",
+      "domain": "calderwood.co.uk",
+      "country": "GB",
+      "industry": "analytics software",
+      "founded": 2015,
+      "employees": 320,
+      "revenue_band": "$10M-$50M",
+      "stage": "series_b",
+      "contact_titles": [
+        "VP Data",
+        "Head of Platform",
+        "Finance Director"
+      ]
+    },
+    "arvely": {
+      "name": "Arvely Payments",
+      "domain": "arvely.com",
+      "country": "NL",
+      "industry": "payments",
+      "founded": 2014,
+      "employees": 900,
+      "revenue_band": "$50M-$250M",
+      "stage": "series_c",
+      "contact_titles": [
+        "Chief Product Officer",
+        "VP Risk Engineering"
+      ]
+    },
+    "oakenshaw": {
+      "name": "Oakenshaw Manufacturing Software",
+      "domain": "oakenshaw.com",
+      "country": "US",
+      "industry": "manufacturing software",
+      "founded": 2001,
+      "employees": 2600,
+      "revenue_band": "$250M-$1B",
+      "stage": "public",
+      "contact_titles": [
+        "VP Information Technology",
+        "Director of Operations"
+      ]
+    },
+    "sandgate": {
+      "name": "Sandgate Retail Systems",
+      "domain": "sandgateretail.com.au",
+      "country": "AU",
+      "industry": "retail software",
+      "founded": 2011,
+      "employees": 1100,
+      "revenue_band": "$50M-$250M",
+      "stage": "bootstrapped",
+      "contact_titles": [
+        "Head of Technology",
+        "Retail Operations Director"
+      ]
+    },
+    "quillon": {
+      "name": "Quillon Labs",
+      "domain": "quillonlabs.com",
+      "country": "CA",
+      "industry": "developer tools",
+      "founded": 2019,
+      "employees": 240,
+      "revenue_band": "$10M-$50M",
+      "stage": "series_b",
+      "contact_titles": [
+        "VP Engineering",
+        "Head of Developer Experience"
+      ]
+    },
+    "halden": {
+      "name": "Halden Logistics Cloud",
+      "domain": "halden.se",
+      "country": "SE",
+      "industry": "logistics software",
+      "founded": 2020,
+      "employees": 180,
+      "revenue_band": "$1M-$10M",
+      "stage": "series_a",
+      "contact_titles": [
+        "Head of Platform"
+      ]
+    },
+    "larkspur": {
+      "name": "Larkspur Media Cloud",
+      "domain": "larkspurmedia.com",
+      "country": "US",
+      "industry": "media software",
+      "founded": 2022,
+      "employees": 75,
+      "revenue_band": "$1M-$10M",
+      "stage": "series_a",
+      "contact_titles": [
+        "Chief Technology Officer"
+      ]
+    },
+    "tessellate": {
+      "name": "Tessellate Security",
+      "domain": "tessellate.dev",
+      "country": "US",
+      "industry": "security software",
+      "founded": 2023,
+      "employees": 60,
+      "revenue_band": "$1M-$10M",
+      "stage": "seed",
+      "contact_titles": [
+        "Co-founder and CTO"
+      ]
+    }
+  }
+}

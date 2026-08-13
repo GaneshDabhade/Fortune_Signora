@@ -3,7 +3,7 @@
     cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.seed
 
 **There is one product.** This runs `_tracked` — the same function the pipeline
-suite runs — over `playground@2` instead of `baseline@1`. Provider simulation →
+suite runs — over `playground@3` instead of `baseline@1`. Provider simulation →
 ingestion → normalization → knowledge graph → observations → business events →
 signals → buying scores → opportunities, every stage the real path takes, in the
 real order, with no branch anywhere that knows this is a playground.
@@ -16,7 +16,7 @@ product would validate a thing that does not ship.
 
 A scenario declares offsets. *Where* those offsets sit is the decision of
 whoever tells the story — the same narrative is today's book or a historical
-replay depending only on the anchor, which is why `playground@2.json` does not
+replay depending only on the anchor, which is why `playground@3.json` does not
 carry a date and this module does.
 
 `playground@1` had no anchor at all, so it inherited the simulator's fixed epoch
@@ -63,7 +63,7 @@ from tests.conftest import DEFAULT_ADMIN_DATABASE_URL, DEFAULT_APP_DATABASE_URL
 from tests.opportunity_engine.test_opportunity_pipeline import _tracked
 from tests.pipeline import sweep_stale
 
-SCENARIO = ("playground", 2)
+SCENARIO = ("playground", 3)
 WORKSPACE_NAME = "Playground"
 
 HORIZON = timedelta(days=150)
@@ -279,7 +279,12 @@ async def main() -> int:
             # Only used to pick the entity returned for the caller's
             # convenience; the scoring moment above is what decides *when* the
             # question is asked, and it is the same for every account.
-            anchor="snowflake",
+            # ⚠️ **Derived, never named.** ⛔ This was the literal `"snowflake"`
+            # and it broke the moment [TASK-1480](../../../docs/BACKLOG.md)
+            # replaced the cast — **a hardcoded subject makes the seeder depend
+            # on WHICH companies the dataset holds**, which is the one thing a
+            # dataset swap is supposed to be free to change.
+            anchor=subjects[0],
         )
 
         examined, rescored = await sweep_stale(
