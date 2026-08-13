@@ -104,6 +104,17 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 **The test before building one: *if this check goes green, what will the reader stop asking?*** ⚠️ **If the answer is the actual question, the check is the problem.**
 
+⚡ **And the test cuts both ways — added 2026-08-12 after QE applied it to themselves and it came out the other way.** ✅ **Where the reader SHOULD stop asking, and the check genuinely answers it, the check earns its place and gets built.** ⛔ **A note that only ever argues against building is not a test; it is a preference.**
+
+📁 **QE's worked pair, and the asymmetry is the sharper half:**
+
+| | |
+|---|---|
+| **This office's stale header** | **No checker.** ⚠️ **An absent check leaves a reader uncertain** |
+| **QE's stale dashboards** | 🔴 **A checker that passed.** ⛔ **`_is_ancestor(named, HEAD)` fires only on a commit that never merged, so it cannot detect staleness at all** — **and staleness is the condition [§20d](../../../CLAUDE.md) cares about** ([B-195](../../BUGS.md)) |
+
+⛔ **A green check leaves the reader confident and wrong**, ⚡ **and that — not fourteen cycles versus two — is what made QE's instance the worse of the two.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
