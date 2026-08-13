@@ -534,6 +534,49 @@ All three are fixed in the mappers, and each is faithful to the real vendor inde
 
 ---
 
+## `playground@3` — the cast stops being real *(TASK-1480, 2026-08-13)*
+
+**`playground@2`'s twelve entities were real companies, and the argument for that is recorded above unedited** — a dated record of what was decided then, not a claim about now.
+
+**What overruled it was not a policy change; it was reading what the product actually says about an account.** Signora asserts *worth verifying*, *ranked on ageing evidence*, *a declining-engagement signal* — **fabricated commercial claims, attached to a named business that exists.** ⛔ **The `_comment` mitigation does not travel with a screenshot**, which is the one way this data leaves the context that explains it.
+
+**Twelve invented companies replace them, and nothing else moves**: the same nine countries, eight stages, five canonical revenue bands, 60 → 12,000 employees. **Recognisability is not what makes a demonstration land; plausibility is.**
+
+⚠️ **One defect fell out of building it, and it was in the seeder rather than the data.** `tests/playground/seed.py` anchored on a hardcoded `"snowflake"`, so it broke the moment the cast changed. **It anchors on `subjects[0]` now** — a seeder that names a company knows something about the dataset that only the dataset should know.
+
+---
+
+## `playground@4` — the people have names *(TASK-429, 2026-08-13)*
+
+**Identical to `playground@3` in every company, domain, country, industry, founding year, headcount, revenue band and stage.** The single change: each company's `contact_titles` becomes `people`, and **every contact now has a name.**
+
+**A new version rather than an edit, and the loader says why in its own error message**: a published dataset is immutable, every recorded run cites a content hash, and `playground@3` is on `main` inside cycle 225's certification. **Mutating it would make TASK-1480's evidence describe a dataset that no longer exists.**
+
+### Why the named cast could not have landed on `playground@2`
+
+⛔ **This is the sequencing reason TASK-429 sat behind TASK-1480, and it is one level more severe than TASK-1480's own case.** An invented individual carrying an invented `stance` of `damaged` is a fabricated claim about a real business **and** a false claim about a real person's employer. **`playground@2` supplies no `people`, so it can render no named contact — and a test fails the moment somebody adds a cast to it.**
+
+### What the fixture derives rather than stores
+
+| Field | Author | Why |
+|---|---|---|
+| `person_id` | **the generator**, `sha256(company/ref)` | **Opaque, so nothing downstream can parse a company out of it** — a readable id becomes a second copy of facts the payload already carries. And a derivation cannot collide unless its inputs do, where thirty-six hand-written ids are thirty-six chances to paste one twice |
+| `email` | **the generator**, from name + domain | An address can never point at a company the person does not work for — the one way a fictional address could become misleading rather than merely fictional |
+
+⛔ **`hashlib`, never `hash()`.** Python's is seeded per process, so a provider identifier built on it would differ between two runs of one scenario. **The test that catches this is pinned to a literal value**, because a same-process comparison would pass just as happily against the defect.
+
+### The fourth claim the simulator could describe and the pipeline could never produce
+
+**A fourth instance of the class the `playground@2` table above names**, found the same way and worth adding to it:
+
+| Gap | What was unreachable |
+|---|---|
+| **Apollo declared `contacts` in `known_fields` and never translated them** | **Every person at every account.** The field arrived, the strict unknown-field check accepted it, and no consumer could ever see it — **the identical shape as Crunchbase's `acquisitions`, dead at the source since M2.2.** `people` recorded the cost in its own docstrings as a duplicate-person defect it could not fix: **every arrival minted a new subject, because the identifier that would have matched one stopped here** |
+
+⚠️ **And a smaller one beside it.** Contact seniority was **positional** — `executive` for the first contact and `manager` for every other — while the taxonomy qualifies `executive`, `vp` and `director`. **So no leadership rule could fire for any contact below index 0**, whatever their actual title. Seniority is now per person, from the dataset.
+
+---
+
 ## Proportionality review — 2026-08-01, before M12.3's second slice
 
 > **The simulator exists to make Signora better. It is not a product.** Reviewed against one question, applied to every candidate: *what specific Signora capability does this validate?* Where the answer was unclear, the item is recorded and not built.

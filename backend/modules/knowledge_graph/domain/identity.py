@@ -41,8 +41,15 @@ class EntityKind(StrEnum):
     — *person × company × title × interval* — has a subject; it resolves
     nothing, because there is nothing to resolve against. **`PERSON` is
     therefore a kind this graph names and does not bind**: no
-    `identity_binding` row will ever carry it until a provider supplies an
-    identifier, and that is [TASK-429](../../../../docs/BACKLOG.md).
+    `identity_binding` row carries it.
+
+    ⚠️ **The upstream half of that has changed and the statement above has
+    not.** [TASK-429](../../../../docs/BACKLOG.md) supplies the identifier —
+    `ClaimAttribute.PERSON_IDENTITY` carries a provider-stable `person_ref` —
+    so the sentence *"until a provider supplies an identifier"* is no longer
+    what is missing. ⛔ **What is missing is a binding**, which is
+    [TASK-428](../../../../docs/BACKLOG.md) S5 and belongs to `people` rather
+    than to this graph.
 
     **Stated rather than left to be discovered**, because a member that
     resolution never produces looks like a bug to whoever finds it next.

@@ -13,26 +13,80 @@ because it is categorically different: a trajectory, not a snapshot.
 
 from __future__ import annotations
 
+import hashlib
+import re
 from collections.abc import Mapping
 from typing import Any
 
 from signora_platform.simulation.generators.base import PayloadGenerator, _fixture_notice
 from signora_platform.simulation.scenario import ScenarioEvent
 
+#: Non-name characters, for building an address out of a person's name.
+_NOT_A_NAME_CHARACTER = re.compile(r"[^a-z]+")
+
+
+def _person_id(company: str, ref: str) -> str:
+    """A provider-stable, **opaque** identifier for one person.
+
+    Derived rather than stored, for the two reasons that decide where a field
+    lives. **Nothing downstream may parse it** — a readable id invites a
+    consumer to recover the company or the role from it, and then the id has
+    quietly become a second copy of facts the payload already carries. And a
+    dataset holding thirty-six hand-written opaque ids is thirty-six chances
+    to paste one twice, where a derivation cannot collide unless the inputs do.
+
+    `hashlib` rather than `hash()`: Python's is seeded per process, and a
+    provider identifier that changed between two runs of the same scenario
+    would make replay impossible — the hidden-input defect the platform has
+    already eliminated five times.
+    """
+    digest = hashlib.sha256(f"{company}/{ref}".encode()).hexdigest()
+    return f"apollo_{digest[:20]}"
+
+
+def _email(full_name: str, domain: str) -> str:
+    """`first.last@domain`, on the company's **own** domain.
+
+    Derived from the two fields that decide it, so an address can never point
+    at a company the person does not work for — which is the one way a fixture
+    address could become misleading rather than merely fictional.
+    """
+    parts = [_NOT_A_NAME_CHARACTER.sub("", part.casefold()) for part in full_name.split()]
+    local = ".".join(part for part in parts if part)
+    return f"{local}@{domain}"
+
 
 class ApolloFixtureGenerator(PayloadGenerator):
-    """Company profile, contacts, headcount, industry, revenue band."""
+    """Company profile, contacts, headcount, industry, revenue band.
+
+    ### The contacts carry an identity from `playground@4` onward
+
+    **Until [TASK-429](../../../../docs/BACKLOG.md) this generator emitted a
+    title and a seniority band and nothing else**, and the comment one class
+    down said what that cost: the people were *"nameless, and invisible beside
+    the account"*. `people` felt it as a duplicate-person defect it had
+    documented rather than fixed — **every arrival minted a new subject,
+    because there was no identifier to match one against.**
+
+    ⛔ **A company whose dataset entry has no `people` emits no contacts**, and
+    that is deliberate rather than defensive. `playground@2`'s twelve entities
+    are **real companies**, so a named individual must never be renderable from
+    it — an invented person with an invented stance attached to a real employer
+    is a fabricated claim about a real business. **`playground@2` supplies no
+    `people` and therefore produces no named contact**, and a test pins it.
+    """
 
     provider = "apollo"
 
     def render(self, event: ScenarioEvent) -> Mapping[str, Any]:
         facts = event.facts
+        domain = str(facts.get("domain", "example.com"))
         return {
             "_fixture": _fixture_notice("Apollo"),
             "organization": {
                 "id": event.subject,
                 "name": facts.get("name", event.subject),
-                "website_url": f"https://{facts.get('domain', 'example.com')}",
+                "website_url": f"https://{domain}",
                 "industry": facts.get("industry", "software"),
                 "estimated_num_employees": facts.get("employees", 0),
                 # A band rather than a figure: enrichment vendors report
@@ -44,11 +98,25 @@ class ApolloFixtureGenerator(PayloadGenerator):
             },
             "contacts": [
                 {
-                    "id": f"{event.subject}-contact-{index}",
-                    "title": title,
-                    "seniority": "executive" if index == 0 else "manager",
+                    "person_id": _person_id(event.subject, str(person.get("ref", ""))),
+                    "full_name": person.get("full_name"),
+                    "title": person.get("title"),
+                    # The provider's own band, per person. It used to be
+                    # positional — `executive` for the first contact and
+                    # `manager` for the rest — which made every leadership rule
+                    # unreachable below index 0, because the taxonomy qualifies
+                    # `executive`, `vp` and `director` and nothing else.
+                    "seniority": person.get("seniority"),
+                    # **The join key.** A contact provider that did not say
+                    # which company it meant would resolve every person to an
+                    # entity of its own, which is exactly what CoreSignal did
+                    # to whole companies before M12.1.5.
+                    "company_domain": domain,
+                    "email": _email(str(person.get("full_name", "")), domain),
+                    "first_seen": person.get("first_seen"),
+                    "last_seen": person.get("last_seen"),
                 }
-                for index, title in enumerate(facts.get("contact_titles", []))
+                for person in facts.get("people", [])
             ],
         }
 

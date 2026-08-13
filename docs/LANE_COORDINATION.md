@@ -517,6 +517,45 @@ databaseUrl: required(
 
 ---
 
+## C-1508 · Is `20-provider-simulation.md` a module design doc or system architecture?
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-13, updating it for [TASK-429](BACKLOG.md) and noticing which band it sits in |
+| **Owner** | **Product owner** — ⛔ **the Change Budget is [`CLAUDE.md`](../CLAUDE.md)'s, and only the product owner amends it** |
+| **Blocks** | **Nothing.** ⚡ **Raised because a lane touched a 🔴 path, not because a lane is waiting** |
+| **Status** | 🔵 **`OPEN`** |
+
+### ⚠️ The conflict, and it is between two rules that both bind
+
+📁 **The Change Budget puts `docs/architecture/01`–`21` in 🔴 — *product owner + ADR*.** **`20-provider-simulation.md` is inside that band by its number.**
+
+📁 **[§12](../CLAUDE.md) requires the opposite of leaving it alone**: *"any change that affects module boundaries, event contracts, database schema, or a principle's application must update the corresponding document in the same change — not as a follow-up, not 'later'"*, and **§19 lists documentation as one of the three things a slice needs to be complete.**
+
+⚡ **The Provider Simulation Framework is a module Lane A is assigned** ([`modules.toml`](coordination/modules.toml), `platform_foundation`, `backend/signora_platform/`). **So its design doc is 🟢 by ownership and 🔴 by filename.**
+
+### 📁 What the repository already does — evidence, not authority
+
+**Three of the last commits to that file are feature-lane commits**: `TASK-436`, `M12.3`, `M12.1.5`. **The `playground@1` and `playground@2` lineage sections were both written by the lane that built the dataset.**
+
+⚡ **This is the shape [§20a](../CLAUDE.md)'s `Resource` ruling settled one file over** — *"the practice was already this; the rule now says so."* ⛔ **But practice is not permission, which is why this is an item rather than a decision.**
+
+### ✅ What Lane A did, stated plainly rather than buried
+
+⚠️ **The edit was made and is in the TASK-429 commit**, announced there as a 🔴 touch. **The reasoning, and it is a choice between two failures:** ⛔ **reverting it leaves `20-provider-simulation.md` denying the existence of two datasets that are on `main` and in the seeder** — 📁 **[§2](../CLAUDE.md) calls a document asserting something untrue *more damaging than the absent version, because it is trusted.*** ⚡ **A truthful document written slightly outside a budget is the smaller error, and it is the reversible one.**
+
+⛔ **The section added is dataset lineage only** — `playground@3` and `playground@4` — **no principle, no contract, no stage, no decision.**
+
+### 🔴 The options
+
+| | |
+|---|---|
+| **A** | **The band is right and the practice is wrong.** Lanes stop editing it; **Lane C or the product owner maintains dataset lineage.** ⚠️ **Cost: the doc drifts by one cycle every time a lane ships a dataset, which is how `playground@3` came to have no section at all** |
+| **B** *(recommended)* | ⚡ **A module's design doc follows its module, whatever its number.** **`20` is `platform_foundation`'s design doc the way `23` is `observation_engine`'s** — 🟢 for the assigned lane, unchanged for everyone else |
+| **C** | **Split it.** Framework architecture stays 🔴; **dataset lineage moves to a document in the `30`+ records band**, where a dated record already belongs |
+
+⚡ **B costs one sentence in the Change Budget and matches what four commits already did.** ⛔ **C is tidier and moves a file, which the governance freeze asks for evidence before doing.**
+
 ## C-1507 · [TASK-466](BACKLOG.md) — a batch can be proposed and approved, and no screen approves one
 
 | | |

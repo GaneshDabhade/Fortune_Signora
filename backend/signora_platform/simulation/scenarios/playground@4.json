@@ -1,0 +1,455 @@
+{
+  "_comment": "Identical to playground@3's thirty-five steps, replayed against playground@4 — the SAME twelve companies, the same offsets, the same six scenarios emerging from the same evidence. The only difference is upstream: @4's companies carry named people, so the thirteen apollo steps now render a person identity block where they previously rendered nameless titles (TASK-429). No step is added, removed or re-dated, deliberately — a fixture change and a scenario change landing together would make it impossible to say which one moved a downstream figure.\n\nTwelve invented companies, twelve business stories, told over roughly five months so that freshness varies on its own rather than being declared. Offsets are days from the scenario epoch and nothing more; the Playground seeder anchors it relative to today and owns that number — see backend/tests/playground/seed.py. Every state a reviewer sees (current, ageing, stale, contested, unnamed) is produced by the pipeline from these events; not one of them is set. The six scenarios TASK-1480 requires EMERGE from the shape of the evidence rather than from a flag: porterfield is hot because five things happened in the last fortnight and they agree; brightmoor is stale because nothing has happened since month one; northfield is emerging because a raise is followed by hiring into the buying centre; veritalis is multi-stakeholder because four providers describe five named roles; tessellate and larkspur are low-evidence because one provider spoke once and nothing corroborates it; oakenshaw is healthy because three consistent readings say the same unremarkable thing.",
+  "dataset": "playground",
+  "dataset_version": 4,
+  "steps": [
+    {
+      "provider": "apollo",
+      "subject": "brightmoor",
+      "offset_days": 18,
+      "facts": {
+        "employees": 12000,
+        "revenue_band": "$1B+"
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "brightmoor",
+      "offset_days": 21,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Industrial Data Platform",
+            "direction": "sustained",
+            "weeks": 5,
+            "peak": 72
+          }
+        ]
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "brightmoor",
+      "offset_days": 24,
+      "facts": {
+        "employees": 11940,
+        "open_roles": 9
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "brightmoor",
+      "offset_days": 26,
+      "facts": {
+        "employees": 11980,
+        "open_roles": 14,
+        "employee_changes": [
+          {
+            "type": "hire",
+            "title": "VP Manufacturing Systems",
+            "seniority": "executive",
+            "occurred_on": "2026-04-02"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "sandgate",
+      "offset_days": 44,
+      "facts": {
+        "employees": 1100,
+        "revenue_band": "$50M-$250M"
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "sandgate",
+      "offset_days": 46,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Retail Inventory Intelligence",
+            "direction": "emerging",
+            "weeks": 3,
+            "peak": 58
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "oakenshaw",
+      "offset_days": 61,
+      "facts": {
+        "employees": 2600,
+        "revenue_band": "$250M-$1B"
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "larkspur",
+      "offset_days": 63,
+      "facts": {
+        "employees": 75,
+        "revenue_band": "$1M-$10M"
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "arvely",
+      "offset_days": 72,
+      "facts": {
+        "employees": 900,
+        "revenue_band": "$50M-$250M"
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "calderwood",
+      "offset_days": 88,
+      "facts": {
+        "employees": 320,
+        "revenue_band": "$10M-$50M"
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "quillon",
+      "offset_days": 90,
+      "facts": {
+        "employees": 240,
+        "revenue_band": "$10M-$50M"
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "veritalis",
+      "offset_days": 96,
+      "facts": {
+        "employees": 480,
+        "revenue_band": "$10M-$50M"
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "tessellate",
+      "offset_days": 97,
+      "facts": {
+        "employees": 60,
+        "revenue_band": "$1M-$10M"
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "oakenshaw",
+      "offset_days": 100,
+      "facts": {
+        "employees": 2640,
+        "open_roles": 17
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "northfield",
+      "offset_days": 104,
+      "facts": {
+        "employees": 1280,
+        "revenue_band": "$50M-$250M"
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "halden",
+      "offset_days": 108,
+      "facts": {
+        "employees": 180,
+        "revenue_band": "$1M-$10M"
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "arvely",
+      "offset_days": 112,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Payment Orchestration",
+            "direction": "decaying",
+            "weeks": 2,
+            "peak": 41
+          }
+        ]
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "veritalis",
+      "offset_days": 118,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Regulatory Reporting",
+            "direction": "sustained",
+            "weeks": 5,
+            "peak": 79
+          }
+        ]
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "sandgate",
+      "offset_days": 119,
+      "facts": {
+        "employees": 1085,
+        "open_roles": 6
+      }
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "northfield",
+      "offset_days": 121,
+      "facts": {
+        "funding_rounds": [
+          {
+            "type": "series_d",
+            "amount_usd": 90000000,
+            "announced_on": "2026-07-02",
+            "investors": [
+              "Kestrel Ventures",
+              "Ardmore Growth"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "halden",
+      "offset_days": 124,
+      "facts": {
+        "employees": 192,
+        "open_roles": 8
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "veritalis",
+      "offset_days": 126,
+      "facts": {
+        "employees": 502,
+        "open_roles": 21,
+        "employee_changes": [
+          {
+            "type": "hire",
+            "title": "Director of Risk",
+            "seniority": "director",
+            "occurred_on": "2026-07-09"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "calderwood",
+      "offset_days": 129,
+      "facts": {
+        "employees": 338,
+        "open_roles": 12,
+        "employee_changes": [
+          {
+            "type": "departure",
+            "title": "VP Data",
+            "seniority": "executive",
+            "occurred_on": "2026-07-21"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "builtwith",
+      "subject": "veritalis",
+      "offset_days": 131,
+      "facts": {
+        "technologies": [
+          {
+            "name": "LegacyCaseTracker",
+            "category": "compliance",
+            "first_detected": "2019-02-01",
+            "last_detected": "2026-06-14",
+            "is_live": false
+          },
+          {
+            "name": "ModernPolicyEngine",
+            "category": "compliance",
+            "first_detected": "2026-06-20",
+            "last_detected": "2026-08-05",
+            "is_live": true
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "oakenshaw",
+      "offset_days": 133,
+      "facts": {
+        "employees": 2680,
+        "revenue_band": "$250M-$1B"
+      }
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "arvely",
+      "offset_days": 134,
+      "facts": {
+        "funding_rounds": [
+          {
+            "type": "series_c",
+            "amount_usd": 45000000,
+            "announced_on": "2026-07-25",
+            "investors": [
+              "Northgate Partners"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "northfield",
+      "offset_days": 136,
+      "facts": {
+        "employees": 1400,
+        "open_roles": 48,
+        "employee_changes": [
+          {
+            "type": "hire",
+            "title": "Head of Procurement",
+            "seniority": "director",
+            "occurred_on": "2026-07-28"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "quillon",
+      "offset_days": 137,
+      "facts": {
+        "employees": 266,
+        "open_roles": 19,
+        "employee_changes": [
+          {
+            "type": "hire",
+            "title": "Head of Developer Experience",
+            "seniority": "director",
+            "occurred_on": "2026-08-02"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "porterfield",
+      "offset_days": 139,
+      "facts": {
+        "employees": 4200,
+        "revenue_band": "$250M-$1B"
+      }
+    },
+    {
+      "provider": "builtwith",
+      "subject": "quillon",
+      "offset_days": 140,
+      "facts": {
+        "technologies": [
+          {
+            "name": "SelfHostedCI",
+            "category": "developer_tools",
+            "first_detected": "2021-05-01",
+            "last_detected": "2026-08-06",
+            "is_live": true
+          }
+        ]
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "porterfield",
+      "offset_days": 141,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Revenue Intelligence",
+            "direction": "sustained",
+            "weeks": 7,
+            "peak": 91
+          },
+          {
+            "topic": "Clinical Data Integration",
+            "direction": "emerging",
+            "weeks": 3,
+            "peak": 74
+          }
+        ]
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "northfield",
+      "offset_days": 142,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Data Platform Consolidation",
+            "direction": "emerging",
+            "weeks": 4,
+            "peak": 68
+          }
+        ]
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "porterfield",
+      "offset_days": 143,
+      "facts": {
+        "employees": 4310,
+        "open_roles": 64,
+        "employee_changes": [
+          {
+            "type": "hire",
+            "title": "VP Revenue Operations",
+            "seniority": "executive",
+            "occurred_on": "2026-08-04"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "porterfield",
+      "offset_days": 144,
+      "facts": {
+        "acquisitions": [
+          {
+            "uuid": "porterfield-acq-1",
+            "acquiree_name": "Ardenway Clinical",
+            "announced_on": "2026-08-01"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "porterfield",
+      "offset_days": 146,
+      "facts": {
+        "employees": 4380,
+        "open_roles": 71
+      }
+    }
+  ]
+}

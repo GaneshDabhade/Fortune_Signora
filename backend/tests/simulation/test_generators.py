@@ -9,6 +9,7 @@ intent score is not a simulation of intent but a number.
 from __future__ import annotations
 
 import random
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -251,3 +252,98 @@ class TestIntentTrajectories:
             build_trajectory(
                 "x", direction=TrendDirection.EMERGING, weeks=0, peak=50, rng=random.Random(1)
             )
+
+
+class TestAProviderSuppliesAPersonIdentifier:
+    """**TASK-429.** Apollo's contacts used to carry a title and a positional
+    seniority band and nothing else — this generator's neighbour described the
+    result as *"nameless, and invisible beside the account it described"*, and
+    `people` felt it as a duplicate-person defect it documented rather than
+    fixed.
+    """
+
+    @staticmethod
+    def _contacts(version: int, subject: str) -> list[dict[str, object]]:
+        dataset = load("playground", version)
+        event = ScenarioEvent(
+            sequence=1,
+            provider="apollo",
+            subject=subject,
+            occurred_at=datetime(2026, 8, 1, tzinfo=UTC),
+            facts=dict(dataset.entity(subject)),
+        )
+        contacts = ApolloFixtureGenerator().generate(event).payload["contacts"]
+        assert isinstance(contacts, list)
+        return contacts
+
+    def test_every_contact_carries_the_identity_block(self) -> None:
+        contacts = self._contacts(4, "northfield")
+
+        assert len(contacts) == 10
+        for contact in contacts:
+            assert set(contact) == {
+                "person_id",
+                "full_name",
+                "title",
+                "seniority",
+                "company_domain",
+                "email",
+                "first_seen",
+                "last_seen",
+            }
+            assert contact["full_name"]
+
+    def test_the_person_id_is_the_same_in_every_process(self) -> None:
+        """🔴 **Pinned to a literal, and that is the assertion.**
+
+        A comparison of two renders in one process would pass just as happily
+        against `hash()`, which is **seeded per process** — so a provider
+        identifier built on it would differ between two runs of one scenario
+        and make replay impossible. **Only a value recorded here can fail that
+        way**, because only this test outlives the process that wrote it.
+        """
+        assert self._contacts(4, "northfield")[0]["person_id"] == (
+            "apollo_46513c635d9a01e8321b"
+        )
+
+    def test_nothing_downstream_can_read_a_company_out_of_the_id(self) -> None:
+        """It is the provider's key, not a description. A readable id invites a
+        consumer to parse it, and then it has quietly become a second copy of
+        facts the payload already carries."""
+        for contact in self._contacts(4, "northfield"):
+            identifier = str(contact["person_id"])
+            assert "northfield" not in identifier
+            assert str(contact["full_name"]).split()[0].casefold() not in identifier
+
+    def test_the_address_is_on_the_company_the_person_works_at(self) -> None:
+        for contact in self._contacts(4, "veritalis"):
+            assert str(contact["email"]).endswith("@veritalis.io")
+            assert contact["company_domain"] == "veritalis.io"
+
+    def test_a_real_company_dataset_produces_no_named_contact(self) -> None:
+        """🔴 **The guard this row exists inside.**
+
+        `playground@2`'s twelve entities are **real companies**. An invented
+        person with an invented stance attached to a real employer is a
+        fabricated commercial claim about a real business *and* a false claim
+        about a real person's job — one level more severe than the defect
+        [TASK-1480](../../../docs/BACKLOG.md) retired `playground@2` for.
+
+        ⛔ **It supplies no `people`, so it can render no named contact**, and
+        this fails the moment somebody adds a cast to it.
+        """
+        dataset = load("playground", 2)
+
+        for key in dataset.entities:
+            assert self._contacts(2, key) == []
+
+    def test_the_named_cast_did_not_lose_a_contact_that_playground_3_declared(
+        self,
+    ) -> None:
+        """@4 is @3 with names, not a redesign. Every title @3 declared is
+        still held by somebody, at the same company, in the same order."""
+        for key, entity in load("playground", 3).entities.items():
+            declared = list(entity["contact_titles"])
+            named = [c["title"] for c in self._contacts(4, key)]
+
+            assert named[: len(declared)] == declared

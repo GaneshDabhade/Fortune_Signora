@@ -309,6 +309,48 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-265 · A database behind the migration head fails 26 tests and never says so
+
+| | |
+|---|---|
+| **Module** | **Repository test harness** — `backend/tests/conftest.py` |
+| **Current assignee** | **Lane A** — ⚡ **reported and not fixed here**, because the fix changes what a failing gate *means* for every lane |
+| **Severity** | 🟡 — **wrong but survivable.** ⛔ **Nothing a customer touches.** ⚠️ **What it costs is diagnosis time, at the worst moment**: the failures name application behaviour, so the first hypothesis is always a code defect |
+| **Status** | **`OPEN` — Lane A, 2026-08-13** |
+| **Found** | **2026-08-13, by Lane A**, running the full suite before pushing TASK-429 |
+
+#### 🔴 What happened
+
+**One full-suite run reported `27 failed, 4536 passed`. The next reported `4563 passed`, with one file changed** — and that file accounted for exactly **one** of the twenty-seven.
+
+⛔ **The other twenty-six were every `account_tag` test there is**, across `test_account_tag_repository.py` and `test_api_account_tags.py`. **They pass in isolation (18/18) and they pass across the whole `tests/integration` directory (662/662).**
+
+#### ⚡ Why it is a harness defect and not a flake
+
+🔴 **The failures partition cleanly on the two newest migrations, `0051` and `0052`.** ⛔ **A flake scatters; a clean partition on schema version is a signature.** **The database was behind head when that run started, and `account_tag` did not exist yet.**
+
+⚡ **What brings it to head is a test** — `tests/integration/test_migration_runner.py`, whose whole subject is that the runner reaches head. ⛔ **And `test_account_tag_*` sorts before `test_migration_runner` alphabetically**, so every table added by a recent migration is unprotected in exactly the window where it is newest.
+
+⚠️ **What moved the schema is NOT established and is deliberately not asserted here.** A `make dr` restore from a snapshot of `main` would do it — `0051` and `0052` are unpromoted, so a `main` snapshot is at `0050` — but that is a hypothesis and the defect below does not depend on it.
+
+#### 🔴 The actual gap, which holds however the drift happened
+
+📁 **`tests/conftest.py` carries two session-scoped autouse guards, and both exist for this exact class**: one refuses a database that has not consented to truncation, the other refuses a connection that bypasses RLS — *"otherwise Row-Level Security is not enforced and isolation assertions are vacuous."*
+
+⛔ **There is no third one asserting the schema is at head.** **So a database behind head is discovered as N application failures rather than one sentence**, and N grows with every migration a cycle adds.
+
+#### ✅ Expected
+
+**One session-scoped failure naming the revision the database is at and the revision the code expects.**
+
+#### ⛔ Actual
+
+**Twenty-six failures describing tags, vocabularies, batches and workspace isolation** — every one of them a true statement about a table that was not there.
+
+#### ⚠️ Why Lane A reported rather than fixed it
+
+**The fix is one fixture, and it is not the size that matters.** ⛔ **A new session-scoped autouse guard changes what a failing gate means for every lane and for QE**, and it would have travelled inside an unrelated slice. 📁 **[§20e](../CLAUDE.md): finding a defect outside the slice is an obligation to report it, not a licence to fix it.** ⚡ **And this one is worth QE seeing before it is closed** — QE runs the full suite every cycle and is the reader the guard would be written for.
+
 ### B-264 · Changing any preference silently forgot which workspace you were last in
 
 | | |

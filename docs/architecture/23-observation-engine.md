@@ -53,9 +53,11 @@ The canonical vocabulary holds two kinds of claim, and the module's whole shape 
 | | Attributes | What a claim asserts | What an observation is |
 |---|---|---|---|
 | **State** | `EMPLOYEE_COUNT`, `REVENUE_BAND`, `INDUSTRY`, `FOUNDED_YEAR`, `COUNTRY`, `LEGAL_NAME`, `OPEN_ROLES` | *This is currently true.* | A **transition** — value moved from X to Y between t₁ and t₂ |
-| **Occurrence** | `FUNDING_ROUND`, `ACQUISITION`, `TECHNOLOGY_DETECTED`, `TECHNOLOGY_REMOVED`, `ROLE_CHANGE`, `HEADCOUNT_CHANGE`, `INTENT_TOPIC_SURGE` | *This happened.* | A **first sighting** — the occurrence, deduplicated across re-syncs |
+| **Occurrence** | `FUNDING_ROUND`, `ACQUISITION`, `TECHNOLOGY_DETECTED`, `TECHNOLOGY_REMOVED`, `ROLE_CHANGE`, `PERSON_IDENTITY`, `HEADCOUNT_CHANGE`, `INTENT_TOPIC_SURGE` | *This happened.* | A **first sighting** — the occurrence, deduplicated across re-syncs |
 
 `HEADCOUNT_CHANGE` is instructive: CoreSignal reports a *delta* directly. It is already an assertion that something happened, and deriving a transition from it would double-count against `EMPLOYEE_COUNT`.
+
+`PERSON_IDENTITY` is the instructive one in the other direction — **it is the attribute that most looks like state and is not.** A contact provider restates its whole roster on every sync, which reads as *"this is currently true"*. But state is keyed per `(entity, attribute)` and produces **transitions**, so ten people at one company would collapse into a single value that flips on each sync and renders as nine departures nobody made. **Keyed per member instead**, exactly as `TECHNOLOGY_DETECTED` is: a re-report of the same person is the same sighting, a new person is a new one, and ⛔ **a departure is still not derivable from absence** — it needs `ROLE_CHANGE`, from a provider that watched it happen.
 
 `INTENT_TOPIC_SURGE` is one claim per observed week. Each week is a distinct occurrence, keyed on `(topic, observed_week)` — so a re-report of week 3 in week 5 deduplicates, and the weekly series survives intact as a series of observations. The *trajectory* is then readable downstream without this module inventing a trend rule.
 
@@ -135,6 +137,7 @@ The declared classification — state or occurrence — plus, for occurrence att
 | `ACQUISITION` | `counterparty` + `announced_on` |
 | `TECHNOLOGY_DETECTED` / `TECHNOLOGY_REMOVED` | normalized technology name |
 | `ROLE_CHANGE` | `title` + `direction` + `observed_at` |
+| `PERSON_IDENTITY` | `person_ref` alone — ⛔ **not the title and not the name.** A promotion or a corrected surname is not an arrival, and anything that moves would make each nightly sync a fresh sighting of everybody |
 | `HEADCOUNT_CHANGE` | `observed_at` + delta |
 | `INTENT_TOPIC_SURGE` | `topic` + `observed_week` |
 

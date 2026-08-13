@@ -108,7 +108,7 @@ test:
 ## The Product Playground — twelve accounts through the real pipeline.
 ##
 ## **There is one product.** This runs the same pipeline the suite runs, over
-## `playground@2` instead of `baseline@1`. No branch anywhere knows it is a
+## `playground@4` instead of `baseline@1`. No branch anywhere knows it is a
 ## playground; the only difference is which scenario file is named.
 ##
 ## `demo` brings the stack up and seeds. `demo-seed` re-seeds an already-running

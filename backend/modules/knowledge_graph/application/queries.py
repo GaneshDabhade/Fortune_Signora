@@ -246,9 +246,9 @@ SEARCH_COVERAGE: dict[EntityKind, "SearchCoverage"] = {
     # specification — C-221 narrows the People domain to *"role-based and
     # organization-level intelligence"*, with no person's name anywhere.
     # **So the honest sentence is "Signora does not search people by name"**,
-    # which is exactly what this coverage renders, and it stays correct even
-    # if TASK-429 later supplies a provider identifier: an identifier is not
-    # a name either.
+    # which is exactly what this coverage renders — **and it stayed correct
+    # when TASK-429 supplied the provider identifier, because an identifier is
+    # not a name either.** A `Person` in this repository still holds neither.
     #
     # ⚡ **Added because `EntityKind.PERSON` was added and the suite refused
     # the omission** — `test_every_kind_the_graph_knows_gets_a_group` failed

@@ -26,6 +26,7 @@ from modules.provider_normalization.domain.vocabulary import (
     AcquisitionValue,
     ClaimAttribute,
     FundingValue,
+    PersonIdentityValue,
     RevenueBand,
     RoleChangeValue,
     RoleDirection,
@@ -98,6 +99,103 @@ class ApolloMapper(ProviderMapper):
                 )
             else:
                 yield MappedClaim(ClaimAttribute.REVENUE_BAND, band, observed_at)
+
+        # **`contacts` has been declared in `known_fields` since M2.2 and never
+        # translated** — the same shape `acquisitions` was found in one mapper
+        # down, and with the same consequence: the field arrived, the strict
+        # unknown-field check accepted it, and nothing downstream could ever see
+        # it. `people` recorded the cost as a duplicate-person defect it could
+        # not fix, because the identifier that would have fixed it stopped here.
+        yield from self._identities(
+            payload.get("contacts", []),
+            company_domain=self.subject(payload).domain,
+            observed_at=observed_at,
+        )
+
+    def _identities(
+        self, contacts: Any, *, company_domain: str | None, observed_at: datetime
+    ) -> Iterator[MappedClaim | Rejection]:
+        """Contacts become identities, **and a contact at another company does not.**
+
+        ⛔ **`email` is deliberately not lifted into the vocabulary.** The
+        provider supplies one and the fixture emits one, because a fixture that
+        omitted a field the vendor returns would mislead whoever swaps it for a
+        real payload. **The platform declines to carry it**: `people` holds no
+        direct identifier by specification (`C-221`), nothing has asked for an
+        address, and a canonical attribute is the wrong place to discover later
+        that nobody wanted it. **`person_ref` is what joins a person across
+        arrivals, and it does that without being one.** If `C-203` is ruled the
+        other way, this becomes one field.
+        """
+        for index, contact in enumerate(contacts):
+            # **The join key, checked rather than assumed.** A contact provider
+            # keys people by employer, and a roster entry naming a different
+            # company is a payload assembled wrongly — accepting it would attach
+            # somebody to an account they have never worked at, which is the one
+            # error on this screen a seller would act on and could not detect.
+            stated = contact.get("company_domain")
+            if stated is not None and company_domain is not None and stated != company_domain:
+                yield Rejection(
+                    RejectionReason.UNPARSEABLE_VALUE,
+                    f"contacts[{index}].company_domain {stated!r} is not this payload's "
+                    f"company {company_domain!r} — a roster entry for another employer",
+                )
+                continue
+
+            # ⛔ **A contact with no provider identifier is rejected rather than
+            # given a synthesised one.** Minting a key here would put a
+            # *platform* invention behind a *provider*'s field name, and
+            # `people` would then join two strangers on it and have no way to
+            # tell that it had.
+            person_ref = contact.get("person_id")
+            if not person_ref:
+                yield Rejection(
+                    RejectionReason.MISSING_REQUIRED_FIELD,
+                    f"contacts[{index}].person_id — an identity with no identifier "
+                    "is the duplicate-person defect this attribute exists to end",
+                )
+                continue
+
+            full_name = contact.get("full_name")
+            if not full_name:
+                yield Rejection(
+                    RejectionReason.MISSING_REQUIRED_FIELD, f"contacts[{index}].full_name"
+                )
+                continue
+
+            title = contact.get("title")
+            if not title:
+                yield Rejection(
+                    RejectionReason.MISSING_REQUIRED_FIELD, f"contacts[{index}].title"
+                )
+                continue
+
+            first_seen, bad_first = parse_date(
+                contact.get("first_seen"), f"contacts[{index}].first_seen"
+            )
+            last_seen, bad_last = parse_date(
+                contact.get("last_seen"), f"contacts[{index}].last_seen"
+            )
+            for problem in (bad_first, bad_last):
+                if problem:
+                    yield problem
+
+            yield MappedClaim(
+                ClaimAttribute.PERSON_IDENTITY,
+                PersonIdentityValue(
+                    person_ref=str(person_ref),
+                    full_name=str(full_name),
+                    title=str(title),
+                    # Carried verbatim. The band decides whether a leadership
+                    # rule fires, and re-deriving it from the title here would
+                    # put a second seniority vocabulary in the layer whose whole
+                    # job is to carry the provider's.
+                    seniority=str(contact.get("seniority", "unknown")),
+                    first_seen=first_seen,
+                    last_seen=last_seen,
+                ),
+                observed_at,
+            )
 
 
 class BuiltWithMapper(ProviderMapper):

@@ -20,10 +20,20 @@ pass.
 
 ### ⛔ What this contract deliberately does not publish
 
-**A name, or any direct identifier.** C-221. Whether a provider could even
-supply one is ❓1 of
-[ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md) and
-gates [TASK-429](../../../../docs/BACKLOG.md) — **not this row**.
+**A name, or any direct identifier.** C-221, and it is unchanged by
+[TASK-429](../../../../docs/BACKLOG.md).
+
+> ⚠️ **A provider now supplies both, and this contract still publishes
+> neither.** ❓1 of
+> [ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md)
+> asked whether one *could*; TASK-429 answered **yes** and stopped there.
+> **`PersonIdentityValue` carries `person_ref` and `full_name` in the
+> normalization vocabulary, because carrying a vendor's assertion is that
+> layer's whole job — and carrying it obliges no consumer to store it.**
+> ⛔ **What `people` needs from that value is `person_ref`, which joins a
+> person across arrivals without being a direct identifier.** Whether a name
+> ever reaches a screen is [C-203](../../../../docs/LANE_COORDINATION.md),
+> and it is still open.
 
 > ⚡ **The reader arrived on 2026-08-07, and the reason it was withheld is the
 > reason it now exists.** This said *"no reader port, because no consumer has
@@ -144,12 +154,16 @@ class AffiliationReader(Protocol):
 
         ⚠️ **Today this returns one affiliation in almost every case**, and that
         is a property of the platform rather than of the port: **`people` mints
-        a new subject per arrival** because it holds no identifier to match one
-        against ([C-221](../../../../docs/LANE_COORDINATION.md)). **Joining a
-        person across companies needs a provider identifier** — ❓1 of
-        [ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md),
-        gated on [TASK-429](../../../../docs/BACKLOG.md). **Stated so a consumer
-        does not read a single-element result as a data gap.**
+        a new subject per arrival**, because the `ROLE_CHANGE` claim it is fed
+        from carries a title and a direction and no identifier. **Stated so a
+        consumer does not read a single-element result as a data gap.**
+
+        ✅ **The identifier exists as of [TASK-429](../../../../docs/BACKLOG.md)**
+        — ❓1 of [ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md)
+        is answered, and `ClaimAttribute.PERSON_IDENTITY` carries a
+        provider-stable `person_ref`. ⛔ **Joining on it is
+        [TASK-428](../../../../docs/BACKLOG.md) S5 and is not built**, so this
+        paragraph still describes the behaviour rather than the intention.
         """
         ...
 

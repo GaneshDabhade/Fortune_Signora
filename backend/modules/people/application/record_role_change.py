@@ -108,17 +108,23 @@ class RecordRoleChange:
     async def arrived(self, change: RoleChange, *, actor_id: UUID) -> Arrival:
         """Somebody took a role. **A new person and a new open interval.**
 
-        ⚠️ **Every arrival mints a new `Person`, and that is correct here even
-        though it will sometimes be the same human twice.** Signora holds no
-        name, no email and no provider identifier
-        ([C-221](../../../../docs/LANE_COORDINATION.md)), so **there is nothing
-        to match an arrival against** — inventing a heuristic on title alone
-        would merge two strangers who share a job title.
+        ⚠️ **Every arrival mints a new `Person`, and that is still true here
+        even though it will sometimes be the same human twice.** This use case
+        is fed by `ROLE_CHANGE`, which carries
+        `RoleChangeValue(title, seniority, direction)` and **no identifier** —
+        so there is nothing to match an arrival against, and inventing a
+        heuristic on title alone would merge two strangers who share a job
+        title.
 
-        **Joining a person across companies needs a provider identifier**, which
-        is ❓1 of [ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md)
-        and gates [TASK-429](../../../../docs/BACKLOG.md). ⛔ **Stated here
-        rather than left for somebody to discover as a duplicate-person bug.**
+        ✅ **The identifier now exists, and it arrives by a different door.**
+        ❓1 of [ADR-0400](../../../../docs/architecture/adr/0400-person-as-an-entity.md)
+        asked whether a provider could supply one; **[TASK-429](../../../../docs/BACKLOG.md)
+        answered it** — `ClaimAttribute.PERSON_IDENTITY` carries a
+        provider-stable `person_ref` alongside the title, and Apollo emits one
+        per roster member. ⛔ **Nothing consumes it into this module yet**, and
+        that is [TASK-428](../../../../docs/BACKLOG.md)'s stage S5, which named
+        this row as its gate. **Until then a duplicate `Person` is a known
+        limitation with an owner, rather than a defect nobody has noticed.**
         """
         person = Person(id=uuid4(), workspace_id=change.workspace_id)
         await self._repository.add_person(person, actor_id=actor_id)

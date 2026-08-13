@@ -64,6 +64,14 @@ ATTRIBUTE_KINDS: Final[dict[ClaimAttribute, AttributeKind]] = {
     ClaimAttribute.FUNDING_ROUND: AttributeKind.OCCURRENCE,
     ClaimAttribute.ACQUISITION: AttributeKind.OCCURRENCE,
     ClaimAttribute.ROLE_CHANGE: AttributeKind.OCCURRENCE,
+    # **A roster, not a field.** The provider restates every member on every
+    # sync, so the temptation is to call it STATE — but state is per
+    # (entity, attribute) and produces *transitions*, which would collapse ten
+    # people at one company into a single value that flips on each sync and
+    # reads as nine departures that never happened. Keyed per member instead,
+    # exactly as TECHNOLOGY_DETECTED is: a re-report of the same person is the
+    # same sighting, and a new person is a new one.
+    ClaimAttribute.PERSON_IDENTITY: AttributeKind.OCCURRENCE,
     # Already a delta. A transition derived from it would double-count
     # against EMPLOYEE_COUNT.
     ClaimAttribute.HEADCOUNT_CHANGE: AttributeKind.OCCURRENCE,
@@ -124,6 +132,14 @@ def occurrence_key(attribute: ClaimAttribute, value: Any, observed_at: datetime)
 
     if attribute is ClaimAttribute.ROLE_CHANGE:
         return f"{_normalized(_field(value, 'title'))}|{_field(value, 'direction')}|{stamp}"
+
+    if attribute is ClaimAttribute.PERSON_IDENTITY:
+        # **The provider's key alone, and deliberately not the title.** A
+        # nightly roster re-reports the same people indefinitely, and keying on
+        # anything that moves — a title, a `last_seen`, the sync stamp — would
+        # turn every sync into a fresh sighting of everybody. ⛔ **And not the
+        # name**: a person who corrects a spelling or marries has not arrived.
+        return _normalized(_field(value, "person_ref"))
 
     if attribute is ClaimAttribute.INTENT_TOPIC_SURGE:
         # The observed week, never the reporting week. Intent is reported

@@ -366,6 +366,63 @@ class TestAttributeSemantics:
             ClaimAttribute.INTENT_TOPIC_SURGE, value, datetime(2026, 2, 4, tzinfo=UTC)
         )
 
+    def test_a_roster_is_keyed_per_person_and_not_per_sync(self) -> None:
+        """**TASK-429.** A contact provider restates every member on every
+        sync. Keyed on anything that moves — the stamp, the title, the
+        `last_seen` — and one nightly refresh becomes ten people arriving.
+        """
+        aoife = {
+            "person_ref": "apollo_46513c635d9a01e8321b",
+            "full_name": "Aoife Brennan",
+            "title": "Chief Information Officer",
+        }
+
+        monday = occurrence_key(
+            ClaimAttribute.PERSON_IDENTITY, aoife, datetime(2026, 8, 1, tzinfo=UTC)
+        )
+        tuesday = occurrence_key(
+            ClaimAttribute.PERSON_IDENTITY, aoife, datetime(2026, 8, 2, tzinfo=UTC)
+        )
+
+        assert monday == tuesday == "apollo_46513c635d9a01e8321b"
+
+    def test_a_promotion_is_not_a_new_person_and_neither_is_a_new_surname(self) -> None:
+        """⛔ **The title is deliberately not in the key**, and neither is the
+        name. Somebody who is promoted, or who corrects a spelling, has not
+        arrived — and a roster that said they had would report an appointment
+        the company never made."""
+        before = {
+            "person_ref": "apollo_x",
+            "full_name": "Aoife Brennan",
+            "title": "Chief Information Officer",
+        }
+        after = {
+            "person_ref": "apollo_x",
+            "full_name": "Aoife Brennan-Kelly",
+            "title": "Chief Digital Officer",
+        }
+
+        assert occurrence_key(
+            ClaimAttribute.PERSON_IDENTITY, before, datetime(2026, 8, 1, tzinfo=UTC)
+        ) == occurrence_key(
+            ClaimAttribute.PERSON_IDENTITY, after, datetime(2026, 11, 1, tzinfo=UTC)
+        )
+
+    def test_two_people_sharing_a_title_are_two_sightings(self) -> None:
+        """The failure the identifier exists to prevent, from the other side:
+        two holders of one title must never reduce to one person."""
+        title = "VP Engineering"
+
+        assert occurrence_key(
+            ClaimAttribute.PERSON_IDENTITY,
+            {"person_ref": "apollo_a", "full_name": "Arjun Menon", "title": title},
+            datetime(2026, 8, 1, tzinfo=UTC),
+        ) != occurrence_key(
+            ClaimAttribute.PERSON_IDENTITY,
+            {"person_ref": "apollo_b", "full_name": "Rachel Lindqvist", "title": title},
+            datetime(2026, 8, 1, tzinfo=UTC),
+        )
+
     @pytest.mark.parametrize(
         "attribute",
         [a for a, kind in ATTRIBUTE_KINDS.items() if kind is AttributeKind.STATE],

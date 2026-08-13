@@ -168,12 +168,14 @@ def test_the_dataset_is_read_from_the_seeder_that_seeds_it(review: ModuleType) -
     a session record must identify which one it showed. This reads the seeder
     rather than restating its choice.
     """
-    # ⚠️ **Moved to `playground@3` by [TASK-1480](../../docs/BACKLOG.md).** ⚡ The
-    # docstring above is why the literal has to move with the seeder: this test
-    # reads the seeder's choice rather than restating it, **so a stale literal
-    # here would be the record naming the wrong dataset that it exists to
-    # prevent.**
-    assert review._dataset() == "playground@3"
+    # ⚠️ **`playground@3` by [TASK-1480](../../docs/BACKLOG.md), then
+    # `playground@4` by [TASK-429](../../docs/BACKLOG.md)** — the version where
+    # each company's contacts have names. ⚡ The docstring above is why the
+    # literal has to move with the seeder: this test reads the seeder's choice
+    # rather than restating it, **so a stale literal here would be the record
+    # naming the wrong dataset that it exists to prevent.** It has now caught
+    # exactly that, twice.
+    assert review._dataset() == "playground@4"
 
 
 def test_known_limitations_carry_a_title_a_reviewer_can_act_on(review: ModuleType) -> None:

@@ -27,9 +27,17 @@ useful:
 > *"A VP of Engineering joined Acme in March and left in September"* becomes
 > **queryable**, where today it is two events that pass.
 
-**Whether a provider could supply a name is ❓1 of the ADR and gates
-[TASK-429](../../../../docs/BACKLOG.md), not this module.** If the answer turns
-out to be no, nothing here changes.
+**Whether a provider could supply a name was ❓1 of the ADR, and
+[TASK-429](../../../../docs/BACKLOG.md) answered it: yes** — a contact provider
+emits a roster, and `ClaimAttribute.PERSON_IDENTITY` carries a provider-stable
+`person_ref`, a name, a title and a seniority band into the canonical
+vocabulary.
+
+⛔ **Nothing here changed, which is what the paragraph above predicted.** The
+answer being *yes* is not an instruction to store a name: **`person_ref` is the
+field this module was missing**, and it identifies a subject without describing
+one. Consuming it is [TASK-428](../../../../docs/BACKLOG.md) S5, and C-221 still
+decides what a `Person` holds.
 
 ### The temptation, named because the neighbouring module named its own
 

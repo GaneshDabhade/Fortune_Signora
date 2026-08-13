@@ -21,6 +21,7 @@ from modules.provider_normalization.domain.vocabulary import (
     ClaimAttribute,
     FundingValue,
     IntentSurgeValue,
+    PersonIdentityValue,
     TechnologyValue,
 )
 from modules.provider_normalization.infrastructure.mappers import MAPPERS
@@ -422,3 +423,147 @@ class TestARegistryCanNameACompany:
         hint = MAPPERS["crunchbase"].subject({"organization": {"uuid": "globex"}})
 
         assert hint.domain is None
+
+
+class TestAProviderSuppliesAPersonIdentifier:
+    """**TASK-429.** `contacts` was declared in Apollo's `known_fields` at M2.2
+    and translated by nothing until this row — the same shape `acquisitions`
+    was found in, with the same consequence: the field arrived, the strict
+    unknown-field check accepted it, and no consumer could ever see it.
+
+    ⛔ **The subject is `person_ref`, not the name.** `people` mints a new
+    subject on every arrival and documents that as a defect it cannot fix,
+    because it holds nothing to match one against. This is the input that ends
+    it.
+    """
+
+    @staticmethod
+    def _with(contacts: list[dict[str, object]]) -> NormalizationOutcome:
+        return _normalize(
+            "apollo",
+            {
+                "_fixture": "x",
+                "organization": {
+                    "id": "northfield",
+                    "website_url": "https://northfielddata.com",
+                },
+                "contacts": contacts,
+            },
+        )
+
+    def test_a_contact_becomes_a_person_identity_claim(self) -> None:
+        outcome = self._with(
+            [
+                {
+                    "person_id": "apollo_46513c635d9a01e8321b",
+                    "full_name": "Aoife Brennan",
+                    "title": "Chief Information Officer",
+                    "seniority": "executive",
+                    "company_domain": "northfielddata.com",
+                    "email": "aoife.brennan@northfielddata.com",
+                    "first_seen": "2021-03-08",
+                    "last_seen": "2026-08-01",
+                }
+            ]
+        )
+
+        identities = [
+            c for c in outcome.claims if c.attribute is ClaimAttribute.PERSON_IDENTITY
+        ]
+        assert len(identities) == 1
+        assert identities[0].value == PersonIdentityValue(
+            person_ref="apollo_46513c635d9a01e8321b",
+            full_name="Aoife Brennan",
+            title="Chief Information Officer",
+            seniority="executive",
+            first_seen=date(2021, 3, 8),
+            last_seen=date(2026, 8, 1),
+        )
+
+    def test_the_email_is_not_carried_into_the_vocabulary(self) -> None:
+        """⛔ **The provider supplies an address; the platform declines it.**
+
+        Not an oversight — `people` holds no direct identifier by specification
+        (C-221), and nothing has asked for one. A canonical attribute is the
+        wrong place to find out later that nobody wanted it. **If C-203 is
+        ruled the other way this becomes one field**, which is why the address
+        stays in the payload rather than being deleted from the fixture.
+        """
+        outcome = self._with(
+            [
+                {
+                    "person_id": "p1",
+                    "full_name": "Aoife Brennan",
+                    "title": "Chief Information Officer",
+                    "email": "aoife.brennan@northfielddata.com",
+                }
+            ]
+        )
+
+        identity = next(
+            c for c in outcome.claims if c.attribute is ClaimAttribute.PERSON_IDENTITY
+        )
+        assert "aoife.brennan@northfielddata.com" not in repr(identity.value)
+
+    def test_a_contact_with_no_identifier_is_rejected_not_synthesised(self) -> None:
+        """⛔ **The one rejection this attribute exists for.**
+
+        Minting a key here would put a *platform* invention behind a
+        *provider*'s field name — and `people` would then join two strangers on
+        it with no way to tell that it had.
+        """
+        outcome = self._with(
+            [{"full_name": "Aoife Brennan", "title": "Chief Information Officer"}]
+        )
+
+        assert not any(c.attribute is ClaimAttribute.PERSON_IDENTITY for c in outcome.claims)
+        assert any(
+            r.reason is RejectionReason.MISSING_REQUIRED_FIELD and "person_id" in r.detail
+            for r in outcome.rejections
+        )
+
+    def test_a_roster_entry_for_another_employer_is_rejected(self) -> None:
+        """**The join key is checked, not assumed.**
+
+        A contact provider keys people by employer. A roster entry naming a
+        different company would attach somebody to an account they have never
+        worked at — the one error on this screen a seller would act on and
+        could not detect.
+        """
+        outcome = self._with(
+            [
+                {
+                    "person_id": "p1",
+                    "full_name": "Aoife Brennan",
+                    "title": "Chief Information Officer",
+                    "company_domain": "porterfieldhealth.com",
+                }
+            ]
+        )
+
+        assert not any(c.attribute is ClaimAttribute.PERSON_IDENTITY for c in outcome.claims)
+        assert any(
+            r.reason is RejectionReason.UNPARSEABLE_VALUE and "another employer" in r.detail
+            for r in outcome.rejections
+        )
+
+    def test_one_bad_contact_does_not_discard_the_roster(self) -> None:
+        """A rejection is per contact. Dropping the whole roster because one
+        entry was malformed would lose evidence that arrived correctly."""
+        outcome = self._with(
+            [
+                {"full_name": "No Identifier", "title": "VP Data Platform"},
+                {
+                    "person_id": "p2",
+                    "full_name": "Cormac Dwyer",
+                    "title": "VP Data Platform",
+                    "seniority": "vp",
+                },
+            ]
+        )
+
+        identities = [
+            c for c in outcome.claims if c.attribute is ClaimAttribute.PERSON_IDENTITY
+        ]
+        assert len(identities) == 1
+        assert len(outcome.rejections) == 1

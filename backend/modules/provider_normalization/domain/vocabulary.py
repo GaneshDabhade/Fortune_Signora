@@ -54,6 +54,28 @@ class ClaimAttribute(StrEnum):
     HEADCOUNT_CHANGE = "headcount_change"
     OPEN_ROLES = "open_roles"
     ROLE_CHANGE = "role_change"
+    PERSON_IDENTITY = "person_identity"
+    """**Who holds a role, as opposed to that a role changed hands.**
+
+    ⚠️ **The one attribute added by an approved task rather than an RFC**, and
+    it is named here so nobody has to reconstruct why. `TASK-429` carries the
+    provider contract Lane C prepared and the product owner ruled at `D-233`;
+    the module docstring's *"RFC required to extend"* asks for a decision taken
+    outside a coding session, and this is one.
+
+    ⛔ **It is not `ROLE_CHANGE` with a name bolted on.** A role change is an
+    **event** — somebody moved, on a date, in a direction — and this is a
+    **snapshot**: the provider's current roster, restated in full on every
+    sync. Folding them together would make a re-sync look like thirty-six
+    people arriving.
+
+    **Why the platform needed it.** `people` mints a new subject on every
+    arrival and says so in its own docstring, because it holds no identifier
+    to match one against — so *"where else has this person worked"* returns one
+    affiliation in almost every case. **That is the defect this attribute
+    supplies the input for**, and it is `person_ref` that closes it, not the
+    name.
+    """
 
     # --- behavioural
     INTENT_TOPIC_SURGE = "intent_topic_surge"
@@ -81,6 +103,7 @@ _ATTRIBUTE_DOMAINS: Final[dict[ClaimAttribute, ClaimDomain]] = {
     ClaimAttribute.HEADCOUNT_CHANGE: ClaimDomain.WORKFORCE,
     ClaimAttribute.OPEN_ROLES: ClaimDomain.WORKFORCE,
     ClaimAttribute.ROLE_CHANGE: ClaimDomain.WORKFORCE,
+    ClaimAttribute.PERSON_IDENTITY: ClaimDomain.WORKFORCE,
     ClaimAttribute.INTENT_TOPIC_SURGE: ClaimDomain.BEHAVIOURAL,
 }
 
@@ -148,6 +171,46 @@ class RoleChangeValue:
 
 
 @dataclass(frozen=True, slots=True)
+class PersonIdentityValue:
+    """One person a contact provider says holds a role at this company.
+
+    ### `person_ref` is the field that matters, and it is not the name
+
+    **Provider-stable and opaque.** It is what lets `people` recognise a second
+    arrival as the same subject instead of minting a stranger — the duplicate
+    -person defect `RecordRoleChange.arrived` documents rather than fixes.
+    ⛔ **Nothing may parse it.** It is a provider's key, not a description, and
+    a consumer that read a company out of it would be depending on a format the
+    vendor is free to change.
+
+    ⚠️ **A name is carried because the provider supplies one, not because this
+    layer decided a name was needed.** Normalization's whole rule is to carry a
+    vendor's assertion into canonical vocabulary without interpreting it —
+    ⛔ **and carrying it here does not oblige any consumer to store it.**
+    `people` is anonymous by specification (`C-221`), and what it needs from
+    this value is `person_ref`.
+
+    ⛔ **No stance, no influence, no seat, no rank.** Those are the fields the
+    neighbouring committee model warns are *one plausible field away* from
+    turning an identity into a scoring input — and a provider claiming one
+    would be a vendor deciding a customer's buying committee.
+
+    `last_seen` is **when the provider last observed them in this role**, and
+    an old one is not a departure. A departure is a `ROLE_CHANGE` with a
+    direction, from a provider that watched it happen; inferring one from a
+    stale timestamp would manufacture an event out of a vendor's refresh
+    schedule.
+    """
+
+    person_ref: str
+    full_name: str
+    title: str
+    seniority: str
+    first_seen: date | None = None
+    last_seen: date | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class IntentSurgeValue:
     """One week of one topic. Never a rollup.
 
@@ -180,6 +243,7 @@ ATTRIBUTE_VALUE_TYPES: Final[dict[ClaimAttribute, tuple[type, ...]]] = {
     ClaimAttribute.HEADCOUNT_CHANGE: (int,),
     ClaimAttribute.OPEN_ROLES: (int,),
     ClaimAttribute.ROLE_CHANGE: (RoleChangeValue,),
+    ClaimAttribute.PERSON_IDENTITY: (PersonIdentityValue,),
     ClaimAttribute.INTENT_TOPIC_SURGE: (IntentSurgeValue,),
 }
 
@@ -191,6 +255,7 @@ ClaimValue = (
     | FundingValue
     | AcquisitionValue
     | RoleChangeValue
+    | PersonIdentityValue
     | IntentSurgeValue
 )
 
