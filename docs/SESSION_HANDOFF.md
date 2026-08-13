@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 222 — promoted `12625ab9`, 2026-08-13
+>
+> **`main` = `12625ab9` = the certified commit.** Two commits, Lane A · migration head **`0052`** · `pytest` **4505** · coverage **95.10%** · **406** Security Invariants · mypy strict over **875** files. **DR passed. Reversibility proven base ↔ `0052`.** ✅ **First attempt, no aborts.**
+>
+> ### 🔴 The invariant count, and a correction that landed on QE's own sentence
+>
+> **Lane A retracted their own claim** that cycle 221's 403 → 406 meant *three tables being checked*. ✅ **QE verified the retraction rather than accepting it**, and **cycle 222 demonstrates it: a third table was added and the count stayed at 406.**
+>
+> ⛔ **QE's cycle 221 handoff said *"QE verified that rather than taking it"* — and the verification covered the REGISTRATION only.** ⚠️ **One check was presented as covering two claims.** **Corrected in place, dated, above.**
+>
+> ⚡ **The transferable part is Lane A's tell: the count not moving when it should have.** **Same instrument as the 654 errors that were all connection failures — a number behaving in a way the story cannot explain.**
+>
+> ### ✅ Three design decisions fire-tested by the lane, each to an exact count
+>
+> **`200` on create, not `201`** — typing an existing name **selects** that tag, so a `201` would be a lie on the second press. **`AccountTagError`'s own error-map row** — without it a duplicate label reported `catalog_refused`, **a document the caller was not editing**; **exactly two red.** **`changed` nullable with the null load-bearing** — `None` is *not applied yet*, `[]` is *applied and everyone already had it*; ⛔ **a caller reading *nothing to reverse* as *never applied* would offer undo on a finished batch**; **exactly three red.**
+>
+> ### ⛔ [C-1504](LANE_COORDINATION.md) — a premise that expired
+>
+> `action_batch/public/` publishes **read-only** and says why: *"a port that could write before the domain exists would let a consumer commit to a lifecycle nobody has built."* ⚡ **That reasoning was right and its premise has expired** — slices 4 and 5 shipped, `TASK-465` is `PROMOTED`. **The docstring still reads *"nothing implements this yet."*** ✅ **Recorded rather than edited, and raised rather than taken — by the lane that owns BOTH modules and could have taken the edge quietly.**
+
 > ## Cycle 221 — promoted `a5b3b8b1`, 2026-08-13
 >
 > **`main` = `a5b3b8b1` = the certified commit.** Thirteen commits, both lanes · migration head **`0051`** · coverage **95.08%** · **406** Security Invariants · mypy strict over 872 files. **DR passed. Reversibility proven base ↔ `0051` on a disposable database.** ✅ **First attempt, no aborts.**
@@ -10,7 +30,11 @@
 >
 > ### ✅ Security Invariants 403 → 406
 >
-> **`account_tag` and `account_tag_assignment` being CHECKED rather than merely listed**, and both registered in `tenancy_policy.py` **in the same change that creates them** (§8). **QE verified that rather than taking it.**
+> **Both registered in `tenancy_policy.py` in the same change that creates them** (§8). ✅ **QE verified THAT — it grepped both names.**
+>
+> ⚠️ **CORRECTED 2026-08-13, cycle 222, by Lane A retracting their own claim.** ⛔ **The sentence above originally read *"the three new ones are these tables being CHECKED rather than merely listed"*, and the arithmetic was wrong.** 📁 **Measured**: all three tables are in `TENANT_OWNED_TABLES`, and **only `account_tag_assignment` is in `IMMUTABLE_TENANT_TABLES`** — the parametrized one — **with an explicit comment that `account_tag` is deliberately not there.** ⚡ **The +3 is one table entering one list.**
+>
+> ⛔ **And QE's *"verified that rather than taking it"* covered the registration only, not the arithmetic.** **One check was presented as covering two claims.** ✅ **Demonstrated in cycle 222: a third table was added and the count stayed at 406.** **The substance holds** — removing `account_tag_batch` from `TENANT_OWNED_TABLES` fails `test_every_table_is_classified`.
 >
 > ### 🔴 Two findings from Lane A that a green run would have hidden
 >
@@ -334,7 +358,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-13 · **`main` at `a5b3b8b1`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-13 · **`main` at `12625ab9`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
