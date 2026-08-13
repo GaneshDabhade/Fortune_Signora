@@ -1,6 +1,20 @@
 'use client';
 
+import type { ListedAccount } from '@/lib/api/types';
 import { AccountTags, tagsFor } from '@/components/accounts/account-tags';
+import { BulkBar } from '@/components/accounts/bulk-bar';
+import type { Selection } from '@/lib/accounts/selection';
+import {
+  NOTHING_SELECTED,
+  headerState,
+  isSelected,
+  offersSelectAll,
+  resolvedIds,
+  selectAllMatching,
+  selectOnScreen,
+  selectedCount,
+  toggle,
+} from '@/lib/accounts/selection';
 import {
   useAccountTagAssignments,
   useAccountTags,
@@ -126,6 +140,31 @@ export default function CompaniesPage() {
   const vocabulary = useAccountTags(columns.includes('tags') ? workspaceId : null);
   const assignments = useAccountTagAssignments(workspaceId, taggable);
 
+  const [selection, setSelection] = useState<Selection>(NOTHING_SELECTED);
+  const onScreen = useMemo(() => shown.map((r) => r.account.account_id), [shown]);
+  /**
+   * 🔴 **The design's *"Select all 312"* is NOT offered, and the reason is that
+   * 312 has no source** — [TASK-466](../../../docs/BACKLOG.md).
+   *
+   * 📁 `CursorPage` publishes `items`, `next_cursor` and `has_more` and **no
+   * total** — measured, and deliberate: 📁 the accounts read's own words are
+   * that *"the graph is written continuously"*, which is why it is keyset
+   * rather than offset. ⛔ **A count over a set that changes between two
+   * requests is a number that is wrong by the time it renders.**
+   *
+   * ⚠️ **Using the loaded count instead would be the same word in two
+   * meanings**: the customer reads *"Select all 312"* and gets the 50 in hand.
+   * 📁 [`table.ts`](../../../lib/accounts/table.ts) already names that class —
+   * *"an export named 'all companies' that contained 50 would be the worst
+   * kind of wrong: silently plausible."*
+   *
+   * ✅ **So the control is absent rather than approximate**, and the header
+   * checkbox still selects everything on screen. **Recorded here and raised as
+   * [C-1505](../../../docs/LANE_COORDINATION.md)** rather than left as a
+   * missing button somebody re-derives.
+   */
+  const totalMatching = onScreen.length;
+
   if (workspaceId === null) return <NoWorkspace />;
 
   const hasNext = page + 1 < pages.length || accounts.hasNextPage === true;
@@ -138,15 +177,39 @@ export default function CompaniesPage() {
     void accounts.fetchNextPage().then(() => setPage((was) => was + 1));
   };
 
-  const exportCsv = () => {
-    const csv = toCsv(shown, shownColumns);
+  const download = (rows: readonly ListedAccount[], name: string) => {
+    const csv = toCsv(rows, shownColumns);
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'companies.csv';
+    link.download = name;
     link.click();
     URL.revokeObjectURL(url);
   };
+
+  const exportCsv = () => download(shown, 'companies.csv');
+
+  /**
+   * ⛔ **`undefined` when the selection cannot be enumerated**, which is what
+   * removes the control rather than letting it lie.
+   *
+   * 📁 *"Select all 312"* on a table holding 50 names a set the SERVER
+   * resolves. ⚡ **Exporting the 50 would produce a file the customer believes
+   * holds 312** — [`table.ts`](../../lib/accounts/table.ts)'s own words:
+   * *"the worst kind of wrong — silently plausible."* ⚠️ **Resolving it needs
+   * a server-side export, which no endpoint offers**, so the honest answer is
+   * no button.
+   */
+  const exportSelection = (() => {
+    const ids = resolvedIds(selection);
+    if (ids === null) return undefined;
+    const wanted = new Set(ids);
+    return () =>
+      download(
+        loadedAll.filter((row) => wanted.has(row.account.account_id)),
+        'selected-companies.csv',
+      );
+  })();
 
   return (
     <>
@@ -220,9 +283,45 @@ export default function CompaniesPage() {
           ) : mode === 'cards' ? (
             <CardGrid rows={shown} density={density} />
           ) : (
+            <>
+            <BulkBar
+              count={selectedCount(selection)}
+              onSelectAll={
+                offersSelectAll(selection, onScreen, totalMatching)
+                  ? () => setSelection(selectAllMatching(totalMatching))
+                  : undefined
+              }
+              selectAllCount={
+                offersSelectAll(selection, onScreen, totalMatching) ? totalMatching : undefined
+              }
+              onClear={() => setSelection(NOTHING_SELECTED)}
+              onExport={exportSelection}
+            />
             <Table>
               <THead>
                 <TR>
+                  <TH scope="col" className="w-8">
+                    <input
+                      type="checkbox"
+                      aria-label="Select the companies on this page"
+                      checked={headerState(selection, onScreen) === 'all'}
+                      /* ⚡ **Mixed is a real third state.** A box that showed
+                         ticked while half the rows were unselected would make
+                         *Select all* look like a no-op. */
+                      ref={(box) => {
+                        if (box !== null) {
+                          box.indeterminate = headerState(selection, onScreen) === 'some';
+                        }
+                      }}
+                      onChange={() =>
+                        setSelection(
+                          headerState(selection, onScreen) === 'all'
+                            ? NOTHING_SELECTED
+                            : selectOnScreen(onScreen),
+                        )
+                      }
+                    />
+                  </TH>
                   {shownColumns.map((column) => (
                     <TH key={column.id} scope="col">
                       {column.label}
@@ -233,6 +332,16 @@ export default function CompaniesPage() {
               <TBody>
                 {shown.map((row) => (
                   <TR key={row.account.account_id}>
+                    <TD className={ROW_PADDING[density]}>
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${row.account.name ?? row.account.account_id}`}
+                        checked={isSelected(selection, row.account.account_id)}
+                        onChange={() =>
+                          setSelection(toggle(selection, row.account.account_id, onScreen))
+                        }
+                      />
+                    </TD>
                     {shownColumns.map((column) => (
                       <TD key={column.id} className={ROW_PADDING[density]}>
                         {column.id === 'company' ? (
@@ -267,6 +376,7 @@ export default function CompaniesPage() {
                 ))}
               </TBody>
             </Table>
+            </>
           )}
 
           <nav

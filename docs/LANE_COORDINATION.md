@@ -517,6 +517,47 @@ databaseUrl: required(
 
 ---
 
+## C-1505 · [TASK-466](BACKLOG.md) — *"Select all 312"* names a number no endpoint publishes
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-13, on `tsc` refusing `pages[0].total` — ⚡ **the type found it, not a reading of the design** |
+| **Owner** | **Design Authority**, with an architecture question underneath it |
+| **Blocks** | ⛔ **One control on the Companies bulk bar.** ✅ **Selection, the header checkbox and Export all ship** |
+| **Status** | 🔵 **`OPEN`** |
+
+### 🔴 The gap, measured
+
+📁 **`Fortune Signora Companies.dc.html` draws two counts**: *"8,412 total · 312 in view"* and, in the bulk bar, ***"41 selected of 312 in view · Select all 312"***.
+
+⛔ **`CursorPage` publishes `items`, `next_cursor` and `has_more`. There is no total, anywhere** — and it is deliberate rather than an omission. 📁 The accounts read's own words:
+
+> *"The graph is written continuously: a resolution binds a new provider identity and an account appears, so an offset page would skip or repeat rows between two requests and a customer paging the list would silently miss accounts."*
+
+⚡ **Keyset pagination and a live total are in tension by construction.** A count over a set that changes between two requests is wrong by the time it renders.
+
+### ⛔ Why this lane did not approximate it
+
+⚠️ **The loaded count was available and using it would have been the same word in two meanings**: the customer reads *"Select all 312"* and gets the 50 in hand. 📁 [`table.ts`](../../frontend/lib/accounts/table.ts) already names that class in its own comment — *"an export named 'all companies' that contained 50 would be the worst kind of wrong: **silently plausible**."*
+
+✅ **So the control is absent rather than approximate**, and the header checkbox still selects everything on screen.
+
+### ⚠️ And the control needs more than a number
+
+🔴 **Even with a total, *"Select all 312"* selects a set the client cannot enumerate** — which is why [`selection.ts`](../../frontend/lib/accounts/selection.ts) returns `null` for its ids rather than the rows in hand. ⛔ **Every action on it needs a server-side counterpart that takes the FILTER rather than a list**: export, tag, assign. **None exists.**
+
+### ✅ Recommended, and stated as input rather than authority
+
+**Two questions, and the first is cheap:**
+
+**① Does the design need an exact total, or a bounded one?** ⚡ *"312 in view"* beside a keyset list could honestly be *"312+"* or *"about 312"*, and 📁 the design's own header already says *"8,412 total"* — **a workspace-level count that changes far more slowly than a filtered one.**
+
+**② If *Select all matching* is genuinely wanted, it is a filter-taking API on every action**, not a count. ⛔ **That is architecture rather than a screen**, and it is why this is raised rather than sized.
+
+⛔ **Not decided here**, and ⚠️ **nothing about the bar's other controls waits on it.**
+
+---
+
 ## C-1504 · [TASK-466](BACKLOG.md) — the Action Batch publishes no way to PROPOSE one, and its first consumer has to
 
 | | |
