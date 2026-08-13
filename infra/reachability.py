@@ -59,6 +59,39 @@ ENTERED_FROM_OUTSIDE: Final = {
     # `/join/{workspace_id}` was declared here by Lane A on QE's explicit
     # delegation (B-123). Outside TASK-499's named budget and announced in the
     # commit rather than assumed.
+    # ══ Entry-gate destinations — TASK-1423 ═════════════════════════════════
+    #
+    # **Every one of these is reached by `resolveEntry` REFUSING, and by
+    # nothing else.** The engine returns a route for eleven terminal reasons
+    # and until this row not one of those routes existed, so every refusal
+    # resolved to a 404 — a person told nothing about why, on the one screen
+    # where the product is refusing them.
+    #
+    # **They cannot have an in-product entrance and that is the point.** A link
+    # to "your account is suspended" would be a link somebody clicks while
+    # their account works. The entrance is a redirect from the gate that
+    # failed, which is as outside as `/verify`'s email is.
+    #
+    # **Declared by Lane A on the same delegation as `/join/{workspaceId}`
+    # below** (B-123): *"the lane that knows why a route has no entrance is the
+    # lane that built it."* Announced in the commit rather than assumed.
+    "/account/deleted": (
+        "reached by the entry engine when an account is deleted — rule 01 in "
+        "`lib/entry/rules.ts`; there is no in-product link to your own deletion"
+    ),
+    "/account/suspended": (
+        "reached by the entry engine when an account is suspended — rule 02; "
+        "nobody navigates to their own suspension"
+    ),
+    "/auth/step-up": (
+        "reached by the entry engine when a workspace policy demands a second "
+        "check — rule 05; the challenge itself is TASK-1410's, and this row "
+        "renders the gate so that capability has somewhere to land"
+    ),
+    "/workspaces/none": (
+        "reached by the entry engine when somebody belongs to no organization "
+        "— rule 10; by definition there is no organization to link from"
+    ),
     "/signin": "the front door — typed, bookmarked, or redirected to by the shell",
     "/register": "linked from marketing and from /signin",
     "/verify": "reached from the verification email, by design",

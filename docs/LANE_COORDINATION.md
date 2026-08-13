@@ -517,6 +517,45 @@ databaseUrl: required(
 
 ---
 
+## C-1501 · [TASK-1423](BACKLOG.md) — the entry engine sends a suspended workspace to a PAGE and the design gives it a BANNER
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-13, reading `Workspace Lifecycle` against `lib/entry/rules.ts` before building |
+| **Owner** | **Design Authority** — ⚡ **a contradiction between two authorities, not a gap** |
+| **Blocks** | ⛔ **Two of [TASK-1423](BACKLOG.md)'s eleven screens — rules 15 and 16 ONLY.** ✅ **The other nine are unaffected and this lane is building them** |
+| **Status** | 🔵 **`OPEN`** |
+
+### 🔴 The contradiction, both sides quoted
+
+📁 **[`lib/entry/rules.ts`](../frontend/lib/entry/rules.ts) rules 15 and 16** route to **dedicated destinations**:
+
+```
+15  WS_SUSPENDED   route: (s, i) => `/w/${…}/suspended`
+16  WS_ARCHIVED    route: (s, i) => `/w/${…}/archived`
+```
+
+📁 **`Fortune Signora Workspace Lifecycle.dc.html` gives both a BANNER over the working product**, and says so in the same row that grants access:
+
+| State | Access | Banner |
+|---|---|---|
+| **`SUSPENDED`** | ⚡ **Read-only** — *"read everything, export everything. No writes, no sends, no agent runs."* | **"Persistent, no dismiss"** |
+| **`ARCHIVED`** | ⚡ **Read-only** — *"identical mechanic to SUSPENDED, different cause and different resolver."* | **"Persistent, no dismiss"** |
+
+⛔ **And the document distinguishes the two shapes explicitly elsewhere in the same table** — `PROVISIONING` is *"WL-02 page"* and `DELETING` is *"WL-08 page"*. ⚡ **So *page* and *banner* are terms it uses deliberately, and it chose banner for these two.**
+
+### ⚠️ Why it matters more than a layout choice
+
+🔴 **A page REMOVES the capability the design grants.** 📁 SUSPENDED says *"read everything, export everything"* — ⛔ **and a redirect to `/w/{id}/suspended` means a customer whose payment failed cannot reach their data at all**, which is the opposite of what the state is for. ⚡ **The worst moment to lock somebody out of their own records is the moment they are being asked to pay.**
+
+### ✅ Recommended, and stated as input rather than authority
+
+**The design.** 📁 [D-154](DECISION_REGISTER.md) — *begin from the design rather than iterate from it* — **and `rules.ts` predates this document**: [C-1405](#c-1405) commissioned it precisely because it did not exist when the engine was written.
+
+⚠️ **Not decided here**, because it changes an engine contract eleven rules share and 📁 [§21](../CLAUDE.md) says an ambiguous design is a ruling rather than an interpretation.
+
+---
+
 ## C-1500 · [TASK-1476](BACKLOG.md) — does Signora STORE what a rep writes, or only observe? Eight of Account 360's sections turn on it
 
 > ✅ **RENUMBERED FROM `C-210` — product owner, 2026-08-12, allocating `C-1500`+ to Lane A.** ⛔ **`C-210` remains Lane B's canonical item** — *"will Signora hold personal data?"*, line 48, `OPEN` and unruled.
