@@ -917,6 +917,39 @@ async def get_preferences(context: CurrentWorkspace) -> PreferencesResponse:
     return PreferencesResponse.from_domain(prefs)
 
 
+@router.post(
+    "/workspaces/{workspace_id}/preferences/first-run-dismissal",
+    response_model=PreferencesResponse,
+    summary="This person has closed the first-run overlay",
+)
+async def dismiss_first_run(context: CurrentWorkspace) -> PreferencesResponse:
+    """⚡ **An event, not a setting** — 📁 `Authenticated Entry` rule 20's
+    overlay is *"dismissible forever"*, and **nothing in the design un-dismisses
+    it.**
+
+    ⛔ **Its own path rather than a field on `PATCH /preferences`.** That
+    endpoint is the profile panel's, where every field has a control a person
+    can move back; **a dismissal in that vocabulary would read as a toggle**,
+    and there is none.
+
+    ⚠️ **Idempotent, and the FIRST moment wins.** A double click, a retry or a
+    second device answers the same and writes nothing the second time — the
+    domain refuses to move a timestamp that already exists.
+
+    ⛔ **No body, and there could not be one.** The only two facts are *who* and
+    *when*: the first is the caller's verified identity and the second is the
+    server's clock. **A client-supplied moment would let a browser decide when
+    somebody stopped being new.**
+    """
+    context.authorize(Resource.PREFERENCES, Action.UPDATE)
+    prefs = await build_use_cases(context.session).dismiss_first_run.execute(
+        context.workspace_id,
+        context.principal.user_id,
+        now=datetime.now(UTC),
+    )
+    return PreferencesResponse.from_domain(prefs)
+
+
 @router.patch(
     "/workspaces/{workspace_id}/preferences",
     response_model=PreferencesResponse,

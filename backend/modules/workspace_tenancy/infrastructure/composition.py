@@ -39,6 +39,7 @@ from modules.workspace_tenancy.application.use_cases.onboarding import (
 )
 from modules.workspace_tenancy.application.use_cases.preferences import (
     ChangePreferencesUseCase,
+    DismissFirstRunUseCase,
     GetPreferencesUseCase,
 )
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMember
@@ -101,6 +102,7 @@ class WorkspaceTenancyUseCases:
     skip_onboarding: SkipOnboardingUseCase
     get_preferences: GetPreferencesUseCase
     change_preferences: ChangePreferencesUseCase
+    dismiss_first_run: DismissFirstRunUseCase
 
 
 def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
@@ -197,6 +199,7 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         skip_onboarding=SkipOnboardingUseCase(runs=onboarding_repository),
         get_preferences=GetPreferencesUseCase(preferences=preferences_repository),
         change_preferences=ChangePreferencesUseCase(preferences=preferences_repository),
+        dismiss_first_run=DismissFirstRunUseCase(preferences=preferences_repository),
     )
 
 

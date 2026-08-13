@@ -14,6 +14,7 @@ screen would draw.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from datetime import datetime
 from enum import Enum
 from typing import Literal
 from uuid import UUID
@@ -119,3 +120,35 @@ class ChangePreferencesUseCase:
         )
         await self._preferences.save(updated)
         return updated
+
+
+class DismissFirstRunUseCase:
+    """Record that this person closed the first-run overlay.
+
+    ⚡ **A use case rather than a `ChangePreferences` field**, and the
+    distinction is the design's. 📁 Rule 20's overlay is *"dismissible
+    forever"* — ⛔ **there is no control anywhere that un-dismisses it**, so it
+    is an event somebody caused rather than a setting they can see and change.
+    **Routing it through the partial-update endpoint would put it in the
+    profile panel's vocabulary**, where a reader would reasonably expect a
+    toggle back.
+
+    ⚠️ **`now` is a parameter, matching {@link RecordEntryUseCase} on the same
+    table** — 📁 *"the clock is injected, everywhere"*, and a use case reading
+    the wall clock itself is the untestable shape this module already refuses.
+    """
+
+    def __init__(self, *, preferences: PersonPreferencesRepository) -> None:
+        self._preferences = preferences
+
+    async def execute(
+        self, workspace_id: UUID, person_id: UUID, *, now: datetime
+    ) -> PersonPreferences:
+        current = await self._preferences.get(workspace_id, person_id)
+        dismissed = current.dismissed_first_run(now)
+        # ⛔ **Only when something changed.** ⚡ A second dismissal must not
+        # write a row, for the reason `left()` records: a write that stores no
+        # new fact is a row created for nothing.
+        if dismissed is not current:
+            await self._preferences.save(dismissed)
+        return dismissed
