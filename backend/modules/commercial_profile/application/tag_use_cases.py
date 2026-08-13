@@ -1,6 +1,6 @@
 """What a customer does with their own labels — [TASK-466](../../../../docs/BACKLOG.md).
 
-**Four use cases, and the third is the one this row exists for.**
+**Five use cases, and `ApplyTagUseCase` is the one this row exists for.**
 
 ⚡ **The port is a Protocol declared here**, in the application layer that
 consumes it, rather than in `infrastructure/` — 📁 [§6](../../../../CLAUDE.md):
@@ -25,7 +25,16 @@ from modules.commercial_profile.domain.account_tag import (
 
 
 class AccountTagRepository(Protocol):
-    """What persistence has to answer. **Six questions and no more.**"""
+    """What persistence has to answer. **Six questions and no more.**
+
+    ⛔ **`remove` is deliberately absent, and it was written and then cut.**
+    [TASK-466](../../../../docs/BACKLOG.md) draws no delete control — the
+    design's bulk bar offers *Add tag* and the table renders chips — **so a
+    `remove` here would have been a method with no caller**, which is the
+    class this lane has now found eight times. ⚠️ **Deleting a tag also
+    cascades every assignment**, so the first caller should arrive with a
+    confirmation designed for it rather than inherit one nobody specified.
+    """
 
     async def vocabulary(self, workspace_id: UUID) -> TagVocabulary: ...
 
@@ -33,7 +42,12 @@ class AccountTagRepository(Protocol):
 
     async def rename(self, workspace_id: UUID, tag: AccountTag, *, actor_id: UUID) -> None: ...
 
-    async def remove(self, workspace_id: UUID, tag_id: UUID) -> None: ...
+    async def tags_for(
+        self, workspace_id: UUID, accounts: tuple[UUID, ...]
+    ) -> dict[UUID, tuple[UUID, ...]]:
+        """⚡ **Which tags each of these accounts wears** — the Companies
+        table's Tags column, one query for a page of rows."""
+        ...
 
     async def accounts_with(
         self, workspace_id: UUID, tag_id: UUID, *, among: tuple[UUID, ...]
@@ -181,3 +195,23 @@ class ReverseTagApplicationUseCase:
         if not restore:
             return
         await self._tags.unassign(workspace_id, application.tag_id, restore)
+
+
+class TagsForAccountsUseCase:
+    """Which tags a page of accounts wears.
+
+    ⚡ **The Companies table's Tags column, and the reason it is its own use
+    case rather than a field on the accounts list**: 📁 an account is
+    `knowledge_graph`'s entity and a tag is this module's, so folding one into
+    the other's response would be a cross-module dependency
+    ([§5](../../../../CLAUDE.md)) bought for a column. **The screen reads both
+    and joins them, which is the boundary working rather than an omission.**
+    """
+
+    def __init__(self, *, tags: AccountTagRepository) -> None:
+        self._tags = tags
+
+    async def execute(
+        self, workspace_id: UUID, accounts: tuple[UUID, ...]
+    ) -> dict[UUID, tuple[UUID, ...]]:
+        return await self._tags.tags_for(workspace_id, accounts)

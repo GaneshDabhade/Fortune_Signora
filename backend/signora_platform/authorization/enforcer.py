@@ -130,6 +130,23 @@ class Resource(StrEnum):
     #: *"a `Resource` entry without policy grants provides no runtime
     #: capability"* — so the grants live in `policy.csv` beside it.
     ACTION_BATCH = "action_batch"
+    #: ⚡ **[TASK-466](../../../docs/BACKLOG.md), against
+    #: [ADR-0411](../../../docs/architecture/adr/0411-customer-organized-account-metadata.md).**
+    #: 📁 [§20a](../../../CLAUDE.md) ruled at
+    #: [C-224](../../../docs/LANE_COORDINATION.md) that adding a member here is
+    #: a **declarative registration and never an authorization grant** — the
+    #: grants live in `policy.csv` beside it.
+    #:
+    #: ⚡ **Its own resource rather than a reuse of `ACCOUNT`.** ⛔ **Reading
+    #: what an account IS and labelling it are different grants**, and the
+    #: label is the one a customer is likely to want held more narrowly: a
+    #: tag is somebody's private opinion of a company —
+    #: *"Champion lost"*, *"Competitor"* — **written by a colleague and
+    #: visible to everybody who can see the account.** ⚠️ **`ACCOUNT` read is
+    #: granted to every member**, and folding the write in would have made
+    #: every reader an author, which is the same mistake `SIGNAL` records
+    #: avoiding one resource earlier.
+    ACCOUNT_TAG = "account_tag"
 
 
 class Action(StrEnum):

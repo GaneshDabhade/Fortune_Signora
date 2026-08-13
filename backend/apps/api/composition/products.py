@@ -34,6 +34,15 @@ from modules.commercial_profile.application.ports import (
 )
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.application.segment_queries import SegmentQueries
+from modules.commercial_profile.application.tag_use_cases import (
+    ApplyTagUseCase,
+    CreateTagUseCase,
+    RenameTagUseCase,
+    TagsForAccountsUseCase,
+)
+from modules.commercial_profile.infrastructure.tag_repository import (
+    SqlAccountTagRepository,
+)
 from modules.commercial_profile.infrastructure.composition import (
     build_buying_committees,
     build_catalogs,
@@ -154,3 +163,34 @@ def segment_queries(context: CurrentWorkspace) -> SegmentQueries:
 
 
 SegmentRead = Annotated[SegmentQueries, Depends(segment_queries)]
+
+
+def _tag_repository(context: CurrentWorkspace) -> SqlAccountTagRepository:
+    return SqlAccountTagRepository(context.session)
+
+
+def create_tag(context: CurrentWorkspace) -> CreateTagUseCase:
+    return CreateTagUseCase(tags=_tag_repository(context))
+
+
+def rename_tag(context: CurrentWorkspace) -> RenameTagUseCase:
+    return RenameTagUseCase(tags=_tag_repository(context))
+
+
+def apply_tag_to_accounts(context: CurrentWorkspace) -> ApplyTagUseCase:
+    return ApplyTagUseCase(tags=_tag_repository(context))
+
+
+def tags_for_accounts(context: CurrentWorkspace) -> TagsForAccountsUseCase:
+    return TagsForAccountsUseCase(tags=_tag_repository(context))
+
+
+def tag_vocabulary(context: CurrentWorkspace) -> SqlAccountTagRepository:
+    return _tag_repository(context)
+
+
+TagVocabularyRead = Annotated[SqlAccountTagRepository, Depends(tag_vocabulary)]
+TagCreate = Annotated[CreateTagUseCase, Depends(create_tag)]
+TagRename = Annotated[RenameTagUseCase, Depends(rename_tag)]
+TagApply = Annotated[ApplyTagUseCase, Depends(apply_tag_to_accounts)]
+TagsForAccounts = Annotated[TagsForAccountsUseCase, Depends(tags_for_accounts)]

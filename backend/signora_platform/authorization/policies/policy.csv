@@ -63,3 +63,7 @@ p, owner, *, action_batch, read
 p, member, *, action_batch, read
 p, owner, *, action_batch, update
 p, member, *, action_batch, update
+p, owner, *, account_tag, read
+p, member, *, account_tag, read
+p, owner, *, account_tag, update
+p, member, *, account_tag, update

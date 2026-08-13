@@ -25,6 +25,11 @@ from apps.api.composition.products import (
     IcpRead,
     IcpWrite,
     SegmentRead,
+    TagApply,
+    TagCreate,
+    TagRename,
+    TagsForAccounts,
+    TagVocabularyRead,
     TargetAccountsRead,
     TargetAccountsWrite,
 )
@@ -40,9 +45,20 @@ from modules.commercial_profile.application.declare_target_accounts import (
     DeclareTargetAccountsInput,
 )
 from modules.commercial_profile.application.publish import PublishProductCatalogInput
+from modules.commercial_profile.application.tag_use_cases import (
+    ApplyTagInput,
+    CreateTagInput,
+    RenameTagInput,
+)
 from modules.commercial_profile.interface.schemas import (
+    AccountTagApplicationResponse,
+    AccountTagAssignmentsResponse,
+    AccountTagResponse,
+    AccountTagVocabularyResponse,
+    ApplyAccountTagRequest,
     BuyingCommitteeResponse,
     CommercialFocusResponse,
+    CreateAccountTagRequest,
     DeclareBuyingCommitteeRequest,
     DeclareCompetitorsRequest,
     DeclaredCompetitorsResponse,
@@ -52,6 +68,7 @@ from modules.commercial_profile.interface.schemas import (
     IcpDeclarationResponse,
     ProductCatalogResponse,
     PublishProductCatalogRequest,
+    RenameAccountTagRequest,
     SegmentSummaryResponse,
     TargetAccountListResponse,
 )
@@ -481,4 +498,136 @@ async def list_segments(
             else None
         ),
         has_more=page.has_more,
+    )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/account-tags",
+    response_model=AccountTagVocabularyResponse,
+    summary="The labels this workspace uses on its accounts",
+)
+async def account_tags(
+    context: CurrentWorkspace, tags: TagVocabularyRead
+) -> AccountTagVocabularyResponse:
+    """The vocabulary, in name order.
+
+    **Never a 404 and never empty-as-an-error.** A workspace that has named no
+    tags has an empty vocabulary, which is a real answer — the screen renders
+    *Add tag* either way, and there is nothing here for a caller to branch on.
+    """
+    context.authorize(Resource.ACCOUNT_TAG, Action.READ)
+    return AccountTagVocabularyResponse.from_domain(
+        await tags.vocabulary(context.workspace_id)
+    )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/account-tags",
+    response_model=AccountTagResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Add a label, or select the one that already has that name",
+)
+async def create_account_tag(
+    context: CurrentWorkspace, create: TagCreate, body: CreateAccountTagRequest
+) -> AccountTagResponse:
+    """**200, not 201, and deliberately.**
+
+    Typing a name the workspace already uses selects that tag rather than
+    failing — which is what makes the design's *Add tag* control safe to press
+    twice. A `201` would be a lie on the second press, and a `409` would make a
+    customer fix something that is not wrong.
+    """
+    context.authorize(Resource.ACCOUNT_TAG, Action.UPDATE)
+    tag = await create.execute(
+        CreateTagInput(
+            workspace_id=context.workspace_id,
+            # Taken from the verified caller, never from the request.
+            actor_id=context.principal.user_id,
+            name=body.name,
+            tone=body.tone,
+        )
+    )
+    return AccountTagResponse.from_domain(tag)
+
+
+@router.patch(
+    "/workspaces/{workspace_id}/account-tags/{tag_id}",
+    response_model=AccountTagResponse,
+    summary="Correct a label",
+)
+async def rename_account_tag(
+    context: CurrentWorkspace,
+    rename: TagRename,
+    tag_id: UUID,
+    body: RenameAccountTagRequest,
+) -> AccountTagResponse:
+    """**Every account keeps the tag.** The id does not move, which is the
+    whole reason a tag has one: without it, renaming would be indistinguishable
+    from deleting one label and creating another."""
+    context.authorize(Resource.ACCOUNT_TAG, Action.UPDATE)
+    tag = await rename.execute(
+        RenameTagInput(
+            workspace_id=context.workspace_id,
+            actor_id=context.principal.user_id,
+            tag_id=tag_id,
+            name=body.name,
+            tone=body.tone,
+        )
+    )
+    return AccountTagResponse.from_domain(tag)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/account-tags/{tag_id}/accounts",
+    response_model=AccountTagApplicationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Put a label on several accounts at once",
+)
+async def apply_account_tag(
+    context: CurrentWorkspace,
+    apply: TagApply,
+    tag_id: UUID,
+    body: ApplyAccountTagRequest,
+) -> AccountTagApplicationResponse:
+    """**The response reports what CHANGED, never what was asked.**
+
+    A batch over forty-one accounts where three already carried the tag applied
+    thirty-eight changes, and the confirmation says so. **The reversal operates
+    on those thirty-eight and no others** — the three were tagged before this
+    batch and taking the batch back must leave them alone.
+    """
+    context.authorize(Resource.ACCOUNT_TAG, Action.UPDATE)
+    application = await apply.execute(
+        ApplyTagInput(
+            workspace_id=context.workspace_id,
+            actor_id=context.principal.user_id,
+            tag_id=tag_id,
+            accounts=tuple(body.accounts),
+        )
+    )
+    return AccountTagApplicationResponse.from_domain(application)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/account-tags/assignments",
+    response_model=AccountTagAssignmentsResponse,
+    summary="Which labels these accounts wear",
+)
+async def account_tag_assignments(
+    context: CurrentWorkspace, tags: TagsForAccounts, body: ApplyAccountTagRequest
+) -> AccountTagAssignmentsResponse:
+    """The Companies table's Tags column, for one page of rows.
+
+    **A POST because the account list is the query**, and a table showing forty
+    rows would otherwise put forty ids in a URL. It reads and writes nothing.
+
+    **An account with no tags is absent rather than present-and-empty** — the
+    screen renders nothing for it either way, and the shorter answer cannot be
+    misread as *"we looked and found none"* versus *"we did not look"*, because
+    the request names exactly which accounts were asked about.
+    """
+    context.authorize(Resource.ACCOUNT_TAG, Action.READ)
+    held = await tags.execute(context.workspace_id, tuple(body.accounts))
+    return AccountTagAssignmentsResponse(
+        assignments={account: list(tag_ids) for account, tag_ids in held.items()}
     )

@@ -13,6 +13,13 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from modules.commercial_profile.application.segment_queries import SegmentSummary
+from modules.commercial_profile.domain.account_tag import (
+    MAX_TAG_NAME,
+    AccountTag,
+    TagApplication,
+    TagTone,
+    TagVocabulary,
+)
 from modules.commercial_profile.domain.catalog import (
     MAX_DESCRIPTION,
     MAX_NAME,
@@ -853,3 +860,115 @@ class SegmentSummaryResponse(BaseModel):
             last_changed_at=summary.last_changed_at,
             last_changed_by=summary.last_changed_by,
         )
+
+
+class AccountTagResponse(BaseModel):
+    """One label in the workspace's vocabulary."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    name: str = Field(description="**As the customer typed it**, never the folded form.")
+    tone: str = Field(
+        description=(
+            "The design's chip token — `risk`, `warn`, `pos` or `neutral`. **`ai` is not "
+            "among them**: that tone is reserved for what Signora itself inferred, and a "
+            "customer's own label must not be able to wear it."
+        )
+    )
+
+    @classmethod
+    def from_domain(cls, tag: AccountTag) -> AccountTagResponse:
+        return cls(id=tag.id, name=tag.name, tone=tag.tone.value)
+
+
+class AccountTagVocabularyResponse(BaseModel):
+    """Every tag the workspace has, in name order."""
+
+    model_config = ConfigDict(frozen=True)
+
+    tags: list[AccountTagResponse]
+
+    @classmethod
+    def from_domain(cls, vocabulary: TagVocabulary) -> AccountTagVocabularyResponse:
+        return cls(tags=[AccountTagResponse.from_domain(tag) for tag in vocabulary.tags])
+
+
+class CreateAccountTagRequest(BaseModel):
+    """Add a label, or select the one that already answers to that name."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str = Field(min_length=1, max_length=MAX_TAG_NAME)
+    tone: TagTone = Field(
+        description=(
+            "**Chosen by the customer.** Nothing in the platform can derive it: "
+            '"Champion lost" is a risk and "Expansion" is positive because a person '
+            "judged them so."
+        )
+    )
+
+
+class RenameAccountTagRequest(BaseModel):
+    """Correct a label. **Every account keeps the tag** — the id does not move."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    name: str = Field(min_length=1, max_length=MAX_TAG_NAME)
+    tone: TagTone
+
+
+class ApplyAccountTagRequest(BaseModel):
+    """Put one tag on several accounts at once."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    accounts: list[UUID] = Field(
+        min_length=1,
+        description=(
+            "**The accounts the customer selected.** Duplicates are tolerated and counted "
+            "once — a table that offered *Select all* twice must not report two changes "
+            "for one row, and must not try to reverse it twice."
+        ),
+    )
+
+
+class AccountTagApplicationResponse(BaseModel):
+    """What the batch actually did, account by account.
+
+    **`changed` is what a reversal operates on, and `unchanged` is what makes the
+    confirmation truthful** — *"38 tagged, 3 already had it"* rather than
+    *"41 tagged"*.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    tag_id: UUID
+    changed: list[UUID]
+    unchanged: list[UUID]
+    applied_count: int
+    total_count: int
+
+    @classmethod
+    def from_domain(cls, application: TagApplication) -> AccountTagApplicationResponse:
+        return cls(
+            tag_id=application.tag_id,
+            changed=list(application.changed),
+            unchanged=list(application.unchanged),
+            applied_count=application.applied_count,
+            total_count=application.total_count,
+        )
+
+
+class AccountTagAssignmentsResponse(BaseModel):
+    """Which tags each of the requested accounts wears.
+
+    **Keyed by account, and an account with none is simply absent** — a caller
+    asking about forty accounts gets rows for the ones that have tags, and the
+    screen renders nothing for the rest. An empty list per account would say the
+    same thing in more bytes.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    assignments: dict[UUID, list[UUID]]

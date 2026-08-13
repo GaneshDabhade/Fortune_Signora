@@ -24,6 +24,7 @@ from modules.commercial_profile.application.declaring import (
     IcpUnknownProductError,
 )
 from modules.commercial_profile.application.publish import CatalogVersionConflictError
+from modules.commercial_profile.domain.account_tag import AccountTagError
 from modules.commercial_profile.domain.committee import BuyingCommitteeError
 from modules.commercial_profile.domain.competitors import CompetitorsError
 from modules.commercial_profile.domain.declaration import CommercialProfileError
@@ -96,6 +97,14 @@ ERROR_MAPPING: ErrorMapping = {
     # above its ceiling. Registered after the rows above and never shadowing
     # them — handler lookup walks the exception's MRO, so a derived type still
     # wins for its own instances.
+    # ⚠️ **Listed BEFORE the base class it inherits.** `AccountTagError`
+    # extends `CommercialProfileError`, and without its own row a customer who
+    # typed a duplicate label would be told `catalog_refused` — a code naming
+    # a document they were not editing.
+    AccountTagError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "account_tag_refused",
+    ),
     CommercialProfileError: (
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         "catalog_refused",

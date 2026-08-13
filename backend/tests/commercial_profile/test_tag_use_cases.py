@@ -53,9 +53,16 @@ class FakeTags:
         self.writes += 1
         self.tags.setdefault(workspace_id, {})[tag.id] = tag
 
-    async def remove(self, workspace_id: UUID, tag_id: UUID) -> None:
-        self.writes += 1
-        self.tags.get(workspace_id, {}).pop(tag_id, None)
+    async def tags_for(
+        self, workspace_id: UUID, accounts: tuple[UUID, ...]
+    ) -> dict[UUID, tuple[UUID, ...]]:
+        held: dict[UUID, list[UUID]] = {}
+        for (ws, tag_id), assigned in self.assignments.items():
+            if ws != workspace_id:
+                continue
+            for account_id in assigned & set(accounts):
+                held.setdefault(account_id, []).append(tag_id)
+        return {account: tuple(tag_ids) for account, tag_ids in held.items()}
 
     async def accounts_with(
         self, workspace_id: UUID, tag_id: UUID, *, among: tuple[UUID, ...]
