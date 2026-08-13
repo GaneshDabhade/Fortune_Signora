@@ -204,6 +204,20 @@ export const REGISTRY: readonly CardContract[] = [
    * and a client-side capability gate here would be the false-claim class
    * [B-253](../../../docs/BUGS.md) is open about.
    */
+  /**
+   * 🔴 **Activation's two BLOCKING steps** — [TASK-1424](../../../docs/BACKLOG.md).
+   * ⛔ **`invite-the-team` is deliberately absent**: it is the only
+   * non-blocking card, so it is the only one the design lets a person skip —
+   * and *"skip state is per person, on the server, for 30 days. Nothing about
+   * activation lives in `localStorage`."* **No endpoint holds that.**
+   */
+  { id: 'connect-a-crm', title: 'Connect a CRM', module: 'integrations', requires: null },
+  {
+    id: 'connect-calls',
+    title: 'Connect calls and calendar',
+    module: 'integrations',
+    requires: null,
+  },
   {
     id: 'pipeline-health',
     // 📁 The design's own words, not a paraphrase — the contract requires it.

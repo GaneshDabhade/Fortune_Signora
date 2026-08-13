@@ -6,6 +6,7 @@ import type { ReactElement } from 'react';
 
 import { EmptyState, PageHeader } from '@/components/ui';
 import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
+import { ConnectCallsCard, ConnectCrmCard } from '@/components/home/activation-cards';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { cardsFor, type CardContract } from '@/lib/home/cards';
 import {
@@ -108,7 +109,11 @@ const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => ReactElement>
    * filter below exists: 📁 the catalogue is deliberately written ahead of the
    * cards, and a registered card with no renderer must not draw a hole.
    */
-  Object.freeze({ 'pipeline-health': PipelineHealthCard });
+  Object.freeze({
+    'pipeline-health': PipelineHealthCard,
+    'connect-a-crm': ConnectCrmCard,
+    'connect-calls': ConnectCallsCard,
+  });
 
 export function Home() {
   const { activeWorkspace, isLoading, error } = useWorkspaceContext();
