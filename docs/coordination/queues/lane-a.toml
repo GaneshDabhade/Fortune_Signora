@@ -1552,10 +1552,29 @@ updated      = 2026-08-12
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
 backlog = ["TASK-466", "TASK-1416", "TASK-1421", "TASK-1423", "TASK-1424", "TASK-1480", "TASK-202"]
-# 🔴 THREE ADDITIONS, 2026-08-13, AND THIS OFFICE CAUSED THE GAP IT IS CLOSING.
-#    TASK-1473, TASK-429 and TASK-430 were released to READY this morning
-#    (D-233) and were never added here, so `state-check` reported all three
-#    as "READY and appears in no lane queue".
+# 🔴 RE-DERIVED AFTER THE REBASE, 2026-08-13, BECAUSE THE REBASE LEFT THIS
+#    ARRAY AND ITS OWN COMMENT DISAGREEING.
+#
+#    The comment below survived and the array did not: it described three
+#    additions the line no longer contained. A file documenting a change it
+#    does not carry is worse than one missing the change, because the comment
+#    is what the next reader believes. Caught by verifying the artifact after
+#    a rebase that reported success -- the same class QE hit three times today
+#    with edits that did less than they claimed.
+#
+#    Re-derived from BACKLOG.md rather than restored from either side:
+#    ⛔ TASK-1423 and TASK-1424 are CLAIMED by Lane A and are OUT. My
+#      pre-rebase array still advertised them, which is exactly the defect
+#      dd04a2fa fixed ("advertised three finished rows in prose, not in its
+#      arrays"). Restoring my version would have re-created it.
+#    ✅ TASK-1421 and TASK-1480 are READY, on no assignment board, and were
+#      absent from integration's array. Free work nobody could see.
+#    ✅ TASK-1473, TASK-429 and TASK-430 are the rows released under D-233
+#      and never queued -- this office's own gap, reported by state-check.
+#
+#    ⛔ And it mattered more than usual today: D-234 corrected CLAUDE.md
+#    step 3 to point every lane at THIS array. A released row that is not
+#    here is now unreachable by the procedure, not merely harder to find.
 #
 #    That is the SAME defect as the two stale `[[blocked]]` entries fixed
 #    earlier today, arriving from the opposite direction: those said blocked
