@@ -9,16 +9,16 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "6446aec"
+generated_from = "3feff2b"
 task_count     = 63
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-466", "TASK-1416", "TASK-1421", "TASK-1423", "TASK-1424", "TASK-1480", "TASK-202"]
+backlog            = ["TASK-466", "TASK-1416", "TASK-1421", "TASK-1423", "TASK-1424", "TASK-1473", "TASK-1480", "TASK-202", "TASK-429", "TASK-430"]
 assigned_total     = 47
 claimable          = 10
-claimable_now      = 7
-awaiting_sync      = 3
+claimable_now      = 10
+awaiting_sync      = 0
 in_flight          = 16
 actionable         = 3
 awaiting_qe_transition = 0
@@ -64,7 +64,7 @@ critical_path  = 0
 estimated_ready = "— on [R11-06](architecture/39-product-review-findings.md)'s own trigge"
 waiting_for    = "— on [R11-06](architecture/39-product-review-findings.md)'s own trigger: **real reviewer evidence**.** ✅ **[C-338](LANE_COORDINATION.md) is `CLOSED`, "
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1401"
@@ -432,7 +432,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1474"
@@ -672,7 +672,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-430"
@@ -688,7 +688,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-435"

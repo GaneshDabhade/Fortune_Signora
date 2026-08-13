@@ -131,6 +131,8 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 > **`queues/lane-a.toml`'s `backlog` array and the comment explaining it are separate hunks. A clean rebase can keep the comment and drop the array.**
 
+⚠️ **Mechanism corrected 2026-08-13, third occurrence, and the first two diagnoses were incomplete.** ⛔ **The array is not hand-maintained: `infra/coordination.py` WRITES it.** ⚡ **So after a rebase the committed array is whatever the replayed commits left, and it is stale until the generator runs — which is why *re-derive* is the fix and *restore my version* never was.** ✅ **The prescription below was right for a reason I had not measured; the diagnosis above described the symptom.**
+
 🔴 **Both times the file was left describing a change it no longer carried** — ⚠️ **which is worse than losing the change outright, because the comment is what the next reader believes.** ⚡ **It is the half-landing shape in a different medium: the thing that describes the change survives and the change does not.**
 
 ⛔ **A `git rebase` reporting success is a report, not the artifact.** ✅ **Read the array back every time.**
