@@ -1,5 +1,31 @@
 # Session Handoff
 
+> ## Cycle 221 — promoted `a5b3b8b1`, 2026-08-13
+>
+> **`main` = `a5b3b8b1` = the certified commit.** Thirteen commits, both lanes · migration head **`0051`** · coverage **95.08%** · **406** Security Invariants · mypy strict over 872 files. **DR passed. Reversibility proven base ↔ `0051` on a disposable database.** ✅ **First attempt, no aborts.**
+>
+> ### ✅ Coverage headroom is positive again
+>
+> **95.08% against a floor of 95.0** — **eight basis points, the first positive headroom in four cycles**, after [B-196](BUGS.md) took it to 94.96. ⚡ **Lane A measured 100% on both new files BEFORE pushing rather than at certification**, which is what §19 asks for and what the previous cycle cost.
+>
+> ### ✅ Security Invariants 403 → 406
+>
+> **`account_tag` and `account_tag_assignment` being CHECKED rather than merely listed**, and both registered in `tenancy_policy.py` **in the same change that creates them** (§8). **QE verified that rather than taking it.**
+>
+> ### 🔴 Two findings from Lane A that a green run would have hidden
+>
+> **① A 98% coverage run named one uncovered line whose docstring claimed the method was idempotent while the code raised.** ⛔ **The comment was wrong, not the code** — **coverage catching a false claim rather than a missing test.**
+>
+> **② An attribution test stayed green because the FAKE was doing the protecting.** ⛔ `setdefault` preserved the first writer, **so the test was checking the double rather than the code.** ✅ **The fake now raises the duplicate-key violation Postgres would** — `(tag_id, account_id)` is a primary key — **and the same fire test turns five red instead of one.** ⚡ **[B-191](BUGS.md)'s lesson in the fixture layer.**
+>
+> ### ⚠️ An environment failure, and the tell that identifies one
+>
+> **Lane A hit 654 `ConnectionRefusedError`s. It was QE's stack** — `make dr` and `make down` bring it down as part of the cycle. **They restarted it and said so.** ⚡ **Their tell is better than a retry: errors and passes matched EXACTLY.** **An environment failure takes every test; a regression takes some.**
+>
+> ### ⛔ Open against QE's own guard
+>
+> **`--promote` inspects `VERIFIED` and not `FIXED`.** 📁 A `FIXED` → `OPEN` regression was caught this cycle **only because QE read two refs by hand after a conflict recurred.** ⚠️ **Raised by Lane A, and it should not stay something noticed twice by accident.**
+
 > ## Cycle 220 — promoted `72c53947`, 2026-08-13
 >
 > **`main` = `72c53947` = the certified commit.** Fourteen commits, all Lane A · migration head **`0050`** · coverage **95.03%** · 403 Security Invariants · mypy strict over 868 files. **DR passed. Reversibility proven base ↔ `0050`.**
@@ -308,7 +334,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-13 · **`main` at `72c53947`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-13 · **`main` at `a5b3b8b1`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
