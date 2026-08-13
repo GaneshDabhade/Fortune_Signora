@@ -123,6 +123,58 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ---
 
+### B-199 · 🟢 The commit correcting a stale figure in `MANIFEST.md` left the row counting three different sets, and two per-file byte counts were never true of their files
+
+| | |
+|---|---|
+| **Module** | **None — `docs/design-snapshot/MANIFEST.md`**, the Design Snapshot ([D-138](DECISION_REGISTER.md)) |
+| **Current assignee** | **Lane C — Product Office**, which owns the snapshot and the refresh instruction |
+| **Severity** | 🟢 · **Non-blocking.** ⛔ **All 36 content hashes are correct and were verified individually**, so no lane is misled about *content* and nothing is gated |
+| **Status** | 🔵 **`OPEN`** — ⚡ **fix already authored by Lane C at `e39988aa`, not yet on `integration`** |
+| **Found** | **2026-08-13, cycle 226**, during validation of the delivery that contains it |
+| **Commit found** | **`3d7e2d9e`** — *"The snapshot manifest went stale again, in the row that documents its own staleness"* |
+
+**Expected.** A summary row states quantities over one stated set, and a per-file byte figure equals the file it names.
+
+**Actual.** Neither holds.
+
+### ① The corrected header counts three different sets
+
+`| **Contents** | ✅ **37 files · 2,769,237 bytes · 35 screen designs** |`
+
+| Quantity | What it actually counts |
+|---|---|
+| **37 files** | **every file, including `MANIFEST.md` itself** |
+| **2,769,237 bytes** | ⚡ **the 35 `.html` files ONLY** — exact to the byte |
+| **35 screen designs** | the `.html` files |
+
+**Measured at `3d7e2d9e`:** `.html` **35 files / 2,769,237 bytes** · `.css` **1 / 10,554** · `.md` **1 / 20,990**. Whole snapshot **2,800,781**; excluding `MANIFEST.md` **2,779,791**.
+
+⛔ **And it disagrees with this same document twelve lines below**, which records **`snapshot files 31 → 36`** and **`Screen count 29 → 34`**. The screens difference is `Entry Coverage Review`, which **this document itself calls *"NOT a screen specification"*** — so **34 is the defensible count** and the header promotes an audit document to a screen.
+
+⚠️ **The version replaced was internally consistent.** On 2026-08-10 the row read `31 files · 2,286,072 bytes` and **both excluded `MANIFEST.md`** — one denominator throughout, verified against that commit's tree.
+
+> 🔴 **The correction was less consistent than the staleness it corrected.** **A stale total is wrong about the world, and a reader catches it by measuring.** **Three denominators is wrong about itself, and no measurement catches it without first knowing which set each quantity means.**
+
+### ② Two per-file byte figures were never true
+
+| Recorded | Actual | Where |
+|---|---|---|
+| `Authenticated Entry` — **98,921** | **99,112** | the 2026-08-08 refresh record |
+| `Reports` — **48,859** | **48,965** | the byte-for-byte verification note |
+
+⛔ **Neither is a dated record of an earlier version.** **Both files have exactly one commit** — `c44a837f` and `c1609215` — **and neither ever changed size**, so both figures were wrong when written. **Their hashes match the current files exactly**, which is what makes it provable: a hash that matches cannot describe bytes of a different length.
+
+⚡ **`Reports` is the one that matters**, because its line is the document's *stated evidence* for byte-identity — *"compared byte-for-byte … identical"* — and **the number offered as proof is not the file's.** The conclusion still holds; the proof offered for it does not.
+
+### 🔴 It narrows the lesson the same commit drew
+
+**It concluded:** *"The per-file hashes did not go stale; only the hand-maintained total did."*
+
+✅ **The first half is exactly right — all 36 hashes verified individually.** ⛔ **The second half is too kind to the document: two *per-file* byte figures are in the same hand-maintained class and were never right.** **The problem is not the total. It is every figure a human types beside a hash they computed** — which is [§2](../CLAUDE.md), *truth has exactly one authoritative representation*, applied to a file whose whole purpose is to be checkable rather than asserted.
+
+⛔ **QE proposes no fix** — the snapshot is Lane C's. **Reported because the defect is in the tree promoted this cycle**, and because QE, not the fixing lane, sets `VERIFIED`.
+
 ### B-198 · 🟠 QE files bug rows on `lane-qe` and also resets `lane-qe` to `integration` to synchronize it, and the reset silently discards any row not yet integrated
 
 | | |

@@ -1,5 +1,23 @@
 # Session Handoff
 
+> ## Cycle 226 — promoted `3d7e2d9e`, 2026-08-13
+>
+> **`main` = `3d7e2d9e` = the certified commit.** **Lane C's five commits — D-236's three rulings, the queue regeneration, the snapshot manifest.** `pytest` **4547** · coverage **95.06%** · **406** Security Invariants · migration head **`0052`**. **DR passed** — 406 invariants against the restarted stack. **Reversibility head→base→head clean on a disposable database.** ✅ **First attempt, no aborts.**
+>
+> ⚡ **The cycle was warranted by the path classifier, not by judgement.** Three of the five commits touch `docs/coordination/*.toml` — neither `.md` nor `.json` — so `_is_closeout` calls them executable and `IMPACT_RULES` calls them `platform`. **Documentation alone would have accumulated.**
+>
+> 🔴 **Four "ahead" counts were three illusions, and resolving them is why nothing was re-certified.** Lane A showed 2 ahead of `integration` and Lane B 2 ahead. **Patch-id and blob-hash put all four already on `main`** — Lane B's `affiliation_reader.py` and its 276-line test file are byte-identical to `main`'s. **A count is never the answer; the mapping is.**
+>
+> ⚠️ **Lane A's `TASK-429` was NOT bundled, deliberately.** Three of its commits were *authored* at 17:34, before the 17:42:30 pin, but reached `origin` at 17:48. §20e would have permitted a re-pin — it costs a restart, not correctness — but **bundling makes one lane's gate hold another lane's work.** It is cycle 227.
+>
+> ⚡ **`integration` moved mid-cycle and that was legal.** Lane A pushed `fc14b5c5`, a claim for `TASK-1479` touching only `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md`; `--audit-claims` passes. **Promotion still went to the certified SHA and no other**, and Closeout step 10 replayed the claim on top.
+>
+> 🔴 **B-265's hypothesis was about a QE operation and is disproven.** Lane A wondered whether a `dr` restore moved a schema behind a lane's tests. **`dr`, `smoke`, `up` and `down` all target the `signora-prod` compose project — its own postgres on 5433 — and `certify` builds a disposable per-commit database.** No QE operation can reach a lane's. ⚡ **The gap Lane A actually named stands regardless**: `conftest.py` guards destructive consent and RLS binding and **nothing asserts the schema is at head**, so a stale database is discovered as N application failures rather than one sentence — **and N grows with every migration.**
+>
+> ⚡ **B-433 was misdiagnosed and the disproof was inside the file that reported it.** Lane C isolated a withheld queue row to a two-module `Module` cell from a sample of two. **Across all 10 of Lane A's `READY` rows, `on_integration` is a perfect discriminator, 10/10** — and the emitted source carries **no `module` field at all**. The generator was enforcing §20e; the array was right and the summary counted a row it withholds. **Lane C reached the same conclusion independently and left the wrong diagnosis standing rather than rewriting it** (§2).
+>
+> 📁 **[B-199](BUGS.md) filed 🟢** — the commit titled *"the snapshot manifest went stale again"* corrected the row into three denominators (37 files, but `2,769,237` is exactly the 35 `.html` files), and **two per-file byte figures were never true of their files**, both of which have one commit and never changed size. **All 36 hashes verified individually and every one is correct.** Fix authored at `e39988aa`, not yet on `integration`.
+>
 > ## Cycle 225 — promoted `0c79753f`, 2026-08-13
 >
 > **`main` = `0c79753f` = the certified commit.** Two commits, Lane A · `pytest` **4547** · coverage **95.06%** · **406** Security Invariants · migration head **`0052`**. **DR passed.** ✅ **First attempt, no aborts.**
@@ -424,7 +442,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-13 · **`main` at `0c79753f`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-13 · **`main` at `3d7e2d9e`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
