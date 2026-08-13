@@ -1551,7 +1551,7 @@ updated      = 2026-08-12
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-466", "TASK-1416", "TASK-202"]
+backlog = ["TASK-466", "TASK-1416", "TASK-1421", "TASK-1423", "TASK-1424", "TASK-202"]
 # ⚠️ TWO ADDITIONS, 2026-08-10 — both were READY and in NO queue, reported by QE
 #    and confirmed here by `state-check` rather than taken on trust.
 #
@@ -1908,21 +1908,19 @@ note    = "RE-POINTED on D-208 §2 — it was blocked on C-1408 and that was the
 
 [[blocked]]
 task    = "TASK-1426"
-blocker = ["C-1410", "C-1405"]
+blocker = ["C-1410"]
 owner   = "Design Authority"
 note    = "the one genuinely design-dependent row of the four. Rule 04 routes to (intent preserved) and the document does not say where that lands with NO intent — the assumption it would otherwise invent is a customer-visible destination. Its backlog row declares the dependency per D-208 §3. Separately awaiting Session Continuity"
 
-[[blocked]]
-task    = "TASK-1421"
-blocker = ["C-1405"]
-owner   = "Product Owner"
-note    = "the Workspace Chooser specification does not exist — D-206's review classifies it a major new document, ~6 sections, never drawn. This row was released READY earlier today by Product Office in error, sized from one sentence in a rules table"
-
-[[blocked]]
-task    = "TASK-1423"
-blocker = ["C-1405"]
-owner   = "Product Owner"
-note    = "eleven gate screens span four documents and three do not exist — Session Continuity, Security Gates, Workspace Lifecycle States. Three of the eleven (403, 404, /auth/locked) ARE drawn and could be sliced out"
+# TASK-1421 and TASK-1423 were blocked here on C-1405 and are NOT any more.
+# C-1405 is CLOSED (2026-08-12, on delivery) and both rows are READY in the
+# backlog. The notes said the specifications "do not exist" and "never drawn";
+# all five commissioned designs are in docs/design-snapshot/screens/ with their
+# hashes in MANIFEST.md — verified by listing the directory, not by trusting
+# this file. Left as a comment rather than deleted: this was stale for a day,
+# in the file Lane A polls, naming a blocker that had been closed. That is the
+# C-213 class in the projection Product Office owns, and the record of it is
+# worth more than a clean diff.
 
 [[blocked]]
 task    = "TASK-422"

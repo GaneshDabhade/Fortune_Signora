@@ -1006,8 +1006,11 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 | | |
 |---|---|
-| **Status** | ⚠️ **`READY FOR PRODUCT DECISION`** — Lane C, 2026-08-12 |
-| **Owner** | **Product owner** — ⛔ **which orderings a seller gets is product scope** |
+| **Status** | ✅ **`CLOSED` — RULED, product owner, 2026-08-13, [D-231](DECISION_REGISTER.md) ②.** ⛔ **Do not reopen absent a separate future requirement** |
+| ✅ **THE RULING — all three RETIRE** | > **`By urgency` → RETIRE · `By stage` → RETIRE · `All / Mine / Unassigned` → RETIRE**<br><br>✅ **The finalized Home design's canonical worklist model replaces the legacy `/` controls, and the canonical ordering remains *"ranked by what it costs to ignore."***<br><br>⛔ **Do NOT carry the legacy controls into `/w/:workspace/home`.** ⛔ **Do NOT invent replacement controls.** ⛔ **Do NOT create a new design unless a separate future requirement explicitly asks for one** |
+| ⚡ **And proceed with Home immediately** | 📁 **The ruling says so in terms: *"this decision applies only to the legacy controls. It does NOT block or change the already-authorized Home implementation."*** ✅ **The legacy `/` surface may be reconciled and removed once the canonical Home migration requirements are satisfied** |
+| ⚠️ **It releases no backlog row, and that is measured** | 📁 **`grep -c "C-1432" BACKLOG.md` → **0**.** ✅ **No row was ever blocked on it** — the `Blocks` cell below has said so since the item was raised. ⚡ **What the ruling discharges is the last PRODUCT question in front of the retirement; two ENGINEERING conditions remain and neither is this ruling's:** ⛔ **27 e2e specs and the post-login redirect still point at `/`** · ⛔ **[TASK-1439](BACKLOG.md)'s open question — *do `/` and `/business` leave the rail before their design-named successors exist* — is a member-navigation regression this office declined to take and did not manufacture a row for** |
+| **Owner** | — *(was: product owner)* |
 | **Blocks** | ⛔ **The retirement of the legacy `/` Attention surface, and nothing else.** ✅ **Confirmed by inspection 2026-08-12, not asserted: neither [TASK-1424](BACKLOG.md) nor [TASK-1425](BACKLOG.md) mentions `Unassigned`, `By urgency` or `By stage`** — **the separation the product owner asked for already exists by construction and needed no refinement** |
 | ⚡ **NOT A HOME BLOCKER** | **Product owner, 2026-08-12: *"C-1432 is a product decision, NOT a blanket Home implementation blocker."*** ✅ **Everything the Home design specifies is implementable now** — the canonical route · the composition and card registry · *ranked by what it costs to ignore* · the card catalogue · the six states · responsive · a11y · activation ordering · **U-04's interim ranking instruction · U-05's *reorder and remove only***. ⛔ **Only the three legacy controls wait on this ruling** |
 
@@ -5665,9 +5668,12 @@ KeyError: '0035'
 
 | | |
 |---|---|
-| **Status** | **`READY FOR PRODUCT DECISION`** — **the analysis is done and the alternatives are below.** ⛔ **Not `READY FOR IMPLEMENTATION`**: that is the product owner's on a ruling |
-| **Owner** | **The product owner.** [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute)'s ruling is theirs and this is a question about what it meant |
-| **Blocks** | **[TASK-003](BACKLOG.md)**, which this lane holds `IN PROGRESS` and has **written no code for** |
+| **Status** | ✅ **`CLOSED` — RULED **A**, product owner, 2026-08-13, [D-231](DECISION_REGISTER.md) ①.** ⛔ **Do not reopen absent new contradictory evidence** |
+| ✅ **THE RULING** | > ⛔ **No label catalog. No rename of canonical attribute names in `explanation.py`. No change to evidence identity or digest construction.**<br><br>📁 **[C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute)'s boundary stands unchanged**: customer-facing terminology belongs in the composed presentation layer · **the canonical representation and evidence identity must remain unchanged** · ⛔ ***"until R11-06 receives real reviewer evidence, do not introduce a terminology transformation merely for readability."***<br><br>⛔ **No new terminology architecture is to be created** |
+| **Owner** | — *(was: the product owner)* |
+| ⚠️ **What this does NOT do** | ⛔ **It does not make [TASK-003](BACKLOG.md) claimable.** ⚡ **That row's work IS the terminology transformation the ruling forbids**, so releasing it to `READY` would hand a lane exactly what ① prohibits. ✅ **It moves `BLOCKED` → `WAITING` on the trigger the ruling itself names** — 📁 **real reviewer evidence against [R11-06](architecture/39-product-review-findings.md)** — **which is Option A's own stated consequence, written into it before the ruling: *"TASK-003 returns to `WAITING` on that trigger."*** |
+| ⚠️ **The three browser translations stay** | 📁 **`employee count` · `Employee count` · `employee_count`, catalogued by [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute) and still inconsistent.** ⛔ **Not converged here and no row created for it** — **the ruling forbids introducing a transformation for readability, and no task is manufactured to work around that** |
+| **Blocked** | **[TASK-003](BACKLOG.md)** — ⛔ **no code was ever written for it, which is why the ruling costs nothing to apply** |
 
 ### ① The problem, measured
 
