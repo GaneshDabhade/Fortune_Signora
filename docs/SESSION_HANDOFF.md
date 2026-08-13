@@ -1,5 +1,27 @@
 # Session Handoff
 
+> ## Cycle 223 — promoted `fde954be`, 2026-08-13
+>
+> **`main` = `fde954be` = the certified commit.** Four commits, both lanes · `pytest` **4527** · coverage **95.09%** · **406** Security Invariants · mypy strict over **878** files · migration head **`0052`**, unchanged. **DR passed.** ✅ **First attempt, no aborts.**
+>
+> ### ✅ [D-235](DECISION_REGISTER.md) is on `main` — three rulings that were stranded
+>
+> **Verified absent from `integration` before the cycle opened.** ⚡ **Lane A had measured that and correctly declined to act on them.** 📁 **One gates the `propose` write port — the last thing between `TASK-466` and a customer pressing the control.** The other two release `TASK-466`'s *Segment* portion and unblock everything in `TASK-1423` except WL-08.
+>
+> ### ⚡ Why both lanes are in one cycle rather than Lane A alone
+>
+> **Lane C reported the gating fact with no ask attached**, and explicitly noted **no lane was idle** so the synchronization rule did not apply. ⛔ **Without it QE would have run a one-commit cycle and their twelve would have accumulated a fourth time.**
+>
+> ⚡ **A fact reported without an escalation attached was more useful than the escalation would have been** — recorded because it is the cheaper mechanism and the one that keeps working.
+>
+> ### ⚠️ Lane C's §5d correction — the diagnosis was the symptom
+>
+> **The queue array is not hand-maintained: `coordination.py` writes it.** ⛔ **So after a rebase the committed value is whatever the replayed commits left — stale until the generator runs.** ✅ ***"Re-derive"* was right for a reason they had not measured; *"restore my version"* never was.**
+>
+> ### ⛔ Still owed by QE
+>
+> **`--promote` inspects `VERIFIED` and not `FIXED`.** A `FIXED` → `OPEN` regression was caught in cycle 221 **only because QE read two refs by hand after a conflict recurred.** ⚠️ **Raised by Lane A; the row is QE's to file.**
+
 > ## Cycle 222 — promoted `12625ab9`, 2026-08-13
 >
 > **`main` = `12625ab9` = the certified commit.** Two commits, Lane A · migration head **`0052`** · `pytest` **4505** · coverage **95.10%** · **406** Security Invariants · mypy strict over **875** files. **DR passed. Reversibility proven base ↔ `0052`.** ✅ **First attempt, no aborts.**
@@ -358,7 +380,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-13 · **`main` at `12625ab9`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-13 · **`main` at `fde954be`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
