@@ -6,7 +6,11 @@ import type { ReactElement } from 'react';
 
 import { EmptyState, PageHeader } from '@/components/ui';
 import { PipelineHealthCard } from '@/components/home/pipeline-health-card';
-import { ConnectCallsCard, ConnectCrmCard } from '@/components/home/activation-cards';
+import {
+  ConnectCallsCard,
+  ConnectCrmCard,
+  InviteTheTeamCard,
+} from '@/components/home/activation-cards';
 import { FirstRunOverlay } from '@/components/home/first-run-overlay';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { cardsFor, type CardContract } from '@/lib/home/cards';
@@ -99,7 +103,20 @@ import type { WorkspaceRole } from '@/lib/state/permissions';
  * and one registered for a card that has no component is exactly the
  * placeholder [TASK-1433](../../../../../../docs/BACKLOG.md) refused.
  */
-const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => ReactElement>>> =
+/**
+ * ⚠️ **`ReactElement | null`, and the `null` is the design's rather than a
+ * convenience** — [TASK-1424](../../../../../../docs/BACKLOG.md).
+ *
+ * ⛔ **Most cards must NEVER return nothing**: 📁 *"cards degrade individually…
+ * the composition never changes shape because one card has nothing"*, so an
+ * empty read is an empty STATE and not an absent card.
+ *
+ * ✅ **Exactly one case is different, and the design names it**: *"non-blocking
+ * cards can be skipped, which HIDES them for 30 days."* ⚡ **A skipped card is
+ * gone, not empty** — that is what skipping means — **so the type has to allow
+ * it, and the comment has to say which case it is for.**
+ */
+const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => ReactElement | null>>> =
   /**
    * 🔴 **This was `Object.freeze({})`** — [TASK-1425](../../../../../../docs/BACKLOG.md).
    * ⚡ **With both it and `REGISTRY` empty, `cardsFor` returned nothing and
@@ -114,6 +131,7 @@ const RENDERERS: Readonly<Partial<Record<CardContract['id'], () => ReactElement>
     'pipeline-health': PipelineHealthCard,
     'connect-a-crm': ConnectCrmCard,
     'connect-calls': ConnectCallsCard,
+    'invite-the-team': InviteTheTeamCard,
   });
 
 export function Home() {

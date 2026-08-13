@@ -154,3 +154,31 @@ describe('🔴 the ordering rule is in force, not merely written', () => {
     expect(firstOptional).toBeGreaterThan(lastBlocking);
   });
 });
+
+describe('🔴 the activation composition is complete, and the third card waited for its store', () => {
+  /**
+   * ⚡ **All three of the design's steps are contributed now** —
+   * [TASK-1424](../../../docs/BACKLOG.md). ⛔ **`invite-the-team` was
+   * deliberately absent until migration `0050`**, because *"skip for now"* is
+   * the design's control and **a skip that forgot at the next sign-in is a
+   * control that lies.**
+   */
+  it('all three steps are in the composition, in priority order', () => {
+    const activation = COMPOSITION_CARDS.activation.filter(
+      (id): id is ActivationCardId => id in ACTIVATION_PRIORITY,
+    );
+
+    expect(activation).toEqual(['connect-a-crm', 'connect-calls', 'invite-the-team']);
+  });
+
+  it('⛔ and only the non-blocking one is skippable', () => {
+    // 📁 *"Blocking cards — CRM and calls — cannot be dismissed."* ⚡ The two
+    // blocking cards render through a component with no skip control at all,
+    // so this is structural rather than a flag somebody could flip.
+    const skippable = (Object.keys(BLOCKING) as ActivationCardId[]).filter(
+      (id) => !BLOCKING[id],
+    );
+
+    expect(skippable).toEqual(['invite-the-team']);
+  });
+});

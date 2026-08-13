@@ -1216,4 +1216,14 @@ export interface PersonPreferences {
    * wrongly.
    */
   first_run_dismissed: boolean;
+  /**
+   * 🔴 **Whether the invite-the-team card is hidden RIGHT NOW.**
+   *
+   * ⛔ **The answer, not the moment and not the window.** 📁 *"Hides them for 30
+   * days"* is a question about the server's clock — ⚡ **a client computing it
+   * from a timestamp would answer differently on a device whose clock is
+   * wrong**, and this is the one field where that would silently un-hide a card
+   * somebody put away.
+   */
+  invite_hidden: boolean;
 }

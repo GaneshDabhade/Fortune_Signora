@@ -233,6 +233,13 @@ export const REGISTRY: readonly CardContract[] = [
     module: 'integrations',
     requires: null,
   },
+  /**
+   * ✅ **The third activation step, contributed once its store existed** —
+   * [TASK-1424](../../../docs/BACKLOG.md). ⛔ It was deliberately absent while
+   * the 30-day skip had nowhere to live, **because a *Skip for now* that
+   * forgot at the next sign-in is a control that lies.**
+   */
+  { id: 'invite-the-team', title: 'Invite the team', module: 'workspace_tenancy', requires: null },
   {
     id: 'pipeline-health',
     // 📁 The design's own words, not a paraphrase — the contract requires it.

@@ -43,6 +43,8 @@ import {
 } from '@/lib/home/activation';
 import { correlationOf } from '@/lib/accounts/section-state';
 import { useIntegrations } from '@/lib/query/hooks/integrations';
+import { usePreferences, useSkipInvite } from '@/lib/query/hooks/preferences';
+import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /** 📁 The design's own words for each step, so the card says what the design
@@ -89,6 +91,93 @@ export function ConnectCrmCard() {
 
 export function ConnectCallsCard() {
   return <Step id="connect-calls" />;
+}
+
+/**
+ * 🔴 **The one activation card a person may put away** —
+ * [TASK-1424](../../../docs/BACKLOG.md).
+ *
+ * 📁 ***"Signora scores relationships, so a workspace with one person in it
+ * measures very little."*** ⚡ **Optional, and the design says so twice**: *"not
+ * blocking · you can do this at any time from Team Management"*.
+ *
+ * ⛔ **Skipping hides it for thirty days and is reversible**, and **the server
+ * holds both** — 📁 *"skip state is per person, on the server, for 30 days.
+ * Nothing about activation lives in `localStorage`."*
+ */
+export function InviteTheTeamCard() {
+  const { activeWorkspace } = useWorkspaceContext();
+  const workspaceId = activeWorkspace?.id ?? null;
+  const preferences = usePreferences(workspaceId);
+  const skip = useSkipInvite(workspaceId);
+  const members = useWorkspaceMembers(workspaceId);
+
+  // ⛔ **Absent until the answer is known.** ⚡ Rendering while the preference is
+  // unread would show a card somebody put away, on every slow connection —
+  // 📁 [P-A](../../../docs/DOMAIN_DISCOVERY_REGISTER.md) one level up.
+  if (preferences.data === undefined || preferences.data.invite_hidden) return null;
+
+  // ⚡ **Completion is derived from the source of truth**, and the source is the
+  // roster: 📁 *"a workspace of one measures little"*, so **this step is done
+  // when somebody else is in it.**
+  const done = (members.data?.items?.length ?? 1) > 1;
+
+  return (
+    <Card>
+      <CardBody className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span
+            aria-hidden
+            className={cn(
+              'flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-2xs font-semibold',
+              done ? 'bg-success text-white' : 'border border-border text-content-subtle',
+            )}
+          >
+            {done ? <Check className="h-3 w-3" /> : '3'}
+          </span>
+          <h3 className="text-sm font-semibold text-content">Invite the team</h3>
+          <span className="text-2xs text-content-subtle">{done ? 'Complete' : 'Optional'}</span>
+        </div>
+
+        {/* ⚠️ **The design writes *"a workspace of one"* and this says
+            *organization*, deliberately.** 📁 [ADR-0034]: *"a customer says
+            organization, the platform says workspace"*, and the translation
+            lives at the frontend edge — ⛔ **a design mock is not exempt from
+            it**, and `vocabulary.test.tsx` caught this sentence before it
+            shipped. */}
+        <p className="text-sm leading-6 text-content-muted">
+          Signora scores relationships, so an organization with one person in it measures very
+          little.
+        </p>
+        <p className="text-2xs text-content-subtle">
+          Not blocking — you can do this at any time from Team Management.
+        </p>
+
+        <div className="flex items-center gap-3">
+          <Link
+            href="/settings/team"
+            className="w-fit rounded border border-border px-3 py-1.5 text-sm text-content hover:bg-surface-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            {done ? 'Manage the team' : 'Invite people'}
+          </Link>
+
+          {done ? null : (
+            /* 📁 ***"'Skip for now' applies only to non-blocking cards."*** ⛔ It
+               is absent from the two blocking steps by construction — they do
+               not render this component. */
+            <button
+              type="button"
+              onClick={() => skip.mutate(true)}
+              disabled={skip.isPending}
+              className="rounded text-sm text-content-subtle underline decoration-border underline-offset-4 hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed"
+            >
+              Skip for now
+            </button>
+          )}
+        </div>
+      </CardBody>
+    </Card>
+  );
 }
 
 function Step({ id }: { id: 'connect-a-crm' | 'connect-calls' }) {
