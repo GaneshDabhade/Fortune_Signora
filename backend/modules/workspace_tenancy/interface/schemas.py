@@ -457,9 +457,15 @@ class PreferencesResponse(BaseModel):
     #: renders on the fact; **a timestamp it does not need is a timestamp it
     #: could display wrongly.**
     first_run_dismissed: bool
+    #: 🔴 **[TASK-1424] — whether the invite card is hidden RIGHT NOW.**
+    #: ⛔ **The answer, not the moment and not the window.** ⚡ *"Hides them for
+    #: 30 days"* is a question about the server's clock, and **a client that
+    #: computed it from a timestamp would answer differently on a device whose
+    #: clock is wrong.**
+    invite_hidden: bool
 
     @classmethod
-    def from_domain(cls, prefs: PersonPreferences) -> PreferencesResponse:
+    def from_domain(cls, prefs: PersonPreferences, *, now: datetime) -> PreferencesResponse:
         return cls(
             theme=prefs.theme,
             density=prefs.density,
@@ -474,6 +480,7 @@ class PreferencesResponse(BaseModel):
             answer_style=prefs.answer_style,
             confidence_floor=prefs.confidence_floor,
             first_run_dismissed=prefs.first_run_dismissed_at is not None,
+            invite_hidden=prefs.invite_is_hidden(now),
         )
 
 

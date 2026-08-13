@@ -914,7 +914,7 @@ async def get_preferences(context: CurrentWorkspace) -> PreferencesResponse:
     prefs = await build_use_cases(context.session).get_preferences.execute(
         context.workspace_id, context.principal.user_id
     )
-    return PreferencesResponse.from_domain(prefs)
+    return PreferencesResponse.from_domain(prefs, now=datetime.now(UTC))
 
 
 @router.post(
@@ -947,7 +947,39 @@ async def dismiss_first_run(context: CurrentWorkspace) -> PreferencesResponse:
         context.principal.user_id,
         now=datetime.now(UTC),
     )
-    return PreferencesResponse.from_domain(prefs)
+    return PreferencesResponse.from_domain(prefs, now=datetime.now(UTC))
+
+
+@router.post(
+    "/workspaces/{workspace_id}/preferences/invite-skip",
+    response_model=PreferencesResponse,
+    summary="Hide or restore the invite-the-team activation card",
+)
+async def skip_invite(context: CurrentWorkspace, skip: bool = True) -> PreferencesResponse:
+    """📁 ***"Hides them for 30 days per person and is reversible from the
+    progress line."***
+
+    ⚡ **One route for both directions**, because the design calls reversal part
+    of the same control — ⛔ **two routes would let a product ship the hide and
+    forget the way back**, which is the shape this rule exists to prevent.
+
+    ⚠️ **The window is derived from the moment and never stored.** 📁 [§2]: a
+    stored expiry is a second representation of a fact the timestamp already
+    carries, **and the two disagree the first time a clock moves.**
+
+    ⛔ **Only the invite card.** **CRM and calls are blocking and cannot be
+    skipped at all** — there is no parameter here that could name them, which is
+    the design's *"blocking cards cannot be dismissed"* made unrepresentable
+    rather than merely checked.
+    """
+    context.authorize(Resource.PREFERENCES, Action.UPDATE)
+    prefs = await build_use_cases(context.session).skip_invite.execute(
+        context.workspace_id,
+        context.principal.user_id,
+        skip=skip,
+        now=datetime.now(UTC),
+    )
+    return PreferencesResponse.from_domain(prefs, now=datetime.now(UTC))
 
 
 @router.patch(
@@ -979,4 +1011,4 @@ async def change_preferences(
             **supplied,
         )
     )
-    return PreferencesResponse.from_domain(prefs)
+    return PreferencesResponse.from_domain(prefs, now=datetime.now(UTC))

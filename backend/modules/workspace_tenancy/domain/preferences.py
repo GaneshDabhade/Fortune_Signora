@@ -58,7 +58,7 @@ database, where a token edit could not reach it.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import StrEnum
 from uuid import UUID
 
@@ -167,6 +167,10 @@ class PersonPreferences:
     #: *not dismissed*, and the design's word is *"dismissible forever"*, so
     #: this outlives the session by construction.
     first_run_dismissed_at: datetime | None = None
+    #: 🔴 **[TASK-1424] — when the invite-the-team card was skipped.** ⛔ `None`
+    #: is *not skipped*, and the design's window is derived from this moment
+    #: rather than stored beside it.
+    invite_skipped_at: datetime | None = None
 
     # ── Screen `04 · AI preferences` ──────────────────────────────────────
     #
@@ -226,6 +230,36 @@ class PersonPreferences:
         if self.first_run_dismissed_at is not None:
             return self
         return replace(self, first_run_dismissed_at=at)
+
+    #: 📁 ***"Hides them for 30 days per person."***
+    INVITE_SKIP_DAYS = 30
+
+    def skipped_invite(self, at: datetime) -> PersonPreferences:
+        """Put the invite card away for a while.
+
+        ⚠️ **The LATEST skip wins here, and that is the opposite of
+        {@link dismissed_first_run}** — deliberately. ⛔ A dismissal answers
+        *when did this person stop being new*, which the first close settles
+        forever; **a skip restarts a window**, and somebody who skips again a
+        month later is asking for another thirty days rather than repeating an
+        old request.
+        """
+        return replace(self, invite_skipped_at=at)
+
+    def unskipped_invite(self) -> PersonPreferences:
+        """📁 ***"Reversible from the progress line."*** ⛔ Setting it back to
+        `None` is the whole of it — no second column to contradict the date."""
+        if self.invite_skipped_at is None:
+            return self
+        return replace(self, invite_skipped_at=None)
+
+    def invite_is_hidden(self, now: datetime) -> bool:
+        """⚡ **Derived, never stored.** 📁 [§2]: a stored expiry would be a
+        second representation of a fact this column already carries, **and the
+        two would disagree the first time a clock moved.**"""
+        if self.invite_skipped_at is None:
+            return False
+        return now - self.invite_skipped_at < timedelta(days=self.INVITE_SKIP_DAYS)
 
     def left(self) -> PersonPreferences:
         """Forget that they were ever here.

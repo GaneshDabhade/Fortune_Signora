@@ -152,3 +152,28 @@ class DismissFirstRunUseCase:
         if dismissed is not current:
             await self._preferences.save(dismissed)
         return dismissed
+
+
+class SkipInviteUseCase:
+    """Put the invite-the-team activation card away for thirty days.
+
+    📁 ***"Non-blocking cards can be skipped, which hides them for 30 days per
+    person and is reversible from the progress line."***
+
+    ⚠️ **`skip=False` un-skips**, rather than a second use case. ⚡ **The design
+    calls reversal part of the same control**, and two use cases would let one
+    exist without the other — which is how a product ships a hide with no way
+    back.
+    """
+
+    def __init__(self, *, preferences: PersonPreferencesRepository) -> None:
+        self._preferences = preferences
+
+    async def execute(
+        self, workspace_id: UUID, person_id: UUID, *, skip: bool, now: datetime
+    ) -> PersonPreferences:
+        current = await self._preferences.get(workspace_id, person_id)
+        updated = current.skipped_invite(now) if skip else current.unskipped_invite()
+        if updated is not current:
+            await self._preferences.save(updated)
+        return updated

@@ -337,3 +337,11 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
     first_run_dismissed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+
+    # 🔴 **[TASK-1424] — when this person skipped the invite-the-team card.**
+    # ⛔ **A timestamp because the design's rule is a WINDOW**: *"hides them for
+    # 30 days per person"*. ⚡ A boolean cannot answer *how long ago*, and a
+    # stored expiry would be a second representation of the same fact.
+    invite_skipped_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
