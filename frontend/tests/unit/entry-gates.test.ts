@@ -7,7 +7,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { GATE_COPY, GATE_REASONS, type GateReason } from '@/lib/entry/gates';
+import {
+  GATE_COPY,
+  GATE_REASONS,
+  deletionActions,
+  type GateReason,
+  type ScheduledDeletion,
+} from '@/lib/entry/gates';
 import { RULES } from '@/lib/entry/rules';
 
 describe('🔴 every gate this module answers for is a reason the engine can return', () => {
@@ -119,5 +125,47 @@ describe('⚠️ every action points at a route that exists', () => {
       if (action === null) continue;
       expect(shipped, `${reason} points at ${action.href}`).toContain(action.href);
     }
+  });
+});
+
+describe('🔴 WL-08 — "the purge date is a DATE, never 30 days"', () => {
+  /**
+   * 📁 The design states the reason, and it is the sharpest sentence in the
+   * document: ***"a relative window read on day 29 is indistinguishable from
+   * one read on day 1, and this is the last screen where that ambiguity is
+   * affordable."***
+   */
+  it('⛔ the contract carries an instant and has no field for a duration', () => {
+    const deletion: ScheduledDeletion = {
+      organization: 'Meridian Freight',
+      deletedBy: 'K. Bruun',
+      deletedOn: '2026-08-13',
+      retainedUntil: '2026-09-12',
+    };
+
+    // ⚡ **Unrepresentable rather than tested**: there is no key a caller could
+    // pass "30 days" through, so the rule cannot be broken by a careless page.
+    expect(Object.keys(deletion)).not.toContain('retentionDays');
+    expect(Object.keys(deletion)).not.toContain('daysRemaining');
+    expect(deletion.retainedUntil).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
+
+describe('📁 "owner sees a restore action" — and a member does not', () => {
+  it('an owner is offered all three', () => {
+    expect(deletionActions(true)).toEqual([
+      'Restore it',
+      'Export everything',
+      'Your other organizations',
+    ]);
+  });
+
+  it('⛔ a member is not offered a restore that would refuse them', () => {
+    // ⚡ **On the screen telling somebody their data is going away**, a control
+    // that turns out to be forbidden is the worst possible place for one.
+    expect(deletionActions(false)).not.toContain('Restore it');
+    // ✅ **Export survives, because the design grants it to members**: the state
+    // is read-only, not closed.
+    expect(deletionActions(false)).toContain('Export everything');
   });
 });

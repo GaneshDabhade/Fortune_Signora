@@ -111,3 +111,48 @@ export const GATE_COPY: Readonly<Record<GateReason, GateCopy>> = {
     action: { label: 'Go to your organizations', href: '/workspaces' },
   },
 };
+
+/**
+ * 🔴 **WL-08 · a workspace scheduled for deletion, and the one rule the design
+ * states twice as strongly as any other** —
+ * [TASK-1423](../../../docs/BACKLOG.md), against 📁
+ * `Fortune Signora Workspace Lifecycle.dc.html`.
+ *
+ * > ***"The purge date is a DATE, never '30 days'. A relative window read on
+ * > day 29 is indistinguishable from one read on day 1, and this is the last
+ * > screen where that ambiguity is affordable."***
+ *
+ * ⛔ **So this contract carries an instant and no duration**, and there is no
+ * field a caller could pass a *"30 days"* through. ⚡ **The rule is
+ * unrepresentable rather than merely tested.**
+ */
+export interface ScheduledDeletion {
+  /** 📁 *"Meridian Freight is scheduled for deletion"* — the organization's own name. */
+  readonly organization: string;
+  /** 📁 *"Deleted by K. Bruun"* — ⛔ a person, because *"deleted by the system"* is
+   * a different sentence and this state is always somebody's decision. */
+  readonly deletedBy: string;
+  /** 📁 *"on 13 August"* — when the decision was taken. */
+  readonly deletedOn: string;
+  /**
+   * 📁 *"Data is retained until 12 September, after which it cannot be
+   * recovered."* ⛔ **An instant, never a window.** ⚡ A caller holding only
+   * *"30 days"* cannot construct this, which is the point.
+   */
+  readonly retainedUntil: string;
+}
+
+/**
+ * ⚡ **What a member may do about it, and it is not what an owner may do.**
+ *
+ * 📁 The design's own header: *"WL-08 · DELETING, member view"* with
+ * ***"Owner sees a restore action"*** beside it. ⛔ **So restore is offered to
+ * owners only** — and a member shown a restore button would be shown a control
+ * that refuses them, on the screen telling them their data is going away.
+ */
+export function deletionActions(isOwner: boolean): readonly string[] {
+  // 📁 The design lists three, and the first is owner-only.
+  return isOwner
+    ? ['Restore it', 'Export everything', 'Your other organizations']
+    : ['Export everything', 'Your other organizations'];
+}
