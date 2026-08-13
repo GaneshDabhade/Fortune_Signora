@@ -211,6 +211,45 @@ def _board_claims(assignments: str) -> dict[str, set[str]]:
     return claims
 
 
+def _promoted_tip() -> str | None:
+    """**The newest certified commit that is an ancestor of `main`.**
+
+    B-195. This is the SHA a refreshed board is supposed to name — **not
+    `main`'s tip.** §20e's bounded exception puts the Closeout commit *after*
+    the promotion by construction, so `main` is always one or more commits
+    ahead of the commit the records describe. **Comparing against the tip
+    reports every correctly-refreshed board as stale**, which the first
+    attempt did and a fire test caught.
+    """
+    sources: list[str] = []
+    if MANIFEST.exists():
+        sources.append(MANIFEST.read_text())
+    for ref in ("origin/integration", "origin/main"):
+        # ⛔ **A commit never contains its own certificate.** The record naming
+        # `C` is written after `C` exists, so it lands on `integration` and
+        # reaches `main` only at the next promotion. **Reading the working tree
+        # alone reports the last-but-one promotion as the newest**, which the
+        # second attempt did. `certification-guard._runs()` solves it the same
+        # way and this mirrors it deliberately rather than inventing a variant.
+        content = _git("show", f"{ref}:certification/manifest.json")
+        if content:
+            sources.append(content)
+    runs: list[dict[str, object]] = []
+    for source in sources:
+        try:
+            runs.extend(json.loads(source).get("runs") or [])
+        except json.JSONDecodeError:
+            continue
+    newest: str | None = None
+    for run in runs:
+        commit = str(run.get("commit") or "")
+        if not commit or not _satisfied(run) or not _is_ancestor(commit, "origin/main"):
+            continue
+        if newest is None or _is_ancestor(newest, commit):
+            newest = commit
+    return newest
+
+
 def _satisfied(run: dict[str, object]) -> bool:
     """Did this run certify? **Borrowed from `certification-guard.py`, never
     re-derived**, because a second copy of this predicate is a second answer to
@@ -2058,8 +2097,38 @@ def main() -> int:
                 f"`{status_named}`, which is newer. The board has gone backwards — the "
                 f"B-100 signature, where a rebase keeps a lane's side of a shared table."
             )
+        elif _promoted_tip() and not _same_commit(named, _promoted_tip() or ""):
+            # ⛔ **B-195. `reachable from HEAD` is not `current`.**
+            #
+            # Every previously promoted commit is an ancestor, so the rule above
+            # fires only on a record naming something that never merged — and it
+            # **cannot detect staleness at all**, which is the one condition
+            # §20d cares about: *the dashboard describes the promoted
+            # repository.*
+            #
+            # Found by QE's own cycle 218 Closeout touching `BACKLOG.md` and
+            # nothing else. **Three records named cycle 217 for two cycles and
+            # this rule printed `ok`** — a green output on exactly the condition
+            # the check exists for, which is worse than no check, because an
+            # absent one leaves a reader uncertain and a green one leaves them
+            # confident and wrong.
+            #
+            # ⚠️ **Compared against the newest PROMOTED commit, never `main`'s
+            # tip.** The first attempt used the tip and over-fired on a
+            # correctly-refreshed board — **the Closeout commit lands after the
+            # promotion by construction (§20e's bounded exception), so `main` is
+            # always ahead of the SHA the board is supposed to name.** Caught by
+            # fire-testing, not by reading.
+            findings.append(
+                f"ACTIVE_ASSIGNMENTS.md is dated at `{named}` and the newest promoted commit "
+                f"is `{(_promoted_tip() or '')[:8]}`. The record describes an earlier "
+                "promotion, so a reader takes the previous cycle's state for the current "
+                "one (§20d, B-195)."
+            )
         else:
-            notes.append(f"ACTIVE_ASSIGNMENTS.md is dated at `{named}`, reachable from HEAD.")
+            notes.append(
+                f"ACTIVE_ASSIGNMENTS.md is dated at `{named}`, the newest promoted commit."
+            )
 
     # 5h — L-17. **The inverse direction, and the one that failed.**
     #
