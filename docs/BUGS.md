@@ -309,6 +309,49 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-267 · A database password in a connection string reached the log, with redaction on
+
+| | |
+|---|---|
+| **Module** | **`signora_platform`** — `observability/logging.py` |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — ⛔ **a credential value reaching a log sink.** ⚠️ **Not 🔴 only because there is no deployed environment** ([ADR-0027](architecture/adr/0027-local-first-development.md) defers release to M14.5), **so no customer secret has been written anywhere.** 🔴 **It would be 🔴 the day one is** |
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-13**, in [TASK-1479](BACKLOG.md) slice ⓵, with a Security Invariant. ⚠️ **QE verifies and closes** |
+| **Found** | **2026-08-13, by Lane A**, measuring what logging emits today **before writing any of [ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md)** |
+
+#### 🔴 What happened
+
+```
+logger.info("connecting to postgres://signora_app:S3cr3tPassw0rd@db:5432/signora")
+→ {"message":"connecting to postgres://signora_app:S3cr3tPassw0rd@db:5432/signora"}
+```
+
+⛔ **Through the JSON formatter. With redaction enabled. At INFO.**
+
+#### ⚠️ Why the existing redaction missed it, and why that is the interesting part
+
+📁 `redact()` covered **three** shapes: a field *named* like a secret, a JWT, and a `Bearer` token. ⚡ **Every credential this platform actually holds is a fourth** — **a URI.** `SIGNORA_DATABASE_URL`, `SIGNORA_REDIS_URL` and the object-store URL, ⛔ **and none of them was reachable by any of the three**: the field is called `url`, so the key pattern misses it, and the value is neither a JWT nor a bearer token.
+
+🔴 **The protection was real and it was pointed away from the secrets the repository has.**
+
+#### ⛔ A second hole beside it: a format choice was silently a security choice
+
+📁 `configure_logging(json_output=False)` installed a **bare `logging.Formatter`**, and **redaction lived only in `JsonFormatter`.** ⚡ **So a developer who turned on readable logs turned off redaction** — without asking to, and without being told.
+
+📁 [ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md) §3 in its own words: ***"A developer must opt IN to verbosity, never opt OUT of redaction"***, and *"the default is safe"* in **every** environment.
+
+#### ✅ Fixed
+
+**URI userinfo is redacted, and the host and database are not** — a redacted host removes the diagnostic value the line exists for, and a guard that destroys the reason to log is a guard somebody turns off. **`PlainFormatter` redacts on the same terms as `JsonFormatter`.**
+
+⚠️ **The first pattern required a username, so `redis://:secret@cache:6379/2` — the form Redis URLs actually take — walked through it.** **Caught by the check written to prove the fix.**
+
+#### ⚡ Enforcement
+
+📁 **`tests/security_invariants/test_secret_safe_logging.py`**, which [ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md) §4 asks for by name. **Four fire tests; every assertion falls to at least one of them.**
+
+⚠️ **Fire-testing found two assertions that could not fail** — a credential passed as a *field* asserted nothing against the plain sink, because that formatter renders no fields at all. **Both were rescoped and the plain sink's real property is now asserted directly**, so a future format string that grows `%(url)s` breaks the file rather than silently reopening the gap.
+
 ### B-266 · The two highest READY rows in the backlog were offered to no lane
 
 | | |

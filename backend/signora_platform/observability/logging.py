@@ -32,6 +32,27 @@ _JWT_PATTERN: Final = re.compile(r"\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]+\.[A-Za
 
 _BEARER_PATTERN: Final = re.compile(r"(?i)\b(bearer\s+)\S+")
 
+# **The password inside a connection string** — `postgres://user:secret@host`.
+# ⛔ **The gap that made this ADR's invariant worth writing** (ADR-0412): every
+# credential this platform actually holds is a URI. `SIGNORA_DATABASE_URL`,
+# `SIGNORA_REDIS_URL` and the object-store URL are the secrets most likely to
+# reach a log, and none of them was caught: the key is `url`, so the key
+# pattern misses it, and the value is neither a JWT nor a bearer token.
+#
+# ⚡ **Measured, not foreseen** — `logging.getLogger(...).info("connecting to
+# postgres://signora_app:S3cr3tPassw0rd@db:5432/signora")` emitted the password
+# verbatim through the JSON formatter with redaction enabled.
+#
+# **The userinfo alone is replaced**, never the whole URI: a redacted host and
+# database name would remove the diagnostic value the line exists for, and the
+# username is not the secret.
+#
+# ⚠️ **The username is `*` and not `+`, and that was a live miss.** The first
+# version required one, and `redis://:secret@cache:6379/2` — **the form Redis
+# URLs actually take, with no username** — walked straight through it. Caught
+# by the check written to prove the fix, which is the argument for writing one.
+_URI_CREDENTIAL_PATTERN: Final = re.compile(r"(?i)\b([a-z][a-z0-9+.-]*://[^\s:/@]*):[^\s@]+@")
+
 _STANDARD_ATTRS: Final = frozenset(
     {
         "args",
@@ -76,7 +97,9 @@ def redact(value: Any) -> Any:
     if isinstance(value, list | tuple):
         return [redact(item) for item in value]
     if isinstance(value, str):
-        return _BEARER_PATTERN.sub(rf"\1{REDACTED}", _JWT_PATTERN.sub(REDACTED, value))
+        redacted = _JWT_PATTERN.sub(REDACTED, value)
+        redacted = _BEARER_PATTERN.sub(rf"\1{REDACTED}", redacted)
+        return _URI_CREDENTIAL_PATTERN.sub(rf"\1:{REDACTED}@", redacted)
     return value
 
 
@@ -108,19 +131,45 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(redact(payload), default=str, separators=(",", ":"))
 
 
+class PlainFormatter(logging.Formatter):
+    """Human-readable output, **redacted on the same terms as JSON.**
+
+    ⛔ **Added by ADR-0412, and it closes a real hole.** `json_output=False`
+    previously installed a bare `logging.Formatter`, so **the only sink that
+    redacted anything was the JSON one** — a developer who turned on readable
+    logs turned off redaction, without asking to and without being told.
+
+    📁 The ruling is explicit: ***"A developer must opt IN to verbosity, never
+    opt OUT of redaction"***, and *"the default is safe"* in **every**
+    environment. ⚡ **A format choice must not be a security choice**, which is
+    what it silently was.
+    """
+
+    def format(self, record: logging.LogRecord) -> str:
+        rendered = super().format(record)
+        redacted = redact(rendered)
+        return redacted if isinstance(redacted, str) else rendered
+
+
 def configure_logging(*, level: str = "INFO", json_output: bool = True) -> None:
     """Install the root logging configuration for a process.
 
     Called once at process start by ``apps/api`` and ``apps/worker``.
     Replaces existing handlers rather than adding to them, so repeated
     calls (in tests, or under a reloader) do not duplicate every line.
+
+    ⚠️ **`json_output` chooses a FORMAT and never a level of protection**
+    (ADR-0412). Both formatters redact; the flag decides whether a human or a
+    log aggregator is reading.
     """
     root = logging.getLogger()
     root.handlers.clear()
 
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(
-        JsonFormatter() if json_output else logging.Formatter("%(levelname)s %(name)s %(message)s")
+        JsonFormatter()
+        if json_output
+        else PlainFormatter("%(levelname)s %(name)s %(message)s")
     )
     root.addHandler(handler)
     root.setLevel(level.upper())
