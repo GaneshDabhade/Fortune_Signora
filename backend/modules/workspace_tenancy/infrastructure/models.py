@@ -329,3 +329,11 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
     last_entered_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+
+    # 🔴 **[TASK-1424] — when this person closed the first-run overlay.**
+    # ⛔ **A timestamp rather than a boolean**: `NULL` is *not dismissed*, the
+    # same reading as `last_entered_at` beside it, and it also answers *when did
+    # this person stop being new* without a second migration.
+    first_run_dismissed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )

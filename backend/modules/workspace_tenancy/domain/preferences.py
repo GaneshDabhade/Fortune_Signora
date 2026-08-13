@@ -163,6 +163,10 @@ class PersonPreferences:
     #: long ago*: rule 12 `LAST_USED` must not fire for somebody who has never
     #: been anywhere.
     last_entered_at: datetime | None = None
+    #: 🔴 **[TASK-1424] — when the first-run overlay was closed.** ⛔ `None` is
+    #: *not dismissed*, and the design's word is *"dismissible forever"*, so
+    #: this outlives the session by construction.
+    first_run_dismissed_at: datetime | None = None
 
     # ── Screen `04 · AI preferences` ──────────────────────────────────────
     #
@@ -205,6 +209,23 @@ class PersonPreferences:
         if self.last_entered_at is not None and at <= self.last_entered_at:
             return self
         return replace(self, last_entered_at=at)
+
+    def dismissed_first_run(self, at: datetime) -> PersonPreferences:
+        """Record that this person closed the first-run overlay.
+
+        ⚡ **Idempotent, and the FIRST moment wins.** ⛔ A second dismissal must
+        not move the timestamp forward: *"dismissible forever"* is answered by
+        the earliest close, and overwriting it would lose the only fact the
+        column exists to carry — **when this person stopped being new.**
+
+        ⚠️ **Deliberately not a `choose_` method**, for the reason
+        {@link entered} gives one paragraph up: the others record a decision
+        about a setting somebody can see and change, **and there is no control
+        in the design that un-dismisses this.**
+        """
+        if self.first_run_dismissed_at is not None:
+            return self
+        return replace(self, first_run_dismissed_at=at)
 
     def left(self) -> PersonPreferences:
         """Forget that they were ever here.

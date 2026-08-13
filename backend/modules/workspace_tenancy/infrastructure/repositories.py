@@ -634,6 +634,7 @@ def _preferences_to_domain(model: PersonPreferencesModel) -> PersonPreferences:
         answer_style=AnswerStyle(model.answer_style),
         confidence_floor=model.confidence_floor,
         last_entered_at=model.last_entered_at,
+        first_run_dismissed_at=model.first_run_dismissed_at,
     )
 
 
@@ -682,6 +683,7 @@ class SqlAlchemyPersonPreferencesRepository(SqlAlchemyRepository):
             # passed, because the aggregate would be correct and the row never
             # written.
             "last_entered_at": preferences.last_entered_at,
+            "first_run_dismissed_at": preferences.first_run_dismissed_at,
         }
         if model is None:
             self._session.add(

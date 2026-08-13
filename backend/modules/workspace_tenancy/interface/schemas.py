@@ -452,6 +452,12 @@ class PreferencesResponse(BaseModel):
     answer_style: AnswerStyle
     confidence_floor: int
 
+    #: 🔴 **[TASK-1424] — whether this person has closed the first-run overlay.**
+    #: ⛔ **The FACT, not the moment.** The timestamp is stored, and a client
+    #: renders on the fact; **a timestamp it does not need is a timestamp it
+    #: could display wrongly.**
+    first_run_dismissed: bool
+
     @classmethod
     def from_domain(cls, prefs: PersonPreferences) -> PreferencesResponse:
         return cls(
@@ -467,6 +473,7 @@ class PreferencesResponse(BaseModel):
             always_show_citations=prefs.always_show_citations,
             answer_style=prefs.answer_style,
             confidence_floor=prefs.confidence_floor,
+            first_run_dismissed=prefs.first_run_dismissed_at is not None,
         )
 
 
