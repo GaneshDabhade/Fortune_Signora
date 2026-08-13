@@ -11,7 +11,8 @@
 | **Upstream reference** | `https://claude.ai/design/p/1d043179-1ee9-4c9f-b59e-592e04297cad` |
 | **Design system** | **Modernist** — `c798a756-9b5d-4587-a7bc-6f61a447ebab`, the version every screen links |
 | **Design version** | ⚠️ **The project exposes none.** **This snapshot's identity is the content hashes below** — stated rather than invented |
-| **Contents** | ✅ **37 files · 2,769,237 bytes · 35 screen designs** — **re-measured 2026-08-13, never transcribed forward.** ⚠️ **34 are `Fortune Signora …`; one is `Workspace Setup.dc.html`, named without the prefix** |
+| **Contents** | ✅ **`screens/` holds 35 files · 2,769,237 bytes · **34 screen designs** and one audit document.** ⚡ **One denominator: every figure on this line is `screens/` and nothing else.** ⛔ **The 35th file is [`Fortune Signora Entry Coverage Review.dc.html`](screens/), which §*Refresh record — 2026-08-09* of this document calls *"NOT a screen specification"* in terms.** 📁 **The snapshot as a whole is 37 files / 2,800,781 bytes — `screens/` plus `MANIFEST.md` and `design-system/styles.css`** |
+| 🔴 **THIS ROW WAS WRONG A THIRD TIME AND THE THIRD WAS THIS OFFICE'S CORRECTION OF THE SECOND** | ⛔ **The 2026-08-13 version read *"37 files · 2,769,237 bytes · 35 screen designs"* — **three quantities over three different sets**: 37 counted every file including this one, 2,769,237 counted `screens/` alone, and 35 counted `screens/` while calling an audit document a screen.** ⚠️ **The 2026-08-10 version it replaced was internally consistent — `31 files · 2,286,072 bytes` both excluded `MANIFEST.md`** — **so the correction introduced an inconsistency the stale figure did not have.** ✅ **Found by QE, who measured all three sets rather than reading the sentence** |
 | 🔴 **AND THIS ROW WENT STALE AGAIN, IN THE SAME WAY, BY THE OFFICE THAT CORRECTED IT** | ⛔ **It read *"31 files · 2,286,072 bytes · 29 screen designs"* and had been wrong since 2026-08-12**, when **five commissioned designs were added — `Home`, `Session Continuity`, `Workspace Chooser`, `Workspace Lifecycle`, `Security Gates`** — **and this header was not touched.** ⚡ **The row below documents exactly this failure occurring on 2026-08-08 and being corrected on 2026-08-10; it then recurred within two days.** 📁 **[§2](../../CLAUDE.md) — *the repository itself should always tell the truth* — and a summary row that silently stops counting is the defect, not the drift.** ⚠️ **The lesson this office keeps re-learning: a figure that must be updated by hand will not be. The hashes below are per-file and did not go stale; only the total did** |
 | ⚠️ **Why the previous total did not reconcile** | ⛔ **This row read *"28 files · 2,124,212 bytes · 27 screen designs"* and had been WRONG SINCE 2026-08-08.** ⚡ **Adding the two new designs to the old total gives 2,215,560 — 70,512 short of the measured 2,286,072, and the gap is the finding.** 📁 **Measured by `git log --diff-filter=A`: `Fortune Signora Authenticated Entry.dc.html` was added 2026-08-08 and `Fortune Signora Entry Coverage Review.dc.html` on 2026-08-09, and NEITHER updated this header.** 🔴 **[§2](../../CLAUDE.md) — *the repository itself should always tell the truth* — and a summary row that silently stops counting is the same defect class as the count that hid the two missing designs for three days. ✅ **Recorded rather than quietly overwritten** |
 
@@ -76,6 +77,8 @@
 ---
 
 ## Verified, not assumed
+
+> 🔴 **The byte figure in the sentence below is not this file's, and it is the sentence offered as PROOF of byte-identity.** ⛔ **`Fortune Signora Reports.dc.html` measures **48,965** bytes; the line says **48,859**.** ✅ **The file has one commit and never changed size, so this is not a dated record of another version — it was wrong when written.** ⚡ **The SHA-256 is correct and the conclusion stands: the comparison was genuinely byte-identical.** ⚠️ **But a number offered as evidence that is not the file's makes the proof unverifiable by the only reader who would check it.** 📁 **Found by QE, filed as [B-199](../BUGS.md). Left in place rather than silently overwritten** ([§2](../../CLAUDE.md)).
 
 ⚡ **A screen was re-fetched after harvesting and compared byte-for-byte:** `Fortune Signora Reports.dc.html` — **48,859 bytes, SHA-256 `7c0f92bf50b16a67…`, identical.** **The screens are upstream content, not a rendering of it.**
 
@@ -182,7 +185,7 @@
 
 | | |
 |---|---|
-| **Retrieved** | **`Fortune Signora Authenticated Entry.dc.html`** — **98,921 bytes** |
+| **Retrieved** | **`Fortune Signora Authenticated Entry.dc.html`** — **98,921 bytes** · 🔴 **WRONG WHEN WRITTEN: the file measures **99,112** and has one commit, so it never changed size.** ✅ **Its hash is correct.** 📁 **[B-199](../BUGS.md), found by QE** |
 | **sha256** | `515d333563d4eedcbfe716928ffd2412…` |
 | **Method** | `DesignSync` · `get_file`, one call, against project `1d043179-1ee9-4c9f-b59e-592e04297cad` |
 | **Workflow** | **29** in [`workflows.toml`](../coordination/workflows.toml) |
