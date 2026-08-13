@@ -8,6 +8,7 @@ clearing a field is a legitimate thing to ask for.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -15,12 +16,24 @@ import pytest
 from modules.workspace_tenancy.application.use_cases.preferences import (
     ChangePreferencesInput,
     ChangePreferencesUseCase,
+    DismissFirstRunUseCase,
     GetPreferencesUseCase,
+    SkipInviteUseCase,
 )
-from modules.workspace_tenancy.domain.preferences import Density, Theme, TimeFormat
+from modules.workspace_tenancy.domain.preferences import (
+    Density,
+    PersonPreferences,
+    Theme,
+    TimeFormat,
+)
 from modules.workspace_tenancy.tests.fakes import FakePersonPreferencesRepository
 
 pytestmark = pytest.mark.asyncio
+
+#: ⚡ **The clock is injected, everywhere** — these use cases take `now`
+#: precisely so a test never has to wait for one to move.
+AT = datetime(2026, 8, 13, 9, 14, tzinfo=UTC)
+LATER = datetime(2026, 8, 13, 11, 30, tzinfo=UTC)
 
 
 class TestSomebodyWhoHasNeverOpenedTheScreen:
@@ -105,3 +118,95 @@ class TestAPartialChange:
         theirs = await GetPreferencesUseCase(preferences=repo).execute(ws, colleague)
 
         assert theirs.theme is Theme.SYSTEM
+
+
+class _CountingPreferences(FakePersonPreferencesRepository):
+    """The fake, plus the one fact these tests are about: **did a write happen?**
+
+    ⛔ **Asserting the VALUE is unchanged does not test this guard.** The
+    domain already refuses to move — `dismissed_first_run` returns `self` when
+    a moment is recorded, and `test_first_run_dismissal.py` covers that. **A
+    use case that called `save` anyway would pass every value assertion and
+    still write a row per click**, which is precisely the defect the guard
+    exists to prevent and precisely what nothing observed.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.writes = 0
+
+    async def save(self, preferences: PersonPreferences) -> None:
+        self.writes += 1
+        await super().save(preferences)
+
+
+class TestASecondDismissalWritesNothing:
+    """📁 [B-196](../../../../docs/BUGS.md) — QE, cycle 220.
+
+    ⚡ **The behaviour was designed, stated in a comment, and asserted
+    nowhere**: *"a write that stores no new fact is a row created for
+    nothing."* ⛔ **Ten uncovered statements in this file took the repository
+    under the coverage floor**, and the honest half of that row is that the
+    branch genuinely had no test.
+    """
+
+    async def test_the_first_dismissal_writes_once(self) -> None:
+        repo = _CountingPreferences()
+        ws, person = uuid4(), uuid4()
+
+        await DismissFirstRunUseCase(preferences=repo).execute(ws, person, now=AT)
+
+        assert repo.writes == 1
+
+    async def test_a_second_dismissal_writes_nothing_at_all(self) -> None:
+        repo = _CountingPreferences()
+        ws, person = uuid4(), uuid4()
+        first = await DismissFirstRunUseCase(preferences=repo).execute(ws, person, now=AT)
+
+        again = await DismissFirstRunUseCase(preferences=repo).execute(ws, person, now=LATER)
+
+        # ⚡ **The first moment wins**, which is the fact a customer would
+        # notice, and the row count is the fact only this assertion can see.
+        assert again.first_run_dismissed_at == first.first_run_dismissed_at == AT
+        assert repo.writes == 1
+
+
+class TestUnskippingSomethingNeverSkipped:
+    """⛔ **The same guard on the other use case**, and the case is real rather
+    than defensive: 📁 the design puts *"Show the skipped step"* on the
+    activation progress line, and **the line renders for everybody** — so a
+    person who never skipped can reach the control that un-skips."""
+
+    async def test_a_skip_writes_once(self) -> None:
+        repo = _CountingPreferences()
+        ws, person = uuid4(), uuid4()
+
+        await SkipInviteUseCase(preferences=repo).execute(ws, person, skip=True, now=AT)
+
+        assert repo.writes == 1
+
+    async def test_un_skipping_a_record_that_was_never_skipped_writes_nothing(self) -> None:
+        repo = _CountingPreferences()
+        ws, person = uuid4(), uuid4()
+
+        after = await SkipInviteUseCase(preferences=repo).execute(
+            ws, person, skip=False, now=AT
+        )
+
+        assert after.invite_skipped_at is None
+        assert repo.writes == 0
+
+    async def test_but_a_real_un_skip_does_write(self) -> None:
+        """✅ **The half that must not regress.** A guard that became *never
+        write* would ship a hide with no way back — 📁 the exact failure
+        `SkipInviteUseCase`'s docstring says two use cases would produce."""
+        repo = _CountingPreferences()
+        ws, person = uuid4(), uuid4()
+        await SkipInviteUseCase(preferences=repo).execute(ws, person, skip=True, now=AT)
+
+        after = await SkipInviteUseCase(preferences=repo).execute(
+            ws, person, skip=False, now=LATER
+        )
+
+        assert after.invite_skipped_at is None
+        assert repo.writes == 2
