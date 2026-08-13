@@ -253,6 +253,7 @@
 | | |
 |---|---|
 | **Type** | ⚡ **Implementation Package.** ⛔ **Lane C states WHAT; Lane A owns decomposition, sequencing and end-to-end implementation** |
+| **Module** | **`provider_normalization`** — ⚠️ **added 2026-08-13: the row named its modules in prose inside the `Owner` cell and carried no `Module` cell**, so [`coordination.py`](../infra/coordination.py) resolved it to no lane and `state-check` reported it *"READY and appears in no lane queue"*. ⛔ **Correct to a human reader, invisible to the projection Lane A polls** — 📁 **the same gap as [TASK-1480](#task-1480)** |
 | **Owner** | **Lane A** — `provider_normalization` (vocabulary + mappers) and `product_surface` (the three consumers), both Lane A's in [`modules.toml`](coordination/modules.toml) |
 | **Status** | ✅ **`READY` — Lane C, 2026-08-12** |
 | **Authority** | ✅ **[C-209 ruled A by the product owner, 2026-08-12](LANE_COORDINATION.md): *Signora owns commercial account facts.*** **Contract: [ADR-0409](architecture/adr/0409-commercial-account-facts.md)** |
