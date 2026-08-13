@@ -149,6 +149,21 @@ export interface ScheduledDeletion {
  * ***"Owner sees a restore action"*** beside it. ⛔ **So restore is offered to
  * owners only** — and a member shown a restore button would be shown a control
  * that refuses them, on the screen telling them their data is going away.
+ *
+ * ## ⛔ NOBODY MAY WIRE `Restore it` YET, and the design says so in terms
+ *
+ * 📁 **`Workspace Lifecycle` §07 `Unresolved decisions`, U-02, owner
+ * *Architecture*** — ***"No approved document establishes that a soft-delete
+ * window exists. WL-08 and transition 11 assume it; if the backend
+ * hard-deletes, both must be removed and the confirmation copy rewritten to
+ * say so."*** ⛔ **Interim, verbatim: *"do not build WL-08's Restore action
+ * until the backend model is confirmed."***
+ *
+ * ⚡ **This function stays because it records WHICH role gets which control**,
+ * which is a design fact and survives either ruling. 🔴 **What must not happen
+ * is a page rendering `Restore it` as a working button** — 📁
+ * [C-1502](../../../docs/LANE_COORDINATION.md) holds the ruling, and
+ * `workspace_tenancy` today has no deletion lifecycle for it to call.
  */
 export function deletionActions(isOwner: boolean): readonly string[] {
   // 📁 The design lists three, and the first is owner-only.

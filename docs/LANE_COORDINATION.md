@@ -517,6 +517,46 @@ databaseUrl: required(
 
 ---
 
+## C-1502 · [TASK-1423](BACKLOG.md) — WL-08 renders a soft-delete window that no approved document says exists, and the design says so itself
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-13, ⚠️ **correcting its own row from the day before** — [TASK-1423](BACKLOG.md) declared WL-08 *"waiting on four facts `Membership` does not carry"* and **that was the wrong reason**, reached by reading the screen and not the document's §07 |
+| **Owner** | ⛔ **Two owners, and the design names both** — **Architecture** for U-02, **Legal + Product** for U-01 |
+| **Blocks** | ⛔ **WL-08 only — one of [TASK-1423](BACKLOG.md)'s eleven.** ✅ **Six are delivered; two more wait on [C-1501](#c-1501--task-1423--the-entry-engine-sends-a-suspended-workspace-to-a-page-and-the-design-gives-it-a-banner)** |
+| **Status** | 🔵 **`OPEN`** |
+
+### 🔴 This is not a gap this lane found — it is a gap the design DECLARED, and the lane missed it
+
+📁 **`Fortune Signora Workspace Lifecycle.dc.html` §07 `Unresolved decisions`**, whose own heading reads ***"Five items. Three are capabilities this document deliberately did not invent."*** ⚠️ **Two of the five are WL-08's, quoted verbatim:**
+
+| | | |
+|---|---|---|
+| **U-01** | **Retention window length** · *Legal + Product* | 📁 ***"This document uses 30 days for DELETING → PURGED, which the shipped documents assert nowhere. It is the single most consequential number here and it is not a design decision."*** |
+| **U-02** | **Whether restore-from-deleting exists at all** · *Architecture* | 📁 ***"The brief warns against inventing recovery. No approved document establishes that a soft-delete window exists. WL-08 and transition 11 assume it; if the backend hard-deletes, both must be removed and the confirmation copy rewritten to say so."*** |
+
+⛔ **U-02's interim is an instruction to this lane and it is unambiguous**: 📁 ***"do not build WL-08's Restore action until the backend model is confirmed."***
+
+### ⚠️ What the code measurement adds, which the design could not know
+
+🔴 **`workspace_tenancy` has no deletion lifecycle of any kind.** ⚡ **Measured, not inferred** — [`WorkspaceModel`](../backend/modules/workspace_tenancy/infrastructure/models.py) is `id`, `name`, and the timestamp and audit mixins: **no standing, no `deleted_at`, no `deleted_by`, no retention column**, and `application/use_cases/` holds **no delete-workspace case at all**.
+
+⛔ **So the correction to yesterday's row is not a nuance.** ⚡ **Adding four facts to `Membership` would have meant inventing the soft-delete window U-02 says nobody has approved** — **a schedule-deletion operation, a retention policy, a restore route and a purge job**, ⛔ **the last of which destroys customer data on a timer.** 📁 [D-153](DECISION_REGISTER.md) ⑦ and [§21](../CLAUDE.md) both put that with an authority rather than a lane, **and I would have shipped it as a slice.**
+
+### ✅ What is already built and does NOT wait on this
+
+📁 [`lib/entry/gates.ts`](../frontend/lib/entry/gates.ts)'s `ScheduledDeletion` **already satisfies U-01's interim in its stronger half**: it carries **an instant and has no field a caller could pass a duration through**, which is 📁 *"render the resulting date rather than the duration"* made unrepresentable rather than merely tested. ⚡ **Whatever number Legal rules, this contract renders it correctly**, so **U-01 alone would not block the screen.**
+
+🔴 **U-02 is the one that blocks it**, because it decides whether the state WL-08 describes **exists**.
+
+### ✅ Recommended, and stated as input rather than authority
+
+**Take U-02 first and U-01 second, because U-01 is only meaningful if U-02 is yes.** ⚡ **If the backend hard-deletes, WL-08 is not deferred — it is deleted**, along with transition 11 and the confirmation copy that promises recovery, 📁 exactly as the document says.
+
+⚠️ **Not decided here.** ⛔ **A retention window is a number a customer's data disappears on, and this lane inventing it is [§20c](../CLAUDE.md)'s worst case rather than a fixture gap** — 📁 and [D-233](DECISION_REGISTER.md)'s *fixture gap, not a blocker* does not reach it, **because the missing thing is a capability and not a fixture.**
+
+---
+
 ## C-1501 · [TASK-1423](BACKLOG.md) — the entry engine sends a suspended workspace to a PAGE and the design gives it a BANNER
 
 | | |
