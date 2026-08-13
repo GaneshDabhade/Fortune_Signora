@@ -26,6 +26,7 @@ from apps.api.composition.products import (
     IcpWrite,
     SegmentRead,
     TagApply,
+    TagBatchPropose,
     TagCreate,
     TagRename,
     TagsForAccounts,
@@ -48,6 +49,7 @@ from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.application.tag_use_cases import (
     ApplyTagInput,
     CreateTagInput,
+    ProposeTagBatchInput,
     RenameTagInput,
 )
 from modules.commercial_profile.interface.schemas import (
@@ -67,6 +69,7 @@ from modules.commercial_profile.interface.schemas import (
     DeclareTargetAccountsRequest,
     IcpDeclarationResponse,
     ProductCatalogResponse,
+    ProposedTagBatchResponse,
     PublishProductCatalogRequest,
     RenameAccountTagRequest,
     SegmentSummaryResponse,
@@ -630,4 +633,51 @@ async def account_tag_assignments(
     held = await tags.execute(context.workspace_id, tuple(body.accounts))
     return AccountTagAssignmentsResponse(
         assignments={account: list(tag_ids) for account, tag_ids in held.items()}
+    )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/account-tags/{tag_id}/batches",
+    response_model=ProposedTagBatchResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Propose putting a label on several companies, as one named thing",
+)
+async def propose_account_tag_batch(
+    context: CurrentWorkspace,
+    propose: TagBatchPropose,
+    tag_id: UUID,
+    body: ApplyAccountTagRequest,
+) -> ProposedTagBatchResponse:
+    """**201, and it proposes rather than applies.**
+
+    ⛔ **Nothing is tagged by this request.** 📁 ADR-0405: *an action is
+    approved before it is effective* — **approval is a human
+    decision on a screen**, and the work returns here as
+    `action_batch.applied`.
+
+    ⚡ **`201` because something now exists that did not**, and its id is in the
+    body: the confirmation names what it created, which is why an event-based
+    propose was refused ([C-1504](../../../../docs/LANE_COORDINATION.md)).
+
+    🔴 **The batch and its payload commit together or not at all.** 📁
+    [D-235](../../../../docs/DECISION_REGISTER.md) ①: *"no batch-without-payload
+    state is representable."* ⛔ **Two endpoints in sequence would make it
+    representable** — the first succeeding and the second failing leaves an
+    approvable action that applies nothing.
+    """
+    context.authorize(Resource.ACCOUNT_TAG, Action.UPDATE)
+    # ⚠️ **`ACTION_BATCH` is authorized too, and deliberately.** Proposing one
+    # is an act in that context as well, and a caller permitted to label
+    # accounts is not automatically permitted to create approvable work.
+    context.authorize(Resource.ACTION_BATCH, Action.UPDATE)
+    batch_id = await propose.execute(
+        ProposeTagBatchInput(
+            workspace_id=context.workspace_id,
+            actor_id=context.principal.user_id,
+            tag_id=tag_id,
+            accounts=tuple(body.accounts),
+        )
+    )
+    return ProposedTagBatchResponse(
+        batch_id=batch_id, item_count=len(dict.fromkeys(body.accounts))
     )

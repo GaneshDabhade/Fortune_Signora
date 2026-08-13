@@ -15,6 +15,9 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from modules.action_batch.infrastructure.composition import (
+    build_action_batch_proposer,
+)
 from modules.commercial_profile.application.declare_committee import (
     DeclareBuyingCommittee,
 )
@@ -37,11 +40,9 @@ from modules.commercial_profile.application.segment_queries import SegmentQuerie
 from modules.commercial_profile.application.tag_use_cases import (
     ApplyTagUseCase,
     CreateTagUseCase,
+    ProposeTagBatchUseCase,
     RenameTagUseCase,
     TagsForAccountsUseCase,
-)
-from modules.commercial_profile.infrastructure.tag_repository import (
-    SqlAccountTagRepository,
 )
 from modules.commercial_profile.infrastructure.composition import (
     build_buying_committees,
@@ -55,8 +56,12 @@ from modules.commercial_profile.infrastructure.composition import (
     build_focuses,
     build_icp_declarations,
     build_publish_product_catalog,
-    build_target_accounts,
     build_segment_queries,
+    build_target_accounts,
+)
+from modules.commercial_profile.infrastructure.tag_repository import (
+    SqlAccountTagRepository,
+    SqlTagBatchStore,
 )
 from signora_platform.api import CurrentWorkspace
 from signora_platform.event_bus import PostgresOutboxEventPublisher
@@ -194,3 +199,16 @@ TagCreate = Annotated[CreateTagUseCase, Depends(create_tag)]
 TagRename = Annotated[RenameTagUseCase, Depends(rename_tag)]
 TagApply = Annotated[ApplyTagUseCase, Depends(apply_tag_to_accounts)]
 TagsForAccounts = Annotated[TagsForAccountsUseCase, Depends(tags_for_accounts)]
+
+
+def propose_tag_batch(context: CurrentWorkspace) -> ProposeTagBatchUseCase:
+    """⚡ **One session, three collaborators** — which is what makes the batch
+    and its payload atomic. 📁 [D-235](../../../docs/DECISION_REGISTER.md) ①."""
+    return ProposeTagBatchUseCase(
+        tags=_tag_repository(context),
+        batches=SqlTagBatchStore(context.session),
+        proposer=build_action_batch_proposer(context.session),
+    )
+
+
+TagBatchPropose = Annotated[ProposeTagBatchUseCase, Depends(propose_tag_batch)]

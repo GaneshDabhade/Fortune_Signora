@@ -960,6 +960,25 @@ class AccountTagApplicationResponse(BaseModel):
         )
 
 
+class ProposedTagBatchResponse(BaseModel):
+    """The batch somebody is now asked to approve.
+
+    ⛔ **An id and a count, never a state.** 📁 The approval lifecycle is the
+    Action Batch's and is read from its own endpoint — **two representations of
+    where a batch stands would eventually disagree** ([§2](../../../../CLAUDE.md)).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    batch_id: UUID
+    item_count: int = Field(
+        description=(
+            "**Companies, not clicks.** The selection is de-duplicated before the count is "
+            "taken, so the sentence a customer approves says how many companies it touches."
+        )
+    )
+
+
 class AccountTagAssignmentsResponse(BaseModel):
     """Which tags each of the requested accounts wears.
 

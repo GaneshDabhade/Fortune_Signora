@@ -365,3 +365,106 @@ class TestARenameKeepsTheTagOnEveryAccount:
 
         assert response.status_code == 422, response.text
         assert response.json()["error"]["code"] == "account_tag_refused"
+
+
+class TestProposingABulkAddTag:
+    """🔴 **The customer journey's first half, over the full stack.**
+
+    ⛔ **Nothing is tagged by this request** — it creates something somebody is
+    asked to approve, and 📁 ADR-0405 is why: *an action is approved before it
+    is effective.*
+    """
+
+    async def test_it_answers_201_with_the_id_of_what_it_made(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+        tag = (await _create_tag(client, key_pair, user, workspace, name="At risk")).json()
+        accounts = [uuid4() for _ in range(3)]
+
+        response = await client.post(
+            f"/workspaces/{workspace}/account-tags/{tag['id']}/batches",
+            json={"accounts": [str(a) for a in accounts]},
+            headers=_auth(key_pair, user),
+        )
+
+        assert response.status_code == 201, response.text
+        assert response.json()["item_count"] == 3
+        UUID(response.json()["batch_id"])
+
+    async def test_the_count_is_companies_and_not_clicks(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """⛔ **A customer approving *"Tag 3 companies"* when two are the same
+        row has approved a sentence that is false**, and `item_count` is what
+        the Action Batch reports for the rest of its life."""
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+        tag = (await _create_tag(client, key_pair, user, workspace, name="At risk")).json()
+        twice = uuid4()
+
+        response = await client.post(
+            f"/workspaces/{workspace}/account-tags/{tag['id']}/batches",
+            json={"accounts": [str(twice), str(uuid4()), str(twice)]},
+            headers=_auth(key_pair, user),
+        )
+
+        assert response.json()["item_count"] == 2
+
+    async def test_nothing_is_tagged_until_somebody_approves_it(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """🔴 **The assertion that separates propose from apply.**
+
+        ⚡ **Proposing is a question**, and a screen that showed the chips
+        immediately would have told the customer the work was done before
+        anybody accepted it.
+        """
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+        tag = (await _create_tag(client, key_pair, user, workspace, name="At risk")).json()
+        account = uuid4()
+
+        await client.post(
+            f"/workspaces/{workspace}/account-tags/{tag['id']}/batches",
+            json={"accounts": [str(account)]},
+            headers=_auth(key_pair, user),
+        )
+
+        held = (await _assignments(client, key_pair, user, workspace, [account])).json()
+        assert held["assignments"] == {}
+
+    async def test_a_tag_from_another_workspace_proposes_nothing(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        me, colleague = uuid4(), uuid4()
+        mine = await _workspace(client, key_pair, me)
+        theirs = await _workspace(client, key_pair, colleague)
+        theirs_tag = await _create_tag(client, key_pair, colleague, theirs, name="At risk")
+
+        response = await client.post(
+            f"/workspaces/{mine}/account-tags/{theirs_tag.json()['id']}/batches",
+            json={"accounts": [str(uuid4())]},
+            headers=_auth(key_pair, me),
+        )
+
+        assert response.status_code == 422, response.text
+        assert response.json()["error"]["code"] == "account_tag_refused"
+
+    async def test_an_empty_selection_is_refused_before_anything_is_created(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        # ⛔ **An approvable action over nothing** is a question with no answer,
+        # and the schema refuses it before the use case is reached.
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+        tag = (await _create_tag(client, key_pair, user, workspace, name="At risk")).json()
+
+        response = await client.post(
+            f"/workspaces/{workspace}/account-tags/{tag['id']}/batches",
+            json={"accounts": []},
+            headers=_auth(key_pair, user),
+        )
+
+        assert response.status_code == 422, response.text

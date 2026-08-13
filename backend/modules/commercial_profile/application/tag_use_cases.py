@@ -1,6 +1,6 @@
 """What a customer does with their own labels — [TASK-466](../../../../docs/BACKLOG.md).
 
-**Seven use cases, and `ApplyTagUseCase` is the one this row exists for.**
+**Eight use cases, and `ApplyTagUseCase` is the one this row exists for.**
 
 ⚡ **The port is a Protocol declared here**, in the application layer that
 consumes it, rather than in `infrastructure/` — 📁 [§6](../../../../CLAUDE.md):
@@ -11,6 +11,7 @@ dependencies point inward.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Protocol
 from uuid import UUID, uuid4
 
@@ -301,3 +302,115 @@ class ReverseTagBatchUseCase:
         await ReverseTagApplicationUseCase(tags=self._tags).execute(
             workspace_id, batch.applied
         )
+
+
+#: 📁 **The only batch window the design states** —
+#: `Fortune Signora Companies.dc.html`: ***"every import is reversible for 24
+#: hours as a single named batch."***
+#:
+#: ⚠️ **It says *import*, and a bulk tag is a different act.** ⛔ **Applying it
+#: here is an inference rather than a citation**, and it is named as a constant
+#: with this note so a ruling is one edit — 📁
+#: [C-1506](../../../../docs/LANE_COORDINATION.md).
+#:
+#: ⛔ **`None` was the alternative and it is worse**: it means *reversal was
+#: never offered*, and [TASK-466](../../../../docs/BACKLOG.md) says in terms
+#: that *"a batch that applies but cannot be reversed in the window is a
+#: defect, not a limitation."*
+REVERSIBLE_FOR = timedelta(hours=24)
+
+
+class ActionBatchProposer(Protocol):
+    """⚡ **`action_batch`'s published write, narrowed to what this module
+    uses** — 📁 [D-235](../../../../docs/DECISION_REGISTER.md) ①.
+
+    ⛔ **Restated here as a Protocol rather than imported as one**, so the use
+    case below depends on a shape rather than on another module's file — 📁
+    [§6](../../../../CLAUDE.md): *dependencies point inward*, and the
+    composition root supplies the real adapter.
+    """
+
+    async def propose(
+        self,
+        *,
+        workspace_id: UUID,
+        name: str,
+        item_count: int,
+        proposed_by: UUID,
+        reversible_for: timedelta | None = None,
+    ) -> UUID: ...
+
+
+class TagBatchRecorder(Protocol):
+    """Where this module writes its own half of a proposed batch."""
+
+    async def record(self, workspace_id: UUID, batch: TagBatch, *, actor_id: UUID) -> None: ...
+
+
+@dataclass(frozen=True, slots=True)
+class ProposeTagBatchInput:
+    workspace_id: UUID
+    actor_id: UUID
+    tag_id: UUID
+    accounts: tuple[UUID, ...]
+
+
+class ProposeTagBatchUseCase:
+    """🔴 **Ask for a bulk *Add tag*, as one named thing somebody approves.**
+
+    📁 [D-235](../../../../docs/DECISION_REGISTER.md) ①: *"`propose` creates
+    the batch and its payload atomically… ⛔ no batch-without-payload state is
+    representable."*
+
+    ⚡ **Both writes happen on one session**, which is what makes that true. ⛔
+    **Two endpoints called in sequence would make the broken state
+    representable** — the first succeeding and the second failing leaves an
+    approvable action that applies nothing, which is
+    [ADR-0405](../../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md)'s
+    *no partial state* broken by construction.
+
+    ⛔ **It proposes and does not apply.** 📁 Approval is a human decision on a
+    screen; the batch takes effect when somebody accepts it, and
+    `action_batch.applied` is what brings the work back here.
+    """
+
+    def __init__(
+        self,
+        *,
+        tags: AccountTagRepository,
+        batches: TagBatchRecorder,
+        proposer: ActionBatchProposer,
+    ) -> None:
+        self._tags = tags
+        self._batches = batches
+        self._proposer = proposer
+
+    async def execute(self, request: ProposeTagBatchInput) -> UUID:
+        vocabulary = await self._tags.vocabulary(request.workspace_id)
+        tag = vocabulary.get(request.tag_id)
+        if tag is None:
+            raise AccountTagError("That tag is not in this workspace.")
+
+        # ⚡ **De-duplicated BEFORE the count is taken**, so the name a customer
+        # approves says how many companies it touches rather than how many rows
+        # they clicked. 📁 A table offering *Select all* on top of an existing
+        # selection is exactly how a row arrives twice.
+        accounts = tuple(dict.fromkeys(request.accounts))
+        if not accounts:
+            raise AccountTagError("A batch has to name at least one account.")
+
+        batch_id = await self._proposer.propose(
+            workspace_id=request.workspace_id,
+            # 📁 **The customer's own words**, so a history reads as a record of
+            # decisions rather than a list of identifiers.
+            name=f"Tag {len(accounts)} companies “{tag.name}”",
+            item_count=len(accounts),
+            proposed_by=request.actor_id,
+            reversible_for=REVERSIBLE_FOR,
+        )
+        await self._batches.record(
+            request.workspace_id,
+            TagBatch(batch_id=batch_id, tag_id=request.tag_id, requested=accounts),
+            actor_id=request.actor_id,
+        )
+        return batch_id

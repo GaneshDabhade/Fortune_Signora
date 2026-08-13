@@ -10,17 +10,22 @@ is a shared lifecycle. ⚠️ **A re-delivered event must change nothing** — �
 
 from __future__ import annotations
 
+from datetime import timedelta
 from uuid import UUID, uuid4
 
 import pytest
 
 from modules.commercial_profile.application.tag_use_cases import (
+    REVERSIBLE_FOR,
     ApplyTagBatchUseCase,
+    ProposeTagBatchInput,
+    ProposeTagBatchUseCase,
     ReverseTagBatchUseCase,
     TagBatchStore,
 )
 from modules.commercial_profile.domain.account_tag import (
     AccountTag,
+    AccountTagError,
     TagApplication,
     TagBatch,
     TagTone,
@@ -192,3 +197,168 @@ class TestTakingItBack:
         await reverse.execute(workspace, batch_id)
 
         assert await tags.accounts_with(workspace, tag.id, among=accounts) == frozenset()
+
+
+class FakeProposer:
+    """**Records what it was asked for**, because two of these tests are about
+    the name and the count a customer approves."""
+
+    def __init__(self) -> None:
+        self.proposals: list[dict[str, object]] = []
+
+    async def propose(
+        self,
+        *,
+        workspace_id: UUID,
+        name: str,
+        item_count: int,
+        proposed_by: UUID,
+        reversible_for: timedelta | None = None,
+    ) -> UUID:
+        batch_id = uuid4()
+        self.proposals.append(
+            {
+                "batch_id": batch_id,
+                "name": name,
+                "item_count": item_count,
+                "reversible_for": reversible_for,
+            }
+        )
+        return batch_id
+
+
+class RecordingBatches(FakeBatches):
+    async def record(self, workspace_id: UUID, batch: TagBatch, *, actor_id: UUID) -> None:
+        self.batches[(workspace_id, batch.batch_id)] = batch
+
+
+class TestProposingABulkAddTag:
+    async def test_it_proposes_and_records_the_payload(self) -> None:
+        tags, batches, proposer = FakeTags(), RecordingBatches(), FakeProposer()
+        workspace, actor = uuid4(), uuid4()
+        tag = AccountTag(id=uuid4(), name="At risk", tone=TagTone.RISK)
+        await tags.create(workspace, tag, actor_id=actor)
+        accounts = (uuid4(), uuid4(), uuid4())
+
+        batch_id = await ProposeTagBatchUseCase(
+            tags=tags, batches=batches, proposer=proposer
+        ).execute(
+            ProposeTagBatchInput(
+                workspace_id=workspace, actor_id=actor, tag_id=tag.id, accounts=accounts
+            )
+        )
+
+        recorded = await batches.get(workspace, batch_id)
+        assert recorded is not None
+        assert recorded.requested == accounts
+        # ⛔ **Proposed, not applied.** Approval is a human decision on a
+        # screen, and nothing is tagged until somebody accepts it.
+        assert recorded.applied is None
+        assert tags.writes == 1  # the tag itself, and nothing since
+
+    async def test_the_name_a_customer_approves_names_the_act(self) -> None:
+        """📁 *"What the customer called it — their words, so a history reads
+        as a record of decisions rather than a list of identifiers."*"""
+        tags, batches, proposer = FakeTags(), RecordingBatches(), FakeProposer()
+        workspace, actor = uuid4(), uuid4()
+        tag = AccountTag(id=uuid4(), name="At risk", tone=TagTone.RISK)
+        await tags.create(workspace, tag, actor_id=actor)
+
+        await ProposeTagBatchUseCase(tags=tags, batches=batches, proposer=proposer).execute(
+            ProposeTagBatchInput(
+                workspace_id=workspace,
+                actor_id=actor,
+                tag_id=tag.id,
+                accounts=(uuid4(), uuid4()),
+            )
+        )
+
+        assert proposer.proposals[0]["name"] == 'Tag 2 companies “At risk”'
+
+    async def test_the_count_is_companies_and_not_clicks(self) -> None:
+        """🔴 **De-duplicated BEFORE the count is taken.**
+
+        ⛔ **A customer approving *"Tag 3 companies"* when two are the same row
+        has approved a sentence that is false** — and the batch's `item_count`
+        is what the Action Batch reports for the rest of its life.
+        """
+        tags, batches, proposer = FakeTags(), RecordingBatches(), FakeProposer()
+        workspace, actor = uuid4(), uuid4()
+        tag = AccountTag(id=uuid4(), name="At risk", tone=TagTone.RISK)
+        await tags.create(workspace, tag, actor_id=actor)
+        twice = uuid4()
+
+        batch_id = await ProposeTagBatchUseCase(
+            tags=tags, batches=batches, proposer=proposer
+        ).execute(
+            ProposeTagBatchInput(
+                workspace_id=workspace,
+                actor_id=actor,
+                tag_id=tag.id,
+                accounts=(twice, uuid4(), twice),
+            )
+        )
+
+        assert proposer.proposals[0]["item_count"] == 2
+        assert proposer.proposals[0]["name"] == 'Tag 2 companies “At risk”'
+        recorded = await batches.get(workspace, batch_id)
+        assert recorded is not None and len(recorded.requested) == 2
+
+    async def test_a_window_is_declared_so_reversal_is_offered_at_all(self) -> None:
+        """⛔ **`None` would mean *reversal was never offered***, and
+        [TASK-466](../../../docs/BACKLOG.md) calls a batch that cannot be
+        reversed a defect rather than a limitation.
+
+        ⚠️ **The number is the design's only stated batch window and it is
+        stated for IMPORTS** — 📁 [C-1506](../../../docs/LANE_COORDINATION.md)
+        asks whether it carries here.
+        """
+        tags, batches, proposer = FakeTags(), RecordingBatches(), FakeProposer()
+        workspace, actor = uuid4(), uuid4()
+        tag = AccountTag(id=uuid4(), name="At risk", tone=TagTone.RISK)
+        await tags.create(workspace, tag, actor_id=actor)
+
+        await ProposeTagBatchUseCase(tags=tags, batches=batches, proposer=proposer).execute(
+            ProposeTagBatchInput(
+                workspace_id=workspace, actor_id=actor, tag_id=tag.id, accounts=(uuid4(),)
+            )
+        )
+
+        assert proposer.proposals[0]["reversible_for"] == REVERSIBLE_FOR
+        assert proposer.proposals[0]["reversible_for"] is not None
+
+    async def test_a_tag_from_another_workspace_proposes_nothing(self) -> None:
+        tags, batches, proposer = FakeTags(), RecordingBatches(), FakeProposer()
+
+        with pytest.raises(AccountTagError):
+            await ProposeTagBatchUseCase(
+                tags=tags, batches=batches, proposer=proposer
+            ).execute(
+                ProposeTagBatchInput(
+                    workspace_id=uuid4(),
+                    actor_id=uuid4(),
+                    tag_id=uuid4(),
+                    accounts=(uuid4(),),
+                )
+            )
+
+        # ⛔ **Nothing proposed**, so no approvable action exists for a tag the
+        # workspace does not have.
+        assert proposer.proposals == []
+
+    async def test_an_empty_selection_proposes_nothing(self) -> None:
+        tags, batches, proposer = FakeTags(), RecordingBatches(), FakeProposer()
+        workspace, actor = uuid4(), uuid4()
+        tag = AccountTag(id=uuid4(), name="At risk", tone=TagTone.RISK)
+        await tags.create(workspace, tag, actor_id=actor)
+
+        with pytest.raises(AccountTagError):
+            await ProposeTagBatchUseCase(
+                tags=tags, batches=batches, proposer=proposer
+            ).execute(
+                ProposeTagBatchInput(
+                    workspace_id=workspace, actor_id=actor, tag_id=tag.id, accounts=()
+                )
+            )
+
+        assert proposer.proposals == []

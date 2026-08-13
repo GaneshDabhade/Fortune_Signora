@@ -517,6 +517,39 @@ databaseUrl: required(
 
 ---
 
+## C-1506 · [TASK-466](BACKLOG.md) — the reversible window for a bulk tag is the design's number for a different act
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-13, on reaching `reversible_for` and finding no citation for it |
+| **Owner** | **Design Authority** — ⚡ **a customer-visible promise about how long an undo lasts** |
+| **Blocks** | ⛔ **Nothing.** ✅ **A window is declared and the batch is reversible; this asks whether the NUMBER is right** |
+| **Status** | 🔵 **`OPEN`** |
+
+### ⚠️ What the design states, and what it does not
+
+📁 **`Fortune Signora Companies.dc.html` states exactly one batch window**, and it states it for imports:
+
+> ***"Nothing is written until the preview is approved, and every import is reversible for 24 hours as a single named batch."***
+
+⛔ **A bulk *Add tag* is not an import**, and the document says nothing about how long one stays reversible. ⚠️ **It also draws a second, much shorter window for a different mechanism** — *"optimistic commit, undo in the toast for 10 seconds"* — **which is an inline edit rather than a batch**, and is not this.
+
+### ✅ What this lane did, and why it is an inference rather than a guess
+
+🔴 **`None` was the alternative and it is worse.** 📁 `reversible_for=None` means ***reversal was never offered***, and [TASK-466](BACKLOG.md) says in terms: *"a batch that applies but cannot be reversed in the window is a defect, not a limitation."*
+
+✅ **So `REVERSIBLE_FOR = timedelta(hours=24)` is a named constant** in [`tag_use_cases.py`](../backend/modules/commercial_profile/application/tag_use_cases.py), **carrying this item's number in its own comment** — ⚡ **a ruling is one edit and one test line.**
+
+⚠️ **Stated as an inference in the code rather than passed off as a citation**, because the document's sentence is about imports and somebody reading the constant later would otherwise believe it was specified.
+
+### ✅ Recommended, and stated as input rather than authority
+
+**24 hours, on consistency.** ⚡ **Both are bulk mutations applied as one named thing a person approved**, and a customer who learns *"a batch is reversible for a day"* has learned one rule rather than two. ⛔ **A shorter window for tagging would need a reason**, and the obvious one — *tagging is less consequential* — argues for the same window rather than a tighter one.
+
+⚠️ **If the answer is *"it depends on the operation"*, that is a real product position** and the constant moves to the operation that declares it, which is where `ProposeBatch.reversible_for` already puts it.
+
+---
+
 ## C-1505 · [TASK-466](BACKLOG.md) — *"Select all 312"* names a number no endpoint publishes
 
 | | |
