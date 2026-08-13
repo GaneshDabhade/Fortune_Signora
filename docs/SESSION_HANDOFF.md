@@ -1,5 +1,31 @@
 # Session Handoff
 
+> ## Cycle 219 — promoted `47fce828`, 2026-08-13
+>
+> **`main` = `47fce828` = the certified commit.** Thirteen commits · migration head **`0049`** · `pytest 4424` · **coverage `95.0`** · 403 Security Invariants · mypy strict over 868 files. **Migration reversibility proven base ↔ `0049`.**
+>
+> ⚠️ **Cycle 218 has no block here, and that absence IS [B-195](BUGS.md)'s finding**: its Closeout touched `docs/BACKLOG.md` and nothing else. **Left as a dated gap rather than backfilled** — a record of what was missed is worth more than a tidy sequence.
+>
+> ### 🔴 Three certifications, and both failures were QE's
+>
+> **① `0ccc72de` passed every gate and could not be promoted.** ⛔ QE's own [B-195](BUGS.md) filing had gone to `main` and `integration` was never rebased onto it, **so the certified commit was not a descendant.** 📁 **§20e predicts it exactly** — *rebase `integration` onto `main`, always; Closeout commits land on `main` and never on `integration`, so every cycle diverges the two by construction.* **The rule was not missing. It was read and not performed.**
+>
+> **② The second attempt was one push from destroying eleven commits** — seven of `TASK-1424`, [B-264](BUGS.md), and migration `0049`. ⚡ **QE rebased the candidate onto `main`, then ran the patch-id survival check its own procedure requires — against a STALE `origin/integration`, before fetching.** It reported everything surviving: **true of the ref compared against, false of the repository.** ✅ **`--force-with-lease` refused with `stale info`, and that is the only thing that caught it.**
+>
+> > ⛔ **A verification against a stale operand is not a weaker verification. It is a confident wrong answer guarding a destructive operation.**
+>
+> **The recovery was the skipped step** — rebase `integration` onto `main`, which **replays** everything rather than discarding it. ✅ Verified against the **fetched** ref: nothing missing by patch-id, migration present.
+>
+> ⛔ **Not instrumented, deliberately.** **Both errors were caught by gates that already existed** — `--ff-only` refused, then `--force-with-lease` refused — **and neither would have been caught by anything QE was about to build.** ⚡ **The guarantee held twice while the sequence failed twice.**
+>
+> ### ⚠️ Coverage headroom is gone
+>
+> **`95.0` against a floor of `95`.** It passed. **4 basis points three cycles ago, 3 last cycle, 0 now.** ⛔ **The next slice that adds an uncovered line fails the gate**, and it will present as that slice being rejected for something the repository had already spent. 📁 `make coverage-debt ARGS="<module>"` sees it before QE does.
+>
+> ### ✅ What shipped
+>
+> **`TASK-1424`** — the first-run overlay, its dismissal stored where *forever* means it, and activation's two blocking steps. **[B-264](BUGS.md)** — changing any preference silently forgot which workspace you were in. **[B-195](BUGS.md)** — the board-header check now asks whether the record is *current*, after three wrong predicates.
+
 > ## Cycle 217 — promoted `e158dd04`, 2026-08-12
 >
 > **`main` = `e158dd04` = the certified commit.** Ten commits. **First attempt, no aborts.**
