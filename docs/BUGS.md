@@ -5773,17 +5773,25 @@ def _load_state_check() -> ModuleType:
 | **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-13, found on the sequenced-row sweep |
 | **Found** | **`0c79753f`**, releasing [TASK-1419](BACKLOG.md) |
 
-**Steps.** Release a `SEQUENCED` row whose `Module` cell names **two** modules — [TASK-1419](BACKLOG.md) reads **`action_batch` + `product_surface`**. Run `python3 infra/coordination.py`.
+> 🔴 **CAUSE CORRECTED 2026-08-13 BY LANE A, AND THE ORIGINAL DIAGNOSIS BELOW WAS WRONG.** ⛔ **This row said the `Module` cell naming two modules was the cause. It is a coincidence.** ✅ **Verified in the code before accepting the correction** — 📁 [`infra/coordination.py`](../infra/coordination.py): **`claimable = [r for r in mine if r.state == ASSIGNED]`** against **`claimable_now = [r for r in claimable if r.on_integration]`**.
+>
+> ⚡ **Two expressions, and only one carries the `on_integration` guard.** **[TASK-1419](BACKLOG.md) was `READY` in a working copy and `SEQUENCED` on `integration`, so the array withheld it CORRECTLY and the summary counted it anyway.** ⛔ **[TASK-1477](BACKLOG.md) is emitted because it is synchronized, not because it names one module.**
+>
+> 🔴 **And the obvious fix is the dangerous one.** **Making the array emit the row — which is how this row read — publishes unsynchronized work to every lane**, which is precisely what the guard prevents and is [C-422](LANE_COORDINATION.md) exactly. ✅ **Lane A moved the COUNT to the array, never the array to the count**, and extracted `supply_line` so the difference is publishable: *"9 claimable of 48 assigned, 1 authored and NOT on integration."* ⚡ **That difference is the Synchronization Queue [§20e](../CLAUDE.md) already asks this office to publish every cycle.**
+>
+> ⛔ **The *"third distinct way a READY row is unreachable"* claim below is WITHDRAWN.** **The row was genuinely unclaimable from `integration` and the ref was right to withhold it.** ⚠️ **What was broken was the report, which made a correct withholding look like a drop** — **a different defect, and a smaller one.**
+>
+> 📁 **Left standing rather than rewritten** ([§2](../CLAUDE.md)): the original is what this office measured and believed, and the correction is what the code says.
+
+**Steps.** *(as originally written — the reproduction is real; the inference from it was not.)* Release a `SEQUENCED` row whose `Module` cell names **two** modules — [TASK-1419](BACKLOG.md) reads **`action_batch` + `product_surface`**. Run `python3 infra/coordination.py`.
 
 **Expected.** The row appears in `queues/lane-a.toml`'s `backlog`, as a single-module row does.
 
 **Actual.** ⛔ **The summary counts it — *"Lane A: 10 claimable"* — and the emitted array holds 9 and does not name it.** 📁 **`state-check` then reports *"TASK-1419 is READY and appears in no lane queue"*, correctly.**
 
-⚡ **Isolated by comparison rather than inferred:** ✅ **[TASK-1477](BACKLOG.md), single-module, IS emitted** — and it was invisible for a different reason until its `Module` cell was added hours earlier. ⛔ **[TASK-1478](BACKLOG.md) and [TASK-1479](BACKLOG.md) have no `Module` cell and are also absent**, but those are umbrella rows and their absence is correct.
+⚠️ **ORIGINAL INFERENCE, WRONG, kept for the record:** *"Isolated by comparison: TASK-1477, single-module, IS emitted."* ⛔ **The comparison held and the variable was misidentified — TASK-1477 differed in synchronization, not in module count, and this office varied one thing and read another.**
 
-⚠️ **Adding the id to the array by hand does not hold — the generator overwrites it on the next run**, which is the right behaviour for a generated file and is why this is a defect in the generator rather than a queue to repair.
-
-🔴 **Why it matters more than one row.** **This is the third distinct way in two days that a `READY` row has been executable and unreachable**: a stale `[[blocked]]` entry ([TASK-1421](BACKLOG.md), [TASK-1423](BACKLOG.md)), a missing `Module` cell ([TASK-1480](BACKLOG.md), [TASK-1477](BACKLOG.md)), and now a `Module` cell naming two. ⚡ **Each was found by `state-check` rather than by a lane going idle, which is the instrument working — but a lane that trusted its queue alone would have been short of work three times.**
+⚡ **What survives from it, and is worth keeping:** **adding the id to the array by hand does not hold — the generator overwrites it**, which is right for a generated file and is why the defect was in the generator rather than in the queue.
 
 ### B-432 · 🟠 The coordination register has more resolution vocabulary than any reader knows, and a sweep that knows two words reports a queue twice its size
 
