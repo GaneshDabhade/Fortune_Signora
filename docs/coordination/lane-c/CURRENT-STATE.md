@@ -9,9 +9,12 @@
 
 | | |
 |---|---|
-| **`main`** | ✅ **`920b08a4`** — cycle 218 promoted. ⚡ **No unresolved 🔴; promotion is not blocked** |
+| **`main`** | See `git rev-parse origin/main`. ⚠️ **Cycle 219 was the last promoted at this writing** |
 | **`integration`** | See `git rev-parse origin/integration`. ⚠️ **Not transcribed — a SHA in prose goes stale in one commit** |
-| **`lane-c-sync`** | Level with `integration` as of this writing |
+| **`lane-c-sync`** | See `git log origin/integration..origin/lane-c-sync --oneline` |
+| 🔴 **Coverage headroom** | ⛔ **NONE. `95.0` against a floor of `95`**, down from 4 basis points three cycles ago *(QE, cycle 219)*. **The next slice adding an uncovered line fails the gate** |
+
+> 🔴 **The coverage line is a RELEASING constraint, not a status figure, which is why it sits in the header.** ⚠️ **A large row released with no note about its test burden is a row that will come back as a rejection** — ⛔ **and this office does not see the gate, so it will not discover it.** ✅ **Re-read it from the gate rather than from here** *(`make coverage-debt`)*; **the number above is dated the moment it is written.** ⛔ **No proposal, and QE made none: it is a fact that shapes which rows are cheap, not a governance matter.**
 
 > ⛔ **This header read *"cycle 204"* and `main` = `4f680315` for fourteen cycles.** ⚠️ **The file whose purpose is to be the trusted entry point was the stalest thing in it** — 📁 the [C-213](../../LANE_COORDINATION.md) class, in this office's own record. **Corrected 2026-08-12.**
 >
