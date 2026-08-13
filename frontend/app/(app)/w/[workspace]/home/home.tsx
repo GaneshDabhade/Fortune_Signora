@@ -12,6 +12,7 @@ import {
   InviteTheTeamCard,
 } from '@/components/home/activation-cards';
 import { FirstRunOverlay } from '@/components/home/first-run-overlay';
+import { ActivationProgress } from '@/components/home/activation-progress';
 import { StatedAbsence } from '@/components/feedback/stated-absence';
 import { cardsFor, type CardContract } from '@/lib/home/cards';
 import {
@@ -201,6 +202,13 @@ export function Home() {
           not a fifth composition**, and the cards below it are unchanged — a
           new person's Home must be the same screen they come back to. */}
       <FirstRunOverlay />
+
+      {/* 📁 ***"Progress counts blocking cards only"***, and 📁 ***"skipping is
+          reversible from the PROGRESS LINE"*** — [TASK-1424](../../../../../../docs/BACKLOG.md).
+          ⛔ **Only in the activation composition**: the other three are not a
+          setup sequence, and a *step 1 of 2* over an executive dashboard would
+          be counting something nobody is doing. */}
+      {composition === 'activation' ? <ActivationProgress /> : null}
       {/* 📁 *"not a separate screen with its own layout, navigation or
           breadcrumb"* — ⛔ **so this states the composition and nothing more.**
           ⚡ The question is the design's own for each of the four. */}

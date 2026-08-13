@@ -27,9 +27,17 @@ vi.mock('@/lib/auth/client', () => ({ useSession: () => ({ data: { user: { id: '
 // same boundary this file already mocks the other reads at, **and returning
 // *dismissed* keeps these tests about the COMPOSITION**: an overlay in the
 // output would make every assertion below answer a question it was not asking.
+// ⚡ **The activation progress line reads the connection set** — [TASK-1424].
+// ⚠️ **Third time this file has needed a new mock as Home grew a read**, and
+// that is the test doing its job: it renders the REAL Home against mocked
+// boundaries, **so a new dependency cannot arrive silently.**
+vi.mock('@/lib/query/hooks/integrations', () => ({
+  useIntegrations: () => ({ data: [] }),
+}));
 vi.mock('@/lib/query/hooks/preferences', () => ({
-  usePreferences: () => ({ data: { first_run_dismissed: true } }),
+  usePreferences: () => ({ data: { first_run_dismissed: true, invite_hidden: false } }),
   useDismissFirstRun: () => ({ mutate: () => {}, isPending: false }),
+  useSkipInvite: () => ({ mutate: () => {}, isPending: false }),
 }));
 
 import { Home } from '@/app/(app)/w/[workspace]/home/home';
