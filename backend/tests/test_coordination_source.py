@@ -726,3 +726,54 @@ def test_notice_health_is_silent_when_nothing_is_withheld(
         lane="Lane A", depends_on=[], on_integration=True,
     )
     assert coordination._notice_health([row]) == {}
+
+
+def _row(task_id: str, *, state: str = "READY", on_integration: bool = True) -> Any:
+    return coordination.Task(
+        id=task_id,
+        title=task_id,
+        state=state,
+        declared=state,
+        lane="Lane A",
+        depends_on=[],
+        on_integration=on_integration,
+    )
+
+
+def test_the_summary_counts_what_the_published_array_emits() -> None:
+    """🔴 **B-433.** The summary counted `ASSIGNED`; `backlog` emits
+    `ASSIGNED and on_integration`. **A row set `READY` in a working copy and
+    not yet synchronized was counted here and withheld there**, so it read as
+    dropped — one row, two numbers, and no way to tell which was wrong.
+
+    ⛔ **The array was right.** Emitting the row instead would publish
+    unsynchronized work to every lane, which is the C-422 failure.
+    """
+    rows = [_row("TASK-1", state=coordination.ASSIGNED),
+            _row("TASK-2", state=coordination.ASSIGNED, on_integration=False)]
+
+    line = coordination.supply_line("Lane A", rows)
+
+    assert line.startswith("Lane A: 1 claimable of 2 assigned")
+
+
+def test_an_authored_but_unsynchronized_row_is_named_rather_than_dropped() -> None:
+    """⚡ **The gap is the Synchronization Queue**, which §20e asks Product
+    Office to publish every cycle — *"everything approved and not yet on
+    `integration`"*. ⛔ **Silently counting the smaller number would make it
+    invisible one document further along**, which is how it stayed unnoticed.
+    """
+    rows = [_row("TASK-1419", state=coordination.ASSIGNED, on_integration=False)]
+
+    line = coordination.supply_line("Lane A", rows)
+
+    assert "TASK-1419" in line
+    assert "authored and NOT on integration" in line
+
+
+def test_a_lane_with_nothing_pending_gets_no_synchronization_clause() -> None:
+    """A clause that appeared unconditionally would be noise on every cycle
+    where nothing is waiting, and noise is how a real one gets skipped."""
+    rows = [_row("TASK-1", state=coordination.ASSIGNED)]
+
+    assert coordination.supply_line("Lane A", rows) == "Lane A: 1 claimable of 1 assigned"

@@ -506,6 +506,43 @@ def tasks() -> list[Task]:
     return rows
 
 
+def supply_line(lane: str, mine: list[Task]) -> str:
+    """One lane's supply, counted the way the published array counts it. **B-433.**
+
+    ⛔ **`and r.on_integration` is the whole of the defect.** This counted
+    `ASSIGNED` alone while the published `backlog` array counts
+    `ASSIGNED and on_integration`, so a row set `READY` in a working copy and
+    not yet synchronized was **counted here and withheld there** — one row, two
+    numbers, and the row looked dropped.
+
+    🔴 **The array was right and this line was wrong, which is the opposite of
+    how the defect reads.** ⛔ **Emitting the row instead would publish
+    unsynchronized work to every lane** — the failure the `on_integration`
+    guard exists to prevent, and the one that produced
+    [C-422](../docs/LANE_COORDINATION.md), where a row corrected on one day was
+    claimed from the stale state on the next.
+
+    ⚡ **The gap is reported rather than hidden, and it is not noise.** It is
+    the **Synchronization Queue** §20e asks Product Office to publish every
+    cycle — *"everything approved and not yet on `integration`"* — and *"a
+    Synchronization Queue that grows is the failure the model was created to
+    end."* **Collapsing the two numbers into the smaller one would make it
+    invisible again**, one document further along.
+
+    ⚠️ **Extracted from `main` to be testable.** Inline, the corrected count
+    had no way to be pinned, and an uncheckable fix to a counting defect is
+    the shape that regresses.
+    """
+    claimable = [r for r in mine if r.state == ASSIGNED and r.on_integration]
+    authored = sorted(r.id for r in mine if r.state == ASSIGNED and not r.on_integration)
+    pending = (
+        f", {len(authored)} authored and NOT on integration ({', '.join(authored)})"
+        if authored
+        else ""
+    )
+    return f"{lane}: {len(claimable)} claimable of {len(mine)} assigned{pending}"
+
+
 def _walk(rows: list[Task], by_id: dict[str, Task]) -> None:
     """Depth of the longest unfinished chain ending at each task.
 
@@ -1503,9 +1540,7 @@ def main() -> int:
             return 1
 
     for lane in sorted({r.lane for r in rows if r.lane != "—"}):
-        mine = [r for r in rows if r.lane == lane]
-        print(f"  {lane}: {sum(1 for r in mine if r.state == ASSIGNED)} claimable "
-              f"of {len(mine)} assigned")
+        print("  " + supply_line(lane, [r for r in rows if r.lane == lane]))
     unplaced = [r for r in rows if r.lane == "—"]
     if unplaced:
         print(f"  ⛔ {len(unplaced)} task(s) resolve to no lane: "
