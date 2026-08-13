@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 224 — promoted `7cd62c57`, 2026-08-13
+>
+> **`main` = `7cd62c57` = the certified commit.** Eleven commits, **all three lanes**, 28 executable paths · `pytest` **4547** · coverage **95.06%** · **406** Security Invariants · migration head **`0052`**. **DR passed.** ✅ **First attempt, no aborts.**
+>
+> ### 🔴 A defect record of QE's own was lost and recovered
+>
+> **[B-196](BUGS.md) was gone from every ref.** ⛔ **Filed on `lane-qe`, pushed, and discarded by QE's own Closeout `reset --keep` before any candidate picked it up.** 📁 **`reset --keep` refuses to discard UNCOMMITTED changes and discards COMMITTED ones without comment.**
+>
+> ✅ **Audited on `main`: B-190 through B-195 all survived; B-196 did not.** ⚡ **The difference is not care — it is whether a cycle ran in between.**
+>
+> ⚠️ **Found only because an anchored insert asserted `count == 1` and threw.** ⛔ **A broad replacement would have written the next row and reported success, leaving B-196 lost with nothing to notice.** 📁 **The product owner's standing instruction to prefer anchored replacements is what surfaced it.**
+>
+> ✅ **Recovered by extracting the section from `bca167b7` in the reflog** — **not by cherry-picking**, which conflicted in `certification/manifest.json`, **a generated file QE does not hand-resolve.** ⚡ **And this candidate was built by cherry-picking `lane-qe` rather than resetting it**, which is [B-198](BUGS.md) applied rather than restated.
+>
+> ### ⛔ Two rows filed with it
+>
+> **[B-197](BUGS.md)** — **`_promote` reads `docs/BACKLOG.md` on both refs and nothing else**, and `verified_regressions` checks the four QE-written states of a **task** row. **So a `FIXED` → `OPEN` regression is invisible, and so is a `VERIFIED` regression in `BUGS.md`** — ⚡ **the second is worse, because §20e says *only QE sets `VERIFIED`* on a bug.** ✅ **Worth building: `registers.py` already parses the rows and `verified_regressions` already implements the ordering.**
+>
+> **[B-198](BUGS.md)** — the practice that lost B-196. ⛔ **It states the decision rather than taking it**: either rows stop being filed on `lane-qe`, or the Closeout stops resetting it. **Both have costs and neither is obviously right.**
+
 > ## Cycle 223 — promoted `fde954be`, 2026-08-13
 >
 > **`main` = `fde954be` = the certified commit.** Four commits, both lanes · `pytest` **4527** · coverage **95.09%** · **406** Security Invariants · mypy strict over **878** files · migration head **`0052`**, unchanged. **DR passed.** ✅ **First attempt, no aborts.**
@@ -380,7 +400,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-13 · **`main` at `fde954be`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-13 · **`main` at `7cd62c57`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
