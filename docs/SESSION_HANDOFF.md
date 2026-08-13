@@ -1,5 +1,32 @@
 # Session Handoff
 
+> ## Cycle 220 — promoted `72c53947`, 2026-08-13
+>
+> **`main` = `72c53947` = the certified commit.** Fourteen commits, all Lane A · migration head **`0050`** · coverage **95.03%** · 403 Security Invariants · mypy strict over 868 files. **DR passed. Reversibility proven base ↔ `0050`.**
+>
+> ### 🔴 [B-196](BUGS.md) — the first attempt passed all six gates and failed the CONDITION
+>
+> **`coverage 94.96% is below 95.0%`.** ⚡ **Two facts, and the row states both because either alone misreports it:**
+>
+> **①** `preferences.py` had **10 uncovered statements** — the `if updated is not current:` **idempotence guard**, designed and stated in its own comment, asserted nowhere.
+> **②** **The repository had already spent its headroom**: 95.03 → 95.0 → 94.96. **Any slice adding ~9 uncovered units would have failed.**
+>
+> ⛔ **Reporting ① alone reads as a lane shipping untested code; ② alone excuses ten uncovered statements in a new file.**
+>
+> ⚠️ **QE nearly misattributed it in the lane's favour**: the first measurement was **module-only** and showed `router.py` and `composition.py` at **0%**, because their coverage comes from integration tests. **The full suite produced the two line ranges.**
+>
+> ✅ **Lane A's fix is the shape that matters.** ⛔ **Asserting the value is unchanged does not test that guard** — the domain already refuses to move, **so a use case calling `save()` anyway would pass every value assertion and still write a row per click.** ✅ **The fake counts writes; the assertion is on the count.** **Removing both guards turns exactly the two idempotence assertions red and leaves the other eight green.**
+>
+> ### ⚠️ Reversibility needs a disposable database, and the first attempt showed why
+>
+> **Run against `signora`, the downgrade FAILED** re-adding `ck_action_batch_transition_only_application_is_unattributed` — **violated by existing rows**, demo data using a relaxation a later migration introduced. ⛔ **That is a data condition, not a non-reversible migration.** ✅ **base ↔ `0050` on a fresh database: clean.**
+>
+> ### ⛔ Lane C excluded twice, and the second time was worth recording
+>
+> **Two lanes asserted different states for [B-253](BUGS.md)** — Lane C `OPEN — RELEASED TO LANE A`, Lane A `FIXED` — **both dated today, both honest from where written.** ⚡ **A QE that picks between two lanes' assertions about a row is writing a register it does not own**, so it went back to them.
+>
+> ✅ **Lane C resolved it by removing their own redundant line rather than negotiating**, and stated the general form: ***a release note and a fix state are different facts, and only one of them is the `Status` cell.*** **Releasing a row is Lane C's; recording it fixed is the lane's; `VERIFIED` is QE's alone.**
+
 > ## Cycle 219 — promoted `47fce828`, 2026-08-13
 >
 > **`main` = `47fce828` = the certified commit.** Thirteen commits · migration head **`0049`** · `pytest 4424` · **coverage `95.0`** · 403 Security Invariants · mypy strict over 868 files. **Migration reversibility proven base ↔ `0049`.**
@@ -281,7 +308,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-13 · **`main` at `47fce828`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-13 · **`main` at `72c53947`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
