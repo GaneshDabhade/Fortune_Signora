@@ -90,6 +90,103 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-197 · 🟡 The promotion guard protects QE-written states in `BACKLOG.md` and reads `BUGS.md` not at all, so a `VERIFIED` bug can silently reopen
+
+| | |
+|---|---|
+| **Module** | **QE gates** — [`infra/certification-guard.py`](../infra/certification-guard.py), `verified_regressions` |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — ⛔ **it cannot promote an uncertified commit.** ⚠️ **It can promote one that reopens a defect somebody had closed**, and the promotion prints `PASS` while doing it |
+| **Status** | 🔵 **`OPEN`** |
+| **Found** | **2026-08-13, cycle 221**, by QE reading two refs by hand after a cherry-pick conflict recurred — ⛔ **not by any gate.** ⚡ **Raised as a row by Lane A**, who said it should not stay a thing noticed twice by accident |
+| **Commit found** | **`a5b3b8b1`** |
+
+### 🔴 The scope, measured
+
+📁 `_promote()` reads **`docs/BACKLOG.md` on both refs and nothing else** — ⛔ **`grep -c 'docs/BUGS.md"'` against the guard returns `0`.** 📁 `verified_regressions` checks `QE_TERMINAL_STATES` = **`VERIFIED` · `CERTIFIED` · `PROMOTED` · `DONE`**, which are **the four QE-written states of a TASK row.**
+
+> ⛔ **The guard's subject is task lifecycle. The bug register is outside it entirely.**
+
+### ⚠️ Two things it cannot see
+
+**① A `FIXED` → `OPEN` regression — which happened.** 📁 Lane C's tip carried [B-253](#b-253) as `OPEN` while `integration` had Lane A's `FIXED`; **their revert was correct and its base was stale.** ✅ **Caught because a conflict recurred and QE read both refs. Nothing fired.**
+
+**② A `VERIFIED` regression in `BUGS.md`** — ⚡ **worse, because [§20e](../CLAUDE.md) says *only QE sets `VERIFIED`* on a bug.** **The guard exists to stop QE's own judgements being undone by a rebase, and it protects that state in one register and not the other.**
+
+### ✅ Worth building, on the test that declined [B-193](#b-193)
+
+> ***If this check goes green, what will the reader stop asking?***
+
+**A reader would stop asking whether a closed defect survived the rebase — and comparing `BUGS.md` states across the two refs genuinely answers that.** ⛔ **Unlike B-193 there is no ambiguity about what to compare**: 📁 `registers.py` already parses the rows and `verified_regressions` already implements the ordering. **The work is applying an existing function to a second register.**
+
+⚠️ **Not built in the commit that files it**, so this is a claim about the present rather than an announcement of a fix.
+
+---
+
+### B-198 · 🟠 QE files bug rows on `lane-qe` and also resets `lane-qe` to `integration` to synchronize it, and the reset silently discards any row not yet integrated
+
+| | |
+|---|---|
+| **Module** | **QE's Closeout practice** — not a file |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **a defect record was lost.** ⚡ **[B-196](#b-196) was filed, pushed, and gone from every ref within one cycle** — **and it is the one register whose whole purpose is that no defect disappears because somebody could not act on it** |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-13**, by recovering the row. ⚠️ **The PRACTICE is not fixed and that is what this row is about** |
+| **Found** | **2026-08-13, cycle 224**, when an anchored insert failed because the row it anchored on was absent |
+| **Commit found** | **`fde954be`** |
+
+### 🔴 The two habits, and they conflict
+
+**①** QE files rows on `lane-qe`, because [`BUGS.md`](BUGS.md) is a document and a gate fix is a slice.
+**②** QE runs `git reset --keep lane-qe → origin/integration` at every Closeout, to synchronize.
+
+⛔ **`reset --keep` refuses to discard uncommitted changes and discards COMMITTED ones without comment.** ⚡ **So a row survives only if a candidate happens to pick it up before the next Closeout.**
+
+📁 **Audited on `main`: B-190, B-191, B-192, B-193, B-194 and B-195 all survived. B-196 did not.** ⛔ **The difference is not care — it is whether a cycle ran in between.**
+
+### ⚠️ The near-miss is what makes it 🟠 rather than 🟡
+
+**QE noticed only because an anchored insert asserted `t.count(anchor) == 1` and threw.** ⛔ **A broad replacement would have written B-197 into the file and reported success**, and **B-196 would have stayed lost with nothing to notice.** 📁 **The product owner's instruction — *never perform broad replacements when an anchored replacement can assert uniqueness* — is what surfaced this.**
+
+### ✅ Recovered, not rewritten
+
+📁 `bca167b7` in the reflog. ⛔ **The cherry-pick conflicted in `certification/manifest.json`, a generated file QE does not hand-resolve**, so **only the B-196 section was extracted and reinserted** — 2487 characters, unchanged.
+
+### ⛔ What the practice fix has to decide, and why it is not made here
+
+**Either rows stop being filed on `lane-qe`, or the Closeout stops resetting it.** ⚠️ **Both have costs and neither is obviously right**: the reset is what keeps `lane-qe` from diverging, and filing elsewhere means a document commit on a branch that carries gate fixes. ✅ **Stated as the decision rather than taken inside the commit that discovered it.**
+
+---
+
+### B-196 · 🟠 Coverage fell to 94.96% against a floor of 95.0, and the two facts behind it point at different owners
+
+| | |
+|---|---|
+| **Module** | **`workspace_tenancy`** — [`application/use_cases/preferences.py`](../backend/modules/workspace_tenancy/application/use_cases/preferences.py) |
+| **Current assignee** | **The current assignee of `workspace_tenancy`** — joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 · ⛔ **Blocking Quality Defect** ([§20e](../CLAUDE.md)): **coverage below the floor prevents promotion**, so it holds every lane's finished work, not only this one's |
+| **Status** | 🔵 **`OPEN`** |
+| **Found** | **2026-08-13, cycle 220**, by certification. **All six gates passed; the CONDITION failed** |
+| **Commit found** | **`9da34ec0`** |
+
+**Actual.** `NOT CERTIFIED · coverage 94.96% is below 95.0%`.
+
+### 🔴 Two facts, and reporting either alone would be wrong
+
+**① The uncovered lines are nameable and covering them clears it.** 📁 `preferences.py` is at **78%** with **10 uncovered statements** — **`147-154` and `175-179`**, measured on the **full** suite rather than the module's own, because router and composition are covered by integration tests and a module-only run misattributes.
+
+**Both are the same shape**: the `if updated is not current:` guard that exists so **a second dismissal does not write a row storing no new fact.** ⚡ **The idempotent branch is the untested one** — a second call with nothing to change.
+
+**② The repository had already spent its headroom to zero.** 📁 **95.03% three cycles ago, 95.0% last cycle, 94.96% now.** ⛔ **Any slice adding roughly nine uncovered units would have failed**, and this is the slice that arrived.
+
+> ⛔ **Reporting ① alone reads as a lane shipping untested code. Reporting ② alone excuses ten uncovered statements in a new file.** ✅ **Both are true and the row states both**, because QE predicted ② to both lanes an hour before ① happened — *"it will present as that slice being rejected for something the repository had already spent."*
+
+### ✅ What clears it
+
+**Two tests: a second dismissal, and an `unskipped_invite` on a record that was never skipped.** 📁 **The behaviour is already designed and stated in the code's own comment** — *"a write that stores no new fact is a row created for nothing"* — **it is asserted nowhere.**
+
+⚠️ **`make coverage-debt ARGS="workspace_tenancy"` names the file**, and §19 puts that run **before** the push rather than at certification.
+
+---
 ### B-195 · 🟡 The board-header check asks whether a named commit is REACHABLE, so a record two cycles stale passes green
 
 | | |
