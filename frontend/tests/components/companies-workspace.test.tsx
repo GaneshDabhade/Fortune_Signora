@@ -58,9 +58,30 @@ const THREE = [
   listed('a3', 'Meridian Freight', { last_observed_at: null }, 'technology'),
 ];
 
+/**
+ * ⚡ **Pages answered by PATH rather than by call order** —
+ * [TASK-466](../../../docs/BACKLOG.md).
+ *
+ * ⛔ **The Tags vocabulary is read on every visit**, and a
+ * `mockResolvedValueOnce` queue takes precedence over any implementation — so
+ * it consumed one of the pages and the second arrived as a tag list. ✅ **The
+ * ordered stub becomes a sequence keyed to the read it belongs to.**
+ */
+function servePages(...pages: readonly unknown[]): void {
+  let served = 0;
+  apiRequest.mockImplementation((path: unknown) => {
+    if (typeof path === 'string' && path.includes('/account-tags')) {
+      return Promise.resolve({ tags: [], assignments: {} });
+    }
+    const next = pages[Math.min(served, pages.length - 1)];
+    served += 1;
+    return Promise.resolve(next);
+  });
+}
+
 beforeEach(() => {
   apiRequest.mockReset();
-  apiRequest.mockResolvedValue(page(THREE));
+  servePages(page(THREE));
 });
 
 describe('📁 Table and Cards are one view of one selection', () => {
@@ -174,9 +195,11 @@ describe('🔴 Previous / Next, never a fabricated total', () => {
   });
 
   it('✅ Next moves forward and Previous comes back to the page held', async () => {
-    apiRequest
-      .mockResolvedValueOnce(page([listed('a1', 'Vantage Logistics')], true, 'CURSOR_ONE'))
-      .mockResolvedValueOnce(page([listed('a2', 'Ashgrove Retail')], false));
+    apiRequest.mockReset();
+    servePages(
+      page([listed('a1', 'Vantage Logistics')], true, 'CURSOR_ONE'),
+      page([listed('a2', 'Ashgrove Retail')], false),
+    );
 
     renderPage();
     await screen.findByText('Vantage Logistics');
@@ -188,7 +211,14 @@ describe('🔴 Previous / Next, never a fabricated total', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Previous' }));
     await screen.findByText('Vantage Logistics');
     // ⛔ **No second request** — the page was held, and Previous never refetches.
-    expect(apiRequest).toHaveBeenCalledTimes(2);
+    // ⚡ **Counting the LIST reads, not every call the screen makes.** ⛔ A
+    // total-call assertion is a hidden dependency on how many things a page
+    // happens to read (§2) — the Tags vocabulary added one and this test would
+    // have failed for a reason it is not about.
+    const listReads = apiRequest.mock.calls
+      .map((call) => call[0] as string)
+      .filter((path) => path.includes('/accounts-list'));
+    expect(listReads).toHaveLength(2);
   });
 });
 

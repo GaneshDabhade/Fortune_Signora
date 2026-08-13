@@ -61,6 +61,32 @@ function renderPage() {
   );
 }
 
+/**
+ * ⚡ **Pages answered by PATH rather than by call order** —
+ * [TASK-466](../../../docs/BACKLOG.md).
+ *
+ * ⛔ **The Tags vocabulary is read on every visit.** The bulk bar's *Add tag*
+ * needs it, and gating it on the Tags COLUMN meant the control never rendered
+ * — 📁 **found by the Playwright journey, not by this suite.**
+ *
+ * ⚠️ **A `mockResolvedValueOnce` queue takes precedence over any
+ * implementation**, so it cannot be routed *behind*: the vocabulary consumed
+ * one of the pages and the second page arrived as a tag list. ✅ **So the
+ * ordered stub becomes an explicit sequence keyed to the read it belongs to**,
+ * which is what it always meant.
+ */
+function servePages(...pages: readonly unknown[]): void {
+  let served = 0;
+  apiRequest.mockImplementation((path: unknown) => {
+    if (typeof path === 'string' && path.includes('/account-tags')) {
+      return Promise.resolve({ tags: [], assignments: {} });
+    }
+    const next = pages[Math.min(served, pages.length - 1)];
+    served += 1;
+    return Promise.resolve(next);
+  });
+}
+
 beforeEach(() => apiRequest.mockReset());
 
 describe('⛔ an empty book is a designed state, not a blank', () => {
@@ -156,9 +182,10 @@ describe('⚡ paging walks the server’s cursor and never computes one', () => 
   });
 
   it('🔴 it echoes the cursor back rather than computing an offset', async () => {
-    apiRequest
-      .mockResolvedValueOnce(page([listed('a1', 'Databricks')], true, 'CURSOR_ONE'))
-      .mockResolvedValueOnce(page([listed('a2', 'Vantage')], false));
+    servePages(
+      page([listed('a1', 'Databricks')], true, 'CURSOR_ONE'),
+      page([listed('a2', 'Vantage')], false),
+    );
 
     renderPage();
 
@@ -177,7 +204,14 @@ describe('⚡ paging walks the server’s cursor and never computes one', () => 
     // ⛔ **The cursor is opaque by contract.** ⚡ **An offset page would skip or
     // repeat rows** — the graph is written continuously, so a resolution can
     // insert an account between two requests.
-    const second = apiRequest.mock.calls[1]?.[0] as string;
+    // ⚡ **Selected by PATH, not by call index.** ⛔ The page reads more than
+    // one thing now, and `calls[1]` was the tag vocabulary — an index into a
+    // call log is a hidden dependency on how many reads a screen happens to
+    // make (§2).
+    const listReads = apiRequest.mock.calls
+      .map((call) => call[0] as string)
+      .filter((path) => path.includes('/accounts-list'));
+    const second = listReads[1];
     expect(second).toContain('cursor=CURSOR_ONE');
     expect(second).not.toContain('offset');
   });

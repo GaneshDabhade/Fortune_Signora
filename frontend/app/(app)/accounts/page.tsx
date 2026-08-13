@@ -140,7 +140,21 @@ export default function CompaniesPage() {
     () => (columns.includes('tags') ? shown.map((r) => r.account.account_id) : []),
     [columns, shown],
   );
-  const vocabulary = useAccountTags(columns.includes('tags') ? workspaceId : null);
+  /**
+   * 🔴 **NOT conditional on the Tags column, and the journey is what found
+   * that** — [TASK-466](../../../docs/BACKLOG.md).
+   *
+   * ⛔ **It was `columns.includes('tags') ? workspaceId : null`, and the
+   * consequence was that *Add tag* never rendered**: the control is hidden
+   * while the vocabulary is unread, `DEFAULT_COLUMNS` does not include `tags`,
+   * so a customer who had not turned the column on could not label anything.
+   *
+   * ⚡ **A bulk action's availability must not depend on which columns somebody
+   * chose to look at.** ⚠️ **The ASSIGNMENTS read stays conditional** — that
+   * one genuinely is the column's data, and asking for tags nobody is looking
+   * at is a request whose answer is thrown away.
+   */
+  const vocabulary = useAccountTags(workspaceId);
   const assignments = useAccountTagAssignments(workspaceId, taggable);
 
   const [selection, setSelection] = useState<Selection>(NOTHING_SELECTED);

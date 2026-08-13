@@ -517,6 +517,47 @@ databaseUrl: required(
 
 ---
 
+## C-1507 · [TASK-466](BACKLOG.md) — a batch can be proposed and approved, and no screen approves one
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-13, writing the Playwright journey — ⚡ **the journey found it, not the suite** |
+| **Owner** | **Design Authority** — ⛔ **the approved design draws no approvals surface, and inventing one is a customer journey a lane made up** |
+| **Blocks** | ⛔ **The second half of [TASK-466](BACKLOG.md)'s journey.** ✅ **Propose ships and is proven headed; approve, apply and reverse are proven at the API** |
+| **Status** | 🔵 **`OPEN`** |
+
+### 🔴 What exists now, and what does not
+
+✅ **The lifecycle is complete at the API** — [TASK-466](BACKLOG.md) added `approve` and `reverse` this cycle, because 📁 the module published *"two endpoints of seven"* and a proposed batch could not be accepted at all.
+
+⛔ **No screen calls any of them.** 📁 `Fortune Signora Companies.dc.html` draws the bulk bar and **no approvals inbox**, no pending-batch list, and no *"3 waiting for you"* affordance anywhere in the shell.
+
+⚡ **So a seller can propose *"Tag 41 companies"* and nobody can accept it from the product.**
+
+### ⚠️ Why this lane did not build one
+
+📁 [D-156](DECISION_REGISTER.md) ⑥: ⛔ ***"do not invent alternative user experiences."*** ⚡ **An approvals surface is a screen with a list, a decision, a history and a permission model** — **it is a design, not a control**, and guessing it is how a product grows a second inbox nobody asked for.
+
+⛔ **And the alternative — approving silently on the seller's behalf — is worse.** 📁 [ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md): *intelligence suggests; humans commit.* **A propose that auto-approves is not an approval workflow; it is a write with extra steps**, and it would make the whole context decorative.
+
+### ✅ What ships meanwhile, and it is declared rather than implied
+
+**The journey covers what a customer can actually drive**: select companies · name a label · propose it · **be told plainly that nothing has happened yet.** ⚡ **Six assertions, run headed.**
+
+📁 **The approve → apply → reverse half is proven at the API and in the handlers** — `test_api_action_batch.py` and `test_tag_batch_handlers.py` — ⛔ **and the spec's own header says so, so a green run cannot be read as more than it checked.**
+
+### ✅ Recommended, and stated as input rather than authority
+
+**Two candidates, and the first is much smaller:**
+
+**① The proposer approves their own batch, from the bulk bar.** ⚡ **The confirm dialog already exists and already names the count** — one more control on it, and the seller who selected the companies is the person deciding. ⛔ **It is not an approvals *workflow*** and does not pretend to be; it makes the batch mechanism reachable while the real question waits.
+
+**② A proper approvals surface**, which is a design and belongs upstream.
+
+⚠️ **① changes what `Add tag` does and is therefore not a lane's call**, which is why it is raised rather than built.
+
+---
+
 ## C-1506 · [TASK-466](BACKLOG.md) — the reversible window for a bulk tag is the design's number for a different act
 
 | | |
