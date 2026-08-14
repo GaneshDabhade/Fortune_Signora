@@ -23,18 +23,14 @@
  * | **Assigned to somebody the member list does not know** | ⚡ **A stated absence, not a blank** — the reference outlived the membership, which is the one case ADR-0411's design makes visible rather than silent |
  * | **Genuinely unassigned** | *Unassigned*, which is a real answer |
  */
+import type { Membership } from '@/lib/api/types';
 import type { AccountAssignment } from '@/lib/query/hooks/account-assignments';
-
-export interface WorkspaceMember {
-  readonly user_id: string;
-  readonly name: string;
-}
 
 export interface AccountOwnerProps {
   /** ⛔ **`undefined` while the read is in flight**, and that is not the same
    * as no owner. */
   readonly assignment?: AccountAssignment;
-  readonly members: readonly WorkspaceMember[];
+  readonly members: readonly Membership[];
 }
 
 /**
@@ -62,16 +58,26 @@ export function AccountOwner({ assignment, members }: AccountOwnerProps) {
   }
 
   const member = members.find((candidate) => candidate.user_id === assignment.member_user_id);
-  if (member === undefined) {
-    // ⚡ **The case the reference model makes visible.** Somebody holds this
-    // account and is no longer in the member list — 📁 exactly what
-    // [C-1510](../../../docs/LANE_COORDINATION.md) asks the product owner
-    // about. ⛔ **Rendering their raw id would show a customer a UUID; showing
-    // nothing would hide that the account is held at all.**
-    return <span className="text-muted-foreground italic">No longer a member</span>;
+  if (member !== undefined) {
+    // ⚡ **`member_email` when it is known, and D23's wording when it is not.**
+    // 📁 The convention already exists in Team Management — *"Somebody here"*,
+    // **rather than an identifier dressed as information** — and inventing a
+    // second answer for the same absence would be the duplicated vocabulary
+    // §4 forbids.
+    //
+    // ⛔ **The platform has no NAME to give**: Better Auth owns user identity
+    // and runs in the Next.js tier, so the Python API has none
+    // ([C-024](../../../docs/LANE_COORDINATION.md), ADR-0026). **An email is
+    // what a person recognises here, and it is what Team Management shows.**
+    return <span>{member.member_email ?? 'Somebody here'}</span>;
   }
 
-  return <span>{member.name}</span>;
+  // ⚡ **The case the reference model makes visible.** Somebody holds this
+    // account and is no longer in the member list — 📁 exactly what
+  // [C-1510](../../../docs/LANE_COORDINATION.md) asks the product owner
+  // about. ⛔ **Rendering their raw id would show a customer a UUID; showing
+  // nothing would hide that the account is held at all.**
+  return <span className="text-muted-foreground italic">No longer a member</span>;
 }
 
 /**

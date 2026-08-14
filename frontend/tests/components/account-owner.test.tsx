@@ -16,7 +16,14 @@ import {
 } from '@/components/accounts/account-owner';
 import type { AccountAssignment } from '@/lib/query/hooks/account-assignments';
 
-const PRIYA = { user_id: 'u1', name: 'Priya Raghunathan' };
+const PRIYA = {
+  id: 'm1',
+  workspace_id: 'w1',
+  user_id: 'u1',
+  role: 'member' as const,
+  created_at: '2026-08-01T00:00:00Z',
+  member_email: 'priya.nair@northwind.example',
+};
 const OWNED: AccountAssignment = {
   account_id: 'a1',
   role: 'owner',
@@ -43,14 +50,16 @@ describe('🔴 an unresolved read is not an empty result', () => {
 });
 
 describe('⚡ the id becomes a person here, and nowhere else', () => {
-  it('resolves the member against the list the screen already holds', () => {
+  it('shows the address, because the platform has no name to give', () => {
     /**
-     * 📁 ADR-0411 stores a reference *so that a name is never duplicated* —
-     * ⛔ **a name on the wire would be stale the day somebody changed theirs.**
+     * ⛔ **Better Auth owns user identity and runs in the Next.js tier, so the
+     * Python API has no name** — 📁 [C-024](../../../docs/LANE_COORDINATION.md),
+     * ADR-0026. ⚡ **`member_email` is what a person recognises, and it is
+     * what Team Management already shows.**
      */
     render(<AccountOwner assignment={OWNED} members={[PRIYA]} />);
 
-    expect(screen.getByText('Priya Raghunathan')).toBeVisible();
+    expect(screen.getByText('priya.nair@northwind.example')).toBeVisible();
   });
 
   it('🔴 says so when the holder is no longer a member', () => {
@@ -90,5 +99,21 @@ describe('⛔ picking one account’s owner out of a page of answers', () => {
      * distinction by accident.
      */
     expect(ownerFor('a1', undefined)).toBeUndefined();
+  });
+});
+
+
+describe('⚡ the wording for an absent address is the one that already exists', () => {
+  it('says “Somebody here” rather than an identifier dressed as information', () => {
+    /**
+     * 📁 **D23's wording, reused rather than reinvented.** Team Management
+     * already answers this exact absence, and ⛔ **a second answer for one
+     * question is the duplicated vocabulary [§4](../../../CLAUDE.md) forbids.**
+     */
+    render(
+      <AccountOwner assignment={OWNED} members={[{ ...PRIYA, member_email: null }]} />,
+    );
+
+    expect(screen.getByText('Somebody here')).toBeVisible();
   });
 });

@@ -1,6 +1,11 @@
 'use client';
 
 import type { ListedAccount } from '@/lib/api/types';
+import {
+  AccountOwner,
+  UnassignedOwner,
+  ownerFor,
+} from '@/components/accounts/account-owner';
 import { AccountTags, tagsFor } from '@/components/accounts/account-tags';
 import { AddTagControl } from '@/components/accounts/add-tag-control';
 import { BulkBar } from '@/components/accounts/bulk-bar';
@@ -22,6 +27,8 @@ import {
   useCreateTag,
   useProposeTagBatch,
 } from '@/lib/query/hooks/account-tags';
+import { useAccountAssignments } from '@/lib/query/hooks/account-assignments';
+import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { Building2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -155,6 +162,17 @@ export default function CompaniesPage() {
    * at is a request whose answer is thrown away.
    */
   const vocabulary = useAccountTags(workspaceId);
+  /** ⛔ **Asked only when the column is on**, exactly as the tag reads are —
+   * a request for owners nobody is looking at is work the customer pays for
+   * and cannot see. */
+  const ownerIds = useMemo(
+    () => (columns.includes('owner') ? shown.map((r) => r.account.account_id) : []),
+    [columns, shown],
+  );
+  const owners = useAccountAssignments(workspaceId, ownerIds);
+  /** ⚡ **The member list the screen already holds**, which is what turns a
+   * `member_user_id` into somebody a person recognises. */
+  const members = useWorkspaceMembers(columns.includes('owner') ? workspaceId : null);
   const assignments = useAccountTagAssignments(workspaceId, taggable);
 
   const [selection, setSelection] = useState<Selection>(NOTHING_SELECTED);
@@ -395,6 +413,31 @@ export default function CompaniesPage() {
                             fallbackId={row.account.account_id}
                             href={`/accounts/${row.account.account_id}`}
                           />
+                        ) : column.id === 'owner' ? (
+                          /* ⛔ **Joined, never read from the row**, on the same
+                             terms as tags: an assignment is
+                             `commercial_profile`'s and an account is
+                             `knowledge_graph`'s (§5). ⚡ **And the id becomes a
+                             person only here** — ADR-0411 stores a reference
+                             precisely so a name is never duplicated. */
+                          ownerFor(row.account.account_id, owners.data?.assignments) ===
+                          undefined ? (
+                            /* ⚠️ **Only once the read has ARRIVED.** While it
+                               is in flight the cell renders nothing —
+                               forty rows saying *Unassigned* during a load is
+                               forty false statements (P-A). */
+                            owners.isSuccess ? (
+                              <UnassignedOwner />
+                            ) : null
+                          ) : (
+                            <AccountOwner
+                              assignment={ownerFor(
+                                row.account.account_id,
+                                owners.data?.assignments,
+                              )}
+                              members={members.data?.items ?? []}
+                            />
+                          )
                         ) : column.id === 'tags' ? (
                           /* ⛔ **Joined, never read from the row.** A tag is
                              `commercial_profile`'s and an account is

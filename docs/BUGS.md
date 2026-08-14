@@ -309,6 +309,49 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-268 · Every lane's stack creates `signora`, and every tool is told `signora_lane_a`
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — `infra/environments.py` **and** `infra/docker-compose.yml` |
+| **Current assignee** | **Lane A** for `environments.py`; ⚠️ **the compose file is QE's** ([§20e](../CLAUDE.md), a gate instrument) — **which is why this is reported rather than fixed** |
+| **Severity** | 🟡 — **wrong but survivable.** ⛔ **Isolation is NOT at risk**: each lane has its own container on its own port, so the stacks are separated by `COMPOSE_PROJECT_NAME` regardless of the name inside. ⚠️ **What breaks is every tool that uses the PUBLISHED name against a lane's own stack** |
+| **Status** | **`OPEN` — Lane A, 2026-08-14** |
+| **Found** | **2026-08-14, by Lane A**, bringing up its own stack to run a Playwright journey — ⚡ **the third symptom of one cause, and the first time the cause was measured** |
+
+#### 🔴 The two representations
+
+| | |
+|---|---|
+| 📁 `infra/environments.py:138` | `return "signora" if self.slot == 0 else f"signora_{self.name.replace('-', '_')}"` → **`signora_lane_a`** |
+| 📁 `infra/docker-compose.yml:31` | `POSTGRES_DB: signora` — **hardcoded, not parameterised** |
+
+⛔ **They agree for slot 0 and disagree for every other environment**, which is why nobody has hit it on the shared stack.
+
+#### ⚠️ Three symptoms, one cause, and the first two were misread
+
+**All three were hit by this lane today before the cause was found:**
+
+| | |
+|---|---|
+| **`make demo-prepare` fails** | *"database `signora_lane_a` does not exist"* — **the Makefile uses the published name against a stack that created `signora`** |
+| **The seeder wrote where nothing was read** | ⚠️ **Cost real time during [TASK-429](BACKLOG.md)**: the seeder writes to `signora` via `tests/conftest.py`'s default, and this lane read `signora_lane_a` and concluded the pipeline had produced nothing. 📁 **Diagnosed then as *"I was reading the wrong database"* — true, and not the cause** |
+| **A fresh lane stack cannot be migrated** | `alembic upgrade head` against the published name, on a container that never created it |
+
+#### ✅ Expected
+
+**One name.** ⚡ **Either the compose file parameterises `POSTGRES_DB` from the published value, or `environments.py` publishes what the compose file creates** — 📁 [§2](../CLAUDE.md): *truth has exactly one authoritative representation; everything else derives from it.*
+
+#### ⚠️ Which way, and why this lane is not choosing
+
+**Each lane already has its own container and its own port**, so a distinct database *name* buys no isolation it does not already have — **which argues for publishing `signora`.** ⛔ **But `environments.py`'s own comment says *"`signora` for slot 0 by history"*, implying the per-slot name is deliberate**, and the compose file is **QE's**.
+
+⚡ **So the fix touches one file this lane owns and one it does not**, and picking a direction unilaterally would decide something for the lane that certifies with it.
+
+#### ⛔ Worked around, not fixed, and stated so
+
+**This lane is using `signora` against its own container to run its journey.** ⚠️ **That works and it is exactly the confusion the defect creates** — the next person will do the same and not know why.
+
 ### B-267 · A database password in a connection string reached the log, with redaction on
 
 | | |

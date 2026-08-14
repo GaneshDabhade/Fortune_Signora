@@ -605,3 +605,61 @@ So `TagApplication` records what **changed**, and `inverse()` may read nothing e
 | **Owner / CSM** | [ADR-0411](adr/0411-customer-organized-account-metadata.md) ratifies it; not started |
 | **An approvals screen** | [C-1507](../LANE_COORDINATION.md) — the lifecycle is complete at the API and **no screen approves a batch** |
 | **The reversible window's number** | [C-1506](../LANE_COORDINATION.md) — 24 hours is the design's number for *imports*, and is an inference here |
+
+
+---
+
+## TASK-1479 ⓶ — who owns an account, and who looks after it
+
+**[ADR-0411](adr/0411-customer-organized-account-metadata.md)'s second capability.** Tags shipped as [TASK-466](../BACKLOG.md); this is **Account Owner and CSM**. ⛔ **Segments is the third and is deliberately not here** — see the last section.
+
+### ⛔ A reference to a member, never a name
+
+📁 **The ruling's own words**: *"A reference to a workspace **member**, not free text. A person who leaves must not leave a dangling string — the reference is what makes removal answerable."*
+
+⚡ **So `account_assignment` stores a `member_user_id`**, and the screen resolves it against the member list it already holds. **No name is stored, and none travels on the response** — a name would be stale the day somebody changed theirs, and it is the duplicated identity the reference exists to avoid.
+
+🔴 **A reference that is never verified is free text with a `UUID` type.** `AssignAccounts` refuses a user who is not a member of this workspace, **before anything is written**, through `WorkspaceQueryPort` — 📁 the approved synchronous cross-module read at [05-module-dependencies.md](05-module-dependencies.md) line 60, *sync, for workspace scope*. ⛔ **This module keeps no copy of a membership**: a cached one would be a second representation of a tenancy fact, and the copy is the one that is wrong the day somebody leaves.
+
+⚠️ **Membership is checked twice and it is not redundant.** At proposal, so a customer is refused immediately rather than after approval; and again on apply, **because a member who leaves between proposing and approving must not be assigned on acceptance.** Two moments, two checks, because the answer can differ between them.
+
+### ⚡ Row per role, and the reason is the inverse
+
+**Two nullable columns on the account would also refuse a second owner.** The row shape — `(workspace_id, account_id, role)` as the primary key — is chosen for what it does to the **reversal**.
+
+📁 [ADR-0405](adr/0405-an-action-is-approved-before-it-is-effective.md) puts the inverse with the domain that performed the operation, and **the inverse of *"set the owner on these forty accounts"* is *"restore what each one had"*** — which needs a prior value **per account**, not a column that can hold one.
+
+### 🔴 The reversal, which is the hardest thing in this slice and was wrong twice
+
+**`Reassignment` carries `previous` — accounts that actually moved, with who held each before — and `inverse()` returns it and never `unchanged`.** ⛔ Reversing an account that did not move would take an owner away from somebody who always had one.
+
+**Two defects were found here, and neither by reasoning:**
+
+| | |
+|---|---|
+| **The absences** | ⛔ An account that had **no** owner before must end with **no** owner. **Writing nothing for a `None` leaves the new owner in place**, so the reversal reports success while half of it did not happen. **Found by writing the naive version and running the tests** |
+| **The world moved** | 🔴 `restore` was **unconditional** — it wrote the prior state over whatever it found. **The batch set an owner, a colleague chose a different one, and *take it back* silently discarded their choice.** ⚡ **A lost update wearing an undo's clothes.** **Found by QE naming an axis this lane had not tested** |
+
+⚡ **The distinction the fix turns on:** `restore` was doing ***"make the world look like it used to"*** when what the customer pressed was ***"undo my change"***. **Those are different operations and only the second is what the button says.**
+
+✅ **So `Reassignment` carries `assigned_to`** — what the batch put there — **and every write in `restore` is conditional on that value still being in place.** An account somebody else has since claimed is left alone; a second reversal finds nothing matching and does nothing. **The condition cannot be recomputed later, which is why it is stored on the batch row.**
+
+### ⚠️ The one question this slice did NOT answer
+
+📁 **[C-1510](../LANE_COORDINATION.md)**: **what may *take it back* do when the previous owner has left the workspace?**
+
+⛔ **The shipped path restores faithfully** — the prior holder was a member when the batch ran, and replaying that is the batch's own change undone. ⚠️ **QE's counter is stronger than the argument in the code**: *"an account silently owned by somebody who cannot open it is worse than an account with no owner, because the empty state is visible and the invalid one is not."*
+
+**Two live options and a third this lane would propose** — restore faithfully **and report** which accounts returned to somebody who has since left — **are in the register.** ⛔ **Not decided here**: the shipped behaviour is an encoded assumption, documented rather than silent, and that is what makes it an item rather than a note.
+
+### The screen
+
+**The Companies table's Owner column**, and 📁 [`table.ts`](../../frontend/lib/accounts/table.ts)'s own header is corrected: **two of its five source-less columns now have one.** ⚡ **Three states, and only one of them is *nobody*** — an unread answer renders **nothing**, an account held by somebody no longer in the member list says so, and a genuinely unassigned account says *Unassigned*. 📁 [P-A](../DOMAIN_DISCOVERY_REGISTER.md)'s loading cousin, which [C-226](../LANE_COORDINATION.md) found six times on one screen.
+
+### ⛔ Segments is not here, and the reason is this module's own vocabulary
+
+📁 **ADR-0411's third capability is *"a named, saved grouping of accounts"*.** 🔴 **`commercial_profile` already owns the word**: [ADR-0041](adr/0041-icp-aggregate.md)'s ICP **is** *"a named customer segment"*, served at `/workspaces/{id}/icp-segments` under the summary *"Every customer segment this workspace sells to."*
+
+⚠️ **Two customer-facing meanings of one word in one bounded context is [§4](../../CLAUDE.md)'s exact prohibition**, and **the honest answer may be reuse rather than construction**: `workspace_tenancy`'s `SavedView` is already a named, versioned, immutable, workspace-scoped **declaration** — which is what *"a stored predicate"* means, and ADR-0411 §3 leaves that choice to this lane.
+
+⛔ **Routed to Product Office rather than decided inside a slice**, because it is vocabulary and ownership rather than implementation.

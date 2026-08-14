@@ -1205,6 +1205,40 @@ def _audit_main() -> int:
     return 1
 
 
+def _report_journeys(rev_range: str) -> int:
+    """Name the Playwright specs a change selects.
+
+    ⚠️ **Added 2026-08-14 because [`CLAUDE.md`](../CLAUDE.md) §19 already named
+    it** — *"`python3 infra/certification-guard.py --journeys` names which
+    specs the change selects; the mapping is deterministic and not a judgement
+    call."* 🔴 **`journeys_for` existed and had no way in from the command
+    line**, so the constitution instructed a step nobody could perform.
+
+    ⛔ **The rule is repaired by building the mechanism rather than by editing
+    the sentence**, because the sentence describes the behaviour the
+    repository wants — and 📁 [§2](../CLAUDE.md) puts the defect in the
+    document that asserted something untrue of the repository, not in the
+    requirement.
+    """
+    changed = _git("diff", "--name-only", rev_range)
+    paths = [line for line in changed.splitlines() if line]
+    selected = journeys_for(paths)
+
+    if not selected:
+        print("journeys: none — nothing under frontend/ changed")
+        return 0
+    if "__all__" in selected:
+        print(
+            "journeys: ALL — a changed frontend path matches no rule, and an "
+            "unrecognised path widens rather than narrows (a new directory must "
+            "not silently reduce validation)"
+        )
+        return 0
+    for journey in sorted(selected):
+        print(f"journeys: {journey}")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -1239,6 +1273,13 @@ def main() -> int:
         help="is there anything on `integration` worth certifying, and what is it?",
     )
     parser.add_argument(
+        "--journeys",
+        metavar="REV_RANGE",
+        nargs="?",
+        const="origin/integration...HEAD",
+        help="which Playwright specs a change selects (CLAUDE.md §19)",
+    )
+    parser.add_argument(
         "--promote",
         metavar="SHA",
         help="run every BLOCKING gate and promote only if all of them pass (D-228)",
@@ -1255,6 +1296,8 @@ def main() -> int:
         return _report_plan(args.plan)
     if args.next_cycle:
         return _next_cycle()
+    if args.journeys:
+        return _report_journeys(args.journeys)
     if args.promote:
         return _promote(args.promote)
 
