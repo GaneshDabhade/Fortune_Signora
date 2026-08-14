@@ -61,8 +61,13 @@ def _load_state_check(root: Path) -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     sys.modules["state_check_under_test"] = module
     spec.loader.exec_module(module)
-    module.REPO_ROOT = root
-    module.MODULES_TOML = root / "docs" / "coordination" / "modules.toml"
+    #: `setattr` rather than attribute assignment: `state-check.py` is loaded
+    #: dynamically, so mypy sees a bare `ModuleType` and cannot know these
+    #: module-level constants exist. **Redirecting them is the whole point of
+    #: the fixture** — every case must read a fabricated register, never the
+    #: live one, or the suite would pass identically with the check deleted.
+    setattr(module, "REPO_ROOT", root)
+    setattr(module, "MODULES_TOML", root / "docs" / "coordination" / "modules.toml")
     return module
 
 
@@ -79,7 +84,8 @@ def _findings(check: ModuleType, root: Path, owner: str | None) -> list[str]:
         rows.append(owner)
     rows.append("| **Status** | 🟡 `OPEN` |")
     (root / "docs" / "LANE_COORDINATION.md").write_text("\n".join(rows) + "\n")
-    return check._item_owner_findings()
+    findings: list[str] = check._item_owner_findings()
+    return findings
 
 
 ROUTABLE = [
