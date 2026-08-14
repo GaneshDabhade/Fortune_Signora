@@ -20,8 +20,12 @@ not share a vocabulary:**
 
 | | |
 |---|---|
-| **The table's `Segment` column** | **One value per row**, from a tier vocabulary — `Enterprise`, `Mid-market` |
-| **The `Segments` panel** | **Five named groupings with counts** — `Renewal risk — 90 days` 41 · `Expansion-ready` 118 · `Board reporting set` 212 · `Competitive watch` 26 · `Dormant enterprise` 304 |
+| **The table's `Segment` column** | **One value per row**, from a tier |
+| | vocabulary — `Enterprise`, `Mid-market` |
+| **The `Segments` panel** | **Five named groupings with counts** — |
+| | `Renewal risk — 90 days` 41 · `Expansion-ready` 118 · |
+| | `Board reporting set` 212 · `Competitive watch` 26 · |
+| | `Dormant enterprise` 304 |
 
 ⛔ **No row's `Segment` cell holds any panel segment's name, and no panel entry
 is named `Enterprise` or `Mid-market`.** ⚠️ **The two sets are disjoint**, so
@@ -29,9 +33,9 @@ they cannot be one thing rendered twice — **and that is a reading of the
 snapshot rather than an inference from it.**
 
 ⚡ **This model follows the PANEL**, because the panel is the only place a
-segment is created, named and counted, and **`Board reporting set` — *"manually
-curated for the quarterly pack"* — is [ADR-0411](../../../../docs/architecture/adr/0411-customer-organized-account-metadata.md)'s
-enumerated grouping in the design's own words.** ✅ **The column is raised as
+segment is created, named and counted, and **`Board reporting set` —
+*"manually curated for the quarterly pack"* — is ADR-0411's enumerated
+grouping in the design's own words.** ✅ **The column is raised as
 [C-1511](../../../../docs/LANE_COORDINATION.md) rather than guessed at**: 📁
 [D-235](../../../../docs/DECISION_REGISTER.md) ② ruled that the column carries
 the ADR-0411 meaning, and the values drawn in it are unexplained by that
@@ -305,13 +309,14 @@ class SegmentBatch:
     | | |
     |---|---|
     | `applied is None` | **Not applied.** There is nothing to reverse |
-    | `applied.added == ()` | **Applied, and added nobody** — every selected account was already in it |
+    | `applied.added == ()` | **Applied, and added nobody** — every |
+    | | selected account was already in it |
     | `applied.added != ()` | **Applied.** Reversal removes exactly those |
 
-    ⚠️ **A boolean could express two of those three**, and the one it would
-    lose is the difference between *nobody has approved this yet* and
-    *somebody approved it and it changed nothing*. **Only the first is still
-    waiting for a person.**
+    ⚠️ **A boolean could express two of those three**, and the one it
+    would lose is the difference between *nobody has approved this yet*
+    and *somebody approved it and it changed nothing*. **Only the first
+    is still waiting for a person.**
     """
 
     batch_id: UUID

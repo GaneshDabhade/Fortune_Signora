@@ -432,3 +432,58 @@ class AccountAssignmentBatchModel(Base, WorkspaceScopedMixin, TimestampMixin, Au
     #: ⚡ **`[account, prior]` pairs**, `prior` null where nobody held it — the
     #: condition the reversal needs and cannot recompute later.
     moved: Mapped[list[list[str | None]] | None] = mapped_column(JSONB, nullable=True)
+
+
+class AccountSegmentModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """One named, saved grouping — migration `0055`.
+
+    ⚡ **Two representations of the name and only one is shown.** `name` is what
+    the customer typed; `name_key` is `account_tag.fold`'s output and is what
+    the unique index is on. ⛔ **A `lower(name)` constraint would not be the
+    rule** — `lower("STRASSE")` and `lower("straße")` differ where the customer
+    means one segment, and `casefold` is the function that does not.
+    """
+
+    __tablename__ = "account_segment"
+
+    segment_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    name: Mapped[str] = mapped_column(String(length=60), nullable=False)
+    #: ⛔ **Never rendered.** What uniqueness is decided on, and nothing else.
+    name_key: Mapped[str] = mapped_column(String(length=60), nullable=False)
+
+
+class AccountSegmentMemberModel(Base, WorkspaceScopedMixin):
+    """Which accounts are in which segment — migration `0055`.
+
+    ⛔ **No `UPDATE` grant, and none is needed**: an account is in a segment or
+    it is removed from it, and there is no field on this row a customer can
+    change. Registered in `IMMUTABLE_TENANT_TABLES` for that reason.
+    """
+
+    __tablename__ = "account_segment_member"
+
+    segment_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    #: ⛔ **No foreign key**, and the omission is the module boundary: an
+    #: account is `knowledge_graph`'s entity (§5).
+    account_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    added_by: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    added_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
+    )
+
+
+class AccountSegmentBatchModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """One bulk *Add to segment* — migration `0056`.
+
+    ⛔ **`added` is nullable and the null is load-bearing**, on exactly the
+    terms `AccountAssignmentBatchModel` states: `NULL` means not applied, `[]`
+    means applied and every selected account was already in the segment.
+    """
+
+    __tablename__ = "account_segment_batch"
+
+    batch_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    segment_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    requested: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    #: ⚡ **What the reversal removes**, and never `requested`.
+    added: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)

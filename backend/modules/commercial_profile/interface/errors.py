@@ -7,6 +7,9 @@ about the customer's own declaration and they are entitled to the reason.
 
 from fastapi import status
 
+from modules.commercial_profile.application.assignment_use_cases import (
+    NotAWorkspaceMemberError,
+)
 from modules.commercial_profile.application.declare_committee import (
     CommitteeVersionConflictError,
 )
@@ -24,9 +27,6 @@ from modules.commercial_profile.application.declaring import (
     IcpUnknownProductError,
 )
 from modules.commercial_profile.application.publish import CatalogVersionConflictError
-from modules.commercial_profile.application.assignment_use_cases import (
-    NotAWorkspaceMemberError,
-)
 from modules.commercial_profile.domain.account_assignment import AssignmentError
 from modules.commercial_profile.domain.account_tag import AccountTagError
 from modules.commercial_profile.domain.committee import BuyingCommitteeError
