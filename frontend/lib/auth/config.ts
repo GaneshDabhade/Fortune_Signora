@@ -256,9 +256,36 @@ export function environmentName(): string {
   return process.env.SIGNORA_ENVIRONMENT ?? 'local';
 }
 
-/** Whether this process is serving people who are not the person who started it. */
+/**
+ * Whether this process is serving people who are not the person who started it.
+ *
+ * ### ⚠️ `development` is gone, and removing it is the point
+ *
+ * 📁 **[ADR-0412](../../../docs/architecture/adr/0412-environment-and-secret-safe-logging.md)
+ * §2, ratified as [C-298](../../../docs/LANE_COORDINATION.md)**: *"frontend and
+ * backend semantics are identical — a value that means production in one tier
+ * and something else in the other is the same defect with a longer fuse."*
+ *
+ * 🔴 **This list had three members and the AI Platform's had one.** They were
+ * never compared, so `SIGNORA_ENVIRONMENT=development` was **local here and
+ * deployed there** — the deterministic mock refused while this tier happily
+ * wrote verification links to stdout. ⛔ **`development` and `local` were two
+ * spellings of one environment**, which is how a guard comes to be written
+ * against whichever spelling somebody happened to use.
+ *
+ * ✅ **The vocabulary is now closed and lives in
+ * `backend/signora_platform/environment.py`**, and a Security Invariant reads
+ * both this list and the AI Platform's guard and fails if they diverge — 📁
+ * ADR-0412 §4: *"two tiers disagreeing about a name is invisible until the day
+ * it matters."*
+ *
+ * ⛔ **A value outside the vocabulary is DEPLOYED**, not development. An
+ * allow-list makes an unknown name restrictive by default; a deny-list would
+ * make it permissive, and the safe direction for a name nobody has thought
+ * about yet is the one that refuses.
+ */
 function isDeployed(): boolean {
-  return !['local', 'test', 'development'].includes(environmentName());
+  return !['local', 'test'].includes(environmentName());
 }
 
 /**

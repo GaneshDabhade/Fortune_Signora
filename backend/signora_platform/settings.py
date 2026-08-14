@@ -11,11 +11,25 @@ from functools import lru_cache
 from pydantic import PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from signora_platform.environment import SignoraEnvironment
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="SIGNORA_", env_file=".env", extra="ignore")
 
-    environment: str = "local"
+    #: **Typed rather than a string** — [ADR-0412](../../docs/architecture/adr/0412-environment-and-secret-safe-logging.md)
+    #: §2: *"an unrecognised environment value must be unrepresentable, never
+    #: silently treated as development."* ⛔ **A `str` here is exactly the shape
+    #: that treats an unknown value as *"not production"* by accident**, and
+    #: Pydantic now refuses one at construction.
+    #:
+    #: ⚠️ **It still defaults, and the ADR says a missing value should FAIL.**
+    #: That half is deliberately NOT in this change: `Settings(...)` is
+    #: constructed in 61 places, so making it required is a mechanical diff
+    #: that would bury a security fix in churn. **Stated here rather than left
+    #: to be discovered** — the remainder is [TASK-1479](../../docs/BACKLOG.md)
+    #: slice ⓵b, not a forgotten clause.
+    environment: SignoraEnvironment = SignoraEnvironment.LOCAL
 
     database_url: PostgresDsn
     database_pool_size: int = 10

@@ -51,7 +51,18 @@ _BEARER_PATTERN: Final = re.compile(r"(?i)\b(bearer\s+)\S+")
 # version required one, and `redis://:secret@cache:6379/2` — **the form Redis
 # URLs actually take, with no username** — walked straight through it. Caught
 # by the check written to prove the fix, which is the argument for writing one.
-_URI_CREDENTIAL_PATTERN: Final = re.compile(r"(?i)\b([a-z][a-z0-9+.-]*://[^\s:/@]*):[^\s@]+@")
+#
+# ⚠️ **And the password is `[^\s]*` — greedy to the LAST `@` — which was the
+# second live miss.** With `[^\s@]+` it stopped at the *first* `@`, so
+# `postgres://user:p@ss@host/db` redacted `p` and left `ss` standing. **A
+# password containing an unencoded `@` is malformed per RFC 3986 and happens
+# anyway**, and a partial leak is a leak: for `S3cr@tP@ssw0rd` it would have
+# published `tP` and `ssw0rd`.
+#
+# ⛔ **Greedy is the safe direction here.** Two URIs run together without
+# whitespace over-redact rather than under-redact, and losing a host name is
+# recoverable where losing a password is not.
+_URI_CREDENTIAL_PATTERN: Final = re.compile(r"(?i)\b([a-z][a-z0-9+.-]*://[^\s:/@]*):[^\s]*@")
 
 _STANDARD_ATTRS: Final = frozenset(
     {

@@ -125,6 +125,64 @@ def test_the_host_and_database_survive_redaction() -> None:
     assert redacted == f"postgres://signora_app:{REDACTED}@db:5432/signora"
 
 
+#: **The awkward members of the URI family**, each with the fragments that must
+#: not survive. ⚠️ **Fragments rather than whole passwords, and that is the
+#: point**: the first check here looked for the complete literal and reported
+#: `postgres://user:p@ss@host/db` as safe while `ss` was standing in the
+#: output. **A partial leak is a leak.**
+AWKWARD_URIS: dict[str, tuple[str, ...]] = {
+    # `@` in a password is malformed per RFC 3986 and happens anyway. The
+    # pattern used to stop at the FIRST `@`, publishing everything after it.
+    "postgres://user:p@ss@host:5432/db": ("p@ss", "ss@host"),
+    "postgres://u:S3cr@tP@ssw0rd@host/db": ("S3cr", "tP", "ssw0rd"),
+    "postgres://user:p/w0rd@host:5432/db": ("p/w0rd", "w0rd"),
+    "postgres://user:p%40ssw0rd@host:5432/db": ("p%40ssw0rd", "ssw0rd"),
+    # A URI inside a sentence, with punctuation after it.
+    "failed to reach postgres://u:S3cret@h/d, retrying": ("S3cret",),
+    "connecting to redis://:S3cret@cache:6379/2.": ("S3cret",),
+    # Two in one line — neither may survive because the other matched.
+    "a postgres://u:AAA@h/d and redis://:BBB@c/1": ("AAA", "BBB"),
+    "POSTGRES://user:S3cret@host/db": ("S3cret",),
+}
+
+
+@pytest.mark.parametrize("uri", sorted(AWKWARD_URIS))
+def test_no_fragment_of_an_awkward_password_survives(uri: str) -> None:
+    """⛔ **The family a real connection string actually comes from.**
+
+    Each of these was proposed as a way past the guard; **one of them was.**
+    """
+    redacted = redact(uri)
+    assert isinstance(redacted, str)
+
+    surviving = [fragment for fragment in AWKWARD_URIS[uri] if fragment in redacted]
+    assert not surviving, f"{surviving} survived redaction of {uri!r} → {redacted!r}"
+
+
+def test_a_uri_with_no_password_is_not_mangled() -> None:
+    """⚡ **The other direction.** A username is not a secret, and a redactor
+    that ate one would be redacting identity rather than credentials."""
+    assert redact("postgres://user@host/db") == "postgres://user@host/db"
+
+
+def test_a_credential_in_a_traceback_never_reaches_a_sink() -> None:
+    """**A third rendering route past both formatters.**
+
+    `exc_info` is formatted separately from the message and from the fields, so
+    a credential inside an exception is a distinct path — and exception text is
+    exactly where a connection string appears.
+    """
+    buffer = io.StringIO()
+    configure_logging(level="INFO", json_output=True)
+    logging.getLogger().handlers[0].stream = buffer  # type: ignore[attr-defined]
+    try:
+        raise ValueError("could not connect to postgres://user:TracebackSecret@host/db")
+    except ValueError:
+        logging.getLogger("invariant").exception("connection failed")
+
+    assert "TracebackSecret" not in buffer.getvalue()
+
+
 def test_a_url_carrying_no_credential_is_left_alone() -> None:
     """A vendor endpoint is not a secret, and a redactor that mangled every
     URL would be one nobody could read past."""

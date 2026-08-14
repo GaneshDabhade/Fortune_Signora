@@ -22,6 +22,8 @@ from typing import Literal
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from signora_platform.environment import SignoraEnvironment
+
 
 class AISettings(BaseSettings):
     """What the AI Platform needs to reach a model.
@@ -49,9 +51,26 @@ class AISettings(BaseSettings):
     #: touch a frozen substrate (§20a) to do it.
     #:
     #: It exists for exactly one guard — the mock must never be registered
-    #: outside a local environment — and a test constructs this object
+    #: outside a development environment — and a test constructs this object
     #: directly, so that guard can be made to fail without mutating a global.
-    environment: str = "local"
+    #:
+    #: ⚠️ **Typed, and it used to be `str = "local"`** —
+    #: [ADR-0412](../../../../docs/architecture/adr/0412-environment-and-secret-safe-logging.md)
+    #: §2. 🔴 **The string was half of [C-298](../../../../docs/LANE_COORDINATION.md)**:
+    #: this module called `local` alone development, the auth tier called
+    #: `local`, `test` and `development` development, and **the two sets were
+    #: never compared.** `SIGNORA_ENVIRONMENT=development` therefore refused
+    #: the deterministic mock while the auth tier considered the same process
+    #: local — **so a fresh clone would have needed Ollama**, which
+    #: [ADR-0028](../../../../docs/architecture/adr/0028-model-runtime-by-environment.md)
+    #: forbids in as many words.
+    #:
+    #: ⛔ **The type is the platform's, and that is not a boundary breach.**
+    #: The vocabulary is substrate — the one thing every tier must agree on —
+    #: and both objects still read one variable independently. **Neither
+    #: stores the other's value**, which is the distinction the paragraph above
+    #: draws.
+    environment: SignoraEnvironment = SignoraEnvironment.LOCAL
 
     #: Which provider serves the development model. **Defaults to the
     #: deterministic mock**, which is what makes a fresh clone productive

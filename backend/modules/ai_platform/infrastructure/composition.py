@@ -71,7 +71,7 @@ def build_provider_registry(
     """
     registry = AIProviderRegistry()
     if settings.development_provider == "mock":
-        if settings.environment != "local":
+        if not settings.environment.is_development:
             raise AIRegistrationError(
                 AIVendor.MOCK,
                 f"the deterministic mock provider was selected in environment "
