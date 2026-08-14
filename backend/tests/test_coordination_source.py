@@ -813,3 +813,30 @@ def test_a_startable_row_with_only_a_steward_still_takes_no_lane() -> None:
     """
     assert coordination._lane_for("", _STEWARD_BODY, {}, "READY") is None
     assert coordination._lane_for("", _STEWARD_BODY, {}, "SEQUENCED") == "Lane C"
+
+
+def test_a_withdrawn_row_with_no_lane_is_not_a_finding() -> None:
+    """⚡ **The unplaced-row warning was 100% false positives — 2026-08-14.**
+
+    All three rows it named were correctly ownerless and said so on their own
+    rows: `TASK-900` is `RATIFIED` (a closed RFC whose move to `DONE` is QE's),
+    and `TASK-1459` and `TASK-1472` are `WITHDRAWN` duplicates this office
+    withdrew. **A warning that has never once been true is one its reader
+    learns to skip**, and the first genuine finding would then arrive as line
+    four of a list already dismissed.
+    """
+    assert "WITHDRAWN" in coordination._NEEDS_NO_OWNER
+    assert "RATIFIED" in coordination._NEEDS_NO_OWNER
+
+
+def test_needs_no_owner_is_not_folded_into_closed() -> None:
+    """⛔ **The narrower question must stay narrower.**
+
+    `_CLOSED` drops a row from the walk entirely. `RATIFIED` must NOT be
+    dropped — `TASK-900`'s row records that moving it to `DONE` is QE's, and
+    hiding it would remove the only standing reminder. **Two questions, two
+    sets**: *is this row closed?* and *does it still need an owner named?*
+    """
+    assert "RATIFIED" not in coordination._CLOSED
+    assert "WITHDRAWN" not in coordination._CLOSED
+    assert coordination._CLOSED < coordination._NEEDS_NO_OWNER

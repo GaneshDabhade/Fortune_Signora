@@ -7888,7 +7888,19 @@ runtime-composition · state-check
 
 ✅ **And it is bounded, which is why it is a note and not a second row.** **All 41 fall between `94082899` (2026-07-31) and `586f1539` (2026-08-04), all with an empty `profile`.** **Nothing after 2026-08-04 is affected** — `tsc` has been recorded on all 185 runs since.
 
-⚡ **This is the design working rather than failing.** 📁 **`satisfied` is derived and never stored** (`record.py`), so those runs re-read as unsatisfied today without anybody rewriting history — **which is exactly the property that makes the `RECORD_VERSION` answer above cheap.** ⛔ **Whether any of the 41 was promoted is QE's to check; this office did not, and does not assert that one was.**
+⚡ **This is the design working rather than failing.** 📁 **`satisfied` is derived and never stored** (`record.py`), so those runs re-read as unsatisfied today without anybody rewriting history — **which is exactly the property that makes the `RECORD_VERSION` answer above cheap.**
+
+#### ✅ RESOLVED the same day — QE walked it, and the answer is the mechanism, not a defect
+
+**This office left the promotion walk to QE and did not assert an outcome. QE ran it: 40 of the 41 are ancestors of `main`.** ⚠️ **Read alone that says forty commits reached `main` from runs the record now calls unsatisfied. ⛔ It is the wrong reading, and one measurement disproves it.**
+
+📁 **`tsc` entered `REQUIRED_GATES` at `4e43da17`, 2026-08-04 14:53:14Z** — ***"B-111 — tsc was in the Definition of Done and in no gate, and main is red."*** **Re-derived here rather than accepted: `git log -L` over the constant returns exactly two commits — `05b823ff` created it, `4e43da17` added `tsc`.**
+
+🔴 **The last five-gate run, `586f1539`, certified at 14:49:14Z — four minutes earlier.**
+
+> ✅ **Five-gate runs certified AFTER `tsc` became required: ZERO.** ⚡ **So no commit on `main` was ever promoted while missing a gate that was required at the time.** **The requirement set widened and `satisfied` re-read the older runs against the wider set** — ⚡ **the property named above, confirmed rather than assumed.**
+
+⚠️ **QE's own note on it is the reusable half:** ***"correct about a fact and wrong about whether the fact was a problem — *40 unsatisfied runs are on `main`* is true and means nothing without the date `tsc` was added."***
 
 > ⚠️ **Recorded here rather than raised as a coordination item.** **This office opened `C-1435` for the gate set and withdrew it within the hour: [§20e](../CLAUDE.md) — *a defect is not a dependency* — and this row has existed and been QE's since 2026-08-06.** ⛔ **The `sixteen` in this row's own title is also the number this office "corrected" a lane on, having not read it.**
 

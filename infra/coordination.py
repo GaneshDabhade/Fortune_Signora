@@ -63,6 +63,24 @@ _HELD = frozenset({
 })
 _CLOSED = frozenset({"DONE", "DISPOSED", "PROMOTED"})
 
+#: States in which a row **needs no owner** — for the unplaced-row warning only.
+#:
+#: ⛔ **Deliberately NOT folded into `_CLOSED`.** `RATIFIED` rows must stay
+#: visible: `TASK-900`'s own row records that moving it to `DONE` is QE's, and
+#: hiding it would remove the only reminder. This set answers a narrower
+#: question — *does a lane still need to be named on this row?* — and nothing
+#: else reads it.
+#:
+#: ⚠️ **Added 2026-08-14 because the warning was 100% false positives.** All
+#: three rows it named — `TASK-900` (`RATIFIED`), `TASK-1459` and `TASK-1472`
+#: (`WITHDRAWN`, duplicates this office withdrew) — are correctly ownerless,
+#: and each says so on its own row. **A warning that has never once been true
+#: is one its reader learns to skip**, and the fourth line — a genuinely
+#: unowned implementation row — would arrive in a list already dismissed.
+#: That is `OPERATING-MODE.md` §5c: *ask what the check would report on a real
+#: problem.*
+_NEEDS_NO_OWNER = _CLOSED | frozenset({"WITHDRAWN", "RATIFIED"})
+
 #: **Rows a lane can still act on** — B-409, 2026-08-08.
 #:
 #: ⛔ `IN FLIGHT` collapses eight declared states, and only three of them are
@@ -1569,10 +1587,17 @@ def main() -> int:
 
     for lane in sorted({r.lane for r in rows if r.lane != "—"}):
         print("  " + supply_line(lane, [r for r in rows if r.lane == lane]))
-    unplaced = [r for r in rows if r.lane == "—"]
+    unowned = [r for r in rows if r.lane == "—"]
+    unplaced = [r for r in unowned if r.declared not in _NEEDS_NO_OWNER]
     if unplaced:
         print(f"  ⛔ {len(unplaced)} task(s) resolve to no lane: "
               + ", ".join(r.id for r in unplaced))
+    # ⚡ **Named, never silently dropped.** A suppressed row is still a row, and
+    # a filter whose effect is invisible is the one nobody can audit.
+    if suppressed := len(unowned) - len(unplaced):
+        print(f"  · {suppressed} ownerless row(s) need no owner and are not counted "
+              + "(" + ", ".join(f"{r.id} {r.declared}" for r in unowned
+                                if r.declared in _NEEDS_NO_OWNER) + ")")
     return 0
 
 
