@@ -210,6 +210,22 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ✅ **The practice covers both: never consume a number whose columns or members you have not resolved** — `--left-right` gets `ahead` and `behind` named explicitly, a survival count gets each id mapped to its commit.
 
+## 5h · A hand-maintained copy of a registry is the defect. Derive it.
+
+**Three instances in two days, in three different kinds of artefact.**
+
+| | The copy | What it cost |
+|---|---|---|
+| **[B-199](../../BUGS.md)** | A byte total and two per-file figures typed beside computed hashes | **Two were never true of their files** |
+| **[B-434](../../BUGS.md)** | `state-check`'s literal actor list | **Demanded the one thing [C-213](../../LANE_COORDINATION.md) forbids in that cell** |
+| **QE's, cycle 228** | **Six stack names hand-listed in a Security Invariant** where `BY_NAME ∪ UNSLOTTED` holds nine | 🔴 **A future `lane-d`/`lane-e` collision would have passed silently** |
+
+⛔ **The third is the worst and QE named why: in a Security Invariant, a guard that tests a copy still looks like a guard.** ⚡ **The copy is not wrong when written — it is wrong the first time the registry grows, and nothing connects the two events.**
+
+✅ **The practice: when a check needs a set the repository already defines, read the definition.** ⛔ **If a literal list is unavoidable, the check must fail when the registry and the list disagree** — 📁 **that is [§2](../../../CLAUDE.md)'s *truth has exactly one authoritative representation; everything else derives from it*, applied to test code, which is where it is least often applied.**
+
+⚠️ **This office nearly added a fourth**: satisfying [B-434](../../BUGS.md) meant writing `Lane A` into a coordination row's `Owner` cell. ✅ **The fix was a join through [`modules.toml`](../modules.toml), never a wider pattern.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
