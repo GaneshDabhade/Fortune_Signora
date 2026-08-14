@@ -38,6 +38,7 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 from modules.provider_platform.domain.provider import ProviderName
+from signora_platform.environment import SignoraEnvironment
 
 
 class ProviderSettings(BaseSettings):
@@ -74,7 +75,19 @@ class ProviderSettings(BaseSettings):
     #: It exists for exactly one guard, which the composition root carries —
     #: and a test constructs this object directly, so that guard can be made to
     #: fail without mutating a global.
-    environment: str = "local"
+    #:
+    #: ⚡ **Typed and required** —
+    #: [ADR-0412](../../../../docs/architecture/adr/0412-environment-and-secret-safe-logging.md)
+    #: §2. 🔴 **This was the FOURTH reader of `SIGNORA_ENVIRONMENT` and the
+    #: third to compare against the string `"local"`**, each with its own list
+    #: and none of them compared: `local` alone here and in the AI Platform,
+    #: `local`/`test`/`development` in the auth tier. **Found while making the
+    #: test suite declare its own environment** — with the suite honestly
+    #: saying `test`, the guard in this module's composition root would have
+    #: **refused every adapter it wires for development**, which is the whole
+    #: of how the pipeline is exercised.
+
+    environment: SignoraEnvironment
 
     #: Which providers this process serves. **Every provider with a ratified
     #: qualification record**, because an adapter exists for each one today; a

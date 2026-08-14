@@ -107,7 +107,7 @@ def build_provider_registry(
     no adapter behind it raises here — rather than producing a registry that is
     quietly one provider short, discovered by an account that never enriches.
     """
-    if settings.providers and settings.environment != "local":
+    if settings.providers and not settings.environment.is_development:
         raise ProviderRegistrationError(
             f"simulated provider adapters were selected in environment "
             f"'{settings.environment}'. They serve generated company data that is "

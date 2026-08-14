@@ -141,6 +141,20 @@ The declared classification — state or occurrence — plus, for occurrence att
 | `HEADCOUNT_CHANGE` | `observed_at` + delta |
 | `INTENT_TOPIC_SURGE` | `topic` + `observed_week` |
 
+### ⛔ An occurrence that identifies nothing is refused
+
+**`UnkeyableOccurrenceError`, added 2026-08-13 after QE attacked `PERSON_IDENTITY`-as-occurrence and found the seam.**
+
+🔴 **An empty occurrence key is not a key — it is a merge.** Every branch above fell through to a helper returning `""` for a missing field, so **ten people with no `person_ref` all keyed to `""` and deduplicated into one observation** — the *"nine departures nobody made"* the classification above exists to prevent, arriving by the other door.
+
+⚠️ **It was true of seven of the eight occurrence attributes, not one.** `TECHNOLOGY_DETECTED`, `TECHNOLOGY_REMOVED` and `PERSON_IDENTITY` collapsed to `""`; `FUNDING_ROUND`, `ACQUISITION` and `INTENT_TOPIC_SURGE` to `"|"`; **`ROLE_CHANGE` to one key per instant**, merging every role change reported at the same moment. **`HEADCOUNT_CHANGE` is the only one that survived**, because its key is the stamp and the delta, which identify *when* even when the value is empty.
+
+⛔ **Every mapper already rejects a value with no identifier** — Apollo's says so in as many words — **but the guard was at one producer rather than at the function that collapses.** A seam that silently merges unrelated records when a future producer forgets is a seam trusting its callers, and this module's neighbouring rule already prefers the opposite: *"failing loudly here is the alternative to silently treating an unknown attribute as state."*
+
+✅ **Unreachable through today's mappers, and that is stated rather than implied** — it is defence in depth on the same standing as the explicit `workspace_id` filter beside RLS, and it is constructible directly, which is how it is fire-tested.
+
+⚠️ **Distinct from `UnclassifiedAttributeError`, deliberately.** That one means *nobody declared what this attribute is*; this one means *the attribute is declared and the value cannot be identified* — **a data defect rather than a configuration one**, and an engineer routed to `ATTRIBUTE_KINDS` by the wrong exception would be reading the wrong file.
+
 This is vocabulary knowledge and lives in **one function**, on the same reasoning as `normalize_domain`: when authentic payloads replace fixtures these keys will need revisiting, and that revision should be a single edit rather than a hunt.
 
 ---

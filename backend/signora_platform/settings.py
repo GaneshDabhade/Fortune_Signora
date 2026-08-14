@@ -23,13 +23,19 @@ class Settings(BaseSettings):
     #: that treats an unknown value as *"not production"* by accident**, and
     #: Pydantic now refuses one at construction.
     #:
-    #: ⚠️ **It still defaults, and the ADR says a missing value should FAIL.**
-    #: That half is deliberately NOT in this change: `Settings(...)` is
-    #: constructed in 61 places, so making it required is a mechanical diff
-    #: that would bury a security fix in churn. **Stated here rather than left
-    #: to be discovered** — the remainder is [TASK-1479](../../docs/BACKLOG.md)
-    #: slice ⓵b, not a forgotten clause.
-    environment: SignoraEnvironment = SignoraEnvironment.LOCAL
+    #: ⚡ **Required, with no default** — ADR-0412 §2: *"a missing value FAILS.
+    #: It does not default."* 📁 **The precedent is already in this file**:
+    #: `redis_url` refuses rather than defaulting to index 0, and its comment
+    #: records why — *"it used to default in code, which made the allocation
+    #: table advisory."*
+    #:
+    #: ⚠️ **A default here was doing the same thing to the ADR.** 🔴 **Measured:
+    #: `Settings(...)` is constructed in 36 places and NOT ONE passed
+    #: `environment`** — so every one of them, including the entire test
+    #: suite, silently believed it was `local`. **The right answer by accident,
+    #: which is the shape ADR-0412 §5 names**: *"the gap is invisible precisely
+    #: because nothing fails."*
+    environment: SignoraEnvironment
 
     database_url: PostgresDsn
     database_pool_size: int = 10

@@ -1139,6 +1139,12 @@ The mock needs a vendor label: `AIProviderDescriptor` declares one and `Inferenc
 
 The environment is a field on **`AISettings`**, reading `SIGNORA_ENVIRONMENT` — the same variable `signora_platform.Settings` reads, because both objects carry the `SIGNORA_` prefix and this is one process's environment with several owners.
 
+> ⚡ **Typed and required from 2026-08-13** — [ADR-0412](adr/0412-environment-and-secret-safe-logging.md) §2, ratified as [C-298](../LANE_COORDINATION.md). **It was `str = "local"` and the guard read `!= "local"`.**
+>
+> 🔴 **That string was one of four independent answers to *"is this development?"***, and none of the four was ever compared with another: **`local` alone here and in `provider_platform`**, **`local`/`test`/`development`** in the auth tier, and **`lane-a`…`prod-local`** in `infra/environments.py`. ⛔ **`SIGNORA_ENVIRONMENT=development` therefore refused the deterministic mock while the auth tier considered the same process local — so a fresh clone would have needed Ollama**, which [ADR-0028](adr/0028-model-runtime-by-environment.md) forbids in as many words.
+>
+> ✅ **`SignoraEnvironment.is_development` is now the single answer all three backend readers take**, and a Security Invariant **refuses any module that decides an environment by comparing a string** — because aligning three readers once is worth nothing if the fourth is written the old way.
+
 | Rejected | Why |
 |---|---|
 | Read `signora_platform.Settings` | A module reading another module's configuration (§6), and reaching into a frozen substrate to do it (§20a) |

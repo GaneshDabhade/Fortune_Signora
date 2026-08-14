@@ -37,6 +37,22 @@ os.environ.setdefault("SIGNORA_JWT_PUBLIC_KEY", "test-placeholder-not-a-key")
 os.environ.setdefault("SIGNORA_JWT_ISSUER", "https://auth.signora.test")
 os.environ.setdefault("SIGNORA_JWT_AUDIENCE", "signora-api-test")
 
+# ⚡ **The suite declares its own environment, and it is `test`.**
+#
+# 📁 [ADR-0412](../../docs/architecture/adr/0412-environment-and-secret-safe-logging.md)
+# §2 makes `SIGNORA_ENVIRONMENT` required, and until this line the suite had
+# no answer of its own — it inherited whatever `.env` happened to say.
+# **Measured: not one of the 36 `Settings(...)` constructions passed it**, so
+# every test silently believed it was `local`. The right answer, by accident.
+#
+# ⛔ **Set rather than `setdefault`, unlike the value above it.** A shell that
+# exported `SIGNORA_ENVIRONMENT` would otherwise decide whether the suite
+# thinks it is production — **a safety class inherited from ambient state is
+# the hidden input [§2](../../CLAUDE.md) forbids**, and a test run's
+# environment is not a matter of configuration. A test that needs another
+# environment constructs `Settings(environment=...)` explicitly, and several do.
+os.environ["SIGNORA_ENVIRONMENT"] = "test"
+
 # The target database, resolved **once, here**, from the environment.
 #
 # **This is what makes two development lanes possible** (CLAUDE.md §20e).

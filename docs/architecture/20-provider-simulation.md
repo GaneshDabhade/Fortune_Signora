@@ -652,6 +652,10 @@ Measured against the twelve seeded accounts, not asserted:
 | | Owns | Reads |
 |---|---|---|
 | **`ProviderSettings`** · `infrastructure/settings.py` | `environment` · `providers` | `SIGNORA_ENVIRONMENT` · `SIGNORA_PROVIDERS` |
+
+> ⚠️ **`environment` is `SignoraEnvironment` and required from 2026-08-13** — [ADR-0412](adr/0412-environment-and-secret-safe-logging.md) §2. **The guard was `settings.environment != "local"`, and it is `not settings.environment.is_development`.**
+>
+> ⛔ **This was the fourth reader of `SIGNORA_ENVIRONMENT` and the third to compare against a bare string.** ⚡ **Found while making the test suite declare its own environment**: with the suite honestly saying `test` rather than inheriting `local` from whatever `.env` happened to hold, **this guard would have refused every simulated provider adapter** — which is the whole of how the pipeline is exercised.
 | **`SimulationSettings`** · `infrastructure/adapters/simulated/settings.py` | `scenario` · `scenario_version` · `seed` · `page_size` | `SIGNORA_SIMULATION_*` |
 
 **§6 one level down: the adapter that reads a value owns it.** When a production adapter is written it brings its own settings object beside itself, and **neither of the other two files changes** — which is the test of whether the split was drawn in the right place.

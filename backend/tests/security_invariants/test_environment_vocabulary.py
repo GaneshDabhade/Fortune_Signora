@@ -157,3 +157,42 @@ def test_a_value_outside_the_vocabulary_would_not_be_development() -> None:
     assert not SignoraEnvironment.DEMO.is_development
     assert SignoraEnvironment.LOCAL.is_development
     assert SignoraEnvironment.TEST.is_development
+
+
+#: Every backend module that reads `SIGNORA_ENVIRONMENT` and guards on it.
+#: **Three of them, and all three compared against a string literal** before
+#: ADR-0412 — `!= "local"` in the AI Platform and in the Provider Platform,
+#: and a three-name list in the auth tier.
+_GUARDING_MODULES = (
+    Path(__file__).resolve().parents[2] / "modules" / "ai_platform" / "infrastructure",
+    Path(__file__).resolve().parents[2] / "modules" / "provider_platform" / "infrastructure",
+)
+
+
+@pytest.mark.parametrize("package", _GUARDING_MODULES, ids=lambda p: p.parent.name)
+def test_no_module_decides_development_by_comparing_a_string(package: Path) -> None:
+    """⛔ **The re-divergence guard, and it is the one that matters.**
+
+    Aligning three readers once is worth nothing if the fourth is written the
+    old way. 🔴 **Every one of them compared `settings.environment` against a
+    string literal**, and **none of the comparisons was ever compared with
+    another** — which is C-298 stated mechanically.
+
+    ⚡ **`is_development` is the only permitted answer**, so a module cannot
+    hold a private opinion about what `local` means. **A new guard written as
+    `!= "local"` fails here rather than being discovered by a lane whose
+    development environment stopped working.**
+    """
+    offenders = [
+        f"{source.name}:{number}"
+        for source in package.rglob("*.py")
+        for number, line in enumerate(source.read_text().splitlines(), start=1)
+        if re.search(r"""\.environment\s*[!=]=\s*['"]""", line)
+    ]
+
+    assert not offenders, (
+        f"{offenders} decides an environment by comparing a string. Use "
+        "`SignoraEnvironment.is_development` — ADR-0412 §2, and the reason C-298 "
+        "existed: three modules each held their own list and none was ever compared "
+        "with another."
+    )

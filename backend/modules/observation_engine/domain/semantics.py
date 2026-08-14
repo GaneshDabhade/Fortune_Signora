@@ -49,6 +49,31 @@ class UnclassifiedAttributeError(Exception):
         )
 
 
+class UnkeyableOccurrenceError(Exception):
+    """An occurrence carries nothing that says **which** occurrence it is.
+
+    ⛔ **Distinct from `UnclassifiedAttributeError`, and the difference is the
+    whole of it.** That one means *nobody declared what this attribute is*;
+    this one means *the attribute is declared and the VALUE cannot be
+    identified.* **Collapsing them would hide a data defect behind a
+    configuration one.**
+
+    ⚡ **Raised rather than returning an empty key**, because an empty key
+    deduplicates: two unrelated occurrences with nothing to tell them apart
+    would become one observation, and **the record of the second would not
+    exist to be found later.**
+    """
+
+    def __init__(self, attribute: ClaimAttribute, field: str) -> None:
+        super().__init__(
+            f"a '{attribute}' occurrence carries no '{field}', so nothing distinguishes "
+            "it from any other. An occurrence key identifies WHICH occurrence this is; "
+            "an empty one silently merges unrelated records into a single observation, "
+            "and the ones it swallowed leave no trace. Reject the claim at the mapper "
+            "rather than admitting a value that cannot be identified."
+        )
+
+
 ATTRIBUTE_KINDS: Final[dict[ClaimAttribute, AttributeKind]] = {
     # --- state: the provider asserts what is currently true
     ClaimAttribute.EMPLOYEE_COUNT: AttributeKind.STATE,
@@ -122,16 +147,16 @@ def occurrence_key(attribute: ClaimAttribute, value: Any, observed_at: datetime)
         # Keyed on the technology alone: a vendor re-reporting the same
         # technology with a later `last_detected` is the same detection, not
         # a new one.
-        return _normalized(_field(value, "name"))
+        return _identifying(value, "name", attribute)
 
     if attribute is ClaimAttribute.FUNDING_ROUND:
-        return f"{_normalized(_field(value, 'round_type'))}|{_field(value, 'announced_on')}"
+        return f"{_identifying(value, 'round_type', attribute)}|{_field(value, 'announced_on')}"
 
     if attribute is ClaimAttribute.ACQUISITION:
-        return f"{_normalized(_field(value, 'counterparty'))}|{_field(value, 'announced_on')}"
+        return f"{_identifying(value, 'counterparty', attribute)}|{_field(value, 'announced_on')}"
 
     if attribute is ClaimAttribute.ROLE_CHANGE:
-        return f"{_normalized(_field(value, 'title'))}|{_field(value, 'direction')}|{stamp}"
+        return f"{_identifying(value, 'title', attribute)}|{_field(value, 'direction')}|{stamp}"
 
     if attribute is ClaimAttribute.PERSON_IDENTITY:
         # **The provider's key alone, and deliberately not the title.** A
@@ -139,18 +164,54 @@ def occurrence_key(attribute: ClaimAttribute, value: Any, observed_at: datetime)
         # anything that moves — a title, a `last_seen`, the sync stamp — would
         # turn every sync into a fresh sighting of everybody. ⛔ **And not the
         # name**: a person who corrects a spelling or marries has not arrived.
-        return _normalized(_field(value, "person_ref"))
+        return _identifying(value, "person_ref", attribute)
 
     if attribute is ClaimAttribute.INTENT_TOPIC_SURGE:
         # The observed week, never the reporting week. Intent is reported
         # late by design, and keying on arrival would make one week's
         # measurement look like several.
-        return f"{_normalized(_field(value, 'topic'))}|{_field(value, 'observed_week')}"
+        return f"{_identifying(value, 'topic', attribute)}|{_field(value, 'observed_week')}"
 
     if attribute is ClaimAttribute.HEADCOUNT_CHANGE:
         return f"{stamp}|{value}"
 
     raise UnclassifiedAttributeError(attribute)
+
+
+def _identifying(value: Any, name: str, attribute: ClaimAttribute) -> str:
+    """The part of a value that says **which** occurrence this is — refused when absent.
+
+    🔴 **An occurrence key that identifies nothing is not a key.** Every branch
+    above used to fall through `_field`, which returns `""` for a missing
+    field — so ten people with no `person_ref` all keyed to `""` and
+    **deduplicated into one**, which is precisely the *"nine departures nobody
+    made"* that `PERSON_IDENTITY`'s own comment says the design exists to
+    prevent.
+
+    ⚠️ **Found by QE attacking the claim, and it was true of seven of the
+    eight occurrence attributes** — not one. `TECHNOLOGY_DETECTED`,
+    `TECHNOLOGY_REMOVED` and `PERSON_IDENTITY` collapsed to `""`;
+    `FUNDING_ROUND`, `ACQUISITION` and `INTENT_TOPIC_SURGE` to `"|"`; and
+    `ROLE_CHANGE` to one key per instant, merging every role change reported
+    at the same moment.
+
+    ⛔ **The guard was at one producer, not at the function that collapses.**
+    Every mapper does reject a value with no identifier — Apollo's says so in
+    as many words — **but a seam that silently merges unrelated records when a
+    future producer forgets is a seam that is trusting its callers.** 📁 The
+    repository already prefers the opposite: *"failing loudly here is the
+    alternative to silently treating an unknown attribute as state"*, one
+    function up.
+
+    ✅ **Unreachable through today's mappers, and stated rather than implied.**
+    That is what makes it defence in depth rather than dead code — the same
+    standing as the explicit `workspace_id` filter beside RLS (§8), and it is
+    constructible directly, which is how it is fire-tested.
+    """
+    identity = _normalized(_field(value, name))
+    if not identity:
+        raise UnkeyableOccurrenceError(attribute, name)
+    return identity
 
 
 def _field(value: Any, name: str) -> str:

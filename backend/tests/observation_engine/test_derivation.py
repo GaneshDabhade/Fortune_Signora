@@ -30,6 +30,7 @@ from modules.observation_engine.domain.semantics import (
     AttributeKind,
     UnclassifiedAttributeError,
     attribute_kind,
+    UnkeyableOccurrenceError,
     occurrence_key,
 )
 from modules.provider_normalization.public import ClaimAttribute, ClaimView, RevenueBand
@@ -422,6 +423,119 @@ class TestAttributeSemantics:
             {"person_ref": "apollo_b", "full_name": "Rachel Lindqvist", "title": title},
             datetime(2026, 8, 1, tzinfo=UTC),
         )
+
+    @pytest.mark.parametrize(
+        "attribute",
+        [
+            a
+            for a, kind in ATTRIBUTE_KINDS.items()
+            if kind is AttributeKind.OCCURRENCE and a is not ClaimAttribute.HEADCOUNT_CHANGE
+        ],
+    )
+    def test_an_occurrence_that_identifies_nothing_is_refused(
+        self, attribute: ClaimAttribute
+    ) -> None:
+        """🔴 **An empty occurrence key is not a key — it is a merge.**
+
+        **Found by QE attacking `PERSON_IDENTITY`-as-occurrence**, and true of
+        seven of the eight: `TECHNOLOGY_DETECTED`, `TECHNOLOGY_REMOVED` and
+        `PERSON_IDENTITY` collapsed to `""`; `FUNDING_ROUND`, `ACQUISITION` and
+        `INTENT_TOPIC_SURGE` to `"|"`; `ROLE_CHANGE` to one key per instant.
+
+        ⛔ **Ten people with no `person_ref` deduplicated into one observation**
+        — the *"nine departures nobody made"* that attribute's own comment says
+        the design exists to prevent. **The guard was at one producer, not at
+        the function that collapses.**
+
+        ⚠️ `HEADCOUNT_CHANGE` is excluded because it is genuinely keyed on the
+        stamp and the delta, so an empty value still identifies *when*.
+        """
+        with pytest.raises(UnkeyableOccurrenceError):
+            occurrence_key(attribute, {}, datetime(2026, 1, 1, tzinfo=UTC))
+
+    def test_ten_unidentified_people_do_not_become_one(self) -> None:
+        """⚡ **The failure stated as the product would experience it.**
+
+        Before the guard these ten keyed to `""` and reduced to a single
+        observation. **A roster of ten arriving as one is nine people the
+        record never mentions**, and nothing downstream could tell.
+        """
+        roster = [{"full_name": f"Person {index}", "title": "VP"} for index in range(10)]
+
+        for person in roster:
+            with pytest.raises(UnkeyableOccurrenceError):
+                occurrence_key(
+                    ClaimAttribute.PERSON_IDENTITY, person, datetime(2026, 1, 1, tzinfo=UTC)
+                )
+
+    @pytest.mark.parametrize(
+        "attribute",
+        [a for a, kind in ATTRIBUTE_KINDS.items() if kind is AttributeKind.OCCURRENCE],
+    )
+    def test_two_records_that_should_differ_never_share_a_key(
+        self, attribute: ClaimAttribute
+    ) -> None:
+        """🔴 **The property, rather than the symptom — and QE's framing, not mine.**
+
+        My own check asked *"is the key empty"*; **QE's re-measurement showed
+        that was the narrower question.** `ROLE_CHANGE` was reported as safe
+        because its key carries a timestamp, **so it was not empty — and two
+        role changes at the same instant still collided.**
+
+        ⛔ **Emptiness was never the defect. Collision is.** A degenerate key
+        that carries a stamp merges everything reported in that instant just as
+        surely as `""` merges everything.
+
+        ⚡ **Stated for every occurrence attribute including
+        `HEADCOUNT_CHANGE`**, which the emptiness test excludes — it is the one
+        that genuinely survived, and a property test should confirm that rather
+        than assume it.
+        """
+        moment = datetime(2026, 1, 1, tzinfo=UTC)
+        # Two values that a reader would call different records, differing only
+        # in the field each attribute is supposed to be identified by.
+        pairs: dict[ClaimAttribute, tuple[dict[str, object], dict[str, object]]] = {
+            ClaimAttribute.TECHNOLOGY_DETECTED: ({"name": "Snowplow"}, {"name": "Segment"}),
+            ClaimAttribute.TECHNOLOGY_REMOVED: ({"name": "Snowplow"}, {"name": "Segment"}),
+            ClaimAttribute.FUNDING_ROUND: (
+                {"round_type": "series_b", "announced_on": "2026-01-01"},
+                {"round_type": "series_c", "announced_on": "2026-01-01"},
+            ),
+            ClaimAttribute.ACQUISITION: (
+                {"counterparty": "Northfield", "announced_on": "2026-01-01"},
+                {"counterparty": "Porterfield", "announced_on": "2026-01-01"},
+            ),
+            ClaimAttribute.ROLE_CHANGE: (
+                {"title": "CIO", "direction": "joined"},
+                {"title": "CTO", "direction": "joined"},
+            ),
+            ClaimAttribute.PERSON_IDENTITY: (
+                {"person_ref": "apollo_a"},
+                {"person_ref": "apollo_b"},
+            ),
+            ClaimAttribute.INTENT_TOPIC_SURGE: (
+                {"topic": "Cloud ERP", "observed_week": "2026-01-05"},
+                {"topic": "Data Platform", "observed_week": "2026-01-05"},
+            ),
+            ClaimAttribute.HEADCOUNT_CHANGE: ({"delta": 12}, {"delta": -4}),
+        }
+        first, second = pairs[attribute]
+
+        assert occurrence_key(attribute, first, moment) != occurrence_key(
+            attribute, second, moment
+        )
+
+    def test_the_refusal_is_not_the_unclassified_one(self) -> None:
+        """⛔ **Two different failures and they must not collapse.**
+
+        `UnclassifiedAttributeError` means *nobody declared what this attribute
+        is*. This one means *the attribute is declared and the VALUE cannot be
+        identified* — **a data defect, not a configuration one**, and an
+        engineer routed to `ATTRIBUTE_KINDS` by the wrong exception would be
+        looking in the wrong file.
+        """
+        assert not issubclass(UnkeyableOccurrenceError, UnclassifiedAttributeError)
+        assert not issubclass(UnclassifiedAttributeError, UnkeyableOccurrenceError)
 
     @pytest.mark.parametrize(
         "attribute",

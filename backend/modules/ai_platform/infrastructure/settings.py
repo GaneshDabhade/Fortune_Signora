@@ -70,7 +70,10 @@ class AISettings(BaseSettings):
     #: and both objects still read one variable independently. **Neither
     #: stores the other's value**, which is the distinction the paragraph above
     #: draws.
-    environment: SignoraEnvironment = SignoraEnvironment.LOCAL
+    #: ⚡ **Required, with no default** — ADR-0412 §2, and for the same reason
+    #: the platform's is: **not one of the 36 constructions passed it**, so
+    #: every caller silently believed it was `local`.
+    environment: SignoraEnvironment
 
     #: Which provider serves the development model. **Defaults to the
     #: deterministic mock**, which is what makes a fresh clone productive
