@@ -123,49 +123,29 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ---
 
-### B-201 · 🟠 Cycle 229 is NOT CERTIFIED — coverage 94.78% against a 95.0 floor, and three new files miss more than the shortfall
+### ⚠️ QE allocated two identifiers outside its own block, and its own instrument caught it
 
-| | |
-|---|---|
-| **Module** | **`commercial_profile`** — the `account_assignment` slice (TASK-1479 ⓶a) |
-| **Current assignee** | **The current assignee of `commercial_profile`** — joined from [`modules.toml`](coordination/modules.toml) |
-| **Severity** | 🟠 · ⛔ **Blocking Quality Defect** ([§20e](../CLAUDE.md)): **coverage below the floor prevents promotion**, so it holds every lane's finished work rather than only this slice's |
-| **Status** | 🔵 **`OPEN`** |
-| **Found** | **2026-08-14, cycle 229**, by certification at the pinned snapshot |
-| **Commit found** | **`6a58d4a4`** |
+⛔ **These findings were first filed as `B-200` and `B-201`. Both collide with existing rows** — `B-201 · state-check reads the history table as a second claim` and `B-200 · Two colour tokens that do not exist`, **both on `main`, both Lane A's.**
 
-**Actual.** `NOT CERTIFIED · coverage 94.78% is below 95.0%`. ✅ **All six gates PASSED** — `pytest` 4687 · `security-invariants` 443 · `mypy` 890 · `import-linter` 37/37 · `tsc` · `smoke`. ⛔ **The gates are not what failed; the condition is.**
+📁 **[§20e](../CLAUDE.md): QE allocates from `100`+; `200`+ is Lane A's.** ⚡ **The cause is the week's own pattern, in the search that chose the number**: QE grepped `^### B-1[0-9]{2}`, saw `B-199` as the highest, and took `200`. ⛔ **That answers *"what is the highest in 100–199?"* when the question is *"what is the next free number in MY block?"* — and the second answer was never 200.**
 
-### ✅ Measured on the metric that failed, not a narrower one
+✅ **`infra/state-check.py` reported it** — *"B- identifiers are allocated twice: B-200, B-201"* — **which is the check working; QE had simply not run it before pushing.**
 
-⚠️ **QE's first attribution was wrong and is recorded so the next reader does not repeat it.** `coverage json`'s statement arithmetic gives **95.84%** and the gate reports **94.78%** — **the gate measures branches too.** ⛔ **Attributing a branch-coverage failure with a line-coverage sum names the wrong files.** ✅ **Recomputed over `num_statements + num_branches`, which reproduces the gate's figure exactly.**
+🔴 **And QE's block is exhausted.** **97 of 100 used. The three gaps are `102`, `122` and `182`, and `102` and `182` are LIVE REFERENCES** — 14 and 3 mentions respectively. ⚡ **`122` was the only genuinely free identifier, so it carries the durable finding above and the cycle-229 coverage failure is recorded inside it rather than given an id QE does not have.**
 
-| | |
-|---|---|
-| Repository | **22,283 measurable · 1,164 missed → 94.78%** |
-| The floor | at most **1,114** missed — ⛔ **49 must close** |
-| ⚡ **The three files this slice ADDED** | **203 measurable · 55 missed → 72.9%** |
-| ✅ **Covering all three lands the repository at** | **95.02%** |
+⚠️ **This is the third block to exhaust** — Lane C's `400`–`499` and Lane A's `C-200`–`C-299` were both extended on the product owner's explicit instruction. ⛔ **QE will not grant itself a range.** **Raised for a ruling; until then QE has zero free identifiers.**
 
-**So the slice's own new files miss more than the whole shortfall, and closing them alone clears it.**
+### 🔴 Cycle 229's certification failure, recorded here rather than in a row QE cannot number
 
-| File | Covered | Missed |
-|---|---|---|
-| `application/assignment_use_cases.py` | **61.3%** | **36** — lines `217-234`, `291-297`, … |
-| `infrastructure/assignment_repository.py` | **73.9%** | **18** — lines `186`, `226-263`, `271`, `287`, `301` |
-| `domain/account_assignment.py` | ✅ **97.6%** | 1 — line `176` |
+**`NOT CERTIFIED` at `6a58d4a4`: coverage 94.78% against a 95.0 floor**, with **all six gates passing** — the gates were not what failed, the condition was.
 
-⚠️ **Removing the three entirely still leaves 94.98%**, so modified files contributed too — ⛔ **but that is a rounding-level effect and NOT the finding.** **The finding is that 55 > 49.**
+⚠️ **QE's first attribution was wrong and the correction is the reusable half.** `coverage json`'s statement arithmetic gives **95.84%** where the gate reports **94.78%**, because **the gate counts branches.** ⛔ **Attributing a branch-coverage failure with a line-coverage sum names the wrong files.** ✅ **Recomputed over `num_statements + num_branches`, which reproduces the gate exactly: the three files the slice added missed 55 where 49 had to close, so closing them alone would land the repository at 95.02%.**
 
-### 📁 This is §19's own bullet, and it was checkable before the push
+✅ **Lane A closed it and measured 95.02% — the predicted landing to the decimal** — covering all three to 100% on statements and branches, 17 new tests. ⚡ **And they held slice ⓶b back themselves**, because its new files sit at 27–42% and would have put the repository under the floor again. **That is this discipline applied before a handover rather than after a rejection.**
 
-> ***"Coverage expectations met — `make coverage-debt ARGS="<your module>"` — no file the slice introduced sits at 0%, and the slice does not push the repository under the floor."***
+⛔ **QE did not exclude the slice**, using the lane's own argument: `main`'s red frontend suite is the live harm, and excluding would have held Lane C's fourteen commits and QE's gate fix behind a defect that was neither's.
 
-⛔ **Neither new file sits at 0%, so the first half passed. The second half is what failed**, and it is the half a lane can only check by running the repository-wide suite rather than its module's.
-
-⚡ **QE is NOT excluding the slice.** 📁 **The lane is live, the shortfall is bounded, and the missing lines are named above** — **and excluding it would hold Lane C's fourteen commits and QE's own gate fix behind a defect that is neither's**, while leaving [B-200](#b-200)'s red frontend suite on `main`, which **this slice is the only thing that fixes.**
-
-### B-200 · 🟠 A red frontend suite reached `main` under a CERTIFIED stamp, because no certification run has ever executed it
+### B-122 · 🟠 A red frontend suite reached `main` under a CERTIFIED stamp, because no certification run has ever executed it
 
 | | |
 |---|---|
