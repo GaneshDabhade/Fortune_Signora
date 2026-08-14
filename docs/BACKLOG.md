@@ -2838,7 +2838,22 @@
 | ⚠️ **Risk, named before it is met** | ⛔ **The design shows a workspace with SSO, SCIM, 312 seats and five roles. None of that exists.** ✅ **The row renders what the platform can answer and states the rest as absent** — **the class this lane has now refused six times** |
 | **Build-vs-Buy** | ✅ **n/a for the surface; SSO/SCIM are Better Auth, ratified** |
 
-### TASK-1413 · API keys and webhooks — scoped, rotatable, and logged per call
+### TASK-1481 · Webhook delivery — durable, retried, and parked with its payload
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** — ⚡ **the existing outbox/relay pattern** ([ADR-0011](architecture/adr/0011-background-processing-and-event-bus-transport.md)) |
+| **Owner** | **Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-13** ([D-237](DECISION_REGISTER.md) ②). ⚡ **Split out of [TASK-1413](#task-1413--api-keys--scoped-rotatable-shown-once-and-logged-per-call) by the [C-1404](LANE_COORDINATION.md) ruling, which treats webhooks separately.** ✅ **Needs NOTHING from the API-key work and must not wait for it** |
+| **Approved design** | 📁 **`Fortune Signora Settings.dc.html`** — ⛔ **the design is the authority and nothing here extends it** |
+| **Delivers** | **A customer's endpoint receives a delivery; a failure retries with backoff for 24 hours and then parks with the payload retained** |
+| ⛔ **Explicitly out of scope** | **New webhook product features** · **an API-key dependency** · **a second delivery mechanism.** 📁 **[D-237](DECISION_REGISTER.md): *"use the existing outbound delivery infrastructure"*** |
+| **Change Budget** | 🟢 **the relay and its worker** · 🟠 **a delivery-attempt table with its `tenancy_policy.py` registration, and a migration** |
+| **Playwright coverage** | ⚠️ **Not a browser journey** — **asserted against the database and the worker**: a failed delivery is retried, and after the window it is parked **with its payload still readable** |
+| **Definition of Done** | **Delivery · retry with backoff · parking after 24 hours with the payload retained · every state observable** ([§17](../CLAUDE.md)) **· certified · `main`** |
+| **Build-vs-Buy** | ✅ **n/a — the outbox and relay are Signora's and already run** |
+
+### TASK-1413 · API keys — scoped, rotatable, shown once, and logged per call
 
 | | |
 |---|---|
@@ -2846,7 +2861,7 @@
 | **Epic** | **Platform Foundation** |
 | **Owner** | **Lane A** — ⚠️ **assigned 2026-08-13. The LANE was never in doubt: [D-230](DECISION_REGISTER.md) gives Lane A every module without exception, so whichever module ends up owning machine credentials, Lane A builds it.** ⛔ **The MODULE is still undecided and that is [C-1404](LANE_COORDINATION.md), which is Product Office's.** ⚡ **So this is an assignment, never a release: the row stays `SEQUENCED`, because building it would decide where machine credentials live — 📁 [§20e](../CLAUDE.md)'s architectural blocker, which a lane must not absorb inside a slice** |
 | **Module** | 🔴 **UNASSIGNED — [C-1404](LANE_COORDINATION.md).** ⛔ **No module owns machine credentials.** ⚠️ **Raised rather than assigned, because inventing a module boundary is architecture** ([§21](../CLAUDE.md)) |
-| **Status** | ⏸️ **`SEQUENCED` — behind [C-1404](LANE_COORDINATION.md)**, which is Product Office's own and answerable this week |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-13, on the [C-1404](LANE_COORDINATION.md) ruling** ([D-237](DECISION_REGISTER.md)). ⚡ **Scoped to the API-KEY half alone — the webhook half is [TASK-1481](#task-1481) and needs nothing from this row.** ⛔ **Claimable once [ADR-0414](architecture/adr/0414-machine-credentials-bounded-context.md) is an ancestor of `integration`** — 📁 [§20e](../CLAUDE.md)'s five states: *ruled* and *actionable* are different days. **Was:** ⏸️ **`SEQUENCED` — behind [C-1404](LANE_COORDINATION.md)**, which is Product Office's own and answerable this week |
 | **Design authority** | ⛔ **`Fortune Signora Settings.dc.html` §*API keys & webhooks*** |
 | ✅ **What it delivers** | **A key issued once, stored hashed, never re-displayed** · **a scope narrower than its creator's** · **rotation with an overlap window** · **a per-call log** · **webhook delivery with backoff and a parked-payload state** |
 | 🔴 **Why it matters more than its screen** | ⚡ **[TASK-1407](#task-1407--the-engine-admits-a-non-human-principal-before-one-exists) widens the entry engine to admit a NON-HUMAN principal.** ⛔ **This row is where non-human principals come from.** ✅ **The two must agree on what a service principal is, and [495](architecture/495-principal-and-identity-boundary.md) already ratified the model** |
