@@ -17345,6 +17345,84 @@
         ]
       ],
       "tree_clean": true
+    },
+    {
+      "certified_at": "2026-08-14T04:40:08.841917+00:00",
+      "commit": "385970bfffca0fe803e23960565df977418df70c",
+      "conditions": {
+        "migration_head": "0052",
+        "prompt_releases": [
+          {
+            "fingerprint": "bafc9d282d53e4e3ae7a10748d41e9128acb63c9ae1e6d5e00390871db2debfb",
+            "model": "llama3.1:8b",
+            "reference": "research_planning@2"
+          },
+          {
+            "fingerprint": "409a6b2e38a92f1b72022a7b205bfaf299e93e4213e83afcfe486e65fa80d3b6",
+            "model": "llama3.1:8b",
+            "reference": "research_synthesis@2"
+          }
+        ],
+        "rendering_protocol_version": 2,
+        "scenario_fingerprint": "e5b92f4872fc966f8333ed93070f85afa3c75b1ac85041d69c88ddb08596922e"
+      },
+      "coverage": 95.03,
+      "gates": [
+        {
+          "detail": "37 kept, 0 broken",
+          "name": "import-linter",
+          "passed": true
+        },
+        {
+          "detail": "strict, clean over 882 files",
+          "name": "mypy",
+          "passed": true
+        },
+        {
+          "detail": "4641 passed",
+          "name": "pytest",
+          "passed": true
+        },
+        {
+          "detail": "443 invariants",
+          "name": "security-invariants",
+          "passed": true
+        },
+        {
+          "detail": "24 stages in 206s, slowest 1. Build 62s",
+          "name": "smoke",
+          "passed": true
+        },
+        {
+          "detail": "clean",
+          "name": "tsc",
+          "passed": true
+        }
+      ],
+      "profile": "platform",
+      "record_version": 1,
+      "scenarios": [
+        {
+          "detail": "190 assertions",
+          "name": "baseline@1 research lifecycle",
+          "passed": true
+        }
+      ],
+      "tools": [
+        [
+          "mypy",
+          "2.3.0"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ],
+        [
+          "python",
+          "3.13.14"
+        ]
+      ],
+      "tree_clean": true
     }
   ]
 }
