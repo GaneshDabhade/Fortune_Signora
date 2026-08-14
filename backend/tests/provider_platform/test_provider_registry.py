@@ -32,6 +32,7 @@ from modules.provider_platform.infrastructure.composition import (
     build_provider_registry,
 )
 from modules.provider_platform.infrastructure.settings import ProviderSettings
+from signora_platform.environment import SignoraEnvironment
 
 
 class TestTheRegistryIsBuiltFromConfigurationAlone:
@@ -161,7 +162,15 @@ class TestSettingsAreReadFromTheEnvironmentAndNowhereElse:
         settings = ProviderSettings()
 
         with pytest.raises(ValueError):
-            settings.environment = "production"  # type: ignore[misc]
+            # ⚠️ **A valid member rather than a widened ignore.** `environment`
+            # became `SignoraEnvironment` (ADR-0412), so a bare string is TWO
+            # errors here — the frozen-mutation `[misc]` this line has always
+            # suppressed, and an `[assignment]` it never did. ⛔ **Widening the
+            # ignore would suppress the second class permanently**, and the
+            # property under test is *frozen*, not *badly typed*: assigning a
+            # correct value keeps `[assignment]` live on this line and still
+            # proves the object refuses mutation.
+            settings.environment = SignoraEnvironment.PRODUCTION  # type: ignore[misc]
 
 
 class TestARunCanBeReplayedFromItsOwnRecord:
