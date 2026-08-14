@@ -155,6 +155,25 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⚠️ **The test that separates this from silencing a check**, and QE applied it rather than taking the claim: **re-add one genuine second `Status` row and confirm the check still fires.** ⛔ **A relabel that also stops the check catching a real duplicate has hidden the defect rather than removed it.**
 
+## 5f · An author cannot see the narrowness of their own predicate
+
+**Named by QE, 2026-08-13, after four in one day. ⛔ Not a rule — the reason a second reader is worth the round trip.**
+
+> **A check answers the question its author asked. The failure is that the question was narrower than the one they believed they were asking — and the author is the one person who cannot see the gap, because they wrote both halves to match.**
+
+📁 **Four instances, one day, and every one was found by somebody other than its author:**
+
+| | The narrow question | The real one |
+|---|---|---|
+| **B-433**, mine | *"does the `Module` cell differ?"* | *"is the row synchronized?"* |
+| **QE's degeneracy predicate** | *"is the key empty?"* | *"can two records that should be distinct share it?"* — **6 of 8 became 7 of 8** |
+| **Lane A's password check** · **QE's redaction probe** | — | — |
+| **QE's disjointness measurement** | *"do the vocabularies intersect?"* — **against the PRE-FIX enum** | **against the ratified one, and the answer is `{demo}` rather than empty** |
+
+⚡ **The fourth is the one this office caught, and only because it was about to put the claim in front of the product owner.** ✅ **`grep`ping the enum took one command; accepting *"intersection EMPTY"* would have cost a ruling made on a false premise.**
+
+⛔ **The practice, and it is cheap: re-measure any figure you are about to relay into a decision, especially one you agree with.** ⚠️ **Agreement is when this fails — a number that confirms what you already believe is the one nobody re-runs.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.

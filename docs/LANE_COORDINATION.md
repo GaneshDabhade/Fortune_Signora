@@ -1317,13 +1317,29 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ✅ **[§2](../CLAUDE.md)'s least-powerful-author rule points the same way**: a stack name is developer configuration and a deployment class is a safety property, and **a safety property must not be settable by somebody choosing a port slot.**
 
+### 🔴 The decisive measurement — the two vocabularies share exactly one member, and it is deliberate
+
+**Contributed by QE, whose files two of the three are. ⚠️ Re-measured here against the RATIFIED enum, and it comes out one member different from QE's report.**
+
+| | |
+|---|---|
+| **Stack** — [`environments.py`](../infra/environments.py) `BY_NAME` | `demo` · `lane-a` · `lane-b` · `lane-c` · `lane-d` · `lane-e` · `lane-qe` · `review` |
+| **Deployment class** — [ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md), ratified | `local` · `test` · **`demo`** · `production-local` · `staging` · `production` |
+| ⚡ **Intersection** | **`{demo}` — one member, and Lane A put it there on purpose**: *"the one deliberate overlap, because there the stack and the deployment class genuinely are the same thing."* |
+
+⚠️ **QE reported the intersection as EMPTY and measured against `development · test · production · production-local`** — ⛔ **the PRE-FIX vocabulary. `development` is deliberately absent from the ratified enum and `local` replaces it.** ✅ **Verified against `signora_platform/environment.py` on Lane A's branch: `LOCAL · TEST · DEMO · PRODUCTION_LOCAL · STAGING · PRODUCTION`.**
+
+⚡ **The correction does not weaken the finding — it sharpens what the ruling is choosing between.** **Every stack name except `demo` is invalid for the deployment reader, and every deployment class except `demo` resolves to `BY_NAME.get(...) → None`.** ⛔ **So the overload cannot be resolved by convention, documentation or care: outside one intentional member there is no value that satisfies both readers.**
+
+📁 **A consequence QE owns and reports as not-a-defect-today:** `infra/docker-compose.prod.yml`:41 sets `production-local`, **so inside the prod-local stack, stack resolution returns `None`.** ✅ **Services address each other by compose service name and never ask.** ⚠️ **A future in-container caller of `current_environment()` would get the fallback and be told nothing.**
+
 ### The alternatives
 
 | | | |
 |---|---|---|
 | **A** ▶ | **A second variable for the stack** — `SIGNORA_STACK` or equivalent — **and `SIGNORA_ENVIRONMENT` keeps ADR-0412's meaning alone** | ✅ **Each variable answers one question.** ⚠️ **Touches every lane's local setup and [`RUNNING.md`](RUNNING.md), which is QE's** |
 | **B** | **`environments.py` stops reading `SIGNORA_ENVIRONMENT`** and resolves the stack from the branch alone | ✅ **Smallest change.** ⛔ **Removes the capability its docstring exists to provide — a lane driving a stack that is not its own** |
-| **C** | **Leave it and document the hazard** | ⛔ **A documented trap is still a trap, and this one breaks development in two places while explaining neither** |
+| **C** | **Leave it and document the hazard** | ⛔ **ELIMINATED by the measurement above.** **Outside `demo`, no value satisfies both readers — so there is no convention a document could teach.** ⚠️ **A documented trap is still a trap, and this one breaks development in two places while explaining neither** |
 
 ### Recommendation — **A**, and it is input rather than authority
 
