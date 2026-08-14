@@ -13,6 +13,11 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from modules.commercial_profile.application.segment_queries import SegmentSummary
+from modules.commercial_profile.domain.account_assignment import (
+    AccountAssignment,
+    AccountRole,
+    Reassignment,
+)
 from modules.commercial_profile.domain.account_tag import (
     MAX_TAG_NAME,
     AccountTag,
@@ -991,3 +996,80 @@ class AccountTagAssignmentsResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     assignments: dict[UUID, list[UUID]]
+
+
+class AccountAssignmentResponse(BaseModel):
+    """Who holds one role on one account.
+
+    ⛔ **A `user_id` and no name.** The screen resolves it against the member
+    list it already has — 📁 ADR-0411 stores a reference precisely so a name is
+    never duplicated here, and a name on this response would be the second
+    representation §2 forbids, stale the day somebody changes theirs.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: UUID
+    role: AccountRole
+    member_user_id: UUID
+
+    @classmethod
+    def from_domain(cls, assignment: AccountAssignment) -> AccountAssignmentResponse:
+        return cls(
+            account_id=assignment.account_id,
+            role=assignment.role,
+            member_user_id=assignment.member_user_id,
+        )
+
+
+class AccountAssignmentListResponse(BaseModel):
+    """Every assignment on the accounts the caller asked about."""
+
+    model_config = ConfigDict(frozen=True)
+
+    assignments: list[AccountAssignmentResponse]
+
+    @classmethod
+    def from_domain(
+        cls, assignments: tuple[AccountAssignment, ...]
+    ) -> AccountAssignmentListResponse:
+        return cls(
+            assignments=[
+                AccountAssignmentResponse.from_domain(assignment)
+                for assignment in assignments
+            ]
+        )
+
+
+class AssignAccountsRequest(BaseModel):
+    """Put one member on a selection of accounts."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    account_ids: list[UUID] = Field(min_length=1)
+    role: AccountRole
+    member_user_id: UUID
+
+
+class ReassignmentResponse(BaseModel):
+    """What the assignment changed — **and what would undo it.**
+
+    ⚡ **`changed` counts accounts that actually moved**, so the confirmation a
+    seller reads is the truth rather than the size of their selection. 📁 The
+    same distinction `AccountTagBatch` draws between `requested` and `changed`,
+    and the reason both exist.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    role: AccountRole
+    changed: int
+    unchanged: int
+
+    @classmethod
+    def from_domain(cls, reassignment: Reassignment) -> ReassignmentResponse:
+        return cls(
+            role=reassignment.role,
+            changed=len(reassignment.previous),
+            unchanged=len(reassignment.unchanged),
+        )

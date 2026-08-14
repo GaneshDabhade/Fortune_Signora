@@ -147,6 +147,11 @@ class Resource(StrEnum):
     #: every reader an author, which is the same mistake `SIGNAL` records
     #: avoiding one resource earlier.
     ACCOUNT_TAG = "account_tag"
+    #: Who owns an account and who looks after it — ADR-0411's second
+    #: capability, TASK-1479 slice ⓶. **A declarative registration and never a
+    #: grant** (§20a, C-224): the grants are the `policy.csv` rows beside the
+    #: tag's, and a member here with no policy row denies everyone.
+    ACCOUNT_ASSIGNMENT = "account_assignment"
 
 
 class Action(StrEnum):

@@ -67,3 +67,7 @@ p, owner, *, account_tag, read
 p, member, *, account_tag, read
 p, owner, *, account_tag, update
 p, member, *, account_tag, update
+p, owner, *, account_assignment, read
+p, member, *, account_assignment, read
+p, owner, *, account_assignment, update
+p, member, *, account_assignment, update

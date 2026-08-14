@@ -9,11 +9,14 @@ Every other write records a *decision about* the pipeline's output; this one
 records the input the pipeline has never had.
 """
 
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Query, status
 
 from apps.api.composition.products import (
+    AccountsAssign,
+    AssignmentsRead,
     CatalogRead,
     CatalogWrite,
     CommitteeRead,
@@ -34,6 +37,9 @@ from apps.api.composition.products import (
     TargetAccountsRead,
     TargetAccountsWrite,
 )
+from modules.commercial_profile.application.assignment_use_cases import (
+    AssignAccountsInput,
+)
 from modules.commercial_profile.application.declare_committee import (
     DeclareBuyingCommitteeInput,
 )
@@ -53,11 +59,13 @@ from modules.commercial_profile.application.tag_use_cases import (
     RenameTagInput,
 )
 from modules.commercial_profile.interface.schemas import (
+    AccountAssignmentListResponse,
     AccountTagApplicationResponse,
     AccountTagAssignmentsResponse,
     AccountTagResponse,
     AccountTagVocabularyResponse,
     ApplyAccountTagRequest,
+    AssignAccountsRequest,
     BuyingCommitteeResponse,
     CommercialFocusResponse,
     CreateAccountTagRequest,
@@ -71,6 +79,7 @@ from modules.commercial_profile.interface.schemas import (
     ProductCatalogResponse,
     ProposedTagBatchResponse,
     PublishProductCatalogRequest,
+    ReassignmentResponse,
     RenameAccountTagRequest,
     SegmentSummaryResponse,
     TargetAccountListResponse,
@@ -680,4 +689,67 @@ async def propose_account_tag_batch(
     )
     return ProposedTagBatchResponse(
         batch_id=batch_id, item_count=len(dict.fromkeys(body.accounts))
+    )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/account-assignments",
+    response_model=AccountAssignmentListResponse,
+    summary="Who owns these accounts, and who looks after them",
+)
+async def account_assignments(
+    context: CurrentWorkspace,
+    assignments: AssignmentsRead,
+    account_ids: Annotated[list[UUID], Query(min_length=1)],
+) -> AccountAssignmentListResponse:
+    """The assignments on the accounts the caller names.
+
+    ⚡ **The caller names them**, because the Companies table asks this for
+    exactly the rows it is rendering — a read that returned every assignment in
+    the workspace would be the unbounded fetch §14 calls a defect at write
+    time, and it would grow with the customer's book rather than with the page.
+
+    **Never a 404 and never empty-as-an-error.** An account nobody owns yet is
+    simply absent from the list, and the screen renders *Unassigned* either
+    way (P-A).
+    """
+    context.authorize(Resource.ACCOUNT_ASSIGNMENT, Action.READ)
+    return AccountAssignmentListResponse.from_domain(
+        await assignments.for_accounts(context.workspace_id, tuple(account_ids))
+    )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/account-assignments",
+    response_model=ReassignmentResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Put a member on these accounts",
+)
+async def assign_accounts(
+    context: CurrentWorkspace,
+    assign: AccountsAssign,
+    request: AssignAccountsRequest,
+) -> ReassignmentResponse:
+    """Assign, and report **what moved.**
+
+    ⚠️ **`200`, not `201`**, and the reason is the same one the tag batch
+    records: this addresses a resource that already exists — the account — and
+    creates nothing a caller could later fetch by a new id. **A `201` would owe
+    a `Location`, and there is no new location.**
+
+    ⛔ **A member who is not in this workspace is refused before anything is
+    written**, which is what makes ADR-0411's *"a reference, not free text"*
+    true rather than aspirational.
+    """
+    context.authorize(Resource.ACCOUNT_ASSIGNMENT, Action.UPDATE)
+    return ReassignmentResponse.from_domain(
+        await assign.execute(
+            AssignAccountsInput(
+                workspace_id=context.workspace_id,
+                account_ids=tuple(request.account_ids),
+                role=request.role,
+                member_user_id=request.member_user_id,
+                actor_id=context.principal.user_id,
+            )
+        )
     )

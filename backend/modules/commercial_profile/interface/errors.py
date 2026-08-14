@@ -24,6 +24,10 @@ from modules.commercial_profile.application.declaring import (
     IcpUnknownProductError,
 )
 from modules.commercial_profile.application.publish import CatalogVersionConflictError
+from modules.commercial_profile.application.assignment_use_cases import (
+    NotAWorkspaceMemberError,
+)
+from modules.commercial_profile.domain.account_assignment import AssignmentError
 from modules.commercial_profile.domain.account_tag import AccountTagError
 from modules.commercial_profile.domain.committee import BuyingCommitteeError
 from modules.commercial_profile.domain.competitors import CompetitorsError
@@ -97,10 +101,38 @@ ERROR_MAPPING: ErrorMapping = {
     # above its ceiling. Registered after the rows above and never shadowing
     # them — handler lookup walks the exception's MRO, so a derived type still
     # wins for its own instances.
-    # ⚠️ **Listed BEFORE the base class it inherits.** `AccountTagError`
-    # extends `CommercialProfileError`, and without its own row a customer who
-    # typed a duplicate label would be told `catalog_refused` — a code naming
-    # a document they were not editing.
+    # **Listed before the base class it inherits, as a reading convention.**
+    # `AccountTagError` extends `CommercialProfileError`, and without its own
+    # row a customer who typed a duplicate label would be told
+    # `catalog_refused` — a code naming a document they were not editing.
+    #
+    # ⚠️ **Corrected 2026-08-14: the ORDER is not what prevents that, and this
+    # comment previously implied it was.** Handler lookup walks the exception's
+    # MRO, exactly as the note above says, **so the derived row wins wherever
+    # it sits.** 🔴 **Measured rather than reasoned**: moving this row after
+    # `CommercialProfileError` leaves all 18 tag API tests green.
+    #
+    # ⛔ **The false claim mattered.** It was reported to QE as a load-bearing
+    # choice to check during TASK-466's validation, and a comment that sends a
+    # reviewer to verify a mechanism that does not exist is the [§2](../../../../CLAUDE.md)
+    # defect — *"the comment beside it is then a false claim that survives
+    # review."* **What actually protects the code is the row's existence, and
+    # a test that pins the code.**
+    # **Before `AssignmentError`, by the same reading convention** — and, like
+    # that row, **not because the order decides anything.** ⚡ *"This person is
+    # not on your team"* and *"this selection named no accounts"* are answered
+    # by different people (📁 §10's truthful-attribution rule), and a shared
+    # code would send a customer to look at their selection when the problem is
+    # their colleague. **The distinct row is what prevents that; `test_api_
+    # account_assignments.py` pins the code so the row cannot quietly go.**
+    AssignmentError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "account_assignment_refused",
+    ),
+    NotAWorkspaceMemberError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "not_a_workspace_member",
+    ),
     AccountTagError: (
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         "account_tag_refused",
