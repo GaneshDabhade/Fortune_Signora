@@ -10,23 +10,23 @@
 [meta]
 generator      = "infra/coordination.py"
 generated_from = "2fff10d"
-task_count     = 60
+task_count     = 61
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1416", "TASK-1419", "TASK-1421", "TASK-1424", "TASK-1473", "TASK-1477", "TASK-1478", "TASK-202", "TASK-430"]
-assigned_total     = 50
-claimable          = 9
+assigned_total     = 51
+claimable          = 11
 claimable_now      = 9
-awaiting_sync      = 0
+awaiting_sync      = 2
 in_flight          = 20
 actionable         = 5
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 21
+blocked            = 20
 lane_utilization   = 4.0
-idle_prediction_days   = 1.3
+idle_prediction_days   = 1.6
 dependency_wait_days   = 2.0
 blocked_duration_days  = 1.1
 critical_path_max      = 3
@@ -100,19 +100,19 @@ on_integration = true
 
 [[task]]
 id            = "TASK-1413"
-title         = "API keys and webhooks — scoped, rotatable, and logged per call"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
+title         = "API keys — scoped, rotatable, shown once, and logged per call"
+state         = "ASSIGNED"
+declared      = "READY"
 lane          = "Lane A"
 depends_on     = []
 unblocks       = []
 next_owner     = []
 next_lane      = "—"
 critical_path  = 0
-estimated_ready = "— behind [C-1404](LANE_COORDINATION.md)**, which is Product Office's o"
-waiting_for    = "— behind [C-1404](LANE_COORDINATION.md)**, which is Product Office's own and answerable this week"
+estimated_ready = "now"
+waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
+on_integration = false
 
 [[task]]
 id            = "TASK-1414"
@@ -497,6 +497,22 @@ estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
+
+[[task]]
+id            = "TASK-1481"
+title         = "Webhook delivery — durable, retried, and parked with its payload"
+state         = "ASSIGNED"
+declared      = "READY"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "now"
+waiting_for    = ""
+blocked_days   = 0.0
+on_integration = false
 
 [[task]]
 id            = "TASK-200"
