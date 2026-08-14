@@ -184,6 +184,22 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 📁 **The detail that makes it worth recording: `development` is the member [ADR-0412](../../architecture/adr/0412-environment-and-secret-safe-logging.md) deliberately REMOVED**, and the ADR's own reason is *"two spellings of one environment is how a guard comes to be written against the spelling somebody happened to use."* ⚠️ **The analysis was written against the spelling somebody happened to use.**
 
+## 5f-2 · One instance of an output does not tell you the rule that produced it
+
+**Recorded 2026-08-14, from a wrong claim this office made to the product owner.**
+
+🔴 **`TASK-479` was absent from the generated projection. Its `Status` read `DISPOSED`, a token this office had not seen.** ⛔ **I connected the two and reported *"a state token no tool recognises, so the row is invisible to every reader that parses state."***
+
+✅ **Lane A measured instead of reasoning.** 📁 **`coordination.py`:64 — `_CLOSED = frozenset({"DONE", "DISPOSED", "PROMOTED"})`, applied at `:481`; [`state-check.py`](../../../infra/state-check.py) carries it in four places.** ⚡ **`DISPOSED` is recognised everywhere and deliberately filtered.**
+
+🔴 **And the population settles it: the projection omits 137 of 198 rows, almost all `PROMOTED`.** ⛔ **`TASK-479` is absent for the same reason `TASK-466` is.** **I had one data point and inferred a rule from it.**
+
+⚠️ **The failure mode I warned about is impossible by construction, which I would have seen by reading the set rather than the symptom**: **`_CLOSED` is an ALLOW-LIST, so a typo'd state falls through to classification and APPEARS.** ⛔ **An unknown state is never dropped.**
+
+> **The question was never *why is this row absent*. It was *what governs absence, and how many rows does it govern?*** ⚡ **One is a symptom; the other is the rule.**
+
+📁 **Related to [§5f](#5f--an-author-cannot-see-the-narrowness-of-their-own-predicate) and distinct from it: there the predicate was too narrow; here the SAMPLE was.**
+
 ## 5g · A count compares reachability. Only content compares content.
 
 **Recorded 2026-08-13 after the same trap fired three times in a week, twice on a destructive operation.**
