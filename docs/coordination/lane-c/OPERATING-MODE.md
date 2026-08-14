@@ -143,6 +143,18 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⛔ **No guard is proposed, and §5c's test is why:** **a reader would stop asking whether the array matched its comment, and only re-derivation actually answers that.**
 
+## 5e · A row has one `Status` cell. Stack history under a different label.
+
+**Recorded 2026-08-13, after three rows declared their state two or three times.**
+
+⛔ **Prepending a terminal state is right and preserves history** ([§2](../../../CLAUDE.md)). ⛔ **Leaving the earlier cell labelled `Status` is not** — **the row then answers the state question more than once, and every reader takes the first.**
+
+🔴 **Measured: four call sites parse that cell, and all four take the first match.** 📁 **[`state-check.py`](../../../infra/state-check.py):1151 and :1339 · [`pipeline-dashboard.py`](../../../infra/pipeline-dashboard.py):67 · [`registers.py`](../../../infra/registers.py):87.** ⚡ **So a stacked cell does not merely trip a checker — it changes what four independent readers answer, and it does so silently.**
+
+✅ **The fix is a label, never a deletion:** `📁 **Earlier state — not the row's status**`. **History intact, one `Status` per row.**
+
+⚠️ **The test that separates this from silencing a check**, and QE applied it rather than taking the claim: **re-add one genuine second `Status` row and confirm the check still fires.** ⛔ **A relabel that also stops the check catching a real duplicate has hidden the defect rather than removed it.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
