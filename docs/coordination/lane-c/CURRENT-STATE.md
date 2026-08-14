@@ -24,11 +24,14 @@
 
 ## Open product-owner decisions
 
-⛔ **Three. Each has a prepared recommendation and needs one word.** Full analysis in [`LANE_COORDINATION.md`](../../LANE_COORDINATION.md).
+⛔ **Six. Each has a prepared recommendation and needs one word.** Full analysis in [`LANE_COORDINATION.md`](../../LANE_COORDINATION.md).
 
 | | Recommendation | Blocks |
 |---|---|---|
+| **C-1435** | ⚡ **ⓐ — widen `REQUIRED_GATES` for new runs only.** 🔴 **A red frontend suite reached `main` under a `CERTIFIED` stamp, and nothing malfunctioned: `frontend-suite` is in **0 of 226** runs because it is not one of the required six** | ⛔ **Nothing.** ⚠️ **It changes what this office may INFER from a stamp** |
+| **C-1434** | ⚡ **ⓑ — the ICP sense keeps *Segment*; the saved-grouping sense is renamed UPSTREAM.** ⛔ **This office does not propose the word** ([D-138](../../DECISION_REGISTER.md)); **a snapshot refresh instruction is what is needed** | **[ADR-0411](../../architecture/adr/0411-customer-organized-account-metadata.md)'s third capability only.** ✅ **Tags shipped; Lane A is on slice ⓷** |
 | **C-1433** | ⚡ **FIRST: is it already [ADR-0412](../../architecture/adr/0412-environment-and-secret-safe-logging.md) §6 applied?** ⛔ **This office drafted that clause and will not read it as deciding its own recommendation** | Nothing today |
+| **C-1510** | ⚡ **Lane A's third option — restore faithfully AND report which accounts returned to somebody who has left.** ⚠️ **Authored on `lane-a`, NOT on `integration`** — this office cannot move a row it cannot see, and has told Lane A to set the state itself | **Nothing** — the shipped path is a documented assumption |
 | **C-1508** | Lane A's — `20-provider-simulation.md`'s budget band | Nothing |
 | **C-1509** | Lane A's — four relationship facts attributed to a provider that cannot know them | **TASK-430's stance and committee views** |
 | **U-02** | ⛔ **No recommendation. Whether a deleted workspace can be restored is a product promise.** Owned by [R-04](../../architecture/16-architecture-risks.md), carried by [TASK-426](../../BACKLOG.md), **whose trigger (c) has fired** | **WL-08 alone** |
