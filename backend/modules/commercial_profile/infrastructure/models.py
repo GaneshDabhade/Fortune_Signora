@@ -384,3 +384,30 @@ class AccountTagBatchModel(Base, WorkspaceScopedMixin, TimestampMixin):
     requested: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
     changed: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
     created_by: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+
+
+class AccountAssignmentModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """Who holds which role on which account — migration `0053`.
+
+    **`(workspace_id, account_id, role)` is the identity**, so a second owner
+    is refused by the schema rather than by a query somebody remembers to
+    write.
+
+    ⚡ **`TimestampMixin` here, unlike the tag join row beside it**, and the
+    difference is real rather than inconsistency: an assignment **can** be
+    updated — reassigning an account is a correction to who is responsible —
+    so `updated_at` carries a value that differs from `created_at` and is not
+    the decorative class §2 names.
+    """
+
+    __tablename__ = "account_assignment"
+
+    #: ⛔ **No foreign key**, and the omission is the module boundary: an
+    #: account is `knowledge_graph`'s entity (§5).
+    account_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    role: Mapped[str] = mapped_column(String(length=8), primary_key=True)
+    #: ⛔ **No foreign key either, and for a stronger reason than the account's.**
+    #: A constraint would prove the *user* exists; what has to be true is that
+    #: they are a member of *this workspace*, which only
+    #: `WorkspaceQueryPort.get_membership` can answer.
+    member_user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
