@@ -13,9 +13,14 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
-from modules.commercial_profile.domain.account_assignment import AccountRole
+from modules.commercial_profile.domain.account_assignment import (
+    AccountRole,
+    AssignmentBatch,
+    Reassignment,
+)
 from modules.commercial_profile.infrastructure.assignment_repository import (
     SqlAccountAssignmentRepository,
+    SqlAssignmentBatchStore,
 )
 from tests.conftest import DEFAULT_APP_DATABASE_URL
 
@@ -344,3 +349,149 @@ class TestTheReversalAgainstAWorldThatMoved:
         )
 
         assert await _held(session, workspace, account, AccountRole.OWNER) == later
+
+
+class TestTheBatchStoreKeepsWhatTheEventDoesNot:
+    """🔴 **`SqlAssignmentBatchStore` against a real database** — found untested
+    by [B-201](../../../docs/BUGS.md)'s repository-wide coverage number.
+
+    📁 *Events carry identity; ports carry payload.* The `applied` event names
+    a `batch_id` and nothing else, **so everything the reversal needs has to
+    survive in this table** — and these are the assertions that say it does.
+    """
+
+    async def test_a_recorded_batch_reads_back_as_not_applied(
+        self, session: AsyncSession
+    ) -> None:
+        """⛔ **`None`, not `()`.** ⚠️ **The distinction is the whole reason the
+        column is nullable**: *never approved* and *approved and moved nobody*
+        are different rows, and only the first is still waiting for a person.
+        """
+        workspace_id, member, account = uuid4(), uuid4(), uuid4()
+        await _scoped(session, workspace_id)
+        store = SqlAssignmentBatchStore(session)
+        batch = AssignmentBatch(
+            batch_id=uuid4(),
+            role=AccountRole.OWNER,
+            member_user_id=member,
+            requested=(account,),
+        )
+
+        await store.record(workspace_id, batch, actor_id=member)
+        read_back = await store.by_id(workspace_id, batch.batch_id)
+
+        assert read_back is not None
+        assert read_back.moved is None
+        assert read_back.requested == (account,)
+        assert read_back.to_reverse() == ()
+
+    async def test_an_applied_batch_carries_the_prior_holders_and_the_absences(
+        self, session: AsyncSession
+    ) -> None:
+        """🔴 **A `None` prior has to survive the round trip through JSON.**
+
+        ⛔ **This is where the reversal's hardest case lives**: an account that
+        had *no* owner before must come back as `(account, None)` rather than
+        being dropped — **a reversal that skipped it would leave the new owner
+        in place while reporting success.**
+        """
+        workspace_id, member, prior = uuid4(), uuid4(), uuid4()
+        had_owner, had_none = uuid4(), uuid4()
+        await _scoped(session, workspace_id)
+        store = SqlAssignmentBatchStore(session)
+        batch = AssignmentBatch(
+            batch_id=uuid4(),
+            role=AccountRole.OWNER,
+            member_user_id=member,
+            requested=(had_owner, had_none),
+        )
+        await store.record(workspace_id, batch, actor_id=member)
+
+        await store.record_applied(
+            workspace_id,
+            batch.batch_id,
+            Reassignment(
+                role=AccountRole.OWNER,
+                assigned_to=member,
+                previous=((had_owner, prior), (had_none, None)),
+            ),
+            actor_id=member,
+        )
+        read_back = await store.by_id(workspace_id, batch.batch_id)
+
+        assert read_back is not None
+        assert read_back.moved is not None
+        assert read_back.to_reverse() == ((had_owner, prior), (had_none, None))
+        # ⚡ **What the batch PUT there**, which is what makes `restore`
+        # conditional rather than a lost update wearing an undo's clothes.
+        assert read_back.moved.assigned_to == member
+
+    async def test_a_batch_from_another_workspace_is_absent_rather_than_visible(
+        self, session: AsyncSession
+    ) -> None:
+        """🔴 **Tenancy, asserted rather than assumed.** ⛔ The predicate and
+        the RLS policy both scope this, and a store that returned a neighbour's
+        batch would let one workspace's reversal rewrite another's accounts.
+        """
+        mine, theirs, member = uuid4(), uuid4(), uuid4()
+        await _scoped(session, mine)
+        store = SqlAssignmentBatchStore(session)
+        batch = AssignmentBatch(
+            batch_id=uuid4(),
+            role=AccountRole.CSM,
+            member_user_id=member,
+            requested=(uuid4(),),
+        )
+        await store.record(mine, batch, actor_id=member)
+
+        assert await store.by_id(theirs, batch.batch_id) is None
+
+    async def test_a_batch_nobody_proposed_here_reads_as_absent(
+        self, session: AsyncSession
+    ) -> None:
+        """⛔ **`None`, and the handler does nothing with it.** A tag batch's
+        `applied` event reaches this consumer too, and raising would
+        dead-letter somebody else's action on this module's queue."""
+        workspace_id = uuid4()
+        await _scoped(session, workspace_id)
+
+        assert await SqlAssignmentBatchStore(session).by_id(workspace_id, uuid4()) is None
+
+
+class TestARestoreWithNothingToConditionOnWritesNothing:
+    async def test_a_reversal_with_no_assigned_to_is_refused_silently(
+        self, session: AsyncSession
+    ) -> None:
+        """🔴 **The guard at the top of `restore`, and it is the safe default.**
+
+        ⛔ **Every write in `restore` is conditional on the batch's own value
+        still being in place.** With no `assigned_to` there is nothing to
+        condition on — **the reversal could not tell its own change from
+        anybody else's** — and guessing would be exactly the destructive write
+        the compare-and-set exists to prevent.
+
+        ⚠️ **Silently rather than by raising**, because this is reachable only
+        from a batch that recorded no assignment, and dead-lettering a
+        reversal on the worker's queue would be worse than doing nothing.
+        """
+        workspace_id, account, holder = uuid4(), uuid4(), uuid4()
+        await _scoped(session, workspace_id)
+        repository = SqlAccountAssignmentRepository(session)
+        await repository.assign(
+            workspace_id,
+            (account,),
+            role=AccountRole.OWNER,
+            member_user_id=holder,
+            actor_id=holder,
+        )
+
+        await repository.restore(
+            workspace_id,
+            ((account, None),),
+            role=AccountRole.OWNER,
+            assigned_to=None,
+            actor_id=holder,
+        )
+
+        # **Untouched.** The account is still held by whoever held it.
+        assert await _held(session, workspace_id, account, AccountRole.OWNER) == holder
