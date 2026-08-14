@@ -1,5 +1,23 @@
 # Session Handoff
 
+> ## Cycle 227 — promoted `da7d5e3e`, 2026-08-14
+>
+> **`main` = `da7d5e3e` = the certified commit.** **14 commits from three lanes** — Lane A's `TASK-429` and `B-267`, Lane C's D-236 follow-ups, QE's `B-434`. `pytest` **4603** · coverage **95.03%** · **422** Security Invariants *(up 16)* · migration head **`0052`**. **DR passed** — 422 invariants against the restarted stack. **Reversibility head→base→head clean.**
+>
+> ⚠️ **Second attempt. The first ABORTED on the environment lease and that is a statement about the run, not the commit.** Lane A held it for a test run; the pid was gone but *"may be stale"* is not *"is dead"*, so it was **not** force-released. **The lease cleared itself.** 📁 Its own message names the precedent: *cycle 25 recorded `pytest 134 passed` against a suite of 2589 because another run truncated its database mid-suite.*
+>
+> ⛔ **KNOWN LIMITATION, promoted deliberately and named rather than buried.** **[B-267](BUGS.md) closes the credential-in-a-log-message leak but not the malformed case**: `postgres://user:p@ss@host` matched to the *first* `@`, so `ss` survived. ✅ **Strictly better than the previous `main`**, where the whole password reached the JSON sink and everything reached the plain sink. ✅ **Unreachable today, checked rather than assumed** — `database_url` and `redis_url` are Pydantic `PostgresDsn`/`RedisDsn`, so a literal `@` in userinfo fails validation before it exists, and `grep` finds **no code path that logs a URL at all**. **Lane A's fix is on `3e3bd774` and lands next cycle.**
+>
+> ⚡ **B-267 validated by attack, not by reading.** Ten routes redact — message, `%s` arg, structured field, **and both exception/traceback paths through both formatters**. Neutering the pattern *while keeping the capture group* turns **10 of 15 assertions red**; the five survivors each test a **different** mechanism (bearer, key-based, credential-free URL, and the plain sink's own property). **No decorative assertion survives.**
+>
+> 🔴 **`TASK-429`'s central claim survives direct attack.** A promotion **and** a rename both re-report as `apollo:1` — **2 distinct keys for 3 records**, exactly as declared. ⚠️ **But 7 of 8 occurrence attributes collide when the identifying field is absent**: `HEADCOUNT_CHANGE` is the only survivor, because it puts the whole value in the key. **The guard was at one producer and not at the seam that collapses**; Lane A moved it to the seam as `UnkeyableOccurrenceError`, distinct from `UnclassifiedAttributeError` so an engineer is routed to a payload rather than to `ATTRIBUTE_KINDS`.
+>
+> ⛔ **QE certified its own gate change this cycle, and that is stated rather than hidden.** [B-434](BUGS.md) — the coordination owner check demanded a literal lane name where [C-213](LANE_COORDINATION.md) forbids one, so **satisfying it required committing the violation it protects against.** Fixed by joining through [`modules.toml`](coordination/modules.toml). **Fire-testing it found a second, older defect: the `Lane B` branch had never once been reachable** (`actor` is `Lane [ACD]`), **proven dead against the promoted file rather than assumed**, and reordered rather than deleted because the property is real. **12 regression tests, five of which must fire.** ⚠️ **`infra/state-check.py` is a QE gate and no other lane can validate it; the independent evidence is the deterministic gate plus a suite whose failing cases were proven able to fail.**
+>
+> ⚠️ **A gate QE skipped rather than one that failed:** the new suite broke `mypy --strict` because I type-checked `infra/` and not `backend/`. Caught by running the cheap gates before `certify`, fixed in the same cycle.
+>
+> 📁 **[C-1433](LANE_COORDINATION.md) — `SIGNORA_ENVIRONMENT` names two concepts.** Stack (`infra/environments.py`: `demo · lane-a…lane-e · lane-qe · review`) and deployment class (ADR-0412: `local · test · demo · production-local · staging · production`). **Intersection is `{demo}`, and it is deliberate.** ⚠️ **QE first reported it as EMPTY, measured against an *inferred* vocabulary containing `development` — the member ADR-0412 explicitly removed. Lane C caught it before it reached a ruling.** ⚡ **ADR-0412 §6 may already decide the item** — *"a second reader of it elsewhere is the second taxonomy this ruling forbids"* — with §7's exclusion list checked and not covering it. **Lane C declined to close it on their own drafted clause.**
+>
 > ## Cycle 226 — promoted `3d7e2d9e`, 2026-08-13
 >
 > **`main` = `3d7e2d9e` = the certified commit.** **Lane C's five commits — D-236's three rulings, the queue regeneration, the snapshot manifest.** `pytest` **4547** · coverage **95.06%** · **406** Security Invariants · migration head **`0052`**. **DR passed** — 406 invariants against the restarted stack. **Reversibility head→base→head clean on a disposable database.** ✅ **First attempt, no aborts.**
@@ -442,7 +460,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-13 · **`main` at `3d7e2d9e`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-14 · **`main` at `da7d5e3e`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
