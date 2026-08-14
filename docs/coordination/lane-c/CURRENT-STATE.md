@@ -106,7 +106,13 @@
 
 📁 **[§20e](../../../CLAUDE.md) says no lane may remain *assigned* to work that has reached `main`.** ⛔ **Nothing says the same about the document that *offers* it** — ⚡ **and that is the side where the cost is a wasted slice rather than a stale row.**
 
-✅ **QE set `PROMOTED` on all three and removed the board rows; startable fell 11 → 9.** 🔴 **SECOND INSTANCE, 2026-08-14, and it is the SAME mechanism — so by this office's own standard it is now an argument rather than data.** ⛔ **Asked to surface everything blocked on QE, this office reported EIGHTEEN rows.** ✅ **QE measured it and eight were removed from the board as `PROMOTED` at cycle 205's own Closeout** — 📁 `ACTIVE_ASSIGNMENTS.md` on `main`: *"8 promoted assignment(s) removed — TASK-1470, TASK-1471, TASK-1474, TASK-1463, TASK-1468, TASK-1467, TASK-1460, TASK-1405"*. **The board was reconciled and the backlog rows were never advanced.**
+✅ **QE set `PROMOTED` on all three and removed the board rows; startable fell 11 → 9.** ✅ **CLOSED THE SAME DAY, WITHOUT A RULE — 2026-08-14.** ⚡ **QE advanced all eight to `PROMOTED` on the request rather than at the next Closeout**, and verified each by ARTIFACT — delivery commits, `top-bar-search-width.test.tsx`, `signal-queue.tsx`, `gate-screen.tsx` — ⛔ **rather than by citing its own removal note, which would have been reading the report about the artifact.** 📁 **`main` = `5d580d95`; confirmed here by reading the eight rows on `main`.**
+
+⛔ **So the argument was never needed and this office is recording that rather than banking it.** ⚡ **The repair was a request to the one lane that may set `PROMOTED`, and it took hours.** ⚠️ **A rule proposed on the evidence would have cost a governance change to solve something a message solved** — 📁 **[§20e](../../../CLAUDE.md), *governance is stable; it evolves reactively*, and the reactive answer here was smaller than the observation that prompted it.**
+
+🔴 **What survives is NOT the asymmetry. It is two rows: `TASK-205` and `TASK-300`.**
+
+🔴 **SECOND INSTANCE, 2026-08-14, and it is the SAME mechanism — so by this office's own standard it is now an argument rather than data.** ⛔ **Asked to surface everything blocked on QE, this office reported EIGHTEEN rows.** ✅ **QE measured it and eight were removed from the board as `PROMOTED` at cycle 205's own Closeout** — 📁 `ACTIVE_ASSIGNMENTS.md` on `main`: *"8 promoted assignment(s) removed — TASK-1470, TASK-1471, TASK-1474, TASK-1463, TASK-1468, TASK-1467, TASK-1460, TASK-1405"*. **The board was reconciled and the backlog rows were never advanced.**
 
 ⚡ **Same mechanism as instance 1, not a different one**: [§20e](../../../CLAUDE.md) binds the BOARD — *no lane may remain assigned to work that has reached `main`* — **and is silent on the backlog row.** ⛔ **So the board is reconciled every cycle and the rows are not, and a reader of the rows sees work with QE that shipped days ago.**
 
