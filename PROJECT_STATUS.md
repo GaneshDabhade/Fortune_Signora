@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `da7d5e3e`, 2026-08-14.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `385970bf`, 2026-08-14.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,13 +12,13 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `da7d5e3e`, 2026-08-14.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `385970bf`, 2026-08-14.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`da7d5e3e`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 227** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
+| **`main`** | **`385970bf`** — ⚡ **the certified commit itself**, `promoted == certified`. **Cycle 228** · ⚠️ **promoted with [B-428](docs/BUGS.md) 🔴 `OPEN` on the product owner's standing override — not a resolution, severity untouched** |
 | **Release candidate** | ✅ **None.** `integration` is one commit ahead of `main`, the cycle 215 certification record, which cannot itself be certified ([§20e](CLAUDE.md), the bounded exception) |
-| **Certification** | ✅ [`da7d5e3e713a`](certification/reports/da7d5e3e713a.md) · migration head **`0052`** · profile **`platform`** · ⚠️ **second attempt — the first ABORTED on the environment lease, which is a statement about the run and not the commit** |
+| **Certification** | ✅ [`385970bfffca`](certification/reports/385970bfffca.md) · migration head **`0052`** · profile **`platform`** · ✅ **first attempt, no aborts** |
 | **Cycle 225 gates** | `pytest` **4419 passed** · coverage **95.03%** · **403** security invariants · `mypy --strict` clean over **867** files · `import-linter` **37 kept, 0 broken** · `tsc` clean · `smoke` **24 stages** · scenario **190 assertions** |
 | **Measured beyond the record** | ⚡ **QE ran the gates certification names but does not capture** — `eslint` **clean repository-wide** · frontend suite **3092 across 172 files** · **Disaster Recovery passed** against the restarted production stack. **A lane's figure is a claim; QE publishes a measurement** |
 | ⚡ **Proven at runtime, not by reading** | **The `distDir` move ([B-219](docs/BUGS.md)) changed where the production image finds its static assets.** QE warned that copying to `.next/static` would produce **an image that starts and serves no CSS** — silent, and worse than a build failure. **Measured on the built image: `/_next/static/css/d8cb99ad71c03326.css`, `200`, 40 589 bytes.** ⛔ **The predicted failure mode is disproven on the one tree that could have had it** |
