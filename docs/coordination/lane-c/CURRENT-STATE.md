@@ -48,7 +48,7 @@
 | Item | Settled | Authority |
 |---|---|---|
 | **C-338** | Options prepared; product owner instructed *"do not investigate this again"* | `LANE_COORDINATION.md` |
-| **TASK-1432's blocker** | `grep -rn "shell/scope"` → own unit test + 2 comments, **no module**. Correctly `SEQUENCED` | `queues/lane-a.toml` |
+| ⛔ **TASK-1432's blocker** | 🔴 **NO LONGER SETTLED — released 2026-08-14.** **The measurement said *no module reads `shell/scope`* and it was true twice; `copilot.tsx` and `top-bar.tsx` read it now.** ⚡ **§7's own rule: settled becomes eligible again when the implementation changes** | [`BACKLOG.md`](../../BACKLOG.md) |
 | **TASK-470's blocker** | `multiSession()` wired at `lib/auth/server.ts:130`. Released | `BACKLOG.md` |
 | **PO queue size** | **29 live, not 60** | [B-432](../../BUGS.md) |
 | **B-183 tenancy chain** | Fixed; certified at `99d4c2b9`. B-243 superseded by B-183 | [`BUGS.md`](../../BUGS.md) |
