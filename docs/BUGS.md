@@ -5925,9 +5925,13 @@ def _load_state_check() -> ModuleType:
 > | | | |
 > |---|---|---|
 > | **A** | **Give every row a `Workflow` cell**, or require the `[workflow N]` link in `Epic` | ✅ **Makes the link derivable and the registry checkable.** ⛔ **147 rows to touch, and it is scope on the product owner's own register** |
-> | **B** ▶ | **Stop treating `workflows.toml`'s `tasks` array as authoritative** — ⚡ **derive workflow membership from the DESIGN each row names, which rows already carry as `Design authority`** | ✅ **No row edits.** ⚠️ **Needs the design→workflow map, which `workflows.toml` already holds in its `design` field** |
+> | **B** | ⛔ **TESTED AND IT FAILS. Derive workflow membership from the DESIGN each row names.** ✅ **It resolves 51 rows and finds real ones the link method misses** — workflow 13 gains `TASK-1458`, `1461`, `1462`, `1463`, `1470`. 🔴 **But design→workflow is MANY-to-one and it over-assigns**: `Fortune Signora Authentication.dc.html` serves **six workflows** — Login, Registration, Email Verification, Forgot Password, Password Reset and Invitation Acceptance — **so workflow 7 derived `TASK-485`, `486`, `487` and `488`, which are Registration and Email Verification.** ⛔ **It also leaves the same 147 rows unresolvable, because a row with no `Design authority` cell has nothing to derive from either** |
 >
-> ⛔ **Not decided here.** 📁 **B is the cheaper of the two and reuses a field rows already populate**; **A is more direct and costs 147 edits to a register [§20e](../CLAUDE.md) reserves to the product owner for scope.**
+> 🔴 **So only A remains, and it is expensive.** ⛔ **B was this office's recommendation for the length of one measurement and is withdrawn before it reached the product owner — tested rather than proposed.** ⚡ **The reason it fails is worth more than the option: a design document is not a workflow, and six workflows share one.**
+
+⚠️ **Which means the registry is not merely stale — the relationship it encodes exists NOWHERE ELSE in the repository.** ⛔ **A hand-maintained list is the only representation, so [§5h](coordination/lane-c/OPERATING-MODE.md)'s *derive it* has no source to derive from until a row carries the link.**
+
+✅ **Recommendation, as input: A, and scoped to NEW rows only** — require the `[workflow N]` link in `Epic` going forward, and leave the 147 historic rows alone. ⚡ **The registry becomes trustworthy for everything written after the decision without touching the product owner's register**, and the existing gap stays visible rather than being papered over.
 >
 > ✅ **Recorded rather than actioned, per the product owner's standing instruction to document and proceed.** ⛔ **Until one is chosen, any workflow-level count carries this caveat, and this office will state it every time rather than quoting a number that reads as measured.**
 
