@@ -15,7 +15,7 @@ task_count     = 61
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1416", "TASK-1419", "TASK-1421", "TASK-1424", "TASK-1473", "TASK-1477", "TASK-1478", "TASK-202", "TASK-430"]
-assigned_total     = 51
+assigned_total     = 56
 claimable          = 13
 claimable_now      = 9
 awaiting_sync      = 4
@@ -24,7 +24,7 @@ actionable         = 4
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
-blocked            = 18
+blocked            = 23
 lane_utilization   = 4.0
 idle_prediction_days   = 1.9
 dependency_wait_days   = 2.1
@@ -34,7 +34,7 @@ critical_path_max      = 3
 [lane.Lane_C]
 notice             = ""
 backlog            = []
-assigned_total     = 7
+assigned_total     = 2
 claimable          = 0
 claimable_now      = 0
 awaiting_sync      = 0
@@ -43,7 +43,7 @@ actionable         = 0
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "in_flight_only"
-blocked            = 6
+blocked            = 1
 lane_utilization   = 0.2
 idle_prediction_days   = 0.0
 dependency_wait_days   = 1.0
@@ -627,6 +627,22 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-411"
+title         = "Usage Accounting — meter what a workspace consumed"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = ["TASK-412"]
+next_owner     = ["Lane A"]
+next_lane      = "Lane A"
+critical_path  = 0
+estimated_ready = "** — **trigger: the Billing screen is scheduled for implementation**"
+waiting_for    = "** — **trigger: the Billing screen is scheduled for implementation**"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-412"
 title         = "Usage & Billing Observability"
 state         = "SEQUENCED"
@@ -639,6 +655,22 @@ next_lane      = "—"
 critical_path  = 1
 estimated_ready = "when TASK-411 complete"
 waiting_for    = "behind [TASK-411](#task-411) — Lane C, 2026-08-11, on Lane A's finding.** ⛔ **It read `READY` and should not have.** ⚡ *'Every figure derives from TAS"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-413"
+title         = "Change-aware validation — `frontend/`-only skips `dr`"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "** — **trigger: a measured certification wall-clock that demonstrably "
+waiting_for    = "** — **trigger: a measured certification wall-clock that demonstrably delayed a promotion, recorded at least twice**"
 blocked_days   = 0.0
 on_integration = true
 
@@ -723,6 +755,38 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
+id            = "TASK-425"
+title         = "A tenant administration surface"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "** — **trigger: the first support request that cannot be answered with"
+waiting_for    = "** — **trigger: the first support request that cannot be answered without database access**"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-426"
+title         = "A deletion and retention strategy, before there is data to regret"
+state         = "SEQUENCED"
+declared      = "SEQUENCED"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "— AND TRIGGER *(c)* HAS FIRED. Recorded 2026-08-13** ([D-235](DECISION"
+waiting_for    = "— AND TRIGGER *(c)* HAS FIRED. Recorded 2026-08-13** ([D-235](DECISION_REGISTER.md) ③). 🔴 **`backend/migrations/versions/` on `integration` is at `005"
+blocked_days   = 0.0
+on_integration = true
+
+[[task]]
 id            = "TASK-429"
 title         = "M-E · A provider supplies a person identifier"
 state         = "IN FLIGHT"
@@ -768,6 +832,22 @@ critical_path  = 0
 estimated_ready = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is schedu"
 waiting_for    = "** — **trigger: [SW-02](architecture/482-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and blocks nothing"
 blocked_days   = 0.0
+on_integration = true
+
+[[task]]
+id            = "TASK-454"
+title         = "One condition, one wire code"
+state         = "WAITING_PRODUCT_OWNER"
+declared      = "WAITING"
+lane          = "Lane A"
+depends_on     = []
+unblocks       = []
+next_owner     = []
+next_lane      = "—"
+critical_path  = 0
+estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
+waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
+blocked_days   = 1.0
 on_integration = true
 
 [[task]]
@@ -867,38 +947,6 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
-id            = "TASK-411"
-title         = "Usage Accounting — meter what a workspace consumed"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane C"
-depends_on     = []
-unblocks       = ["TASK-412"]
-next_owner     = ["Lane A"]
-next_lane      = "Lane A"
-critical_path  = 0
-estimated_ready = "** — **trigger: the Billing screen is scheduled for implementation**"
-waiting_for    = "** — **trigger: the Billing screen is scheduled for implementation**"
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-413"
-title         = "Change-aware validation — `frontend/`-only skips `dr`"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane C"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "** — **trigger: a measured certification wall-clock that demonstrably "
-waiting_for    = "** — **trigger: a measured certification wall-clock that demonstrably delayed a promotion, recorded at least twice**"
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
 id            = "TASK-418"
 title         = "The platform gains the four capabilities ADR-0404 approved"
 state         = "IN FLIGHT"
@@ -912,54 +960,6 @@ critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-425"
-title         = "A tenant administration surface"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane C"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "** — **trigger: the first support request that cannot be answered with"
-waiting_for    = "** — **trigger: the first support request that cannot be answered without database access**"
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-426"
-title         = "A deletion and retention strategy, before there is data to regret"
-state         = "SEQUENCED"
-declared      = "SEQUENCED"
-lane          = "Lane C"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "— AND TRIGGER *(c)* HAS FIRED. Recorded 2026-08-13** ([D-235](DECISION"
-waiting_for    = "— AND TRIGGER *(c)* HAS FIRED. Recorded 2026-08-13** ([D-235](DECISION_REGISTER.md) ③). 🔴 **`backend/migrations/versions/` on `integration` is at `005"
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-454"
-title         = "One condition, one wire code"
-state         = "WAITING_PRODUCT_OWNER"
-declared      = "WAITING"
-lane          = "Lane C"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION."
-waiting_for    = "** — **on [C-003](LANE_COORDINATION.md) and [C-009](LANE_COORDINATION.md), both `OPEN` and both the product owner's.** ⛔ **Corrected from `READY` by L"
-blocked_days   = 1.0
 on_integration = true
 
 [[task]]
