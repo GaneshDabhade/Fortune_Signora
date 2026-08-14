@@ -7880,6 +7880,18 @@ runtime-composition · state-check
 
 > **Same decision as B-123's open half, now with a second and larger reason to take it.** **QE's next step is a report, not an enforcement**: compute the plan, compare it to the manifest, print the delta, refuse nothing — [427](architecture/427-impact-based-validation.md) step 1's own discipline, *measure the disagreement while everything still runs.*
 
+### ⚠️ One thing sits INSIDE the six, and it is dated — Lane C, 2026-08-14
+
+**This row is about the ten gates beyond `REQUIRED_GATES`. ⚡ There is also a stratum where one of the six itself is absent.**
+
+**Measured across all 226 runs in `certification/manifest.json`:** 🔴 **41 record five gates rather than six. In every one the missing gate is `tsc`, which IS required — so `missing_gates` is non-empty and `satisfied` is `False` for all 41 by the record's own rule.**
+
+✅ **And it is bounded, which is why it is a note and not a second row.** **All 41 fall between `94082899` (2026-07-31) and `586f1539` (2026-08-04), all with an empty `profile`.** **Nothing after 2026-08-04 is affected** — `tsc` has been recorded on all 185 runs since.
+
+⚡ **This is the design working rather than failing.** 📁 **`satisfied` is derived and never stored** (`record.py`), so those runs re-read as unsatisfied today without anybody rewriting history — **which is exactly the property that makes the `RECORD_VERSION` answer above cheap.** ⛔ **Whether any of the 41 was promoted is QE's to check; this office did not, and does not assert that one was.**
+
+> ⚠️ **Recorded here rather than raised as a coordination item.** **This office opened `C-1435` for the gate set and withdrew it within the hour: [§20e](../CLAUDE.md) — *a defect is not a dependency* — and this row has existed and been QE's since 2026-08-06.** ⛔ **The `sixteen` in this row's own title is also the number this office "corrected" a lane on, having not read it.**
+
 
 ### B-130 · D-107 removed `UI_WAVE_TASKS` and left its test referencing it
 

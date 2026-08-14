@@ -200,6 +200,24 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 📁 **Related to [§5f](#5f--an-author-cannot-see-the-narrowness-of-their-own-predicate) and distinct from it: there the predicate was too narrow; here the SAMPLE was.**
 
+### ⚠️ The widening, from the same pair of lanes running the other way — 2026-08-14
+
+> ## **Check the state cell before citing the reasoning. Including your own.**
+
+**Lane A proposed this after making the mistake and catching itself.** ⚡ **It rebuilt [C-1503](../../LANE_COORDINATION.md)'s argument from the source material, sent this office the conclusion as a live question, then found its own item `CLOSED` — ruled by the product owner at [D-235](../../DECISION_REGISTER.md) ② the day before.**
+
+🔴 **This office did the same thing to the same item within the hour, and worse.** ⛔ **I opened `C-1434` for a question `D-235` ② had already answered — a row in a register I write, whose `Blocks` cell I filled in myself.** **I derived a real and correct argument from the design snapshot, eliminated an option on evidence, drafted a recommendation, and none of it was needed.**
+
+⛔ **`C-1435` went the same way in the same commit: I raised a coordination item for [B-131](../../BUGS.md), which has been `OPEN` and QE's since 2026-08-06** — 📁 **[§20e](../../../CLAUDE.md), *a defect is not a dependency*.** ⚠️ **And its title carries the number `sixteen`, which is the figure I "corrected" a lane on without having read the row that states it.**
+
+| | |
+|---|---|
+| ⛔ **The tell** | **A question whose argument assembles TOO easily.** ⚡ **If the evidence lines up in one pass, ask who assembled it the first time** |
+| ✅ **The check, and it is two commands** | **`grep -n "<the subject>" docs/LANE_COORDINATION.md docs/BUGS.md docs/DECISION_REGISTER.md` BEFORE drafting, not after** |
+| ⚠️ **Why it recurs** | **Rederiving feels like analysis. It produces the same artifact as analysis. ⛔ Only the register can tell the two apart** |
+
+📁 **[§5e](#5e--a-row-has-one-status-cell-stack-history-under-a-different-label) says a row has one `Status` cell.** ⚡ **This is the reader's half of that rule: a cell nobody reads is the same as a cell that does not exist.**
+
 ## 5g · A count compares reachability. Only content compares content.
 
 **Recorded 2026-08-13 after the same trap fired three times in a week, twice on a destructive operation.**
