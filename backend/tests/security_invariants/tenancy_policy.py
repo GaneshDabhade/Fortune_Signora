@@ -245,6 +245,22 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # explicitly rather than reaching the tag's, so a policy here does not
         # depend on a join (§8, defense in depth).
         "account_tag_assignment",
+        # Commercial Profile (TASK-1479 slice ⓶b), migration 0055. What a
+        # customer named their own saved groupings — ADR-0411's third
+        # capability. **A leak here reads the customer's private working
+        # vocabulary**: "Board reporting set", "Competitive watch" and
+        # "Dormant enterprise" say what a company is worried about before any
+        # account is attached to them.
+        "account_segment",
+        # Migration 0055. Which accounts are in which segment. **Tenant-owned in
+        # its own right and not by association**: it carries `workspace_id`
+        # explicitly rather than reaching the segment's, so a policy here does
+        # not depend on a join (§8, defense in depth) — the same reasoning
+        # `account_tag_assignment` records above.
+        "account_segment_member",
+        # Commercial Profile (TASK-1479 slice ⓶b), migration 0056. What one bulk
+        # "Add to segment" asked for and what it added.
+        "account_segment_batch",
         # Commercial Profile (TASK-1479 slice ⓶), migration 0054. What one bulk
         # owner change asked for and what it moved — the same shape 0052 holds
         # for tags. **A leak here reads a company's account-coverage decisions
@@ -458,6 +474,20 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # nobody would cite while turning a rename into four writes. The two
         # tables of one capability differ, and the migration says why.
         "account_tag_assignment",
+        # Migration 0055, and on exactly the terms above. **An account is in a
+        # segment or it is removed from it; there is no field on the join row a
+        # customer can change**, so no `UPDATE` grant exists. ⚠️ **`account_segment`
+        # itself is deliberately NOT here**, for the reason `account_tag` is
+        # not: renaming *"Board reporting set"* to *"Quarterly pack"* is a
+        # correction to a customer's own filing, and versioning it would keep a
+        # history nobody would cite while turning one rename into four writes.
+        #
+        # 🔴 **Registered because the invariant refused the change without it**,
+        # which is the pair of mistakes this list catches in both directions: in
+        # slice ⓶ this lane registered a table here while granting `UPDATE`, and
+        # here it withheld `UPDATE` without registering. **Neither is reachable
+        # by reading the migration alone.**
+        "account_segment_member",
         # A request is written once and its progress is appended, exactly as
         # `opportunity`/`opportunity_state` are — which is the shape migration
         # 0018 committed to when it withheld UPDATE from `research_task`
