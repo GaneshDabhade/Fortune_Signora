@@ -227,3 +227,69 @@ class TestABatchKnowsWhetherItHasRun:
         shape one layer up."""
         with pytest.raises(AccountSegmentError):
             SegmentBatch(batch_id=uuid4(), segment_id=uuid4(), requested=())
+
+
+class TestTheAggregateRefusesADirectoryThatCannotBeTrue:
+    def test_one_segment_cannot_appear_twice(self) -> None:
+        """⛔ **Not the same as a duplicate NAME.** Two rows with one id is a
+        directory that cannot say which of them a membership belongs to."""
+        segment = AccountSegment(id=uuid4(), name="Board reporting set")
+
+        with pytest.raises(AccountSegmentError):
+            SegmentDirectory(segments=(segment, segment.renamed("Quarterly pack")))
+
+    def test_replacing_something_that_is_not_here_is_refused(self) -> None:
+        with pytest.raises(AccountSegmentError):
+            SegmentDirectory(segments=()).replaced(
+                AccountSegment(id=uuid4(), name="Board reporting set")
+            )
+
+    def test_replacing_swaps_exactly_one(self) -> None:
+        kept = AccountSegment(id=uuid4(), name="Competitive watch")
+        target = AccountSegment(id=uuid4(), name="Board reporting set")
+        directory = SegmentDirectory(segments=(kept, target))
+
+        after = directory.replaced(target.renamed("Quarterly pack"))
+
+        assert after.get(kept.id) == kept
+        assert after.get(target.id) is not None
+        assert after.get(target.id).name == "Quarterly pack"  # type: ignore[union-attr]
+
+    def test_removing_something_that_is_not_here_is_refused(self) -> None:
+        """⚡ **A refusal rather than a silent no-op**, because *"delete the
+        grouping"* answering *"done"* about something that was never there is a
+        report the customer cannot check."""
+        with pytest.raises(AccountSegmentError):
+            SegmentDirectory(segments=()).removed(uuid4())
+
+    def test_removing_takes_exactly_one_out(self) -> None:
+        kept = AccountSegment(id=uuid4(), name="Competitive watch")
+        going = AccountSegment(id=uuid4(), name="Board reporting set")
+
+        after = SegmentDirectory(segments=(kept, going)).removed(going.id)
+
+        assert after.segments == (kept,)
+
+
+class TestABatchCannotDescribeAnImpossibleOutcome:
+    def test_one_account_cannot_be_added_twice(self) -> None:
+        """⛔ **The count would be wrong and the inverse would remove it
+        twice.**"""
+        account = uuid4()
+
+        with pytest.raises(AccountSegmentError):
+            SegmentAddition(segment_id=uuid4(), added=(account, account), unchanged=())
+
+    def test_one_account_cannot_be_unchanged_twice(self) -> None:
+        account = uuid4()
+
+        with pytest.raises(AccountSegmentError):
+            SegmentAddition(segment_id=uuid4(), added=(), unchanged=(account, account))
+
+    def test_the_total_counts_both_halves(self) -> None:
+        addition = SegmentAddition(
+            segment_id=uuid4(), added=(uuid4(), uuid4()), unchanged=(uuid4(),)
+        )
+
+        assert addition.added_count == 2
+        assert addition.total_count == 3

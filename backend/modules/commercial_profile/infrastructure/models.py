@@ -431,7 +431,18 @@ class AccountAssignmentBatchModel(Base, WorkspaceScopedMixin, TimestampMixin, Au
     requested: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
     #: ⚡ **`[account, prior]` pairs**, `prior` null where nobody held it — the
     #: condition the reversal needs and cannot recompute later.
-    moved: Mapped[list[list[str | None]] | None] = mapped_column(JSONB, nullable=True)
+    #:
+    #: 🔴 **`none_as_null=True`, added in slice ⓶b.** Without it Python `None`
+    #: is stored as the JSON value `null` rather than SQL `NULL`. ⚠️ **Nothing
+    #: in ⓶a read it wrongly** — the ORM decodes JSON `null` to `None`, so
+    #: `row.moved is None` was always right — **but the migration's own
+    #: docstring promises a SQL `NULL`, and any predicate, partial index or
+    #: report written against that promise would have been wrong.** Found by
+    #: the segment batch's conditional write, which uses exactly such a
+    #: predicate and matched zero rows.
+    moved: Mapped[list[list[str | None]] | None] = mapped_column(
+        JSONB(none_as_null=True), nullable=True
+    )
 
 
 class AccountSegmentModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
@@ -486,4 +497,13 @@ class AccountSegmentBatchModel(Base, WorkspaceScopedMixin, TimestampMixin, Audit
     segment_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
     requested: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
     #: ⚡ **What the reversal removes**, and never `requested`.
-    added: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
+    #:
+    #: 🔴 **`none_as_null=True`, and without it the three states are two.**
+    #: SQLAlchemy's default for a JSON column serialises Python `None` as the
+    #: JSON value `null`, **not as SQL `NULL`** — so the row reads back as
+    #: `None` through the ORM while `added IS NULL` matches nothing. **The
+    #: conditional write in `record_application` silently refused every first
+    #: application until this was set.**
+    added: Mapped[list[str] | None] = mapped_column(
+        JSONB(none_as_null=True), nullable=True
+    )
