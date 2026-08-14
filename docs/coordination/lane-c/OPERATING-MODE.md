@@ -184,6 +184,22 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 📁 **The detail that makes it worth recording: `development` is the member [ADR-0412](../../architecture/adr/0412-environment-and-secret-safe-logging.md) deliberately REMOVED**, and the ADR's own reason is *"two spellings of one environment is how a guard comes to be written against the spelling somebody happened to use."* ⚠️ **The analysis was written against the spelling somebody happened to use.**
 
+## 5g · A count compares reachability. Only content compares content.
+
+**Recorded 2026-08-13 after the same trap fired three times in a week, twice on a destructive operation.**
+
+⛔ **Before any `--force-with-lease`, the patch-id survival check reports a NUMBER. The number is never the answer.** ✅ **Map every flagged id back to its commit and classify it**, because *missing* has three meanings and only one is a loss:
+
+| | |
+|---|---|
+| ✅ **Already upstream** | Dropped by rebase as previously applied. **Not lost** |
+| ✅ **Replayed with a resolution** | Same change, new patch-id. **Not lost** — 📁 **QE hit this on a byte-identical certification record: same subject, identical file list, both blobs identical, and the count still said *"1 commit would be lost"*** |
+| 🔴 **Reachable from nothing** | **The only real one** |
+
+⚡ **Reading only the count, all three look the same** — **and the two safe ones are far more common, which is exactly what trains a reader to dismiss the number.**
+
+⛔ **Do it before the push, not after.** 📁 **QE's near-miss earlier the same week was eleven commits, and `--force-with-lease` was the only thing between the branch and them.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
