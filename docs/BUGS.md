@@ -123,6 +123,54 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ---
 
+### B-200 · 🟠 A red frontend suite reached `main` under a CERTIFIED stamp, because no certification run has ever executed it
+
+| | |
+|---|---|
+| **Module** | **QE's own instrument** — [`backend/tests/certification/__main__.py`](../backend/tests/certification/__main__.py) |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 · ⚠️ **NOT a Blocking Quality Defect, and the distinction matters.** **Nothing about the promotion guarantee is false**: every commit on `main` was certified against the gates certification actually runs. ⛔ **What is false is the inference a reader draws from the word** |
+| **Status** | 🔵 **`OPEN`** |
+| **Found** | **2026-08-14, by Lane A**, measuring their own reported figure against the command the gate runs |
+| **Commit found** | **`2f017a8d`** |
+
+**Expected.** A gate the Validation Planner names for a change either runs, or its absence is visible to the person reading `CERTIFIED`.
+
+**Actual.** ⛔ **Measured across every run in `certification/manifest.json`:**
+
+| Gate | Runs recorded, of **226** |
+|---|---|
+| `pytest` · `security-invariants` · `mypy` · `import-linter` · `smoke` | **226** |
+| `tsc` | **185** |
+| ⛔ **`frontend-suite`** | **0** |
+| ⛔ **`eslint`** | **0** |
+| ⛔ `dr` · `state-check` · `migration-reversibility` | **0** |
+
+**And the suite is red.** `npx vitest run` on `integration` at `f2d4a164`: **`1 failed | 3244 passed` across 183 files** — `tests/unit/auth-mode.test.ts`, asserting `development → Development` after [ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md) closed the vocabulary and removed `development`. **Failing since `3eb51f0d`, which is on `main` inside a certified snapshot.**
+
+⚡ **`tsc` passed throughout, and could not have caught it — a type-checker cannot see a wrong assertion.**
+
+### 🔴 This is not a defect in the deferral. It is the evidence the deferral was waiting for
+
+📁 **`_plan_shortfall`'s own docstring states the design, and it is correct:**
+
+> ***"Enforcing it would mean adding to `REQUIRED_GATES`, which makes every prior record unsatisfied because none of them executed these gates. That is a change to what certification means (ADR-0032), not one a run may make about itself."***
+
+✅ **So B-131 chose to measure rather than enforce, deliberately** — [427](architecture/427-impact-based-validation.md) step 1: *"measure the disagreement while everything still runs."* ⛔ **The disagreement has now cost something concrete, which is the outcome step 1 exists to detect.**
+
+⚠️ **QE's own practice had the same hole and that is the half QE owns outright.** **Cheap gates before every pin have been `mypy` · `lint-imports` · `tsc` · `eslint` — never `npx vitest run`.** **So neither the runner nor the operator ran it, and each could have assumed the other did.**
+
+### ✅ What QE changes today, and what it must not
+
+| | |
+|---|---|
+| **Immediately, within QE's authority** | ⚡ **`npx vitest run` joins the cheap-gate set before every pin**, exactly as `dr`, migration reversibility and `state-check` are already run outside the recorded six. **This closes the hole for every future cycle without touching what `CERTIFIED` means** |
+| ⛔ **NOT done by QE** | **Adding `frontend-suite` or `eslint` to `REQUIRED_GATES`.** 📁 **ADR-0032**: it changes what certification *means* and retroactively unsatisfies **226** records. **That is the product owner's, and it needs a decision rather than a commit** |
+
+⛔ **No prior certification is withdrawn or re-read.** **Each recorded truthfully what it ran**, and re-judging a past record against a gate set it never claimed is the defect [§2](../CLAUDE.md) forbids in the other direction.
+
+⚠️ **Lane A declined to file this, reading it as *"B-131 in the concrete"*.** ⚡ **QE files it separately because the claims differ**: **B-131 is that planned gates are not recorded. This is that a defect reached `main` under a CERTIFIED stamp** — and the second is the one a reader of `PROJECT_STATUS.md` would want to know.
+
 ### B-199 · 🟢 The commit correcting a stale figure in `MANIFEST.md` left the row counting three different sets, and two per-file byte counts were never true of their files
 
 | | |

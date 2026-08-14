@@ -32,6 +32,9 @@ import tomllib
 from pathlib import Path
 from typing import Final
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from registers import bug_rows  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = REPO_ROOT / "certification" / "manifest.json"
 MIGRATIONS = REPO_ROOT / "backend" / "migrations" / "versions"
@@ -199,6 +202,47 @@ def verified_regressions(before: str, after: str) -> list[tuple[str, str]]:
     return sorted(lost)
 
 
+#: The one bug-row state only QE may write ([§20e](../CLAUDE.md)): *"Verifies and
+#: closes — **QE**, never the lane that fixed it."* **`FIXED` is the lane's and
+#: `WONTFIX` is a decision, so neither belongs here** — this set is exactly the
+#: states a lane's rebase can *un*-write.
+QE_BUG_STATES: frozenset[str] = frozenset({"VERIFIED"})
+
+
+def verified_bug_regressions(before: str, after: str) -> list[tuple[str, str]]:
+    """Bug rows whose QE-written state has been undone — **B-197.**
+
+    ⛔ **`verified_regressions` above protects `BACKLOG.md` and read `BUGS.md`
+    not at all**: `grep -c 'docs/BUGS.md"'` against this file returned `0`. **So
+    a rebase could carry a `VERIFIED` defect back to `OPEN` and the promotion
+    would print `PASS` beside it** — truthfully, about the other register.
+
+    ⚡ **It is the same defect B-232 found one register over**, and the same
+    repair: **read the authoritative cell, never the prose around it.**
+    `registers.bug_rows` already does that, and `BugRow.state` already takes the
+    *first* state token because *"`FIXED` — **`VERIFIED` is QE's to set**"*
+    contains both words (📁 [B-101](../docs/BUGS.md)). ✅ **This joins that
+    parser rather than adding a second one** — a second reading of one register
+    is what [B-413](../docs/BUGS.md) cost, where two properties on one dataclass
+    disagreed about the same cell.
+
+    ⚠️ **A row leaving the register counts.** `ABSENT` is reported, because
+    deleting a `VERIFIED` row hides a closed defect exactly as thoroughly as
+    reopening it, and a rebase that drops a row is how B-168 happened.
+    """
+    old = {r.identifier: r.state for r in bug_rows(before)}
+    new = {r.identifier: r.state for r in bug_rows(after)}
+    lost: list[tuple[str, str]] = []
+    for identifier, state in old.items():
+        if state not in QE_BUG_STATES:
+            continue
+        now = new.get(identifier, "ABSENT")
+        if now == state:
+            continue
+        lost.append((identifier, now or "UNREADABLE"))
+    return sorted(lost)
+
+
 def _promote(sha: str) -> int:
     """Run every blocking gate, and promote **only** if all of them pass.
 
@@ -236,6 +280,15 @@ def _promote(sha: str) -> int:
         print(f"          {task}: VERIFIED -> {became}")
     if lost:
         failures.append(f"{len(lost)} row(s) lose a VERIFIED state")
+
+    main_bugs = _git("show", "origin/main:docs/BUGS.md")
+    cand_bugs = _git("show", f"{target}:docs/BUGS.md")
+    reopened = verified_bug_regressions(main_bugs, cand_bugs) if main_bugs and cand_bugs else []
+    print(f"  {'PASS' if not reopened else 'FAIL'}  no VERIFIED defect is reopened (B-197)")
+    for identifier, became in reopened:
+        print(f"          {identifier}: VERIFIED -> {became}")
+    if reopened:
+        failures.append(f"{len(reopened)} defect(s) lose a VERIFIED state")
 
     if failures:
         print()
