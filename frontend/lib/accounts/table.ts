@@ -5,8 +5,14 @@
  * ## 🔴 Every column here is a field the contract publishes
  *
  * 📁 **The design draws nine**: Company · Segment · Open ACV · Signora score ·
- * Renewal · Owner · Tags. ⛔ **Five of those have no source** — Segment, Owner
- * and Tags by [C-1425](../../../docs/LANE_COORDINATION.md); **Open ACV and
+ * Renewal · Owner · Tags. ⛔ **Five of those had no source when this file was
+ * written.** ⚡ **Two now do**: **Tags** shipped as
+ * [TASK-466](../../../docs/BACKLOG.md) and **Owner** as
+ * [TASK-1479](../../../docs/BACKLOG.md) slice ⓶, both on
+ * [ADR-0411](../../../docs/architecture/adr/0411-customer-organized-account-metadata.md)
+ * — **the ruling C-1425 was waiting for.** ⚠️ **Segment is still absent and is
+ * NOT the same concept as this module's ICP-segment**, which is why it has not
+ * followed them. **Open ACV and
  * Renewal are refused in writing** by
  * [`crm.py`](../../../backend/modules/provider_normalization/infrastructure/mappers/crm.py):
  * *"contract value, renewal date… have no canonical attribute, and
@@ -22,7 +28,14 @@
  */
 import type { ListedAccount } from '@/lib/api/types';
 
-export type ColumnId = 'company' | 'kind' | 'sources' | 'agreement' | 'freshness' | 'tags';
+export type ColumnId =
+  | 'company'
+  | 'kind'
+  | 'sources'
+  | 'agreement'
+  | 'freshness'
+  | 'owner'
+  | 'tags';
 
 export interface ColumnSpec {
   readonly id: ColumnId;
@@ -75,6 +88,12 @@ export const COLUMNS: readonly ColumnSpec[] = [
   // ⚡ **Released by [C-1425](../../../docs/LANE_COORDINATION.md)**, which the
   // header above records as one of the five columns with no source. **It has
   // one now** — [ADR-0411](../../../docs/architecture/adr/0411-customer-organized-account-metadata.md).
+  // ⚡ **Owner gained a source on 2026-08-14** — TASK-1479 slice ⓶ built it,
+  // and the header note above recorded it as one of the five columns that had
+  // none. ⛔ **Like Tags, it has no `read`**: it is a different bounded
+  // context's fact, joined by the screen from its own endpoint rather than
+  // carried on the account row (§5).
+  { id: 'owner', label: 'Owner' },
   { id: 'tags', label: 'Tags' },
 ];
 

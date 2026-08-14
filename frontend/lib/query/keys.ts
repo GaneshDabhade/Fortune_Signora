@@ -56,6 +56,14 @@ export const queryKeys = {
   accountTagAssignments: (workspaceId: string, accountIds: readonly string[]) =>
     ['workspace', workspaceId, 'account-tag-assignments', [...accountIds].sort()] as const,
 
+  /**
+   * 📁 [TASK-1479](../../../docs/BACKLOG.md) slice ⓶ — who owns each company.
+   * ⚡ **Keyed by the accounts asked about, for the reason above**: a page of
+   * rows is a different question from the next page.
+   */
+  accountAssignments: (workspaceId: string, accountIds: readonly string[]) =>
+    ['workspace', workspaceId, 'account-assignments', [...accountIds].sort()] as const,
+
   accountScore: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'score'] as const,
 
