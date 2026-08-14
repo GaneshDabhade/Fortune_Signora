@@ -93,6 +93,16 @@
 
 ⚠️ **Instance 4 is the first where the lane cited the five states back** — 📁 [§20e](../../../CLAUDE.md): *"a decision is authoritative when the product owner rules it; it is **actionable** when `integration` records it."* ✅ **That is the rule working, and it is also the measurement: the gap between those two days is now a thing lanes plan around rather than trip over.**
 
+### ⚠️ A second standing observation — the board rule has no counterpart on the document that OFFERS work
+
+**Recorded 2026-08-13, from QE's cycle-226 Closeout. ⛔ Evidence, not a proposal** ([§20e](../../../CLAUDE.md), *governance is stable; it evolves reactively*).
+
+🔴 **`state-check` listed [TASK-466](../../BACKLOG.md) and [TASK-1423](../../BACKLOG.md) among the startable while both were on `main`** — `4c7fd7b1` and `38144e76`, each confirmed by `git merge-base --is-ancestor` rather than read off the row. ⛔ **A lane running the Task Claim Protocol would have claimed one and spent a slice on work already promoted.** ⚠️ **Two had been stale since before cycle 225.**
+
+📁 **[§20e](../../../CLAUDE.md) says no lane may remain *assigned* to work that has reached `main`.** ⛔ **Nothing says the same about the document that *offers* it** — ⚡ **and that is the side where the cost is a wasted slice rather than a stale row.**
+
+✅ **QE set `PROMOTED` on all three and removed the board rows; startable fell 11 → 9.** ⛔ **No rule proposed.** **The governance freeze wants an *observed* execution problem, and this one was caught before it cost anything — so it is one instance, recorded, and a second is what would make it an argument.**
+
 ### ⚠️ The cost is not the delay
 
 📁 **QE's framing, and it is the sharper one: *a correct report reads as wrong*.** **QE reported B-263 as an open ruling; this office said it was ruled. Both were true from where each stood.** ⛔ **Second time in a week two lanes contradicted each other and neither was mistaken** — the first was `C-210`.

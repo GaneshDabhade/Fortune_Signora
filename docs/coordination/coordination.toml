@@ -9,24 +9,24 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "fc14b5c"
-task_count     = 63
+generated_from = "7c88f71"
+task_count     = 60
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-1416", "TASK-1421", "TASK-1423", "TASK-1424", "TASK-1473", "TASK-1477", "TASK-202", "TASK-430", "TASK-466"]
-assigned_total     = 48
-claimable          = 10
-claimable_now      = 9
-awaiting_sync      = 1
-in_flight          = 18
+backlog            = ["TASK-1416", "TASK-1419", "TASK-1421", "TASK-1424", "TASK-1473", "TASK-1477", "TASK-202", "TASK-430"]
+assigned_total     = 45
+claimable          = 8
+claimable_now      = 8
+awaiting_sync      = 0
+in_flight          = 17
 actionable         = 4
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 20
-lane_utilization   = 3.6
-idle_prediction_days   = 1.4
+lane_utilization   = 3.4
+idle_prediction_days   = 1.1
 dependency_wait_days   = 1.6
 blocked_duration_days  = 0.4
 critical_path_max      = 3
@@ -144,27 +144,11 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1421"
 title         = "The workspace chooser at `/workspaces` — a route the engine already sends people to"
-state         = "ASSIGNED"
-declared      = "READY"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-1423"
-title         = "The six gate screens — a failure that is designed, not a redirect loop"
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"
@@ -467,22 +451,6 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
-id            = "TASK-1480"
-title         = "Replace the demonstration dataset — content only, mechanism untouched"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
 id            = "TASK-200"
 title         = "CX-07 — the Responsive Product Surface"
 state         = "IN FLIGHT"
@@ -736,22 +704,6 @@ critical_path  = 0
 estimated_ready = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDIN"
 waiting_for    = "** — **trigger: the hosted evaluation credential ([C-334](LANE_COORDINATION.md), ruled and being provided)**. ⚡ **Trigger checked 2026-08-12 by Lane A"
 blocked_days   = 0.1
-on_integration = true
-
-[[task]]
-id            = "TASK-466"
-title         = "Companies bulk — the first consumer, end to end"
-state         = "ASSIGNED"
-declared      = "READY"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
 on_integration = true
 
 [[task]]

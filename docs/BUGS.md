@@ -5763,6 +5763,30 @@ def _load_state_check() -> ModuleType:
 >
 > ⛔ **This office is not taking that decision, and the reason is that it is the office asking to be unblocked.** 📁 **A split that happens to release my own queue is indistinguishable from weakening a requirement to unblock promotion, whatever the reasoning** — **so it goes to the product owner with the conflict named** ([§20e](../CLAUDE.md): a lane's recommendation is architectural input, never implementation authority).
 
+### B-434 · 🟡 `state-check` asks a coordination row to name a lane, which is the thing C-213 forbids it to name
+
+| | |
+|---|---|
+| **Module** | **Repository tooling** — [`infra/state-check.py`](../infra/state-check.py):1349 |
+| **Current assignee** | **QE** — 📁 [D-022](DECISION_REGISTER.md)'s clarification: *a defect in a gate is QE's, unchanged* |
+| **Severity** | 🟡 — ⛔ **wrong but survivable, and it is survivable only because nobody has acted on it.** 🔴 **The obvious remediation is the harmful one**: naming a lane in the `Owner` cell is exactly what [C-213](LANE_COORDINATION.md) cost two days |
+| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-13, on QE's advisory naming [C-289](LANE_COORDINATION.md) and [C-292](LANE_COORDINATION.md) |
+| **Found** | **`06ac0d5d`**, checking two rows before "fixing" them |
+
+**Steps.** Write a coordination row whose `Owner` names a **module** and leaves the assignee to be joined — the form [C-213](LANE_COORDINATION.md) and [`modules.toml`](coordination/modules.toml) require. Run `python3 infra/state-check.py`.
+
+**Expected.** The row passes: its owner is resolvable, by the join every other view uses.
+
+**Actual.** ⛔ ***"`C-289`'s `Owner` names no lane, QE or the product owner. An owner a reader cannot route to is an absent owner."***
+
+✅ **Both rows are correct as written, verified rather than assumed:** 📁 **[C-289](LANE_COORDINATION.md) — *"`knowledge_graph`'s current assignee — joined from `modules.toml`, ⛔ not named here (C-213)"*** · **[C-292](LANE_COORDINATION.md), the same form for `signal_engine`.** ✅ **`modules.toml` gives both `current_owner = "Lane A"`.** ⚡ **So the owner IS routable; the checker reads the wrong side of the join.**
+
+🔴 **The predicate is `actor.search(owner)` at :1349** — a literal match for a lane, QE or the product owner **in the cell itself**. 📁 **[§20e](../CLAUDE.md) requires the opposite: *"no document restates an assignee, and a coordination item names its MODULE; the assignee is joined at render time."***
+
+⚠️ **Why 🟡 and not 🟢.** ⛔ **A false positive that names a specific row invites the fix that satisfies it**, and here that fix is **writing a lane name into the cell** — 📁 **which is how [C-213](LANE_COORDINATION.md) made *"the lane that could act would not and the lane named could not"*, blocking TASK-205 for two days.** ⚡ **The check would go green and the repository would be one edit further from the rule it exists to protect.**
+
+✅ **The fix is a join, not a wider regex:** resolve a `Module`-form owner through [`modules.toml`](coordination/modules.toml) and report only when *that* fails.
+
 ### B-433 · 🟠 A row naming two modules is counted claimable and then left out of the lane's queue, so it is executable and invisible at once
 
 | | |
