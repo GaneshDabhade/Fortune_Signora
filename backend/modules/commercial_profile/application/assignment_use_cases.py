@@ -1,4 +1,6 @@
-"""Putting a member on an account, and taking it back — [TASK-1479](../../../../docs/BACKLOG.md) slice ⓶.
+"""Putting a member on an account, and taking it back.
+
+**[TASK-1479](../../../../docs/BACKLOG.md) slice ⓶.**
 
 **[ADR-0411](../../../../docs/architecture/adr/0411-customer-organized-account-metadata.md)'s
 second capability.** The domain decides what a reassignment *is*; this decides
@@ -28,9 +30,12 @@ from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
+from modules.action_batch.public import ActionBatchProposer
+from modules.commercial_profile.application.tag_use_cases import REVERSIBLE_FOR
 from modules.commercial_profile.domain.account_assignment import (
     AccountAssignment,
     AccountRole,
+    AssignmentBatch,
     AssignmentError,
     Reassignment,
 )
@@ -179,10 +184,182 @@ class ReverseAssignment:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class ProposeAssignmentBatchInput:
+    workspace_id: UUID
+    actor_id: UUID
+    account_ids: tuple[UUID, ...]
+    role: AccountRole
+    member_user_id: UUID
+
+
+class ProposeAssignmentBatch:
+    """🔴 **Ask for a bulk owner change, as one named thing somebody approves.**
+
+    ⛔ **It proposes and does not assign.** 📁 ADR-0405:
+    *intelligence suggests; humans commit* — **reassigning forty accounts is
+    exactly the shape that should be approved before it is effective**, and the
+    tag batch established the pattern one capability over.
+
+    ⚡ **Membership is verified HERE, at proposal time, and again when the batch
+    applies.** ⚠️ **Not redundant**: a proposal a customer cannot act on is
+    worth refusing immediately, and a member who leaves between proposal and
+    approval must not be assigned on acceptance. **Two moments, two checks,
+    because the answer can differ between them.**
+    """
+
+    def __init__(
+        self,
+        *,
+        workspaces: WorkspaceQueryPort,
+        proposer: ActionBatchProposer,
+    ) -> None:
+        self._workspaces = workspaces
+        self._proposer = proposer
+
+    async def execute(self, request: ProposeAssignmentBatchInput) -> UUID:
+        # ⚡ **De-duplicated BEFORE the count is taken**, so the name a customer
+        # approves says how many companies it touches rather than how many rows
+        # they clicked — the same reason the tag batch does it.
+        accounts = tuple(dict.fromkeys(request.account_ids))
+        if not accounts:
+            raise AssignmentError("A batch has to name at least one account.")
+
+        membership = await self._workspaces.get_membership(
+            request.workspace_id, request.member_user_id
+        )
+        if membership is None:
+            raise NotAWorkspaceMemberError(request.member_user_id)
+
+        return await self._proposer.propose(
+            workspace_id=request.workspace_id,
+            # 📁 **The customer's own words.** ⛔ Not the member's name — this
+            # module holds none, by ADR-0411's own design, and inventing one
+            # here would be the duplicated identity the reference exists to
+            # avoid.
+            name=(
+                f"Change the {request.role.value} on {len(accounts)} "
+                f"compan{'y' if len(accounts) == 1 else 'ies'}"
+            ),
+            item_count=len(accounts),
+            proposed_by=request.actor_id,
+            reversible_for=REVERSIBLE_FOR,
+        )
+
+
+class AssignmentBatchStore(Protocol):
+    """Where this module reads and writes its own half of a proposed batch."""
+
+    async def record(
+        self, workspace_id: UUID, batch: AssignmentBatch, *, actor_id: UUID
+    ) -> None: ...
+
+    async def by_id(
+        self, workspace_id: UUID, batch_id: UUID
+    ) -> AssignmentBatch | None: ...
+
+    async def record_applied(
+        self,
+        workspace_id: UUID,
+        batch_id: UUID,
+        moved: Reassignment,
+        *,
+        actor_id: UUID,
+    ) -> None: ...
+
+
+class ApplyAssignmentBatch:
+    """Assign the accounts the batch named, **because somebody approved it.**
+
+    ⛔ **The accounts come from this module's own row, never from the event.**
+    *Events carry identity; ports carry payload* — a replayed `applied` cannot
+    act on a selection that has since changed.
+
+    ⚡ **Membership is verified again here.** 📁 It was checked at proposal
+    time, and **a member who leaves between proposing and approving must not be
+    assigned on acceptance** — two moments, two checks, because the answer can
+    differ between them.
+    """
+
+    def __init__(
+        self,
+        *,
+        repository: AccountAssignmentRepository,
+        batches: AssignmentBatchStore,
+        workspaces: WorkspaceQueryPort,
+    ) -> None:
+        self._repository = repository
+        self._batches = batches
+        self._workspaces = workspaces
+
+    async def execute(self, workspace_id: UUID, batch_id: UUID, *, actor_id: UUID) -> None:
+        batch = await self._batches.by_id(workspace_id, batch_id)
+        if batch is None:
+            # **A batch this module did not propose is not an error.** Another
+            # domain's action is simply not ours.
+            return
+
+        membership = await self._workspaces.get_membership(
+            workspace_id, batch.member_user_id
+        )
+        if membership is None:
+            raise NotAWorkspaceMemberError(batch.member_user_id)
+
+        moved = await self._repository.assign(
+            workspace_id,
+            batch.requested,
+            role=batch.role,
+            member_user_id=batch.member_user_id,
+            actor_id=actor_id,
+        )
+        await self._batches.record_applied(workspace_id, batch_id, moved, actor_id=actor_id)
+
+
+class ReverseAssignmentBatch:
+    """Undo exactly what the batch moved, **because it was taken back.**
+
+    ⚠️ **The reversal window is `action_batch`'s and is not re-checked here.**
+    📁 `has_settled` lives there and the aggregate refuses a late reversal, so
+    **a second implementation of the window would be behaviour existing twice**
+    (§2) — and the two would eventually disagree about whether a customer may
+    still undo something.
+    """
+
+    def __init__(
+        self,
+        *,
+        repository: AccountAssignmentRepository,
+        batches: AssignmentBatchStore,
+    ) -> None:
+        self._repository = repository
+        self._batches = batches
+
+    async def execute(self, workspace_id: UUID, batch_id: UUID, *, actor_id: UUID) -> None:
+        batch = await self._batches.by_id(workspace_id, batch_id)
+        if batch is None or batch.moved is None:
+            # ⛔ **A batch that never applied has nothing to undo**, and that is
+            # not a failure — it is the `None` the store deliberately keeps
+            # distinct from an empty list.
+            return
+
+        await self._repository.restore(
+            workspace_id,
+            batch.to_reverse(),
+            role=batch.role,
+            assigned_to=batch.moved.assigned_to,
+            actor_id=actor_id,
+        )
+
+
 __all__ = [
     "AccountAssignmentRepository",
+    "ApplyAssignmentBatch",
+    "AssignmentBatchStore",
     "AssignAccounts",
     "AssignAccountsInput",
     "NotAWorkspaceMemberError",
+    "ProposeAssignmentBatch",
+    "ProposeAssignmentBatchInput",
     "ReverseAssignment",
+    "ReverseAssignmentBatch",
 ]

@@ -245,6 +245,11 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # explicitly rather than reaching the tag's, so a policy here does not
         # depend on a join (§8, defense in depth).
         "account_tag_assignment",
+        # Commercial Profile (TASK-1479 slice ⓶), migration 0054. What one bulk
+        # owner change asked for and what it moved — the same shape 0052 holds
+        # for tags. **A leak here reads a company's account-coverage decisions
+        # together with the people they were assigned to.**
+        "account_assignment_batch",
         # Commercial Profile (TASK-1479 slice ⓶), migration 0053. Who owns an
         # account and who looks after it — ADR-0411's second capability.
         # **Tenant-owned, and the leak this classification prevents is a

@@ -1,11 +1,11 @@
 """Reading and writing who holds an account — migration `0053`.
 
-**The `AccountAssignmentRepository` port, over Postgres.** [TASK-1479](../../../../docs/BACKLOG.md)
-slice ⓶, against [ADR-0411](../../../../docs/architecture/adr/0411-customer-organized-account-metadata.md).
+**The `AccountAssignmentRepository` port, over Postgres.**
+[TASK-1479](../../../../docs/BACKLOG.md) slice ⓶, against **ADR-0411**.
 
 ### ⚡ Every write returns what it changed
 
-⛔ **Not what it was asked to change.** 📁 [ADR-0405](../../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md)
+⛔ **Not what it was asked to change.** 📁 **ADR-0405**
 puts the inverse with the domain that performed the operation, and the inverse
 of a bulk reassignment is *"restore what each account had"* — **which is
 knowable only at the moment of writing.** A caller that read the state
@@ -23,9 +23,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from modules.commercial_profile.domain.account_assignment import (
     AccountAssignment,
     AccountRole,
+    AssignmentBatch,
     Reassignment,
 )
-from modules.commercial_profile.infrastructure.models import AccountAssignmentModel
+from modules.commercial_profile.infrastructure.models import (
+    AccountAssignmentBatchModel,
+    AccountAssignmentModel,
+)
 
 
 class SqlAccountAssignmentRepository:
@@ -210,4 +214,91 @@ class SqlAccountAssignmentRepository:
         await self._session.flush()
 
 
-__all__ = ["SqlAccountAssignmentRepository"]
+class SqlAssignmentBatchStore:
+    """This module's own half of a proposed owner change — migration `0054`.
+
+    ⛔ **The accounts are read from here and never from the event.** *Events
+    carry identity; ports carry payload* — so a replayed `applied` cannot act
+    on a selection somebody has since changed.
+    """
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def record(
+        self, workspace_id: UUID, batch: AssignmentBatch, *, actor_id: UUID
+    ) -> None:
+        self._session.add(
+            AccountAssignmentBatchModel(
+                batch_id=batch.batch_id,
+                workspace_id=workspace_id,
+                role=batch.role.value,
+                member_user_id=batch.member_user_id,
+                requested=[str(account) for account in batch.requested],
+                # ⛔ **`None`, not `[]`.** The batch has not applied, and those
+                # are different answers.
+                moved=None,
+                created_by=actor_id,
+                updated_by=actor_id,
+            )
+        )
+        await self._session.flush()
+
+    async def by_id(self, workspace_id: UUID, batch_id: UUID) -> AssignmentBatch | None:
+        row = (
+            await self._session.execute(
+                select(AccountAssignmentBatchModel).where(
+                    AccountAssignmentBatchModel.workspace_id == workspace_id,
+                    AccountAssignmentBatchModel.batch_id == batch_id,
+                )
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            # **A batch this module did not propose is not an error.** Another
+            # domain's batch is simply not ours, and the handler does nothing.
+            return None
+
+        moved: Reassignment | None = None
+        if row.moved is not None:
+            moved = Reassignment(
+                role=AccountRole(row.role),
+                assigned_to=row.member_user_id,
+                previous=tuple(
+                    (UUID(account), UUID(prior) if prior is not None else None)
+                    for account, prior in row.moved
+                ),
+            )
+        return AssignmentBatch(
+            batch_id=row.batch_id,
+            role=AccountRole(row.role),
+            member_user_id=row.member_user_id,
+            requested=tuple(UUID(account) for account in row.requested),
+            moved=moved,
+        )
+
+    async def record_applied(
+        self, workspace_id: UUID, batch_id: UUID, moved: Reassignment, *, actor_id: UUID
+    ) -> None:
+        """Write what the batch actually moved.
+
+        ⚡ **The one `UPDATE` this table takes**, and it is a transition rather
+        than an edit: `NULL` becomes a list exactly once.
+        """
+        await self._session.execute(
+            update(AccountAssignmentBatchModel)
+            .where(
+                AccountAssignmentBatchModel.workspace_id == workspace_id,
+                AccountAssignmentBatchModel.batch_id == batch_id,
+            )
+            .values(
+                moved=[
+                    [str(account), str(prior) if prior is not None else None]
+                    for account, prior in moved.previous
+                ],
+                updated_by=actor_id,
+            )
+        )
+        await self._session.flush()
+
+
+__all__ = ["SqlAccountAssignmentRepository", "SqlAssignmentBatchStore"]

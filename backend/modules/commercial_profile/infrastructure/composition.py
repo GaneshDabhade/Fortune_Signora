@@ -10,6 +10,10 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from modules.commercial_profile.application.assignment_use_cases import (
+    ApplyAssignmentBatch,
+    ReverseAssignmentBatch,
+)
 from modules.commercial_profile.application.declare_committee import (
     DeclareBuyingCommittee,
 )
@@ -24,6 +28,10 @@ from modules.commercial_profile.application.segment_queries import SegmentQuerie
 from modules.commercial_profile.application.tag_use_cases import (
     ApplyTagBatchUseCase,
     ReverseTagBatchUseCase,
+)
+from modules.commercial_profile.infrastructure.assignment_repository import (
+    SqlAccountAssignmentRepository,
+    SqlAssignmentBatchStore,
 )
 from modules.commercial_profile.infrastructure.catalog_reader import SqlProductCatalogReader
 from modules.commercial_profile.infrastructure.committee_reader import SqlBuyingCommitteeReader
@@ -47,6 +55,7 @@ from modules.commercial_profile.infrastructure.tag_repository import (
 from modules.commercial_profile.infrastructure.target_account_reader import (
     SqlTargetAccountReader,
 )
+from modules.workspace_tenancy.infrastructure.composition import build_query_service
 from signora_platform.event_bus import EventPublisher
 
 
@@ -176,6 +185,30 @@ def build_icp_reader(session: AsyncSession) -> SqlIcpReader:
     ever reaching into the pipeline.
     """
     return SqlIcpReader(session)
+
+
+def build_apply_assignment_batch(session: AsyncSession) -> ApplyAssignmentBatch:
+    """The consuming domain performing a bulk owner change — TASK-1479 slice ⓶.
+
+    ⚡ **Three collaborators**: who holds what, what this batch asked for, and
+    the membership check — **which is asked again here** because a member who
+    leaves between proposing and approving must not be assigned on acceptance.
+    """
+    return ApplyAssignmentBatch(
+        repository=SqlAccountAssignmentRepository(session),
+        batches=SqlAssignmentBatchStore(session),
+        workspaces=build_query_service(session),
+    )
+
+
+def build_reverse_assignment_batch(session: AsyncSession) -> ReverseAssignmentBatch:
+    """⛔ **No membership port**, and the omission is the same one
+    `ReverseAssignment` records: a reversal restores who held the account
+    before, and rechecking would make *undo* mean two things."""
+    return ReverseAssignmentBatch(
+        repository=SqlAccountAssignmentRepository(session),
+        batches=SqlAssignmentBatchStore(session),
+    )
 
 
 def build_apply_tag_batch(session: AsyncSession) -> ApplyTagBatchUseCase:

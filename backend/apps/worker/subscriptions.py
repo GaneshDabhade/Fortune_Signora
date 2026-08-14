@@ -88,17 +88,27 @@ from modules.commercial_profile.infrastructure.competitor_reader import (
     SqlDeclaredCompetitorReader,
 )
 from modules.commercial_profile.infrastructure.composition import (
+    build_apply_assignment_batch,
     build_apply_tag_batch,
+    build_reverse_assignment_batch,
     build_reverse_tag_batch,
 )
 from modules.commercial_profile.interface.tag_batch_handlers import (
     APPLY_CONSUMER_NAME as TAG_BATCH_APPLY_CONSUMER,
 )
 from modules.commercial_profile.interface.tag_batch_handlers import (
+    ASSIGNMENT_APPLY_CONSUMER_NAME as ASSIGNMENT_BATCH_APPLY_CONSUMER,
+)
+from modules.commercial_profile.interface.tag_batch_handlers import (
+    ASSIGNMENT_REVERSE_CONSUMER_NAME as ASSIGNMENT_BATCH_REVERSE_CONSUMER,
+)
+from modules.commercial_profile.interface.tag_batch_handlers import (
     REVERSE_CONSUMER_NAME as TAG_BATCH_REVERSE_CONSUMER,
 )
 from modules.commercial_profile.interface.tag_batch_handlers import (
+    apply_assignment_batch,
     apply_tag_batch,
+    reverse_assignment_batch,
     reverse_tag_batch,
 )
 from modules.knowledge_graph.infrastructure.composition import (
@@ -294,6 +304,26 @@ async def _reverse_tag_batch(envelope: EventEnvelope) -> None:
     )
 
 
+async def _apply_assignment_batch(envelope: EventEnvelope) -> None:
+    current = runtime()
+
+    await apply_assignment_batch(
+        envelope,
+        session_factory=current.session_factory,
+        apply=build_apply_assignment_batch,
+    )
+
+
+async def _reverse_assignment_batch(envelope: EventEnvelope) -> None:
+    current = runtime()
+
+    await reverse_assignment_batch(
+        envelope,
+        session_factory=current.session_factory,
+        reverse=build_reverse_assignment_batch,
+    )
+
+
 async def _run_requested_research(envelope: EventEnvelope) -> None:
     current = runtime()
 
@@ -486,6 +516,30 @@ def register() -> None:
             consumer_name=TAG_BATCH_REVERSE_CONSUMER,
             event_type=ACTION_BATCH_REVERSED,
             handler=_reverse_tag_batch,
+            pool=DEFAULT.name,
+        )
+
+    # **ADR-0411's second capability on the same two events** — TASK-1479
+    # slice ⓶. ⚡ **Separate consumers from the tag pair**, because one consumer
+    # handling both would make a tag batch and an owner batch share an
+    # idempotency key, and a replayed event would be swallowed by whichever ran
+    # first.
+    if not registry.find(
+        consumer_name=ASSIGNMENT_BATCH_APPLY_CONSUMER, event_type=ACTION_BATCH_APPLIED
+    ):
+        registry.subscribe(
+            consumer_name=ASSIGNMENT_BATCH_APPLY_CONSUMER,
+            event_type=ACTION_BATCH_APPLIED,
+            handler=_apply_assignment_batch,
+            pool=DEFAULT.name,
+        )
+    if not registry.find(
+        consumer_name=ASSIGNMENT_BATCH_REVERSE_CONSUMER, event_type=ACTION_BATCH_REVERSED
+    ):
+        registry.subscribe(
+            consumer_name=ASSIGNMENT_BATCH_REVERSE_CONSUMER,
+            event_type=ACTION_BATCH_REVERSED,
+            handler=_reverse_assignment_batch,
             pool=DEFAULT.name,
         )
 

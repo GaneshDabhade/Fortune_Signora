@@ -411,3 +411,24 @@ class AccountAssignmentModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMi
     #: they are a member of *this workspace*, which only
     #: `WorkspaceQueryPort.get_membership` can answer.
     member_user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+
+
+class AccountAssignmentBatchModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """One bulk owner change — migration `0054`.
+
+    ⛔ **`moved` is nullable and the null is load-bearing**: `NULL` means the
+    batch has not applied, `[]` means it applied and every account already had
+    that member. **Collapsing them would make *never approved* and *approved
+    and changed nothing* the same row**, and only the first is still waiting
+    for somebody.
+    """
+
+    __tablename__ = "account_assignment_batch"
+
+    batch_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    role: Mapped[str] = mapped_column(String(length=8), nullable=False)
+    member_user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    requested: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    #: ⚡ **`[account, prior]` pairs**, `prior` null where nobody held it — the
+    #: condition the reversal needs and cannot recompute later.
+    moved: Mapped[list[list[str | None]] | None] = mapped_column(JSONB, nullable=True)

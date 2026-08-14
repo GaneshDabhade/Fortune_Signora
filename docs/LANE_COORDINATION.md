@@ -517,6 +517,42 @@ databaseUrl: required(
 
 ---
 
+## C-1510 · What may *take it back* do when the previous owner has left?
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-14, building [TASK-1479](BACKLOG.md) slice ⓶ — ⚡ **on QE's hypothesis, tested and found to be a different class from the three defects beside it** |
+| **Owner** | **Product owner** — ⛔ **the question is what the button means, not how it is implemented** |
+| **Blocks** | **Nothing.** ⚠️ **But the shipped path has ALREADY CHOSEN**, which is why this is an item rather than a note |
+| **Status** | 🔵 **`OPEN`** |
+
+### 🔴 Why this is a `C-` and not a `B-`
+
+📁 **[§20e](../CLAUDE.md): *"A defect is not a dependency. Something behaving wrongly today is a `B-` row; something not yet built or agreed is a `C-` row."*** ⛔ **Nothing behaves wrongly against an agreed definition, because the definition is the open question.**
+
+⚡ **And it clears the register's own bar by that test rather than by importance**: *"if you can proceed without encoding an assumption about the answer, you do not need an item."* 🔴 **This lane has encoded one** — the shipped reversal picks *restore faithfully* out of two live options. **Documented rather than silent, which is the difference between a recorded assumption and a hidden one. It is still an assumption.**
+
+### ⚠️ The situation, in one sentence
+
+**A bulk assignment moved an account from Priya to Sam. Priya has since left the workspace. The customer presses *take it back*.**
+
+### The two options, and the argument on each
+
+| | |
+|---|---|
+| **A — restore faithfully** *(what is shipped)* | ⚡ **The batch's own change is undone exactly.** 📁 [ADR-0405](architecture/adr/0405-an-action-is-approved-before-it-is-effective.md) puts the inverse with the domain that performed the operation, and **the inverse of *"set Sam"* is *"set Priya"*** — she was a member when it happened. ⛔ **The cost, and it is QE's counter and it is strong: an account silently owned by somebody who cannot open it is worse than an account with no owner, because THE EMPTY STATE IS VISIBLE AND THE INVALID ONE IS NOT.** ⚠️ **A seller reading the Companies column cannot tell a valid owner from a departed one** |
+| **B — decline that account and say so** | ✅ **Nothing invalid is ever written**, and the customer is told which accounts could not be returned. ⛔ **The cost: *take it back* no longer means what it says.** **A reversal that partly reverses is one the customer has to reconcile by hand**, and they pressed one button expecting one outcome |
+
+⚡ **A third shape exists and is the one this lane would propose if asked**: **restore faithfully AND report the accounts whose holder is no longer eligible**, so the write is complete and the screen can say *"3 of 40 returned to somebody who has since left."* 📁 **It is [P-A](DOMAIN_DISCOVERY_REGISTER.md)'s shape applied to a write**: the outcome must not be indistinguishable from an unqualified success.
+
+### ⛔ What this is NOT
+
+**Not the three defects fixed in `935cbbd5`.** Those were cases where the reversal touched **state that was never its own** — an assignment made since, a second reversal, an account the batch no longer held. ⚡ **Every one is now conditional on the batch's own value still being in place.** **A departed prior holder is different in kind: it IS the batch's own change to undo, and replaying it is faithful.**
+
+### 📁 Where the code says so
+
+**`ReverseAssignment`'s docstring carries the reasoning** — ⛔ **but a decision recorded only in a docstring is one nobody will find when they need to rule on it**, which is what this register exists to prevent.
+
 ## C-1509 · [TASK-429](BACKLOG.md) — four of the six relationship facts cannot come from a contact provider
 
 | | |

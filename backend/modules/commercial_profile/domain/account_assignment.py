@@ -1,4 +1,6 @@
-"""Who owns an account, and who looks after it — **[ADR-0411](../../../../docs/architecture/adr/0411-customer-organized-account-metadata.md)**.
+"""Who owns an account, and who looks after it.
+
+**[ADR-0411](../../../../docs/architecture/adr/0411-customer-organized-account-metadata.md).**
 
 **Customer-organized account metadata, and the first of the three this module
 did not already hold.** Tags shipped with [TASK-466](../../../../docs/BACKLOG.md);
@@ -20,7 +22,7 @@ outlived the person and told nobody.**
 **Both refuse a second owner.** The row shape is chosen for what it does to the
 **inverse**.
 
-📁 [ADR-0405](../../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md):
+📁 **ADR-0405**:
 *an action is approved before it is effective*, and **the consuming domain owns
 performing the operation and implementing the inverse.** Assigning an owner
 across a selection is exactly that kind of operation, and **the inverse of
@@ -56,7 +58,7 @@ class AssignmentError(ValueError):
 
 
 class AccountRole(StrEnum):
-    """The two roles [ADR-0411](../../../../docs/architecture/adr/0411-customer-organized-account-metadata.md) names.
+    """The two roles ADR-0411 names.
 
     ⛔ **Closed, and not because a third is unimaginable.** The ruling's scope
     line is *"Those three. Nothing else"*, and a role nobody has approved
@@ -147,8 +149,36 @@ class Reassignment:
         return self.previous
 
 
+@dataclass(frozen=True, slots=True)
+class AssignmentBatch:
+    """A bulk owner change, and what it did — if it has run.
+
+    **Three states of `moved`, and a consumer can tell them apart:**
+
+    | | |
+    |---|---|
+    | `None` | **Not applied.** Nothing to reverse |
+    | empty `previous` | **Applied**, and every account already had that member |
+    | populated | **Applied**, and the reversal restores exactly these |
+
+    ⛔ **`None` and *"applied and moved nobody"* are different answers**, and
+    only the first is still waiting for somebody to approve it.
+    """
+
+    batch_id: UUID
+    role: AccountRole
+    member_user_id: UUID
+    requested: tuple[UUID, ...]
+    moved: Reassignment | None = None
+
+    def to_reverse(self) -> tuple[tuple[UUID, UUID | None], ...]:
+        """**What the reversal writes** — nothing at all if it never applied."""
+        return () if self.moved is None else self.moved.inverse()
+
+
 __all__ = [
     "AccountAssignment",
+    "AssignmentBatch",
     "AccountRole",
     "AssignmentError",
     "Reassignment",

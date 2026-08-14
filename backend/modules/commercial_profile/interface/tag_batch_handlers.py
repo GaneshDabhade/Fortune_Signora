@@ -42,6 +42,10 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from modules.commercial_profile.application.assignment_use_cases import (
+    ApplyAssignmentBatch,
+    ReverseAssignmentBatch,
+)
 from modules.commercial_profile.application.tag_use_cases import (
     ApplyTagBatchUseCase,
     ReverseTagBatchUseCase,
@@ -54,6 +58,13 @@ logger = get_logger(__name__)
 
 APPLY_CONSUMER_NAME = "commercial_profile.apply_tag_batch"
 REVERSE_CONSUMER_NAME = "commercial_profile.reverse_tag_batch"
+
+#: ⚡ **Separate consumers from the tag pair, deliberately.** Both listen to the
+#: same two events, and **one consumer handling both would make a tag batch and
+#: an owner batch share an idempotency key** — a replayed event would then be
+#: swallowed by whichever ran first.
+ASSIGNMENT_APPLY_CONSUMER_NAME = "commercial_profile.apply_assignment_batch"
+ASSIGNMENT_REVERSE_CONSUMER_NAME = "commercial_profile.reverse_assignment_batch"
 """**Permanent contracts.** Renaming one resets the idempotency ledger, and
 every historical application would be replayed — which here would mean
 re-tagging accounts a customer has already seen the outcome of, and
@@ -120,5 +131,62 @@ async def reverse_tag_batch(
 
     logger.info(
         "tag batch reversed",
+        extra={"batch_id": str(batch_id), "workspace_id": str(workspace_id)},
+    )
+
+
+ApplyAssignmentFactory = Callable[[AsyncSession], ApplyAssignmentBatch]
+ReverseAssignmentFactory = Callable[[AsyncSession], ReverseAssignmentBatch]
+
+
+async def apply_assignment_batch(
+    envelope: EventEnvelope,
+    *,
+    session_factory: async_sessionmaker[AsyncSession],
+    apply: ApplyAssignmentFactory,
+) -> None:
+    """Put the member on the accounts the batch named, because it took effect.
+
+    ⛔ **The payload names a `batch_id` and nothing else is trusted from it** —
+    the accounts are read from this module's own row, exactly as the tag
+    handler above does and for the same reason.
+    """
+    batch_id = UUID(str(envelope.payload["batch_id"]))
+    workspace_id = envelope.workspace_id
+
+    async with tenant_scoped_session(
+        session_factory, workspace_id=workspace_id, user_id=SYSTEM_USER_ID
+    ) as session:
+        await apply(session).execute(workspace_id, batch_id, actor_id=SYSTEM_USER_ID)
+
+    logger.info(
+        "assignment batch applied",
+        extra={"batch_id": str(batch_id), "workspace_id": str(workspace_id)},
+    )
+
+
+async def reverse_assignment_batch(
+    envelope: EventEnvelope,
+    *,
+    session_factory: async_sessionmaker[AsyncSession],
+    reverse: ReverseAssignmentFactory,
+) -> None:
+    """Put back exactly what the batch moved, because it was taken back.
+
+    ⚡ **Conditional on the batch's own value still being in place** — 📁 three
+    defects fixed at `935cbbd5`: an assignment made since, a second reversal,
+    and an account the batch no longer held. **An undo undoes its own change,
+    not everybody's.**
+    """
+    batch_id = UUID(str(envelope.payload["batch_id"]))
+    workspace_id = envelope.workspace_id
+
+    async with tenant_scoped_session(
+        session_factory, workspace_id=workspace_id, user_id=SYSTEM_USER_ID
+    ) as session:
+        await reverse(session).execute(workspace_id, batch_id, actor_id=SYSTEM_USER_ID)
+
+    logger.info(
+        "assignment batch reversed",
         extra={"batch_id": str(batch_id), "workspace_id": str(workspace_id)},
     )
