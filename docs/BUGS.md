@@ -5904,6 +5904,33 @@ def _load_state_check() -> ModuleType:
 | **Severity** | 🟠 — ⛔ **wrong behaviour a reader would act on**: the file is the only per-workflow state the repository has, and it under-reports remaining work |
 | **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-11, answering *"how many workflows are completed, pending, blocked"*. ⚠️ **Widened 2026-08-13 — it drifts in BOTH directions and it has now misled this office's own planning** |
 
+> ### 🔴 ROOT CAUSE, 2026-08-14 — the link cannot be derived, so the registry cannot be repaired by a sweep
+>
+> **Measured across all 198 backlog rows:**
+>
+> | | |
+> |---|---|
+> | Rows with an `Epic` cell | **86 of 198** |
+> | Rows carrying a derivable **`[workflow N]`** link | 🔴 **51** |
+> | ⛔ **Rows from which no workflow can be derived** | 🔴 **147** |
+>
+> ⚡ **And the `Epic` label is free text with no controlled vocabulary.** 📁 **Workflow 13 is named *Application Shell*; the rows that belong to it say *"Common Platform Foundation — App Shell"*, *"App Shell — workflow 29"*, *"Common Platform Foundation"*.** ⛔ **A name match finds ONE row. The seven App Shell rows this bug was opened over are invisible to every mechanical link.**
+>
+> 🔴 **So `workflows.toml`'s `tasks` array is a hand-maintained copy of a relationship the repository does not otherwise express** — 📁 **[OPERATING-MODE §5h](coordination/lane-c/OPERATING-MODE.md), and QE's corollary applies exactly: the defence is DERIVATION, never detection.** ⛔ **Here derivation is impossible, because the source data does not exist in 147 rows.**
+>
+> ⚠️ **This reframes what the register can answer.** **The repeated question — *how many workflows are pending* — has been answered from this registry twice, and the answer rests on a list nothing can check.** ✅ **The four `planned`-but-spent workflows found on 2026-08-13 were found by resolving ids BY HAND, which is the only method that works and does not scale.**
+>
+> ### ⚖️ Two repairs, and neither is a sweep
+>
+> | | | |
+> |---|---|---|
+> | **A** | **Give every row a `Workflow` cell**, or require the `[workflow N]` link in `Epic` | ✅ **Makes the link derivable and the registry checkable.** ⛔ **147 rows to touch, and it is scope on the product owner's own register** |
+> | **B** ▶ | **Stop treating `workflows.toml`'s `tasks` array as authoritative** — ⚡ **derive workflow membership from the DESIGN each row names, which rows already carry as `Design authority`** | ✅ **No row edits.** ⚠️ **Needs the design→workflow map, which `workflows.toml` already holds in its `design` field** |
+>
+> ⛔ **Not decided here.** 📁 **B is the cheaper of the two and reuses a field rows already populate**; **A is more direct and costs 147 edits to a register [§20e](../CLAUDE.md) reserves to the product owner for scope.**
+>
+> ✅ **Recorded rather than actioned, per the product owner's standing instruction to document and proceed.** ⛔ **Until one is chosen, any workflow-level count carries this caveat, and this office will state it every time rather than quoting a number that reads as measured.**
+
 > ### 🔴 SECOND MEASUREMENT, 2026-08-13 — four `planned` workflows have every row PROMOTED
 >
 > **Measured by resolving each `planned` workflow's task ids against `BACKLOG.md` rather than reading the registry's state:**
