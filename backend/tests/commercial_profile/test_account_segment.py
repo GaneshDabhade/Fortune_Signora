@@ -69,18 +69,29 @@ class TestTwoNamesACustomerCannotTellApartAreOneSegment:
         with pytest.raises(AccountSegmentError):
             directory.added(AccountSegment(id=uuid4(), name="BOARD REPORTING SET"))
 
-    def test_the_fold_is_the_tag_vocabulary_s_and_not_a_second_copy(self) -> None:
-        """🔴 **One rule, imported rather than reimplemented** ([§2](../../../CLAUDE.md)).
+    def test_the_folding_rule_is_the_tag_vocabulary_s_and_not_a_second_copy(self) -> None:
+        """🔴 **One rule, borrowed rather than reimplemented** ([§2](../../../CLAUDE.md)).
 
-        ⛔ **`casefold` rather than `lower`, and the difference is a customer
-        who is not writing English** — `lower("STRASSE") != lower("straße")`,
-        and the two are one name to the person who typed them.
+        ⛔ **Asserted BEHAVIOURALLY, on the input where the two candidate
+        implementations disagree.** `casefold` and `lower` differ on
+        `"STRASSE"` versus `"straße"` — German is the case that separates them
+        — **so a segment that had grown its own `lower`-based folding fails
+        here and a segment that shares the tag's does not.**
+
+        ⚠️ **An identity assertion — `segment.fold is tag.fold` — was written
+        first and is weaker.** It proves one import statement and would pass
+        against a copy that had been imported back; **this proves the rule.**
         """
-        from modules.commercial_profile.domain.account_segment import fold as segment_fold
         from modules.commercial_profile.domain.account_tag import fold as tag_fold
 
-        assert segment_fold is tag_fold
-        assert segment_fold("STRASSE") == segment_fold("straße")
+        upper = AccountSegment(id=uuid4(), name="STRASSE")
+        sharp = AccountSegment(id=uuid4(), name="straße")
+
+        assert upper.key == sharp.key
+        assert upper.key == tag_fold("STRASSE")
+        assert AccountSegment(id=uuid4(), name=" Board   reporting  set ").key == tag_fold(
+            "board reporting set"
+        )
 
     def test_finding_by_name_is_how_a_customer_reaches_one(self) -> None:
         wanted = AccountSegment(id=uuid4(), name="Expansion-ready")
