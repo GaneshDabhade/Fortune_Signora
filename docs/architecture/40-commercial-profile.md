@@ -656,10 +656,18 @@ So `TagApplication` records what **changed**, and `inverse()` may read nothing e
 
 **The Companies table's Owner column**, and 📁 [`table.ts`](../../frontend/lib/accounts/table.ts)'s own header is corrected: **two of its five source-less columns now have one.** ⚡ **Three states, and only one of them is *nobody*** — an unread answer renders **nothing**, an account held by somebody no longer in the member list says so, and a genuinely unassigned account says *Unassigned*. 📁 [P-A](../DOMAIN_DISCOVERY_REGISTER.md)'s loading cousin, which [C-226](../LANE_COORDINATION.md) found six times on one screen.
 
-### ⛔ Segments is not here, and the reason is this module's own vocabulary
+### ⛔ Segments is slice ⓶b — and the reason this section first gave was WRONG
 
-📁 **ADR-0411's third capability is *"a named, saved grouping of accounts"*.** 🔴 **`commercial_profile` already owns the word**: [ADR-0041](adr/0041-icp-aggregate.md)'s ICP **is** *"a named customer segment"*, served at `/workspaces/{id}/icp-segments` under the summary *"Every customer segment this workspace sells to."*
+🔴 **This section said Segments was deferred on an open vocabulary question, and it was not open.** ⚠️ **It is corrected in place rather than deleted, because the argument it made is persuasive, is still findable in the register, and the next assignee would otherwise re-derive it exactly as this lane did** ([§2](../../CLAUDE.md): a false claim that survives review is worse than a gap).
 
-⚠️ **Two customer-facing meanings of one word in one bounded context is [§4](../../CLAUDE.md)'s exact prohibition**, and **the honest answer may be reuse rather than construction**: `workspace_tenancy`'s `SavedView` is already a named, versioned, immutable, workspace-scoped **declaration** — which is what *"a stored predicate"* means, and ADR-0411 §3 leaves that choice to this lane.
+**What it said:** that [ADR-0041](adr/0041-icp-aggregate.md)'s ICP **is** *"a named customer segment"*, served at `/workspaces/{id}/icp-segments`; that two customer-facing meanings of one word in one bounded context is [§4](../../CLAUDE.md)'s exact prohibition; and that the honest answer might be reuse of `workspace_tenancy`'s `SavedView` rather than construction.
 
-⛔ **Routed to Product Office rather than decided inside a slice**, because it is vocabulary and ownership rather than implementation.
+📁 **Every sentence of that is true, and it is the argument of [C-1503](../LANE_COORDINATION.md) — which this lane raised on 2026-08-13 and the product owner CLOSED the same day.**
+
+> ✅ **[D-235](../DECISION_REGISTER.md) ②, Option C:** ⛔ *"The four `icp_*` tables are NOT renamed and there is NO repository-wide terminology rewrite."* ✅ *"A customer says **ICP** for ADR-0041's aggregate, and **Segment** means ADR-0411's customer-organized enumerated grouping. `icp_segment` stays the internal implementation name. The App Shell's `segment` scope dimension, Companies, Account 360 and Action Batch all carry the ADR-0411 meaning."*
+
+⚡ **So *"Add to segment"* is buildable exactly as drawn, nothing is renamed, and the collision was only ever the internal table name** — **a better answer than either option this lane proposed.**
+
+⚠️ **How the mistake happened, because the mechanism is more useful than the apology.** This lane re-derived C-1503's argument from the source material — ADR-0041, ADR-0411, the endpoint — **without reading the Status cell of its own item.** 🔴 **The same lane had twice that week told other lanes that `RULED` is not `AVAILABLE`; this is that error inverted, reading `CLOSED` as open.** ⛔ **Both are one act: taking an item's argument as live without re-reading its state.**
+
+✅ **Segments is therefore SCHEDULED, not deferred** — slice ⓶b, immediately after ⓶a. ⚠️ **Split at QE's request and on the better argument: `main`'s frontend suite is red, ⓶a is the only thing that fixes it, and holding a shipped fix to complete a second capability is the wrong trade** ([B-200](../BUGS.md)).

@@ -90,12 +90,34 @@ describe('📁 ADR-0406 §2 names three modes, and these are they', () => {
     expect(withEnvironment('demo', authMode)).not.toBe('production');
   });
 
-  it('`test` and `development` are Development, matching the transport guard', () => {
-    // The same three names `isDeployed()` uses. If these ever disagree, the
+  it('`local` and `test` are Development, matching the transport guard', () => {
+    // The same two names `isDeployed()` allows. If these ever disagree, the
     // badge and the console-transport guard would describe different
     // repositories.
+    expect(withEnvironment('local', authMode)).toBe('development');
     expect(withEnvironment('test', authMode)).toBe('development');
-    expect(withEnvironment('development', authMode)).toBe('development');
+  });
+
+  it('🔴 `development` is not in the vocabulary, so it reports as PRODUCTION', () => {
+    /**
+     * ⚡ **This assertion was the opposite until today, and the change is
+     * [ADR-0412](../../../docs/architecture/adr/0412-environment-and-secret-safe-logging.md)'s.**
+     * 📁 The vocabulary is closed — `local`, `test`, `demo`, `production-local`,
+     * `staging`, `production` — and **`development` was retired because it and
+     * `local` were two spellings of one environment**: it meant *local* in this
+     * tier and *deployed* in the AI Platform's guard, so the console transport
+     * wrote verification links to stdout where the deterministic mock refused.
+     *
+     * ⛔ **The mode named `development` still exists and this is not a
+     * contradiction** — `AuthMode` is what a reviewer is shown; the environment
+     * name is what configuration says. **`local` is the environment that
+     * produces that mode**, and nothing is spelled two ways any more.
+     *
+     * ✅ **A retired name reporting as PRODUCTION is the allow-list working**,
+     * not a gap: an unknown name refuses, which is the safe direction for a
+     * value nobody has thought about yet.
+     */
+    expect(withEnvironment('development', authMode)).toBe('production');
   });
 });
 

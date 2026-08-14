@@ -332,13 +332,21 @@ export type AuthMode = 'production' | 'development' | 'demo';
  *
  * ## ⚠️ A gap this function makes visible and deliberately does not close
  *
- * ⛔ **`isDeployed()` above is a DENYLIST of three names — `local`, `test`,
- * `development` — and the environment registry contains none of them.** **It
- * holds `review`, `lane-qe`, `lane-a`…`lane-e` and `demo`.** ⚡ **So a lane
- * that exported `SIGNORA_ENVIRONMENT=lane-a`, which is what the registry calls
- * it, would be classified as DEPLOYED and its auth tier would refuse to
- * start.** ✅ **Latent rather than live** — nothing sets the variable for the
- * frontend today, so `environmentName()` returns `local`.
+ * ⛔ **`isDeployed()` above is an ALLOW-LIST of two names — `local` and `test`
+ * — and the environment registry contains neither.** **It holds `review`,
+ * `lane-qe`, `lane-a`…`lane-e` and `demo`.** ⚡ **So a lane that exported
+ * `SIGNORA_ENVIRONMENT=lane-a`, which is what the registry calls it, would be
+ * classified as DEPLOYED and its auth tier would refuse to start.** ✅ **Latent
+ * rather than live** — nothing sets the variable for the frontend today, so
+ * `environmentName()` returns `local`.
+ *
+ * ⚠️ **This paragraph said *"a DENYLIST of three names — `local`, `test`,
+ * `development`"* until [ADR-0412](../../../docs/architecture/adr/0412-environment-and-secret-safe-logging.md)
+ * closed the vocabulary and `development` was removed above.** 🔴 **The list
+ * changed and the sentence describing it did not**, which is [§2](../../../CLAUDE.md)'s
+ * false claim surviving review — **and the direction matters**: a deny-list
+ * admits an unknown name and an allow-list refuses it, so the two words are
+ * opposite guarantees, not synonyms.
  *
  * ⛔ **Not fixed here, and the reason is [§13](../../../CLAUDE.md).** **Widening
  * that list would make the console transport — which writes a credential to
