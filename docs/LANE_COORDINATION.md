@@ -11131,6 +11131,41 @@ rules parsed: 24   ·   distinct reason codes: 24
 
 **Three candidates, and the choice is architectural:** ⓐ **a new `machine_identity` module** · ⓑ **inside `workspace_tenancy`**, which already owns membership and roles · ⓒ **inside `platform_foundation`**, which owns `infra/` and no runtime surface. ⚠️ **ⓑ is the smallest change and the least honest** — a service principal is not a member.
 
+---
+
+## ⚡ PREPARED 2026-08-13 — the question is unanswerable because it is two questions
+
+🔴 **This item has been open since 2026-08-09 and the reason is in its own sentence:** ***"It is a credential system AND an outbound delivery system."*** ⛔ **Asking *which module owns machine credentials* of a row containing both cannot produce one answer, because the two halves point at different owners.**
+
+### ① API keys — a non-human principal authenticating INBOUND
+
+📁 **[495](architecture/495-principal-and-identity-boundary.md) ratified the model and constrains the owner without naming one:** **`workspace_id` is *"non-nullable for every non-human kind — a machine identity that is not workspace-scoped is a cross-tenant credential"*** · **`owner_user_id` — *"every machine principal is owned by a human"*** · **`acting_for` — *"the field the whole model exists for."***
+
+⚡ **So a machine principal is anchored to a workspace and to a member — the two aggregates [`workspace_tenancy`](../backend/modules/workspace_tenancy/) already owns.** ⚠️ **That is a stronger argument for ⓑ than *"smallest change"*, and it is the one this item did not make.** ⛔ **The counter stands: issuance, rotation, one-time display and per-call logging are a credential lifecycle, not a membership one.**
+
+⛔ **ⓒ is eliminated: `platform_foundation` has no runtime surface, and API keys need endpoints.**
+
+### ② Webhooks — outbound delivery with retry, backoff and parking
+
+⛔ **This half is NOT a credential question at all**, and it is why the row resists a single owner. 📁 **The design: *"failed webhook deliveries retry with backoff for 24 hours, then park with the payload retained"*** — **durable outbound delivery, which is the outbox-and-relay shape the platform already runs.**
+
+⚠️ **And `integrations` is the near-miss worth naming rather than leaving for somebody to propose.** ✅ **It already publishes `Credential`, `ConnectedAccount`, `ConnectionState` and `ExecutionContext`** — ⛔ **but for the OPPOSITE direction: credentials Signora holds to call OUT to a vendor.** 🔴 **An API key is a credential a third party holds to call Signora IN.** 📁 **[§13](../CLAUDE.md) already forbids exactly this conflation — *"a sign-in OAuth token must never be reused as an integration OAuth token"*** — **and putting an inbound machine credential in the module that owns outbound ones is that defect with a new pair of nouns.**
+
+### ⚠️ AND THE CLASSIFICATION IS WRONG
+
+⛔ **This row reads *"RECLASSIFIED to SEQUENCING… never a product decision"*, citing [D-232](DECISION_REGISTER.md) §7.** 🔴 **[D-232](DECISION_REGISTER.md) is a dangling reference — cited here and by [C-337](#c-337) and by [ADR-0408](architecture/adr/0408-inbound-rate-limiting.md)'s status line, and never written.** ✅ **Verified: no `D-232` row exists in the register.**
+
+📁 **And [§20e](../CLAUDE.md)'s Change Budget puts *a new module or bounded context* at 🔴 — product owner plus an ADR.** ⛔ **So if the answer is ⓐ, this is a product decision and was misclassified as sequencing on the authority of a record that does not exist.**
+
+### ✅ Recommendation — split the row, and only one half needs a ruling
+
+| | |
+|---|---|
+| **①** | **The credential half needs the ruling** — ⓐ a new bounded context, or ⓑ inside `workspace_tenancy` on 495's anchors. ⛔ **🔴 either way if it is ⓐ** |
+| **②** | **The delivery half does not.** ✅ **Durable outbound delivery is platform machinery that already exists, and it is buildable once ① has an owner to authenticate the caller** |
+
+⚡ **This does not release [TASK-1413](BACKLOG.md).** ⛔ **It makes the question answerable in one word instead of unanswerable in three** — and **the split is decomposition of approved scope, never new scope.**
+
 ## C-1403 · A `403` names its approvers, and nothing publishes who they are
 
 | | |
