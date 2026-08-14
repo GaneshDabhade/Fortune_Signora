@@ -1291,6 +1291,41 @@ def _design_clarification_findings(backlog: str) -> list[str]:
     return out
 
 
+def _routable_modules() -> frozenset[str]:
+    """Modules `modules.toml` can join an assignee for — **B-434.**
+
+    ⛔ **An `Owner` cell naming a MODULE is routable, and naming a LANE is the
+    defect.** §20e: *"a coordination item, backlog row or defect names its
+    **module**; the assignee is joined at render time"*, and *"no document
+    restates an assignee."*
+
+    ⚠️ **The check this serves demanded the opposite until 2026-08-13.** It
+    required a literal `Lane A` inside the cell — **the one thing
+    [C-213](../docs/LANE_COORDINATION.md) forbids putting there** — so
+    `C-289` and `C-292`, both written in the required form, were reported as
+    ownerless. ⛔ **The dangerous half is the remediation**: satisfying the old
+    check meant writing a lane name into the cell, which is precisely how
+    C-213 blocked `TASK-205` for two days. **The check would have gone green
+    and the register would have been one edit further from the rule.**
+
+    ⚡ **Found by Lane C, who nearly made that edit and filed the defect
+    instead.** ✅ **A join, never a wider regex** — a regex admitting bare
+    module names would also admit any lowercase word, and an owner cell reading
+    `the usual owner` would pass.
+    """
+    if not MODULES_TOML.is_file():
+        return frozenset()
+    try:
+        registry = tomllib.loads(MODULES_TOML.read_text())
+    except tomllib.TOMLDecodeError:
+        return frozenset()
+    return frozenset(
+        name
+        for name, row in registry.items()
+        if isinstance(row, dict) and row.get("current_owner")
+    )
+
+
 def _item_owner_findings() -> list[str]:
     """Does every coordination item awaiting somebody name who? — **D-186.**
 
@@ -1332,6 +1367,12 @@ def _item_owner_findings() -> list[str]:
     #: case-insensitively; the register is prose written by hand and a gate must
     #: not depend on its shift key.**
     actor = re.compile(r"Lane [ACD]|QE|product owner|design authority", re.I)
+    #: ⚡ **A module name is an owner — B-434, 2026-08-13.** The cell names the
+    #: module and the assignee joins from `modules.toml` (§20e), so a routable
+    #: owner is EITHER an actor above OR a module the registry can resolve.
+    #: ⛔ **Only backticked tokens count**, and only ones the registry knows:
+    #: a bare-word rule would let `the usual owner` pass as an owner.
+    routable = _routable_modules()
 
     for n, (i, head) in enumerate(heads):
         end = heads[n + 1][0] if n + 1 < len(heads) else len(lines)
@@ -1346,16 +1387,30 @@ def _item_owner_findings() -> list[str]:
                 f"{cid} is awaiting somebody and has no `Owner` cell. **A row "
                 f"nobody is named on is a row nobody answers** (C-213)."
             )
-        elif not actor.search(owner):
-            out.append(
-                f"{cid}'s `Owner` names no lane, QE or the product owner. "
-                f"**An owner a reader cannot route to is an absent owner.**"
-            )
+        #: ⛔ **Lane B is tested FIRST, and that ordering is the whole fix —
+        #: B-434, 2026-08-13.** `actor` is `Lane [ACD]`, which deliberately
+        #: excludes B, so a `Lane B` owner failed the generic test above and was
+        #: reported as *"names no lane"* — **the specific branch below could
+        #: never be reached.** ⚡ **Decorative Logic** (`CLAUDE.md` §2): a branch
+        #: whose removal changed nothing, with a comment asserting a check that
+        #: was not happening. ✅ **Proven dead against the promoted file before
+        #: it was moved**, not assumed. ⛔ **Reordered rather than deleted,
+        #: because the property is real** — §20e: an item assigned to a lane
+        #: that cannot answer *looks answered*, which is worse than one visibly
+        #: unowned.
         elif "Lane B" in owner:
             out.append(
                 f"{cid} is owned by **Lane B**, which D-165 closed. "
                 f"**An item assigned to a lane that cannot answer is worse than "
                 f"one visibly unowned, because it looks answered** (§20e)."
+            )
+        elif not actor.search(owner) and not (
+            routable & set(re.findall(r"`([a-z_][a-z0-9_]*)`", owner))
+        ):
+            out.append(
+                f"{cid}'s `Owner` names no lane, QE, the product owner, or a "
+                f"module `modules.toml` can join an assignee for. "
+                f"**An owner a reader cannot route to is an absent owner.**"
             )
     return out
 
