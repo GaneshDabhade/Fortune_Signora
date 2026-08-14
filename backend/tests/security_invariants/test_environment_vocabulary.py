@@ -39,7 +39,9 @@ concrete:
 
 from __future__ import annotations
 
+import importlib.util
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -49,9 +51,9 @@ from signora_platform.environment import SignoraEnvironment
 #: The auth tier's own list, **read from source rather than restated** — a copy
 #: here would be the second representation this file exists to forbid, and it
 #: would agree with itself forever while the tier drifted.
-_FRONTEND_CONFIG = (
-    Path(__file__).resolve().parents[3] / "frontend" / "lib" / "auth" / "config.ts"
-)
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+
+_FRONTEND_CONFIG = _REPO_ROOT / "frontend" / "lib" / "auth" / "config.ts"
 
 
 def _frontend_development_names() -> frozenset[str]:
@@ -113,6 +115,29 @@ def test_a_name_either_side_calls_development_is_development_to_both(name: str) 
     )
 
 
+def _stack_names() -> frozenset[str]:
+    """Every name `infra/environments.py` uses for a **stack** — read, not restated.
+
+    🔴 **This was a hand-written set of six, and QE found it.** The real space
+    is `BY_NAME | UNSLOTTED` — nine names — so **`lane-d` and `lane-e` were
+    unchecked**, and they are precisely the names nobody has used yet, which
+    is when a collision would be introduced with nobody noticing.
+
+    ⛔ **The same defect this file exists to prevent, committed inside it.** 📁
+    [§2](../../../CLAUDE.md), *truth has exactly one authoritative
+    representation* — and **in a Security Invariant it is worse than
+    elsewhere, because a guard that tests a copy still looks like a guard.**
+    """
+    spec = importlib.util.spec_from_file_location(
+        "signora_environments", _REPO_ROOT / "infra" / "environments.py"
+    )
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return frozenset(module.BY_NAME) | frozenset(module.UNSLOTTED)
+
+
 def test_no_stack_name_is_a_member_of_the_deployment_vocabulary() -> None:
     """⛔ **`SIGNORA_ENVIRONMENT` carries ONE concept.**
 
@@ -122,12 +147,15 @@ def test_no_stack_name_is_a_member_of_the_deployment_vocabulary() -> None:
     to stdout"*. **Different questions, and a value that answers one cannot
     answer the other.**
 
-    ⚠️ **`demo` is deliberately excluded from this check and IS a member**, and
-    the collision is real rather than an oversight: the demonstration stack and
-    the demonstration deployment class are the same thing by intent. **Every
-    other stack name must stay out.**
+    ⚠️ **`demo` is the one deliberate overlap and IS a member**, because the
+    demonstration stack and the demonstration deployment class are the same
+    thing by intent. ⚡ **Named as an exclusion rather than omitted from a
+    list**, so it reads as a decision instead of a gap.
+
+    ✅ **The stack names are derived**, so `lane-f` tomorrow is covered without
+    anybody remembering to add it.
     """
-    stack_only = frozenset({"lane-a", "lane-b", "lane-c", "lane-qe", "review", "prod-local"})
+    stack_only = _stack_names() - {"demo"}
 
     overlap = stack_only & frozenset(member.value for member in SignoraEnvironment)
 
