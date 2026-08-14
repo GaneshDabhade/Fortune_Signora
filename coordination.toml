@@ -9,23 +9,23 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "e425e4a"
-task_count     = 61
+generated_from = "d9a63e1"
+task_count     = 53
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
 backlog            = ["TASK-1416", "TASK-1419", "TASK-1421", "TASK-1424", "TASK-1473", "TASK-1477", "TASK-1478", "TASK-202", "TASK-430"]
-assigned_total     = 56
+assigned_total     = 48
 claimable          = 13
 claimable_now      = 9
 awaiting_sync      = 4
-in_flight          = 20
+in_flight          = 12
 actionable         = 4
 awaiting_qe_transition = 0
 blocked_on_integration = 0
 supply_state       = "working"
 blocked            = 23
-lane_utilization   = 4.0
+lane_utilization   = 2.4
 idle_prediction_days   = 1.9
 dependency_wait_days   = 2.1
 blocked_duration_days  = 1.2
@@ -80,22 +80,6 @@ critical_path  = 0
 estimated_ready = "— RE-POINTED 2026-08-13, Lane C: the blocker is **[TASK-1421](#task-14"
 waiting_for    = "— RE-POINTED 2026-08-13, Lane C: the blocker is **[TASK-1421](#task-1421--the-workspace-chooser-at-workspaces--a-route-the-engine-already-sends-people"
 blocked_days   = 1.0
-on_integration = true
-
-[[task]]
-id            = "TASK-1405"
-title         = "Home is one route and four compositions"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
 on_integration = true
 
 [[task]]
@@ -307,70 +291,6 @@ blocked_days   = 2.1
 on_integration = true
 
 [[task]]
-id            = "TASK-1460"
-title         = "🔴 The layout grid the design specifies and the repository has never had"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-1463"
-title         = "Three App Shell sections the design specifies and the shell does not implement"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-1467"
-title         = "The three gate screens that are already drawn — sliced out of a row blocked on four docume"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-1468"
-title         = "Signal Center — the triage model is right and eight surfaces the design draws are missing"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
 id            = "TASK-1469"
 title         = "Opportunity Intelligence — the deal record the design draws and the product does not have"
 state         = "SEQUENCED"
@@ -387,38 +307,6 @@ blocked_days   = 0.0
 on_integration = true
 
 [[task]]
-id            = "TASK-1470"
-title         = "`Ask Signora` sits below the utilities and the design pins it above them"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-1471"
-title         = "The shell frame skeletonises itself on cold boot, and §16 says the frame is never blank"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
 id            = "TASK-1473"
 title         = "⛔ BLOCKED ON A DESIGN RULING — the rail at 1024–1279, and whether a band overrides a perso"
 state         = "ASSIGNED"
@@ -430,22 +318,6 @@ next_owner     = []
 next_lane      = "—"
 critical_path  = 0
 estimated_ready = "now"
-waiting_for    = ""
-blocked_days   = 0.0
-on_integration = true
-
-[[task]]
-id            = "TASK-1474"
-title         = "Two top-bar rules the design states, the contract implements, and nothing calls"
-state         = "IN FLIGHT"
-declared      = "IN VALIDATION"
-lane          = "Lane A"
-depends_on     = []
-unblocks       = []
-next_owner     = []
-next_lane      = "—"
-critical_path  = 0
-estimated_ready = "—"
 waiting_for    = ""
 blocked_days   = 0.0
 on_integration = true
@@ -1023,5 +895,5 @@ next_lane      = "—"
 critical_path  = 0
 estimated_ready = "—"
 waiting_for    = ""
-blocked_days   = 6.5
+blocked_days   = 6.6
 on_integration = true
