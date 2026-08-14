@@ -130,7 +130,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | **None — `docs/design-snapshot/MANIFEST.md`**, the Design Snapshot ([D-138](DECISION_REGISTER.md)) |
 | **Current assignee** | **Lane C — Product Office**, which owns the snapshot and the refresh instruction |
 | **Severity** | 🟢 · **Non-blocking.** ⛔ **All 36 content hashes are correct and were verified individually**, so no lane is misled about *content* and nothing is gated |
-| **Status** | 🔵 **`OPEN`** — ⚡ **fix already authored by Lane C at `e39988aa`, not yet on `integration`** |
+| **Status** | ✅ **`VERIFIED` — QE, 2026-08-14, cycle 227.** ⚡ **Measured on `main`, never read from the fix's own description**: `screens/` holds **35 files · 2,769,237 bytes**, and **both figures are over the same set** — the three-denominator defect is gone. ✅ **`Authenticated Entry` reads 99,112 and `Reports` reads 48,965**, each matching the file it names, and **all 36 content hashes resolve.** ⛔ **Lane C's own framing is the better one and is recorded here**: *a stale total is wrong about the world and a reader catches it by measuring; three denominators is wrong about itself and no measurement catches it without knowing which set each quantity means.* **Was:** 🔵 `OPEN`, fix authored at `e39988aa` |
 | **Found** | **2026-08-13, cycle 226**, during validation of the delivery that contains it |
 | **Commit found** | **`3d7e2d9e`** — *"The snapshot manifest went stale again, in the row that documents its own staleness"* |
 
