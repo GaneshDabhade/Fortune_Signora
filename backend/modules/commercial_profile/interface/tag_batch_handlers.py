@@ -46,6 +46,10 @@ from modules.commercial_profile.application.assignment_use_cases import (
     ApplyAssignmentBatch,
     ReverseAssignmentBatch,
 )
+from modules.commercial_profile.application.segment_use_cases import (
+    ApplySegmentBatchUseCase,
+    ReverseSegmentBatchUseCase,
+)
 from modules.commercial_profile.application.tag_use_cases import (
     ApplyTagBatchUseCase,
     ReverseTagBatchUseCase,
@@ -65,6 +69,12 @@ REVERSE_CONSUMER_NAME = "commercial_profile.reverse_tag_batch"
 #: swallowed by whichever ran first.
 ASSIGNMENT_APPLY_CONSUMER_NAME = "commercial_profile.apply_assignment_batch"
 ASSIGNMENT_REVERSE_CONSUMER_NAME = "commercial_profile.reverse_assignment_batch"
+
+#: TASK-1479 ⓶b. ⛔ **Distinct consumer names, and that is what makes three
+#: capabilities share one event stream safely**: each keeps its own position,
+#: so a segment batch that fails to apply does not stall tags or owners.
+SEGMENT_APPLY_CONSUMER_NAME = "commercial_profile.apply_segment_batch"
+SEGMENT_REVERSE_CONSUMER_NAME = "commercial_profile.reverse_segment_batch"
 """**Permanent contracts.** Renaming one resets the idempotency ledger, and
 every historical application would be replayed — which here would mean
 re-tagging accounts a customer has already seen the outcome of, and
@@ -188,5 +198,61 @@ async def reverse_assignment_batch(
 
     logger.info(
         "assignment batch reversed",
+        extra={"batch_id": str(batch_id), "workspace_id": str(workspace_id)},
+    )
+
+
+ApplySegmentFactory = Callable[[AsyncSession], ApplySegmentBatchUseCase]
+ReverseSegmentFactory = Callable[[AsyncSession], ReverseSegmentBatchUseCase]
+
+
+async def apply_segment_batch(
+    envelope: EventEnvelope,
+    *,
+    session_factory: async_sessionmaker[AsyncSession],
+    apply: ApplySegmentFactory,
+) -> None:
+    """Put the companies into the grouping, because the batch took effect.
+
+    ⛔ **The payload names a `batch_id` and nothing else is trusted from it** —
+    the accounts come from this module's own row, so a redelivered event cannot
+    apply a selection somebody has since changed.
+    """
+    batch_id = UUID(str(envelope.payload["batch_id"]))
+    workspace_id = envelope.workspace_id
+
+    async with tenant_scoped_session(
+        session_factory, workspace_id=workspace_id, user_id=SYSTEM_USER_ID
+    ) as session:
+        await apply(session).execute(workspace_id, batch_id, actor_id=SYSTEM_USER_ID)
+
+    logger.info(
+        "segment batch applied",
+        extra={"batch_id": str(batch_id), "workspace_id": str(workspace_id)},
+    )
+
+
+async def reverse_segment_batch(
+    envelope: EventEnvelope,
+    *,
+    session_factory: async_sessionmaker[AsyncSession],
+    reverse: ReverseSegmentFactory,
+) -> None:
+    """Take the companies back out, because the batch was taken back.
+
+    ⛔ **Removes what the batch ADDED, never what it requested.** A company
+    curated into the grouping before the batch stays in it — it was not this
+    batch's doing.
+    """
+    batch_id = UUID(str(envelope.payload["batch_id"]))
+    workspace_id = envelope.workspace_id
+
+    async with tenant_scoped_session(
+        session_factory, workspace_id=workspace_id, user_id=SYSTEM_USER_ID
+    ) as session:
+        await reverse(session).execute(workspace_id, batch_id)
+
+    logger.info(
+        "segment batch reversed",
         extra={"batch_id": str(batch_id), "workspace_id": str(workspace_id)},
     )

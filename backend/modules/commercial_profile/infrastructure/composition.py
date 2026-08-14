@@ -25,9 +25,17 @@ from modules.commercial_profile.application.declare_target_accounts import (
 )
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.application.segment_queries import SegmentQueries
+from modules.commercial_profile.application.segment_use_cases import (
+    ApplySegmentBatchUseCase,
+    ReverseSegmentBatchUseCase,
+)
 from modules.commercial_profile.application.tag_use_cases import (
     ApplyTagBatchUseCase,
     ReverseTagBatchUseCase,
+)
+from modules.commercial_profile.infrastructure.account_segment_repository import (
+    SqlAccountSegmentRepository,
+    SqlSegmentBatchStore,
 )
 from modules.commercial_profile.infrastructure.assignment_repository import (
     SqlAccountAssignmentRepository,
@@ -226,4 +234,27 @@ def build_apply_tag_batch(session: AsyncSession) -> ApplyTagBatchUseCase:
 def build_reverse_tag_batch(session: AsyncSession) -> ReverseTagBatchUseCase:
     return ReverseTagBatchUseCase(
         tags=SqlAccountTagRepository(session), batches=SqlTagBatchStore(session)
+    )
+
+
+def build_apply_segment_batch(session: AsyncSession) -> ApplySegmentBatchUseCase:
+    """The consuming domain putting companies into a grouping — TASK-1479 ⓶b.
+
+    ⛔ **No membership port, and the contrast with the owner batch is the
+    point.** An assignment names a *person* and has to re-check they are still
+    on the team; a segment names *companies the customer already has*, and
+    there is no second party whose standing could have changed between
+    proposing and approving.
+    """
+    return ApplySegmentBatchUseCase(
+        segments=SqlAccountSegmentRepository(session),
+        batches=SqlSegmentBatchStore(session),
+    )
+
+
+def build_reverse_segment_batch(session: AsyncSession) -> ReverseSegmentBatchUseCase:
+    """Take back exactly what the batch added."""
+    return ReverseSegmentBatchUseCase(
+        segments=SqlAccountSegmentRepository(session),
+        batches=SqlSegmentBatchStore(session),
     )

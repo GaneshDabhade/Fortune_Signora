@@ -41,12 +41,24 @@ from modules.commercial_profile.application.ports import (
 )
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.application.segment_queries import SegmentQueries
+from modules.commercial_profile.application.segment_use_cases import (
+    AddToSegmentUseCase,
+    CreateSegmentUseCase,
+    ProposeSegmentBatchUseCase,
+    RenameSegmentUseCase,
+    SegmentDirectoryUseCase,
+    SegmentsForAccountsUseCase,
+)
 from modules.commercial_profile.application.tag_use_cases import (
     ApplyTagUseCase,
     CreateTagUseCase,
     ProposeTagBatchUseCase,
     RenameTagUseCase,
     TagsForAccountsUseCase,
+)
+from modules.commercial_profile.infrastructure.account_segment_repository import (
+    SqlAccountSegmentRepository,
+    SqlSegmentBatchStore,
 )
 from modules.commercial_profile.infrastructure.assignment_repository import (
     SqlAccountAssignmentRepository,
@@ -254,3 +266,49 @@ def propose_tag_batch(context: CurrentWorkspace) -> ProposeTagBatchUseCase:
 
 
 TagBatchPropose = Annotated[ProposeTagBatchUseCase, Depends(propose_tag_batch)]
+
+
+# ── Segments (TASK-1479 ⓶b, ADR-0411's third capability) ────────────────────
+
+
+def _segment_repository(context: CurrentWorkspace) -> SqlAccountSegmentRepository:
+    return SqlAccountSegmentRepository(context.session)
+
+
+def create_segment(context: CurrentWorkspace) -> CreateSegmentUseCase:
+    return CreateSegmentUseCase(segments=_segment_repository(context))
+
+
+def rename_segment(context: CurrentWorkspace) -> RenameSegmentUseCase:
+    return RenameSegmentUseCase(segments=_segment_repository(context))
+
+
+def add_to_segment_use_case(context: CurrentWorkspace) -> AddToSegmentUseCase:
+    return AddToSegmentUseCase(segments=_segment_repository(context))
+
+
+def segments_for_accounts(context: CurrentWorkspace) -> SegmentsForAccountsUseCase:
+    return SegmentsForAccountsUseCase(segments=_segment_repository(context))
+
+
+def segment_directory(context: CurrentWorkspace) -> SegmentDirectoryUseCase:
+    return SegmentDirectoryUseCase(segments=_segment_repository(context))
+
+
+def propose_segment_batch(context: CurrentWorkspace) -> ProposeSegmentBatchUseCase:
+    """⚡ **One session, three collaborators**, which is what makes the batch and
+    its payload atomic — 📁 [D-235](../../../docs/DECISION_REGISTER.md) ①, and
+    the same wiring the tag batch uses."""
+    return ProposeSegmentBatchUseCase(
+        segments=_segment_repository(context),
+        batches=SqlSegmentBatchStore(context.session),
+        proposer=build_action_batch_proposer(context.session),
+    )
+
+
+SegmentCreate = Annotated[CreateSegmentUseCase, Depends(create_segment)]
+SegmentRename = Annotated[RenameSegmentUseCase, Depends(rename_segment)]
+SegmentAdd = Annotated[AddToSegmentUseCase, Depends(add_to_segment_use_case)]
+SegmentsForAccounts = Annotated[SegmentsForAccountsUseCase, Depends(segments_for_accounts)]
+SegmentDirectoryRead = Annotated[SegmentDirectoryUseCase, Depends(segment_directory)]
+SegmentBatchPropose = Annotated[ProposeSegmentBatchUseCase, Depends(propose_segment_batch)]

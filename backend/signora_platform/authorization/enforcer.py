@@ -152,6 +152,10 @@ class Resource(StrEnum):
     #: grant** (§20a, C-224): the grants are the `policy.csv` rows beside the
     #: tag's, and a member here with no policy row denies everyone.
     ACCOUNT_ASSIGNMENT = "account_assignment"
+    #: A customer's own saved groupings of accounts — ADR-0411's third
+    #: capability, TASK-1479 slice ⓶b. **A declarative registration and never a
+    #: grant** (§20a, C-224/D-073), on the same terms as the two above.
+    ACCOUNT_SEGMENT = "account_segment"
 
 
 class Action(StrEnum):

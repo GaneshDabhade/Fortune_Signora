@@ -71,3 +71,7 @@ p, owner, *, account_assignment, read
 p, member, *, account_assignment, read
 p, owner, *, account_assignment, update
 p, member, *, account_assignment, update
+p, owner, *, account_segment, read
+p, member, *, account_segment, read
+p, owner, *, account_segment, update
+p, member, *, account_segment, update

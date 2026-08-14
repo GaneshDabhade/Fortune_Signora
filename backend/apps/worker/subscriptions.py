@@ -89,8 +89,10 @@ from modules.commercial_profile.infrastructure.competitor_reader import (
 )
 from modules.commercial_profile.infrastructure.composition import (
     build_apply_assignment_batch,
+    build_apply_segment_batch,
     build_apply_tag_batch,
     build_reverse_assignment_batch,
+    build_reverse_segment_batch,
     build_reverse_tag_batch,
 )
 from modules.commercial_profile.interface.tag_batch_handlers import (
@@ -106,9 +108,17 @@ from modules.commercial_profile.interface.tag_batch_handlers import (
     REVERSE_CONSUMER_NAME as TAG_BATCH_REVERSE_CONSUMER,
 )
 from modules.commercial_profile.interface.tag_batch_handlers import (
+    SEGMENT_APPLY_CONSUMER_NAME as SEGMENT_BATCH_APPLY_CONSUMER,
+)
+from modules.commercial_profile.interface.tag_batch_handlers import (
+    SEGMENT_REVERSE_CONSUMER_NAME as SEGMENT_BATCH_REVERSE_CONSUMER,
+)
+from modules.commercial_profile.interface.tag_batch_handlers import (
     apply_assignment_batch,
+    apply_segment_batch,
     apply_tag_batch,
     reverse_assignment_batch,
+    reverse_segment_batch,
     reverse_tag_batch,
 )
 from modules.knowledge_graph.infrastructure.composition import (
@@ -311,6 +321,26 @@ async def _apply_assignment_batch(envelope: EventEnvelope) -> None:
         envelope,
         session_factory=current.session_factory,
         apply=build_apply_assignment_batch,
+    )
+
+
+async def _apply_segment_batch(envelope: EventEnvelope) -> None:
+    current = runtime()
+
+    await apply_segment_batch(
+        envelope,
+        session_factory=current.session_factory,
+        apply=build_apply_segment_batch,
+    )
+
+
+async def _reverse_segment_batch(envelope: EventEnvelope) -> None:
+    current = runtime()
+
+    await reverse_segment_batch(
+        envelope,
+        session_factory=current.session_factory,
+        reverse=build_reverse_segment_batch,
     )
 
 
@@ -540,6 +570,34 @@ def register() -> None:
             consumer_name=ASSIGNMENT_BATCH_REVERSE_CONSUMER,
             event_type=ACTION_BATCH_REVERSED,
             handler=_reverse_assignment_batch,
+            pool=DEFAULT.name,
+        )
+
+    # **ADR-0411's THIRD capability on the same two events** — TASK-1479 slice
+    # ⓶b. ⚡ **A third consumer pair, on the same reasoning the second one
+    # states**: one consumer handling several capabilities would make a tag
+    # batch, an owner batch and a segment batch share an idempotency key, and a
+    # replayed event would be swallowed by whichever ran first.
+    #
+    # ⛔ **Each handler returns early on a batch that is not its own** — the
+    # `applied` event is a shared lifecycle and every consumer sees every one
+    # of them, so "not mine" is a normal outcome and never an error.
+    if not registry.find(
+        consumer_name=SEGMENT_BATCH_APPLY_CONSUMER, event_type=ACTION_BATCH_APPLIED
+    ):
+        registry.subscribe(
+            consumer_name=SEGMENT_BATCH_APPLY_CONSUMER,
+            event_type=ACTION_BATCH_APPLIED,
+            handler=_apply_segment_batch,
+            pool=DEFAULT.name,
+        )
+    if not registry.find(
+        consumer_name=SEGMENT_BATCH_REVERSE_CONSUMER, event_type=ACTION_BATCH_REVERSED
+    ):
+        registry.subscribe(
+            consumer_name=SEGMENT_BATCH_REVERSE_CONSUMER,
+            event_type=ACTION_BATCH_REVERSED,
+            handler=_reverse_segment_batch,
             pool=DEFAULT.name,
         )
 

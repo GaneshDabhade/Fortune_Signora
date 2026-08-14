@@ -18,6 +18,10 @@ from modules.commercial_profile.domain.account_assignment import (
     AccountRole,
     Reassignment,
 )
+from modules.commercial_profile.domain.account_segment import (
+    AccountSegment,
+    SegmentAddition,
+)
 from modules.commercial_profile.domain.account_tag import (
     MAX_TAG_NAME,
     AccountTag,
@@ -1073,3 +1077,115 @@ class ReassignmentResponse(BaseModel):
             changed=len(reassignment.previous),
             unchanged=len(reassignment.unchanged),
         )
+
+
+# ── Segments (TASK-1479 ⓶b, ADR-0411's third capability) ────────────────────
+
+
+class CreateAccountSegmentRequest(BaseModel):
+    """Name a new saved grouping."""
+
+    name: str = Field(min_length=1, max_length=60)
+
+
+class RenameAccountSegmentRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=60)
+
+
+class AccountSegmentResponse(BaseModel):
+    """One saved grouping.
+
+    ⛔ **No `rule` and no `kind`.** The design draws a Dynamic kind and it is
+    not built ([C-1511](../../../../docs/LANE_COORDINATION.md)); **a field
+    reporting `"static"` for every row would be a vocabulary this response
+    cannot yet contrast with anything**, which is a promise rather than a fact.
+    """
+
+    segment_id: UUID
+    name: str
+
+    @classmethod
+    def from_domain(cls, segment: AccountSegment) -> AccountSegmentResponse:
+        return cls(segment_id=segment.id, name=segment.name)
+
+
+class AccountSegmentEntry(BaseModel):
+    """One row of the Segments panel: a grouping and how many companies are in
+    it.
+
+    ⚡ **`account_count` is derived on read.** A stored count is a second
+    representation that goes stale the next time anybody adds an account.
+    """
+
+    segment_id: UUID
+    name: str
+    account_count: int
+
+
+class AccountSegmentDirectoryResponse(BaseModel):
+    """Every saved grouping the workspace has, with its count.
+
+    ⛔ **A segment with nobody in it is present with `0`, never absent.** 📁
+    [P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): an empty result and
+    an absent one are different facts, and **a newly named segment is in the
+    empty state for as long as it takes somebody to curate it** — vanishing
+    from the panel in that window would look like the creation had failed.
+    """
+
+    segments: list[AccountSegmentEntry]
+
+
+class AddToAccountSegmentRequest(BaseModel):
+    account_ids: list[UUID] = Field(min_length=1)
+
+
+class AccountSegmentAdditionResponse(BaseModel):
+    """What a bulk *Add to segment* actually did.
+
+    ⚠️ **Two numbers, because one would have to lie.** *"38 added, 3 already
+    there"* is a sentence the customer can check against the table in front of
+    them; *"41 updated"* is one they can disprove by looking.
+    """
+
+    segment_id: UUID
+    added: int
+    unchanged: int
+
+    @classmethod
+    def from_domain(cls, addition: SegmentAddition) -> AccountSegmentAdditionResponse:
+        return cls(
+            segment_id=addition.segment_id,
+            added=addition.added_count,
+            unchanged=len(addition.unchanged),
+        )
+
+
+class AccountSegmentMembership(BaseModel):
+    """Which segments one account is in."""
+
+    account_id: UUID
+    segment_ids: list[UUID]
+
+
+class AccountSegmentMembershipList(BaseModel):
+    """The Companies read: segment membership for the accounts on screen.
+
+    ⛔ **An account in no segment is ABSENT from this list**, not present with
+    an empty array — the screen asked about forty accounts and this answers
+    only about the ones with something to say. **The caller must not read an
+    absent account as an unread one**, which is why the request names its
+    accounts and the response never widens beyond them.
+    """
+
+    memberships: list[AccountSegmentMembership]
+
+
+class ProposedSegmentBatchResponse(BaseModel):
+    """The id of a batch that has been proposed and **not applied.**
+
+    ⛔ **The only field, deliberately.** 📁 `ActionBatchView` is what publishes
+    a batch's state, and a second copy of it here would be the representation
+    that drifts — **the one nobody updates when the batch is approved.**
+    """
+
+    batch_id: UUID

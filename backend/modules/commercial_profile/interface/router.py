@@ -27,7 +27,13 @@ from apps.api.composition.products import (
     FocusWrite,
     IcpRead,
     IcpWrite,
+    SegmentAdd,
+    SegmentBatchPropose,
+    SegmentCreate,
+    SegmentDirectoryRead,
     SegmentRead,
+    SegmentRename,
+    SegmentsForAccounts,
     TagApply,
     TagBatchPropose,
     TagCreate,
@@ -52,6 +58,12 @@ from modules.commercial_profile.application.declare_target_accounts import (
     DeclareTargetAccountsInput,
 )
 from modules.commercial_profile.application.publish import PublishProductCatalogInput
+from modules.commercial_profile.application.segment_use_cases import (
+    AddToSegmentInput,
+    CreateSegmentInput,
+    ProposeSegmentBatchInput,
+    RenameSegmentInput,
+)
 from modules.commercial_profile.application.tag_use_cases import (
     ApplyTagInput,
     CreateTagInput,
@@ -60,14 +72,22 @@ from modules.commercial_profile.application.tag_use_cases import (
 )
 from modules.commercial_profile.interface.schemas import (
     AccountAssignmentListResponse,
+    AccountSegmentAdditionResponse,
+    AccountSegmentDirectoryResponse,
+    AccountSegmentEntry,
+    AccountSegmentMembership,
+    AccountSegmentMembershipList,
+    AccountSegmentResponse,
     AccountTagApplicationResponse,
     AccountTagAssignmentsResponse,
     AccountTagResponse,
     AccountTagVocabularyResponse,
+    AddToAccountSegmentRequest,
     ApplyAccountTagRequest,
     AssignAccountsRequest,
     BuyingCommitteeResponse,
     CommercialFocusResponse,
+    CreateAccountSegmentRequest,
     CreateAccountTagRequest,
     DeclareBuyingCommitteeRequest,
     DeclareCompetitorsRequest,
@@ -77,9 +97,11 @@ from modules.commercial_profile.interface.schemas import (
     DeclareTargetAccountsRequest,
     IcpDeclarationResponse,
     ProductCatalogResponse,
+    ProposedSegmentBatchResponse,
     ProposedTagBatchResponse,
     PublishProductCatalogRequest,
     ReassignmentResponse,
+    RenameAccountSegmentRequest,
     RenameAccountTagRequest,
     SegmentSummaryResponse,
     TargetAccountListResponse,
@@ -753,3 +775,183 @@ async def assign_accounts(
             )
         )
     )
+
+
+# ── Segments (TASK-1479 ⓶b) ─────────────────────────────────────────────────
+
+
+@router.get(
+    "/workspaces/{workspace_id}/account-segments",
+    response_model=AccountSegmentDirectoryResponse,
+    summary="The saved groupings, and how many companies are in each",
+)
+async def account_segments(
+    context: CurrentWorkspace, directory: SegmentDirectoryRead
+) -> AccountSegmentDirectoryResponse:
+    """The Segments panel.
+
+    ⛔ **A segment with nobody in it comes back with `0`, never absent.** A
+    newly named grouping is in that state until somebody curates it, and
+    vanishing from the panel in that window would look like the creation had
+    failed (P-A).
+    """
+    context.authorize(Resource.ACCOUNT_SEGMENT, Action.READ)
+    entries = await directory.execute(context.workspace_id)
+    return AccountSegmentDirectoryResponse(
+        segments=[
+            AccountSegmentEntry(
+                segment_id=segment.id, name=segment.name, account_count=count
+            )
+            for segment, count in entries
+        ]
+    )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/account-segments",
+    response_model=AccountSegmentResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Name a new grouping",
+)
+async def create_account_segment(
+    context: CurrentWorkspace, create: SegmentCreate, body: CreateAccountSegmentRequest
+) -> AccountSegmentResponse:
+    """**201, and the contrast with *Add tag* is deliberate.**
+
+    ⚠️ *Add tag* answers `200` because typing an existing name **selects** that
+    tag — the control is meant to be pressed twice. ⛔ **The design's *New
+    segment* is not that control**: it opens a naming affordance, and a
+    customer who names a grouping that already exists has made a mistake worth
+    telling them about rather than a repeat they intended.
+
+    **So this creates, and a duplicate name is refused** by the aggregate and
+    by the unique index behind it.
+    """
+    context.authorize(Resource.ACCOUNT_SEGMENT, Action.UPDATE)
+    segment = await create.execute(
+        CreateSegmentInput(
+            workspace_id=context.workspace_id,
+            # Taken from the verified caller, never from the request.
+            actor_id=context.principal.user_id,
+            name=body.name,
+        )
+    )
+    return AccountSegmentResponse.from_domain(segment)
+
+
+@router.patch(
+    "/workspaces/{workspace_id}/account-segments/{segment_id}",
+    response_model=AccountSegmentResponse,
+    summary="Correct a grouping's name",
+)
+async def rename_account_segment(
+    context: CurrentWorkspace,
+    rename: SegmentRename,
+    segment_id: UUID,
+    body: RenameAccountSegmentRequest,
+) -> AccountSegmentResponse:
+    """**Every company in it stays in it.** The id does not move, which is what
+    separates a rename from deleting one grouping and creating another."""
+    context.authorize(Resource.ACCOUNT_SEGMENT, Action.UPDATE)
+    segment = await rename.execute(
+        RenameSegmentInput(
+            workspace_id=context.workspace_id,
+            actor_id=context.principal.user_id,
+            segment_id=segment_id,
+            name=body.name,
+        )
+    )
+    return AccountSegmentResponse.from_domain(segment)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/account-segment-memberships",
+    response_model=AccountSegmentMembershipList,
+    summary="Which segments are these accounts in",
+)
+async def account_segment_memberships(
+    context: CurrentWorkspace,
+    memberships: SegmentsForAccounts,
+    body: AddToAccountSegmentRequest,
+) -> AccountSegmentMembershipList:
+    """The Companies read.
+
+    ⚡ **`POST` for a read, and the reason is the tag path's**: a page of forty
+    account ids does not fit a query string a proxy will keep, and splitting it
+    across requests would reintroduce the N+1 the batch read exists to remove.
+
+    ⛔ **An account in no segment is absent from the response**, not present
+    with an empty array — the screen asked about forty and this answers about
+    the ones with something to say.
+    """
+    context.authorize(Resource.ACCOUNT_SEGMENT, Action.READ)
+    held = await memberships.execute(context.workspace_id, tuple(body.account_ids))
+    return AccountSegmentMembershipList(
+        memberships=[
+            AccountSegmentMembership(account_id=account_id, segment_ids=list(segment_ids))
+            for account_id, segment_ids in held.items()
+        ]
+    )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/account-segments/{segment_id}/accounts",
+    response_model=AccountSegmentAdditionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Put several companies into a grouping at once",
+)
+async def add_to_account_segment(
+    context: CurrentWorkspace,
+    add: SegmentAdd,
+    segment_id: UUID,
+    body: AddToAccountSegmentRequest,
+) -> AccountSegmentAdditionResponse:
+    """Add, and report **what changed.**
+
+    ⛔ **Companies already in the grouping are left alone** — `added_by` and
+    `added_at` on a row somebody curated in June are facts about June, and an
+    upsert would move them to whoever last pressed this.
+    """
+    context.authorize(Resource.ACCOUNT_SEGMENT, Action.UPDATE)
+    return AccountSegmentAdditionResponse.from_domain(
+        await add.execute(
+            AddToSegmentInput(
+                workspace_id=context.workspace_id,
+                actor_id=context.principal.user_id,
+                segment_id=segment_id,
+                accounts=tuple(body.account_ids),
+            )
+        )
+    )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/account-segments/{segment_id}/batches",
+    response_model=ProposedSegmentBatchResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Propose adding a selection of companies to a grouping",
+)
+async def propose_account_segment_batch(
+    context: CurrentWorkspace,
+    propose: SegmentBatchPropose,
+    segment_id: UUID,
+    body: AddToAccountSegmentRequest,
+) -> ProposedSegmentBatchResponse:
+    """**202, because nothing has happened yet.**
+
+    📁 [ADR-0405](../../../../docs/architecture/adr/\
+0405-an-action-is-approved-before-it-is-effective.md):
+    an action is approved before it is effective. ⛔ **This proposes; somebody
+    approves; the worker applies.** A `200` would say the companies are in the
+    grouping, and they are not.
+    """
+    context.authorize(Resource.ACCOUNT_SEGMENT, Action.UPDATE)
+    batch_id = await propose.execute(
+        ProposeSegmentBatchInput(
+            workspace_id=context.workspace_id,
+            actor_id=context.principal.user_id,
+            segment_id=segment_id,
+            accounts=tuple(body.account_ids),
+        )
+    )
+    return ProposedSegmentBatchResponse(batch_id=batch_id)
