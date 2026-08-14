@@ -1341,6 +1341,33 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 | **B** | **`environments.py` stops reading `SIGNORA_ENVIRONMENT`** and resolves the stack from the branch alone | ✅ **Smallest change.** ⛔ **Removes the capability its docstring exists to provide — a lane driving a stack that is not its own** |
 | **C** | **Leave it and document the hazard** | ⛔ **ELIMINATED by the measurement above.** **Outside `demo`, no value satisfies both readers — so there is no convention a document could teach.** ⚠️ **A documented trap is still a trap, and this one breaks development in two places while explaining neither** |
 
+### ⚡ FIRST QUESTION — is this already decided? Because if it is, the item collapses
+
+**Raised by QE, 2026-08-13. ✅ Verified verbatim against the ADR rather than accepted, and the citation is exact.**
+
+📁 **[ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md) §6, last clause:** > ⛔ ***"`SIGNORA_ENVIRONMENT` is no exception, and a second reader of it elsewhere is the second taxonomy this ruling forbids."***
+
+📁 **§2:** ***"`SIGNORA_ENVIRONMENT` is the single name"*** · ***"The vocabulary is closed"*** · ***"an unrecognised environment value must be unrepresentable, never silently treated as development."***
+
+⚡ **[`environments.py`](../infra/environments.py):267 is a second reader of that variable resolving a different taxonomy** — the clause's subject, almost word for word. ⛔ **And under a closed vocabulary, `lane-a` — a legitimate, defined stack name — is an *unrepresentable* value by ratified contract**, which is precisely what Lane A observed when the demonstration began raising a Pydantic validation failure rather than `AIRegistrationError`.
+
+**The argument against, which QE stated themselves rather than leaving for somebody to find:** ⚠️ **§6 cites [§20b](../CLAUDE.md), whose subject is *"no **module** calls `os.environ`"*, and `infra/` is tooling rather than a module.** ✅ **But the clause's second half is unqualified — *"a second reader of it **elsewhere**"* — and the harm it names is exactly what the resolver creates.**
+
+### ⛔ THIS OFFICE WILL NOT ADJUDICATE THE REACH OF ITS OWN SENTENCE
+
+🔴 **Lane C drafted [ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md), including that clause.** ⛔ **Reading it as already deciding the thing this office then recommended is the self-serving reading, and it is not one a lane may take on its own behalf** — 📁 [§20e](../CLAUDE.md): *a lane's recommendation is architectural input and never implementation authority*, and [OPERATING-MODE §1](coordination/lane-c/OPERATING-MODE.md): ⛔ *close a decision because closing it unblocks Lane C.*
+
+**So the question is put rather than answered, and it is one word:**
+
+> **Does ADR-0412 §6 already forbid `environments.py`'s second reading of `SIGNORA_ENVIRONMENT`?**
+>
+> ✅ **If YES — this is not a new decision. It is ADR-0412 applied, and the only open questions are *which* new variable names the stack and who edits [`RUNNING.md`](RUNNING.md) and the compose files.** ⚡ **QE has offered to implement either way, and both files are theirs.**
+> ⛔ **If NO — the three alternatives below stand as written.**
+
+📁 **Checked rather than assumed: §7's *deliberately does not decide* list names member names · the logging library · the field-matching strategy · the `Settings` object's owning module · deployment configuration.** ⛔ **A second taxonomy keyed on the same variable is on none of them.**
+
+⚡ **`{demo}` survives either reading** — it is in both vocabularies *on purpose*, so it is one concept two systems agree on rather than a second taxonomy.
+
 ### Recommendation — **A**, and it is input rather than authority
 
 ⚡ **The variable that means a safety class should be the one that cannot be set for convenience.** ⛔ **Not decided here**: it reaches `infra/` (Lane A), the compose files and [`RUNNING.md`](RUNNING.md) (QE), and every lane's environment, **which is three owners and therefore not one lane's to choose.**
