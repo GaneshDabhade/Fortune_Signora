@@ -49,7 +49,9 @@ class _Repository:
     ) -> Reassignment:
         self.assigned.append(account_ids)
         return Reassignment(
-            role=role, previous=tuple((account, None) for account in account_ids)
+            role=role,
+            assigned_to=member_user_id,
+            previous=tuple((account, None) for account in account_ids),
         )
 
     async def restore(
@@ -58,6 +60,7 @@ class _Repository:
         previous: tuple[tuple[UUID, UUID | None], ...],
         *,
         role: AccountRole,
+        assigned_to: UUID | None,
         actor_id: UUID,
     ) -> None:
         self.restored.append(previous)

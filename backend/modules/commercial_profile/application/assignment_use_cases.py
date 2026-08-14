@@ -62,6 +62,7 @@ class AccountAssignmentRepository(Protocol):
         previous: tuple[tuple[UUID, UUID | None], ...],
         *,
         role: AccountRole,
+        assigned_to: UUID | None,
         actor_id: UUID,
     ) -> None: ...
 
@@ -169,6 +170,11 @@ class ReverseAssignment:
             workspace_id,
             reassignment.inverse(),
             role=reassignment.role,
+            # ⚡ **The condition travels with the reversal.** Undoing *my*
+            # change is a different operation from restoring a past state, and
+            # only the first is what a customer pressing *take it back* asked
+            # for.
+            assigned_to=reassignment.assigned_to,
             actor_id=actor_id,
         )
 

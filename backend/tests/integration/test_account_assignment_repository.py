@@ -147,7 +147,8 @@ class TestRestoringPutsBackTheAbsencesToo:
             member_user_id=member, actor_id=actor,
         )
         await repository.restore(
-            workspace, outcome.inverse(), role=AccountRole.OWNER, actor_id=actor
+            workspace, outcome.inverse(), role=AccountRole.OWNER,
+            assigned_to=outcome.assigned_to, actor_id=actor,
         )
 
         assert await _held(session, workspace, account, AccountRole.OWNER) is None
@@ -169,7 +170,8 @@ class TestRestoringPutsBackTheAbsencesToo:
             member_user_id=second, actor_id=actor,
         )
         await repository.restore(
-            workspace, outcome.inverse(), role=AccountRole.OWNER, actor_id=actor
+            workspace, outcome.inverse(), role=AccountRole.OWNER,
+            assigned_to=outcome.assigned_to, actor_id=actor,
         )
 
         assert await _held(session, workspace, account, AccountRole.OWNER) == first
@@ -193,7 +195,8 @@ class TestRestoringPutsBackTheAbsencesToo:
             member_user_id=new, actor_id=actor,
         )
         await repository.restore(
-            workspace, outcome.inverse(), role=AccountRole.OWNER, actor_id=actor
+            workspace, outcome.inverse(), role=AccountRole.OWNER,
+            assigned_to=outcome.assigned_to, actor_id=actor,
         )
 
         assert await _held(session, workspace, had, AccountRole.OWNER) == first
@@ -228,3 +231,116 @@ class TestReadsAskAboutAccountsTheCallerAlreadyNamed:
         assert await SqlAccountAssignmentRepository(session).for_accounts(
             other, (account,)
         ) == ()
+
+
+class TestTheReversalAgainstAWorldThatMoved:
+    """**QE's three hypotheses, tested rather than reasoned about.**
+
+    🔴 The two known failures are about the *shape* of the prior state — an
+    absence must be restored as an absence. **These are about its validity: is
+    the state the reversal is undoing still the state it left?**
+    """
+
+    async def test_a_reversal_does_not_overwrite_an_assignment_made_since(
+        self, session: AsyncSession
+    ) -> None:
+        """🔴 **A lost update wearing an undo's clothes.**
+
+        The batch set the owner to `new`. Somebody then legitimately set it to
+        `later`. ⛔ **Taking the batch back must not silently discard `later`**
+        — the customer undid a batch, not a colleague's decision, and nothing
+        on the screen would say the second change had gone.
+        """
+        account, first, new, later = uuid4(), uuid4(), uuid4(), uuid4()
+        workspace, actor = uuid4(), uuid4()
+        await _scoped(session, workspace)
+        repository = SqlAccountAssignmentRepository(session)
+
+        await repository.assign(
+            workspace, (account,), role=AccountRole.OWNER,
+            member_user_id=first, actor_id=actor,
+        )
+        outcome = await repository.assign(
+            workspace, (account,), role=AccountRole.OWNER,
+            member_user_id=new, actor_id=actor,
+        )
+        # Somebody else, afterwards and legitimately.
+        await repository.assign(
+            workspace, (account,), role=AccountRole.OWNER,
+            member_user_id=later, actor_id=actor,
+        )
+
+        await repository.restore(
+            workspace, outcome.inverse(), role=AccountRole.OWNER,
+            assigned_to=outcome.assigned_to, actor_id=actor,
+        )
+
+        assert await _held(session, workspace, account, AccountRole.OWNER) == later
+
+    async def test_reversing_twice_does_not_re_assert_a_stale_holder(
+        self, session: AsyncSession
+    ) -> None:
+        """⚠️ **The second reversal must be a no-op, not a second write.**
+
+        After the first `restore`, the account is back with `first`. If a
+        colleague then assigns `later`, **a repeated reversal must not reach
+        back and undo them** — an undo pressed twice is still one undo.
+        """
+        account, first, new, later = uuid4(), uuid4(), uuid4(), uuid4()
+        workspace, actor = uuid4(), uuid4()
+        await _scoped(session, workspace)
+        repository = SqlAccountAssignmentRepository(session)
+
+        await repository.assign(
+            workspace, (account,), role=AccountRole.OWNER,
+            member_user_id=first, actor_id=actor,
+        )
+        outcome = await repository.assign(
+            workspace, (account,), role=AccountRole.OWNER,
+            member_user_id=new, actor_id=actor,
+        )
+        await repository.restore(
+            workspace, outcome.inverse(), role=AccountRole.OWNER,
+            assigned_to=outcome.assigned_to, actor_id=actor,
+        )
+        await repository.assign(
+            workspace, (account,), role=AccountRole.OWNER,
+            member_user_id=later, actor_id=actor,
+        )
+
+        await repository.restore(
+            workspace, outcome.inverse(), role=AccountRole.OWNER,
+            assigned_to=outcome.assigned_to, actor_id=actor,
+        )
+
+        assert await _held(session, workspace, account, AccountRole.OWNER) == later
+
+    async def test_an_absence_is_only_restored_if_the_batch_still_holds_it(
+        self, session: AsyncSession
+    ) -> None:
+        """⛔ **The same rule for the clearing half.**
+
+        The batch gave an unowned account an owner. Somebody then chose a
+        different one. **Taking the batch back must not clear their choice** —
+        the account was never the batch's to empty once it had moved on.
+        """
+        account, new, later = uuid4(), uuid4(), uuid4()
+        workspace, actor = uuid4(), uuid4()
+        await _scoped(session, workspace)
+        repository = SqlAccountAssignmentRepository(session)
+
+        outcome = await repository.assign(
+            workspace, (account,), role=AccountRole.OWNER,
+            member_user_id=new, actor_id=actor,
+        )
+        await repository.assign(
+            workspace, (account,), role=AccountRole.OWNER,
+            member_user_id=later, actor_id=actor,
+        )
+
+        await repository.restore(
+            workspace, outcome.inverse(), role=AccountRole.OWNER,
+            assigned_to=outcome.assigned_to, actor_id=actor,
+        )
+
+        assert await _held(session, workspace, account, AccountRole.OWNER) == later

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -108,7 +108,9 @@ class SqlAccountAssignmentRepository:
             account_id for account_id in account_ids if held.get(account_id) == member_user_id
         )
         if not moved:
-            return Reassignment(role=role, unchanged=unchanged)
+            return Reassignment(
+                role=role, assigned_to=member_user_id, unchanged=unchanged
+            )
 
         # **Upsert on the natural key.** ⛔ The alternative — delete then insert
         # — would make a reassignment two statements, and a failure between
@@ -135,7 +137,9 @@ class SqlAccountAssignmentRepository:
             )
         )
         await self._session.flush()
-        return Reassignment(role=role, previous=moved, unchanged=unchanged)
+        return Reassignment(
+            role=role, assigned_to=member_user_id, previous=moved, unchanged=unchanged
+        )
 
     async def restore(
         self,
@@ -143,15 +147,40 @@ class SqlAccountAssignmentRepository:
         previous: tuple[tuple[UUID, UUID | None], ...],
         *,
         role: AccountRole,
+        assigned_to: UUID | None,
         actor_id: UUID,
     ) -> None:
-        """Put back exactly what `assign` found, **including the absences.**
+        """Put back exactly what `assign` found — **and only where it still holds.**
 
-        🔴 **The `None` case is the half that is normally missed.** An account
-        that had no owner before must end with no owner — **writing nothing for
-        it would leave the new owner in place**, so the reversal would silently
-        succeed while half of it did not happen.
+        🔴 **The `None` case is one half.** An account that had no owner before
+        must end with no owner; **writing nothing for it would leave the new
+        owner in place**, so the reversal would report success while half of it
+        did not happen.
+
+        🔴 **`assigned_to` is the other half, and it was missing.** Every write
+        here is conditional on the batch's own value still being in place —
+        📁 **three failing tests, from QE's hypotheses**, showed an
+        unconditional restore doing three wrong things:
+
+        * **overwriting an assignment made since** — the batch set an owner, a
+          colleague chose a different one, and *take it back* silently
+          discarded their decision. **A lost update wearing an undo's clothes.**
+        * **re-asserting a stale holder on a second reversal** — an undo
+          pressed twice is still one undo.
+        * **clearing an account the batch no longer held** — it was never the
+          batch's to empty once it had moved on.
+
+        ⚡ **So this is a compare-and-set, and the comparison is the whole
+        difference between *undo my change* and *make the world look like it
+        used to*.**
         """
+        if assigned_to is None:
+            # ⛔ **Nothing was assigned, so there is nothing to condition on.**
+            # A reversal with no `assigned_to` cannot tell its own change from
+            # anybody else's, and guessing would be the destructive write this
+            # method exists to avoid.
+            return
+
         cleared = tuple(account for account, holder in previous if holder is None)
         if cleared:
             await self._session.execute(
@@ -159,33 +188,24 @@ class SqlAccountAssignmentRepository:
                     AccountAssignmentModel.workspace_id == workspace_id,
                     AccountAssignmentModel.account_id.in_(cleared),
                     AccountAssignmentModel.role == role.value,
+                    # **The condition.** Somebody else's choice is not ours to
+                    # clear.
+                    AccountAssignmentModel.member_user_id == assigned_to,
                 )
             )
 
-        restored = [(account, holder) for account, holder in previous if holder is not None]
-        if restored:
+        for account_id, holder in previous:
+            if holder is None:
+                continue
             await self._session.execute(
-                insert(AccountAssignmentModel)
-                .values(
-                    [
-                        {
-                            "workspace_id": workspace_id,
-                            "account_id": account_id,
-                            "role": role.value,
-                            "member_user_id": holder,
-                            "created_by": actor_id,
-                            "updated_by": actor_id,
-                        }
-                        for account_id, holder in restored
-                    ]
+                update(AccountAssignmentModel)
+                .where(
+                    AccountAssignmentModel.workspace_id == workspace_id,
+                    AccountAssignmentModel.account_id == account_id,
+                    AccountAssignmentModel.role == role.value,
+                    AccountAssignmentModel.member_user_id == assigned_to,
                 )
-                .on_conflict_do_update(
-                    index_elements=["workspace_id", "account_id", "role"],
-                    set_={
-                        "member_user_id": insert(AccountAssignmentModel).excluded.member_user_id,
-                        "updated_by": actor_id,
-                    },
-                )
+                .values(member_user_id=holder, updated_by=actor_id)
             )
         await self._session.flush()
 

@@ -106,6 +106,15 @@ class Reassignment:
     """
 
     role: AccountRole
+    #: **Who this reassignment put there.** ⚡ **Required for the reversal to be
+    #: conditional rather than destructive**: an undo must only undo *its own*
+    #: change, so it compares before it writes.
+    #:
+    #: 🔴 **Added after three failing tests, from QE's hypotheses.** Without it
+    #: `restore` overwrote whatever it found — **a lost update wearing an
+    #: undo's clothes**: the batch set an owner, a colleague chose a different
+    #: one, and *take it back* silently discarded their decision.
+    assigned_to: UUID | None = None
     #: Accounts whose holder actually moved, with who held it before —
     #: `None` where nobody did.
     previous: tuple[tuple[UUID, UUID | None], ...] = ()
@@ -130,6 +139,10 @@ class Reassignment:
         move would take an owner away from somebody who always had one, which
         is a change the customer never asked for and would not be able to
         explain.
+
+        ⚠️ **This says what to restore, never that it is still safe to.** The
+        condition is `assigned_to`, and it is the repository's to apply —
+        **an undo that does not check has undone somebody else's work.**
         """
         return self.previous
 
