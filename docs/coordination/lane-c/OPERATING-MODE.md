@@ -226,6 +226,18 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⚠️ **This office nearly added a fourth**: satisfying [B-434](../../BUGS.md) meant writing `Lane A` into a coordination row's `Owner` cell. ✅ **The fix was a join through [`modules.toml`](../modules.toml), never a wider pattern.**
 
+⛔ **And that near-fourth is the sharpest of the set, on QE's reading: a check whose cheapest satisfaction is the violation it protects against.** 🔴 **The copy would have been created BY the guard** — strictly worse than three that were merely written by hand.
+
+### ⛔ The corollary: derivation, never detection — do NOT build the checker
+
+**QE's, 2026-08-14, and it follows from the sentence above rather than from new evidence.**
+
+⚡ **The instinct after three instances is *"add a check that copies match their registries."*** ⛔ **That check would have to know which literals are copies of which registries — which is itself a hand-maintained mapping. A fourth copy, guarding the first three.**
+
+✅ **So the only reliable defence for this class is derivation, and it is what all three fixes actually did**: a join, a derived set, a measured figure. ⚡ **The fix and the guard are the same act**, which is unusual enough to be worth stating.
+
+📁 **[§5c](#5c--before-writing-a-check-ask-what-it-would-report-on-a-real-problem)'s test settles it: a green result would tell a reader *"no copies have drifted"* when all it can test is *"the copies somebody remembered to list have not drifted."*** ⛔ **The answer to *what will the reader stop asking* is the real question.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
