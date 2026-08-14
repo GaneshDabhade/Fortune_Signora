@@ -200,6 +200,16 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⛔ **Do it before the push, not after.** 📁 **QE's near-miss earlier the same week was eleven commits, and `--force-with-lease` was the only thing between the branch and them.**
 
+### ⚠️ The general form, which is QE's sentence and better than the heading above
+
+> ⛔ **A number consumed without its mapping.**
+
+📁 **A second instance, same day, different count:** **`git rev-list --left-right --count A...B` prints *&lt;only in A&gt; &lt;only in B&gt;*, and *left* is the first ref rather than *the branch*.** ⛔ **QE read `15 10` and `9 1` as branch totals and reported cycle 228 as *"your 10 plus Lane A's 9"*; measured explicitly it is 5 and 2**, with Lane A **11 behind**.
+
+⚡ **So the family is wider than survival checks: *missing* has three meanings, and a count has two sides.** ⚠️ **Both look equally authoritative, and reading the wrong one inverts the answer without any sign that it has.**
+
+✅ **The practice covers both: never consume a number whose columns or members you have not resolved** — `--left-right` gets `ahead` and `behind` named explicitly, a survival count gets each id mapped to its commit.
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
