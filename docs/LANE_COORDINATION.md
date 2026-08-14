@@ -1290,6 +1290,49 @@ expect(withEnvironment('lane-a', authMode)).toBe('production');
 
 ---
 
+## C-1433 · `SIGNORA_ENVIRONMENT` now names a deployment class, and `environments.py` still reads it to resolve a stack
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-13, on Lane A's report from [C-298](#c-298)'s fix. ⚡ **They named it and explicitly declined to decide it** — *"it needs its own variable, and that is a change with cross-lane reach rather than something to fold into a security slice"* |
+| **Owner** | **Product owner** — ⛔ **one variable serving two concepts across three lanes' files is an architecture question, and the fix touches [`infra/environments.py`](../infra/environments.py) (Lane A), the compose files (QE) and every lane's local setup** |
+| **Status** | 🔵 **`OPEN`** |
+| **Blocks** | ⛔ **Nothing today.** ✅ **[C-298](#c-298)'s fix stands on its own and [TASK-1479](BACKLOG.md) ⓵b proceeds.** ⚠️ **What it risks is a lane setting the documented value and breaking its own stack** |
+
+### 🔴 The conflict, measured
+
+📁 **[ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md) makes `SIGNORA_ENVIRONMENT` a **deployment class** — the ratified vocabulary is `local` · `test` · `demo` · `production-local` · `staging` · `production`**, and `is_development` is an allow-list of `{local, test}`.
+
+📁 **[`infra/environments.py`](../infra/environments.py) reads the same variable to resolve a **stack**:** `:267` — `explicit = os.environ.get("SIGNORA_ENVIRONMENT")`, resolving names like `:183` — `Environment("lane-a", 2, "Development — Product Surface", "Lane A", port_slot=3)`.
+
+⛔ **And its own docstring INVITES the value that breaks things:** `:254` — ***"`SIGNORA_ENVIRONMENT` — explicit, and it wins. A lane driving a stack that is not its own must be able to say so out loud."***
+
+🔴 **So a lane following that instruction sets `SIGNORA_ENVIRONMENT=lane-a` and gets a value ADR-0412's vocabulary does not contain.** ⚠️ **Lane A measured what that did before the fix: it read as DEPLOYED to both tiers, so the mock provider refused *and* the console email transport threw at startup — breaking development twice at once and explaining neither.**
+
+### ⚡ The shape, and it is the general one
+
+> **One variable carries two concepts: *which stack* — ports, database, Redis index — and *what kind of deployment* — is it safe to serve a stub, or to write a credential to stdout.**
+>
+> ⛔ **A value that answers one cannot answer the other.**
+
+✅ **[§2](../CLAUDE.md)'s least-powerful-author rule points the same way**: a stack name is developer configuration and a deployment class is a safety property, and **a safety property must not be settable by somebody choosing a port slot.**
+
+### The alternatives
+
+| | | |
+|---|---|---|
+| **A** ▶ | **A second variable for the stack** — `SIGNORA_STACK` or equivalent — **and `SIGNORA_ENVIRONMENT` keeps ADR-0412's meaning alone** | ✅ **Each variable answers one question.** ⚠️ **Touches every lane's local setup and [`RUNNING.md`](RUNNING.md), which is QE's** |
+| **B** | **`environments.py` stops reading `SIGNORA_ENVIRONMENT`** and resolves the stack from the branch alone | ✅ **Smallest change.** ⛔ **Removes the capability its docstring exists to provide — a lane driving a stack that is not its own** |
+| **C** | **Leave it and document the hazard** | ⛔ **A documented trap is still a trap, and this one breaks development in two places while explaining neither** |
+
+### Recommendation — **A**, and it is input rather than authority
+
+⚡ **The variable that means a safety class should be the one that cannot be set for convenience.** ⛔ **Not decided here**: it reaches `infra/` (Lane A), the compose files and [`RUNNING.md`](RUNNING.md) (QE), and every lane's environment, **which is three owners and therefore not one lane's to choose.**
+
+📁 **[ADR-0412](architecture/adr/0412-environment-and-secret-safe-logging.md) §7 already settles what is NOT in question**: the vocabulary itself is Lane A's and *"becomes part of the ratified contract"* on proposal, so ⛔ **this item must not reopen the member names.**
+
+---
+
 ## C-1432 · Three orderings for one worklist — which survives the Attention migration?
 
 | | |
