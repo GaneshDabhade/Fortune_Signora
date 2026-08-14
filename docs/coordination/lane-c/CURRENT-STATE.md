@@ -3,7 +3,9 @@
 **Small by design. It points at authoritative sources and duplicates none of them.**
 ⛔ **Not a backlog. Not a queue. Not a decision register.**
 
-**Last written: 2026-08-12, cycle 218.**
+**Last written: 2026-08-14, after cycle 228.**
+
+> 🔴 **This line read *"2026-08-12, cycle 218"* for ten cycles while the sections below described a repository that had moved on.** ⚠️ **Second time this file has gone stale in the way it warns about, and both times it was the header a reader trusts first.**
 
 ## Repository position
 
@@ -24,11 +26,14 @@
 
 ⛔ **Three. Each has a prepared recommendation and needs one word.** Full analysis in [`LANE_COORDINATION.md`](../../LANE_COORDINATION.md).
 
-| | Recommendation | Releases |
+| | Recommendation | Blocks |
 |---|---|---|
-| **C-1405** | Commission the Workspace Chooser design first | ⚡ **TASK-1421 *and* TASK-1423** — **two rows, verified from both backlog rows 2026-08-12** |
-| **C-338** | **Option A** — the R11-06 trigger has not fired | TASK-003 → `WAITING` |
-| **C-1424** | **Option B** — optimistic, on [§20c](../../../CLAUDE.md) | B-253 |
+| **C-1433** | ⚡ **FIRST: is it already [ADR-0412](../../architecture/adr/0412-environment-and-secret-safe-logging.md) §6 applied?** ⛔ **This office drafted that clause and will not read it as deciding its own recommendation** | Nothing today |
+| **C-1508** | Lane A's — `20-provider-simulation.md`'s budget band | Nothing |
+| **C-1509** | Lane A's — four relationship facts attributed to a provider that cannot know them | **TASK-430's stance and committee views** |
+| **U-02** | ⛔ **No recommendation. Whether a deleted workspace can be restored is a product promise.** Owned by [R-04](../../architecture/16-architecture-risks.md), carried by [TASK-426](../../BACKLOG.md), **whose trigger (c) has fired** | **WL-08 alone** |
+
+⚠️ **C-1405, C-338 and C-1424 were the three listed here and are all CLOSED** — ruled 2026-08-12 and 2026-08-13.
 
 ⚠️ **Everything else visible in the register is routing, not a decision.** The queue was measured at **29 live items, not 60** — the difference was five ownership/state schemas, one of which a single-schema sweep cannot see.
 
@@ -36,9 +41,9 @@
 
 | | |
 |---|---|
-| **Lane A** | Product surface. **9 claimable against a floor of 10.** The tenth is TASK-1421, gated on C-1405 alone. Source: [`queues/lane-a.toml`](../queues/lane-a.toml) |
+| **Lane A** | ⚡ **Every module, since [D-230](../../DECISION_REGISTER.md). 51 rows assigned.** ⛔ **Do not transcribe a claimable count here — read it**: `python3 infra/coordination.py`. Source: [`queues/lane-a.toml`](../queues/lane-a.toml) |
 | **Lane B** | ⛔ **THERE IS NO LANE B — product owner, 2026-08-12.** **All implementation work is Lane A's.** `modules.toml` already reflects this: 19 modules Lane A, 2 Lane C, none Lane B. ⚡ **Lane C routes every implementation task to Lane A and proposes no second implementation lane** |
-| **QE** | Cycle 204 certified, not promoted. Holding on B-183 / B-428 |
+| **QE** | ⛔ **Not transcribed** — read `git log --oneline -1 origin/main`. **Cycle 228 was the last promoted at this writing** |
 | **Lane C** | ✅ **This restructure.** Next bounded objective below |
 
 ## Do not re-investigate
@@ -56,7 +61,7 @@
 | **Workflow mapping by title** | ⛔ **Forbidden.** *"research"* contains *"search"* | [OPERATING-MODE.md](OPERATING-MODE.md) §6 |
 | **B-428-A fire-tests** | ⛔ **Not evidence for B-428-B.** C-106 still needs its ruling | [`BUGS.md`](../../BUGS.md) |
 
-## 🔴 Highest repository priority — Lane A's queue is exhausted
+## ✅ RESOLVED — Lane A's queue was exhausted (2026-08-12), and is not now
 
 **Reported by Lane A, 2026-08-12, at `99643282` — five slices pushed, all `IN VALIDATION`.**
 
@@ -72,7 +77,7 @@
 
 - **B-184** — `--audit-claims` refuses on every invocation, naming two immutable `main` commits. ⛔ **The repair is not a hash suppression list.** QE's, filed not fixed.
 - **`timeline` publishes an empty `public/`** — a boundary nothing can cross ([§5](../../../CLAUDE.md)). Becomes [C-428](../../LANE_COORDINATION.md)'s defect the moment a row is released assuming it publishes something.
-- **4 tasks resolve to no lane** — TASK-300, TASK-900, TASK-901, TASK-1413. Unexamined.
+- **3 tasks resolve to no lane** — **TASK-900** (`RATIFIED`, complete) and **TASK-1472**/**TASK-1459** (withdrawn duplicates this office wrote). ✅ **All three are correct; none needs an owner.** ⚡ **TASK-300, TASK-901 and TASK-1413 were on this list and are assigned.**
 - **C-289 and C-292 name owners that route to nobody.** Routing, not a decision.
 - **3 workflows genuinely thin** — Settings, AI Research, Help Center. **Mode C, one per session.**
 
