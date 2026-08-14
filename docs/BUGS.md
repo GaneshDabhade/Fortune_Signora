@@ -5859,7 +5859,24 @@ def _load_state_check() -> ModuleType:
 | **Module** | **Repository-wide** — [`docs/coordination/workflows.toml`](coordination/workflows.toml) |
 | **Current assignee** | **Lane C** — 📁 `docs/coordination/**` is Product Office's ([§20e](../CLAUDE.md)) |
 | **Severity** | 🟠 — ⛔ **wrong behaviour a reader would act on**: the file is the only per-workflow state the repository has, and it under-reports remaining work |
-| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-11, answering *"how many workflows are completed, pending, blocked"* |
+| **Status** | 🔵 **`OPEN` — Lane C**, 2026-08-11, answering *"how many workflows are completed, pending, blocked"*. ⚠️ **Widened 2026-08-13 — it drifts in BOTH directions and it has now misled this office's own planning** |
+
+> ### 🔴 SECOND MEASUREMENT, 2026-08-13 — four `planned` workflows have every row PROMOTED
+>
+> **Measured by resolving each `planned` workflow's task ids against `BACKLOG.md` rather than reading the registry's state:**
+>
+> | # | Workflow | Rows |
+> |---|---|---|
+> | **10** | **Team Management** | `TASK-471` — **PROMOTED** |
+> | **12** | **CRM Integrations** | `TASK-402` — **PROMOTED** |
+> | **14** | **Companies** | `TASK-440` — **PROMOTED** |
+> | **16** | **Global Search** | `TASK-481` · `TASK-301` · `TASK-460` — **all PROMOTED** |
+>
+> ⛔ **The original finding was that a workflow reads COMPLETE because its remaining rows are not in it.** ⚡ **This is the inverse: a workflow reads PLANNED while every row it names is on `main`.** **One register, two opposite errors, and neither is visible without resolving the ids.**
+>
+> 🔴 **AND IT COST A PLANNING RECOMMENDATION.** ⛔ **Asked where Lane A's next supply should come from, this office recommended **Team Management** on the registry's `planned` state and its note — *"418 calls it the highest reuse in all 26 screens — 8 of 13 endpoints already ship."*** ✅ **`TASK-471` has been `PROMOTED` since 2026-08-10.** ⚠️ **The recommendation was withdrawn before any work started, and only because the duplicate-check ran first.**
+>
+> ⛔ **The states are NOT corrected here, deliberately.** **`on_main` would assert the workflow is complete, and *"every row it names is promoted"* is a weaker claim than *"the design is covered"*** — 📁 **which is the original B-431 defect, in the other direction.** ⚡ **Asserting completion from a row list that is known to be incomplete is how this row was opened.** ✅ **A truthful state needs the screen-level coverage measurement, and that is the repair rather than a relabel.**
 | **Found** | **By cross-checking the registry's `tasks` arrays against `BACKLOG.md` rather than reading either alone** |
 
 #### 🔴 The measurement
