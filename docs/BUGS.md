@@ -123,6 +123,48 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ---
 
+### B-201 · 🟠 Cycle 229 is NOT CERTIFIED — coverage 94.78% against a 95.0 floor, and three new files miss more than the shortfall
+
+| | |
+|---|---|
+| **Module** | **`commercial_profile`** — the `account_assignment` slice (TASK-1479 ⓶a) |
+| **Current assignee** | **The current assignee of `commercial_profile`** — joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 · ⛔ **Blocking Quality Defect** ([§20e](../CLAUDE.md)): **coverage below the floor prevents promotion**, so it holds every lane's finished work rather than only this slice's |
+| **Status** | 🔵 **`OPEN`** |
+| **Found** | **2026-08-14, cycle 229**, by certification at the pinned snapshot |
+| **Commit found** | **`6a58d4a4`** |
+
+**Actual.** `NOT CERTIFIED · coverage 94.78% is below 95.0%`. ✅ **All six gates PASSED** — `pytest` 4687 · `security-invariants` 443 · `mypy` 890 · `import-linter` 37/37 · `tsc` · `smoke`. ⛔ **The gates are not what failed; the condition is.**
+
+### ✅ Measured on the metric that failed, not a narrower one
+
+⚠️ **QE's first attribution was wrong and is recorded so the next reader does not repeat it.** `coverage json`'s statement arithmetic gives **95.84%** and the gate reports **94.78%** — **the gate measures branches too.** ⛔ **Attributing a branch-coverage failure with a line-coverage sum names the wrong files.** ✅ **Recomputed over `num_statements + num_branches`, which reproduces the gate's figure exactly.**
+
+| | |
+|---|---|
+| Repository | **22,283 measurable · 1,164 missed → 94.78%** |
+| The floor | at most **1,114** missed — ⛔ **49 must close** |
+| ⚡ **The three files this slice ADDED** | **203 measurable · 55 missed → 72.9%** |
+| ✅ **Covering all three lands the repository at** | **95.02%** |
+
+**So the slice's own new files miss more than the whole shortfall, and closing them alone clears it.**
+
+| File | Covered | Missed |
+|---|---|---|
+| `application/assignment_use_cases.py` | **61.3%** | **36** — lines `217-234`, `291-297`, … |
+| `infrastructure/assignment_repository.py` | **73.9%** | **18** — lines `186`, `226-263`, `271`, `287`, `301` |
+| `domain/account_assignment.py` | ✅ **97.6%** | 1 — line `176` |
+
+⚠️ **Removing the three entirely still leaves 94.98%**, so modified files contributed too — ⛔ **but that is a rounding-level effect and NOT the finding.** **The finding is that 55 > 49.**
+
+### 📁 This is §19's own bullet, and it was checkable before the push
+
+> ***"Coverage expectations met — `make coverage-debt ARGS="<your module>"` — no file the slice introduced sits at 0%, and the slice does not push the repository under the floor."***
+
+⛔ **Neither new file sits at 0%, so the first half passed. The second half is what failed**, and it is the half a lane can only check by running the repository-wide suite rather than its module's.
+
+⚡ **QE is NOT excluding the slice.** 📁 **The lane is live, the shortfall is bounded, and the missing lines are named above** — **and excluding it would hold Lane C's fourteen commits and QE's own gate fix behind a defect that is neither's**, while leaving [B-200](#b-200)'s red frontend suite on `main`, which **this slice is the only thing that fixes.**
+
 ### B-200 · 🟠 A red frontend suite reached `main` under a CERTIFIED stamp, because no certification run has ever executed it
 
 | | |
@@ -165,7 +207,8 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | | |
 |---|---|
 | **Immediately, within QE's authority** | ⚡ **`npx vitest run` joins the cheap-gate set before every pin**, exactly as `dr`, migration reversibility and `state-check` are already run outside the recorded six. **This closes the hole for every future cycle without touching what `CERTIFIED` means** |
-| ⛔ **NOT done by QE** | **Adding `frontend-suite` or `eslint` to `REQUIRED_GATES`.** 📁 **ADR-0032**: it changes what certification *means* and retroactively unsatisfies **226** records. **That is the product owner's, and it needs a decision rather than a commit** |
+| ⛔ **NOT done by QE** | **Adding `frontend-suite` or `eslint` to `REQUIRED_GATES`.** 📁 **ADR-0032**: it changes what certification *means*. **That is the product owner's, and it needs a decision rather than a commit** |
+| ⚡ **AND THE OBJECTION QE FIRST GAVE IS NOT A COST — corrected on Lane C's argument** | **QE wrote that widening *"retroactively unsatisfies 226 records"* as though that were a price.** ⛔ **It is not.** **`satisfied` is DERIVED and never stored**, so widening **re-judges history visibly instead of falsifying it** — 📁 [§2](../CLAUDE.md), *truth has exactly one authoritative representation*. ⚡ **And the precedent is already in the manifest: `tsc` entered `REQUIRED_GATES` at `4e43da17` on 2026-08-04, and the 41 five-gate runs before it now re-read as unsatisfied — cleanly, with nobody rewriting a record.** ✅ **QE walked those 41: 40 are ancestors of `main`, and ZERO were certified after `tsc` became required** *(last five-gate run 14:49:14Z; the widening landed 14:53:14Z — a four-minute boundary, measured by Lane C)*. ⛔ **So no commit was ever promoted missing a gate required at the time, and the one previous widening cost nothing.** **The decision should be taken without that objection weighing on it** |
 
 ⛔ **No prior certification is withdrawn or re-read.** **Each recorded truthfully what it ran**, and re-judging a past record against a gate set it never claimed is the defect [§2](../CLAUDE.md) forbids in the other direction.
 
