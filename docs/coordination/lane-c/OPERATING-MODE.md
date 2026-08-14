@@ -174,6 +174,16 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⛔ **The practice, and it is cheap: re-measure any figure you are about to relay into a decision, especially one you agree with.** ⚠️ **Agreement is when this fails — a number that confirms what you already believe is the one nobody re-runs.**
 
+### ⚠️ And a comparison has TWO operands. Read both.
+
+**Added on QE's own account of how the disjointness measurement went wrong, which is a different failure from the one above.**
+
+⛔ **The evidence was gathered correctly.** 📁 **QE's terminal printed `BY_NAME` containing `demo` in the same output where it concluded the intersection was empty.** 🔴 **What was wrong was the OTHER set — `development · test · production · production-local`, assembled from a compose file, a lane's prose and an assumption, and never read from [`environment.py`](../../../backend/signora_platform/environment.py).**
+
+⚡ **So *read the artifact, not the report about it* has a second half nobody states: a comparison has two operands, and it is the one you are not investigating that gets remembered instead of read.** ⛔ **The same shape as a survival check run against a stale ref — a correct operation on an operand that was assembled rather than fetched.**
+
+📁 **The detail that makes it worth recording: `development` is the member [ADR-0412](../../architecture/adr/0412-environment-and-secret-safe-logging.md) deliberately REMOVED**, and the ADR's own reason is *"two spellings of one environment is how a guard comes to be written against the spelling somebody happened to use."* ⚠️ **The analysis was written against the spelling somebody happened to use.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
