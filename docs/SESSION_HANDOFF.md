@@ -1,5 +1,19 @@
 # Session Handoff
 
+> ## Cycle 230 — promoted `84cd6ad4`, 2026-08-15 · **what CERTIFIED means changed**
+>
+> ⚡ **`REQUIRED_GATES` is eight, not six.** **`frontend-suite` and `eslint` are members**, on the product owner's ruling of [B-122](BUGS.md), **and the runner executes them** — the pairing that matters, since adding to the set without running them would fail every future certification on *"required gate did not run"*.
+>
+> ✅ **Proven by the run, not asserted: `84cd6ad42242` records EIGHT gates** — `frontend-suite` **3254 passed in 184 files**, `eslint` **clean** — **the first time either appears in 229 runs.** The planner's shortfall fell from **11 to 8**.
+>
+> 📁 **The evidence the ruling rested on**: `385970bf`, cycle 228's certified and promoted commit, **fails `auth-mode.test.ts` deterministically** — reproduced in a clean worktree with `SIGNORA_ENVIRONMENT` unset and no `.env`. **`tsc` passed throughout and could not have caught it: a type-checker sees a wrong type, and this was a wrong assertion.**
+>
+> ⚠️ **The historical effect is accepted, in the product owner's words: *"the records remain historical records under the gate set that existed at the time; the current derived state may correctly show that they do not satisfy today's expanded gate set."*** **`satisfied` is derived and never stored, and `tsc`'s own addition at `4e43da17` is the worked precedent — it did this to 41 earlier runs without anybody rewriting a record.** ⛔ **No prior certification is withdrawn or re-read.**
+>
+> ⚡ **QE is allocated `B-1000`–`B-1099`**, recorded in [`CLAUDE.md`](../CLAUDE.md) §20e. **`100`–`199` is exhausted at 98 of 100, and both apparent gaps are live references** — `B-102` with 12 mentions, `B-182` with 2. ⛔ **A gap that is referenced is not free.** **This is the first edit QE has made to `CLAUDE.md` and it was directed rather than drafted.**
+>
+> ⚠️ **A follow-up, recorded and deliberately not made a blocker on the product owner's instruction:** `--audit-main` reads certification records by commit rather than `satisfied`, and QE has not measured whether widening changes any of its verdicts.
+>
 > ## Cycle 229 — promoted `ac622c24`, 2026-08-15
 >
 > **`main` = `ac622c24` = the certified commit.** **26 commits, three lanes** — Lane A's TASK-1479 ⓶a (bulk owner change, migrations `0053`/`0054`), Lane C's coordination and register work, QE's own gate repair. `pytest` **4704** · coverage **95.02%** · **443** Security Invariants · migration head **`0054`** · **DR passed** with 443 against the restarted stack · reversibility clean.
@@ -494,7 +508,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-15 · **`main` at `ac622c24`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-15 · **`main` at `84cd6ad4`** · ✅ **CERTIFIED under eight gates, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
