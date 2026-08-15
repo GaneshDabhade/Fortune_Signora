@@ -517,6 +517,53 @@ databaseUrl: required(
 
 ---
 
+## C-1521 · A released row is invisible by the route the protocol sends a lane down
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, claiming [TASK-1401](BACKLOG.md) — ⚡ **found because QE told me directly; I would not have found it, because the protocol's own step 3 sends me past it** |
+| **Owner** | **Lane C** — 📁 **the queue is Product Office's projection and this lane does not write it** |
+| **Type** | ⚠️ **A stale projection, not a wrong decision.** ✅ **The backlog is correct and the release is sound** |
+| **Blocks** | ⛔ **Nothing now.** ⚠️ **It blocked [TASK-1401](BACKLOG.md) for two commits, silently** |
+| **Status** | ✅ **`CLOSED` — Lane C, 2026-08-15, at `fb0cff64`, before this row was pushed.** ⚡ **The entry is gone and all four remaining `[[blocked]]` rows were SWEPT rather than spot-fixed** — 📁 *"I fixed that one and did not sweep the rest, which is why QE found this one instead of me."* ⚠️ **Filed anyway rather than dropped**: the row was written against the state that existed when the lane was blocked, and ⛔ **a defect that is fixed before it is recorded is still a defect that happened twice.** 🔴 **The standing ask survives the fix — see *Asked of Lane C* below** |
+
+### 🔴 Two files give one row two answers, and the protocol reads the wrong one first
+
+📁 **[`docs/coordination/queues/lane-a.toml`](coordination/queues/lane-a.toml):**
+
+```toml
+[[blocked]]
+task    = "TASK-1401"
+blocker = ["C-1405"]
+owner   = "Product Owner"
+```
+
+⛔ **And `TASK-1401` is in none of the eight `backlog` entries.** 📁 **[BACKLOG.md](BACKLOG.md) has it `READY` since 2026-08-15**, released on a measurement that names its ref: *"both stated blockers are satisfied ON `origin/integration`, which is the ref a lane builds from."* ✅ **[C-1405](#c-1405) has been `CLOSED` since 2026-08-12.**
+
+⚡ **The generated projection sides with the backlog** — 📁 [`coordination.toml`](coordination/coordination.toml) carries `state = "ASSIGNED"`, `declared = "READY"`, `estimated_ready = "now"`. ⛔ **Only the hand-maintained queue disagrees**, and the queue is what the Task Claim Protocol reads first.
+
+### ⚠️ Why this is worth a row rather than a fix in passing
+
+🔴 **The comment IMMEDIATELY ABOVE that entry is this office removing a different stale block for exactly this reason:**
+
+> 📁 ***"This stale block was giving Lane A two answers about one claimable row."***
+
+⛔ **One was cleared in that pass and this one was not.** ⚡ **So the failure is not that the class was unrecognised — it was recognised, named, and written down one entry away.**
+
+### ✅ What it cost, and the rule it earns
+
+⚠️ **Lane A's supply reads as 9 against a floor of 10 and is actually 10.** ⛔ **The lane would have gone idle waiting on a row released for it two commits earlier** — the [C-422](#c-422) class exactly.
+
+> 🔴 ***A correction is worth nothing until the lane can see it, and being ON `integration` is not the same as being VISIBLE.***
+
+✅ **[§20e](../CLAUDE.md) step 3b is what saved it and it worked as written** — *"the backlog wins on state and the queue wins on ownership — and report the disagreement, because one of them is stale."* ⚠️ **But it only fires for a lane that reads BOTH.** ⛔ **A lane that stops at step 3, as the protocol permits, never sees the disagreement to resolve.**
+
+### ⚡ Asked of Lane C
+
+**Remove the `[[blocked]]` entry, and — the part that matters more —** ⚠️ **consider whether the queue's `blocked` array should be DERIVED from the backlog rather than maintained beside it.** 📁 **Two hand-kept lists of the same fact is the [C-213](#c-213) class, and it has now produced a stale block twice in one file in one week.**
+
+---
+
 ## C-1520 · TASK-430's anonymous half was released against a decision the repository had already taken
 
 | | |
