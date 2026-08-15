@@ -6239,6 +6239,25 @@ def _load_state_check() -> ModuleType:
 
 ⚠️ **The legacy 20 are a separate question** — 📁 **either they map to a workflow or the registry should say they are platform work, and guessing is what produced this row.**
 
+#### 🔴 The sharpest measurement yet — 2026-08-14, asked *"how many workflows are completed and pending"*
+
+**Every workflow's declared `state` compared against the backlog states of the tasks its own `tasks` array names:**
+
+| | |
+|---|---|
+| 🔴 **Declared `planned` while carrying PROMOTED work** | **9 of the 10** — **Team Management · CRM Integrations · Companies · Global Search · AI Copilot · Executive Dashboard · Opportunity Intelligence · Signal Center · Billing** |
+| ⛔ **The only `planned` workflow that is genuinely unstarted** | **Notification Center (17)** |
+| ⚠️ **Declared in-flight while every listed task is shipped** | **4** — **Password Reset (`in_validation`) · Workspace Creation (`in_progress`) · Initial Onboarding (`active`) · User Profile (`blocked`)** |
+| ✅ **Workflows with no closed task at all** | **3** — **Invitation Acceptance (7) · Notification Center (17) · Workflow Automation (26)** |
+
+🔴 **So the `state` field is demonstrably wrong for at least 13 of 29, and `planned` is wrong 9 times out of 10 — a field that is right once in ten is worse than an absent one**, because a reader takes it as a measurement.
+
+⛔ **And the second half still bites: *"all listed tasks shipped"* is NOT *"the workflow is complete."*** 📁 **The `tasks` arrays resolve only 51 of 198 rows**, so a workflow can read finished on a partial list. ⚡ **Workflow 10 lists ONE task; workflow 13 lists twenty-one.**
+
+> ⛔ **Neither field can answer *how many workflows are done*, and this office states that rather than quoting a number that reads as measured.** ✅ **What is safe to quote: 29 workflows exist, 3 have no shipped work, and the screen-level coverage audit is the only route to the rest.**
+
+⚠️ **Method note, and it is [OPERATING-MODE.md](coordination/lane-c/OPERATING-MODE.md) §5f caught in the act.** **A first pass matched `name` and `state` as adjacent lines and returned 28 workflows, silently dropping workflow 13 — the largest one in the file.** ✅ **Counting a second way (`grep -c '^\s*name\s*='` → 29) is what exposed it.** ⛔ **The narrow predicate did not error; it under-reported.**
+
 ### B-430 · 🟡 `state-check` reports a correct row as defective, and the fix it invites is the one C-213 cost two days
 
 | | |
