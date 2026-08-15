@@ -335,6 +335,21 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 📁 **[§5c](#5c--before-writing-a-check-ask-what-it-would-report-on-a-real-problem)'s test settles it: a green result would tell a reader *"no copies have drifted"* when all it can test is *"the copies somebody remembered to list have not drifted."*** ⛔ **The answer to *what will the reader stop asking* is the real question.**
 
+#### ⚠️ Refined 2026-08-15 — *never* was too absolute, and QE produced the counter-case
+
+🔴 **This said *derivation, never detection*. It is right about the general case and wrong as a universal, and B-1003 is where it breaks.**
+
+| | The repair | Why |
+|---|---|---|
+| **[B-1001](../../BUGS.md)** — `BUGS.md` held its own copy of the identifier table | ✅ **DELETION.** The table became a pointer to `CLAUDE.md` §20e | ⚡ **The reference carries everything the copy did** |
+| **[B-1003](../../BUGS.md)** — `RUNNING.md`'s allocation table | ✅ **A CHECK** — `test_runbook_allocation_table.py`, 11 cases | ⛔ **The reference does NOT carry it**: `--exports` answers only for the clone you are standing in and **cannot tell a reader that Lane A is slot 2** |
+
+> ## **The test is not *"is there a registry?"* — it is *"does the registry answer the question the copy answers?"***
+>
+> ✅ **When it does, delete the copy; the fix and the guard are the same act.** ⛔ **When it does not, the copy has a job, and a check is what stops it being trusted.**
+
+⚡ **And the second case must still refuse to hand-maintain the copy.** **QE's table is GENERATED from `infra/environments.py` rather than typed** — 📁 **written after they had typed one themselves and got `lane-qe`'s slot wrong and omitted `lane-e` entirely, one minute after writing *"no lane types a port."*** ⛔ **So: derive the CONTENT, check the DRIFT. Neither alone was enough here.**
+
 ## 6 · Workflow → task mapping
 
 ⛔ **Never map by substring, title similarity, keyword or approximate name.** `TASK-1418` *"AI Research"* matched Global Search because ***"research"* contains *"search"***.
