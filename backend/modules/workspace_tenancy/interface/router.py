@@ -13,6 +13,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Request, status
 
+from modules.workspace_tenancy.application.capability_use_cases import (
+    AssignRoleInput,
+    CreateRoleInput,
+    RenameRoleInput,
+)
 from modules.workspace_tenancy.application.use_cases import (
     AddMemberInput,
     CreateWorkspaceInput,
@@ -45,10 +50,12 @@ from modules.workspace_tenancy.application.use_cases.saved_views import (
 from modules.workspace_tenancy.application.use_cases.transfer_ownership import (
     TransferOwnershipCommand,
 )
+from modules.workspace_tenancy.domain.capability import NotAWorkspaceMemberError
 from modules.workspace_tenancy.domain.exceptions import SavedViewNotFoundError
 from modules.workspace_tenancy.domain.onboarding import Answer, CompanySizeBand, Role
 from modules.workspace_tenancy.infrastructure.acceptance import accepting_workspace
 from modules.workspace_tenancy.infrastructure.composition import (
+    build_capability_use_cases,
     build_query_service,
     build_use_cases,
 )
@@ -56,19 +63,26 @@ from modules.workspace_tenancy.interface.schemas import (
     AddMemberRequest,
     AdvanceOnboardingRequest,
     AnswerPayload,
+    AssignCapabilityRoleRequest,
+    CapabilityRoleListResponse,
+    CapabilityRoleResponse,
     ChangePreferencesRequest,
     ChangeRoleRequest,
     ChooseGoalsRequest,
     ConfirmCompanyRequest,
+    CreateCapabilityRoleRequest,
     CreateWorkspaceRequest,
     DescribePersonRequest,
+    EffectivePermissionsResponse,
     HistoryEntryResponse,
     InvitationResponse,
     InviteMemberRequest,
     MembershipResponse,
     OnboardingRunResponse,
+    PermissionResponse,
     PreferencesResponse,
     RemoveMemberRequest,
+    RenameCapabilityRoleRequest,
     ReviseViewRequest,
     SavedViewResponse,
     SaveViewRequest,
@@ -1012,3 +1026,160 @@ async def change_preferences(
         )
     )
     return PreferencesResponse.from_domain(prefs, now=datetime.now(UTC))
+
+
+# ── Capability roles (TASK-1479 ⓸, ADR-0410) ────────────────────────────────
+
+
+@router.get(
+    "/workspaces/{workspace_id}/capability-roles",
+    response_model=CapabilityRoleListResponse,
+    summary="The roles this organization has defined, and how many people hold each",
+)
+async def capability_roles(context: CurrentWorkspace) -> CapabilityRoleListResponse:
+    """Settings' *Roles & permissions*.
+
+    ⚡ **A member may read this and may not change it** — `policy.csv` grants
+    `member, capability_role, read` and withholds `update`. 📁 Team Management
+    shows a colleague's role to everyone; **defining roles is administration**,
+    which is the same class as adding a member.
+    """
+    context.authorize(Resource.CAPABILITY_ROLE, Action.READ)
+    summaries = await build_capability_use_cases(context.session).list_roles.execute(
+        context.workspace_id
+    )
+    return CapabilityRoleListResponse(
+        roles=[
+            CapabilityRoleResponse(
+                role_id=summary.role.id, name=summary.role.name, holders=summary.holders
+            )
+            for summary in summaries
+        ]
+    )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/capability-roles",
+    response_model=CapabilityRoleResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Name a new role",
+)
+async def create_capability_role(
+    context: CurrentWorkspace, body: CreateCapabilityRoleRequest
+) -> CapabilityRoleResponse:
+    """The design's *New role*.
+
+    ⚠️ **The role this creates grants nothing.** 📁 ADR-0410 §5: *"a capability
+    that is not yet granted denies, which is the safe direction."* **Its grants
+    are `policy.csv` rows, which are a separate reviewed change** — the point of
+    choosing Casbin over a vendor's rules UI (ADR-0010).
+
+    ⛔ **So the screen must say so** rather than imply a working role, and
+    `holders: 0` on the response is the only honest thing it can report.
+    """
+    context.authorize(Resource.CAPABILITY_ROLE, Action.UPDATE)
+    role = await build_capability_use_cases(context.session).create_role.execute(
+        CreateRoleInput(
+            workspace_id=context.workspace_id,
+            # Taken from the verified caller, never from the request.
+            actor_id=context.principal.user_id,
+            name=body.name,
+        )
+    )
+    return CapabilityRoleResponse(role_id=role.id, name=role.name, holders=0)
+
+
+@router.patch(
+    "/workspaces/{workspace_id}/capability-roles/{role_id}",
+    response_model=CapabilityRoleResponse,
+    summary="Correct a role's name",
+)
+async def rename_capability_role(
+    context: CurrentWorkspace, role_id: UUID, body: RenameCapabilityRoleRequest
+) -> CapabilityRoleResponse:
+    """🔴 **A rename moves the subject `policy.csv` keys on.**
+
+    ⛔ **A rename without a matching policy edit denies everything, silently,
+    for everyone holding the role.** ⚠️ Stated at every layer that can see it —
+    the type, the repository, the use case and here — because it is the one
+    operation in this module whose blast radius is in a file the module does
+    not own.
+    """
+    context.authorize(Resource.CAPABILITY_ROLE, Action.UPDATE)
+    use_cases = build_capability_use_cases(context.session)
+    role = await use_cases.rename_role.execute(
+        RenameRoleInput(
+            workspace_id=context.workspace_id,
+            actor_id=context.principal.user_id,
+            role_id=role_id,
+            name=body.name,
+        )
+    )
+    summaries = await use_cases.list_roles.execute(context.workspace_id)
+    holders = next((s.holders for s in summaries if s.role.id == role.id), 0)
+    return CapabilityRoleResponse(role_id=role.id, name=role.name, holders=holders)
+
+
+@router.put(
+    "/workspaces/{workspace_id}/members/{user_id}/capability-role",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Change what a colleague may do, or change it back",
+)
+async def assign_capability_role(
+    context: CurrentWorkspace, user_id: UUID, body: AssignCapabilityRoleRequest
+) -> None:
+    """Team Management's *Change to Analyst*, and *change back*.
+
+    ⚡ **`PUT` of the whole assignment rather than `PATCH`**: there is one
+    field, `role_id: null` is *change back*, and *"I did not mention it"* is
+    not a state a customer can be in.
+
+    ⛔ **`204`, because there is nothing to return that the caller did not
+    send** — and what the person may now DO is a different question, answered
+    by *Effective permissions* against the enforcer rather than guessed from
+    this response.
+    """
+    context.authorize(Resource.CAPABILITY_ROLE, Action.UPDATE)
+    await build_capability_use_cases(context.session).assign_role.execute(
+        AssignRoleInput(
+            workspace_id=context.workspace_id,
+            actor_id=context.principal.user_id,
+            user_id=user_id,
+            role_id=body.role_id,
+        )
+    )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/members/{user_id}/effective-permissions",
+    response_model=EffectivePermissionsResponse,
+    summary="What this person is actually able to do here",
+)
+async def effective_permissions(
+    context: CurrentWorkspace, user_id: UUID
+) -> EffectivePermissionsResponse:
+    """Team Management's *Effective permissions* and *A Member will be able to*.
+
+    📁 **ADR-0410 §3: *"a read of the authorization layer — the resolved answer
+    for a person, computed, never stored."*** ⚡ **Every entry was asked of the
+    same enforcer that decides the request path**, so this screen and the
+    enforcement point cannot disagree.
+
+    ⛔ **A `404` for somebody who is not a member**, on the same terms as every
+    other route here: an absence and *"a member who may do nothing"* are
+    different facts, and the second would be a sentence about somebody who is
+    not there.
+    """
+    context.authorize(Resource.CAPABILITY_ROLE, Action.READ)
+    view = await build_capability_use_cases(context.session).effective_permissions.execute(
+        context.workspace_id, user_id
+    )
+    if view is None:
+        raise NotAWorkspaceMemberError(user_id)
+    return EffectivePermissionsResponse(
+        user_id=user_id,
+        role_name=view.role_name,
+        permissions=[
+            PermissionResponse(resource=p.resource, action=p.action) for p in view.permissions
+        ],
+    )

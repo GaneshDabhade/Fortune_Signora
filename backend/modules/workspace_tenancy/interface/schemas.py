@@ -516,3 +516,74 @@ class ChangePreferencesRequest(BaseModel):
     confidence_floor: int | None = Field(
         default=None, ge=MIN_CONFIDENCE_FLOOR, le=MAX_CONFIDENCE_FLOOR
     )
+
+
+# ── Capability roles (TASK-1479 ⓸, ADR-0410) ────────────────────────────────
+
+
+class CreateCapabilityRoleRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=40)
+
+
+class RenameCapabilityRoleRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=40)
+
+
+class AssignCapabilityRoleRequest(BaseModel):
+    """*Change to Analyst*, and *change back*.
+
+    ⛔ **`role_id: None` is *change back*** and is a deliberate value rather
+    than an omission — 📁 which is why this is a `PUT` of the whole assignment
+    and not a `PATCH`: there is one field, and *"I did not mention it"* is not
+    a state the customer can be in.
+    """
+
+    role_id: UUID | None = None
+
+
+class CapabilityRoleResponse(BaseModel):
+    """One capability role.
+
+    ⛔ **No permission list.** 📁 ADR-0410 §2 keeps the grants in `policy.csv`,
+    and a copy on this response would be the second authorization model the
+    ruling forbids — **stale the moment somebody edits the policy file.**
+    """
+
+    role_id: UUID
+    name: str
+    #: ⚡ **What a *delete* control must ask before offering itself** —
+    #: migration `0057` refuses to delete a role people hold.
+    holders: int
+
+
+class CapabilityRoleListResponse(BaseModel):
+    """Settings' *Roles & permissions*.
+
+    ⛔ **An empty list is a real answer**, and the ordinary one: a workspace
+    that has defined no roles is not a workspace with a broken screen.
+    """
+
+    roles: list[CapabilityRoleResponse]
+
+
+class PermissionResponse(BaseModel):
+    resource: str
+    action: str
+
+
+class EffectivePermissionsResponse(BaseModel):
+    """*A Member will be able to…*
+
+    📁 **ADR-0410 §3: computed, never stored.** ⚡ **Every entry was asked of
+    the same enforcer the request path uses**, so this screen and the
+    enforcement point cannot disagree.
+
+    ⚠️ **`role_name` is `None` when the person authorizes as their membership
+    role**, including when a role they were assigned no longer resolves — ⛔
+    **showing a role they are not effectively holding is the stale claim §3
+    forbids, arriving by a different route.**
+    """
+
+    user_id: UUID
+    role_name: str | None
+    permissions: list[PermissionResponse]

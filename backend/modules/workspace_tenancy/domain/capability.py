@@ -90,6 +90,21 @@ class CapabilityError(WorkspaceTenancyError):
     """A capability role cannot be recorded as the customer stated it."""
 
 
+class NotAWorkspaceMemberError(WorkspaceTenancyError):
+    """Nobody here by that id — **and the two answers are deliberately one.**
+
+    ⛔ **Not split into *no such person* and *not a member here*.** ⚡ **A error
+    that could tell them apart would confirm a user id exists somewhere**,
+    which is the enumeration `WorkspaceNotFoundError` refuses for the same
+    reason — and identity is Better Auth's, in a tier this one cannot see
+    (ADR-0026).
+    """
+
+    def __init__(self, user_id: UUID) -> None:
+        super().__init__(f"Nobody in this workspace has the id {user_id}.")
+        self.user_id = user_id
+
+
 def fold(name: str) -> str:
     """The form two role names are compared in. **Never the form anybody sees.**
 

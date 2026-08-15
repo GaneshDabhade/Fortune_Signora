@@ -6,9 +6,17 @@ injection standard).
 """
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from modules.workspace_tenancy.application.capability_use_cases import (
+    AssignCapabilityRole,
+    CreateCapabilityRole,
+    EffectivePermissions,
+    ListCapabilityRoles,
+    RenameCapabilityRole,
+)
 from modules.workspace_tenancy.application.use_cases import (
     AddMemberUseCase,
     CreateWorkspaceUseCase,
@@ -52,9 +60,13 @@ from modules.workspace_tenancy.application.use_cases.saved_views import (
     ReviseSavedViewUseCase,
 )
 from modules.workspace_tenancy.application.use_cases.transfer_ownership import TransferOwnership
+from modules.workspace_tenancy.domain.entities import WorkspaceRole
 from modules.workspace_tenancy.infrastructure.adapters import (
     OutboxEventPublisherAdapter,
     SessionTenantContext,
+)
+from modules.workspace_tenancy.infrastructure.capability_repository import (
+    SqlCapabilityRepository,
 )
 from modules.workspace_tenancy.infrastructure.delivery import ConsoleInvitationDelivery
 from modules.workspace_tenancy.infrastructure.query_service import WorkspaceQueryService
@@ -69,6 +81,7 @@ from modules.workspace_tenancy.infrastructure.repositories import (
 )
 from modules.workspace_tenancy.infrastructure.saved_view_service import SavedViewService
 from modules.workspace_tenancy.infrastructure.settings import load_tenancy_settings
+from signora_platform.authorization import CasbinAuthorizer
 from signora_platform.event_bus import PostgresOutboxEventPublisher
 
 
@@ -224,3 +237,50 @@ def build_query_service(session: AsyncSession) -> WorkspaceQueryService:
     permitted to call directly (docs/architecture/05-module-dependencies.md).
     """
     return WorkspaceQueryService(session)
+
+
+@dataclass(frozen=True, slots=True)
+class CapabilityUseCases:
+    """ADR-0410's five, built together — TASK-1479 slice ⓸."""
+
+    list_roles: ListCapabilityRoles
+    create_role: CreateCapabilityRole
+    rename_role: RenameCapabilityRole
+    assign_role: AssignCapabilityRole
+    effective_permissions: EffectivePermissions
+
+
+class _MembershipReaderAdapter:
+    """`MembershipReader`, over this module's own query service.
+
+    ⛔ **Declared in `application/` as a Protocol and satisfied here**, so the
+    use cases depend on a shape rather than on a concrete reader (§6).
+    """
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._service = WorkspaceQueryService(session)
+
+    async def role_of(self, workspace_id: UUID, user_id: UUID) -> WorkspaceRole | None:
+        membership = await self._service.get_membership(workspace_id, user_id)
+        return None if membership is None else WorkspaceRole(membership.role)
+
+
+def build_capability_use_cases(session: AsyncSession) -> CapabilityUseCases:
+    """⚡ **The authorizer is constructed here and nowhere downstream.**
+
+    📁 `EffectivePermissions` reads the authorization layer, so it needs the
+    same enforcer the request path uses — **and a second one built with
+    different paths would be the two-sources-of-truth defect the whole slice
+    exists to avoid.**
+    """
+    capabilities = SqlCapabilityRepository(session)
+    memberships = _MembershipReaderAdapter(session)
+    return CapabilityUseCases(
+        list_roles=ListCapabilityRoles(capabilities=capabilities),
+        create_role=CreateCapabilityRole(capabilities=capabilities),
+        rename_role=RenameCapabilityRole(capabilities=capabilities),
+        assign_role=AssignCapabilityRole(capabilities=capabilities, memberships=memberships),
+        effective_permissions=EffectivePermissions(
+            capabilities=capabilities, memberships=memberships, authorizer=CasbinAuthorizer()
+        ),
+    )

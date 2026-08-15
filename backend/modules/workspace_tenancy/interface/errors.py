@@ -13,6 +13,10 @@ from modules.workspace_tenancy.application.use_cases.accept_invitation import (
     UnverifiedEmailError,
 )
 from modules.workspace_tenancy.application.use_cases.leave_workspace import NotAMemberError
+from modules.workspace_tenancy.domain.capability import (
+    CapabilityError,
+    NotAWorkspaceMemberError,
+)
 from modules.workspace_tenancy.domain.entities import LastOwnerCannotLeaveError
 from modules.workspace_tenancy.domain.exceptions import (
     DuplicateMembershipError,
@@ -40,6 +44,13 @@ ERROR_MAPPING: ErrorMapping = {
     # indistinguishable from one that does not exist, or workspace ids
     # become enumerable (18-authentication.md).
     WorkspaceNotFoundError: (status.HTTP_404_NOT_FOUND, "workspace_not_found"),
+    # ⚡ **Its own row rather than falling to the module's base**, on the
+    # reasoning `commercial_profile`'s error map records three times over: a
+    # customer told a code about a document they were not editing has been
+    # handed a lead that goes nowhere. **`test_api_capability_roles.py` pins
+    # both codes so neither row can quietly go.**
+    NotAWorkspaceMemberError: (status.HTTP_404_NOT_FOUND, "member_not_found"),
+    CapabilityError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "capability_refused"),
     SavedViewNotFoundError: (status.HTTP_404_NOT_FOUND, "saved_view_not_found"),
     InvalidSavedViewNameError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_saved_view_name"),
     # **422 rather than 400**: the request is well-formed and the declaration

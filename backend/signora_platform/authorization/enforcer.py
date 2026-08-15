@@ -156,6 +156,15 @@ class Resource(StrEnum):
     #: capability, TASK-1479 slice ⓶b. **A declarative registration and never a
     #: grant** (§20a, C-224/D-073), on the same terms as the two above.
     ACCOUNT_SEGMENT = "account_segment"
+    #: The named capability roles a workspace defines, and who holds one —
+    #: ADR-0410, TASK-1479 slice ⓸. **A declarative registration and never a
+    #: grant** (§20a, C-224/D-073).
+    #:
+    #: ⚠️ **This governs MANAGING roles, never what a role permits.** What a
+    #: role permits is the `policy.csv` rows keyed on its own subject, and
+    #: there is deliberately no resource that means *"authorization itself"* —
+    #: a grant that could edit grants is the one this model must not have.
+    CAPABILITY_ROLE = "capability_role"
 
 
 class Action(StrEnum):

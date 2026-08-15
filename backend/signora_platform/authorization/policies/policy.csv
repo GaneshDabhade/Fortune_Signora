@@ -75,3 +75,6 @@ p, owner, *, account_segment, read
 p, member, *, account_segment, read
 p, owner, *, account_segment, update
 p, member, *, account_segment, update
+p, owner, *, capability_role, read
+p, member, *, capability_role, read
+p, owner, *, capability_role, update
