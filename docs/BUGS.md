@@ -157,6 +157,44 @@ Such a row names the code, records **Current assignee: none — not assignable**
 ### ✅ The fix, and why it is not a checker
 
 **The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
+### B-435 · 🟡 `infra/` is outside the type gate, and the promotion guard is one of the files that does not type-check
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — `infra/**` ([D-022](DECISION_REGISTER.md)) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟡 — ⛔ **nothing is failing today.** ⚠️ **But `infra/` decides whether a commit may be promoted, and no gate reads its types** |
+| **Status** | 🔵 **`OPEN` — Lane C, 2026-08-15** |
+| **Found** | Running `mypy --strict` on a file I had just edited, and wondering whether the gate would have caught it |
+
+**Steps to reproduce.**
+
+```bash
+grep -n mypy Makefile        # → cd backend && uv run mypy .
+python3 -m mypy --strict infra/certification-guard.py
+```
+
+**Expected.** ⚡ **The tooling that decides promotions is type-checked by the same gate as everything else.**
+
+**Actual.** 📁 **The gate runs from `backend/`. `infra/` is at the repository root, so it is never in the checked tree.** 🔴 **Measured across all 25 files: 10 clean, 15 fail when checked directly.**
+
+⚠️ **And the count is honest rather than alarming — some failures are artifacts of standalone checking.** 📁 `infra/validate.py`'s single error is `Skipping analyzing "tests.certification": missing library stubs`, which is a path problem and not a type problem.
+
+🔴 **But not all of them are, and the worst is the one that matters most:**
+
+```
+infra/certification-guard.py:366  "object" has no attribute "__iter__" (not iterable)
+infra/certification-guard.py:369  "object" has no attribute "__iter__" (not iterable)
+infra/certification-guard.py:1421 Argument 1 to "len" has incompatible type "object"; expected "Sized"
+```
+
+⛔ **That is the file `infra/certification-guard.py --audit-main` runs from, and the one that refuses a promotion whose target is not certified.**
+
+#### ⚠️ What this is NOT
+
+⛔ **Not a claim that any of the 15 is a live defect**, and not a request to fix 15 files. ✅ **`coordination.py` and `registers.py` are clean, so the directory is not uniformly untyped** — which makes the absence of a gate the finding rather than the code.
+
+⛔ **And explicitly not a proposal to widen the gate here.** 📁 **Changing what a gate covers is the [B-131](#b-131) class** — it is a change to what a check *means*, not one a bug row may make. **The row states the gap; ⛔ the remedy is a decision.**
 
 ### B-197 · 🟡 The promotion guard protects QE-written states in `BACKLOG.md` and reads `BUGS.md` not at all, so a `VERIFIED` bug can silently reopen
 
