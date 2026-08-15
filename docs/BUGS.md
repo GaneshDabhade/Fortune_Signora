@@ -361,6 +361,30 @@ acquire("x")      # → succeeds, takes the environment
 
 > ⛔ **Not proposed here.** 📁 **[§20e](../CLAUDE.md) and [B-131](#b-131)'s precedent: a bug row states the gap; changing what a guard decides is a decision.**
 
+⚡ **QE's addition, and it is what makes it a ruling rather than a patch: the fix cannot be *"never reclaim"* and cannot be *"always reclaim"* — both failure modes are real and neither is hypothetical.** **It is a third behaviour that does not exist yet.**
+
+#### 🔴 The near-miss reconstructed — QE, 2026-08-15, correcting their own account
+
+**QE first reported this as *"I was entitled to `release --force` and chose not to."*** ⛔ **True of their intent, false about the mechanism: they would never have needed to force.**
+
+| observed | what it means |
+|---|---|
+| `make dr` returned `Error 4` | ⚡ **so the recorded pid was ALIVE then** — a dead one is reclaimed silently and never blocks |
+| `kill -0` on it a minute later | ⛔ **dead** |
+| Lane A's own process | 🔴 **live throughout, and the record never knew about it** |
+
+🔴 **So a simple RETRY of `make dr` — the obvious next move after a transient block — would have auto-reclaimed and run.** ⛔ **No force, no prompt, no `BLOCKED` message.** ⚠️ **And `make dr` restarts PostgreSQL, Redis, the API, workers and the relay, mid-journey, on another lane's live e2e.**
+
+📁 **QE's own verdict: *"What saved it was not refusing to force. It was going to look at the machine instead of retrying the command"* — and they investigated because the record looked odd, not because they knew a retry was dangerous.**
+
+#### ⚠️ Why this stays 🟠 and is not raised to 🔴
+
+**The obvious argument for 🔴 is [B-270](#b-270)'s precedent — a documented command silently destroying another environment — and Lane A raised that one to 🔴 on exactly that ground.**
+
+⛔ **It is not taken here, for a checkable reason.** 📁 **`infra/registers.py:34`: `blocks_promotion` is 🔴 **and** unresolved. **Raising this row would stop every lane's promotion** over a hazard that (a) leaves `main` correct, (b) now has its check written into the `BLOCKED` diagnostic, and (c) needs a ruling rather than a fix.
+
+⚡ **Severity says how much it hurts; the blocking class says whether the repository can move.** ✅ **This hurts a lane's afternoon and does not stop the repository, and inflating it would spend the one signal that does.**
+
 ### B-435 · 🟡 `infra/` is outside the type gate, and the promotion guard is one of the files that does not type-check
 
 | | |
