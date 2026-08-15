@@ -308,7 +308,7 @@ on_integration = true
 
 [[task]]
 id            = "TASK-1473"
-title         = "⛔ BLOCKED ON A DESIGN RULING — the rail at 1024–1279, and whether a band overrides a perso"
+title         = "The rail at 1024–1279 — the band forces the collapsed state, the preference governs above "
 state         = "ASSIGNED"
 declared      = "READY"
 lane          = "Lane A"

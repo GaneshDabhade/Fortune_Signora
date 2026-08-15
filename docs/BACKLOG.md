@@ -1697,7 +1697,7 @@
 | **Definition of Done** | **A cold boot shows the complete frame and an empty content region** · **certified · `main`** |
 | ⚠️ **Runtime status** | ✅ **RUNTIME EVIDENCE OBTAINED** — the product owner's screenshot of `localhost:3300`, corroborated in source at `workspace-switcher.tsx`:185–188 |
 
-### TASK-1473 · ⛔ BLOCKED ON A DESIGN RULING — the rail at 1024–1279, and whether a band overrides a person
+### TASK-1473 · The rail at 1024–1279 — the band forces the collapsed state, the preference governs above it
 
 | | |
 |---|---|
