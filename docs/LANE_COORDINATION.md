@@ -517,6 +517,51 @@ databaseUrl: required(
 
 ---
 
+## C-1520 · TASK-430's anonymous half was released against a decision the repository had already taken
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, building [TASK-430](BACKLOG.md) — ⚡ **found after writing the endpoint and before shipping it**, by reading the section registry the surface would have to live in |
+| **Owner** | 🔴 **Product owner**, through Lane C — ⛔ **[C-203](#c-203) is the open question and it is not a lane's** |
+| **Type** | ⚠️ **A released row whose buildable half is not buildable.** ✅ **Nothing is broken** — the work was withdrawn rather than shipped |
+| **Blocks** | ⛔ **[TASK-430](BACKLOG.md) entirely** — both its deliverables |
+| **Status** | **`OPEN`** |
+
+### 🔴 The row was released on a reading that a shipped audit contradicts
+
+📁 **[TASK-430](BACKLOG.md)'s release cites [D-074](DECISION_REGISTER.md):** *"the customer-facing People Intelligence module may still remain later in the roadmap. **The underlying domain should not.** The anonymous surface is buildable from S3."*
+
+📁 **`frontend/lib/accounts/sections.ts`, the `contacts` section, written by [TASK-1476](BACKLOG.md) and on `main`:**
+
+> ⚡ ***"An anonymous title list is not this section — it is a different one the design does not draw, and inventing it is what [§21](../CLAUDE.md) forbids."***
+
+⛔ **So the only surface an anonymous list could occupy has already been examined, and the conclusion was recorded in the code**: the design's row is **`name · role · relationship · engagement`**, and ⚠️ **`people` supplies none of the four.**
+
+### ⚡ Measured, and the module is smaller than the row assumes
+
+| [TASK-430](BACKLOG.md) delivers | Source |
+|---|---|
+| **The People Intelligence screen** | ⛔ **Contacts, stance, engagement, risk, relationships — no source.** ⚡ The buying committee is **`commercial_profile`'s**, and 📁 the `contacts` section already warns that rendering it here *"would tell a rep that Acme has these six people"* |
+| **Global Search's people group** | 🔴 **A person with no name cannot be searched for.** ⛔ There is nothing to type |
+
+✅ **What `people` does hold is real and small**: `person` and `affiliation`, two tables, and `AffiliationReader.at_company` — **a title, a seniority band and the period held.**
+
+### ⛔ What this lane built and then withdrew, and why the withdrawal is the point
+
+**The endpoint was written, typed, lint-clean and covered by eight passing integration tests** — including one that only exists because a fire test demanded it: ⚡ **removing `context.authorize` left seven of them green**, because `policy.csv` grants `person, read` to both membership roles, **so nothing in the file distinguished a checked route from an unchecked one.** ✅ **A capability role supplied the missing subject** — 📁 [ADR-0410](architecture/adr/0410-authorization-capability-layer.md) §5's *"a capability that is not yet granted denies"* — and the route now refuses a narrowed member.
+
+🔴 **It is not shipped, because nothing can call it.** ⛔ **An endpoint with no consumer is the unreachable-primitive class**, and this lane has filed that finding three times this week against other people's work. ⚠️ **[C-238](#c-238) is the same module's own precedent one layer down**: `AffiliationReader` was *"a `Protocol` that nothing satisfied"*, and **shipping a route nothing calls would be that defect one layer up.**
+
+### ✅ What is actually being asked
+
+**Whether [C-203](#c-203) is ruled** — *does a name ever reach a screen* — ⛔ **and nothing else.** ⚡ **[C-221](#c-221) is `people`'s specification rather than a limitation**, so this is a **commercial decision about what Signora may show, not an engineering one.**
+
+⚠️ **If the answer is no**, ✅ **TASK-430 should be re-scoped or parked** rather than left `READY`, **because its two deliverables both need the answer to be yes.**
+
+⚡ **If the answer is yes**, **the endpoint is ready and its tests exist** — 📁 recorded here so the work is not repeated: `GET /workspaces/{id}/accounts/{account_id}/people`, `Resource.PERSON` with `owner`/`member` read, and an `AffiliationListResponse` carrying **id · person_id · title · seniority · started_on · ended_on and nothing else.**
+
+---
+
 ## C-1519 · `platform_foundation`'s ownership contradicts itself, and a `READY` row sits on it
 
 | | |
