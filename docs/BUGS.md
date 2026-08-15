@@ -329,6 +329,38 @@ Such a row names the code, records **Current assignee: none — not assignable**
 ### ✅ The fix, and why it is not a checker
 
 **The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
+### B-436 · 🟠 The lease reclaims itself on a dead pid, which does automatically what QE correctly refused to do by hand
+
+| | |
+|---|---|
+| **Module** | **Platform Foundation** — [`infra/environment-lease.py`](../infra/environment-lease.py) ([D-022](DECISION_REGISTER.md)) |
+| **Current assignee** | **Lane C** |
+| **Severity** | 🟠 — ⛔ **it destroys a run's environment, and the run is somebody else's** |
+| **Status** | 🔵 **`OPEN` — Lane C, 2026-08-15** |
+| **Found** | ⚡ **Fire-testing the `BLOCKED` diagnostic after QE's near-miss.** **The test produced no output, which is how the auto-reclaim was found: there was no `BLOCKED` path to test** |
+
+**Steps to reproduce.**
+
+```python
+# a lease record naming a pid that no longer exists
+holder()          # → None, and the lease file is DELETED
+acquire("x")      # → succeeds, takes the environment
+```
+
+**Expected.** ⚡ **What QE established the same day: *a dead pid is evidence about the record, not about the machine.***
+
+**Actual.** 📁 **`holder()` reclaims silently, and its docstring states the reasoning:** *"A stale lease is reclaimed silently — it describes a process that no longer exists, and reporting it as a conflict would send the operator hunting for something that already died."*
+
+⚡ **That reasoning is sound for the case it was written for — a crashed run leaving a lock nobody can clear.** 🔴 **It is wrong for the case QE hit: the recorded pid was dead AND another clone had a live run the record never knew about.** ⛔ **QE was contemplating `release --force`, judged that a dead pid did not prove the machine was free, and did not force. `holder()` would have done it for them, without the judgement and without the message.**
+
+#### ⚠️ What is fixed here and what is NOT
+
+✅ **The `BLOCKED` diagnostic now says what a dead pid does and does not prove**, and names two commands that check the machine rather than the record — `ss -ltn` for the ports, `pgrep -af` for runs in flight. 📁 **`OPERATING-MODE.md`: when a guard's output is advice, the advice is under test.**
+
+⛔ **The auto-reclaim itself is NOT changed, deliberately.** ⚠️ **Removing it makes a crashed run a lock nobody can clear without `--force`, which is the failure its docstring was written against — and the two failure modes are opposites.** ⚡ **A correct fix probably checks the MACHINE before reclaiming (ports bound, processes matching) rather than trusting either the record or the pid, and that is a behaviour change to a gate every target depends on.**
+
+> ⛔ **Not proposed here.** 📁 **[§20e](../CLAUDE.md) and [B-131](#b-131)'s precedent: a bug row states the gap; changing what a guard decides is a decision.**
+
 ### B-435 · 🟡 `infra/` is outside the type gate, and the promotion guard is one of the files that does not type-check
 
 | | |
