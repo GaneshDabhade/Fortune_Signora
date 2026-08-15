@@ -216,6 +216,20 @@ infra/certification-guard.py:1421 Argument 1 to "len" has incompatible type "obj
 
 ⚠️ **Split ownership, deliberately:** ✅ **the `certification-guard.py` half is QE's** — it is their instrument, and a Product Office edit to the thing that gates promotion is the wrong lane on the wrong file. ⛔ **This row stays `OPEN` for the other 12 unchecked files and for the gate-scope gap, which is Lane C's.**
 
+##### ✅ FIXED by QE, 2026-08-15 — the guard half only
+
+**`REQUIRED_GATES` and `MINIMUM_COVERAGE` are imported from `record.py` rather than restated, by PACKAGE path with `backend/` on `sys.path`** — ⚡ **the leaf form reproduced the very `missing library stub` artifact this row flagged for `validate.py`, so the argument was avoided by not producing it.** ✅ **`mypy --strict` on the file: 0 errors, from 3.**
+
+**`_satisfied` split into two named predicates**: `_satisfied` asks *did this run's recorded gates pass?* (the past, no required-gate check, deliberately) and `_promotable` asks *may this be promoted now?* (with it). **Three call sites moved — the promotion gate, `--guard-check`, and the certified-commits listing.** ⛔ **`run.get("gates") or []` replaced by `_entries()`, which REFUSES a malformed record instead of reading it as empty.**
+
+**Verified live: `ac622c24ad30` is now refused, naming `eslint` and `frontend-suite`; `136f112bea79` reads *8 of 8 required*; `--audit-main` byte-identical.**
+
+> ⚡ **QE corrected its own prediction in the act of fixing it, and the correction is the better argument.** **They expected the strict predicate to refuse 209 commits on `main`; the fire test said it refuses none** — the audit accepts *an ancestor of a certified commit that is itself on `main`*, and a certified commit near the tip vouches for everything behind it. ⛔ ***"209 was a real measurement of the wrong quantity"*** — commits the two predicates disagree about, which is not what the audit consumes. **A number consumed without its mapping, while writing a row about that.**
+>
+> ✅ **The design survives on what the fire test found instead:** `certified_all` is **empty** in the window between widening `REQUIRED_GATES` and the first run under it, so with nothing to be an ancestor *of*, every non-Closeout commit on `main` becomes a violation at once. ⚡ ***A historical audit whose verdict depends on a gate added this morning is not a historical audit.***
+>
+> 📁 **And one finding worth keeping**: restoring `or []` turns **only** *no-scenarios-key-at-all* red. **The four `gates` cases are double-protected by `_promotable`'s required-gate check and isolate `_entries` not at all; `scenarios` has no `REQUIRED_SCENARIOS` backstop, so it is the only case carrying that guarantee** — and the least obvious one in the list.
+
 ### B-197 · 🟡 The promotion guard protects QE-written states in `BACKLOG.md` and reads `BUGS.md` not at all, so a `VERIFIED` bug can silently reopen
 
 | | |
