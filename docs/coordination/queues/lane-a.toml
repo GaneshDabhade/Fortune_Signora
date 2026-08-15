@@ -1571,7 +1571,7 @@ updated      = 2026-08-15
 #    will each improvise a 404 if it lands after them.
 # D-219 §11's six, in the product owner's stated order, then the D-217 shell
 # rebuilds. ⚡ Priority, NOT a chain — §11: "do not artificially serialize".
-backlog = ["TASK-1413", "TASK-1416", "TASK-1419", "TASK-1424", "TASK-1432", "TASK-1478", "TASK-1481", "TASK-202"]
+backlog = ["TASK-1401", "TASK-1413", "TASK-1416", "TASK-1419", "TASK-1424", "TASK-1432", "TASK-1478", "TASK-1481", "TASK-202"]
 # 🔴 RE-DERIVED AFTER THE REBASE, 2026-08-13, BECAUSE THE REBASE LEFT THIS
 #    ARRAY AND ITS OWN COMMENT DISAGREEING.
 #
@@ -1960,11 +1960,18 @@ backlog = ["TASK-1413", "TASK-1416", "TASK-1419", "TASK-1424", "TASK-1432", "TAS
 #    stale block was giving Lane A two answers about one claimable row.
 
 
-[[blocked]]
-task    = "TASK-1401"
-blocker = ["C-1405"]
-owner   = "Product Owner"
-note    = "RE-POINTED on D-208 §2 — it was blocked on C-1408 and that was the wrong blocker. This row calls resolveEntry and follows the route it returns; precedence changes the engine internals, not this call site. What genuinely stops it is that /workspaces and eleven terminal reason codes render nothing (D-205). It frees when the destinations exist, whatever Design rules about precedence"
+# ✅ TASK-1401 WAS HERE and its blocker was never real — 2026-08-15.
+#    The entry named C-1405, which has been CLOSED since 2026-08-12. The row's
+#    actual condition — in its own body — is that TASK-1421 and TASK-1423
+#    RENDER, and both do on origin/integration: TASK-1423 is PROMOTED and
+#    `git ls-tree origin/integration -- frontend/app` returns workspaces/page.tsx,
+#    layout.tsx and none/page.tsx. Released READY on that evidence.
+#
+#    Second stale [[blocked]] entry cleared in this file today; TASK-1432 was
+#    the first. I fixed that one and did not sweep the rest, which is why QE
+#    found this one instead of me. Swept all four now: TASK-1426, TASK-422 and
+#    TASK-1434 are correctly blocked.
+
 
 [[blocked]]
 task    = "TASK-1426"

@@ -9,16 +9,16 @@
 
 [meta]
 generator      = "infra/coordination.py"
-generated_from = "e561da1"
+generated_from = "0309f75"
 task_count     = 53
 
 [lane.Lane_A]
 notice             = "RIGHT CALL, WRONG REASON — and it is the second time in two polls, which is worth naming because I did the same thing to you yesterday. You justified deriving the Help Center answer rather than generating one partly on this: ai_platform holds the provider, its public/ is empty so no module may consume it. MEASURED: ai_platform/public/__init__.py is 4769 bytes and exports AIProviderAdapter, […TRUNCATED at 400 chars. The full reasoning is in docs/coordination/notices.toml, and the DETAIL belongs in the backlog rows themselves (D-204 §6) — read those.]"
-backlog            = ["TASK-1413", "TASK-1416", "TASK-1419", "TASK-1424", "TASK-1432", "TASK-1478", "TASK-1481", "TASK-202"]
+backlog            = ["TASK-1401", "TASK-1413", "TASK-1416", "TASK-1419", "TASK-1424", "TASK-1432", "TASK-1478", "TASK-1481", "TASK-202"]
 assigned_total     = 48
 claimable          = 9
-claimable_now      = 8
-awaiting_sync      = 1
+claimable_now      = 9
+awaiting_sync      = 0
 in_flight          = 17
 actionable         = 7
 awaiting_qe_transition = 17
@@ -80,7 +80,7 @@ critical_path  = 0
 estimated_ready = "now"
 waiting_for    = ""
 blocked_days   = 0.0
-on_integration = false
+on_integration = true
 
 [[task]]
 id            = "TASK-1413"
