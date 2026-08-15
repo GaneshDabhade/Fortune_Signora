@@ -26,6 +26,7 @@ from modules.workspace_tenancy.domain.capability import (
     CapabilityError,
     CapabilityRole,
     fold,
+    subject_for,
 )
 from modules.workspace_tenancy.domain.entities import WorkspaceRole
 from signora_platform.authorization import Action, Authorizer, Resource
@@ -53,6 +54,8 @@ class CapabilityRepository(Protocol):
     async def assign(
         self, workspace_id: UUID, user_id: UUID, role_id: UUID | None, *, actor_id: UUID
     ) -> None: ...
+
+    async def held_roles(self, workspace_id: UUID) -> dict[UUID, CapabilityRole]: ...
 
     async def holders(self, workspace_id: UUID, role_id: UUID) -> int: ...
 
@@ -212,6 +215,29 @@ class ListCapabilityRoles:
         return tuple(summaries)
 
 
+class HeldCapabilityRoles:
+    """Who in this workspace holds which role — **the roster's role chip.**
+
+    🔴 **Why this exists rather than the roster asking per person.** 📁 The
+    design draws a role beside every name in Team Management, and ⛔ **a
+    membership role rendered there for somebody who effectively authorizes as
+    `Analyst` is a false claim on the screen** — the class this repository keeps
+    finding. ⚡ **One question for the whole list**, because the alternative is
+    an N+1 and [§14](../../../../CLAUDE.md) calls that a defect at write time.
+
+    ⛔ **Separate from the roster's own endpoint, deliberately.** A capability
+    role is not part of a membership, and putting it on `MembershipResponse`
+    would make a tenancy contract carry an authorization fact — 📁 exactly the
+    two concerns ADR-0410 §1 exists to keep apart.
+    """
+
+    def __init__(self, *, capabilities: CapabilityRepository) -> None:
+        self._capabilities = capabilities
+
+    async def execute(self, workspace_id: UUID) -> dict[UUID, CapabilityRole]:
+        return await self._capabilities.held_roles(workspace_id)
+
+
 @dataclass(frozen=True, slots=True)
 class Permission:
     """One thing somebody may do."""
@@ -236,6 +262,24 @@ class EffectivePermissionsView:
     #: their membership role.
     role_name: str | None
     permissions: tuple[Permission, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class RoleChangeView:
+    """What a role change would trade — **both directions.**
+
+    📁 **The design's own words, in Team Management's *Change role* dialog:**
+    *"Both directions are shown, because a role change is a trade rather than a
+    promotion."*
+
+    ⛔ **`gains` and `loses` are deliberately NOT fields.** ⚡ They are the set
+    difference of two lists that are both here, and a third representation of a
+    fact these two already carry is the duplication §2 forbids — **the screen
+    derives them, once.**
+    """
+
+    current: EffectivePermissionsView
+    proposed: EffectivePermissionsView
 
 
 class EffectivePermissions:
@@ -278,15 +322,64 @@ class EffectivePermissions:
         membership = await self._memberships.role_of(workspace_id, user_id)
         if membership is None:
             return None
+        return await self._today(workspace_id, user_id, membership)
 
+    async def preview(
+        self, workspace_id: UUID, user_id: UUID, role_id: UUID | None
+    ) -> RoleChangeView | None:
+        """What *Change to Analyst* — or *change back* — would actually trade.
+
+        ⚡ **Both sides come from the same enforcer as the request path**, so the
+        dialog cannot promise something the enforcement point will refuse. 📁 It
+        is the §3 read taken twice, and **nothing is stored either time.**
+
+        ⚠️ **Today every capability role grants nothing**, so `proposed` is
+        empty and the dialog honestly says the person would lose everything —
+        📁 ADR-0410 §5's *"a capability that is not yet granted denies"*, shown
+        to the customer before they click rather than discovered afterwards.
+        ⛔ **And it stops being empty on its own** the day somebody adds a
+        `cap:` row: **computed, so there is no second place to update.**
+
+        ⛔ **`role_id` naming a role that is not here RAISES rather than falling
+        back.** ⚠️ `subject_for`'s fallback is right for a role that vanished
+        *under* somebody; here it would render *"no change"* for a change that
+        cannot be made — 📁 the P-A shape again, one layer up.
+        """
+        membership = await self._memberships.role_of(workspace_id, user_id)
+        if membership is None:
+            return None
+
+        proposed_role: CapabilityRole | None = None
+        if role_id is not None:
+            proposed_role = await self._capabilities.role(workspace_id, role_id)
+            if proposed_role is None:
+                raise CapabilityError("That role is not in this workspace.")
+
+        return RoleChangeView(
+            current=await self._today(workspace_id, user_id, membership),
+            proposed=self._as(
+                workspace_id,
+                subject_for(
+                    membership,
+                    CapabilityAssignment(user_id=user_id, role_id=role_id),
+                    proposed_role,
+                ),
+                proposed_role,
+            ),
+        )
+
+    async def _today(
+        self, workspace_id: UUID, user_id: UUID, membership: WorkspaceRole
+    ) -> EffectivePermissionsView:
         assignment = await self._capabilities.assignment(workspace_id, user_id)
         role: CapabilityRole | None = None
         if assignment is not None and assignment.role_id is not None:
             role = await self._capabilities.role(workspace_id, assignment.role_id)
+        return self._as(workspace_id, subject_for(membership, assignment, role), role)
 
-        from modules.workspace_tenancy.domain.capability import subject_for
-
-        subject = subject_for(membership, assignment, role)
+    def _as(
+        self, workspace_id: UUID, subject: str, role: CapabilityRole | None
+    ) -> EffectivePermissionsView:
         granted = tuple(
             Permission(resource=str(resource), action=str(action))
             for resource in Resource
@@ -313,11 +406,13 @@ __all__ = [
     "CreateRoleInput",
     "EffectivePermissions",
     "EffectivePermissionsView",
+    "HeldCapabilityRoles",
     "ListCapabilityRoles",
     "MembershipReader",
     "Permission",
     "RenameCapabilityRole",
     "RenameRoleInput",
+    "RoleChangeView",
     "RoleSummary",
     "fold",
 ]

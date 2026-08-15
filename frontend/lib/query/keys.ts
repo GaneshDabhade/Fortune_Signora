@@ -26,6 +26,25 @@ export const queryKeys = {
   preferences: (workspaceId: string) => ['preferences', workspaceId] as const,
 
   members: (workspaceId: string) => ['workspace', workspaceId, 'members'] as const,
+
+  /** 📁 [TASK-1479](../../../docs/BACKLOG.md) ⓸ — Settings' *Roles & permissions*. */
+  capabilityRoles: (workspaceId: string) =>
+    ['workspace', workspaceId, 'capability-roles'] as const,
+  /** ⚡ **Who holds which role, for the whole roster in one answer** — the
+   * chip beside every name, without an ask per row. */
+  capabilityAssignments: (workspaceId: string) =>
+    ['workspace', workspaceId, 'capability-assignments'] as const,
+  /** ⚡ **Per person**, because the answer is about one person and nobody else. */
+  effectivePermissions: (workspaceId: string, userId: string) =>
+    ['workspace', workspaceId, 'effective-permissions', userId] as const,
+  /**
+   * ⛔ **Keyed by the role being previewed as well as the person**, and
+   * `'unassigned'` stands in for *change back* — ⚡ **two different questions
+   * about one person**, and a shared key would answer *change to Analyst* with
+   * the cached answer for *change back*.
+   */
+  roleChangePreview: (workspaceId: string, userId: string, roleId: string | null) =>
+    ['workspace', workspaceId, 'role-change-preview', userId, roleId ?? 'unassigned'] as const,
   organizationHistory: (workspaceId: string) =>
     ['workspace', workspaceId, 'history'] as const,
   invitations: (workspaceId: string) =>

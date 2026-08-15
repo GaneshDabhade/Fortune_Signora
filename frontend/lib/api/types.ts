@@ -1260,3 +1260,72 @@ export interface AccountTag {
 export interface AccountTagAssignments {
   assignments: Record<string, string[]>;
 }
+
+/**
+ * 🔴 **One named set of capabilities** — [TASK-1479](../../../docs/BACKLOG.md)
+ * ⓸, against
+ * [ADR-0410](../../../docs/architecture/adr/0410-authorization-capability-layer.md).
+ *
+ * ⛔ **No permission list on the role, and that is the contract rather than an
+ * omission.** 📁 ADR-0410 §2 keeps the grants in `policy.csv`, so a copy here
+ * would be the second authorization model the ruling forbids — **stale the
+ * moment somebody edits the file the enforcer actually reads.**
+ *
+ * ⚡ **What a role permits is asked ABOUT A PERSON**, through
+ * `EffectivePermissions` below, because that is the only question the enforcer
+ * can answer honestly.
+ */
+export interface CapabilityRole {
+  role_id: string;
+  /** ⚡ **As the customer typed it.** `Analyst`, never `cap:analyst`. */
+  name: string;
+  /**
+   * ⚠️ **How many people hold it**, derived on read. ⛔ **What a *delete*
+   * control must ask before offering itself** — the database refuses to remove
+   * a role somebody holds, and a control it would reject is one that goes
+   * nowhere.
+   */
+  holders: number;
+}
+
+/** One thing somebody may do. Both halves are the platform's vocabulary, so
+ * neither reaches a screen unrendered (ADR-0034). */
+export interface Permission {
+  resource: string;
+  action: string;
+}
+
+/**
+ * 🔴 **What one person may actually do here** — the design's *Effective
+ * permissions*.
+ *
+ * 📁 **ADR-0410 §3: computed, never stored.** ⚡ **Every entry was asked of the
+ * same enforcer that decided the request which returned it**, so this screen
+ * and the enforcement point cannot disagree.
+ */
+export interface EffectivePermissions {
+  user_id: string;
+  /**
+   * ⚠️ **`null` means they authorize as their membership role** — including
+   * when a role they were assigned no longer resolves. ⛔ **Showing a role
+   * somebody is not effectively holding is the stale claim §3 forbids arriving
+   * by a different route.**
+   */
+  role_name: string | null;
+  permissions: Permission[];
+}
+
+/**
+ * 🔴 **What a role change would trade** — the design's *Change role — Member →
+ * Analyst*.
+ *
+ * 📁 **Its own words: *"Both directions are shown, because a role change is a
+ * trade rather than a promotion."*** ⛔ **No `gains`/`loses` on the wire**:
+ * they are the set difference of these two lists, and a third representation
+ * of one fact is the duplication §2 forbids.
+ */
+export interface RoleChangePreview {
+  user_id: string;
+  current: EffectivePermissions;
+  proposed: EffectivePermissions;
+}

@@ -167,6 +167,38 @@ class SqlCapabilityRepository:
             )
         await self._session.flush()
 
+    async def held_roles(self, workspace_id: UUID) -> dict[UUID, CapabilityRole]:
+        """Who holds which role, for everybody who holds one.
+
+        🔴 **One query for the whole roster**, and that is the point. ⛔ A
+        screen showing a role chip per person would otherwise ask once per row
+        — 📁 [§14](../../../../CLAUDE.md): *obvious inefficiency is a defect at
+        write time.*
+
+        ⛔ **Somebody who holds no role is ABSENT rather than mapped to
+        `None`.** ⚡ The caller asked about one workspace and gets everybody in
+        it who has one — **a key with a null value would be a third way of
+        saying what two already say** (`assignment` above).
+        """
+        rows = await self._session.execute(
+            select(CapabilityAssignmentModel.user_id, CapabilityRoleModel)
+            .join(
+                CapabilityRoleModel,
+                CapabilityRoleModel.role_id == CapabilityAssignmentModel.role_id,
+            )
+            .where(
+                CapabilityAssignmentModel.workspace_id == workspace_id,
+                # ⚡ **The join already drops a `NULL` `role_id`** — *changed
+                # back* — and this states it rather than relying on the reader
+                # knowing that an inner join does.
+                CapabilityAssignmentModel.role_id.is_not(None),
+            )
+        )
+        return {
+            user_id: CapabilityRole(id=role.role_id, name=role.name)
+            for user_id, role in rows.all()
+        }
+
     async def holders(self, workspace_id: UUID, role_id: UUID) -> int:
         """How many people hold this role.
 

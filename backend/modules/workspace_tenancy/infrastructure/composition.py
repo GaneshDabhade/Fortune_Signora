@@ -14,6 +14,7 @@ from modules.workspace_tenancy.application.capability_use_cases import (
     AssignCapabilityRole,
     CreateCapabilityRole,
     EffectivePermissions,
+    HeldCapabilityRoles,
     ListCapabilityRoles,
     RenameCapabilityRole,
 )
@@ -241,13 +242,14 @@ def build_query_service(session: AsyncSession) -> WorkspaceQueryService:
 
 @dataclass(frozen=True, slots=True)
 class CapabilityUseCases:
-    """ADR-0410's five, built together — TASK-1479 slice ⓸."""
+    """ADR-0410's six, built together — TASK-1479 slice ⓸."""
 
     list_roles: ListCapabilityRoles
     create_role: CreateCapabilityRole
     rename_role: RenameCapabilityRole
     assign_role: AssignCapabilityRole
     effective_permissions: EffectivePermissions
+    held_roles: HeldCapabilityRoles
 
 
 class _MembershipReaderAdapter:
@@ -283,4 +285,5 @@ def build_capability_use_cases(session: AsyncSession) -> CapabilityUseCases:
         effective_permissions=EffectivePermissions(
             capabilities=capabilities, memberships=memberships, authorizer=CasbinAuthorizer()
         ),
+        held_roles=HeldCapabilityRoles(capabilities=capabilities),
     )

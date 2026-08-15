@@ -74,16 +74,17 @@ from modules.workspace_tenancy.interface.schemas import (
     CreateWorkspaceRequest,
     DescribePersonRequest,
     EffectivePermissionsResponse,
+    HeldCapabilityRolesResponse,
     HistoryEntryResponse,
     InvitationResponse,
     InviteMemberRequest,
     MembershipResponse,
     OnboardingRunResponse,
-    PermissionResponse,
     PreferencesResponse,
     RemoveMemberRequest,
     RenameCapabilityRoleRequest,
     ReviseViewRequest,
+    RoleChangePreviewResponse,
     SavedViewResponse,
     SaveViewRequest,
     TransferOwnershipRequest,
@@ -1058,6 +1059,31 @@ async def capability_roles(context: CurrentWorkspace) -> CapabilityRoleListRespo
     )
 
 
+@router.get(
+    "/workspaces/{workspace_id}/capability-assignments",
+    response_model=HeldCapabilityRolesResponse,
+    summary="Who holds which role",
+)
+async def capability_assignments(context: CurrentWorkspace) -> HeldCapabilityRolesResponse:
+    """The role chip beside every name in Team Management.
+
+    🔴 **One question for the whole roster.** ⛔ Asking per person would be an
+    N+1 on a screen that renders every colleague — 📁 [§14](../../../../CLAUDE.md),
+    *obvious inefficiency is a defect at write time.*
+
+    ⚠️ **Separate from `GET /members`, deliberately.** 📁 ADR-0410 §1 keeps
+    membership and capability apart, and **a capability role on a membership
+    response would put an authorization fact inside a tenancy contract.**
+    """
+    context.authorize(Resource.CAPABILITY_ROLE, Action.READ)
+    held = await build_capability_use_cases(context.session).held_roles.execute(
+        context.workspace_id
+    )
+    return HeldCapabilityRolesResponse(
+        assignments={str(user_id): role.name for user_id, role in held.items()}
+    )
+
+
 @router.post(
     "/workspaces/{workspace_id}/capability-roles",
     response_model=CapabilityRoleResponse,
@@ -1176,10 +1202,36 @@ async def effective_permissions(
     )
     if view is None:
         raise NotAWorkspaceMemberError(user_id)
-    return EffectivePermissionsResponse(
-        user_id=user_id,
-        role_name=view.role_name,
-        permissions=[
-            PermissionResponse(resource=p.resource, action=p.action) for p in view.permissions
-        ],
+    return EffectivePermissionsResponse.from_domain(view, user_id=user_id)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/members/{user_id}/capability-role/preview",
+    response_model=RoleChangePreviewResponse,
+    summary="What changing this person's role would gain them, and what it would cost",
+)
+async def preview_capability_role_change(
+    context: CurrentWorkspace, user_id: UUID, role_id: Annotated[UUID | None, Query()] = None
+) -> RoleChangePreviewResponse:
+    """Team Management's *Change role — Member → Analyst*, before it happens.
+
+    📁 **The design requires both directions**: *"Both directions are shown,
+    because a role change is a trade rather than a promotion."* ⛔ **A dialog
+    that showed only what somebody gains would describe a promotion**, and this
+    layer's whole purpose is that a capability role can narrow.
+
+    ⚡ **`role_id` omitted is *change back*** — the same convention as the `PUT`
+    it previews, and deliberately the same word for the same act.
+
+    ⚠️ **`READ`, not `UPDATE`.** ⛔ Reading what a change *would* do grants
+    nothing and changes nothing; requiring the authority to perform it would
+    stop a member seeing why a control is not theirs — 📁 which is the
+    `onlyOwnersCan` shape the product already uses, one tier up.
+    """
+    context.authorize(Resource.CAPABILITY_ROLE, Action.READ)
+    view = await build_capability_use_cases(context.session).effective_permissions.preview(
+        context.workspace_id, user_id, role_id
     )
+    if view is None:
+        raise NotAWorkspaceMemberError(user_id)
+    return RoleChangePreviewResponse.from_domain(view, user_id=user_id)

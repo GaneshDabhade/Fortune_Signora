@@ -517,6 +517,46 @@ databaseUrl: required(
 
 ---
 
+## C-1513 · The design snapshot says both *"New role"* and *"Custom roles are deliberately absent"*
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, building [TASK-1479](BACKLOG.md) slice ⓸ — ⚡ **found by reading both screens the ADR releases**, not by review |
+| **Owner** | 🔴 **Product owner**, through Lane C — ⛔ **the design snapshot is not a lane's to edit**, and neither is which half is right |
+| **Type** | ⚠️ **A contradiction inside one snapshot**, not a dependency. **Nothing is blocked** |
+| **Blocks** | ✅ **Nothing.** 📁 **[ADR-0410](architecture/adr/0410-authorization-capability-layer.md) §6 rules it already** — it releases *New role* by name — **and slice ⓸ is built on that reading and shipped** |
+| **Status** | **`OPEN`** — ⚡ **filed so the design says one thing rather than two**, before a later slice reads the other half and builds the opposite |
+
+### ⛔ The two sentences, both in `docs/design-snapshot/screens/`
+
+📁 **`Fortune Signora Settings.dc.html`, the *Roles & permissions* card:**
+
+> ✅ ***"Five roles · permissions are additive, never subtractive"***, with a ***"New role"*** control beside it.
+
+📁 **`Fortune Signora Team Management.dc.html`, the role matrix:**
+
+> ⛔ ***"Full · Team-scoped · Own only · Read · None. Roles are fixed; scope comes from teams. Custom roles are deliberately absent — they become unauditable within a year."***
+
+### 🔴 Three disagreements, not one
+
+| | Settings | Team Management |
+|---|---|---|
+| **Can a customer define a role?** | ✅ ***New role*** | ⛔ ***"Custom roles are deliberately absent"*** |
+| **How many roles are there?** | **Five** | **Five, named** — `Owner · Admin · Analyst · Member · Guest` |
+| **Can a role take something away?** | ⛔ ***"additive, never subtractive"*** | ⚡ **The matrix draws `Analyst` as NARROWER than `Admin`**, which is subtraction |
+
+### ⚡ What this lane did, and why it needs no ruling to have shipped
+
+📁 **ADR-0410 §6 is the ratified contract and it names the control:** ✅ ***"Settings — Roles & permissions, New role."*** ⛔ **So the Settings half is the one implemented**, and [D-138](DECISION_REGISTER.md) makes the snapshot the *implementation* authority while the ADR is the ratified decision — **and where a ratified ADR names a control explicitly, it is not ambiguous.**
+
+⚠️ **The third row is the one that would have mattered most, and this lane recorded its reasoning in `capability.py` rather than leaving it implied.** 🔴 ***"Additive, never subtractive"* and a narrower `Analyst` cannot both hold**, and **a capability role that could only add makes a narrower one unbuildable** — 📁 [§2](../CLAUDE.md): *a design that cannot express the product.* ✅ **Replacement is what the Security Invariants assert**, and 📁 **ADR-0410 §5's safe direction survives it**: an unlisted pair denies for a capability role exactly as it does for `member`.
+
+### ✅ What is actually being asked
+
+**Which half of the snapshot is current** — ⛔ **not which is better.** ⚡ **`Five roles` and `Custom roles are deliberately absent` read as an EARLIER revision than a *New role* button**, and 📁 [D-138](DECISION_REGISTER.md) says a refresh is a new baseline **assessed before it propagates** — so **the two halves may simply have been refreshed at different times.**
+
+⚠️ **If custom roles are genuinely out**, ⛔ **the capability layer is unaffected and only the *New role* control is** — the roles would become a fixed set defined in `policy.csv` rather than by a customer, and **everything else in slice ⓸ stands.**
+
 ## C-1512 · [ADR-0413](architecture/adr/0413-customer-authored-notes-and-tasks.md) creates a bounded context and names no module for it
 
 | | |

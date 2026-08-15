@@ -618,6 +618,143 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-272 · The coverage gate systematically understates every file that touches the database
+
+| | |
+|---|---|
+| **Status** | **`OPEN` — Lane A, 2026-08-15** |
+| **Raised by** | **Lane A**, 2026-08-15, **checking its own slice's coverage before handover** on QE's advice — ⚡ **found by disbelieving the number, not by reading the code** |
+| **Module** | ⛔ **`platform_foundation`** — [`backend/pyproject.toml`](../backend/pyproject.toml) `[tool.coverage.run]` and [`infra/coverage-debt.py`](../infra/coverage-debt.py). **Lane C's under [D-022](DECISION_REGISTER.md)**, and **not this lane's to fix** |
+| **Severity** | 🟠 **The gate passes, so nothing is less tested than believed** — ⛔ **but `coverage-debt` names the wrong files, and a lane acting on it writes tests for lines that are already covered** |
+
+#### 🔴 The measurement, and it is decisive
+
+**Same test file, same tests, one configuration line:**
+
+| Configuration | `authorization_subject.py` |
+|---|---|
+| **As the repository is configured today** | ⛔ **64%** — missing `86-87, 90-96, 99` |
+| **Plus `concurrency = thread,greenlet`** | ✅ **100%** — missing nothing |
+
+```
+pytest tests/integration/test_api_capability_roles.py --cov=…authorization_subject
+  → 21 stmts, 5 missed, 64%
+
+… --cov-config=<covrc with concurrency = thread,greenlet>
+  → 21 stmts, 0 missed, 100%
+```
+
+⚡ **20 tests passed in both runs. No production code changed. No test changed.**
+
+#### ⚠️ The tell was that the "missing" lines were impossible
+
+📁 **`resolve_role` is eight straight-line statements.** ⛔ **Coverage reported line `85` executed and line `86` — the very next statement — not.**
+
+```python
+85  membership = await self._memberships.get_membership(…)   ✅ covered
+86  if membership is None:                                    ⛔ "missing"
+87      return None                                           ⛔ "missing"
+89  assignment = await self._capabilities.assignment(…)       ✅ covered
+90  if assignment is None or assignment.role_id is None:      ⛔ "missing"
+96      return WorkspaceRole(membership.role).value           ⛔ "missing"
+98  role = await self._capabilities.role(…)                   ✅ covered
+99  return subject_for(…)                                     ⛔ "missing"
+```
+
+🔴 **Every `await` line is covered. Every line between them is not.** ⚡ **That is not a gap in a test suite; no suite can produce that shape.**
+
+#### 📁 The cause
+
+**SQLAlchemy's async layer runs every database `await` through `greenlet`** — `sqlalchemy/util/_concurrency_py3k.py`, `greenlet_spawn`. ⛔ **`coverage.py` defaults to `concurrency = thread` and loses line events for frames resumed inside a greenlet it is not tracing**, so only the lines where control returns to the traced frame are recorded.
+
+⚠️ **`[tool.coverage.run]` sets `source`, `branch` and `omit`, and does not set `concurrency`.** ⚡ **`greenlet 3.5.4` and `coverage 7.15.2` are both installed; the option is available and unused.**
+
+#### ⛔ Why it matters even though the gate passes
+
+✅ **Nothing is less covered than the repository believes** — the true figure is **higher**, so 95.01% is a floor rather than a ceiling.
+
+🔴 **But [`coverage-debt.py`](../infra/coverage-debt.py) is the instrument [§19](../CLAUDE.md) tells every lane to run before handover**, and it currently names the database-touching files as the worst in the repository:
+
+```
+  MISSED   COVER  FILE
+      96     61%  modules/workspace_tenancy/interface/router.py
+      50     62%  modules/workspace_tenancy/infrastructure/repositories.py
+      15     53%  modules/workspace_tenancy/infrastructure/query_service.py
+      11     70%  modules/workspace_tenancy/infrastructure/capability_repository.py
+```
+
+⚠️ **Every one of those is an async SQLAlchemy file.** ⛔ **A lane reading that list writes tests for lines that already run** — which is what this lane was about to do.
+
+⚡ **It is [§2](../CLAUDE.md)'s standing pattern: an instrument answering a narrower question than the one asked.** **The question is *"which lines does the suite execute?"*; the answer given is *"which lines does the suite execute in the traced greenlet?"***
+
+#### ✅ What is NOT proposed
+
+⛔ **This lane did not change the configuration.** 📁 A one-line edit to `[tool.coverage.run]` **moves what the 95% gate means for every file in the repository at once**, and the measured figure would rise — **which is a change to a gate's meaning, and [§20e](../CLAUDE.md) says that is a slice with an owner, not a convenience.**
+
+⚠️ **The repository-wide magnitude is unmeasured here.** ✅ **One file moved 36 points**; the honest statement is that the true figure is higher by an unknown amount, and **whoever changes the configuration should re-cut `fail_under` from the new measurement rather than leaving a baseline that was set against the old instrument.**
+
+---
+
+### B-271 · `environments.py --exports` derives a database the compose file never creates
+
+| | |
+|---|---|
+| **Status** | **`OPEN` — Lane A, 2026-08-15** |
+| **Raised by** | **Lane A**, 2026-08-15, **checking QE's proposed mitigation for [B-270](#b-270) before using it** — ⚡ **found by running the instruction, not by reading it** |
+| **Module** | ⛔ **`platform_foundation`** — [`infra/environments.py`](../infra/environments.py) and [`infra/docker-compose.yml`](../infra/docker-compose.yml). **Lane C's under [D-022](DECISION_REGISTER.md)**, and **not this lane's to fix** |
+| **Severity** | 🟠 **It is about to become the documented mitigation for a 🔴 data-destruction defect**, and two of the three variables it produces are wrong on a per-lane compose stack |
+
+#### 🔴 The two files disagree about the database name
+
+📁 **[`infra/environments.py`](../infra/environments.py), on `lane-a-2b`:**
+
+```
+SIGNORA_POSTGRES_PORT=5732        ✅ correct
+SIGNORA_DATABASE=signora_lane_a   ⛔ no such database on this clone
+```
+
+📁 **[`infra/docker-compose.yml`](../infra/docker-compose.yml)`:29–33`, which is what actually creates it:**
+
+```yaml
+POSTGRES_USER: signora
+POSTGRES_DB:   signora
+ports: [ "${SIGNORA_POSTGRES_PORT:-5432}:5432" ]
+```
+
+⚡ **The PORT comes from the same variable in both, so it agrees.** ⛔ **The DATABASE does not: the compose file hardcodes `signora`, and the derivation computes `signora_lane_<letter>`.**
+
+**Measured on this clone:** `docker exec signora-lane-a-postgres-1 psql -U signora -d postgres -tAc "select datname from pg_database"` → **`postgres · signora · template0 · template1`.** ⛔ **No `signora_lane_a`.**
+
+#### ⚠️ Two models, and each half of the answer comes from a different one
+
+| | Assumes | Gets right |
+|---|---|---|
+| **[`RUNNING.md`](RUNNING.md#running-a-lane)** — *"One Postgres, one Redis, many databases"* | **One shared server on 5432**, database per lane | **the database name** |
+| **[`infra/docker-compose.yml`](../infra/docker-compose.yml)** — a compose project per lane | **A server per lane on its own port**, database always `signora` | **the port** |
+
+⛔ **`environments.py` renders the first model's database onto the second model's port**, so the pair it emits describes **no environment that exists.**
+
+#### 🔴 Why this is urgent rather than cosmetic
+
+**QE is shipping this as the mitigation for [B-270](#b-270) in cycle 233:**
+
+```bash
+eval "$(python3 infra/environments.py --exports)"
+export SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://…@localhost:${SIGNORA_POSTGRES_PORT}/${SIGNORA_DATABASE}"
+```
+
+⛔ **On a per-lane compose stack that resolves to `5732/signora_lane_a`, which does not exist.** ✅ **It fails loudly** — the [B-268](#b-268) class, and the good outcome — ⚠️ **but a lane following the documented workaround for a data-destruction defect gets an error, and the next thing anybody does with an error is work around it.**
+
+⛔ **And `SIGNORA_DATABASE_URL` is the one that bites**: 📁 `migrations/env.py` reads it from `os.environ` directly, so **pointing it at a different database locks one and migrates the other** ([B-007](#b-007), open).
+
+#### ✅ What this lane is doing meanwhile, stated rather than implied
+
+**Exporting all three at `localhost:5732/signora`** — ⚡ **this clone's own compose stack, derived from `backend/.env` and confirmed against `pg_database`** — **which is what every gate this lane has run was measured on.**
+
+⛔ **Not proposed as the fix.** ✅ **The fix is that one representation decides both halves** — 📁 [§2](../CLAUDE.md), *truth has exactly one authoritative representation*: **either the compose file takes its database name from the derivation, or the derivation reads the compose file.** ⚠️ **Today each is authoritative for one half of a pair that is only ever used together.**
+
+---
+
 ### B-270 · `make demo-seed` seeds human review's database from any lane, and says it succeeded
 
 | | |
@@ -625,7 +762,7 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 | **Status** | **`OPEN` — Lane A, 2026-08-15** |
 | **Raised by** | **Lane A**, 2026-08-15, running [TASK-1479](BACKLOG.md) ⓶b's journey — ⚡ **found by the data not being there afterwards**, not by review |
 | **Module** | ⛔ **`platform_foundation`** — [`Makefile`](../Makefile) and `backend/tests/conftest.py`. **Lane C's under [D-022](DECISION_REGISTER.md)**, and **not this lane's to fix** ([§20e](../CLAUDE.md)) |
-| **Severity** | 🟠 **A lane silently writes into an environment it is told to stay off**, and the command reports success |
+| **Severity** | 🔴 **Raised from 🟠 on 2026-08-15** — ⛔ **a lane running bare `pytest` TRUNCATES human review's database**, and human product review is [§20e](../CLAUDE.md) Completion step 15. **See *Escalated the same day* below** |
 
 #### 🔴 What happens
 
@@ -736,6 +873,54 @@ test · e2e · demo-seed · demo-narrate · certify   →   consent=1  db=1
 #### ⚠️ QE should know, because it is their stack
 
 **Human review's Playground was deleted and re-seeded by this lane at 2026-08-15T03:5x.** ✅ **Nothing outside the Playground workspace was touched** — the delete is scoped by workspace name — **but the demo data a reviewer would have been looking at is this lane's, not the one that was there.**
+
+#### 🔴 Escalated the same day — **it is not only the seeder. It is `pytest` itself, and it TRUNCATES**
+
+**Severity raised 🟠 → 🔴 by Lane A, 2026-08-15**, on evidence found by doing it.
+
+⛔ **A lane running bare `pytest` — with no variable set, which is what a fresh shell is — points the whole integration suite at `localhost:5432/signora`.** ⚡ **That is human review's, by the same `DEFAULT_APP_DATABASE_URL` default this row already names**, and 🔴 **`clean_database` truncates every table after every test.**
+
+| | |
+|---|---|
+| **What the seeder does** | `DELETE FROM workspace WHERE id = :id` — ✅ **one workspace, by name** |
+| **What the suite does** | ⛔ **`TRUNCATE` every table, after every test** |
+
+**What this lane actually did, stated rather than summarised.** Resuming after a context compaction, in a shell that no longer carried the exports [`RUNNING.md`](RUNNING.md#running-a-lane) requires, it ran:
+
+```
+SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 pytest tests/integration/test_api_capability_roles.py
+```
+
+**16 of 17 tests failed with `relation "capability_assignment" does not exist`** — ⚡ **the tell that it was on a database at `0054` rather than this lane's `0057`, and the only reason the mistake was visible at all.** ⛔ **The truncation runs in teardown regardless of whether the test passed.**
+
+**Measured immediately afterwards, at `5432/signora`:** `workspace` **0** · `membership` **0** · `outbox_event` **0** · `alembic_version` **`0054`** · 69 tables.
+
+#### 🔴 And it is not only a bare `pytest` — it is `make test`
+
+⛔ **[`Makefile`](../Makefile)`:106`, the repository's own documented gate**, *"suite + coverage gate"*:
+
+```make
+test:
+	@python3 infra/environment-lease.py run test -- sh -c 'cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest --cov'
+```
+
+🔴 **It sets `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1` and no database variable at all.** ⚡ **`environment-lease.py run` adds only its own lease variable** — `run()` builds `{**os.environ, LEASE_VARIABLE: identifier}` — **so the database is whatever the caller's shell already had**, and a fresh shell has none.
+
+⚠️ **`E2E_ENV` sets all three, eleven lines further down, for `make e2e`.** ⛔ **`make test` sets none**, and it is the more destructive of the two.
+
+📁 **[`RUNNING.md`](RUNNING.md#running-a-lane) does document the three exports** — ⚠️ **under *"this is only needed for a lane added later"*, in the section for **creating** a lane. **A lane that already exists reads that as done.**
+
+⛔ **So the failure mode needs no mistake**: open a new shell, run the gate the Makefile documents, and the suite truncates human review's database. **That is what happened here.**
+
+⚠️ **Stated exactly: this lane cannot prove what was there beforehand.** 📁 **By this row's own record the last thing written there was this lane's Playground seed**, so the balance of evidence is that what was destroyed was that seed rather than the product owner's original data — ⛔ **but that is an inference, and the honest report is that the environment was emptied and nobody can now say by which of the two events.**
+
+#### ⚡ Why this changes the fix rather than only the severity
+
+⛔ **The guard that exists is the wrong guard.** `require_explicit_consent_to_truncate` asks *"do you consent to truncation?"* — ⚡ **and the answer was yes, correctly: this lane's own database is disposable.** 🔴 **The question it does not ask is *which database*, which is the only question that was wrong** — 📁 [§2](../CLAUDE.md), *an instrument answering a narrower question than the one asked.*
+
+✅ **A guard that would have caught it, and it needs no discipline:** **refuse to run destructive fixtures against slot 0.** [`infra/environments.py`](../infra/environments.py) already computes `"signora" if self.slot == 0`, so the check is *"is the resolved database human review's?"* → **fail with the reason.** ⛔ **A default that silently selects the one environment [§20e](../CLAUDE.md) reserves for the product owner is the defect; consent is not the missing half.**
+
+⚠️ **And the default itself is wrong in the other direction too** — ⛔ **a test suite with no environment configured should refuse to run, not pick one.** 📁 That is the same shape as [B-268](#b-268) failing loudly, which this row already calls the better behaviour.
 
 ---
 

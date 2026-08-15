@@ -325,3 +325,179 @@ class TestAnotherWorkspaceCannotBeReached:
         )
 
         assert response.status_code == 404, response.text
+
+
+class TestPreviewingARoleChange:
+    """📁 **The design's *Change role — Member → Analyst* dialog**, which shows
+    *Gains* and *Loses* — *"both directions… because a role change is a trade
+    rather than a promotion."*"""
+
+    async def test_it_names_what_the_change_would_cost(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """⚡ **The sentence the customer needs before clicking.** ⛔ Today a
+        capability role grants nothing, so this is *"loses everything"* — 📁
+        ADR-0410 §5's safe direction, **shown rather than discovered.**"""
+        owner, person = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        await _add_member(client, key_pair, owner, workspace, person)
+        role_id = (
+            await _create_role(client, key_pair, owner, workspace, "Analyst")
+        ).json()["role_id"]
+
+        response = await client.get(
+            f"/workspaces/{workspace}/members/{person}/capability-role/preview",
+            params={"role_id": role_id},
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["current"]["role_name"] is None
+        assert {"resource": "workspace", "action": "read"} in body["current"]["permissions"]
+        assert body["proposed"]["role_name"] == "Analyst"
+        assert body["proposed"]["permissions"] == []
+
+    async def test_changing_back_is_previewable_and_is_the_direction_that_gains(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        owner, person = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        await _add_member(client, key_pair, owner, workspace, person)
+        role_id = (
+            await _create_role(client, key_pair, owner, workspace, "Analyst")
+        ).json()["role_id"]
+        await client.put(
+            f"/workspaces/{workspace}/members/{person}/capability-role",
+            json={"role_id": role_id},
+            headers=_auth(key_pair, owner),
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace}/members/{person}/capability-role/preview",
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["current"]["permissions"] == []
+        assert body["proposed"]["role_name"] is None
+        assert {"resource": "workspace", "action": "read"} in body["proposed"]["permissions"]
+
+    async def test_a_role_that_is_not_here_is_refused_rather_than_shown_as_no_change(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """⛔ **A dialog rendering *nothing changes* for a change the `PUT`
+        would refuse is worse than an error** — it would say the act was safe."""
+        owner, person = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        await _add_member(client, key_pair, owner, workspace, person)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/members/{person}/capability-role/preview",
+            params={"role_id": str(uuid4())},
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 422, response.text
+        assert response.json()["error"]["code"] == "capability_refused"
+
+    async def test_somebody_who_is_not_a_member_is_a_404_with_its_own_code(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/members/{uuid4()}/capability-role/preview",
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 404, response.text
+        assert response.json()["error"]["code"] == "member_not_found"
+
+    async def test_a_member_may_read_a_preview(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """⚠️ **`READ`, not `UPDATE`.** ⛔ Requiring the authority to perform the
+        change would stop a member ever seeing why a control is not theirs —
+        📁 the `onlyOwnersCan` shape the product already uses, one tier up."""
+        owner, person = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        await _add_member(client, key_pair, owner, workspace, person)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/members/{person}/capability-role/preview",
+            headers=_auth(key_pair, person),
+        )
+
+        assert response.status_code == 200, response.text
+
+
+class TestWhoHoldsWhat:
+    async def test_the_roster_learns_every_held_role_in_one_request(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """🔴 **Team Management's role chip.** ⛔ Asking per person would be an
+        N+1 on a screen that renders every colleague."""
+        owner, holder, plain = uuid4(), uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        await _add_member(client, key_pair, owner, workspace, holder)
+        await _add_member(client, key_pair, owner, workspace, plain)
+        role_id = (
+            await _create_role(client, key_pair, owner, workspace, "Analyst")
+        ).json()["role_id"]
+        await client.put(
+            f"/workspaces/{workspace}/members/{holder}/capability-role",
+            json={"role_id": role_id},
+            headers=_auth(key_pair, owner),
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace}/capability-assignments",
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json()["assignments"] == {str(holder): "Analyst"}
+
+    async def test_changing_back_removes_them_from_the_answer(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """⛔ **Absent, not `null`.** ⚡ A key with a null value would be a third
+        way of saying *"holds nothing"*, and the screen would have to know all
+        three."""
+        owner, person = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        await _add_member(client, key_pair, owner, workspace, person)
+        role_id = (
+            await _create_role(client, key_pair, owner, workspace, "Analyst")
+        ).json()["role_id"]
+        for role in (role_id, None):
+            await client.put(
+                f"/workspaces/{workspace}/members/{person}/capability-role",
+                json={"role_id": role},
+                headers=_auth(key_pair, owner),
+            )
+
+        response = await client.get(
+            f"/workspaces/{workspace}/capability-assignments",
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json()["assignments"] == {}
+
+    async def test_a_member_may_read_it(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        owner, person = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        await _add_member(client, key_pair, owner, workspace, person)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/capability-assignments",
+            headers=_auth(key_pair, person),
+        )
+
+        assert response.status_code == 200, response.text

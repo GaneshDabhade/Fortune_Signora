@@ -1172,3 +1172,104 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 
 **Ten tests hold those refusals**, because a `Protocol` nothing asserts is a suggestion — and these are the non-responsibilities that erode *"one reasonable exception at a time"*.
 
+
+## The capability layer — 2026-08-15 (Lane A, [TASK-1479](../BACKLOG.md) ⓸)
+
+📁 **[ADR-0410](adr/0410-authorization-capability-layer.md), ratified as [C-1429](../LANE_COORDINATION.md).** ⚡ **§7 delegates the vocabulary, the role sets, the schema, the API shape and the UI to this lane; what follows is what was decided and why.**
+
+### 🔴 §6 said *"two roles remain two"*, and that is still true
+
+⛔ **`WorkspaceRole` is unchanged.** ⚡ **`OWNER` and `MEMBER` are tenancy membership** — *does this person belong here, and may they administer it* — and **a capability role is a different question sitting above it**: *may this person perform this action on this resource.* 📁 ADR-0410 §1.
+
+> **The enum did not widen, and §6's own reasoning is why.** ⛔ **Widening it would have made every new screen a change to a tenancy primitive.**
+
+### ⚡ The mechanism already existed, and finding that was most of the slice
+
+📁 `Authorizer.is_allowed(role: str, …)` **takes a free string**, and `model.conf`'s `sub` is *"the caller's workspace role, already resolved from a server-side-verified membership"* — **deliberately not the user id.**
+
+✅ **So a capability role needed no change to `signora_platform/**` at all.** **It is another role string, resolved server-side exactly as the membership role already is, and its grants are `policy.csv` rows** — 📁 the registry [§20e](../../CLAUDE.md) says every lane extends. ⛔ **One line of composition is the whole wiring**, and it is in `apps/api/main.py`.
+
+### 🔴 The one genuine decision — a capability role REPLACES the membership role
+
+⚠️ **It does not add to it, and four things in the design require that.**
+
+| | |
+|---|---|
+| 📁 ***"Effective permissions"*** | **ADR-0410 §3 calls it *the resolved answer for a person*.** ⛔ **One answer** — a union of *what my membership allows* and *what my role allows* is two answers a customer has to combine themselves |
+| 📁 ***"Change to Analyst"*** | **The design's own words**, and ⚡ **a change is not an addition** |
+| 🔴 **Narrowing must be representable** | **`Analyst` is drawn as narrower than `Admin`.** ⛔ **A role that could only add makes a narrower one unbuildable** — *a design that cannot express the product* |
+| ✅ **The safe direction survives** | 📁 §5: *"a capability that is not yet granted denies."* **An unlisted pair is denied for a capability role exactly as it is for `member`** |
+
+⛔ **And §5's migration guarantee is untouched, because assignment is opt-in.** **Nobody holds a capability role until somebody assigns one**, so *"every current OWNER and every current MEMBER keeps exactly the authority it has today"* is **true by construction rather than by care.**
+
+### ⛔ The invariant that is not negotiable, expressed as a type
+
+📁 **ADR-0410 §5: *"a member must not acquire an owner's capability through the new layer."***
+
+⚡ **`CapabilityRole` cannot be constructed with a name that collides with a membership role**, and `key` prefixes every subject with `cap:` — **so the two namespaces are disjoint by construction rather than by a list somebody maintains.** ⛔ **A role named `owner` would be handed to `is_allowed` as the string `owner` and would match all 46 of that role's policy rows.**
+
+⚠️ **The enforcement is a Security Invariant as well** — `tests/security_invariants/test_capability_layer.py`, **nine of them, against the real enforcer and the real `policy.csv`**, because a type stops this module and the policy file is edited by every lane. **One of them asserts that no `cap:` subject appears in `policy.csv` at all**: this slice ships the layer and grants nothing through it, and **the day somebody adds a row that test fails and they have to say what they granted and to whom.**
+
+### 📁 What reaches the API, and the two shapes worth arguing about
+
+| | |
+|---|---|
+| `GET · POST /workspaces/{id}/capability-roles` | The list, and *New role*. **A member may read and may not change** — Team Management shows a colleague's role to everyone; **defining roles is administration** |
+| `PATCH …/capability-roles/{role_id}` | 🔴 **A rename moves the subject `policy.csv` keys on**, so **a rename without a matching policy edit denies everything, silently, for everyone holding the role.** ⚠️ Stated at the type, the repository, the use case and the route |
+| `PUT …/members/{user_id}/capability-role` | ⛔ **`PUT` and `204`.** There is one field, **`role_id: null` IS *change back***, and *"I did not mention it"* is not a state a customer can be in. **What they may now do is a different question**, answered by *Effective permissions* rather than guessed from the response |
+| `GET …/members/{user_id}/effective-permissions` | 📁 **§3 — computed, never stored.** ⛔ **A `404` for a non-member, never an empty permission list**: an absence and *"a member who may do nothing"* are different facts |
+| `GET …/members/{user_id}/capability-role/preview` | 📁 **The design's *Change role* trade** — see below |
+| `GET …/capability-assignments` | **Who holds which role, for the whole roster in one answer.** ⛔ **Separate from `GET /members`, deliberately**: a capability role on a membership response would put an authorization fact inside a tenancy contract |
+
+⚠️ **`Resource.CAPABILITY_ROLE` governs *managing* roles and never what a role permits.** 🔴 **There is deliberately no resource meaning *"authorization itself"*** — **a grant that could edit grants is the one this model must not have.**
+
+### 🔴 *Change role* is a trade, and the preview is what makes the screen honest
+
+📁 **The design: *"Both directions are shown, because a role change is a trade rather than a promotion."***
+
+⛔ **`EffectivePermissions` answers about a person as they are.** **It cannot answer *what would they be able to do as Analyst*, and without that the dialog either omits *Gains* — not design compliant — or invents it.** ✅ **So the preview resolves BOTH subjects through the same enforcer**, and the screen derives *gains* and *loses* as the set difference — ⛔ **not a third field on the wire** ([§2](../../CLAUDE.md)).
+
+⚠️ **Today every capability role grants nothing, so *Gains* honestly says so and *Loses* is everything.** ⚡ **It stops saying that on its own** the day somebody adds a `cap:` row: **computed, so there is no second place to update.**
+
+⛔ **A `role_id` naming a role that is not in the workspace RAISES rather than falling back.** ⚠️ `subject_for`'s fallback is right for a role that vanished *under* somebody; **here it would render *"nothing changes"* for a change the `PUT` would refuse** — and the dialog would have said the act was safe.
+
+### ⚠️ The screen may not say what the enforcer says, and that needed a catalog
+
+🔴 **The server answers in `(resource, action)` pairs and NONE of them may reach a screen.** 📁 `workspace`, `target_account`, `commercial_focus` and `action_batch` are platform vocabulary ([ADR-0034](adr/0034-ubiquitous-language.md)) — ⛔ **and `vocabulary.test.tsx` structurally cannot catch them**, because it reads source literals and these arrive at runtime.
+
+✅ **`components/team/capabilities.ts` gains `CAPABILITY_AREAS`** — **a resource maps to an area a salesperson would name**, and several fold into one. ⛔ **Not generated from `policy.csv`**, on the same reasoning the role catalog beside it already records: **generating it would put `commercial_focus` on a screen the day somebody added a grant.**
+
+⚠️ **`policy.csv` grants 34 tuples to `member` and 46 to `owner`** — **eighty lines is the *lie by compression* that file already warns about.**
+
+⛔ **An unrecognised resource is COUNTED, never named and never dropped.** **Dropping it would under-report what somebody may do — the worst failure this panel has, because a reader acts on the absence — and naming it would put the platform's vocabulary on the screen.** ⚡ **A line reading *"and 2 more"* is what tells the next engineer the catalog needs an entry.**
+
+⚠️ **Two levels, not the design's five.** 📁 The design draws *Full · Team-scoped · Own only · Read · None*, and ⛔ **three of those describe scoping by team or by ownership, which nothing enforces today.** **Rendering *Team-scoped* would be a claim no enforcement point makes.**
+
+### ⚠️ One test was corrected rather than worked around
+
+📁 `frontend/tests/components/team.test.tsx` **forbade the word `permission` on this screen.** 🔴 **Too wide, and this slice is what showed it**: the finalized design's own labels are ***"Roles & permissions"*** and ***"Effective permissions"***, and **ADR-0410 §6 releases both by name.** ⛔ **Keeping the entry would have made the guard forbid the design.**
+
+✅ **The guard got stricter where the risk actually moved** — the raw resource names are now in the forbidden list, and they are the ones only a rendering assertion can catch.
+
+### 🔴 Where the slice is reachable, and the one test that proves it
+
+**Settings → Your team.** ⚡ **The roles card sits beside the people it applies to**, and the roster gains a *Limited to* column, a *Change role* trade and an *Effective permissions* panel.
+
+⛔ **Every other test in the slice would pass against a capability layer that was stored, read back and never consulted.** ✅ **One does not:**
+
+```
+a member reads the roles list                    200
+the owner changes them to a role with no grants
+the member reads the roles list again            403
+```
+
+⚡ **Fire-tested**: reverting the one line of wiring in `apps/api/main.py` fails **exactly that test** and leaves the other eleven green. **Storage and refusals still work; only reachability breaks** — which is the guard against the unreachable-primitive class.
+
+### ⚠️ What is deliberately not built
+
+| | |
+|---|---|
+| **Grants for any role** | 📁 **ADR-0410 §2 — they are `policy.csv` rows, and a reviewed change.** ⛔ **A rules UI is what choosing Casbin over a vendor was avoiding** ([ADR-0010](adr/0010-identity-and-access.md)) |
+| **Deleting a role** | ⚡ `holders` is on the response so a control could ask first; **migration `0057`'s `ON DELETE RESTRICT` refuses to remove a role somebody holds**, and a control the database would reject is one that goes nowhere |
+| **Field-level permissions** | 📁 **ADR-0410 §4 records it as this layer's question and does not choose the mechanism.** ⛔ Not decided here |
+| **The design's role matrix** | ⚠️ **The Team Management design says *"Custom roles are deliberately absent — they become unauditable within a year"*, and the Settings design has *New role* and *"Five roles"*.** 🔴 **The two halves of one snapshot disagree**, and **ADR-0410 §6 rules it by naming *New role* explicitly.** 📁 Raised as [C-1513](../LANE_COORDINATION.md) so the design says one thing rather than two |

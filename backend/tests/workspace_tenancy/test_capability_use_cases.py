@@ -19,6 +19,7 @@ from modules.workspace_tenancy.application.capability_use_cases import (
     CreateCapabilityRole,
     CreateRoleInput,
     EffectivePermissions,
+    HeldCapabilityRoles,
     ListCapabilityRoles,
     RenameCapabilityRole,
     RenameRoleInput,
@@ -71,6 +72,13 @@ class _Capabilities:
         self.assigned.append((user_id, role_id))
         self._assignments[user_id] = role_id
 
+    async def held_roles(self, workspace_id: UUID) -> dict[UUID, CapabilityRole]:
+        return {
+            user_id: next(r for r in self._roles if r.id == role_id)
+            for user_id, role_id in self._assignments.items()
+            if role_id is not None
+        }
+
     async def holders(self, workspace_id: UUID, role_id: UUID) -> int:
         return sum(1 for held in self._assignments.values() if held == role_id)
 
@@ -102,6 +110,25 @@ class _RecordingAuthorizer:
     ) -> bool:
         self.asked.append((role, str(resource), str(action)))
         return (str(resource), str(action)) in self._allow
+
+
+class _AllowingBySubject:
+    """Answers differently depending on WHO is asking.
+
+    🔴 **`_RecordingAuthorizer` above ignores the subject**, which is exactly
+    right for proving the permissions were asked — and ⛔ **useless for a
+    trade**, where the whole assertion is that two subjects get different
+    answers. **A fake that answered the same for both would let a preview
+    reporting `current == proposed` pass.**
+    """
+
+    def __init__(self, allow: dict[str, set[tuple[str, str]]]) -> None:
+        self._allow = allow
+
+    def is_allowed(
+        self, *, role: str, workspace_id: UUID, resource: Resource, action: Action
+    ) -> bool:
+        return (str(resource), str(action)) in self._allow.get(role, set())
 
 
 class TestNamingARole:
@@ -347,3 +374,121 @@ class TestEffectivePermissionsIsReadRatherThanHeld:
         assert view is not None
         assert view.subject == "member"
         assert view.role_name is None
+
+
+class TestPreviewingARoleChange:
+    """📁 **The design: *"Both directions are shown, because a role change is a
+    trade rather than a promotion."*** ⚡ **So the preview must answer two
+    questions, and both against the enforcer rather than a table.**"""
+
+    async def test_it_answers_what_they_have_now_and_what_they_would_have(self) -> None:
+        person, workspace = uuid4(), uuid4()
+        analyst = CapabilityRole(id=uuid4(), name="Analyst")
+        capabilities = _Capabilities(roles=(analyst,))
+        memberships = _Memberships()
+        memberships.add(person, WorkspaceRole.MEMBER)
+        # ⚡ **`member` may read a workspace; `cap:analyst` has no rows** — which
+        # is the whole trade this dialog exists to show.
+        authorizer = _AllowingBySubject({"member": {("workspace", "read")}})
+
+        view = await EffectivePermissions(
+            capabilities=capabilities, memberships=memberships, authorizer=authorizer
+        ).preview(workspace, person, analyst.id)
+
+        assert view is not None
+        assert view.current.subject == "member"
+        assert view.current.permissions != ()
+        assert view.proposed.subject == analyst.key
+        assert view.proposed.role_name == "Analyst"
+        assert view.proposed.permissions == ()
+
+    async def test_changing_back_previews_the_membership_role(self) -> None:
+        """⚡ ***Change back* is previewable too**, and it is the direction that
+        GAINS — 📁 which is why omitting `role_id` had to mean something rather
+        than being refused."""
+        person, workspace = uuid4(), uuid4()
+        analyst = CapabilityRole(id=uuid4(), name="Analyst")
+        capabilities = _Capabilities(roles=(analyst,))
+        await capabilities.assign(workspace, person, analyst.id, actor_id=uuid4())
+        memberships = _Memberships()
+        memberships.add(person, WorkspaceRole.MEMBER)
+        authorizer = _AllowingBySubject({"member": {("workspace", "read")}})
+
+        view = await EffectivePermissions(
+            capabilities=capabilities, memberships=memberships, authorizer=authorizer
+        ).preview(workspace, person, None)
+
+        assert view is not None
+        assert view.current.permissions == ()
+        assert view.proposed.subject == "member"
+        assert view.proposed.role_name is None
+        assert view.proposed.permissions != ()
+
+    async def test_a_role_that_is_not_here_is_refused_rather_than_shown_as_no_change(
+        self,
+    ) -> None:
+        """🔴 **The one place `subject_for`'s fallback would be WRONG.**
+
+        ⛔ **Falling back would render *"nothing changes"* for a change that
+        cannot be made** — a customer would click *Change to Analyst*, the `PUT`
+        would refuse, and the dialog would have said it was safe.
+        """
+        person, workspace = uuid4(), uuid4()
+        memberships = _Memberships()
+        memberships.add(person, WorkspaceRole.MEMBER)
+
+        with pytest.raises(CapabilityError):
+            await EffectivePermissions(
+                capabilities=_Capabilities(),
+                memberships=memberships,
+                authorizer=_AllowingBySubject({}),
+            ).preview(workspace, person, uuid4())
+
+    async def test_a_non_member_is_absent_rather_than_previewed(self) -> None:
+        view = await EffectivePermissions(
+            capabilities=_Capabilities(),
+            memberships=_Memberships(),
+            authorizer=_AllowingBySubject({}),
+        ).preview(uuid4(), uuid4(), None)
+
+        assert view is None
+
+    async def test_an_owner_sees_what_narrowing_would_cost_them(self) -> None:
+        """🔴 **The direction that matters most** — 📁 the Security Invariant
+        asserts an owner narrowed to a capability role loses `member, add`;
+        **this is the customer being told so before they do it.**"""
+        person, workspace = uuid4(), uuid4()
+        analyst = CapabilityRole(id=uuid4(), name="Analyst")
+        capabilities = _Capabilities(roles=(analyst,))
+        memberships = _Memberships()
+        memberships.add(person, WorkspaceRole.OWNER)
+        authorizer = _AllowingBySubject({"owner": {("member", "add")}})
+
+        view = await EffectivePermissions(
+            capabilities=capabilities, memberships=memberships, authorizer=authorizer
+        ).preview(workspace, person, analyst.id)
+
+        assert view is not None
+        lost = set(view.current.permissions) - set(view.proposed.permissions)
+        assert {(p.resource, p.action) for p in lost} == {("member", "add")}
+
+
+class TestWhoHoldsWhat:
+    """📁 **Team Management's role chip, beside every name.**"""
+
+    async def test_it_reports_everybody_who_holds_one_and_nobody_who_does_not(self) -> None:
+        """⛔ **Somebody who holds no role is ABSENT, not mapped to `None`.**
+        ⚡ A key with a null value would be a third way of saying what
+        `assignment` already says two ways."""
+        workspace = uuid4()
+        analyst = CapabilityRole(id=uuid4(), name="Analyst")
+        holder, plain, changed_back = uuid4(), uuid4(), uuid4()
+        capabilities = _Capabilities(roles=(analyst,))
+        await capabilities.assign(workspace, holder, analyst.id, actor_id=uuid4())
+        await capabilities.assign(workspace, changed_back, None, actor_id=uuid4())
+
+        held = await HeldCapabilityRoles(capabilities=capabilities).execute(workspace)
+
+        assert held == {holder: analyst}
+        assert plain not in held
+        assert changed_back not in held

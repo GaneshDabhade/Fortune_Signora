@@ -15,6 +15,10 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from modules.workspace_tenancy.application.capability_use_cases import (
+    EffectivePermissionsView,
+    RoleChangeView,
+)
 from modules.workspace_tenancy.application.use_cases.organization_history import (
     HistoryEntry,
     HistoryKind,
@@ -566,6 +570,20 @@ class CapabilityRoleListResponse(BaseModel):
     roles: list[CapabilityRoleResponse]
 
 
+class HeldCapabilityRolesResponse(BaseModel):
+    """Who holds which role, for the whole roster, in one answer.
+
+    ⛔ **Somebody who holds none is ABSENT rather than mapped to `null`.** ⚡
+    The request named a workspace and the answer covers everybody in it who has
+    one — **so *"we looked and they hold nothing"* needs no key**, the same
+    shape `account_tag` assignments use one module over.
+
+    ⚠️ **Keys are user ids as strings**, because JSON has no other kind.
+    """
+
+    assignments: dict[str, str]
+
+
 class PermissionResponse(BaseModel):
     resource: str
     action: str
@@ -587,3 +605,41 @@ class EffectivePermissionsResponse(BaseModel):
     user_id: UUID
     role_name: str | None
     permissions: list[PermissionResponse]
+
+    @classmethod
+    def from_domain(
+        cls, view: EffectivePermissionsView, *, user_id: UUID
+    ) -> EffectivePermissionsResponse:
+        return cls(
+            user_id=user_id,
+            role_name=view.role_name,
+            permissions=[
+                PermissionResponse(resource=p.resource, action=p.action)
+                for p in view.permissions
+            ],
+        )
+
+
+class RoleChangePreviewResponse(BaseModel):
+    """*Change role — Member → Analyst*, before anybody commits to it.
+
+    📁 **The design: *"Both directions are shown, because a role change is a
+    trade rather than a promotion."*** ⚡ **Two resolved answers**, each asked of
+    the enforcer that decides the request path.
+
+    ⛔ **No `gains`/`loses` fields.** They are the set difference of these two
+    lists, and a third representation of one fact is the duplication §2 forbids
+    — **the screen derives them, once.**
+    """
+
+    user_id: UUID
+    current: EffectivePermissionsResponse
+    proposed: EffectivePermissionsResponse
+
+    @classmethod
+    def from_domain(cls, view: RoleChangeView, *, user_id: UUID) -> RoleChangePreviewResponse:
+        return cls(
+            user_id=user_id,
+            current=EffectivePermissionsResponse.from_domain(view.current, user_id=user_id),
+            proposed=EffectivePermissionsResponse.from_domain(view.proposed, user_id=user_id),
+        )

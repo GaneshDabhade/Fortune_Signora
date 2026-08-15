@@ -27,6 +27,8 @@ const orgHistory = vi.hoisted(() => vi.fn());
 const members = vi.hoisted(() => vi.fn());
 const viewerRole = vi.hoisted(() => vi.fn());
 const session = vi.hoisted(() => vi.fn());
+const capabilityRoles = vi.hoisted(() => vi.fn());
+const capabilityAssignments = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: workspaceContext,
@@ -43,6 +45,23 @@ vi.mock('@/lib/query/hooks/team', () => ({
   useOrganizationHistory: orgHistory,
   useWorkspaceMembers: members,
   useViewerRole: viewerRole,
+}));
+
+/**
+ * ⚡ **TASK-1479 ⓸.** The page now reads the capability layer as well.
+ * ⛔ **Mocked here rather than provided**, because these tests assert this
+ * screen's product rules and a real query client would make every one of them
+ * depend on a fetch that is not their subject — the capability screens have
+ * their own file.
+ */
+vi.mock('@/lib/query/hooks/capability-roles', () => ({
+  useCapabilityRoles: capabilityRoles,
+  useCapabilityAssignments: capabilityAssignments,
+  useCreateCapabilityRole: () => ({ mutate: vi.fn(), isPending: false }),
+  useAssignCapabilityRole: () => ({ mutate: vi.fn(), isPending: false }),
+  useEffectivePermissions: () => ({ data: undefined, isLoading: true, isError: false }),
+  useRoleChangePreview: () => ({ data: undefined, isLoading: true, isError: false }),
+  trade: () => ({ gains: [], loses: [] }),
 }));
 
 vi.mock('@/lib/auth/client', () => ({ useSession: session }));
@@ -94,6 +113,8 @@ beforeEach(() => {
   viewerRole.mockReturnValue({ role: 'owner', resolved: true });
   members.mockReturnValue({ ...IDLE, data: { items: [person()] } });
   orgHistory.mockReturnValue({ ...IDLE, data: [] });
+  capabilityRoles.mockReturnValue({ ...IDLE, data: { roles: [] } });
+  capabilityAssignments.mockReturnValue({ ...IDLE, data: { assignments: {} } });
 });
 
 describe('an organization with nobody in it says what to do about it', () => {
@@ -578,22 +599,110 @@ describe('roles are explained as capabilities, never as permissions', () => {
     // **The property that makes the catalog worth having.** Adding
     // `timeline:read` to `member` must change nothing here, because "see
     // everything Signora finds" was already true and already said.
+    //
+    // ## ⚠️ `'permission'` was on this list and is not any more
+    //
+    // 🔴 **It was too wide, and [TASK-1479](../../../docs/BACKLOG.md) ⓸ is
+    // what showed it.** 📁 The finalized design's own labels are
+    // ***"Roles & permissions"*** and ***"Effective permissions"***, and
+    // [ADR-0410](../../../docs/architecture/adr/0410-authorization-capability-layer.md)
+    // §6 releases both by name. ⛔ **Keeping the entry would have made the
+    // guard forbid the design.**
+    //
+    // ✅ **It is not [ADR-0034](../../../docs/architecture/adr/0034-ubiquitous-language.md)
+    // vocabulary either** — that list is *workspace · tenant · provider ·
+    // pipeline · entity · claim · observation · business event · buying score ·
+    // outbox · port · adapter*, and **a salesperson says *permissions*
+    // unprompted about their own team**, which is the ADR's own test.
+    //
+    // ⚡ **The guard got STRICTER where the risk actually moved.** The tuple
+    // forms stay, and the raw resource names below are new: they arrive at
+    // RUNTIME from the enforcer, so `vocabulary.test.tsx` — which reads source
+    // literals — cannot see them, and only a rendering assertion can.
     render(draw());
     const text = (document.body.textContent ?? '').toLowerCase();
 
     for (const forbidden of [
       'casbin',
       'policy',
-      'permission',
       'workspace:',
       'member:',
       'resource',
       'tuple',
       'forbidden',
       '403',
+      // ⛔ **What a permission looks like on the wire**, and none of it may be
+      // rendered — `describeCapabilities` exists to turn these into sentences.
+      'cap:',
+      'capability_role',
+      'commercial_focus',
+      'target_account',
+      'action_batch',
+      'buying_committee',
+      'saved_view',
     ]) {
       expect(text).not.toContain(forbidden);
     }
+  });
+});
+
+describe('the roster says what somebody has been narrowed to', () => {
+  // 🔴 **[TASK-1479](../../../docs/BACKLOG.md) ⓸, and this is the
+  // reachability guard.** ⛔ The capability layer can be complete, tested and
+  // wired and still never reach a screen — the ⓶a journey caught exactly that,
+  // a column built and never rendered.
+
+  it('names the role somebody holds rather than only their membership', () => {
+    // ⛔ **Rendering `Member` for somebody who effectively authorizes as
+    // `Analyst` is a false claim on the screen**, which is why this is a
+    // separate column rather than a nicer label on the existing one.
+    capabilityRoles.mockReturnValue({
+      ...IDLE,
+      data: { roles: [{ role_id: 'r1', name: 'Analyst', holders: 1 }] },
+    });
+    capabilityAssignments.mockReturnValue({
+      ...IDLE,
+      data: { assignments: { [ME]: 'Analyst' } },
+    });
+
+    render(draw());
+
+    expect(screen.getByDisplayValue('Analyst')).toBeVisible();
+  });
+
+  it('says the ordinary state as a capability rather than as a blank', () => {
+    // ⚡ **Nobody holds a capability role until somebody assigns one**, so a
+    // dash in this column would make every colleague look misconfigured.
+    render(draw());
+
+    expect(screen.getByText('Nothing')).toBeVisible();
+  });
+
+  it('asks what the change would trade before making it', () => {
+    // 📁 **The design: *"Both directions are shown."*** ⛔ Changing on the
+    // select's `change` alone would narrow somebody's access with no dialog
+    // and no chance to see what it cost.
+    capabilityRoles.mockReturnValue({
+      ...IDLE,
+      data: { roles: [{ role_id: 'r1', name: 'Analyst', holders: 0 }] },
+    });
+
+    render(draw());
+    fireEvent.change(screen.getByLabelText('What ana@acme.com can be limited to'), {
+      target: { value: 'r1' },
+    });
+
+    expect(screen.getByText(/Change role — you to Analyst/)).toBeVisible();
+  });
+
+  it('offers effective permissions to a member, who may read them', () => {
+    // ⚡ **`policy.csv` grants `member, capability_role, read`** — and somebody
+    // who cannot see why a control is missing has no way to know who to ask.
+    viewerRole.mockReturnValue({ role: 'member', resolved: true });
+
+    render(draw());
+
+    expect(screen.getAllByRole('button', { name: 'See what they can do' })[0]).toBeVisible();
   });
 });
 

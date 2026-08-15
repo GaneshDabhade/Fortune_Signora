@@ -28,6 +28,11 @@ import {
   onlyOwnersCan,
   type TeamRole,
 } from '@/components/team/capabilities';
+import {
+  EffectivePermissionsPanel,
+  RoleChangeDialog,
+  RolesAndPermissions,
+} from '@/components/team/capability-roles';
 import { OrganizationHistory } from '@/components/team/history';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import {
@@ -49,6 +54,10 @@ import {
   useViewerRole,
   useWorkspaceMembers,
 } from '@/lib/query/hooks/team';
+import {
+  useCapabilityAssignments,
+  useCapabilityRoles,
+} from '@/lib/query/hooks/capability-roles';
 import { useSession } from '@/lib/auth/client';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 import { ReadingColumn } from '../../reading-column';
@@ -106,6 +115,16 @@ export default function TeamPage() {
     membership: Membership;
     to: 'owner' | 'member';
   } | null>(null);
+  /** ⚡ **TASK-1479 ⓸** — the design's *Change role* trade, and its *Effective
+   * permissions* panel. Both are about one person, so both hold one. */
+  const [narrowing, setNarrowing] = useState<{
+    membership: Membership;
+    roleId: string | null;
+    roleName: string;
+  } | null>(null);
+  const [inspecting, setInspecting] = useState<Membership | null>(null);
+  const { data: capabilityRoles } = useCapabilityRoles(workspaceId);
+  const { data: held } = useCapabilityAssignments(workspaceId);
 
   if (workspacesLoading) return <SkeletonText lines={4} />;
   if (!activeWorkspace) return <NoWorkspace />;
@@ -241,6 +260,11 @@ export default function TeamPage() {
                 <TR>
                   <TH pin>Person</TH>
                   <TH>Role</TH>
+                  {/* ⚡ **TASK-1479 ⓸** — a second, narrower fact, and it is a
+                      separate column because it is a separate question: *Role*
+                      says whether they administer this organization, this says
+                      whether anything has been narrowed on top of it. */}
+                  <TH>Limited to</TH>
                   <TH>{''}</TH>
                 </TR>
               </THead>
@@ -277,21 +301,83 @@ export default function TeamPage() {
                       )}
                     </TD>
                     <TD>
-                      {/* **Absent, never disabled**, and absent for two
-                          different reasons: a member is not offered a control
-                          the server would refuse, and nobody is offered one
-                          that removes themselves — leaving is a different
-                          operation, and it is blocked on C-207. */}
-                      {myRole === 'owner' && one.user_id !== viewerId ? (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          loading={remove.isPending}
-                          onClick={() => setLeaving(one)}
-                        >
-                          Remove
-                        </Button>
-                      ) : null}
+                      {/* 🔴 **What they are narrowed to, and it is the fact
+                          the Role column CANNOT carry.** ⛔ Rendering `Member`
+                          for somebody who effectively authorizes as `Analyst`
+                          would be a false claim on the screen — the class this
+                          repository keeps finding. */}
+                      {myRole === 'owner' && (capabilityRoles?.roles.length ?? 0) > 0 ? (
+                        <Select
+                          label={`What ${nameOf(one, viewerId)} can be limited to`}
+                          labelHidden
+                          value={
+                            (capabilityRoles?.roles ?? []).find(
+                              (role) => role.name === held?.assignments[one.user_id],
+                            )?.role_id ?? ''
+                          }
+                          onChange={(event) => {
+                            const roleId = event.target.value === '' ? null : event.target.value;
+                            setNarrowing({
+                              membership: one,
+                              roleId,
+                              roleName:
+                                (capabilityRoles?.roles ?? []).find(
+                                  (role) => role.role_id === roleId,
+                                )?.name ?? UNNARROWED,
+                            });
+                          }}
+                          options={[
+                            // ⛔ **`''` is *change back*** — the same
+                            // affordance the request calls `role_id: null`.
+                            { value: '', label: UNNARROWED },
+                            ...(capabilityRoles?.roles ?? []).map((role) => ({
+                              value: role.role_id,
+                              label: role.name,
+                            })),
+                          ]}
+                        />
+                      ) : (
+                        <span className="text-content-muted">
+                          {held?.assignments[one.user_id] ?? UNNARROWED}
+                        </span>
+                      )}
+                      {/* 🔴 **In this cell rather than a column of its own, and
+                          the headed review is why.** ⛔ A fifth column pushed
+                          *Effective permissions* and *Remove* off the card —
+                          **reachable only by scrolling sideways, which is the
+                          unreachable class arriving through layout.**
+                          ⚡ **It belongs here anyway**: *Limited to* and *what
+                          that actually means* are one subject, and a customer
+                          asks the second immediately after reading the first.
+                          ✅ **Offered to everybody, because a member may read
+                          it** — somebody who cannot see why a control is
+                          missing has no way to find out who to ask. */}
+                      <button
+                        type="button"
+                        onClick={() => setInspecting(one)}
+                        className="mt-1 block text-xs text-content-subtle underline underline-offset-2 hover:text-content"
+                      >
+                        See what they can do
+                      </button>
+                    </TD>
+                    <TD>
+                      <div className="flex gap-2">
+                        {/* **Absent, never disabled**, and absent for two
+                            different reasons: a member is not offered a control
+                            the server would refuse, and nobody is offered one
+                            that removes themselves — leaving is a different
+                            operation, and it is blocked on C-207. */}
+                        {myRole === 'owner' && one.user_id !== viewerId ? (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={remove.isPending}
+                            onClick={() => setLeaving(one)}
+                          >
+                            Remove
+                          </Button>
+                        ) : null}
+                      </div>
                     </TD>
                   </TR>
                 ))}
@@ -300,6 +386,13 @@ export default function TeamPage() {
           )}
         </CardBody>
       </Card>
+
+      {/* ⚡ **TASK-1479 ⓸ — the design's *Roles & permissions*, next to the
+          people it applies to.** 📁 The design's Settings screen puts it
+          directly under *Users*, and putting it on its own route would need a
+          card on `/settings` as well (CX-01) for a section nobody would look
+          for separately. */}
+      <RolesAndPermissions workspaceId={workspaceId} canAdminister={myRole === 'owner'} />
 
       {/* **Last, because it answers a question asked after the others.** An
           administrator arrives to see who is here or to change something; they
@@ -457,6 +550,43 @@ export default function TeamPage() {
           )}
         </CardBody>
       </Card>
+
+      <RoleChangeDialog
+        workspaceId={workspaceId}
+        open={narrowing !== null}
+        onClose={() => setNarrowing(null)}
+        person={narrowing ? inASentence(narrowing.membership, viewerId) : ''}
+        userId={narrowing?.membership.user_id ?? ''}
+        roleId={narrowing?.roleId ?? null}
+        roleName={narrowing?.roleName ?? UNNARROWED}
+      />
+
+      <Dialog
+        open={inspecting !== null}
+        onClose={() => setInspecting(null)}
+        title={
+          inspecting
+            ? `What ${inASentence(inspecting, viewerId)} can actually do`
+            : 'Effective permissions'
+        }
+        // 📁 **ADR-0410 §3 — computed, never stored.** ⚡ Every line was asked
+        // of the same enforcer that decides this person's requests, so what the
+        // dialog says and what the server does cannot disagree.
+        description="Worked out from what the server would actually allow, just now."
+        footer={
+          <Button variant="secondary" onClick={() => setInspecting(null)}>
+            Close
+          </Button>
+        }
+      >
+        {inspecting ? (
+          <EffectivePermissionsPanel
+            workspaceId={workspaceId}
+            userId={inspecting.user_id}
+            membershipRole={inspecting.role === 'owner' ? 'an owner' : 'a member'}
+          />
+        ) : null}
+      </Dialog>
 
       <Dialog
         open={handingTo !== null}
@@ -685,6 +815,36 @@ function nameOf(membership: Membership, viewerId: string | null): string {
 
 function countWord(n: number, one: string, many: string): string {
   return `${n} ${n === 1 ? one : many}`;
+}
+
+/**
+ * ⚡ **What holding no capability role means, under the *Limited to* heading**
+ * — [TASK-1479](../../../../docs/BACKLOG.md) ⓸.
+ *
+ * ⛔ **Not *"—"* and not a blank.** 📁 The state is the ordinary one — nobody
+ * holds a capability role until somebody assigns one — and **rendering the
+ * common case as a blank would make every colleague look misconfigured.**
+ * ⚡ ***"Limited to: Nothing"* is a real answer to the column's question**,
+ * which an empty cell is not.
+ *
+ * ⚠️ **It read *"Everything their role allows"* until the headed review.** 🔴
+ * **Five of those, one per row, pushed the actions column off the card** —
+ * *Effective permissions* and *Remove* were reachable only by horizontal
+ * scrolling, **which is the unreachable class arriving through layout rather
+ * than through wiring.**
+ */
+const UNNARROWED = 'Nothing';
+
+/**
+ * What to call somebody **inside a sentence**.
+ *
+ * ⛔ **`nameOf` returns *"You"*, capitalised, because it starts a table cell**
+ * — and the headed review showed the cost: *"What **You** can actually do"* and
+ * *"The companies **You** owns stay theirs."* ⚡ **Two different jobs, and one
+ * of them needs a lower-case subject pronoun.**
+ */
+function inASentence(membership: Membership, viewerId: string | null): string {
+  return membership.user_id === viewerId ? 'you' : nameOf(membership, viewerId);
 }
 
 
