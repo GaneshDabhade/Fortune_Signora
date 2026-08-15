@@ -517,6 +517,110 @@ databaseUrl: required(
 
 ---
 
+## C-1515 · Every commercial fact is a deal property, and nothing fetches a deal
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, auditing [TASK-1477](BACKLOG.md) **before writing a line** — 📁 the order [TASK-1478](BACKLOG.md) says this programme depends on |
+| **Owner** | 🔴 **Product owner**, through Lane C — ⛔ **it is an assignment and sequencing question, and [C-300](#c-300--provider-platform-owns-the-half-of-the-inbound-path-lane-b-may-not-build) already holds the neighbouring one** |
+| **Type** | ⚠️ **An implementation blocker on the CONSUMERS, not on the vocabulary.** ✅ **The vocabulary is delivered; the mapper is buildable; only acquisition is not** |
+| **Blocks** | ⛔ **All three consumers [ADR-0409](architecture/adr/0409-commercial-account-facts.md) §6 releases** — Companies' *Open ACV* and *Renewal* columns, [TASK-1469](BACKLOG.md)'s deal record, [C-297](#c-297)'s Forecast. ✅ **Nothing else** |
+| **Status** | **`OPEN`** |
+
+### 🔴 Measured, before anything was built
+
+📁 **[ADR-0409](architecture/adr/0409-commercial-account-facts.md) §3 names three attributes.** ⛔ **In both CRMs the design and the repository name, all three are properties of a DEAL — never of a company.**
+
+| Attribute | HubSpot | Salesforce |
+|---|---|---|
+| **`OPEN_ACV`** | `deal.amount` | `Opportunity.Amount` |
+| **`COMMERCIAL_STAGE`** | `deal.dealstage` | `Opportunity.StageName` |
+| **`RENEWAL_DATE`** | ⚠️ **no standard property on either object** — a custom field in practice | ⚠️ **same** |
+
+⛔ **And the only CRM read path in the repository is company-only:**
+
+```
+modules/integrations/infrastructure/hubspot.py:44
+_BASE: Final = "https://api.hubapi.com/crm/v3/objects/companies"
+```
+
+⚡ **`HubSpotCompanies` · `HubSpotCompanySource` · `HubSpotCompanyMapper`** — **three classes, all company.** ✅ **Measured: `grep -rn "deal\|opportunit"` over `integrations/infrastructure/` returns nothing**, and `ProviderName` holds five enrichment and intent suppliers with **no CRM member at all.**
+
+### ⚡ The design already knows the object is Opportunity
+
+📁 **`Fortune Signora CRM Integrations.dc.html`, and it is unambiguous:**
+
+> **"Connected 14 Mar 2026 by L. Petrova · 8,412 accounts, **3,104 opportunities**, 24,880 contacts in sync."**
+>
+> **"Field mappings — **Opportunity**"** · *"28 mapped · 2 need attention · 1 write-back"*
+
+⛔ **So the gap is not a design gap.** ✅ **The design specifies a synced Opportunity object with its own field-mapping surface; the repository has never fetched one.**
+
+### ✅ What this lane did anyway, and why it is not blocked on this item
+
+⚡ **The vocabulary is delivered** — `ClaimDomain.COMMERCIAL`, the three attributes, `MoneyValue`, `CommercialStageValue`, `VOCABULARY_VERSION` → `2`. 📁 **ADR-0409 §1 calls that *"the whole of the architectural half"***, and it encodes no assumption about acquisition.
+
+✅ **A HubSpot DEAL mapper is buildable next, on `crm.py`'s own stated reasoning**: *"Nothing here decides how the payload arrived… the gap Epic E1 found is in **acquiring** records, not in interpreting them."* ⛔ **That is the precedent that made the company mapper buildable while [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) was still proposed, and it applies unchanged.**
+
+### 🔴 What actually needs a decision
+
+⛔ **Who builds the deal read path, and when.** 📁 **[ADR-0300](architecture/adr/0300-inbound-customer-systems.md) is `PRODUCT OWNER APPROVED` and Option A is BUILT** — `IntegrationSourceAdapter`, `Capability.CRM_RECORDS`, `HubSpotCompanySource` are on `main`. ⚠️ **What remains is [409](architecture/409-inbound-source-port-contract.md) steps 3–5 in `provider_platform`** — the event annotation, the runner, a simulated adapter — **held on [C-300](#c-300--provider-platform-owns-the-half-of-the-inbound-path-lane-b-may-not-build), `DEFERRED` with the runner as its trigger.**
+
+> ⛔ **So the port exists, nothing drives it, and a second sibling source would be a second thing nothing drives.**
+
+⚠️ **Stated plainly rather than sequenced around: shipping the Companies *Open ACV* column against no acquisition path would render an empty cell for every account, forever** — 📁 **the decorative class [§2](../CLAUDE.md) names, and P-A's *a failed read must never render as an empty result* is the same rule one layer up.**
+
+### ✅ What this lane recommends, and it is input rather than authority
+
+**Build the deal mapper next** — it is complete, testable and encodes no assumption — **and sequence the consumers behind whatever ruling C-300's trigger produces.** ⛔ **Do not ship a column that can only ever be empty.**
+
+---
+
+## C-1514 · ADR-0409 §3 does not describe the unmapped stage the design requires
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, implementing [TASK-1477](BACKLOG.md)'s vocabulary |
+| **Owner** | 🔴 **Product owner**, through Lane C — ⛔ **the shape of a ratified contract's value is not a lane's to change silently** |
+| **Type** | ⚠️ **A gap between a ratified ADR and the finalized design.** ✅ **Implemented in the direction the design requires, and raised rather than resolved quietly** |
+| **Blocks** | ✅ **Nothing.** ⚡ **The vocabulary ships with the optional position** |
+| **Status** | **`OPEN`** |
+
+### 🔴 The two documents describe different values
+
+📁 **[ADR-0409](architecture/adr/0409-commercial-account-facts.md) §3:**
+
+> **`COMMERCIAL_STAGE`** — *"**A closed canonical position**, carrying the tenant's own label beside it."*
+
+⚡ **Which reads as though a canonical position is always present.**
+
+📁 **`Fortune Signora CRM Integrations.dc.html`:**
+
+> *"Salesforce added **"Legal review"** and **"Procurement"** to StageName last week. **214 opportunities now sit in stages Signora treats as unmapped**, and their velocity metrics are **excluded until mapped**."*
+
+### ⛔ Unmapped is a state the product shows, counts and acts on
+
+⚠️ **Not an error. Not a gap to be filled. Not a missing claim.** ⚡ **The design puts a NUMBER on it — 214 — offers *"Map both →"*, and states a consequence: velocity metrics are excluded.** **A value that cannot express it cannot render that screen.**
+
+🔴 **And the alternative is worse than a missing feature.** ⛔ **Coercing an unknown tenant stage into the nearest canonical position is precisely the invention ADR-0409 exists to prevent** — 📁 its own §3: *"A free string would be a `value: Any` in disguise."* **A wrong canonical position is not a disguise; it is a false fact.**
+
+### ✅ What was implemented
+
+```python
+@dataclass(frozen=True, slots=True)
+class CommercialStageValue:
+    position: CommercialStage | None   # None means: maps to nothing canonical
+    label: str                          # the tenant's own word, always present
+```
+
+⚡ **`is_mapped` is the predicate the design's *"excluded until mapped"* needs**, in one place rather than in every consumer that has to honour it. ⛔ **An empty label raises** — a stage with no label is a claim about nothing.
+
+### ⚠️ What is being asked
+
+**Whether ADR-0409 §3 should record the optional position**, or whether the office reads the design differently. ✅ **Either answer is implementable and the code is already in the direction the design requires** — ⛔ **what must not happen is the ADR and the type disagreeing about a ratified contract with nobody having noticed.**
+
+---
+
 ## C-1513 · The design snapshot says both *"New role"* and *"Custom roles are deliberately absent"*
 
 | | |

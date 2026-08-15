@@ -97,12 +97,26 @@ class HubSpotCompanyMapper(ProviderMapper):
 
     ### What it deliberately does not translate
 
-    **Nothing commercial.** *Is this already a customer*, *contract value*,
-    *renewal date*, *opportunity stage* — the facts that make a CRM worth
-    connecting for Epic D — have **no canonical attribute**, and
-    `ClaimAttribute` says an RFC extends it. Inventing one here would put a
-    vocabulary decision inside a translation file, which is the quietest
-    place in the codebase to make one.
+    **Nothing commercial** — ⚠️ **and the reason has changed, so the sentence
+    is updated rather than deleted.** 📁 [ADR-0409](../../../../../docs/
+    architecture/adr/0409-commercial-account-facts.md) §4 asks for exactly
+    that: *"the comment should be updated to cite it rather than deleted — it
+    records why the gap existed."*
+
+    **It used to read:** *"contract value, renewal date, opportunity stage —
+    the facts that make a CRM worth connecting for Epic D — have no canonical
+    attribute, and `ClaimAttribute` says an RFC extends it."* ✅ **That RFC is
+    ADR-0409, ratified 2026-08-12, and `OPEN_ACV` · `RENEWAL_DATE` ·
+    `COMMERCIAL_STAGE` now exist.**
+
+    🔴 **The gap that remains is a different one, and it is about the OBJECT
+    rather than the vocabulary.** ⛔ **All three are properties of a HubSpot
+    *deal*, and this is a company mapper.** ⚡ **`HubSpotCompanies` reads
+    `/crm/v3/objects/companies` and nothing in the repository fetches a deal**
+    — 📁 [C-1515](../../../../../docs/LANE_COORDINATION.md), raised rather than
+    worked around. **A deal mapper is buildable on this file's own reasoning**
+    — *"the gap is in acquiring records, not in interpreting them"* — **and it
+    is a sibling of this class, not a widening of it.**
 
     **What is translated is what the canonical language already accepts**,
     and it turns out to be six of the seven firmographic attributes. A

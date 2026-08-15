@@ -26,9 +26,13 @@ from modules.provider_normalization.domain.outcome import (
 )
 from modules.provider_normalization.domain.vocabulary import (
     ATTRIBUTE_VALUE_TYPES,
+    VOCABULARY_VERSION,
     ClaimAttribute,
     ClaimDomain,
+    CommercialStage,
+    CommercialStageValue,
     IntentSurgeValue,
+    MoneyValue,
     RevenueBand,
     TechnologyValue,
     TrendDirection,
@@ -311,3 +315,120 @@ class TestValueEncoding:
 
         assert encoded["first_seen"] == "2026-01-12"
         assert encoded["last_seen"] is None
+
+
+class TestCommercialFactsAreCanonicalRatherThanPerScreen:
+    """🔴 **[ADR-0409](../../../docs/architecture/adr/0409-commercial-account-facts.md),
+    ratified as [C-209](../../../docs/LANE_COORDINATION.md) option A** —
+    [TASK-1477](../../../docs/BACKLOG.md).
+
+    ⚡ **The ADR's whole point is that ONE model serves Companies, the deal
+    record and Forecast.** ⛔ **These hold the parts a screen-specific model
+    would have got wrong.**
+    """
+
+    def test_commercial_is_its_own_domain_and_not_capital(self) -> None:
+        """⛔ **Capital is what happened to the COMPANY; commercial is the
+        state of OUR RELATIONSHIP with it.** 📁 ADR-0409 §2 — **a consumer
+        filtering on domain would otherwise get the wrong set.**"""
+        for attribute in (
+            ClaimAttribute.OPEN_ACV,
+            ClaimAttribute.RENEWAL_DATE,
+            ClaimAttribute.COMMERCIAL_STAGE,
+        ):
+            assert attribute.domain is ClaimDomain.COMMERCIAL
+
+        assert ClaimAttribute.FUNDING_ROUND.domain is ClaimDomain.CAPITAL
+        assert ClaimAttribute.ACQUISITION.domain is ClaimDomain.CAPITAL
+
+    def test_the_vocabulary_version_records_that_it_changed(self) -> None:
+        """📁 **ADR-0409 §5 asks for this by name.** ⛔ *"A vocabulary change
+        that leaves it at 1 is a stored fact disagreeing with the code that
+        wrote it."*"""
+        assert VOCABULARY_VERSION == 2
+
+    def test_an_amount_cannot_be_recorded_without_its_currency(self) -> None:
+        """🔴 **ADR-0409 §3: *"A figure without its currency is not a fact."***
+
+        ⚠️ **Stricter than its own precedent, deliberately.** `FundingValue`
+        allows `amount=None` because a round announced without a figure is
+        still the round; ⛔ **an Open ACV with no amount is not a thinner fact,
+        it is no fact at all.**
+        """
+        money = MoneyValue(amount=98_000, currency="USD")
+
+        assert money.amount == 98_000
+        assert money.currency == "USD"
+        # ⛔ **Unconstructable rather than discouraged** — the type refuses it.
+        with pytest.raises(TypeError):
+            MoneyValue(amount=98_000)  # type: ignore[call-arg]
+
+    def test_a_tenant_stage_that_maps_to_nothing_is_representable(self) -> None:
+        """🔴 **The design requires this state and ADR-0409 §3 does not describe
+        it** — 📁 [C-1514](../../../docs/LANE_COORDINATION.md).
+
+        ⚡ **The CRM Integrations screen**: *"Salesforce added 'Legal review'
+        and 'Procurement' to StageName last week. **214 opportunities now sit
+        in stages Signora treats as unmapped**, and their velocity metrics are
+        **excluded until mapped**."*
+
+        ⛔ **So *unmapped* is a state the product shows, counts and acts on** —
+        **not an error, and never the nearest canonical position guessed at.**
+        """
+        unmapped = CommercialStageValue(position=None, label="Legal review")
+
+        assert unmapped.is_mapped is False
+        assert unmapped.label == "Legal review"
+
+        mapped = CommercialStageValue(
+            position=CommercialStage.NEGOTIATING, label="Negotiation/Review"
+        )
+        assert mapped.is_mapped is True
+
+    def test_a_stage_always_carries_the_tenants_own_word(self) -> None:
+        """⛔ **An empty label is the zero-filled absence §5 forbids**, wearing
+        a value's clothes: the provider supplied a stage or it did not."""
+        with pytest.raises(ValueError):
+            CommercialStageValue(position=CommercialStage.NEGOTIATING, label="   ")
+
+    def test_open_is_a_question_about_the_stage_and_is_answered_in_one_place(
+        self,
+    ) -> None:
+        """🔴 **This is what makes `OPEN_ACV` computable.**
+
+        📁 [§2](../../../CLAUDE.md), *least powerful author*: **which positions
+        are open is static knowledge the enum owns**, and a consumer
+        re-deriving it would be the second representation that eventually
+        disagrees.
+        """
+        assert CommercialStage.QUALIFYING.is_open
+        assert CommercialStage.EVALUATING.is_open
+        assert CommercialStage.NEGOTIATING.is_open
+        assert not CommercialStage.CLOSED_WON.is_open
+        assert not CommercialStage.CLOSED_LOST.is_open
+
+    def test_open_is_defined_as_not_closed_so_a_new_stage_is_open_by_default(
+        self,
+    ) -> None:
+        """⚡ **The safe direction, asserted rather than described.**
+
+        ⛔ **A sixth position added later must be OPEN until somebody says
+        otherwise** — the alternative silently drops a stage out of every
+        open-pipeline figure the day it is added, **and nothing would fail.**
+        """
+        closed = {stage for stage in CommercialStage if not stage.is_open}
+
+        assert closed == {CommercialStage.CLOSED_WON, CommercialStage.CLOSED_LOST}
+
+    def test_no_forecast_category_became_a_pipeline_position(self) -> None:
+        """⛔ **`Commit` and `Best case` are drawn by the Executive Dashboard
+        and are NOT stages.**
+
+        ⚠️ **A rep sets a forecast category as a JUDGEMENT; a stage records
+        where the work IS.** ⚡ **Folding them in would put an opinion inside a
+        fact** — 📁 the same refusal [C-297](../../../docs/LANE_COORDINATION.md)
+        makes of probability, one concept over.
+        """
+        members = {stage.value for stage in CommercialStage}
+
+        assert members.isdisjoint({"commit", "best_case", "pipeline", "omitted"})

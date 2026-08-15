@@ -18,7 +18,12 @@ from datetime import date, datetime
 from enum import StrEnum
 from typing import Final
 
-VOCABULARY_VERSION: Final = 1
+VOCABULARY_VERSION: Final = 2
+#: ⚡ **Incremented to 2 by [ADR-0409](../../../../docs/architecture/adr/
+#: 0409-commercial-account-facts.md) §5, which asks for it by name**: *"It
+#: exists to be incremented; a vocabulary change that leaves it at 1 is a
+#: stored fact disagreeing with the code that wrote it."*
+#: ⛔ **The `COMMERCIAL` domain and its three attributes are what changed.**
 
 
 class ClaimDomain(StrEnum):
@@ -29,6 +34,17 @@ class ClaimDomain(StrEnum):
     CAPITAL = "capital"
     WORKFORCE = "workforce"
     BEHAVIOURAL = "behavioural"
+    COMMERCIAL = "commercial"
+    """**What this account is worth to us, and where it stands** —
+    📁 [ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md) §2,
+    ratified by the product owner as [C-209](../../../../docs/LANE_COORDINATION.md)
+    option A.
+
+    ⛔ **Deliberately NOT folded into `CAPITAL`.** ⚡ **Capital is what happened
+    to the *company*; commercial is the state of *our relationship with it*.**
+    Different subject, different provenance — **and a consumer filtering on
+    domain would get the wrong set.**
+    """
 
 
 class ClaimAttribute(StrEnum):
@@ -77,6 +93,32 @@ class ClaimAttribute(StrEnum):
     name.
     """
 
+    # --- commercial
+    OPEN_ACV = "open_acv"
+    """**What this account is worth, as the customer's own system states it.**
+
+    ⚠️ **Whether it is *open* is a question about the STAGE, not about this
+    figure** — see `CommercialStage.is_open`. ⛔ **The two are separate
+    attributes because a provider supplies them separately**, and fusing them
+    would make a deal that closed since the last sync carry a figure this
+    layer had already decided was open.
+    """
+
+    RENEWAL_DATE = "renewal_date"
+    """**When the current term ends.** ⛔ **A `date`, never a countdown** — the
+    design draws *"Renewal 69d"* and *"Renewal in 38 days"*, and **a stored
+    number of days is wrong the next morning.**"""
+
+    COMMERCIAL_STAGE = "commercial_stage"
+    """**Where the relationship stands, canonically, with the tenant's own
+    word beside it.**
+
+    📁 [ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+    §3: *"Reasoning reads the canonical position. A screen may show the
+    customer's word."* ⚡ **[ADR-0034](../../../../docs/architecture/adr/
+    0034-ubiquitous-language.md) inside a single attribute.**
+    """
+
     # --- behavioural
     INTENT_TOPIC_SURGE = "intent_topic_surge"
     """**One claim per observed week**, never a flattened current value.
@@ -105,6 +147,9 @@ _ATTRIBUTE_DOMAINS: Final[dict[ClaimAttribute, ClaimDomain]] = {
     ClaimAttribute.ROLE_CHANGE: ClaimDomain.WORKFORCE,
     ClaimAttribute.PERSON_IDENTITY: ClaimDomain.WORKFORCE,
     ClaimAttribute.INTENT_TOPIC_SURGE: ClaimDomain.BEHAVIOURAL,
+    ClaimAttribute.OPEN_ACV: ClaimDomain.COMMERCIAL,
+    ClaimAttribute.RENEWAL_DATE: ClaimDomain.COMMERCIAL,
+    ClaimAttribute.COMMERCIAL_STAGE: ClaimDomain.COMMERCIAL,
 }
 
 
@@ -133,6 +178,73 @@ class RoleDirection(StrEnum):
     JOINED = "joined"
     LEFT = "left"
     PROMOTED = "promoted"
+
+
+class CommercialStage(StrEnum):
+    """Where a relationship stands, in the smallest set the consumers need.
+
+    🔴 **[ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+    §3 delegates these members to this lane and says why**: *"Naming them from
+    this office, without a mapper in front of me, would be the invention this
+    ADR exists to avoid."* ⚡ **They are proposed in the Slice Handoff and
+    become part of the ratified contract.**
+
+    ## 📁 Where each member comes from, because *the smallest set* needs a test
+
+**`NEGOTIATING` · `CLOSED_WON`** — ⚡ **drawn by name.** *"Weakest link:
+    **Negotiation → Closed won**, down 9 points"* (Executive Dashboard) ·
+    *"Stage · **Negotiation**"* (App Shell) · *"**Negotiation** since 12 Jun"*
+    (Design System v2).
+
+    **`CLOSED_LOST`** — 🔴 **required by the funnel the design draws.** That
+    conversion is a ratio, **and its denominator is every deal that left
+    Negotiation without winning.** ⛔ Without this member the figure cannot be
+    computed honestly.
+
+    **`QUALIFYING` · `EVALUATING`** — ⚡ **the two positions every CRM's default
+    pipeline collapses into before Negotiation**: HubSpot's `qualifiedtobuy` /
+    `presentationscheduled` / `decisionmakerboughtin`, Salesforce's
+    `Qualification` / `Needs Analysis` / `Value Proposition`. ⛔ **Fewer would
+    make the funnel a single step and the *weakest link* unanswerable.**
+
+    ## ⛔ What is deliberately NOT here
+
+    **`Commit` and `Best case`.** 📁 The Executive Dashboard draws them —
+    *"commit, best case and AI projection against a $68.0M plan"* — ⚠️ **and
+    they are FORECAST CATEGORIES, not pipeline positions.** ⛔ **A rep sets a
+    forecast category as a judgement; a stage records where the work is.**
+    Folding them in would put an opinion inside a fact, **and
+    [C-297](../../../../docs/LANE_COORDINATION.md)'s refusal of probability is
+    the same refusal one concept over.**
+
+    **The tenant's own stages.** *"Legal review"*, *"Procurement"* — 📁 the CRM
+    Integrations design's own example. ⚡ **They travel as
+    `CommercialStageValue.label` and are never members here**, which is the
+    whole reason the canonical set is closed.
+    """
+
+    QUALIFYING = "qualifying"
+    EVALUATING = "evaluating"
+    NEGOTIATING = "negotiating"
+    CLOSED_WON = "closed_won"
+    CLOSED_LOST = "closed_lost"
+
+    @property
+    def is_open(self) -> bool:
+        """Whether work on this relationship is still live.
+
+        🔴 **This is what makes `OPEN_ACV` computable, and it lives here rather
+        than in every consumer.** 📁 [§2](../../../../CLAUDE.md), *least
+        powerful author*: **which positions are open is static knowledge this
+        enum owns**, and a consumer re-deriving it would be the second
+        representation that eventually disagrees.
+
+        ⛔ **Stated as *not closed* rather than as a list of the open ones.** ⚡
+        **A sixth position added later is open until somebody says otherwise**,
+        which is the safe direction — the alternative silently drops a stage
+        out of every open-pipeline figure the day it is added.
+        """
+        return self not in {CommercialStage.CLOSED_WON, CommercialStage.CLOSED_LOST}
 
 
 # --------------------------------------------------------------- values
@@ -168,6 +280,95 @@ class RoleChangeValue:
     title: str
     seniority: str
     direction: RoleDirection
+
+
+@dataclass(frozen=True, slots=True)
+class MoneyValue:
+    """A figure and the currency it is in, **and never one without the other.**
+
+    📁 [ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+    §3: *"A figure without its currency is not a fact."*
+
+    ⚠️ **Both REQUIRED, which is where this departs from its own precedent and
+    the departure is deliberate.** 📁 `FundingValue` and `AcquisitionValue`
+    carry `amount: int | None` beside `currency: str | None`, **because a
+    funding round is announced without a figure and the round is still the
+    fact.** ⛔ **An Open ACV with no amount is not a thinner fact — it is no
+    fact at all**, and [§2](../../../../CLAUDE.md) prefers a violation that
+    cannot be constructed over one a reader has to remember to check.
+
+    ⛔ **No conversion, ever.** 📁 §5: *"Currency is carried, never
+    converted."* ⚡ **A rate is applied at a moment** — [§10](../../../../CLAUDE.md),
+    *operational facts and commercial policy stay separate* — **so a converted
+    figure stored on a claim is correct briefly and wrong permanently.**
+
+    ⚠️ **Minor units are the provider's, uninterpreted.** This layer carries
+    what the customer's system said; **deciding whether `1200` is twelve
+    dollars or twelve hundred is a mapper's job**, and stating it here would
+    be this file deciding a vendor's format.
+    """
+
+    amount: int
+    currency: str
+
+
+@dataclass(frozen=True, slots=True)
+class CommercialStageValue:
+    """A canonical position, **and the tenant's own word for it.**
+
+    ## 🔴 `position` is optional, and the design is why
+
+    📁 **The CRM Integrations screen states the case in full:**
+
+    > ⚡ *"Salesforce added 'Legal review' and 'Procurement' to StageName last
+    > week. **214 opportunities now sit in stages Signora treats as unmapped**,
+    > and their velocity metrics are **excluded until mapped**."*
+
+    ⛔ **So *unmapped* is a state the product SHOWS, counts, and acts on** — it
+    is not an error and not a gap to be filled. ⚡ **`position=None` with a
+    `label` is exactly that state**, and it is representable rather than
+    inferred from a missing claim.
+
+    ⚠️ **[ADR-0409](../../../../docs/architecture/adr/0409-commercial-account-facts.md)
+    §3 describes the value as *"a closed canonical position, carrying the
+    tenant's own label beside it"*, which reads as though a position is always
+    present.** 🔴 **The design requires otherwise, and this is raised rather
+    than resolved quietly** — 📁 [C-1514](../../../../docs/LANE_COORDINATION.md).
+    **Implemented as optional because the alternative cannot express a screen
+    the design draws**, and because ⛔ **coercing an unknown tenant stage into
+    the nearest canonical one is precisely the invention the ADR exists to
+    prevent.**
+
+    ## ⛔ Why the label is never reasoned over
+
+    📁 §5: *"The tenant's stage label is provenance and is never reasoned
+    over."* ⚡ **A consumer branching on `label` would be parsing a vendor's
+    string** — [§10](../../../../CLAUDE.md), vendor neutrality — **and the
+    customer renames it the following week.**
+    """
+
+    #: ⛔ **`None` means the tenant's stage maps to nothing canonical.** Not
+    #: *unknown*, not *missing* — **mapped to nothing, deliberately.**
+    position: CommercialStage | None
+    #: ⚡ **What the customer's own system calls it**, carried so a screen can
+    #: show their word and so *"map both →"* has something to name.
+    label: str
+
+    def __post_init__(self) -> None:
+        if not self.label.strip():
+            # ⛔ **A stage with no label is a claim about nothing.** The
+            # provider supplied a stage or it did not; an empty string is the
+            # zero-filled absence §5 forbids wearing a value's clothes.
+            raise ValueError("a commercial stage carries the tenant's own label")
+
+    @property
+    def is_mapped(self) -> bool:
+        """Whether this stage means anything to reasoning yet.
+
+        ⚡ **The predicate the design's *"excluded until mapped"* needs**, in
+        one place rather than in every consumer that has to honour it.
+        """
+        return self.position is not None
 
 
 class OrgEdgeSource(StrEnum):
@@ -290,6 +491,9 @@ ATTRIBUTE_VALUE_TYPES: Final[dict[ClaimAttribute, tuple[type, ...]]] = {
     ClaimAttribute.ROLE_CHANGE: (RoleChangeValue,),
     ClaimAttribute.PERSON_IDENTITY: (PersonIdentityValue,),
     ClaimAttribute.INTENT_TOPIC_SURGE: (IntentSurgeValue,),
+    ClaimAttribute.OPEN_ACV: (MoneyValue,),
+    ClaimAttribute.RENEWAL_DATE: (date,),
+    ClaimAttribute.COMMERCIAL_STAGE: (CommercialStageValue,),
 }
 
 ClaimValue = (
@@ -302,6 +506,9 @@ ClaimValue = (
     | RoleChangeValue
     | PersonIdentityValue
     | IntentSurgeValue
+    | date
+    | MoneyValue
+    | CommercialStageValue
 )
 
 
