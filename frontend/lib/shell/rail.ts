@@ -168,3 +168,53 @@ export function bandFor(viewportWidth: number): Band {
 export function deviceClassFor(viewportWidth: number): DeviceClass {
   return viewportWidth < BREAKPOINTS.smallLaptop ? 'compact' : 'regular';
 }
+
+/**
+ * **Whether the BAND decides the rail's state, rather than the person** —
+ * [TASK-1473](../../../docs/BACKLOG.md), 📁 [D-233](../../../docs/DECISION_REGISTER.md)
+ * rule ⓐ.
+ *
+ * > ✅ ***At 1024–1279 the band forces the rail to 56px. At ≥1280 the user's
+ * > stored per-device-class preference decides.***
+ *
+ * ## 📁 The evidence is the utility panel, and it is worth carrying here
+ *
+ * ⚠️ **The design's band table is a set of FORCED states, and the panel is
+ * what proves it**: the same `Small laptop` entry carries **`panelW: '0'` and
+ * `panelDisplay: 'none'`** beside the rail line. ⚡ **The panel has its own
+ * persisted preference** — *"Open state is remembered per module per user"* —
+ * **and the band overrides it to `none`.** ⛔ **`none` is categorical, not a
+ * proportion.** **Same band, same table, same document: it overrides a stored
+ * preference for one component, so it overrides one for the other.**
+ *
+ * ⛔ **`railW` is NOT the evidence, and citing it was retracted.** 📁 Desktop
+ * is `railW: '30%'` and Laptop is `railW: '28%'`, **and both are the same
+ * 232px rail** — so it is a proportion of the mock diagram rather than a
+ * specification, and the `28% → 12%` drop proves nothing either way.
+ *
+ * ## ⚡ Why the preference still does real work
+ *
+ * **There are four bands.** ⛔ The objection to ⓐ was *"a band-forced state
+ * needs no stored preference, so per device class would do no work"* — ✅ **and
+ * it does not survive counting them**: between **Desktop ≥1600** and **Laptop
+ * 1280–1599** both states are permitted, and the preference is what chooses.
+ */
+export function bandForcesCollapse(band: Band): boolean {
+  return band === 'smallLaptop';
+}
+
+/**
+ * **The rail's actual state**, from the band and what the person asked for.
+ *
+ * ⛔ **A pure function rather than a branch in the hook**, so the ruling is
+ * testable without a viewport, a person or a browser — and so the next lane
+ * can find rule ⓐ by name rather than by reading an effect.
+ *
+ * ⚠️ **`phone` is deliberately NOT forced.** 📁 Below 1024 *"the rail becomes a
+ * sheet from a top-bar button"* — **a sheet is neither expanded nor collapsed**,
+ * and the shell already handles that separately. ⛔ **Returning `true` here
+ * would make the sheet render at 56px**, which is a third state nobody drew.
+ */
+export function railIsCollapsed(band: Band, storedPreference: boolean): boolean {
+  return bandForcesCollapse(band) ? true : storedPreference;
+}

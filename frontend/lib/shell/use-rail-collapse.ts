@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { collapseKey, deviceClassFor, type DeviceClass } from './rail';
+import {
+  type Band,
+  bandFor,
+  bandForcesCollapse,
+  collapseKey,
+  deviceClassFor,
+  railIsCollapsed,
+  type DeviceClass,
+} from './rail';
 
 /**
  * **Rail collapse, remembered** — [TASK-1408](../../../docs/BACKLOG.md).
@@ -32,19 +40,41 @@ import { collapseKey, deviceClassFor, type DeviceClass } from './rail';
  * it having happened.
  */
 export interface RailCollapse {
+  /** ⚡ **The EFFECTIVE state** — the band's answer where it has one, the
+   * person's otherwise. 📁 [TASK-1473](../../../docs/BACKLOG.md), rule ⓐ. */
   collapsed: boolean;
   toggle: () => void;
   device: DeviceClass;
+  /**
+   * ⛔ **`false` where the band decides and the person cannot.**
+   *
+   * 📁 **At 1024–1279 the band forces 56px**, so a toggle would be a control
+   * that changes nothing. ⚡ **The shell hides it rather than disabling it** —
+   * *absent, never disabled*, the same rule the roster applies to a control
+   * the server would refuse.
+   */
+  canToggle: boolean;
 }
 
 export function useRailCollapse(userId: string | null): RailCollapse {
-  const [collapsed, setCollapsed] = useState(false);
+  // ⚡ **The stored preference, which is NOT the same thing as the state.**
+  // 📁 [TASK-1473](../../../docs/BACKLOG.md): at 1024–1279 the band overrides
+  // it, and ⛔ **overriding it must not overwrite it** — somebody who prefers
+  // an expanded rail keeps that preference while working on a small laptop,
+  // and gets it back at 1280.
+  const [preference, setPreference] = useState(false);
   const [device, setDevice] = useState<DeviceClass>('regular');
+  // ⚡ **The band, measured alongside the device class**, because rule ⓐ needs
+  // 1280 and the device class only knows 1024.
+  const [band, setBand] = useState<Band>('laptop');
 
   // Device class first: the key depends on it, so a resize across the
   // breakpoint reads a different preference rather than rewriting one.
   useEffect(() => {
-    const measure = () => setDevice(deviceClassFor(window.innerWidth));
+    const measure = () => {
+      setDevice(deviceClassFor(window.innerWidth));
+      setBand(bandFor(window.innerWidth));
+    };
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
@@ -53,14 +83,18 @@ export function useRailCollapse(userId: string | null): RailCollapse {
   useEffect(() => {
     if (userId === null || userId === '') return;
     try {
-      setCollapsed(window.localStorage.getItem(collapseKey(userId, device)) === 'true');
+      setPreference(window.localStorage.getItem(collapseKey(userId, device)) === 'true');
     } catch {
       // See the note above: a cosmetic preference must never cost the rail.
     }
   }, [userId, device]);
 
   const toggle = useCallback(() => {
-    setCollapsed((was) => {
+    // ⛔ **Inert where the band decides.** 📁 Rule ⓐ — writing a preference the
+    // person cannot see take effect would be a control reporting success for
+    // nothing, and `[` reaches this the same way the button does.
+    if (bandForcesCollapse(band)) return;
+    setPreference((was) => {
       const next = !was;
       if (userId !== null && userId !== '') {
         try {
@@ -71,7 +105,7 @@ export function useRailCollapse(userId: string | null): RailCollapse {
       }
       return next;
     });
-  }, [userId, device]);
+  }, [userId, device, band]);
 
   // 📁 *"`[` toggles collapse."* ⛔ **Ignored while a field has focus** — a
   // seller typing an account name into search must not fold the navigation.
@@ -91,5 +125,10 @@ export function useRailCollapse(userId: string | null): RailCollapse {
     return () => window.removeEventListener('keydown', onKey);
   }, [toggle]);
 
-  return { collapsed, toggle, device };
+  return {
+    collapsed: railIsCollapsed(band, preference),
+    toggle,
+    device,
+    canToggle: !bandForcesCollapse(band),
+  };
 }

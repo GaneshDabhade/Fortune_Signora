@@ -17,6 +17,8 @@ import {
   RAIL_WIDTH,
   TAB_ORDER,
   bandFor,
+  bandForcesCollapse,
+  railIsCollapsed,
   collapseKey,
   deviceClassFor,
   railViolations,
@@ -157,5 +159,63 @@ describe('♿ the tab order is a contract, not a consequence of DOM order', () =
     // it — the one pair a source-order layout gets backwards.
     expect([...TAB_ORDER]).toEqual(['rail', 'filter-strip', 'content', 'utility-panel']);
     expect(DESIGN).toMatch(/Tab order is rail → filter strip → content → utility panel/);
+  });
+});
+
+describe('the band at 1024–1279 forces the rail, and the preference governs above it', () => {
+  /**
+   * 🔴 **[TASK-1473](../../../docs/BACKLOG.md), 📁 [D-233](../../../docs/DECISION_REGISTER.md)
+   * rule ⓐ** — ruled after Lane C found the design ambiguous and QE challenged
+   * the premise.
+   *
+   * ⚠️ **Two-sided on purpose.** 📁 The row asks for exactly this: *"under ① the
+   * assertion must fail at 232px@1279 **and** at 56px@1280."* ⛔ **A test that
+   * only checked the forced side would pass against a rail that is collapsed
+   * everywhere**, which is the opposite defect and just as wrong.
+   */
+
+  it('forces the collapsed rail below 1280, whatever the person prefers', () => {
+    // 📁 *"Small laptop 1024–1279 — Rail collapses to 56px icons with
+    // tooltips."* ⚡ The evidence it is a FORCED state is the utility panel:
+    // the same band entry carries `panelDisplay: 'none'`, overriding that
+    // component's own stored preference.
+    expect(railIsCollapsed('smallLaptop', false)).toBe(true);
+    expect(railIsCollapsed('smallLaptop', true)).toBe(true);
+  });
+
+  it('lets the person decide at 1280 and above', () => {
+    // ⚡ **The preference does real work between Laptop and Desktop**, which is
+    // what defeats the objection that a band-forced state makes it pointless.
+    expect(railIsCollapsed('laptop', false)).toBe(false);
+    expect(railIsCollapsed('laptop', true)).toBe(true);
+    expect(railIsCollapsed('desktop', false)).toBe(false);
+    expect(railIsCollapsed('desktop', true)).toBe(true);
+  });
+
+  it('does not force the sheet, which is neither expanded nor collapsed', () => {
+    // ⛔ Below 1024 *"the rail becomes a sheet from a top-bar button"*.
+    // Returning `true` here would render the sheet at 56px — a third state
+    // nobody drew.
+    expect(railIsCollapsed('phone', false)).toBe(false);
+    expect(bandForcesCollapse('phone')).toBe(false);
+  });
+
+  it('holds the rule at the exact pixels the row names', () => {
+    // ⚡ **The boundary, from a viewport width rather than a band name** —
+    // 📁 the row's own two-sided requirement.
+    expect(railIsCollapsed(bandFor(1279), false)).toBe(true);
+    expect(railIsCollapsed(bandFor(1280), false)).toBe(false);
+    expect(railIsCollapsed(bandFor(1024), false)).toBe(true);
+    expect(railIsCollapsed(bandFor(1023), false)).toBe(false);
+  });
+
+  it('names which bands take the decision away, in one place', () => {
+    // ⛔ **A rule with a name a reviewer can search for**, rather than a
+    // comparison repeated in a hook and a component.
+    const forced = (['phone', 'smallLaptop', 'laptop', 'desktop'] as const).filter(
+      bandForcesCollapse,
+    );
+
+    expect(forced).toEqual(['smallLaptop']);
   });
 });

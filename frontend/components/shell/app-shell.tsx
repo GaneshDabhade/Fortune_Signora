@@ -293,6 +293,14 @@ export function AppShell({
             >
               ✕
             </button>
+          ) : !rail.canToggle ? (
+            /* ⛔ **Absent, never disabled** — [TASK-1473](../../../docs/BACKLOG.md),
+               📁 [D-233](../../../docs/DECISION_REGISTER.md) rule ⓐ. **At
+               1024–1279 the band forces 56px**, so this control would change
+               nothing. ⚡ **The same rule the roster applies to a control the
+               server would refuse**: a control that goes nowhere costs more
+               trust than an absent one. */
+            null
           ) : (
             <button
               type="button"
