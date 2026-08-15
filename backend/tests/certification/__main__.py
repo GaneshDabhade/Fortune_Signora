@@ -162,6 +162,43 @@ def _typescript() -> _Outcome:
     )
 
 
+def _frontend_suite() -> _Outcome:
+    """The frontend unit suite — **added 2026-08-15 on the product owner's ruling.**
+
+    ⛔ **[B-122](../../../docs/BUGS.md): a CERTIFIED commit reached `main` with
+    this suite red.** `385970bf`, `auth-mode.test.ts`,
+    `expected 'production' to be 'development'` — deterministic from the code,
+    reproduced in a clean worktree with no environment set.
+
+    ⚡ **`tsc` cannot stand in for it.** A type-checker sees a wrong *type*; this
+    was a wrong *assertion*, and it type-checked perfectly. **The two gates
+    answer different questions about the same directory.**
+    """
+    code, output = _run(["npx", "vitest", "run"], cwd=REPOSITORY_ROOT / "frontend")
+    tests = re.search(r"Tests\s+(\d+) passed", output)
+    files = re.search(r"Test Files\s+(\d+) passed", output)
+    if code == 0 and tests and files:
+        detail = f"{tests.group(1)} passed in {files.group(1)} files"
+    else:
+        failed = re.search(r"Tests\s+(\d+) failed", output)
+        detail = f"{failed.group(1)} failed" if failed else "did not report a total"
+    return _Outcome(passed=code == 0, detail=detail, output=output)
+
+
+def _eslint() -> _Outcome:
+    """`eslint` over the frontend — **added 2026-08-15 with `frontend-suite`.**
+
+    **Named by the Validation Planner and run by nothing**: 0 of 228 recorded
+    runs. ⚠️ **Reported as a gate rather than folded into `frontend-suite`**,
+    because a lint failure and a failing assertion are different defects and a
+    single verdict would not say which occurred.
+    """
+    code, output = _run(["npx", "eslint", "."], cwd=REPOSITORY_ROOT / "frontend")
+    problems = re.search(r"(\d+) problems?", output)
+    detail = "clean" if code == 0 else f"{problems.group(1) if problems else '?'} problem(s)"
+    return _Outcome(passed=code == 0, detail=detail, output=output)
+
+
 def _import_linter() -> _Outcome:
     code, output = _run(["uv", "run", "lint-imports"], cwd=BACKEND_ROOT)
     return _Outcome(passed=code == 0, detail=contracts_of(output), output=output)
@@ -443,6 +480,12 @@ def _certify(target: disposable_database.Disposable) -> int:
         GateResult(name="import-linter", passed=contracts.passed, detail=contracts.detail),
         GateResult(name="tsc", passed=typescript.passed, detail=typescript.detail),
     ]
+    frontend = _frontend_suite()
+    print(f"  frontend-suite      {frontend.detail}")
+    gates.append(GateResult(name="frontend-suite", passed=frontend.passed, detail=frontend.detail))
+    lint = _eslint()
+    print(f"  eslint              {lint.detail}")
+    gates.append(GateResult(name="eslint", passed=lint.passed, detail=lint.detail))
     smoke = _smoke()
     print(f"  smoke               {smoke.detail}")
     gates.append(GateResult(name="smoke", passed=smoke.passed, detail=smoke.detail))
@@ -492,7 +535,8 @@ def _certify(target: disposable_database.Disposable) -> int:
         print(f"  · {reason}")
     _report_gate_output(gates, {"pytest": suite, "security-invariants": invariants,
                                 "mypy": types, "import-linter": contracts,
-                                "tsc": typescript, "smoke": smoke})
+                                "tsc": typescript, "smoke": smoke,
+                                "frontend-suite": frontend, "eslint": lint})
     return 1
 
 

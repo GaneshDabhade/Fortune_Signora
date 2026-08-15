@@ -152,7 +152,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | **QE's own instrument** — [`backend/tests/certification/__main__.py`](../backend/tests/certification/__main__.py) |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 · ⚠️ **NOT a Blocking Quality Defect, and the distinction matters.** **Nothing about the promotion guarantee is false**: every commit on `main` was certified against the gates certification actually runs. ⛔ **What is false is the inference a reader draws from the word** |
-| **Status** | 🔵 **`OPEN`** |
+| **Status** | ✅ **`RULED` — product owner, 2026-08-15, and IMPLEMENTED.** ⚡ **Both halves approved.** **①  `frontend-suite` and `eslint` are members of `REQUIRED_GATES`** — *"a frontend test suite that can be red while the repository is certified is a genuine certification gap"*. **② QE is allocated `B-1000`–`B-1099`**, recorded in [`CLAUDE.md`](../CLAUDE.md) §20e. ⛔ **The historical effect is accepted and explicitly NOT a reinterpretation**: *"the records remain historical records under the gate set that existed at the time; the current derived state may correctly show that they do not satisfy today's expanded gate set."* ⚠️ **The `--audit-main` caveat is recorded as a follow-up verification, not a blocker, on the product owner's instruction** |
 | **Found** | **2026-08-14, by Lane A**, measuring their own reported figure against the command the gate runs |
 | **Commit found** | **`2f017a8d`** |
 

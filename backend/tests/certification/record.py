@@ -53,8 +53,31 @@ from typing import Final
 #: gate passed" vacuously — the same defect `36-empty-array-checks.md` found in
 #: nine shipped CHECK constraints, where `array_length(x, 1) >= 1` cannot reject
 #: the empty array.
+#: ⚡ **`frontend-suite` and `eslint` added 2026-08-15 on the product owner's
+#: ruling** ([B-122](../../../docs/BUGS.md)). **A CERTIFIED commit reached `main`
+#: with a deterministically failing frontend test** — `385970bf`,
+#: `auth-mode.test.ts`, `expected 'production' to be 'development'` — and
+#: neither gate had run in any of the 228 recorded runs. ⛔ **`tsc` passed
+#: throughout and could not have caught it: a type-checker cannot see a wrong
+#: assertion.**
+#:
+#: ⚠️ **Widening re-judges history, and that effect is accepted rather than
+#: overlooked.** `satisfied` is derived and never stored, so records made under
+#: the narrower set now re-read as unsatisfied. **They are not retrospectively
+#: fraudulent** — each recorded truthfully what it ran, under the gate set that
+#: existed then. 📁 **The precedent is `tsc`'s own addition at `4e43da17`**,
+#: which did exactly this to 41 earlier runs without anybody rewriting a record.
 REQUIRED_GATES: Final = frozenset(
-    {"pytest", "mypy", "tsc", "import-linter", "security-invariants", "smoke"}
+    {
+        "pytest",
+        "mypy",
+        "tsc",
+        "import-linter",
+        "security-invariants",
+        "smoke",
+        "frontend-suite",
+        "eslint",
+    }
 )
 
 #: The coverage floor, mirroring `fail_under` in `pyproject.toml`.

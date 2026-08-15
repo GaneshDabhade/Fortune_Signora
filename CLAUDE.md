@@ -1599,7 +1599,7 @@ It compares what the governance documents *say* against what git, the migrations
 | Actor | `B-` bugs | `C-` coordination | `TASK-` | ADR |
 |---|---|---|---|---|
 | **Historic** — allocated before this rule | `001`–`099` | `001`–`099` | `001`–`099` | `0001`–`0099` |
-| **QE** | `100`+ | `100`+ | — *(QE writes nothing in the backlog)* | `0100`+ |
+| **QE** | `100`–`199`, **then `1000`–`1099`** | `100`+ | — *(QE writes nothing in the backlog)* | `0100`+ |
 | **Lane A** | `200`+ | `200`–`299`, **then `1500`+** | `200`+ | `0200`+ |
 | **Lane B** | `300`+ | `300`+ | `300`+ | `0300`+ |
 | **Lane C** *(Product Office)* | `400`–`499`, **then `1400`+** | `400`–`499`, **then `1400`+** | `400`–`499`, **then `1400`+** | `0400`–`0499`, **then `1400`+** |
@@ -1636,6 +1636,18 @@ It compares what the governance documents *say* against what git, the migrations
 > ⚡ **`1500`+ and not `1000`+ — it leaves `500`–`900` untouched for Lanes D and E and the product owner**, the same reasoning that gave Lane C `1400`+.
 >
 > ⚠️ **This is the third edit Lane C has made to this file and, like the first two, it was *directed rather than drafted*.** **`CLAUDE.md` remains the product owner's.**
+
+> ⚡ **QE gained `B-1000`–`B-1099` on 2026-08-15, on the product owner's explicit ruling and instruction** ([B-122](docs/BUGS.md)).
+>
+> **`100`–`199` is exhausted — 98 of 100 allocated, and the two apparent gaps are live references**: `B-102` has 12 mentions repository-wide and `B-182` has 2. ⛔ **A gap that is referenced is not free**, which is [B-263](docs/BUGS.md)'s lesson one register over.
+>
+> ⚠️ **It had already cost a collision.** QE filed two findings as `B-200` and `B-201`; **both are Lane A's range and both collided with existing rows of theirs.** `infra/state-check.py` reported it. ⛔ **The cause was the search that chose the number** — grepping `^### B-1[0-9]{2}`, seeing `B-199`, and taking `200` — **which answers *"what is the highest in 100–199?"* when the question is *"what is the next free number in MY block?"***
+>
+> ✅ **`1000`+ and not `1400`+ or `1500`+, deliberately: those are Lane C's and Lane A's.** **`500`–`900` stay untouched for Lanes D and E and the product owner**, the same reasoning that gave Lane C `1400`+ and Lane A `C-1500`+. **Measured before allocation: no `B-`, `C-`, `TASK-` or `ADR-` identifier in `1000`–`1099` is in use.**
+>
+> ⛔ **Nothing is renumbered and nothing migrates.** **`B-100`–`B-199` keep their ids, their references and their history**; the second range is additive. **`100`–`199` is not used further.**
+>
+> ⚠️ **This is the first edit QE has made to this file, and it was *directed rather than drafted*.** **`CLAUDE.md` remains the product owner's.**
 
 **Migrations are deliberately exempt**, and are the one identifier that must stay dense: Alembic's `down_revision` is a linear chain, so a gap is not a cosmetic oddity but a broken migration graph. **The existing practice is correct and stays** — a lane that finds its number taken renumbers on rebase and says so in the commit message, as Lane A did twice for `0026`. **The chain is the identity; the filename follows it.**
 
