@@ -59,7 +59,11 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from signora_platform.simulation import dataset as dataset_module
-from tests.conftest import DEFAULT_ADMIN_DATABASE_URL, DEFAULT_APP_DATABASE_URL
+from tests.conftest import (
+    DEFAULT_ADMIN_DATABASE_URL,
+    DEFAULT_APP_DATABASE_URL,
+    _refuse_human_reviews_database,
+)
 from tests.opportunity_engine.test_opportunity_pipeline import _tracked
 from tests.pipeline import sweep_stale
 
@@ -253,6 +257,19 @@ async def main() -> int:
             "Set SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 to confirm the database is disposable."
         )
         return 2
+
+    # ⛔ **[B-270](../../../docs/BUGS.md), the path a `Makefile` cannot reach.**
+    # This module resolves its target from `DEFAULT_APP_DATABASE_URL` — the same
+    # fallback the suite uses — so `python -m tests.playground.seed` in a shell
+    # with no `SIGNORA_TEST_*` **writes into human review's database**, which is
+    # how `make demo-seed` re-seeded slot 0 from a lane while reporting success.
+    #
+    # ⚡ **`make demo-seed` is guarded by `refuse-slot-0`; running this module
+    # directly is not**, and the guard belongs with the code rather than with one
+    # of its callers. **`ALLOW_SLOT_0=1` is the same escape**, and it reaches this
+    # process from either `make demo-seed ALLOW_SLOT_0=1` or an exported shell
+    # variable — **measured, not assumed.**
+    _refuse_human_reviews_database()
 
     cast = dataset_module.load(*SCENARIO)
     subjects = tuple(sorted(cast.entities))

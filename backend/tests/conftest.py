@@ -13,6 +13,7 @@ Two connections are used, deliberately mirroring production reality:
 
 import os
 from collections.abc import AsyncIterator
+from pathlib import Path
 
 import pytest
 from sqlalchemy import text
@@ -151,6 +152,71 @@ async def require_explicit_consent_to_truncate() -> None:
             "is disposable. Never set it against a database holding data you "
             "want to keep."
         )
+    _refuse_human_reviews_database()
+
+
+#: Human review's database, derived rather than written down. `infra/` is not on
+#: the test path, so this reads the values `environments.py` computes for the
+#: `review` environment and falls back to the literal pair only if that import
+#: is impossible — an absent registry must not silently disable the guard.
+def _human_review_target() -> tuple[str, str]:
+    try:
+        import importlib.util
+        import sys as _sys
+
+        path = Path(__file__).resolve().parents[2] / "infra" / "environments.py"
+        spec = importlib.util.spec_from_file_location("_signora_environments", path)
+        if spec and spec.loader:
+            module = importlib.util.module_from_spec(spec)
+            _sys.modules["_signora_environments"] = module
+            spec.loader.exec_module(module)
+            review = next(e for e in module.ENVIRONMENTS if e.name == "review")
+            return str(review.postgres_port), str(review.database)
+    except Exception:  # noqa: BLE001 - a missing registry must not disable the guard
+        pass
+    return "5432", "signora"
+
+
+def _refuse_human_reviews_database() -> None:
+    """Refuse to truncate the database a person is reviewing the product in.
+
+    ⛔ **[B-270](../../docs/BUGS.md).** The consent guard above asks *"do you
+    consent to truncation?"* and **never** *"which database?"* — and the answer
+    to the first was correctly **yes** every time. `make test` supplied the
+    consent flag with no database variable, so a shell without `SIGNORA_TEST_*`
+    fell through `DEFAULT_APP_DATABASE_URL` to human review's database and
+    emptied it. **No mistake was required: new shell, documented gate, slot 0
+    gone.** Lane A hit it exactly that way.
+
+    ⚡ **This is keyed on the DATABASE, not on the cluster, and that distinction
+    is load-bearing.** `make certify` creates a disposable `signora_certify_<sha>`
+    **on `localhost:5432`** — slot 0's cluster — because
+    `tests/certification/database.py` pins `_HOST` there. **A port-based refusal
+    would break every certification run**, which is why the pair is checked and
+    not the port alone.
+
+    ✅ **`ALLOW_SLOT_0=1` is the same escape `refuse-slot-0` uses in the
+    `Makefile`**, deliberately one vocabulary rather than two: the environment
+    genuinely cannot distinguish a reviewer from a lane, so the human says which.
+    """
+    if os.environ.get("ALLOW_SLOT_0") == "1":
+        return
+    port, database = _human_review_target()
+    for variable in ("SIGNORA_TEST_APP_DATABASE_URL", "SIGNORA_TEST_ADMIN_DATABASE_URL"):
+        url = os.environ.get(variable) or (
+            DEFAULT_APP_DATABASE_URL
+            if variable.endswith("APP_DATABASE_URL")
+            else DEFAULT_ADMIN_DATABASE_URL
+        )
+        if url.endswith(f":{port}/{database}"):
+            raise RuntimeError(
+                f"REFUSED — {variable} points at localhost:{port}/{database}, "
+                "which is human review's database. This suite truncates every "
+                "table after each test (B-270).\n\n"
+                "  Derive your own environment instead of quoting one:\n"
+                "    eval \"$(python3 infra/environments.py --exports)\"\n\n"
+                "  If you are deliberately targeting slot 0, set ALLOW_SLOT_0=1."
+            )
 
 
 @pytest.fixture(autouse=True)
