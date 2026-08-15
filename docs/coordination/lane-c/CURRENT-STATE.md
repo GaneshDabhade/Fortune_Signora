@@ -24,7 +24,7 @@
 
 ## Open product-owner decisions
 
-⛔ **Eight. Each has a prepared recommendation and needs one word.** Full analysis in [`LANE_COORDINATION.md`](../../LANE_COORDINATION.md).
+⛔ **Nine. Each has a prepared recommendation and needs one word.** Full analysis in [`LANE_COORDINATION.md`](../../LANE_COORDINATION.md).
 
 | | Recommendation | Blocks |
 |---|---|---|
