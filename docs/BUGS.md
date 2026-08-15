@@ -771,10 +771,36 @@ export SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://…@localhost:${SIGNO
 
 | | |
 |---|---|
-| **Status** | **`OPEN` — Lane A, 2026-08-15** |
+| **Status** | ✅ **`FIXED` — both halves, 2026-08-15, cycle 233.** ⚡ **The `make` half is Lane C's** (`DESTRUCTIVE_DB_ENV` + `refuse-slot-0`) — **QE VERIFIES that half.** ⛔ **The `conftest`/seeder half is QE's own, so it stays `FIXED`**: *"QE verifies and closes, never the lane that fixed it"* (§20e), **and QE will not stamp its own work.** ⚠️ **That `VERIFIED` is genuinely outstanding and is named rather than assumed** — see *The verification gap* below |
 | **Raised by** | **Lane A**, 2026-08-15, running [TASK-1479](BACKLOG.md) ⓶b's journey — ⚡ **found by the data not being there afterwards**, not by review |
 | **Module** | ⛔ **`platform_foundation`** — [`Makefile`](../Makefile) and `backend/tests/conftest.py`. **Lane C's under [D-022](DECISION_REGISTER.md)**, and **not this lane's to fix** ([§20e](../CLAUDE.md)) |
 | **Severity** | 🔴 **Raised from 🟠 on 2026-08-15** — ⛔ **a lane running bare `pytest` TRUNCATES human review's database**, and human product review is [§20e](../CLAUDE.md) Completion step 15. **See *Escalated the same day* below** |
+
+#### ✅ Closed in two places, by two lanes
+
+| Path | Guarded by |
+|---|---|
+| `make test` · `demo-seed` · `demo-narrate` · e2e | **Lane C** — `DESTRUCTIVE_DB_ENV` names a database in the same breath as the consent, and `refuse-slot-0` keys on the **port** |
+| **bare `pytest`**, with or without `SIGNORA_TEST_*` | **QE** — `conftest._refuse_human_reviews_database()`, in the consent fixture |
+| ⚡ **`python -m tests.playground.seed`, run directly** | **QE** — the same guard, before any engine is created |
+
+🔴 **The third path was named by neither lane until 2026-08-15.** **`seed.py` imports `DEFAULT_APP_DATABASE_URL` from `conftest` and has no `Makefile` in front of it when run directly** — ⚡ **which is exactly the mechanism in this row's own title.** **The history said *"`make demo-seed` seeds human review's database"* and nobody had traced it to that import.**
+
+⚠️ **The discrimination is on the DATABASE, not the cluster, and it is load-bearing.** **`make certify` creates its disposable `signora_certify_<sha>` on `localhost:5432`** — slot 0's *cluster* — because `certification/database.py` pins `_HOST` there. ⛔ **A port-based refusal in `conftest` would have taken the release gate offline**, and the fire test shows a port-only key turning 2 red.
+
+#### ⚠️ The verification gap, stated rather than worked around
+
+**QE wrote half the fix.** 📁 §20e: *"Verifies and closes: QE, never the lane that fixed it."* ⛔ **So QE cannot set `VERIFIED` on the `conftest`/seeder half, and has not.**
+
+⚡ **The model has no third party for a defect in QE's own test infrastructure**, and that is a real gap rather than an oversight in this row. **It is recorded for the product owner.** ✅ **What is NOT in doubt is the evidence: both directions demonstrated live — refused with a diagnostic naming the derivation command, then allowed through with `ALLOW_SLOT_0=1`.**
+
+#### 🔴 A correction about this row's severity, and it is QE's error
+
+⛔ **Lane A reported that `state-check` named this row as the single unresolved 🔴 and that their severity call was therefore gating every lane's promotion.** ⚠️ **QE agreed with that in writing without reading the register.**
+
+✅ **Measured: `state-check` reports *"No unresolved 🔴 across 264 bug row(s) — promotion is not blocked."*** **This row's Severity cell reads 🟠 and always has.** ⚡ **The 82 `🔴` glyphs inside the row are prose emphasis**, and `state-check` was **already repaired** to read the Severity cell rather than any occurrence — **the fix is commented at `infra/state-check.py:1820`.**
+
+📁 **So the instrument was right, both lanes read past it, and promotion was never blocked.** ⛔ **QE's error is the reusable one: *a peer's accuracy record is not evidence about a specific claim* — the same rule QE wrote this morning, broken the same day, with the same lane.**
 
 #### 🔴 What happens
 
