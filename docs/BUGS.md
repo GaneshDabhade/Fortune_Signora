@@ -138,6 +138,16 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 📁 **This is the third time in one cycle QE read an exit code as a verdict** — the `git branch -f` refusal that printed a `PINNED` banner over a move that never happened, the rejected `integration` push whose code was printed rather than gated on, and this. ⚡ **The pattern is one thing: an instrument answering a narrower question than the one asked, and its cheerful answer being consumed as the answer to the wider one.**
 
+### 🔴 A fourth instance, while this row was being written
+
+⛔ **QE pushed the repair to `main`, ran `--audit-main | tail -6`, and read *"the guarantee holds."*** 📁 **`_audit_main` reads `rev-list RULE_RATIFIED_AT..main` — the LOCAL ref**, which was still at `6d4f9fca`. **The audit vouched for a `main` three commits older than the one just published.**
+
+⚡ **The guard was not wrong and was not silent.** **Its first two lines were `note — 3 commit(s) on \`origin/main\` are not in this clone's \`main\`` and the same for `integration`** — `_behind_origin()` exists for precisely this, and its docstring says so: *"A fetch updates `origin/integration`; it does not move `integration`."* ⛔ **`tail -6` cut both notes off.**
+
+> 📁 **This is Lane A's lesson from the same week, arriving at QE**: they tailed a gate run to four lines and discarded the diagnostic on a Security Invariant failure — *"the one output you cannot regenerate."* ⚠️ **Here the diagnostic was regenerable and QE still had to be told twice.**
+
+✅ **Re-run against the synchronized ref: 1891 commits, 208 certified, 1679 in-snapshot, 4 Closeout, no violations.** ⚡ **The count that exposed it was `1 Closeout` — unchanged after adding three Closeout-class commits.** **A number that should have moved and did not is the cheapest signal in this class, and it is the one to look for**: a green verdict has no such tell.
+
 ### ⚠️ The checker named a cause that was not the cause
 
 📁 It reported *"the board has gone backwards — the B-100 signature, where a rebase keeps a lane's side of a shared table."* ⛔ **Measured: the stamp is byte-identical on `main`, `integration`, `lane-qe` and `lane-a-2b`.** **Nothing was lost in a rebase — the edit was never made.**
