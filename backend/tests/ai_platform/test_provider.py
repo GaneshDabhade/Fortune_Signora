@@ -269,6 +269,46 @@ class TestTheRegistryIsBuiltFromConfigurationAlone:
             with pytest.raises(ModelNotRegisteredError):
                 registry.for_model(settings.anthropic_model)
 
+    async def test_a_second_hosted_vendor_registers_the_same_way(self) -> None:
+        """🔴 **[TASK-420](../../../docs/BACKLOG.md), Epic H slice one — and the
+        claim it exists to test.**
+
+        📁 [ADR-0012](../../../docs/architecture/adr/0012-ai-platform-architecture.md)
+        says a vendor integrates by *describing what it supports*. ⚡ **Adding
+        one required no change to the registry, the port or the composition's
+        shape** — **only a second `if key: register(...)`.**
+
+        ⛔ **And the two are registered TOGETHER without either learning about
+        the other**, which is what makes the registry's by-model resolution the
+        thing that keeps callers vendor-blind.
+        """
+        import httpx
+
+        settings = self._settings(anthropic_api_key="k", openai_api_key="k2")
+        async with httpx.AsyncClient() as client:
+            registry = build_provider_registry(settings, client=client)
+
+            assert registry.for_model(settings.openai_model).describe().vendor is AIVendor.OPENAI
+            assert (
+                registry.for_model(settings.anthropic_model).describe().vendor
+                is AIVendor.ANTHROPIC
+            )
+
+    async def test_the_second_vendor_is_absent_until_its_own_credential_exists(self) -> None:
+        """⛔ **A deployment that has not configured OpenAI behaves exactly as
+        it did before the adapter was written.** ⚠️ **Asserted with ANTHROPIC's
+        key present**, so the test cannot pass merely because nothing is
+        registered at all."""
+        import httpx
+
+        settings = self._settings(anthropic_api_key="k", openai_api_key=None)
+        async with httpx.AsyncClient() as client:
+            registry = build_provider_registry(settings, client=client)
+
+            assert registry.for_model(settings.anthropic_model) is not None
+            with pytest.raises(ModelNotRegisteredError):
+                registry.for_model(settings.openai_model)
+
     async def test_no_adapter_is_registered_for_a_vendor_the_caller_named(self) -> None:
         """There is no vendor-keyed lookup to reach for, by construction. A
         caller that cannot *name* a vendor cannot branch on one."""

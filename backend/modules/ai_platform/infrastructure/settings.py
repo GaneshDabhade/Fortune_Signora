@@ -101,3 +101,11 @@ class AISettings(BaseSettings):
     anthropic_api_key: str | None = Field(default=None)
     anthropic_base_url: str = "https://api.anthropic.com"
     anthropic_model: str = "claude-sonnet-4-5"
+
+    #: ⚡ **The second hosted vendor** — [TASK-420](../../../../docs/BACKLOG.md),
+    #: Epic H slice one. ⛔ **Absent by default, exactly as Anthropic's is**:
+    #: an adapter registers only where a credential exists, so a deployment
+    #: that has not configured OpenAI behaves as though it were never built.
+    openai_api_key: str | None = Field(default=None)
+    openai_base_url: str = "https://api.openai.com"
+    openai_model: str = "gpt-4.1"

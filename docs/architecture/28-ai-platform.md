@@ -1225,3 +1225,73 @@ The environment is a field on **`AISettings`**, reading `SIGNORA_ENVIRONMENT` �
 A test asserting *the refusal names no vendor* was written here, **failed on the comment explaining why it names no vendor**, and was removed. The Security Invariant already states it, parses the AST, and **exempts prose on purpose** — *"the first draft failed on three docstrings explaining why the framework is vendor-neutral, which would have banned exactly the writing that keeps the rule understood."* **The guarantee exists once, in the suite that owns it.**
 
 *+5 tests. `VERIFIED` is QE's.*
+
+## TASK-420 — a second hosted vendor, and the claim it finally tested
+
+📁 **[TASK-420](../BACKLOG.md), Epic H slice one.** ⚡ **The row's own words are
+why it was first:** *"It proves the claim the whole epic rests on. ADR-0012 says
+a vendor integrates by describing what it supports; **nothing has ever tested
+that by adding one.** If anything above the port must change, that is the
+finding, and it is cheaper here than under a deadline."*
+
+### ✅ Nothing above the port changed
+
+⛔ **No new method, no optional parameter, no branch, no change to
+`AIProviderAdapter`, `AIProviderRegistry`, `InferenceRequest` or
+`InferenceResult`.** ⚡ **The composition gained one `if key: register(...)`
+identical in shape to Anthropic's, and the contract suite gained a third
+subclass.**
+
+⚠️ **That is a stronger result than it looks, because the three vendors obtain
+structured output three genuinely different ways:**
+
+| | |
+|---|---|
+| **Ollama** | A JSON-mode string in `response` |
+| **Anthropic** | A **forced tool call** — `tools` + `tool_choice`, and the `tool_use` block's arguments are the answer |
+| **OpenAI** | A **native `response_format`** — `json_schema` with `strict: true`, and the answer is `choices[0].message.content` **as a string** |
+
+✅ **The port asks for *one describe and one complete*, and that is why it
+absorbed a third convention without widening.** 📁 Its own docstring predicted
+it: *"a wider port would force every future vendor to implement methods most of
+them do not have, and the usual outcome is adapters raising
+`NotImplementedError`, which is a contract that lies."*
+
+### 🔴 The one thing that DID need care, and a guard that was decorative until it was fire-tested
+
+📁 **The Anthropic adapter records the rule**: *"Serialised here so the port's
+contract is the same string-of-JSON every adapter returns."*
+
+⚠️ **OpenAI already returns a string**, so the tempting line is to pass it
+through. ⛔ **Two vendors would then return the same content with different key
+order and whitespace**, and anything that hashed, cached or diffed a result
+would see a provider difference — 📁 [§2](../../CLAUDE.md), *hidden inputs are
+architecture defects*, **and provider identity is the hidden input this layer
+exists to remove.**
+
+🔴 **The existing agreement test could not have caught it.** It asserts
+`json.loads(a) == json.loads(b)`, **which is true of two strings with different
+key order.** ✅ **So a byte-identical assertion was added across all three.**
+
+⚠️ **And it was decorative when first written.** ⛔ **Fire-testing it — removing
+the re-serialisation — left it GREEN**, because the OpenAI fixture's string
+happened to be byte-identical to `json.dumps(…, sort_keys=True)`'s output.
+✅ **The fixture's spacing is now deliberately non-canonical, and says so in
+place**, because the natural instinct is to tidy it and that would silently
+disarm the guard.
+
+> ⚡ **The reusable half: a fixture written in the canonical form makes a
+> canonicalisation guard untestable.** **The test and the fixture have to
+> disagree about formatting for the test to mean anything.**
+
+### ⛔ What is deliberately not here
+
+**Bedrock and Azure OpenAI.** 📁 `AIVendor`'s own reason: *"a member here with
+no ratified status is a speculative extension point, and the roadmap's
+no-speculative-ports ruling applies to enums too."*
+
+**Any evaluation against a real model.** ⚠️ 📁 [C-334](../LANE_COORDINATION.md)
+— **no provider key is configured on this workstation** — **and an adapter is
+built and tested against a transport rather than a vendor**, exactly as
+`HubSpotCompanies` is. ⛔ **What C-334 blocks is measuring a model's behaviour,
+which this slice does not claim to have done.**

@@ -32,6 +32,7 @@ from modules.ai_platform.domain.provider import (
 from modules.ai_platform.infrastructure.adapters.anthropic import AnthropicAdapter
 from modules.ai_platform.infrastructure.adapters.mock import MockAdapter
 from modules.ai_platform.infrastructure.adapters.ollama import OllamaAdapter
+from modules.ai_platform.infrastructure.adapters.openai import OpenAIAdapter
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_platform.infrastructure.repository import (
     SqlInferenceRecorder,
@@ -97,6 +98,20 @@ def build_provider_registry(
                 api_key=settings.anthropic_api_key,
                 models=frozenset({settings.anthropic_model}),
                 base_url=settings.anthropic_base_url,
+            )
+        )
+    # ⚡ **The same shape, one vendor later** — [TASK-420](../../../../docs/BACKLOG.md).
+    # ⛔ **Registered only where a credential exists**, so a deployment that has
+    # not configured OpenAI behaves exactly as it did before the adapter
+    # existed. 📁 The registry resolves BY MODEL, so nothing above it learns
+    # that a second hosted vendor is present.
+    if settings.openai_api_key:
+        registry.register(
+            OpenAIAdapter(
+                client=client,
+                api_key=settings.openai_api_key,
+                models=frozenset({settings.openai_model}),
+                base_url=settings.openai_base_url,
             )
         )
     return registry
