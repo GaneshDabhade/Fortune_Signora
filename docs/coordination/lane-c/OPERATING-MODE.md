@@ -269,6 +269,18 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ✅ **The practice covers both: never consume a number whose columns or members you have not resolved** — `--left-right` gets `ahead` and `behind` named explicitly, a survival count gets each id mapped to its commit.
 
+### 🔴 The sharpest case, and the one nothing warns you about — QE, 2026-08-15
+
+> ## **A wrong count announces itself when something disagrees. A right count answering the wrong question agrees with everything.**
+
+**B-1005's cost.** This office measured **45** — *commits touching nothing but a regenerated projection*. ⛔ **Correct, reproduced by QE, and not the number the row needs.** ✅ **The question is *how many commits would have been closeout-exempt but for the `.toml`* — because a commit touching `BACKLOG.md`, `LANE_COORDINATION.md` **and** `coordination.toml` is documentation in substance and is disqualified by one file in it.**
+
+⚡ **At 45 the row reads *"a lane's regenerations are noisy."* At ~157 it reads *"the accumulate rule has a one-in-six hole, concentrated in planning."*** ⛔ **Same defect; only the second justifies the care the fix needs.**
+
+⚠️ **And the two independent measurements did NOT agree: QE got 159, this office got 157 — same window, same intent, predicates that differ somewhere.** ✅ **Which is the rule proving itself twice over: neither number is wrong, and *stating the predicate* is the only thing that makes them comparable.**
+
+📁 **So a count is reported with the predicate that produced it, not just its value** — the same shape as [§5g-2](#5g-2--report-a-sha-from-the-shared-ref-never-from-the-one-you-control)'s *a measurement is a claim about a ref*. ⛔ **Ref, predicate, mapping: a number needs all three before anybody can check it.**
+
 ## 5g-2 · Report a SHA from the shared ref, never from the one you control
 
 **Recorded 2026-08-15, from QE. ⛔ Both halves are this office's, and they compounded.**
