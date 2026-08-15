@@ -2194,3 +2194,55 @@ if (workspaceId === null) return [];   // absent  AND  not-yet-arrived
 ### ✅ What a browser proved that jsdom could not
 
 📁 **The pager REPLACES the page** — the first page's rows are gone from the document, not scrolled past · **the card grid reflows**, measured as a narrower card at laptop than at phone · **compact density makes rows shorter**, measured as geometry rather than asserted from a class name.
+
+---
+
+## TASK-1401 — the entry engine gets a caller, and what that caller could not be told
+
+**The row is *"the five hardcoded redirects become one call site."*** ⚡ **The audit found that three of the five are not the engine's, and that the engine could be told two of the twelve facts it reads.** **Both are recorded here rather than in a coordination register, because a register row closes and this is what the next lane assigned to `product_surface` needs.**
+
+### 🔴 `resolveEntry` had no production caller at all, and now has one
+
+📁 **Measured before a line was written: `EntrySession` and `Membership` appear in `lib/entry/**` and three test files, and nowhere else.** ⛔ **So the engine's purity had never cost anybody anything** — a pure function cannot fetch, and until this row nobody had to supply what it cannot fetch.
+
+✅ **The caller is `useOnboardingExit`**, and it was chosen rather than invented: 📁 [TASK-469](../BACKLOG.md) built `onboardingExit()` as a seam whose own comment promised *"when D-193/D-194 reach `integration`, this function becomes `resolveEntry({ intent: null })` and nothing else in the flow changes."* ⚡ **Three call sites already read it, and none of them changed shape.**
+
+### ⛔ Ten of twelve facts have no source, and they are declared rather than defaulted
+
+📁 **[`lib/entry/observed.ts`](../../frontend/lib/entry/observed.ts).** ⚠️ **The tempting shape was `onboardingComplete: true, // no source yet`, ten times.** 🔴 **Each of those is a hidden input** ([§2](../../CLAUDE.md)) **and each makes its rule unreachable** — so the engine would read as twenty-four rules deciding entry while ten literals decided it.
+
+✅ **They are declared once, each with the reason it is absent and the rules it costs**, and the guarantee is a type rather than a promise: **`Exclude<keyof EntrySession, ObservedKey>` means a field added to `EntrySession` stops the build** until it is either observed or declared. ⚡ **A new rule input can never arrive with a silent default.**
+
+> ⚠️ **Fifteen of the twenty-four rules cannot fire today**, and `entry-observed.test.ts` pins that number as a tripwire in both directions: **a slice that supplies a fact should see it fall; a slice that adds a rule without a source should see it rise and be made to say so.**
+
+### 🔴 The trap with the longest fuse — rules 15, 16, 17
+
+⛔ **They route to `/w/:id/suspended`, `/w/:id/archived` and `/w/:id/deleted`, and none of those routes exists.** ✅ **Harmless today for exactly one reason: `Workspace` publishes `id · name · created_at · updated_at` and no lifecycle field**, so `standing` is always `active` and the three can never fire.
+
+> 🔴 **Whichever slice publishes a workspace standing must ship the three screens in the same change.** ⛔ **Not a follow-up** — the day the field lands, three unreachable rules become three 404s, shown to customers whose workspace has just been suspended.
+
+⚡ **The warning is carried in three places on purpose**: at gate 4 in [`rules.ts`](../../frontend/lib/entry/rules.ts), beside `standing` in `observed.ts`, and here. ⛔ **Deliberately NOT in `LANE_COORDINATION.md`** — 📁 §20e: a coordination item exists to be answered and closed, **and this has nothing to answer.** ✅ **A test asserts it too, so the day it stops being true the suite says so.**
+
+### ⚡ Three of *the five* are not entry decisions, and the engine's name says why
+
+| Call site | Verdict |
+|---|---|
+| `signin-form` → `/` | ✅ **the engine's** |
+| `join/[workspaceId]` → `/` | ✅ **the engine's** |
+| `register-form` → `/verify` | ⛔ **before authentication succeeds** |
+| `reset-password-form` → `/reset/done` | ⛔ **before authentication succeeds** |
+| `(app)/layout` → `/signin` | ⛔ **before authentication succeeds** |
+
+🔴 **There is no reason code for *never signed in*.** 📁 **`AccountStanding` is *active · locked · suspended · deleted · pending_deletion*; `SessionStanding` is *valid · expired · step_up_required*.** ⛔ **None of them means *nobody is here*.**
+
+> ⛔ **Mapping it to `SESSION_EXPIRED` would write a false answer into the record support reads.** 📁 The diagnostics bundle exists to answer *"why did I land here"* without reproducing the login — **and telling somebody their session expired when they never had one is [§10](../../CLAUDE.md)'s *failure attribution must be truthful* in the routing layer.**
+
+### ⚠️ A guard I claimed and had to correct after fire-testing it
+
+📁 **[P-A](../DOMAIN_DISCOVERY_REGISTER.md): *a failed read must never render as an empty result*** — and on this decision the empty result is a **redirect** to `/workspaces/none`, which tells a customer with five workspaces that they have none **and navigates them there.**
+
+⛔ **The `isError` branch does NOT protect that**, and the fire test is what showed it: **on a failed query `data` is `undefined`, so the next branch catches it and returns `resolving`.** ⚡ **The routing property is protected twice and the second guard is load-bearing.**
+
+✅ **What deleting the branch DOES produce is `resolving` forever — a person stranded on a spinner inside a flow whose only exit is this decision.** 🔴 **So the test asserts *failure is distinguishable from loading*, which goes red, rather than *failure does not redirect*, which does not.**
+
+> ⚡ **The rule this earns: when two properties look like one guard, fire-test to find out which one the guard has. The claim you would have written is usually the more impressive of the two.**

@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 import { Button, Dialog } from '@/components/ui';
 
-import { onboardingExit } from './exit';
+import { useOnboardingExit } from './exit';
 import { RAIL_STEPS } from './steps';
 
 /**
@@ -111,7 +110,9 @@ export function consequence(industry: string | null | undefined): string {
  */
 export function SkipSetup({ completedIds, industry }: SkipSetupProps) {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
+  // ⛔ **No `useRouter` here any more.** 📁 The flow does not choose where
+  // somebody lands; `useOnboardingExit` asks the engine. See `exit.ts`.
+  const { exit } = useOnboardingExit();
 
   // ⚡ **`welcome` is not a question**, so it is not counted. The design's
   // banner says *"two questions left"* on a run with the workspace made and
@@ -143,7 +144,7 @@ export function SkipSetup({ completedIds, industry }: SkipSetupProps) {
               Finish setup — {formatSetupEstimate(remaining)}
             </Button>
             {/* ⛔ **This leaves, and asks nothing further.** *No second ask.* */}
-            <Button variant="secondary" onClick={() => router.push(onboardingExit())}>
+            <Button variant="secondary" onClick={exit}>
               Skip
             </Button>
           </div>

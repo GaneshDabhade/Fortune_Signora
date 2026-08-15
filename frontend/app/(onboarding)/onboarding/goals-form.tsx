@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Button, MultiChoiceCards } from '@/components/ui';
@@ -8,7 +7,7 @@ import { chooseGoals, finishOnboarding, type Goal } from '@/lib/api/onboarding';
 
 import { OnboardingShell } from '../onboarding-shell';
 import { OnboardingSkeleton } from './company-form';
-import { onboardingExit } from './exit';
+import { useOnboardingExit } from './exit';
 import { GOALS, MAX_GOALS, RAIL_STEPS, isGoal } from './steps';
 import { SkipSetup } from './skip-setup';
 import { useOnboarding } from './use-onboarding';
@@ -38,7 +37,9 @@ import { useOnboarding } from './use-onboarding';
  * working without saying why reads as a bug.**
  */
 export function GoalsForm() {
-  const router = useRouter();
+  // ⛔ **No `useRouter` here any more.** 📁 The flow does not choose where
+  // somebody lands; `useOnboardingExit` asks the engine. See `exit.ts`.
+  const { exit } = useOnboardingExit();
   const { run, error, isLoading, isSaving, save } = useOnboarding();
   const [chosen, setChosen] = useState<readonly string[] | null>(null);
 
@@ -68,7 +69,7 @@ export function GoalsForm() {
     const goals = selected.filter(isGoal) as Goal[];
     await save((id) => chooseGoals(id, goals));
     await save((id) => finishOnboarding(id));
-    router.push(onboardingExit());
+    exit();
   };
 
   return (
@@ -96,7 +97,7 @@ export function GoalsForm() {
               // valid answer and is not the same as never being asked — the
               // goals are simply left as they were and the run closes.
               await save((id) => finishOnboarding(id));
-              router.push(onboardingExit());
+              exit();
             }}
             className="text-sm text-content-muted underline underline-offset-4 hover:text-content"
           >

@@ -24,11 +24,35 @@ import {
   consequence,
   formatSetupEstimate,
 } from '@/app/(onboarding)/onboarding/skip-setup';
-import { onboardingExit } from '@/app/(onboarding)/onboarding/exit';
+
 
 const push = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: (href: string) => push(href) }),
+  /**
+   * ⚡ **Added by [TASK-1401](../../../docs/BACKLOG.md).** The exit now asks the
+   * entry engine, and the engine reads the attempted route from the query
+   * string — ⛔ so a component that never had a `useSearchParams` before now
+   * reaches one two files away.
+   */
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+/**
+ * 🔴 **The exit is no longer a constant, so the test has to supply the fact it
+ * now depends on** — 📁 [TASK-1401](../../../docs/BACKLOG.md).
+ *
+ * ⚡ **One membership is rule 11 · `SOLE_WORKSPACE`** — 📁 *"Enter it. No
+ * confirmation, no picker, no interstitial."* ⛔ **Which is the point of the
+ * assertion below: the flow does not know that, and must not.**
+ */
+vi.mock('@/lib/query/hooks', () => ({
+  useWorkspaces: () => ({
+    isPending: false,
+    isError: false,
+    error: null,
+    data: { items: [{ id: 'ws-only', name: 'Northwind' }] },
+  }),
 }));
 
 function open() {
@@ -94,7 +118,11 @@ describe('⛔ no dark pattern, and no second ask', () => {
     // 🔴 **One navigation, to the flow's single exit seam.** ⛔ Not a second
     // dialog, not a re-worded offer, not a toast that offers to undo.
     expect(push).toHaveBeenCalledTimes(1);
-    expect(push).toHaveBeenCalledWith(onboardingExit());
+    // ⚡ **And the destination is the ENGINE's, not this flow's** —
+    // 📁 [TASK-1401](../../../docs/BACKLOG.md). **Rule 11 for a sole
+    // membership.** ⛔ **A literal `/` here would mean the flow had chosen
+    // again**, which is exactly what the coordination notice forbids.
+    expect(push).toHaveBeenCalledWith('/w/ws-only/home');
   });
 
   it('🔴 asks exactly once — pressing Skip opens no further prompt', async () => {

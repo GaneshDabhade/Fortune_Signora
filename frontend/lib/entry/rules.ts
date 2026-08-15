@@ -316,6 +316,27 @@ export const RULES: readonly Rule[] = [
   },
 
   // ══ Gate 4 · Workspace standing ═════════════════════════════════════════
+  //
+  // 🔴 **READ THIS BEFORE ADDING A STANDING FIELD TO THE WORKSPACE API.**
+  // [TASK-1401](../../../docs/BACKLOG.md), measured 2026-08-15.
+  //
+  // ⛔ **The next three rules route to `/w/:id/suspended`, `/w/:id/archived`
+  // and `/w/:id/deleted`, and NONE OF THOSE ROUTES EXISTS.** ⚡ **They are
+  // harmless today for one reason only: `Workspace` in `lib/api/types.ts`
+  // carries `id · name · created_at · updated_at` and no lifecycle field, so
+  // `standing` is always `'active'` and these three can never fire.**
+  //
+  // ⚠️ **The day somebody publishes a standing, these stop being unreachable
+  // and become three 404s** — for customers whose workspace has just been
+  // suspended or archived, which is the worst possible audience for a
+  // not-found page. ✅ **So the screens ship in the SAME change as the field,
+  // never in a follow-up.**
+  //
+  // ⛔ **This is deliberately here and not in `LANE_COORDINATION.md`.** ⚡ **A
+  // coordination item exists to be answered and closed, and this has nothing
+  // to answer** — it is a trap with a long fuse, and the register would lose
+  // it long before the fuse burned down. **`lib/entry/observed.ts` carries the
+  // other half, beside the reason `standing` cannot be observed.**
   {
     n: '15',
     kind: 'terminal',

@@ -1,53 +1,80 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
+
+import { useEntryDecision } from '@/lib/entry/use-entry';
+
 /**
- * **Where onboarding lets go** — [TASK-469](../../../../docs/BACKLOG.md).
+ * **Where onboarding lets go** — [TASK-469](../../../../docs/BACKLOG.md), and
+ * **now [TASK-1401](../../../../docs/BACKLOG.md), which is the row that was
+ * always going to replace it.**
  *
- * ## 🔴 This is a seam, and it exists because the flow may not choose
+ * ## ✅ The seam was built to be deleted, and this is the deletion
  *
- * **The coordination source carries a notice naming this row directly**
- * (`origin/coordination`, republished 2026-08-08, [D-144](../../../../docs/DECISION_REGISTER.md)
- * is what makes that a ref this lane reads):
+ * 📁 **The coordination notice that created this file:**
  *
- * > ***"D-193/D-194: 'Authenticated Entry' is now the authority for ALL
- * > post-login behaviour. TASK-468 and TASK-469 (both yours) have NO DEFINED
- * > EXIT and the spec says both must exit through `resolveEntry` with
- * > `intent=null` — do NOT choose a destination in either flow."***
+ * > ***"'Authenticated Entry' is now the authority for ALL post-login
+ * > behaviour. TASK-468 and TASK-469 (both yours) have NO DEFINED EXIT and the
+ * > spec says both must exit through `resolveEntry` with `intent=null` — do NOT
+ * > choose a destination in either flow."***
  *
- * ### ⛔ What could not be done, and why it was not faked
+ * 📁 **And the promise the previous slice left**: *"When D-193/D-194 reach
+ * `integration`, this function becomes `resolveEntry({ intent: null })` and
+ * nothing else in the flow changes."* ⚡ **It has, and it does** — **the three
+ * call sites keep their shape and none of them chooses a destination.**
  *
- * **`resolveEntry` does not exist**, and **D-193/D-194 are not in the decision
- * register on `origin/integration`** — both measured this poll, not assumed.
- * [§20e](../../../../CLAUDE.md) is explicit that **executable work comes from
- * `integration` and nowhere else**, and that a ruling is *authoritative* when
- * the product owner makes it but only *actionable* when `integration` records
- * it. **Writing a `resolveEntry` here would be this lane inventing the spec's
- * shape**, and the next row would inherit a guess wearing a ruling's name.
+ * 🔴 **This is the engine's FIRST production caller.** 📁 [`principal.ts`](../../../../lib/entry/principal.ts)
+ * has said *"`resolveEntry` has zero callers"* since it was written; **that
+ * sentence stops being true here.**
  *
- * ### ✅ What could be done, and is
+ * ## ⛔ Why the exit had to stop being a plain string
  *
- * **The prohibition needs nothing that does not exist.** *"Do not choose a
- * destination in the flow"* is obeyable today: the choice is no longer made
- * inside a form — it is made **once, here, on a line whose whole purpose is to
- * be replaced.**
+ * ⚠️ **`resolveEntry` needs the person's memberships, and memberships arrive
+ * over the network.** ⛔ **A synchronous `string` cannot express *not known
+ * yet***, so the seam becomes a hook — **which is the whole change; the buttons
+ * still call one thing and still choose nothing.**
  *
- * ⚠️ **The behaviour is unchanged on purpose.** `/` is where the flow already
- * landed, so this moves nothing a customer would notice; **it converts a
- * decision scattered through a screen into one seam a later row deletes.**
- * ⛔ **Changing the destination as well would be choosing one**, which is the
- * thing the notice forbids.
+ * ## 🔴 What happens when the read FAILS, and why it is not a P-A breach
+ *
+ * 📁 **[P-A](../../../../docs/DOMAIN_DISCOVERY_REGISTER.md): *a failed read
+ * must never render as an empty result*.** ⚡ **The forbidden move here would be
+ * treating a failed workspace read as *no memberships*** — rule 10 — **and
+ * sending somebody who has just finished onboarding to a screen that tells them
+ * they belong to nothing.** ✅ **[`use-entry.ts`](../../../../lib/entry/use-entry.ts)
+ * refuses to ask the engine at all in that case.**
+ *
+ * ✅ **So a failed read exits to `/`, which is exactly where onboarding landed
+ * before this row and assumes nothing about the person.** ⛔ **That is not a
+ * fallback dressed as a decision** — it is the one destination that makes no
+ * claim, and the alternative is stranding somebody inside a finished flow.
  */
 
 /**
- * The destination a finished or abandoned run hands back to.
- *
- * 🔴 **When D-193/D-194 reach `integration`, this function becomes
- * `resolveEntry({ intent: null })` and nothing else in the flow changes.**
- * That is the entire reason it is a function and not a string constant: a
- * constant would still have to be *read* at three call sites, and the row that
- * lands the spec would be editing three of them.
+ * ⛔ **The destination that assumes nothing**, used only when the engine could
+ * not be asked. ⚡ **Not a product decision** — it is the behaviour this flow
+ * already had.
  */
-export function onboardingExit(): string {
-  // ⛔ Not a product decision. It is today's behaviour, held in one place
-  // until the authority for post-login entry exists on the branch this lane
-  // builds from.
-  return '/';
+export const EXIT_WHEN_UNRESOLVED = '/';
+
+export interface OnboardingExit {
+  /** ⚡ **Navigate.** Chooses nothing: the engine's answer, or the destination that assumes nothing. */
+  readonly exit: () => void;
+  /**
+   * ⚠️ **The memberships have not arrived.** ⛔ **A caller shows a pending
+   * control rather than exiting** — 📁 *an unresolved read must not render as
+   * an empty one*, and here the empty one is a redirect.
+   */
+  readonly resolving: boolean;
+}
+
+export function useOnboardingExit(): OnboardingExit {
+  const router = useRouter();
+  const state = useEntryDecision();
+
+  const exit = useCallback(() => {
+    router.push(state.status === 'resolved' ? state.decision.route : EXIT_WHEN_UNRESOLVED);
+  }, [router, state]);
+
+  return { exit, resolving: state.status === 'resolving' };
 }

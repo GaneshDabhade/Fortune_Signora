@@ -22,7 +22,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const useOnboarding = vi.hoisted(() => vi.fn());
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+/**
+ * ⚡ **`useSearchParams` and `useWorkspaces` added by
+ * [TASK-1401](../../../docs/BACKLOG.md)** — ⛔ **the flow no longer chooses
+ * where somebody lands**, so it reaches the entry engine two files away, and
+ * the engine reads memberships and the attempted route.
+ */
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+vi.mock('@/lib/query/hooks', () => ({
+  useWorkspaces: () => ({
+    isPending: false,
+    isError: false,
+    error: null,
+    data: { items: [{ id: 'ws-only', name: 'Northwind' }] },
+  }),
+}));
 vi.mock('@/app/(onboarding)/onboarding/use-onboarding', () => ({ useOnboarding }));
 vi.mock('@/lib/api/onboarding', () => ({
   chooseGoals: vi.fn(),
