@@ -760,7 +760,13 @@ _SHUT_ITEM_STATES = {
 }
 _STATE_WORDS = _STARTABLE | _DEPARTED | _HELD | {
     "WAITING", "BLOCKED", "SEQUENCED", "PREPARING", "UNDER REVIEW",
-    "REVISION REQUESTED", "RATIFIED",
+    # ⚠️ `WITHDRAWN` added 2026-08-15, and the way it was found is the point.
+    # `state-check` printed "Backlog: 196 task(s)" and "TASK- identifiers: 198
+    # allocated" **in the same run** — two totals for one file, with nothing
+    # explaining the gap. The two rows were `TASK-1459` and `TASK-1472`, both
+    # withdrawn duplicates, and both invisible to every check built on
+    # `_backlog_states`.
+    "REVISION REQUESTED", "RATIFIED", "WITHDRAWN",
 }
 
 
@@ -1952,11 +1958,37 @@ def main() -> int:
             # unknown-row check above, wrong as a count of defined tasks.
             states = _backlog_states(backlog)
             startable = sorted(t for t, s in states.items() if s in _STARTABLE)
+            # ⛔ **An unrecognised state must never be silently dropped.**
+            # `_STATE_WORDS` is an allow-list on *inclusion*, so a row whose
+            # Status cell carries a token nobody added disappears from this
+            # count and from every queue check built on `_backlog_states` —
+            # the opposite of `coordination.py`'s `_CLOSED`, which allow-lists
+            # *exclusion* and therefore lets an unknown state fall through and
+            # appear. Reported here so the two totals this run prints can never
+            # again differ without saying why.
+            defined = {
+                m.group(1)
+                for m in re.finditer(r"^### (TASK-\d+)", backlog, flags=re.M)
+            }
+            unstated = sorted(defined - set(states))
             notes.append(
                 f"Backlog: {len(states)} task(s), {len(startable)} startable "
                 f"({', '.join(startable) if startable else 'none'}), "
                 f"no task claimed twice."
             )
+            if unstated:
+                findings.append(
+                    f"{len(unstated)} backlog row(s) have a Status cell in "
+                    f"which NO token is a recognised state, so they are "
+                    f"counted by no check that reads state: "
+                    f"{', '.join(unstated)}. **Add the token to `_STATE_WORDS` "
+                    "or correct the row** — a row nothing counts is a row "
+                    "nothing can report on. ⚠️ **Scoped deliberately to *no* "
+                    "recognised token**: `_backlog_states` classifies by the "
+                    "FIRST recognised word in line order (B-101), so a cell "
+                    "carrying an unknown token beside a known one is "
+                    "classified by the known one and is not reported here."
+                )
 
     # 5c-2 — a document warning that it is not on `integration`, while it is.
     #
