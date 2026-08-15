@@ -104,6 +104,18 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 **The test before building one: *if this check goes green, what will the reader stop asking?*** ⚠️ **If the answer is the actual question, the check is the problem.**
 
+### ⚡ When a guard's output is advice, the advice is under test — not just the refusal
+
+**Recorded 2026-08-15, QE's wording, from `refuse-slot-0` in the `Makefile`.**
+
+🔴 **The guard fired correctly and told the reader to run `make $@ ALLOW_SLOT_0=1`. `$@` there is the PREREQUISITE — `refuse-slot-0` — not the target the person actually ran**, so the instruction expanded to a command that does nothing.
+
+⛔ **A green fire test would have confirmed the guard fires and said nothing about whether its instruction works.** ⚡ **And for a refusal, the instruction IS the product** — a guard that stops somebody and then misdirects them has spent its whole budget and delivered nothing.
+
+✅ **Caught by reading the fire test's OUTPUT rather than its exit code.** 📁 **Same family as [§5g-2](#5g-2--report-a-sha-from-the-shared-ref-never-from-the-one-you-control)** — the exit code was the operand that did not matter.
+
+> ⚠️ **The other half of that guard, worth keeping because the shape recurs:** **`demo-seed` against slot 0 is exactly what a reviewer wants and exactly what a lane must never do, and nothing in the environment distinguishes them.** ⛔ **Blocking unconditionally breaks the legitimate use; skipping silently is Decorative Logic.** ✅ **`ALLOW_SLOT_0=1` makes the human state which of two indistinguishable intents they have, at the moment the two diverge** — 📁 **[§2](../../../CLAUDE.md)'s *hidden inputs are architecture defects*, solved by making the input explicit rather than by inferring it.**
+
 ⚡ **And the test cuts both ways — added 2026-08-12 after QE applied it to themselves and it came out the other way.** ✅ **Where the reader SHOULD stop asking, and the check genuinely answers it, the check earns its place and gets built.** ⛔ **A note that only ever argues against building is not a test; it is a preference.**
 
 📁 **QE's worked pair, and the asymmetry is the sharper half:**
@@ -264,7 +276,7 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⚠️ **Nobody spots an unpushed ref by being careful.** **The local view is complete, self-consistent and wrong** — which is why the tell has to be behavioural rather than attentional.
 
-### 📁 Six instances on 2026-08-15, four layers, two lanes
+### 📁 Eight instances on 2026-08-15, six layers, two lanes
 
 | Layer | The reading | Why it was wrong |
 |---|---|---|
@@ -274,8 +286,12 @@ OUT OF SCOPE          named, so the boundary is checkable
 | 🔴 **Ref** | **4 refs fast-forwarded** *(QE)* | ⛔ **Locally. `origin` had none of them** |
 | 🔴 **Process** | **`certify` sets no database** *(this office)* | ⛔ **True of the PARENT. `__main__.py:446` injects three URLs into the child** |
 | **Producer** | **`database.py` returns a disposable-DB dict** *(QE)* | ⛔ **Read the producer and assumed a consumer. The application is a different line** |
+| **Document** | **`RUNNING.md` cited as the mitigation** *(QE)* | ⛔ **Cited without opening. Line 64 is a note addressed to QE saying those exact lines are stale** |
+| ⚡ **Inverted** | **`--exports` prints `5432`/`signora`** *(QE, reported in passing)* | ⚠️ **The RIGHT operand, read correctly — and stopped early. It is also a hole in this office's own fix** |
 
-⚡ **In every one the raw reading was correct and the operand was not the one the consumer uses.**
+⚡ **In seven of the eight the raw reading was correct and the operand was not the one the consumer uses.** 🔴 **The eighth inverts it: the right operand, read correctly, with the narrower conclusion drawn** — ⛔ **and it is the hardest to catch, because nothing about the output looks incomplete.**
+
+> ⚠️ **And one thing that usually goes unsaid, from the same repair:** **a fix can make a hazard *worse* by making it look intentional.** **`DESTRUCTIVE_DB_ENV` named slot 0 explicitly where the old code reached it by accident, so the next reader has less reason to question it than the accident did.** 📁 **Same shape as `certify` gaining the same variable and reading as a fix rather than as redundancy.**
 
 > ## ⚠️ The fifth one cost a certification run, and that is what makes this section load-bearing
 >
