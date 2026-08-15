@@ -517,6 +517,112 @@ databaseUrl: required(
 
 ---
 
+## C-1519 · `platform_foundation`'s ownership contradicts itself, and a `READY` row sits on it
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, running the Task Claim Protocol on [TASK-1481](BACKLOG.md) — ⚡ **found at step 4, before claiming** |
+| **Owner** | 🔴 **Product owner**, through Lane C — ⛔ **a module transfer needs its own ruling and no lane may infer one** |
+| **Type** | ⚠️ **An ownership contradiction between two authoritative sources.** ✅ **Not blocking this lane** — it took the next row and recorded why |
+| **Blocks** | ⛔ **[TASK-1481](BACKLOG.md), which no lane can safely claim** |
+| **Status** | **`OPEN`** |
+
+### 🔴 Two sources, both authoritative, and they disagree
+
+📁 **[`docs/coordination/modules.toml`](coordination/modules.toml)** — 📁 [§20e](../CLAUDE.md): *"the authoritative module ownership registry. Every ownership view derives from it."*
+
+```toml
+[platform_foundation]
+current_owner = "Lane A"
+future_owner  = "Lane A"
+transition    = "settled"
+```
+
+📁 **[TASK-1478](BACKLOG.md), the standing programme row:**
+
+> ⛔ ***"`platform_foundation` and `apps` are NOT in this programme. They are Lane C's under [D-022](DECISION_REGISTER.md), and [D-229](DECISION_REGISTER.md) ⑤ deliberately did not move them — a module transfer needs its own ruling."***
+
+### ⚠️ And [TASK-1481](BACKLOG.md) sits exactly on the seam
+
+| | |
+|---|---|
+| **Module** | **`platform_foundation`** |
+| **Owner** | **Lane A** |
+| **Status** | ✅ **`READY` — Lane C, 2026-08-13** |
+
+⛔ **So the row is claimable by its own cells and unclaimable by TASK-1478's sentence**, and 📁 **§20e forbids the thing that would settle it locally**: *"one implementation module → one implementation lane → one current assignee → one source of truth. Dual ownership of an implementation module is not permitted."*
+
+### 🔴 Which is right cannot be read out — and that is the finding
+
+⚡ **Two readings, and they have opposite consequences:**
+
+| | |
+|---|---|
+| **① `modules.toml` is current** | **[D-229](DECISION_REGISTER.md) gave Lane A every module and TASK-1478's prose is stale** — ⛔ **and §20e already forbids that prose**: *"no document restates an assignee."* ✅ **TASK-1481 is Lane A's and claimable** |
+| **② TASK-1478 is current** | **`modules.toml` was changed without a ruling** — 📁 [§2](../CLAUDE.md), *governance describes reality; it never quietly changes it*. ⛔ **TASK-1481 is Lane C's and its `Owner` cell is wrong** |
+
+⚠️ **Reading ② is the more serious of the two**, because it would mean an ownership transfer arrived through a registry edit — **the exact failure §2 names**: *"if applying the edit would change what somebody does tomorrow, it needed a decision yesterday."*
+
+### ✅ What this lane did
+
+⛔ **Did not claim it, and did not resolve it by preferring the source that suited.** ⚡ **Took [TASK-430](BACKLOG.md) instead and recorded the skip in TASK-1481's own row**, because 📁 *"skipping quietly is re-prioritizing, and priority is not a lane's to hold."*
+
+⚠️ **This is [C-213](#c-213)'s class exactly** — a stale assignee that *looks answered* — **except that this time both sources look authoritative, so no reader can tell which to believe.**
+
+---
+
+## C-1518 · TASK-1432 was released on a grep that matched comments
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, running the Task Claim Protocol on [TASK-1432](BACKLOG.md) — ⚡ **found by verifying the release condition rather than trusting it** |
+| **Owner** | **Lane C** — ⛔ **`READY` is theirs to set and theirs to withdraw** ([§20e](../CLAUDE.md)) |
+| **Type** | ⚠️ **A planning correction.** ✅ **Not blocking this lane** — it took the next row |
+| **Blocks** | ⛔ **Nothing, provided the row is re-sequenced before somebody builds it** |
+| **Status** | **`OPEN`** |
+
+### 🔴 The row's own condition, and it is precise
+
+📁 **[TASK-1432](BACKLOG.md):**
+
+> ✅ ***"One module renders a figure that `period`, `region`, `segment` or `owner` would narrow, and reads it from `scope.ts`."***
+
+📁 **Its release says the condition fired:** *"This row was checked twice before and stayed sequenced because no module read `lib/shell/scope.ts` — **grep found**…"*
+
+### ⛔ Measured, and nothing imports it
+
+```
+$ grep -rn "from '@/lib/shell/scope'" --include=*.ts --include=*.tsx frontend
+tests/unit/scope.test.ts:20:} from '@/lib/shell/scope';
+```
+
+🔴 **The only importer in the entire frontend is the file's own unit test.**
+
+⚠️ **The two files a path-grep matches name it in COMMENTS:**
+
+| File | What actually matches |
+|---|---|
+| `components/shell/top-bar.tsx:29` | *"`lib/shell/scope.ts` has to the filter strip"* — **prose in a docstring** |
+| `components/shell/copilot.tsx:95` | *"the direction [`scope.ts`](…) refuses by name"* — **prose in a docstring** |
+
+⚡ **`copilot.tsx` does take a `scope` prop — and it is a `string`**, not `scope.ts`'s type, and it renders it as a line of text. ⛔ **Nothing narrows a figure by it.**
+
+### ⚠️ Why it matters more than a mis-sequenced row
+
+📁 **The row states its own consequence:**
+
+> ⛔ ***"A seller who sets the period to Q3 and sees every figure unchanged learns the filter is broken, and stops trusting the ones that work."***
+
+✅ **So shipping it now would produce exactly the outcome the row was sequenced to prevent** — **four chips serialising into the URL with nothing reading them.**
+
+### ⚡ The reusable half, and it is today's fourth instance of one shape
+
+⛔ **A path string appearing in a file is not evidence that the file DEPENDS on it.** ✅ **The checkable form is the import**, and 📁 `infra/reachability.py` already learned the same lesson one register over: *"a route named in a file that renders links is a door; a route named in a file that renders nothing is a declaration."*
+
+> ⚡ **The operand again: `grep -l <path>` answers *"which files mention this"*, and the question was *"which modules depend on this"*.**
+
+---
+
 ## C-1517 · The Workspace Chooser's verbatim copy says *workspace*; ADR-0034 says that is the platform's word
 
 | | |
