@@ -60,10 +60,10 @@ describe('🔴 a column exists only where a field does', () => {
    * ⚡ **The other direction, and it is what keeps `read` optional honest.**
    *
    * ⛔ **A column may omit `read` only where its value genuinely is not on the
-   * row.** 📁 `tags` and `owner` are both `commercial_profile`'s and an account
-   * is `knowledge_graph`'s — the screen joins them
+   * row.** 📁 `tags`, `owner` and `segment` are all `commercial_profile`'s and
+   * an account is `knowledge_graph`'s — the screen joins them
    * ([TASK-466](../../../docs/BACKLOG.md), [TASK-1479](../../../docs/BACKLOG.md)
-   * ⓶). ⚠️ **Without this assertion, `read` becoming optional would let any
+   * ⓶ and ⓶b). ⚠️ **Without this assertion, `read` becoming optional would let any
    * future column skip the type's question instead of answering it.**
    *
    * 🔴 **The set is asserted whole rather than by membership**, so **adding a
@@ -72,10 +72,10 @@ describe('🔴 a column exists only where a field does', () => {
    * produced when `owner` landed is the guard working**, and widening it is an
    * answer, not a repair.
    */
-  it('⛔ and exactly two columns are joined rather than read', () => {
+  it('⛔ and exactly three columns are joined rather than read', () => {
     const joined = COLUMNS.filter((column) => column.read === undefined).map((c) => c.id);
 
-    expect(joined).toEqual(['owner', 'tags']);
+    expect(joined).toEqual(['owner', 'segment', 'tags']);
   });
 
   /**

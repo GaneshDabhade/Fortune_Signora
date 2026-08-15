@@ -64,6 +64,16 @@ export const queryKeys = {
   accountAssignments: (workspaceId: string, accountIds: readonly string[]) =>
     ['workspace', workspaceId, 'account-assignments', [...accountIds].sort()] as const,
 
+  /** ⚡ **TASK-1479 ⓶b.** The panel: every saved grouping and its count. */
+  accountSegments: (workspaceId: string) =>
+    ['workspace', workspaceId, 'account-segments'] as const,
+
+  /** ⛔ **Sorted, like the assignment key above** — the same forty accounts in
+   *  a different order are one question, and an unsorted key would cache two
+   *  answers to it. */
+  accountSegmentMemberships: (workspaceId: string, accountIds: readonly string[]) =>
+    ['workspace', workspaceId, 'account-segment-memberships', [...accountIds].sort()] as const,
+
   accountScore: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'score'] as const,
 

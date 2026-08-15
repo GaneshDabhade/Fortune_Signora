@@ -35,6 +35,7 @@ export type ColumnId =
   | 'agreement'
   | 'freshness'
   | 'owner'
+  | 'segment'
   | 'tags';
 
 export interface ColumnSpec {
@@ -94,6 +95,13 @@ export const COLUMNS: readonly ColumnSpec[] = [
   // context's fact, joined by the screen from its own endpoint rather than
   // carried on the account row (§5).
   { id: 'owner', label: 'Owner' },
+  // ⚡ **Segment gained a source on 2026-08-15** — TASK-1479 slice ⓶b, and the
+  // third of the five source-less columns the header above records to get one.
+  // ⛔ **No `read`, for the reason Tags and Owner have none**: a saved grouping
+  // is `commercial_profile`'s and an account is `knowledge_graph`'s, so the
+  // screen joins them from a second endpoint rather than reading a field the
+  // account row does not carry (§5).
+  { id: 'segment', label: 'Segment' },
   { id: 'tags', label: 'Tags' },
 ];
 

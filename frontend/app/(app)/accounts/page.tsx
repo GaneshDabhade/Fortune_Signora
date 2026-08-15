@@ -6,6 +6,11 @@ import {
   UnassignedOwner,
   ownerFor,
 } from '@/components/accounts/account-owner';
+import {
+  AccountSegments,
+  UnsegmentedAccount,
+  membershipFor,
+} from '@/components/accounts/account-segments';
 import { AccountTags, tagsFor } from '@/components/accounts/account-tags';
 import { AddTagControl } from '@/components/accounts/add-tag-control';
 import { BulkBar } from '@/components/accounts/bulk-bar';
@@ -28,6 +33,10 @@ import {
   useProposeTagBatch,
 } from '@/lib/query/hooks/account-tags';
 import { useAccountAssignments } from '@/lib/query/hooks/account-assignments';
+import {
+  useAccountSegmentMemberships,
+  useAccountSegments,
+} from '@/lib/query/hooks/account-segments';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { Building2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -173,6 +182,17 @@ export default function CompaniesPage() {
   /** ⚡ **The member list the screen already holds**, which is what turns a
    * `member_user_id` into somebody a person recognises. */
   const members = useWorkspaceMembers(columns.includes('owner') ? workspaceId : null);
+  /** ⛔ **Asked only when the column is on**, on the same terms as the owner
+   *  and tag reads. */
+  const segmentIds = useMemo(
+    () => (columns.includes('segment') ? shown.map((r) => r.account.account_id) : []),
+    [columns, shown],
+  );
+  const segmentMemberships = useAccountSegmentMemberships(workspaceId, segmentIds);
+  /** ⚡ **The directory the screen already holds**, which is what turns a
+   *  `segment_id` into a name a person recognises — the same shape the tag
+   *  vocabulary serves for chips. */
+  const segments = useAccountSegments(columns.includes('segment') ? workspaceId : null);
   const assignments = useAccountTagAssignments(workspaceId, taggable);
 
   const [selection, setSelection] = useState<Selection>(NOTHING_SELECTED);
@@ -436,6 +456,32 @@ export default function CompaniesPage() {
                                 owners.data?.assignments,
                               )}
                               members={members.data?.items ?? []}
+                            />
+                          )
+                        ) : column.id === 'segment' ? (
+                          /* ⛔ **Joined, never read from the row**, on the same
+                             terms as owner and tags (§5). ⚡ **A LIST rather
+                             than one value**: the design's panel counts overlap
+                             by construction, and rendering only the first would
+                             be this screen choosing which of a customer's
+                             groupings matters. */
+                          membershipFor(
+                            row.account.account_id,
+                            segmentMemberships.data?.memberships,
+                          ) === undefined ? (
+                            /* ⚠️ **Only once the read has ARRIVED.** Forty rows
+                               saying *No segment* during a load is forty false
+                               statements (P-A). */
+                            segmentMemberships.isSuccess ? (
+                              <UnsegmentedAccount />
+                            ) : null
+                          ) : (
+                            <AccountSegments
+                              membership={membershipFor(
+                                row.account.account_id,
+                                segmentMemberships.data?.memberships,
+                              )}
+                              segments={segments.data?.segments ?? []}
                             />
                           )
                         ) : column.id === 'tags' ? (
