@@ -525,7 +525,7 @@ databaseUrl: required(
 | **Owner** | 🔴 **Product owner** — ⛔ **a new module or bounded context is 🔴 in the Change Budget**, and this lane may not create one |
 | **Type** | 🔴 **Architectural blocker**, not an implementation one — [§20e](../CLAUDE.md): *no accepted architecture exists for the next step* |
 | **Blocks** | ⛔ **Slice ⓷ entirely.** ✅ **Nothing else** — slice ⓸ ([ADR-0410](architecture/adr/0410-authorization-capability-layer.md)) is unaffected and this lane has moved to it |
-| **Status** | **`OPEN`** |
+| **Status** | **`READY FOR PRODUCT DECISION`** — ⚡ **all six things [§20e](../CLAUDE.md) requires of an architectural blocker are present, and Lane C has verified the item independently.** ⛔ **Waiting only on a ruling** |
 
 ### 🔴 The problem
 
@@ -544,6 +544,20 @@ databaseUrl: required(
 | | Why not |
 |---|---|
 | **`commercial_profile`** | ⚡ **The closest, and it is the one this lane would reach for.** ⛔ **But its bounded context is what a customer DECLARES about their commercial setup** — products, ideal customer, buying committee, competitors, target accounts, and now tags, owner and segments. **A note is not a declaration; it is a record somebody wrote about an account** — and ADR-0413's own retention, export and audit obligations attach to the module, which this one has never carried |
+### 🔴 The precedent that points the other way, and the answer to it
+
+⚠️ **`commercial_profile` already holds Tags, and a tag is customer-authored too** — nobody declared it and nobody asserted it. 📁 **[ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md) put them there at migration `0051`, which this lane wrote.** ⛔ **So *"its context is what a customer DECLARES"* does not survive the question *"why do notes not follow tags?"***
+
+✅ **Found by Lane C reviewing this item rather than accepting it.** ⚡ **The real distinction is in ADR-0413's own §1 and it is stronger than the elimination this item first gave:**
+
+> **A tag is a *label*. A note is *content*.**
+>
+> ⚡ **Only content makes Signora *"the system of record for something a customer creates"*** — and that is what brings **retention, export, permissions and audit**, the obligations `commercial_profile`'s `public/`, its import contract and its design doc were never built against.
+>
+> ⛔ **Losing a tag is annoying. Losing a note is a data-loss incident.**
+
+✅ **And that axis is what defends §7's boundary**: **files, emails and meetings are excluded for the same reason rather than by fiat** — each is content, each would bring the same obligations, and the ruling named them separately because they arrive by different routes.
+
 | **`timeline`** | 📁 **A projection that *"deliberately holds no interpretation"*** and is append-only from events. ⛔ **Notes and Tasks are AUTHORED.** ✅ They *appear* in the timeline, which is a projection rule, not a home |
 | **`knowledge_graph`** | Account identity and evidence, every claim carrying provenance to a provider. ⛔ **Nobody asserted a customer's own note** — 📁 the same argument [ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md) used to keep tags out |
 | **`people`** | ⛔ **[C-221](#c-221)'s scope bound**: no person's name, anywhere. A note has an author and a body |
@@ -580,7 +594,7 @@ databaseUrl: required(
 | **Raised by** | **Lane A**, 2026-08-15, building [TASK-1479](BACKLOG.md) ⓶b — ⚡ **measured off the design snapshot, not inferred from it** |
 | **Owner** | **Product owner**, with Product Office — ⛔ **it is what a customer's `Segment` cell MEANS**, and a lane picking is a lane deciding the product |
 | **Blocks** | ⛔ **Nothing.** ✅ **⓶b ships the enumerated grouping the ruling names**, and this asks about values the ruling does not explain |
-| **Status** | **`OPEN`** |
+| **Status** | **`READY FOR PRODUCT DECISION`** — ⚡ **the measurement, the three readings and a recommendation are all here.** ⛔ **Blocks nothing** |
 
 ### 🔴 The measurement
 
@@ -644,7 +658,7 @@ databaseUrl: required(
 | **Raised by** | **Lane A**, 2026-08-14, building [TASK-1479](BACKLOG.md) slice ⓶ — ⚡ **on QE's hypothesis, tested and found to be a different class from the three defects beside it** |
 | **Owner** | **Product owner** — ⛔ **the question is what the button means, not how it is implemented** |
 | **Blocks** | **Nothing.** ⚠️ **But the shipped path has ALREADY CHOSEN**, which is why this is an item rather than a note |
-| **Status** | 🔵 **`OPEN`** |
+| **Status** | **`READY FOR PRODUCT DECISION`** — ⚡ **both options argued, and a third this lane would propose.** ⛔ **Blocks nothing; the shipped behaviour is an encoded assumption, documented** |
 
 ### 🔴 Why this is a `C-` and not a `B-`
 

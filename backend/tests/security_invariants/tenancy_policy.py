@@ -245,6 +245,22 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # explicitly rather than reaching the tag's, so a policy here does not
         # depend on a join (§8, defense in depth).
         "account_tag_assignment",
+        # Workspace & Tenancy (TASK-1479 slice ⓸), migration 0057. The named
+        # capability roles a customer defined — ADR-0410. **A leak here reads
+        # how a company divides authority internally**: the role names alone
+        # say who they think should see what, before any person is attached.
+        "capability_role",
+        # Migration 0057. Which capability role each person holds. **Tenant-owned
+        # in its own right**: it carries `workspace_id` explicitly rather than
+        # reaching the role's, so a policy here does not depend on a join
+        # (§8, defense in depth) — the same reasoning the tag and segment join
+        # rows record.
+        #
+        # 🔴 **The leak this classification prevents is an authorization one.**
+        # A row visible across tenants would let one workspace read which of
+        # another's people were narrowed, which is a map of where they think
+        # their risk is.
+        "capability_assignment",
         # Commercial Profile (TASK-1479 slice ⓶b), migration 0055. What a
         # customer named their own saved groupings — ADR-0411's third
         # capability. **A leak here reads the customer's private working
