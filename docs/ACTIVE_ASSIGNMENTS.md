@@ -71,7 +71,13 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-15, `136f112b`
+## Current — as of 2026-08-15, `9a01139c`
+
+> ⚡ **Cycle 232 Closeout. NO rows removed** — [TASK-1479](BACKLOG.md) still covers four contracts, ⓶b is on `main`, ⓷ and ⓸ are not.
+>
+> ✅ **Activity 3 ran this time.** ⛔ **It did not at cycle 231** ([B-1000](BUGS.md)), and the check that reported it was one QE had already read and dismissed on its exit code.
+>
+> ⚠️ **Two 🔴 defects are OPEN against the environment and neither is on `main`**: [B-270](BUGS.md) — **`make test` in a fresh shell truncates human review's database** — and [B-271](BUGS.md) — **the derivation names a database compose never creates.** ⛔ **Both fixes are prepared and land in cycle 233.** **A lane running a documented gate today can still empty slot 0.**
 
 > ⚡ **Cycle 231 Closeout. NO rows removed, for the reason cycle 229 recorded below — and this note is late.**
 >

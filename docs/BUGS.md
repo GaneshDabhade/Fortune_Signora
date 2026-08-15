@@ -90,6 +90,52 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-1003 · 🟠 The runbook hands every lane slot 0's port, and it had told QE so itself
+
+| | |
+|---|---|
+| **Module** | **QE documentation** — [`docs/RUNNING.md`](RUNNING.md), seven `localhost:5432` sites |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **`:324` instructs a new lane to `CREATE DATABASE` on slot 0's server**, which is how `signora_lane_a`, `signora_lane_b`, `signora_lane_qe` and `signora_validate_lanea` came to sit on `5432` — ⚡ **exactly where [B-270](#b-270)'s destructive fixtures fall back to.** **The runbook does not merely mis-direct a lane at slot 0; it instructs them to create the decoy there** |
+| **Status** | 🔵 **`OPEN`** — repair drafted, lands cycle 233 with [B-270](#b-270) and [B-271](#b-271) |
+| **Found** | **2026-08-15**, by QE citing the file to Lane A as a mitigation for B-270 **without opening it**. ⚡ **Caught by Lane C**, who had flagged the same lines and left them correctly |
+| **Commit found** | **`9a01139c`** |
+
+### 🔴 The part that is not a stale document
+
+📁 **`RUNNING.md:64` is a note in QE's own file, addressed to QE:**
+
+> *"The explicit `localhost:5432` examples further down this file are now correct only for slot 0. `make` targets derive the port and need no edit; **hand-run commands do. Left for QE**, whose file this is."*
+
+⛔ **QE had a warning, in its own file, naming its own role, and cited the file to another lane without reading it.** ⚡ **The instance is *citing a file instead of using it*; the rule is *a peer's accuracy record is not evidence about a specific claim* — and here it was not even a peer's.**
+
+⚠️ **A stale example a reader might notice is one thing; the same lines handed to a lane as the safe path around a data-destruction defect is another.** **The difference is entirely in the use, not in the text** — which is why `:64` is **kept** rather than deleted once discharged.
+
+### ✅ The repair is derivation, and it is scoped by measurement
+
+⛔ **Substituting `5732` for `5432` would trade one stale constant for four** and put the file back here the next time a lane is added or retired. 📁 **`signora_lane_b` is in there today naming a lane closed 2026-08-12 — that failure has already happened once.**
+
+⚡ **And `:382` carries its own fix one row below itself:** the `SIGNORA_REDIS_URL` row already says *"index 0 is human review's. Substitute your environment's index"*, and the `SIGNORA_DATABASE_URL` row directly above it does not. **A one-row inconsistency in a two-row table — the repair needs no new wording, only its neighbour's own pattern.**
+
+⚠️ **Scope narrowed by Lane C's measurement:** an inline `VAR=x cmd` in a recipe **overrides an exported variable**, so a shell poisoned by the old runbook is still safe on the `make` targets. ⛔ **What the document must protect is hand-run commands and `:324`'s `CREATE DATABASE`** — **and `:324` is the one no guard can reach, because it runs before any test does.**
+
+🔴 **The fix cannot state a database name.** [B-271](#b-271) proves the derivation and the compose file disagree about it, so the runbook will say **how to find out** — `psql … -c "select datname from pg_database"` — rather than what the answer is. ⚡ **`pg_database` is the only operand that cannot be stale.**
+
+### B-1004 · 🟢 Aborted certification runs leave their disposable database behind
+
+| | |
+|---|---|
+| **Module** | **QE gates** — `backend/tests/certification/database.py` |
+| **Current assignee** | **QE** |
+| **Severity** | 🟢 — **four orphans at 16–33 MB.** ⛔ **Not a correctness defect: the isolation works, which is the point of it** |
+| **Status** | 🔵 **`OPEN`** |
+| **Found** | **2026-08-15**, while proving that `make certify` does *not* target `5432/signora` |
+| **Commit found** | **`9a01139c`** |
+
+📁 `signora_certify_0b423a8da4b6` · `0e2db3c3cfd3` · `375acf87b54b` · `9a01139c125b`. **The disposable database is dropped on a clean exit and survives a `SIGTERM`** — ✅ **which is correct behaviour**: a killed run's database is the only remaining evidence of what it was doing. ⚠️ **The cost accumulates, and one of these was created by QE killing its own run.**
+
+⛔ **Deliberately not fixed by dropping on signal.** **A handler that deletes state during an abort removes the thing an investigator needs**, and this row exists to be swept deliberately rather than automatically.
+
 ### B-1002 · 🟠 The promotion guard's idea of CERTIFIED diverged from the certification package's, and the missing condition was the one the product owner had just changed
 
 | | |
