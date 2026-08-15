@@ -21,14 +21,15 @@ a builder — and a real one would be testing PostgreSQL rather than the seam.
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 from unittest.mock import patch
 from uuid import UUID, uuid4
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from modules.commercial_profile.interface import tag_batch_handlers
 from modules.commercial_profile.interface.tag_batch_handlers import (
@@ -39,6 +40,11 @@ from modules.commercial_profile.interface.tag_batch_handlers import (
     reverse_segment_batch,
 )
 from signora_platform.event_bus import EventEnvelope
+
+#: ⛔ **Never called.** `tenant_scoped_session` is patched, so the handler
+#: hands this straight to the recorder and nothing opens a connection — the
+#: cast says that rather than leaving `object()` at a typed parameter.
+NO_FACTORY = cast("async_sessionmaker[AsyncSession]", object())
 
 WORKSPACE = UUID("11111111-1111-4111-8111-111111111111")
 BATCH = UUID("33333333-3333-4333-8333-333333333333")
@@ -96,7 +102,7 @@ def _factory(use_case: _UseCase) -> Any:
 
 
 @pytest.fixture
-def scope() -> AsyncIterator[_Scope]:
+def scope() -> Iterator[_Scope]:
     recorder = _Scope()
     with patch.object(tag_batch_handlers, "tenant_scoped_session", recorder):
         yield recorder
@@ -119,7 +125,7 @@ class TestTheSeamReadsOneFieldAndTrustsNothingElse:
 
         await apply_segment_batch(
             _envelope(extra={"account_ids": ["not", "trusted"], "segment_id": str(uuid4())}),
-            session_factory=object(),
+            session_factory=NO_FACTORY,
             apply=_factory(use_case),
         )
 
@@ -135,7 +141,7 @@ class TestTheSeamReadsOneFieldAndTrustsNothingElse:
 
         await reverse_segment_batch(
             _envelope(extra={"account_ids": ["not", "trusted"]}),
-            session_factory=object(),
+            session_factory=NO_FACTORY,
             reverse=_factory(use_case),
         )
 
@@ -148,7 +154,7 @@ class TestTheSeamReadsOneFieldAndTrustsNothingElse:
 
         await apply_assignment_batch(
             _envelope(extra={"member_user_id": str(uuid4())}),
-            session_factory=object(),
+            session_factory=NO_FACTORY,
             apply=_factory(use_case),
         )
 
@@ -160,7 +166,7 @@ class TestTheSeamReadsOneFieldAndTrustsNothingElse:
         use_case = _UseCase()
 
         await reverse_assignment_batch(
-            _envelope(), session_factory=object(), reverse=_factory(use_case)
+            _envelope(), session_factory=NO_FACTORY, reverse=_factory(use_case)
         )
 
         assert use_case.calls == [(WORKSPACE, BATCH, SYSTEM_USER_ID)]
@@ -189,7 +195,7 @@ class TestTheSeamOpensItsOwnTenantScopedSession:
         use_case = _UseCase()
 
         await handler(
-            _envelope(), session_factory=object(), **{keyword: _factory(use_case)}
+            _envelope(), session_factory=NO_FACTORY, **{keyword: _factory(use_case)}
         )
 
         assert scope.opened == [{"workspace_id": WORKSPACE, "user_id": SYSTEM_USER_ID}]
@@ -211,7 +217,7 @@ class TestTheSeamOpensItsOwnTenantScopedSession:
 
         await apply_segment_batch(
             _envelope(extra={"proposed_by": str(proposer)}),
-            session_factory=object(),
+            session_factory=NO_FACTORY,
             apply=_factory(use_case),
         )
 

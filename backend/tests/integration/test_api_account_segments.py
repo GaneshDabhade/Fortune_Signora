@@ -298,7 +298,8 @@ class TestProposingABulkAdd:
     async def test_it_answers_202_because_nothing_has_happened_yet(
         self, client: AsyncClient, key_pair: KeyPair
     ) -> None:
-        """📁 [ADR-0405](../../../docs/architecture/adr/0405-an-action-is-approved-before-it-is-effective.md):
+        """📁 [ADR-0405](../../../docs/architecture/adr/\
+0405-an-action-is-approved-before-it-is-effective.md):
         an action is approved before it is effective.
 
         ⛔ **A `200` would say the companies are in the grouping, and they are

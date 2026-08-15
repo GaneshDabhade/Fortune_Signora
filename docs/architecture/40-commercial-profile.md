@@ -671,3 +671,70 @@ So `TagApplication` records what **changed**, and `inverse()` may read nothing e
 ⚠️ **How the mistake happened, because the mechanism is more useful than the apology.** This lane re-derived C-1503's argument from the source material — ADR-0041, ADR-0411, the endpoint — **without reading the Status cell of its own item.** 🔴 **The same lane had twice that week told other lanes that `RULED` is not `AVAILABLE`; this is that error inverted, reading `CLOSED` as open.** ⛔ **Both are one act: taking an item's argument as live without re-reading its state.**
 
 ✅ **Segments is therefore SCHEDULED, not deferred** — slice ⓶b, immediately after ⓶a. ⚠️ **Split at QE's request and on the better argument: `main`'s frontend suite is red, ⓶a is the only thing that fixes it, and holding a shipped fix to complete a second capability is the wrong trade** ([B-200](../BUGS.md)).
+
+
+---
+
+## TASK-1479 ⓶b — a named grouping, and what separates it from a tag
+
+**[ADR-0411](adr/0411-customer-organized-account-metadata.md)'s third and last capability**, and the one the section above wrongly reported as deferred. 📁 **[D-235](../DECISION_REGISTER.md) ② ruled it on 2026-08-13** — *Segment* means the customer-organized **enumerated grouping**, `icp_segment` stays an internal name, nothing is renamed.
+
+### ⚠️ A tag and a segment are the same shape, and one of them would be [§4](../../CLAUDE.md)'s duplicated vocabulary
+
+🔴 **Both are named, customer-authored, enumerated groupings of accounts.** **What separates them is in the design rather than in this lane's judgement:**
+
+| | **Tag** | **Segment** |
+|---|---|---|
+| **Rendered as** | many chips in one cell | a name with a **count** |
+| **Carries** | a **tone** a person picked | a **membership** a person curated |
+| **Answers** | *"what is true of this account?"* | *"which accounts am I working through?"* |
+
+⚡ **A tag describes an account; a segment collects them.** ⛔ **That is why a segment has a count and nothing here has a tone.**
+
+### 🔴 Membership, and the panel is what decides it
+
+📁 **The design draws segments twice and the two do not share a vocabulary** — the `Segment` **column** shows `Enterprise`/`Mid-market`, one per row; the `Segments` **panel** lists five named groupings with counts, and **no row's cell holds a panel segment's name.** ✅ **Raised as [C-1511](../LANE_COORDINATION.md) rather than guessed at.**
+
+⚡ **This model follows the PANEL**, because **the panel is the only place a segment is created, named and counted**, and *"Board reporting set — manually curated for the quarterly pack"* is ADR-0411's enumerated grouping in the design's own words.
+
+⚠️ **An earlier draft argued this from arithmetic** — that the counts sum to 701 over 312 companies and therefore overlap. 🔴 **312 is the CSV export of the *current view*; the table holds 8,412.** ⛔ **Recorded as withdrawn rather than quietly removed** — found by Lane C re-measuring rather than relaying.
+
+### ⛔ The Dynamic kind is not built, and the reason is measured
+
+📁 **Four of the five drawn segments are `Dynamic`** — *"recalculates hourly"* — **which is a stored PREDICATE**, the other half of the one choice ADR-0411 says must be made once. **Of the predicates the rules name: `score below 50` and `open ACV above $100K` have sources; `no contact 14d`, `Usage above 88%`, `healthy support` and `No activity in 60 days` have zero occurrences across `backend/modules/`.**
+
+⛔ **So there is no nullable `rule` column** — it would be a half-built predicate engine sitting in the schema inviting somebody to finish it.
+
+### ⚡ Two tables, because a segment outlives its membership
+
+**A segment with nobody in it is a real thing** — a customer names *"Board reporting set"* before curating it — **so membership cannot be the segment.** 📁 The same reason `account_tag` and `account_tag_assignment` are two tables: **deleting the last member must not delete the list.**
+
+**Uniqueness is on a stored `name_key`, not on `lower(name)`.** ⛔ `lower("STRASSE")` and `lower("straße")` differ where the customer means one segment; **`casefold` is the function that does not**, and the column is `account_tag.fold`'s output — **one implementation, borrowed rather than copied.** ✅ **Asserted behaviourally, on exactly that input**, so a segment that grew its own `lower`-based folding fails.
+
+### ⚠️ The count is derived, and the empty segment is why
+
+**The panel's count is `GROUP BY` over membership, never a stored column** — a stored one goes stale the next time anybody adds a company (§2). ⛔ **And the directory and the counts are two reads rather than one join**: **a join would have made a segment with nobody in it vanish from the customer's own panel**, which is the state every segment passes through between being named and being curated — 📁 [P-A](../DOMAIN_DISCOVERY_REGISTER.md), in the window the customer is looking at.
+
+### 🔴 The reversal, and it is the third time this module has had to state it
+
+⛔ **Reversing *Add to segment* is not *remove those companies from the segment*.** A company curated into *Board reporting set* in June and caught in an August bulk add **must still be in it after the customer presses *take it back***.
+
+✅ **Fire-tested against the real defect**: making `inverse()` return `added + unchanged` turns three assertions red.
+
+⚡ **And `record_application` is a compare-and-set** — `UPDATE … WHERE added IS NULL`, raising on any rowcount but 1. 🔴 **The domain refuses a second application too, but its answer depends on having read the row, and two deliveries of one `applied` event can both read `None`.**
+
+> 📁 **That write is what found [B-269](../BUGS.md)**: it matched **zero** rows, because SQLAlchemy stores Python `None` in a JSON column as the JSON value `null` rather than SQL `NULL`. **Three columns in this module carried it, the ORM decoded all three back correctly, and every migration docstring promising three states was false to SQL.** ⚡ **`none_as_null=True` on all three, and the test asks the database rather than the round trip.**
+
+### The screen
+
+**The Companies table's Segment column** — 📁 the **third** of [`table.ts`](../../frontend/lib/accounts/table.ts)'s five source-less columns to get a source, after Tags at [TASK-466](../BACKLOG.md) and Owner at ⓶a. **Two remain.**
+
+⚡ **Three states, and the middle one is the one that would be lost**: unread renders nothing · read-and-in-nothing says *No segment* · read-and-in-some renders a chip per grouping, **in the directory's name order** so the same company renders the same way on every visit.
+
+### ⛔ What ⓶b did NOT build, and each is a stated absence
+
+| | |
+|---|---|
+| **A *New segment* control a customer can drive** | **The write path is proven at the API and in the handlers.** 📁 The approved Companies design has no completable naming affordance, exactly as it has no owner-assignment control and no approvals inbox — [C-1507](../LANE_COORDINATION.md), and [D-156](../DECISION_REGISTER.md) ⑥ forbids inventing one |
+| **The Dynamic kind** | [C-1511](../LANE_COORDINATION.md), with the source measurement |
+| **Account 360's segment surface** | ⓶b is the Companies column only |

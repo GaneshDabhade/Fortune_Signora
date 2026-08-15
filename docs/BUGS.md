@@ -380,6 +380,73 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-270 · `make demo-seed` seeds human review's database from any lane, and says it succeeded
+
+| | |
+|---|---|
+| **Status** | **`OPEN` — Lane A, 2026-08-15** |
+| **Raised by** | **Lane A**, 2026-08-15, running [TASK-1479](BACKLOG.md) ⓶b's journey — ⚡ **found by the data not being there afterwards**, not by review |
+| **Module** | ⛔ **`platform_foundation`** — [`Makefile`](../Makefile) and `backend/tests/conftest.py`. **Lane C's under [D-022](DECISION_REGISTER.md)**, and **not this lane's to fix** ([§20e](../CLAUDE.md)) |
+| **Severity** | 🟠 **A lane silently writes into an environment it is told to stay off**, and the command reports success |
+
+#### 🔴 What happens
+
+```
+make demo-seed
+  → cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.seed
+```
+
+⛔ **The target sets no database variable at all.** 📁 `tests/playground/seed.py:62` imports `DEFAULT_APP_DATABASE_URL` from `tests/conftest.py`, which is:
+
+```python
+os.environ.get("SIGNORA_TEST_APP_DATABASE_URL",
+               "postgresql+asyncpg://…@localhost:5432/signora")
+```
+
+🔴 **It never reads `SIGNORA_DATABASE_URL`** — **the variable every lane's `backend/.env` sets, and the one [`RUNNING.md`](RUNNING.md#running-a-lane) allocates per lane.**
+
+⚡ **`localhost:5432/signora` is slot 0.** 📁 [`infra/environments.py`](../infra/environments.py): `"signora" if self.slot == 0`. **Slot 0 is human review's** — 📁 [`RUNNING.md`](RUNNING.md): *"3000 and 8000 belong to human review on `main`, and to no lane."*
+
+> ⛔ **So a lane running the documented demo command seeds human review's stack**, and **the seeder deletes and recreates the Playground workspace there** — `seed.py:241`, `DELETE FROM workspace WHERE id = :id`, scoped to its own `WORKSPACE_NAME`.
+
+#### ⚠️ Measured, on this workstation, before filing
+
+**Ran `make demo-seed`'s command with `backend/.env` sourced. It printed:**
+
+```
+workspace   0d26ca3d-6e13-4e21-9292-91c95438756e
+members     4 signed-in user(s) enrolled
+```
+
+**Then, in Lane A's own database on `5732`:** `select count(*) from workspace` → **`0`**.
+**In `signora-v2`'s database on `5432`** — human review's — **`1`.**
+
+⛔ **The success message names a workspace id that exists in somebody else's environment.**
+
+#### ⚡ Why nothing catches it
+
+**Sourcing `backend/.env` does not help**, and that is the trap: the file sets `SIGNORA_DATABASE_URL`, the seeder reads `SIGNORA_TEST_APP_DATABASE_URL`, **and neither name is wrong — they are two variables for one fact** ([§2](../CLAUDE.md)).
+
+⚠️ **It is the [B-268](#b-268) family and it is worse in one respect.** **B-268 fails loudly** — the database does not exist and the tool stops. **This one succeeds**, against a real database, with real data, and **reports a workspace id.**
+
+#### ⛔ Worked around, not fixed, and stated so
+
+**This lane seeded its own stack by setting the variable the seeder actually reads:**
+
+```
+SIGNORA_TEST_APP_DATABASE_URL=…@localhost:5732/signora \
+SIGNORA_TEST_ADMIN_DATABASE_URL=…@localhost:5732/signora \
+  python -m tests.playground.seed
+```
+
+⛔ **Not proposed as the fix.** ⚡ **The fix is that a seeder reads the environment's own database URL** — `SIGNORA_DATABASE_URL`, or `infra/environments.py`'s `Environment.database`, **which already computes it correctly per slot and is the one representation** — **and the `_TEST_` names stay what they are: the test suite's.**
+
+#### ⚠️ QE should know, because it is their stack
+
+**Human review's Playground was deleted and re-seeded by this lane at 2026-08-15T03:5x.** ✅ **Nothing outside the Playground workspace was touched** — the delete is scoped by workspace name — **but the demo data a reviewer would have been looking at is this lane's, not the one that was there.**
+
+---
+
 ### B-269 · Three nullable JSONB columns document a `NULL` that no SQL predicate can see
 
 | | |

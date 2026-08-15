@@ -517,6 +517,70 @@ databaseUrl: required(
 
 ---
 
+## C-1511 · The Companies `Segment` column and the `Segments` panel are disjoint vocabularies
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, building [TASK-1479](BACKLOG.md) ⓶b — ⚡ **measured off the design snapshot, not inferred from it** |
+| **Owner** | **Product owner**, with Product Office — ⛔ **it is what a customer's `Segment` cell MEANS**, and a lane picking is a lane deciding the product |
+| **Blocks** | ⛔ **Nothing.** ✅ **⓶b ships the enumerated grouping the ruling names**, and this asks about values the ruling does not explain |
+| **Status** | **`OPEN`** |
+
+### 🔴 The measurement
+
+📁 `Fortune Signora Companies.dc.html` draws segments in two places:
+
+| | |
+|---|---|
+| **The table's `Segment` column** | **One value per row** — `Enterprise` (6 rows), `Mid-market` (2). The card view renders `Enterprise · EMEA`, `Mid-market · EMEA`, `Enterprise · NA` |
+| **The `Segments` panel** | **Five named groupings with counts** — `Renewal risk — 90 days` 41 · `Expansion-ready` 118 · `Board reporting set` 212 · `Competitive watch` 26 · `Dormant enterprise` 304 |
+
+⛔ **The two sets are disjoint.** **No row's cell holds any panel segment's name, and no panel entry is named `Enterprise` or `Mid-market`.**
+
+### ⚠️ Why [D-235](DECISION_REGISTER.md) ② does not settle it
+
+📁 **The ruling is explicit and this lane is following it**: *"The App Shell's `segment` scope dimension, Companies, Account 360 and Action Batch all carry the [ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md) meaning."*
+
+⚡ **So the column carries the enumerated grouping.** ⛔ **And then the values drawn in it are unexplained**: `Enterprise` and `Mid-market` are a **tier vocabulary**, one per company, and nothing in ADR-0411 produces them.
+
+> ⚠️ **This is not [C-1503](#c-1503--task-466--segment-already-means-something-in-this-repository-and-adr-0411-means-something-else-by-it) again, and the distinction matters.** **C-1503 asked which of two ratified meanings the word carries, and the product owner answered it.** **This asks what the values the design DRAWS in that column are** — a question C-1503 never put and D-235 never reached.
+
+### ✅ What ⓶b shipped, so the question is not blocking
+
+**The membership model, following the panel** — because **the panel is the only place a segment is created, named and counted**, and 📁 `Board reporting set — "manually curated for the quarterly pack"` is ADR-0411's enumerated grouping in the design's own words.
+
+⚡ **The cell renders a LIST rather than one value**, because a company can be in *Board reporting set* and *Competitive watch* at once. ⛔ **Rendering only the first would be the screen choosing which of a customer's groupings matters.**
+
+### The readings, and each is coherent
+
+| | |
+|---|---|
+| **A** — the column is the panel's groupings | ✅ **What ⓶b built.** The mock's `Enterprise`/`Mid-market` are placeholder values from before the panel existed |
+| **B** — the column is a firmographic tier | ⛔ **Then it is not ADR-0411's**, and D-235 ② would need revisiting — **or the column has a different source** and is one of [`table.ts`](../frontend/lib/accounts/table.ts)'s source-less columns after all |
+| **C** — both, and the design draws two things | ⚠️ **Possible, and it is what the snapshot literally shows** — but 📁 **ADR-0411 §3 says the choice is *"ONE choice, made once, not per screen"***, so two would need saying out loud |
+
+### ⛔ And the Dynamic kind is inside the same question
+
+📁 **The panel draws two kinds — `Dynamic` (*"recalculates hourly"*) and `Static` (*"manually curated"*) — and four of the five drawn are Dynamic.** ⚡ **A recalculating segment is a stored PREDICATE**, which is the other half of the one choice ADR-0411 reserved.
+
+🔴 **Measured rather than assumed**, of the predicates the five rules name:
+
+| Predicate | Source |
+|---|---|
+| `score below 50` | ✅ `buying_score_engine` publishes it |
+| `open ACV above $100K` | ✅ `opportunity_engine` |
+| `no contact 14d` · `Usage above 88%` · `healthy support` · `No activity in 60 days` | ⛔ **Zero occurrences across `backend/modules/`** |
+
+⛔ **So a rule engine would be built over facts that do not exist** — 📁 the same ⬜ class [414](architecture/414-wave-1-account-360.md) records for product usage and calls, and **building a screen section against invented data is what `no-mock-data.test.tsx` exists to refuse.**
+
+### ✅ Recommended, and stated as input rather than authority
+
+**Reading A, and say so.** ⚡ **It is the only one that makes the panel — the place a customer creates and names a segment — the same concept as the column that shows it**, and it needs no new source. ⛔ **If B is intended, the column needs a source naming and it is not `commercial_profile`'s.**
+
+**And rule the Dynamic kind separately**, because it is buildable independently of the column's meaning and **two of its six drawn predicates already have sources.**
+
+---
+
 ## C-1510 · What may *take it back* do when the previous owner has left?
 
 | | |
