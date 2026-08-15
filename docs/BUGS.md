@@ -6,13 +6,13 @@
 
 ## Identifier blocks — per lane, from 2026-08-02
 
-**Product owner's direction.** New rows use the opening lane's allocated block, so two lanes can no longer allocate the same number and QE no longer renumbers at merge (which is what [B-017](#b-017--a-lanes-merged-slice-disappeared-from-integration-and-the-backlog-reoffers-it)'s neighbourhood cost once already).
+**Product owner's direction.** New rows use the opening lane's allocated block, so two lanes can no longer allocate the same number and QE no longer renumbers at merge (which is what [B-017](#b-017--a-lanes-merged-slice-disappeared-from-integration-and-the-backlog-reoffers-it)'s neighbourhood cost once already). Rows numbered below 100 predate the scheme and keep their identifiers permanently; **an id is never renumbered.**
 
-| Lane | Bugs | Coordination | Tasks |
-|---|---|---|---|
-| **Lane B** | `B-3xx` | `C-3xx` | `TASK-3xx` |
-
-**Only Lane B's block has been stated to Lane B.** The blocks for Lane A, QE and the unclaimed lanes are the product owner's to allocate, and **this table is deliberately incomplete rather than guessed** — a lane inventing another lane's range is exactly the collision the scheme removes. Rows numbered below 100 predate the scheme and keep their identifiers permanently; an id is never renumbered.
+> 🔴 **The allocation table is [`CLAUDE.md`](../CLAUDE.md) §20e, and it is not restated here** ([B-1001](#b-1001--this-register-carried-a-second-copy-of-the-identifier-allocation-table-and-it-had-been-wrong-for-thirteen-days)).
+>
+> ⛔ **This section used to carry its own copy** — one row, Lane B's, under the sentence *"Only Lane B's block has been stated to Lane B."* ⚠️ **That was true when written on 2026-08-02 and false by the end of that day**, when the product owner allocated every block at once. **Nothing connected the two events**, and the copy sat here for thirteen days telling a lane opening a row that its own range did not exist.
+>
+> ⚡ **Replacing it with a reference is the fix *and* the guard.** **A checker for *"does this copy match the registry?"* would itself be a third copy of the answer** — §2, *truth has exactly one authoritative representation; everything else derives from it.*
 
 
 ## How it works
@@ -89,6 +89,64 @@ Such a row names the code, records **Current assignee: none — not assignable**
 > ⚠️ **Neither was caught by a gate, and in both cases the thing that found it was somebody using the product** — the product owner opening `/verify`, and a Playwright journey running against the real stack. ✅ **That is [§20e](../CLAUDE.md)'s sentence with two fresh instances rather than a restatement.**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
+
+### B-1001 · 🟢 This register carried a second copy of the identifier allocation table, and it had been wrong for thirteen days
+
+| | |
+|---|---|
+| **Module** | **QE register** — [`docs/BUGS.md`](BUGS.md), *Identifier blocks* |
+| **Current assignee** | **QE** |
+| **Severity** | 🟢 — ⛔ **it caused no collision that can be traced to it.** ⚠️ **It could only ever mislead in one direction: a lane reading it would believe its block was unallocated**, and the reasonable response to that is to ask rather than to guess |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-15.** The copy is replaced by a reference to [`CLAUDE.md`](../CLAUDE.md) §20e |
+| **Found** | **2026-08-15**, by QE recording its own newly allocated `B-1000`–`B-1099` range and noticing the register it was writing into disagreed with the constitution it had just edited |
+| **Commit found** | **`6d4f9fca`** |
+
+### 🔴 What it said
+
+📁 A one-row table listing **Lane B only**, under: *"Only Lane B's block has been stated to Lane B. The blocks for Lane A, QE and the unclaimed lanes are the product owner's to allocate, and this table is deliberately incomplete rather than guessed."*
+
+⚡ **The caution was exactly right when written.** ⚠️ **The product owner allocated every block later the same day** — `CLAUDE.md` §20e now carries seven actors, two of them with a second range each. **The copy was never edited to follow**, and there was no mechanism by which it would be.
+
+> 📁 **Lane C's §5h names this class precisely:** *"the copy is never wrong when written; it is wrong the first time the registry grows, and nothing connects the two events."*
+
+⛔ **This one is worse than the general case in one respect and better in another.** **Worse:** it stated its own incompleteness as a *deliberate* choice, so a reader had every reason to trust that the absence was current. **Better:** it advertised the absence rather than hiding it, which is why nothing was built on it.
+
+### ✅ The fix is a deletion
+
+**The table is replaced by a pointer to the one authoritative location.** ⛔ **No synchronisation, no checker** — **the guard against a copy drifting is not having the copy** (§2). ⚡ **The same act removes the defect and the mechanism that produced it**, which is the only repair of this class that does not leave a fourth thing to maintain.
+
+### B-1000 · 🟡 QE skipped a mandatory Closeout activity and reported the cycle clean, because it read `state-check`'s exit code as a verdict
+
+| | |
+|---|---|
+| **Module** | **QE process** — Repository Closeout activity 3, [`docs/ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — ⛔ **nothing uncertified reached `main`**; `--audit-main` is clean across 208 certified, 1679 ancestors and 1 Closeout. ⚠️ **The board asserted a state one cycle stale**, which is the §2 class: a record every lane reads, trusted precisely because nothing else contradicts it |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-15.** **`VERIFIED` is QE's to set and QE fixed it, so it stays `FIXED`** — ⛔ **QE never verifies its own work** (§20e) |
+| **Found** | **2026-08-15, cycle 232 poll**, by QE re-reading `state-check`'s *findings* rather than its exit code — ⛔ **one cycle after the same output had already printed it** |
+| **Commit found** | **`6d4f9fca`** |
+
+### 🔴 What happened
+
+📁 **Cycle 231's Closeout commit `6d4f9fca` touched `PROJECT_STATUS.md` and `SESSION_HANDOFF.md`.** ⛔ **Activity 3 of eleven — *reconcile the execution board* — did not run**, so the board stamped `ac622c24` (cycle 229) while the dashboard named `136f112bea79`. ⚠️ **Every prior cycle got this right**: `810b27d9`, `f5391c2e`, `41b5ce4b` and `8055afe5` each moved the stamp.
+
+### 🔴 The real defect is the reading, not the omission
+
+⚡ **QE ran `infra/state-check.py`, saw `exit=0`, and published *"state-check exit=0"* as evidence the cycle was clean.** ⛔ **The finding was in that same output**, four lines above the exit code.
+
+> **`state-check` is advisory by construction and never fails** — *"each of these has more than one correct resolution, and choosing between them is a governance decision."* **A zero exit means the checker ran to completion. It has never meant the repository agrees with itself.**
+
+📁 **This is the third time in one cycle QE read an exit code as a verdict** — the `git branch -f` refusal that printed a `PINNED` banner over a move that never happened, the rejected `integration` push whose code was printed rather than gated on, and this. ⚡ **The pattern is one thing: an instrument answering a narrower question than the one asked, and its cheerful answer being consumed as the answer to the wider one.**
+
+### ⚠️ The checker named a cause that was not the cause
+
+📁 It reported *"the board has gone backwards — the B-100 signature, where a rebase keeps a lane's side of a shared table."* ⛔ **Measured: the stamp is byte-identical on `main`, `integration`, `lane-qe` and `lane-a-2b`.** **Nothing was lost in a rebase — the edit was never made.**
+
+⚡ **Worth more than the correction itself.** **A check that detects a symptom is not thereby a diagnosis**, and the guess is stated in the same prose as the observation. **Believing it would have sent QE searching rebase history for an omission.** ⛔ **Not filed against `state-check`**: the observation was correct and load-bearing, and softening its explanatory sentence would make it less useful, not more.
+
+### ✅ The fix, and why it is not a checker
+
+**The board is reconciled and the stamp corrected.** ⛔ **No new check is added.** A checker for *"did Closeout run all eleven activities?"* would be a fourth place recording what the eleven are, and **the copy is never wrong when written; it is wrong the first time the list grows.** ⚡ **What actually failed already had an instrument — `state-check` printed the finding.** **The repair is that QE reads findings, not exit codes**, and the evidence for whether it holds is the next cycle's board stamp rather than a green tick.
 
 ### B-197 · 🟡 The promotion guard protects QE-written states in `BACKLOG.md` and reads `BUGS.md` not at all, so a `VERIFIED` bug can silently reopen
 
