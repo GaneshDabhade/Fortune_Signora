@@ -90,6 +90,68 @@ Such a row names the code, records **Current assignee: none — not assignable**
 >
 > ⛔ **QE is not proposing a gate.** ⚡ **The two instances share a cause a gate cannot reach: a test that names an input can be written in any framework, and no check knows which assertions were meant to be about behaviour.** ✅ **What they do justify is a review question rather than a rule — *does this assertion fail if the product breaks?* — and that belongs to whoever next revises the testing guidance, not to a defect row.**
 
+### B-1005 · 🟠 Two independent classifiers are both blind to `.toml`, so 157 planning commits in a week were treated as executable
+
+| | |
+|---|---|
+| **Module** | **QE gates** — [`infra/certification-guard.py`](../infra/certification-guard.py), `_is_closeout` and `IMPACT_RULES` |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — ⛔ **the bias is toward OVER-certifying, so nothing unsafe reaches `main`.** ⚠️ **What it costs is the rule itself**: *"documentation and planning accumulate until they accompany executable work"* **did not apply to 157 of 932 commits — 17%, concentrated entirely in planning** |
+| **Status** | 🔵 **`OPEN`** |
+| **Found** | **2026-08-15** by **Lane C**, who noticed every queue regeneration plans as `platform`/16 gates and **declined to propose a classifier rule** — [B-131](#b-131)'s class, and QE's |
+| **Commit found** | **`044fbf30`** |
+
+### 🔴 Two classifiers, one blind spot, reached by different routes
+
+| | asks | how `.toml` fails |
+|---|---|---|
+| **`_is_closeout`** — used by `--next-cycle` and `--audit-main` | *may this reach `main` outside a certified snapshot?* | **passes the PREFIX** (`docs/`) and **fails the SUFFIX** (`.md`, `.json`) |
+| **`IMPACT_RULES`** — used by `--plan` | *which gates does this change select?* | **matches no rule**, and *"an unrecognised path is `platform`, never `none`"* |
+
+⛔ **Neither knows `.toml` exists.** ⚡ **A single classifier being conservative is a fail-safe; two agreeing by coincidence is a gap that looks like corroboration** — **which is why this survived: every instrument agreed, and all of them were wrong in the same direction.**
+
+### 📊 The cost, measured twice and reconciled
+
+**`origin/main`, `--since=2026-08-08`, 932 commits. Predicate: ≥1 file matching `docs/coordination/**.toml`, AND every remaining file passes `_is_closeout()`.**
+
+| | |
+|---|---|
+| Touching `docs/coordination/**.toml` | **187** |
+| ⚡ **Disqualified SOLELY by the `.toml`** | 🔴 **157 — 17% of the week** |
+| Of those, touching *only* those files | **45** *(Lane C's narrower question)* |
+
+⚠️ **Both figures are correct and they answer different questions.** ⛔ **45 asks *"how many commits are nothing but a regenerated projection?"*; 157 asks *"how many would have been closeout-exempt but for the `.toml`?"*** — **and the second is the one the rule is about, because a commit touching `BACKLOG.md`, `LANE_COORDINATION.md` and `coordination.toml` is documentation in substance.**
+
+📁 **At 45 this row reads *"a lane's regenerations are noisy."* At 157 it reads *"the accumulate rule has a 17% hole, concentrated in planning."* Same defect; only the second justifies the care the fix needs.**
+
+### ⚠️ It puts two ratified rules in direct conflict, for exactly one lane
+
+📁 **[D-144](DECISION_REGISTER.md): *"a planning change that is not published has not been made."*** **So Product Office is REQUIRED to republish the projection whenever planning changes.**
+
+📁 **§20e: *"documentation, claim commits, planning updates and execution-board maintenance accumulate until they accompany executable work — certifying them alone spends a full gate run proving a markdown table is still true, which is how a team learns to skip cycles."***
+
+⛔ **Neither rule is wrong. The classifier is what makes them collide**, and it collides for the one lane whose output is mostly planning. ⚡ **Raised by Lane C, who is the lane it costs.**
+
+### ⛔ The fix is NOT obviously "add `.toml`", and that is the whole difficulty
+
+**`_is_closeout` is what stands between an uncertified commit and `main`.** 📁 **`infra/` is deliberately excluded from `CLOSEOUT_PATHS` precisely so that changing a gate cannot be waved through as a Closeout — [B-014](#b-014) is what that cost when it was not enforced.** ⛔ **Widening the suffix list is the same move in a different dimension.**
+
+⚠️ **A `.toml` under `docs/coordination/` is generated and read only by `coordination.py` and by lanes polling.** ⚡ **But `CLOSEOUT_SUFFIXES` is not scoped to a directory, so admitting `.toml` admits it everywhere — including any future `.toml` that configures something.**
+
+✅ **What this row does NOT do is propose the rule.** **It records the gap, the cost and the tension.** 📁 **The precedent is [B-122](#b-122): a change to what a gate MEANS went to the product owner with evidence and came back as a ruling.** **Same route.**
+
+### 📁 How the evidence was gathered, because it failed once first
+
+⛔ **QE published 159 and Lane C published 157. Neither disagreed with the other's data.** ⚡ **QE's FIRST script called `_is_closeout` and returned 157; a SECOND, written to split the count, re-expressed the condition as a prefix test and returned 159. QE ran both and published the later one.**
+
+🔴 **That is [B-1002](#b-1002) reproduced in a throwaway script** — **a second implementation of a predicate, diverging from the authoritative one, invisible because both returned a plausible number.** ⛔ **The two commits are `99a0e8bb` and `c44a837f`, each carrying a `docs/design-snapshot/**.dc.html`: prefix passes, suffix fails.**
+
+✅ **The practice recorded from it, and it is three-part:** ***a number needs its REF, its PREDICATE and its MAPPING.*** **2026-08-15 produced one failure of each — B-270's severity across four refs, this predicate, and `196 vs 198`'s mapping.**
+
+> ⚡ **And the refinement that closes the gap *"state your predicate"* leaves open:**
+>
+> ## **If you compute a number twice, reconcile it before publishing either. If you computed it once, say which predicate — so somebody else can compute the second.**
+
 ### B-1003 · 🟠 The runbook hands every lane slot 0's port, and it had told QE so itself
 
 | | |

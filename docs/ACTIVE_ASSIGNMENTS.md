@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-15, `9a01139c`
+## Current — as of 2026-08-15, `044fbf30`
+
+> ⚡ **Cycle 233 Closeout. NO rows removed** — [TASK-1479](BACKLOG.md) covers four contracts and ⓷ is blocked on [C-1512](LANE_COORDINATION.md); [TASK-1477](BACKLOG.md) and [TASK-1421](BACKLOG.md) are held and in flight.
+>
+> ⚡ **25 commits from three lanes.** **Lane A's ADR-0410 capability layer and `TASK-1477 ⓐ`'s commercial vocabulary; Lane C's B-271 reconciliation; QE's B-270, B-1002 and B-1003.** **`pytest` 4915 · coverage 95.01% · 458 Security Invariants · migration `0057`.**
+>
+> 🔴 **One slice was returned before it landed.** **`TASK-1477 ⓐ` added three `ClaimAttribute` members and classified none in `ATTRIBUTE_KINDS`** — caught by a Security Invariant *and* the module's own test, which is the deliberate overlap §11 asks for. ✅ **Lane A classified all three `STATE`, then fire-tested `OCCURRENCE` and found it UNREPRESENTABLE**: a bare date has no `occurrence_key`. 📁 *"I would not have known that from reading; the guard told me."*
+>
+> ⚠️ **QE held DR rather than forcing a stale lease.** **The recorded holder's pid was dead — `release --force` was authorised by the tool's own diagnostic — and a LIVE e2e run existed that the record knew nothing about.** ⛔ **A dead pid is evidence about a record, not about the machine.**
 
 > ⚡ **Cycle 232 Closeout. NO rows removed** — [TASK-1479](BACKLOG.md) still covers four contracts, ⓶b is on `main`, ⓷ and ⓸ are not.
 >

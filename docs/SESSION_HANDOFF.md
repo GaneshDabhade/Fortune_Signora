@@ -1,5 +1,25 @@
 # Session Handoff
 
+> ## Cycle 233 — promoted `044fbf30`, 2026-08-15 · **the capability layer, and B-270 closed**
+>
+> **`main` = `044fbf30` = the certified commit**, `promoted == certified` verified from `ls-remote` after the push. **25 commits from three lanes.** `pytest` **4915** · coverage **95.01%** ⚠️ *(one basis point)* · **458** Security Invariants · `mypy` strict over **910** files · **`frontend-suite` 3284 in 186 files** · `smoke` 24 stages in 213s · **DR passed with 458 invariants against the restarted stack** · **migrations reversible base→head→base→head on a clean database** · migration head **`0057`**. ✅ **Eight gates, first attempt.**
+>
+> ⚡ **Lane A: ADR-0410's capability layer** (named roles, an effective-permissions preview both ways, `0057`) **and `TASK-1477 ⓐ`'s commercial vocabulary.** **Lane C: B-271** — `environments.py` returned `signora_lane_<name>` for every non-zero slot and **no such database has ever existed**; it now returns `signora` everywhere and **the PORT is the separator.** **QE: B-270, B-1002, B-1003.**
+>
+> 🔴 **[B-270](BUGS.md) is closed on both halves and its row is the model working.** **Lane A raised the severity to 🔴 on their branch; QE set the status to `FIXED` on theirs; git merged the two lines cleanly** — 📁 `registers.py`: *"🔴 **and** unresolved. A fixed 🔴 is a record, not a blocker."* ⚡ **§2 satisfied in both directions with no trade between the truer row and the shippable one, and QE never had to choose.**
+>
+> ⛔ **The third destructive path was named by no lane for a full day: `tests/playground/seed.py` imports `DEFAULT_APP_DATABASE_URL` from `conftest` and has no `Makefile` in front of it when run directly** — **which is the exact mechanism in B-270's own title.**
+>
+> ⚠️ **QE moved off slot 0's cluster.** **`backend/.env` read `localhost:5432/signora_lane_qe`** — QE was one of the four `signora_lane_*` databases it had cited as evidence for `RUNNING.md:324` being their producer. **Now `5632`, migrated to `0057`, Redis off human review's `6379`, 458 invariants passing against its own cluster.**
+>
+> 🔴 **[B-1005](BUGS.md) filed: two independent classifiers are both blind to `.toml`.** `_is_closeout` passes the prefix and fails the suffix; `IMPACT_RULES` matches no rule and falls through to `platform`. ⛔ **157 of 932 commits in a week — 17% — were planning that the classifier treated as executable**, and it collides with [D-144](DECISION_REGISTER.md)'s *"a planning change that is not published has not been made"* for exactly one lane. ⚡ **The fix is not obviously *add `.toml`*: `_is_closeout` guards what may reach `main` outside a certified snapshot. Same route as B-122 — evidence to the product owner.**
+>
+> ⚠️ **QE held DR rather than forcing a stale lease.** **The recorded holder's pid was dead and `release --force` was authorised by the tool's own diagnostic; a LIVE e2e run existed that the record knew nothing about.** ⛔ ***A dead pid is evidence about a record, not about the machine.***
+>
+> ⚡ **The day's practice, from three lanes: a number needs its REF, its PREDICATE and its MAPPING** — and 2026-08-15 produced one failure of each. **Plus Lane A's *grep for an existing MEMBER, never for the type*, and *a wrong count announces itself when something disagrees; a right count answering the wrong question agrees with everything.***
+>
+> 🟠 **Open for the product owner: who verifies a defect in QE's own test infrastructure, when §20e says the lane that fixed it may not?** **QE fixed half of B-270 and will not stamp it.**
+>
 > ## Cycle 232 — promoted `9a01139c`, 2026-08-15 · **the promotion gate now refuses a record that skipped a gate**
 >
 > **`main` = `9a01139c` = the certified commit.** 14 commits — **13 Lane C, 1 QE.** `pytest` **4811** · coverage **95.12%** · **446** Security Invariants · `mypy` strict over **900** files · **`frontend-suite` 3263 in 185 files** · **`eslint` clean** · `smoke` **24 stages in 153s** · **DR passed, 446 invariants against the restarted stack** · reversibility base-and-back at `0056`. ✅ **Eight gates, all recorded.**
