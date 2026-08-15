@@ -62,6 +62,8 @@ Everything runs locally. There is no cloud environment and no remote gate ([ADR-
 > **PostgreSQL is `5432 + 100n`, Redis `6379 + 100n`, MinIO `9000/9001 + 100n`** — the same stride as web and API. **Slot 0 is unchanged**, so `review` still answers exactly where it always did.
 >
 > ⚠️ **The explicit `localhost:5432` examples further down this file are now correct only for slot 0.** `make` targets derive the port and need no edit; **hand-run commands do.** **Left for QE**, whose file this is — Lane C changed the mechanism and does not rewrite the runbook (§20e).
+>
+> ✅ **DISCHARGED 2026-08-15, cycle 233 — [B-1003](BUGS.md). Every example below derives; none quotes a port.** ⛔ **The note is KEPT rather than deleted**, because it records a warning that sat here, correctly addressed to QE, while QE cited this file to another lane without opening it. 📁 **The rule it produced: *citing is the failure mode; the note was fine.***
 
 > **What is still shared is the machine.** Ports, databases, Redis indices and compose projects are isolated; RAM and CPU are not. `make release-preflight` reports memory pressure and names what holds it, because that is the one dimension nothing can allocate away.
 
@@ -203,11 +205,13 @@ make review-end ARGS='--note "Timeline empty state reads oddly"'
 # you pasted it into backend/.env two steps ago. Setting it on the command line
 # would override that value — and it used to be set from a .dev-keys/ file that
 # nothing in this repository has ever created, which silently emptied it (B-016).
-cd backend && SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora \
-  SIGNORA_REDIS_URL=redis://localhost:6379/0 \
-  SIGNORA_JWT_ISSUER=http://localhost:3000 \
+eval "$(python3 infra/environments.py --exports)"
+
+cd backend && SIGNORA_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:${SIGNORA_POSTGRES_PORT}/${SIGNORA_DATABASE}" \
+  SIGNORA_REDIS_URL="redis://localhost:${SIGNORA_REDIS_PORT}/0" \
+  SIGNORA_JWT_ISSUER="http://localhost:${SIGNORA_WEB_PORT}" \
   SIGNORA_JWT_AUDIENCE=signora-api \
-  uv run uvicorn apps.api.main:create_app --factory --reload --port 8000
+  uv run uvicorn apps.api.main:create_app --factory --reload --port ${SIGNORA_API_PORT}
 
 # frontend
 cd frontend && npm run dev
@@ -284,18 +288,33 @@ Three development lanes work the same repository at once (`CLAUDE.md` §20e). **
 
 ### The allocation convention — permanent
 
-**This table is the only place a lane's ports, database and Redis index are recorded.** No lane invents ports; no lane shares a database. **Adding a lane means claiming the next row here**, in the same change that creates the branch — not choosing numbers and telling nobody.
+**This table records which SLOT each environment holds. Everything else is derived from it** — ⛔ **no lane types a port and no lane types a database name.**
 
-| Environment | Branch | Web | API | Database | Redis DB |
-|---|---|---|---|---|---|
-| **Human review** | `main` | **3000** | **8000** | `signora` | 0 |
-| **Production stack** *(smoke · dr · certify)* | any | **3100** | **8100** | *its own, inside its compose project* | *its own* |
-| **QE** | `lane-qe` | 3200 | 8200 | `signora_lane_qe` | 1 |
-| **Lane A — Product Surface** | `lane-a-product-surface` | 3300 | 8300 | `signora_lane_a` | 2 |
-| **Lane B — Commercial Profile** | `lane-b-commercial-profile` | 3400 | 8400 | `signora_lane_b` | 3 |
-| **Lane C** — *Product Office & Platform Foundation* | `lane-c` | 3500 | 8500 | `signora_lane_c` | 4 |
-| **Demo** — *the seeded product, for a non-engineer* | any | **3800** | **8800** | `signora_demo` | 7 |
-| **Lane D** | *unclaimed* | 3600 | 8600 | `signora_lane_d` | 5 |
+```bash
+eval "$(python3 infra/environments.py --exports)"
+```
+
+⚡ **That is the authoritative answer for the clone you are standing in**, resolved from `SIGNORA_ENVIRONMENT` if set, else the checked-out branch. **`SIGNORA_POSTGRES_PORT`, `SIGNORA_REDIS_PORT`, `SIGNORA_WEB_PORT`, `SIGNORA_API_PORT`, `SIGNORA_DATABASE` and `COMPOSE_PROJECT_NAME` all come from there.**
+
+| Environment | Branch | Slot | Web | API | PostgreSQL | Redis | MinIO |
+|---|---|---|---|---|---|---|---|
+| **Human review** | `main` | **0** | 3000 | 8000 | **5432** | 6379 | 9000/9001 |
+| **Production stack** *(smoke · dr · certify)* | any | — | 3100 | 8100 | *its own, inside its compose project* | *its own* | *its own* |
+| **QE** | `lane-qe` | **1** | 3200 | 8200 | **5632** | 6579 | 9200/9201 |
+| **Lane A — Product Surface** | `lane-a-product-surface` | **2** | 3300 | 8300 | **5732** | 6679 | 9300/9301 |
+| **Lane B — Commercial Profile** | `lane-b-commercial-profile` | **3** | 3400 | 8400 | **5832** | 6779 | 9400/9401 |
+| **Lane C** — *Product Office & Platform Foundation* | `lane-c` | **4** | 3500 | 8500 | **5932** | 6879 | 9500/9501 |
+| **Lane D** | *unclaimed* | **5** | 3600 | 8600 | **6032** | 6979 | 9600/9601 |
+| **Lane E** | *unclaimed* | **6** | 3700 | 8700 | **6132** | 7079 | 9700/9701 |
+| **Demo** — *the seeded product, for a non-engineer* | any | **7** | 3800 | 8800 | **6232** | 7179 | 9800/9801 |
+
+**Every environment's database is `signora`.** ⛔ **The NAME does not separate anything and never did** — [B-271](BUGS.md). **The PostgreSQL PORT is the separator**, because each environment runs its own cluster in its own compose project, and 📁 [483](architecture/483-environment-isolation-audit.md) is why: *"a PostgreSQL role is cluster-wide… per-database separation cannot reach a shared cluster; a separate cluster has separate roles."*
+
+> 🔴 **This table used to carry a `Database` column of `signora_lane_a`, `signora_lane_qe`, `signora_lane_c` and no PostgreSQL or Redis PORT column at all.** ⛔ **Those databases were never created by any compose file** — the derivation named them and nothing made them. ⚡ **The table WAS the old one-server-many-databases model**, which is why two models coexisted for so long: `:324` below was not a stray stale example but an instance of what this table asserted.
+>
+> ⚠️ **Corrected 2026-08-15, cycle 233** ([B-1003](BUGS.md)), **after QE cited this file to a lane as the safe path around a data-destruction defect without opening it.** 📁 **The warning was already here, addressed to QE, at the top of this document.**
+>
+> ⛔ **The ports above are shown so a reader can sanity-check what they are connected to. They are NOT the source** — `infra/environments.py` is, `SLOT_STRIDE` is 100, and **if this table and the exports ever disagree, the exports are right and the disagreement is a defect to report.**
 
 > **`lane-c` gained a runtime on 2026-08-05, and the row that said *none* was correct when it was written.** Lane C owned no module and needed no ports; **Platform Foundation changed that** — it now builds `infra/`, the launchers and the demo lifecycle, and cannot test a launcher it cannot run. **`demo` is a profile rather than a lane**, which is why it names no branch.
 >
@@ -312,32 +331,45 @@ Three development lanes work the same repository at once (`CLAUDE.md` §20e). **
 
 > **One Postgres, one Redis, many databases.** There is no second stack — Postgres holds as many databases as there are lanes, Redis distinguishes them by logical index, and nothing in the test path touches Redis today. The Redis column exists so that the first lane whose work does touch it is not the one that has to invent the scheme.
 
-Three things per lane, all environment variables. **Substitute your lane's row from the table above.**
-
-**1 — its own database**, once. **The first four already exist and are migrated to head**, so this is only needed for a lane added later:
+Three things per lane. ⛔ **Do not copy a port or a database name from anywhere, including the table above** — **derive them, every session, in the shell you are about to work in:**
 
 ```bash
-cd backend
-uv run python -c "
-import asyncio, asyncpg
-async def main():
-    c = await asyncpg.connect('postgresql://signora:signora@localhost:5432/postgres')
-    await c.execute('CREATE DATABASE signora_lane_b OWNER signora')
-    await c.close()
-asyncio.run(main())"
+eval "$(python3 infra/environments.py --exports)"
+```
 
-SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/signora_lane_b \
+> 🔴 **Then CHECK, before anything destructive runs.** **If `SIGNORA_POSTGRES_PORT` is `5432` you are NOT on a lane branch** — that is human review's cluster, and the suite truncates every table after each test ([B-270](BUGS.md)). ⛔ **Stop, and set `SIGNORA_ENVIRONMENT` to your own environment.**
+>
+> ⚡ **`make` targets carry their own guard — `refuse-slot-0` — and an inline assignment in a recipe overrides an exported variable, so a poisoned shell is still safe there.** ⛔ **A hand-run command has no such guard**, which is the whole reason this section derives rather than quotes.
+
+**1 — its own cluster**, once. ⚡ **Every environment runs its own PostgreSQL in its own compose project, and its database is always `signora`** — **there is nothing to create:**
+
+```bash
+env $(python3 infra/environments.py --exports | grep -v '^#') \
+  docker compose -f infra/docker-compose.yml up -d --wait
+
+cd backend && SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:${SIGNORA_POSTGRES_PORT}/${SIGNORA_DATABASE}" \
   uv run alembic upgrade head
 ```
 
-**2 — point the tests at it.** **Three variables, and all three must be exported into the shell** — `backend/.env` is not enough:
+> ⛔ **This step used to run `CREATE DATABASE signora_lane_b` against `localhost:5432/postgres`** — **slot 0's cluster.** ⚡ **That is where `signora_lane_a`, `signora_lane_b`, `signora_lane_qe` and `signora_validate_lanea` came from, and it is exactly where [B-270](BUGS.md)'s destructive fallback lands.** 📁 **The runbook was not merely mis-directing a lane at slot 0; it was instructing them to create the decoy there** ([B-1003](BUGS.md)).
+
+**2 — point the tests at it.** **Three variables, and all three must be exported** — `backend/.env` is not enough, because `tests/conftest.py` reads `os.environ` directly:
 
 ```bash
-export SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora_lane_b
-export SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/signora_lane_b
-export SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/signora_lane_b
+export SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:${SIGNORA_POSTGRES_PORT}/${SIGNORA_DATABASE}"
+export SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:${SIGNORA_POSTGRES_PORT}/${SIGNORA_DATABASE}"
+export SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:${SIGNORA_POSTGRES_PORT}/${SIGNORA_DATABASE}"
 export SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
 ```
+
+> ⚠️ **The app role is `signora_app`, never the owner.** 📁 **`tests/conftest.py:106` refuses a connection with `BYPASSRLS`** — *"otherwise Row-Level Security is not enforced and isolation assertions are vacuous"* — **and it caught QE doing exactly that while validating this change.**
+
+> ✅ **Confirm what you are actually connected to before trusting any of it.** ⚡ **`pg_database` is the only operand that cannot be stale:**
+>
+> ```bash
+> psql "postgresql://signora:signora@localhost:${SIGNORA_POSTGRES_PORT}/postgres" \
+>   -tAc "select datname from pg_database where datname not like 'template%'"
+> ```
 
 **Every test path honours the first two** — the fixtures, the API integration clients and the seeders all resolve the URL from one place in `tests/conftest.py`.
 
@@ -379,8 +411,8 @@ Set `SIGNORA_API_URL` and `BETTER_AUTH_URL` to that lane's ports in its `fronten
 
 | Variable | Local value |
 |---|---|
-| `SIGNORA_DATABASE_URL` | `postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora` |
-| `SIGNORA_REDIS_URL` | `redis://localhost:6379/0` — **index 0 is human review's.** Substitute your environment's index from [§ Running a lane](#running-a-lane); the worker and relay refuse to start without it |
+| `SIGNORA_DATABASE_URL` | `postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:${SIGNORA_POSTGRES_PORT}/${SIGNORA_DATABASE}` — 🔴 **port `5432` is human review's cluster.** **Derive it.** ⛔ **This row read `localhost:5432/signora` until 2026-08-15 while the Redis row directly below already carried this warning** ([B-1003](BUGS.md)) |
+| `SIGNORA_REDIS_URL` | `redis://localhost:${SIGNORA_REDIS_PORT}/0` — **port `6379` is human review's.** Derive it as above; the worker and relay refuse to start without it. ⚡ **Each environment runs its own Redis, so the logical INDEX no longer separates lanes — the port does** |
 | `SIGNORA_JWT_PUBLIC_KEY` | the **public** half of a dev RSA pair |
 | `SIGNORA_JWT_ISSUER` | `http://localhost:3000` |
 | `SIGNORA_JWT_AUDIENCE` | `signora-api` |

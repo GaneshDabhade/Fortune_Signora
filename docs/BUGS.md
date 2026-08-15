@@ -97,7 +97,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | **QE documentation** — [`docs/RUNNING.md`](RUNNING.md), seven `localhost:5432` sites |
 | **Current assignee** | **QE** |
 | **Severity** | 🟠 — ⛔ **`:324` instructs a new lane to `CREATE DATABASE` on slot 0's server**, which is how `signora_lane_a`, `signora_lane_b`, `signora_lane_qe` and `signora_validate_lanea` came to sit on `5432` — ⚡ **exactly where [B-270](#b-270)'s destructive fixtures fall back to.** **The runbook does not merely mis-direct a lane at slot 0; it instructs them to create the decoy there** |
-| **Status** | 🔵 **`OPEN`** — repair drafted, lands cycle 233 with [B-270](#b-270) and [B-271](#b-271) |
+| **Status** | ✅ **`FIXED` — QE, 2026-08-15, cycle 233.** ⛔ **`VERIFIED` is QE's to set and QE wrote the fix, so it stays `FIXED`** (§20e) |
 | **Found** | **2026-08-15**, by QE citing the file to Lane A as a mitigation for B-270 **without opening it**. ⚡ **Caught by Lane C**, who had flagged the same lines and left them correctly |
 | **Commit found** | **`9a01139c`** |
 
@@ -119,7 +119,19 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ⚠️ **Scope narrowed by Lane C's measurement:** an inline `VAR=x cmd` in a recipe **overrides an exported variable**, so a shell poisoned by the old runbook is still safe on the `make` targets. ⛔ **What the document must protect is hand-run commands and `:324`'s `CREATE DATABASE`** — **and `:324` is the one no guard can reach, because it runs before any test does.**
 
-🔴 **The fix cannot state a database name.** [B-271](#b-271) proves the derivation and the compose file disagree about it, so the runbook will say **how to find out** — `psql … -c "select datname from pg_database"` — rather than what the answer is. ⚡ **`pg_database` is the only operand that cannot be stale.**
+🔴 **The fix cannot state a database name.** [B-271](#b-271) proved the derivation and the compose file disagreed about it, so the runbook says **how to find out** — `psql … -c "select datname from pg_database"` — rather than what the answer is. ⚡ **`pg_database` is the only operand that cannot be stale.**
+
+### ✅ What shipped, and one thing it found about QE itself
+
+**The allocation table is now slot-based with PostgreSQL, Redis and MinIO port columns, GENERATED from `infra/environments.py` rather than typed.** ⛔ **Six command sites derive; none quotes a port.** ✅ **`RUNNING.md:64` is KEPT and marked discharged** — it records a warning that sat there, addressed to QE, while QE cited the file without opening it.
+
+⚡ **`backend/tests/test_runbook_allocation_table.py` — 11 cases — makes the table's drift a failing gate rather than a discovery.** 📁 **Deliberately a check and NOT a deletion, which is the opposite of [B-1001](#b-1001)'s repair**: there a reference carried everything the copy did; **here the table earns its place, because `--exports` answers only for the clone you are standing in and cannot show you that Lane A is slot 2.** ✅ **So the copy stays and stops being trusted.**
+
+**Fire-tested five ways: drift one port → 1 red · delete the `Lane E` row → 3 red · put a `5432` command back inside a fence → 1 red · swap two columns on one row → 1 red · rename the header → GREEN**, ⚠️ **which is honest and is recorded: the parser is positional and does not read the header, so a rename is invisible to it while a reorder is not.**
+
+⛔ **QE wrote the corrected table from inference and got it wrong** — **`lane-qe` recorded as slot 2 when it is slot 1, and `lane-e` omitted entirely** — **one minute after writing *"no lane types a port."* ⚡ Caught by generating the table from `environments.py` instead**, which is now how it is produced. **`test_every_environment_has_a_row` is the case that would have caught the omission.**
+
+🔴 **And the repair surfaced QE's own environment.** **`backend/.env` read `localhost:5432/signora_lane_qe`** — ⛔ **slot 0's cluster, and QE was one of the four `signora_lane_*` databases it had cited as evidence for `:324` being their producer.** ✅ **QE's own stack is now up on `5632`, migrated to `0056`, `.env` repointed, Redis moved off human review's `6379`, and 446 Security Invariants pass against it.** ⚡ **QE had been running on slot 0's server the entire time, because nothing ever told it otherwise — which is the clearest possible argument for the table carrying port columns.**
 
 ### B-1004 · 🟢 Aborted certification runs leave their disposable database behind
 
