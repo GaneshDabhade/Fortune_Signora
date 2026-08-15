@@ -382,7 +382,18 @@ class AccountTagBatchModel(Base, WorkspaceScopedMixin, TimestampMixin):
         PGUUID(as_uuid=True), ForeignKey("account_tag.id", ondelete="CASCADE"), nullable=False
     )
     requested: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
-    changed: Mapped[list[str] | None] = mapped_column(JSONB, nullable=True)
+    #: ⚡ **What the reversal untags**, and never `requested`.
+    #:
+    #: 🔴 **`none_as_null=True`, added in slice ⓶b — the THIRD instance of one
+    #: defect in this module** ([B-269](../../../../docs/BUGS.md)). Migration
+    #: `0052` documents `NULL` as *"not yet applied"* and distinguishes it from
+    #: an empty list; **without this flag SQLAlchemy stores the JSON value
+    #: `null` and no SQL predicate can tell them apart.** ⛔ **This one shipped
+    #: to `main` at [TASK-466](../../../../docs/BACKLOG.md)** and is corrected
+    #: here rather than left as the one the sweep missed.
+    changed: Mapped[list[str] | None] = mapped_column(
+        JSONB(none_as_null=True), nullable=True
+    )
     created_by: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
 
 

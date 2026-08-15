@@ -36,6 +36,19 @@ module's.
 
 `downgrade()` drops the table. **Lossless only while nothing has been
 written** — true of any new table, and stated rather than implied.
+
+### ⚠️ Corrected 2026-08-14 — the `NULL` above is a Python `None`, not a SQL `NULL`
+
+🔴 **[B-269](../../../docs/BUGS.md).** The three states this docstring
+tabulates are true through the ORM and **were not true to SQL**: SQLAlchemy's
+default for a JSON column stores Python `None` as the JSON value `null`, so
+`changed IS NULL` matched nothing. ✅ **Fixed at the model with
+`JSONB(none_as_null=True)`** — no migration, no backfill, and every row
+already written still decodes to `None`.
+
+⚠️ **The sentence above is kept rather than rewritten**, because it states the
+intent correctly and **a lane arriving cold should see that the promise and
+the storage once disagreed** ([§2](../../../CLAUDE.md)).
 """
 
 from collections.abc import Sequence

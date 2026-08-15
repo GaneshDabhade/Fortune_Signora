@@ -380,6 +380,60 @@ python3 infra/state-check.py 2>&1 | grep -E "promoted task\(s\) have no"
 
 ---
 
+### B-269 · Three nullable JSONB columns document a `NULL` that no SQL predicate can see
+
+| | |
+|---|---|
+| **Status** | ✅ **`FIXED` — Lane A, 2026-08-14**, all three, with a test that asks the database rather than the ORM. ⚠️ **QE verifies and closes** |
+| **Raised by** | **Lane A**, 2026-08-14, building [TASK-1479](BACKLOG.md) ⓶b — ⚡ **found by a conditional write that matched zero rows**, not by review |
+| **Module** | `commercial_profile` — **Lane A's** in [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🟠 **Latent.** ⛔ **Nothing read it wrongly and nothing shipped broken** — the defect is in what the repository ASSERTS about itself |
+
+#### 🔴 What is actually stored
+
+**SQLAlchemy's default for a JSON column serialises Python `None` as the JSON value `null`, not as SQL `NULL`.** ⚡ **The ORM decodes it straight back to `None`**, so every read is correct and always was.
+
+⛔ **`WHERE moved IS NULL` matches nothing. Ever.**
+
+| Column | Migration | Shipped in |
+|---|---|---|
+| `account_tag_batch.changed` | `0052` | ⛔ **[TASK-466](BACKLOG.md) — on `main`** |
+| `account_assignment_batch.moved` | `0054` | [TASK-1479](BACKLOG.md) ⓶a — pinned at `f2ad4b68` |
+| `account_segment_batch.added` | `0056` | [TASK-1479](BACKLOG.md) ⓶b — **where it was found** |
+
+🔴 **Three of three.** ⚠️ **Every nullable JSONB column in the module carried it**, and the sweep now finds none.
+
+#### ⛔ The false claim is in the migrations, and that is what makes it a defect
+
+📁 **`0052`**: *"`NULL` until the batch applies, which is a different fact from an empty list."*
+📁 **`0054`**: *"Collapsing `NULL` and `[]` would make *never approved* and *approved and changed nothing* the same row."*
+
+⚡ **Which is precisely what the column does to any SQL predicate.** ⛔ **A partial index, a report, or a later guard written against those docstrings would be wrong** — and **a lane arriving cold reads the migration, not the ORM** ([§12](../CLAUDE.md)).
+
+> 📁 **[§2](../CLAUDE.md): the repository must not assert something untrue of itself.** **The columns behave; the documents do not describe them.**
+
+#### 🔴 The repository already carried this lesson, in a comment written for exactly this reason
+
+📁 **`modules/observation_engine/infrastructure/models.py:43`**, verified rather than cited:
+
+> ***"`none_as_null` matters: without it SQLAlchemy writes JSON `null` into the column rather than SQL NULL, and the constraint distinguishing an occurrence from a change would never see the absence it tests for."***
+
+⛔ **So this was not a subtlety nobody had met.** ⚡ **It is a documented trap, in this repository, with a comment naming the precise failure mode — and three columns walked into it.** ⚠️ **That makes it an [L-1](../ENGINEERING_LAWS.md) reuse finding as much as a correctness one**: the audit asks what already exists, and the answer was a comment written by somebody who had already paid for it. **Found by QE, on a sweep this lane had not run.**
+
+#### ⚡ How it surfaced, and why no earlier test could have
+
+**⓶b's `SqlSegmentBatchStore.record_application` is a compare-and-set** — `UPDATE … WHERE added IS NULL` — **so a second application cannot overwrite the record a reversal depends on.** ⛔ **It matched zero rows against a row written moments earlier**, and the first application of every segment batch was silently refused.
+
+🔴 **The seam pattern, fifth instance**: **the ORM read path and the SQL predicate path disagreed about one column, and only the path nobody had written yet was wrong.** ⚠️ **A round trip through Python cannot tell SQL `NULL` from JSON `null`** — which is exactly why it survived every passing test in two shipped slices.
+
+#### ✅ Fixed
+
+**`JSONB(none_as_null=True)` on all three.** ⛔ **No migration and no backfill**: every row written so far still decodes to `None`, and nothing has ever queried these columns in SQL.
+
+**The regression test asks the database** — `SELECT added IS NULL FROM account_segment_batch` — **rather than reading the value back through Python**, because the round trip is the instrument that could not see it.
+
+---
+
 ### B-268 · Every lane's stack creates `signora`, and every tool is told `signora_lane_a`
 
 | | |
