@@ -140,7 +140,18 @@ def test_the_demo_environment_is_not_slot_zero() -> None:
     """
     demo = next(e for e in environments.ENVIRONMENTS if e.name == "demo")
     review = next(e for e in environments.ENVIRONMENTS if e.name == "review")
+    # ⛔ **The fourth assertion was `demo.database != review.database` and it
+    # was redundant here** — [B-271](../../docs/BUGS.md), 2026-08-15. The
+    # incident this test prevents was a PORT collision: `make demo` pointing at
+    # 3000. **Demo runs its own PostgreSQL on its own port, asserted directly
+    # above, so a demo seed cannot reach review's data whatever the database is
+    # called.** The name never did that work.
+    #
+    # ⚡ **Replaced by the thing this test is NAMED for**, which nothing
+    # asserted: `review` is slot 0 and `demo` is not. **A rename that made every
+    # port collide would still have satisfied the old line.**
+    assert review.slot == 0
+    assert demo.slot != 0
     assert demo.web_port != review.web_port
     assert demo.api_port != review.api_port
     assert demo.postgres_port != review.postgres_port
-    assert demo.database != review.database
