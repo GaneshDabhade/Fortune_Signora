@@ -270,6 +270,23 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 > ## **A SHA in a message is a promise not to move the ref — and its converse, that a ref you have moved locally has not moved.**
 
+### ⚡ Lane A's generalisation, which is the same rule about a different noun
+
+> ## **A measurement is a claim about a ref, and a claim without its ref is not checkable.**
+
+🔴 **Three lanes made three correct measurements of [B-270](../../BUGS.md)'s severity and three claims wider than what they measured.** **Lane A raised it to 🔴 on their branch, with dated reasoning. QE read `integration` and wrote *"reads 🟠 and always has."* This office verified QE's ref, agreed, and repeated *"it has never been anything else"* — ⛔ a claim about all of time from a single snapshot, made while correcting somebody for exactly that.**
+
+```
+origin/lane-a-2b   🔴 Raised from 🟠 on 2026-08-15
+origin/integration 🟠      origin/lane-qe 🟠      origin/main 🟠
+```
+
+✅ **Every reading was right. `state-check` was right on every ref it was pointed at.** ⛔ **The unexamined operand here was neither a process nor a projection but the TREE.**
+
+⚠️ **The repair is not *"check more refs"* — it is that a severity, a count or a status carries the ref it was read from**, and *"escalated 🟠 → 🔴"* becomes *"…on `lane-a-2b`, not yet on `integration`"*. 📁 **Which is the [five states of a decision](../../../CLAUDE.md) applied to a measurement: ruled is not actionable, and measured is not published.**
+
+📁 **Lane A said it first and said it about themselves.**
+
 ⛔ **The first version of this section said *read it back with `git ls-remote`*. That is a verification step and it does not hold**: QE *did* read `ls-remote` earlier in the cycle, before their local fast-forwards existed, then trusted `git rev-parse` for the rest. ✅ **An invariant about the sender survives where a chore for the reader does not.**
 
 🔴 **The converse binds the INTEGRATOR harder than the lane, and the asymmetry is the point.** **A lane's stale SHA costs one wrong report. QE reported `integration` fast-forwarded and a Certification Snapshot pinned to `9a01139c` — a commit in no ref `origin` advertised.** ⛔ ***A snapshot naming a commit no other clone can resolve is a record nobody can check***, and it was one step from promotion. ✅ **Caught by this office reading `git ls-remote --heads origin` while checking something else, and fixed within the hour.**
