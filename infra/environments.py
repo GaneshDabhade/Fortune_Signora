@@ -134,8 +134,34 @@ class Environment:
 
     @property
     def database(self) -> str:
-        """The application database. `signora` for slot 0 by history."""
-        return "signora" if self.slot == 0 else f"signora_{self.name.replace('-', '_')}"
+        """The application database. **`signora`, on every slot.**
+
+        ⛔ **This returned `signora_{name}` for every non-zero slot until
+        2026-08-15, and no such database has ever existed.**
+        [B-271](../docs/BUGS.md): `infra/docker-compose.yml:31` hardcodes
+        `POSTGRES_DB: signora`, so a lane's own stack creates `signora` and
+        nothing creates the derived name. **The two together described no
+        environment that exists**, and QE's own clone is the worked case — its
+        `.env` names `5432/signora_lane_qe`, which is slot 0's *server* holding
+        a database `RUNNING.md:324` told somebody to create there by hand.
+
+        **The port is the discriminator and always was.** Every lane runs its
+        own PostgreSQL on `5432 + 100n`, so one database name per server is
+        correct — the isolation is the server, not the string.
+
+        ⚠️ **The cost, stated rather than implied: the port becomes the SOLE
+        discriminator, so a misconfigured port is a silent cross-lane write
+        where a wrong name used to fail loudly.** `refuse-slot-0` in the
+        `Makefile` covers the case that matters — slot 0 — and the remaining
+        exposure is lane-to-lane, which requires overriding
+        `SIGNORA_ENVIRONMENT` by hand.
+
+        ⚡ **The alternative was to make compose create the derived name. It was
+        rejected on measurement**: lane `.env` files are hand-written and would
+        still point at the old database, so it changes what compose creates
+        without changing what anything consults — the mismatch survives the fix.
+        """
+        return "signora"
 
     @property
     def auth_database(self) -> str:

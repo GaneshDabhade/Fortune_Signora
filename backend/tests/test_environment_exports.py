@@ -88,36 +88,47 @@ def test_exports_publishes_the_database_name() -> None:
 
 
 @pytest.mark.parametrize(
-    ("name", "expected"),
-    [
-        # ⚡ Slot 0 is `signora` by history, and that is the only place the
-        # hardcoded name was ever right.
-        ("review", "signora"),
-        ("demo", "signora_demo"),
-        ("lane-a", "signora_lane_a"),
-        ("lane-b", "signora_lane_b"),
-        ("lane-qe", "signora_lane_qe"),
-    ],
+    "name",
+    ["review", "demo", "lane-a", "lane-b", "lane-qe"],
 )
-def test_each_environment_publishes_its_own_database(name: str, expected: str) -> None:
-    """**The rows that separate the fix from the defect.**
+def test_every_environment_publishes_the_same_database(name: str) -> None:
+    """**`signora`, everywhere — [B-271](../../docs/BUGS.md), 2026-08-15.**
 
-    ⛔ Before this, every one of these resolved to `signora` — correct for
-    `review` and wrong for the other four, on each one's *own* PostgreSQL port.
+    ⛔ **This asserted a distinct `signora_{name}` per environment, and no such
+    database has ever existed.** `infra/docker-compose.yml:31` hardcodes
+    `POSTGRES_DB: signora`, so a lane's own stack creates that and nothing
+    creates the derived name. **The test passed while describing no environment
+    that exists**, because it only ever read the producer.
+
+    ⚡ **The isolation this file exists to protect is unchanged and is asserted
+    below**: [483](../../docs/architecture/483-environment-isolation-audit.md)
+    finds the *cluster* is the boundary — *"per-database separation cannot reach
+    a shared cluster; a separate cluster has separate roles"* — and every
+    environment has its own. **The port is what separates them.**
     """
-    assert _exports_for(name)["SIGNORA_DATABASE"] == expected
+    assert _exports_for(name)["SIGNORA_DATABASE"] == "signora"
 
 
-def test_no_two_environments_share_a_database() -> None:
-    """A shared name would defeat the separate clusters it sits inside.
+def test_no_two_environments_share_a_postgres_port() -> None:
+    """**The guarantee, moved to the property that actually delivers it.**
 
-    ⚡ **[483](../../docs/architecture/483-environment-isolation-audit.md)**: a
-    separate cluster is what makes role separation real, and a shared database
-    *name* across clusters is survivable but reads as one environment in every
-    log line and connection string.
+    ⛔ This asserted distinct database *names*, which [B-271](../../docs/BUGS.md)
+    showed were never created. ⚡ **The invariant is strengthened rather than
+    deleted** ([§2](../../CLAUDE.md)): what keeps two environments apart is that
+    each runs its own PostgreSQL, and a collision here is the failure the old
+    assertion was reaching for.
+
+    📁 **[483](../../docs/architecture/483-environment-isolation-audit.md)**
+    says why it is the cluster and not the name: *"a PostgreSQL **role** is
+    cluster-wide… per-database separation cannot reach a shared cluster."*
+
+    ⚠️ **What is genuinely lost is legibility** — the old docstring's *"reads as
+    one environment in every log line and connection string"*, which it also
+    called survivable. **The port distinguishes them in a connection string;
+    nothing else has to.**
     """
-    names = [e.database for e in environments.ENVIRONMENTS]
-    assert len(names) == len(set(names))
+    ports = [e.postgres_port for e in environments.ENVIRONMENTS]
+    assert len(ports) == len(set(ports))
 
 
 def test_the_demo_environment_is_not_slot_zero() -> None:
