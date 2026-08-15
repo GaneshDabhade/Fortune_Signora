@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: prod-local-env environments reachability event-catalog workstation validate unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy review-first-hour
+.PHONY: refuse-slot-0 prod-local-env environments reachability event-catalog workstation validate unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy review-first-hour
 
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
@@ -112,7 +112,7 @@ down: prod-local-env
 ##
 ## ⚡ **The Makefile already knew the answer**: `SIGNORA_DB` is resolved at line
 ## 140 from `infra/environments.py`. It simply was not passed.
-test:
+test: refuse-slot-0
 	@python3 infra/environment-lease.py run test -- sh -c 'cd backend && $(call DESTRUCTIVE_DB_ENV,$(SIGNORA_DB)) uv run pytest --cov'
 
 ## The Product Playground — twelve accounts through the real pipeline.
@@ -166,6 +166,44 @@ DESTRUCTIVE_DB_ENV = SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_
                      SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(1) \
                      SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
 
+## 🔴 **Naming the database is not enough when the name is slot 0's.**
+##
+## **[B-270](docs/BUGS.md), second half, 2026-08-15.** `DESTRUCTIVE_DB_ENV` closed
+## the *fallback* — a shell with no `SIGNORA_TEST_*` no longer reaches
+## `conftest.py`'s `localhost:5432/signora`. ⛔ **It did NOT close the case where
+## `SIGNORA_DB` legitimately RESOLVES to `signora`**: `infra/environments.py:295`
+## falls back to the historical shared stack whenever the clone is not on a lane
+## branch, and slot 0 is human review's.
+##
+## ⚠️ **That made the fix worse in one respect** — the target now names slot 0
+## *explicitly*, so it reads as deliberate rather than as an oversight.
+##
+## ⚡ **Found from QE running `--exports` on `integration` and reporting
+## `SIGNORA_POSTGRES_PORT=5432` in passing.** It was not the subject of their
+## message.
+##
+## **Refusal, with an override that has to be typed.** `demo-seed` against slot 0
+## is exactly what a reviewer wants and exactly what a lane must never do, and
+## nothing in the environment can tell those apart — so the human says which.
+refuse-slot-0:
+	@test "$(SIGNORA_DB)" != "signora" || test "$(ALLOW_SLOT_0)" = "1" || { \
+	  echo ""; \
+	  echo "  REFUSED: this would truncate 'signora' on port $(SIGNORA_PG_PORT) — slot 0, human review's."; \
+	  echo ""; \
+	  echo "  This clone resolves to no lane environment, so infra/environments.py fell back"; \
+	  echo "  to the historical shared stack. Check with:"; \
+	  echo ""; \
+	  echo "    python3 infra/environments.py --exports"; \
+	  echo ""; \
+	  echo "  On a lane branch you get that lane's own port and database. If you are on"; \
+	  echo "  integration or a detached HEAD, you are not meant to be running this."; \
+	  echo ""; \
+	  echo "  If slot 0 really is the target — a reviewer seeding their own stack —"; \
+	  echo "  say so on the command you actually ran, e.g.  make demo-seed ALLOW_SLOT_0=1"; \
+	  echo ""; \
+	  exit 1; \
+	}
+
 ## Everything a reviewer needs, in one command: stack up, schema migrated,
 ## Better Auth's own tables created, four sign-in accounts, twelve accounts of
 ## pipeline output. Credentials are in docs/RUNNING.md.
@@ -197,7 +235,7 @@ demo-prepare:
 	@$(MAKE) demo-users
 	@$(MAKE) demo-seed
 
-demo-seed:
+demo-seed: refuse-slot-0
 	@cd backend && $(call DESTRUCTIVE_DB_ENV,$(SIGNORA_DB)) uv run python -m tests.playground.seed
 
 ## The Playground's sign-in accounts, created through Better Auth's own sign-up
@@ -215,7 +253,7 @@ demo-users:
 ## Nothing is scripted: the real prompt registry, the real release rule, the
 ## real provider. If `explanation_narration@1` were not released for the
 ## configured model this refuses, exactly as production would.
-demo-narrate:
+demo-narrate: refuse-slot-0
 	@cd backend && $(call DESTRUCTIVE_DB_ENV,$(SIGNORA_DB)) uv run python -m tests.playground.narrate
 
 ## Advisory: did a slice change production code without updating its module's
