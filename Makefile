@@ -185,10 +185,22 @@ DESTRUCTIVE_DB_ENV = SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_
 ## **Refusal, with an override that has to be typed.** `demo-seed` against slot 0
 ## is exactly what a reviewer wants and exactly what a lane must never do, and
 ## nothing in the environment can tell those apart — so the human says which.
+##
+## 🔴 **The test is the PORT, not the database name — corrected 2026-08-15 on
+## [B-271](docs/BUGS.md), the same day the guard was written.**
+##
+## **The first version asked `SIGNORA_DB != signora`.** ⛔ **That premise is
+## false**: `infra/docker-compose.yml:31` hardcodes `POSTGRES_DB: signora`, so
+## **every lane's own stack holds a database of that name.** ⚡ **The port is what
+## separates slots; the name never did.** ⛔ **A guard keyed on the name asks a
+## question whose answer is the same everywhere.**
+##
+## ⚠️ **Found because QE reported B-271 as a `RUNNING.md` problem.** **It is also
+## this guard's premise, and this office wrote both.**
 refuse-slot-0:
-	@test "$(SIGNORA_DB)" != "signora" || test "$(ALLOW_SLOT_0)" = "1" || { \
+	@test "$(SIGNORA_PG_PORT)" != "5432" || test "$(ALLOW_SLOT_0)" = "1" || { \
 	  echo ""; \
-	  echo "  REFUSED: this would truncate 'signora' on port $(SIGNORA_PG_PORT) — slot 0, human review's."; \
+	  echo "  REFUSED: port $(SIGNORA_PG_PORT) is slot 0 — human review's stack."; \
 	  echo ""; \
 	  echo "  This clone resolves to no lane environment, so infra/environments.py fell back"; \
 	  echo "  to the historical shared stack. Check with:"; \
