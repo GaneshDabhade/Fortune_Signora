@@ -284,6 +284,26 @@
 lane         = "Lane A"
 updated      = 2026-08-15
 
+# 🔴 PLANNING-SYNC, 2026-08-15 — FOUR CLAIMABLE ROWS ARE INVISIBLE ON `integration`.
+#
+#    Measured, not inferred, and both sides read from `origin/integration`:
+#      BACKLOG.md   → 13 READY
+#      this file    →  9 in `backlog`
+#      the gap      →  TASK-420, TASK-1413, TASK-1432, TASK-1481
+#
+#    The ROWS are on `integration`; the regenerated PROJECTION is not. So a
+#    lane following step 3 — "read your queue first" — sees 9 of 13, and four
+#    rows it may claim today are invisible on the only ref it polls.
+#
+#    ⚠️ This office reported those same four to the product owner yesterday as
+#    "authored on lane-c-sync, not yet on integration". That was true then and
+#    is FALSE now: cycle 231 promoted the rows and left the projection behind.
+#    A stale correction about staleness is still a stale claim.
+#
+#    ⛔ Not repairable from here — Product Office cannot push to `integration`.
+#    The commit carrying this is marked `Planning-Sync: required` (D-136), which
+#    is the one class QE synchronises ahead of ordinary feature work.
+
 # ⚡ RE-MEASURED 2026-08-12 **over `99d4c2b9`** — Lane A's nine and QE's one,
 #    not over yesterday's base. **9 claimable**, and the number moved for two
 #    reasons pulling opposite ways: TASK-470 released after `multiSession()`
