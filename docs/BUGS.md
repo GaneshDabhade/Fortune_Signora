@@ -679,6 +679,35 @@ SIGNORA_TEST_ADMIN_DATABASE_URL=…@localhost:5732/signora \
 
 ⛔ **Not proposed as the fix.** ⚡ **The fix is that a seeder reads the environment's own database URL** — `SIGNORA_DATABASE_URL`, or `infra/environments.py`'s `Environment.database`, **which already computes it correctly per slot and is the one representation** — **and the `_TEST_` names stay what they are: the test suite's.**
 
+#### ✅ FIXED — the Makefile half, Lane C, 2026-08-15. ⛔ The `conftest.py` guard is NOT this fix.
+
+**Every claim re-measured before touching anything, and every one held:**
+
+| | |
+|---|---|
+| `Makefile` `test:` | ⛔ **`SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1` and no database variable** |
+| `environment-lease.py:263` | **`environment = {**os.environ, LEASE_VARIABLE: identifier}`** — only the lease is added |
+| `conftest.py:70` · `:74` | **fallback `localhost:5432/signora`** |
+| `environments.py:138` | **`return "signora" if self.slot == 0`** — 🔴 **slot 0 IS human review's** |
+
+🔴 **And the sweep found four more, one of which is worse than the reported one.** ⛔ **`certify` — the gate QE runs every cycle — carried the bare consent flag with no database.** **So did `demo-seed`, `demo-narrate`, and the E2E family only escaped because `E2E_ENV` happened to name one.**
+
+✅ **The repair makes the two inseparable rather than adding a check.** **`DESTRUCTIVE_DB_ENV` is one definition taking a database name, and every recipe that consents to truncation now gets the consent *from* it** — so a future target cannot acquire the flag without naming a database. 📁 **[§2](../CLAUDE.md): one representation, and `E2E_ENV` derives from it rather than restating the URLs.**
+
+**Verified by expansion, not by reading** — `make -n` on all five:
+
+```
+test · e2e · demo-seed · demo-narrate · certify   →   consent=1  db=1
+```
+
+⚡ **`make test` in this clone now resolves `localhost:5932/signora_lane_c`. It resolved `localhost:5432/signora`.**
+
+> ⛔ **What is NOT fixed, and it is the better half: the guard still never asks *which* database.** 📁 **Lane A's analysis is exactly right** — `require_explicit_consent_to_truncate` asks *"do you consent?"*, the answer was correctly **yes**, and the only thing wrong was the target. **`environments.py` already computes `slot == 0`, so refusing destructive fixtures against slot 0 is one condition.**
+>
+> ⚠️ **`backend/tests/conftest.py` is shared test infrastructure and QE's, not Lane C's** — **so it is raised rather than written.** ⚡ **The Makefile fix closes the documented path; the guard closes `pytest` run directly, which is how Lane A actually hit it.**
+
+⛔ **`make -n e2e` verified byte-equivalent in effect** — same four variables, same values, order only.
+
 #### ⚠️ QE should know, because it is their stack
 
 **Human review's Playground was deleted and re-seeded by this lane at 2026-08-15T03:5x.** ✅ **Nothing outside the Playground workspace was touched** — the delete is scoped by workspace name — **but the demo data a reviewer would have been looking at is this lane's, not the one that was there.**

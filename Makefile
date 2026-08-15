@@ -102,8 +102,18 @@ down: prod-local-env
 ##
 ## The lease is now workstation-scoped, so this also refuses to start while
 ## another *clone* holds the environment ([B-118](docs/BUGS.md)).
+##
+## ⛔ **This target named NO database until 2026-08-15, and consented to
+## truncation anyway** — [B-270](docs/BUGS.md), raised 🔴 by Lane A after running
+## it. `environment-lease.py run` adds only its lease variable, so the database
+## was whatever the shell already held, and `conftest.py`'s fallback is
+## `localhost:5432/signora` — **slot 0, which is human review's.** A new shell
+## plus the documented gate emptied it, with no mistake required.
+##
+## ⚡ **The Makefile already knew the answer**: `SIGNORA_DB` is resolved at line
+## 140 from `infra/environments.py`. It simply was not passed.
 test:
-	@python3 infra/environment-lease.py run test -- sh -c 'cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest --cov'
+	@python3 infra/environment-lease.py run test -- sh -c 'cd backend && $(call DESTRUCTIVE_DB_ENV,$(SIGNORA_DB)) uv run pytest --cov'
 
 ## The Product Playground — twelve accounts through the real pipeline.
 ##
@@ -143,6 +153,19 @@ SIGNORA_API := $(shell python3 infra/environments.py --exports | sed -n 's/^SIGN
 DEV_COMPOSE := env $(SIGNORA_STACK) docker compose -f infra/docker-compose.yml
 OWNER_DATABASE_URL := postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(SIGNORA_DB)
 
+# **Consent to truncation and the database being truncated, named together.**
+# [B-270](docs/BUGS.md): the guard in `conftest.py` asks *"do you consent?"* and
+# never *"which database?"*, and the answer to the first was correctly yes. So
+# the two must not be separable here — **any recipe that sets
+# `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1` gets it from this and therefore names a
+# database in the same breath.**
+#
+# ⚡ One definition, called with a database name, so `test` and the E2E targets
+# cannot drift apart — [§2](CLAUDE.md), truth has exactly one representation.
+DESTRUCTIVE_DB_ENV = SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:$(SIGNORA_PG_PORT)/$(1) \
+                     SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(1) \
+                     SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
+
 ## Everything a reviewer needs, in one command: stack up, schema migrated,
 ## Better Auth's own tables created, four sign-in accounts, twelve accounts of
 ## pipeline output. Credentials are in docs/RUNNING.md.
@@ -175,7 +198,7 @@ demo-prepare:
 	@$(MAKE) demo-seed
 
 demo-seed:
-	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.seed
+	@cd backend && $(call DESTRUCTIVE_DB_ENV,$(SIGNORA_DB)) uv run python -m tests.playground.seed
 
 ## The Playground's sign-in accounts, created through Better Auth's own sign-up
 ## and verification routes. Not a bypass: the accounts simply already exist.
@@ -193,7 +216,7 @@ demo-users:
 ## real provider. If `explanation_narration@1` were not released for the
 ## configured model this refuses, exactly as production would.
 demo-narrate:
-	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.narrate
+	@cd backend && $(call DESTRUCTIVE_DB_ENV,$(SIGNORA_DB)) uv run python -m tests.playground.narrate
 
 ## Advisory: did a slice change production code without updating its module's
 ## documentation? (CLAUDE.md §12)
@@ -407,7 +430,7 @@ state-check:
 ## cannot certify, and a command whose convenient path yields worthless evidence
 ## teaches people to use it.
 certify: release-preflight
-	@python3 infra/environment-lease.py run certify -- sh -c 'cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.certification'
+	@python3 infra/environment-lease.py run certify -- sh -c 'cd backend && $(call DESTRUCTIVE_DB_ENV,$(SIGNORA_DB)) uv run python -m tests.certification'
 
 ## The customer journeys, in a real browser, against this lane's own stack.
 ##
@@ -462,10 +485,8 @@ E2E_DB  ?= $(SIGNORA_DB)
 ## `backend/.env`.** That is why B-183's fix is in `.env.example` and not here:
 ## the Playwright journeys ran with RLS disarmed because the *server* was
 ## started as the owner, and no line in this file could have changed that.
-E2E_ENV := SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \
-           SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \
-           SIGNORA_APP_URL=$(E2E_URL) \
-           SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
+E2E_ENV := $(call DESTRUCTIVE_DB_ENV,$(E2E_DB)) \
+           SIGNORA_APP_URL=$(E2E_URL)
 
 e2e:
 	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test $(ARGS)'
