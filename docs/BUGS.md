@@ -373,15 +373,41 @@ acquire("x")      # → succeeds, takes the environment
 | `kill -0` on it a minute later | ⛔ **dead** |
 | Lane A's own process | 🔴 **live throughout, and the record never knew about it** |
 
-🔴 **So a simple RETRY of `make dr` — the obvious next move after a transient block — would have auto-reclaimed and run.** ⛔ **No force, no prompt, no `BLOCKED` message.** ⚠️ **And `make dr` restarts PostgreSQL, Redis, the API, workers and the relay, mid-journey, on another lane's live e2e.**
+🔴 **So a simple RETRY of `make dr` — the obvious next move after a transient block — would have auto-reclaimed and run.** ⛔ **No force, no prompt, no `BLOCKED` message.**
 
-📁 **QE's own verdict: *"What saved it was not refusing to force. It was going to look at the machine instead of retrying the command"* — and they investigated because the record looked odd, not because they knew a retry was dangerous.**
+> ### ⚠️ CORRECTED before this row reached `main` — QE, 2026-08-15, measuring their own worked example
+>
+> **QE's first account said the retry would have restarted *"PostgreSQL, Redis, the API, workers and the relay on another lane's live journey."*** ⛔ **It would not, and they measured it rather than defending it.**
+>
+> ```
+> make dr    → docker-compose.prod.yml · signora-prod-postgres-1 · API 8100 · web 3100
+> make e2e   → SIGNORA_APP_URL=http://localhost:3500   ← DERIVED; 3300 in Lane A's clone
+> ```
+>
+> ✅ **Re-measured here before rewriting: different compose projects, different ports.** ⚡ **`make dr` restarts the PRODUCTION stack; Lane A's journey ran against Lane A's stack. The demonstrated damage is zero.**
+>
+> ⛔ **So the hazard class is real and this illustration of its cost was not.** **The true statement is narrower: a retry silently takes an environment the operator believes is held, with no message — and what that costs depends on what the two operations actually share, which the lease does not know and does not check.**
+
+#### ⚡ Which raises the better question: what does the lease still guard?
+
+📁 **Its own `BLOCKED` message says *"they share one production stack, one pair of review ports and one test database."*** ⛔ **After [B-271](#b-271) and the per-slot stride, two lanes share none of those.** **Measured across the eight leased targets:**
+
+| | shares | |
+|---|---|---|
+| `smoke` · `dr` · `up` · `down` | 🔴 **the one production stack** (`docker-compose.prod.yml`, ports 3100/8100) | ✅ **serializing these is correct** |
+| `test` · `certify` · `e2e` · `product-demo` | ⚡ **nothing** — each resolves its own cluster and web port (`5932`/`3500` here, `5732`/`3300` in Lane A's) | ⚠️ **serialized anyway** |
+
+⚡ **So the lease is workstation-wide over a set that stopped being shared**, and its message describes a world that migration removed. ⛔ **Not a second defect and not fixed here** — 📁 **it is the same ruling: what the lease protects and when it may reclaim are one question, and answering half of it is how the current halves came to disagree.**
+
+📁 **QE's own verdict on the near-miss stands and is the honest one: *"What saved it was not refusing to force. It was going to look at the machine instead of retrying the command"* — and they investigated because the record looked odd, not because they knew a retry was dangerous.**
 
 #### ⚠️ Why this stays 🟠 and is not raised to 🔴
 
 **The obvious argument for 🔴 is [B-270](#b-270)'s precedent — a documented command silently destroying another environment — and Lane A raised that one to 🔴 on exactly that ground.**
 
 ⛔ **It is not taken here, for a checkable reason.** 📁 **`infra/registers.py:34`: `blocks_promotion` is 🔴 **and** unresolved. **Raising this row would stop every lane's promotion** over a hazard that (a) leaves `main` correct, (b) now has its check written into the `BLOCKED` diagnostic, and (c) needs a ruling rather than a fix.
+
+⚡ **And the correction above strengthens this rather than weakening it.** 📁 **[B-270](#b-270)'s 🔴 was a documented command destroying IRRECOVERABLE data with no mistake required.** ⛔ **B-436 is a silent acquisition whose demonstrated cost is currently zero, and no case producing damage can be written until somebody establishes what the lease still guards.** ⚠️ **QE's own note: had they not measured, they would have argued this row up to 🔴 on an example that does not hold.**
 
 ⚡ **Severity says how much it hurts; the blocking class says whether the repository can move.** ✅ **This hurts a lane's afternoon and does not stop the repository, and inflating it would spend the one signal that does.**
 
