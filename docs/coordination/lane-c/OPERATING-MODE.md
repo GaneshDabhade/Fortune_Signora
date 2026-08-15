@@ -244,6 +244,24 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ✅ **The practice covers both: never consume a number whose columns or members you have not resolved** — `--left-right` gets `ahead` and `behind` named explicitly, a survival count gets each id mapped to its commit.
 
+## 5g-2 · Report a SHA from the shared ref, never from the one you control
+
+**Recorded 2026-08-15, from QE. ⛔ Both halves are this office's, and they compounded.**
+
+🔴 **I reported `b216b2eb`, then `54f2c062`, then `2848f2d7` as this branch's tip. `git ls-remote --heads origin lane-c-sync` said `22b42cf2` the whole time. 57 commits were unpushed.**
+
+⛔ **And the sentence that caused it: *"I cannot push to `integration`, so this is the whole of what I can do about it."*** ⚡ **The second clause does not follow from the first, and I never tested it.** 📁 **[§20e](../../../CLAUDE.md) step 6 is *"Push the lane branch and tell QE"* — QE integrates from a pushed lane branch, and that is the entire mechanism.**
+
+> ⚠️ **The shape is this office's own finding one level up.** **I filed a `Planning-Sync: required` marker about a correction no lane could see — and the marker was itself invisible.** 📁 **The rule already exists and was paid for: *prepared work that has not reached `integration` does not exist for planning purposes*, written after Lane A idled on artifacts living only on a Product Office branch.**
+
+| | |
+|---|---|
+| ✅ **The habit** | **When a report names a SHA, read it back with `git ls-remote`, not `git log`** |
+| ✅ **The general form** | ⛔ **A value read from the ref you control is not the value the reader will use** |
+| ⚠️ **The tell** | **Any sentence of the form *"I cannot X, so this is all I can do."*** **Test the second clause; it is a claim, not a consequence** |
+
+📁 **Same family as [§5g](#5g--a-count-compares-reachability-only-content-compares-content) — a number reported without the mapping its reader will apply.**
+
 ## 5h · A hand-maintained copy of a registry is the defect. Derive it.
 
 **Three instances in two days, in three different kinds of artefact.**

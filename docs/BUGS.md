@@ -196,6 +196,26 @@ infra/certification-guard.py:1421 Argument 1 to "len" has incompatible type "obj
 
 ⛔ **And explicitly not a proposal to widen the gate here.** 📁 **Changing what a gate covers is the [B-131](#b-131) class** — it is a change to what a check *means*, not one a bug row may make. **The row states the gap; ⛔ the remedy is a decision.**
 
+#### 🔴 What is UNDER the type errors — QE, 2026-08-15, and it is why the row matters
+
+**QE reproduced the three errors and then read the code they sit in. ⚡ The types are the symptom.**
+
+📁 **`_satisfied()` in the promotion guard is a SECOND IMPLEMENTATION of the certification predicate, and its docstring claims a parity it does not have** — *"Derived exactly as `CertificationRun.satisfied` derives it."*
+
+| `Record.failures` checks | the guard |
+|---|---|
+| dirty tree · a recorded gate failed · a scenario failed | ✅ |
+| coverage below the floor | ⚠️ **yes, against a hardcoded `95.0`** |
+| 🔴 **a `REQUIRED_GATES` member DID NOT RUN** | ⛔ **NO — the guard never imports or references `REQUIRED_GATES`** |
+
+🔴 **Four of five, and the missing one is the check the product owner is being asked to change in [B-122](#b-122).**
+
+⛔ **`for gate in run.get("gates") or []` means a record with no `gates` key yields zero failures and reads satisfied.** ⚡ **That is `36-empty-array-checks.md`'s defect in the promotion path, and `REQUIRED_GATES`' own comment names it**: *"a run recording no gates at all would otherwise satisfy 'every gate passed' vacuously."* **The package defends against it. The guard does not** — so B-122's 228 gateless-of-`frontend-suite` runs would all have read satisfied here.
+
+✅ **The fix is [§2](../CLAUDE.md)'s: derive, do not reimplement.** `record.py` is stdlib-only, so the guard can import `REQUIRED_GATES` and `MINIMUM_COVERAGE` exactly as it already imports `bug_rows` from `registers`. ⚡ **The three type errors close in the same act** — narrowing `object` properly is what makes *"`gates` is not a list"* refusable instead of silently `[]`.
+
+⚠️ **Split ownership, deliberately:** ✅ **the `certification-guard.py` half is QE's** — it is their instrument, and a Product Office edit to the thing that gates promotion is the wrong lane on the wrong file. ⛔ **This row stays `OPEN` for the other 12 unchecked files and for the gate-scope gap, which is Lane C's.**
+
 ### B-197 · 🟡 The promotion guard protects QE-written states in `BACKLOG.md` and reads `BUGS.md` not at all, so a `VERIFIED` bug can silently reopen
 
 | | |
