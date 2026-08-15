@@ -17,7 +17,12 @@ from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from modules.workspace_tenancy.domain.entities import WorkspaceRole
-from signora_platform.db.base import AuditMixin, Base, TimestampMixin
+from signora_platform.db.base import (
+    AuditMixin,
+    Base,
+    TimestampMixin,
+    WorkspaceScopedMixin,
+)
 
 
 class WorkspaceModel(Base, TimestampMixin, AuditMixin):
@@ -344,4 +349,49 @@ class PersonPreferencesModel(Base, TimestampMixin, AuditMixin):
     # stored expiry would be a second representation of the same fact.
     invite_skipped_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
+    )
+
+
+class CapabilityRoleModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """One named capability role — migration `0057`, ADR-0410.
+
+    ⛔ **No column holds the role's CONTENTS.** 📁 The grants are `policy.csv`
+    rows keyed on `role_key`, because ADR-0410 §2 forbids *"a second
+    independent authorization model"* — **and a copy here would drift from the
+    file the enforcer actually reads.**
+
+    ⚡ **`name` is what a customer sees; `role_key` is what reaches Casbin**,
+    namespaced `cap:` so a capability role can never collide with a membership
+    role — **including one this repository has not invented yet.**
+    """
+
+    __tablename__ = "capability_role"
+
+    role_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    name: Mapped[str] = mapped_column(String(length=40), nullable=False)
+    #: ⛔ **Never rendered.** The subject `Authorizer.is_allowed` is asked about.
+    role_key: Mapped[str] = mapped_column(String(length=48), nullable=False)
+
+
+class CapabilityAssignmentModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """Which capability role one person holds — migration `0057`.
+
+    ⚡ **`(workspace_id, user_id)` is the key**, so a second capability role for
+    one person is unrepresentable — which is what makes ADR-0410 §3's
+    *"Effective permissions"* one answer rather than a union.
+
+    ⛔ **`role_id` is nullable and the null is the ordinary state**: everyone
+    holds no capability role until somebody assigns one.
+    """
+
+    __tablename__ = "capability_assignment"
+
+    user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    #: ⚠️ **`RESTRICT`, not `CASCADE`** — deleting a role people hold would
+    #: silently return each of them to their membership role, which for an
+    #: owner holding a narrow role is a WIDENING (migration `0057`).
+    role_id: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("capability_role.role_id", ondelete="RESTRICT"),
+        nullable=True,
     )

@@ -13,7 +13,7 @@ destination**, which is a correctness defect rather than a security one.
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from uuid import UUID, uuid4
+from uuid import UUID
 
 import pytest
 

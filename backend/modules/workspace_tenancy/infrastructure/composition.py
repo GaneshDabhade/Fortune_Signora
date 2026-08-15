@@ -40,8 +40,8 @@ from modules.workspace_tenancy.application.use_cases.onboarding import (
 from modules.workspace_tenancy.application.use_cases.preferences import (
     ChangePreferencesUseCase,
     DismissFirstRunUseCase,
-    SkipInviteUseCase,
     GetPreferencesUseCase,
+    SkipInviteUseCase,
 )
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMember
 from modules.workspace_tenancy.application.use_cases.saved_views import (

@@ -37,11 +37,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from modules.workspace_tenancy.application.ports import MembershipRepository
 from modules.workspace_tenancy.application.use_cases.last_used_workspace import (
     ForgetWorkspaceEntry,
 )
-
-from modules.workspace_tenancy.application.ports import MembershipRepository
 from modules.workspace_tenancy.domain.entities import Membership
 
 

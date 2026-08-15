@@ -33,20 +33,22 @@ from modules.integrations.interface.errors import (
     ERROR_MAPPING as INTEGRATIONS_ERRORS,
 )
 from modules.integrations.interface.router import router as integrations_router
-from modules.timeline.interface.router import router as timeline_router
 from modules.knowledge_graph.interface.router import router as knowledge_graph_router
+from modules.observation_engine.interface.router import router as observation_router
+from modules.opportunity_engine.interface.errors import (
+    ERROR_MAPPING as OPPORTUNITY_ENGINE_ERRORS,
+)
+from modules.opportunity_engine.interface.router import router as opportunity_router
+from modules.provider_platform.interface.router import router as coverage_router
 from modules.sales_engagement.interface.router import router as approach_router
 from modules.signal_engine.interface.errors import (
     ERROR_MAPPING as SIGNAL_ENGINE_ERRORS,
 )
 from modules.signal_engine.interface.router import router as validation_router
-from modules.opportunity_engine.interface.errors import (
-    ERROR_MAPPING as OPPORTUNITY_ENGINE_ERRORS,
+from modules.timeline.interface.router import router as timeline_router
+from modules.workspace_tenancy.infrastructure.authorization_subject import (
+    CapabilityAwareMembershipVerifier,
 )
-from modules.observation_engine.interface.router import router as observation_router
-from modules.provider_platform.interface.router import router as coverage_router
-from modules.opportunity_engine.interface.router import router as opportunity_router
-from modules.workspace_tenancy.infrastructure.composition import build_query_service
 from modules.workspace_tenancy.interface.errors import (
     ERROR_MAPPING as WORKSPACE_TENANCY_ERRORS,
 )
@@ -85,8 +87,19 @@ class ReadinessResponse(BaseModel):
 
 
 def _membership_verifier(session: AsyncSession) -> MembershipVerifier:
-    """Adapts Workspace & Tenancy's query service to the platform's port."""
-    return build_query_service(session)
+    """Adapts Workspace & Tenancy to the platform's port.
+
+    ⚡ **Capability-aware from TASK-1479 ⓸**, on ADR-0410.
+    **This one line is where the capability layer takes effect**, and it is the
+    only wiring the whole slice needed: the platform's `MembershipVerifier`
+    asks for the string to authorize against, and this now answers with a
+    person's capability role where they hold one.
+
+    ⛔ **`None` still means *not a member*** and still becomes a `404`. **A
+    capability role never widens who may reach a workspace, only what they may
+    do inside it.**
+    """
+    return CapabilityAwareMembershipVerifier(session)
 
 
 def _error_mappings() -> ErrorMapping:
