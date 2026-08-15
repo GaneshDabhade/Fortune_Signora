@@ -1,5 +1,19 @@
 # Session Handoff
 
+> ## Cycle 231 — promoted `136f112b`, 2026-08-15 · **ADR-0411 is complete**
+>
+> **`main` = `136f112b` = the certified commit.** **Lane A's TASK-1479 ⓶b — Segments — completes ADR-0411**: Tags at TASK-466, Owner/CSM at ⓶a, Segments here. **9 commits, migrations `0055`/`0056`.** `pytest` **4796** · coverage **95.12%** *(up from 95.02 — the first slice this week to raise the floor rather than defend it)* · **446** Security Invariants · `mypy` **899** files · **`frontend-suite` 3263 in 185 files** · **`eslint` clean** · **DR passed** · reversibility clean at head `0056`. ✅ **First attempt, eight gates.**
+>
+> ⚡ **Lane C's 14 commits replayed to nothing — verified by patch-id, 0 of 14 not already on `main`.** **So the coverage figure is attributable to these nine commits alone.**
+>
+> 🔴 **A Security Invariant failed once on Lane A's machine and did not reproduce — `test_an_invalid_audience_is_rejected`.** It has now passed in isolation, across the invariant suite in order, in two of their full runs, **and in QE's certification (446 invariants).** ⛔ **Not filed as a defect and not dismissed as a flake.**
+>
+> **The diagnosis is by mechanism rather than by log, because the log was discarded.** `JwtVerifier.verify` catches `jwt.ExpiredSignatureError` **first** and maps it to `ExpiredTokenError`, which is **deliberately not** an `InvalidTokenError`; PyJWT validates `exp` before `aud`. **Lane A tested it: expired + wrong audience → `ExpiredTokenError`.** ⚡ **So a clock step produces exactly this failure, and `DID NOT RAISE` — the audience check actually weakening — would be deterministic and could not be intermittent.** **One non-reproducing failure is evidence *for* the clock and *against* the guarantee having lapsed.** ⚠️ **Sufficient is not demonstrated, and it stays an open observation.**
+>
+> ⚠️ **The reusable lesson is Lane A's own and it is about process:** they tailed a gate run to four lines and discarded the diagnostic **on a Security Invariant failure** — *"the one output you cannot regenerate, because the next run is a different run."* **Full output captured for gate runs from now.**
+>
+> 🔴 **The `Security Invariants: N` figure means less than its name, and this is the first cycle to say so on the dashboard.** **It counts test ids, and only `IMMUTABLE_TENANT_TABLES` is parametrized** — so **registering a tenant-owned table adds assertions and no ids.** **Cycle 231's `+3` was one table entering the immutable set, times three parametrized tests; its three tenant-owned registrations moved it by zero.** ⛔ **A lane citing the count as evidence its registration is not decorative is citing the one figure insensitive to that.** **Measured by Lane C, verified independently.**
+>
 > ## Cycle 230 — promoted `84cd6ad4`, 2026-08-15 · **what CERTIFIED means changed**
 >
 > ⚡ **`REQUIRED_GATES` is eight, not six.** **`frontend-suite` and `eslint` are members**, on the product owner's ruling of [B-122](BUGS.md), **and the runner executes them** — the pairing that matters, since adding to the set without running them would fail every future certification on *"required gate did not run"*.
@@ -508,7 +522,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-15 · **`main` at `84cd6ad4`** · ✅ **CERTIFIED under eight gates, and commit-bound**
+> **As of:** 2026-08-15 · **`main` at `136f112b`** · ✅ **CERTIFIED under eight gates, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
