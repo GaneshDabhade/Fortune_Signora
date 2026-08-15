@@ -254,10 +254,30 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 > ⚠️ **The shape is this office's own finding one level up.** **I filed a `Planning-Sync: required` marker about a correction no lane could see — and the marker was itself invisible.** 📁 **The rule already exists and was paid for: *prepared work that has not reached `integration` does not exist for planning purposes*, written after Lane A idled on artifacts living only on a Product Office branch.**
 
+### ⚡ The rule, after it caught the integrator the same day it caught this office
+
+> ## **A SHA in a message is a promise not to move the ref — and its converse, that a ref you have moved locally has not moved.**
+
+⛔ **The first version of this section said *read it back with `git ls-remote`*. That is a verification step and it does not hold**: QE *did* read `ls-remote` earlier in the cycle, before their local fast-forwards existed, then trusted `git rev-parse` for the rest. ✅ **An invariant about the sender survives where a chore for the reader does not.**
+
+🔴 **The converse binds the INTEGRATOR harder than the lane, and the asymmetry is the point.** **A lane's stale SHA costs one wrong report. QE reported `integration` fast-forwarded and a Certification Snapshot pinned to `9a01139c` — a commit in no ref `origin` advertised.** ⛔ ***A snapshot naming a commit no other clone can resolve is a record nobody can check***, and it was one step from promotion. ✅ **Caught by this office reading `git ls-remote --heads origin` while checking something else, and fixed within the hour.**
+
+⚠️ **Nobody spots an unpushed ref by being careful.** **The local view is complete, self-consistent and wrong** — which is why the tell has to be behavioural rather than attentional.
+
+### 📁 Four instances on 2026-08-15, three layers, two lanes
+
+| Layer | The reading | Why it was wrong |
+|---|---|---|
+| **Register** | **3** `>>>>>>>` in `BUGS.md` | ⛔ **Two were quoted evidence inside fenced blocks, in a row about a stray marker** |
+| **Instrument** | **39 `READY`** *(QE)* | ⛔ Matched *"Previously: `READY`"* |
+| **Instrument** | **209 commits** *(QE)* | ⛔ **A real measurement of a quantity the audit does not consume** |
+| 🔴 **Ref** | **4 refs fast-forwarded** *(QE)* | ⛔ **Locally. `origin` had none of them** |
+
+⚡ **In every one the raw reading was correct and the operand was not the one the consumer uses.**
+
 | | |
 |---|---|
-| ✅ **The habit** | **When a report names a SHA, read it back with `git ls-remote`, not `git log`** |
-| ✅ **The general form** | ⛔ **A value read from the ref you control is not the value the reader will use** |
+| ✅ **The general form** | **Read around the match rather than counting it** — *and* **read the ref the reader will use, not the one you are standing on** |
 | ⚠️ **The tell** | **Any sentence of the form *"I cannot X, so this is all I can do."*** **Test the second clause; it is a claim, not a consequence** |
 
 📁 **Same family as [§5g](#5g--a-count-compares-reachability-only-content-compares-content) — a number reported without the mapping its reader will apply.**
