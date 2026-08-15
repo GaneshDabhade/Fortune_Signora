@@ -196,6 +196,24 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 📁 **The detail that makes it worth recording: `development` is the member [ADR-0412](../../architecture/adr/0412-environment-and-secret-safe-logging.md) deliberately REMOVED**, and the ADR's own reason is *"two spellings of one environment is how a guard comes to be written against the spelling somebody happened to use."* ⚠️ **The analysis was written against the spelling somebody happened to use.**
 
+### 🔴 A repair has a scope, and nothing in the repair asks what it is — 2026-08-15
+
+> ## **When you fix an instance, ask where else the class occurs — in the same commit.**
+
+⛔ **Three instances on one day, and each was a correct repair with a scope of one:**
+
+| | the repair | what it missed |
+|---|---|---|
+| **Lane C** | removed `TASK-1432`'s stale `[[blocked]]` entry, **and wrote a comment explaining why a stale block gives a lane two answers** | ⛔ **Did not sweep the file. `TASK-1401`'s was found by QE hours later, hiding the row released to fix Lane A's floor** |
+| **QE** | wrote a script to split a count | ⛔ **Re-expressed `_is_closeout` instead of calling it, and published the wrong figure** |
+| **QE** | measured the cost of B-1005 | ⛔ **Counted a narrower predicate than the row needed** |
+
+⚠️ **The tell is that nothing about a correct repair prompts the question.** ⚡ **It works, the instance is gone, and *"where else?"* has to be asked deliberately** — which is why it belongs in the commit rather than in a later sweep.
+
+✅ **And the sweep is only evidence if its result is reported either way.** 📁 **All four `[[blocked]]` entries were checked and three were correct — `TASK-1426` on a genuine missing design, `TASK-422` and `TASK-1434` correctly sequenced.** ⛔ **A sweep that reports only what it found is indistinguishable from one that stopped early.**
+
+📁 **Same family as [§5f](#5f--an-author-cannot-see-the-narrowness-of-their-own-predicate)**, and the harder half: **there the predicate was too narrow; here the predicate was right and applied once.**
+
 ### ⚡ Lane A's rule for finding a closed set — 2026-08-15, adopted by QE the same hour
 
 > ## **Grep for an existing MEMBER, never for the type.**
