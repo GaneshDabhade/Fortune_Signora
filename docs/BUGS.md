@@ -394,10 +394,23 @@ acquire("x")      # → succeeds, takes the environment
 
 | | shares | |
 |---|---|---|
-| `smoke` · `dr` · `up` · `down` | 🔴 **the one production stack** (`docker-compose.prod.yml`, ports 3100/8100) | ✅ **serializing these is correct** |
-| `test` · `certify` · `e2e` · `product-demo` | ⚡ **nothing** — each resolves its own cluster and web port (`5932`/`3500` here, `5732`/`3300` in Lane A's) | ⚠️ **serialized anyway** |
+| `smoke` · `dr` · `up` · `down` · ⚡ **`certify`** | 🔴 **the one production stack** (`docker-compose.prod.yml`, ports 3100/8100) | ✅ **serializing these is correct** |
+| ⚠️ **`certify` also** | **slot 0's PostgreSQL cluster** — `database.py:79` pins `_HOST = "localhost:5432"` unconditionally | — |
+| `test` · `e2e` · `product-demo` | ⚡ **nothing** — each resolves its own cluster and web port (`5932`/`3500` here, `5732`/`3300` in Lane A's) | ⚠️ **serialized anyway** |
 
-⚡ **So the lease is workstation-wide over a set that stopped being shared**, and its message describes a world that migration removed. ⛔ **Not a second defect and not fixed here** — 📁 **it is the same ruling: what the lease protects and when it may reclaim are one question, and answering half of it is how the current halves came to disagree.**
+⚡ **So the lease is workstation-wide over a set that partly stopped being shared**, and its message describes a world the migration removed for three of the eight. ⛔ **Not a second defect and not fixed here** — 📁 **it is the same ruling: what the lease protects and when it may reclaim are one question, and answering half of it is how the current halves came to disagree.**
+
+⚡ **And the option space is narrower than *"a third behaviour that does not exist yet"* suggested.** ⛔ **The guard is not uniformly wrong: it is CORRECT for five targets and vestigial for three**, so *"stop guarding"* is the wrong ruling and **"guard what is actually shared"** is a per-target answer — **materially easier to rule on.**
+
+> #### 🔴 `certify` was in the wrong column, and I put it there with the tool I had just warned about
+>
+> **This table first read *"`test` · `certify` · `e2e` · `product-demo` — shares nothing"*, measured with `make -n certify`, which shows `5932/signora` and nothing else.**
+>
+> ⛔ **`make -n` shows the RECIPE. It cannot show that `__main__.py:209` spawns `bash ./infra/smoke.sh`, which binds 3100 and 8100, nor that `database.py:71,79` creates the disposable database on `localhost:5432`.**
+>
+> ⚠️ **[B-270](#b-270) carries this sentence, written by this office earlier the same day: *"`make -n` shows what the parent sets; it cannot show what a child injects."*** 🔴 **I wrote the warning, in this file, and then measured a different property with the same tool and the same blind spot.**
+>
+> ✅ **Caught by QE, who checked it because it is the target they run every cycle.**
 
 📁 **QE's own verdict on the near-miss stands and is the honest one: *"What saved it was not refusing to force. It was going to look at the machine instead of retrying the command"* — and they investigated because the record looked odd, not because they knew a retry was dangerous.**
 
