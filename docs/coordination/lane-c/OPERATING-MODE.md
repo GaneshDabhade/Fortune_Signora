@@ -277,9 +277,19 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⚡ **At 45 the row reads *"a lane's regenerations are noisy."* At ~157 it reads *"the accumulate rule has a one-in-six hole, concentrated in planning."*** ⛔ **Same defect; only the second justifies the care the fix needs.**
 
-⚠️ **And the two independent measurements did NOT agree: QE got 159, this office got 157 — same window, same intent, predicates that differ somewhere.** ✅ **Which is the rule proving itself twice over: neither number is wrong, and *stating the predicate* is the only thing that makes them comparable.**
+⚠️ **And the two independent measurements did NOT agree: QE got 159, this office got 157 — same window, same intent.** ✅ **Stating the predicate is what let it be resolved in one round trip: 157 is right, and the two extra commits — `99a0e8bb` and `c44a837f` — each carry a `docs/design-snapshot/**.dc.html`, which passes `startswith("docs/")` and fails `endswith((".md", ".json"))`.**
 
-📁 **So a count is reported with the predicate that produced it, not just its value** — the same shape as [§5g-2](#5g-2--report-a-sha-from-the-shared-ref-never-from-the-one-you-control)'s *a measurement is a claim about a ref*. ⛔ **Ref, predicate, mapping: a number needs all three before anybody can check it.**
+📁 **So a count is reported with the predicate that produced it, not just its value** — the same shape as [§5g-2](#5g-2--report-a-sha-from-the-shared-ref-never-from-the-one-you-control)'s *a measurement is a claim about a ref*. ⛔ **Ref, predicate, mapping: a number needs all three before anybody can check it, and 2026-08-15 produced one failure of each.**
+
+#### ⚡ QE's refinement, which is sharper than *"state your predicate"*
+
+> ## **If you compute a number twice, reconcile it before publishing either. If you computed it once, say which predicate — so somebody else can compute the second.**
+
+🔴 **QE's discrepancy was never with this office. It was between their own two scripts.** **The first called `_is_closeout` and returned 157. The second, written to split A from B, re-expressed the condition in different words — prefix without suffix — and returned 159. ⛔ They ran both and published the one they ran last.**
+
+📁 **That is [B-1002](../../BUGS.md) in miniature: a second implementation of a predicate, diverging from the authoritative one, and the divergence invisible because both returned a plausible number.** ⚠️ **They filed that defect against `certification-guard.py` in the morning and reproduced it in a shell heredoc the same evening.**
+
+✅ **The rule that survives is [§5h](#5h--a-hand-maintained-copy-of-a-registry-is-the-defect-derive-it)'s, applied to a throwaway script: the split should have CALLED `_is_closeout` and partitioned its result, never restated the condition.** ⛔ **A one-off script is exactly where restating feels harmless.**
 
 ## 5g-2 · Report a SHA from the shared ref, never from the one you control
 
