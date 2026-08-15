@@ -196,6 +196,19 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 📁 **The detail that makes it worth recording: `development` is the member [ADR-0412](../../architecture/adr/0412-environment-and-secret-safe-logging.md) deliberately REMOVED**, and the ADR's own reason is *"two spellings of one environment is how a guard comes to be written against the spelling somebody happened to use."* ⚠️ **The analysis was written against the spelling somebody happened to use.**
 
+### ⚡ Lane A's rule for finding a closed set — 2026-08-15, adopted by QE the same hour
+
+> ## **Grep for an existing MEMBER, never for the type.**
+> **A type appears wherever the vocabulary is USED. A member appears wherever it is ENUMERATED.**
+
+**Found implementing `TASK-1477`**: three new `ClaimAttribute` members were added and classified in none of the places that enumerate them, and a Security Invariant caught it — *"a silent default is how a new canonical attribute acquires observation behaviour nobody chose."*
+
+⚡ **It is the operational form of [§5f](#5f--an-author-cannot-see-the-narrowness-of-their-own-predicate).** ⛔ **Searching for `ClaimAttribute` returns every consumer and drowns the four registries; searching for `RENEWAL_DATE` returns exactly the places a new member must also appear.**
+
+📁 **QE adopted it against a gap they had already hit without recognising it: `REQUIRED_GATES` is a closed set whose *runner* lives in a different file, and they found that by reasoning where one member-search would have shown it in a line.**
+
+⚠️ **And the second half of Lane A's finding is the better half: they argued `RENEWAL_DATE` should be `STATE` — *"the date is the VALUE, not the moment of assertion"* — flipped it to `OCCURRENCE`, and two `occurrence_key` tests failed, because a bare date identifies no occurrence.** ✅ **The wrong classification was UNREPRESENTABLE rather than merely wrong** — 📁 [§2](../../../CLAUDE.md), *types should make incorrect architecture impossible*. **Their sentence: *"I would not have known that from reading; the guard told me."***
+
 ## 5f-2 · One instance of an output does not tell you the rule that produced it
 
 **Recorded 2026-08-14, from a wrong claim this office made to the product owner.**
