@@ -517,6 +517,62 @@ databaseUrl: required(
 
 ---
 
+## C-1512 · [ADR-0413](architecture/adr/0413-customer-authored-notes-and-tasks.md) creates a bounded context and names no module for it
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, starting [TASK-1479](BACKLOG.md) slice ⓷ — ⚡ **before writing a line**, which is what [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) cost when it was not |
+| **Owner** | 🔴 **Product owner** — ⛔ **a new module or bounded context is 🔴 in the Change Budget**, and this lane may not create one |
+| **Type** | 🔴 **Architectural blocker**, not an implementation one — [§20e](../CLAUDE.md): *no accepted architecture exists for the next step* |
+| **Blocks** | ⛔ **Slice ⓷ entirely.** ✅ **Nothing else** — slice ⓸ ([ADR-0410](architecture/adr/0410-authorization-capability-layer.md)) is unaffected and this lane has moved to it |
+| **Status** | **`OPEN`** |
+
+### 🔴 The problem
+
+📁 **ADR-0413 §1 says this is a new category in the product's own words:**
+
+> ⚡ ***"This is the first time Signora becomes the system of record for something a customer creates."*** *"That is why retention, export, permissions and audit follow from it — not as scope creep, but because a system of record owes them and a read-only platform did not."*
+
+⛔ **And §7's list of what it deliberately did not decide names schema · API shape · the migration · versioned-or-append-only · task state vocabulary · reminders and due dates · retention periods · export format · any UI.** ⚠️ **It does not name the module**, so the delegation [TASK-1479](BACKLOG.md) grants this lane — *"§7 items are Lane A's to propose in the Slice Handoff"* — **does not reach it.**
+
+### ⚠️ Measured before raising
+
+**Nothing exists.** `grep` over `backend/modules/` finds **no note or task table, no migration, no domain type, no `tenancy_policy.py` row, no route.** ⛔ **A clean build with no home.**
+
+### The affected modules, and why none of them is the answer
+
+| | Why not |
+|---|---|
+| **`commercial_profile`** | ⚡ **The closest, and it is the one this lane would reach for.** ⛔ **But its bounded context is what a customer DECLARES about their commercial setup** — products, ideal customer, buying committee, competitors, target accounts, and now tags, owner and segments. **A note is not a declaration; it is a record somebody wrote about an account** — and ADR-0413's own retention, export and audit obligations attach to the module, which this one has never carried |
+| **`timeline`** | 📁 **A projection that *"deliberately holds no interpretation"*** and is append-only from events. ⛔ **Notes and Tasks are AUTHORED.** ✅ They *appear* in the timeline, which is a projection rule, not a home |
+| **`knowledge_graph`** | Account identity and evidence, every claim carrying provenance to a provider. ⛔ **Nobody asserted a customer's own note** — 📁 the same argument [ADR-0411](architecture/adr/0411-customer-organized-account-metadata.md) used to keep tags out |
+| **`people`** | ⛔ **[C-221](#c-221)'s scope bound**: no person's name, anywhere. A note has an author and a body |
+
+### The alternatives
+
+| | |
+|---|---|
+| **A** — **a new module**, narrow by name | ✅ **What the ADR describes.** ⛔ **🔴 in the Change Budget: product owner + ADR.** ⚡ **This lane's proposed name is `notes_and_tasks`** — deliberately compound, because **it cannot grow into files, emails, meetings or custom fields without renaming itself**, which is exactly the boundary §7's last paragraph asks for |
+| **B** — **inside `commercial_profile`** | ✅ **Buildable today with no ruling**, and the module is already this lane's. ⛔ **It gives one module two different obligations** — immutable versioned declarations, and authored records owing retention, export and audit — **and its `public/` surface, its import contract and its whole design doc are built around the first** |
+| **C** — **a new module named for the act rather than the artefacts** — `customer_authoring` | ⚡ **Narrow for the same reason as A**: files are uploaded, emails and meetings are read from elsewhere, custom fields are schema. ⛔ **Still 🔴, and *customer* is ambiguous here** — the Signora customer, or the accounts they sell to |
+
+### ✅ Recommended, and stated as input rather than authority
+
+**A, named `notes_and_tasks`.** ⚡ **The ADR's own §1 argues for it** — a system of record is a different category from everything the repository holds — **and §7's closing boundary is easier to keep when the module name cannot absorb the four exclusions.**
+
+⚠️ **The trade-off, stated rather than hidden:** **it is the repository's first module created for a capability rather than for a pipeline stage**, and every module in [`modules.toml`](coordination/modules.toml) was placed by a product-owner ruling ([D-103](DECISION_REGISTER.md) `people`, [D-127](DECISION_REGISTER.md) `action_batch`). **This would be the third, and it needs the same.**
+
+### Implementation impact
+
+**Everything else in slice ⓷ is ready and does not depend on the answer** — the audit is done and recorded on [TASK-1479](BACKLOG.md)'s board row: **due dates are drawn so they are in; reminders are not drawn so they are out; the task state vocabulary is binary because the design draws a tick and a strikethrough and nothing between; *Overdue* is derived from the due date rather than stored.** ⛔ **All of it is unwritable until the file paths exist**, which is what makes this architectural rather than an inconvenience.
+
+⚠️ **And two findings from the same audit that the ruling should see**, because they narrow what ⓷ can deliver whatever the module is:
+
+- 🔴 **The reference model draws AI-AUTHORED notes and tasks** — one note's author is *"Signora"*, tagged *"AI note"*; two tasks read *"Agent · renewal sweep"* and *"Recommended by Signora"*. ⛔ **The ruling is about CUSTOMER-authored records, and nothing in the repository writes a note**, so those rows are [414](architecture/414-wave-1-account-360.md)'s ⬜ — no source rather than no endpoint.
+- ⚠️ **`@mentions` and slash commands are drawn**, and a mention needs a member directory with a **name**. 📁 **The platform has none** — [C-024](#c-024), ADR-0026 — which is the same absence the Owner column met at ⓶a and answered with an address.
+
+---
+
 ## C-1511 · The Companies `Segment` column and the `Segments` panel are disjoint vocabularies
 
 | | |

@@ -722,6 +722,17 @@ test · e2e · demo-seed · demo-narrate · certify   →   consent=1  db=1
 
 ⛔ **`make -n e2e` verified byte-equivalent in effect** — same four variables, same values, order only.
 
+#### 🔴 Same file as [B-265](#b-265), and that is the finding under the finding
+
+**Both defects are `backend/tests/conftest.py` deciding which database everything talks to**, and they are the two halves of one gap:
+
+| | |
+|---|---|
+| **[B-265](#b-265)** | A database **behind the migration head** fails 26 tests and never says so — ⚡ **loud, and misattributed** |
+| **B-270** | A seeder points at **another environment's** database and reports success — ⛔ **silent** |
+
+⚠️ **`DEFAULT_APP_DATABASE_URL` is the repository's implicit environment selector** — the test suite's, the seeder's, and anything else that imports it — **and nothing validates that the database it names is the one the caller meant.** ⚡ **Two variables (`SIGNORA_DATABASE_URL`, `SIGNORA_TEST_APP_DATABASE_URL`) express one fact**, which is [§2](../CLAUDE.md), and **[`infra/environments.py`](../infra/environments.py) already computes the correct answer per slot.**
+
 #### ⚠️ QE should know, because it is their stack
 
 **Human review's Playground was deleted and re-seeded by this lane at 2026-08-15T03:5x.** ✅ **Nothing outside the Playground workspace was touched** — the delete is scoped by workspace name — **but the demo data a reviewer would have been looking at is this lane's, not the one that was there.**
