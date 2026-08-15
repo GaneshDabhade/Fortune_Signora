@@ -71,7 +71,13 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-14, `385970bf`
+## Current — as of 2026-08-15, `ac622c24`
+
+> ⚡ **Cycle 229 Closeout. NO rows removed, and that is a decision rather than an omission.**
+>
+> 📁 **[TASK-1479](BACKLOG.md) has a delivery on `main` — slice ⓶a, the bulk owner change — and stays `CLAIMED`.** ⛔ **It is four ratified contracts and one is delivered.** **Marking it `IN VALIDATION` would say the task is finished while ⓶b, ⓷ and ⓸ are untouched**, and the lane said so before QE could ask. ✅ **`Milestone: slice 2a of 4` in the Slice Handoff is where per-slice state belongs** — the per-slice marker the repository already had, and the one QE keys on rather than the row's state.
+>
+> ⚠️ **This is the correction to QE's own removal predicate.** **A delivery reaching `main` is not sufficient to retire a row** when the row covers more than the delivery.
 
 > ⚡ **Cycle 228 Closeout.** **[TASK-1425](BACKLOG.md) removed — `1450ee76` is on `main` and the row now reads `IN VALIDATION`, which is the state QE takes over from.** ⛔ **`CLAUDE.md` §20e: *no lane may remain assigned to work that has reached `main`.***
 >

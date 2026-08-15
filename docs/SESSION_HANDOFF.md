@@ -1,5 +1,19 @@
 # Session Handoff
 
+> ## Cycle 229 — promoted `ac622c24`, 2026-08-15
+>
+> **`main` = `ac622c24` = the certified commit.** **26 commits, three lanes** — Lane A's TASK-1479 ⓶a (bulk owner change, migrations `0053`/`0054`), Lane C's coordination and register work, QE's own gate repair. `pytest` **4704** · coverage **95.02%** · **443** Security Invariants · migration head **`0054`** · **DR passed** with 443 against the restarted stack · reversibility clean.
+>
+> ⚠️ **Second attempt. The first was `NOT CERTIFIED` — coverage 94.78% against the 95.0 floor, with all six gates passing.** ⛔ **The gates were not what failed; the condition was.**
+>
+> 🔴 **QE's first attribution of that failure was wrong, and the correction is the reusable half.** `coverage json`'s statement arithmetic gives **95.84%** where the gate reports **94.78%**, because **the gate counts branches.** ⛔ **Attributing a branch-coverage failure with a line-coverage sum names the wrong files.** ✅ **Recomputed over `num_statements + num_branches`, which reproduces the gate exactly: the three files the slice added missed 55 where 49 had to close.** **Lane A closed them to 100% and measured 95.02% — the predicted landing to the decimal** — and **held slice ⓶b back themselves** because its files sat at 27–42%.
+>
+> ⚡ **The reversal guard was fire-tested and it is load-bearing.** Removing both `member_user_id == assigned_to` conditions turns **exactly three red of 29**: *does not overwrite an assignment made since* · *reversing twice does not re-assert a stale holder* · *an absence is only restored if the batch still holds it*. ⛔ **QE selected the wrong test files three times before finding them** — a grep for `restore_previous|ReverseAssignment` never matched `tests/integration/`, where they live. **The claim held; the instrument that checked it did not, three times.**
+>
+> 🔴 **[B-122](BUGS.md) is the finding that outlives this cycle.** **`frontend-suite` and `eslint` have run in 0 of 227 certification runs**, and **a red frontend suite reached `main` under a CERTIFIED stamp** — `auth-mode.test.ts`, failing since `3eb51f0d`. `tsc` passed throughout and could not have caught it. ⚠️ **QE's own cheap gates had the same hole**; `vitest` now runs before every pin. ⛔ **Adding either to `REQUIRED_GATES` is the product owner's** — and **the objection QE first gave against it does not hold**: `satisfied` is derived and never stored, so widening re-judges history visibly rather than falsifying it, and **`tsc`'s own addition on 2026-08-04 is the worked precedent** *(41 five-gate runs before it, zero after — a four-minute boundary)*.
+>
+> ⚠️ **QE allocated two identifiers from Lane A's block and its own check caught it.** `B-200`/`B-201` collided with existing rows; renumbered to **`B-122`**. **The cause was the week's pattern in the search that chose the number** — grepping `^### B-1[0-9]{2}`, seeing `B-199`, and taking `200`. 🔴 **And QE's block is exhausted: 97 of 100 used, two of the three gaps live references, zero free. Raised for a ruling; QE will not grant itself a range.**
+>
 > ## Cycle 228 — promoted `385970bf`, 2026-08-14
 >
 > **`main` = `385970bf` = the certified commit.** **14 commits, two lanes** — Lane A's ADR-0412 ⓵b and C-298, Lane C's C-1433 and the B-433 reconciliation. `pytest` **4641** · coverage **95.03%** · **443** Security Invariants *(up 21)* · migration head **`0052`**. **DR passed** — 443 against the restarted stack. **Reversibility clean.** ✅ **First attempt, no aborts.**
@@ -480,7 +494,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-14 · **`main` at `385970bf`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-15 · **`main` at `ac622c24`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
