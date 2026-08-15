@@ -71,7 +71,15 @@
 >
 > **Two such decisions have since been taken, both on 2026-08-04, both by the product owner, neither inside a governance edit** — the morning's C-415 ruling and the afternoon's consolidation onto Lane B. **The paragraph above is left standing as the dated record it is**, because the rule it states is precisely the rule those two transfers followed (§2 — *correct a claim about the present; date a record of the past*).
 
-## Current — as of 2026-08-15, `044fbf30`
+## Current — as of 2026-08-15, `723a0bf2`
+
+> ⚡ **Cycle 234 Closeout. 19 commits, two lanes, ONE gate run** — Lane A rebased onto Lane C rather than each taking a cycle.
+>
+> ✅ **[TASK-1421](BACKLOG.md) and [TASK-1473](BACKLOG.md) promoted.** **A person in two organizations can choose which to work in; a small laptop gets the collapsed rail and a laptop keeps the choice.** **Lane C: [B-436](BUGS.md) and the corrected lease diagnostic.**
+>
+> 🔴 **Both slices were returned once before landing — for a missing `Slice-Handoff`, not a test failure.** 📁 **`state-check` holds *52 of 136 promoted tasks have no handoff* as a BASELINE that can only be held**, and **a commit message is immutable once on `main`.** ⚡ **Lane A amended while the branch was still theirs; the tree was byte-identical and only the messages changed.** ⛔ **Catching it after promotion would have cost the baseline permanently.**
+>
+> ⚠️ **[TASK-430](BACKLOG.md) was built and withdrawn.** **A `people` interface layer — route, schemas, `Resource.PERSON`, policy rows, eight passing tests — has no surface to land on**, because `frontend/lib/accounts/sections.ts` had already ruled out the only one. ✅ **Shape recorded in [C-1520](LANE_COORDINATION.md) so it is not rebuilt.** ⚡ **The lane's own correction is the lesson: *"it was not judgement that stopped it; it was reading the file I needed anyway."***
 
 > ⚡ **Cycle 233 Closeout. NO rows removed** — [TASK-1479](BACKLOG.md) covers four contracts and ⓷ is blocked on [C-1512](LANE_COORDINATION.md); [TASK-1477](BACKLOG.md) and [TASK-1421](BACKLOG.md) are held and in flight.
 >

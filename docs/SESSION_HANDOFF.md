@@ -1,5 +1,19 @@
 # Session Handoff
 
+> ## Cycle 234 — promoted `723a0bf2`, 2026-08-15 · **the workspace chooser, and a handoff caught in time**
+>
+> **`main` = `723a0bf2` = the certified commit**, verified from `ls-remote` after the push. **19 commits, two lanes, one gate run.** `pytest` **4915** · coverage **95.01%** · **458** Security Invariants · `mypy` strict over **910** files · **`frontend-suite` 3303 in 187 files** · `smoke` 24 stages in 222s · **DR passed with 458 invariants** · **reversible base→head→base→head on a clean database** · head **`0057`**. ✅ **Eight gates, first attempt.**
+>
+> ⚡ **[TASK-1421](BACKLOG.md): a person in two organizations can choose which to work in** — `/workspaces`, **a route four entry rules already dead-ended into.** **[TASK-1473](BACKLOG.md): the rail collapses at 1024–1279 and keeps the choice at 1280+**, fire-tested BOTH ways — *"a one-sided guard would have passed against a rail that is collapsed everywhere."*
+>
+> 🔴 **Both were returned once, for a missing `Slice-Handoff` rather than a failure.** 📁 **The baseline can only be held and a promoted message is immutable** — **amending while the branch was still the lane's cost one rebase; after promotion it would have cost the baseline permanently.** ✅ **Tree byte-identical; only the messages changed.**
+>
+> ⚠️ **[TASK-430](BACKLOG.md) built and withdrawn** — an endpoint with eight passing tests and no surface to land on, because an earlier lane had already recorded that the surface should not exist. ⚡ **The reusable half is the ORDERING: the artefacts that say *where this goes* are the same artefacts that say *whether this belongs*, and consulting them last means the work is already built when the answer arrives.**
+>
+> 🔴 **An authorization suite that would have passed with the authorization deleted.** **Removing `context.authorize` left SEVEN of eight tests green, because `policy.csv` grants `person, read` to BOTH membership roles** — ⛔ **nothing in the file distinguished a checked route from an unchecked one.** ⚡ ***An authorization test proves nothing if every subject in the file holds the grant.*** ✅ **What makes it fixable is the capability layer supplying a subject that holds no grants by construction** ([ADR-0410](architecture/adr/0410-capability-layer.md) §5) — **so any route in this repository can now be tested that way, which was not true before cycle 233.**
+>
+> ⚠️ **[B-436](BUGS.md): `holder()` silently reclaims a lease whose pid is dead.** **Found by planting a dead-pid record and getting NO output — the absence was the finding.** ⛔ **QE's worked example of the damage was WRONG and is corrected in the row**: `make dr` restarts the *production* stack and a lane's e2e runs against its *own*, so demonstrated cost is zero. ⚡ **What survives is sharper — the lease guards five targets correctly and three vestigially, so the ruling is *guard what is actually shared* rather than *a third behaviour that does not exist yet*.**
+>
 > ## Cycle 233 — promoted `044fbf30`, 2026-08-15 · **the capability layer, and B-270 closed**
 >
 > **`main` = `044fbf30` = the certified commit**, `promoted == certified` verified from `ls-remote` after the push. **25 commits from three lanes.** `pytest` **4915** · coverage **95.01%** ⚠️ *(one basis point)* · **458** Security Invariants · `mypy` strict over **910** files · **`frontend-suite` 3284 in 186 files** · `smoke` 24 stages in 213s · **DR passed with 458 invariants against the restarted stack** · **migrations reversible base→head→base→head on a clean database** · migration head **`0057`**. ✅ **Eight gates, first attempt.**
