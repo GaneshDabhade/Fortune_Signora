@@ -517,6 +517,67 @@ databaseUrl: required(
 
 ---
 
+## C-1516 · A raw record says where a payload came from, never what it IS
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-15, building [TASK-1477](BACKLOG.md) ⓑ — ⚡ **found by writing the mapper and discovering it cannot be registered** |
+| **Owner** | 🔴 **Product owner**, through Lane C — ⚠️ **all three modules are Lane A's, and the change is still a CONTRACT change across them** ([§20e](../CLAUDE.md)) |
+| **Type** | ⚠️ **An implementation blocker on registering a second mapper for one provider.** ✅ **Not architectural — nothing needs deciding that has not been decided; it needs a discriminator that does not exist** |
+| **Blocks** | ⛔ **The HubSpot deal mapper reaching a record.** ✅ **The mapper itself is written and testable; [TASK-1477](BACKLOG.md) ⓐ, the vocabulary, is delivered and unaffected** |
+| **Status** | **`OPEN`** |
+
+### 🔴 The registry holds one mapper per provider, and it fails silently
+
+📁 `provider_normalization/infrastructure/mappers/__init__.py`:
+
+```python
+MAPPERS: dict[str, ProviderMapper] = {
+    mapper.provider: mapper for mapper in (…, HubSpotCompanyMapper())
+}
+```
+
+⛔ **`HubSpotDealMapper.provider` is `"hubspot"`, exactly as it must be.** ⚡ **Measured rather than reasoned about:**
+
+```
+registry size for two hubspot mappers: 1
+survivor: HubSpotDealMapper
+```
+
+🔴 **Adding the deal mapper to that tuple DELETES the company mapper**, and **nothing fails** — every firmographic claim a customer's CRM supplies would simply stop being produced. ⚠️ **A dict comprehension, last-wins, no error.**
+
+### ⛔ Why the obvious discriminators do not work
+
+| Candidate | Why not |
+|---|---|
+| **A second `provider` string** — `"hubspot_deal"` | ⛔ **`provider` is provenance and travels onto every claim.** 📁 `crm.py`: *"a claim from HubSpot is a claim… nothing downstream branches on where evidence came from."* **One CRM would look like two sources** |
+| **`capability`** — the raw record already carries it | ⛔ **`CRM_RECORDS`' own docstring covers both**: *"The customer's own account **and opportunity** records."* ⚡ **One capability, two object shapes, decided deliberately** |
+| **Dispatch on the payload's shape** | ⛔ **HubSpot returns companies and deals from different endpoints and the objects carry no type field.** **A *"does this look like a deal?"* branch is the interpretation this layer exists to refuse** |
+
+### ⚡ The knowledge exists at acquisition and is thrown away
+
+📁 **`raw_provider_record` records `provider` · `capability` · `external_id` · `occurred_at` · `payload`.**
+
+> 🔴 **The fetcher knows it called `/crm/v3/objects/deals`. The stored record does not.**
+
+⛔ **That is the whole defect, and it is one sentence: a raw record says where a payload came from and never what it IS.**
+
+### ✅ Recommended, and it is input rather than authority
+
+**A nullable `record_kind` on `raw_provider_record`, set by the source that fetched it, and a registry keyed on `(provider, record_kind)`.**
+
+- ⚡ **Additive.** Existing records carry `NULL` and resolve exactly as today; **no stored row changes meaning.**
+- ⛔ **Nothing branches on the value but the registry.** The kind is a mapper-selection key, **never a fact about the account**, and no claim carries it.
+- ⚠️ **It touches three modules** — `provider_platform`'s table, `integrations`' source, `provider_normalization`'s registry — **all Lane A's, and still a contract change rather than a local one.**
+
+### ⛔ What this lane did NOT do, and the reason is the rule it keeps applying to others
+
+**The deal mapper is written, typed and lint-clean.** ⛔ **It is NOT committed**, because **a mapper that cannot be registered cannot run even when records arrive** — 📁 **the unreachable-primitive class**, and this lane has filed that finding against other people's work three times this week.
+
+✅ **The design is recorded here so nothing is lost**: the subject is the **associated company and never the deal** — *"attributing it to the deal's own id would mint a company per deal"* — `closedate` is ⛔ **not** a renewal date, and an unknown `dealstage` becomes `CommercialStageValue(position=None, label=…)` rather than a rejection, **so the customer sees the deal and is told it is unmapped.**
+
+---
+
 ## C-1515 · Every commercial fact is a deal property, and nothing fetches a deal
 
 | | |
