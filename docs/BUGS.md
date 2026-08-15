@@ -140,6 +140,18 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ✅ **What this row does NOT do is propose the rule.** **It records the gap, the cost and the tension.** 📁 **The precedent is [B-122](#b-122): a change to what a gate MEANS went to the product owner with evidence and came back as a ruling.** **Same route.**
 
+### ⚠️ The cost is narrower than first stated, and the remainder is QE's availability
+
+**Observed 2026-08-15, hours after this row was filed.** ⛔ **Lane C released `TASK-1401` to clear Lane A's supply floor, and Lane A could not see it** — a released row lives on a Product Office branch until QE integrates it.
+
+⚡ **QE integrated it WITHOUT certifying.** 📁 **Integration does not require certification; PROMOTION does** — so the row became visible on the ref every lane polls in one fast-forward, and it accumulates for `main` with the next executable work.
+
+✅ **So the cost this row describes is narrower than *"every republication costs a cycle"*. It is *every republication costs a cycle AT PROMOTION TIME*** — **the difference between a lane waiting and a dashboard waiting**, and only the first is expensive.
+
+⛔ **It does not dissolve the defect, and two things remain true.** **`--next-cycle` still calls a `.toml`-only range warranted**, so the repository still opens cycles for regenerated projections. ⚠️ **And a lane still cannot see a planning correction until QE integrates it** — 🔴 **which puts QE's AVAILABILITY on the critical path for a planning correction, rather than the gate.**
+
+📁 **That last sentence is Lane C's and it is the part a cold reader would not predict:** **the mechanism this row is about turns out to cost less than it looked, and what is left is not a classifier problem at all.**
+
 ### 📁 How the evidence was gathered, because it failed once first
 
 ⛔ **QE published 159 and Lane C published 157. Neither disagreed with the other's data.** ⚡ **QE's FIRST script called `_is_closeout` and returned 157; a SECOND, written to split the count, re-expressed the condition as a prefix test and returned 159. QE ran both and published the later one.**
