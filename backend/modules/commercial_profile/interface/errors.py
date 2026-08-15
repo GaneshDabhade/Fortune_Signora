@@ -28,6 +28,7 @@ from modules.commercial_profile.application.declaring import (
 )
 from modules.commercial_profile.application.publish import CatalogVersionConflictError
 from modules.commercial_profile.domain.account_assignment import AssignmentError
+from modules.commercial_profile.domain.account_segment import AccountSegmentError
 from modules.commercial_profile.domain.account_tag import AccountTagError
 from modules.commercial_profile.domain.committee import BuyingCommitteeError
 from modules.commercial_profile.domain.competitors import CompetitorsError
@@ -136,6 +137,19 @@ ERROR_MAPPING: ErrorMapping = {
     AccountTagError: (
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         "account_tag_refused",
+    ),
+    # ⚡ **Its own row for the reason the two above give**, and the API test
+    # caught its absence: without it a customer who names a grouping twice is
+    # told `catalog_refused` — **a code naming a document they were not
+    # editing**, which is the exact defect the note above this map records.
+    #
+    # ⛔ **Not about ordering.** Handler lookup walks the MRO, so this wins for
+    # its own instances wherever the row sits; **it is the row's EXISTENCE that
+    # matters, and `test_api_account_segments.py` pins the code so it cannot
+    # quietly go.**
+    AccountSegmentError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "account_segment_refused",
     ),
     CommercialProfileError: (
         status.HTTP_422_UNPROCESSABLE_CONTENT,
