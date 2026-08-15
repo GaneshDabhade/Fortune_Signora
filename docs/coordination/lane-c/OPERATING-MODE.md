@@ -264,7 +264,7 @@ OUT OF SCOPE          named, so the boundary is checkable
 
 ⚠️ **Nobody spots an unpushed ref by being careful.** **The local view is complete, self-consistent and wrong** — which is why the tell has to be behavioural rather than attentional.
 
-### 📁 Four instances on 2026-08-15, three layers, two lanes
+### 📁 Six instances on 2026-08-15, four layers, two lanes
 
 | Layer | The reading | Why it was wrong |
 |---|---|---|
@@ -272,13 +272,22 @@ OUT OF SCOPE          named, so the boundary is checkable
 | **Instrument** | **39 `READY`** *(QE)* | ⛔ Matched *"Previously: `READY`"* |
 | **Instrument** | **209 commits** *(QE)* | ⛔ **A real measurement of a quantity the audit does not consume** |
 | 🔴 **Ref** | **4 refs fast-forwarded** *(QE)* | ⛔ **Locally. `origin` had none of them** |
+| 🔴 **Process** | **`certify` sets no database** *(this office)* | ⛔ **True of the PARENT. `__main__.py:446` injects three URLs into the child** |
+| **Producer** | **`database.py` returns a disposable-DB dict** *(QE)* | ⛔ **Read the producer and assumed a consumer. The application is a different line** |
 
 ⚡ **In every one the raw reading was correct and the operand was not the one the consumer uses.**
 
+> ## ⚠️ The fifth one cost a certification run, and that is what makes this section load-bearing
+>
+> **This office wrote *"`make certify` has been truncating whatever database the shell held"* into [B-270](../../BUGS.md).** **QE read `/proc/<pid>/environ`, found the same absence, and killed a valid cycle-232 run.** ⛔ **A false finding that reaches a shared register stops being one person's error.**
+
 | | |
 |---|---|
-| ✅ **The general form** | **Read around the match rather than counting it** — *and* **read the ref the reader will use, not the one you are standing on** |
+| ✅ **The general form** | **Read around the match rather than counting it** · **read the ref the reader will use, not the one you are standing on** · ⚡ **and a parent that does not need a variable is not evidence its child lacks one** |
 | ⚠️ **The tell** | **Any sentence of the form *"I cannot X, so this is all I can do."*** **Test the second clause; it is a claim, not a consequence** |
+| 🔴 **QE's reciprocal, and it binds this office equally** | ***A peer's accuracy record is not evidence about a specific claim.*** **QE skipped a one-command check because the claim came from a lane that had been right four times that day.** ⛔ **Weighting the source instead of the assertion, when the assertion was checkable in seconds** |
+
+⚡ **And the repair that generalises is not the correction — it is naming the METHOD that produced it, where the next person will reuse that method.** 📁 **B-270 now carries *"`make -n` shows what the parent sets; it cannot show what a child injects"* beside the measurement, not in the correction block.** ⛔ **A `CORRECTION` tells a reader the claim was false; that sentence tells them why their method would produce it again.**
 
 📁 **Same family as [§5g](#5g--a-count-compares-reachability-only-content-compares-content) — a number reported without the mapping its reader will apply.**
 
